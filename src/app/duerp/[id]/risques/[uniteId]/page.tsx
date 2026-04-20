@@ -226,7 +226,14 @@ export default async function RisquesUnitePage({
         </ol>
       </section>
 
-      <section className="cartouche">
+      <div
+        className={
+          nonSelectionnes.length > 0
+            ? "grid gap-6 lg:grid-cols-2 lg:items-start"
+            : ""
+        }
+      >
+        <section className="cartouche">
         <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
           <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
             Risques retenus
@@ -389,6 +396,7 @@ export default async function RisquesUnitePage({
           </ul>
         </section>
       )}
+      </div>
 
       <section className="cartouche overflow-hidden">
         <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">

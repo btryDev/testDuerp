@@ -49,14 +49,98 @@ export default async function RisquesOverviewPage({
         <h2 className="mt-4 text-[1.6rem] font-semibold tracking-[-0.018em] leading-tight">
           Pour chaque unité, cochez les risques qui s&apos;appliquent.
         </h2>
-        <p className="mt-4 text-[0.95rem] leading-[1.7] text-muted-foreground">
-          Les risques du référentiel sectoriel sont proposés pré-cochés.
-          Décochez ce qui ne s&apos;applique pas, cotez la gravité via les
-          questions comportementales, et ajoutez des risques spécifiques si
-          besoin. Si une unité n&apos;a aucun risque significatif, vous
-          pourrez le déclarer explicitement sur sa page.
-        </p>
       </header>
+
+      <section
+        aria-label="Marche à suivre pour chaque unité"
+        className="relative overflow-hidden rounded-[calc(var(--radius)*1.4)] bg-[color:var(--warm-soft)] ring-1 ring-[color:var(--warm)]/10"
+      >
+        <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-dashed border-[color:var(--warm)]/15 px-6 py-3.5 sm:px-8">
+          <p className="font-mono text-[0.66rem] font-medium uppercase tracking-[0.18em] text-[color:var(--warm)]">
+            Marche à suivre
+          </p>
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[color:var(--warm)]/60">
+            Sur chaque unité de travail
+          </p>
+        </div>
+
+        <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              n: "01",
+              titre: "Ouvrir une unité",
+              corps:
+                "Cliquez sur une unité de la liste ci-dessous pour accéder à ses risques.",
+            },
+            {
+              n: "02",
+              titre: "Décocher ce qui ne s'applique pas",
+              corps:
+                "Les risques du référentiel sectoriel arrivent pré-cochés. Retirez ceux qui ne vous concernent pas.",
+            },
+            {
+              n: "03",
+              titre: "Coter chaque risque retenu",
+              corps:
+                "3 questions comportementales par risque — gravité, probabilité, maîtrise. La criticité se calcule automatiquement.",
+            },
+            {
+              n: "04",
+              titre: "Ajouter vos risques spécifiques",
+              corps:
+                "Un risque particulier à votre activité ? Ajoutez-le manuellement et cotez-le comme les autres.",
+            },
+          ].map((e, i, arr) => {
+            const estDernier = i === arr.length - 1;
+            const estAvantDernier = i === arr.length - 2;
+            return (
+              <li
+                key={e.n}
+                className={[
+                  "flex items-start gap-3 px-5 py-4 sm:px-6",
+                  !estDernier
+                    ? "border-b border-dashed border-[color:var(--warm)]/15"
+                    : "",
+                  estAvantDernier ? "sm:border-b-0" : "",
+                  i % 2 === 0 ? "sm:border-r sm:border-dashed sm:border-[color:var(--warm)]/15" : "",
+                  "lg:border-b-0",
+                  !estDernier ? "lg:border-r lg:border-dashed lg:border-[color:var(--warm)]/15" : "lg:border-r-0",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                <span
+                  aria-hidden
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[color:var(--warm)]/45 font-mono text-[0.68rem] font-semibold tabular-nums text-[color:var(--warm)]"
+                >
+                  {e.n}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[0.93rem] font-semibold tracking-[-0.008em] leading-snug text-[color:var(--warm)]">
+                    {e.titre}
+                  </p>
+                  <p className="mt-1 text-[0.8rem] leading-snug text-[color:var(--warm)]/70">
+                    {e.corps}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+
+        <div className="flex items-center gap-3 border-t border-dashed border-[color:var(--warm)]/15 px-6 py-2.5 sm:px-8">
+          <span
+            aria-hidden
+            className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[color:var(--warm)]/55"
+          >
+            Cas particulier
+          </span>
+          <p className="flex-1 text-[0.8rem] leading-snug text-[color:var(--warm)]/75">
+            Si une unité n&apos;a aucun risque significatif, vous pourrez le
+            déclarer explicitement sur sa page.
+          </p>
+        </div>
+      </section>
 
       <section className="cartouche overflow-hidden">
         <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
