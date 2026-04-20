@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: duerp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: duerp
+      POSTGRES_PASSWORD: duerp
+      POSTGRES_DB: duerp
+    ports:
+      - "5433:5432"
+    volumes:
+      - duerp-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  duerp-postgres-data:
