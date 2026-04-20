@@ -52,9 +52,65 @@ export default async function SynthesePage({
   const synthese = construireSynthese(duerp.unites);
   const versions = await listerVersions(id);
 
+  // Rappel de mise à jour annuelle — art. R. 4121-2 : obligatoire pour les
+  // entreprises de 11 salariés et plus. On signale aussi le cas où aucune
+  // version n'a jamais été validée (DUERP en cours de constitution).
+  const effectifSoumisAMajAnnuelle = duerp.entreprise.effectif >= 11;
+  const derniereVersion = versions[0];
+  const joursDepuisDerniereVersion = derniereVersion
+    ? Math.floor(
+        (Date.now() - derniereVersion.createdAt.getTime()) /
+          (1000 * 60 * 60 * 24),
+      )
+    : null;
+  const majEchue =
+    effectifSoumisAMajAnnuelle &&
+    derniereVersion !== undefined &&
+    joursDepuisDerniereVersion !== null &&
+    joursDepuisDerniereVersion > 365;
+  const jamaisValide =
+    effectifSoumisAMajAnnuelle && derniereVersion === undefined;
+
   return (
     <div className="space-y-14">
       <WizardSteps etapes={etapes} />
+
+      {(majEchue || jamaisValide) && (
+        <section
+          role="alert"
+          className="rounded-[calc(var(--radius)*1.4)] border border-dashed border-[color:var(--minium)]/50 bg-[color:var(--minium)]/8 px-6 py-5"
+        >
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <p className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[color:var(--minium)]">
+              Mise à jour requise · art. R. 4121-2
+            </p>
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[color:var(--minium)]/80">
+              Effectif {duerp.entreprise.effectif} salarié
+              {duerp.entreprise.effectif > 1 ? "s" : ""}
+            </p>
+          </div>
+          <p className="mt-2 text-[0.9rem] leading-[1.6] text-ink">
+            {jamaisValide ? (
+              <>
+                Aucune version n&apos;a encore été validée pour ce DUERP.
+                L&apos;art. R. 4121-2 impose une mise à jour annuelle pour
+                les entreprises d&apos;au moins 11 salariés — validez une
+                première version dès que l&apos;évaluation est complète.
+              </>
+            ) : (
+              <>
+                La dernière version date de{" "}
+                <span className="font-semibold">
+                  {joursDepuisDerniereVersion} jours
+                </span>
+                . La mise à jour annuelle est obligatoire pour les entreprises
+                d&apos;au moins 11 salariés (art. R. 4121-2). Créez une
+                nouvelle version pour figer l&apos;état à jour.
+              </>
+            )}
+          </p>
+        </section>
+      )}
 
       {/* Couverture du dossier */}
       <section className="cartouche relative px-8 py-10">

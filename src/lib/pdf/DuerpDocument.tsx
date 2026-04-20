@@ -536,6 +536,81 @@ export function DuerpDocument({ snapshot, historique }: Props) {
         </Text>
       </Page>
 
+      {/* Annexe exposition — R. 4121-1-1 : proportion de salariés exposés.
+          On ne la génère que si au moins un risque renseigne l'un des champs
+          (salariés exposés, mesures physiques, CMR). */}
+      {unites.some((u) =>
+        u.risques.some(
+          (r) =>
+            r.nombreSalariesExposes !== null ||
+            r.dateMesuresPhysiques !== null ||
+            r.exposeCMR,
+        ),
+      ) && (
+        <Page size="A4" style={s.page}>
+          <Text style={s.h2}>Annexe — Exposition (R. 4121-1-1)</Text>
+          <Text style={[s.small, { marginBottom: 8 }]}>
+            Article R. 4121-1-1 : données utiles à l&apos;évaluation des
+            expositions individuelles et proportion de salariés exposés
+            au-delà des seuils réglementaires. Cette annexe consolide les
+            informations saisies sur chaque risque.
+          </Text>
+          <View style={s.thead}>
+            <Text style={[s.th, { width: "30%" }]}>Risque</Text>
+            <Text style={[s.th, { width: "20%" }]}>Unité</Text>
+            <Text style={[s.th, { width: "15%" }]}>
+              Salariés exposés
+            </Text>
+            <Text style={[s.th, { width: "20%" }]}>
+              Dern. mesures physiques
+            </Text>
+            <Text style={[s.th, { width: "15%" }]}>CMR</Text>
+          </View>
+          {unites.flatMap((u) =>
+            u.risques
+              .filter(
+                (r) =>
+                  r.nombreSalariesExposes !== null ||
+                  r.dateMesuresPhysiques !== null ||
+                  r.exposeCMR,
+              )
+              .map((r) => (
+                <View key={r.id} style={s.row}>
+                  <Text style={[s.td, { width: "30%" }]}>{r.libelle}</Text>
+                  <Text style={[s.td, { width: "20%" }]}>{u.nom}</Text>
+                  <Text style={[s.td, { width: "15%" }]}>
+                    {r.nombreSalariesExposes !== null
+                      ? `${r.nombreSalariesExposes}`
+                      : "—"}
+                  </Text>
+                  <Text style={[s.td, { width: "20%" }]}>
+                    {formatDate(r.dateMesuresPhysiques)}
+                  </Text>
+                  <Text
+                    style={[
+                      s.td,
+                      { width: "15%" },
+                      r.exposeCMR ? { color: "#b30000" } : {},
+                    ]}
+                  >
+                    {r.exposeCMR ? "Oui — R. 4412" : "—"}
+                  </Text>
+                </View>
+              )),
+          )}
+          <Text style={[s.small, { marginTop: 10 }]}>
+            Textes de référence pour les mesures physiques : bruit
+            (R. 4432-1 et suiv.), éclairement (R. 4223-4), ambiances
+            thermiques, vibrations (R. 4441-1 et suiv.). Les expositions CMR
+            déclenchent les obligations renforcées de l&apos;art. R. 4412-59
+            et suivants (substitution, liste nominative, suivi médical).
+          </Text>
+          <Text style={s.footer} fixed>
+            {entreprise.raisonSociale} — DUERP v{version}
+          </Text>
+        </Page>
+      )}
+
       {/* Historique + mentions légales */}
       <Page size="A4" style={s.page}>
         <Text style={s.h2}>Historique des versions</Text>

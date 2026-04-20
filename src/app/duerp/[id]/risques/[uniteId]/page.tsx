@@ -31,8 +31,12 @@ export default async function RisquesUnitePage({
 
   const risquesRetenus = unite.risques;
   const aCoterCount = risquesRetenus.filter((r) => !r.cotationSaisie).length;
+  const sansMesureCount = risquesRetenus.filter(
+    (r) => r.cotationSaisie && r.mesures.length === 0,
+  ).length;
+  const aEvaluerCount = aCoterCount + sansMesureCount;
   const etape1Faite = risquesRetenus.length > 0;
-  const etape2Faite = etape1Faite && aCoterCount === 0;
+  const etape2Faite = etape1Faite && aEvaluerCount === 0;
 
   return (
     <div className="space-y-12">
@@ -59,11 +63,11 @@ export default async function RisquesUnitePage({
           {String(risquesRetenus.length).padStart(2, "0")} risque
           {risquesRetenus.length > 1 ? "s" : ""} retenu
           {risquesRetenus.length > 1 ? "s" : ""}
-          {aCoterCount > 0 && (
+          {aEvaluerCount > 0 && (
             <>
               <span className="mx-2 text-rule">·</span>
               <span className="text-[color:var(--warm)]">
-                {String(aCoterCount).padStart(2, "0")} à coter
+                {String(aEvaluerCount).padStart(2, "0")} à évaluer
               </span>
             </>
           )}
@@ -189,7 +193,7 @@ export default async function RisquesUnitePage({
                     : "text-[color:var(--warm)]/45"
                 }`}
               >
-                Coter chaque risque retenu
+                Évaluer chaque risque retenu
               </p>
               <p
                 className={`mt-1.5 text-[0.86rem] leading-relaxed ${
@@ -198,8 +202,16 @@ export default async function RisquesUnitePage({
                     : "text-[color:var(--warm)]/40"
                 }`}
               >
-                3 questions simples par risque — gravité, probabilité, maîtrise.
-                La criticité se calcule automatiquement.
+                Pour chaque risque, en deux temps :{" "}
+                <span className="font-semibold">
+                  01 · coter (gravité, probabilité, maîtrise)
+                </span>{" "}
+                puis{" "}
+                <span className="font-semibold">
+                  02 · lister les mesures de prévention
+                </span>
+                . Les deux vont ensemble — la maîtrise cotée reflète ce qui
+                existe déjà.
               </p>
               <span
                 className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.14em] ${
@@ -218,7 +230,7 @@ export default async function RisquesUnitePage({
                     Terminé
                   </>
                 ) : (
-                  `${String(aCoterCount).padStart(2, "0")} à coter`
+                  `${String(aEvaluerCount).padStart(2, "0")} à évaluer`
                 )}
               </span>
             </div>
@@ -251,7 +263,10 @@ export default async function RisquesUnitePage({
           </p>
         ) : (
           <ul className="divide-y divide-dashed divide-rule/50">
-            {risquesRetenus.map((r) => (
+            {risquesRetenus.map((r) => {
+              const mesureFaite = r.mesures.length > 0;
+              const evalComplete = r.cotationSaisie && mesureFaite;
+              return (
               <li
                 key={r.id}
                 className="flex flex-col items-start justify-between gap-4 px-6 py-5 sm:flex-row sm:items-center sm:px-8"
@@ -265,42 +280,85 @@ export default async function RisquesUnitePage({
                       {r.description}
                     </p>
                   )}
-                  <p className="mt-2 flex flex-wrap items-center font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
-                    {r.cotationSaisie ? (
-                      <span className="inline-flex items-center">
-                        Criticité {String(r.criticite).padStart(2, "0")} / 16
-                        <InfoTooltip align="left">
-                          Indice calculé : (gravité × probabilité) ÷ maîtrise,
-                          borné à 16. Plus c&apos;est élevé, plus le risque
-                          est à traiter en priorité.
-                        </InfoTooltip>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center text-[color:var(--warm)]">
-                        Non coté
-                        <InfoTooltip align="left">
-                          Le risque a été retenu mais pas encore évalué.
-                          Cliquez sur « Coter » pour répondre aux 3 questions.
-                        </InfoTooltip>
-                      </span>
-                    )}
-                    <span className="mx-2 text-rule">·</span>
-                    {String(r.mesures.length).padStart(2, "0")} mesure
-                    {r.mesures.length > 1 ? "s" : ""}
+
+                  {/* Progression compacte 01 · 02 de l'évaluation de ce risque */}
+                  <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[0.6rem] uppercase tracking-[0.16em]">
+                    <span
+                      className={`inline-flex items-center gap-1.5 ${
+                        r.cotationSaisie
+                          ? "text-ink"
+                          : "text-[color:var(--warm)]"
+                      }`}
+                    >
+                      <span
+                        aria-hidden
+                        className={`inline-block size-1.5 rounded-full ${
+                          r.cotationSaisie
+                            ? "bg-ink"
+                            : "bg-[color:var(--warm)]"
+                        }`}
+                      />
+                      01 ·{" "}
+                      {r.cotationSaisie ? (
+                        <span className="inline-flex items-center tabular-nums">
+                          criticité {String(r.criticite).padStart(2, "0")}/16
+                          <InfoTooltip align="left">
+                            Indice calculé : (gravité × probabilité) ÷
+                            maîtrise, borné à 16. Plus c&apos;est élevé, plus
+                            le risque est à traiter en priorité.
+                          </InfoTooltip>
+                        </span>
+                      ) : (
+                        "à coter"
+                      )}
+                    </span>
+                    <span aria-hidden className="text-rule">
+                      ·
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1.5 ${
+                        !r.cotationSaisie
+                          ? "text-muted-foreground/50"
+                          : mesureFaite
+                            ? "text-ink"
+                            : "text-[color:var(--warm)]"
+                      }`}
+                    >
+                      <span
+                        aria-hidden
+                        className={`inline-block size-1.5 rounded-full ${
+                          !r.cotationSaisie
+                            ? "bg-rule-soft"
+                            : mesureFaite
+                              ? "bg-ink"
+                              : "bg-[color:var(--warm)]"
+                        }`}
+                      />
+                      02 ·{" "}
+                      {!r.cotationSaisie
+                        ? "après cotation"
+                        : mesureFaite
+                          ? `${String(r.mesures.length).padStart(2, "0")} mesure${
+                              r.mesures.length > 1 ? "s" : ""
+                            }`
+                          : "à renseigner"}
+                    </span>
                     {!r.referentielId && (
                       <>
-                        <span className="mx-2 text-rule">·</span>
+                        <span aria-hidden className="text-rule">
+                          ·
+                        </span>
                         <span className="inline-flex items-center text-[color:var(--warm)]">
                           personnalisé
                           <InfoTooltip align="left">
-                            Risque ajouté manuellement (hors référentiel INRS).
-                            Vous pouvez le modifier ou le supprimer à tout
-                            moment.
+                            Risque ajouté manuellement (hors référentiel
+                            INRS). Vous pouvez le modifier ou le supprimer à
+                            tout moment.
                           </InfoTooltip>
                         </span>
                       </>
                     )}
-                  </p>
+                  </div>
                 </div>
                 <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:flex-nowrap">
                   <span className="group/tip relative inline-flex">
@@ -308,43 +366,38 @@ export default async function RisquesUnitePage({
                       href={`/duerp/${id}/risques/${uniteId}/${r.id}`}
                       className={buttonVariants({
                         size: "sm",
-                        variant: r.cotationSaisie ? "outline" : "default",
+                        variant: evalComplete ? "outline" : "default",
                       })}
                     >
-                      {r.cotationSaisie ? "Modifier cotation" : "Coter"}
+                      {!r.cotationSaisie
+                        ? "Évaluer"
+                        : !mesureFaite
+                          ? "Continuer l'évaluation"
+                          : "Modifier l'évaluation"}
                     </Link>
                     <span
                       role="tooltip"
-                      className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 w-max max-w-[17rem] translate-y-1 rounded-md bg-ink px-3 py-2 text-left text-[0.72rem] leading-relaxed text-paper-elevated opacity-0 shadow-lg transition-all duration-150 group-hover/tip:translate-y-0 group-hover/tip:opacity-100 [font-family:var(--font-body)]"
+                      className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 w-max max-w-[18rem] translate-y-1 rounded-md bg-ink px-3 py-2 text-left text-[0.72rem] leading-relaxed text-paper-elevated opacity-0 shadow-lg transition-all duration-150 group-hover/tip:translate-y-0 group-hover/tip:opacity-100 [font-family:var(--font-body)]"
                     >
-                      Répondez à 3 questions simples (gravité, probabilité,
-                      maîtrise). La criticité se calcule automatiquement.
+                      Évaluation en deux temps : d&apos;abord la cotation
+                      (3 questions), puis les mesures de prévention. Les deux
+                      sont enchaînés dans le même flux.
                       <span
                         aria-hidden
                         className="absolute right-4 top-full border-4 border-transparent border-t-ink"
                       />
                     </span>
                   </span>
-                  {r.cotationSaisie && (
-                    <span className="group/tip relative inline-flex">
-                      <Link
-                        href={`/duerp/${id}/risques/${uniteId}/${r.id}/mesures`}
-                        className={buttonVariants({ size: "sm", variant: "outline" })}
-                      >
-                        Mesures
-                      </Link>
-                      <span
-                        role="tooltip"
-                        className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 w-max max-w-[17rem] translate-y-1 rounded-md bg-ink px-3 py-2 text-left text-[0.72rem] leading-relaxed text-paper-elevated opacity-0 shadow-lg transition-all duration-150 group-hover/tip:translate-y-0 group-hover/tip:opacity-100 [font-family:var(--font-body)]"
-                      >
-                        Mesures de prévention existantes et prévues
-                        (EPI, formation, organisation…).
-                        <span
-                          aria-hidden
-                          className="absolute right-4 top-full border-4 border-transparent border-t-ink"
-                        />
-                      </span>
-                    </span>
+                  {evalComplete && (
+                    <Link
+                      href={`/duerp/${id}/risques/${uniteId}/${r.id}/mesures`}
+                      className={buttonVariants({
+                        size: "sm",
+                        variant: "ghost",
+                      })}
+                    >
+                      Mesures →
+                    </Link>
                   )}
                   {!r.referentielId && (
                     <>
@@ -358,7 +411,8 @@ export default async function RisquesUnitePage({
                   )}
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
       </section>
