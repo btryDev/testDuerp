@@ -338,12 +338,31 @@ export default async function SynthesePage({
       </section>
 
       <section>
-        <p className="label-admin">§ Versions figées</p>
-        <h3 className="display-lg mt-1 text-2xl">Historique du dossier</h3>
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <div>
+            <p className="label-admin">§ Versions figées</p>
+            <h3 className="display-lg mt-1 text-2xl">Historique du dossier</h3>
+          </div>
+          <a
+            href={`/duerp/${id}/pdf/preview`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Aperçu PDF brouillon ↗
+          </a>
+        </div>
+        <p className="mt-2 max-w-2xl text-[0.82rem] leading-relaxed text-muted-foreground">
+          L&apos;aperçu télécharge un PDF estampillé{" "}
+          <span className="font-semibold">« Document non validé »</span> sur
+          chaque page, sans créer de version. Pour un PDF officiel consultable
+          et archivé, validez une version ci-dessous.
+        </p>
         {versions.length === 0 ? (
           <p className="cartouche mt-4 p-6 text-sm text-muted-foreground">
-            Aucune version validée pour l&apos;instant. Créez-en une pour
-            figer l&apos;état actuel et générer un PDF téléchargeable.
+            Aucune version validée pour l&apos;instant. L&apos;aperçu
+            ci-dessus vous permet toutefois de vérifier le rendu avant de
+            figer une version.
           </p>
         ) : (
           <ul className="filet mt-4 cartouche divide-y divide-rule">
