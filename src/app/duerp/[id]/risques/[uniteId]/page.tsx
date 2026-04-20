@@ -27,11 +27,12 @@ export default async function RisquesUnitePage({
       .filter((r) => r.referentielId)
       .map((r) => [r.referentielId!, r]),
   );
-  const risquesCustom = unite.risques.filter((r) => !r.referentielId);
   const nonSelectionnes = proposes.filter((refId) => !idsSelectionnes.has(refId));
 
   const risquesRetenus = unite.risques;
   const aCoterCount = risquesRetenus.filter((r) => !r.cotationSaisie).length;
+  const etape1Faite = risquesRetenus.length > 0;
+  const etape2Faite = etape1Faite && aCoterCount === 0;
 
   return (
     <div className="space-y-12">
@@ -68,6 +69,162 @@ export default async function RisquesUnitePage({
           )}
         </p>
       </header>
+
+      <section
+        aria-label="Marche à suivre"
+        className="relative overflow-hidden rounded-[calc(var(--radius)*1.4)] bg-[color:var(--warm-soft)] ring-1 ring-[color:var(--warm)]/10"
+      >
+        {/* En-tête éditorial */}
+        <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-dashed border-[color:var(--warm)]/15 px-6 py-5 sm:px-8">
+          <p className="font-mono text-[0.66rem] font-medium uppercase tracking-[0.18em] text-[color:var(--warm)]">
+            Marche à suivre
+          </p>
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[color:var(--warm)]/60">
+            Progression de cette unité
+          </p>
+        </div>
+
+        {/* Barre continue 2 segments + légendes sous-jacentes */}
+        <div className="px-6 pt-6 sm:px-8">
+          <div
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={2}
+            aria-valuenow={(etape1Faite ? 1 : 0) + (etape2Faite ? 1 : 0)}
+            className="flex gap-1.5"
+          >
+            <span
+              className={`h-[6px] flex-1 rounded-[2px] transition-colors duration-300 ${
+                etape1Faite
+                  ? "bg-[color:var(--warm)]"
+                  : "bg-[color:var(--warm)]/20"
+              }`}
+            />
+            <span
+              className={`h-[6px] flex-1 rounded-[2px] transition-colors duration-300 ${
+                etape2Faite
+                  ? "bg-[color:var(--warm)]"
+                  : etape1Faite
+                    ? "bg-[color:var(--warm)]/40"
+                    : "bg-[color:var(--warm)]/12"
+              }`}
+            />
+          </div>
+          <div className="mt-2 flex justify-between font-mono text-[0.58rem] uppercase tracking-[0.2em] text-[color:var(--warm)]/55 tabular-nums">
+            <span>
+              01 /{" "}
+              {etape1Faite ? "terminé" : "à faire"}
+            </span>
+            <span>
+              02 /{" "}
+              {!etape1Faite
+                ? "en attente"
+                : etape2Faite
+                  ? "terminé"
+                  : "à faire"}
+            </span>
+          </div>
+        </div>
+
+        {/* Les 2 étapes côte à côte, séparées par un filet pointillé */}
+        <ol className="mt-5 grid grid-cols-1 sm:grid-cols-2">
+          <li className="flex items-start gap-4 border-b border-dashed border-[color:var(--warm)]/15 px-6 py-6 sm:border-b-0 sm:border-r sm:px-8">
+            <span
+              aria-hidden
+              className={`flex size-11 shrink-0 items-center justify-center rounded-full font-mono text-[0.78rem] font-semibold tabular-nums transition-colors ${
+                etape1Faite
+                  ? "bg-[color:var(--warm)] text-[color:var(--paper-elevated)]"
+                  : "border border-[color:var(--warm)]/45 text-[color:var(--warm)]"
+              }`}
+            >
+              01
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[1rem] font-semibold tracking-[-0.012em] leading-snug text-[color:var(--warm)]">
+                Cocher les risques concernés
+              </p>
+              <p className="mt-1.5 text-[0.86rem] leading-relaxed text-[color:var(--warm)]/70">
+                Parcourez la liste du référentiel plus bas et cochez ceux qui
+                s&apos;appliquent à cette unité. Les non-cochés sont considérés
+                comme écartés.
+              </p>
+              <span
+                className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.14em] ${
+                  etape1Faite
+                    ? "bg-[color:var(--paper-elevated)] text-[color:var(--warm)] ring-1 ring-[color:var(--warm)]/20"
+                    : "bg-[color:var(--warm)] text-[color:var(--paper-elevated)]"
+                }`}
+              >
+                {etape1Faite ? (
+                  <>
+                    <span aria-hidden>✓</span>
+                    {String(risquesRetenus.length).padStart(2, "0")} retenu
+                    {risquesRetenus.length > 1 ? "s" : ""}
+                  </>
+                ) : (
+                  "À faire"
+                )}
+              </span>
+            </div>
+          </li>
+
+          <li className="flex items-start gap-4 px-6 py-6 sm:px-8">
+            <span
+              aria-hidden
+              className={`flex size-11 shrink-0 items-center justify-center rounded-full font-mono text-[0.78rem] font-semibold tabular-nums transition-colors ${
+                etape2Faite
+                  ? "bg-[color:var(--warm)] text-[color:var(--paper-elevated)]"
+                  : etape1Faite
+                    ? "border border-[color:var(--warm)]/45 text-[color:var(--warm)]"
+                    : "border border-dashed border-[color:var(--warm)]/25 text-[color:var(--warm)]/40"
+              }`}
+            >
+              02
+            </span>
+            <div className="min-w-0 flex-1">
+              <p
+                className={`text-[1rem] font-semibold tracking-[-0.012em] leading-snug ${
+                  etape1Faite
+                    ? "text-[color:var(--warm)]"
+                    : "text-[color:var(--warm)]/45"
+                }`}
+              >
+                Coter chaque risque retenu
+              </p>
+              <p
+                className={`mt-1.5 text-[0.86rem] leading-relaxed ${
+                  etape1Faite
+                    ? "text-[color:var(--warm)]/70"
+                    : "text-[color:var(--warm)]/40"
+                }`}
+              >
+                3 questions simples par risque — gravité, probabilité, maîtrise.
+                La criticité se calcule automatiquement.
+              </p>
+              <span
+                className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.14em] ${
+                  !etape1Faite
+                    ? "border border-dashed border-[color:var(--warm)]/30 text-[color:var(--warm)]/50"
+                    : etape2Faite
+                      ? "bg-[color:var(--paper-elevated)] text-[color:var(--warm)] ring-1 ring-[color:var(--warm)]/20"
+                      : "bg-[color:var(--warm)] text-[color:var(--paper-elevated)]"
+                }`}
+              >
+                {!etape1Faite ? (
+                  "Verrouillé"
+                ) : etape2Faite ? (
+                  <>
+                    <span aria-hidden>✓</span>
+                    Terminé
+                  </>
+                ) : (
+                  `${String(aCoterCount).padStart(2, "0")} à coter`
+                )}
+              </span>
+            </div>
+          </li>
+        </ol>
+      </section>
 
       <section className="cartouche">
         <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">

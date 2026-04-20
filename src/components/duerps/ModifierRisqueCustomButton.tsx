@@ -25,6 +25,7 @@ export function ModifierRisqueCustomButton({
   >(action, { status: "idle" });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fermeture du form après succès du Server Action
     if (state.status === "success") setOuvert(false);
   }, [state]);
 

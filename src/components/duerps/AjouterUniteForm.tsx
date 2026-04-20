@@ -20,6 +20,7 @@ export function AjouterUniteForm({ duerpId }: { duerpId: string }) {
   useEffect(() => {
     if (state.status === "success") {
       formRef.current?.reset();
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- fermeture du form après succès du Server Action
       setOuvert(false);
     }
   }, [state]);
