@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { StepIdentite } from "./StepIdentite";
 import { StepEtablissement } from "./StepEtablissement";
+import { StepTypologie } from "./StepTypologie";
 import {
   VALEURS_INITIALES,
   type OnboardingState,
@@ -23,23 +24,6 @@ type Etape = {
    */
   valide: (s: OnboardingState) => string | null;
 };
-
-function PlaceholderStepTypologie(_props: StepProps) {
-  void _props;
-  return (
-    <div className="space-y-4">
-      <p className="label-admin mb-2">Étape 3 sur 4 · À venir</p>
-      <h2 className="text-[1.6rem] font-semibold tracking-[-0.015em]">
-        Votre type d&apos;établissement
-      </h2>
-      <p className="max-w-xl text-[0.88rem] leading-relaxed text-muted-foreground">
-        Cette étape sera ajoutée dans le commit suivant — elle demandera si
-        vous accueillez du public (ERP), la hauteur du bâtiment (IGH) et la
-        présence de logements.
-      </p>
-    </div>
-  );
-}
 
 function PlaceholderStepResume(_props: StepProps) {
   void _props;
@@ -89,8 +73,23 @@ const ETAPES: Etape[] = [
     id: "typologie",
     numero: 3,
     titre: "Typologie",
-    Component: PlaceholderStepTypologie,
-    valide: () => null,
+    Component: StepTypologie,
+    valide: (s) => {
+      if (
+        !s.estEtablissementTravail &&
+        !s.estERP &&
+        !s.estIGH &&
+        !s.estHabitation
+      )
+        return "Cochez au moins un régime (travail, ERP, IGH ou habitation).";
+      if (s.estERP && !s.typeErp)
+        return "Précisez votre activité ERP.";
+      if (s.estERP && !s.categorieErp)
+        return "Précisez votre capacité d'accueil.";
+      if (s.estIGH && !s.classeIgh)
+        return "Précisez la classe IGH.";
+      return null;
+    },
   },
   {
     id: "resume",
