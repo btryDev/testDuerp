@@ -25,39 +25,15 @@ export async function creerEntreprise(
     };
   }
 
-  // Création atomique Entreprise → Etablissement par défaut → DUERP initial
-  // (cf. ADR-001). L'établissement hérite des infos de l'entreprise ;
-  // l'utilisateur pourra le préciser plus tard (catégorie ERP, IGH, etc.).
-  const duerp = await prisma.$transaction(async (tx) => {
-    const entreprise = await tx.entreprise.create({
-      data: parsed.data,
-    });
-
-    const etablissement = await tx.etablissement.create({
-      data: {
-        entrepriseId: entreprise.id,
-        raisonDisplay: entreprise.raisonSociale,
-        adresse: entreprise.adresse,
-        effectifSurSite: entreprise.effectif,
-      },
-    });
-
-    return tx.duerp.create({
-      data: {
-        etablissementId: etablissement.id,
-        unites: {
-          create: {
-            nom: "Risques transverses",
-            description:
-              "Risques transverses à l'entreprise (routier, RPS, TMS, écrans). Gérés via les questions détecteurs.",
-            estTransverse: true,
-          },
-        },
-      },
-    });
+  // V2 : l'entrée dans l'outil se fait en deux temps.
+  //   1. créer l'entreprise (identité juridique)
+  //   2. déclarer au moins un établissement (adresse, typologie, régimes)
+  // Le DUERP est initié depuis la page détail d'un établissement.
+  const entreprise = await prisma.entreprise.create({
+    data: parsed.data,
   });
 
-  redirect(`/duerp/${duerp.id}/secteur`);
+  redirect(`/etablissements/nouveau?entrepriseId=${entreprise.id}`);
 }
 
 export async function modifierEntreprise(

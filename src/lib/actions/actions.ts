@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { tousRisquesConnus } from "@/lib/referentiels";
 import type { TypeMesure } from "@/lib/referentiels/types";
+import { statutUIVersAction } from "./mapping";
 
 /**
  * Server actions pour l'entité `Action` — unifiée DUERP + vérifications
@@ -33,21 +34,6 @@ const STATUTS_ACTION = ["ouverte", "en_cours", "levee", "abandonnee"] as const;
 // La conversion se fait ici pour préserver la compatibilité avec les
 // composants existants tant que l'UI n'est pas refondue (étape 8 du plan).
 const STATUTS_DUERP = ["existante", "prevue"] as const;
-type StatutDuerp = (typeof STATUTS_DUERP)[number];
-type StatutAction = (typeof STATUTS_ACTION)[number];
-
-function statutDuerpVersAction(
-  statut: StatutDuerp,
-  echeance: Date | null | undefined,
-): StatutAction {
-  if (statut === "existante") return "levee";
-  if (echeance && echeance.getTime() < Date.now()) return "en_cours";
-  return "ouverte";
-}
-
-function statutActionVersDuerp(statut: StatutAction): StatutDuerp {
-  return statut === "levee" ? "existante" : "prevue";
-}
 
 export type MesureActionState =
   | { status: "idle" }
@@ -152,7 +138,7 @@ export async function ajouterMesureCustom(
   }
 
   const etablissementId = await resoudreEtablissementViaRisque(risqueId);
-  const statutAction = statutDuerpVersAction(
+  const statutAction = statutUIVersAction(
     parsed.data.statut,
     parsed.data.echeance ?? null,
   );
@@ -203,7 +189,7 @@ export async function modifierMesure(
     if (!actuelle) throw new Error("Action introuvable");
     const echeanceEff =
       rest.echeance !== undefined ? rest.echeance : actuelle.echeance;
-    const nouveau = statutDuerpVersAction(statutDuerp, echeanceEff);
+    const nouveau = statutUIVersAction(statutDuerp, echeanceEff);
     data.statut = nouveau;
     data.leveeLe = nouveau === "levee" ? actuelle.leveeLe ?? new Date() : null;
   }
@@ -218,18 +204,6 @@ export async function modifierMesure(
 export async function supprimerMesure(mesureId: string): Promise<void> {
   const m = await prisma.action.delete({ where: { id: mesureId } });
   if (m.risqueId) await revalidateMesure(m.risqueId);
-}
-
-/**
- * Helper UI : convertit une Action persistée vers la forme historique
- * `{ statut: existante | prevue }` consommée par les composants DUERP
- * du wizard. Utilisée uniquement dans les pages wizard en attendant la
- * refonte UI (étape 8).
- */
-export function actionVersMesureUI<T extends { statut: StatutAction }>(
-  a: T,
-): Omit<T, "statut"> & { statut: StatutDuerp } {
-  return { ...a, statut: statutActionVersDuerp(a.statut) };
 }
 
 export type { TypeMesure };

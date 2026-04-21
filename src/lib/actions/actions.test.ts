@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { actionVersMesureUI } from "./actions";
+import { actionVersMesureUI } from "./mapping";
 
 describe("actionVersMesureUI", () => {
   it("map 'levee' vers 'existante' (mesure en place côté wizard DUERP)", () => {
