@@ -11,30 +11,117 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// MVP sans auth — Entreprise est la racine. User sera ajouté plus tard.
+// ============================================================================
+// V2 — Plateforme de conformité santé-sécurité continue
+// Modèle documenté dans /docs/adr/001 à 004.
+// ============================================================================
+
+// MVP sans auth — Entreprise reste la racine. User viendra plus tard.
 
 model Entreprise {
-  id            String   @id @default(cuid())
-  raisonSociale String
-  siret         String?
-  codeNaf       String
-  effectif      Int
-  adresse       String
-  duerps        Duerp[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String          @id @default(cuid())
+  raisonSociale  String
+  siret          String?
+  codeNaf        String
+  effectif       Int
+  adresse        String
+  etablissements Etablissement[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
+
+// ADR-001 : Etablissement est l'ancrage des obligations réglementaires.
+// ADR-004 : régimes cumulables (travail / ERP / IGH / habitation) via flags.
+model Etablissement {
+  id                      String    @id @default(cuid())
+  entrepriseId            String
+  entreprise              Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  raisonDisplay           String
+  adresse                 String
+  codeNaf                 String?
+  effectifSurSite         Int
+
+  // Régimes — cf. ADR-004
+  estEtablissementTravail Boolean   @default(true)
+  estERP                  Boolean   @default(false)
+  estIGH                  Boolean   @default(false)
+  estHabitation           Boolean   @default(false)
+  typeErp                 TypeErp?
+  categorieErp            CategorieErp?
+  classeIgh               ClasseIgh?
+
+  duerps                  Duerp[]
+  equipements             Equipement[]
+  verifications           Verification[]
+  rapports                RapportVerification[]
+  actions                 Action[]
+
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@index([entrepriseId])
+}
+
+enum TypeErp {
+  M
+  N
+  O
+  L
+  P
+  R
+  S
+  T
+  U
+  V
+  W
+  X
+  Y
+  PA
+  CTS
+  SG
+  PS
+  REF
+  GA
+  OA
+  EF
+}
+
+enum CategorieErp {
+  N1
+  N2
+  N3
+  N4
+  N5
+}
+
+enum ClasseIgh {
+  GHA
+  GHW
+  GHO
+  GHR
+  GHS
+  GHU
+  GHZ
+  ITGH
+}
+
+// ----------------------------------------------------------------------------
+// Module DUERP — existant, rattaché à Etablissement
+// ----------------------------------------------------------------------------
 
 model Duerp {
   id                   String         @id @default(cuid())
-  entrepriseId         String
-  entreprise           Entreprise     @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+  etablissementId      String
+  etablissement        Etablissement  @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
   versions             DuerpVersion[]
   unites               UniteTravail[]
   referentielSecteurId String?
   transversesRepondues Boolean        @default(false)
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
+
+  @@index([etablissementId])
 }
 
 model DuerpVersion {
@@ -58,50 +145,215 @@ model UniteTravail {
   description        String?
   referentielUniteId String?
   estTransverse      Boolean  @default(false)
-  // Déclaration explicite « aucun risque significatif identifié »
-  // lorsqu'une unité reste sans risque coché après évaluation.
   aucunRisqueJustif  String?
   risques            Risque[]
 }
 
 model Risque {
-  id            String       @id @default(cuid())
-  uniteId       String
-  unite         UniteTravail @relation(fields: [uniteId], references: [id], onDelete: Cascade)
-  referentielId String?
-  libelle       String
-  description   String?
-  gravite       Int
-  probabilite   Int
-  maitrise      Int
-  criticite     Int
-  cotationSaisie Boolean     @default(false)
-  // Critère d'appréciation recommandé par INRS ED 840 (nombre de personnes
-  // exposées). Alimente aussi, le cas échéant, les annexes pénibilité / C2P.
+  id                    String       @id @default(cuid())
+  uniteId               String
+  unite                 UniteTravail @relation(fields: [uniteId], references: [id], onDelete: Cascade)
+  referentielId         String?
+  libelle               String
+  description           String?
+  gravite               Int
+  probabilite           Int
+  maitrise              Int
+  criticite             Int
+  cotationSaisie        Boolean      @default(false)
   nombreSalariesExposes Int?
-  // Date des dernières mesures physiques (bruit R. 4432, éclairement
-  // R. 4223-4, ambiances thermiques, vibrations R. 4441). Optionnel — à
-  // renseigner quand l'activité impose une mesure.
   dateMesuresPhysiques  DateTime?
-  // Indique une exposition à un agent CMR — cancérogène, mutagène ou toxique
-  // pour la reproduction (R. 4412-59 et suivants). Déclenche des obligations
-  // renforcées : liste des salariés exposés, suivi médical, substitution.
-  exposeCMR             Boolean    @default(false)
-  mesures       Mesure[]
+  exposeCMR             Boolean      @default(false)
+  actions               Action[]
 
   @@unique([uniteId, referentielId])
 }
 
-model Mesure {
-  id                  String    @id @default(cuid())
-  risqueId            String
-  risque              Risque    @relation(fields: [risqueId], references: [id], onDelete: Cascade)
+// ----------------------------------------------------------------------------
+// Module Conformité — nouveau V2
+// ----------------------------------------------------------------------------
+
+model Equipement {
+  id                String              @id @default(cuid())
+  etablissementId   String
+  etablissement     Etablissement       @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  categorie         CategorieEquipement
+  libelle           String
+  localisation      String?
+  dateMiseEnService DateTime?
+  caracteristiques  Json?
+  actif             Boolean             @default(true)
+
+  verifications     Verification[]
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([etablissementId, categorie])
+}
+
+enum CategorieEquipement {
+  INSTALLATION_ELECTRIQUE
+  EXTINCTEUR
+  BAES
+  ALARME_INCENDIE
+  DESENFUMAGE
+  VMC
+  CTA
+  HOTTE_PRO
+  APPAREIL_CUISSON_ERP
+  ASCENSEUR
+  PORTE_AUTO
+  PORTAIL_AUTO
+  EQUIPEMENT_SOUS_PRESSION
+  STOCKAGE_MATIERE_DANGEREUSE
+  EQUIPEMENT_LEVAGE
+  AUTRE
+}
+
+model Verification {
+  id                String                @id @default(cuid())
+  etablissementId   String
+  etablissement     Etablissement         @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  equipementId      String
+  equipement        Equipement            @relation(fields: [equipementId], references: [id], onDelete: Cascade)
+
+  obligationId      String
+  libelleObligation String
+  periodicite       Periodicite
+  realisateurRequis Realisateur[]
+
+  datePrevue        DateTime
+  dateRealisee      DateTime?
+  statut            StatutVerification    @default(a_planifier)
+
+  rapports          RapportVerification[]
+  actions           Action[]
+
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  @@index([etablissementId, datePrevue])
+  @@index([equipementId])
+  @@index([statut])
+}
+
+enum StatutVerification {
+  a_planifier
+  planifiee
+  realisee_conforme
+  realisee_observations
+  realisee_ecart_majeur
+  depassee
+}
+
+enum Periodicite {
+  hebdomadaire
+  mensuelle
+  trimestrielle
+  semestrielle
+  annuelle
+  biennale
+  triennale
+  quinquennale
+  decennale
+  mise_en_service_uniquement
+  autre
+}
+
+enum Realisateur {
+  organisme_agree
+  organisme_accredite
+  personne_qualifiee
+  personne_competente
+  exploitant
+  fabricant
+  bureau_controle
+}
+
+model RapportVerification {
+  id                 String               @id @default(cuid())
+  etablissementId    String
+  etablissement      Etablissement        @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  verificationId     String
+  verification       Verification         @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+
+  dateRapport        DateTime
+  organismeVerif     String?
+  resultat           ResultatVerification
+  commentaires       String?
+
+  fichierCle         String
+  fichierNomOriginal String
+  fichierMime        String
+  fichierTaille      Int
+
+  createdAt          DateTime             @default(now())
+
+  @@index([etablissementId, dateRapport])
+  @@index([verificationId])
+}
+
+enum ResultatVerification {
+  conforme
+  observations_mineures
+  ecart_majeur
+  non_verifiable
+}
+
+// ----------------------------------------------------------------------------
+// Action unifiée — ADR-002
+// Remplace l'ancien modèle `Mesure`. XOR (risqueId, verificationId) imposé
+// par CHECK constraint SQL ajouté dans la migration.
+// ----------------------------------------------------------------------------
+
+model Action {
+  id                  String        @id @default(cuid())
+  etablissementId     String
+  etablissement       Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  risqueId            String?
+  risque              Risque?       @relation(fields: [risqueId], references: [id], onDelete: Cascade)
+  verificationId      String?
+  verification        Verification? @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+
   referentielMesureId String?
+
   libelle             String
-  type                String
-  statut              String
+  description         String?
+  type                TypeAction
+  statut              StatutAction  @default(ouverte)
+  criticite           Int?
   echeance            DateTime?
   responsable         String?
 
+  leveeLe             DateTime?
+  leveeCommentaire    String?
+  leveeRapportId      String?
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
   @@unique([risqueId, referentielMesureId])
+  @@index([etablissementId, statut])
+  @@index([verificationId])
+}
+
+// Valeurs snake_case pour préserver la compatibilité avec les snapshots JSON
+// et le code TS existant (cf. lib/referentiels/types.ts TypeMesure).
+enum TypeAction {
+  suppression
+  reduction_source
+  protection_collective
+  protection_individuelle
+  formation
+  organisationnelle
+}
+
+enum StatutAction {
+  ouverte
+  en_cours
+  levee
+  abandonnee
 }

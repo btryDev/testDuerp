@@ -7,18 +7,19 @@ import { prisma } from "@/lib/prisma";
 import { trouverReferentielParId } from "@/lib/referentiels";
 
 /**
- * Crée un DUERP vide (sans secteur choisi ni unités). L'utilisateur est
- * redirigé vers l'étape de choix de secteur qui alimente ensuite les unités.
+ * Crée un DUERP vide rattaché à un établissement (ADR-001). L'utilisateur
+ * est redirigé vers l'étape de choix de secteur qui alimente ensuite les
+ * unités de travail.
  */
-export async function creerDuerp(entrepriseId: string): Promise<void> {
-  const entreprise = await prisma.entreprise.findUnique({
-    where: { id: entrepriseId },
+export async function creerDuerp(etablissementId: string): Promise<void> {
+  const etablissement = await prisma.etablissement.findUnique({
+    where: { id: etablissementId },
   });
-  if (!entreprise) throw new Error("Entreprise introuvable");
+  if (!etablissement) throw new Error("Établissement introuvable");
 
   const duerp = await prisma.duerp.create({
     data: {
-      entrepriseId,
+      etablissementId,
       unites: {
         create: {
           nom: "Risques transverses",
@@ -30,7 +31,7 @@ export async function creerDuerp(entrepriseId: string): Promise<void> {
     },
   });
 
-  revalidatePath(`/entreprises/${entrepriseId}`);
+  revalidatePath(`/entreprises/${etablissement.entrepriseId}`);
   redirect(`/duerp/${duerp.id}/secteur`);
 }
 

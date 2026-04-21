@@ -25,22 +25,36 @@ export async function creerEntreprise(
     };
   }
 
-  const entreprise = await prisma.entreprise.create({
-    data: parsed.data,
-  });
+  // Création atomique Entreprise → Etablissement par défaut → DUERP initial
+  // (cf. ADR-001). L'établissement hérite des infos de l'entreprise ;
+  // l'utilisateur pourra le préciser plus tard (catégorie ERP, IGH, etc.).
+  const duerp = await prisma.$transaction(async (tx) => {
+    const entreprise = await tx.entreprise.create({
+      data: parsed.data,
+    });
 
-  const duerp = await prisma.duerp.create({
-    data: {
-      entrepriseId: entreprise.id,
-      unites: {
-        create: {
-          nom: "Risques transverses",
-          description:
-            "Risques transverses à l'entreprise (routier, RPS, TMS, écrans). Gérés via les questions détecteurs.",
-          estTransverse: true,
+    const etablissement = await tx.etablissement.create({
+      data: {
+        entrepriseId: entreprise.id,
+        raisonDisplay: entreprise.raisonSociale,
+        adresse: entreprise.adresse,
+        effectifSurSite: entreprise.effectif,
+      },
+    });
+
+    return tx.duerp.create({
+      data: {
+        etablissementId: etablissement.id,
+        unites: {
+          create: {
+            nom: "Risques transverses",
+            description:
+              "Risques transverses à l'entreprise (routier, RPS, TMS, écrans). Gérés via les questions détecteurs.",
+            estTransverse: true,
+          },
         },
       },
-    },
+    });
   });
 
   redirect(`/duerp/${duerp.id}/secteur`);

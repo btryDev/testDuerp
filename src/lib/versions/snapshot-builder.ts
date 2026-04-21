@@ -10,6 +10,11 @@ import type { TypeMesure } from "@/lib/referentiels/types";
  * Construit un snapshot DUERP à partir de l'état courant en base.
  * Partagé entre la validation de version et l'aperçu brouillon du PDF.
  * Ne persiste rien — la persistance reste à la charge de l'appelant.
+ *
+ * Le format `mesures: [...]` est conservé dans le snapshot malgré le passage
+ * à `Action` en base (ADR-002) : les snapshots sont des documents versionnés
+ * à valeur légale, consommés tels quels par le moteur PDF. La conversion
+ * Action → MesureSnapshot est triviale et documentée dans le code ci-dessous.
  */
 export async function construireSnapshot(
   duerpId: string,
@@ -18,13 +23,13 @@ export async function construireSnapshot(
   const duerp = await prisma.duerp.findUnique({
     where: { id: duerpId },
     include: {
-      entreprise: true,
+      etablissement: { include: { entreprise: true } },
       unites: {
         orderBy: { nom: "asc" },
         include: {
           risques: {
             orderBy: { libelle: "asc" },
-            include: { mesures: true },
+            include: { actions: true },
           },
         },
       },
@@ -53,16 +58,21 @@ export async function construireSnapshot(
         ? r.dateMesuresPhysiques.toISOString()
         : null,
       exposeCMR: r.exposeCMR,
-      mesures: r.mesures.map<MesureSnapshot>((m) => ({
-        id: m.id,
-        libelle: m.libelle,
-        type: m.type as TypeMesure,
-        statut: m.statut as "existante" | "prevue",
-        echeance: m.echeance ? m.echeance.toISOString() : null,
-        responsable: m.responsable,
+      mesures: r.actions.map<MesureSnapshot>((a) => ({
+        id: a.id,
+        libelle: a.libelle,
+        type: a.type as TypeMesure,
+        // Action.statut (ouverte|en_cours|levee|abandonnee) → MesureSnapshot.statut (existante|prevue).
+        // "levee" = mesure déjà en place = "existante" ; sinon "prevue".
+        statut: a.statut === "levee" ? "existante" : "prevue",
+        echeance: a.echeance ? a.echeance.toISOString() : null,
+        responsable: a.responsable,
       })),
     })),
   }));
+
+  const etab = duerp.etablissement;
+  const ent = etab.entreprise;
 
   return {
     version: options.numero,
@@ -70,11 +80,11 @@ export async function construireSnapshot(
     motif: options.motif,
     referentielSecteurId: duerp.referentielSecteurId,
     entreprise: {
-      raisonSociale: duerp.entreprise.raisonSociale,
-      siret: duerp.entreprise.siret,
-      codeNaf: duerp.entreprise.codeNaf,
-      effectif: duerp.entreprise.effectif,
-      adresse: duerp.entreprise.adresse,
+      raisonSociale: ent.raisonSociale,
+      siret: ent.siret,
+      codeNaf: etab.codeNaf ?? ent.codeNaf,
+      effectif: etab.effectifSurSite,
+      adresse: etab.adresse,
     },
     unites: unitesSnap,
   };

@@ -1,0 +1,421 @@
+// ============================================================================
+// Schéma Prisma V2 — PROPOSITION (non appliquée)
+//
+// Ce fichier est le projet de schéma résultant des ADR 001 à 004.
+// Il n'est PAS destiné à être migré en l'état — il sert de référence pour
+// l'étape 1 du plan (refonte du modèle de données).
+//
+// ADR référencés :
+//   ADR-001 : Introduction de l'entité `Etablissement`
+//   ADR-002 : Unification des actions correctives (`Action` unifiée)
+//   ADR-003 : Organisation des référentiels (pas d'impact schéma)
+//   ADR-004 : Typologie d'établissement (flags + enums)
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================================
+// 1. ENTITÉS DE BASE
+// ============================================================================
+
+// MVP sans auth — pas encore de User. Entreprise reste racine.
+// Quand l'auth arrivera, on ajoutera User 1─N Entreprise (ou membership).
+
+model Entreprise {
+  id            String          @id @default(cuid())
+  raisonSociale String
+  siret         String?
+  codeNaf       String          // NAF principal de l'entreprise
+  effectif      Int             // effectif juridique total
+  adresse       String          // siège juridique (utilisé si mono-établissement)
+  etablissements Etablissement[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+// ADR-001 + ADR-004
+model Etablissement {
+  id             String   @id @default(cuid())
+  entrepriseId   String
+  entreprise     Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+
+  // Identité
+  raisonDisplay  String   // "Restaurant du Marché" ou raison sociale si mono-site
+  adresse        String
+  codeNaf        String?  // null = hérite d'Entreprise.codeNaf
+  effectifSurSite Int
+
+  // Typologie — ADR-004
+  estEtablissementTravail Boolean      @default(true)
+  estERP                  Boolean      @default(false)
+  estIGH                  Boolean      @default(false)
+  estHabitation           Boolean      @default(false)
+  typeErp                 TypeErp?
+  categorieErp            CategorieErp?
+  classeIgh               ClasseIgh?
+
+  // Relations
+  duerps         Duerp[]
+  equipements    Equipement[]
+  verifications  Verification[]
+  rapports       RapportVerification[]
+  actions        Action[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([entrepriseId])
+}
+
+enum TypeErp {
+  M    // Magasin de vente
+  N    // Restaurant, débit de boissons
+  O    // Hôtel
+  L    // Salle de spectacle
+  P    // Salle de danse, jeux
+  R    // Enseignement
+  S    // Bibliothèque
+  T    // Salle d'exposition
+  U    // Soins
+  V    // Culte
+  W    // Bureaux, administration
+  X    // Sportif couvert
+  Y    // Musée
+  PA   // Plein air
+  CTS  // Chapiteau
+  SG   // Structure gonflable
+  PS   // Parc de stationnement couvert
+  REF  // Refuge
+  GA   // Gare
+  OA   // Hôtel-restaurant d'altitude
+  EF   // Flottant
+}
+
+enum CategorieErp {
+  N1   // 1ʳᵉ (> 1500 personnes)
+  N2   // 2ᵉ (701 à 1500)
+  N3   // 3ᵉ (301 à 700)
+  N4   // 4ᵉ (jusqu'à 300, seuil du type)
+  N5   // 5ᵉ (sous seuil — règles PE)
+}
+
+enum ClasseIgh {
+  GHA    // Habitation
+  GHW    // Bureaux (GHW1 ou GHW2 précisable ailleurs si besoin)
+  GHO    // Hôtel
+  GHR    // Enseignement
+  GHS    // Archives
+  GHU    // Sanitaire
+  GHZ    // Mixte
+  ITGH   // Immeuble de très grande hauteur
+}
+
+// ============================================================================
+// 2. MODULE DUERP (existant, adapté à Etablissement)
+// ============================================================================
+
+model Duerp {
+  id                   String         @id @default(cuid())
+
+  // ADR-001 : rattachement à Etablissement au lieu de Entreprise
+  etablissementId      String
+  etablissement        Etablissement  @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  // Existant conservé
+  referentielSecteurId String?
+  transversesRepondues Boolean        @default(false)
+  versions             DuerpVersion[]
+  unites               UniteTravail[]
+
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([etablissementId])
+}
+
+model DuerpVersion {
+  id        String   @id @default(cuid())
+  duerpId   String
+  duerp     Duerp    @relation(fields: [duerpId], references: [id], onDelete: Cascade)
+  numero    Int
+  snapshot  Json     // conservé 40 ans (art. L. 4121-3-1 / art. 17 loi 2021-1018)
+  pdfUrl    String?
+  motif     String?
+  createdAt DateTime @default(now())
+
+  @@unique([duerpId, numero])
+}
+
+model UniteTravail {
+  id                 String   @id @default(cuid())
+  duerpId            String
+  duerp              Duerp    @relation(fields: [duerpId], references: [id], onDelete: Cascade)
+  nom                String
+  description        String?
+  referentielUniteId String?
+  estTransverse      Boolean  @default(false)
+  aucunRisqueJustif  String?
+  risques            Risque[]
+}
+
+model Risque {
+  id                    String       @id @default(cuid())
+  uniteId               String
+  unite                 UniteTravail @relation(fields: [uniteId], references: [id], onDelete: Cascade)
+  referentielId         String?
+  libelle               String
+  description           String?
+  gravite               Int
+  probabilite           Int
+  maitrise              Int
+  criticite             Int
+  cotationSaisie        Boolean      @default(false)
+  nombreSalariesExposes Int?
+  dateMesuresPhysiques  DateTime?
+  exposeCMR             Boolean      @default(false)
+
+  // ADR-002 : plus de "mesures", les actions liées remontent via Action.risqueId
+  actions               Action[]
+
+  @@unique([uniteId, referentielId])
+  @@index([uniteId])
+}
+
+// ============================================================================
+// 3. MODULE CONFORMITÉ (nouveau V2)
+// ============================================================================
+
+// Equipement déclaré dans un établissement.
+// L'inventaire des équipements est la base du matching avec les obligations.
+model Equipement {
+  id               String        @id @default(cuid())
+  etablissementId  String
+  etablissement    Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  categorie        CategorieEquipement  // enum large : ELECTRICITE, EXTINCTEUR, BAES, VMC, HOTTE, ASCENSEUR, PORTE_AUTO, etc.
+  libelle          String               // "Tableau général BT - local technique" ou saisi libre
+  localisation     String?              // "Cuisine", "Sous-sol", libre
+  dateMiseEnService DateTime?
+  caracteristiques Json?                // données structurées spécifiques à la catégorie (type, puissance, volume…)
+  actif            Boolean              @default(true)
+
+  verifications    Verification[]
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([etablissementId, categorie])
+}
+
+enum CategorieEquipement {
+  // P1
+  INSTALLATION_ELECTRIQUE
+  EXTINCTEUR
+  BAES              // Bloc autonome d'éclairage de sécurité
+  ALARME_INCENDIE
+  DESENFUMAGE
+  VMC
+  CTA               // Centrale de traitement d'air
+  // P2
+  HOTTE_PRO
+  APPAREIL_CUISSON_ERP
+  ASCENSEUR
+  PORTE_AUTO
+  PORTAIL_AUTO
+  // P3
+  EQUIPEMENT_SOUS_PRESSION
+  STOCKAGE_MATIERE_DANGEREUSE
+  EQUIPEMENT_LEVAGE
+  // catch-all
+  AUTRE
+}
+
+// Occurrence d'une vérification — passée ou à venir.
+// Générée par le moteur de calendrier (étape 6) à partir des obligations.
+model Verification {
+  id               String               @id @default(cuid())
+  etablissementId  String
+  etablissement    Etablissement        @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  equipementId     String
+  equipement       Equipement           @relation(fields: [equipementId], references: [id], onDelete: Cascade)
+
+  obligationId     String               // id du référentiel TS (pas de FK — référentiel en code)
+  libelleObligation String              // snapshot du libellé au moment de la génération
+  periodicite      Periodicite
+  realisateurRequis Realisateur[]       // enum[] : quel profil peut réaliser la vérif
+
+  datePrevue       DateTime             // échéance prévue
+  dateRealisee     DateTime?
+  statut           StatutVerification   @default(A_PLANIFIER)
+
+  rapports         RapportVerification[]
+  actions          Action[]             // actions ouvertes si écart détecté
+
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@index([etablissementId, datePrevue])
+  @@index([equipementId])
+  @@index([statut])
+}
+
+enum StatutVerification {
+  A_PLANIFIER            // aucune vérif précédente connue, urgence
+  PLANIFIEE              // date prévue dans le futur
+  REALISEE_CONFORME      // rapport reçu, sans écart
+  REALISEE_OBSERVATIONS  // écart mineur
+  REALISEE_ECART_MAJEUR  // écart majeur — génère des Action obligatoires
+  DEPASSEE               // échéance passée sans réalisation
+}
+
+enum Periodicite {
+  HEBDOMADAIRE
+  MENSUELLE
+  TRIMESTRIELLE
+  SEMESTRIELLE
+  ANNUELLE
+  BIENNALE
+  TRIENNALE
+  QUINQUENNALE
+  DECENNALE
+  MISE_EN_SERVICE_UNIQUEMENT
+  AUTRE
+}
+
+enum Realisateur {
+  ORGANISME_AGREE           // vérifications R. 4226-14 (électricité par ex.)
+  ORGANISME_ACCREDITE       // COFRAC
+  PERSONNE_QUALIFIEE        // art. R. 4323-22+ (équipements de travail)
+  PERSONNE_COMPETENTE       // aération — arrêté 25/06/1980
+  EXPLOITANT                // vérifs quotidiennes/hebdo
+  FABRICANT
+  BUREAU_CONTROLE
+}
+
+// Rapport de vérification uploadé par l'utilisateur et rattaché à une Verification.
+// Le registre de sécurité (L. 4711-5) est une vue sur cette table.
+model RapportVerification {
+  id               String        @id @default(cuid())
+  etablissementId  String
+  etablissement    Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  verificationId   String
+  verification     Verification  @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+
+  dateRapport      DateTime
+  organismeVerif   String?       // raison sociale de l'organisme qui a réalisé la vérif
+  resultat         ResultatVerification
+  commentaires     String?
+
+  // Fichier — abstraction pour passer de filesystem à S3/R2 plus tard
+  fichierCle       String        // clé de stockage opaque (ex. "etablissements/abc/verifs/xyz.pdf")
+  fichierNomOriginal String
+  fichierMime      String
+  fichierTaille    Int
+
+  createdAt        DateTime      @default(now())
+
+  @@index([etablissementId, dateRapport])
+  @@index([verificationId])
+}
+
+enum ResultatVerification {
+  CONFORME
+  OBSERVATIONS_MINEURES
+  ECART_MAJEUR
+  NON_VERIFIABLE           // équipement inaccessible, rapport incomplet
+}
+
+// ============================================================================
+// 4. ACTION UNIFIÉE (ADR-002)
+// ============================================================================
+
+// Remplace l'ancien modèle `Mesure`.
+// Une action est liée SOIT à un risque du DUERP (mesure de prévention), SOIT
+// à une vérification (levée d'écart). XOR imposé par CHECK constraint SQL.
+model Action {
+  id              String       @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  // Origine — contrainte XOR en SQL :
+  //   ALTER TABLE "Action" ADD CONSTRAINT action_origine_xor
+  //     CHECK (("risqueId" IS NULL) <> ("verificationId" IS NULL));
+  risqueId        String?
+  risque          Risque?      @relation(fields: [risqueId], references: [id], onDelete: Cascade)
+  verificationId  String?
+  verification    Verification? @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+
+  // Conservation du lien au référentiel pour le toggle on/off (pattern existant)
+  referentielMesureId String?
+
+  libelle         String
+  description     String?
+  type            TypeAction
+  statut          StatutAction @default(OUVERTE)
+  criticite       Int?         // 1-16, hérité du risque ou saisi
+  echeance        DateTime?
+  responsable     String?
+
+  // Levée
+  leveeLe              DateTime?
+  leveeCommentaire     String?
+  leveeRapportId       String?   // FK logique vers RapportVerification (optionnel, pas de FK stricte)
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([risqueId, referentielMesureId])         // préserve le pattern toggle
+  @@index([etablissementId, statut])
+  @@index([verificationId])
+}
+
+enum TypeAction {
+  SUPPRESSION
+  REDUCTION_SOURCE
+  PROTECTION_COLLECTIVE
+  PROTECTION_INDIVIDUELLE
+  FORMATION
+  ORGANISATIONNELLE
+}
+
+enum StatutAction {
+  OUVERTE
+  EN_COURS
+  LEVEE
+  ABANDONNEE
+}
+
+// ============================================================================
+// 5. NOTES DE MIGRATION (étape 1)
+// ============================================================================
+//
+// 1. Migration des `Entreprise` existantes :
+//    - Pour chaque Entreprise, créer un Etablissement par défaut :
+//        raisonDisplay = raisonSociale, adresse = entreprise.adresse,
+//        codeNaf = null (hérite), effectifSurSite = entreprise.effectif,
+//        estEtablissementTravail = true, tous les autres flags false.
+//    - Rattacher tous les Duerp existants à ce nouvel établissement.
+//
+// 2. Migration des `Mesure` existantes vers `Action` (cf. ADR-002) :
+//    - `existante` → `LEVEE` (avec leveeLe = createdAt)
+//    - `prevue` + echeance future/null → `OUVERTE`
+//    - `prevue` + echeance passée → `EN_COURS`
+//    - Ajouter CHECK XOR après copie.
+//
+// 3. Les types enum Prisma (SUPPRESSION, etc.) sont en SCREAMING_SNAKE_CASE
+//    pour respecter la convention Prisma. La sérialisation côté snapshot JSON
+//    garde les anciennes valeurs en kebab/snake (`suppression`, `reduction_source`…)
+//    pour préserver la lisibilité des versions 40 ans. Mapping dans le code.
+//
+// 4. Les snapshots `DuerpVersion.snapshot` déjà stockés ne sont pas migrés
+//    (immuables). Le lecteur PDF conserve un chemin legacy.
+//
+// ============================================================================
