@@ -1,3 +1,4 @@
+import type { StatutAction, TypeAction } from "@prisma/client";
 import type { TypeMesure } from "@/lib/referentiels/types";
 
 export const LABEL_TYPE_MESURE: Record<TypeMesure, string> = {
@@ -12,4 +13,14 @@ export const LABEL_TYPE_MESURE: Record<TypeMesure, string> = {
 export const LABEL_STATUT: Record<"existante" | "prevue", string> = {
   existante: "Existante",
   prevue: "Prévue",
+};
+
+// Vocabulaire V2 (modèle Prisma `Action` — ADR-002).
+export const LABEL_TYPE_ACTION: Record<TypeAction, string> = LABEL_TYPE_MESURE;
+
+export const LABEL_STATUT_ACTION: Record<StatutAction, string> = {
+  ouverte: "Ouverte",
+  en_cours: "En cours",
+  levee: "Levée",
+  abandonnee: "Abandonnée",
 };

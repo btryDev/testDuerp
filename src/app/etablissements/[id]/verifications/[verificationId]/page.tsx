@@ -5,6 +5,8 @@ import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
 import { BadgeResultat } from "@/components/rapports/BadgeResultat";
 import { SupprimerRapportButton } from "@/components/rapports/SupprimerRapportButton";
 import { UploadRapportForm } from "@/components/rapports/UploadRapportForm";
+import { BadgeStatutAction } from "@/components/actions/BadgeStatutAction";
+import { CreerActionVerifForm } from "@/components/actions/CreerActionVerifForm";
 import { getVerification } from "@/lib/calendrier/queries";
 import {
   LABEL_DOMAINE,
@@ -14,6 +16,8 @@ import {
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import { uploadRapport } from "@/lib/rapports/actions";
+import { creerActionDepuisVerification } from "@/lib/actions/plan";
+import { prisma } from "@/lib/prisma";
 
 function formatDate(d: Date | null): string | null {
   if (!d) return null;
@@ -34,6 +38,11 @@ export default async function VerificationDetailPage({
   if (!v || v.etablissementId !== id) notFound();
 
   const obligation = obligationParId(v.obligationId);
+  const actionsLiees = await prisma.action.findMany({
+    where: { verificationId: v.id },
+    orderBy: [{ statut: "asc" }, { echeance: "asc" }],
+  });
+  const boundCreerAction = creerActionDepuisVerification.bind(null, v.id);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-14 sm:px-10">
@@ -242,6 +251,61 @@ export default async function VerificationDetailPage({
             ))}
           </ul>
         )}
+      </section>
+
+      {/* Actions correctives liées */}
+      <section className="mt-10 space-y-4">
+        <h2 className="text-[1.05rem] font-semibold tracking-[-0.012em]">
+          Actions correctives
+          <span className="ml-2 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+            · {actionsLiees.length}
+          </span>
+        </h2>
+
+        {actionsLiees.length > 0 && (
+          <ul className="cartouche divide-y divide-dashed divide-rule/50">
+            {actionsLiees.map((a) => (
+              <li
+                key={a.id}
+                className="flex items-start justify-between gap-4 px-6 py-3 sm:px-8"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-[0.92rem] font-semibold">{a.libelle}</p>
+                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+                    Échéance : {formatDate(a.echeance) ?? "—"}
+                    {a.responsable && (
+                      <>
+                        <span className="mx-2 text-rule">·</span>
+                        {a.responsable}
+                      </>
+                    )}
+                  </p>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <BadgeStatutAction statut={a.statut} />
+                  <Link
+                    href={`/etablissements/${id}/actions/${a.id}`}
+                    className={buttonVariants({
+                      variant: "outline",
+                      size: "sm",
+                    })}
+                  >
+                    Détail
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <details className="cartouche overflow-hidden">
+          <summary className="cursor-pointer select-none border-b border-dashed border-rule/60 px-6 py-4 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground sm:px-8">
+            + Créer une action corrective
+          </summary>
+          <div className="px-6 py-6 sm:px-8">
+            <CreerActionVerifForm action={boundCreerAction} />
+          </div>
+        </details>
       </section>
 
       {/* Formulaire d'upload */}

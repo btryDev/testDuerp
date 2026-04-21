@@ -24,12 +24,6 @@ const TYPES_ACTION = [
   "organisationnelle",
 ] as const;
 
-// Statuts possibles pour une action (nouveau vocabulaire V2).
-// Les anciens `existante` / `prevue` du wizard DUERP sont mappés :
-//   existante  → levee
-//   prevue     → ouverte (ou en_cours si échéance passée)
-const STATUTS_ACTION = ["ouverte", "en_cours", "levee", "abandonnee"] as const;
-
 // Alias DUERP : le wizard continue d'exposer `statut: existante | prevue`.
 // La conversion se fait ici pour préserver la compatibilité avec les
 // composants existants tant que l'UI n'est pas refondue (étape 8 du plan).

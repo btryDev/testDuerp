@@ -152,6 +152,12 @@ export default async function EtablissementPage({
           </h2>
           <div className="flex flex-wrap gap-2">
             <Link
+              href={`/etablissements/${id}/actions`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Plan d&apos;actions
+            </Link>
+            <Link
               href={`/etablissements/${id}/registre`}
               className={buttonVariants({ variant: "outline", size: "sm" })}
             >
