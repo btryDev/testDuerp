@@ -11,15 +11,25 @@ import {
   SOURCES_LEGALES,
   obligationParId,
   obligationsAeration,
+  obligationsAscenseurs,
   obligationsConformite,
+  obligationsCuissonHotte,
   obligationsElectricite,
+  obligationsEquipementSousPression,
   obligationsIncendie,
+  obligationsLevage,
   obligationsParDomaine,
+  obligationsPortesPortails,
+  obligationsStockageDangereux,
 } from "./index";
 
 describe("référentiel conformité — invariants structurels", () => {
   it("couvre au moins 25 obligations P1 (critère de done étape 3)", () => {
     expect(obligationsConformite.length).toBeGreaterThanOrEqual(25);
+  });
+
+  it("couvre au moins 60 obligations après extension P2/P3 (critère de done étape 11)", () => {
+    expect(obligationsConformite.length).toBeGreaterThanOrEqual(60);
   });
 
   it("les identifiants sont uniques", () => {
@@ -122,6 +132,15 @@ describe("référentiel conformité — couverture P1", () => {
     expect(obligationsElectricite.length).toBeGreaterThanOrEqual(7);
     expect(obligationsIncendie.length).toBeGreaterThanOrEqual(7);
     expect(obligationsAeration.length).toBeGreaterThanOrEqual(7);
+  });
+
+  it("couvre les 6 nouveaux domaines P2/P3 (étape 11)", () => {
+    expect(obligationsCuissonHotte.length).toBeGreaterThanOrEqual(4);
+    expect(obligationsAscenseurs.length).toBeGreaterThanOrEqual(5);
+    expect(obligationsPortesPortails.length).toBeGreaterThanOrEqual(4);
+    expect(obligationsEquipementSousPression.length).toBeGreaterThanOrEqual(5);
+    expect(obligationsStockageDangereux.length).toBeGreaterThanOrEqual(5);
+    expect(obligationsLevage.length).toBeGreaterThanOrEqual(7);
   });
 
   it("obligationsParDomaine renvoie cohérent avec le filtrage", () => {

@@ -22,9 +22,11 @@ Raisons :
 3. L'auditabilité repose sur Git : chaque obligation ajoutée, modifiée ou
    supprimée laisse une trace dans l'historique du code.
 
-## Périmètre couvert à l'étape 3 (P1)
+## Périmètre couvert à l'issue de l'étape 11
 
-Trois domaines « tous établissements » :
+Neuf domaines. À date : **≥ 60 obligations** (test de cohérence en place).
+
+### P1 — tous établissements (étape 3)
 
 - **Électricité** — Code du travail R. 4226, arrêté du 26 décembre 2011,
   règlement ERP (EL), règlement IGH (GH 50).
@@ -34,14 +36,28 @@ Trois domaines « tous établissements » :
   1987, règlement ERP (CH 58, PS 32, GC 20), arrêté du 25 avril 1985
   (VMC-Gaz habitation).
 
-Total à l'étape 3 : **≥ 25 obligations** (test de cohérence en place).
+### P2 — fréquents selon secteur (étape 11)
 
-Les domaines suivants sont traités plus tard :
+- **Cuisson et hotte professionnelles** — Arrêté du 25 juin 1980 sections
+  GC (grandes cuisines) et GZ (gaz combustibles). S'applique typiquement
+  en restauration ERP.
+- **Ascenseurs** — CCH art. R. 134-1 à R. 134-31, arrêté du 18 novembre
+  2004 (entretien), arrêté du 13 août 2008 (contrôle technique
+  quinquennal).
+- **Portes et portails automatiques** — Code du travail R. 4224-15,
+  arrêté du 21 décembre 1993 (vérifications périodiques).
 
-- **P2** (étape 11) — ascenseurs (CCH R. 134), portes et portails
-  automatiques (CT R. 4224-15), cuisson et hotte au-delà de la base ERP.
-- **P3** — équipements sous pression, stockage de matières dangereuses
-  (limité), équipements de levage simples.
+### P3 — selon équipements déclarés (étape 11)
+
+- **Équipements sous pression** — Code de l'environnement L. 557-1 s.,
+  décret 2015-799, arrêté du 20 novembre 2017 (inspection périodique,
+  requalification).
+- **Stockage de matières dangereuses** — Code de l'environnement L. 511-1
+  s. (ICPE), arrêté du 3 octobre 2010 (récipients mobiles, rétention,
+  ventilation).
+- **Équipements de levage** — Code du travail R. 4323-22 à R. 4323-28,
+  arrêtés du 1er et du 2 mars 2004 (VGP semestrielle/annuelle, examens
+  d'adéquation, remise en service).
 
 Les domaines hors périmètre V2 (IGH complexes, ICPE, ATEX, rayonnements
 ionisants, sport, piscine) sont documentés dans `.claude/CLAUDE.md`.
@@ -234,19 +250,39 @@ Pour la traçabilité, la liste des textes cités au moins une fois à l'étape 
 - L. 4711-5 (registre de sécurité — tous établissements de travail)
 
 ### Code de la construction et de l'habitation (CCH)
+- R. 134-1 à R. 134-4 (ascenseurs — entretien, contrôle technique, carnet,
+  téléalarme)
 - R. 143-34 (visite périodique commission ERP)
 - R. 143-44 (registre sécurité ERP)
 - R. 146-21 (registre sécurité IGH)
 
+### Code de l'environnement
+- L. 511-1 et s. (ICPE — déclaration, enregistrement, autorisation)
+- L. 557-1 et s. (surveillance des équipements sous pression)
+
+### Code du travail (complément P2/P3)
+- R. 4224-15 (maintien en état des portes et portails automatiques)
+- R. 4323-22 à R. 4323-28 (vérifications des équipements de travail)
+- R. 4412-38, R. 4412-87 (prévention du risque chimique, FDS)
+
 ### Arrêtés de référence
 - Arrêté du 25 avril 1985 (VMC-Gaz habitation)
 - Arrêté du 25 juin 1980 modifié (règlement ERP — articles CH 58, DF 10,
-  EC 14, EC 15, EL 5, EL 19, EL 20, GC 20, GE 4, MS 25, MS 38, MS 73, PS 32)
+  EC 14, EC 15, EL 5, EL 19, EL 20, GC 12, GC 19, GC 20, GC 21, GE 4,
+  GZ 29, MS 25, MS 38, MS 73, PS 32)
 - Arrêté du 8 octobre 1987 (contrôle aération en milieu de travail)
 - Arrêté du 22 juin 1990 modifié (ERP 5ᵉ catégorie — article PE 4)
+- Arrêté du 21 décembre 1993 (portes et portails automatiques)
+- Arrêté du 1er mars 2004 (vérifications appareils de levage de charges)
+- Arrêté du 2 mars 2004 (vérifications appareils de levage de personnes)
+- Arrêté du 18 novembre 2004 (entretien des ascenseurs)
 - Arrêté du 2 mai 2005 (règles des SSI)
+- Arrêté du 13 août 2008 (contrôle technique quinquennal des ascenseurs)
+- Arrêté du 3 octobre 2010 (stockage en récipients mobiles — ICPE)
 - Arrêté du 26 décembre 2011 (modalités vérifications électriques travail)
 - Arrêté du 30 décembre 2011 (règlement IGH — articles GH 50, GH 60 à 63)
+- Arrêté du 20 novembre 2017 (suivi en service des équipements sous pression)
+- Décret 2015-799 (produits et équipements à risques)
 
 ### INRS (à titre documentaire, pas opposable stricto sensu)
 - ED 6127 — Habilitation électrique (pratique de la périodicité triennale)

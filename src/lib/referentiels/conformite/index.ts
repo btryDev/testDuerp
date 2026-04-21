@@ -5,23 +5,47 @@
  * côté moteur de matching (étape 5) et côté UI (vue par domaine). La liste
  * `obligationsConformite` fusionne le tout.
  *
- * Les obligations P2 et P3 (cuisson-hotte au-delà du P1, ascenseurs, portes
- * et portails, sous-pression, stockage dangereux, levage) sont ajoutées à
- * l'étape 11. Pour l'instant, aeration.ts couvre déjà la hotte ERP P1.
+ * Domaines couverts à l'issue de l'étape 11 :
+ *   - P1 : électricité, incendie, aération (≥ 25 obligations, étape 3)
+ *   - P2 : cuisson/hotte, ascenseurs, portes et portails automatiques
+ *   - P3 : équipements sous pression, stockage de matières dangereuses,
+ *     équipements de levage
  */
 
 import type { DomaineObligation, Obligation } from "./types";
 import { obligationsElectricite } from "./electricite";
 import { obligationsIncendie } from "./incendie";
 import { obligationsAeration } from "./aeration";
+import { obligationsCuissonHotte } from "./cuisson-hotte";
+import { obligationsAscenseurs } from "./ascenseurs";
+import { obligationsPortesPortails } from "./portes-portails";
+import { obligationsEquipementSousPression } from "./equipement-sous-pression";
+import { obligationsStockageDangereux } from "./stockage-dangereux";
+import { obligationsLevage } from "./levage";
 
-export { obligationsElectricite, obligationsIncendie, obligationsAeration };
+export {
+  obligationsElectricite,
+  obligationsIncendie,
+  obligationsAeration,
+  obligationsCuissonHotte,
+  obligationsAscenseurs,
+  obligationsPortesPortails,
+  obligationsEquipementSousPression,
+  obligationsStockageDangereux,
+  obligationsLevage,
+};
 export * from "./types";
 
 export const obligationsConformite: Obligation[] = [
   ...obligationsElectricite,
   ...obligationsIncendie,
   ...obligationsAeration,
+  ...obligationsCuissonHotte,
+  ...obligationsAscenseurs,
+  ...obligationsPortesPortails,
+  ...obligationsEquipementSousPression,
+  ...obligationsStockageDangereux,
+  ...obligationsLevage,
 ];
 
 /**
