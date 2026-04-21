@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { CreerDuerpButton } from "@/components/duerps/CreerDuerpButton";
 import { SupprimerEtablissementButton } from "@/components/etablissements/SupprimerEtablissementButton";
+import { ScoreConformite } from "@/components/dashboard/ScoreConformite";
+import { PanneauRecommandations } from "@/components/dashboard/PanneauRecommandations";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
-import { compterEtatCalendrier } from "@/lib/calendrier/queries";
+import { getDashboardData } from "@/lib/dashboard/queries";
 
 function regimes(etab: {
   estEtablissementTravail: boolean;
@@ -40,8 +42,10 @@ export default async function EtablissementPage({
   if (!etab) notFound();
 
   const regs = regimes(etab);
-  const equipements = await listerEquipementsDeLEtablissement(id);
-  const etatCalendrier = await compterEtatCalendrier(id);
+  const [equipements, dashboard] = await Promise.all([
+    listerEquipementsDeLEtablissement(id),
+    getDashboardData(id),
+  ]);
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-14 sm:px-10">
@@ -96,6 +100,67 @@ export default async function EtablissementPage({
       </header>
 
       <div className="filet-pointille my-10" />
+
+      {/* Tableau de bord — score + recommandations + indicateurs clés */}
+      {equipements.length > 0 && (
+        <section className="space-y-5">
+          <h2 className="sr-only">Tableau de bord de conformité</h2>
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <ScoreConformite score={dashboard.score} />
+            <PanneauRecommandations recommandations={dashboard.recommandations} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <Link
+              href={`/etablissements/${id}/calendrier?urgent=1`}
+              className="cartouche block px-4 py-4 transition hover:border-ink"
+            >
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
+                Vérifs en retard
+              </p>
+              <p className="mt-1 text-[1.4rem] font-semibold">
+                {dashboard.compteurs.verifsEnRetard}
+              </p>
+            </Link>
+            <Link
+              href={`/etablissements/${id}/calendrier`}
+              className="cartouche block px-4 py-4 transition hover:border-ink"
+            >
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
+                Sous 30 jours
+              </p>
+              <p className="mt-1 text-[1.4rem] font-semibold">
+                {dashboard.compteurs.verifsSous30j}
+              </p>
+            </Link>
+            <Link
+              href={`/etablissements/${id}/actions?enCours=1`}
+              className="cartouche block px-4 py-4 transition hover:border-ink"
+            >
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
+                Actions à couvrir
+              </p>
+              <p className="mt-1 text-[1.4rem] font-semibold">
+                {dashboard.compteurs.actionsOuvertes +
+                  dashboard.compteurs.actionsEnCours}
+              </p>
+            </Link>
+            <Link
+              href={`/etablissements/${id}/registre`}
+              className="cartouche block px-4 py-4 transition hover:border-ink"
+            >
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
+                Rapports (12 mois)
+              </p>
+              <p className="mt-1 text-[1.4rem] font-semibold">
+                {dashboard.compteurs.verifsRealisees12m}
+              </p>
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {equipements.length > 0 && <div className="filet-pointille my-10" />}
 
       <section className="space-y-5">
         <div className="flex items-baseline justify-between gap-4">
@@ -172,48 +237,14 @@ export default async function EtablissementPage({
           </div>
         </div>
 
-        <div className="cartouche px-6 py-5 sm:px-8">
-          {equipements.length === 0 ? (
+        {equipements.length === 0 && (
+          <div className="cartouche px-6 py-5 sm:px-8">
             <p className="text-[0.9rem] text-muted-foreground">
               Déclarez d&apos;abord vos équipements pour générer
               automatiquement le calendrier des vérifications périodiques.
             </p>
-          ) : etatCalendrier.enRetard === 0 &&
-            etatCalendrier.aVenir === 0 &&
-            etatCalendrier.realisees12m === 0 ? (
-            <p className="text-[0.9rem] text-muted-foreground">
-              Le calendrier n&apos;a pas encore été généré. Rendez-vous sur
-              la page calendrier pour le créer à partir de vos équipements.
-            </p>
-          ) : (
-            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3 text-[0.9rem]">
-              <div>
-                <dt className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
-                  En retard
-                </dt>
-                <dd className="mt-1 text-[1.4rem] font-semibold">
-                  {etatCalendrier.enRetard}
-                </dd>
-              </div>
-              <div>
-                <dt className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
-                  Sous 30 jours
-                </dt>
-                <dd className="mt-1 text-[1.4rem] font-semibold">
-                  {etatCalendrier.aVenir}
-                </dd>
-              </div>
-              <div>
-                <dt className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
-                  Réalisées (12 mois)
-                </dt>
-                <dd className="mt-1 text-[1.4rem] font-semibold">
-                  {etatCalendrier.realisees12m}
-                </dd>
-              </div>
-            </dl>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       <div className="filet-pointille my-10" />
