@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/layout/EmptyState";
 import { PreRemplissagePanel } from "@/components/equipements/PreRemplissagePanel";
 import { SupprimerEquipementButton } from "@/components/equipements/SupprimerEquipementButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
@@ -92,13 +93,17 @@ export default async function EquipementsPage({
       )}
 
       {equipements.length === 0 ? (
-        <div className="cartouche px-6 py-8 sm:px-8">
-          <p className="text-[0.9rem] text-muted-foreground">
-            Aucun équipement déclaré pour l&apos;instant. Utilisez le panneau
-            de pré-remplissage ci-dessus ou ajoutez manuellement via le bouton
-            « Ajouter un équipement ».
-          </p>
-        </div>
+        <EmptyState
+          titre="Les équipements de votre établissement alimentent tout le reste"
+          pourquoi="Électricité, extincteurs, hotte, ascenseur… Chaque équipement déclenche des vérifications périodiques qui doivent être faites par un organisme ou un technicien. C'est la déclaration ici qui dit à l'outil quoi mettre dans votre calendrier."
+          quoiFaire={
+            suggestionsRestantes.length > 0
+              ? "parcourez les suggestions ci-dessus (elles sont basées sur votre secteur d'activité) et cochez celles qui s'appliquent, ou ajoutez manuellement via le bouton en haut."
+              : "ajoutez un premier équipement via le bouton « + Ajouter un équipement » en haut de la page."
+          }
+          cta="Ajouter un équipement"
+          ctaHref={`/etablissements/${id}/equipements/nouveau`}
+        />
       ) : (
         <section className="space-y-8">
           {[...parCategorie.entries()].map(([cat, liste]) => (

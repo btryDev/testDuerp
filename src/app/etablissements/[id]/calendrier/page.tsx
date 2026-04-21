@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/layout/EmptyState";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
 import { GenererCalendrierButton } from "@/components/calendrier/GenererCalendrierButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
@@ -168,18 +169,30 @@ export default async function CalendrierPage({
       <div className="filet-pointille my-10" />
 
       {verifs.length === 0 ? (
-        <div className="cartouche px-6 py-10 sm:px-8">
-          <p className="text-[0.9rem] text-muted-foreground">
-            Aucune vérification dans le calendrier pour ces filtres.
-            {verifs.length === 0 && etat.enRetard === 0 && etat.aVenir === 0 ? (
-              <>
-                {" "}
-                Commencez par déclarer vos équipements, puis cliquez sur
-                <strong> Régénérer</strong> pour peupler le calendrier.
-              </>
-            ) : null}
-          </p>
-        </div>
+        etat.enRetard === 0 &&
+        etat.aVenir === 0 &&
+        etat.realisees12m === 0 ? (
+          <EmptyState
+            titre="Votre calendrier de vérifications périodiques"
+            pourquoi="Le Code du travail et le règlement ERP imposent de vérifier certains équipements à fréquence fixe (extincteurs tous les ans, électricité tous les ans, etc.). L'outil calcule ces échéances à partir des équipements que vous avez déclarés."
+            quoiFaire={
+              filtreDomaine || filtreUrgent
+                ? "retirez les filtres ou cliquez sur « Régénérer » en haut à droite si vous avez ajouté de nouveaux équipements."
+                : "cliquez sur « Régénérer » en haut à droite pour créer vos occurrences à partir des équipements déjà déclarés."
+            }
+            ctaSecondary={{
+              libelle: "Revoir mes équipements",
+              href: `/etablissements/${id}/equipements`,
+            }}
+          />
+        ) : (
+          <div className="cartouche px-6 py-10 sm:px-8">
+            <p className="text-[0.9rem] text-muted-foreground">
+              Aucune vérification ne correspond à ces filtres — essayez de les
+              retirer pour tout voir.
+            </p>
+          </div>
+        )
       ) : (
         <div className="space-y-10">
           {[...parMois.entries()].map(([cleMois, liste]) => (

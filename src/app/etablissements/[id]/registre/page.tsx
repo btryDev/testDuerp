@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/layout/EmptyState";
 import { BadgeResultat } from "@/components/rapports/BadgeResultat";
 import { SupprimerRapportButton } from "@/components/rapports/SupprimerRapportButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
@@ -147,13 +148,24 @@ export default async function RegistrePage({
       <div className="filet-pointille my-10" />
 
       {rapports.length === 0 ? (
-        <div className="cartouche px-6 py-10 sm:px-8">
-          <p className="text-[0.9rem] text-muted-foreground">
-            {q || filtreDomaine
-              ? "Aucun rapport ne correspond à ces filtres."
-              : "Aucun rapport n'a encore été déposé pour cet établissement. Les rapports s'ajoutent depuis la page détail d'une vérification."}
-          </p>
-        </div>
+        q || filtreDomaine ? (
+          <div className="cartouche px-6 py-10 sm:px-8">
+            <p className="text-[0.9rem] text-muted-foreground">
+              Aucun rapport ne correspond à ces filtres — essayez de les
+              retirer.
+            </p>
+          </div>
+        ) : (
+          <EmptyState
+            titre="Le registre de sécurité centralise vos rapports de vérification"
+            pourquoi="Chaque fois qu'un technicien vérifie une installation (électricité, extincteurs, hotte…), il vous remet un rapport. L'article L. 4711-5 du Code du travail impose de tenir ces rapports à disposition d'un contrôleur. Le registre numérique vous évite la boîte d'archive."
+            quoiFaire="ouvrez une vérification dans votre calendrier, déposez le fichier (PDF, photo, DOCX) et indiquez le résultat. L'outil met automatiquement à jour la prochaine échéance."
+            ctaSecondary={{
+              libelle: "Ouvrir le calendrier",
+              href: `/etablissements/${id}/calendrier`,
+            }}
+          />
+        )
       ) : (
         <ul className="cartouche divide-y divide-dashed divide-rule/50">
           {rapports.map((r) => {

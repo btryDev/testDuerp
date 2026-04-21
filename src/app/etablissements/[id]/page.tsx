@@ -5,9 +5,14 @@ import { CreerDuerpButton } from "@/components/duerps/CreerDuerpButton";
 import { SupprimerEtablissementButton } from "@/components/etablissements/SupprimerEtablissementButton";
 import { ScoreConformite } from "@/components/dashboard/ScoreConformite";
 import { PanneauRecommandations } from "@/components/dashboard/PanneauRecommandations";
+import {
+  OnboardingChecklist,
+  type EtapeOnboarding,
+} from "@/components/layout/OnboardingChecklist";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 import { getDashboardData } from "@/lib/dashboard/queries";
+import { prisma } from "@/lib/prisma";
 
 function regimes(etab: {
   estEtablissementTravail: boolean;
@@ -42,23 +47,58 @@ export default async function EtablissementPage({
   if (!etab) notFound();
 
   const regs = regimes(etab);
-  const [equipements, dashboard] = await Promise.all([
+  const [equipements, dashboard, nbVerifs, nbRapports] = await Promise.all([
     listerEquipementsDeLEtablissement(id),
     getDashboardData(id),
+    prisma.verification.count({ where: { etablissementId: id } }),
+    prisma.rapportVerification.count({ where: { etablissementId: id } }),
   ]);
 
-  return (
-    <main className="mx-auto max-w-4xl px-6 py-14 sm:px-10">
-      <nav>
-        <Link
-          href={`/entreprises/${etab.entrepriseId}`}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
-        >
-          ← {etab.entreprise.raisonSociale}
-        </Link>
-      </nav>
+  // Construction des étapes d'onboarding — la checklist s'efface une fois
+  // toutes les étapes faites (logique dans le composant).
+  const etapesOnboarding: EtapeOnboarding[] = [
+    {
+      id: "etablissement",
+      titre: "Décrire votre établissement",
+      pourquoi:
+        "Adresse, effectif sur site et régimes (ERP, IGH, travail). Ces informations conditionnent les obligations qui vous sont applicables.",
+      faite: true,
+    },
+    {
+      id: "equipements",
+      titre: "Déclarer vos équipements",
+      pourquoi:
+        "Installation électrique, extincteurs, hotte, ascenseur… Ce sont eux qui déclenchent les vérifications périodiques à faire (élec annuel, extincteurs, etc.).",
+      faite: equipements.length > 0,
+      href: `/etablissements/${id}/equipements`,
+      cta:
+        equipements.length === 0
+          ? "Commencer la déclaration"
+          : undefined,
+    },
+    {
+      id: "calendrier",
+      titre: "Générer votre calendrier de vérifications",
+      pourquoi:
+        "Une fois les équipements saisis, l'outil calcule automatiquement les dates de vos prochaines vérifications obligatoires. Vous n'avez plus qu'à les planifier.",
+      faite: nbVerifs > 0,
+      href: `/etablissements/${id}/calendrier`,
+      cta: nbVerifs === 0 ? "Ouvrir le calendrier" : undefined,
+    },
+    {
+      id: "rapport",
+      titre: "Déposer un premier rapport de vérification",
+      pourquoi:
+        "Dès que vous avez un rapport (même ancien), vous pouvez le déposer dans le registre. L'outil recalcule automatiquement la prochaine échéance.",
+      faite: nbRapports > 0,
+      href: `/etablissements/${id}/registre`,
+      cta: nbRapports === 0 ? "Ouvrir le registre" : undefined,
+    },
+  ];
 
-      <header className="mt-8 flex flex-wrap items-start justify-between gap-6">
+  return (
+    <main className="mx-auto max-w-4xl px-6 py-12 sm:px-10">
+      <header className="flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0 flex-1 space-y-3">
           <p className="label-admin">Établissement</p>
           <h1 className="text-[1.8rem] font-semibold tracking-[-0.02em] leading-tight">
@@ -110,6 +150,16 @@ export default async function EtablissementPage({
       </header>
 
       <div className="filet-pointille my-10" />
+
+      {/* Guide de mise en place (s'efface automatiquement une fois complet) */}
+      <OnboardingChecklist
+        etapes={etapesOnboarding}
+        etablissementRaison={etab.raisonDisplay}
+      />
+
+      {etapesOnboarding.every((e) => e.faite) === false && (
+        <div className="filet-pointille my-10" />
+      )}
 
       {/* Tableau de bord — score + recommandations + indicateurs clés */}
       {equipements.length > 0 && (
@@ -220,44 +270,21 @@ export default async function EtablissementPage({
 
       <div className="filet-pointille my-10" />
 
-      <section className="space-y-5">
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
+      {equipements.length === 0 && (
+        <section className="space-y-5">
           <h2 className="text-[1.1rem] font-semibold tracking-[-0.012em]">
             Calendrier de conformité
           </h2>
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href={`/etablissements/${id}/actions`}
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              Plan d&apos;actions
-            </Link>
-            <Link
-              href={`/etablissements/${id}/registre`}
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              Registre de sécurité
-            </Link>
-            <Link
-              href={`/etablissements/${id}/calendrier`}
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              Voir le calendrier →
-            </Link>
-          </div>
-        </div>
-
-        {equipements.length === 0 && (
           <div className="cartouche px-6 py-5 sm:px-8">
             <p className="text-[0.9rem] text-muted-foreground">
               Déclarez d&apos;abord vos équipements pour générer
               automatiquement le calendrier des vérifications périodiques.
             </p>
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
-      <div className="filet-pointille my-10" />
+      {equipements.length === 0 && <div className="filet-pointille my-10" />}
 
       <section className="space-y-5">
         <div className="flex items-baseline justify-between gap-4">

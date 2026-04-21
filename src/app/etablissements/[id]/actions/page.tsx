@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/layout/EmptyState";
 import { BadgeOrigine } from "@/components/actions/BadgeOrigine";
 import { BadgeStatutAction } from "@/components/actions/BadgeStatutAction";
 import { getEtablissement } from "@/lib/etablissements/queries";
@@ -176,13 +177,24 @@ export default async function PlanActionsPage({
       <div className="filet-pointille my-10" />
 
       {actions.length === 0 ? (
-        <div className="cartouche px-6 py-10 sm:px-8">
-          <p className="text-[0.9rem] text-muted-foreground">
-            Aucune action pour ces filtres. Les actions se créent soit
-            depuis le wizard DUERP (mesures de prévention) soit depuis la
-            page détail d&apos;une vérification (levée d&apos;écart).
-          </p>
-        </div>
+        origineFiltre || enCoursSeulement ? (
+          <div className="cartouche px-6 py-10 sm:px-8">
+            <p className="text-[0.9rem] text-muted-foreground">
+              Aucune action ne correspond à ces filtres — essayez de les
+              retirer.
+            </p>
+          </div>
+        ) : (
+          <EmptyState
+            titre="Le plan d'actions regroupe ce que vous avez à corriger"
+            pourquoi="Deux origines possibles. (1) Les mesures de prévention prévues dans votre DUERP — elles remontent automatiquement ici. (2) Les écarts détectés sur un rapport de vérification — vous créez l'action depuis la page de la vérification concernée. Dans les deux cas, vous pouvez les clôturer avec un commentaire de levée."
+            quoiFaire="depuis une vérification avec un résultat « observations » ou « écart majeur », cliquez sur « + Créer une action corrective ». Ou continuez à remplir votre DUERP — les mesures s'ajouteront seules."
+            ctaSecondary={{
+              libelle: "Ouvrir le registre de sécurité",
+              href: `/etablissements/${id}/registre`,
+            }}
+          />
+        )
       ) : (
         <ul className="cartouche divide-y divide-dashed divide-rule/50">
           {actions.map((a) => {

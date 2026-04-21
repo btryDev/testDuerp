@@ -11,26 +11,26 @@ type Etape = {
 const ETAPES: Etape[] = [
   {
     numero: "01",
-    titre: "Entreprise",
-    corps: "SIRET, NAF, effectif, adresse.",
-    illustration: <IlloFormulaire />,
+    titre: "Mon établissement",
+    corps: "Adresse, effectif, régime (ERP, IGH, travail).",
+    illustration: <IlloBatiment />,
   },
   {
     numero: "02",
-    titre: "Unités & risques",
-    corps: "Pré-cochés selon le secteur.",
+    titre: "Mes équipements",
+    corps: "Électricité, extincteurs, hotte, ascenseur…",
     illustration: <IlloChecklist />,
   },
   {
     numero: "03",
-    titre: "Cotation",
-    corps: "Questions comportementales, sans note.",
-    illustration: <IlloCotation />,
+    titre: "Mon calendrier",
+    corps: "Les dates de vérification calculées pour vous.",
+    illustration: <IlloCalendrier />,
   },
   {
     numero: "04",
-    titre: "Document généré",
-    corps: "PDF horodaté, plan d'actions priorisé.",
+    titre: "Mon dossier",
+    corps: "Registre + plan d'actions + DUERP, prêts à montrer.",
     illustration: <IlloDocument />,
   },
 ];
@@ -38,30 +38,37 @@ const ETAPES: Etape[] = [
 export default function Home() {
   return (
     <main className="mx-auto w-full max-w-[1180px] px-6 py-10 sm:px-12 sm:py-14">
-      <header className="flex items-center justify-between">
-        <p className="font-mono text-[0.72rem] tracking-[0.2em] uppercase text-ink">
-          DUERP
-        </p>
-        <p className="font-mono text-[0.66rem] tracking-[0.18em] uppercase text-muted-foreground">
-          Générateur
-        </p>
-      </header>
-
-      <div className="filet-pointille mt-6" />
-
-      <section className="mt-16 grid grid-cols-1 gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
-        {/* ─── Left column: title + compact step list ───────────── */}
+      <section className="grid grid-cols-1 gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
+        {/* ─── Left column: positionnement + parcours ───────────── */}
         <div>
-          <p className="label-admin mb-5">Générateur DUERP</p>
+          <p className="label-admin mb-5">Conformité santé-sécurité</p>
           <h1 className="display-xl text-[clamp(2.2rem,4.5vw,3.4rem)]">
-            Votre DUERP,
+            Votre conformité,
             <br />
-            <span className="text-[color:var(--warm)]">étape par étape</span>.
+            <span className="text-[color:var(--warm)]">
+              sans expert à plein temps
+            </span>
+            .
           </h1>
-          <p className="mt-6 max-w-sm text-[0.9rem] leading-relaxed text-muted-foreground">
-            Questionnaire guidé structuré sur les publications INRS. Vous
-            renseignez, vous cochez, vous téléchargez le PDF.
+          <p className="mt-6 max-w-md text-[0.92rem] leading-relaxed text-muted-foreground">
+            Pensée pour les dirigeants de TPE/PME qui ne sont pas
+            spécialistes en sécurité. Vous répondez à des questions
+            simples — l&apos;outil s&apos;occupe des articles de loi, des
+            périodicités et des rappels. Vos documents officiels
+            (DUERP, registre de sécurité, plan d&apos;actions) se
+            génèrent à la demande.
           </p>
+
+          <div className="mt-10 rounded-md border border-dashed border-rule/70 bg-paper-sunk/30 px-5 py-4 font-mono text-[0.68rem] uppercase leading-relaxed tracking-[0.14em] text-muted-foreground">
+            Basé sur les sources officielles
+            <br />
+            <span className="text-ink">
+              Légifrance · INRS · règlement ERP / IGH
+            </span>
+            <br />
+            Zéro IA pour les décisions — chaque règle est citée avec son
+            article.
+          </div>
 
           <ol className="mt-12 divide-y divide-dashed divide-rule/60 border-y border-dashed border-rule/60">
             {ETAPES.map((e) => (
@@ -92,70 +99,96 @@ export default function Home() {
           </ol>
         </div>
 
-        {/* ─── Right column: direct creation form ───────────────── */}
+        {/* ─── Right column: formulaire direct ───────────────────── */}
         <div className="cartouche px-6 py-10 sm:px-10 sm:py-12">
-          <p className="label-admin mb-3">Nouveau dossier</p>
+          <p className="label-admin mb-3">Commencer</p>
           <h2 className="text-[1.3rem] font-semibold tracking-[-0.015em] leading-tight">
-            Renseigner l&apos;entreprise
+            Créer votre espace d&apos;entreprise
           </h2>
-          <p className="mt-2 text-[0.85rem] text-muted-foreground">
-            Ces informations figurent en en-tête du DUERP.
+          <p className="mt-2 text-[0.85rem] leading-relaxed text-muted-foreground">
+            Juste les informations administratives d&apos;abord. Vous
+            ajouterez un établissement (restaurant, boutique, bureau…)
+            juste après.
           </p>
 
           <div className="filet-pointille my-8" />
 
-          <EntrepriseForm
-            action={creerEntreprise}
-            libelleSubmit="Continuer →"
-          />
+          <EntrepriseForm action={creerEntreprise} libelleSubmit="Continuer →" />
         </div>
       </section>
 
       <div className="filet-pointille mt-20" />
 
-      <p className="mt-6 max-w-2xl text-[0.72rem] leading-relaxed text-muted-foreground">
-        Outil d&apos;aide à la rédaction structuré sur les publications INRS
-        / OiRA. Ne constitue pas un conseil juridique. La responsabilité de
-        l&apos;évaluation des risques et des mesures prises reste celle de
-        l&apos;employeur ; la conformité du document final s&apos;apprécie au
-        cas par cas.
-      </p>
+      <div className="mt-6 grid grid-cols-1 gap-4 text-[0.76rem] leading-relaxed text-muted-foreground sm:grid-cols-3">
+        <p>
+          <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-ink">
+            Pour qui
+          </span>
+          <br />
+          Restaurants, commerces, bureaux. De 1 à 50 salariés. Pas
+          d&apos;activité industrielle complexe.
+        </p>
+        <p>
+          <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-ink">
+            Ce que vous obtenez
+          </span>
+          <br />
+          Un DUERP à jour, un calendrier de vérifications, un registre
+          numérique horodaté, un plan d&apos;actions.
+        </p>
+        <p>
+          <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-ink">
+            Ce que l&apos;outil ne fait pas
+          </span>
+          <br />
+          Il ne se substitue pas à un contrôle réglementaire : il vous
+          aide à les préparer et les retrouver.
+        </p>
+      </div>
     </main>
   );
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Illustrations compactes (48×36 environ)
+   Illustrations compactes (48×36 environ) — cohérence papier/sepia
    ───────────────────────────────────────────────────────────────── */
 
-function IlloFormulaire() {
+function IlloBatiment() {
   return (
     <svg viewBox="0 0 40 28" className="h-7 w-10 text-ink/80">
       <rect
-        x="2"
-        y="2"
-        width="36"
-        height="24"
-        rx="2"
+        x="4"
+        y="8"
+        width="14"
+        height="18"
         fill="var(--paper-elevated)"
         stroke="currentColor"
         strokeWidth="0.6"
       />
-      <g stroke="currentColor" strokeWidth="0.5" opacity="0.45">
-        <line x1="6" y1="8" x2="22" y2="8" />
-        <line x1="6" y1="14" x2="34" y2="14" />
-        <line x1="6" y1="20" x2="18" y2="20" />
-      </g>
       <rect
-        x="24"
-        y="5"
-        width="10"
-        height="4"
-        rx="1"
-        fill="var(--warm-soft)"
-        stroke="var(--warm)"
-        strokeWidth="0.4"
+        x="18"
+        y="4"
+        width="18"
+        height="22"
+        fill="var(--paper-elevated)"
+        stroke="currentColor"
+        strokeWidth="0.6"
       />
+      <g fill="var(--warm-soft)" stroke="var(--warm)" strokeWidth="0.3">
+        <rect x="6" y="11" width="3" height="3" />
+        <rect x="11" y="11" width="3" height="3" />
+        <rect x="6" y="17" width="3" height="3" />
+        <rect x="11" y="17" width="3" height="3" />
+        <rect x="21" y="7" width="3" height="3" />
+        <rect x="26" y="7" width="3" height="3" />
+        <rect x="31" y="7" width="3" height="3" />
+        <rect x="21" y="13" width="3" height="3" />
+        <rect x="26" y="13" width="3" height="3" />
+        <rect x="31" y="13" width="3" height="3" />
+        <rect x="21" y="19" width="3" height="3" />
+        <rect x="31" y="19" width="3" height="3" />
+      </g>
+      <rect x="26" y="19" width="3" height="7" fill="var(--ink)" opacity="0.8" />
     </svg>
   );
 }
@@ -203,32 +236,46 @@ function IlloChecklist() {
   );
 }
 
-function IlloCotation() {
-  const bars = [3, 5, 7, 4];
+function IlloCalendrier() {
   return (
     <svg viewBox="0 0 40 28" className="h-7 w-10 text-ink/80">
-      <line x1="4" y1="24" x2="36" y2="24" stroke="currentColor" strokeWidth="0.4" opacity="0.35" />
-      {bars.map((rows, i) => {
-        const x = 7 + i * 8;
-        const accent = i === 2;
-        return (
-          <g key={i}>
-            {Array.from({ length: rows }).map((_, r) => {
-              const y = 22 - r * 2.6;
-              return [0, 1].map((c) => (
-                <circle
-                  key={`${r}-${c}`}
-                  cx={x + (c === 0 ? -1.2 : 1.2)}
-                  cy={y}
-                  r="0.8"
-                  fill={accent ? "var(--warm)" : "currentColor"}
-                  opacity={accent ? 1 : 0.7}
-                />
-              ));
-            })}
-          </g>
-        );
-      })}
+      <rect
+        x="5"
+        y="5"
+        width="30"
+        height="20"
+        rx="1.5"
+        fill="var(--paper-elevated)"
+        stroke="currentColor"
+        strokeWidth="0.6"
+      />
+      <rect x="5" y="5" width="30" height="5" fill="var(--paper-sunk)" />
+      <line x1="10" y1="3" x2="10" y2="8" stroke="currentColor" strokeWidth="0.8" />
+      <line x1="30" y1="3" x2="30" y2="8" stroke="currentColor" strokeWidth="0.8" />
+      {/* Jours */}
+      <g fill="currentColor" opacity="0.45">
+        {[0, 1, 2, 3, 4].map((col) =>
+          [0, 1, 2].map((row) => (
+            <circle
+              key={`${col}-${row}`}
+              cx={9 + col * 5.5}
+              cy={14 + row * 4}
+              r="0.6"
+            />
+          )),
+        )}
+      </g>
+      {/* Échéance mise en avant */}
+      <rect
+        x="18"
+        y="12"
+        width="4"
+        height="4"
+        rx="0.5"
+        fill="var(--warm-soft)"
+        stroke="var(--warm)"
+        strokeWidth="0.4"
+      />
     </svg>
   );
 }
