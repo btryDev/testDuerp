@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { StepIdentite } from "./StepIdentite";
 import { StepEtablissement } from "./StepEtablissement";
 import { StepTypologie } from "./StepTypologie";
+import { StepResume } from "./StepResume";
+import {
+  finaliserOnboarding,
+  type OnboardingActionState,
+} from "@/lib/onboarding/actions";
 import {
   VALEURS_INITIALES,
   type OnboardingState,
@@ -24,21 +29,6 @@ type Etape = {
    */
   valide: (s: OnboardingState) => string | null;
 };
-
-function PlaceholderStepResume(_props: StepProps) {
-  void _props;
-  return (
-    <div className="space-y-4">
-      <p className="label-admin mb-2">Étape 4 sur 4 · À venir</p>
-      <h2 className="text-[1.6rem] font-semibold tracking-[-0.015em]">
-        Résumé & confirmation
-      </h2>
-      <p className="max-w-xl text-[0.88rem] leading-relaxed text-muted-foreground">
-        Cette étape montrera un récapitulatif avant création.
-      </p>
-    </div>
-  );
-}
 
 const ETAPES: Etape[] = [
   {
@@ -95,7 +85,7 @@ const ETAPES: Etape[] = [
     id: "resume",
     numero: 4,
     titre: "Résumé",
-    Component: PlaceholderStepResume,
+    Component: StepResume,
     valide: () => null,
   },
 ];
@@ -105,8 +95,25 @@ export function WizardShell() {
   const [etapeIdx, setEtapeIdx] = useState(0);
   const [blocage, setBlocage] = useState<string | null>(null);
 
+  const [serverState, formAction, submitting] = useActionState<
+    OnboardingActionState,
+    FormData
+  >(finaliserOnboarding, { status: "idle" });
+
   const etape = ETAPES[etapeIdx];
   const CurrentStep = etape.Component;
+
+  // Erreurs serveur par champ, projetées sur les StepProps pour affichage
+  // contextuel en cas d'échec de validation Zod côté serveur.
+  const serverErrors =
+    serverState.status === "error"
+      ? Object.fromEntries(
+          Object.entries(serverState.fieldErrors ?? {}).map(([k, v]) => [
+            k,
+            v?.[0],
+          ]),
+        )
+      : undefined;
 
   const update = (patch: Partial<OnboardingState>) => {
     setState((s) => ({ ...s, ...patch }));
@@ -183,34 +190,89 @@ export function WizardShell() {
         </ol>
       </div>
 
-      <CurrentStep state={state} update={update} />
+      {/* Le form entoure TOUT pour que la server action reçoive les
+          champs cachés générés à partir du state React au moment du
+          submit à l'étape 4. Les étapes intermédiaires sont naviguées
+          par boutons type="button", sans soumission. */}
+      <form action={formAction}>
+        <CurrentStep state={state} update={update} errors={serverErrors} />
 
-      {blocage && (
-        <p className="mt-6 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
-          {blocage}
-        </p>
-      )}
+        {/* Champs cachés qui reflètent le state, toujours sérialisés */}
+        <ChampsCaches state={state} />
 
-      <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-rule/60 pt-6">
-        {etapeIdx > 0 ? (
-          <Button variant="outline" onClick={precedent}>
-            ← Précédent
-          </Button>
-        ) : (
-          <Link
-            href="/"
-            className={buttonVariants({ variant: "outline" })}
-          >
-            Annuler
-          </Link>
+        {blocage && (
+          <p className="mt-6 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
+            {blocage}
+          </p>
         )}
 
-        {etapeIdx < ETAPES.length - 1 ? (
-          <Button onClick={suivant}>Suivant →</Button>
-        ) : (
-          <Button disabled>Créer mon espace (bientôt)</Button>
+        {serverState.status === "error" && !serverState.fieldErrors && (
+          <p className="mt-6 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
+            {serverState.message}
+          </p>
         )}
-      </div>
+
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-rule/60 pt-6">
+          {etapeIdx > 0 ? (
+            <Button type="button" variant="outline" onClick={precedent}>
+              ← Précédent
+            </Button>
+          ) : (
+            <Link
+              href="/"
+              className={buttonVariants({ variant: "outline" })}
+            >
+              Annuler
+            </Link>
+          )}
+
+          {etapeIdx < ETAPES.length - 1 ? (
+            <Button type="button" onClick={suivant}>
+              Suivant →
+            </Button>
+          ) : (
+            <Button type="submit" disabled={submitting}>
+              {submitting ? "Création en cours…" : "Créer mon espace →"}
+            </Button>
+          )}
+        </div>
+      </form>
     </main>
+  );
+}
+
+/**
+ * Champs HTML masqués qui sérialisent le state en FormData pour la
+ * server action. Évite de manipuler FormData à la main dans le submit.
+ */
+function ChampsCaches({ state }: { state: OnboardingState }) {
+  return (
+    <>
+      <input type="hidden" name="raisonSociale" value={state.raisonSociale} />
+      <input type="hidden" name="siret" value={state.siret} />
+      <input type="hidden" name="raisonDisplay" value={state.raisonDisplay} />
+      <input type="hidden" name="adresse" value={state.adresse} />
+      <input type="hidden" name="codeNaf" value={state.codeNaf} />
+      <input
+        type="hidden"
+        name="effectifSurSite"
+        value={state.effectifSurSite}
+      />
+      <input
+        type="hidden"
+        name="estEtablissementTravail"
+        value={state.estEtablissementTravail ? "true" : "false"}
+      />
+      <input type="hidden" name="estERP" value={state.estERP ? "true" : "false"} />
+      <input type="hidden" name="estIGH" value={state.estIGH ? "true" : "false"} />
+      <input
+        type="hidden"
+        name="estHabitation"
+        value={state.estHabitation ? "true" : "false"}
+      />
+      <input type="hidden" name="typeErp" value={state.typeErp} />
+      <input type="hidden" name="categorieErp" value={state.categorieErp} />
+      <input type="hidden" name="classeIgh" value={state.classeIgh} />
+    </>
   );
 }

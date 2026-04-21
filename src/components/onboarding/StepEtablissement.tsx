@@ -42,7 +42,6 @@ export function StepEtablissement({ state, update, errors }: StepProps) {
           </Label>
           <Input
             id="raisonDisplay"
-            name="raisonDisplay"
             value={state.raisonDisplay}
             onChange={(e) => update({ raisonDisplay: e.target.value })}
             required
@@ -61,7 +60,6 @@ export function StepEtablissement({ state, update, errors }: StepProps) {
           </Label>
           <Input
             id="adresse"
-            name="adresse"
             value={state.adresse}
             onChange={(e) => update({ adresse: e.target.value })}
             required
@@ -85,7 +83,6 @@ export function StepEtablissement({ state, update, errors }: StepProps) {
             </Label>
             <Input
               id="codeNaf"
-              name="codeNaf"
               value={state.codeNaf}
               onChange={(e) => update({ codeNaf: e.target.value })}
               required
@@ -122,7 +119,6 @@ export function StepEtablissement({ state, update, errors }: StepProps) {
             </Label>
             <Input
               id="effectifSurSite"
-              name="effectifSurSite"
               type="number"
               min={1}
               max={9999}

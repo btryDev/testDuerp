@@ -27,7 +27,6 @@ export function StepIdentite({ state, update, errors }: StepProps) {
           </Label>
           <Input
             id="raisonSociale"
-            name="raisonSociale"
             value={state.raisonSociale}
             onChange={(e) => update({ raisonSociale: e.target.value })}
             required
@@ -55,7 +54,6 @@ export function StepIdentite({ state, update, errors }: StepProps) {
           </Label>
           <Input
             id="siret"
-            name="siret"
             inputMode="numeric"
             pattern="\d{14}"
             value={state.siret}
