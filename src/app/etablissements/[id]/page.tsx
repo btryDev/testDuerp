@@ -5,6 +5,7 @@ import { CreerDuerpButton } from "@/components/duerps/CreerDuerpButton";
 import { SupprimerEtablissementButton } from "@/components/etablissements/SupprimerEtablissementButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
+import { compterEtatCalendrier } from "@/lib/calendrier/queries";
 
 function regimes(etab: {
   estEtablissementTravail: boolean;
@@ -40,6 +41,7 @@ export default async function EtablissementPage({
 
   const regs = regimes(etab);
   const equipements = await listerEquipementsDeLEtablissement(id);
+  const etatCalendrier = await compterEtatCalendrier(id);
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-14 sm:px-10">
@@ -139,6 +141,65 @@ export default async function EtablissementPage({
             </p>
           </div>
         )}
+      </section>
+
+      <div className="filet-pointille my-10" />
+
+      <section className="space-y-5">
+        <div className="flex items-baseline justify-between gap-4">
+          <h2 className="text-[1.1rem] font-semibold tracking-[-0.012em]">
+            Calendrier de conformité
+          </h2>
+          <Link
+            href={`/etablissements/${id}/calendrier`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Voir le calendrier →
+          </Link>
+        </div>
+
+        <div className="cartouche px-6 py-5 sm:px-8">
+          {equipements.length === 0 ? (
+            <p className="text-[0.9rem] text-muted-foreground">
+              Déclarez d&apos;abord vos équipements pour générer
+              automatiquement le calendrier des vérifications périodiques.
+            </p>
+          ) : etatCalendrier.enRetard === 0 &&
+            etatCalendrier.aVenir === 0 &&
+            etatCalendrier.realisees12m === 0 ? (
+            <p className="text-[0.9rem] text-muted-foreground">
+              Le calendrier n&apos;a pas encore été généré. Rendez-vous sur
+              la page calendrier pour le créer à partir de vos équipements.
+            </p>
+          ) : (
+            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3 text-[0.9rem]">
+              <div>
+                <dt className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+                  En retard
+                </dt>
+                <dd className="mt-1 text-[1.4rem] font-semibold">
+                  {etatCalendrier.enRetard}
+                </dd>
+              </div>
+              <div>
+                <dt className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+                  Sous 30 jours
+                </dt>
+                <dd className="mt-1 text-[1.4rem] font-semibold">
+                  {etatCalendrier.aVenir}
+                </dd>
+              </div>
+              <div>
+                <dt className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+                  Réalisées (12 mois)
+                </dt>
+                <dd className="mt-1 text-[1.4rem] font-semibold">
+                  {etatCalendrier.realisees12m}
+                </dd>
+              </div>
+            </dl>
+          )}
+        </div>
       </section>
 
       <div className="filet-pointille my-10" />
