@@ -405,8 +405,17 @@
   }
 
   /* =============================================================
-     Animations discrètes — type « lever de voile »
+     Accent serif éditorial — usage parcimonieux (titres marqués,
+     accent sur un mot, citation). Instrument Serif — italique
+     présente.
      ============================================================= */
+
+  .accent-serif {
+    font-family: var(--font-serif), "Instrument Serif", Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
 }
 
 /* Static composition — no entry animations, aligned with the editorial aesthetic. */

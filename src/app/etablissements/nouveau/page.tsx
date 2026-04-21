@@ -35,13 +35,24 @@ export default async function NouvelEtablissementPage({
         <p className="max-w-xl text-[0.9rem] leading-[1.7] text-muted-foreground">
           Chaque établissement a sa propre adresse, sa typologie et son
           DUERP. Une entreprise peut en avoir plusieurs (plusieurs
-          restaurants, bureau + boutique…).
+          restaurants, bureau + boutique…). Les champs adresse et code
+          NAF sont pré-remplis avec ceux du siège — ajustez-les si ce
+          nouveau site a des informations différentes.
         </p>
       </header>
 
       <div className="mt-10">
         <EtablissementForm
           action={action}
+          valeursInitiales={{
+            // Pré-remplissage depuis l'entreprise pour éviter la
+            // ressaisie en cas de mono-site / multi-site proche. L'user
+            // peut toujours modifier.
+            adresse: entreprise.adresse,
+            codeNaf: entreprise.codeNaf,
+            effectifSurSite: entreprise.effectif,
+            estEtablissementTravail: true,
+          }}
           libelleSubmit="Créer l'établissement →"
           labelAnnuler={{
             libelle: "Annuler",

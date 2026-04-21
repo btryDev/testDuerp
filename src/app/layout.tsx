@@ -37,7 +37,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${geist.variable} ${jetbrains.variable} h-full antialiased`}
+      className={`${geist.variable} ${jetbrains.variable} ${instrument.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AppHeader />
