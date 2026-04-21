@@ -146,16 +146,24 @@ export default async function EtablissementPage({
       <div className="filet-pointille my-10" />
 
       <section className="space-y-5">
-        <div className="flex items-baseline justify-between gap-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
           <h2 className="text-[1.1rem] font-semibold tracking-[-0.012em]">
             Calendrier de conformité
           </h2>
-          <Link
-            href={`/etablissements/${id}/calendrier`}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-          >
-            Voir le calendrier →
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/etablissements/${id}/registre`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Registre de sécurité
+            </Link>
+            <Link
+              href={`/etablissements/${id}/calendrier`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Voir le calendrier →
+            </Link>
+          </div>
         </div>
 
         <div className="cartouche px-6 py-5 sm:px-8">

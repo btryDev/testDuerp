@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { buttonVariants } from "@/components/ui/button";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
+import { BadgeResultat } from "@/components/rapports/BadgeResultat";
+import { SupprimerRapportButton } from "@/components/rapports/SupprimerRapportButton";
+import { UploadRapportForm } from "@/components/rapports/UploadRapportForm";
 import { getVerification } from "@/lib/calendrier/queries";
 import {
   LABEL_DOMAINE,
@@ -9,6 +13,7 @@ import {
 } from "@/lib/calendrier/labels";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import { obligationParId } from "@/lib/referentiels/conformite";
+import { uploadRapport } from "@/lib/rapports/actions";
 
 function formatDate(d: Date | null): string | null {
   if (!d) return null;
@@ -173,6 +178,93 @@ export default async function VerificationDetailPage({
           </ul>
         </section>
       )}
+
+      {/* Rapports déjà déposés */}
+      <section className="mt-10 space-y-4">
+        <h2 className="text-[1.05rem] font-semibold tracking-[-0.012em]">
+          Rapports déposés
+          <span className="ml-2 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+            · {v.rapports.length}
+          </span>
+        </h2>
+
+        {v.rapports.length === 0 ? (
+          <div className="cartouche px-6 py-5 sm:px-8">
+            <p className="text-[0.9rem] text-muted-foreground">
+              Aucun rapport n&apos;a encore été déposé pour cette vérification.
+              Utilisez le formulaire ci-dessous pour enregistrer un rapport
+              et marquer la vérification comme réalisée.
+            </p>
+          </div>
+        ) : (
+          <ul className="cartouche divide-y divide-dashed divide-rule/50">
+            {v.rapports.map((r) => (
+              <li
+                key={r.id}
+                className="flex items-start justify-between gap-4 px-6 py-4 sm:px-8"
+              >
+                <div className="min-w-0 flex-1 space-y-1">
+                  <p className="text-[0.95rem] font-semibold">
+                    {formatDate(r.dateRapport)}
+                    {r.organismeVerif && (
+                      <span className="ml-2 text-muted-foreground">
+                        · {r.organismeVerif}
+                      </span>
+                    )}
+                  </p>
+                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+                    {r.fichierNomOriginal}
+                  </p>
+                  {r.commentaires && (
+                    <p className="text-[0.82rem] text-muted-foreground">
+                      {r.commentaires}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <BadgeResultat resultat={r.resultat} />
+                  <div className="flex gap-2">
+                    <a
+                      href={`/api/rapports/${r.id}/fichier`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                      })}
+                    >
+                      Ouvrir
+                    </a>
+                    <SupprimerRapportButton id={r.id} />
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Formulaire d'upload */}
+      <section className="mt-10 cartouche overflow-hidden">
+        <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
+          <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
+            Déposer un rapport
+          </p>
+          <p className="mt-2 text-[0.85rem] leading-relaxed text-muted-foreground">
+            L&apos;enregistrement du rapport marque la vérification comme
+            réalisée et régénère automatiquement la prochaine échéance.
+          </p>
+        </div>
+        <div className="px-6 py-6 sm:px-8">
+          <UploadRapportForm
+            action={uploadRapport.bind(null, v.id)}
+            labelAnnuler={{
+              libelle: "Annuler",
+              href: `/etablissements/${id}/calendrier`,
+            }}
+          />
+        </div>
+      </section>
     </main>
   );
 }
