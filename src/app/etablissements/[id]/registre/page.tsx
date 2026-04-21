@@ -81,6 +81,14 @@ export default async function RegistrePage({
             l&apos;inspection et de la commission de sécurité.
           </p>
         </div>
+        <a
+          href={`/api/etablissements/${id}/registre/pdf`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          Exporter PDF
+        </a>
       </header>
 
       {/* Filtres */}

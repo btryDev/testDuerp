@@ -89,6 +89,16 @@ export default async function EtablissementPage({
         </div>
 
         <div className="flex flex-wrap gap-2">
+          {equipements.length > 0 && (
+            <a
+              href={`/api/etablissements/${id}/dossier-conformite/pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ size: "sm" })}
+            >
+              Dossier de conformité PDF
+            </a>
+          )}
           <Link
             href={`/etablissements/${id}/modifier`}
             className={buttonVariants({ variant: "outline", size: "sm" })}

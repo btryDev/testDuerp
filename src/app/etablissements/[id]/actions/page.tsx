@@ -76,16 +76,26 @@ export default async function PlanActionsPage({
         </Link>
       </nav>
 
-      <header className="mt-8 space-y-3">
-        <p className="label-admin">Plan d&apos;actions de conformité</p>
-        <h1 className="text-[1.8rem] font-semibold tracking-[-0.02em] leading-tight">
-          Actions correctives
-        </h1>
-        <p className="max-w-2xl text-[0.9rem] leading-relaxed text-muted-foreground">
-          Vue unifiée des actions issues du DUERP (mesures de prévention
-          prévues) et des rapports de vérification (levées d&apos;écart).
-          Hiérarchie L. 4121-2 appliquée aux mesures du DUERP.
-        </p>
+      <header className="mt-8 flex flex-wrap items-start justify-between gap-6">
+        <div className="min-w-0 flex-1 space-y-3">
+          <p className="label-admin">Plan d&apos;actions de conformité</p>
+          <h1 className="text-[1.8rem] font-semibold tracking-[-0.02em] leading-tight">
+            Actions correctives
+          </h1>
+          <p className="max-w-2xl text-[0.9rem] leading-relaxed text-muted-foreground">
+            Vue unifiée des actions issues du DUERP (mesures de prévention
+            prévues) et des rapports de vérification (levées d&apos;écart).
+            Hiérarchie L. 4121-2 appliquée aux mesures du DUERP.
+          </p>
+        </div>
+        <a
+          href={`/api/etablissements/${id}/plan-actions/pdf`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          Exporter PDF
+        </a>
       </header>
 
       {/* Indicateurs */}
