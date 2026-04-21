@@ -119,10 +119,10 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
-    typologies: { travail: true, erp: true, igh: true },
+    typologies: { travail: true },
     categoriesEquipement: ["EXTINCTEUR", "ALARME_INCENDIE"],
     notesInternes:
-      "Obligation permanente (pas d'échéance périodique). Modélisée avec periodicite=autre pour documentation ; n'entrera pas dans le calendrier.",
+      "Obligation permanente (pas d'échéance périodique). Modélisée sur travail=true en MVP : en pratique tout établissement du scope V2 emploie au moins un salarié (L. 4711-5 CT). Les références CCH R. 143-44 / R. 146-21 restent citées pour information.",
   },
 
   // ---------------------------------------------------------------------------

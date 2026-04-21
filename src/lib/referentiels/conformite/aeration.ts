@@ -99,8 +99,26 @@ export const obligationsAeration: Obligation[] = [
     criticite: 4,
     typologies: { travail: true },
     categoriesEquipement: ["VMC", "CTA", "HOTTE_PRO"],
-    notesInternes:
-      "Applicable uniquement si l'établissement déclare un local à pollution spécifique — affinage côté moteur de matching (propriété de l'équipement ou flag dédié).",
+    conditions: [
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "VMC",
+        propriete: "estLocalPollutionSpecifique",
+        valeur: true,
+      },
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "CTA",
+        propriete: "estLocalPollutionSpecifique",
+        valeur: true,
+      },
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "HOTTE_PRO",
+        propriete: "estLocalPollutionSpecifique",
+        valeur: true,
+      },
+    ],
   },
 
   // ---------------------------------------------------------------------------

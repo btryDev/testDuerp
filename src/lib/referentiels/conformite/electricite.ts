@@ -213,8 +213,14 @@ export const obligationsElectricite: Obligation[] = [
     criticite: 4,
     typologies: { erp: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
-    notesInternes:
-      "Obligation applicable uniquement si l'établissement déclare un groupe électrogène — à affiner côté moteur de matching.",
+    conditions: [
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "INSTALLATION_ELECTRIQUE",
+        propriete: "aGroupeElectrogene",
+        valeur: true,
+      },
+    ],
   },
 
   // ---------------------------------------------------------------------------
