@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { CreerDuerpButton } from "@/components/duerps/CreerDuerpButton";
 import { SupprimerEtablissementButton } from "@/components/etablissements/SupprimerEtablissementButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
+import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 
 function regimes(etab: {
   estEtablissementTravail: boolean;
@@ -38,6 +39,7 @@ export default async function EtablissementPage({
   if (!etab) notFound();
 
   const regs = regimes(etab);
+  const equipements = await listerEquipementsDeLEtablissement(id);
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-14 sm:px-10">
@@ -90,6 +92,54 @@ export default async function EtablissementPage({
           <SupprimerEtablissementButton id={id} />
         </div>
       </header>
+
+      <div className="filet-pointille my-10" />
+
+      <section className="space-y-5">
+        <div className="flex items-baseline justify-between gap-4">
+          <h2 className="text-[1.1rem] font-semibold tracking-[-0.012em]">
+            Équipements déclarés
+          </h2>
+          {equipements.length > 0 && (
+            <Link
+              href={`/etablissements/${id}/equipements`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Gérer les équipements →
+            </Link>
+          )}
+        </div>
+
+        {equipements.length === 0 ? (
+          <div className="cartouche flex flex-col items-start gap-4 px-6 py-8 sm:px-8">
+            <p className="text-[0.9rem] text-muted-foreground">
+              Aucun équipement déclaré pour l&apos;instant. La déclaration
+              alimentera votre calendrier de vérifications obligatoires.
+            </p>
+            <Link
+              href={`/etablissements/${id}/equipements`}
+              className={buttonVariants({ size: "sm" })}
+            >
+              Déclarer les équipements
+            </Link>
+          </div>
+        ) : (
+          <div className="cartouche px-6 py-5 sm:px-8">
+            <p className="text-[0.9rem] text-muted-foreground">
+              {equipements.length} équipement
+              {equipements.length > 1 ? "s" : ""} déclaré
+              {equipements.length > 1 ? "s" : ""} —{" "}
+              <Link
+                href={`/etablissements/${id}/equipements`}
+                className="underline underline-offset-2"
+              >
+                voir la liste
+              </Link>
+              .
+            </p>
+          </div>
+        )}
+      </section>
 
       <div className="filet-pointille my-10" />
 
