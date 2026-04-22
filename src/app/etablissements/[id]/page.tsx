@@ -113,6 +113,10 @@ export default async function EtablissementPage({
     getOptionalUser(),
   ]);
 
+  // La checklist ne liste QUE les étapes actionnables par l'utilisateur.
+  // Le dépôt d'un premier rapport dépend d'un prestataire externe (organisme
+  // agréé, bureau de contrôle) : on ne bloque pas l'accueil sur ce point,
+  // le registre reste accessible via la sidebar et la cellule bento dédiée.
   const etapesOnboarding: EtapeOnboarding[] = [
     {
       id: "etablissement",
@@ -138,15 +142,6 @@ export default async function EtablissementPage({
       faite: nbVerifs > 0,
       href: `/etablissements/${id}/calendrier`,
       cta: nbVerifs === 0 ? "Ouvrir le calendrier" : undefined,
-    },
-    {
-      id: "rapport",
-      titre: "Déposer un premier rapport de vérification",
-      pourquoi:
-        "L'outil stocke vos rapports et rappelle les échéances — il ne réalise pas les vérifications à votre place.",
-      faite: nbRapports > 0,
-      href: `/etablissements/${id}/registre`,
-      cta: nbRapports === 0 ? "Ouvrir le registre" : undefined,
     },
   ];
   const onboardingFini = etapesOnboarding.every((e) => e.faite);
