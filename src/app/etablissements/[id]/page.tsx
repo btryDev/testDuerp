@@ -546,9 +546,43 @@ export default async function EtablissementPage({
               </div>
             </BentoCell>
           ) : null}
+
+          {/* Widget pédagogique — lien vers /guide */}
+          <WidgetGuide etablissementId={id} />
         </div>
       </div>
     </div>
+  );
+}
+
+function WidgetGuide({ etablissementId }: { etablissementId: string }) {
+  return (
+    <Link
+      href={`/etablissements/${etablissementId}/guide`}
+      className="group relative flex items-center justify-between gap-6 rounded-2xl border border-[color:color-mix(in_oklch,var(--accent-vif)_20%,transparent)] bg-[color:color-mix(in_oklch,var(--accent-vif)_5%,var(--paper-elevated))] px-6 py-5 transition-colors hover:border-[color:var(--accent-vif)]"
+    >
+      <div className="min-w-0 flex-1">
+        <p className="font-mono text-[0.66rem] uppercase tracking-[0.18em] text-[color:var(--accent-vif)]">
+          Guide · Comprendre vos obligations
+        </p>
+        <p className="mt-1.5 text-[1.05rem] font-medium tracking-[-0.015em]">
+          Que demande vraiment la loi, et comment l&apos;outil vous aide
+          à la tenir ?
+        </p>
+        <p className="mt-1 max-w-[60ch] text-[0.86rem] leading-[1.55] text-muted-foreground">
+          Les quatre obligations structurantes (DUERP, vérifications,
+          registre, plan d&apos;actions), la hiérarchie des mesures de
+          prévention, le rythme annuel — expliqués sans jargon, avec les
+          références Légifrance à l&apos;appui.
+        </p>
+      </div>
+      <span
+        aria-hidden
+        className="shrink-0 text-[color:var(--accent-vif)] transition-transform group-hover:translate-x-1"
+      >
+        →
+      </span>
+    </Link>
   );
 }
 

@@ -12,6 +12,7 @@ import {
   FileText,
   ListChecks,
   FileCheck2,
+  Compass,
   Settings,
   HelpCircle,
   Building2,
@@ -25,7 +26,8 @@ export type SidebarActive =
   | "calendrier"
   | "registre"
   | "actions"
-  | "duerp";
+  | "duerp"
+  | "guide";
 
 type Counts = Partial<
   Record<Exclude<SidebarActive, "tableau" | "duerp" | "registre">, number>
@@ -103,6 +105,12 @@ export function AppSidebar({
       label: "DUERP",
       href: `/etablissements/${etablissement.id}`,
       Icon: FileCheck2,
+    },
+    {
+      id: "guide",
+      label: "Comprendre",
+      href: `/etablissements/${etablissement.id}/guide`,
+      Icon: Compass,
     },
   ];
 
