@@ -122,6 +122,89 @@ function libelleCourt(libelle: string): string {
     .replace(/^./, (c) => c.toUpperCase());
 }
 
+export type StatsEquipement = {
+  enRetard: number;
+  aPlanifier: number;
+  sous30j: number;
+  derniereRealisee: Date | null;
+  prochaineDate: Date | null;
+};
+
+/**
+ * Compte les vérifications par équipement — pour afficher des pastilles
+ * de statut sur les cartes du widget « Équipements déclarés ».
+ * Retourne une map `equipementId → stats`. Les équipements sans aucune
+ * vérification n'apparaissent pas dans la map (l'appelant traite ça
+ * comme « aucune vérification »).
+ */
+export async function compterVerifsParEquipement(
+  etablissementId: string,
+): Promise<Map<string, StatsEquipement>> {
+  const user = await requireUser();
+  const now = new Date();
+  const dans30j = new Date(now.getTime() + 30 * 86400000);
+  const ilYaUnAn = new Date(now.getTime() - 365 * 86400000);
+
+  const verifs = await prisma.verification.findMany({
+    where: {
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
+    select: {
+      equipementId: true,
+      statut: true,
+      datePrevue: true,
+      dateRealisee: true,
+    },
+  });
+
+  const map = new Map<string, StatsEquipement>();
+  const getStats = (id: string): StatsEquipement => {
+    let s = map.get(id);
+    if (!s) {
+      s = {
+        enRetard: 0,
+        aPlanifier: 0,
+        sous30j: 0,
+        derniereRealisee: null,
+        prochaineDate: null,
+      };
+      map.set(id, s);
+    }
+    return s;
+  };
+
+  for (const v of verifs) {
+    const s = getStats(v.equipementId);
+    const enRetard =
+      v.statut === "depassee" ||
+      (v.statut === "planifiee" && v.datePrevue < now);
+    if (enRetard) s.enRetard += 1;
+    if (v.statut === "a_planifier") s.aPlanifier += 1;
+    if (
+      v.statut === "planifiee" &&
+      v.datePrevue >= now &&
+      v.datePrevue <= dans30j
+    )
+      s.sous30j += 1;
+
+    if (v.dateRealisee && v.dateRealisee >= ilYaUnAn) {
+      if (!s.derniereRealisee || v.dateRealisee > s.derniereRealisee) {
+        s.derniereRealisee = v.dateRealisee;
+      }
+    }
+    if (
+      v.statut === "planifiee" &&
+      v.datePrevue >= now &&
+      (!s.prochaineDate || v.datePrevue < s.prochaineDate)
+    ) {
+      s.prochaineDate = v.datePrevue;
+    }
+  }
+
+  return map;
+}
+
 function libellePeriodicite(p: string): string {
   switch (p) {
     case "hebdomadaire":

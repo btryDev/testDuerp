@@ -57,6 +57,16 @@ type EquipementLite = {
   id: string;
   libelle: string;
   categorie: string;
+  /** Stats de vérification pour afficher des pastilles contextuelles
+   * (en retard / à planifier / à venir / à jour). Undefined si aucune
+   * vérification n'existe pour cet équipement. */
+  stats?: {
+    enRetard: number;
+    aPlanifier: number;
+    sous30j: number;
+    derniereRealisee: Date | null;
+    prochaineDate: Date | null;
+  };
 };
 
 type VerificationLite = {

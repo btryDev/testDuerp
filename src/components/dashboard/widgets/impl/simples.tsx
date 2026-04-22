@@ -147,6 +147,53 @@ function libelleCategorie(c: string): string {
   return c.replace(/_/g, " ").toLowerCase();
 }
 
+type PastilleStatut =
+  | { libelle: string; tone: "alerte" | "warn" | "ok" }
+  | null;
+
+/**
+ * Règle de priorité pour afficher UNE pastille pertinente par carte
+ * équipement (on évite la surcharge visuelle) :
+ *  1. Retard → « N en retard » alerte
+ *  2. À planifier → « N à planifier » warn
+ *  3. Sous 30 j → « Sous Nj » warn
+ *  4. Vérifié récemment → « À jour » ok
+ *  5. Aucune stat → null
+ */
+function pastillePrincipale(stats: {
+  enRetard: number;
+  aPlanifier: number;
+  sous30j: number;
+  derniereRealisee: Date | null;
+  prochaineDate: Date | null;
+}): PastilleStatut {
+  if (stats.enRetard > 0) {
+    return {
+      libelle: `${stats.enRetard} en retard`,
+      tone: "alerte",
+    };
+  }
+  if (stats.aPlanifier > 0) {
+    return {
+      libelle: `${stats.aPlanifier} à planifier`,
+      tone: "warn",
+    };
+  }
+  if (stats.prochaineDate && stats.sous30j > 0) {
+    const jours = Math.max(
+      0,
+      Math.round(
+        (stats.prochaineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+      ),
+    );
+    return { libelle: `Sous ${jours} j`, tone: "warn" };
+  }
+  if (stats.derniereRealisee) {
+    return { libelle: "À jour", tone: "ok" };
+  }
+  return null;
+}
+
 export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
   const { equipements, etablissementId } = bundle;
   return (
@@ -158,23 +205,45 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
       }}
     >
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-        {equipements.slice(0, 8).map((eq) => (
-          <Link
-            key={eq.id}
-            href={`/etablissements/${etablissementId}/equipements`}
-            className="flex min-h-[88px] flex-col justify-between gap-2 rounded-lg border border-rule-soft bg-paper-sunk p-3.5 transition-all hover:-translate-y-0.5 hover:border-ink"
-          >
-            <strong className="truncate text-[0.86rem] font-medium">
-              {eq.libelle}
-            </strong>
-            <span className="font-mono text-[0.68rem] text-muted-foreground">
-              {libelleCategorie(eq.categorie)}
-            </span>
-          </Link>
-        ))}
+        {equipements.slice(0, 8).map((eq) => {
+          const pastille = eq.stats ? pastillePrincipale(eq.stats) : null;
+          return (
+            <Link
+              key={eq.id}
+              href={`/etablissements/${etablissementId}/equipements`}
+              className="flex min-h-[96px] flex-col justify-between gap-2 rounded-lg border border-rule-soft bg-paper-sunk p-3 transition-all hover:-translate-y-0.5 hover:border-ink"
+            >
+              <div className="flex flex-col gap-1">
+                <strong className="line-clamp-2 text-[0.84rem] font-medium leading-tight">
+                  {eq.libelle}
+                </strong>
+                <span className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted-foreground">
+                  {libelleCategorie(eq.categorie)}
+                </span>
+              </div>
+              {pastille ? (
+                <span
+                  className={
+                    pastille.tone === "alerte"
+                      ? "pill-alerte"
+                      : pastille.tone === "warn"
+                        ? "pill-warn"
+                        : "pill-ok"
+                  }
+                >
+                  {pastille.libelle}
+                </span>
+              ) : (
+                <span className="inline-flex items-center rounded-full border border-rule-soft bg-paper-elevated px-2 py-0.5 font-mono text-[0.62rem] text-muted-foreground">
+                  Aucune vérif
+                </span>
+              )}
+            </Link>
+          );
+        })}
         <Link
           href={`/etablissements/${etablissementId}/equipements/nouveau`}
-          className="flex min-h-[88px] flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-rule bg-transparent p-3.5 text-center text-muted-foreground transition-colors hover:border-[color:var(--accent-vif)] hover:bg-[color:var(--accent-vif-soft)] hover:text-[color:var(--accent-vif)]"
+          className="flex min-h-[96px] flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-rule bg-transparent p-3 text-center text-muted-foreground transition-colors hover:border-[color:var(--accent-vif)] hover:bg-[color:var(--accent-vif-soft)] hover:text-[color:var(--accent-vif)]"
         >
           <span className="text-xl leading-none">+</span>
           <strong className="text-[0.82rem] font-medium">

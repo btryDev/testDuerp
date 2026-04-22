@@ -13,6 +13,7 @@ import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 import {
   compterObligationsParMois,
+  compterVerifsParEquipement,
   getDashboardData,
   listerEvenementsParMois,
 } from "@/lib/dashboard/queries";
@@ -52,6 +53,7 @@ export default async function EtablissementPage({
 
   const [
     equipements,
+    statsEquipements,
     dashboard,
     barsData,
     evenementsAnnee,
@@ -63,6 +65,7 @@ export default async function EtablissementPage({
     user,
   ] = await Promise.all([
     listerEquipementsDeLEtablissement(id),
+    compterVerifsParEquipement(id),
     getDashboardData(id),
     compterObligationsParMois(id),
     listerEvenementsParMois(id),
@@ -151,6 +154,7 @@ export default async function EtablissementPage({
       id: e.id,
       libelle: e.libelle,
       categorie: e.categorie,
+      stats: statsEquipements.get(e.id),
     })),
     barsData,
     evenementsAnnee,
