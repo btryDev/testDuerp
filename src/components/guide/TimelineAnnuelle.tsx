@@ -103,40 +103,43 @@ export function TimelineAnnuelle({
 
   return (
     <section>
-      <header className="mb-10 max-w-[72ch]">
-        <p className="g-kicker">§ Calendrier · {anneeCourante}</p>
+      <header className="mb-10 flex flex-wrap items-end justify-between gap-4">
+        <div className="max-w-[72ch]">
+          <p className="g-kicker">§ Calendrier · {anneeCourante}</p>
+          {modeReel ? (
+            <>
+              <h2 className="g-h2 mt-3">
+                Votre année,{" "}
+                <span className="g-h2-em">en un coup d&apos;œil</span>.
+              </h2>
+              <p className="g-sub mt-3">
+                Un événement marquant par mois, tiré de vos vérifications.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="g-h2 mt-3">
+                Une année <span className="g-h2-em">rythmée</span>, pas
+                surchargée.
+              </h2>
+              <p className="g-sub mt-3">
+                <strong>Votre calendrier</strong> est généré automatiquement
+                à partir des équipements que vous déclarez et de votre
+                typologie d&apos;établissement. L&apos;exemple ci-dessous
+                correspond à une restauration · 8 salariés · ERP 5ème cat.
+              </p>
+            </>
+          )}
+        </div>
+
         {modeReel ? (
-          <>
-            <h2 className="g-h2 mt-3">
-              Votre année,{" "}
-              <span className="g-h2-em">en un coup d&apos;œil</span>.
-            </h2>
-            <p className="g-sub mt-3">
-              Un événement marquant par mois, tiré de vos vérifications.
-              Le détail complet est sur la page{" "}
-              <a
-                href={`/etablissements/${etablissementId}/calendrier`}
-                className="text-ink underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-ink"
-              >
-                Calendrier
-              </a>
-              .
-            </p>
-          </>
-        ) : (
-          <>
-            <h2 className="g-h2 mt-3">
-              Une année <span className="g-h2-em">rythmée</span>, pas
-              surchargée.
-            </h2>
-            <p className="g-sub mt-3">
-              <strong>Votre calendrier</strong> est généré automatiquement
-              à partir des équipements que vous déclarez et de votre
-              typologie d&apos;établissement. L&apos;exemple ci-dessous
-              correspond à une restauration · 8 salariés · ERP 5ème cat.
-            </p>
-          </>
-        )}
+          <a
+            href={`/etablissements/${etablissementId}/calendrier`}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-rule bg-transparent px-3.5 py-2 text-[0.82rem] font-medium text-ink transition-colors hover:border-ink"
+          >
+            Voir le calendrier complet →
+          </a>
+        ) : null}
       </header>
 
       {montrerFallback ? (
