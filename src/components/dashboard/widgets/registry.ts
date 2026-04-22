@@ -34,7 +34,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     titre: "Score de conformité",
     description:
       "Indicateur global + détail par famille. Trois visualisations disponibles.",
-    taille: "large",
+    taille: "medium",
     variants: [
       { id: "anneau", label: "Anneau" },
       { id: "gauge", label: "Jauge" },
@@ -48,7 +48,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     titre: "Indicateurs",
     description:
       "Vue d'ensemble en 6 chiffres : en retard · à planifier · sous 30 j, puis actions en cours · rapports 12 m · délai depuis le dernier rapport.",
-    taille: "large",
+    taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
     Component: WidgetIndicateurs,
@@ -178,7 +178,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     titre: "Vos documents",
     description:
       "Hub consolidé : DUERP, registre, plan d'actions, dossier complet — Voir · Télécharger · « à faire » contextuel par ligne.",
-    taille: "large",
+    taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
     Component: WidgetDocuments,
@@ -199,7 +199,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     titre: "Guide pédagogique",
     description:
       "Rappel des obligations, du rythme annuel et des rôles — lien vers la page Comprendre.",
-    taille: "large",
+    taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
     Component: WidgetGuide,
