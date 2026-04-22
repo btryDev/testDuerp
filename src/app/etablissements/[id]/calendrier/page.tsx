@@ -5,6 +5,8 @@ import { EmptyState } from "@/components/layout/EmptyState";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
 import { GenererCalendrierButton } from "@/components/calendrier/GenererCalendrierButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
+import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
+import { genererCalendrier } from "@/lib/calendrier/actions";
 import {
   compterEtatCalendrier,
   grouperParMois,
@@ -48,6 +50,22 @@ export default async function CalendrierPage({
     : undefined;
   const filtreUrgent = urgent === "1";
 
+  // Self-healing : si l'utilisateur a des équipements déclarés mais aucune
+  // vérification en base, on génère automatiquement. Couvre les anciens
+  // comptes pré-auto-génération et les rares cas où une mutation a échoué
+  // silencieusement à régénérer.
+  const etat0 = await compterEtatCalendrier(id);
+  if (
+    etat0.enRetard === 0 &&
+    etat0.aVenir === 0 &&
+    etat0.realisees12m === 0
+  ) {
+    const nbEquipements = (await listerEquipementsDeLEtablissement(id)).length;
+    if (nbEquipements > 0) {
+      await genererCalendrier(id);
+    }
+  }
+
   const [verifs, etat] = await Promise.all([
     listerVerifications(id, {
       domaine: filtreDomaine,
@@ -85,15 +103,15 @@ export default async function CalendrierPage({
             Vérifications périodiques
           </h1>
           <p className="max-w-2xl text-[0.9rem] leading-relaxed text-muted-foreground">
-            Occurrences générées à partir de vos équipements et de la
-            typologie de l&apos;établissement. Chaque occurrence cite son
-            obligation légale et le profil de réalisateur requis.
+            Le calendrier se met à jour automatiquement dès que vous ajoutez
+            ou modifiez un équipement. Chaque occurrence cite son obligation
+            légale et le profil de réalisateur requis.
           </p>
         </div>
         <GenererCalendrierButton
           etablissementId={id}
           variant="outline"
-          libelle="Régénérer"
+          libelle="Actualiser"
         />
       </header>
 
@@ -177,11 +195,11 @@ export default async function CalendrierPage({
             pourquoi="Le Code du travail et le règlement ERP imposent de vérifier certains équipements à fréquence fixe (extincteurs tous les ans, électricité tous les ans, etc.). L'outil calcule ces échéances à partir des équipements que vous avez déclarés."
             quoiFaire={
               filtreDomaine || filtreUrgent
-                ? "retirez les filtres ou cliquez sur « Régénérer » en haut à droite si vous avez ajouté de nouveaux équipements."
-                : "cliquez sur « Régénérer » en haut à droite pour créer vos occurrences à partir des équipements déjà déclarés."
+                ? "retirez les filtres ci-dessus pour voir l'ensemble de vos vérifications."
+                : "déclarez vos équipements — le calendrier se remplira automatiquement."
             }
             ctaSecondary={{
-              libelle: "Revoir mes équipements",
+              libelle: "Déclarer mes équipements",
               href: `/etablissements/${id}/equipements`,
             }}
           />

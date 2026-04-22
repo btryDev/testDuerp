@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { Realisateur } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import { determineObligationsApplicables } from "@/lib/matching";
 import {
   genererProchainesVerifications,
@@ -36,6 +37,8 @@ export type GenerationResult = {
 export async function genererCalendrier(
   etablissementId: string,
 ): Promise<GenerationResult> {
+  await assertEtablissementOwnership(etablissementId);
+
   // 1. Lecture établissement + équipements
   const etab = await prisma.etablissement.findUnique({
     where: { id: etablissementId },

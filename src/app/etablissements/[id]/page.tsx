@@ -170,9 +170,9 @@ export default async function EtablissementPage({
     },
     {
       id: "calendrier",
-      titre: "Générer votre calendrier de vérifications",
+      titre: "Consulter votre calendrier de vérifications",
       pourquoi:
-        "Une fois les équipements saisis, l'outil calcule automatiquement les dates de vos prochaines vérifications obligatoires. Vous n'avez plus qu'à les planifier.",
+        "Dès que vos équipements sont déclarés, l'outil calcule tout seul les dates des prochaines vérifications obligatoires. Il n'y a rien à lancer — votre rôle, c'est planifier et déposer les rapports.",
       faite: nbVerifs > 0,
       href: `/etablissements/${id}/calendrier`,
       cta: nbVerifs === 0 ? "Ouvrir le calendrier" : undefined,

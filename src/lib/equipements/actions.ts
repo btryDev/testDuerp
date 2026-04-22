@@ -4,8 +4,34 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { assertEtablissementOwnership } from "@/lib/auth/scope";
+import { genererCalendrier } from "@/lib/calendrier/actions";
 import { equipementSchema, serialiserCaracteristiques } from "./schema";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
+
+// Toute mutation d'équipement invalide le calendrier de vérifications : on
+// régénère systématiquement juste après. Swallow + log : une erreur de gen
+// ne doit pas bloquer la mutation sous-jacente (UX) ; l'utilisateur peut
+// toujours déclencher « Actualiser » à la main depuis la page calendrier.
+async function regenererCalendrierSilencieux(etablissementId: string) {
+  try {
+    await genererCalendrier(etablissementId);
+  } catch (err) {
+    console.error(
+      `[equipements] regen calendrier a échoué pour ${etablissementId}`,
+      err,
+    );
+  }
+}
+
+async function resoudreEtablissementId(equipementId: string): Promise<string> {
+  const eq = await prisma.equipement.findUnique({
+    where: { id: equipementId },
+    select: { etablissementId: true },
+  });
+  if (!eq) throw new Error("Équipement introuvable");
+  return eq.etablissementId;
+}
 
 export type EquipementActionState =
   | { status: "idle" }
@@ -44,6 +70,7 @@ export async function creerEquipement(
   _prev: EquipementActionState,
   formData: FormData,
 ): Promise<EquipementActionState> {
+  await assertEtablissementOwnership(etablissementId);
   const parsed = equipementSchema.safeParse(normaliserFormData(formData));
   if (!parsed.success) {
     return {
@@ -66,6 +93,8 @@ export async function creerEquipement(
     },
   });
 
+  await regenererCalendrierSilencieux(etablissementId);
+
   revalidatePath(`/etablissements/${etablissementId}`);
   revalidatePath(`/etablissements/${etablissementId}/equipements`);
   redirect(`/etablissements/${etablissementId}/equipements`);
@@ -76,6 +105,9 @@ export async function modifierEquipement(
   _prev: EquipementActionState,
   formData: FormData,
 ): Promise<EquipementActionState> {
+  const etablissementId = await resoudreEtablissementId(id);
+  await assertEtablissementOwnership(etablissementId);
+
   const parsed = equipementSchema.safeParse(normaliserFormData(formData));
   if (!parsed.success) {
     return {
@@ -98,13 +130,20 @@ export async function modifierEquipement(
     },
   });
 
+  await regenererCalendrierSilencieux(eq.etablissementId);
+
   revalidatePath(`/etablissements/${eq.etablissementId}`);
   revalidatePath(`/etablissements/${eq.etablissementId}/equipements`);
   return { status: "success", id };
 }
 
 export async function supprimerEquipement(id: string): Promise<void> {
+  const etablissementId = await resoudreEtablissementId(id);
+  await assertEtablissementOwnership(etablissementId);
+
   const eq = await prisma.equipement.delete({ where: { id } });
+  await regenererCalendrierSilencieux(eq.etablissementId);
+
   revalidatePath(`/etablissements/${eq.etablissementId}`);
   redirect(`/etablissements/${eq.etablissementId}/equipements`);
 }
@@ -119,6 +158,7 @@ export async function creerEquipementsDepuisPreRemplissage(
   etablissementId: string,
   entrees: { categorie: CategorieEquipement; libelle: string }[],
 ): Promise<{ created: number }> {
+  await assertEtablissementOwnership(etablissementId);
   if (entrees.length === 0) return { created: 0 };
 
   const result = await prisma.equipement.createMany({
@@ -128,6 +168,8 @@ export async function creerEquipementsDepuisPreRemplissage(
       libelle: e.libelle,
     })),
   });
+
+  await regenererCalendrierSilencieux(etablissementId);
 
   revalidatePath(`/etablissements/${etablissementId}`);
   revalidatePath(`/etablissements/${etablissementId}/equipements`);
