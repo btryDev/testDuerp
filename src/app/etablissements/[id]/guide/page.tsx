@@ -111,55 +111,8 @@ export default async function GuidePage({
             />
           </div>
 
-          {/* ─── Hiérarchie des mesures ─────────────── */}
-          <BentoCell kicker="§ II · Hiérarchie des mesures de prévention — art. L. 4121-2">
-            <p className="max-w-[68ch] text-[0.95rem] leading-[1.6] text-ink/80">
-              Face à un risque, le Code du travail impose un <strong>ordre
-              strict</strong> dans le choix des mesures. Ne pas respecter
-              cet ordre est le premier point qu&apos;un inspecteur du
-              travail vérifie.
-            </p>
-            <ol className="mt-2 flex flex-col gap-2">
-              <EtapeHierarchie
-                num="I"
-                titre="Supprimer le risque à la source"
-                exemple="Remplacer un produit dangereux par un produit inoffensif, automatiser une manutention pénible."
-              />
-              <EtapeHierarchie
-                num="II"
-                titre="Réduire le risque à la source"
-                exemple="Choisir un outil moins bruyant, capoter une machine, aérer un poste."
-              />
-              <EtapeHierarchie
-                num="III"
-                titre="Protection collective"
-                exemple="Ventilation générale, garde-corps, barrière, éclairage de secours."
-              />
-              <EtapeHierarchie
-                num="IV"
-                titre="Protection individuelle (EPI)"
-                exemple="Gants anti-coupure, chaussures, masque — en dernier recours seulement."
-              />
-              <EtapeHierarchie
-                num="V"
-                titre="Formation et information"
-                exemple="Sensibilisation, consignes, pictogrammes."
-              />
-              <EtapeHierarchie
-                num="VI"
-                titre="Mesures organisationnelles"
-                exemple="Rotation des postes, pauses, limitation du travail isolé."
-              />
-            </ol>
-            <p className="mt-3 max-w-[68ch] text-[0.82rem] text-muted-foreground">
-              L&apos;outil vous alerte si, pour un risque donné, vous avez
-              coché uniquement des EPI ou de la formation sans envisager
-              une solution collective ou une réduction à la source.
-            </p>
-          </BentoCell>
-
           {/* ─── Cycle annuel ──────────────────────── */}
-          <BentoCell kicker="§ III · Votre année, en un coup d'œil">
+          <BentoCell kicker="§ II · Votre année, en un coup d'œil">
             <p className="max-w-[68ch] text-[0.95rem] leading-[1.6] text-ink/80">
               Voici un exemple de rythme pour un établissement type —
               votre calendrier réel est généré automatiquement par
@@ -195,7 +148,7 @@ export default async function GuidePage({
           </BentoCell>
 
           {/* ─── Qui fait quoi ─────────────────────── */}
-          <BentoCell kicker="§ IV · Qui fait quoi">
+          <BentoCell kicker="§ III · Qui fait quoi">
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Role
                 qui="Vous (dirigeant)"
@@ -225,7 +178,7 @@ export default async function GuidePage({
           </BentoCell>
 
           {/* ─── En cas de contrôle ─────────────────── */}
-          <BentoCell kicker="§ V · En cas de contrôle — quoi présenter">
+          <BentoCell kicker="§ IV · En cas de contrôle — quoi présenter">
             <p className="max-w-[68ch] text-[0.95rem] leading-[1.6] text-ink/80">
               Un contrôleur (inspecteur du travail, assureur, acquéreur,
               bailleur, commission de sécurité) a besoin de vérifier que
@@ -263,7 +216,7 @@ export default async function GuidePage({
           </BentoCell>
 
           {/* ─── Sources primaires ─────────────────── */}
-          <BentoCell kicker="§ VI · Pour aller plus loin">
+          <BentoCell kicker="§ V · Pour aller plus loin">
             <p className="max-w-[68ch] text-[0.9rem] leading-[1.6] text-muted-foreground">
               Toutes les obligations citées sont construites à partir de
               sources primaires libres d&apos;accès. Vous pouvez les
@@ -341,28 +294,6 @@ function LigneGlose({ label, texte }: { label: string; texte: string }) {
       </p>
       <p className="mt-1 text-ink/85">{texte}</p>
     </div>
-  );
-}
-
-function EtapeHierarchie({
-  num,
-  titre,
-  exemple,
-}: {
-  num: string;
-  titre: string;
-  exemple: string;
-}) {
-  return (
-    <li className="grid grid-cols-[32px_1fr] items-start gap-3 rounded-lg bg-paper-sunk px-3 py-2.5">
-      <span className="font-mono text-[0.95rem] font-medium text-[color:var(--accent-vif)]">
-        {num}.
-      </span>
-      <div>
-        <p className="text-[0.92rem] font-medium">{titre}</p>
-        <p className="mt-0.5 text-[0.8rem] text-muted-foreground">{exemple}</p>
-      </div>
-    </li>
   );
 }
 
