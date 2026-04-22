@@ -21,6 +21,98 @@ export type BarMois = {
   retard: number;
 };
 
+export type EvenementMoisReel = {
+  mois: number; // 0-11
+  libelle: string;
+  tag: string;
+  hot: boolean;
+};
+
+/**
+ * Pour la frise "Calendrier" — pour chaque mois de l'année courante,
+ * on retient **un seul événement** (la vérif la plus ancienne du mois)
+ * avec son libellé et son tag périodicité. Les mois sans aucune vérif
+ * renvoient `null` (affichage "période calme").
+ *
+ * `hot = true` si la vérif est dépassée OU si c'est la première
+ * occurrence annuelle d'un DUERP ou contrôle majeur — simple heuristique.
+ */
+export async function listerEvenementsParMois(
+  etablissementId: string,
+  annee: number = new Date().getFullYear(),
+): Promise<Array<EvenementMoisReel | null>> {
+  const user = await requireUser();
+  const debut = new Date(annee, 0, 1);
+  const fin = new Date(annee + 1, 0, 1);
+
+  const verifs = await prisma.verification.findMany({
+    where: {
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+      OR: [
+        { datePrevue: { gte: debut, lt: fin } },
+        { dateRealisee: { gte: debut, lt: fin } },
+      ],
+    },
+    select: {
+      libelleObligation: true,
+      datePrevue: true,
+      dateRealisee: true,
+      periodicite: true,
+      statut: true,
+    },
+    orderBy: { datePrevue: "asc" },
+  });
+
+  const buckets: Array<EvenementMoisReel | null> = Array.from(
+    { length: 12 },
+    () => null,
+  );
+
+  for (const v of verifs) {
+    const ref = v.dateRealisee ?? v.datePrevue;
+    if (ref.getFullYear() !== annee) continue;
+    const m = ref.getMonth();
+    if (buckets[m]) continue; // on garde seulement le premier
+
+    buckets[m] = {
+      mois: m,
+      libelle: v.libelleObligation,
+      tag: libellePeriodicite(v.periodicite),
+      hot: v.statut === "depassee",
+    };
+  }
+
+  return buckets;
+}
+
+function libellePeriodicite(p: string): string {
+  switch (p) {
+    case "hebdomadaire":
+      return "Hebdo";
+    case "mensuelle":
+      return "Mensuel";
+    case "trimestrielle":
+      return "Trimestriel";
+    case "semestrielle":
+      return "Semestriel";
+    case "annuelle":
+      return "Annuel";
+    case "biennale":
+      return "Biennal";
+    case "triennale":
+      return "Triennal";
+    case "quinquennale":
+      return "Quinquennal";
+    case "decennale":
+      return "Décennal";
+    case "mise_en_service_uniquement":
+      return "Mise en service";
+    default:
+      return "Périodique";
+  }
+}
+
 /**
  * Agrège les vérifications de l'année civile courante par mois, pour les
  * barres du dashboard. Utilisé par `BarsObligations`. Scoping par user
