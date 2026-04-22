@@ -224,17 +224,18 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
               {pastille ? (
                 <span
                   className={
-                    pastille.tone === "alerte"
+                    "w-fit self-start " +
+                    (pastille.tone === "alerte"
                       ? "pill-alerte"
                       : pastille.tone === "warn"
                         ? "pill-warn"
-                        : "pill-ok"
+                        : "pill-ok")
                   }
                 >
                   {pastille.libelle}
                 </span>
               ) : (
-                <span className="inline-flex items-center rounded-full border border-rule-soft bg-paper-elevated px-2 py-0.5 font-mono text-[0.62rem] text-muted-foreground">
+                <span className="inline-flex w-fit items-center self-start rounded-full border border-rule-soft bg-paper-elevated px-2 py-0.5 font-mono text-[0.62rem] text-muted-foreground">
                   Aucune vérif
                 </span>
               )}
