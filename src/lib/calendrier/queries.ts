@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 
@@ -15,9 +16,11 @@ export async function listerVerifications(
   etablissementId: string,
   filtres: FiltresCalendrier = {},
 ) {
+  const user = await requireUser();
   const verifs = await prisma.verification.findMany({
     where: {
       etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
       ...(filtres.urgentsSeulement
         ? { statut: { in: ["a_planifier", "depassee"] } }
         : {}),
@@ -41,8 +44,9 @@ export type VerificationListee = Awaited<
 >[number];
 
 export async function getVerification(id: string) {
-  const v = await prisma.verification.findUnique({
-    where: { id },
+  const user = await requireUser();
+  const v = await prisma.verification.findFirst({
+    where: { id, etablissement: { entreprise: { userId: user.id } } },
     include: {
       equipement: true,
       etablissement: {
@@ -68,6 +72,11 @@ export async function getVerification(id: string) {
  *  - nombre total réalisées sur les 12 derniers mois
  */
 export async function compterEtatCalendrier(etablissementId: string) {
+  const user = await requireUser();
+  const scope = {
+    etablissementId,
+    etablissement: { entreprise: { userId: user.id } },
+  } as const;
   const now = new Date();
   const dans30j = new Date(now.getTime());
   dans30j.setDate(dans30j.getDate() + 30);
@@ -76,23 +85,17 @@ export async function compterEtatCalendrier(etablissementId: string) {
 
   const [enRetard, aVenir, realisees12m] = await Promise.all([
     prisma.verification.count({
-      where: {
-        etablissementId,
-        statut: { in: ["a_planifier", "depassee"] },
-      },
+      where: { ...scope, statut: { in: ["a_planifier", "depassee"] } },
     }),
     prisma.verification.count({
       where: {
-        etablissementId,
+        ...scope,
         statut: "planifiee",
         datePrevue: { lte: dans30j },
       },
     }),
     prisma.verification.count({
-      where: {
-        etablissementId,
-        dateRealisee: { gte: ilYaUnAn },
-      },
+      where: { ...scope, dateRealisee: { gte: ilYaUnAn } },
     }),
   ]);
 

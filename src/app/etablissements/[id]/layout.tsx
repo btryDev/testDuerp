@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { EtablissementNav } from "@/components/layout/EtablissementNav";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 
 /**
  * Layout imbriqué pour toutes les pages d'un établissement.
@@ -16,8 +17,9 @@ export default async function EtablissementLayout({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const etab = await prisma.etablissement.findUnique({
-    where: { id },
+  const user = await requireUser();
+  const etab = await prisma.etablissement.findFirst({
+    where: { id, entreprise: { userId: user.id } },
     select: {
       id: true,
       raisonDisplay: true,

@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import {
+  assertEntrepriseOwnership,
+  assertEtablissementOwnership,
+} from "@/lib/auth/scope";
 import { etablissementSchema } from "./schema";
 
 export type EtablissementActionState =
@@ -42,6 +46,7 @@ export async function creerEtablissement(
   _prev: EtablissementActionState,
   formData: FormData,
 ): Promise<EtablissementActionState> {
+  await assertEntrepriseOwnership(entrepriseId);
   const parsed = etablissementSchema.safeParse(normaliserFormData(formData));
   if (!parsed.success) {
     return {
@@ -67,6 +72,7 @@ export async function modifierEtablissement(
   _prev: EtablissementActionState,
   formData: FormData,
 ): Promise<EtablissementActionState> {
+  await assertEtablissementOwnership(id);
   const parsed = etablissementSchema.safeParse(normaliserFormData(formData));
   if (!parsed.success) {
     return {
@@ -87,6 +93,7 @@ export async function modifierEtablissement(
 }
 
 export async function supprimerEtablissement(id: string): Promise<void> {
+  await assertEtablissementOwnership(id);
   const etab = await prisma.etablissement.delete({ where: { id } });
   revalidatePath(`/entreprises/${etab.entrepriseId}`);
   redirect(`/entreprises/${etab.entrepriseId}`);

@@ -119,7 +119,7 @@ On conserve les trois secteurs existants du MVP DUERP :
 - **Next.js 15** (App Router, Server Actions)
 - **TypeScript strict**
 - **PostgreSQL** + **Prisma** (ORM)
-- **NextAuth.js** (ou équivalent déjà en place) pour l'authentification
+- **Supabase Auth** (`@supabase/ssr`) pour l'authentification — cf. ADR-005. Supabase sert uniquement d'auth provider ; la data reste accédée via Prisma (rôle `postgres`, bypass RLS).
 - **react-hook-form** + **Zod** pour les formulaires et la validation
 - **Tailwind CSS** + **shadcn/ui** pour l'interface
 - **@react-pdf/renderer** pour la génération PDF

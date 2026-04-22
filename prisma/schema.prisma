@@ -16,10 +16,14 @@ datasource db {
 // Modèle documenté dans /docs/adr/001 à 004.
 // ============================================================================
 
-// MVP sans auth — Entreprise reste la racine. User viendra plus tard.
+// ADR-005 : Entreprise est rattachée à un user Supabase (auth.users.id).
+// userId est un UUID stocké en texte, pas de FK cross-schéma : auth.* est
+// géré par Supabase, on n'y projette pas de contrainte Prisma. Le scoping
+// par user est assuré au niveau applicatif (helper requireUser + WHERE userId).
 
 model Entreprise {
   id             String          @id @default(cuid())
+  userId         String?         @db.Uuid
   raisonSociale  String
   siret          String?
   codeNaf        String
@@ -28,6 +32,8 @@ model Entreprise {
   etablissements Etablissement[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+
+  @@index([userId])
 }
 
 // ADR-001 : Etablissement est l'ancrage des obligations réglementaires.

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import type { StatutAction } from "@prisma/client";
 
 export type OrigineAction = "duerp" | "verification" | "libre";
@@ -16,8 +17,12 @@ export async function listerActions(
   etablissementId: string,
   filtres: FiltresPlanActions = {},
 ) {
+  const user = await requireUser();
   const where: Parameters<typeof prisma.action.findMany>[0] = {
-    where: { etablissementId },
+    where: {
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
   };
 
   if (filtres.origine === "duerp") {
@@ -78,8 +83,9 @@ export function origineDeLAction(a: {
 }
 
 export async function getAction(id: string) {
-  return prisma.action.findUnique({
-    where: { id },
+  const user = await requireUser();
+  return prisma.action.findFirst({
+    where: { id, etablissement: { entreprise: { userId: user.id } } },
     include: {
       risque: {
         include: { unite: { include: { duerp: true } } },
@@ -104,25 +110,30 @@ export async function getAction(id: string) {
  * pour rester performants même à volume.
  */
 export async function compterActions(etablissementId: string) {
+  const user = await requireUser();
+  const scope = {
+    etablissementId,
+    etablissement: { entreprise: { userId: user.id } },
+  } as const;
   const now = new Date();
 
   const [ouvertes, enCours, enRetard, leveesRecemment] = await Promise.all([
     prisma.action.count({
-      where: { etablissementId, statut: "ouverte" },
+      where: { ...scope, statut: "ouverte" },
     }),
     prisma.action.count({
-      where: { etablissementId, statut: "en_cours" },
+      where: { ...scope, statut: "en_cours" },
     }),
     prisma.action.count({
       where: {
-        etablissementId,
+        ...scope,
         statut: { in: ["ouverte", "en_cours"] },
         echeance: { lt: now },
       },
     }),
     prisma.action.count({
       where: {
-        etablissementId,
+        ...scope,
         statut: "levee",
         leveeLe: {
           gte: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 30),

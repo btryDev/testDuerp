@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
+import { assertEntrepriseOwnership } from "@/lib/auth/scope";
 import { entrepriseSchema } from "./schema";
 
 export type ActionState =
@@ -14,6 +16,7 @@ export async function creerEntreprise(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  const user = await requireUser();
   const raw = Object.fromEntries(formData);
   const parsed = entrepriseSchema.safeParse(raw);
 
@@ -30,7 +33,7 @@ export async function creerEntreprise(
   //   2. déclarer au moins un établissement (adresse, typologie, régimes)
   // Le DUERP est initié depuis la page détail d'un établissement.
   const entreprise = await prisma.entreprise.create({
-    data: parsed.data,
+    data: { ...parsed.data, userId: user.id },
   });
 
   redirect(`/etablissements/nouveau?entrepriseId=${entreprise.id}`);
@@ -41,6 +44,7 @@ export async function modifierEntreprise(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  await assertEntrepriseOwnership(id);
   const raw = Object.fromEntries(formData);
   const parsed = entrepriseSchema.safeParse(raw);
 
@@ -63,6 +67,7 @@ export async function modifierEntreprise(
 }
 
 export async function supprimerEntreprise(id: string): Promise<void> {
+  await assertEntrepriseOwnership(id);
   await prisma.entreprise.delete({ where: { id } });
   revalidatePath("/entreprises");
   redirect("/entreprises");

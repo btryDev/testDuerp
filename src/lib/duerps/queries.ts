@@ -1,4 +1,7 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
+
+// ADR-005 : scope par userId via la chaîne duerp → etablissement → entreprise.
 
 // Transition V2 : les relations Prisma s'appellent désormais `etablissement`
 // (au lieu de `entreprise` directe) et `actions` (au lieu de `mesures`). On
@@ -31,8 +34,9 @@ function actionVersMesure(a: ActionRow) {
 }
 
 export async function getDuerp(id: string) {
-  const duerp = await prisma.duerp.findUnique({
-    where: { id },
+  const user = await requireUser();
+  const duerp = await prisma.duerp.findFirst({
+    where: { id, etablissement: { entreprise: { userId: user.id } } },
     include: {
       etablissement: { include: { entreprise: true } },
       unites: {
@@ -63,8 +67,12 @@ export async function getDuerp(id: string) {
 }
 
 export async function getUnite(id: string) {
-  const unite = await prisma.uniteTravail.findUnique({
-    where: { id },
+  const user = await requireUser();
+  const unite = await prisma.uniteTravail.findFirst({
+    where: {
+      id,
+      duerp: { etablissement: { entreprise: { userId: user.id } } },
+    },
     include: {
       duerp: {
         include: { etablissement: { include: { entreprise: true } } },

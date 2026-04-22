@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 
 export async function getEquipement(id: string) {
-  return prisma.equipement.findUnique({
-    where: { id },
+  const user = await requireUser();
+  return prisma.equipement.findFirst({
+    where: { id, etablissement: { entreprise: { userId: user.id } } },
     include: { etablissement: { select: { id: true, raisonDisplay: true } } },
   });
 }
@@ -11,8 +13,12 @@ export async function getEquipement(id: string) {
 export async function listerEquipementsDeLEtablissement(
   etablissementId: string,
 ) {
+  const user = await requireUser();
   return prisma.equipement.findMany({
-    where: { etablissementId },
+    where: {
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
     orderBy: [{ categorie: "asc" }, { createdAt: "asc" }],
   });
 }

@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { getOptionalUser } from "@/lib/auth/require-user";
 
-export default function Home() {
+export default async function Home() {
+  const user = await getOptionalUser();
+  // Quand l'utilisateur n'est pas connecté, le CTA principal l'envoie sur
+  // /signup : la création d'un dossier nécessite un compte (ADR-005), le
+  // middleware redirigerait de toute façon /onboarding vers /login.
+  const ctaHref = user ? "/entreprises" : "/signup";
+  const ctaLabel = user ? "Reprendre mon dossier" : "Créer un compte";
+
   return (
     <main>
       {/* ================================================================
@@ -49,16 +57,25 @@ export default function Home() {
                   à montrer.
                 </p>
 
-                <div className="mt-14 flex items-center gap-6">
+                <div className="mt-14 flex flex-wrap items-center gap-6">
                   <Link
-                    href="/onboarding"
+                    href={ctaHref}
                     className={buttonVariants({ size: "lg" })}
                   >
-                    Ouvrir un dossier
+                    {ctaLabel}&nbsp;→
                   </Link>
-                  <span className="font-mono text-[0.58rem] uppercase tracking-[0.22em] text-muted-foreground">
-                    5&nbsp;min · sans engagement
-                  </span>
+                  {user ? (
+                    <span className="font-mono text-[0.58rem] uppercase tracking-[0.22em] text-muted-foreground">
+                      Connecté · {user.email}
+                    </span>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-ink underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-ink"
+                    >
+                      J'ai déjà un compte · Me connecter
+                    </Link>
+                  )}
                 </div>
               </div>
 
@@ -190,19 +207,32 @@ export default function Home() {
         <div className="flex flex-col items-start justify-between gap-8 py-20 sm:flex-row sm:items-center sm:py-24">
           <div>
             <p className="text-[clamp(1.6rem,3.2vw,2.2rem)] font-medium leading-[1.15] tracking-[-0.02em]">
-              Prêt à commencer&nbsp;?
+              {user ? "On reprend ?" : "Prêt à commencer ?"}
               <br />
               <span className="accent-serif text-[color:var(--warm)]">
-                Ouvrons&nbsp;le&nbsp;dossier.
+                {user
+                  ? "Votre dossier vous attend."
+                  : "Un compte, puis le dossier."}
               </span>
             </p>
+            {!user ? (
+              <p className="mt-4 font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
+                Gratuit en bêta · hébergement UE ·{" "}
+                <Link
+                  href="/login"
+                  className="text-ink underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-ink"
+                >
+                  déjà inscrit·e ?
+                </Link>
+              </p>
+            ) : null}
           </div>
 
           <Link
-            href="/onboarding"
+            href={ctaHref}
             className={buttonVariants({ size: "lg" })}
           >
-            Ouvrir →
+            {ctaLabel}&nbsp;→
           </Link>
         </div>
         <div className="filet-pointille" />

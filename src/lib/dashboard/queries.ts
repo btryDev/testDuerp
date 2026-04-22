@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import { compterActions } from "@/lib/actions/queries";
 import { compterEtatCalendrier } from "@/lib/calendrier/queries";
 import {
@@ -36,12 +37,21 @@ export type DashboardData = {
 export async function getDashboardData(
   etablissementId: string,
 ): Promise<DashboardData> {
+  const user = await requireUser();
+  const scope = {
+    etablissementId,
+    etablissement: { entreprise: { userId: user.id } },
+  } as const;
+
   // Agrégats existants déjà optimisés
   const [etatCalendrier, compteursActions, duerp] = await Promise.all([
     compterEtatCalendrier(etablissementId),
     compterActions(etablissementId),
     prisma.duerp.findFirst({
-      where: { etablissementId },
+      where: {
+        etablissementId,
+        etablissement: { entreprise: { userId: user.id } },
+      },
       orderBy: { updatedAt: "desc" },
       include: {
         versions: { orderBy: { numero: "desc" }, take: 1 },
@@ -53,7 +63,7 @@ export async function getDashboardData(
   // — le moteur de reco limite à 5 de toute façon).
   const [verifications, actionsOuvertes] = await Promise.all([
     prisma.verification.findMany({
-      where: { etablissementId },
+      where: scope,
       select: {
         id: true,
         statut: true,
@@ -66,7 +76,7 @@ export async function getDashboardData(
     }),
     prisma.action.findMany({
       where: {
-        etablissementId,
+        ...scope,
         statut: { in: ["ouverte", "en_cours"] },
       },
       select: {
