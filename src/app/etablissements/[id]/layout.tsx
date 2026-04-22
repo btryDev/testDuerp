@@ -1,13 +1,14 @@
 import { notFound } from "next/navigation";
-import { EtablissementNav } from "@/components/layout/EtablissementNav";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 
 /**
  * Layout imbriqué pour toutes les pages d'un établissement.
- * Lit l'entité minimum pour le fil d'Ariane + la nav contextuelle.
- * L'appel DB est léger (select ciblé) et partagé par toutes les pages
- * descendantes grâce au cache de requête Next.js.
+ * Rôle : garde d'ownership (findFirst scopé par userId). La navigation
+ * a été retirée : le dashboard l'assure via AppSidebar + AppTopbar, et
+ * chaque sous-page (calendrier, équipements…) porte son propre
+ * « ← retour ». À ré-introduire ici si on veut une nav partagée entre
+ * toutes les sous-pages non-dashboard.
  */
 export default async function EtablissementLayout({
   children,
@@ -20,24 +21,9 @@ export default async function EtablissementLayout({
   const user = await requireUser();
   const etab = await prisma.etablissement.findFirst({
     where: { id, entreprise: { userId: user.id } },
-    select: {
-      id: true,
-      raisonDisplay: true,
-      entrepriseId: true,
-      entreprise: { select: { raisonSociale: true } },
-    },
+    select: { id: true },
   });
   if (!etab) notFound();
 
-  return (
-    <>
-      <EtablissementNav
-        etablissementId={etab.id}
-        raisonDisplay={etab.raisonDisplay}
-        entrepriseRaison={etab.entreprise.raisonSociale}
-        entrepriseId={etab.entrepriseId}
-      />
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }

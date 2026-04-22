@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { AppHeaderGate } from "@/components/layout/AppHeaderGate";
 import "./globals.css";
 
 const geist = Geist({
@@ -40,7 +41,9 @@ export default function RootLayout({
       className={`${geist.variable} ${jetbrains.variable} ${instrument.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AppHeader />
+        <AppHeaderGate>
+          <AppHeader />
+        </AppHeaderGate>
         <div className="flex-1">{children}</div>
       </body>
     </html>

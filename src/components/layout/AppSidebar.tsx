@@ -15,7 +15,9 @@ import {
   Settings,
   HelpCircle,
   Building2,
+  LogOut,
 } from "lucide-react";
+import { signOutAction } from "@/lib/auth/actions";
 
 export type SidebarActive =
   | "tableau"
@@ -200,9 +202,15 @@ export function AppSidebar({
               <p className="truncate text-[0.8rem] font-medium">
                 {user.email ?? "Utilisateur"}
               </p>
-              <p className="truncate text-[0.68rem] text-muted-foreground">
-                Connecté
-              </p>
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="mt-0.5 flex items-center gap-1 text-[0.68rem] text-muted-foreground transition-colors hover:text-ink"
+                >
+                  <LogOut aria-hidden className="size-3" />
+                  Déconnexion
+                </button>
+              </form>
             </div>
           </div>
         ) : null}
