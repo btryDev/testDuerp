@@ -2,15 +2,14 @@ import { WizardShell } from "@/components/onboarding/WizardShell";
 
 /**
  * Parcours de mise en place — wizard mono-page (client component) qui
- * pilote 4 étapes :
- *   1. Identité juridique (raison sociale + SIRET)
- *   2. Établissement (nom d'usage, adresse, NAF, effectif)
- *   3. Typologie (ERP / IGH / habitation, via assistant — commit suivant)
- *   4. Résumé + création transactionnelle (commit suivant)
+ * pilote 3 étapes :
+ *   1. Identité & lieu (raison sociale, SIRET, adresse structurée, NAF, effectif)
+ *   2. Typologie (ERP / IGH / habitation, via assistant)
+ *   3. Résumé + création transactionnelle
  *
  * Entreprise + premier Etablissement sont créés atomiquement à la fin.
- * Pas de duplication : adresse / NAF / effectif saisis UNE seule fois
- * puis copiés dans les deux entités.
+ * Nom d'usage de l'établissement = raison sociale par défaut, modifiable
+ * plus tard depuis la page établissement.
  */
 export default function OnboardingPage() {
   return <WizardShell />;

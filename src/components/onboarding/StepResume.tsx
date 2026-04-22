@@ -34,10 +34,19 @@ export function StepResume({ state }: StepProps) {
     );
   if (state.estHabitation) regimes.push("Immeuble d'habitation");
 
+  const adresseComplete = [
+    state.adresseRue.trim(),
+    [state.adresseCodePostal.trim(), state.adresseVille.trim()]
+      .filter(Boolean)
+      .join(" "),
+  ]
+    .filter(Boolean)
+    .join(", ");
+
   return (
     <div className="space-y-6">
       <div>
-        <p className="label-admin mb-2">Étape 4 sur 4 · Confirmation</p>
+        <p className="label-admin mb-2">Étape 3 sur 3 · Confirmation</p>
         <h2 className="text-[1.6rem] font-semibold tracking-[-0.015em] leading-tight">
           Tout est prêt, on récapitule.
         </h2>
@@ -54,8 +63,7 @@ export function StepResume({ state }: StepProps) {
             En une phrase
           </p>
           <p className="mt-3 text-[1rem] leading-relaxed">
-            Vous êtes{" "}
-            <strong>{state.raisonSociale || "—"}</strong>
+            Vous êtes <strong>{state.raisonSociale || "—"}</strong>
             {state.siret && (
               <>
                 {" "}
@@ -64,9 +72,8 @@ export function StepResume({ state }: StepProps) {
                 </span>
               </>
             )}
-            . Votre établissement,{" "}
-            <strong>{state.raisonDisplay || "—"}</strong>, est situé{" "}
-            <strong>{state.adresse || "—"}</strong> et emploie{" "}
+            . Votre site principal est situé{" "}
+            <strong>{adresseComplete || "—"}</strong> et emploie{" "}
             <strong>{state.effectifSurSite || "—"}</strong>{" "}
             {Number(state.effectifSurSite) > 1 ? "salariés" : "salarié"} sur
             site. Code activité : <strong>{state.codeNaf || "—"}</strong>.
@@ -76,8 +83,7 @@ export function StepResume({ state }: StepProps) {
         <dl className="divide-y divide-dashed divide-rule/50">
           <FicheLigne label="Raison sociale" valeur={state.raisonSociale} />
           {state.siret && <FicheLigne label="SIRET" valeur={state.siret} />}
-          <FicheLigne label="Nom du site" valeur={state.raisonDisplay} />
-          <FicheLigne label="Adresse" valeur={state.adresse} />
+          <FicheLigne label="Adresse" valeur={adresseComplete} />
           <FicheLigne label="Code NAF" valeur={state.codeNaf} />
           <FicheLigne
             label="Effectif sur site"

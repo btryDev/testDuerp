@@ -8,8 +8,13 @@ export type OnboardingState = {
   raisonSociale: string;
   siret: string;
 
-  raisonDisplay: string;
-  adresse: string;
+  // Adresse structurée — validée champ par champ côté client, recomposée
+  // en chaîne unique au submit pour alimenter Entreprise.adresse /
+  // Etablissement.adresse (colonne `adresse` unique en base, ADR-001).
+  adresseRue: string;
+  adresseCodePostal: string;
+  adresseVille: string;
+
   codeNaf: string;
   effectifSurSite: string; // saisie texte, convertie en number au submit
 
@@ -26,8 +31,9 @@ export type OnboardingState = {
 export const VALEURS_INITIALES: OnboardingState = {
   raisonSociale: "",
   siret: "",
-  raisonDisplay: "",
-  adresse: "",
+  adresseRue: "",
+  adresseCodePostal: "",
+  adresseVille: "",
   codeNaf: "",
   effectifSurSite: "",
   estEtablissementTravail: true,

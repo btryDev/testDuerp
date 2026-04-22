@@ -4,7 +4,6 @@ import { onboardingSchema } from "./schema";
 const base = {
   raisonSociale: "Bistrot du marché SARL",
   siret: "",
-  raisonDisplay: "Le bistrot du marché",
   adresse: "12 rue des halles, 44000 Nantes",
   codeNaf: "56.10A",
   effectifSurSite: 8,
@@ -44,6 +43,22 @@ describe("onboardingSchema", () => {
     const res = onboardingSchema.safeParse({ ...base, codeNaf: "56.10a" });
     expect(res.success).toBe(true);
     if (res.success) expect(res.data.codeNaf).toBe("56.10A");
+  });
+
+  it("refuse une adresse non structurée (n'importe quoi)", () => {
+    const res = onboardingSchema.safeParse({
+      ...base,
+      adresse: "chez moi",
+    });
+    expect(res.success).toBe(false);
+  });
+
+  it("refuse une adresse sans code postal 5 chiffres", () => {
+    const res = onboardingSchema.safeParse({
+      ...base,
+      adresse: "12 rue X, 4400 Nantes",
+    });
+    expect(res.success).toBe(false);
   });
 
   it("exige type + catégorie ERP si estERP=true", () => {

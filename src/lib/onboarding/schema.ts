@@ -18,10 +18,13 @@ import {
 
 const siretRegex = /^\d{14}$/;
 const nafRegex = /^\d{2}\.?\d{2}[A-Z]?$/;
+// Adresse recomposée côté client : "12 rue des Halles, 44000 Nantes".
+// On revalide ici la forme finale pour détecter un client-side bypass.
+const adresseRegex = /^.{3,},\s*\d{5}\s.{2,}$/;
 
 export const onboardingSchema = z
   .object({
-    // ─── Étape 1 — Identité juridique ─────────────────────
+    // ─── Étape 1 — Identité juridique + lieu ──────────────
     raisonSociale: z
       .string()
       .trim()
@@ -35,17 +38,13 @@ export const onboardingSchema = z
         .regex(siretRegex, "SIRET = 14 chiffres")
         .optional(),
     ),
-
-    // ─── Étape 2 — Établissement (valent aussi pour l'entreprise) ─
-    raisonDisplay: z
-      .string()
-      .trim()
-      .min(1, "Indiquez un nom pour votre établissement")
-      .max(200),
     adresse: z
       .string()
       .trim()
-      .min(1, "L'adresse est obligatoire")
+      .regex(
+        adresseRegex,
+        "Adresse attendue au format « Rue, 75000 Ville »",
+      )
       .max(300),
     codeNaf: z
       .string()
@@ -150,7 +149,6 @@ export type OnboardingInput = z.infer<typeof onboardingSchema>;
 export const onboardingValeursInitiales = {
   raisonSociale: "",
   siret: "",
-  raisonDisplay: "",
   adresse: "",
   codeNaf: "",
   effectifSurSite: "" as string | number,

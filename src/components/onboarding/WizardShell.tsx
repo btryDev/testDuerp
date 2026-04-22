@@ -4,7 +4,6 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { StepIdentite } from "./StepIdentite";
-import { StepEtablissement } from "./StepEtablissement";
 import { StepTypologie } from "./StepTypologie";
 import { StepResume } from "./StepResume";
 import {
@@ -18,14 +17,14 @@ import {
 } from "./types";
 
 type Etape = {
-  id: "identite" | "etablissement" | "typologie" | "resume";
+  id: "identite" | "typologie" | "resume";
   numero: number;
   titre: string;
   Component: React.ComponentType<StepProps>;
   /**
    * Validation client locale — empêche de passer à l'étape suivante
-   * si les champs obligatoires sont vides. Les vraies erreurs de
-   * format sont remontées côté serveur à la fin.
+   * si les champs obligatoires sont vides ou mal formés. Les vraies
+   * erreurs de format final sont re-vérifiées côté serveur (Zod).
    */
   valide: (s: OnboardingState) => string | null;
 };
@@ -34,22 +33,16 @@ const ETAPES: Etape[] = [
   {
     id: "identite",
     numero: 1,
-    titre: "Identité",
+    titre: "Identité & lieu",
     Component: StepIdentite,
-    valide: (s) =>
-      s.raisonSociale.trim().length === 0
-        ? "Indiquez la raison sociale pour continuer."
-        : null,
-  },
-  {
-    id: "etablissement",
-    numero: 2,
-    titre: "Établissement",
-    Component: StepEtablissement,
     valide: (s) => {
-      if (s.raisonDisplay.trim().length === 0)
-        return "Indiquez un nom d'usage pour votre établissement.";
-      if (s.adresse.trim().length === 0) return "Indiquez l'adresse.";
+      if (s.raisonSociale.trim().length === 0)
+        return "Indiquez la raison sociale pour continuer.";
+      if (s.adresseRue.trim().length < 3)
+        return "Indiquez le numéro et la rue.";
+      if (!/^\d{5}$/.test(s.adresseCodePostal.trim()))
+        return "Le code postal doit faire 5 chiffres.";
+      if (s.adresseVille.trim().length < 2) return "Indiquez la ville.";
       if (s.codeNaf.trim().length === 0) return "Indiquez le code NAF.";
       if (!/^\d{2}\.?\d{2}[A-Z]?$/i.test(s.codeNaf.trim()))
         return "Le code NAF doit ressembler à 56.10A.";
@@ -61,7 +54,7 @@ const ETAPES: Etape[] = [
   },
   {
     id: "typologie",
-    numero: 3,
+    numero: 2,
     titre: "Typologie",
     Component: StepTypologie,
     valide: (s) => {
@@ -72,18 +65,16 @@ const ETAPES: Etape[] = [
         !s.estHabitation
       )
         return "Cochez au moins un régime (travail, ERP, IGH ou habitation).";
-      if (s.estERP && !s.typeErp)
-        return "Précisez votre activité ERP.";
+      if (s.estERP && !s.typeErp) return "Précisez votre activité ERP.";
       if (s.estERP && !s.categorieErp)
         return "Précisez votre capacité d'accueil.";
-      if (s.estIGH && !s.classeIgh)
-        return "Précisez la classe IGH.";
+      if (s.estIGH && !s.classeIgh) return "Précisez la classe IGH.";
       return null;
     },
   },
   {
     id: "resume",
-    numero: 4,
+    numero: 3,
     titre: "Résumé",
     Component: StepResume,
     valide: () => null,
@@ -246,12 +237,22 @@ export function WizardShell() {
  * server action. Évite de manipuler FormData à la main dans le submit.
  */
 function ChampsCaches({ state }: { state: OnboardingState }) {
+  // Adresse recomposée : "12 rue des Halles, 44000 Nantes" — forme stable
+  // utilisée en base pour Entreprise.adresse / Etablissement.adresse.
+  const adresseComplete = [
+    state.adresseRue.trim(),
+    [state.adresseCodePostal.trim(), state.adresseVille.trim()]
+      .filter(Boolean)
+      .join(" "),
+  ]
+    .filter(Boolean)
+    .join(", ");
+
   return (
     <>
       <input type="hidden" name="raisonSociale" value={state.raisonSociale} />
       <input type="hidden" name="siret" value={state.siret} />
-      <input type="hidden" name="raisonDisplay" value={state.raisonDisplay} />
-      <input type="hidden" name="adresse" value={state.adresse} />
+      <input type="hidden" name="adresse" value={adresseComplete} />
       <input type="hidden" name="codeNaf" value={state.codeNaf} />
       <input
         type="hidden"

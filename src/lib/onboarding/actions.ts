@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import { onboardingSchema } from "./schema";
 
 /**
@@ -30,13 +31,13 @@ export async function finaliserOnboarding(
   _prev: OnboardingActionState,
   formData: FormData,
 ): Promise<OnboardingActionState> {
+  const user = await requireUser();
   // On lit les champs un à un — permet de convertir checkboxes (HTML
   // ne soumet "on" que si la case est cochée) en vrais booléens.
   const raw = Object.fromEntries(formData);
   const input = {
     raisonSociale: raw.raisonSociale,
     siret: raw.siret,
-    raisonDisplay: raw.raisonDisplay,
     adresse: raw.adresse,
     codeNaf: raw.codeNaf,
     effectifSurSite: raw.effectifSurSite,
@@ -63,6 +64,7 @@ export async function finaliserOnboarding(
   const result = await prisma.$transaction(async (tx) => {
     const entreprise = await tx.entreprise.create({
       data: {
+        userId: user.id,
         raisonSociale: d.raisonSociale,
         siret: d.siret,
         codeNaf: d.codeNaf,
@@ -73,10 +75,12 @@ export async function finaliserOnboarding(
       },
     });
 
+    // Nom d'usage de l'établissement = raison sociale par défaut.
+    // L'utilisateur pourra le renommer plus tard s'il ouvre un 2ᵉ site.
     const etablissement = await tx.etablissement.create({
       data: {
         entrepriseId: entreprise.id,
-        raisonDisplay: d.raisonDisplay,
+        raisonDisplay: d.raisonSociale,
         adresse: d.adresse,
         codeNaf: d.codeNaf,
         effectifSurSite: d.effectifSurSite,
