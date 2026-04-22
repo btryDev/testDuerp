@@ -55,7 +55,77 @@ function MiniStat({
   );
 }
 
-/* ─── Widget « Échéances » ──────────────────────────────── */
+/* ─── Widget « Indicateurs » — 6 stats en 1 cellule ─────── */
+
+export function WidgetIndicateurs({ bundle }: { bundle: DashboardBundle }) {
+  const {
+    verifsEnRetard,
+    verifsAPlanifier,
+    verifsSous30j,
+    actionsOuvertes,
+    actionsEnCours,
+    actionsEnRetard,
+    verifsRealisees12m,
+  } = bundle.dashboard.compteurs;
+  const totalActions = actionsOuvertes + actionsEnCours;
+  const jourDernier = bundle.jourDernierRapport;
+
+  return (
+    <BentoCell kicker="Indicateurs">
+      {/* Bloc 1 — Échéances vérifications */}
+      <div className="grid grid-cols-3 gap-4 pt-1">
+        <MiniStat
+          label="En retard"
+          valeur={verifsEnRetard}
+          tone={verifsEnRetard > 0 ? "alerte" : "default"}
+        />
+        <MiniStat
+          label="À planifier"
+          valeur={verifsAPlanifier}
+          tone={verifsAPlanifier > 0 ? "warn" : "default"}
+        />
+        <MiniStat
+          label="Sous 30 j"
+          valeur={verifsSous30j}
+          tone={verifsSous30j > 0 ? "warn" : "default"}
+        />
+      </div>
+
+      {/* Séparateur fin */}
+      <div aria-hidden className="-mx-6 border-t border-dashed border-rule-soft" />
+
+      {/* Bloc 2 — Activité */}
+      <div className="grid grid-cols-3 gap-4">
+        <MiniStat
+          label="Actions en cours"
+          valeur={totalActions}
+          tone={actionsEnRetard > 0 ? "warn" : "default"}
+          sub={
+            actionsEnRetard > 0
+              ? `${actionsEnRetard} en retard`
+              : totalActions > 0
+                ? "à lever"
+                : "aucune"
+          }
+        />
+        <MiniStat
+          label="Rapports 12 m"
+          valeur={verifsRealisees12m}
+          tone="ok"
+        />
+        <MiniStat
+          label="Dernier rapport"
+          valeur={jourDernier === null ? "—" : `J-${jourDernier}`}
+          tone={
+            jourDernier !== null && jourDernier < 30 ? "ok" : "default"
+          }
+        />
+      </div>
+    </BentoCell>
+  );
+}
+
+/* ─── Anciens widgets — gardés opt-in pour power users ──── */
 
 export function WidgetEcheances({ bundle }: { bundle: DashboardBundle }) {
   const { verifsEnRetard, verifsAPlanifier, verifsSous30j } =

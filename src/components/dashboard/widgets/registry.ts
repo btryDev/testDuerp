@@ -20,7 +20,11 @@ import {
   WidgetRecos,
 } from "./impl/simples";
 import { WidgetCalendrierType } from "./impl/calendrier-type";
-import { WidgetEcheances, WidgetActivite } from "./impl/groupes";
+import {
+  WidgetIndicateurs,
+  WidgetEcheances,
+  WidgetActivite,
+} from "./impl/groupes";
 import { WidgetDocuments } from "./impl/documents";
 import type { LayoutItem, WidgetDefinition, WidgetId } from "./types";
 
@@ -39,25 +43,37 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     defaultVariant: "anneau",
     Component: WidgetScore,
   },
+  indicateurs: {
+    id: "indicateurs",
+    titre: "Indicateurs",
+    description:
+      "Vue d'ensemble en 6 chiffres : en retard · à planifier · sous 30 j, puis actions en cours · rapports 12 m · délai depuis le dernier rapport.",
+    taille: "large",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: WidgetIndicateurs,
+  },
   echeances: {
     id: "echeances",
-    titre: "Échéances",
+    titre: "Échéances (séparé)",
     description:
-      "Vue condensée : en retard · à planifier · sous 30 j. Regroupe trois compteurs de vérifications dans une cellule.",
+      "Compteurs vérifications isolés — déjà inclus dans le widget « Indicateurs ».",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
     Component: WidgetEcheances,
+    exclueDuDefaut: true,
   },
   activite: {
     id: "activite",
-    titre: "Activité",
+    titre: "Activité (séparé)",
     description:
-      "Vue condensée : actions en cours · rapports 12 m · délai depuis le dernier rapport.",
+      "Compteurs actions & rapports isolés — déjà inclus dans le widget « Indicateurs ».",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
     Component: WidgetActivite,
+    exclueDuDefaut: true,
   },
   "kpi-en-retard": {
     id: "kpi-en-retard",
@@ -236,8 +252,7 @@ export function variantValide(
  */
 const ORDRE_DEFAUT: WidgetId[] = [
   "score",
-  "echeances",
-  "activite",
+  "indicateurs",
   "calendrier-type",
   "prochaines-echeances",
   "documents",

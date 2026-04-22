@@ -13,20 +13,21 @@ describe("registre de widgets", () => {
     const ids = layoutParDefaut().map((i) => i.widgetId);
     expect(ids).not.toContain("recos");
     expect(ids).not.toContain("bars-obligations");
-    // Les KPIs unitaires sont disponibles mais masqués par défaut —
-    // regroupés dans « Échéances » et « Activité ».
+    // KPIs unitaires : disponibles mais masqués par défaut.
     expect(ids).not.toContain("kpi-en-retard");
     expect(ids).not.toContain("kpi-sous-30j");
     expect(ids).not.toContain("kpi-actions");
     expect(ids).not.toContain("kpi-rapports");
+    // Échéances / Activité : déjà regroupés dans « Indicateurs ».
+    expect(ids).not.toContain("echeances");
+    expect(ids).not.toContain("activite");
   });
 
   it("le layout par défaut liste les widgets clés du tableau de bord", () => {
     const ids = new Set(layoutParDefaut().map((i) => i.widgetId));
     for (const attendu of [
       "score",
-      "echeances",
-      "activite",
+      "indicateurs",
       "calendrier-type",
       "prochaines-echeances",
       "documents",

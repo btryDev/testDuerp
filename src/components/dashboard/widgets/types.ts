@@ -16,6 +16,7 @@ export type Taille = "small" | "medium" | "large";
 
 export type WidgetId =
   | "score"
+  | "indicateurs"
   | "echeances"
   | "activite"
   | "kpi-en-retard"
