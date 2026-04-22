@@ -4,6 +4,7 @@ import {
   CLASSES_IGH,
   TYPE_ERP,
 } from "@/lib/etablissements/schema";
+import { evaluerScopeSecteur } from "./scope";
 
 /**
  * Schéma fusionné du parcours d'onboarding — couvre Entreprise + premier
@@ -76,6 +77,19 @@ export const onboardingSchema = z
     ),
   })
   .superRefine((val, ctx) => {
+    // Filtrage du périmètre V2 (lib/onboarding/scope.ts) : le code NAF
+    // doit correspondre à un des 3 secteurs couverts (restauration,
+    // commerce, tertiaire). Refuser sinon : le DUERP produit ne serait
+    // pas fiable.
+    const scope = evaluerScopeSecteur(val.codeNaf);
+    if (scope.status === "hors_perimetre") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["codeNaf"],
+        message: scope.raison,
+      });
+    }
+
     // Mêmes invariants que etablissementSchema (ADR-004).
     if (val.estERP) {
       if (!val.typeErp) {
