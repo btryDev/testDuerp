@@ -83,15 +83,31 @@ export async function compterEtatCalendrier(etablissementId: string) {
   const ilYaUnAn = new Date(now.getTime());
   ilYaUnAn.setFullYear(ilYaUnAn.getFullYear() - 1);
 
-  const [enRetard, aVenir, realisees12m] = await Promise.all([
+  // Sémantique distinguée :
+  //  - `enRetard`    : statut `depassee`, ou `planifiee` dont la datePrevue
+  //    est déjà passée sans dateRealisee — situation réelle de non-conformité
+  //  - `aPlanifier`  : statut `a_planifier` — nouvelle occurrence générée à
+  //    la création d'un équipement, l'utilisateur n'a pas encore fixé de
+  //    date. Non pénalisant : c'est un simple « à faire ».
+  //  - `aVenir`      : `planifiee` dans les 30 prochains jours
+  const [enRetard, aPlanifier, aVenir, realisees12m] = await Promise.all([
     prisma.verification.count({
-      where: { ...scope, statut: { in: ["a_planifier", "depassee"] } },
+      where: {
+        ...scope,
+        OR: [
+          { statut: "depassee" },
+          { statut: "planifiee", datePrevue: { lt: now } },
+        ],
+      },
+    }),
+    prisma.verification.count({
+      where: { ...scope, statut: "a_planifier" },
     }),
     prisma.verification.count({
       where: {
         ...scope,
         statut: "planifiee",
-        datePrevue: { lte: dans30j },
+        datePrevue: { gte: now, lte: dans30j },
       },
     }),
     prisma.verification.count({
@@ -99,7 +115,7 @@ export async function compterEtatCalendrier(etablissementId: string) {
     }),
   ]);
 
-  return { enRetard, aVenir, realisees12m };
+  return { enRetard, aPlanifier, aVenir, realisees12m };
 }
 
 /**

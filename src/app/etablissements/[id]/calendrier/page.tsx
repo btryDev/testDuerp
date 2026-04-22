@@ -57,6 +57,7 @@ export default async function CalendrierPage({
   const etat0 = await compterEtatCalendrier(id);
   if (
     etat0.enRetard === 0 &&
+    etat0.aPlanifier === 0 &&
     etat0.aVenir === 0 &&
     etat0.realisees12m === 0
   ) {
@@ -188,6 +189,7 @@ export default async function CalendrierPage({
 
       {verifs.length === 0 ? (
         etat.enRetard === 0 &&
+        etat.aPlanifier === 0 &&
         etat.aVenir === 0 &&
         etat.realisees12m === 0 ? (
           <EmptyState

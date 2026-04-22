@@ -151,6 +151,7 @@ export default async function EtablissementPage({
 
   const recos = dashboard.recommandations.slice(0, 3);
   const verifsEnRetard = dashboard.compteurs.verifsEnRetard;
+  const verifsAPlanifier = dashboard.compteurs.verifsAPlanifier;
   const verifsSous30j = dashboard.compteurs.verifsSous30j;
   const actionsACouvrir =
     dashboard.compteurs.actionsOuvertes + dashboard.compteurs.actionsEnCours;
@@ -252,14 +253,27 @@ export default async function EtablissementPage({
                     {verifsEnRetard} en retard
                   </span>
                 ) : null}
+                {verifsAPlanifier > 0 ? (
+                  <span className="pill-warn">
+                    {verifsAPlanifier} à planifier
+                  </span>
+                ) : null}
                 {verifsSous30j > 0 ? (
                   <span className="pill-warn">
                     {verifsSous30j} sous 30&nbsp;j
                   </span>
                 ) : null}
-                {nbVerifs - verifsEnRetard - verifsSous30j > 0 ? (
+                {nbVerifs -
+                  verifsEnRetard -
+                  verifsAPlanifier -
+                  verifsSous30j >
+                0 ? (
                   <span className="pill-ok">
-                    {nbVerifs - verifsEnRetard - verifsSous30j} à jour
+                    {nbVerifs -
+                      verifsEnRetard -
+                      verifsAPlanifier -
+                      verifsSous30j}{" "}
+                    à jour
                   </span>
                 ) : null}
               </div>
@@ -284,9 +298,22 @@ export default async function EtablissementPage({
           {/* ─── Row 2 : KPIs ─────────────────────── */}
           <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
             <KpiCard
+              label="En retard"
+              value={verifsEnRetard}
+              tone={verifsEnRetard > 0 ? "alerte" : "default"}
+              trend={
+                verifsAPlanifier > 0
+                  ? {
+                      dir: "flat",
+                      label: `+ ${verifsAPlanifier} à planifier`,
+                    }
+                  : undefined
+              }
+            />
+            <KpiCard
               label="Échéances sous 30 j"
-              value={verifsSous30j + verifsEnRetard}
-              tone={verifsEnRetard > 0 ? "alerte" : verifsSous30j > 0 ? "warn" : "default"}
+              value={verifsSous30j}
+              tone={verifsSous30j > 0 ? "warn" : "default"}
             />
             <KpiCard
               label="Actions en cours"
@@ -305,15 +332,6 @@ export default async function EtablissementPage({
               label="Rapports 12 mois"
               value={dashboard.compteurs.verifsRealisees12m}
               tone="ok"
-            />
-            <KpiCard
-              label="Jours depuis dernier rapport"
-              value={jourDernierRapport ?? "—"}
-              tone={
-                jourDernierRapport !== null && jourDernierRapport < 30
-                  ? "ok"
-                  : "default"
-              }
             />
           </div>
 
@@ -346,11 +364,31 @@ export default async function EtablissementPage({
               ) : (
                 <ul className="flex flex-col">
                   {prochainesVerifs.map((v) => {
-                    const isEnRetard = v.statut === "depassee";
-                    const isA_Planifier =
-                      v.statut === "a_planifier" &&
-                      v.datePrevue < new Date();
-                    const tone = isEnRetard || isA_Planifier ? "alerte" : "ok";
+                    const nowDate = new Date();
+                    const enRetard =
+                      v.statut === "depassee" ||
+                      (v.statut === "planifiee" && v.datePrevue < nowDate);
+                    const aPlanifier = v.statut === "a_planifier";
+                    const tone: "alerte" | "warn" | "ok" = enRetard
+                      ? "alerte"
+                      : aPlanifier
+                        ? "warn"
+                        : "ok";
+                    const dotColor =
+                      tone === "alerte"
+                        ? "var(--minium)"
+                        : tone === "warn"
+                          ? "oklch(0.72 0.15 70)"
+                          : "var(--accent-vif)";
+                    const libelleDate = aPlanifier
+                      ? "À planifier"
+                      : formatDate(v.datePrevue);
+                    const dateColorClass =
+                      tone === "alerte"
+                        ? "text-[color:var(--minium)]"
+                        : tone === "warn"
+                          ? "text-[color:oklch(0.48_0.14_60)]"
+                          : "text-muted-foreground";
                     return (
                       <li
                         key={v.id}
@@ -359,12 +397,7 @@ export default async function EtablissementPage({
                         <span
                           aria-hidden
                           className="size-2 rounded-full"
-                          style={{
-                            background:
-                              tone === "alerte"
-                                ? "var(--minium)"
-                                : "var(--accent-vif)",
-                          }}
+                          style={{ background: dotColor }}
                         />
                         <div className="min-w-0">
                           <p className="truncate text-[0.9rem] font-medium">
@@ -376,13 +409,10 @@ export default async function EtablissementPage({
                         </div>
                         <span
                           className={
-                            "font-mono text-[0.78rem] " +
-                            (tone === "alerte"
-                              ? "text-[color:var(--minium)]"
-                              : "text-muted-foreground")
+                            "font-mono text-[0.78rem] " + dateColorClass
                           }
                         >
-                          {formatDate(v.datePrevue)}
+                          {libelleDate}
                         </span>
                       </li>
                     );

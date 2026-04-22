@@ -76,9 +76,12 @@ export async function compterObligationsParMois(
       buckets[m].couvert += 1;
     } else if (
       v.statut === "depassee" ||
-      ((v.statut === "a_planifier" || v.statut === "planifiee") &&
-        v.datePrevue < now)
+      (v.statut === "planifiee" && v.datePrevue < now)
     ) {
+      // Retard strict : la date prévue est passée sans rapport.
+      // `a_planifier` n'est PAS un retard — l'utilisateur n'a simplement
+      // pas encore planifié (cas typique d'un équipement nouvellement
+      // déclaré). Il est comptabilisé comme « à venir ».
       buckets[m].retard += 1;
     } else {
       buckets[m].aVenir += 1;
@@ -93,6 +96,7 @@ export type DashboardData = {
   recommandations: Recommandation[];
   compteurs: {
     verifsEnRetard: number;
+    verifsAPlanifier: number;
     verifsSous30j: number;
     verifsRealisees12m: number;
     actionsOuvertes: number;
@@ -175,6 +179,7 @@ export async function getDashboardData(
   const score = calculerScoreConformite({
     verifsTotal:
       etatCalendrier.enRetard +
+      etatCalendrier.aPlanifier +
       etatCalendrier.aVenir +
       etatCalendrier.realisees12m,
     verifsEnRetard: etatCalendrier.enRetard,
@@ -210,6 +215,7 @@ export async function getDashboardData(
     recommandations,
     compteurs: {
       verifsEnRetard: etatCalendrier.enRetard,
+      verifsAPlanifier: etatCalendrier.aPlanifier,
       verifsSous30j: etatCalendrier.aVenir,
       verifsRealisees12m: etatCalendrier.realisees12m,
       actionsOuvertes: compteursActions.ouvertes,
