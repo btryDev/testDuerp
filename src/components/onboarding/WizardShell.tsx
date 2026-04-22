@@ -159,11 +159,13 @@ export function WizardShell() {
         />
         <Link
           href="/"
-          className="relative flex items-center gap-1.5 text-[1.08rem] font-semibold tracking-[-0.02em] text-[color:var(--accent-vif)]"
+          className="relative flex items-baseline gap-1.5 text-[1.08rem] font-semibold tracking-[-0.02em] text-[color:var(--accent-vif)]"
         >
-          <span className="size-2 rounded-full bg-[color:var(--accent-vif)]" />
-          DUERP
-          <span className="text-[color:var(--paper-elevated)]">.fr</span>
+          <span className="size-2 translate-y-[-1px] rounded-full bg-[color:var(--accent-vif)]" />
+          Pilote
+          <span className="text-[0.7rem] font-normal tracking-[0.18em] text-[color:color-mix(in_oklch,var(--paper-elevated)_65%,transparent)]">
+            conformité
+          </span>
         </Link>
 
         <h2 className="relative text-[1.65rem] font-medium leading-[1.1] tracking-[-0.025em]">
@@ -230,10 +232,13 @@ export function WizardShell() {
         <div className="mb-6 flex items-center justify-between lg:hidden">
           <Link
             href="/"
-            className="flex items-center gap-1.5 text-[1.02rem] font-semibold tracking-[-0.02em] text-[color:var(--accent-vif)]"
+            className="flex items-baseline gap-1.5 text-[1.02rem] font-semibold tracking-[-0.02em] text-[color:var(--accent-vif)]"
           >
-            <span className="size-2 rounded-full bg-[color:var(--accent-vif)]" />
-            DUERP<span className="text-ink">.fr</span>
+            <span className="size-2 translate-y-[-1px] rounded-full bg-[color:var(--accent-vif)]" />
+            Pilote
+            <span className="text-[0.68rem] font-normal tracking-[0.18em] text-muted-foreground">
+              conformité
+            </span>
           </Link>
         </div>
 

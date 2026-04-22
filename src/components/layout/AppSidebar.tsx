@@ -122,9 +122,12 @@ export function AppSidebar({
       aria-label="Navigation principale"
     >
       {/* Brand */}
-      <div className="flex items-center gap-1.5 border-b border-rule-soft pb-4 pl-2 text-[1.02rem] font-semibold tracking-[-0.02em] text-[color:var(--accent-vif)]">
-        <span className="size-2 rounded-full bg-[color:var(--accent-vif)]" />
-        DUERP<span className="text-ink">.fr</span>
+      <div className="flex items-baseline gap-1.5 border-b border-rule-soft pb-4 pl-2 text-[1.02rem] font-semibold tracking-[-0.02em] text-[color:var(--accent-vif)]">
+        <span className="size-2 translate-y-[-1px] rounded-full bg-[color:var(--accent-vif)]" />
+        Pilote
+        <span className="text-[0.68rem] font-normal tracking-[0.18em] text-muted-foreground">
+          conformité
+        </span>
       </div>
 
       {/* Contexte établissement */}
