@@ -26,6 +26,12 @@ export type EvenementMoisReel = {
   libelle: string;
   tag: string;
   hot: boolean;
+  /** Nombre d'autres événements dans ce mois, au-delà de celui représenté.
+   * Permet d'afficher un badge « +N » cliquable dans la frise. */
+  autres: number;
+  /** Les autres événements du mois, prêts à être dépliés sous la carte
+   * principale quand l'utilisateur clique sur le badge. */
+  autresItems: Array<{ libelle: string; tag: string; hot: boolean }>;
 };
 
 /**
@@ -73,17 +79,47 @@ export async function listerEvenementsParMois(
     const ref = v.dateRealisee ?? v.datePrevue;
     if (ref.getFullYear() !== annee) continue;
     const m = ref.getMonth();
-    if (buckets[m]) continue; // on garde seulement le premier
+    const existant = buckets[m];
 
-    buckets[m] = {
-      mois: m,
-      libelle: v.libelleObligation,
-      tag: libellePeriodicite(v.periodicite),
-      hot: v.statut === "depassee",
-    };
+    if (!existant) {
+      buckets[m] = {
+        mois: m,
+        libelle: libelleCourt(v.libelleObligation),
+        tag: libellePeriodicite(v.periodicite),
+        hot: v.statut === "depassee",
+        autres: 0,
+        autresItems: [],
+      };
+    } else {
+      // Déjà un événement ce mois-ci — on incrémente le compteur et
+      // on empile le détail pour l'affichage déplié. Upgrade en "hot"
+      // si au moins un événement du mois est dépassé.
+      existant.autres += 1;
+      existant.autresItems.push({
+        libelle: libelleCourt(v.libelleObligation),
+        tag: libellePeriodicite(v.periodicite),
+        hot: v.statut === "depassee",
+      });
+      if (v.statut === "depassee") existant.hot = true;
+    }
   }
 
   return buckets;
+}
+
+/**
+ * Raccourcit les libellés d'obligation verbeux pour la frise compacte.
+ * « Vérification périodique annuelle installation électrique »
+ *    → « Installation électrique »
+ */
+function libelleCourt(libelle: string): string {
+  return libelle
+    .replace(/^V[ée]rification\s+(p[ée]riodique\s+)?(annuelle|semestrielle|trimestrielle|mensuelle|hebdomadaire|biennale|triennale|quinquennale|d[ée]cennale)?\s*(des?\s+|de\s+|du\s+|d['’]\s*)?/i, "")
+    .replace(/^Entretien\s+(annuel|semestriel|trimestriel)?\s*(des?\s+|de\s+|du\s+)?/i, "")
+    .replace(/^Maintien\s+en\s+bon\s+[ée]tat\s+/i, "")
+    .replace(/^Exercice\s+(d['’]\s*)?/i, "")
+    .trim()
+    .replace(/^./, (c) => c.toUpperCase());
 }
 
 function libellePeriodicite(p: string): string {
