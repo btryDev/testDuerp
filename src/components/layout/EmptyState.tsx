@@ -83,14 +83,24 @@ export function EmptyState({
                 {cta}
               </Link>
             )}
-            {ctaSecondary && (
-              <Link
-                href={ctaSecondary.href}
-                className={buttonVariants({ variant: "outline", size: "sm" })}
-              >
-                {ctaSecondary.libelle}
-              </Link>
-            )}
+            {ctaSecondary &&
+              (ctaSecondary.href.startsWith("http") ? (
+                <a
+                  href={ctaSecondary.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  {ctaSecondary.libelle} ↗
+                </a>
+              ) : (
+                <Link
+                  href={ctaSecondary.href}
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  {ctaSecondary.libelle}
+                </Link>
+              ))}
           </div>
         )}
       </div>

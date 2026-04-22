@@ -81,15 +81,34 @@ export default async function RegistrePage({
             l&apos;ensemble doit être tenu à disposition de
             l&apos;inspection et de la commission de sécurité.
           </p>
+          <p className="max-w-2xl text-[0.82rem] leading-relaxed text-muted-foreground">
+            <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em]">
+              Note —
+            </span>{" "}
+            l&apos;outil <strong className="text-ink">stocke</strong> vos
+            rapports, il ne réalise pas les vérifications. Les contrôles
+            doivent être effectués par un organisme agréé ou une personne
+            qualifiée.
+          </p>
         </div>
-        <a
-          href={`/api/etablissements/${id}/registre/pdf`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
-          Exporter PDF
-        </a>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href="https://www.btry.fr/solution/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Prendre rendez-vous ↗
+          </a>
+          <a
+            href={`/api/etablissements/${id}/registre/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Exporter PDF
+          </a>
+        </div>
       </header>
 
       {/* Filtres */}
@@ -158,11 +177,13 @@ export default async function RegistrePage({
         ) : (
           <EmptyState
             titre="Le registre de sécurité centralise vos rapports de vérification"
-            pourquoi="Chaque fois qu'un technicien vérifie une installation (électricité, extincteurs, hotte…), il vous remet un rapport. L'article L. 4711-5 du Code du travail impose de tenir ces rapports à disposition d'un contrôleur. Le registre numérique vous évite la boîte d'archive."
-            quoiFaire="ouvrez une vérification dans votre calendrier, déposez le fichier (PDF, photo, DOCX) et indiquez le résultat. L'outil met automatiquement à jour la prochaine échéance."
+            pourquoi="Cette plateforme stocke vos rapports — elle ne réalise pas les contrôles. Chaque fois qu'un organisme agréé ou une personne qualifiée vérifie une installation (électricité, extincteurs, hotte…), il vous remet un rapport. L'article L. 4711-5 du Code du travail impose de le tenir à disposition d'un contrôleur. Le registre numérique vous évite la boîte d'archive."
+            quoiFaire="ouvrez une vérification dans votre calendrier, déposez le fichier (PDF, photo, DOCX) et indiquez le résultat. L'outil met automatiquement à jour la prochaine échéance. Pas encore d'expert pour effectuer la vérification ? Prenez rendez-vous."
+            cta="Ouvrir le calendrier"
+            ctaHref={`/etablissements/${id}/calendrier`}
             ctaSecondary={{
-              libelle: "Ouvrir le calendrier",
-              href: `/etablissements/${id}/calendrier`,
+              libelle: "Prendre rendez-vous",
+              href: "https://www.btry.fr/solution/",
             }}
           />
         )
