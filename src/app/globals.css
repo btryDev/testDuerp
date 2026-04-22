@@ -50,6 +50,8 @@
   --color-minium: var(--minium);
   --color-warm: var(--warm);
   --color-warm-soft: var(--warm-soft);
+  --color-accent-vif: var(--accent-vif);
+  --color-accent-vif-soft: var(--accent-vif-soft);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -71,6 +73,8 @@
   --minium: oklch(0.58 0.19 28); /* rouge — alertes uniquement */
   --warm: oklch(0.32 0.12 260); /* navy — accent d'impulsion */
   --warm-soft: oklch(0.94 0.025 260); /* fond navy très pâle */
+  --accent-vif: oklch(0.62 0.18 150); /* vert « conformité » — accent d'app (ADR Direction B) */
+  --accent-vif-soft: oklch(0.94 0.04 150); /* fond pâle vert */
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -117,6 +121,8 @@
   --minium: oklch(0.65 0.18 32);
   --warm: oklch(0.72 0.14 60);
   --warm-soft: oklch(0.3 0.04 60);
+  --accent-vif: oklch(0.72 0.18 150);
+  --accent-vif-soft: oklch(0.3 0.04 150);
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -427,4 +433,72 @@
 .animer-monter-delai-5,
 .animer-monter-delai-6 {
   opacity: 1;
+}
+
+/* =============================================================
+   App shell — dashboard & onboarding (Direction B, HANDOFF.md)
+   ============================================================= */
+
+@layer components {
+  /* Bento — cellules du tableau de bord */
+  .bento-cell {
+    background: var(--paper-elevated);
+    border: 1px solid var(--rule-soft);
+    border-radius: 14px;
+    padding: 1.375rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: border-color 200ms;
+  }
+  .bento-cell:hover {
+    border-color: color-mix(in oklch, var(--rule) 60%, var(--rule-soft));
+  }
+
+  .bento-kicker {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  /* Pills de statut — communes dashboard + plan d'actions */
+  .pill-ok {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    background: var(--accent-vif-soft);
+    color: var(--accent-vif);
+    font-family: var(--font-mono), monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .pill-warn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    background: oklch(0.95 0.04 75);
+    color: oklch(0.48 0.14 60);
+    font-family: var(--font-mono), monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .pill-alerte {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    background: color-mix(in oklch, var(--minium) 12%, transparent);
+    color: var(--minium);
+    font-family: var(--font-mono), monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
 }

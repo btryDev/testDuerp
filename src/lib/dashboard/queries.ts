@@ -13,6 +13,81 @@ import {
 
 const JOUR_MS = 1000 * 60 * 60 * 24;
 
+export type BarMois = {
+  mois: number; // 0-11
+  annee: number;
+  couvert: number;
+  aVenir: number;
+  retard: number;
+};
+
+/**
+ * Agrège les vérifications de l'année civile courante par mois, pour les
+ * barres du dashboard. Utilisé par `BarsObligations`. Scoping par user
+ * via la chaîne etablissement.entreprise.userId.
+ *
+ * Classification :
+ *  - `couvert`  : dateRealisee dans le mois (quel que soit le résultat)
+ *  - `retard`   : statut depassee, ou (a_planifier/planifiee avec datePrevue < aujourd'hui)
+ *  - `aVenir`   : planifiée/a_planifier dans le futur
+ *
+ * On bucket sur `dateRealisee ?? datePrevue` — un rapport réalisé en mai
+ * apparaît bien dans le mois de mai, même si la datePrevue était ailleurs.
+ */
+export async function compterObligationsParMois(
+  etablissementId: string,
+  annee: number = new Date().getFullYear(),
+): Promise<BarMois[]> {
+  const user = await requireUser();
+  const debut = new Date(annee, 0, 1);
+  const fin = new Date(annee + 1, 0, 1);
+
+  const verifs = await prisma.verification.findMany({
+    where: {
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+      OR: [
+        { datePrevue: { gte: debut, lt: fin } },
+        { dateRealisee: { gte: debut, lt: fin } },
+      ],
+    },
+    select: {
+      datePrevue: true,
+      dateRealisee: true,
+      statut: true,
+    },
+  });
+
+  const buckets: BarMois[] = Array.from({ length: 12 }, (_, i) => ({
+    mois: i,
+    annee,
+    couvert: 0,
+    aVenir: 0,
+    retard: 0,
+  }));
+
+  const now = new Date();
+  for (const v of verifs) {
+    const ref = v.dateRealisee ?? v.datePrevue;
+    if (ref.getFullYear() !== annee) continue;
+    const m = ref.getMonth();
+
+    if (v.dateRealisee) {
+      buckets[m].couvert += 1;
+    } else if (
+      v.statut === "depassee" ||
+      ((v.statut === "a_planifier" || v.statut === "planifiee") &&
+        v.datePrevue < now)
+    ) {
+      buckets[m].retard += 1;
+    } else {
+      buckets[m].aVenir += 1;
+    }
+  }
+
+  return buckets;
+}
+
 export type DashboardData = {
   score: Score;
   recommandations: Recommandation[];

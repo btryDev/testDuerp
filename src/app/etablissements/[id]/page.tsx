@@ -1,18 +1,28 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
-import { CreerDuerpButton } from "@/components/duerps/CreerDuerpButton";
-import { SupprimerEtablissementButton } from "@/components/etablissements/SupprimerEtablissementButton";
-import { ScoreConformite } from "@/components/dashboard/ScoreConformite";
-import { PanneauRecommandations } from "@/components/dashboard/PanneauRecommandations";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import { AppTopbar } from "@/components/layout/AppTopbar";
 import {
   OnboardingChecklist,
   type EtapeOnboarding,
 } from "@/components/layout/OnboardingChecklist";
+import { ScoreRing } from "@/components/dashboard/ScoreRing";
+import { KpiCard } from "@/components/dashboard/KpiCard";
+import { BentoCell } from "@/components/dashboard/BentoCell";
+import {
+  BarsObligations,
+  LegendeBarsObligations,
+} from "@/components/dashboard/BarsObligations";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
-import { getDashboardData } from "@/lib/dashboard/queries";
+import {
+  compterObligationsParMois,
+  getDashboardData,
+} from "@/lib/dashboard/queries";
+import { getOptionalUser } from "@/lib/auth/require-user";
 import { prisma } from "@/lib/prisma";
+import type { Recommandation } from "@/lib/dashboard/recommandations";
 
 function regimes(etab: {
   estEtablissementTravail: boolean;
@@ -36,101 +46,20 @@ function regimes(etab: {
   return out;
 }
 
-type IndiceTone = "neutral" | "alert" | "warn" | "ok";
+function formatDate(d: Date): string {
+  return d.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+  });
+}
 
-/**
- * Tuile d'un module / outil (calendrier, registre, plan d'actions, DUERP…).
- * Même rendu visuel pour tous les outils afin de matérialiser la « boîte à
- * outils » : titre, description, métrique clé, indice contextuel si besoin.
- */
-function Outil({
-  numero,
-  titre,
-  description,
-  metrique,
-  indice,
-  href,
-  cta,
-  children,
-}: {
-  numero: string;
-  titre: string;
-  description: string;
-  metrique?: { valeur: string | number; libelle: string };
-  indice?: { libelle: string; tone: IndiceTone };
-  href?: string;
-  cta?: string;
-  children?: React.ReactNode;
-}) {
-  const indiceClass: Record<IndiceTone, string> = {
-    neutral: "border-rule bg-paper-sunk/70 text-muted-foreground",
-    alert: "border-rose-300 bg-rose-50 text-rose-900",
-    warn: "border-amber-300 bg-amber-50 text-amber-900",
-    ok: "border-emerald-300 bg-emerald-50 text-emerald-900",
-  };
-
-  const corps = (
-    <>
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="numero-section text-[0.72rem]">{numero}</span>
-        {href && (
-          <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground transition group-hover:text-ink">
-            {cta ?? "Ouvrir"} →
-          </span>
-        )}
-      </div>
-      <div className="mt-3">
-        <h3 className="text-[1.02rem] font-semibold tracking-[-0.012em]">
-          {titre}
-        </h3>
-        <p className="mt-1.5 text-[0.82rem] leading-relaxed text-muted-foreground">
-          {description}
-        </p>
-      </div>
-      <div className="mt-auto flex items-end justify-between gap-3 border-t border-dashed border-rule/50 pt-4">
-        {metrique ? (
-          <div>
-            <p className="font-mono text-[0.58rem] uppercase tracking-[0.16em] text-muted-foreground">
-              {metrique.libelle}
-            </p>
-            <p className="mt-0.5 text-[1.4rem] font-semibold leading-none tabular-nums">
-              {metrique.valeur}
-            </p>
-          </div>
-        ) : (
-          <div className="text-[0.78rem] text-muted-foreground">{children}</div>
-        )}
-        {indice && (
-          <span
-            className={
-              "inline-flex items-center rounded-full border px-2.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.14em] " +
-              indiceClass[indice.tone]
-            }
-          >
-            {indice.libelle}
-          </span>
-        )}
-      </div>
-    </>
-  );
-
-  const classes =
-    "group flex h-full flex-col rounded-[calc(var(--radius)*1.4)] bg-paper-elevated p-6 shadow-[0_0_0_1px_var(--rule-soft)] transition hover:shadow-[0_0_0_1px_var(--ink)] sm:p-7";
-
-  if (href) {
-    return (
-      <Link
-        href={href}
-        className={
-          classes +
-          " focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--ink)]"
-        }
-      >
-        {corps}
-      </Link>
-    );
-  }
-  return <div className={classes}>{corps}</div>;
+function tonePourReco(
+  kind: Recommandation["kind"],
+): "alerte" | "warn" | "info" {
+  if (kind === "verif_depassee" || kind === "action_en_retard")
+    return "alerte";
+  if (kind === "verif_proche" || kind === "action_proche") return "warn";
+  return "info";
 }
 
 export default async function EtablissementPage({
@@ -142,15 +71,48 @@ export default async function EtablissementPage({
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
-  const regs = regimes(etab);
-  const [equipements, dashboard, nbVerifs, nbRapports] = await Promise.all([
+  const [
+    equipements,
+    dashboard,
+    barsData,
+    nbVerifs,
+    nbRapports,
+    prochainesVerifs,
+    actionsEnCours,
+    rapportsRecents,
+    user,
+  ] = await Promise.all([
     listerEquipementsDeLEtablissement(id),
     getDashboardData(id),
+    compterObligationsParMois(id),
     prisma.verification.count({ where: { etablissementId: id } }),
     prisma.rapportVerification.count({ where: { etablissementId: id } }),
+    prisma.verification.findMany({
+      where: {
+        etablissementId: id,
+        statut: { in: ["a_planifier", "planifiee", "depassee"] },
+      },
+      include: { equipement: true },
+      orderBy: { datePrevue: "asc" },
+      take: 5,
+    }),
+    prisma.action.findMany({
+      where: {
+        etablissementId: id,
+        statut: { in: ["ouverte", "en_cours"] },
+      },
+      orderBy: [{ echeance: "asc" }, { criticite: "desc" }],
+      take: 3,
+    }),
+    prisma.rapportVerification.findMany({
+      where: { etablissementId: id },
+      include: { verification: true },
+      orderBy: { dateRapport: "desc" },
+      take: 4,
+    }),
+    getOptionalUser(),
   ]);
 
-  // Étapes d'onboarding — s'efface une fois toutes les étapes faites
   const etapesOnboarding: EtapeOnboarding[] = [
     {
       id: "etablissement",
@@ -163,7 +125,7 @@ export default async function EtablissementPage({
       id: "equipements",
       titre: "Déclarer vos équipements",
       pourquoi:
-        "Installation électrique, extincteurs, hotte, ascenseur… Ce sont eux qui déclenchent les vérifications périodiques à faire (élec annuel, extincteurs, etc.).",
+        "Installation électrique, extincteurs, hotte, ascenseur… Ce sont eux qui déclenchent les vérifications périodiques à faire.",
       faite: equipements.length > 0,
       href: `/etablissements/${id}/equipements`,
       cta: equipements.length === 0 ? "Commencer la déclaration" : undefined,
@@ -172,7 +134,7 @@ export default async function EtablissementPage({
       id: "calendrier",
       titre: "Consulter votre calendrier de vérifications",
       pourquoi:
-        "Dès que vos équipements sont déclarés, l'outil calcule tout seul les dates des prochaines vérifications obligatoires. Il n'y a rien à lancer — votre rôle, c'est planifier et déposer les rapports.",
+        "Dès que vos équipements sont déclarés, l'outil calcule tout seul les dates des prochaines vérifications obligatoires.",
       faite: nbVerifs > 0,
       href: `/etablissements/${id}/calendrier`,
       cta: nbVerifs === 0 ? "Ouvrir le calendrier" : undefined,
@@ -181,343 +143,498 @@ export default async function EtablissementPage({
       id: "rapport",
       titre: "Déposer un premier rapport de vérification",
       pourquoi:
-        "L'outil stocke vos rapports et rappelle les échéances — il ne réalise pas les vérifications à votre place. Dès que vous recevez un rapport (même ancien), déposez-le : la prochaine échéance se recalcule automatiquement. Besoin d'un expert pour effectuer la vérification ? Prenez rendez-vous sur btry.fr.",
+        "L'outil stocke vos rapports et rappelle les échéances — il ne réalise pas les vérifications à votre place.",
       faite: nbRapports > 0,
       href: `/etablissements/${id}/registre`,
       cta: nbRapports === 0 ? "Ouvrir le registre" : undefined,
     },
   ];
-
   const onboardingFini = etapesOnboarding.every((e) => e.faite);
-  const aEquipements = equipements.length > 0;
 
-  // DUERP : la dernière initiée sert d'accès rapide
+  // Récup'un DUERP existant pour le lien d'entrée
   const duerpDernier = etab.duerps[0] ?? null;
-  const duerpVersion = duerpDernier?.versions[0] ?? null;
 
-  // Formulations des indices et métriques pour les tuiles
+  const recos = dashboard.recommandations.slice(0, 3);
   const verifsEnRetard = dashboard.compteurs.verifsEnRetard;
   const verifsSous30j = dashboard.compteurs.verifsSous30j;
   const actionsACouvrir =
     dashboard.compteurs.actionsOuvertes + dashboard.compteurs.actionsEnCours;
   const actionsEnRetard = dashboard.compteurs.actionsEnRetard;
+  const regs = regimes(etab);
+  const moisCourant = new Date().getMonth();
+
+  const jourDernierRapport = rapportsRecents[0]
+    ? Math.max(
+        0,
+        Math.floor(
+          (Date.now() - rapportsRecents[0].dateRapport.getTime()) /
+            (1000 * 60 * 60 * 24),
+        ),
+      )
+    : null;
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10 sm:px-10">
-      {/* =====================================================
-          1. Fiche d'identité de l'établissement
-          ===================================================== */}
-      <section aria-labelledby="fiche-heading">
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="min-w-0 flex-1">
-            <p className="label-admin">
-              Fiche d&apos;identité · Établissement
-            </p>
-            <h1
-              id="fiche-heading"
-              className="mt-3 text-[1.9rem] font-semibold tracking-[-0.02em] leading-tight"
-            >
-              {etab.raisonDisplay}
-            </h1>
-            <p className="mt-1 text-[0.88rem] text-muted-foreground">
-              Rattaché à{" "}
+    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[248px_1fr]">
+      <AppSidebar
+        etablissement={etab}
+        active="tableau"
+        counts={{
+          equipements: equipements.length,
+          verificationsEnRetard: verifsEnRetard,
+          actions: actionsACouvrir,
+        }}
+        user={user}
+      />
+
+      <div className="flex min-w-0 flex-col">
+        <AppTopbar
+          title="Tableau de bord"
+          subtitle={`${etab.raisonDisplay} · ${etab.adresse}${regs.length > 0 ? " · " + regs.join(" · ") : ""}`}
+          crumbs={[
+            { href: `/entreprises/${etab.entrepriseId}`, label: etab.entreprise.raisonSociale },
+            { label: etab.raisonDisplay },
+          ]}
+          actions={
+            <>
               <Link
-                href={`/entreprises/${etab.entrepriseId}`}
-                className="underline underline-offset-2 hover:text-ink"
+                href={`/etablissements/${id}/modifier`}
+                className={buttonVariants({ variant: "outline", size: "sm" })}
               >
-                {etab.entreprise.raisonSociale}
+                Fiche établissement
               </Link>
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href={`/etablissements/${id}/modifier`}
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              Modifier la fiche
-            </Link>
-            <SupprimerEtablissementButton id={id} />
-          </div>
-        </div>
-
-        {/* Grille de champs — lisible comme un encart administratif */}
-        <dl className="cartouche mt-6 grid grid-cols-1 divide-y divide-dashed divide-rule/50 sm:grid-cols-2 sm:divide-y-0 sm:[&>*:nth-child(even)]:border-l sm:[&>*:nth-child(even)]:border-dashed sm:[&>*:nth-child(even)]:border-rule/50 sm:[&>*:nth-child(n+3)]:border-t sm:[&>*:nth-child(n+3)]:border-dashed sm:[&>*:nth-child(n+3)]:border-rule/50">
-          <div className="px-6 py-4 sm:px-8">
-            <dt className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
-              Adresse du site
-            </dt>
-            <dd className="mt-1 text-[0.95rem]">{etab.adresse}</dd>
-          </div>
-          <div className="px-6 py-4 sm:px-8">
-            <dt className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
-              Effectif sur site
-            </dt>
-            <dd className="mt-1 text-[0.95rem]">
-              {etab.effectifSurSite} salarié
-              {etab.effectifSurSite > 1 ? "s" : ""}
-            </dd>
-          </div>
-          <div className="px-6 py-4 sm:px-8">
-            <dt className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
-              Code NAF
-            </dt>
-            <dd className="mt-1 font-mono text-[0.85rem]">
-              {etab.codeNaf ?? "—"}
-            </dd>
-          </div>
-          <div className="px-6 py-4 sm:px-8">
-            <dt className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
-              Régimes applicables
-            </dt>
-            <dd className="mt-1.5 flex flex-wrap gap-1.5">
-              {regs.length === 0 ? (
-                <span className="text-[0.88rem] text-muted-foreground">—</span>
-              ) : (
-                regs.map((r) => (
-                  <span
-                    key={r}
-                    className="rounded-full border border-rule bg-paper-sunk/60 px-2.5 py-0.5 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted-foreground"
-                  >
-                    {r}
-                  </span>
-                ))
-              )}
-            </dd>
-          </div>
-        </dl>
-      </section>
-
-      <div className="filet-pointille my-10" />
-
-      {/* =====================================================
-          2. Guide de mise en place (tant qu'il n'est pas fini)
-          ===================================================== */}
-      {!onboardingFini && (
-        <>
-          <OnboardingChecklist
-            etapes={etapesOnboarding}
-            etablissementRaison={etab.raisonDisplay}
-          />
-          <div className="filet-pointille my-10" />
-        </>
-      )}
-
-      {/* =====================================================
-          3. État de conformité (score + recommandations)
-          ===================================================== */}
-      {aEquipements && (
-        <>
-          <section aria-labelledby="etat-heading" className="space-y-5">
-            <div>
-              <p className="label-admin">État de conformité</p>
-              <h2
-                id="etat-heading"
-                className="mt-2 text-[1.15rem] font-semibold tracking-[-0.012em]"
+              <Link
+                href={`/api/etablissements/${id}/dossier-conformite/pdf`}
+                className={buttonVariants({ size: "sm" })}
               >
-                Où vous en êtes aujourd&apos;hui
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-              <ScoreConformite score={dashboard.score} />
-              <PanneauRecommandations recommandations={dashboard.recommandations} />
-            </div>
-          </section>
-          <div className="filet-pointille my-10" />
-        </>
-      )}
+                Dossier PDF ↓
+              </Link>
+            </>
+          }
+        />
 
-      {/* =====================================================
-          4. Boîte à outils — les modules de pilotage
-          ===================================================== */}
-      <section aria-labelledby="outils-heading">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="label-admin">Boîte à outils</p>
-            <h2
-              id="outils-heading"
-              className="mt-2 text-[1.15rem] font-semibold tracking-[-0.012em]"
-            >
-              Vos modules de pilotage de la conformité
-            </h2>
-            <p className="mt-1.5 max-w-xl text-[0.85rem] leading-relaxed text-muted-foreground">
-              Chaque module couvre une famille d&apos;obligations. Les
-              compteurs affichés reflètent la situation en temps réel.
-            </p>
-          </div>
-          {aEquipements && (
-            <a
-              href={`/api/etablissements/${id}/dossier-conformite/pdf`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              Dossier de conformité PDF
-            </a>
-          )}
-        </div>
+        <div className="flex flex-col gap-5 px-8 py-6 pb-12">
+          {/* Onboarding checklist — si incomplet */}
+          {!onboardingFini ? (
+            <OnboardingChecklist
+              etapes={etapesOnboarding}
+              etablissementRaison={etab.raisonDisplay}
+            />
+          ) : null}
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Équipements */}
-          <Outil
-            numero="01."
-            titre="Équipements"
-            description="Déclaration des équipements présents (électricité, extincteurs, hotte, ascenseur…). C'est ce qui déclenche les vérifications obligatoires."
-            href={`/etablissements/${id}/equipements`}
-            cta={aEquipements ? "Gérer" : "Déclarer"}
-            metrique={{
-              valeur: equipements.length,
-              libelle: aEquipements
-                ? equipements.length > 1
-                  ? "équipements déclarés"
-                  : "équipement déclaré"
-                : "à déclarer",
-            }}
-            indice={
-              !aEquipements
-                ? { libelle: "À démarrer", tone: "warn" }
-                : undefined
-            }
-          />
-
-          {/* Calendrier */}
-          <Outil
-            numero="02."
-            titre="Calendrier de vérifications"
-            description="Dates des vérifications périodiques obligatoires (art. R4323-22 et suiv., règlement ERP). Généré à partir des équipements."
-            href={`/etablissements/${id}/calendrier`}
-            cta="Ouvrir"
-            metrique={{
-              valeur: verifsEnRetard + verifsSous30j,
-              libelle: "à traiter sous 30 jours",
-            }}
-            indice={
-              verifsEnRetard > 0
-                ? {
-                    libelle: `${verifsEnRetard} en retard`,
-                    tone: "alert",
-                  }
-                : verifsSous30j > 0
-                  ? {
-                      libelle: `${verifsSous30j} sous 30 j`,
-                      tone: "warn",
-                    }
-                  : aEquipements
-                    ? { libelle: "À jour", tone: "ok" }
-                    : { libelle: "En attente", tone: "neutral" }
-            }
-          />
-
-          {/* Registre de sécurité */}
-          <Outil
-            numero="03."
-            titre="Registre de sécurité"
-            description="Stockage horodaté de tous vos rapports de vérification (art. L4711-5). L'outil archive — il ne réalise pas les contrôles. Présentable en 30 s à un inspecteur."
-            href={`/etablissements/${id}/registre`}
-            cta="Ouvrir"
-            metrique={{
-              valeur: nbRapports,
-              libelle:
-                nbRapports > 1
-                  ? "rapports déposés"
-                  : "rapport déposé",
-            }}
-            indice={
-              dashboard.compteurs.verifsRealisees12m > 0
-                ? {
-                    libelle: `${dashboard.compteurs.verifsRealisees12m} sur 12 mois`,
-                    tone: "neutral",
-                  }
-                : undefined
-            }
-          />
-
-          {/* Plan d'actions */}
-          <Outil
-            numero="04."
-            titre="Plan d'actions"
-            description="Actions correctives issues du DUERP ou des rapports. Hiérarchie des mesures de l'art. L4121-2 appliquée."
-            href={`/etablissements/${id}/actions`}
-            cta="Ouvrir"
-            metrique={{
-              valeur: actionsACouvrir,
-              libelle:
-                actionsACouvrir > 1 ? "actions à couvrir" : "action à couvrir",
-            }}
-            indice={
-              actionsEnRetard > 0
-                ? {
-                    libelle: `${actionsEnRetard} en retard`,
-                    tone: "alert",
-                  }
-                : actionsACouvrir === 0 && aEquipements
-                  ? { libelle: "Aucune ouverte", tone: "ok" }
-                  : undefined
-            }
-          />
-
-          {/* DUERP */}
-          {duerpDernier ? (
-            <Outil
-              numero="05."
-              titre="DUERP"
-              description="Document unique d'évaluation des risques professionnels (art. R4121-1). Versionné et conservé 40 ans."
-              href={`/duerp/${duerpDernier.id}`}
-              cta="Ouvrir"
-              metrique={
-                duerpVersion
-                  ? {
-                      valeur: `v${duerpVersion.numero}`,
-                      libelle: `validé le ${duerpVersion.createdAt.toLocaleDateString(
-                        "fr-FR",
-                        {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        },
-                      )}`,
-                    }
-                  : {
-                      valeur: "—",
-                      libelle: "pas encore validé",
-                    }
+          {/* ─── Row 1 : Score + Recos ─────────────── */}
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.1fr_1.3fr]">
+            <BentoCell
+              kicker="Conformité générale"
+              sub={
+                dashboard.duerp.derniereVersionAu
+                  ? `DUERP v${dashboard.duerp.derniereVersionAu.toLocaleDateString("fr-FR")}`
+                  : dashboard.duerp.existe
+                    ? "DUERP en cours"
+                    : "Pas encore de DUERP"
               }
-              indice={
-                !duerpVersion
-                  ? { libelle: "En cours", tone: "warn" }
+            >
+              <div className="flex flex-wrap items-center gap-6">
+                <ScoreRing value={dashboard.score.valeur} />
+                <dl className="flex-1 min-w-[200px] space-y-1.5">
+                  <BrkRow
+                    label="Équipements déclarés"
+                    value={`${equipements.length}`}
+                  />
+                  <BrkRow
+                    label="Vérifications à jour"
+                    value={`${Math.max(0, nbVerifs - verifsEnRetard)} / ${nbVerifs || 0}`}
+                  />
+                  <BrkRow label="Rapports déposés" value={`${nbRapports}`} />
+                  <BrkRow
+                    label="Actions ouvertes"
+                    value={`${actionsACouvrir}`}
+                  />
+                </dl>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {verifsEnRetard > 0 ? (
+                  <span className="pill-alerte">
+                    {verifsEnRetard} en retard
+                  </span>
+                ) : null}
+                {verifsSous30j > 0 ? (
+                  <span className="pill-warn">
+                    {verifsSous30j} sous 30&nbsp;j
+                  </span>
+                ) : null}
+                {nbVerifs - verifsEnRetard - verifsSous30j > 0 ? (
+                  <span className="pill-ok">
+                    {nbVerifs - verifsEnRetard - verifsSous30j} à jour
+                  </span>
+                ) : null}
+              </div>
+            </BentoCell>
+
+            <BentoCell kicker="À faire en priorité" count={recos.length}>
+              {recos.length === 0 ? (
+                <p className="text-[0.88rem] text-muted-foreground">
+                  Aucune action prioritaire pour l&apos;instant — tout est
+                  à jour. ✓
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-2.5">
+                  {recos.map((r, i) => (
+                    <RecoItem key={i} reco={r} />
+                  ))}
+                </ul>
+              )}
+            </BentoCell>
+          </div>
+
+          {/* ─── Row 2 : KPIs ─────────────────────── */}
+          <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+            <KpiCard
+              label="Échéances sous 30 j"
+              value={verifsSous30j + verifsEnRetard}
+              tone={verifsEnRetard > 0 ? "alerte" : verifsSous30j > 0 ? "warn" : "default"}
+            />
+            <KpiCard
+              label="Actions en cours"
+              value={actionsACouvrir}
+              tone={actionsEnRetard > 0 ? "warn" : "default"}
+              trend={
+                actionsEnRetard > 0
+                  ? {
+                      dir: "down",
+                      label: `${actionsEnRetard} en retard`,
+                    }
                   : undefined
               }
             />
-          ) : (
-            <Outil
-              numero="05."
-              titre="DUERP"
-              description="Document unique d'évaluation des risques professionnels (art. R4121-1). Versionné et conservé 40 ans."
-            >
-              <div className="flex w-full items-center justify-between gap-3">
-                <p className="font-mono text-[0.58rem] uppercase tracking-[0.16em] text-muted-foreground">
-                  Aucun DUERP initié
-                </p>
-                <CreerDuerpButton etablissementId={id} variant="outline" />
-              </div>
-            </Outil>
-          )}
-        </div>
+            <KpiCard
+              label="Rapports 12 mois"
+              value={dashboard.compteurs.verifsRealisees12m}
+              tone="ok"
+            />
+            <KpiCard
+              label="Jours depuis dernier rapport"
+              value={jourDernierRapport ?? "—"}
+              tone={
+                jourDernierRapport !== null && jourDernierRapport < 30
+                  ? "ok"
+                  : "default"
+              }
+            />
+          </div>
 
-        {/* Si plusieurs DUERPs coexistent (cas rare), on renvoie vers l'historique de versions */}
-        {etab.duerps.length > 1 && duerpDernier && (
-          <p className="mt-5 text-[0.82rem] text-muted-foreground">
-            {etab.duerps.length} DUERPs coexistent sur cet établissement — la
-            tuile ouvre le plus récent.{" "}
-            <Link
-              href={`/duerp/${duerpDernier.id}/versions`}
-              className="underline underline-offset-2 hover:text-ink"
+          {/* ─── Row 3 : Bars + Prochaines échéances ── */}
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <BentoCell
+              kicker={`Obligations ${new Date().getFullYear()}`}
+              legend={<LegendeBarsObligations />}
             >
-              Voir l&apos;historique des versions →
-            </Link>
-          </p>
-        )}
-      </section>
-    </main>
+              {barsData.every((b) => b.couvert + b.aVenir + b.retard === 0) ? (
+                <EmptyBar>
+                  Le calendrier se remplit dès que vous déclarez vos équipements.
+                </EmptyBar>
+              ) : (
+                <BarsObligations data={barsData} moisCourant={moisCourant} />
+              )}
+            </BentoCell>
+
+            <BentoCell
+              kicker="Prochaines échéances"
+              more={{
+                href: `/etablissements/${id}/calendrier`,
+                label: "Tout voir",
+              }}
+            >
+              {prochainesVerifs.length === 0 ? (
+                <p className="text-[0.88rem] text-muted-foreground">
+                  Aucune vérification planifiée.
+                </p>
+              ) : (
+                <ul className="flex flex-col">
+                  {prochainesVerifs.map((v) => {
+                    const isEnRetard = v.statut === "depassee";
+                    const isA_Planifier =
+                      v.statut === "a_planifier" &&
+                      v.datePrevue < new Date();
+                    const tone = isEnRetard || isA_Planifier ? "alerte" : "ok";
+                    return (
+                      <li
+                        key={v.id}
+                        className="grid grid-cols-[10px_1fr_auto] items-center gap-3 border-b border-dashed border-rule-soft py-3 last:border-b-0"
+                      >
+                        <span
+                          aria-hidden
+                          className="size-2 rounded-full"
+                          style={{
+                            background:
+                              tone === "alerte"
+                                ? "var(--minium)"
+                                : "var(--accent-vif)",
+                          }}
+                        />
+                        <div className="min-w-0">
+                          <p className="truncate text-[0.9rem] font-medium">
+                            {v.libelleObligation}
+                          </p>
+                          <p className="truncate text-[0.74rem] text-muted-foreground">
+                            {v.equipement.libelle}
+                          </p>
+                        </div>
+                        <span
+                          className={
+                            "font-mono text-[0.78rem] " +
+                            (tone === "alerte"
+                              ? "text-[color:var(--minium)]"
+                              : "text-muted-foreground")
+                          }
+                        >
+                          {formatDate(v.datePrevue)}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </BentoCell>
+          </div>
+
+          {/* ─── Row 4 : Actions + Registre ─────────── */}
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <BentoCell
+              kicker="Plan d'actions"
+              sub={
+                actionsACouvrir === 0
+                  ? "Rien à lever"
+                  : `${actionsACouvrir} ouverte${actionsACouvrir > 1 ? "s" : ""}${actionsEnRetard > 0 ? ` · ${actionsEnRetard} en retard` : ""}`
+              }
+              more={
+                actionsEnCours.length > 0
+                  ? {
+                      href: `/etablissements/${id}/actions`,
+                      label: "Plan complet",
+                    }
+                  : undefined
+              }
+            >
+              {actionsEnCours.length === 0 ? (
+                <p className="text-[0.88rem] text-muted-foreground">
+                  Aucune action en cours ✓
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-2.5">
+                  {actionsEnCours.map((a) => {
+                    const enRetard =
+                      a.echeance != null && a.echeance < new Date();
+                    return (
+                      <li
+                        key={a.id}
+                        className="grid grid-cols-[86px_1fr_auto] items-center gap-3 rounded-lg bg-paper-sunk px-3 py-2.5"
+                      >
+                        <span
+                          className={enRetard ? "pill-alerte" : "pill-warn"}
+                        >
+                          {enRetard ? "En retard" : "En cours"}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-[0.88rem] font-medium">
+                            {a.libelle}
+                          </p>
+                          {a.echeance ? (
+                            <p className="truncate text-[0.74rem] text-muted-foreground">
+                              échéance {formatDate(a.echeance)}
+                            </p>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </BentoCell>
+
+            <BentoCell
+              kicker="Registre — dernières entrées"
+              more={{
+                href: `/etablissements/${id}/registre`,
+                label: "Ouvrir",
+              }}
+            >
+              {rapportsRecents.length === 0 ? (
+                <p className="text-[0.88rem] text-muted-foreground">
+                  Aucun rapport déposé pour l&apos;instant.
+                </p>
+              ) : (
+                <table className="w-full border-collapse text-[0.88rem]">
+                  <thead>
+                    <tr className="border-b border-rule-soft text-left font-mono text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground">
+                      <th className="py-2 font-medium">Date</th>
+                      <th className="py-2 font-medium">Document</th>
+                      <th className="py-2 text-right font-medium">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rapportsRecents.map((r) => (
+                      <tr
+                        key={r.id}
+                        className="border-b border-dashed border-rule-soft last:border-b-0"
+                      >
+                        <td className="py-2.5 font-mono text-[0.82rem] text-muted-foreground">
+                          {formatDate(r.dateRapport)}
+                        </td>
+                        <td className="py-2.5 truncate">
+                          {r.verification.libelleObligation}
+                        </td>
+                        <td className="py-2.5 text-right">
+                          <StatutRapportPill resultat={r.resultat} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </BentoCell>
+          </div>
+
+          {/* ─── Row 5 : Équipements grid ─────────── */}
+          <BentoCell
+            kicker={`Équipements déclarés · ${equipements.length}`}
+            more={{
+              href: `/etablissements/${id}/equipements`,
+              label: "Gérer",
+            }}
+          >
+            <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+              {equipements.slice(0, 8).map((eq) => (
+                <Link
+                  key={eq.id}
+                  href={`/etablissements/${id}/equipements`}
+                  className="flex min-h-[88px] flex-col justify-between gap-2 rounded-lg border border-rule-soft bg-paper-sunk p-3.5 transition-all hover:-translate-y-0.5 hover:border-ink"
+                >
+                  <strong className="truncate text-[0.86rem] font-medium">
+                    {eq.libelle}
+                  </strong>
+                  <span className="font-mono text-[0.68rem] text-muted-foreground">
+                    {libelleCategorie(eq.categorie)}
+                  </span>
+                </Link>
+              ))}
+              <Link
+                href={`/etablissements/${id}/equipements/nouveau`}
+                className="flex min-h-[88px] flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-rule bg-transparent p-3.5 text-center text-muted-foreground transition-colors hover:border-[color:var(--accent-vif)] hover:bg-[color:var(--accent-vif-soft)] hover:text-[color:var(--accent-vif)]"
+              >
+                <span className="text-xl leading-none">+</span>
+                <strong className="text-[0.82rem] font-medium">
+                  Ajouter un équipement
+                </strong>
+              </Link>
+            </div>
+          </BentoCell>
+
+          {duerpDernier ? (
+            <BentoCell kicker="DUERP">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[0.95rem] font-medium">
+                    Document Unique d&apos;Évaluation des Risques
+                  </p>
+                  <p className="mt-0.5 text-[0.78rem] text-muted-foreground">
+                    {duerpDernier.versions[0]
+                      ? `v${duerpDernier.versions[0].numero} du ${duerpDernier.versions[0].createdAt.toLocaleDateString("fr-FR")}`
+                      : "En cours — pas encore validé"}
+                  </p>
+                </div>
+                <Link
+                  href={`/duerp/${duerpDernier.id}`}
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  Ouvrir le DUERP →
+                </Link>
+              </div>
+            </BentoCell>
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
+}
+
+/* ─── Sub-components ─────────────────────────────── */
+
+function BrkRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between border-b border-dashed border-rule-soft py-1.5 text-[0.86rem] last:border-b-0">
+      <span className="text-muted-foreground">{label}</span>
+      <strong className="font-semibold tabular-nums">{value}</strong>
+    </div>
+  );
+}
+
+function RecoItem({ reco }: { reco: Recommandation }) {
+  const tone = tonePourReco(reco.kind);
+  const bgClass =
+    tone === "alerte"
+      ? "border-l-[color:var(--minium)] bg-[color:color-mix(in_oklch,var(--minium)_4%,var(--paper-sunk))]"
+      : tone === "warn"
+        ? "border-l-[color:oklch(0.72_0.15_70)] bg-[oklch(0.98_0.03_75)]"
+        : "border-l-[color:var(--accent-vif)] bg-paper-sunk";
+  const dotColor =
+    tone === "alerte"
+      ? "var(--minium)"
+      : tone === "warn"
+        ? "oklch(0.72 0.15 70)"
+        : "var(--accent-vif)";
+  return (
+    <li
+      className={
+        "grid grid-cols-[10px_1fr_auto] items-center gap-3.5 rounded-lg border-l-[3px] px-3.5 py-3 " +
+        bgClass
+      }
+    >
+      <span
+        aria-hidden
+        className="size-2.5 rounded-full"
+        style={{ background: dotColor }}
+      />
+      <div className="min-w-0">
+        <strong className="block truncate text-[0.92rem] font-medium">
+          {reco.titre}
+        </strong>
+        {reco.sousTitre ? (
+          <em className="mt-0.5 block truncate text-[0.76rem] not-italic text-muted-foreground">
+            {reco.sousTitre}
+          </em>
+        ) : null}
+      </div>
+      <Link
+        href={reco.href}
+        className="rounded-md bg-ink px-3 py-1.5 text-[0.78rem] text-paper-elevated transition-colors hover:bg-[color:color-mix(in_oklch,var(--ink)_85%,var(--accent-vif))]"
+      >
+        Ouvrir →
+      </Link>
+    </li>
+  );
+}
+
+function EmptyBar({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-[160px] items-center justify-center rounded-md border border-dashed border-rule-soft bg-paper-sunk/40 p-6 text-center text-[0.86rem] text-muted-foreground">
+      {children}
+    </div>
+  );
+}
+
+function StatutRapportPill({
+  resultat,
+}: {
+  resultat: "conforme" | "observations_mineures" | "ecart_majeur" | "non_verifiable";
+}) {
+  if (resultat === "conforme") return <span className="pill-ok">OK</span>;
+  if (resultat === "observations_mineures")
+    return <span className="pill-warn">Observations</span>;
+  if (resultat === "ecart_majeur")
+    return <span className="pill-alerte">Écart majeur</span>;
+  return <span className="pill-warn">Non vérifiable</span>;
+}
+
+function libelleCategorie(c: string): string {
+  return c.replace(/_/g, " ").toLowerCase();
 }

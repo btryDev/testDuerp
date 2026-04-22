@@ -7,10 +7,9 @@ import {
 } from "@/lib/onboarding/deduction-erp";
 
 /**
- * Étape 4 — Résumé final en langage naturel avant création.
- * Énonce ce que l'outil a compris pour que le dirigeant valide en un
- * coup d'œil. Le lien « Modifier » pour chaque bloc ramène à l'étape
- * concernée.
+ * Étape 3 — Résumé & forecast.
+ * Carte summary des informations saisies + carte forecast « ce qu'on va
+ * générer pour vous », alignée sur le design Direction B.
  */
 export function StepResume({ state }: StepProps) {
   const typeErpLabel =
@@ -21,18 +20,22 @@ export function StepResume({ state }: StepProps) {
     state.classeIgh;
 
   const regimes: string[] = [];
-  if (state.estEtablissementTravail) regimes.push("Établissement de travail");
-  if (state.estERP)
+  if (state.estEtablissementTravail) regimes.push("Travail");
+  if (state.estERP) {
+    const precisions = [
+      state.typeErp ? typeErpLabel : null,
+      state.categorieErp ? `${state.categorieErp.slice(1)}ᵉ cat.` : null,
+    ].filter(Boolean);
     regimes.push(
-      `ERP ${state.typeErp ? `· ${typeErpLabel}` : ""}${
-        state.categorieErp ? ` · ${state.categorieErp.slice(1)}ᵉ cat.` : ""
-      }`,
+      precisions.length > 0 ? `ERP · ${precisions.join(" · ")}` : "ERP",
     );
-  if (state.estIGH)
+  }
+  if (state.estIGH) {
     regimes.push(
-      `IGH ${classeIghLabel ? `· ${classeIghLabel}` : ""}`.trim(),
+      classeIghLabel ? `IGH · ${classeIghLabel}` : "IGH",
     );
-  if (state.estHabitation) regimes.push("Immeuble d'habitation");
+  }
+  if (state.estHabitation) regimes.push("Habitation");
 
   const adresseComplete = [
     state.adresseRue.trim(),
@@ -46,97 +49,116 @@ export function StepResume({ state }: StepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <p className="label-admin mb-2">Étape 3 sur 3 · Confirmation</p>
-        <h2 className="text-[1.6rem] font-semibold tracking-[-0.015em] leading-tight">
-          Tout est prêt, on récapitule.
+        <h2 className="text-[2rem] font-semibold leading-tight tracking-[-0.03em]">
+          Vérification
         </h2>
-        <p className="mt-3 max-w-xl text-[0.88rem] leading-relaxed text-muted-foreground">
-          Vérifiez ce que l&apos;outil a compris. Vous pourrez tout
-          modifier après la création.
+        <p className="mt-3 max-w-[56ch] text-[0.95rem] leading-[1.55] text-muted-foreground">
+          Tout est bon ? En créant l&apos;espace, on génère votre premier
+          établissement et la trame DUERP pré-remplie.
         </p>
       </div>
 
-      {/* Carte « ce que l'outil a compris » */}
-      <section className="cartouche overflow-hidden">
-        <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
-            En une phrase
-          </p>
-          <p className="mt-3 text-[1rem] leading-relaxed">
-            Vous êtes <strong>{state.raisonSociale || "—"}</strong>
-            {state.siret && (
-              <>
-                {" "}
-                <span className="font-mono text-[0.78rem] text-muted-foreground">
-                  (SIRET {state.siret})
-                </span>
-              </>
-            )}
-            . Votre site principal est situé{" "}
-            <strong>{adresseComplete || "—"}</strong> et emploie{" "}
-            <strong>{state.effectifSurSite || "—"}</strong>{" "}
-            {Number(state.effectifSurSite) > 1 ? "salariés" : "salarié"} sur
-            site. Code activité : <strong>{state.codeNaf || "—"}</strong>.
-          </p>
+      {/* Summary card */}
+      <section className="rounded-2xl border border-rule-soft bg-paper-elevated p-6">
+        <div>
+          <strong className="text-[1.2rem] font-semibold tracking-[-0.02em]">
+            {state.raisonSociale || "—"}
+          </strong>
+          {state.siret ? (
+            <em className="mt-1 block font-mono text-[0.82rem] not-italic text-muted-foreground">
+              SIRET {state.siret}
+            </em>
+          ) : null}
         </div>
-
-        <dl className="divide-y divide-dashed divide-rule/50">
-          <FicheLigne label="Raison sociale" valeur={state.raisonSociale} />
-          {state.siret && <FicheLigne label="SIRET" valeur={state.siret} />}
-          <FicheLigne label="Adresse" valeur={adresseComplete} />
-          <FicheLigne label="Code NAF" valeur={state.codeNaf} />
-          <FicheLigne
-            label="Effectif sur site"
-            valeur={String(state.effectifSurSite)}
+        <dl className="mt-5 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+          <SumLigne label="Adresse" valeur={adresseComplete || "—"} />
+          <SumLigne label="Code NAF" valeur={state.codeNaf || "—"} />
+          <SumLigne
+            label="Effectif"
+            valeur={
+              state.effectifSurSite
+                ? `${state.effectifSurSite} salarié${Number(state.effectifSurSite) > 1 ? "s" : ""}`
+                : "—"
+            }
           />
-          <FicheLigne
-            label="Régimes réglementaires"
-            valeur={regimes.join(" · ") || "—"}
+          <SumLignePills
+            label="Régimes"
+            pills={regimes.length > 0 ? regimes : ["—"]}
           />
         </dl>
       </section>
 
-      {/* Ce qu'il se passe au clic */}
-      <section className="cartouche px-6 py-5 sm:px-8">
-        <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
-          Ce que l&apos;outil va faire
-        </p>
-        <ul className="mt-3 space-y-2 text-[0.88rem] leading-relaxed">
-          <li className="flex items-start gap-3">
-            <span className="mt-1.5 inline-block size-1.5 shrink-0 rounded-full bg-ink" />
-            <span>
-              Créer votre espace d&apos;entreprise + votre premier
-              établissement, liés ensemble.
-            </span>
-          </li>
-          <li className="flex items-start gap-3">
-            <span className="mt-1.5 inline-block size-1.5 shrink-0 rounded-full bg-ink" />
-            <span>
-              Vous rediriger vers votre tableau de bord où vous pourrez
-              déclarer vos équipements (étape suivante).
-            </span>
-          </li>
-          <li className="flex items-start gap-3">
-            <span className="mt-1.5 inline-block size-1.5 shrink-0 rounded-full bg-ink" />
-            <span>
-              Préparer la génération automatique de votre calendrier de
-              vérifications réglementaires dès que vous aurez décrit vos
-              équipements.
-            </span>
-          </li>
+      {/* Forecast */}
+      <section className="rounded-2xl border border-[color:color-mix(in_oklch,var(--accent-vif)_20%,transparent)] bg-[color:color-mix(in_oklch,var(--accent-vif)_5%,var(--paper-elevated))] px-6 py-5">
+        <div>
+          <strong className="block text-[1rem] font-medium text-[color:var(--accent-vif)]">
+            Ce qu&apos;on va générer pour vous
+          </strong>
+          <em className="mt-1 block text-[0.82rem] not-italic text-muted-foreground">
+            Dès que vous déclarerez vos équipements, le calendrier des
+            vérifications se remplira automatiquement.
+          </em>
+        </div>
+        <ul className="mt-4 flex flex-col gap-2 text-[0.9rem]">
+          <ForecastLi>
+            Espace entreprise + premier établissement liés
+          </ForecastLi>
+          <ForecastLi>Trame DUERP pré-remplie pour votre secteur</ForecastLi>
+          <ForecastLi>Registre de sécurité horodaté</ForecastLi>
+          <ForecastLi>
+            Modèle de plan d&apos;actions prêt à suivre
+          </ForecastLi>
         </ul>
       </section>
     </div>
   );
 }
 
-function FicheLigne({ label, valeur }: { label: string; valeur: string }) {
+function SumLigne({ label, valeur }: { label: string; valeur: string }) {
   return (
-    <div className="flex items-start justify-between gap-4 px-6 py-3 sm:px-8">
-      <dt className="text-[0.78rem] text-muted-foreground">{label}</dt>
-      <dd className="max-w-[60%] text-right text-[0.88rem] font-medium">
-        {valeur || "—"}
+    <div className="border-t border-dashed border-rule-soft pt-4">
+      <dt className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="mt-1.5 text-[0.92rem]">{valeur}</dd>
+    </div>
+  );
+}
+
+function SumLignePills({
+  label,
+  pills,
+}: {
+  label: string;
+  pills: string[];
+}) {
+  return (
+    <div className="border-t border-dashed border-rule-soft pt-4">
+      <dt className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="mt-1.5 flex flex-wrap gap-1.5">
+        {pills.map((p, i) => (
+          <span
+            key={`${p}-${i}`}
+            className="rounded-full bg-[color:var(--accent-vif-soft)] px-2.5 py-0.5 text-[0.76rem] font-medium text-[color:var(--accent-vif)]"
+          >
+            {p}
+          </span>
+        ))}
       </dd>
     </div>
+  );
+}
+
+function ForecastLi({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex items-center gap-2.5">
+      <span
+        aria-hidden
+        className="inline-block size-1.5 rounded-full bg-[color:var(--accent-vif)]"
+      />
+      {children}
+    </li>
   );
 }
