@@ -15,7 +15,6 @@ import {
   Compass,
   Settings,
   HelpCircle,
-  Building2,
   LogOut,
 } from "lucide-react";
 import { signOutAction } from "@/lib/auth/actions";
@@ -133,20 +132,16 @@ export function AppSidebar({
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
           Établissement
         </p>
-        <p className="mt-1.5 truncate text-[0.95rem] font-semibold tracking-[-0.01em]">
+        <Link
+          href={`/etablissements/${etablissement.id}/modifier`}
+          className="mt-1.5 block truncate text-[0.95rem] font-semibold tracking-[-0.01em] hover:underline"
+        >
           {etablissement.raisonDisplay}
-        </p>
+        </Link>
         <p className="mt-0.5 truncate text-[0.76rem] text-muted-foreground">
           {ville} · {etablissement.effectifSurSite} salarié
           {etablissement.effectifSurSite > 1 ? "s" : ""}
         </p>
-        <Link
-          href={`/entreprises/${etablissement.entrepriseId}`}
-          className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md border border-rule bg-transparent px-2.5 py-1.5 text-[0.74rem] transition-colors hover:border-ink"
-        >
-          <Building2 aria-hidden className="size-3" />
-          Changer
-        </Link>
       </div>
 
       {/* Nav */}

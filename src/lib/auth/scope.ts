@@ -5,7 +5,7 @@
 
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "./require-user";
+import { getOptionalUser, requireUser } from "./require-user";
 
 /**
  * Récupère une entreprise appartenant au user connecté, ou 404.
@@ -77,4 +77,32 @@ export async function assertEntrepriseOwnership(entrepriseId: string) {
   });
   if (!exists) notFound();
   return user;
+}
+
+/**
+ * Invariant produit : 1 user → 1 entreprise → 1 établissement.
+ * Retourne l'établissement unique du user connecté, ou `null` si le
+ * parcours d'onboarding n'a pas encore été complété.
+ *
+ * Utilisé par les routes multi-entreprises pour rediriger vers le
+ * dashboard unique, et par les pages publiques pour savoir si l'user
+ * doit aller sur /onboarding ou sur son dashboard.
+ *
+ * Version "optional" : ne déclenche pas de redirect vers /login — à
+ * combiner avec `getOptionalUser()`. Utiliser `requireUserEtablissement`
+ * pour forcer le login.
+ */
+export async function getOptionalUserEtablissement(): Promise<{
+  id: string;
+  raisonDisplay: string;
+  entrepriseId: string;
+} | null> {
+  const user = await getOptionalUser();
+  if (!user) return null;
+
+  return prisma.etablissement.findFirst({
+    where: { entreprise: { userId: user.id } },
+    orderBy: { createdAt: "asc" },
+    select: { id: true, raisonDisplay: true, entrepriseId: true },
+  });
 }

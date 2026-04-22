@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
+import { getOptionalUserEtablissement } from "@/lib/auth/scope";
 import { onboardingSchema } from "./schema";
 
 /**
@@ -32,6 +33,12 @@ export async function finaliserOnboarding(
   formData: FormData,
 ): Promise<OnboardingActionState> {
   const user = await requireUser();
+
+  // 1 user = 1 entreprise = 1 établissement (invariant produit).
+  // Si l'utilisateur a déjà un établissement, on ne refait pas
+  // l'onboarding : retour direct au dashboard.
+  const existant = await getOptionalUserEtablissement();
+  if (existant) redirect(`/etablissements/${existant.id}`);
   // On lit les champs un à un — permet de convertir checkboxes (HTML
   // ne soumet "on" que si la case est cochée) en vrais booléens.
   const raw = Object.fromEntries(formData);

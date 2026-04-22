@@ -47,6 +47,15 @@ export async function creerEtablissement(
   formData: FormData,
 ): Promise<EtablissementActionState> {
   await assertEntrepriseOwnership(entrepriseId);
+
+  // 1 entreprise = 1 établissement : si un établissement existe déjà
+  // pour cette entreprise, on redirige au lieu d'en créer un second.
+  const dejaExistant = await prisma.etablissement.findFirst({
+    where: { entrepriseId },
+    select: { id: true },
+  });
+  if (dejaExistant) redirect(`/etablissements/${dejaExistant.id}`);
+
   const parsed = etablissementSchema.safeParse(normaliserFormData(formData));
   if (!parsed.success) {
     return {

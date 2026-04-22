@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { getOptionalUser } from "@/lib/auth/require-user";
+import { getOptionalUserEtablissement } from "@/lib/auth/scope";
 import { signOutAction } from "@/lib/auth/actions";
 
 /**
@@ -11,6 +12,9 @@ import { signOutAction } from "@/lib/auth/actions";
  */
 export async function AppHeader() {
   const user = await getOptionalUser();
+  const etab = user ? await getOptionalUserEtablissement() : null;
+  const dashboardHref = etab ? `/etablissements/${etab.id}` : "/onboarding";
+  const dashboardLabel = etab ? "Mon dossier" : "Commencer";
 
   return (
     <header className="sticky top-0 z-30 border-b border-dashed border-rule/60 bg-paper/95 backdrop-blur">
@@ -33,10 +37,10 @@ export async function AppHeader() {
           {user ? (
             <>
               <Link
-                href="/entreprises"
+                href={dashboardHref}
                 className="font-mono text-[0.66rem] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-ink"
               >
-                Mes entreprises →
+                {dashboardLabel} →
               </Link>
               <span
                 className="hidden max-w-[220px] truncate font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground sm:inline"

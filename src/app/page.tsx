@@ -1,14 +1,26 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { getOptionalUser } from "@/lib/auth/require-user";
+import { getOptionalUserEtablissement } from "@/lib/auth/scope";
 
 export default async function Home() {
   const user = await getOptionalUser();
+  const etab = user ? await getOptionalUserEtablissement() : null;
   // Quand l'utilisateur n'est pas connecté, le CTA principal l'envoie sur
   // /signup : la création d'un dossier nécessite un compte (ADR-005), le
   // middleware redirigerait de toute façon /onboarding vers /login.
-  const ctaHref = user ? "/entreprises" : "/signup";
-  const ctaLabel = user ? "Reprendre mon dossier" : "Créer un compte";
+  // 1 user = 1 dossier : quand il existe déjà, on pointe direct dessus ;
+  // sinon, on aiguille vers /onboarding.
+  const ctaHref = !user
+    ? "/signup"
+    : etab
+      ? `/etablissements/${etab.id}`
+      : "/onboarding";
+  const ctaLabel = !user
+    ? "Créer un compte"
+    : etab
+      ? "Reprendre mon dossier"
+      : "Terminer la mise en place";
 
   return (
     <main>

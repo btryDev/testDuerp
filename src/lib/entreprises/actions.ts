@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
-import { assertEntrepriseOwnership } from "@/lib/auth/scope";
+import {
+  assertEntrepriseOwnership,
+  getOptionalUserEtablissement,
+} from "@/lib/auth/scope";
 import { entrepriseSchema } from "./schema";
 
 export type ActionState =
@@ -17,6 +20,12 @@ export async function creerEntreprise(
   formData: FormData,
 ): Promise<ActionState> {
   const user = await requireUser();
+
+  // 1 user = 1 entreprise : si une entreprise existe déjà pour ce user,
+  // on ne la duplique pas — retour sur le dashboard de l'établissement.
+  const existant = await getOptionalUserEtablissement();
+  if (existant) redirect(`/etablissements/${existant.id}`);
+
   const raw = Object.fromEntries(formData);
   const parsed = entrepriseSchema.safeParse(raw);
 

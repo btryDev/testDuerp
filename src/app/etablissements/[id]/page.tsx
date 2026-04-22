@@ -186,10 +186,6 @@ export default async function EtablissementPage({
         <AppTopbar
           title="Tableau de bord"
           subtitle={`${etab.raisonDisplay} · ${etab.adresse}${regs.length > 0 ? " · " + regs.join(" · ") : ""}`}
-          crumbs={[
-            { href: `/entreprises/${etab.entrepriseId}`, label: etab.entreprise.raisonSociale },
-            { label: etab.raisonDisplay },
-          ]}
           actions={
             <>
               <Link
