@@ -194,11 +194,39 @@ function pastillePrincipale(stats: {
   return null;
 }
 
+function LegendeStatut() {
+  return (
+    <span className="flex flex-wrap items-center gap-3 text-[0.7rem] text-muted-foreground">
+      <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em]">
+        Statut
+      </span>
+      <LegendeItem color="var(--minium)" label="Retard" />
+      <LegendeItem color="oklch(0.72 0.15 70)" label="À planifier / à venir" />
+      <LegendeItem color="var(--accent-vif)" label="À jour" />
+      <LegendeItem color="var(--rule)" label="Aucune vérif" />
+    </span>
+  );
+}
+
+function LegendeItem({ color, label }: { color: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span
+        aria-hidden
+        className="inline-block size-2 rounded-full"
+        style={{ background: color }}
+      />
+      {label}
+    </span>
+  );
+}
+
 export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
   const { equipements, etablissementId } = bundle;
   return (
     <BentoCell
       kicker={`Équipements déclarés · ${equipements.length}`}
+      legend={<LegendeStatut />}
       more={{
         href: `/etablissements/${etablissementId}/equipements`,
         label: "Gérer",
