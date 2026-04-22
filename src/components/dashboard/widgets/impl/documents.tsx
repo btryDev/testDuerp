@@ -3,8 +3,11 @@
 // Widget « Vos documents » — hub consolidé.
 // Une ligne par document (DUERP, Registre, Plan d'actions, Dossier
 // consolidé). Chaque ligne affiche un chip « à faire » contextuel
-// (si pertinent) + bouton Voir + bouton Télécharger.
+// (si pertinent) + bouton Voir + bouton Télécharger. Si le DUERP
+// n'existe pas encore, un bouton « Commencer → » déclenche la
+// création via la server action `creerDuerp`.
 
+import { useTransition } from "react";
 import Link from "next/link";
 import {
   Download,
@@ -15,6 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { BentoCell } from "@/components/dashboard/BentoCell";
+import { creerDuerp } from "@/lib/duerps/actions";
 import type { DashboardBundle } from "../types";
 
 type Ligne = {
@@ -24,6 +28,12 @@ type Ligne = {
   voirHref?: string;
   telechargerHref?: string;
   aFaire?: { libelle: string; tone: "warn" | "alerte" | "ok" };
+  /** CTA primaire de substitution quand l'entité n'existe pas encore
+   *  (ex. DUERP pas initié). Rendu en priorité sur Voir/Télécharger. */
+  commencer?: {
+    libelle: string;
+    onStart: () => Promise<void>;
+  };
 };
 
 export function WidgetDocuments({ bundle }: { bundle: DashboardBundle }) {
@@ -39,16 +49,23 @@ export function WidgetDocuments({ bundle }: { bundle: DashboardBundle }) {
         ? duerpDernier.versions[0]
           ? `v${duerpDernier.versions[0].numero} du ${duerpDernier.versions[0].createdAt.toLocaleDateString("fr-FR")}`
           : "en cours — pas encore validé"
-        : "pas encore initié",
+        : "pas encore initié — à faire",
       Icon: FileCheck2,
       voirHref: duerpDernier ? `/duerp/${duerpDernier.id}` : undefined,
       telechargerHref: duerpDernier
         ? `/duerp/${duerpDernier.id}/pdf/preview`
         : undefined,
-      aFaire:
-        !dashboard.duerp.estAJour && dashboard.duerp.existe
+      aFaire: duerpDernier
+        ? !dashboard.duerp.estAJour && dashboard.duerp.existe
           ? { libelle: "À mettre à jour", tone: "warn" }
-          : undefined,
+          : undefined
+        : { libelle: "À faire", tone: "alerte" },
+      commencer: duerpDernier
+        ? undefined
+        : {
+            libelle: "Commencer",
+            onStart: () => creerDuerp(etablissementId),
+          },
     },
     {
       titre: "Registre de sécurité",
@@ -102,7 +119,9 @@ export function WidgetDocuments({ bundle }: { bundle: DashboardBundle }) {
 }
 
 function LigneDoc({ ligne }: { ligne: Ligne }) {
-  const { titre, meta, Icon, voirHref, telechargerHref, aFaire } = ligne;
+  const { titre, meta, Icon, voirHref, telechargerHref, aFaire, commencer } =
+    ligne;
+  const [pending, startTransition] = useTransition();
 
   return (
     <li className="grid grid-cols-[40px_1fr_auto] items-center gap-4 border-b border-dashed border-rule-soft py-3.5 last:border-b-0">
@@ -132,6 +151,20 @@ function LigneDoc({ ligne }: { ligne: Ligne }) {
           >
             {aFaire.libelle}
           </span>
+        ) : null}
+        {commencer ? (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => {
+              startTransition(async () => {
+                await commencer.onStart();
+              });
+            }}
+            className="inline-flex items-center gap-1 rounded-md bg-[color:var(--accent-vif)] px-3 py-1.5 text-[0.78rem] font-medium text-[color:var(--paper-elevated)] transition-[transform,box-shadow] hover:-translate-y-px hover:shadow-[0_8px_20px_-8px_color-mix(in_oklch,var(--accent-vif)_60%,transparent)] disabled:opacity-60"
+          >
+            {pending ? "…" : `${commencer.libelle} →`}
+          </button>
         ) : null}
         {voirHref ? (
           <Link
