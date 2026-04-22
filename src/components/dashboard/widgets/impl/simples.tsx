@@ -198,12 +198,12 @@ function LegendeStatut() {
   return (
     <span className="flex flex-wrap items-center gap-3 text-[0.7rem] text-muted-foreground">
       <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em]">
-        Statut
+        Contrôles
       </span>
-      <LegendeItem color="var(--minium)" label="Retard" />
-      <LegendeItem color="oklch(0.72 0.15 70)" label="À planifier / à venir" />
+      <LegendeItem color="var(--minium)" label="En retard" />
+      <LegendeItem color="oklch(0.72 0.15 70)" label="À planifier" />
       <LegendeItem color="var(--accent-vif)" label="À jour" />
-      <LegendeItem color="var(--rule)" label="Aucune vérif" />
+      <LegendeItem color="var(--rule)" label="Aucun" />
     </span>
   );
 }
