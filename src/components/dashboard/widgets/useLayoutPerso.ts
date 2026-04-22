@@ -154,20 +154,11 @@ export function useLayoutPerso(etablissementId: string) {
     [],
   );
 
-  const deplacer = useCallback(
-    (widgetId: WidgetId, direction: "up" | "down") => {
-      setLayout((l) => {
-        const idx = l.items.findIndex((it) => it.widgetId === widgetId);
-        if (idx < 0) return l;
-        const cible = direction === "up" ? idx - 1 : idx + 1;
-        if (cible < 0 || cible >= l.items.length) return l;
-        const items = [...l.items];
-        [items[idx], items[cible]] = [items[cible], items[idx]];
-        return { ...l, items };
-      });
-    },
-    [],
-  );
+  /** Remplace l'ordre des items par l'array fourni (typiquement
+   *  retourné par @dnd-kit `arrayMove`). */
+  const reordonner = useCallback((items: LayoutItem[]) => {
+    setLayout((l) => ({ ...l, items }));
+  }, []);
 
   const reinitialiser = useCallback(() => {
     setLayout({ version: SCHEMA_VERSION, items: layoutParDefaut() });
@@ -179,7 +170,7 @@ export function useLayoutPerso(etablissementId: string) {
     ajouter,
     retirer,
     changerVariant,
-    deplacer,
+    reordonner,
     reinitialiser,
   };
 }
