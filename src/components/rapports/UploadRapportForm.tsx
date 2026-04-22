@@ -33,7 +33,7 @@ export function UploadRapportForm({ action, labelAnnuler }: Props) {
   const tailleMaxMo = Math.round(TAILLE_MAX_OCTETS / 1024 / 1024);
 
   return (
-    <form action={formAction} className="space-y-6" encType="multipart/form-data">
+    <form action={formAction} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="fichier">
           Fichier du rapport *
