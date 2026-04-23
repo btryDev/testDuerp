@@ -165,10 +165,10 @@ export default async function SynthesePage({
             )}
             {synthese.nbAlertesSousCotation > 0 && (
               <AlerteItem
-                intitule={`${synthese.nbAlertesSousCotation} cotation${
+                intitule={`${synthese.nbAlertesSousCotation} risque${
                   synthese.nbAlertesSousCotation > 1 ? "s" : ""
-                } inférieure${synthese.nbAlertesSousCotation > 1 ? "s" : ""} à la valeur indicative par défaut`}
-                detail="Valeur basée sur les statistiques sectorielles INRS — à vérifier ou justifier."
+                } avec une gravité ou une probabilité en dessous du repère par défaut`}
+                detail="Repère indicatif (sans valeur réglementaire) — à vérifier ou justifier si votre situation le permet."
                 ton="alerte"
               />
             )}

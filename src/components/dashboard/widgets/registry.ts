@@ -2,6 +2,7 @@
 // Chaque entrée : id stable, taille, variants, composant de rendu,
 // statut par défaut (inclus ou masqué).
 
+import { WidgetEtablissement } from "./impl/etablissement";
 import { WidgetScore } from "./impl/score";
 import {
   WidgetKpiEnRetard,
@@ -35,6 +36,17 @@ import { WidgetMeteo } from "./impl/meteo";
 import type { LayoutItem, WidgetDefinition, WidgetId } from "./types";
 
 export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
+  etablissement: {
+    id: "etablissement",
+    titre: "Identité établissement",
+    description:
+      "Carte d'identité de l'établissement — raison, adresse, effectif, NAF/SIRET, régimes, avec un CTA vers un préventeur. Widget obligatoire, non retirable.",
+    taille: "medium",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: WidgetEtablissement,
+    obligatoire: true,
+  },
   score: {
     id: "score",
     titre: "Score de conformité",
@@ -317,6 +329,7 @@ export function variantValide(
  *   ...
  */
 const ORDRE_DEFAUT: WidgetId[] = [
+  "etablissement",
   "score",
   "indicateurs",
   "calendrier-type",

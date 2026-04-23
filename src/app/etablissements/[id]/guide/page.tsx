@@ -36,10 +36,10 @@ export default async function GuidePage({
   if (!etab) notFound();
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[248px_1fr]">
+    <div className="grid min-h-screen grid-cols-1 lg:h-screen lg:grid-cols-[248px_1fr] lg:overflow-hidden">
       <AppSidebar etablissement={etab} active="guide" user={user} />
 
-      <div className="flex min-w-0 flex-col">
+      <div className="flex min-w-0 flex-col lg:overflow-y-auto">
         <AppTopbar
           title="Comprendre vos obligations"
           subtitle="Ce que la loi attend d'un employeur, traduit simplement. La plateforme vous aide à tenir le fil — elle ne certifie pas votre conformité."

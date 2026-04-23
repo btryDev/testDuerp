@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { tousRisquesConnus } from "@/lib/referentiels";
-import type { TypeMesure } from "@/lib/referentiels/types";
 import { statutUIVersAction } from "./mapping";
 
 /**
@@ -199,5 +198,3 @@ export async function supprimerMesure(mesureId: string): Promise<void> {
   const m = await prisma.action.delete({ where: { id: mesureId } });
   if (m.risqueId) await revalidateMesure(m.risqueId);
 }
-
-export type { TypeMesure };

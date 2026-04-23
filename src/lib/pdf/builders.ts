@@ -67,8 +67,12 @@ export async function construirePlanActionsData(
   });
   if (!etab) return null;
 
+  // Le PDF Plan d'actions documente ce qui reste à faire à la date
+  // d'édition (cf. mentions légales : « actions correctives en cours »).
+  // On exclut donc les levées/abandons de la table — les compteurs de
+  // levées restent exposés dans la synthèse pour donner de la visibilité.
   const [actions, compteurs] = await Promise.all([
-    listerActions(etablissementId),
+    listerActions(etablissementId, { enCoursSeulement: true }),
     compterActions(etablissementId),
   ]);
 
@@ -94,7 +98,7 @@ export async function construirePlanActionsData(
     genereLe: new Date(),
     totalOuvertes: compteurs.ouvertes,
     totalEnCours: compteurs.enCours,
-    totalLevees: actions.filter((a) => a.statut === "levee").length,
+    totalLevees: compteurs.leveesRecemment,
     actions: lignes,
   };
 }

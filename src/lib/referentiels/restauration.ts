@@ -63,7 +63,6 @@ export const restauration: Referentiel = {
       unitesAssociees: ["reception", "stockage", "production", "service-salle", "plonge"],
       graviteParDefaut: 2,
       probabiliteParDefaut: 4,
-      criticiteReferenceSecteur: 8,
       mesuresRecommandees: [
         {
           id: "resto-sol-antiderapant",
@@ -105,7 +104,6 @@ export const restauration: Referentiel = {
       unitesAssociees: ["production", "plonge"],
       graviteParDefaut: 2,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 6,
       mesuresRecommandees: [
         {
           id: "resto-machine-protec",
@@ -144,7 +142,6 @@ export const restauration: Referentiel = {
       unitesAssociees: ["production"],
       graviteParDefaut: 3,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 6,
       mesuresRecommandees: [
         {
           id: "resto-friteuse-implant",
@@ -180,7 +177,6 @@ export const restauration: Referentiel = {
       unitesAssociees: ["reception", "stockage", "production", "service-salle", "plonge"],
       graviteParDefaut: 2,
       probabiliteParDefaut: 4,
-      criticiteReferenceSecteur: 6,
       mesuresRecommandees: [
         {
           id: "resto-aides-manut",
@@ -220,7 +216,6 @@ export const restauration: Referentiel = {
       unitesAssociees: ["stockage", "production"],
       graviteParDefaut: 3,
       probabiliteParDefaut: 2,
-      criticiteReferenceSecteur: 4,
       mesuresRecommandees: [
         {
           id: "resto-escabeau",
@@ -248,7 +243,6 @@ export const restauration: Referentiel = {
       unitesAssociees: ["production"],
       graviteParDefaut: 4,
       probabiliteParDefaut: 2,
-      criticiteReferenceSecteur: 6,
       mesuresRecommandees: [
         {
           id: "resto-hotte",
@@ -284,7 +278,6 @@ export const restauration: Referentiel = {
       unitesAssociees: ["production", "plonge", "stockage"],
       graviteParDefaut: 4,
       probabiliteParDefaut: 1,
-      criticiteReferenceSecteur: 4,
       mesuresRecommandees: [
         {
           id: "resto-controle-elec",
@@ -306,7 +299,6 @@ export const restauration: Referentiel = {
       unitesAssociees: ["plonge", "production", "service-salle", "stockage"],
       graviteParDefaut: 3,
       probabiliteParDefaut: 2,
-      criticiteReferenceSecteur: 4,
       mesuresRecommandees: [
         {
           id: "resto-substitution",
@@ -339,7 +331,6 @@ export const restauration: Referentiel = {
       unitesAssociees: ["production", "stockage"],
       graviteParDefaut: 2,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 4,
       mesuresRecommandees: [
         {
           id: "resto-vmc",
@@ -375,7 +366,6 @@ export const restauration: Referentiel = {
       unitesAssociees: ["production", "service-salle"],
       graviteParDefaut: 3,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 6,
       mesuresRecommandees: [
         {
           id: "resto-organisation",

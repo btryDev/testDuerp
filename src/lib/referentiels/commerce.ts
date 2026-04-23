@@ -74,7 +74,6 @@ export const commerce: Referentiel = {
       unitesAssociees: ["com-reception-stockage", "com-mise-rayon"],
       graviteParDefaut: 3,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 6,
       mesuresRecommandees: [
         {
           id: "com-aides-manut",
@@ -113,7 +112,6 @@ export const commerce: Referentiel = {
       ],
       graviteParDefaut: 2,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 4,
       mesuresRecommandees: [
         {
           id: "com-allees",
@@ -142,7 +140,6 @@ export const commerce: Referentiel = {
       unitesAssociees: ["com-reception-stockage", "com-mise-rayon"],
       graviteParDefaut: 3,
       probabiliteParDefaut: 2,
-      criticiteReferenceSecteur: 4,
       mesuresRecommandees: [
         {
           id: "com-marchepied-norme",
@@ -167,7 +164,6 @@ export const commerce: Referentiel = {
       unitesAssociees: ["com-vente-caisse", "com-locaux"],
       graviteParDefaut: 4,
       probabiliteParDefaut: 2,
-      criticiteReferenceSecteur: 6,
       mesuresRecommandees: [
         {
           id: "com-coffre-differe",
@@ -203,7 +199,6 @@ export const commerce: Referentiel = {
       unitesAssociees: ["com-vente-caisse"],
       graviteParDefaut: 2,
       probabiliteParDefaut: 4,
-      criticiteReferenceSecteur: 6,
       mesuresRecommandees: [
         {
           id: "com-siege-caisse",
@@ -232,7 +227,6 @@ export const commerce: Referentiel = {
       unitesAssociees: ["com-reception-stockage", "com-mise-rayon"],
       graviteParDefaut: 2,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 4,
       mesuresRecommandees: [
         {
           id: "com-cutter-securite",
@@ -255,7 +249,6 @@ export const commerce: Referentiel = {
       unitesAssociees: ["com-locaux", "com-reception-stockage"],
       graviteParDefaut: 2,
       probabiliteParDefaut: 2,
-      criticiteReferenceSecteur: 3,
       mesuresRecommandees: [
         {
           id: "com-substitution-chim",
@@ -283,7 +276,6 @@ export const commerce: Referentiel = {
       unitesAssociees: ["com-vente-caisse", "com-locaux"],
       graviteParDefaut: 1,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 3,
       mesuresRecommandees: [
         {
           id: "com-niveau-sonore",

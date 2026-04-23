@@ -41,7 +41,10 @@ export default async function PlanActionsPage({
   if (!etab) notFound();
 
   const origineFiltre = ORIGINES_UI.find((o) => o.key === origine)?.key;
-  const enCoursSeulement = enCours === "1";
+  // Défaut : plan d'actions = ce qu'il reste à faire (ouverte/en_cours).
+  // L'utilisateur peut passer `?enCours=0` pour inclure les levées/abandons
+  // dans une vue audit (même route, cf. toggle ci-dessous).
+  const enCoursSeulement = enCours !== "0";
 
   const [actions, compteurs] = await Promise.all([
     listerActions(id, {
@@ -61,7 +64,10 @@ export default async function PlanActionsPage({
     const p = new URLSearchParams();
     const o = over.origine ?? origineFiltre;
     if (o) p.set("origine", o);
-    if (over.enCours ?? (enCoursSeulement ? "1" : undefined)) p.set("enCours", "1");
+    // L'état "en cours seulement" est le défaut implicite (pas de param).
+    // Seul le mode "tout afficher" est explicite via ?enCours=0.
+    const e = over.enCours ?? (enCoursSeulement ? undefined : "0");
+    if (e !== undefined) p.set("enCours", e);
     const q = p.toString();
     return q ? `${baseHref}?${q}` : baseHref;
   };
@@ -160,28 +166,43 @@ export default async function PlanActionsPage({
         <Link
           href={
             enCoursSeulement
-              ? makeHref({ enCours: "" }).replace(/&?enCours=1/, "")
-              : makeHref({ enCours: "1" })
+              ? makeHref({ enCours: "0" }) // basculer vers « tout afficher »
+              : makeHref({ enCours: "" }) // retour au défaut
           }
           className={
             "ml-4 rounded-full border px-3 py-1 text-[0.78rem] " +
             (enCoursSeulement
-              ? "border-amber-600 bg-amber-100 text-amber-900"
-              : "border-rule bg-paper-sunk/40 text-muted-foreground hover:border-ink")
+              ? "border-rule bg-paper-sunk/40 text-muted-foreground hover:border-ink"
+              : "border-amber-600 bg-amber-100 text-amber-900")
           }
         >
-          {enCoursSeulement ? "✓ " : ""}En cours seulement
+          {enCoursSeulement ? "Inclure levées / abandons" : "✓ Toutes (levées incluses)"}
         </Link>
       </section>
 
       <div className="filet-pointille my-10" />
 
       {actions.length === 0 ? (
-        origineFiltre || enCoursSeulement ? (
+        origineFiltre ? (
           <div className="cartouche px-6 py-10 sm:px-8">
             <p className="text-[0.9rem] text-muted-foreground">
-              Aucune action ne correspond à ces filtres — essayez de les
-              retirer.
+              Aucune action ne correspond à ce filtre — retirez-le pour
+              revoir tout le plan.
+            </p>
+          </div>
+        ) : enCoursSeulement && compteurs.leveesRecemment > 0 ? (
+          <div className="cartouche px-6 py-10 sm:px-8">
+            <p className="text-[0.9rem] text-muted-foreground">
+              Aucune action à couvrir actuellement.{" "}
+              <Link
+                href={makeHref({ enCours: "0" })}
+                className="text-ink underline decoration-rule decoration-dotted underline-offset-[3px] hover:decoration-ink"
+              >
+                Voir aussi les {compteurs.leveesRecemment} levée
+                {compteurs.leveesRecemment > 1 ? "s" : ""} récente
+                {compteurs.leveesRecemment > 1 ? "s" : ""}
+              </Link>
+              .
             </p>
           </div>
         ) : (

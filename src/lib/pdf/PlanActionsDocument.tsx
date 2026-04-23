@@ -31,6 +31,7 @@ export type PlanActionsData = {
   genereLe: Date;
   totalOuvertes: number;
   totalEnCours: number;
+  /** Nombre d'actions levées sur les 30 derniers jours. */
   totalLevees: number;
   actions: LignePlanActions[];
 };
@@ -68,7 +69,7 @@ export function PlanActionsDocument({ data }: { data: PlanActionsData }) {
           <View style={{ flexDirection: "row", gap: 12 }}>
             <Text>Ouvertes : {data.totalOuvertes}</Text>
             <Text>En cours : {data.totalEnCours}</Text>
-            <Text>Levées : {data.totalLevees}</Text>
+            <Text>Levées (30 j) : {data.totalLevees}</Text>
           </View>
         </View>
 

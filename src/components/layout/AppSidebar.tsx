@@ -116,7 +116,7 @@ export function AppSidebar({
         {
           id: "duerp",
           label: "DUERP",
-          href: `/etablissements/${etablissement.id}`,
+          href: `/etablissements/${etablissement.id}/duerp`,
           Icon: FileCheck2,
         },
         {
@@ -146,12 +146,11 @@ export function AppSidebar({
     },
   ];
 
-  const ville = extraireVille(etablissement.adresse);
   const initialUser = (user?.email ?? "??").slice(0, 2).toUpperCase();
 
   return (
     <aside
-      className="sticky top-0 flex h-screen w-[248px] flex-col border-r border-rule-soft bg-paper-elevated"
+      className="flex h-screen w-[248px] flex-col border-r border-rule-soft bg-paper-elevated"
       aria-label="Navigation principale"
     >
       {/* Brand : marque abstraite (cible) + nom en serif italique éditorial */}
@@ -173,25 +172,8 @@ export function AppSidebar({
         </p>
       </div>
 
-      {/* Contexte établissement */}
-      <div className="px-3 pb-1.5">
-        <div className="rounded-xl bg-paper-sunk p-3">
-          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-            Établissement
-          </p>
-          <Link
-            href={`/etablissements/${etablissement.id}/modifier`}
-            className="mt-1 block truncate text-[13.5px] font-medium leading-[1.25] hover:underline"
-          >
-            {etablissement.raisonDisplay}
-          </Link>
-          <p className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
-            {ville} · Eff. {etablissement.effectifSurSite}
-          </p>
-        </div>
-      </div>
-
-      {/* Nav groupée */}
+      {/* Nav groupée — le contexte établissement est rendu dans la card
+          sticky du dashboard, et dans les crumbs des autres pages. */}
       <nav className="min-h-0 flex-1 overflow-auto px-2.5 pb-2">
         {sections.map((sec) => (
           <div key={sec.title}>
@@ -270,14 +252,4 @@ export function AppSidebar({
       </div>
     </aside>
   );
-}
-
-// L'adresse est stockée au format « Rue, 75000 Ville » (cf. onboarding).
-// On extrait la partie ville pour le libellé compact de la sidebar.
-function extraireVille(adresse: string): string {
-  const parts = adresse.split(",");
-  const lastPart = parts[parts.length - 1]?.trim() ?? "";
-  // Format attendu : "75000 Ville" — on enlève le CP s'il est présent
-  const m = /^\d{5}\s+(.+)$/.exec(lastPart);
-  return m ? m[1] : lastPart || adresse;
 }

@@ -81,18 +81,29 @@ export function construireSynthese(unites: UniteLike[]): ResumeSynthese {
 
   for (const u of unites) {
     for (const r of u.risques) {
+      // L'alerte hiérarchie s'évalue sur TOUTES les mesures (existantes +
+      // prévues), pas seulement celles à prévoir : la règle L. 4121-2
+      // s'applique au dispositif de prévention effectif, pas au seul plan
+      // d'actions. Si un risque est couvert uniquement par des EPI déjà en
+      // place, l'alerte doit se déclencher.
       const types = r.mesures.map((m) => m.type as TypeMesure);
       const alerteHierarchieBasse =
         r.mesures.length > 0 && mesuresUniquementBasNiveau(types);
 
+      // Sous-évaluation : écart sur G ou P (risque intrinsèque) vs défauts
+      // du référentiel. La maîtrise n'est pas comparée car sa finalité est
+      // justement de faire baisser la criticité — un bon niveau de maîtrise
+      // n'est pas une sous-cotation.
       let alerteSousCotation = false;
       if (r.referentielId && r.cotationSaisie) {
         const ref = refMap.get(r.referentielId);
-        if (
-          ref?.criticiteReferenceSecteur !== undefined &&
-          r.criticite < ref.criticiteReferenceSecteur
-        ) {
-          alerteSousCotation = true;
+        if (ref) {
+          if (
+            r.gravite < ref.graviteParDefaut ||
+            r.probabilite < ref.probabiliteParDefaut
+          ) {
+            alerteSousCotation = true;
+          }
         }
       }
 

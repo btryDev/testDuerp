@@ -249,10 +249,15 @@ export function EquipementForm({
                   className="inline-flex items-center"
                 >
                   Capacité parking couvert (véhicules)
-                  <InfoTooltip>
-                    À renseigner uniquement si la VMC ventile un parc de
-                    stationnement couvert d&apos;un ERP. Au-dessus de 250
-                    véhicules, contrôle annuel — sinon biennal (art. PS 32).
+                  <InfoTooltip variant="legal" label="Art. PS 32 — règlement ERP">
+                    <span className="block font-mono text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-paper-elevated/70">
+                      Art. PS 32 · Règlement ERP
+                    </span>
+                    <span className="mt-2 block">
+                      À renseigner uniquement si la VMC ventile un parc de
+                      stationnement couvert d&apos;un ERP. Au-dessus de 250
+                      véhicules, contrôle annuel — sinon biennal.
+                    </span>
                   </InfoTooltip>
                 </Label>
                 <Input

@@ -78,7 +78,6 @@ export const bureau: Referentiel = {
       unitesAssociees: ["bur-poste-ecran", "bur-accueil"],
       graviteParDefaut: 2,
       probabiliteParDefaut: 4,
-      criticiteReferenceSecteur: 6,
       mesuresRecommandees: [
         {
           id: "bur-poste-ergo",
@@ -120,7 +119,6 @@ export const bureau: Referentiel = {
       ],
       graviteParDefaut: 2,
       probabiliteParDefaut: 2,
-      criticiteReferenceSecteur: 4,
       mesuresRecommandees: [
         {
           id: "bur-cables-goulottes",
@@ -151,7 +149,6 @@ export const bureau: Referentiel = {
       unitesAssociees: ["bur-poste-ecran", "bur-accueil"],
       graviteParDefaut: 3,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 6,
       mesuresRecommandees: [
         {
           id: "bur-charge-revue",
@@ -188,7 +185,6 @@ export const bureau: Referentiel = {
       unitesAssociees: ["bur-accueil"],
       graviteParDefaut: 2,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 4,
       mesuresRecommandees: [
         {
           id: "bur-form-conflit-bur",
@@ -217,7 +213,6 @@ export const bureau: Referentiel = {
       unitesAssociees: ["bur-poste-ecran", "bur-accueil", "bur-reunion"],
       graviteParDefaut: 2,
       probabiliteParDefaut: 2,
-      criticiteReferenceSecteur: 3,
       mesuresRecommandees: [
         {
           id: "bur-vmc-bur",
@@ -246,7 +241,6 @@ export const bureau: Referentiel = {
       unitesAssociees: ["bur-poste-ecran"],
       graviteParDefaut: 1,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 3,
       mesuresRecommandees: [
         {
           id: "bur-acoustique",
@@ -269,7 +263,6 @@ export const bureau: Referentiel = {
       unitesAssociees: ["bur-poste-ecran", "bur-archives"],
       graviteParDefaut: 4,
       probabiliteParDefaut: 1,
-      criticiteReferenceSecteur: 3,
       mesuresRecommandees: [
         {
           id: "bur-controle-elec-bur",
@@ -292,7 +285,6 @@ export const bureau: Referentiel = {
       unitesAssociees: ["bur-poste-ecran", "bur-accueil"],
       graviteParDefaut: 2,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 3,
       mesuresRecommandees: [
         {
           id: "bur-clim-bur",
@@ -315,7 +307,6 @@ export const bureau: Referentiel = {
       unitesAssociees: ["bur-poste-ecran"],
       graviteParDefaut: 1,
       probabiliteParDefaut: 3,
-      criticiteReferenceSecteur: 3,
       mesuresRecommandees: [
         {
           id: "bur-stores-bur",
@@ -338,7 +329,6 @@ export const bureau: Referentiel = {
       unitesAssociees: ["bur-archives"],
       graviteParDefaut: 3,
       probabiliteParDefaut: 1,
-      criticiteReferenceSecteur: 3,
       mesuresRecommandees: [
         {
           id: "bur-escabeau-norme",

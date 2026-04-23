@@ -21,28 +21,6 @@ import {
 import { getOptionalUser } from "@/lib/auth/require-user";
 import { prisma } from "@/lib/prisma";
 
-function regimes(etab: {
-  estEtablissementTravail: boolean;
-  estERP: boolean;
-  estIGH: boolean;
-  estHabitation: boolean;
-  typeErp: string | null;
-  categorieErp: string | null;
-  classeIgh: string | null;
-}): string[] {
-  const out: string[] = [];
-  if (etab.estEtablissementTravail) out.push("Établissement de travail");
-  if (etab.estERP)
-    out.push(
-      `ERP ${etab.typeErp ?? ""}${
-        etab.categorieErp ? ` · cat. ${etab.categorieErp.slice(1)}` : ""
-      }`.trim(),
-    );
-  if (etab.estIGH) out.push(`IGH ${etab.classeIgh ?? ""}`.trim());
-  if (etab.estHabitation) out.push("Habitation");
-  return out;
-}
-
 export default async function EtablissementPage({
   params,
 }: {
@@ -143,8 +121,6 @@ export default async function EtablissementPage({
       )
     : null;
 
-  const regs = regimes(etab);
-
   // Le bundle sérialise les champs nécessaires aux widgets. Date
   // objects traversent la frontière server/client via l'App Router.
   const bundle: DashboardBundle = {
@@ -153,6 +129,21 @@ export default async function EtablissementPage({
       id: etab.id,
       raisonDisplay: etab.raisonDisplay,
       entrepriseId: etab.entrepriseId,
+      adresse: etab.adresse,
+      effectifSurSite: etab.effectifSurSite,
+      codeNaf: etab.codeNaf,
+      estEtablissementTravail: etab.estEtablissementTravail,
+      estERP: etab.estERP,
+      estIGH: etab.estIGH,
+      estHabitation: etab.estHabitation,
+      typeErp: etab.typeErp,
+      categorieErp: etab.categorieErp,
+      classeIgh: etab.classeIgh,
+      entreprise: {
+        raisonSociale: etab.entreprise.raisonSociale,
+        siret: etab.entreprise.siret,
+        codeNaf: etab.entreprise.codeNaf,
+      },
     },
     dashboard,
     equipements: equipements.map((e) => ({
@@ -200,7 +191,7 @@ export default async function EtablissementPage({
   };
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[248px_1fr]">
+    <div className="grid min-h-screen grid-cols-1 lg:h-screen lg:grid-cols-[248px_1fr] lg:overflow-hidden">
       <AppSidebar
         etablissement={etab}
         active="tableau"
@@ -214,31 +205,16 @@ export default async function EtablissementPage({
         user={user}
       />
 
-      <div className="flex min-w-0 flex-col">
+      <div className="flex min-w-0 flex-col lg:overflow-y-auto">
         <AppTopbar
           title="Tableau de bord"
-          kicker={`Établissements / ${etab.raisonDisplay.split(" ")[0]}…`}
-          statut={{ label: "Actif", tone: "ok" }}
-          subtitleSegments={[
-            etab.raisonDisplay,
-            etab.adresse,
-            ...regs.map((r) => ({ pill: r })),
-          ]}
           actions={
-            <>
-              <Link
-                href={`/etablissements/${id}/modifier`}
-                className={buttonVariants({ variant: "outline", size: "sm" })}
-              >
-                Fiche établissement
-              </Link>
-              <Link
-                href={`/api/etablissements/${id}/dossier-conformite/pdf`}
-                className={buttonVariants({ size: "sm" })}
-              >
-                Dossier PDF ↓
-              </Link>
-            </>
+            <Link
+              href={`/api/etablissements/${id}/dossier-conformite/pdf`}
+              className={buttonVariants({ size: "sm" })}
+            >
+              Dossier PDF ↓
+            </Link>
           }
         />
 

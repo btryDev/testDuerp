@@ -76,6 +76,7 @@ export function WidgetShell({
           variants={def.variants}
           aVariants={aVariants}
           onRetirer={onRetirer}
+          retirable={!def.obligatoire}
           onChangerVariant={onChangerVariant}
           dragAttributes={attributes}
           dragListeners={listeners}
@@ -94,6 +95,7 @@ function ShellOverlay({
   variants,
   aVariants,
   onRetirer,
+  retirable,
   onChangerVariant,
   dragAttributes,
   dragListeners,
@@ -104,6 +106,7 @@ function ShellOverlay({
   variants: readonly { id: string; label: string }[];
   aVariants: boolean;
   onRetirer: () => void;
+  retirable: boolean;
   onChangerVariant: (variant: string) => void;
   dragAttributes: DraggableAttributes;
   dragListeners: SyntheticListenerMap | undefined;
@@ -137,13 +140,23 @@ function ShellOverlay({
             <Shuffle className="size-3" />
           </BoutonCtrl>
         ) : null}
-        <BoutonCtrl
-          onClick={onRetirer}
-          titre="Retirer du tableau de bord"
-          variant="destructive"
-        >
-          <X className="size-3" />
-        </BoutonCtrl>
+        {retirable ? (
+          <BoutonCtrl
+            onClick={onRetirer}
+            titre="Retirer du tableau de bord"
+            variant="destructive"
+          >
+            <X className="size-3" />
+          </BoutonCtrl>
+        ) : (
+          <span
+            title="Widget obligatoire"
+            aria-label="Widget obligatoire, non retirable"
+            className="flex size-6 items-center justify-center rounded-full font-mono text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70"
+          >
+            §
+          </span>
+        )}
       </div>
 
       {aVariants && ouvertVariants ? (

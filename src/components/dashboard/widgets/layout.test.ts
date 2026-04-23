@@ -40,10 +40,15 @@ describe("registre de widgets", () => {
 });
 
 describe("useLayoutPerso — migration et normalisation", () => {
+  // Le widget « etablissement » est obligatoire et réinjecté en tête si
+  // absent du layout persisté. Les tests qui ne veulent pas s'en soucier
+  // l'incluent explicitement en entrée.
+
   it("migre un layout v1 valide sans le modifier", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
+        { widgetId: "etablissement", variant: "default" },
         { widgetId: "score", variant: "anneau" },
         { widgetId: "bars-obligations", variant: "radial" },
       ],
@@ -51,32 +56,42 @@ describe("useLayoutPerso — migration et normalisation", () => {
     const sortie = __internal.migrerLayout(entree);
     expect(sortie).not.toBeNull();
     expect(sortie?.version).toBe(SCHEMA_VERSION);
-    expect(sortie?.items).toHaveLength(2);
-    expect(sortie?.items[0].widgetId).toBe("score");
+    expect(sortie?.items).toHaveLength(3);
+    expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "etablissement",
+      "score",
+      "bars-obligations",
+    ]);
   });
 
   it("ignore les widgetId inconnus (nettoyage silencieux)", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
+        { widgetId: "etablissement", variant: "default" },
         { widgetId: "score", variant: "anneau" },
         { widgetId: "widget-obsolete-v0", variant: "default" },
       ],
     };
     const sortie = __internal.migrerLayout(entree);
-    expect(sortie?.items).toHaveLength(1);
-    expect(sortie?.items[0].widgetId).toBe("score");
+    expect(sortie?.items).toHaveLength(2);
+    expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "etablissement",
+      "score",
+    ]);
   });
 
   it("remplace un variant inexistant par le variant par défaut", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
+        { widgetId: "etablissement", variant: "default" },
         { widgetId: "bars-obligations", variant: "fantaisie-inconnue" },
       ],
     };
     const sortie = __internal.migrerLayout(entree);
-    expect(sortie?.items[0].variant).toBe("bars");
+    const bars = sortie?.items.find((i) => i.widgetId === "bars-obligations");
+    expect(bars?.variant).toBe("bars");
   });
 
   it("rejette une version de schéma inconnue (retour aux défauts)", () => {
@@ -96,6 +111,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
+        { widgetId: "etablissement", variant: "default" },
         { widgetId: "guide", variant: "default" },
         { widgetId: "score", variant: "nombre" },
         { widgetId: "registre", variant: "default" },
@@ -103,9 +119,26 @@ describe("useLayoutPerso — migration et normalisation", () => {
     };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "etablissement",
       "guide",
       "score",
       "registre",
+    ]);
+  });
+
+  it("ré-injecte les widgets obligatoires manquants en tête", () => {
+    const entree = {
+      version: SCHEMA_VERSION,
+      items: [
+        { widgetId: "guide", variant: "default" },
+        { widgetId: "score", variant: "anneau" },
+      ],
+    };
+    const sortie = __internal.migrerLayout(entree);
+    expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "etablissement",
+      "guide",
+      "score",
     ]);
   });
 });

@@ -26,10 +26,11 @@ function cle(etablissementId: string): string {
  * Normalise un layout lu depuis le storage :
  *  - filtre les widgetId inconnus du registre courant (nettoyage lent)
  *  - remplace les variants inexistants par le variant par défaut
+ *  - ré-injecte les widgets obligatoires manquants (en tête)
  *  - conserve l'ordre utilisateur
  */
 function normaliser(items: LayoutItem[]): LayoutItem[] {
-  return items
+  const valides = items
     .filter(
       (it): it is LayoutItem => typeof it?.widgetId === "string" && it.widgetId in REGISTRY,
     )
@@ -40,6 +41,13 @@ function normaliser(items: LayoutItem[]): LayoutItem[] {
         : def.defaultVariant;
       return { widgetId: it.widgetId, variant };
     });
+
+  const presents = new Set(valides.map((it) => it.widgetId));
+  const obligatoiresManquants = (Object.values(REGISTRY) as typeof REGISTRY[keyof typeof REGISTRY][])
+    .filter((d) => d.obligatoire && !presents.has(d.id))
+    .map((d) => ({ widgetId: d.id, variant: d.defaultVariant }));
+
+  return [...obligatoiresManquants, ...valides];
 }
 
 /**
@@ -136,10 +144,14 @@ export function useLayoutPerso(etablissementId: string) {
   }, []);
 
   const retirer = useCallback((widgetId: WidgetId) => {
-    setLayout((l) => ({
-      ...l,
-      items: l.items.filter((it) => it.widgetId !== widgetId),
-    }));
+    setLayout((l) => {
+      // Garde-fou : les widgets obligatoires ne sont jamais retirés.
+      if (REGISTRY[widgetId]?.obligatoire) return l;
+      return {
+        ...l,
+        items: l.items.filter((it) => it.widgetId !== widgetId),
+      };
+    });
   }, []);
 
   const changerVariant = useCallback(

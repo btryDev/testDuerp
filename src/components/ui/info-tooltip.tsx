@@ -1,15 +1,29 @@
 import type { ReactNode } from "react";
+import { BookOpen } from "lucide-react";
 
 /**
- * Petite icône ⓘ inline, bulle au hover. Pure CSS, pas de JS.
- * `align` décide du côté d'ancrage quand la bulle risque de déborder.
+ * Petit picto inline qui révèle une bulle explicative au survol ET au focus.
+ * Pure CSS (pas de state React) — le bouton est focusable, `:focus-within`
+ * sur le wrapper ouvre la bulle au tap sur mobile et au Tab clavier.
+ *
+ * Deux variantes :
+ *  - `info` (défaut) : pastille noire avec « i », pour l'aide contextuelle
+ *    produit (explication d'un concept, d'un champ de formulaire).
+ *  - `legal` : pastille noire avec icône « livre ouvert », pour les
+ *    références au Code du travail / INRS / règlementaires. Le livre se
+ *    distingue au premier coup d'œil et signale « source juridique ».
  */
 export function InfoTooltip({
   children,
   align = "center",
+  variant = "info",
+  label,
 }: {
   children: ReactNode;
   align?: "center" | "right" | "left";
+  variant?: "info" | "legal";
+  /** Libellé accessible du déclencheur — défaut : « Plus d'informations ». */
+  label?: string;
 }) {
   const posClass =
     align === "right"
@@ -24,17 +38,28 @@ export function InfoTooltip({
         ? "left-3"
         : "left-1/2 -translate-x-1/2";
 
+  const isLegal = variant === "legal";
+  const triggerLabel = label ?? (isLegal ? "Référence légale" : "Plus d'informations");
+  const bubbleWidth = isLegal ? "max-w-[20rem]" : "max-w-[16rem]";
+
   return (
     <span className="group/info relative inline-flex items-center align-baseline">
-      <span
-        aria-hidden
-        className="ml-1.5 inline-flex h-[14px] w-[14px] shrink-0 cursor-help items-center justify-center rounded-full border border-current text-[0.55rem] font-semibold leading-none opacity-50 transition-opacity group-hover/info:opacity-100"
+      <button
+        type="button"
+        aria-label={triggerLabel}
+        className="ml-1.5 inline-flex h-[17px] w-[17px] shrink-0 cursor-help items-center justify-center rounded-full bg-ink text-paper-elevated opacity-70 outline-none transition-all hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-1"
       >
-        i
-      </span>
+        {isLegal ? (
+          <BookOpen aria-hidden className="h-[10px] w-[10px]" strokeWidth={2.4} />
+        ) : (
+          <span aria-hidden className="text-[0.62rem] font-semibold leading-none">
+            i
+          </span>
+        )}
+      </button>
       <span
         role="tooltip"
-        className={`pointer-events-none absolute bottom-full ${posClass} z-30 mb-2 w-max max-w-[16rem] rounded-md bg-ink px-3 py-2 text-left text-[0.72rem] font-normal normal-case leading-relaxed tracking-normal text-paper-elevated opacity-0 shadow-lg transition-opacity duration-150 group-hover/info:opacity-100 [font-family:var(--font-body)]`}
+        className={`pointer-events-none absolute bottom-full ${posClass} z-30 mb-2 w-max ${bubbleWidth} rounded-md bg-ink px-3 py-2 text-left text-[0.72rem] font-normal normal-case leading-relaxed tracking-normal text-paper-elevated opacity-0 shadow-lg transition-opacity duration-150 [font-family:var(--font-body)] group-hover/info:opacity-100 group-focus-within/info:opacity-100`}
       >
         {children}
         <span

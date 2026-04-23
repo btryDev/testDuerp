@@ -16,6 +16,7 @@ export type Taille = "small" | "medium" | "large";
 // small = 2 col · medium = 3 col · large = 6 col (grille à 6 colonnes)
 
 export type WidgetId =
+  | "etablissement"
   | "score"
   | "indicateurs"
   | "echeances"
@@ -58,6 +59,21 @@ type EtablissementLite = {
   id: string;
   raisonDisplay: string;
   entrepriseId: string;
+  adresse: string;
+  effectifSurSite: number;
+  codeNaf: string | null;
+  estEtablissementTravail: boolean;
+  estERP: boolean;
+  estIGH: boolean;
+  estHabitation: boolean;
+  typeErp: string | null;
+  categorieErp: string | null;
+  classeIgh: string | null;
+  entreprise: {
+    raisonSociale: string;
+    siret: string | null;
+    codeNaf: string;
+  };
 };
 
 type EquipementLite = {
@@ -143,6 +159,9 @@ export type WidgetDefinition = {
   Component: ComponentType<{ bundle: DashboardBundle; variant: string }>;
   /** Exclu du layout par défaut (disponible mais pas monté d'office) */
   exclueDuDefaut?: boolean;
+  /** Widget obligatoire : ne peut pas être retiré par l'utilisateur et est
+   * réinjecté automatiquement si absent du layout persisté. */
+  obligatoire?: boolean;
   /** Si la fonction renvoie false, le widget est masqué même s'il est
    * dans le layout (ex. widget DUERP alors qu'aucun DUERP n'existe). */
   visibleQuand?: (b: DashboardBundle) => boolean;
