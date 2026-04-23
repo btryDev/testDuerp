@@ -22,56 +22,84 @@ export function WidgetPlanActions({ bundle }: { bundle: DashboardBundle }) {
   const actionsACouvrir =
     dashboard.compteurs.actionsOuvertes + dashboard.compteurs.actionsEnCours;
   const actionsEnRetard = dashboard.compteurs.actionsEnRetard;
+
+  const sub =
+    actionsACouvrir === 0
+      ? "Rien à lever"
+      : `${actionsACouvrir} ouverte${actionsACouvrir > 1 ? "s" : ""}${actionsEnRetard > 0 ? ` · ${actionsEnRetard} en retard` : ""}`;
+
   return (
-    <BentoCell
-      kicker="Plan d'actions"
-      sub={
-        actionsACouvrir === 0
-          ? "Rien à lever"
-          : `${actionsACouvrir} ouverte${actionsACouvrir > 1 ? "s" : ""}${actionsEnRetard > 0 ? ` · ${actionsEnRetard} en retard` : ""}`
-      }
-      more={
-        actionsEnCours.length > 0
-          ? {
-              href: `/etablissements/${etablissementId}/actions`,
-              label: "Plan complet",
-            }
-          : undefined
-      }
-    >
+    <section className="bento-cell">
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="v2-title">Plan d&apos;actions</h3>
+          <p className="v2-subtitle">
+            Actions correctives en cours · triées par échéance
+          </p>
+        </div>
+        {actionsEnCours.length > 0 ? (
+          <Link
+            href={`/etablissements/${etablissementId}/actions`}
+            className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink/75 hover:text-ink"
+          >
+            Voir les {actionsACouvrir} ↗
+          </Link>
+        ) : null}
+      </header>
+
       {actionsEnCours.length === 0 ? (
         <p className="text-[0.88rem] text-muted-foreground">
-          Aucune action en cours ✓
+          Aucune action en cours ✓ · {sub}
         </p>
       ) : (
-        <ul className="flex flex-col gap-2.5">
-          {actionsEnCours.map((a) => {
-            const enRetard =
-              a.echeance != null && a.echeance < new Date();
+        <ul className="flex flex-col">
+          {actionsEnCours.map((a, i) => {
+            const enRetard = a.echeance != null && a.echeance < new Date();
+            const tone = enRetard ? "alert" : "amber";
+            const color =
+              tone === "alert" ? "var(--alert)" : "var(--amber)";
             return (
               <li
                 key={a.id}
-                className="grid grid-cols-[86px_1fr_auto] items-center gap-3 rounded-lg bg-paper-sunk px-3 py-2.5"
+                className="grid grid-cols-[auto_1fr] items-start gap-3 py-3"
+                style={{
+                  borderTop: i === 0 ? "0" : "1px dashed var(--rule)",
+                }}
               >
-                <span className={enRetard ? "pill-alerte" : "pill-warn"}>
-                  {enRetard ? "En retard" : "En cours"}
-                </span>
+                <div
+                  aria-hidden
+                  className="grid size-[26px] place-items-center rounded-md"
+                  style={{ border: `1px dashed ${color}` }}
+                >
+                  <span
+                    className="inline-block size-1.5 rounded-full"
+                    style={{ background: color }}
+                  />
+                </div>
                 <div className="min-w-0">
-                  <p className="truncate text-[0.88rem] font-medium">
+                  <p className="text-[13.5px] font-medium leading-[1.3]">
                     {a.libelle}
                   </p>
-                  {a.echeance ? (
-                    <p className="truncate text-[0.74rem] text-muted-foreground">
-                      échéance {formatDateCourte(a.echeance)}
-                    </p>
-                  ) : null}
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <span className="pill-v2 pill-v2-neutral">
+                      {a.statut === "en_cours" ? "En cours" : "Ouverte"}
+                    </span>
+                    {a.echeance ? (
+                      <span className="font-mono text-[11px] text-muted-foreground">
+                        échéance ·{" "}
+                        <strong className="text-ink/75">
+                          {formatDateCourte(a.echeance)}
+                        </strong>
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
               </li>
             );
           })}
         </ul>
       )}
-    </BentoCell>
+    </section>
   );
 }
 
@@ -147,140 +175,106 @@ function libelleCategorie(c: string): string {
   return c.replace(/_/g, " ").toLowerCase();
 }
 
-type PastilleStatut =
-  | { libelle: string; tone: "alerte" | "warn" | "ok" }
-  | null;
-
-/**
- * Règle de priorité pour afficher UNE pastille pertinente par carte
- * équipement (on évite la surcharge visuelle) :
- *  1. Retard → « N en retard » alerte
- *  2. À planifier → « N à planifier » warn
- *  3. Sous 30 j → « Sous Nj » warn
- *  4. Vérifié récemment → « À jour » ok
- *  5. Aucune stat → null
- */
-function pastillePrincipale(stats: {
-  enRetard: number;
-  aPlanifier: number;
-  sous30j: number;
-  derniereRealisee: Date | null;
-  prochaineDate: Date | null;
-}): PastilleStatut {
-  if (stats.enRetard > 0) {
-    return {
-      libelle: `${stats.enRetard} en retard`,
-      tone: "alerte",
-    };
-  }
-  if (stats.aPlanifier > 0) {
-    return {
-      libelle: `${stats.aPlanifier} à planifier`,
-      tone: "warn",
-    };
-  }
-  if (stats.prochaineDate && stats.sous30j > 0) {
-    const jours = Math.max(
-      0,
-      Math.round(
-        (stats.prochaineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-      ),
-    );
-    return { libelle: `Sous ${jours} j`, tone: "warn" };
-  }
-  if (stats.derniereRealisee) {
-    return { libelle: "À jour", tone: "ok" };
-  }
-  return null;
-}
-
-function LegendeStatut() {
-  return (
-    <span className="flex flex-wrap items-center gap-3 text-[0.7rem] text-muted-foreground">
-      <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em]">
-        Contrôles
-      </span>
-      <LegendeItem color="var(--minium)" label="En retard" />
-      <LegendeItem color="oklch(0.72 0.15 70)" label="À planifier" />
-      <LegendeItem color="var(--accent-vif)" label="À jour" />
-      <LegendeItem color="var(--rule)" label="Aucun" />
-    </span>
-  );
-}
-
-function LegendeItem({ color, label }: { color: string; label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <span
-        aria-hidden
-        className="inline-block size-2 rounded-full"
-        style={{ background: color }}
-      />
-      {label}
-    </span>
-  );
-}
-
 export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
   const { equipements, etablissementId } = bundle;
+  const totalEq = equipements.length;
+  const tuiles = equipements.slice(0, 8);
+  const nbRestants = totalEq - tuiles.length;
+
   return (
-    <BentoCell
-      kicker={`Équipements déclarés · ${equipements.length}`}
-      legend={<LegendeStatut />}
-      more={{
-        href: `/etablissements/${etablissementId}/equipements`,
-        label: "Gérer",
-      }}
-    >
-      <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-        {equipements.slice(0, 8).map((eq) => {
-          const pastille = eq.stats ? pastillePrincipale(eq.stats) : null;
+    <section className="bento-cell">
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="v2-title">Équipements</h3>
+          <p className="v2-subtitle">
+            {totalEq} type{totalEq > 1 ? "s" : ""} déclaré
+            {totalEq > 1 ? "s" : ""}
+            {nbRestants > 0 ? ` · ${nbRestants} autres non affichés` : ""}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/etablissements/${etablissementId}/equipements`}
+            className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink/75 hover:text-ink"
+          >
+            Gérer ↗
+          </Link>
+          <Link
+            href={`/etablissements/${etablissementId}/equipements/nouveau`}
+            className="inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-rule bg-paper-elevated px-2.5 text-[12px] transition-colors hover:bg-paper-sunk"
+          >
+            + Ajouter
+          </Link>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {tuiles.map((eq) => {
+          const s = eq.stats;
+          const fait = s?.derniereRealisee ? 1 : 0;
+          const retard = s?.enRetard ?? 0;
+          const aPlanif = s?.aPlanifier ?? 0;
+          const totalSignals = fait + retard + aPlanif;
+          const pct = totalSignals ? Math.round(100 * (fait / totalSignals)) : 0;
+          const alert = retard > 0;
           return (
             <Link
               key={eq.id}
               href={`/etablissements/${etablissementId}/equipements`}
-              className="flex min-h-[96px] flex-col justify-between gap-2 rounded-lg border border-rule-soft bg-paper-sunk p-3 transition-all hover:-translate-y-0.5 hover:border-ink"
+              className="v2-equip-tile"
             >
-              <div className="flex flex-col gap-1">
-                <strong className="line-clamp-2 text-[0.84rem] font-medium leading-tight">
-                  {eq.libelle}
-                </strong>
-                <span className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted-foreground">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                   {libelleCategorie(eq.categorie)}
                 </span>
+                <span aria-hidden className="text-[0.78rem] text-ink/50">
+                  ↗
+                </span>
               </div>
-              {pastille ? (
-                <span
-                  className={
-                    "w-fit self-start " +
-                    (pastille.tone === "alerte"
-                      ? "pill-alerte"
-                      : pastille.tone === "warn"
-                        ? "pill-warn"
-                        : "pill-ok")
-                  }
+              <div className="text-[14px] font-medium leading-[1.25]">
+                {eq.libelle}
+              </div>
+              <div className="mt-auto flex items-center gap-2">
+                <div
+                  className="v2-bar-track flex-1"
+                  style={{ height: 4 }}
+                  aria-hidden
                 >
-                  {pastille.libelle}
+                  <div
+                    className="v2-bar-fill"
+                    style={{
+                      width: `${pct}%`,
+                      background: alert ? "var(--alert)" : "var(--navy)",
+                    }}
+                  />
+                </div>
+                <span className="font-mono text-[10.5px] tabular-nums text-muted-foreground">
+                  {pct}%
                 </span>
-              ) : (
-                <span className="inline-flex w-fit items-center self-start rounded-full border border-rule-soft bg-paper-elevated px-2 py-0.5 font-mono text-[0.62rem] text-muted-foreground">
-                  Aucune vérif
-                </span>
-              )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {fait > 0 ? (
+                  <span className="pill-v2 pill-v2-green">{fait} fait</span>
+                ) : null}
+                {retard > 0 ? (
+                  <span className="pill-v2 pill-v2-alert">
+                    {retard} dépassé{retard > 1 ? "s" : ""}
+                  </span>
+                ) : null}
+                {aPlanif > 0 ? (
+                  <span className="pill-v2 pill-v2-dashed">
+                    {aPlanif} à planif.
+                  </span>
+                ) : null}
+                {!fait && !retard && !aPlanif ? (
+                  <span className="pill-v2 pill-v2-dashed">Aucune vérif</span>
+                ) : null}
+              </div>
             </Link>
           );
         })}
-        <Link
-          href={`/etablissements/${etablissementId}/equipements/nouveau`}
-          className="flex min-h-[96px] flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-rule bg-transparent p-3 text-center text-muted-foreground transition-colors hover:border-[color:var(--accent-vif)] hover:bg-[color:var(--accent-vif-soft)] hover:text-[color:var(--accent-vif)]"
-        >
-          <span className="text-xl leading-none">+</span>
-          <strong className="text-[0.82rem] font-medium">
-            Ajouter un équipement
-          </strong>
-        </Link>
       </div>
-    </BentoCell>
+    </section>
   );
 }
 
@@ -323,35 +317,65 @@ export function WidgetDuerp({ bundle }: { bundle: DashboardBundle }) {
   );
 }
 
-/* ─── Guide pédagogique (entrée) ────────────────────────── */
+/* ─── Guide pédagogique (carte sombre V2) ───────────────── */
+
+const GUIDE_ETAPES = [
+  { k: "01", t: "Déclarer les équipements soumis à contrôle" },
+  { k: "02", t: "Planifier les vérifications périodiques" },
+  { k: "03", t: "Consigner chaque rapport au registre" },
+  { k: "04", t: "Tenir le DUERP à jour (au moins 1 fois / an)" },
+];
 
 export function WidgetGuide({ bundle }: { bundle: DashboardBundle }) {
   const { etablissementId } = bundle;
   return (
-    <Link
-      href={`/etablissements/${etablissementId}/guide`}
-      className="group relative flex items-center justify-between gap-6 rounded-2xl border border-[color:color-mix(in_oklch,var(--accent-vif)_20%,transparent)] bg-[color:color-mix(in_oklch,var(--accent-vif)_5%,var(--paper-elevated))] px-6 py-5 transition-colors hover:border-[color:var(--accent-vif)]"
+    <section
+      className="relative flex flex-col gap-3 overflow-hidden rounded-[14px] px-6 py-[22px]"
+      style={{ background: "var(--ink)", color: "#fff" }}
     >
-      <div className="min-w-0 flex-1">
-        <p className="font-mono text-[0.66rem] uppercase tracking-[0.18em] text-[color:var(--accent-vif)]">
-          Guide · Comprendre vos obligations
-        </p>
-        <p className="mt-1.5 text-[1.05rem] font-medium tracking-[-0.015em]">
-          Que demande vraiment la loi, et comment l&apos;outil vous aide
-          à la tenir ?
-        </p>
-        <p className="mt-1 max-w-[60ch] text-[0.86rem] leading-[1.55] text-muted-foreground">
-          Les quatre obligations structurantes, le rythme annuel, les
-          rôles — expliqués sans jargon, avec les références Légifrance.
-        </p>
-      </div>
-      <span
-        aria-hidden
-        className="shrink-0 text-[color:var(--accent-vif)] transition-transform group-hover:translate-x-1"
+      <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-white/55">
+        Guide pédagogique
+      </p>
+      <h3 className="max-w-[320px] text-[18px] font-semibold leading-[1.2] tracking-[-0.015em]">
+        Ce qu&apos;on attend de vous,
+        <br />
+        <span
+          className="italic"
+          style={{
+            fontFamily: "var(--font-serif), Georgia, serif",
+            fontWeight: 400,
+            color: "#9AB7FF",
+          }}
+        >
+          par obligation légale.
+        </span>
+      </h3>
+      <ul className="mt-1 flex flex-col gap-2">
+        {GUIDE_ETAPES.map((x) => (
+          <li
+            key={x.k}
+            className="grid grid-cols-[auto_1fr] items-center gap-2.5 rounded-[10px] px-2.5 py-2"
+            style={{ background: "rgba(255,255,255,0.04)" }}
+          >
+            <span
+              className="font-mono tabular-nums text-[11px]"
+              style={{ color: "#9AB7FF", letterSpacing: "0.08em" }}
+            >
+              {x.k}
+            </span>
+            <span className="text-[13px]" style={{ color: "#D4DAE6" }}>
+              {x.t}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <Link
+        href={`/etablissements/${etablissementId}/guide`}
+        className="mt-2 inline-flex h-[34px] w-fit items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[12.5px] font-medium text-ink transition-colors hover:bg-white/90"
       >
-        →
-      </span>
-    </Link>
+        Lire le guide complet →
+      </Link>
+    </section>
   );
 }
 

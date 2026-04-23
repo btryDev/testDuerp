@@ -15,6 +15,7 @@ import {
   compterObligationsParMois,
   compterVerifsParEquipement,
   getDashboardData,
+  listerEvenementsFenetre,
   listerEvenementsParMois,
 } from "@/lib/dashboard/queries";
 import { getOptionalUser } from "@/lib/auth/require-user";
@@ -57,6 +58,8 @@ export default async function EtablissementPage({
     dashboard,
     barsData,
     evenementsAnnee,
+    evenementsSemaine,
+    evenementsMois,
     nbVerifs,
     nbRapports,
     prochainesVerifs,
@@ -69,6 +72,8 @@ export default async function EtablissementPage({
     getDashboardData(id),
     compterObligationsParMois(id),
     listerEvenementsParMois(id),
+    listerEvenementsFenetre(id, 7),
+    listerEvenementsFenetre(id, 30),
     prisma.verification.count({ where: { etablissementId: id } }),
     prisma.rapportVerification.count({ where: { etablissementId: id } }),
     prisma.verification.findMany({
@@ -158,6 +163,8 @@ export default async function EtablissementPage({
     })),
     barsData,
     evenementsAnnee,
+    evenementsSemaine,
+    evenementsMois,
     prochainesVerifs: prochainesVerifs.map((v) => ({
       id: v.id,
       libelleObligation: v.libelleObligation,
@@ -210,7 +217,13 @@ export default async function EtablissementPage({
       <div className="flex min-w-0 flex-col">
         <AppTopbar
           title="Tableau de bord"
-          subtitle={`${etab.raisonDisplay} · ${etab.adresse}${regs.length > 0 ? " · " + regs.join(" · ") : ""}`}
+          kicker={`Établissements / ${etab.raisonDisplay.split(" ")[0]}…`}
+          statut={{ label: "Actif", tone: "ok" }}
+          subtitleSegments={[
+            etab.raisonDisplay,
+            etab.adresse,
+            ...regs.map((r) => ({ pill: r })),
+          ]}
           actions={
             <>
               <Link
@@ -238,6 +251,18 @@ export default async function EtablissementPage({
           ) : null}
 
           <DashboardGrid bundle={bundle} />
+
+          <hr aria-hidden className="filet-pointille mt-2" />
+          <footer className="flex flex-wrap items-center justify-between gap-6 text-[11.5px] text-muted-foreground">
+            <p className="m-0 max-w-[640px] leading-[1.55]">
+              Outil d&apos;aide à la rédaction structuré sur les publications
+              INRS / OiRA. La responsabilité de l&apos;évaluation des risques
+              reste celle de l&apos;employeur.
+            </p>
+            <span className="font-mono uppercase tracking-[0.14em]">
+              v2 · modèle données
+            </span>
+          </footer>
         </div>
       </div>
     </div>

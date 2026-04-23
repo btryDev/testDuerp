@@ -26,6 +26,12 @@ import {
   WidgetActivite,
 } from "./impl/groupes";
 import { WidgetDocuments } from "./impl/documents";
+import { WidgetFocusAction } from "./impl/focus-action";
+import { WidgetCountdown } from "./impl/countdown";
+import { WidgetAnciennete } from "./impl/anciennete";
+import { WidgetSemaine } from "./impl/semaine";
+import { WidgetFluxRegistre } from "./impl/flux-registre";
+import { WidgetMeteo } from "./impl/meteo";
 import type { LayoutItem, WidgetDefinition, WidgetId } from "./types";
 
 export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
@@ -225,6 +231,66 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     defaultVariant: "default",
     Component: WidgetCalendrierType,
   },
+  "focus-action": {
+    id: "focus-action",
+    titre: "Focus de la semaine",
+    description:
+      "La recommandation prioritaire du moment avec les 2-3 raisons qui la justifient. Déduite du moteur de recos.",
+    taille: "medium",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: WidgetFocusAction,
+  },
+  countdown: {
+    id: "countdown",
+    titre: "Prochaine échéance",
+    description:
+      "Compte à rebours en gros chiffre (J-N / J+N / Aujourd'hui / À planifier) sur la vérification la plus urgente.",
+    taille: "medium",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: WidgetCountdown,
+  },
+  anciennete: {
+    id: "anciennete",
+    titre: "Âge des documents",
+    description:
+      "DUERP et dernier rapport : depuis combien de jours ? Ton rouge / ambre / vert selon le seuil.",
+    taille: "medium",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: WidgetAnciennete,
+  },
+  semaine: {
+    id: "semaine",
+    titre: "Semaine en cours",
+    description:
+      "Mini-agenda 7 jours — intervention(s) par jour, aujourd'hui mis en évidence.",
+    taille: "medium",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: WidgetSemaine,
+  },
+  "flux-registre": {
+    id: "flux-registre",
+    titre: "Activité registre",
+    description:
+      "Feed chronologique inverse des derniers rapports déposés avec leur résultat.",
+    taille: "medium",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: WidgetFluxRegistre,
+  },
+  meteo: {
+    id: "meteo",
+    titre: "Météo · 30 jours",
+    description:
+      "Heatmap 30 jours glissants, chaque case est un jour coloré selon l'urgence dominante.",
+    taille: "medium",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: WidgetMeteo,
+  },
 };
 
 export type { WidgetId } from "./types";
@@ -257,6 +323,7 @@ const ORDRE_DEFAUT: WidgetId[] = [
   "prochaines-echeances",
   "documents",
   "equipements-grid",
+  "plan-actions",
   "guide",
 ];
 

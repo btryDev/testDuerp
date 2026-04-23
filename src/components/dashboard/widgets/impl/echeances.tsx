@@ -1,9 +1,10 @@
 "use client";
 
 // Widget « Prochaines échéances » — 2 variants :
-//  - list     : liste verticale (classique)
-//  - timeline : axe horizontal avec dots marqués aux dates
+//  - list     : liste verticale V2 (titre + equip · date J+N + pill)
+//  - timeline : axe horizontal avec dots marqués aux dates (historique)
 
+import Link from "next/link";
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import type { DashboardBundle } from "../types";
 
@@ -11,7 +12,17 @@ function formatDateCourte(d: Date): string {
   return d.toLocaleDateString("fr-FR", {
     day: "2-digit",
     month: "short",
+    year: "numeric",
   });
+}
+
+function formatDans(datePrevue: Date): string {
+  const diff = Math.round(
+    (datePrevue.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
+  if (diff === 0) return "Aujourd'hui";
+  if (diff > 0) return `J+${diff}`;
+  return `J${diff}`; // diff < 0 → "J-N"
 }
 
 function classifier(
@@ -23,7 +34,7 @@ function classifier(
     return { tone: "alerte", libelleDate: formatDateCourte(datePrevue) };
   }
   if (statut === "a_planifier") {
-    return { tone: "warn", libelleDate: "À planifier" };
+    return { tone: "warn", libelleDate: "—" };
   }
   return { tone: "ok", libelleDate: formatDateCourte(datePrevue) };
 }
@@ -39,11 +50,17 @@ export function WidgetProchainesEcheances({
 
   if (prochainesVerifs.length === 0) {
     return (
-      <BentoCell kicker="Prochaines échéances">
+      <section className="bento-cell">
+        <header className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="v2-title">Prochaines échéances</h3>
+            <p className="v2-subtitle">Les 5 prochaines vérifications</p>
+          </div>
+        </header>
         <p className="text-[0.88rem] text-muted-foreground">
           Aucune vérification planifiée pour l&apos;instant.
         </p>
-      </BentoCell>
+      </section>
     );
   }
 
@@ -61,56 +78,76 @@ export function WidgetProchainesEcheances({
     );
   }
 
-  // Variant "list" (défaut)
+  // Variant "list" V2 : titre + equip (gauche) · date + J+N + pill (droite)
   return (
-    <BentoCell
-      kicker="Prochaines échéances"
-      more={{
-        href: `/etablissements/${etablissementId}/calendrier`,
-        label: "Tout voir",
-      }}
-    >
+    <section className="bento-cell">
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="v2-title">Prochaines échéances</h3>
+          <p className="v2-subtitle">Les 5 prochaines vérifications</p>
+        </div>
+        <Link
+          href={`/etablissements/${etablissementId}/calendrier`}
+          className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink/75 hover:text-ink"
+        >
+          Tout voir ↗
+        </Link>
+      </header>
       <ul className="flex flex-col">
-        {prochainesVerifs.map((v) => {
+        {prochainesVerifs.map((v, i) => {
           const c = classifier(v.statut, v.datePrevue);
-          const dotColor =
+          const pillClass =
             c.tone === "alerte"
-              ? "var(--minium)"
+              ? "pill-v2 pill-v2-alert"
               : c.tone === "warn"
-                ? "oklch(0.72 0.15 70)"
-                : "var(--accent-vif)";
-          const dateClass =
+                ? "pill-v2 pill-v2-dashed"
+                : "pill-v2 pill-v2-navy-soft";
+          const pillLabel =
             c.tone === "alerte"
-              ? "text-[color:var(--minium)]"
+              ? "Dépassé"
               : c.tone === "warn"
-                ? "text-[color:oklch(0.48_0.14_60)]"
-                : "text-muted-foreground";
+                ? "À planifier"
+                : "Planifié";
+          const dans =
+            v.statut === "a_planifier"
+              ? "À planifier"
+              : formatDans(v.datePrevue);
+          const dansColor =
+            c.tone === "alerte" ? "text-[color:var(--alert)]" : "text-muted-foreground";
           return (
             <li
               key={v.id}
-              className="grid grid-cols-[10px_1fr_auto] items-center gap-3 border-b border-dashed border-rule-soft py-3 last:border-b-0"
+              className="grid grid-cols-[1fr_auto] items-start gap-3 py-3"
+              style={{
+                borderTop: i === 0 ? "0" : "1px dashed var(--rule)",
+              }}
             >
-              <span
-                aria-hidden
-                className="size-2 rounded-full"
-                style={{ background: dotColor }}
-              />
               <div className="min-w-0">
-                <p className="truncate text-[0.9rem] font-medium">
+                <p className="truncate text-[13.5px] font-medium tracking-[-0.005em]">
                   {v.libelleObligation}
                 </p>
-                <p className="truncate text-[0.74rem] text-muted-foreground">
+                <p className="mt-[3px] truncate font-mono text-[11px] tracking-[0.04em] text-muted-foreground">
                   {v.equipement.libelle}
                 </p>
               </div>
-              <span className={"font-mono text-[0.78rem] " + dateClass}>
-                {c.libelleDate}
-              </span>
+              <div className="flex flex-col items-end gap-1">
+                <span className="font-mono text-[12px] tabular-nums text-ink/75">
+                  {c.libelleDate}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={"font-mono text-[10.5px] " + dansColor}
+                  >
+                    {dans}
+                  </span>
+                  <span className={pillClass}>{pillLabel}</span>
+                </div>
+              </div>
             </li>
           );
         })}
       </ul>
-    </BentoCell>
+    </section>
   );
 }
 

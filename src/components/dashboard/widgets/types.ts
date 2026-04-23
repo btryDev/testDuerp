@@ -8,6 +8,7 @@ import type { ComponentType } from "react";
 import type {
   BarMois,
   DashboardData,
+  EvenementFenetre,
   EvenementMoisReel,
 } from "@/lib/dashboard/queries";
 
@@ -32,7 +33,13 @@ export type WidgetId =
   | "guide"
   | "recos"
   | "calendrier-type"
-  | "documents";
+  | "documents"
+  | "focus-action"
+  | "countdown"
+  | "anciennete"
+  | "semaine"
+  | "flux-registre"
+  | "meteo";
 
 export type LayoutItem = {
   widgetId: WidgetId;
@@ -107,6 +114,10 @@ export type DashboardBundle = {
   equipements: EquipementLite[];
   barsData: BarMois[];
   evenementsAnnee: Array<EvenementMoisReel | null>;
+  /** Fenêtre glissante 7 j — widget « Semaine ». */
+  evenementsSemaine?: EvenementFenetre[];
+  /** Fenêtre glissante 30 j — widget « Météo ». */
+  evenementsMois?: EvenementFenetre[];
   prochainesVerifs: VerificationLite[];
   actionsEnCours: ActionLite[];
   rapportsRecents: RapportLite[];

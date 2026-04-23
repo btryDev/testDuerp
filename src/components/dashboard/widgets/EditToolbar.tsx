@@ -1,10 +1,10 @@
 "use client";
 
-// Barre de contrôles « Personnaliser le tableau de bord ».
-// Hors édition : un simple bouton « Personnaliser ».
-// En édition :
-//   - indicateur « Mode personnalisation » avec bouton Terminer
-//   - liste des widgets masqués qu'on peut réactiver d'un clic
+// Barre de contrôles « Mise en page » — mockup V2.
+// Hors édition : libellé « Mise en page » + compteur « N widgets actifs »,
+//                actions ghost (+ Ajouter, Réinitialiser) + bouton outline Personnaliser.
+// En édition : indicateur « Mode personnalisation » + bouton Terminer.
+//              Le tiroir de widgets masqués reste disponible sous la barre.
 
 import { Plus, RotateCcw, Settings2, X } from "lucide-react";
 import { REGISTRY, tailleEnCol, tousLesWidgetIds } from "./registry";
@@ -26,53 +26,84 @@ export function EditToolbar({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {enEdition ? (
-            <span className="inline-flex items-center gap-2 rounded-full bg-[color:var(--accent-vif-soft)] px-3 py-1 text-[0.78rem] font-medium text-[color:var(--accent-vif)]">
-              <Settings2 aria-hidden className="size-3.5" />
+            <span className="pill-v2 pill-v2-green">
+              <Settings2 aria-hidden className="size-3" />
               Mode personnalisation
             </span>
-          ) : null}
+          ) : (
+            <>
+              <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
+                Mise en page
+              </span>
+              <span className="font-mono text-[11.5px] text-ink/75">
+                {actif.size} widgets actifs
+              </span>
+            </>
+          )}
         </div>
+
         <div className="flex items-center gap-2">
           {enEdition ? (
-            <button
-              type="button"
-              onClick={onReinitialiser}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-rule bg-transparent px-3 py-1.5 text-[0.8rem] transition-colors hover:border-ink"
-              title="Restaurer les widgets par défaut"
-            >
-              <RotateCcw className="size-3.5" />
-              Réinitialiser
-            </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={onToggle}
-            className={
-              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[0.82rem] font-medium transition-colors " +
-              (enEdition
-                ? "bg-[color:var(--accent-vif)] text-[color:var(--paper-elevated)] hover:-translate-y-px"
-                : "border border-rule bg-transparent text-ink hover:border-ink")
-            }
-          >
-            {enEdition ? (
-              <>
+            <>
+              <BtnGhost onClick={onReinitialiser} title="Restaurer les widgets par défaut">
+                <RotateCcw className="size-3" />
+                Réinitialiser
+              </BtnGhost>
+              <button
+                type="button"
+                onClick={onToggle}
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[color:var(--navy)] px-3 text-[12px] font-medium text-white transition-colors hover:bg-[color:color-mix(in_oklch,var(--navy)_88%,black)]"
+              >
                 <X className="size-3.5" />
                 Terminer
-              </>
-            ) : (
-              <>
-                <Settings2 className="size-3.5" />
+              </button>
+            </>
+          ) : (
+            <>
+              <BtnGhost onClick={onToggle} title="Ajouter un widget">
+                <Plus className="size-3" />
+                Ajouter un widget
+              </BtnGhost>
+              <BtnGhost onClick={onReinitialiser} title="Restaurer les widgets par défaut">
+                Réinitialiser
+              </BtnGhost>
+              <button
+                type="button"
+                onClick={onToggle}
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-rule bg-paper-elevated px-3 text-[12px] font-medium text-ink transition-colors hover:bg-paper-sunk"
+              >
                 Personnaliser
-              </>
-            )}
-          </button>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {enEdition ? <TiroirMasques actif={actif} onAjouter={onAjouter} /> : null}
     </div>
+  );
+}
+
+function BtnGhost({
+  children,
+  onClick,
+  title,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  title: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className="inline-flex h-[30px] items-center gap-1.5 rounded-lg bg-transparent px-2.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink/75 transition-colors hover:bg-paper-sunk"
+    >
+      {children}
+    </button>
   );
 }
 
@@ -107,11 +138,11 @@ function TiroirMasques({
               <button
                 type="button"
                 onClick={() => onAjouter(id)}
-                className="group flex w-full items-start gap-3 rounded-lg border border-rule-soft bg-paper-elevated px-3 py-2.5 text-left transition-colors hover:border-[color:var(--accent-vif)] hover:bg-[color:color-mix(in_oklch,var(--accent-vif)_5%,var(--paper-elevated))]"
+                className="group flex w-full items-start gap-3 rounded-lg border border-rule-soft bg-paper-elevated px-3 py-2.5 text-left transition-colors hover:border-[color:var(--navy)] hover:bg-[color:var(--navy-soft)]"
               >
                 <span
                   aria-hidden
-                  className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border border-rule-soft bg-paper-sunk text-muted-foreground transition-colors group-hover:border-[color:var(--accent-vif)] group-hover:bg-[color:var(--accent-vif)] group-hover:text-[color:var(--paper-elevated)]"
+                  className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border border-rule-soft bg-paper-sunk text-muted-foreground transition-colors group-hover:border-[color:var(--navy)] group-hover:bg-[color:var(--navy)] group-hover:text-white"
                 >
                   <Plus className="size-3.5" />
                 </span>

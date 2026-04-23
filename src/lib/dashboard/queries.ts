@@ -122,6 +122,65 @@ function libelleCourt(libelle: string): string {
     .replace(/^./, (c) => c.toUpperCase());
 }
 
+export type EvenementFenetre = {
+  id: string;
+  libelle: string;
+  date: Date;
+  tone: "alerte" | "warn" | "ok";
+  equipement: string;
+};
+
+/**
+ * Liste tous les événements de vérification sur une fenêtre glissante
+ * de `joursHorizon` jours à partir d'aujourd'hui. Utilisé par les
+ * widgets « Semaine » (7 j) et « Météo » (30 j).
+ *
+ * Classification des tons :
+ *   - alerte : statut depassee, ou planifiee dont la date est déjà passée
+ *   - warn   : statut a_planifier (pas encore fixé)
+ *   - ok     : planifiee dans le futur
+ */
+export async function listerEvenementsFenetre(
+  etablissementId: string,
+  joursHorizon: number,
+): Promise<EvenementFenetre[]> {
+  const user = await requireUser();
+  const now = new Date();
+  const fin = new Date(now.getTime() + joursHorizon * 86400000);
+
+  const verifs = await prisma.verification.findMany({
+    where: {
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+      datePrevue: { lte: fin },
+      // On garde tout ce qui est non réalisé — pour matérialiser les
+      // retards et la charge à venir.
+      dateRealisee: null,
+    },
+    include: { equipement: { select: { libelle: true } } },
+    orderBy: { datePrevue: "asc" },
+  });
+
+  return verifs.map((v) => {
+    const enRetard =
+      v.statut === "depassee" ||
+      (v.statut === "planifiee" && v.datePrevue < now);
+    const aPlanifier = v.statut === "a_planifier";
+    const tone: "alerte" | "warn" | "ok" = enRetard
+      ? "alerte"
+      : aPlanifier
+        ? "warn"
+        : "ok";
+    return {
+      id: v.id,
+      libelle: v.libelleObligation,
+      date: v.datePrevue,
+      tone,
+      equipement: v.equipement.libelle,
+    };
+  });
+}
+
 export type StatsEquipement = {
   enRetard: number;
   aPlanifier: number;

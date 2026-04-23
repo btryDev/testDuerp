@@ -9,22 +9,12 @@
 
 import { useTransition } from "react";
 import Link from "next/link";
-import {
-  Download,
-  FileCheck2,
-  FileStack,
-  ListChecks,
-  Package,
-  type LucideIcon,
-} from "lucide-react";
-import { BentoCell } from "@/components/dashboard/BentoCell";
 import { creerDuerp } from "@/lib/duerps/actions";
 import type { DashboardBundle } from "../types";
 
 type Ligne = {
   titre: string;
   meta: string;
-  Icon: LucideIcon;
   voirHref?: string;
   telechargerHref?: string;
   aFaire?: { libelle: string; tone: "warn" | "alerte" | "ok" };
@@ -50,7 +40,6 @@ export function WidgetDocuments({ bundle }: { bundle: DashboardBundle }) {
           ? `v${duerpDernier.versions[0].numero} du ${duerpDernier.versions[0].createdAt.toLocaleDateString("fr-FR")}`
           : "en cours — pas encore validé"
         : "pas encore initié — à faire",
-      Icon: FileCheck2,
       voirHref: duerpDernier ? `/duerp/${duerpDernier.id}` : undefined,
       telechargerHref: duerpDernier
         ? `/duerp/${duerpDernier.id}/pdf/preview`
@@ -73,7 +62,6 @@ export function WidgetDocuments({ bundle }: { bundle: DashboardBundle }) {
         nbRapports === 0
           ? "aucun rapport"
           : `${nbRapports} rapport${nbRapports > 1 ? "s" : ""} déposé${nbRapports > 1 ? "s" : ""}`,
-      Icon: FileStack,
       voirHref: `/etablissements/${etablissementId}/registre`,
       telechargerHref: `/api/etablissements/${etablissementId}/registre/pdf`,
     },
@@ -83,7 +71,6 @@ export function WidgetDocuments({ bundle }: { bundle: DashboardBundle }) {
         actionsACouvrir === 0
           ? "rien à lever"
           : `${actionsACouvrir} ouverte${actionsACouvrir > 1 ? "s" : ""}${actionsEnRetard > 0 ? ` · ${actionsEnRetard} en retard` : ""}`,
-      Icon: ListChecks,
       voirHref: `/etablissements/${etablissementId}/actions`,
       telechargerHref: `/api/etablissements/${etablissementId}/plan-actions/pdf`,
       aFaire:
@@ -100,53 +87,86 @@ export function WidgetDocuments({ bundle }: { bundle: DashboardBundle }) {
             : undefined,
     },
     {
-      titre: "Dossier consolidé",
-      meta: "DUERP + Registre + Actions en 1 PDF · 30 secondes",
-      Icon: Package,
+      titre: "Dossier de conformité",
+      meta: "DUERP + Registre + Actions · PDF complet",
       telechargerHref: `/api/etablissements/${etablissementId}/dossier-conformite/pdf`,
     },
   ];
 
   return (
-    <BentoCell kicker="Vos documents">
+    <section className="bento-cell">
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="v2-title">Vos documents</h3>
+          <p className="v2-subtitle">
+            DUERP, registre, plan d&apos;actions, dossier complet
+          </p>
+        </div>
+        <Link
+          href={`/api/etablissements/${etablissementId}/dossier-conformite/pdf`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink/75 hover:text-ink"
+        >
+          Tout télécharger ↓
+        </Link>
+      </header>
+
       <ul className="flex flex-col">
-        {lignes.map((l) => (
-          <LigneDoc key={l.titre} ligne={l} />
+        {lignes.map((l, i) => (
+          <LigneDoc key={l.titre} ligne={l} first={i === 0} />
         ))}
       </ul>
-    </BentoCell>
+    </section>
   );
 }
 
-function LigneDoc({ ligne }: { ligne: Ligne }) {
-  const { titre, meta, Icon, voirHref, telechargerHref, aFaire, commencer } =
-    ligne;
+function LigneDoc({ ligne, first }: { ligne: Ligne; first: boolean }) {
+  const { titre, meta, voirHref, telechargerHref, aFaire, commencer } = ligne;
   const [pending, startTransition] = useTransition();
 
   return (
-    <li className="grid grid-cols-[40px_1fr_auto] items-center gap-4 border-b border-dashed border-rule-soft py-3.5 last:border-b-0">
-      <div className="flex size-10 items-center justify-center rounded-xl bg-paper-sunk">
-        <Icon aria-hidden className="size-4.5 text-ink/80" />
+    <li
+      className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 py-3"
+      style={{ borderTop: first ? "0" : "1px dashed var(--rule)" }}
+    >
+      {/* Icône feuille stylisée — coin replié + lignes mono */}
+      <div
+        aria-hidden
+        className="relative flex h-[48px] w-[40px] flex-col justify-end gap-0.5 rounded-[6px] bg-paper-elevated p-1.5"
+        style={{ boxShadow: "0 0 0 1px var(--rule), 0 1px 2px rgba(0,0,0,0.02)" }}
+      >
+        <span
+          className="absolute right-[3px] top-[3px] block h-2 w-2"
+          style={{
+            borderTop: "1px solid var(--rule)",
+            borderLeft: "1px solid var(--rule)",
+            background: "var(--paper-sunk)",
+          }}
+        />
+        <span className="block h-0.5 bg-paper-sunk" />
+        <span className="block h-0.5 w-[70%] bg-paper-sunk" />
+        <span className="block h-0.5 bg-paper-sunk" />
       </div>
 
       <div className="min-w-0">
-        <p className="truncate text-[0.95rem] font-medium tracking-[-0.01em]">
+        <p className="truncate text-[13.5px] font-medium tracking-[-0.005em]">
           {titre}
         </p>
-        <p className="mt-0.5 truncate text-[0.76rem] text-muted-foreground">
+        <p className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
           {meta}
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-1.5">
         {aFaire ? (
           <span
             className={
               aFaire.tone === "alerte"
-                ? "pill-alerte"
+                ? "pill-v2 pill-v2-alert"
                 : aFaire.tone === "warn"
-                  ? "pill-warn"
-                  : "pill-ok"
+                  ? "pill-v2 pill-v2-amber"
+                  : "pill-v2 pill-v2-green"
             }
           >
             {aFaire.libelle}
@@ -161,7 +181,7 @@ function LigneDoc({ ligne }: { ligne: Ligne }) {
                 await commencer.onStart();
               });
             }}
-            className="inline-flex items-center gap-1 rounded-md bg-[color:var(--accent-vif)] px-3 py-1.5 text-[0.78rem] font-medium text-[color:var(--paper-elevated)] transition-[transform,box-shadow] hover:-translate-y-px hover:shadow-[0_8px_20px_-8px_color-mix(in_oklch,var(--accent-vif)_60%,transparent)] disabled:opacity-60"
+            className="inline-flex items-center gap-1 rounded-md bg-[color:var(--navy)] px-3 py-1.5 text-[0.78rem] font-medium text-white transition-colors hover:bg-[color:color-mix(in_oklch,var(--navy)_88%,black)] disabled:opacity-60"
           >
             {pending ? "…" : `${commencer.libelle} →`}
           </button>
@@ -169,7 +189,7 @@ function LigneDoc({ ligne }: { ligne: Ligne }) {
         {voirHref ? (
           <Link
             href={voirHref}
-            className="rounded-md border border-rule bg-transparent px-2.5 py-1.5 text-[0.76rem] transition-colors hover:border-ink"
+            className="inline-flex h-[30px] items-center rounded-lg px-2.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink/75 transition-colors hover:bg-paper-sunk hover:text-ink"
           >
             Voir
           </Link>
@@ -177,12 +197,16 @@ function LigneDoc({ ligne }: { ligne: Ligne }) {
         {telechargerHref ? (
           <Link
             href={telechargerHref}
-            className="inline-flex items-center gap-1 rounded-md bg-ink px-2.5 py-1.5 text-[0.76rem] font-medium text-paper-elevated transition-colors hover:bg-[color:color-mix(in_oklch,var(--ink)_85%,var(--accent-vif))]"
+            className="inline-flex h-[30px] items-center rounded-lg px-2.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink/75 transition-colors hover:bg-paper-sunk hover:text-ink"
             target={telechargerHref.startsWith("/api/") ? "_blank" : undefined}
-            rel={telechargerHref.startsWith("/api/") ? "noopener noreferrer" : undefined}
+            rel={
+              telechargerHref.startsWith("/api/")
+                ? "noopener noreferrer"
+                : undefined
+            }
+            aria-label={`Télécharger ${titre}`}
           >
-            <Download aria-hidden className="size-3" />
-            PDF
+            ↓
           </Link>
         ) : null}
       </div>

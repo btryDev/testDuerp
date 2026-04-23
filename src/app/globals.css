@@ -52,6 +52,14 @@
   --color-warm-soft: var(--warm-soft);
   --color-accent-vif: var(--accent-vif);
   --color-accent-vif-soft: var(--accent-vif-soft);
+  --color-navy: var(--navy);
+  --color-navy-soft: var(--navy-soft);
+  --color-green-dash: var(--green-dash);
+  --color-green-dash-soft: var(--green-dash-soft);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --color-alert: var(--alert);
+  --color-alert-soft: var(--alert-soft);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -75,6 +83,18 @@
   --warm-soft: oklch(0.94 0.025 260); /* fond navy très pâle */
   --accent-vif: oklch(0.62 0.18 150); /* vert « conformité » — accent d'app (ADR Direction B) */
   --accent-vif-soft: oklch(0.94 0.04 150); /* fond pâle vert */
+
+  /* Palette V2 « Tableau de bord » — navy primaire, green/amber/alert sémantiques.
+     Conservée en parallèle de l'accent-vif historique : permet au dashboard de
+     porter sa propre identité sans casser le reste de l'app. */
+  --navy: oklch(0.34 0.1 270); /* #1E2A5E — navy primaire dashboard */
+  --navy-soft: oklch(0.95 0.015 270); /* #EDF0F8 — fond navy pâle */
+  --green-dash: oklch(0.48 0.08 155); /* #2F6B4F — vert conformité dashboard */
+  --green-dash-soft: oklch(0.94 0.025 150); /* #E7F0EB */
+  --amber: oklch(0.62 0.12 80); /* #B88A2E */
+  --amber-soft: oklch(0.94 0.04 85); /* #F5EEDC */
+  --alert: oklch(0.55 0.16 30); /* #B84A3C */
+  --alert-soft: oklch(0.93 0.04 30); /* #F6E4E1 */
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -549,6 +569,112 @@
   .outils-intro-text strong {
     color: var(--foreground);
     font-weight: 600;
+  }
+}
+
+/* =============================================================
+   Dashboard V2 — utilitaires partagés (palette navy + sémantiques)
+   ============================================================= */
+@layer components {
+  /* Pills navy & sémantiques du dashboard V2. Petites caps mono.
+     Complètent les .pill-ok / .pill-warn / .pill-alerte historiques
+     (qui s'appuient sur --accent-vif / --minium). */
+  .pill-v2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .pill-v2-navy {
+    background: var(--navy);
+    color: #fff;
+  }
+  .pill-v2-navy-soft {
+    background: var(--navy-soft);
+    color: var(--navy);
+  }
+  .pill-v2-green {
+    background: var(--green-dash-soft);
+    color: var(--green-dash);
+  }
+  .pill-v2-amber {
+    background: var(--amber-soft);
+    color: var(--amber);
+  }
+  .pill-v2-alert {
+    background: var(--alert-soft);
+    color: var(--alert);
+  }
+  .pill-v2-neutral {
+    background: var(--paper-sunk);
+    color: color-mix(in oklch, var(--ink) 70%, transparent);
+  }
+  .pill-v2-dashed {
+    background: transparent;
+    color: var(--muted-foreground);
+    border: 1px dashed var(--rule);
+  }
+
+  /* Kicker d'en-tête de widget V2 (mono + 2 lignes : titre / sous-titre) */
+  .v2-title {
+    font-size: 0.9375rem;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .v2-subtitle {
+    margin-top: 0.1875rem;
+    font-size: 0.78rem;
+    color: var(--muted-foreground);
+  }
+
+  /* Barre horizontale fine */
+  .v2-bar-track {
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--paper-sunk);
+    position: relative;
+    overflow: hidden;
+  }
+  .v2-bar-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: 9999px;
+  }
+
+  /* Cellule de calendrier 12 mois */
+  .v2-cal-cell {
+    border-radius: 10px;
+    padding: 10px 11px;
+    background: var(--paper-sunk);
+    position: relative;
+    min-height: 78px;
+  }
+  .v2-cal-cell-current {
+    background: var(--navy-soft);
+    box-shadow: inset 0 0 0 1px var(--navy);
+  }
+
+  /* Tuile équipement V2 */
+  .v2-equip-tile {
+    border-radius: 14px;
+    background: var(--paper-sunk);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 108px;
+    transition: background 160ms;
+  }
+  .v2-equip-tile:hover {
+    background: color-mix(in oklch, var(--paper-sunk) 85%, var(--ink) 5%);
   }
 }
 

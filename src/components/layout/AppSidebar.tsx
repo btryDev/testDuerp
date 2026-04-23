@@ -1,8 +1,9 @@
 "use client";
 
-// Sidebar persistante (248px) pour le shell d'app — cf. HANDOFF Direction B.
-// Contexte établissement + navigation des modules + footer paramètres/user.
-// Client component pour le highlight de l'item actif et le lien "Changer".
+// Sidebar persistante (248px) pour le shell d'app — refonte V2.
+// Brand carré navy + libellé stacké · bloc contexte établissement ·
+// nav groupée par sections (Suivi, Référentiel, Administration) avec
+// kickers mono · user chip en pied. Mockup « Tableau de bord V2.html ».
 
 import Link from "next/link";
 import {
@@ -16,6 +17,7 @@ import {
   Settings,
   HelpCircle,
   LogOut,
+  Users,
 } from "lucide-react";
 import { signOutAction } from "@/lib/auth/actions";
 
@@ -46,6 +48,17 @@ type User = {
   email: string | null;
 };
 
+type NavItem = {
+  id: SidebarActive | "fiche" | "equipe";
+  label: string;
+  href: string;
+  Icon: typeof LayoutDashboard;
+  count?: number;
+  alert?: boolean;
+};
+
+type NavSection = { title: string; items: NavItem[] };
+
 export function AppSidebar({
   etablissement,
   active,
@@ -57,161 +70,195 @@ export function AppSidebar({
   counts?: Counts;
   user?: User | null;
 }) {
-  const items: {
-    id: SidebarActive;
-    label: string;
-    href: string;
-    Icon: typeof LayoutDashboard;
-    count?: number;
-    alert?: boolean;
-  }[] = [
+  const sections: NavSection[] = [
     {
-      id: "tableau",
-      label: "Tableau de bord",
-      href: `/etablissements/${etablissement.id}`,
-      Icon: LayoutDashboard,
+      title: "Suivi",
+      items: [
+        {
+          id: "tableau",
+          label: "Tableau de bord",
+          href: `/etablissements/${etablissement.id}`,
+          Icon: LayoutDashboard,
+        },
+        {
+          id: "calendrier",
+          label: "Calendrier",
+          href: `/etablissements/${etablissement.id}/calendrier`,
+          Icon: Calendar,
+          count: counts?.verificationsEnRetard,
+          alert: (counts?.verificationsEnRetard ?? 0) > 0,
+        },
+        {
+          id: "actions",
+          label: "Plan d'actions",
+          href: `/etablissements/${etablissement.id}/actions`,
+          Icon: ListChecks,
+          count: counts?.actions,
+        },
+        {
+          id: "registre",
+          label: "Registre",
+          href: `/etablissements/${etablissement.id}/registre`,
+          Icon: FileText,
+        },
+      ],
     },
     {
-      id: "equipements",
-      label: "Équipements",
-      href: `/etablissements/${etablissement.id}/equipements`,
-      Icon: Wrench,
-      count: counts?.equipements,
+      title: "Référentiel",
+      items: [
+        {
+          id: "equipements",
+          label: "Équipements",
+          href: `/etablissements/${etablissement.id}/equipements`,
+          Icon: Wrench,
+          count: counts?.equipements,
+        },
+        {
+          id: "duerp",
+          label: "DUERP",
+          href: `/etablissements/${etablissement.id}`,
+          Icon: FileCheck2,
+        },
+        {
+          id: "guide",
+          label: "Guide",
+          href: `/etablissements/${etablissement.id}/guide`,
+          Icon: Compass,
+        },
+      ],
     },
     {
-      id: "calendrier",
-      label: "Calendrier",
-      href: `/etablissements/${etablissement.id}/calendrier`,
-      Icon: Calendar,
-      count: counts?.verificationsEnRetard,
-      alert: (counts?.verificationsEnRetard ?? 0) > 0,
-    },
-    {
-      id: "registre",
-      label: "Registre",
-      href: `/etablissements/${etablissement.id}/registre`,
-      Icon: FileText,
-    },
-    {
-      id: "actions",
-      label: "Plan d'actions",
-      href: `/etablissements/${etablissement.id}/actions`,
-      Icon: ListChecks,
-      count: counts?.actions,
-    },
-    {
-      id: "duerp",
-      label: "DUERP",
-      href: `/etablissements/${etablissement.id}`,
-      Icon: FileCheck2,
-    },
-    {
-      id: "guide",
-      label: "Comprendre",
-      href: `/etablissements/${etablissement.id}/guide`,
-      Icon: Compass,
+      title: "Administration",
+      items: [
+        {
+          id: "fiche",
+          label: "Fiche établissement",
+          href: `/etablissements/${etablissement.id}/modifier`,
+          Icon: Settings,
+        },
+        {
+          id: "equipe",
+          label: "Équipe",
+          href: "#",
+          Icon: Users,
+        },
+      ],
     },
   ];
 
   const ville = extraireVille(etablissement.adresse);
-  const initiale = (user?.email ?? "?").slice(0, 2).toUpperCase();
+  const initialUser = (user?.email ?? "??").slice(0, 2).toUpperCase();
 
   return (
     <aside
-      className="sticky top-0 flex h-screen w-[248px] flex-col gap-5 border-r border-rule-soft bg-paper-elevated px-4 py-6"
+      className="sticky top-0 flex h-screen w-[248px] flex-col border-r border-rule-soft bg-paper-elevated"
       aria-label="Navigation principale"
     >
-      {/* Brand */}
-      <div className="flex items-baseline gap-1.5 border-b border-rule-soft pb-4 pl-2 text-[1.02rem] font-semibold tracking-[-0.02em] text-[color:var(--accent-vif)]">
-        <span className="size-2 translate-y-[-1px] rounded-full bg-[color:var(--accent-vif)]" />
-        Pilote
-        <span className="text-[0.68rem] font-normal tracking-[0.18em] text-muted-foreground">
-          conformité
-        </span>
+      {/* Brand : marque abstraite (cible) + nom en serif italique éditorial */}
+      <div className="flex items-center gap-2.5 px-4 pb-[14px] pt-[18px]">
+        <svg
+          width="26"
+          height="26"
+          viewBox="0 0 26 26"
+          fill="none"
+          aria-hidden
+          className="shrink-0"
+        >
+          <circle cx="13" cy="13" r="11" stroke="var(--navy)" strokeWidth="1" opacity="0.3" />
+          <circle cx="13" cy="13" r="6.5" stroke="var(--navy)" strokeWidth="1.1" opacity="0.7" />
+          <circle cx="13" cy="13" r="2.4" fill="var(--navy)" />
+        </svg>
+        <p className="text-[17px] font-semibold leading-none tracking-[-0.025em] text-ink">
+          Pilote
+        </p>
       </div>
 
       {/* Contexte établissement */}
-      <div className="rounded-lg bg-paper-sunk p-3">
-        <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
-          Établissement
-        </p>
-        <Link
-          href={`/etablissements/${etablissement.id}/modifier`}
-          className="mt-1.5 block truncate text-[0.95rem] font-semibold tracking-[-0.01em] hover:underline"
-        >
-          {etablissement.raisonDisplay}
-        </Link>
-        <p className="mt-0.5 truncate text-[0.76rem] text-muted-foreground">
-          {ville} · {etablissement.effectifSurSite} salarié
-          {etablissement.effectifSurSite > 1 ? "s" : ""}
-        </p>
+      <div className="px-3 pb-1.5">
+        <div className="rounded-xl bg-paper-sunk p-3">
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+            Établissement
+          </p>
+          <Link
+            href={`/etablissements/${etablissement.id}/modifier`}
+            className="mt-1 block truncate text-[13.5px] font-medium leading-[1.25] hover:underline"
+          >
+            {etablissement.raisonDisplay}
+          </Link>
+          <p className="mt-0.5 truncate text-[11.5px] text-muted-foreground">
+            {ville} · Eff. {etablissement.effectifSurSite}
+          </p>
+        </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex flex-col gap-0.5">
-        {items.map((it) => {
-          const isActive = it.id === active;
-          return (
-            <Link
-              key={it.id}
-              href={it.href}
-              aria-current={isActive ? "page" : undefined}
-              className={
-                "grid grid-cols-[22px_1fr_auto] items-center gap-2.5 rounded-md px-2.5 py-2 text-[0.88rem] transition-colors " +
-                (isActive
-                  ? "bg-[color:var(--accent-vif-soft)] font-medium text-[color:var(--accent-vif)]"
-                  : "text-ink/75 hover:bg-paper-sunk hover:text-ink")
-              }
-            >
-              <it.Icon aria-hidden className="size-4 opacity-90" />
-              <span className="truncate">{it.label}</span>
-              {typeof it.count === "number" && it.count > 0 ? (
-                <span
+      {/* Nav groupée */}
+      <nav className="min-h-0 flex-1 overflow-auto px-2.5 pb-2">
+        {sections.map((sec) => (
+          <div key={sec.title}>
+            <p className="px-3 pb-1.5 pt-[18px] font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              {sec.title}
+            </p>
+            {sec.items.map((it) => {
+              const isActive = it.id === active;
+              return (
+                <Link
+                  key={it.id}
+                  href={it.href}
+                  aria-current={isActive ? "page" : undefined}
                   className={
-                    "rounded-full px-1.5 py-px text-[0.66rem] font-semibold " +
-                    (it.alert
-                      ? "bg-[color:color-mix(in_oklch,var(--minium)_15%,transparent)] text-[color:var(--minium)]"
-                      : "bg-paper-sunk text-muted-foreground")
+                    "flex items-center gap-3 rounded-[10px] px-3 py-[9px] text-[13.5px] transition-colors " +
+                    (isActive
+                      ? "bg-[color:var(--navy)] font-medium text-white"
+                      : "text-ink/75 hover:bg-paper-sunk hover:text-ink")
                   }
                 >
-                  {it.count}
-                </span>
-              ) : null}
-            </Link>
-          );
-        })}
+                  <it.Icon aria-hidden className="size-4 opacity-90" />
+                  <span className="flex-1 truncate">{it.label}</span>
+                  {typeof it.count === "number" && it.count > 0 ? (
+                    <span
+                      className={
+                        "rounded-full px-[7px] py-px font-mono text-[11px] " +
+                        (isActive
+                          ? "bg-white/15 text-white"
+                          : it.alert
+                            ? "bg-[color:var(--alert-soft)] text-[color:var(--alert)]"
+                            : "bg-paper-sunk text-muted-foreground")
+                      }
+                    >
+                      {it.count}
+                    </span>
+                  ) : null}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
-      {/* Footer */}
-      <div className="mt-auto flex flex-col gap-1 border-t border-rule-soft pt-3">
+      {/* Footer : aide + user chip */}
+      <div className="flex flex-col gap-1 border-t border-rule-soft px-3 py-3">
         <a
           href="#"
-          className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[0.82rem] text-ink/75 transition-colors hover:bg-paper-sunk hover:text-ink"
-        >
-          <Settings aria-hidden className="size-3.5" /> Paramètres
-        </a>
-        <a
-          href="#"
-          className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[0.82rem] text-ink/75 transition-colors hover:bg-paper-sunk hover:text-ink"
+          className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] text-ink/75 transition-colors hover:bg-paper-sunk hover:text-ink"
         >
           <HelpCircle aria-hidden className="size-3.5" /> Aide
         </a>
         {user ? (
-          <div className="mt-1.5 flex items-center gap-2.5 rounded-md bg-paper-sunk px-2.5 py-2">
+          <div className="mt-0.5 flex items-center gap-2.5 px-1 py-1.5">
             <div
               aria-hidden
-              className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-[color:var(--accent-vif)] to-[color:var(--warm)] text-[0.76rem] font-semibold text-paper-elevated"
+              className="grid size-8 place-items-center rounded-full bg-[color:var(--green-dash-soft)] font-mono text-[12px] font-semibold text-[color:var(--green-dash)]"
             >
-              {initiale}
+              {initialUser}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[0.8rem] font-medium">
+              <p className="truncate text-[12.5px] font-medium">
                 {user.email ?? "Utilisateur"}
               </p>
               <form action={signOutAction}>
                 <button
                   type="submit"
-                  className="mt-0.5 flex items-center gap-1 text-[0.68rem] text-muted-foreground transition-colors hover:text-ink"
+                  className="mt-0.5 flex items-center gap-1 text-[10.5px] text-muted-foreground transition-colors hover:text-ink"
                 >
                   <LogOut aria-hidden className="size-3" />
                   Déconnexion
