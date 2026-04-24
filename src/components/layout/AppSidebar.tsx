@@ -4,8 +4,14 @@
 // Brand carré navy + libellé stacké · bloc contexte établissement ·
 // nav groupée par sections (Suivi, Référentiel, Administration) avec
 // kickers mono · user chip en pied. Mockup « Tableau de bord V2.html ».
+//
+// L'item actif peut être passé en prop (back-compat) ou, quand la prop
+// est omise, déduit automatiquement depuis le `pathname` courant. Cela
+// permet de monter la sidebar depuis le layout sans que chaque page ait
+// à passer explicitement son id de section.
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Wrench,
@@ -18,6 +24,12 @@ import {
   HelpCircle,
   LogOut,
   Users,
+  Accessibility,
+  Flame,
+  HandshakeIcon,
+  Droplets,
+  Ticket,
+  ShieldCheck,
 } from "lucide-react";
 import { signOutAction } from "@/lib/auth/actions";
 
@@ -27,6 +39,13 @@ export type SidebarActive =
   | "calendrier"
   | "registre"
   | "actions"
+  | "prestataires"
+  | "accessibilite"
+  | "permis-feu"
+  | "plan-prevention"
+  | "carnet-sanitaire"
+  | "interventions"
+  | "controle"
   | "duerp"
   | "guide";
 
@@ -34,6 +53,8 @@ type Counts = Partial<
   Record<Exclude<SidebarActive, "tableau" | "duerp" | "registre">, number>
 > & {
   verificationsEnRetard?: number;
+  prestatairesAlertes?: number;
+  risquesAReevaluer?: number;
 };
 
 type Etablissement = {
@@ -59,6 +80,26 @@ type NavItem = {
 
 type NavSection = { title: string; items: NavItem[] };
 
+function deduireActif(pathname: string, etablissementId: string): SidebarActive {
+  const base = `/etablissements/${etablissementId}`;
+  if (pathname === base || pathname === `${base}/modifier`) return "tableau";
+  if (pathname.startsWith(`${base}/calendrier`)) return "calendrier";
+  if (pathname.startsWith(`${base}/verifications`)) return "calendrier";
+  if (pathname.startsWith(`${base}/actions`)) return "actions";
+  if (pathname.startsWith(`${base}/registre`)) return "registre";
+  if (pathname.startsWith(`${base}/equipements`)) return "equipements";
+  if (pathname.startsWith(`${base}/prestataires`)) return "prestataires";
+  if (pathname.startsWith(`${base}/accessibilite`)) return "accessibilite";
+  if (pathname.startsWith(`${base}/permis-feu`)) return "permis-feu";
+  if (pathname.startsWith(`${base}/plan-prevention`)) return "plan-prevention";
+  if (pathname.startsWith(`${base}/carnet-sanitaire`)) return "carnet-sanitaire";
+  if (pathname.startsWith(`${base}/interventions`)) return "interventions";
+  if (pathname.startsWith(`${base}/controle`)) return "controle";
+  if (pathname.startsWith(`${base}/duerp`)) return "duerp";
+  if (pathname.startsWith(`${base}/guide`)) return "guide";
+  return "tableau";
+}
+
 export function AppSidebar({
   etablissement,
   active,
@@ -66,10 +107,15 @@ export function AppSidebar({
   user,
 }: {
   etablissement: Etablissement;
-  active: SidebarActive;
+  /** Item actif. Si omis, déduit automatiquement depuis `usePathname()`. */
+  active?: SidebarActive;
   counts?: Counts;
   user?: User | null;
 }) {
+  const pathname = usePathname();
+  const actif: SidebarActive =
+    active ?? deduireActif(pathname ?? "", etablissement.id);
+
   const sections: NavSection[] = [
     {
       title: "Suivi",
@@ -96,10 +142,22 @@ export function AppSidebar({
           count: counts?.actions,
         },
         {
+          id: "interventions",
+          label: "Interventions",
+          href: `/etablissements/${etablissement.id}/interventions`,
+          Icon: Ticket,
+        },
+        {
           id: "registre",
           label: "Registre",
           href: `/etablissements/${etablissement.id}/registre`,
           Icon: FileText,
+        },
+        {
+          id: "controle",
+          label: "Préparer un contrôle",
+          href: `/etablissements/${etablissement.id}/controle`,
+          Icon: ShieldCheck,
         },
       ],
     },
@@ -114,10 +172,44 @@ export function AppSidebar({
           count: counts?.equipements,
         },
         {
+          id: "prestataires",
+          label: "Prestataires",
+          href: `/etablissements/${etablissement.id}/prestataires`,
+          Icon: Users,
+          count: counts?.prestatairesAlertes,
+          alert: (counts?.prestatairesAlertes ?? 0) > 0,
+        },
+        {
+          id: "accessibilite",
+          label: "Accessibilité",
+          href: `/etablissements/${etablissement.id}/accessibilite`,
+          Icon: Accessibility,
+        },
+        {
+          id: "permis-feu",
+          label: "Permis de feu",
+          href: `/etablissements/${etablissement.id}/permis-feu`,
+          Icon: Flame,
+        },
+        {
+          id: "plan-prevention",
+          label: "Plans de prévention",
+          href: `/etablissements/${etablissement.id}/plan-prevention`,
+          Icon: HandshakeIcon,
+        },
+        {
+          id: "carnet-sanitaire",
+          label: "Carnet sanitaire",
+          href: `/etablissements/${etablissement.id}/carnet-sanitaire`,
+          Icon: Droplets,
+        },
+        {
           id: "duerp",
           label: "DUERP",
           href: `/etablissements/${etablissement.id}/duerp`,
           Icon: FileCheck2,
+          count: counts?.risquesAReevaluer,
+          alert: (counts?.risquesAReevaluer ?? 0) > 0,
         },
         {
           id: "guide",
@@ -181,7 +273,7 @@ export function AppSidebar({
               {sec.title}
             </p>
             {sec.items.map((it) => {
-              const isActive = it.id === active;
+              const isActive = it.id === actif;
               return (
                 <Link
                   key={it.id}

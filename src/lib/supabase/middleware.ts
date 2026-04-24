@@ -12,6 +12,16 @@ const PUBLIC_PREFIXES = [
   "/auth",
   "/_next",
   "/favicon.ico",
+  // ADR-007 : accès externe par token — prestataire sans compte.
+  "/acces",
+  // ADR-006 : vérification publique d'intégrité d'une signature.
+  "/verifier",
+  // ADR-006 : accusé de réception après signature (public).
+  "/signe",
+  // Registre d'accessibilité ERP (arrêté 19-04-2017) — consultation publique.
+  "/accessibilite",
+  // Route API qui sert l'affiche A4 du registre (QR + URL).
+  "/api/accessibilite",
 ];
 
 function isPublicPath(pathname: string): boolean {

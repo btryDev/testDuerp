@@ -11,6 +11,7 @@
 // locales uniquement : aucune query supplémentaire.
 
 import { BentoCell } from "@/components/dashboard/BentoCell";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import type { DashboardBundle } from "../types";
 
 const LIBELLE_NIVEAU = {
@@ -18,6 +19,23 @@ const LIBELLE_NIVEAU = {
   a_surveiller: "À surveiller",
   rattrapage: "Rattrapage nécessaire",
 } as const;
+
+/**
+ * Explication déployée au hover / info-bulle. Décrit ce que mesure le score
+ * et rappelle que ce n'est pas une certification officielle.
+ * Formule documentée dans `src/lib/dashboard/score.ts`.
+ */
+function ScoreInfoTooltip({ align = "right" }: { align?: "left" | "right" | "center" }) {
+  return (
+    <InfoTooltip align={align}>
+      Repère interne, pas une certification. Le score agrège trois
+      engagements : les vérifications périodiques dépassées (art. R4226-16
+      CT), les actions correctives en retard (art. L4121-2 CT) et la mise
+      à jour du DUERP depuis moins de 12 mois (art. R4121-2 CT). Plus un
+      engagement est urgent, plus son retard pénalise.
+    </InfoTooltip>
+  );
+}
 
 /** Regroupement des catégories d'équipement en « familles » affichées
  *  dans la vue V2 du score. Une catégorie manquante tombe dans "Autres". */
@@ -63,7 +81,15 @@ export function WidgetScore({
         ? "DUERP en cours"
         : "Pas encore de DUERP";
     return (
-      <BentoCell kicker="Score de conformité" sub={sub}>
+      <BentoCell
+        kicker={
+          <>
+            Score de conformité
+            <ScoreInfoTooltip align="left" />
+          </>
+        }
+        sub={sub}
+      >
         <div className="flex flex-wrap items-center gap-7">
           <GaugeScore valeur={global} />
           <dl className="flex flex-1 flex-col gap-1.5 text-[0.86rem]">
@@ -82,7 +108,14 @@ export function WidgetScore({
 
   if (variant === "nombre") {
     return (
-      <BentoCell kicker="Score de conformité">
+      <BentoCell
+        kicker={
+          <>
+            Score de conformité
+            <ScoreInfoTooltip align="left" />
+          </>
+        }
+      >
         <div className="flex flex-col gap-1">
           <span className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
             Score actuel
@@ -116,9 +149,12 @@ export function WidgetScore({
     <section className="bento-cell">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="v2-title">Score de conformité</h3>
+          <h3 className="v2-title inline-flex items-center">
+            Score de conformité
+            <ScoreInfoTooltip align="left" />
+          </h3>
           <p className="v2-subtitle">
-            Pondération INRS · toutes familles confondues
+            Indicateur interne — pas une certification officielle
           </p>
         </div>
       </header>
@@ -129,33 +165,53 @@ export function WidgetScore({
           <span className={niveauPill.classe}>{niveauPill.label}</span>
         </div>
 
-        <div className="grid gap-3">
+        <div className="flex flex-col gap-3">
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
+            Vérifications à jour par famille
+          </p>
           {familles.length === 0 ? (
-            <p className="text-[0.88rem] text-muted-foreground">
-              Déclarez vos premiers équipements pour voir le score par
-              famille s&apos;afficher ici.
+            <p className="text-[0.85rem] text-muted-foreground">
+              Déclarez vos équipements pour suivre l&apos;état des
+              vérifications par famille.
             </p>
           ) : (
-            familles.map((f) => (
-              <div
-                key={f.nom}
-                className="grid grid-cols-[110px_1fr_44px] items-center gap-3 md:grid-cols-[140px_1fr_52px]"
-              >
-                <div className="text-[0.84rem] text-ink/75">{f.nom}</div>
-                <div className="v2-bar-track">
+            <div className="grid gap-2.5">
+              {familles.map((f) => {
+                const aJour = f.total - f.enRetard;
+                return (
                   <div
-                    className="v2-bar-fill"
-                    style={{
-                      width: `${f.pct}%`,
-                      background: toneColor(f.tone),
-                    }}
-                  />
-                </div>
-                <div className="text-right font-mono text-[0.78rem] tabular-nums text-ink/75">
-                  {f.pct}%
-                </div>
-              </div>
-            ))
+                    key={f.nom}
+                    className="grid grid-cols-[110px_1fr_auto] items-center gap-3 md:grid-cols-[140px_1fr_auto]"
+                  >
+                    <div className="text-[0.84rem] text-ink/75">{f.nom}</div>
+                    <div className="v2-bar-track">
+                      <div
+                        className="v2-bar-fill"
+                        style={{
+                          width: `${f.pct}%`,
+                          background: toneColor(f.tone),
+                        }}
+                      />
+                    </div>
+                    <div
+                      className="text-right font-mono text-[0.74rem] tabular-nums"
+                      style={{
+                        color:
+                          f.enRetard > 0 ? "var(--alert)" : "var(--ink)",
+                        opacity: 0.85,
+                      }}
+                      title={
+                        f.enRetard > 0
+                          ? `${f.enRetard} vérification${f.enRetard > 1 ? "s" : ""} en retard sur ${f.total}`
+                          : `${aJour} / ${f.total} à jour`
+                      }
+                    >
+                      {aJour}/{f.total}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>
@@ -252,38 +308,55 @@ function tonePourPct(pct: number): Tone {
   return "alert";
 }
 
-type FamilleStat = { nom: string; pct: number; tone: Tone };
+type FamilleStat = {
+  nom: string;
+  pct: number;
+  tone: Tone;
+  enRetard: number;
+  total: number;
+};
 
-/** Calcule un pct de conformité par famille à partir des stats d'équipements.
- *  Heuristique simple : sur l'ensemble des vérifications associées aux
- *  équipements de la famille, part = couvertes / total. Sans vérification,
- *  la famille n'est pas représentée. */
+/**
+ * Calcule un pct de conformité par famille à partir des stats d'équipements.
+ *
+ * Règle alignée sur le score global (cf. `src/lib/dashboard/score.ts`) :
+ *   - seules les vérifications réellement **dépassées** pénalisent le pct
+ *   - les vérifications **à planifier** (jamais programmées) sont
+ *     considérées neutres tant qu'une date d'échéance n'est pas passée
+ *   - on n'affiche une barre que si la famille a au moins une vérification
+ *     active ; sinon la famille est masquée (ne pas inventer de 50 % neutre)
+ */
 function calculerFamilles(
   equipements: DashboardBundle["equipements"],
 ): FamilleStat[] {
   const out: FamilleStat[] = [];
   for (const fam of FAMILLES) {
-    let totalSignaux = 0;
-    let retardsEtPlan = 0;
-    let aRepresente = false;
+    let totalVerifs = 0;
+    let enRetard = 0;
+    let aAuMoinsUneVerif = false;
     for (const eq of equipements) {
       if (!fam.categories.includes(eq.categorie)) continue;
-      aRepresente = true;
       const s = eq.stats;
       if (!s) continue;
-      const weight = s.enRetard + s.aPlanifier + (s.derniereRealisee ? 1 : 0);
-      totalSignaux += weight || 1; // compte au moins une "chance" par équipement
-      retardsEtPlan += s.enRetard + s.aPlanifier;
+      const nbPourEq =
+        s.enRetard + s.aPlanifier + s.sous30j + (s.derniereRealisee ? 1 : 0);
+      if (nbPourEq === 0) continue;
+      aAuMoinsUneVerif = true;
+      totalVerifs += nbPourEq;
+      enRetard += s.enRetard;
     }
-    if (!aRepresente) continue;
-    const pct =
-      totalSignaux === 0
-        ? 50
-        : Math.max(
-            0,
-            Math.min(100, Math.round(100 * (1 - retardsEtPlan / totalSignaux))),
-          );
-    out.push({ nom: fam.nom, pct, tone: tonePourPct(pct) });
+    if (!aAuMoinsUneVerif) continue;
+    const pct = Math.max(
+      0,
+      Math.min(100, Math.round(100 * (1 - enRetard / totalVerifs))),
+    );
+    out.push({
+      nom: fam.nom,
+      pct,
+      tone: tonePourPct(pct),
+      enRetard,
+      total: totalVerifs,
+    });
   }
   return out;
 }

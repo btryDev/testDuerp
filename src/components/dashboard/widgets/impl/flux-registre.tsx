@@ -64,30 +64,31 @@ export function WidgetFluxRegistre({
             <li
               key={r.id}
               className={
-                "grid grid-cols-[10px_1fr_auto] items-start gap-3 py-2.5 " +
-                (i < rapportsRecents.length - 1
+                i < rapportsRecents.length - 1
                   ? "border-b border-dashed border-rule-soft"
-                  : "")
+                  : ""
               }
             >
-              <span
-                aria-hidden
-                className="mt-1 size-2 rounded-full"
-                style={{ background: dotColor }}
-              />
-              <div className="min-w-0">
-                <p className="truncate text-[0.86rem] font-medium">
-                  {r.verification.libelleObligation}
-                </p>
-                <p className="mt-0.5 text-[0.72rem] text-muted-foreground">
-                  {libelleResultat} · {dateRelative(r.dateRapport)}
-                </p>
-              </div>
               <Link
-                href={`/etablissements/${etablissementId}/registre`}
-                className="shrink-0 self-center font-mono text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
+                href={`/etablissements/${etablissementId}/verifications/${r.verificationId}`}
+                className="group grid grid-cols-[10px_1fr_auto] items-start gap-3 rounded-md py-2.5 transition-colors hover:bg-paper-sunk"
               >
-                Voir
+                <span
+                  aria-hidden
+                  className="mt-1 size-2 rounded-full"
+                  style={{ background: dotColor }}
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-[0.86rem] font-medium group-hover:underline">
+                    {r.verification.libelleObligation}
+                  </p>
+                  <p className="mt-0.5 text-[0.72rem] text-muted-foreground">
+                    {libelleResultat} · {dateRelative(r.dateRapport)}
+                  </p>
+                </div>
+                <span className="shrink-0 self-center font-mono text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors group-hover:text-ink">
+                  Voir →
+                </span>
               </Link>
             </li>
           );

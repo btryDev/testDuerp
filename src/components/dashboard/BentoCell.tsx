@@ -13,7 +13,7 @@ export function BentoCell({
   children,
   className = "",
 }: {
-  kicker: string;
+  kicker: ReactNode;
   sub?: ReactNode;
   count?: number | string;
   more?: { href: string; label: string };

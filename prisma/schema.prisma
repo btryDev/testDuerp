@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   // En prod (Supabase) : URL via pooler PgBouncer (port 6543) pour le runtime.
   url       = env("DATABASE_URL")
   // URL directe (port 5432) pour les migrations — Prisma Migrate a besoin
@@ -39,32 +39,40 @@ model Entreprise {
 // ADR-001 : Etablissement est l'ancrage des obligations réglementaires.
 // ADR-004 : régimes cumulables (travail / ERP / IGH / habitation) via flags.
 model Etablissement {
-  id                      String    @id @default(cuid())
-  entrepriseId            String
-  entreprise              Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
+  id           String     @id @default(cuid())
+  entrepriseId String
+  entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
 
-  raisonDisplay           String
-  adresse                 String
-  codeNaf                 String?
-  effectifSurSite         Int
+  raisonDisplay   String
+  adresse         String
+  codeNaf         String?
+  effectifSurSite Int
 
   // Régimes — cf. ADR-004
-  estEtablissementTravail Boolean   @default(true)
-  estERP                  Boolean   @default(false)
-  estIGH                  Boolean   @default(false)
-  estHabitation           Boolean   @default(false)
+  estEtablissementTravail Boolean       @default(true)
+  estERP                  Boolean       @default(false)
+  estIGH                  Boolean       @default(false)
+  estHabitation           Boolean       @default(false)
   typeErp                 TypeErp?
   categorieErp            CategorieErp?
   classeIgh               ClasseIgh?
 
-  duerps                  Duerp[]
-  equipements             Equipement[]
-  verifications           Verification[]
-  rapports                RapportVerification[]
-  actions                 Action[]
+  duerps                Duerp[]
+  equipements           Equipement[]
+  verifications         Verification[]
+  rapports              RapportVerification[]
+  actions               Action[]
+  prestataires          Prestataire[]
+  signatures            Signature[]
+  accessTokens          AccessToken[]
+  registreAccessibilite RegistreAccessibilite?
+  permisFeu             PermisFeu[]
+  plansPrevention       PlanPrevention[]
+  carnetSanitaire       CarnetSanitaire?
+  interventions         Intervention[]
 
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([entrepriseId])
 }
@@ -180,9 +188,9 @@ model Risque {
 // ----------------------------------------------------------------------------
 
 model Equipement {
-  id                String              @id @default(cuid())
-  etablissementId   String
-  etablissement     Etablissement       @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
 
   categorie         CategorieEquipement
   libelle           String
@@ -191,10 +199,10 @@ model Equipement {
   caracteristiques  Json?
   actif             Boolean             @default(true)
 
-  verifications     Verification[]
+  verifications Verification[]
 
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([etablissementId, categorie])
 }
@@ -219,26 +227,26 @@ enum CategorieEquipement {
 }
 
 model Verification {
-  id                String                @id @default(cuid())
-  etablissementId   String
-  etablissement     Etablissement         @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
-  equipementId      String
-  equipement        Equipement            @relation(fields: [equipementId], references: [id], onDelete: Cascade)
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  equipementId    String
+  equipement      Equipement    @relation(fields: [equipementId], references: [id], onDelete: Cascade)
 
   obligationId      String
   libelleObligation String
   periodicite       Periodicite
   realisateurRequis Realisateur[]
 
-  datePrevue        DateTime
-  dateRealisee      DateTime?
-  statut            StatutVerification    @default(a_planifier)
+  datePrevue   DateTime
+  dateRealisee DateTime?
+  statut       StatutVerification @default(a_planifier)
 
-  rapports          RapportVerification[]
-  actions           Action[]
+  rapports RapportVerification[]
+  actions  Action[]
 
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([etablissementId, datePrevue])
   @@index([equipementId])
@@ -279,23 +287,23 @@ enum Realisateur {
 }
 
 model RapportVerification {
-  id                 String               @id @default(cuid())
-  etablissementId    String
-  etablissement      Etablissement        @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
-  verificationId     String
-  verification       Verification         @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  verificationId  String
+  verification    Verification  @relation(fields: [verificationId], references: [id], onDelete: Cascade)
 
-  dateRapport        DateTime
-  organismeVerif     String?
-  resultat           ResultatVerification
-  commentaires       String?
+  dateRapport    DateTime
+  organismeVerif String?
+  resultat       ResultatVerification
+  commentaires   String?
 
   fichierCle         String
   fichierNomOriginal String
   fichierMime        String
   fichierTaille      Int
 
-  createdAt          DateTime             @default(now())
+  createdAt DateTime @default(now())
 
   @@index([etablissementId, dateRapport])
   @@index([verificationId])
@@ -315,31 +323,31 @@ enum ResultatVerification {
 // ----------------------------------------------------------------------------
 
 model Action {
-  id                  String        @id @default(cuid())
-  etablissementId     String
-  etablissement       Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
 
-  risqueId            String?
-  risque              Risque?       @relation(fields: [risqueId], references: [id], onDelete: Cascade)
-  verificationId      String?
-  verification        Verification? @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+  risqueId       String?
+  risque         Risque?       @relation(fields: [risqueId], references: [id], onDelete: Cascade)
+  verificationId String?
+  verification   Verification? @relation(fields: [verificationId], references: [id], onDelete: Cascade)
 
   referentielMesureId String?
 
-  libelle             String
-  description         String?
-  type                TypeAction
-  statut              StatutAction  @default(ouverte)
-  criticite           Int?
-  echeance            DateTime?
-  responsable         String?
+  libelle     String
+  description String?
+  type        TypeAction
+  statut      StatutAction @default(ouverte)
+  criticite   Int?
+  echeance    DateTime?
+  responsable String?
 
-  leveeLe             DateTime?
-  leveeCommentaire    String?
-  leveeRapportId      String?
+  leveeLe          DateTime?
+  leveeCommentaire String?
+  leveeRapportId   String?
 
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([risqueId, referentielMesureId])
   @@index([etablissementId, statut])
@@ -362,4 +370,536 @@ enum StatutAction {
   en_cours
   levee
   abandonnee
+}
+
+// ----------------------------------------------------------------------------
+// Annuaire prestataires — ADR-007
+// Matérialise l'obligation de vigilance (art. L8222-1 / D8222-5 CT) :
+// alertes d'expiration URSSAF (6 mois), RC Pro, Kbis, au-delà du simple
+// carnet d'adresses.
+// ----------------------------------------------------------------------------
+
+model Prestataire {
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  // Identité
+  raisonSociale     String
+  siret             String?
+  estOrganismeAgree Boolean              @default(false)
+  domaines          DomainePrestataire[]
+
+  // Contact principal
+  contactNom       String
+  contactEmail     String
+  contactTelephone String?
+
+  // Vigilance L8222-1 — attestation URSSAF (à renouveler tous les 6 mois)
+  attestationUrssafCle           String?
+  attestationUrssafNom           String?
+  attestationUrssafValableJusquA DateTime?
+
+  // Assurance Responsabilité Civile Professionnelle
+  assuranceRcProCle           String?
+  assuranceRcProNom           String?
+  assuranceRcProValableJusquA DateTime?
+
+  // Extrait Kbis / justificatif d'immatriculation
+  kbisCle          String?
+  kbisNom          String?
+  kbisDateEmission DateTime?
+
+  notesInternes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([etablissementId])
+  @@index([etablissementId, raisonSociale])
+}
+
+enum DomainePrestataire {
+  electricite
+  incendie
+  ascenseur
+  porte_automatique
+  ventilation_vmc
+  cuisson_hotte
+  equipement_pression
+  levage
+  stockage_dangereux
+  carnet_sanitaire
+  bureau_controle
+  entretien_general
+  travaux_btp
+  nettoyage
+  autre
+}
+
+// ----------------------------------------------------------------------------
+// Signature électronique horodatée — ADR-006
+// Niveau eIDAS « simple ». Preuve par : identité (compte ou OTP email) +
+// hash SHA-256 du document + horodatage serveur + IP/UA.
+// ----------------------------------------------------------------------------
+
+model Signature {
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  objetType ObjetSignable
+  objetId   String
+
+  signataireNom   String
+  signataireEmail String
+  signataireRole  String?
+  userId          String? @db.Uuid // non-null si compte_connecte
+
+  hashDocument String // SHA-256 hex (64 car.)
+  nomDocument  String?
+
+  methode   MethodeSignature
+  ipAddress String?
+  userAgent String?
+
+  horodatageIso           DateTime @default(now())
+  horodatageQualifieToken String?
+
+  createdAt DateTime @default(now())
+
+  @@index([etablissementId, objetType, objetId])
+  @@index([userId])
+}
+
+enum ObjetSignable {
+  rapport_verification
+  permis_feu
+  plan_prevention
+  registre_accessibilite
+  duerp_version
+}
+
+enum MethodeSignature {
+  compte_connecte
+  otp_email
+}
+
+// ----------------------------------------------------------------------------
+// Accès externe par token — ADR-007
+// Permet à un prestataire sans compte de consulter, déposer un rapport ou
+// signer via un lien magique. Token clair envoyé par email, hash stocké.
+// ----------------------------------------------------------------------------
+
+model AccessToken {
+  id        String @id @default(cuid())
+  tokenHash String @unique
+
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  scope         ScopeAccessToken
+  objetType     String
+  objetId       String
+  prestataireId String?
+
+  emailDestinataire String
+  nomDestinataire   String?
+
+  otpHash           String?
+  otpEssaisRestants Int     @default(3)
+
+  expireLe     DateTime
+  utiliseLe    DateTime?
+  revoqueLe    DateTime?
+  revoqueMotif String?
+
+  createdByUserId              String   @db.Uuid
+  createdAt                    DateTime @default(now())
+  derniereUtilisationIp        String?
+  derniereUtilisationUserAgent String?
+
+  @@index([etablissementId])
+  @@index([objetType, objetId])
+}
+
+enum ScopeAccessToken {
+  signature
+  depot_rapport
+  consultation
+}
+
+// ----------------------------------------------------------------------------
+// Registre d'accessibilité ERP — arrêté du 19 avril 2017 (art. D111-19-33 CCH).
+// Tout ERP doit tenir un registre public consultable sur place ou en ligne,
+// qui décrit : (1) prestations fournies, (2) pièces administratives et
+// techniques relatives à l'accessibilité, (3) formations du personnel
+// d'accueil, (4) modalités de maintenance des équipements.
+// ----------------------------------------------------------------------------
+
+model RegistreAccessibilite {
+  id              String        @id @default(cuid())
+  etablissementId String        @unique
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  // Slug public stable — pose du QR code. Inchangé une fois publié.
+  slugPublic String @unique
+
+  // Étape 1 — Prestations fournies
+  prestationsFournies String?              @db.Text
+  handicapsAccueillis HandicapAccessible[]
+  servicesAdaptes     String?              @db.Text
+
+  // Étape 2 — Pièces administratives et techniques
+  conformiteRegime        RegimeConformiteErp?
+  dateConformite          DateTime?
+  numeroAttestationAccess String?
+  attestationCle          String?
+  attestationNom          String?
+  dateDepotAdap           DateTime? // Agenda d'accessibilité programmée
+  agendaAdapCle           String?
+  agendaAdapNom           String?
+
+  // Étape 3 — Formation personnel d'accueil
+  personnelForme          Boolean   @default(false)
+  dateDerniereFormation   DateTime?
+  organismeFormation      String?
+  attestationFormationCle String?
+  attestationFormationNom String?
+  effectifForme           Int?
+
+  // Étape 4 — Maintenance des équipements d'accessibilité
+  equipementsAccessibilite   String?   @db.Text
+  modalitesMaintenance       String?   @db.Text
+  dernierControleMaintenance DateTime?
+
+  // Publication
+  publie   Boolean   @default(false)
+  publieLe DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slugPublic])
+}
+
+enum HandicapAccessible {
+  moteur
+  visuel
+  auditif
+  mental
+  cognitif
+  psychique
+}
+
+enum RegimeConformiteErp {
+  conforme_origine // Bâtiment neuf ou conforme dès la conception
+  conforme_apres_travaux // Mise en conformité déjà réalisée
+  derogation_accordee // Dérogation préfectorale (art. L. 165-1 CASF)
+  adap_en_cours // Agenda d'accessibilité programmée validé
+  non_conforme_sans_adap // Hors conformité sans plan actif
+}
+
+// ----------------------------------------------------------------------------
+// Permis de feu — recommandation INRS ED 6030, art. R4224-17 CT, MS 52 ERP,
+// exigence APSAD R43 (assurance). Document obligatoire pour tout travail par
+// point chaud (soudage, découpe, brasage, meulage…) sur site.
+// ----------------------------------------------------------------------------
+
+model PermisFeu {
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  // Numérotation auto par établissement (pour traçabilité)
+  numero Int
+
+  // Qui intervient — soit prestataire de l'annuaire (FK), soit saisie libre
+  prestataireId      String?
+  prestataireRaison  String // snapshot pour affichage
+  prestataireContact String // nom du technicien
+  prestataireEmail   String
+
+  // Donneur d'ordre (côté donneur) — snapshot nom saisi
+  donneurOrdreNom      String
+  donneurOrdreFonction String?
+
+  // Travaux
+  dateDebut          DateTime
+  dateFin            DateTime
+  lieu               String // description précise : salle, étage, zone
+  naturesTravaux     NatureTravauxPointChaud[]
+  descriptionTravaux String
+
+  // Checklist mesures préventives (ID du référentiel INRS ED 6030)
+  mesuresValidees String[] @default([])
+  mesuresNotes    String?
+
+  // Surveillance post-travaux (2h standard INRS, 4h si risque élevé)
+  dureeSurveillanceMinutes Int @default(120)
+
+  // Cycle de vie
+  statut StatutPermisFeu @default(brouillon)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([etablissementId, numero])
+  @@index([etablissementId, dateDebut])
+  @@index([statut])
+}
+
+enum NatureTravauxPointChaud {
+  soudage_arc
+  soudage_gaz
+  soudage_oxyacetylenique
+  decoupe_plasma
+  brasage
+  meulage
+  tronconnage
+  chalumeau
+  travaux_etancheite
+  decapage_thermique
+  autre
+}
+
+enum StatutPermisFeu {
+  brouillon
+  attente_signatures
+  valide
+  en_cours
+  termine
+  annule
+}
+
+// ----------------------------------------------------------------------------
+// Plan de prévention — art. R4512-6 à R4512-12 CT (décret 92-158).
+// Obligatoire en écrit si :
+//   - durée totale > 400h/an des travaux d'entreprise(s) extérieure(s), OU
+//   - figure sur la liste de travaux dangereux de l'arrêté du 19 mars 1993.
+// Inspection commune préalable obligatoire (art. R4512-7).
+// ----------------------------------------------------------------------------
+
+model PlanPrevention {
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  numero Int
+
+  // Entreprise extérieure
+  prestataireId              String?
+  entrepriseExterieureRaison String
+  entrepriseExterieureSiret  String?
+  efChefNom                  String // chef de l'entreprise extérieure
+  efChefEmail                String
+  efEffectifIntervenant      Int
+
+  // Entreprise utilisatrice (vous)
+  euChefNom      String
+  euChefFonction String?
+
+  // Travaux
+  dateDebut          DateTime
+  dateFin            DateTime
+  dureeHeuresEstimee Int?
+  lieux              String // multi-lieux possibles, texte libre
+  naturesTravaux     String   @db.Text
+  travauxDangereux   Boolean  @default(false)
+
+  // Inspection commune préalable (art. R4512-7)
+  inspectionDate         DateTime?
+  inspectionParticipants String?   @db.Text
+
+  // Lignes risques-mesures (relation 1-N)
+  lignes LignePlanPrevention[]
+
+  // Cycle de vie
+  statut StatutPlanPrevention @default(brouillon)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([etablissementId, numero])
+  @@index([etablissementId, dateDebut])
+}
+
+model LignePlanPrevention {
+  id               String         @id @default(cuid())
+  planPreventionId String
+  plan             PlanPrevention @relation(fields: [planPreventionId], references: [id], onDelete: Cascade)
+
+  ordre                        Int     @default(0)
+  risque                       String
+  mesureEntrepriseUtilisatrice String?
+  mesureEntrepriseExterieure   String?
+
+  @@index([planPreventionId, ordre])
+}
+
+enum StatutPlanPrevention {
+  brouillon
+  inspection_faite
+  attente_signatures
+  valide
+  clos
+  annule
+}
+
+// ----------------------------------------------------------------------------
+// Carnet sanitaire eau — arrêté du 1er février 2010 (légionelles),
+// art. R1321-23 Code de la santé publique. Applicable aux ERP avec ECS,
+// habitat collectif, restauration. Contenu imposé :
+//   - description des installations (points de puisage)
+//   - relevés de température ECS (hebdo minimum, seuil ≥ 50°C)
+//   - analyses de légionelles (annuel, seuil d'action 1000 UFC/L)
+// ----------------------------------------------------------------------------
+
+model CarnetSanitaire {
+  id              String        @id @default(cuid())
+  etablissementId String        @unique
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  descriptionReseau String?
+
+  pointsReleve PointReleve[]
+  analyses     AnalyseLegionelle[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PointReleve {
+  id       String          @id @default(cuid())
+  carnetId String
+  carnet   CarnetSanitaire @relation(fields: [carnetId], references: [id], onDelete: Cascade)
+
+  nom             String
+  localisation    String?
+  typeReseau      TypeReseauEau
+  seuilMinCelsius Float         @default(50)
+  actif           Boolean       @default(true)
+
+  releves ReleveTemperature[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([carnetId])
+}
+
+model ReleveTemperature {
+  id            String      @id @default(cuid())
+  pointReleveId String
+  pointReleve   PointReleve @relation(fields: [pointReleveId], references: [id], onDelete: Cascade)
+
+  dateReleve         DateTime
+  temperatureCelsius Float
+  conforme           Boolean
+  operateur          String?
+  commentaire        String?
+
+  createdAt DateTime @default(now())
+
+  @@index([pointReleveId, dateReleve])
+}
+
+model AnalyseLegionelle {
+  id       String          @id @default(cuid())
+  carnetId String
+  carnet   CarnetSanitaire @relation(fields: [carnetId], references: [id], onDelete: Cascade)
+
+  dateAnalyse   DateTime
+  laboratoire   String?
+  valeurUfcParL Int?
+  conforme      Boolean
+  rapportCle    String?
+  rapportNom    String?
+  commentaire   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([carnetId, dateAnalyse])
+}
+
+enum TypeReseauEau {
+  ECS
+  EFS
+  ECS_BOUCLAGE
+}
+
+// ----------------------------------------------------------------------------
+// Interventions / tickets — gestion du quotidien (art. R4224-17 CT :
+// obligation de maintien en état de conformité). Pas de forme imposée,
+// mais la traçabilité est ce que l'inspecteur demande en premier.
+//
+// Différenciateur : quand un ticket concerne un équipement ou un risque
+// du DUERP, il peut être lié — et sa clôture déclenche la réévaluation
+// du risque associé.
+// ----------------------------------------------------------------------------
+
+model Intervention {
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  numero Int
+
+  titre       String
+  description String?
+  photos      String[] @default([]) // keys FileStorage
+
+  priorite     PrioriteIntervention @default(moyenne)
+  statut       StatutIntervention   @default(ouvert)
+  localisation String?
+
+  // Liens optionnels
+  uniteTravailId String?
+  risqueId       String? // si le ticket impacte un risque du DUERP
+  prestataireId  String?
+
+  // Cycle de vie
+  creeParUserId String    @db.Uuid
+  assigneA      String? // nom du responsable (interne ou externe)
+  echeance      DateTime?
+  dateCloture   DateTime?
+  motifCloture  String?
+
+  commentaires CommentaireIntervention[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([etablissementId, numero])
+  @@index([etablissementId, statut])
+  @@index([etablissementId, priorite, statut])
+  @@index([risqueId])
+}
+
+model CommentaireIntervention {
+  id             String       @id @default(cuid())
+  interventionId String
+  intervention   Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+
+  auteurNom String
+  contenu   String
+
+  createdAt DateTime @default(now())
+
+  @@index([interventionId])
+}
+
+enum PrioriteIntervention {
+  basse
+  moyenne
+  urgente
+  bloquante
+}
+
+enum StatutIntervention {
+  ouvert
+  assigne
+  en_cours
+  fait
+  annule
 }

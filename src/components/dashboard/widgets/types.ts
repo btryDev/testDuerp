@@ -109,6 +109,7 @@ type ActionLite = {
 
 type RapportLite = {
   id: string;
+  verificationId: string;
   dateRapport: Date;
   resultat:
     | "conforme"

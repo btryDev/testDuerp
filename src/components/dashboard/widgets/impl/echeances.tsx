@@ -73,7 +73,10 @@ export function WidgetProchainesEcheances({
           label: "Tout voir",
         }}
       >
-        <TimelineEcheances verifs={prochainesVerifs} />
+        <TimelineEcheances
+          verifs={prochainesVerifs}
+          etablissementId={etablissementId}
+        />
       </BentoCell>
     );
   }
@@ -117,32 +120,36 @@ export function WidgetProchainesEcheances({
           return (
             <li
               key={v.id}
-              className="grid grid-cols-[1fr_auto] items-start gap-3 py-3"
               style={{
                 borderTop: i === 0 ? "0" : "1px dashed var(--rule)",
               }}
             >
-              <div className="min-w-0">
-                <p className="truncate text-[13.5px] font-medium tracking-[-0.005em]">
-                  {v.libelleObligation}
-                </p>
-                <p className="mt-[3px] truncate font-mono text-[11px] tracking-[0.04em] text-muted-foreground">
-                  {v.equipement.libelle}
-                </p>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <span className="font-mono text-[12px] tabular-nums text-ink/75">
-                  {c.libelleDate}
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className={"font-mono text-[10.5px] " + dansColor}
-                  >
-                    {dans}
-                  </span>
-                  <span className={pillClass}>{pillLabel}</span>
+              <Link
+                href={`/etablissements/${etablissementId}/verifications/${v.id}`}
+                className="grid grid-cols-[1fr_auto] items-start gap-3 rounded-md py-3 transition-colors hover:bg-paper-sunk"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-[13.5px] font-medium tracking-[-0.005em]">
+                    {v.libelleObligation}
+                  </p>
+                  <p className="mt-[3px] truncate font-mono text-[11px] tracking-[0.04em] text-muted-foreground">
+                    {v.equipement.libelle}
+                  </p>
                 </div>
-              </div>
+                <div className="flex flex-col items-end gap-1">
+                  <span className="font-mono text-[12px] tabular-nums text-ink/75">
+                    {c.libelleDate}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={"font-mono text-[10.5px] " + dansColor}
+                    >
+                      {dans}
+                    </span>
+                    <span className={pillClass}>{pillLabel}</span>
+                  </div>
+                </div>
+              </Link>
             </li>
           );
         })}
@@ -153,8 +160,10 @@ export function WidgetProchainesEcheances({
 
 function TimelineEcheances({
   verifs,
+  etablissementId,
 }: {
   verifs: DashboardBundle["prochainesVerifs"];
+  etablissementId: string;
 }) {
   // Axe temporel : de aujourd'hui à la dernière date prévue (au moins
   // 30 jours d'horizon pour ne pas écraser si toutes proches).
@@ -230,19 +239,21 @@ function TimelineEcheances({
                 ? "oklch(0.72 0.15 70)"
                 : "var(--accent-vif)";
           return (
-            <li
-              key={v.id}
-              className="flex items-center gap-3 text-[0.82rem]"
-            >
-              <span
-                aria-hidden
-                className="size-2 shrink-0 rounded-full"
-                style={{ background: dotColor }}
-              />
-              <span className="flex-1 truncate">{v.libelleObligation}</span>
-              <span className="font-mono text-[0.76rem] text-muted-foreground">
-                {c.libelleDate}
-              </span>
+            <li key={v.id}>
+              <Link
+                href={`/etablissements/${etablissementId}/verifications/${v.id}`}
+                className="flex items-center gap-3 rounded-md px-1 py-1 text-[0.82rem] transition-colors hover:bg-paper-sunk"
+              >
+                <span
+                  aria-hidden
+                  className="size-2 shrink-0 rounded-full"
+                  style={{ background: dotColor }}
+                />
+                <span className="flex-1 truncate">{v.libelleObligation}</span>
+                <span className="font-mono text-[0.76rem] text-muted-foreground">
+                  {c.libelleDate}
+                </span>
+              </Link>
             </li>
           );
         })}

@@ -61,39 +61,43 @@ export function WidgetPlanActions({ bundle }: { bundle: DashboardBundle }) {
             return (
               <li
                 key={a.id}
-                className="grid grid-cols-[auto_1fr] items-start gap-3 py-3"
                 style={{
                   borderTop: i === 0 ? "0" : "1px dashed var(--rule)",
                 }}
               >
-                <div
-                  aria-hidden
-                  className="grid size-[26px] place-items-center rounded-md"
-                  style={{ border: `1px dashed ${color}` }}
+                <Link
+                  href={`/etablissements/${etablissementId}/actions/${a.id}`}
+                  className="grid grid-cols-[auto_1fr] items-start gap-3 rounded-md py-3 transition-colors hover:bg-paper-sunk"
                 >
-                  <span
-                    className="inline-block size-1.5 rounded-full"
-                    style={{ background: color }}
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[13.5px] font-medium leading-[1.3]">
-                    {a.libelle}
-                  </p>
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <span className="pill-v2 pill-v2-neutral">
-                      {a.statut === "en_cours" ? "En cours" : "Ouverte"}
-                    </span>
-                    {a.echeance ? (
-                      <span className="font-mono text-[11px] text-muted-foreground">
-                        échéance ·{" "}
-                        <strong className="text-ink/75">
-                          {formatDateCourte(a.echeance)}
-                        </strong>
-                      </span>
-                    ) : null}
+                  <div
+                    aria-hidden
+                    className="grid size-[26px] place-items-center rounded-md"
+                    style={{ border: `1px dashed ${color}` }}
+                  >
+                    <span
+                      className="inline-block size-1.5 rounded-full"
+                      style={{ background: color }}
+                    />
                   </div>
-                </div>
+                  <div className="min-w-0">
+                    <p className="text-[13.5px] font-medium leading-[1.3]">
+                      {a.libelle}
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <span className="pill-v2 pill-v2-neutral">
+                        {a.statut === "en_cours" ? "En cours" : "Ouverte"}
+                      </span>
+                      {a.echeance ? (
+                        <span className="font-mono text-[11px] text-muted-foreground">
+                          échéance ·{" "}
+                          <strong className="text-ink/75">
+                            {formatDateCourte(a.echeance)}
+                          </strong>
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </Link>
               </li>
             );
           })}
@@ -149,16 +153,32 @@ export function WidgetRegistre({ bundle }: { bundle: DashboardBundle }) {
             {rapportsRecents.map((r) => (
               <tr
                 key={r.id}
-                className="border-b border-dashed border-rule-soft last:border-b-0"
+                className="group cursor-pointer border-b border-dashed border-rule-soft transition-colors last:border-b-0 hover:bg-paper-sunk"
               >
                 <td className="py-2.5 font-mono text-[0.82rem] text-muted-foreground">
-                  {formatDateCourte(r.dateRapport)}
+                  <Link
+                    href={`/etablissements/${etablissementId}/verifications/${r.verificationId}`}
+                    className="block"
+                    aria-label={`Ouvrir ${r.verification.libelleObligation}`}
+                  >
+                    {formatDateCourte(r.dateRapport)}
+                  </Link>
                 </td>
                 <td className="truncate py-2.5">
-                  {r.verification.libelleObligation}
+                  <Link
+                    href={`/etablissements/${etablissementId}/verifications/${r.verificationId}`}
+                    className="block group-hover:underline"
+                  >
+                    {r.verification.libelleObligation}
+                  </Link>
                 </td>
                 <td className="py-2.5 text-right">
-                  <PillResultat resultat={r.resultat} />
+                  <Link
+                    href={`/etablissements/${etablissementId}/verifications/${r.verificationId}`}
+                    className="inline-block"
+                  >
+                    <PillResultat resultat={r.resultat} />
+                  </Link>
                 </td>
               </tr>
             ))}

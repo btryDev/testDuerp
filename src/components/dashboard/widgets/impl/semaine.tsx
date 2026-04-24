@@ -4,13 +4,14 @@
 // Mini-agenda 7 jours : jour courant + 6 suivants, groupés par jour,
 // avec les vérifications planifiées dans cette fenêtre.
 
+import Link from "next/link";
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import type { DashboardBundle } from "../types";
 
 const JOURS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
 export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
-  const { evenementsSemaine = [] } = bundle;
+  const { evenementsSemaine = [], etablissementId } = bundle;
 
   // Fenêtre 7 jours à partir d'aujourd'hui
   const today = new Date();
@@ -23,12 +24,22 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
 
   const eventsParJour = new Map<
     string,
-    { libelle: string; tone: "alerte" | "warn" | "ok"; equipement: string }[]
+    {
+      id: string;
+      libelle: string;
+      tone: "alerte" | "warn" | "ok";
+      equipement: string;
+    }[]
   >();
   for (const e of evenementsSemaine) {
     const key = e.date.toISOString().slice(0, 10);
     const arr = eventsParJour.get(key) ?? [];
-    arr.push({ libelle: e.libelle, tone: e.tone, equipement: e.equipement });
+    arr.push({
+      id: e.id,
+      libelle: e.libelle,
+      tone: e.tone,
+      equipement: e.equipement,
+    });
     eventsParJour.set(key, arr);
   }
 
@@ -77,25 +88,32 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
                 {d.getDate()}
               </div>
               <ul className="mt-1.5 flex flex-col gap-0.5">
-                {events.slice(0, 3).map((e, i) => (
-                  <li
-                    key={i}
-                    title={`${e.libelle} — ${e.equipement}`}
-                    className={
-                      "truncate rounded-sm px-1 text-[0.62rem] font-medium leading-tight " +
-                      (e.tone === "alerte"
-                        ? "bg-[color:color-mix(in_oklch,var(--minium)_15%,transparent)] text-[color:var(--minium)]"
-                        : e.tone === "warn"
-                          ? "bg-[oklch(0.95_0.04_75)] text-[oklch(0.48_0.14_60)]"
-                          : "bg-paper-elevated text-ink")
-                    }
-                  >
-                    {e.libelle}
+                {events.slice(0, 3).map((e) => (
+                  <li key={e.id}>
+                    <Link
+                      href={`/etablissements/${etablissementId}/verifications/${e.id}`}
+                      title={`${e.libelle} — ${e.equipement}`}
+                      className={
+                        "block truncate rounded-sm px-1 text-[0.62rem] font-medium leading-tight transition-opacity hover:opacity-80 " +
+                        (e.tone === "alerte"
+                          ? "bg-[color:color-mix(in_oklch,var(--minium)_15%,transparent)] text-[color:var(--minium)]"
+                          : e.tone === "warn"
+                            ? "bg-[oklch(0.95_0.04_75)] text-[oklch(0.48_0.14_60)]"
+                            : "bg-paper-elevated text-ink")
+                      }
+                    >
+                      {e.libelle}
+                    </Link>
                   </li>
                 ))}
                 {events.length > 3 ? (
-                  <li className="text-[0.6rem] text-muted-foreground">
-                    +{events.length - 3}
+                  <li>
+                    <Link
+                      href={`/etablissements/${etablissementId}/calendrier`}
+                      className="block text-[0.6rem] text-muted-foreground hover:text-ink hover:underline"
+                    >
+                      +{events.length - 3}
+                    </Link>
                   </li>
                 ) : null}
               </ul>

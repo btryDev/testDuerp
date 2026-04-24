@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
-import { AppSidebar } from "@/components/layout/AppSidebar";
 import { AppTopbar } from "@/components/layout/AppTopbar";
 import {
   OnboardingChecklist,
@@ -20,6 +19,7 @@ import {
 } from "@/lib/dashboard/queries";
 import { getOptionalUser } from "@/lib/auth/require-user";
 import { prisma } from "@/lib/prisma";
+import { countAlertesVigilance } from "@/lib/prestataires/queries";
 
 export default async function EtablissementPage({
   params,
@@ -44,6 +44,7 @@ export default async function EtablissementPage({
     actionsEnCours,
     rapportsRecents,
     user,
+    prestatairesAlertes,
   ] = await Promise.all([
     listerEquipementsDeLEtablissement(id),
     compterVerifsParEquipement(id),
@@ -78,6 +79,7 @@ export default async function EtablissementPage({
       take: 4,
     }),
     getOptionalUser(),
+    countAlertesVigilance(id),
   ]);
 
   // Checklist onboarding : uniquement les étapes actionnables par l'user.
@@ -171,6 +173,7 @@ export default async function EtablissementPage({
     })),
     rapportsRecents: rapportsRecents.map((r) => ({
       id: r.id,
+      verificationId: r.verificationId,
       dateRapport: r.dateRapport,
       resultat: r.resultat,
       verification: { libelleObligation: r.verification.libelleObligation },
@@ -191,56 +194,41 @@ export default async function EtablissementPage({
   };
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:h-screen lg:grid-cols-[248px_1fr] lg:overflow-hidden">
-      <AppSidebar
-        etablissement={etab}
-        active="tableau"
-        counts={{
-          equipements: equipements.length,
-          verificationsEnRetard: dashboard.compteurs.verifsEnRetard,
-          actions:
-            dashboard.compteurs.actionsOuvertes +
-            dashboard.compteurs.actionsEnCours,
-        }}
-        user={user}
+    <>
+      <AppTopbar
+        title="Tableau de bord"
+        actions={
+          <Link
+            href={`/etablissements/${id}/controle`}
+            className={buttonVariants({ size: "sm" })}
+          >
+            Préparer un contrôle →
+          </Link>
+        }
       />
 
-      <div className="flex min-w-0 flex-col lg:overflow-y-auto">
-        <AppTopbar
-          title="Tableau de bord"
-          actions={
-            <Link
-              href={`/api/etablissements/${id}/dossier-conformite/pdf`}
-              className={buttonVariants({ size: "sm" })}
-            >
-              Dossier PDF ↓
-            </Link>
-          }
-        />
+      <div className="flex flex-col gap-5 px-8 py-6 pb-12">
+        {!onboardingFini ? (
+          <OnboardingChecklist
+            etapes={etapesOnboarding}
+            etablissementRaison={etab.raisonDisplay}
+          />
+        ) : null}
 
-        <div className="flex flex-col gap-5 px-8 py-6 pb-12">
-          {!onboardingFini ? (
-            <OnboardingChecklist
-              etapes={etapesOnboarding}
-              etablissementRaison={etab.raisonDisplay}
-            />
-          ) : null}
+        <DashboardGrid bundle={bundle} />
 
-          <DashboardGrid bundle={bundle} />
-
-          <hr aria-hidden className="filet-pointille mt-2" />
-          <footer className="flex flex-wrap items-center justify-between gap-6 text-[11.5px] text-muted-foreground">
-            <p className="m-0 max-w-[640px] leading-[1.55]">
-              Outil d&apos;aide à la rédaction structuré sur les publications
-              INRS / OiRA. La responsabilité de l&apos;évaluation des risques
-              reste celle de l&apos;employeur.
-            </p>
-            <span className="font-mono uppercase tracking-[0.14em]">
-              v2 · modèle données
-            </span>
-          </footer>
-        </div>
+        <hr aria-hidden className="filet-pointille mt-2" />
+        <footer className="flex flex-wrap items-center justify-between gap-6 text-[11.5px] text-muted-foreground">
+          <p className="m-0 max-w-[640px] leading-[1.55]">
+            Outil d&apos;aide à la rédaction structuré sur les publications
+            INRS / OiRA. La responsabilité de l&apos;évaluation des risques
+            reste celle de l&apos;employeur.
+          </p>
+          <span className="font-mono uppercase tracking-[0.14em]">
+            v2 · modèle données
+          </span>
+        </footer>
       </div>
-    </div>
+    </>
   );
 }
