@@ -21,7 +21,6 @@ export const risquesTransverses: RisqueReferentiel[] = [
     unitesAssociees: [],
     graviteParDefaut: 4,
     probabiliteParDefaut: 2,
-    criticiteReferenceSecteur: 4,
     mesuresRecommandees: [
       {
         id: "trv-routier-alternatif",
@@ -63,7 +62,6 @@ export const risquesTransverses: RisqueReferentiel[] = [
     unitesAssociees: [],
     graviteParDefaut: 2,
     probabiliteParDefaut: 3,
-    criticiteReferenceSecteur: 4,
     mesuresRecommandees: [
       {
         id: "trv-ecran-poste",
@@ -93,7 +91,6 @@ export const risquesTransverses: RisqueReferentiel[] = [
     unitesAssociees: [],
     graviteParDefaut: 3,
     probabiliteParDefaut: 3,
-    criticiteReferenceSecteur: 6,
     mesuresRecommandees: [
       {
         id: "trv-rps-procedure",
@@ -123,7 +120,6 @@ export const risquesTransverses: RisqueReferentiel[] = [
     unitesAssociees: [],
     graviteParDefaut: 3,
     probabiliteParDefaut: 2,
-    criticiteReferenceSecteur: 4,
     mesuresRecommandees: [
       {
         id: "trv-iso-comm",
@@ -148,7 +144,6 @@ export const risquesTransverses: RisqueReferentiel[] = [
     unitesAssociees: [],
     graviteParDefaut: 3,
     probabiliteParDefaut: 3,
-    criticiteReferenceSecteur: 6,
     mesuresRecommandees: [
       {
         id: "trv-charges-meca",
@@ -178,7 +173,6 @@ export const risquesTransverses: RisqueReferentiel[] = [
     unitesAssociees: [],
     graviteParDefaut: 3,
     probabiliteParDefaut: 3,
-    criticiteReferenceSecteur: 6,
     mesuresRecommandees: [
       {
         id: "trv-rps-entretiens",
@@ -209,7 +203,6 @@ export const risquesTransverses: RisqueReferentiel[] = [
     unitesAssociees: [],
     graviteParDefaut: 3,
     probabiliteParDefaut: 1,
-    criticiteReferenceSecteur: 3,
     mesuresRecommandees: [
       {
         id: "trv-addict-reglement",

@@ -226,15 +226,30 @@ export async function enregistrerCotation(
     include: { unite: true },
   });
 
-  // Alerte sous-cotation si référence sectorielle connue
+  // Alerte de sous-évaluation : on compare la gravité et la probabilité
+  // isolément aux défauts du référentiel, pas la criticité agrégée.
+  // Raison : la maîtrise (M) divise C, donc une bonne prévention fait
+  // mécaniquement chuter C — ce n'est pas une sous-cotation, c'est l'effet
+  // recherché. G et P décrivent le risque intrinsèque (ce qui peut arriver,
+  // à quelle fréquence) : c'est là que la sous-évaluation est suspecte.
   let alerte: string | undefined;
   if (risque.referentielId) {
     const ref = tousRisquesConnus().get(risque.referentielId);
-    if (
-      ref?.criticiteReferenceSecteur !== undefined &&
-      criticite < ref.criticiteReferenceSecteur
-    ) {
-      alerte = `Cette cotation (${criticite}) est inférieure à la valeur indicative que nous proposons par défaut pour ce risque (${ref.criticiteReferenceSecteur}), basée sur les statistiques sectorielles INRS. Vérifiez ou justifiez votre choix.`;
+    if (ref) {
+      const ecarts: string[] = [];
+      if (parsed.data.gravite < ref.graviteParDefaut) {
+        ecarts.push(
+          `gravité cotée ${parsed.data.gravite}/4 (repère indicatif : ${ref.graviteParDefaut}/4)`,
+        );
+      }
+      if (parsed.data.probabilite < ref.probabiliteParDefaut) {
+        ecarts.push(
+          `probabilité cotée ${parsed.data.probabilite}/4 (repère indicatif : ${ref.probabiliteParDefaut}/4)`,
+        );
+      }
+      if (ecarts.length > 0) {
+        alerte = `Écart avec le repère par défaut : ${ecarts.join(" · ")}. Si votre situation le justifie (activité marginale, faible population exposée, particularité locale), c'est acceptable — sinon réévaluez. Ce repère n'a pas de valeur réglementaire.`;
+      }
     }
   }
 

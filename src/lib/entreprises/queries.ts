@@ -1,24 +1,41 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
+
+// ADR-005 : toutes les lectures d'Entreprise passent par requireUser() et
+// filtrent sur userId. Les entreprises orphelines (userId = NULL, héritage
+// avant auth) sont donc invisibles.
 
 export async function listerEntreprises() {
+  const user = await requireUser();
   return prisma.entreprise.findMany({
+    where: { userId: user.id },
     orderBy: { updatedAt: "desc" },
     include: {
-      _count: { select: { duerps: true } },
+      etablissements: {
+        include: {
+          _count: { select: { duerps: true } },
+        },
+      },
     },
   });
 }
 
 export async function getEntreprise(id: string) {
-  return prisma.entreprise.findUnique({
-    where: { id },
+  const user = await requireUser();
+  return prisma.entreprise.findFirst({
+    where: { id, userId: user.id },
     include: {
-      duerps: {
-        orderBy: { updatedAt: "desc" },
+      etablissements: {
+        orderBy: { createdAt: "asc" },
         include: {
-          versions: {
-            orderBy: { numero: "desc" },
-            take: 1,
+          duerps: {
+            orderBy: { updatedAt: "desc" },
+            include: {
+              versions: {
+                orderBy: { numero: "desc" },
+                take: 1,
+              },
+            },
           },
         },
       },

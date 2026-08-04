@@ -86,10 +86,18 @@ export async function creerVersion(
       motif,
       snapshot: snapshot as unknown as object,
     },
-    include: { duerp: { select: { entrepriseId: true } } },
+    include: {
+      duerp: {
+        select: {
+          etablissement: { select: { entrepriseId: true } },
+        },
+      },
+    },
   });
 
   revalidatePath(`/duerp/${duerpId}/synthese`);
-  revalidatePath(`/entreprises/${cree.duerp.entrepriseId}`);
+  revalidatePath(
+    `/entreprises/${cree.duerp.etablissement.entrepriseId}`,
+  );
   return { status: "success", numero: prochainNumero };
 }

@@ -3,6 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
+import {
+  assertEntrepriseOwnership,
+  getOptionalUserEtablissement,
+} from "@/lib/auth/scope";
 import { entrepriseSchema } from "./schema";
 
 export type ActionState =
@@ -14,6 +19,13 @@ export async function creerEntreprise(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  const user = await requireUser();
+
+  // 1 user = 1 entreprise : si une entreprise existe déjà pour ce user,
+  // on ne la duplique pas — retour sur le dashboard de l'établissement.
+  const existant = await getOptionalUserEtablissement();
+  if (existant) redirect(`/etablissements/${existant.id}`);
+
   const raw = Object.fromEntries(formData);
   const parsed = entrepriseSchema.safeParse(raw);
 
@@ -25,25 +37,15 @@ export async function creerEntreprise(
     };
   }
 
+  // V2 : l'entrée dans l'outil se fait en deux temps.
+  //   1. créer l'entreprise (identité juridique)
+  //   2. déclarer au moins un établissement (adresse, typologie, régimes)
+  // Le DUERP est initié depuis la page détail d'un établissement.
   const entreprise = await prisma.entreprise.create({
-    data: parsed.data,
+    data: { ...parsed.data, userId: user.id },
   });
 
-  const duerp = await prisma.duerp.create({
-    data: {
-      entrepriseId: entreprise.id,
-      unites: {
-        create: {
-          nom: "Risques transverses",
-          description:
-            "Risques transverses à l'entreprise (routier, RPS, TMS, écrans). Gérés via les questions détecteurs.",
-          estTransverse: true,
-        },
-      },
-    },
-  });
-
-  redirect(`/duerp/${duerp.id}/secteur`);
+  redirect(`/etablissements/nouveau?entrepriseId=${entreprise.id}`);
 }
 
 export async function modifierEntreprise(
@@ -51,6 +53,7 @@ export async function modifierEntreprise(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  await assertEntrepriseOwnership(id);
   const raw = Object.fromEntries(formData);
   const parsed = entrepriseSchema.safeParse(raw);
 
@@ -73,6 +76,7 @@ export async function modifierEntreprise(
 }
 
 export async function supprimerEntreprise(id: string): Promise<void> {
+  await assertEntrepriseOwnership(id);
   await prisma.entreprise.delete({ where: { id } });
   revalidatePath("/entreprises");
   redirect("/entreprises");

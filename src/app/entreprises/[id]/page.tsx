@@ -1,16 +1,16 @@
-import { redirect, notFound } from "next/navigation";
-import { getEntreprise } from "@/lib/entreprises/queries";
+import { redirect } from "next/navigation";
+import { getOptionalUserEtablissement } from "@/lib/auth/scope";
+import { requireUser } from "@/lib/auth/require-user";
 
-export default async function EntreprisePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const entreprise = await getEntreprise(id);
-  if (!entreprise) notFound();
-
-  const dernierDuerp = entreprise.duerps[0];
-  if (!dernierDuerp) redirect("/");
-  redirect(`/duerp/${dernierDuerp.id}`);
+/**
+ * 1 user = 1 entreprise = 1 établissement.
+ * Ancienne page de détail entreprise : redirigée vers le dashboard
+ * de l'établissement unique. Les modifs entreprise restent accessibles
+ * via /entreprises/[id]/modifier (URL directe).
+ */
+export default async function EntrepriseDetailPage() {
+  await requireUser();
+  const etab = await getOptionalUserEtablissement();
+  if (etab) redirect(`/etablissements/${etab.id}`);
+  redirect("/onboarding");
 }

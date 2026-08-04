@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SecteurCard } from "@/components/duerps/SecteurCard";
 import { AutresSecteurs } from "@/components/duerps/AutresSecteurs";
@@ -43,6 +44,20 @@ export default async function SecteurPage({
   return (
     <div className="space-y-14">
       <WizardSteps etapes={etapes} />
+
+      {/* Raccourci : importer un DUERP existant plutôt que reconstruire */}
+      <aside className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-[color:var(--rule)] bg-[color:var(--paper-sunk)] px-5 py-3 text-[0.82rem]">
+        <span className="text-[color:var(--ink)]">
+          <strong>Déjà un DUERP ?</strong> Importez-le au format Excel plutôt
+          que de repartir de zéro.
+        </span>
+        <Link
+          href={`/etablissements/${duerp.etablissementId}/duerp/import`}
+          className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-[color:var(--warm)] hover:underline"
+        >
+          Importer depuis Excel →
+        </Link>
+      </aside>
 
       {refRecommande ? (
         <>

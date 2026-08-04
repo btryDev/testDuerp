@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { AjouterMesureCustomForm } from "@/components/duerps/AjouterMesureCustomForm";
 import { EvaluationProgression } from "@/components/duerps/EvaluationProgression";
 import { MesureReferentielToggle } from "@/components/duerps/MesureReferentielToggle";
@@ -119,19 +120,66 @@ export default async function MesuresPage({
           <span aria-hidden className="text-rule">
             /
           </span>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="inline-flex items-center font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
             Hiérarchie L. 4121-2 — existantes et prévues
-          </p>
+            <InfoTooltip variant="legal" align="left" label="Hiérarchie de prévention — art. L. 4121-2">
+              <span className="block font-mono text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-paper-elevated/70">
+                Art. L. 4121-2 · Code du travail
+              </span>
+              <span className="mt-2 block font-medium normal-case tracking-normal">
+                Ordre à respecter lors du choix des mesures :
+              </span>
+              <span className="mt-1.5 block normal-case tracking-normal">
+                <span className="block">
+                  <span className="font-mono tabular-nums opacity-60">1.</span>{" "}
+                  Supprimer le risque
+                </span>
+                <span className="block">
+                  <span className="font-mono tabular-nums opacity-60">2.</span>{" "}
+                  Réduire à la source
+                </span>
+                <span className="block">
+                  <span className="font-mono tabular-nums opacity-60">3.</span>{" "}
+                  Protection collective
+                </span>
+                <span className="mt-1 block border-t border-paper-elevated/20 pt-1">
+                  <span className="font-mono tabular-nums opacity-60">4.</span>{" "}
+                  EPI (individuelle)
+                </span>
+                <span className="block">
+                  <span className="font-mono tabular-nums opacity-60">5.</span>{" "}
+                  Formation / information
+                </span>
+                <span className="block">
+                  <span className="font-mono tabular-nums opacity-60">6.</span>{" "}
+                  Mesure organisationnelle
+                </span>
+              </span>
+              <span className="mt-2 block text-[0.68rem] italic opacity-75">
+                EPI et formation viennent en dernier, jamais en substitut des
+                trois premiers niveaux.
+              </span>
+            </InfoTooltip>
+          </span>
         </div>
 
-        <p className="max-w-2xl text-[0.9rem] leading-[1.65] text-muted-foreground">
-          Sélectionnez les mesures déjà en place et celles que vous comptez
-          mettre en œuvre. La loi impose de privilégier la suppression du
-          risque, puis sa réduction à la source, puis la protection collective
-          — les EPI et la formation viennent ensuite. Si votre inventaire
-          diffère de ce que vous avez coté pour la maîtrise, vous pourrez
-          revenir ajuster la cotation.
-        </p>
+        <div className="max-w-2xl space-y-3">
+          <p className="text-[0.98rem] font-medium leading-[1.5] tracking-[-0.005em] text-ink">
+            Sélectionnez les mesures déjà en place et celles que vous comptez
+            mettre en œuvre.
+          </p>
+          <p className="text-[0.82rem] leading-relaxed text-muted-foreground">
+            Si votre inventaire diffère de la maîtrise que vous aviez cotée,
+            vous pourrez{" "}
+            <Link
+              href={hrefCotation}
+              className="text-ink underline decoration-rule decoration-dotted underline-offset-[3px] transition-colors hover:decoration-ink"
+            >
+              revenir ajuster la cotation
+            </Link>
+            .
+          </p>
+        </div>
 
         {alerteBasNiveau && (
           <div className="rounded-[calc(var(--radius)*1.4)] border border-dashed border-[color:var(--minium)]/40 bg-[color:var(--minium)]/8 px-5 py-4">
@@ -162,21 +210,39 @@ export default async function MesuresPage({
               référentiel, ou ajoutez une mesure personnalisée.
             </p>
           ) : (
-            <ul className="divide-y divide-dashed divide-rule/50">
-              {mesuresAffichees.map((m) => (
-                <li key={m.id} className="px-6 py-4 sm:px-8">
-                  <MesureRow
-                    id={m.id}
-                    libelle={m.libelle}
-                    type={m.type}
-                    statut={m.statut as "existante" | "prevue"}
-                    echeance={m.echeance}
-                    responsable={m.responsable}
-                    origine={m.referentielMesureId ? "referentiel" : "custom"}
-                  />
-                </li>
-              ))}
-            </ul>
+            <>
+              <p className="flex items-baseline gap-2 border-b border-dashed border-rule/50 px-6 py-3 text-[0.82rem] leading-relaxed text-muted-foreground sm:px-8">
+                <span
+                  aria-hidden
+                  className="font-mono text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-[color:var(--warm)]"
+                >
+                  À faire
+                </span>
+                <span className="min-w-0 flex-1">
+                  Pour chaque mesure, indiquez si elle est{" "}
+                  <span className="font-medium text-ink">déjà en place</span>{" "}
+                  ou{" "}
+                  <span className="font-medium text-ink">à prévoir</span>. Les
+                  mesures « à prévoir » deviennent des actions avec échéance et
+                  responsable.
+                </span>
+              </p>
+              <ul className="divide-y divide-dashed divide-rule/50">
+                {mesuresAffichees.map((m) => (
+                  <li key={m.id} className="px-6 py-4 sm:px-8">
+                    <MesureRow
+                      id={m.id}
+                      libelle={m.libelle}
+                      type={m.type}
+                      statut={m.statut as "existante" | "prevue"}
+                      echeance={m.echeance}
+                      responsable={m.responsable}
+                      origine={m.referentielMesureId ? "referentiel" : "custom"}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </section>
 

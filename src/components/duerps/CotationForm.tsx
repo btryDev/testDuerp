@@ -293,7 +293,7 @@ export function CotationForm({
       {state.status === "success" && state.alerte && (
         <div className="rounded-[calc(var(--radius)*1.4)] border border-dashed border-[color:var(--minium)]/40 bg-[color:var(--minium)]/8 px-5 py-4">
           <p className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[color:var(--minium)]">
-            Cotation inhabituelle pour ce secteur
+            Écart avec le repère indicatif
           </p>
           <p className="mt-2 text-[0.88rem] leading-[1.6] text-ink">
             {state.alerte}

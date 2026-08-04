@@ -38,7 +38,6 @@ export type RisqueReferentiel = {
   probabiliteParDefaut: number;
   maitriseParDefaut?: number;
   mesuresRecommandees: MesureRecommandee[];
-  criticiteReferenceSecteur?: number;
 };
 
 export type OptionQuestion = {

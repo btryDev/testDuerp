@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { creerDuerp } from "@/lib/duerps/actions";
 
 export function CreerDuerpButton({
-  entrepriseId,
+  etablissementId,
   variant = "default",
 }: {
-  entrepriseId: string;
+  etablissementId: string;
   variant?: "default" | "outline";
 }) {
   const [pending, startTransition] = useTransition();
@@ -19,7 +19,7 @@ export function CreerDuerpButton({
       disabled={pending}
       onClick={() => {
         startTransition(async () => {
-          await creerDuerp(entrepriseId);
+          await creerDuerp(etablissementId);
         });
       }}
     >
