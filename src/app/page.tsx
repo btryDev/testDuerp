@@ -1,10 +1,25 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { getOptionalUser } from "@/lib/auth/require-user";
 import { getOptionalUserEtablissement } from "@/lib/auth/scope";
 import { RecoveryHashRedirect } from "./RecoveryHashRedirect";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ code?: string }>;
+}) {
+  // Les liens e-mail Supabase envoyés depuis le dashboard redirigent vers la
+  // Site URL racine avec ?code=… : on l'échange contre une session via la
+  // route callback, puis direction la page de choix du nouveau mot de passe.
+  const { code } = await searchParams;
+  if (code) {
+    redirect(
+      `/auth/callback?code=${encodeURIComponent(code)}&next=/auth/reinitialisation`,
+    );
+  }
+
   const user = await getOptionalUser();
   const etab = user ? await getOptionalUserEtablissement() : null;
   // Quand l'utilisateur n'est pas connecté, le CTA principal l'envoie sur

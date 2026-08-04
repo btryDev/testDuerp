@@ -18,5 +18,11 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Échange impossible (lien expiré / déjà utilisé). Pour une réinitialisation
+  // de mot de passe, la page dédiée affiche l'état « lien invalide ».
+  if (next.startsWith("/auth/reinitialisation")) {
+    return NextResponse.redirect(`${origin}/auth/reinitialisation#error=lien_invalide`);
+  }
+
   return NextResponse.redirect(`${origin}/login?confirmed=1`);
 }
