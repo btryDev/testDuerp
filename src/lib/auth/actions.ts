@@ -85,6 +85,29 @@ export async function signUpAction(
   );
 }
 
+export async function requestPasswordResetAction(
+  _prev: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = emailSchema.safeParse(formData.get("email"));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Adresse invalide" };
+  }
+
+  const supabase = await createClient();
+  const origin = (formData.get("origin") as string) || "";
+  await supabase.auth.resetPasswordForEmail(parsed.data, {
+    redirectTo: origin ? `${origin}/auth/reinitialisation` : undefined,
+  });
+
+  // Réponse identique que le compte existe ou non : pas d'énumération
+  // d'adresses possibles via ce formulaire.
+  return {
+    message:
+      "Si un compte existe avec cette adresse, un e-mail de réinitialisation vient de partir.",
+  };
+}
+
 export async function signOutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();

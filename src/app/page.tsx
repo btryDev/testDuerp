@@ -2,6 +2,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { getOptionalUser } from "@/lib/auth/require-user";
 import { getOptionalUserEtablissement } from "@/lib/auth/scope";
+import { RecoveryHashRedirect } from "./RecoveryHashRedirect";
 
 export default async function Home() {
   const user = await getOptionalUser();
@@ -24,6 +25,7 @@ export default async function Home() {
 
   return (
     <main>
+      <RecoveryHashRedirect />
       {/* ================================================================
          HERO — plein écran, typo monumentale, cadran en pièce maîtresse
          ================================================================ */}

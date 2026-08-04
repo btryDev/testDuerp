@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,9 +31,17 @@ export function LoginForm({ next }: { next: string }) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password" className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
-          Mot de passe
-        </Label>
+        <div className="flex items-baseline justify-between">
+          <Label htmlFor="password" className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
+            Mot de passe
+          </Label>
+          <Link
+            href="/login/mot-de-passe-oublie"
+            className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground underline decoration-rule decoration-dotted underline-offset-4 hover:text-ink"
+          >
+            Oublié ?
+          </Link>
+        </div>
         <Input
           id="password"
           name="password"
