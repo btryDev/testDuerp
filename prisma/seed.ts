@@ -11,11 +11,20 @@
  *   pnpm db:seed <etablissementId>
  *   pnpm db:seed --planifier           → pose aussi des dates sur les
  *                                        vérifications encore à planifier
+ *   pnpm db:seed --serie               → ajoute les occurrences suivantes
+ *                                        de chaque vérification, jusqu'à
+ *                                        24 mois (implique --planifier)
  *
- * `--planifier` est explicite parce qu'il ÉCRIT sur des lignes métier
- * existantes (datePrevue et statut de `Verification`), contrairement au
- * reste du seed qui ne fait qu'ajouter ses propres actions. À réserver à
- * une base de développement.
+ * `--planifier` et `--serie` sont explicites parce qu'ils ÉCRIVENT sur des
+ * lignes métier existantes (datePrevue et statut de `Verification`),
+ * contrairement au reste du seed qui ne fait qu'ajouter ses propres
+ * actions. À réserver à une base de développement.
+ *
+ * Note : la régénération du calendrier depuis l'app (`genererCalendrier`)
+ * supprime les occurrences non réalisées et n'en recrée qu'une par couple
+ * (obligation × équipement). Les séries semées ici sont donc du décor de
+ * développement, effacé au premier « Actualiser » — c'est voulu, elles ne
+ * doivent jamais devenir une source de vérité.
  *
  * Idempotent : les actions posées portent un marqueur `[seed]` dans leur
  * description et sont remplacées à chaque exécution. Rien d'autre n'est
@@ -24,6 +33,7 @@
 
 import {
   PrismaClient,
+  type Periodicite,
   type StatutAction,
   type TypeAction,
 } from "@prisma/client";
@@ -32,6 +42,35 @@ const prisma = new PrismaClient();
 
 const MARQUEUR = "[seed]";
 const JOUR = 86400000;
+
+/** Fenêtre consultable de la frise, en jours — cf. `lib/dashboard/frise`. */
+const HORIZON = 730;
+/**
+ * Occurrences semées au maximum par couple obligation × équipement.
+ *
+ * Une obligation hebdomadaire produirait sinon une centaine de lignes sur
+ * deux ans, pour un axe illisible et une base de dev inutilement lourde.
+ */
+const MAX_OCCURRENCES = 8;
+
+/**
+ * Copie locale de `PERIODICITE_EN_JOURS` (`lib/referentiels/types-communs`).
+ * Le seed tourne hors du bundle Next : on ne traverse pas l'alias `@/`
+ * pour une table de onze entrées, mais elle doit rester alignée.
+ */
+const PERIODICITE_EN_JOURS: Record<Periodicite, number | null> = {
+  hebdomadaire: 7,
+  mensuelle: 30,
+  trimestrielle: 91,
+  semestrielle: 182,
+  annuelle: 365,
+  biennale: 730,
+  triennale: 1095,
+  quinquennale: 1825,
+  decennale: 3650,
+  mise_en_service_uniquement: null,
+  autre: null,
+};
 
 /** Date décalée de `jours` par rapport à maintenant (négatif = passé). */
 function dans(jours: number): Date {
@@ -113,16 +152,16 @@ const ACTIONS: Gabarit[] = [
 ];
 
 /**
- * Étale les vérifications encore `a_planifier` sur l'année à venir.
+ * Étale les vérifications encore `a_planifier` sur les deux ans à venir.
  *
  * Sans ça, un établissement dont le calendrier a été généré mais jamais
  * planifié n'a aucune échéance datée : la frise est vide, et c'est exact.
  * Cette étape simule le travail de programmation qu'un dirigeant ferait
  * dans l'app, pour pouvoir juger le rendu d'une frise remplie.
  *
- * Répartition : une poignée reste dépassée (le board doit montrer du
- * retard), le reste s'échelonne sur 12 mois avec un écart suffisant pour
- * que la frise 90 jours ait plusieurs marqueurs lisibles.
+ * Répartition : une poignée reste dépassée, étalée sur les trois mois
+ * écoulés (la frise défile aussi vers le passé, il faut donc y trouver
+ * quelque chose), le reste s'échelonne sur la fenêtre consultable.
  */
 async function planifierVerifications(etablissementId: string) {
   const aPlanifier = await prisma.verification.findMany({
@@ -138,13 +177,16 @@ async function planifierVerifications(etablissementId: string) {
 
   // ~15 % restent en retard, le reste part dans le futur.
   const nbEnRetard = Math.max(1, Math.round(aPlanifier.length * 0.15));
+  const nbFutures = aPlanifier.length - nbEnRetard;
 
   let n = 0;
   for (const [i, v] of aPlanifier.entries()) {
     const jours =
       i < nbEnRetard
-        ? -(3 + i * 6) // retards échelonnés, pour une moyenne crédible
-        : Math.round(((i - nbEnRetard) / (aPlanifier.length - nbEnRetard)) * 350) + 4;
+        ? // Retards répartis entre −80 et −3 jours : la voie du passé
+          // n'est ni vide ni tassée sur la veille.
+          -(3 + Math.round((i / Math.max(1, nbEnRetard - 1)) * 77))
+        : Math.round(((i - nbEnRetard) / Math.max(1, nbFutures - 1)) * HORIZON) + 4;
 
     await prisma.verification.update({
       where: { id: v.id },
@@ -161,9 +203,81 @@ async function planifierVerifications(etablissementId: string) {
   );
 }
 
+/**
+ * Ajoute les occurrences suivantes de chaque vérification, à sa propre
+ * périodicité, jusqu'au bout de la fenêtre consultable.
+ *
+ * L'app, elle, ne matérialise que la **prochaine** occurrence par couple
+ * (obligation × équipement) : c'est un choix produit — on ne veut pas
+ * afficher un calendrier prédictif qui se périmerait à la première vérif
+ * réalisée. Une frise de 24 mois nourrie de cette seule occurrence est
+ * donc creuse au-delà du premier trimestre. On sème ici la suite, pour
+ * juger le rendu d'une charge réaliste.
+ */
+async function semerSeries(etablissementId: string) {
+  const base = await prisma.verification.findMany({
+    where: { etablissementId, dateRealisee: null },
+    orderBy: { datePrevue: "asc" },
+  });
+
+  // Idempotence : on retombe d'abord sur l'invariant de l'app — une seule
+  // occurrence non réalisée par couple — puis on resème par-dessus.
+  const vues = new Set<string>();
+  const surplus: string[] = [];
+  const tetes: typeof base = [];
+  for (const v of base) {
+    const cle = `${v.obligationId}::${v.equipementId}`;
+    if (vues.has(cle)) surplus.push(v.id);
+    else {
+      vues.add(cle);
+      tetes.push(v);
+    }
+  }
+  if (surplus.length > 0) {
+    await prisma.verification.deleteMany({ where: { id: { in: surplus } } });
+    console.log(`  ${surplus.length} occurrence(s) de seed retirée(s)`);
+  }
+
+  const aCreer = tetes.flatMap((v) => {
+    const pas = PERIODICITE_EN_JOURS[v.periodicite];
+    if (pas === null) return []; // one-shot ou obligation permanente
+
+    const suite = [];
+    const depart = v.datePrevue.getTime();
+    for (let k = 1; k <= MAX_OCCURRENCES; k += 1) {
+      const date = new Date(depart + k * pas * JOUR);
+      if (date.getTime() > Date.now() + HORIZON * JOUR) break;
+      suite.push({
+        etablissementId,
+        equipementId: v.equipementId,
+        obligationId: v.obligationId,
+        libelleObligation: v.libelleObligation,
+        periodicite: v.periodicite,
+        realisateurRequis: v.realisateurRequis,
+        datePrevue: date,
+        statut: "planifiee" as const,
+      });
+    }
+    return suite;
+  });
+
+  if (aCreer.length === 0) {
+    console.log("  aucune occurrence suivante à semer");
+    return;
+  }
+
+  await prisma.verification.createMany({ data: aCreer });
+  console.log(
+    `  ${aCreer.length} occurrence(s) suivante(s) semée(s) sur ${Math.round(HORIZON / 30)} mois`,
+  );
+}
+
 async function main() {
   const args = process.argv.slice(2);
-  const planifier = args.includes("--planifier");
+  const serie = args.includes("--serie");
+  // Semer des occurrences suivantes sur des vérifications sans date ne
+  // produirait qu'un tas au même jour : `--serie` implique `--planifier`.
+  const planifier = serie || args.includes("--planifier");
   const cible = args.find((a) => !a.startsWith("--"));
 
   const etab = cible
@@ -258,6 +372,10 @@ async function main() {
     console.log(
       "  (vérifications inchangées — relancez avec --planifier pour leur poser des dates)",
     );
+  }
+
+  if (serie) {
+    await semerSeries(etab.id);
   }
 
   console.log("Terminé.");
