@@ -9,6 +9,8 @@
 // Le module est volontairement structurel (pas d'import de `queries.ts`,
 // qui tirerait Prisma) pour rester testable en environnement `node`.
 
+import { raccourcirLibelle } from "./libelles";
+
 export type CompteursBrief = {
   verifsEnRetard: number;
   verifsAPlanifier: number;
@@ -102,43 +104,6 @@ const TONS_ALERTE: ReadonlySet<RecoBrief["kind"]> = new Set([
   "action_en_retard",
 ]);
 
-/** Longueur au-delà de laquelle la pastille déborde la colonne du brief. */
-export const LONGUEUR_TAG_MAX = 32;
-
-/**
- * Réduit un libellé d'obligation à un sujet de pastille.
- *
- * Les libellés réglementaires sont des phrases entières — « Habilitation
- * électrique du personnel opérant sur ou à proximité d'installations
- * électriques ». Tel quel, le tag mange toute la largeur du hero. On retire
- * les préfixes de périodicité, on coupe à la première ponctuation forte,
- * puis on tronque proprement sur un mot.
- */
-export function raccourcirTag(libelle: string): string {
-  let t = libelle
-    .replace(
-      /^V[ée]rification\s+(p[ée]riodique\s+)?(annuelle|semestrielle|trimestrielle|mensuelle|hebdomadaire|biennale|triennale|quinquennale|d[ée]cennale)?\s*(de\s+la\s+|de\s+l['’]\s*|des\s+|de\s+|du\s+|d['’]\s*)?/i,
-      "",
-    )
-    .replace(/^Entretien\s+(annuel|semestriel|trimestriel)?\s*(de\s+la\s+|de\s+l['’]\s*|des\s+|de\s+|du\s+)?/i, "")
-    .replace(/^Maintien\s+en\s+bon\s+[ée]tat\s+/i, "")
-    .replace(/^Exercice\s+(d['’]\s*)?/i, "")
-    .trim();
-
-  // Première proposition seulement : ce qui suit « du personnel opérant
-  // sur… » est de la précision juridique, pas un sujet.
-  t = t.split(/\s+(?:du personnel|des personnels|opérant|situé|destiné)\b/i)[0];
-  t = t.split(/[,(]/)[0].trim();
-
-  if (t.length > LONGUEUR_TAG_MAX) {
-    const coupe = t.slice(0, LONGUEUR_TAG_MAX);
-    const espace = coupe.lastIndexOf(" ");
-    t = (espace > 12 ? coupe.slice(0, espace) : coupe).trim() + "…";
-  }
-
-  return t.charAt(0).toUpperCase() + t.slice(1);
-}
-
 function construireTitre(c: CompteursBrief): string {
   const urgent = c.verifsEnRetard + c.actionsEnRetard;
   if (urgent > 0) {
@@ -218,7 +183,7 @@ function enumerer(items: string[]): string {
 
 export function construireBrief(e: EntreeBrief): Brief {
   const gestes: GesteBrief[] = e.recommandations.slice(0, 2).map((r) => ({
-    tag: raccourcirTag(r.titre),
+    tag: raccourcirLibelle(r.titre),
     tagComplet: r.titre,
     label: VERBE[r.kind],
     href: r.href,

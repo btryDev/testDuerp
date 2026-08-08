@@ -239,6 +239,9 @@ function MotifIsometrique() {
 
 /* ─── 2 · La frise ──────────────────────────────────────────── */
 
+/** Largeur de la voie « En retard » + respiration, en pixels. */
+const PISTE_DECALAGE = 196;
+
 const TON_POINT: Record<string, string> = {
   alerte: "var(--board-amber)",
   warn: "var(--board-blue-mid)",
@@ -340,69 +343,81 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
           )}
         </div>
       ) : (
-        <div className="relative mt-7 h-[196px]">
-          {/* Axe + segment de retard */}
-          <div className="absolute inset-x-0 top-[73px] h-1 rounded-sm bg-[color:var(--board-grey-line)]" />
+        <div className="relative mt-7 h-[236px]">
+          {/* Les retards ne sont pas un point dans le temps mais un cumul :
+              ils prennent leur propre voie à gauche, et l'axe des 90 jours
+              ne commence qu'après. C'est ce qui empêche la première
+              échéance de venir se superposer au bloc ambre. */}
           {frise.nbEnRetard > 0 ? (
-            <div className="absolute left-0 top-[73px] h-1 w-[33px] rounded-sm bg-[color:var(--board-amber)]" />
-          ) : null}
-
-          {frise.nbEnRetard > 0 ? (
-            <div className="absolute left-0 top-0 flex w-[172px] flex-col items-start gap-[9px]">
-              <Link
-                href={`/etablissements/${bundle.etablissementId}/calendrier`}
-                className="w-full rounded-[18px] bg-[color:var(--board-amber-mid)] px-[15px] py-3 transition-opacity hover:opacity-85"
-              >
-                <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-amber-ink)]">
-                  En retard
-                </p>
-                <p className="mt-1.5 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] text-[color:var(--board-amber-ink)]">
-                  {frise.nbEnRetard} échéance{frise.nbEnRetard > 1 ? "s" : ""}{" "}
-                  dépassée{frise.nbEnRetard > 1 ? "s" : ""}
-                </p>
-              </Link>
-              <span className="ml-[26px] size-3.5 rounded-full bg-[color:var(--board-amber)] shadow-[0_0_0_4px_var(--board-card)]" />
-            </div>
-          ) : null}
-
-          {frise.marqueurs.map((m) => (
-            <div
-              key={m.id}
-              className="absolute flex w-[172px] flex-col items-center gap-[9px]"
-              style={{
-                left: `min(${m.pct}%, calc(100% - 172px))`,
-                top: m.cote === "haut" ? 0 : 84,
-              }}
+            <Link
+              href={`/etablissements/${bundle.etablissementId}/calendrier`}
+              className="absolute left-0 top-1/2 w-[172px] -translate-y-1/2 rounded-[18px] bg-[color:var(--board-amber-mid)] px-[15px] py-3 transition-opacity hover:opacity-85"
             >
-              {m.cote === "bas" ? (
+              <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-amber-ink)]">
+                En retard
+              </p>
+              <p className="mt-1.5 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] text-[color:var(--board-amber-ink)]">
+                {frise.nbEnRetard} échéance{frise.nbEnRetard > 1 ? "s" : ""}{" "}
+                dépassée{frise.nbEnRetard > 1 ? "s" : ""}
+              </p>
+            </Link>
+          ) : null}
+
+          {/* Piste des 90 jours. */}
+          <div
+            className="absolute inset-y-0 right-0"
+            style={{ left: frise.nbEnRetard > 0 ? PISTE_DECALAGE : 0 }}
+          >
+            <div className="absolute inset-x-0 top-[112px] h-1 rounded-sm bg-[color:var(--board-grey-line)]" />
+            {frise.nbEnRetard > 0 ? (
+              <div className="absolute left-0 top-[112px] h-1 w-8 rounded-sm bg-[color:var(--board-amber)]" />
+            ) : null}
+
+            {frise.marqueurs.map((m) => (
+              <Fragment key={m.id}>
+                {/* Le point est à la date exacte — c'est lui qui dit vrai. */}
                 <span
-                  className="size-3.5 rounded-full shadow-[0_0_0_4px_var(--board-card)]"
-                  style={{ background: TON_POINT[m.tone] }}
+                  className="absolute z-10 size-3.5 -translate-x-1/2 rounded-full shadow-[0_0_0_4px_var(--board-card)]"
+                  style={{ left: `${m.pct}%`, top: 105, background: TON_POINT[m.tone] }}
                 />
-              ) : null}
-              <Link
-                href={`/etablissements/${bundle.etablissementId}/calendrier`}
-                className="w-full rounded-[18px] bg-[color:var(--board-blue-pale)] px-[15px] py-3 text-center transition-opacity hover:opacity-85"
-              >
-                <p className="m-0 line-clamp-2 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] text-[color:var(--board-ink)]">
-                  {m.libelle}
-                </p>
-                <p className="mt-[5px] text-[11.5px] font-semibold tracking-[0.06em] text-[color:var(--board-blue-ink)]">
-                  {m.libelleDate}
-                </p>
-              </Link>
-              {m.cote === "haut" ? (
-                <span
-                  className="size-3.5 rounded-full shadow-[0_0_0_4px_var(--board-card)]"
-                  style={{ background: TON_POINT[m.tone] }}
-                />
-              ) : null}
-            </div>
-          ))}
+                {/* La carte est centrée sur le point, mais bornée pour ne
+                    jamais déborder la piste : aux extrémités elle glisse
+                    légèrement, le point reste à sa place. */}
+                <Link
+                  href={`/etablissements/${bundle.etablissementId}/calendrier`}
+                  className="absolute w-[172px] -translate-x-1/2 rounded-[18px] bg-[color:var(--board-blue-pale)] px-[15px] py-3 text-center transition-opacity hover:opacity-85"
+                  style={{
+                    left: `clamp(86px, ${m.pct}%, calc(100% - 86px))`,
+                    ...(m.cote === "haut"
+                      ? { bottom: 236 - 96 }
+                      : { top: 128 }),
+                  }}
+                >
+                  <p className="m-0 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] text-[color:var(--board-ink)]">
+                    {m.libelle}
+                  </p>
+                  <p className="mt-[5px] text-[11.5px] font-semibold tracking-[0.06em] text-[color:var(--board-blue-ink)]">
+                    {m.libelleDate}
+                  </p>
+                </Link>
+              </Fragment>
+            ))}
+          </div>
         </div>
       )}
 
-      <div className="mt-2.5 flex justify-between border-t border-[color:var(--board-grey-line)] pt-3.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-grey-soft)]">
+      {/* Les graduations s'alignent sur la piste, pas sur la carte : avec
+          une voie « En retard » à gauche, une ligne pleine largeur ferait
+          mentir les mois. */}
+      <div
+        className="mt-2.5 flex justify-between border-t border-[color:var(--board-grey-line)] pt-3.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-grey-soft)]"
+        style={{
+          marginLeft:
+            frise.marqueurs.length > 0 && frise.nbEnRetard > 0
+              ? PISTE_DECALAGE
+              : 0,
+        }}
+      >
         {frise.mois.map((m, i) => (
           <span
             key={m.label}

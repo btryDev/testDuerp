@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  construireBrief,
-  LONGUEUR_TAG_MAX,
-  raccourcirTag,
-  type EntreeBrief,
-} from "./brief";
+import { construireBrief, type EntreeBrief } from "./brief";
+import { LONGUEUR_LIBELLE_MAX, raccourcirLibelle } from "./libelles";
 
 const LE_8_AOUT = new Date(2026, 7, 8);
 
@@ -158,19 +154,19 @@ describe("construireBrief — date", () => {
   });
 });
 
-describe("raccourcirTag", () => {
+describe("raccourcirLibelle", () => {
   it("retire le préfixe de périodicité", () => {
-    expect(raccourcirTag("Vérification périodique annuelle des extincteurs")).toBe(
+    expect(raccourcirLibelle("Vérification périodique annuelle des extincteurs")).toBe(
       "Extincteurs",
     );
-    expect(raccourcirTag("Entretien annuel de la hotte")).toBe("Hotte");
+    expect(raccourcirLibelle("Entretien annuel de la hotte")).toBe("Hotte");
   });
 
   it("coupe la précision juridique qui suit le sujet", () => {
     // Cas réel observé sur le tableau de bord : le libellé complet mangeait
     // toute la largeur du hero.
     expect(
-      raccourcirTag(
+      raccourcirLibelle(
         "Habilitation électrique du personnel opérant sur ou à proximité d'installations électriques",
       ),
     ).toBe("Habilitation électrique");
@@ -178,25 +174,25 @@ describe("raccourcirTag", () => {
 
   it("coupe à la première parenthèse ou virgule", () => {
     expect(
-      raccourcirTag("Vérification électrique à la mise en service (ERP)"),
+      raccourcirLibelle("Vérification électrique à la mise en service (ERP)"),
     ).toBe("Électrique à la mise en service");
   });
 
   it("tronque sur un mot entier, jamais au milieu", () => {
-    const t = raccourcirTag(
+    const t = raccourcirLibelle(
       "Contrôle technique approfondi des installations de désenfumage naturel",
     );
-    expect(t.length).toBeLessThanOrEqual(LONGUEUR_TAG_MAX + 1);
+    expect(t.length).toBeLessThanOrEqual(LONGUEUR_LIBELLE_MAX + 1);
     expect(t.endsWith("…")).toBe(true);
     expect(t).not.toMatch(/\s…$/);
   });
 
   it("laisse intact un libellé déjà court", () => {
-    expect(raccourcirTag("Extincteurs")).toBe("Extincteurs");
+    expect(raccourcirLibelle("Extincteurs")).toBe("Extincteurs");
   });
 
   it("capitalise le résultat", () => {
-    expect(raccourcirTag("Entretien annuel des ascenseurs")).toBe("Ascenseurs");
+    expect(raccourcirLibelle("Entretien annuel des ascenseurs")).toBe("Ascenseurs");
   });
 });
 

@@ -5,6 +5,8 @@
 // l'horloge ici — c'est ce qui rend la frise testable et le rendu stable
 // entre serveur et client.
 
+import { raccourcirLibelle } from "./libelles";
+
 export type EvenementFrise = {
   id: string;
   libelle: string;
@@ -120,7 +122,9 @@ export function construireFrise({
 
   const marqueurs: MarqueurFrise[] = retenus.map((e, i) => ({
     id: e.id,
-    libelle: e.libelle,
+    // Les cartes font 172 px : un libellé réglementaire entier s'y fait
+    // couper au milieu d'un mot.
+    libelle: raccourcirLibelle(e.libelle),
     equipement: e.equipement,
     tone: e.tone,
     pct: Math.min(
