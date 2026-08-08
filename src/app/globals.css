@@ -111,12 +111,17 @@
   --board-blue-mid: #7fafd4;
   --board-blue-strong: #5c93be;
   --board-blue-ink: #2f5f85;
-  --board-amber: #f7c07c;
-  --board-amber-mid: #fce6c9;
-  --board-amber-pale: #fdf0de;
-  --board-amber-ink: #8a5410;
-  --board-amber-ink-strong: #a8410e;
-  --board-amber-ink-deep: #7a4a0b;
+  /* Signal « en retard ». L'ambre pastel d'origine (#f7c07c) ne tenait
+     pas : 1,29 de contraste contre le canvas bleu, il décorait au lieu
+     d'alerter. Corail vif à la place, porté par du type quasi-noir plutôt
+     que du blanc — 6,38 de contraste sur l'aplat, et l'appariement se lit
+     comme un signal, pas comme une teinte de statut fanée. */
+  --board-signal: #ff5a36;
+  --board-signal-on: #0a0a0a;
+  --board-signal-mid: #ffd9cf;
+  --board-signal-pale: #fff0ec;
+  --board-signal-ink: #96280f;
+  --board-signal-ink-strong: #96280f;
   --board-green: #a8e585;
   --board-green-ink: #2a5f1d;
   --board-green-ink-soft: #3d7a29;

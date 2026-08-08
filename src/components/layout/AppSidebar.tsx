@@ -204,7 +204,7 @@ function NavLink({ item, actif }: { item: NavItem; actif: SidebarItemId }) {
             (isActive
               ? "bg-[color:var(--board-ink)]/10 text-[color:var(--board-ink)]"
               : item.alert
-                ? "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink-deep)]"
+                ? "bg-[color:var(--board-signal)] text-[color:var(--board-signal-on)]"
                 : "bg-white/10 text-white/60")
           }
         >

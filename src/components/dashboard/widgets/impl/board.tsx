@@ -99,7 +99,7 @@ function Pastille({
 }) {
   const classes =
     ton === "alerte"
-      ? "bg-[color:var(--board-amber-pale)] text-[color:var(--board-amber-ink)]"
+      ? "bg-[color:var(--board-signal-pale)] text-[color:var(--board-signal-ink)]"
       : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]";
   return (
     <span
@@ -186,7 +186,7 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
                       "truncate px-[14px] py-[10px] " +
                       (primaire
                         ? "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
-                        : "bg-[color:var(--board-amber-pale)] text-[color:var(--board-amber-ink-strong)]")
+                        : "bg-[color:var(--board-signal-pale)] text-[color:var(--board-signal-ink-strong)]")
                     }
                   >
                     {g.tag}
@@ -196,7 +196,7 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
                       "flex-none px-4 py-[10px] font-semibold " +
                       (primaire
                         ? "bg-[color:var(--board-ink)] text-white"
-                        : "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink-deep)]")
+                        : "bg-[color:var(--board-signal)] text-[color:var(--board-signal-on)]")
                     }
                   >
                     {g.label}
@@ -243,7 +243,7 @@ function MotifIsometrique() {
 const PISTE_DECALAGE = 196;
 
 const TON_POINT: Record<string, string> = {
-  alerte: "var(--board-amber)",
+  alerte: "var(--board-signal)",
   warn: "var(--board-blue-mid)",
   ok: "var(--board-blue-strong)",
 };
@@ -351,12 +351,12 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
           {frise.nbEnRetard > 0 ? (
             <Link
               href={`/etablissements/${bundle.etablissementId}/calendrier`}
-              className="absolute left-0 top-1/2 w-[172px] -translate-y-1/2 rounded-[18px] bg-[color:var(--board-amber-mid)] px-[15px] py-3 transition-opacity hover:opacity-85"
+              className="absolute left-0 top-1/2 w-[172px] -translate-y-1/2 rounded-[18px] bg-[color:var(--board-signal-mid)] px-[15px] py-3 transition-opacity hover:opacity-85"
             >
-              <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-amber-ink)]">
+              <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-signal-ink)]">
                 En retard
               </p>
-              <p className="mt-1.5 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] text-[color:var(--board-amber-ink)]">
+              <p className="mt-1.5 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] text-[color:var(--board-signal-ink)]">
                 {frise.nbEnRetard} échéance{frise.nbEnRetard > 1 ? "s" : ""}{" "}
                 dépassée{frise.nbEnRetard > 1 ? "s" : ""}
               </p>
@@ -370,7 +370,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
           >
             <div className="absolute inset-x-0 top-[112px] h-1 rounded-sm bg-[color:var(--board-grey-line)]" />
             {frise.nbEnRetard > 0 ? (
-              <div className="absolute left-0 top-[112px] h-1 w-8 rounded-sm bg-[color:var(--board-amber)]" />
+              <div className="absolute left-0 top-[112px] h-1 w-8 rounded-sm bg-[color:var(--board-signal)]" />
             ) : null}
 
             {frise.marqueurs.map((m) => (
@@ -493,7 +493,7 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
         className={
           "flex size-24 flex-none flex-col items-center justify-center rounded-[26px] " +
           (enRetard
-            ? "bg-[color:var(--board-amber)]"
+            ? "bg-[color:var(--board-signal)]"
             : "bg-[color:var(--board-canvas)]")
         }
       >
@@ -501,7 +501,7 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
           className={
             "text-[34px] font-semibold leading-none tracking-[-0.045em] " +
             (enRetard
-              ? "text-[color:var(--board-amber-ink-deep)]"
+              ? "text-[color:var(--board-signal-on)]"
               : "text-[color:var(--board-ink)]")
           }
         >
@@ -511,7 +511,7 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
           className={
             "mt-[3px] font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] " +
             (enRetard
-              ? "text-[color:var(--board-amber-ink)]"
+              ? "text-[color:var(--board-signal-on)]/85"
               : "text-[color:var(--board-blue-ink)]")
           }
         >
@@ -557,7 +557,7 @@ export function BlocActionsEnRetard({ bundle }: { bundle: DashboardBundle }) {
         className={
           "flex size-24 flex-none flex-col items-center justify-center rounded-[26px] " +
           (stats.nb > 0
-            ? "bg-[color:var(--board-amber)]"
+            ? "bg-[color:var(--board-signal)]"
             : "bg-[color:var(--board-green)]")
         }
       >
@@ -565,7 +565,7 @@ export function BlocActionsEnRetard({ bundle }: { bundle: DashboardBundle }) {
           className={
             "text-[34px] font-semibold leading-none tracking-[-0.045em] " +
             (stats.nb > 0
-              ? "text-[color:var(--board-amber-ink-deep)]"
+              ? "text-[color:var(--board-signal-on)]"
               : "text-[color:var(--board-green-ink)]")
           }
         >
@@ -575,7 +575,7 @@ export function BlocActionsEnRetard({ bundle }: { bundle: DashboardBundle }) {
           className={
             "mt-[3px] font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] " +
             (stats.nb > 0
-              ? "text-[color:var(--board-amber-ink)]"
+              ? "text-[color:var(--board-signal-on)]/85"
               : "text-[color:var(--board-green-ink)]")
           }
         >
@@ -679,7 +679,7 @@ export function BlocPlanActions({ bundle }: { bundle: DashboardBundle }) {
             </div>
           ))}
           <div className="flex items-center gap-[9px] text-[13px] text-[color:var(--board-text-strong)]">
-            <span className="size-[9px] rounded-[3px] bg-[color:var(--board-amber)]" />
+            <span className="size-[9px] rounded-[3px] bg-[color:var(--board-signal)]" />
             <span className="flex-1">dont en retard</span>
             <span className="font-semibold text-[color:var(--board-ink)]">
               {c.actionsEnRetard}
@@ -758,7 +758,7 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
               className={
                 "flex size-[22px] flex-none items-center justify-center rounded-full text-[11px] " +
                 (r.resultat === "ecart_majeur"
-                  ? "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink-deep)]"
+                  ? "bg-[color:var(--board-signal)] text-[color:var(--board-signal-on)]"
                   : "bg-[color:var(--board-green)] text-[color:var(--board-green-ink)]")
               }
             >
@@ -777,15 +777,15 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
         {aFaire ? (
           <Link
             href={aFaire.href}
-            className="flex items-center gap-3 rounded-full border border-[color:rgba(238,108,43,.3)] bg-[color:var(--board-amber-pale)] px-4 py-[13px] transition-opacity hover:opacity-85"
+            className="flex items-center gap-3 rounded-full border border-[color:var(--board-signal)]/30 bg-[color:var(--board-signal-pale)] px-4 py-[13px] transition-opacity hover:opacity-85"
           >
-            <span className="flex size-[22px] flex-none items-center justify-center rounded-full bg-[color:var(--board-amber)] text-[11px] font-semibold text-[color:var(--board-amber-ink-deep)]">
+            <span className="flex size-[22px] flex-none items-center justify-center rounded-full bg-[color:var(--board-signal)] text-[11px] font-semibold text-[color:var(--board-signal-on)]">
               !
             </span>
             <span className="flex-1 text-[13.5px] font-medium leading-[1.35] text-[color:var(--board-ink)]">
               {aFaire.titre}
             </span>
-            <span className="flex-none text-[11.5px] font-semibold text-[color:var(--board-amber-ink-strong)]">
+            <span className="flex-none text-[11.5px] font-semibold text-[color:var(--board-signal-ink-strong)]">
               À FAIRE
             </span>
           </Link>
