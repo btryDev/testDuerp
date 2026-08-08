@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { PictoEquipement } from "@/components/equipements/PictoEquipement";
 import { CATEGORIES_EQUIPEMENT } from "@/lib/equipements/schema";
 import {
   DESCRIPTION_CATEGORIE,
@@ -76,23 +77,26 @@ export function EquipementForm({
       <section className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="categorie">Catégorie *</Label>
-          <select
-            id="categorie"
-            name="categorie"
-            value={categorie}
-            onChange={(e) =>
-              setCategorie(e.currentTarget.value as CategorieEquipement)
-            }
-            required
-            className="h-9 w-full rounded-md border border-rule bg-background px-3 py-1 text-sm shadow-sm"
-            aria-invalid={Boolean(err("categorie"))}
-          >
-            {CATEGORIES_EQUIPEMENT.map((c) => (
-              <option key={c} value={c}>
-                {LABEL_CATEGORIE_EQUIPEMENT[c]}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-3">
+            <PictoEquipement categorie={categorie} taille={44} />
+            <select
+              id="categorie"
+              name="categorie"
+              value={categorie}
+              onChange={(e) =>
+                setCategorie(e.currentTarget.value as CategorieEquipement)
+              }
+              required
+              className="h-9 w-full rounded-md border border-rule bg-background px-3 py-1 text-sm shadow-sm"
+              aria-invalid={Boolean(err("categorie"))}
+            >
+              {CATEGORIES_EQUIPEMENT.map((c) => (
+                <option key={c} value={c}>
+                  {LABEL_CATEGORIE_EQUIPEMENT[c]}
+                </option>
+              ))}
+            </select>
+          </div>
           {DESCRIPTION_CATEGORIE[categorie] && (
             <p className="text-[0.82rem] text-muted-foreground">
               {DESCRIPTION_CATEGORIE[categorie]}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/layout/EmptyState";
+import { PictoEquipement } from "@/components/equipements/PictoEquipement";
 import { PreRemplissagePanel } from "@/components/equipements/PreRemplissagePanel";
 import { SupprimerEquipementButton } from "@/components/equipements/SupprimerEquipementButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
@@ -124,10 +125,13 @@ export default async function EquipementsPage({
         <section className="space-y-8">
           {[...parCategorie.entries()].map(([cat, liste]) => (
             <div key={cat} className="space-y-3">
-              <h2 className="text-[1.05rem] font-semibold tracking-[-0.012em]">
-                {LABEL_CATEGORIE_EQUIPEMENT[cat]}
-                <span className="ml-2 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
-                  · {liste.length} équipement{liste.length > 1 ? "s" : ""}
+              <h2 className="flex items-center gap-3 text-[1.05rem] font-semibold tracking-[-0.012em]">
+                <PictoEquipement categorie={cat} taille={36} />
+                <span>
+                  {LABEL_CATEGORIE_EQUIPEMENT[cat]}
+                  <span className="ml-2 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+                    · {liste.length} équipement{liste.length > 1 ? "s" : ""}
+                  </span>
                 </span>
               </h2>
 

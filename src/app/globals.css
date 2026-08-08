@@ -742,19 +742,41 @@
     box-shadow: inset 0 0 0 1px var(--navy);
   }
 
-  /* Tuile équipement V2 */
+  /* Tuile équipement V2 — bande picto pleine hauteur à gauche (fond
+     navy pâle, filet pointillé), contenu à droite. Hover : anneau navy
+     inset, même affordance que la cellule courante du calendrier. */
   .v2-equip-tile {
-    border-radius: 14px;
+    border-radius: 12px;
     background: var(--paper-sunk);
-    padding: 14px;
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-height: 108px;
-    transition: background 160ms;
+    align-items: stretch;
+    overflow: hidden;
+    min-height: 116px;
+    transition: box-shadow 160ms;
   }
   .v2-equip-tile:hover {
-    background: color-mix(in oklch, var(--paper-sunk) 85%, var(--ink) 5%);
+    box-shadow: inset 0 0 0 1px var(--navy);
+  }
+  .v2-equip-tile-picto {
+    flex: 0 0 76px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--navy-soft);
+    border-right: 1px dashed var(--rule);
+  }
+  .v2-equip-tile-picto > * {
+    transition: transform 200ms ease;
+  }
+  .v2-equip-tile:hover .v2-equip-tile-picto > * {
+    transform: scale(1.05);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .v2-equip-tile-picto > *,
+    .v2-equip-tile:hover .v2-equip-tile-picto > * {
+      transition: none;
+      transform: none;
+    }
   }
 }
 

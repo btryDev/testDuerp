@@ -9,6 +9,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { BentoCell } from "@/components/dashboard/BentoCell";
+import { PictoEquipement } from "@/components/equipements/PictoEquipement";
 import type { DashboardBundle } from "../types";
 
 function formatDateCourte(d: Date): string {
@@ -154,52 +155,57 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
               href={`/etablissements/${etablissementId}/equipements`}
               className="v2-equip-tile"
             >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                  {libelleCategorie(eq.categorie)}
-                </span>
-                <span aria-hidden className="text-[0.78rem] text-ink/50">
-                  ↗
-                </span>
+              <div className="v2-equip-tile-picto">
+                <PictoEquipement categorie={eq.categorie} taille={56} />
               </div>
-              <div className="text-[14px] font-medium leading-[1.25]">
-                {eq.libelle}
-              </div>
-              <div className="mt-auto flex items-center gap-2">
-                <div
-                  className="v2-bar-track flex-1"
-                  style={{ height: 4 }}
-                  aria-hidden
-                >
-                  <div
-                    className="v2-bar-fill"
-                    style={{
-                      width: `${pct}%`,
-                      background: alert ? "var(--alert)" : "var(--navy)",
-                    }}
-                  />
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
+                    {libelleCategorie(eq.categorie)}
+                  </span>
+                  <span aria-hidden className="text-[0.78rem] text-ink/50">
+                    ↗
+                  </span>
                 </div>
-                <span className="font-mono text-[10.5px] tabular-nums text-muted-foreground">
-                  {pct}%
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {fait > 0 ? (
-                  <span className="pill-v2 pill-v2-green">{fait} fait</span>
-                ) : null}
-                {retard > 0 ? (
-                  <span className="pill-v2 pill-v2-alert">
-                    {retard} dépassé{retard > 1 ? "s" : ""}
+                <div className="text-[14px] font-medium leading-[1.25]">
+                  {eq.libelle}
+                </div>
+                <div className="mt-auto flex items-center gap-2">
+                  <div
+                    className="v2-bar-track flex-1"
+                    style={{ height: 4 }}
+                    aria-hidden
+                  >
+                    <div
+                      className="v2-bar-fill"
+                      style={{
+                        width: `${pct}%`,
+                        background: alert ? "var(--alert)" : "var(--navy)",
+                      }}
+                    />
+                  </div>
+                  <span className="font-mono text-[10.5px] tabular-nums text-muted-foreground">
+                    {pct}%
                   </span>
-                ) : null}
-                {aPlanif > 0 ? (
-                  <span className="pill-v2 pill-v2-dashed">
-                    {aPlanif} à planif.
-                  </span>
-                ) : null}
-                {!fait && !retard && !aPlanif ? (
-                  <span className="pill-v2 pill-v2-dashed">Aucune vérif</span>
-                ) : null}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {fait > 0 ? (
+                    <span className="pill-v2 pill-v2-green">{fait} fait</span>
+                  ) : null}
+                  {retard > 0 ? (
+                    <span className="pill-v2 pill-v2-alert">
+                      {retard} dépassé{retard > 1 ? "s" : ""}
+                    </span>
+                  ) : null}
+                  {aPlanif > 0 ? (
+                    <span className="pill-v2 pill-v2-dashed">
+                      {aPlanif} à planif.
+                    </span>
+                  ) : null}
+                  {!fait && !retard && !aPlanif ? (
+                    <span className="pill-v2 pill-v2-dashed">Aucune vérif</span>
+                  ) : null}
+                </div>
               </div>
             </Link>
           );

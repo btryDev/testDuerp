@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { creerEquipementsDepuisPreRemplissage } from "@/lib/equipements/actions";
+import { PictoEquipement } from "@/components/equipements/PictoEquipement";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 
@@ -87,6 +88,7 @@ export function PreRemplissagePanel({ etablissementId, suggestions }: Props) {
                   onChange={() => toggle(s.categorie)}
                   className="mt-1 size-4 rounded border-rule"
                 />
+                <PictoEquipement categorie={s.categorie} taille={36} />
                 <label htmlFor={`pre-${s.categorie}`} className="min-w-0 flex-1">
                   <p className="text-[0.95rem] font-semibold">
                     {LABEL_CATEGORIE_EQUIPEMENT[s.categorie]}
