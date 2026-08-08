@@ -7,9 +7,11 @@ import {
 } from "@/lib/onboarding/deduction-erp";
 
 /**
- * Étape 3 — Résumé & forecast.
- * Carte summary des informations saisies + carte forecast « ce qu'on va
- * générer pour vous », alignée sur le design Direction B.
+ * Étape 3 sur 3 — Résumé.
+ * Carte summary des informations saisies + carte « la suite » qui annonce
+ * uniquement ce qui existe réellement après la création (pas de promesse
+ * de contenu pré-généré : le calendrier vient des équipements déclarés,
+ * le DUERP s'ouvre ensuite, le registre se remplit avec les rapports).
  */
 export function StepResume({ state }: StepProps) {
   const typeErpLabel =
@@ -53,8 +55,10 @@ export function StepResume({ state }: StepProps) {
           Vérification
         </h2>
         <p className="mt-3 max-w-[56ch] text-[0.95rem] leading-[1.55] text-muted-foreground">
-          Tout est bon ? En créant l&apos;espace, on génère votre premier
-          établissement et la trame DUERP pré-remplie.
+          Tout est bon ? En créant l&apos;espace, on enregistre votre
+          établissement. La suite se joue en une étape : déclarer vos
+          équipements — ce sont eux qui alimentent votre calendrier de
+          vérifications.
         </p>
       </div>
 
@@ -92,7 +96,7 @@ export function StepResume({ state }: StepProps) {
       <section className="rounded-2xl border border-[color:color-mix(in_oklch,var(--accent-vif)_20%,transparent)] bg-[color:color-mix(in_oklch,var(--accent-vif)_5%,var(--paper-elevated))] px-6 py-5">
         <div>
           <strong className="block text-[1rem] font-medium text-[color:var(--accent-vif)]">
-            Ce qu&apos;on va générer pour vous
+            La suite, concrètement
           </strong>
           <em className="mt-1 block text-[0.82rem] not-italic text-muted-foreground">
             Dès que vous déclarerez vos équipements, le calendrier des
@@ -103,10 +107,17 @@ export function StepResume({ state }: StepProps) {
           <ForecastLi>
             Espace entreprise + premier établissement liés
           </ForecastLi>
-          <ForecastLi>Trame DUERP pré-remplie pour votre secteur</ForecastLi>
-          <ForecastLi>Registre de sécurité horodaté</ForecastLi>
           <ForecastLi>
-            Modèle de plan d&apos;actions prêt à suivre
+            Votre calendrier de vérifications, généré dès la déclaration de
+            vos équipements
+          </ForecastLi>
+          <ForecastLi>
+            Votre DUERP, prêt à être ouvert — l&apos;outil vous guide unité
+            par unité
+          </ForecastLi>
+          <ForecastLi>
+            Un registre de sécurité qui se remplira au fil des rapports
+            déposés
           </ForecastLi>
         </ul>
       </section>

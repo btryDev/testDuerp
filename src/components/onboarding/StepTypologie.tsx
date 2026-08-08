@@ -21,7 +21,7 @@ import { CarteChoix } from "./CarteChoix";
 import type { StepProps } from "./types";
 
 /**
- * Étape 3 — Assistant ludique pour déterminer la typologie d'établissement
+ * Étape 2 sur 3 — Assistant pour déterminer la typologie d'établissement
  * (ERP / IGH / habitation). Trois questions séquentielles avec grille
  * visuelle pour le type d'activité et la classe IGH.
  *
@@ -55,7 +55,7 @@ export function StepTypologie({ state, update, errors }: StepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <p className="label-admin mb-2">Étape 3 sur 4 · Type d&apos;établissement</p>
+        <p className="label-admin mb-2">Étape 2 sur 3 · Type d&apos;établissement</p>
         <h2 className="text-[1.6rem] font-semibold tracking-[-0.015em] leading-tight">
           Quelques questions pour cadrer les obligations applicables.
         </h2>

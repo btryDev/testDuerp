@@ -23,10 +23,13 @@ function formatDate(d: Date | null): string | null {
 
 export default async function EquipementsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ bienvenue?: string }>;
 }) {
   const { id } = await params;
+  const { bienvenue } = await searchParams;
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
@@ -56,6 +59,19 @@ export default async function EquipementsPage({
           ← {etab.raisonDisplay}
         </Link>
       </nav>
+
+      {/* Bandeau de continuité wizard → équipements (éphémère : le
+          paramètre disparaît à la navigation suivante). */}
+      {bienvenue === "1" && (
+        <div className="cartouche mt-8 px-6 py-5 sm:px-8">
+          <p className="text-[0.95rem] leading-relaxed">
+            <strong>Votre espace est créé.</strong> Dernière étape de la mise
+            en place : cochez les équipements présents chez vous. Votre
+            calendrier de vérifications se génère dans la foulée — chaque
+            échéance citera son texte réglementaire.
+          </p>
+        </div>
+      )}
 
       <header className="mt-8 flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0 flex-1 space-y-3">

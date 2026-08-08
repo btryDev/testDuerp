@@ -12,9 +12,8 @@ const SUGGESTIONS_NAF = [
 ];
 
 /**
- * Étape 1 — Identité juridique + lieu principal, fusionnées dans un seul
- * écran avec deux sections visuellement distinctes. Inputs stylisés pour
- * le shell onboarding Direction B (larges, rounded-lg, focus vert).
+ * Étape 1 sur 3 — Identité juridique + lieu principal, fusionnées dans un
+ * seul écran avec deux sections visuellement distinctes.
  */
 export function StepIdentite({ state, update, errors }: StepProps) {
   const scope =

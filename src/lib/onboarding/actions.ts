@@ -12,7 +12,9 @@ import { onboardingSchema } from "./schema";
  *
  * Crée Entreprise + premier Etablissement dans une transaction unique
  * depuis un seul formulaire (saisi une seule fois, sans duplication
- * ressentie). Redirige ensuite vers la page de l'établissement créé.
+ * ressentie). Redirige ensuite vers la déclaration des équipements
+ * (`?bienvenue=1` déclenche le bandeau de continuité) : c'est l'étape
+ * qui débloque le calendrier, le dashboard vient après.
  *
  * Les champs communs (adresse, codeNaf, effectif) sont copiés dans les
  * deux entités — côté Entreprise c'est le siège, côté Etablissement
@@ -106,5 +108,5 @@ export async function finaliserOnboarding(
 
   revalidatePath("/");
   revalidatePath(`/entreprises/${result.entrepriseId}`);
-  redirect(`/etablissements/${result.id}`);
+  redirect(`/etablissements/${result.id}/equipements?bienvenue=1`);
 }

@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Check, ShieldCheck } from "lucide-react";
 import { StepIdentite } from "./StepIdentite";
 import { StepTypologie } from "./StepTypologie";
@@ -86,9 +87,27 @@ const ETAPES: Etape[] = [
 ];
 
 export function WizardShell() {
+  const router = useRouter();
   const [state, setState] = useState<OnboardingState>(VALEURS_INITIALES);
   const [etapeIdx, setEtapeIdx] = useState(0);
   const [blocage, setBlocage] = useState<string | null>(null);
+
+  // Quitter : rien n'est persisté avant l'étape finale (état React pur),
+  // donc on le dit honnêtement au lieu d'un « Enregistrer et quitter »
+  // trompeur. Confirmation seulement si l'utilisateur a commencé à saisir.
+  const quitter = () => {
+    const modifie =
+      JSON.stringify(state) !== JSON.stringify(VALEURS_INITIALES);
+    if (
+      modifie &&
+      !window.confirm(
+        "Quitter la mise en place ?\n\nVos réponses ne seront pas conservées — le questionnaire ne prend que quelques minutes et pourra être repris depuis le début.",
+      )
+    ) {
+      return;
+    }
+    router.push("/");
+  };
 
   const [serverState, formAction, submitting] = useActionState<
     OnboardingActionState,
@@ -221,7 +240,7 @@ export function WizardShell() {
             <ShieldCheck aria-hidden className="size-4" /> Données hébergées UE
           </div>
           <em className="not-italic">
-            Vous pouvez revenir modifier plus tard.
+            Toutes les informations restent modifiables après la création.
           </em>
         </div>
       </aside>
@@ -248,12 +267,13 @@ export function WizardShell() {
             <span className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground">
               Étape {etape.numero} / {ETAPES.length}
             </span>
-            <Link
-              href="/"
+            <button
+              type="button"
+              onClick={quitter}
               className="text-[0.8rem] text-muted-foreground underline decoration-rule decoration-dotted underline-offset-4 hover:text-ink"
             >
-              Enregistrer et quitter
-            </Link>
+              Quitter
+            </button>
           </div>
           <div
             className="h-1 overflow-hidden rounded-full bg-rule-soft"
@@ -302,12 +322,13 @@ export function WizardShell() {
                 ← Précédent
               </button>
             ) : (
-              <Link
-                href="/"
+              <button
+                type="button"
+                onClick={quitter}
                 className="rounded-lg border border-rule bg-transparent px-4 py-2.5 text-[0.86rem] text-ink transition-colors hover:border-ink"
               >
                 Annuler
-              </Link>
+              </button>
             )}
 
             {etapeIdx < ETAPES.length - 1 ? (
