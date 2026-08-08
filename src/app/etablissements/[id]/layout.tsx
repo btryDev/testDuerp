@@ -67,7 +67,7 @@ export default async function EtablissementLayout({
   ]);
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:h-screen lg:grid-cols-[248px_1fr] lg:overflow-hidden">
+    <div className="grid min-h-screen grid-cols-1 lg:h-screen lg:grid-cols-[auto_1fr] lg:overflow-hidden">
       <AppSidebar
         etablissement={etab}
         counts={{

@@ -32,6 +32,7 @@ import {
   Calendar,
   FileText,
   ListChecks,
+  ListTodo,
   FileCheck2,
   Settings,
   Users,
@@ -42,6 +43,8 @@ import {
   Ticket,
   ShieldCheck,
   BookOpen,
+  Building2,
+  Archive,
 } from "lucide-react";
 
 /** Ids historiques — conservés tels quels pour la prop `active`. */
@@ -306,6 +309,113 @@ export function construireSections({
       title: "Mes registres",
       items: [...registresSocle, ...visibles],
       repliables: repliables.length > 0 ? repliables : undefined,
+    },
+  ];
+}
+
+// ---------------------------------------------------------------------------
+// Rail à deux niveaux.
+//
+// Le rail principal ne porte plus les items mais les *questions* du
+// dirigeant (À faire / Mon établissement / Mes registres) ; les items d'une
+// catégorie s'affichent dans un second panneau accolé. « Comprendre » sort
+// de la section « À faire » pour devenir une entrée de premier niveau sans
+// panneau (lien direct), conformément au découpage demandé. « Compte » est
+// la cinquième entrée, rendue par le composant (elle dépend de l'user, pas
+// de l'établissement).
+
+export type RailCategorieId =
+  | "a-faire"
+  | "etablissement"
+  | "registres"
+  | "comprendre"
+  | "compte";
+
+export type RailCategorie = {
+  id: RailCategorieId;
+  /** Libellé complet — panneau et aria-label. */
+  label: string;
+  /** Libellé court affiché sous l'icône du rail. */
+  labelCourt: string;
+  Icon: typeof LayoutDashboard;
+  /** Catégorie sans panneau : lien direct. */
+  href?: string;
+  items?: NavItem[];
+  repliables?: NavItem[];
+  /** Au moins un item du panneau porte une alerte. */
+  alert?: boolean;
+};
+
+/** Catégorie du rail à laquelle appartient un item — sert à savoir quel
+ *  panneau ouvrir et quelle entrée du rail surligner. */
+export function categorieDeItem(id: SidebarItemId): RailCategorieId {
+  switch (id) {
+    case "guide":
+      return "comprendre";
+    case "equipements":
+    case "prestataires":
+    case "fiche":
+    case "equipe":
+      return "etablissement";
+    case "duerp":
+    case "registre":
+    case "accessibilite":
+    case "permis-feu":
+    case "plan-prevention":
+    case "carnet-sanitaire":
+      return "registres";
+    default:
+      return "a-faire";
+  }
+}
+
+export function construireRail(params: {
+  etablissementId: string;
+  counts?: SidebarCounts;
+  profil?: ProfilRegistres;
+  actif: SidebarItemId;
+}): RailCategorie[] {
+  // On dérive du même arbre que le rail simple : mêmes items, mêmes règles
+  // de divulgation, mêmes badges — seule la présentation change.
+  const [aFaire, etablissement, registres] = construireSections(params);
+
+  // « Comprendre » quitte le panneau « À faire » : il devient une entrée
+  // de premier niveau, en lien direct.
+  const itemsAFaire = aFaire.items.filter((it) => it.id !== "guide");
+  const alerte = (items: NavItem[]) => items.some((it) => it.alert);
+
+  return [
+    {
+      id: "a-faire",
+      label: "À faire",
+      labelCourt: "À faire",
+      Icon: ListTodo,
+      items: itemsAFaire,
+      alert: alerte(itemsAFaire),
+    },
+    {
+      id: "etablissement",
+      label: "Mon établissement",
+      labelCourt: "Établissement",
+      Icon: Building2,
+      items: etablissement.items,
+      alert: alerte(etablissement.items),
+    },
+    {
+      id: "registres",
+      label: "Mes registres",
+      labelCourt: "Registres",
+      Icon: Archive,
+      items: registres.items,
+      repliables: registres.repliables,
+      alert: alerte(registres.items),
+    },
+    {
+      id: "comprendre",
+      label: "Comprendre",
+      labelCourt: "Comprendre",
+      Icon: BookOpen,
+      href: `/etablissements/${params.etablissementId}/guide`,
     },
   ];
 }

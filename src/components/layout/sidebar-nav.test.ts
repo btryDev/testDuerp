@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  categorieDeItem,
+  construireRail,
   construireSections,
   deduireActif,
   type ProfilRegistres,
@@ -152,6 +154,71 @@ describe("construireSections — divulgation progressive", () => {
     };
     const registres = sections(profil).find((s) => s.title === "Mes registres");
     expect(registres?.repliables).toBeUndefined();
+  });
+});
+
+describe("construireRail — rail à deux niveaux", () => {
+  function rail(actif: SidebarItemId = "tableau") {
+    return construireRail({ etablissementId: ID, profil: PROFIL_VIDE, actif });
+  }
+
+  it("expose les catégories dans l'ordre du rail", () => {
+    expect(rail().map((c) => c.id)).toEqual([
+      "a-faire",
+      "etablissement",
+      "registres",
+      "comprendre",
+    ]);
+  });
+
+  it("sort « Comprendre » du panneau « À faire » pour en faire un lien direct", () => {
+    const cats = rail();
+    const aFaire = cats.find((c) => c.id === "a-faire");
+    expect(aFaire?.items?.map((i) => i.id)).not.toContain("guide");
+    const comprendre = cats.find((c) => c.id === "comprendre");
+    expect(comprendre?.items).toBeUndefined();
+    expect(comprendre?.href).toBe(`/etablissements/${ID}/guide`);
+  });
+
+  it("reprend les mêmes items que les sections, guide excepté", () => {
+    const idsSections = construireSections({
+      etablissementId: ID,
+      profil: PROFIL_VIDE,
+      actif: "tableau",
+    }).flatMap((s) => [...s.items, ...(s.repliables ?? [])].map((i) => i.id));
+    const idsRail = rail().flatMap((c) =>
+      [...(c.items ?? []), ...(c.repliables ?? [])].map((i) => i.id),
+    );
+    expect([...idsRail, "guide"].sort()).toEqual(idsSections.sort());
+  });
+
+  it("porte la divulgation des registres sur la catégorie « registres »", () => {
+    const registres = rail().find((c) => c.id === "registres");
+    expect(registres?.repliables?.map((i) => i.id).sort()).toEqual([
+      "accessibilite",
+      "carnet-sanitaire",
+      "permis-feu",
+      "plan-prevention",
+    ]);
+  });
+
+  it("agrège les alertes des items au niveau de la catégorie", () => {
+    const cats = construireRail({
+      etablissementId: ID,
+      actif: "tableau",
+      counts: { verificationsEnRetard: 2, prestatairesAlertes: 0 },
+    });
+    expect(cats.find((c) => c.id === "a-faire")?.alert).toBe(true);
+    expect(cats.find((c) => c.id === "etablissement")?.alert).toBe(false);
+  });
+
+  it("rattache chaque item à la catégorie qui le contient", () => {
+    for (const cat of rail()) {
+      for (const it of [...(cat.items ?? []), ...(cat.repliables ?? [])]) {
+        expect(categorieDeItem(it.id)).toBe(cat.id);
+      }
+    }
+    expect(categorieDeItem("guide")).toBe("comprendre");
   });
 });
 
