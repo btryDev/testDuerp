@@ -1,12 +1,18 @@
 "use client";
 
-// Barre de contrôles « Mise en page » — mockup V2.
-// Hors édition : libellé « Mise en page » + compteur « N widgets actifs »,
-//                actions ghost (+ Ajouter, Réinitialiser) + bouton outline Personnaliser.
-// En édition : indicateur « Mode personnalisation » + bouton Terminer.
-//              Le tiroir de widgets masqués reste disponible sous la barre.
+// Contrôles de mise en page du tableau de bord.
+//
+// Hors édition : une seule pastille « Organiser », flottante en haut à
+// droite du board — c'est la forme et la place qu'elle occupe dans le
+// design. Tout le reste (ajouter, réinitialiser, tiroir) n'apparaît qu'une
+// fois en mode personnalisation : sur un tableau de bord qu'on consulte
+// dix fois par jour et qu'on réorganise deux fois par an, exposer trois
+// actions en permanence encombre le bandeau de tête pour rien.
+//
+// En édition : indicateur + Réinitialiser + Terminer, et le tiroir des
+// widgets masqués sous la barre.
 
-import { Plus, RotateCcw, Settings2, X } from "lucide-react";
+import { GripVertical, Plus, RotateCcw, Settings2, X } from "lucide-react";
 import { REGISTRY, tailleEnCol, tousLesWidgetIds } from "./registry";
 import type { WidgetId } from "./types";
 
@@ -23,65 +29,51 @@ export function EditToolbar({
   onAjouter: (id: WidgetId) => void;
   onReinitialiser: () => void;
 }) {
+  // Pastille compacte hors édition.
+  if (!enEdition) {
+    return (
+      <button
+        type="button"
+        onClick={onToggle}
+        title="Réorganiser le tableau de bord"
+        className="inline-flex items-center gap-1.5 rounded-full border border-[color:rgba(10,10,10,.14)] bg-[color:var(--board-card)]/90 px-3.5 py-2 text-[12.5px] font-medium text-[color:var(--board-ink)] shadow-sm backdrop-blur transition-colors hover:bg-[color:var(--board-card)]"
+      >
+        <GripVertical aria-hidden className="size-3.5 opacity-60" />
+        Organiser
+      </button>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          {enEdition ? (
-            <span className="pill-v2 pill-v2-green">
-              <Settings2 aria-hidden className="size-3" />
-              Mode personnalisation
-            </span>
-          ) : (
-            <>
-              <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
-                Mise en page
-              </span>
-              <span className="font-mono text-[11.5px] text-ink/75">
-                {actif.size} widgets actifs
-              </span>
-            </>
-          )}
+          <span className="pill-v2 pill-v2-green">
+            <Settings2 aria-hidden className="size-3" />
+            Mode personnalisation
+          </span>
+          <span className="font-mono text-[11.5px] text-ink/75">
+            {actif.size} widgets actifs
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
-          {enEdition ? (
-            <>
-              <BtnGhost onClick={onReinitialiser} title="Restaurer les widgets par défaut">
-                <RotateCcw className="size-3" />
-                Réinitialiser
-              </BtnGhost>
-              <button
-                type="button"
-                onClick={onToggle}
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[color:var(--navy)] px-3 text-[12px] font-medium text-white transition-colors hover:bg-[color:color-mix(in_oklch,var(--navy)_88%,black)]"
-              >
-                <X className="size-3.5" />
-                Terminer
-              </button>
-            </>
-          ) : (
-            <>
-              <BtnGhost onClick={onToggle} title="Ajouter un widget">
-                <Plus className="size-3" />
-                Ajouter un widget
-              </BtnGhost>
-              <BtnGhost onClick={onReinitialiser} title="Restaurer les widgets par défaut">
-                Réinitialiser
-              </BtnGhost>
-              <button
-                type="button"
-                onClick={onToggle}
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-rule bg-paper-elevated px-3 text-[12px] font-medium text-ink transition-colors hover:bg-paper-sunk"
-              >
-                Personnaliser
-              </button>
-            </>
-          )}
+          <BtnGhost onClick={onReinitialiser} title="Restaurer les widgets par défaut">
+            <RotateCcw className="size-3" />
+            Réinitialiser
+          </BtnGhost>
+          <button
+            type="button"
+            onClick={onToggle}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[color:var(--navy)] px-3 text-[12px] font-medium text-white transition-colors hover:bg-[color:color-mix(in_oklch,var(--navy)_88%,black)]"
+          >
+            <X className="size-3.5" />
+            Terminer
+          </button>
         </div>
       </div>
 
-      {enEdition ? <TiroirMasques actif={actif} onAjouter={onAjouter} /> : null}
+      <TiroirMasques actif={actif} onAjouter={onAjouter} />
     </div>
   );
 }

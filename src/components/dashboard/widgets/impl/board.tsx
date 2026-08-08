@@ -113,6 +113,24 @@ function Pastille({
   );
 }
 
+function Lien({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="mt-1 inline-flex items-center gap-2 rounded-full bg-[color:var(--board-ink)] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-85"
+    >
+      {children}
+      <ArrowUpRight className="size-3.5" />
+    </Link>
+  );
+}
+
 /* ─── 1 · Le brief ──────────────────────────────────────────── */
 
 export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
@@ -143,34 +161,41 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
 
         {brief.gestes.length > 0 ? (
           <div className="mt-7 flex flex-wrap gap-[9px]">
-            {brief.gestes.map((g) => (
-              <Link
-                key={g.href + g.tag}
-                href={g.href}
-                className="inline-flex items-center overflow-hidden rounded-full text-[12.5px] font-medium transition-opacity hover:opacity-85"
-              >
-                <span
-                  className={
-                    "px-[14px] py-[10px] " +
-                    (g.ton === "alerte"
-                      ? "bg-[color:var(--board-amber-pale)] text-[color:var(--board-amber-ink-strong)]"
-                      : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]")
-                  }
+            {brief.gestes.map((g, i) => {
+              // Le premier geste est le primaire (noir), le suivant est
+              // secondaire (ambre) — c'est la hiérarchie du design, elle ne
+              // dépend pas du type de recommandation.
+              const primaire = i === 0;
+              return (
+                <Link
+                  key={g.href + g.tag}
+                  href={g.href}
+                  title={g.tagComplet}
+                  className="inline-flex max-w-full items-center overflow-hidden rounded-full text-[12.5px] font-medium transition-opacity hover:opacity-85"
                 >
-                  {g.tag}
-                </span>
-                <span
-                  className={
-                    "px-4 py-[10px] font-semibold " +
-                    (g.ton === "alerte"
-                      ? "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink-deep)]"
-                      : "bg-[color:var(--board-ink)] text-white")
-                  }
-                >
-                  {g.label}
-                </span>
-              </Link>
-            ))}
+                  <span
+                    className={
+                      "truncate px-[14px] py-[10px] " +
+                      (primaire
+                        ? "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
+                        : "bg-[color:var(--board-amber-pale)] text-[color:var(--board-amber-ink-strong)]")
+                    }
+                  >
+                    {g.tag}
+                  </span>
+                  <span
+                    className={
+                      "flex-none px-4 py-[10px] font-semibold " +
+                      (primaire
+                        ? "bg-[color:var(--board-ink)] text-white"
+                        : "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink-deep)]")
+                    }
+                  >
+                    {g.label}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         ) : null}
       </div>
@@ -190,7 +215,7 @@ function MotifIsometrique() {
   return (
     <div
       aria-hidden
-      className="hidden aspect-[4/3] min-h-[300px] items-center justify-center rounded-[30px] bg-[image:repeating-linear-gradient(135deg,rgba(47,95,133,.06)_0_12px,transparent_12px_24px)] lg:flex"
+      className="hidden min-h-[260px] items-center justify-center self-stretch rounded-[30px] bg-[image:repeating-linear-gradient(135deg,rgba(47,95,133,.06)_0_12px,transparent_12px_24px)] lg:flex"
     >
       <svg viewBox="0 0 200 140" className="w-[56%]" fill="none">
         <ellipse cx="100" cy="112" rx="72" ry="18" fill="var(--board-blue-pale)" />
@@ -263,24 +288,45 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
         </div>
       </div>
 
-      {frise.marqueurs.length === 0 && frise.nbEnRetard === 0 ? (
-        <div className="mt-8">
+      {frise.marqueurs.length === 0 ? (
+        // Rien à placer sur l'axe : on ne dessine pas une frise déserte de
+        // 196 px. On dit ce qui bloque, et on donne la porte de sortie.
+        <div className="mt-7 flex flex-col items-start gap-3 rounded-[22px] bg-[color:var(--board-grey-pale)] px-6 py-7">
           {bundle.equipements.length === 0 ? (
             <>
-              <p className="text-[13.5px] text-[color:var(--board-grey-ink)]">
-                Votre calendrier se remplit tout seul à partir des équipements
-                déclarés — il n&apos;y en a pas encore.
+              <p className="m-0 text-[15px] font-semibold tracking-[-0.015em] text-[color:var(--board-ink)]">
+                Votre calendrier est vide
               </p>
-              <Link
+              <p className="m-0 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-grey-ink)]">
+                Il se remplit tout seul à partir des équipements déclarés — il
+                n&apos;y en a pas encore.
+              </p>
+              <Lien
                 href={`/etablissements/${bundle.etablissementId}/equipements/nouveau`}
-                className="mt-3 inline-flex items-center gap-2 rounded-full bg-[color:var(--board-ink)] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-85"
               >
                 Déclarer un équipement
-                <ArrowUpRight className="size-3.5" />
-              </Link>
+              </Lien>
+            </>
+          ) : frise.nbEnRetard > 0 ? (
+            <>
+              <p className="m-0 text-[15px] font-semibold tracking-[-0.015em] text-[color:var(--board-ink)]">
+                {frise.nbEnRetard} échéance{frise.nbEnRetard > 1 ? "s" : ""} sans
+                date, aucune à venir
+              </p>
+              <p className="m-0 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-grey-ink)]">
+                Vos vérifications existent mais aucune n&apos;est encore
+                programmée : il n&apos;y a donc rien à poser sur les{" "}
+                {horizon === 90 ? "90 prochains jours" : "12 prochains mois"}.
+                Posez des dates et la frise se remplira.
+              </p>
+              <Lien
+                href={`/etablissements/${bundle.etablissementId}/calendrier`}
+              >
+                Programmer les vérifications
+              </Lien>
             </>
           ) : (
-            <p className="text-[13.5px] text-[color:var(--board-grey-ink)]">
+            <p className="m-0 text-[13.5px] text-[color:var(--board-grey-ink)]">
               Aucune échéance sur cette période.
             </p>
           )}

@@ -47,3 +47,6 @@ next-env.d.ts
 # local file storage (dev only) — rapports de vérification uploadés
 /storage
 
+
+# Exports Claude Design déposés à la racine — références de travail.
+/Tableau de bord Rojer.html

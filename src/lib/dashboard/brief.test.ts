@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { construireBrief, type EntreeBrief } from "./brief";
+import {
+  construireBrief,
+  LONGUEUR_TAG_MAX,
+  raccourcirTag,
+  type EntreeBrief,
+} from "./brief";
 
 const LE_8_AOUT = new Date(2026, 7, 8);
 
@@ -124,6 +129,7 @@ describe("construireBrief — gestes", () => {
     expect(b.gestes).toHaveLength(2);
     expect(b.gestes[0]).toEqual({
       tag: "Extincteurs",
+      tagComplet: "Extincteurs",
       label: "Programmer l'intervention",
       href: "/a",
       ton: "alerte",
@@ -149,5 +155,65 @@ describe("construireBrief — gestes", () => {
 describe("construireBrief — date", () => {
   it("rend la date du jour capitalisée", () => {
     expect(construireBrief(CALME).datePill).toBe("Samedi 8 août 2026");
+  });
+});
+
+describe("raccourcirTag", () => {
+  it("retire le préfixe de périodicité", () => {
+    expect(raccourcirTag("Vérification périodique annuelle des extincteurs")).toBe(
+      "Extincteurs",
+    );
+    expect(raccourcirTag("Entretien annuel de la hotte")).toBe("Hotte");
+  });
+
+  it("coupe la précision juridique qui suit le sujet", () => {
+    // Cas réel observé sur le tableau de bord : le libellé complet mangeait
+    // toute la largeur du hero.
+    expect(
+      raccourcirTag(
+        "Habilitation électrique du personnel opérant sur ou à proximité d'installations électriques",
+      ),
+    ).toBe("Habilitation électrique");
+  });
+
+  it("coupe à la première parenthèse ou virgule", () => {
+    expect(
+      raccourcirTag("Vérification électrique à la mise en service (ERP)"),
+    ).toBe("Électrique à la mise en service");
+  });
+
+  it("tronque sur un mot entier, jamais au milieu", () => {
+    const t = raccourcirTag(
+      "Contrôle technique approfondi des installations de désenfumage naturel",
+    );
+    expect(t.length).toBeLessThanOrEqual(LONGUEUR_TAG_MAX + 1);
+    expect(t.endsWith("…")).toBe(true);
+    expect(t).not.toMatch(/\s…$/);
+  });
+
+  it("laisse intact un libellé déjà court", () => {
+    expect(raccourcirTag("Extincteurs")).toBe("Extincteurs");
+  });
+
+  it("capitalise le résultat", () => {
+    expect(raccourcirTag("Entretien annuel des ascenseurs")).toBe("Ascenseurs");
+  });
+});
+
+describe("construireBrief — gestes raccourcis", () => {
+  it("expose le tag court et conserve le libellé complet", () => {
+    const b = construireBrief({
+      ...CALME,
+      recommandations: [
+        {
+          kind: "verif_depassee",
+          titre:
+            "Habilitation électrique du personnel opérant sur ou à proximité d'installations électriques",
+          href: "/a",
+        },
+      ],
+    });
+    expect(b.gestes[0].tag).toBe("Habilitation électrique");
+    expect(b.gestes[0].tagComplet).toContain("à proximité");
   });
 });
