@@ -148,6 +148,77 @@ describe("construireBrief — gestes", () => {
   });
 });
 
+describe("construireBrief — amorçage", () => {
+  it("remplace « Rien ne presse » par le titre de la première amorce", () => {
+    const b = construireBrief({
+      ...CALME,
+      duerp: { existe: false, estAJour: false },
+      nbRapports: 0,
+      recommandations: [
+        {
+          kind: "amorce_equipements",
+          titre: "Déclarez vos équipements",
+          href: "/etablissements/x/equipements",
+        },
+      ],
+    });
+    expect(b.titre).toBe("Première étape : vos équipements");
+    expect(b.gestes[0]).toEqual({
+      tag: "Déclarez vos équipements",
+      tagComplet: "Déclarez vos équipements",
+      label: "Déclarer",
+      href: "/etablissements/x/equipements",
+      ton: "neutre",
+    });
+  });
+
+  it("titre d'amorce DUERP puis rapport, selon la première reco", () => {
+    const duerp = construireBrief({
+      ...CALME,
+      recommandations: [
+        { kind: "amorce_duerp", titre: "Ouvrez votre DUERP", href: "/d" },
+      ],
+    });
+    expect(duerp.titre).toBe("Prochaine étape : votre DUERP");
+    expect(duerp.gestes[0].label).toBe("Ouvrir");
+
+    const rapport = construireBrief({
+      ...CALME,
+      recommandations: [
+        {
+          kind: "amorce_rapport",
+          titre: "Déposez votre premier rapport",
+          href: "/c",
+        },
+      ],
+    });
+    expect(rapport.titre).toBe("Votre calendrier est en place");
+    expect(rapport.gestes[0].label).toBe("Déposer");
+  });
+
+  it("une urgence réelle garde son titre chiffré, même avec une amorce en reco", () => {
+    const b = construireBrief({
+      ...CALME,
+      compteurs: { ...CALME.compteurs, verifsEnRetard: 1 },
+      recommandations: [
+        { kind: "verif_depassee", titre: "Extincteurs", href: "/a" },
+        { kind: "amorce_duerp", titre: "Ouvrez votre DUERP", href: "/d" },
+      ],
+    });
+    expect(b.titre).toBe("Une échéance à traiter cette semaine");
+  });
+
+  it("les amorces sont toujours de ton neutre", () => {
+    const b = construireBrief({
+      ...CALME,
+      recommandations: [
+        { kind: "amorce_rapport", titre: "Déposez", href: "/c" },
+      ],
+    });
+    expect(b.gestes.every((g) => g.ton === "neutre")).toBe(true);
+  });
+});
+
 describe("construireBrief — date", () => {
   it("rend la date du jour capitalisée", () => {
     expect(construireBrief(CALME).datePill).toBe("Samedi 8 août 2026");

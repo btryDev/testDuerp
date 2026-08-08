@@ -297,8 +297,10 @@ export async function getDashboardData(
   ]);
 
   // Données brutes pour recommandations (15 vérifs + 15 actions suffisent
-  // — le moteur de reco limite à 5 de toute façon).
-  const [verifications, actionsOuvertes] = await Promise.all([
+  // — le moteur de reco limite à 5 de toute façon). Les deux counts
+  // alimentent les règles d'amorçage (6-8).
+  const [verifications, actionsOuvertes, nbEquipements, nbRapports] =
+    await Promise.all([
     prisma.verification.findMany({
       where: scope,
       select: {
@@ -324,6 +326,10 @@ export async function getDashboardData(
       },
       orderBy: { echeance: "asc" },
       take: 30,
+    }),
+    prisma.equipement.count({ where: scope }),
+    prisma.rapportVerification.count({
+      where: { verification: scope },
     }),
   ]);
 
@@ -364,6 +370,9 @@ export async function getDashboardData(
       })),
       duerpAgeJours: ageJours ?? undefined,
       duerpId: duerp?.id,
+      nbEquipements,
+      duerpSecteurChoisi: duerp?.referentielSecteurId != null,
+      nbRapports,
     },
     { now },
   );

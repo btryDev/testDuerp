@@ -342,6 +342,8 @@ export function variantValide(
  *   row 2 : prochaine échéance (3) + actions en retard (3)
  *   row 3 : plan d'actions     (3) + documents         (3)
  *   row 4 : ce qui a changé    (3) + préparer un contrôle (3)
+ *   row 5 : guide pédagogique  (3) — visible d'emblée pour le nouvel
+ *           inscrit ; les layouts déjà personnalisés ne sont pas réécrits.
  *
  * Tout le reste du registre demeure disponible dans le tiroir
  * « Ajouter un widget » — le board est un point de départ, pas un mur.
@@ -354,6 +356,7 @@ const ORDRE_DEFAUT: WidgetId[] = [
   "documents",
   "flux-registre",
   "controle",
+  "guide",
 ];
 
 export function layoutParDefaut(): LayoutItem[] {

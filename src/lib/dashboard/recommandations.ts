@@ -10,6 +10,15 @@
  *   3. Vérifications à venir sous 7 jours
  *   4. Actions à venir sous 15 jours
  *   5. DUERP à mettre à jour (> 11 mois sans nouvelle version)
+ *   6. Amorçage : aucun équipement déclaré → « Déclarez vos équipements »
+ *   7. Amorçage : équipements présents mais DUERP sans secteur choisi
+ *      → « Ouvrez votre DUERP »
+ *   8. Amorçage : vérifications planifiées mais aucun rapport déposé
+ *      → « Déposez votre premier rapport »
+ *
+ * Les amorçages (6-8) sont des invitations neutres, jamais des alertes :
+ * ils ne passent jamais devant une urgence réelle (priorités 1-5) et ne
+ * s'affichent que sur un dossier en cours de mise en place.
  *
  * Toutes les catégories contribuent à la liste ; le tri par priorité +
  * date (tie-breaker) fait remonter les items les plus urgents. Le total
@@ -22,7 +31,10 @@ export type Recommandation = {
     | "action_en_retard"
     | "verif_proche"
     | "action_proche"
-    | "duerp_a_jour";
+    | "duerp_a_jour"
+    | "amorce_equipements"
+    | "amorce_duerp"
+    | "amorce_rapport";
   titre: string;
   sousTitre?: string;
   href: string;
@@ -50,6 +62,16 @@ export type EntreeRecos = {
   etablissementId: string;
   /** DUERPs actifs : pour le lien "mettre à jour". */
   duerpId?: string;
+  /** Nombre d'équipements déclarés (amorçage règle 6). */
+  nbEquipements: number;
+  /**
+   * Le DUERP a un secteur choisi (`referentielSecteurId` non nul). Fait
+   * observable fiable : l'existence d'un Duerp ne suffit pas, les pages
+   * relais historiques en créaient silencieusement (amorçage règle 7).
+   */
+  duerpSecteurChoisi: boolean;
+  /** Nombre de rapports de vérification déposés (amorçage règle 8). */
+  nbRapports: number;
 };
 
 const JOUR_MS = 1000 * 60 * 60 * 24;
@@ -143,6 +165,36 @@ export function genererRecommandations(
       sousTitre: `Dernière version il y a ${Math.round(e.duerpAgeJours / 30)} mois`,
       href: `/duerp/${e.duerpId}`,
       priorite: 5,
+    });
+  }
+
+  // 6-8. Amorçage — invitations neutres pour un dossier en mise en place.
+  if (e.nbEquipements === 0) {
+    acc.push({
+      kind: "amorce_equipements",
+      titre: "Déclarez vos équipements",
+      sousTitre:
+        "Le point de départ : ils déterminent vos vérifications obligatoires",
+      href: `/etablissements/${etab}/equipements`,
+      priorite: 6,
+    });
+  }
+  if (e.nbEquipements > 0 && !e.duerpSecteurChoisi) {
+    acc.push({
+      kind: "amorce_duerp",
+      titre: "Ouvrez votre DUERP",
+      sousTitre: "L'évaluation des risques, guidée unité par unité",
+      href: `/etablissements/${etab}/duerp`,
+      priorite: 7,
+    });
+  }
+  if (e.verifications.length > 0 && e.nbRapports === 0) {
+    acc.push({
+      kind: "amorce_rapport",
+      titre: "Déposez votre premier rapport",
+      sousTitre: "Chaque rapport reçu rejoint votre registre de sécurité",
+      href: `/etablissements/${etab}/calendrier`,
+      priorite: 8,
     });
   }
 

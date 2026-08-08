@@ -64,7 +64,9 @@ export function OnboardingChecklist({
         {/* Progression numérique + segments */}
         <div className="flex min-w-[160px] flex-col items-start gap-2 sm:items-end">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
-            Étape {faites + (indexProchaine === -1 ? 0 : 0)}{" "}
+            {/* Numéro de l'étape courante (le composant retourne null quand
+                tout est fait, donc indexProchaine >= 0 ici). */}
+            Étape {indexProchaine + 1}{" "}
             <span className="text-ink">sur {total}</span>
           </p>
           <div className="flex gap-1" aria-hidden>

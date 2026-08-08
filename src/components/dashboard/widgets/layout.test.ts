@@ -32,7 +32,8 @@ describe("registre de widgets", () => {
 
   it("le layout par défaut est le board éditorial, dans l'ordre", () => {
     // Le brief n'y figure pas : c'est le bandeau de tête de la page, pas
-    // un widget — ni déplaçable, ni retirable.
+    // un widget — ni déplaçable, ni retirable. Le guide clôt le board :
+    // visible d'emblée pour le nouvel inscrit (pédagogie d'amorçage).
     expect(layoutParDefaut().map((i) => i.widgetId)).toEqual([
       "calendrier-type",
       "countdown",
@@ -41,16 +42,20 @@ describe("registre de widgets", () => {
       "documents",
       "flux-registre",
       "controle",
+      "guide",
     ]);
   });
 
-  it("le board tient exactement sur la grille 6 colonnes", () => {
-    // frise (6) · puis trois rangées de deux medium (3+3).
+  it("le board s'aligne sur la grille 6 colonnes (unités de 3)", () => {
+    // frise (6) · trois rangées de deux medium (3+3) · guide (3).
+    // La dernière rangée est volontairement incomplète : la grille CSS
+    // auto-flow gère, et un board « point de départ » n'a pas à être
+    // un mur plein.
     const cols = layoutParDefaut().map(
       (i) => tailleEnCol(REGISTRY[i.widgetId].taille),
     );
-    expect(cols).toEqual([6, 3, 3, 3, 3, 3, 3]);
-    expect(cols.reduce((a, b) => a + b, 0) % 6).toBe(0);
+    expect(cols).toEqual([6, 3, 3, 3, 3, 3, 3, 3]);
+    expect(cols.every((c) => c % 3 === 0)).toBe(true);
   });
 
   it("aucun widget n'est obligatoire", () => {

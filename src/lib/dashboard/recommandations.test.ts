@@ -11,11 +11,19 @@ function dateDecalee(joursDeNow: number): Date {
   return new Date(NOW.getTime() + joursDeNow * JOUR_MS);
 }
 
+/**
+ * Dossier « mûr » : équipements déclarés, secteur DUERP choisi, au moins
+ * un rapport déposé — aucune règle d'amorçage ne se déclenche, les tests
+ * historiques ne testent que les urgences réelles.
+ */
 function baseEntree(): EntreeRecos {
   return {
     etablissementId: "etab-x",
     verifications: [],
     actions: [],
+    nbEquipements: 3,
+    duerpSecteurChoisi: true,
+    nbRapports: 2,
   };
 }
 
@@ -185,6 +193,89 @@ describe("genererRecommandations — catégories", () => {
       ],
     };
     expect(genererRecommandations(e, { now: NOW }).length).toBe(0);
+  });
+});
+
+describe("genererRecommandations — amorçage (règles 6-8)", () => {
+  it("dossier vierge → une seule reco : déclarer les équipements", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      nbEquipements: 0,
+      duerpSecteurChoisi: false,
+      nbRapports: 0,
+    };
+    const recs = genererRecommandations(e, { now: NOW });
+    expect(recs).toHaveLength(1);
+    expect(recs[0].kind).toBe("amorce_equipements");
+    expect(recs[0].href).toBe("/etablissements/etab-x/equipements");
+  });
+
+  it("équipements déclarés mais secteur DUERP non choisi → amorce DUERP", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      nbEquipements: 2,
+      duerpSecteurChoisi: false,
+      nbRapports: 1,
+    };
+    const recs = genererRecommandations(e, { now: NOW });
+    expect(recs).toHaveLength(1);
+    expect(recs[0].kind).toBe("amorce_duerp");
+    expect(recs[0].href).toBe("/etablissements/etab-x/duerp");
+  });
+
+  it("vérifications planifiées sans aucun rapport → amorce premier rapport", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      nbRapports: 0,
+      verifications: [
+        {
+          id: "v1",
+          statut: "planifiee",
+          datePrevue: dateDecalee(60),
+          libelleObligation: "Vérif élec",
+          equipementLibelle: "TGBT",
+        },
+      ],
+    };
+    const recs = genererRecommandations(e, { now: NOW });
+    expect(recs).toHaveLength(1);
+    expect(recs[0].kind).toBe("amorce_rapport");
+    expect(recs[0].href).toBe("/etablissements/etab-x/calendrier");
+  });
+
+  it("une urgence réelle passe toujours devant une amorce", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      duerpSecteurChoisi: false,
+      verifications: [
+        {
+          id: "v1",
+          statut: "depassee",
+          datePrevue: dateDecalee(-10),
+          libelleObligation: "Vérif élec",
+          equipementLibelle: "TGBT",
+        },
+      ],
+    };
+    const recs = genererRecommandations(e, { now: NOW });
+    expect(recs[0].kind).toBe("verif_depassee");
+    expect(recs.some((r) => r.kind === "amorce_duerp")).toBe(true);
+  });
+
+  it("dossier mûr → aucune amorce", () => {
+    const recs = genererRecommandations(baseEntree(), { now: NOW });
+    expect(recs).toHaveLength(0);
+  });
+
+  it("pas d'amorce DUERP tant qu'aucun équipement n'est déclaré (une étape à la fois)", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      nbEquipements: 0,
+      duerpSecteurChoisi: false,
+    };
+    const recs = genererRecommandations(e, { now: NOW });
+    expect(recs.some((r) => r.kind === "amorce_duerp")).toBe(false);
+    expect(recs.some((r) => r.kind === "amorce_equipements")).toBe(true);
   });
 });
 

@@ -10,6 +10,7 @@
 // qui tirerait Prisma) pour rester testable en environnement `node`.
 
 import { raccourcirLibelle } from "./libelles";
+import type { Recommandation } from "./recommandations";
 
 export type CompteursBrief = {
   verifsEnRetard: number;
@@ -26,12 +27,8 @@ export type DuerpBrief = {
 };
 
 export type RecoBrief = {
-  kind:
-    | "verif_depassee"
-    | "action_en_retard"
-    | "verif_proche"
-    | "action_proche"
-    | "duerp_a_jour";
+  /** Aligné sur le moteur de reco — une seule source de vérité. */
+  kind: Recommandation["kind"];
   titre: string;
   href: string;
 };
@@ -97,6 +94,20 @@ const VERBE: Record<RecoBrief["kind"], string> = {
   verif_proche: "Planifier",
   action_proche: "Suivre l'action",
   duerp_a_jour: "Mettre à jour",
+  amorce_equipements: "Déclarer",
+  amorce_duerp: "Ouvrir",
+  amorce_rapport: "Déposer",
+};
+
+/**
+ * Titres d'amorçage : quand le dossier est en mise en place, « Rien ne
+ * presse cette semaine » est vrai mais trompeur — tout reste à faire.
+ * On remplace le titre par l'étape en cours, sur le ton de l'invitation.
+ */
+const TITRE_AMORCE: Partial<Record<RecoBrief["kind"], string>> = {
+  amorce_equipements: "Première étape : vos équipements",
+  amorce_duerp: "Prochaine étape : votre DUERP",
+  amorce_rapport: "Votre calendrier est en place",
 };
 
 const TONS_ALERTE: ReadonlySet<RecoBrief["kind"]> = new Set([
@@ -190,9 +201,15 @@ export function construireBrief(e: EntreeBrief): Brief {
     ton: TONS_ALERTE.has(r.kind) ? "alerte" : "neutre",
   }));
 
+  let titre = construireTitre(e.compteurs);
+  const premiere = e.recommandations[0];
+  if (titre === "Rien ne presse cette semaine" && premiere) {
+    titre = TITRE_AMORCE[premiere.kind] ?? titre;
+  }
+
   return {
     datePill: formaterDate(e.aujourdhui),
-    titre: construireTitre(e.compteurs),
+    titre,
     paragraphe: construireParagraphe(e),
     gestes,
   };
