@@ -27,17 +27,26 @@ import type { DashboardBundle } from "../types";
 
 /* ─── Primitives partagées ──────────────────────────────────── */
 
+/**
+ * Le design distingue deux rayons : 26 px sur les cartes-chiffre, 30 px
+ * sur les grands blocs. Le rayon est donc un paramètre, pas une classe
+ * qu'on écraserait depuis l'appelant (l'ordre des classes Tailwind ne
+ * décide pas de la priorité).
+ */
 function CarteBoard({
   children,
   className = "",
+  rayon = 30,
 }: {
   children: React.ReactNode;
   className?: string;
+  rayon?: 26 | 30;
 }) {
   return (
     <div
       className={
-        "flex h-full flex-col rounded-[30px] bg-[color:var(--board-card)] " +
+        "flex h-full flex-col bg-[color:var(--board-card)] " +
+        (rayon === 26 ? "rounded-[26px] " : "rounded-[30px] ") +
         className
       }
     >
@@ -117,9 +126,14 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
   });
 
   return (
-    <div className="grid items-center gap-9 rounded-[30px] bg-[color:var(--board-card)] px-[46px] py-[52px] lg:grid-cols-[1.15fr_.85fr]">
+    // Plein-fer : le bandeau blanc mord sur le padding du board et touche
+    // les bords, le canvas bleu ne commence qu'en dessous. C'est le
+    // `margin:-12px -12px 0` du design.
+    <div className="-mx-3 -mt-3 grid items-center gap-9 bg-[color:var(--board-card)] px-[46px] pb-[50px] pt-[56px] lg:grid-cols-[1.15fr_.85fr]">
       <div>
-        <Pastille>{brief.datePill}</Pastille>
+        <span className="inline-block rounded-full bg-[color:var(--board-blue-pale)] px-[14px] py-[6px] text-[11.5px] font-semibold tracking-[0.06em] text-[color:var(--board-blue-ink)]">
+          {brief.datePill}
+        </span>
         <h1 className="mt-[26px] max-w-[520px] text-pretty text-[clamp(34px,4vw,56px)] font-semibold leading-[1.02] tracking-[-0.045em] text-[color:var(--board-ink)]">
           {brief.titre}
         </h1>
@@ -176,9 +190,9 @@ function MotifIsometrique() {
   return (
     <div
       aria-hidden
-      className="hidden min-h-[260px] items-center justify-center rounded-[30px] bg-[image:repeating-linear-gradient(135deg,rgba(47,95,133,.06)_0_12px,transparent_12px_24px)] lg:flex"
+      className="hidden aspect-[4/3] min-h-[300px] items-center justify-center rounded-[30px] bg-[image:repeating-linear-gradient(135deg,rgba(47,95,133,.06)_0_12px,transparent_12px_24px)] lg:flex"
     >
-      <svg viewBox="0 0 200 140" className="w-[62%]" fill="none">
+      <svg viewBox="0 0 200 140" className="w-[56%]" fill="none">
         <ellipse cx="100" cy="112" rx="72" ry="18" fill="var(--board-blue-pale)" />
         <path d="M100 34 168 72 100 110 32 72Z" fill="var(--board-blue-soft)" />
         <path d="M100 34 168 72 100 110Z" fill="var(--board-blue-mid)" />
@@ -364,7 +378,7 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
 
   if (prochainesVerifs.length === 0) {
     return (
-      <CarteBoard className="justify-center px-[26px] py-6">
+      <CarteBoard rayon={26} className="justify-center px-[26px] py-6">
         <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-grey-soft)]">
           Prochaine échéance
         </p>
@@ -385,7 +399,7 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
   const enRetard = jours < 0;
 
   return (
-    <CarteBoard className="flex-row items-center gap-[18px] px-[26px] py-6">
+    <CarteBoard rayon={26} className="flex-row items-center gap-[18px] px-[26px] py-6">
       <div className="min-w-0 flex-1">
         <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-grey-soft)]">
           Prochaine échéance
@@ -446,7 +460,7 @@ export function BlocActionsEnRetard({ bundle }: { bundle: DashboardBundle }) {
   const href = `/etablissements/${bundle.etablissementId}/actions`;
 
   return (
-    <CarteBoard className="flex-row items-center gap-[18px] px-[26px] py-6">
+    <CarteBoard rayon={26} className="flex-row items-center gap-[18px] px-[26px] py-6">
       <div className="min-w-0 flex-1">
         <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-grey-soft)]">
           Actions en retard
@@ -605,7 +619,7 @@ export function BlocPlanActions({ bundle }: { bundle: DashboardBundle }) {
         </div>
       </div>
 
-      <p className="mt-[22px] border-t border-[color:rgba(10,10,10,.10)] pt-[18px] text-[13px] leading-[1.5] text-[color:var(--board-grey-ink)]">
+      <p className="mt-[22px] border-t border-[color:rgba(10,10,10,.10)] pt-[18px] text-[13px] leading-[1.5] text-[color:var(--board-text-muted)]">
         {ouvertes === 0
           ? "Aucune action ouverte sur cet établissement."
           : c.actionsEnRetard === 0
@@ -659,11 +673,17 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
           </p>
         ) : null}
 
-        {rapportsRecents.slice(0, 3).map((r) => (
+        {rapportsRecents.slice(0, 3).map((r, i) => (
           <Link
             key={r.id}
             href={`/etablissements/${etablissementId}/verifications/${r.verificationId}`}
-            className="flex items-center gap-3 rounded-full bg-[color:var(--board-grey-pale)] px-4 py-[13px] transition-colors hover:bg-[color:var(--board-blue-pale)]"
+            className={
+              "flex items-center gap-3 rounded-full px-4 py-[13px] transition-colors hover:bg-[color:var(--board-blue-pale)] " +
+              // Le plus récent est mis en avant, comme dans le design.
+              (i === 0
+                ? "bg-[color:var(--board-blue-pale)]"
+                : "bg-[color:var(--board-grey-pale)]")
+            }
           >
             <span
               className={
@@ -675,7 +695,7 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
             >
               {r.resultat === "ecart_majeur" ? "!" : "✓"}
             </span>
-            <span className="flex-1 truncate text-[13.5px] font-medium text-[color:var(--board-ink)]">
+            <span className="flex-1 text-[13.5px] font-medium leading-[1.35] text-[color:var(--board-ink)]">
               {r.verification.libelleObligation} —{" "}
               {LIBELLE_RESULTAT[r.resultat] ?? r.resultat}
             </span>
@@ -693,7 +713,7 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
             <span className="flex size-[22px] flex-none items-center justify-center rounded-full bg-[color:var(--board-amber)] text-[11px] font-semibold text-[color:var(--board-amber-ink-deep)]">
               !
             </span>
-            <span className="flex-1 truncate text-[13.5px] font-medium text-[color:var(--board-ink)]">
+            <span className="flex-1 text-[13.5px] font-medium leading-[1.35] text-[color:var(--board-ink)]">
               {aFaire.titre}
             </span>
             <span className="flex-none text-[11.5px] font-semibold text-[color:var(--board-amber-ink-strong)]">
@@ -766,7 +786,7 @@ export function BlocDocuments({ bundle }: { bundle: DashboardBundle }) {
           <Fragment key={l.id}>
             <Link
               href={l.href}
-              className="truncate rounded-full bg-[color:var(--board-blue-pale)] px-4 py-[11px] text-[13px] font-medium text-[color:var(--board-ink)] transition-opacity hover:opacity-80"
+              className="rounded-full bg-[color:var(--board-blue-pale)] px-4 py-[11px] text-[13px] font-medium leading-[1.3] text-[color:var(--board-ink)] transition-opacity hover:opacity-80"
             >
               {l.libelle}
             </Link>

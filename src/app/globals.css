@@ -121,6 +121,7 @@
   --board-grey-ink: #6b7078;
   --board-grey-soft: #8a9099;
   --board-text: #4c5560;
+  --board-text-muted: #5d636b;
   --board-text-strong: #3d4148;
 
   --background: var(--paper);
