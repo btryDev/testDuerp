@@ -272,6 +272,117 @@ describe("moteur matching — typologie IGH", () => {
   });
 });
 
+describe("moteur matching — disjonction des régimes (ascenseurs)", () => {
+  const ASCENSEURS = [
+    "ascenseur-entretien-contrat",
+    "ascenseur-examen-semestriel-secours",
+    "ascenseur-examen-annuel-securite",
+    "ascenseur-controle-technique-quinquennal",
+    "ascenseur-carnet-entretien",
+    "ascenseur-telealarme-liaison",
+  ];
+
+  function ascenseur(): EquipementMatching {
+    return {
+      id: "eq-asc",
+      libelle: "Ascenseur principal",
+      categorie: "ASCENSEUR",
+      caracteristiques: null,
+    };
+  }
+
+  it("ERP pur (non-travail, non-IGH) avec ascenseur → les 6 obligations ascenseur", () => {
+    const erpPur = etabErpCat3();
+    erpPur.estEtablissementTravail = false;
+    const ids = idsObligations(
+      determineObligationsApplicables(erpPur, [ascenseur()]),
+    );
+    for (const id of ASCENSEURS) expect(ids).toContain(id);
+  });
+
+  it("IGH pur (non-travail, non-ERP) avec ascenseur → les 6 obligations ascenseur", () => {
+    const ighPur = etabIgh();
+    ighPur.estEtablissementTravail = false;
+    ighPur.estERP = false;
+    ighPur.typeErp = null;
+    ighPur.categorieErp = null;
+    const ids = idsObligations(
+      determineObligationsApplicables(ighPur, [ascenseur()]),
+    );
+    for (const id of ASCENSEURS) expect(ids).toContain(id);
+  });
+
+  it("établissement de travail seul (bureau) avec ascenseur → les 6 obligations ascenseur", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [ascenseur()]),
+    );
+    for (const id of ASCENSEURS) expect(ids).toContain(id);
+  });
+
+  it("cumul travail + ERP → chaque obligation ascenseur une seule fois, raisons = régimes matchés", () => {
+    const res = determineObligationsApplicables(etabErpCat3(), [ascenseur()]);
+    const occurrences = res.filter((a) =>
+      ASCENSEURS.includes(a.obligation.id),
+    );
+    expect(occurrences).toHaveLength(ASCENSEURS.length);
+    const contrat = occurrences.find(
+      (a) => a.obligation.id === "ascenseur-entretien-contrat",
+    );
+    expect(contrat?.raisons).toContain("établissement de travail (salariés)");
+    expect(contrat?.raisons).toContain("ERP");
+    // IGH non matché → absent des raisons.
+    expect(contrat?.raisons).not.toContain("IGH");
+  });
+
+  it("habitation pure avec ascenseur → non applicable (habitation absente de la déclaration — limite assumée)", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabHabitationPure(), [ascenseur()]),
+    );
+    for (const id of ASCENSEURS) expect(ids).not.toContain(id);
+  });
+
+  it("le ET typologie × effectif est préservé (travail matché mais effectif hors plage → rejet)", () => {
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-effectif-min",
+      typologies: { travail: true, effectifMin: 50 },
+    };
+    const res = determineObligationsApplicables(etabBureau(), [elec()], {
+      obligations: [synthetique],
+    });
+    expect(res).toHaveLength(0);
+  });
+
+  it("les exclusions restent en ET (erp: false rejette un établissement travail+ERP)", () => {
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-exclusion-erp",
+      typologies: { travail: true, erp: false },
+    };
+    const res = determineObligationsApplicables(etabErpCat3(), [elec()], {
+      obligations: [synthetique],
+    });
+    expect(res).toHaveLength(0);
+    // …mais accepte le même établissement sans régime ERP.
+    const resBureau = determineObligationsApplicables(etabBureau(), [elec()], {
+      obligations: [synthetique],
+    });
+    expect(resBureau).toHaveLength(1);
+  });
+
+  it("typologie vide → toujours rejetée (garde-fou)", () => {
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-typologie-vide",
+      typologies: {},
+    };
+    const res = determineObligationsApplicables(etabBureau(), [elec()], {
+      obligations: [synthetique],
+    });
+    expect(res).toHaveLength(0);
+  });
+});
+
 describe("moteur matching — typologie habitation", () => {
   it("habitation avec VMC-Gaz → arrêté 25 avril 1985 applicable", () => {
     const res = determineObligationsApplicables(etabHabitationPure(), [vmc()]);

@@ -201,3 +201,34 @@ Rejetée : le NAF décrit une **activité** pas un **régime**. Un même NAF 56.
 - Articles R. 146-3 et suivants du Code de la construction et de l'habitation : définitions IGH et classes.
 
 Sources ajoutées en commentaire dans le fichier `src/lib/referentiels/types-communs.ts` au moment de la mise en œuvre.
+
+## Addendum 2026-08 — Sémantique du matching : disjonction des régimes positifs
+
+La mise en œuvre initiale du moteur (`src/lib/matching/engine.ts`) évaluait
+tous les critères de `TypologieApplication` **en ET**, exclusions comme
+critères positifs. Conséquence non voulue : les 6 obligations ascenseurs,
+rédigées `{ travail: true, erp: true, igh: true }` avec l'intention
+manifeste « applicable aux établissements de travail, aux ERP et aux IGH »,
+ne matchaient que les établissements cumulant **les trois** régimes. Un ERP
+non-IGH avec ascenseur (le cas courant) ne recevait aucune obligation
+ascenseur.
+
+**Décision** : les critères de régime **positifs** forment désormais une
+**disjonction** (au moins un satisfait) ; les critères **négatifs**
+(`false`) restent des exclusions en ET, et `effectifMin`/`effectifMax`
+restent en ET. Les `raisons` du mode explain ne citent que les régimes
+effectivement matchés.
+
+**Pourquoi corriger le moteur plutôt que les données** : scinder chaque
+obligation ascenseur en trois entrées (travail / ERP / IGH) triplerait le
+référentiel et ferait matcher plusieurs entrées pour un établissement
+cumulant les régimes ; garder `travail: true` seul perdrait l'ERP pur et
+l'IGH pur, pourtant autorisés par l'onboarding (au moins un régime, pas
+nécessairement travail). Le changement de sémantique est sans régression
+prouvable : toutes les autres obligations du référentiel ne déclarent qu'un
+seul régime positif, et pour un critère unique OU ≡ ET (vérifié par grep et
+par la suite de tests, inchangée hors nouveaux cas).
+
+Détail des règles : `docs/regles-matching.md`, section « Typologie »,
+encadré « Amendement 2026-08 ». Tests : `engine.test.ts`, describe
+« disjonction des régimes (ascenseurs) ».

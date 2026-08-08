@@ -44,19 +44,36 @@ Pour chaque `Obligation` du référentiel :
 
 ## Typologie (ADR-004)
 
-La `TypologieApplication` d'une obligation agrège plusieurs critères qui
-s'appliquent **en ET** :
+> **Amendement 2026-08 — correction ascenseurs.** Les critères de régime
+> **positifs** (`travail: true`, `erp: true | {categories}`,
+> `igh: true | {classes}`, `habitation: true`) s'appliquent désormais
+> **en OU entre eux** : l'établissement doit en satisfaire au moins un.
+> Une obligation déclarant `{ travail: true, erp: true, igh: true }`
+> (les 6 obligations ascenseurs) s'applique donc aux établissements de
+> travail **ou** ERP **ou** IGH — c'était l'intention rédactionnelle, mais
+> l'ancien moteur évaluait ces lignes en ET, si bien qu'un ERP non-IGH
+> avec ascenseur ne recevait aucune obligation ascenseur. Les critères
+> **négatifs** (`travail: false`, `erp: false`, …) restent des exclusions
+> en ET, et `effectifMin`/`effectifMax` restent en ET avec le reste.
+> Sans effet sur le reste du référentiel : toutes les autres obligations
+> ne déclarent qu'un seul régime positif, et pour un critère unique
+> OU ≡ ET.
 
-| Champ            | Effet sur le matching                                                                                                                                                |
+La `TypologieApplication` d'une obligation agrège plusieurs critères.
+Les lignes de régime (travail/ERP/IGH/habitation) s'appliquent **en OU
+entre elles** ; les exclusions (`false`) et l'effectif s'appliquent
+**en ET** :
+
+| Champ            | Critère (régimes : matché si… / effectif : requis)                                                                                                                   |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `travail: true`  | l'établissement doit avoir `estEtablissementTravail = true`                                                                                                          |
-| `erp: true`      | l'établissement doit être ERP (toutes catégories)                                                                                                                    |
-| `erp: { categories: [...] }` | l'établissement doit être ERP **et** sa `categorieErp` doit appartenir à la liste                                                                        |
-| `igh: true`      | l'établissement doit être IGH                                                                                                                                        |
-| `igh: { classes: [...] }`    | l'établissement doit être IGH **et** sa `classeIgh` doit appartenir à la liste                                                                           |
-| `habitation: true`| l'établissement doit avoir `estHabitation = true`                                                                                                                   |
-| `effectifMin`    | `effectifSurSite` doit être ≥ `effectifMin` (bornes incluses)                                                                                                        |
-| `effectifMax`    | `effectifSurSite` doit être ≤ `effectifMax` (bornes incluses)                                                                                                        |
+| `travail: true`  | matché si `estEtablissementTravail = true`                                                                                                                           |
+| `erp: true`      | matché si l'établissement est ERP (toutes catégories)                                                                                                                |
+| `erp: { categories: [...] }` | matché si l'établissement est ERP **et** sa `categorieErp` appartient à la liste                                                                         |
+| `igh: true`      | matché si l'établissement est IGH                                                                                                                                    |
+| `igh: { classes: [...] }`    | matché si l'établissement est IGH **et** sa `classeIgh` appartient à la liste                                                                            |
+| `habitation: true`| matché si `estHabitation = true`                                                                                                                                    |
+| `effectifMin`    | requis (ET) : `effectifSurSite` ≥ `effectifMin` (bornes incluses)                                                                                                    |
+| `effectifMax`    | requis (ET) : `effectifSurSite` ≤ `effectifMax` (bornes incluses)                                                                                                    |
 
 **Règle importante** : si la typologie d'une obligation est vide (aucun
 champ défini), elle est **rejetée**. C'est un garde-fou contre les
@@ -183,13 +200,19 @@ conformite.test.ts`, 18 invariants) vérifient ces règles.
 - **Pas de logique temporelle** : le moteur détermine *quelles* obligations
   s'appliquent, pas *quand* la prochaine vérification est due. Cela relève
   de l'étape 6 (générateur de calendrier).
+- **Ascenseurs en habitation pure** : les 6 obligations ascenseurs
+  déclarent `{ travail, erp, igh }` mais pas `habitation`. Un immeuble
+  d'habitation pur (sans salarié, non-ERP, non-IGH) avec ascenseur ne
+  reçoit donc aucune obligation ascenseur — limite assumée, le scope V2
+  vise les établissements employeurs. Couvert par un test dédié.
 
 ## Tests de non-régression
 
 Toute modification du moteur doit laisser passer :
 
-- `src/lib/matching/engine.test.ts` — 42 scénarios couvrant les
-  combinaisons typologie × équipement × effectif + conditions.
+- `src/lib/matching/engine.test.ts` — 50 scénarios couvrant les
+  combinaisons typologie × équipement × effectif + conditions, dont la
+  disjonction des régimes (amendement 2026-08).
 - `src/lib/referentiels/conformite/conformite.test.ts` — cohérence du
   référentiel.
 
