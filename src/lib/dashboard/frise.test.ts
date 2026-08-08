@@ -207,6 +207,24 @@ describe("construireFrise — regroupement", () => {
   });
 });
 
+describe("construireFrise — proche", () => {
+  it("marque proche une échéance à moins de 30 jours, aujourd'hui compris", () => {
+    expect(frise([ev("a", 0)]).marqueurs[0].proche).toBe(true);
+    expect(frise([ev("a", 30)]).marqueurs[0].proche).toBe(true);
+  });
+
+  it("laisse calmes le lointain et le passé", () => {
+    expect(frise([ev("a", 31)]).marqueurs[0].proche).toBe(false);
+    expect(frise([ev("a", -5)]).marqueurs[0].proche).toBe(false);
+  });
+
+  it("une seule échéance proche suffit à la grappe", () => {
+    const f = frise([ev("a", 28), ev("b", 33)]);
+    expect(f.marqueurs).toHaveLength(1);
+    expect(f.marqueurs[0].proche).toBe(true);
+  });
+});
+
 describe("construireFrise — graduations", () => {
   it("gradue chaque mois de la fenêtre, du premier au dernier", () => {
     const mois = frise([]).mois;

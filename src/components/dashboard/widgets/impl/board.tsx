@@ -3,7 +3,8 @@
 // Blocs du « board éditorial » — direction 4a du design Rojer.
 //
 // Chaque bloc est un widget du registre : il reçoit le bundle et rend une
-// carte blanche à grand rayon sur le canvas bleu. Le système de
+// carte à grand rayon sur le canvas bleu — blanche, sauf les deux qui
+// passent au noir (voir `CarteBoard`). Le système de
 // personnalisation (DashboardGrid + EditToolbar, le « ⠿ Organiser » du
 // mockup) reste donc pleinement opérant — le board n'est que le layout
 // par défaut, pas une page figée.
@@ -50,15 +51,35 @@ function CarteBoard({
   children,
   className = "",
   rayon = 30,
+  ton = "clair",
 }: {
   children: React.ReactNode;
   className?: string;
   rayon?: 26 | 30;
+  /**
+   * Deux blocs sur sept passent au noir : la prochaine échéance et la
+   * préparation d'un contrôle. Ce sont les deux qu'on vient chercher —
+   * l'un dit combien de temps il reste, l'autre est la porte à pousser
+   * quand un inspecteur se présente. Le reste du board les entoure et
+   * les explique. Dans le layout par défaut ils tombent en rangée 2 à
+   * gauche et en rangée 4 à droite : sur la diagonale, jamais côte à
+   * côte ni l'un sous l'autre, sinon la grille se raye. L'utilisateur
+   * peut les déplacer, c'est son tableau de bord.
+   *
+   * Sur fond noir, aucune encre foncée ne passe (blue-ink 2,9 ·
+   * green-ink 2,6) : le texte est blanc ou ardoise, et les champs
+   * colorés restent pastel — ils y gagnent même en présence (glacier
+   * 17,2 · rose 15,2 · vert 13,4).
+   */
+  ton?: "clair" | "sombre";
 }) {
   return (
     <div
       className={
-        "flex h-full flex-col bg-[color:var(--board-card)] " +
+        "flex h-full flex-col " +
+        (ton === "sombre"
+          ? "bg-[color:var(--board-ink)] "
+          : "bg-[color:var(--board-card)] ") +
         (rayon === 26 ? "rounded-[26px] " : "rounded-[30px] ") +
         className
       }
@@ -84,7 +105,7 @@ function TitreBloc({
           {titre}
         </h2>
         {sousTitre ? (
-          <p className="mt-[7px] text-[13.5px] text-[color:var(--board-grey-ink)]">
+          <p className="mt-[7px] text-[13.5px] text-[color:var(--board-slate-mid)]">
             {sousTitre}
           </p>
         ) : null}
@@ -102,7 +123,10 @@ function TitreBloc({
   );
 }
 
-/** Pastille de comptage — bleue par défaut, ambre en alerte. */
+/** Pastille de comptage — bleue par défaut, rose en alerte. Le champ
+ *  d'alerte est d'un cran plus présent que le bleu neutre (1,30 contre
+ *  1,13 sur carte blanche) : c'est le seul écart de poids qu'on s'autorise
+ *  entre les deux tons. */
 function Pastille({
   children,
   ton = "neutre",
@@ -112,7 +136,7 @@ function Pastille({
 }) {
   const classes =
     ton === "alerte"
-      ? "bg-[color:var(--board-signal-pale)] text-[color:var(--board-signal-ink)]"
+      ? "bg-[color:var(--board-signal)] text-[color:var(--board-signal-ink)]"
       : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]";
   return (
     <span
@@ -176,17 +200,21 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
         <h1 className="mt-[26px] max-w-[520px] text-pretty text-[clamp(34px,4vw,56px)] font-semibold leading-[1.02] tracking-[-0.045em] text-[color:var(--board-ink)]">
           {brief.titre}
         </h1>
-        <p className="mt-[22px] max-w-[460px] text-[16px] leading-[1.6] text-[color:var(--board-text)]">
+        <p className="mt-[22px] max-w-[460px] text-[16px] leading-[1.6] text-[color:var(--board-slate-mid)]">
           {brief.paragraphe}
         </p>
 
         {brief.gestes.length > 0 ? (
           <div className="mt-7 flex flex-wrap gap-[9px]">
             {brief.gestes.map((g, i) => {
-              // Le premier geste est le primaire (noir), le suivant est
-              // secondaire (ambre) — c'est la hiérarchie du design, elle ne
-              // dépend pas du type de recommandation.
+              // Deux axes distincts, longtemps confondus : le RANG décide
+              // du poids (le premier geste porte le slab noir, le suivant
+              // un slab bleu), le TON décide de la couleur du sujet. Peindre
+              // le second geste en rouge parce qu'il est second faisait
+              // crier une simple hiérarchie — et retirait au rouge sa
+              // valeur d'alerte partout ailleurs.
               const primaire = i === 0;
+              const alerte = g.ton === "alerte";
               return (
                 <Link
                   key={g.href + g.tag}
@@ -197,9 +225,9 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
                   <span
                     className={
                       "truncate px-[14px] py-[10px] " +
-                      (primaire
-                        ? "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
-                        : "bg-[color:var(--board-signal-pale)] text-[color:var(--board-signal-ink-strong)]")
+                      (alerte
+                        ? "bg-[color:var(--board-signal)] text-[color:var(--board-signal-ink)]"
+                        : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]")
                     }
                   >
                     {g.tag}
@@ -209,7 +237,7 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
                       "flex-none px-4 py-[10px] font-semibold " +
                       (primaire
                         ? "bg-[color:var(--board-ink)] text-white"
-                        : "bg-[color:var(--board-signal)] text-[color:var(--board-signal-on)]")
+                        : "bg-[color:var(--board-blue-ink)] text-white")
                     }
                   >
                     {g.label}
@@ -236,14 +264,19 @@ function MotifIsometrique() {
   return (
     <div
       aria-hidden
-      className="hidden min-h-[260px] items-center justify-center self-stretch rounded-[30px] bg-[image:repeating-linear-gradient(135deg,rgba(47,95,133,.06)_0_12px,transparent_12px_24px)] lg:flex"
+      // Le panneau porte le glacier plutôt que la hachure seule : sur le
+      // blanc du bandeau, des rayures sans fond ne faisaient pas un bloc,
+      // juste une texture. Le hero gagne du même coup sa surface bleue.
+      className="hidden min-h-[260px] items-center justify-center self-stretch rounded-[30px] bg-[color:var(--board-blue-pale)] bg-[image:repeating-linear-gradient(135deg,rgba(47,95,133,.05)_0_12px,transparent_12px_24px)] lg:flex"
     >
       <svg viewBox="0 0 200 140" className="w-[56%]" fill="none">
-        <ellipse cx="100" cy="112" rx="72" ry="18" fill="var(--board-blue-pale)" />
+        <ellipse cx="100" cy="112" rx="72" ry="18" fill="rgba(255,255,255,.55)" />
         <path d="M100 34 168 72 100 110 32 72Z" fill="var(--board-blue-soft)" />
         <path d="M100 34 168 72 100 110Z" fill="var(--board-blue-mid)" />
         <path d="M100 12 140 34 100 56 60 34Z" fill="var(--board-card)" />
-        <path d="M100 12 140 34 100 56Z" fill="var(--board-blue-pale)" />
+        {/* Le glacier est désormais le fond du panneau : cette face y
+            disparaîtrait. */}
+        <path d="M100 12 140 34 100 56Z" fill="var(--board-blue-soft)" />
         <circle cx="100" cy="34" r="6" fill="var(--board-ink)" />
       </svg>
     </div>
@@ -261,10 +294,49 @@ const DEMI_CARTE = 86;
 /** Marge à gauche d'aujourd'hui au cadrage initial, en pixels. */
 const CADRAGE_INITIAL = 130;
 
-const TON_POINT: Record<string, string> = {
-  alerte: "var(--board-signal)",
-  warn: "var(--board-blue-mid)",
-  ok: "var(--board-blue-strong)",
+/** Registre visuel d'un marqueur. La frise ne sert que deux urgences :
+ *  le rouge (dépassé ou en alerte), l'orange (dans les 30 jours). Tout
+ *  le reste est gris — une échéance lointaine n'a rien à crier. */
+type RegistreMarqueur = "chaud" | "proche" | "calme";
+
+function registreMarqueur(m: {
+  passe: boolean;
+  tone: string;
+  proche: boolean;
+}): RegistreMarqueur {
+  if (m.passe || m.tone === "alerte") return "chaud";
+  if (m.proche) return "proche";
+  return "calme";
+}
+
+/** Couleur du point posé sur l'axe. Petit repère sur carte blanche :
+ *  seul endroit du bloc où rouge et orange sont servis saturés. */
+const TON_POINT: Record<RegistreMarqueur, string> = {
+  chaud: "var(--board-signal-mark)",
+  proche: "var(--board-amber-mark)",
+  calme: "var(--board-slate-soft)",
+};
+
+/** Champ et textes de la carte, par registre. */
+const TON_CARTE: Record<
+  RegistreMarqueur,
+  { fond: string; titre: string; sousTitre: string }
+> = {
+  chaud: {
+    fond: "bg-[color:var(--board-signal-mid)]",
+    titre: "text-[color:var(--board-signal-ink)]",
+    sousTitre: "text-[color:var(--board-signal-ink)]",
+  },
+  proche: {
+    fond: "bg-[color:var(--board-amber)]",
+    titre: "text-[color:var(--board-amber-ink)]",
+    sousTitre: "text-[color:var(--board-amber-ink)]",
+  },
+  calme: {
+    fond: "bg-[color:var(--board-slate-pale)]",
+    titre: "text-[color:var(--board-ink)]",
+    sousTitre: "text-[color:var(--board-slate-mid)]",
+  },
 };
 
 /** Flèche de défilement — desktop uniquement (au doigt, on fait glisser). */
@@ -373,7 +445,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                 ? "Les 90 prochains jours"
                 : "Les 12 prochains mois"}
           </h2>
-          <p className="mt-2 text-[13.5px] text-[color:var(--board-grey-ink)]">
+          <p className="mt-2 text-[13.5px] text-[color:var(--board-slate-mid)]">
             {vue === "calendrier"
               ? "Mois par mois, ce qui tombe et quel jour."
               : "Ce qui tombe, quand, et ce qui est déjà pris en charge — faites défiler pour aller jusqu’à 24 mois."}
@@ -398,7 +470,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                     "rounded-full px-[13px] py-[6px] text-[11.5px] font-semibold transition-colors " +
                     (echelle === e
                       ? "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
-                      : "bg-[color:var(--board-grey-pale)] text-[color:var(--board-grey-ink)] hover:text-[color:var(--board-ink)]")
+                      : "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)] hover:text-[color:var(--board-ink)]")
                   }
                 >
                   {e === "jours" ? "90 jours" : "12 mois"}
@@ -462,13 +534,13 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
       ) : frise.marqueurs.length === 0 ? (
         // Rien à placer sur l'axe : on ne dessine pas une frise déserte de
         // 236 px. On dit ce qui bloque, et on donne la porte de sortie.
-        <div className="mt-7 flex flex-col items-start gap-3 rounded-[22px] bg-[color:var(--board-grey-pale)] px-6 py-7">
+        <div className="mt-7 flex flex-col items-start gap-3 rounded-[22px] bg-[color:var(--board-slate-pale)] px-6 py-7">
           {bundle.equipements.length === 0 ? (
             <>
               <p className="m-0 text-[15px] font-semibold tracking-[-0.015em] text-[color:var(--board-ink)]">
                 Votre calendrier est vide
               </p>
-              <p className="m-0 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-grey-ink)]">
+              <p className="m-0 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
                 Il se remplit tout seul à partir des équipements déclarés — il
                 n&apos;y en a pas encore.
               </p>
@@ -484,7 +556,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                 {frise.nbEnRetard} échéance{frise.nbEnRetard > 1 ? "s" : ""} sans
                 date, aucune à venir
               </p>
-              <p className="m-0 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-grey-ink)]">
+              <p className="m-0 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
                 Vos vérifications existent mais aucune n&apos;est encore
                 programmée : il n&apos;y a donc rien à poser sur la frise.
                 Posez des dates et elle se remplira.
@@ -492,7 +564,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
               <Lien href={hrefCalendrier}>Programmer les vérifications</Lien>
             </>
           ) : (
-            <p className="m-0 text-[13.5px] text-[color:var(--board-grey-ink)]">
+            <p className="m-0 text-[13.5px] text-[color:var(--board-slate-mid)]">
               Aucune échéance sur cette période.
             </p>
           )}
@@ -526,8 +598,12 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                 className="relative"
                 style={{ width: frise.largeur, height: PISTE_HAUTEUR }}
               >
+                {/* L'axe porte l'ardoise pleine. C'est la ligne
+                    structurante du plus grand bloc du board : au filet
+                    précédent (1,14 sur la carte) elle disparaissait, et
+                    les points semblaient flotter sans support. */}
                 <div
-                  className="absolute inset-x-0 h-1 rounded-sm bg-[color:var(--board-grey-line)]"
+                  className="absolute inset-x-0 h-1 rounded-sm bg-[color:var(--board-slate)]"
                   style={{ top: AXE_Y }}
                 />
 
@@ -549,9 +625,8 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
 
                 {frise.marqueurs.map((m) => {
                   const grappe = m.evenements.length > 1;
-                  // Le rouge dit « c'est dépassé ou ça alerte » ; il ne
-                  // sert à rien d'autre sur cette frise.
-                  const chaud = m.passe || m.tone === "alerte";
+                  const registre = registreMarqueur(m);
+                  const carte = TON_CARTE[registre];
                   return (
                     <Fragment key={m.cle}>
                       {/* Une grappe couvre un intervalle réel : on le
@@ -564,7 +639,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                             left: m.x,
                             width: m.xFin - m.x,
                             top: AXE_Y,
-                            background: TON_POINT[m.tone],
+                            background: TON_POINT[registre],
                             opacity: 0.45,
                           }}
                         />
@@ -577,7 +652,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                           style={{
                             left: m.x,
                             top: AXE_Y - 8,
-                            background: TON_POINT[m.tone],
+                            background: TON_POINT[registre],
                           }}
                         >
                           {m.evenements.length}
@@ -588,7 +663,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                           style={{
                             left: m.x,
                             top: AXE_Y - 7,
-                            background: TON_POINT[m.tone],
+                            background: TON_POINT[registre],
                           }}
                         />
                       )}
@@ -606,9 +681,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                           .join("\n")}
                         className={
                           "absolute w-[172px] -translate-x-1/2 rounded-[18px] px-[15px] py-3 text-center transition-opacity hover:opacity-85 " +
-                          (chaud
-                            ? "bg-[color:var(--board-signal-mid)]"
-                            : "bg-[color:var(--board-blue-pale)]")
+                          carte.fond
                         }
                         style={{
                           left: Math.min(
@@ -623,9 +696,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                         <p
                           className={
                             "m-0 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] " +
-                            (chaud
-                              ? "text-[color:var(--board-signal-ink)]"
-                              : "text-[color:var(--board-ink)]")
+                            carte.titre
                           }
                         >
                           {m.titre}
@@ -633,9 +704,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                         <p
                           className={
                             "mt-[5px] text-[11.5px] font-semibold tracking-[0.06em] " +
-                            (chaud
-                              ? "text-[color:var(--board-signal-ink)]"
-                              : "text-[color:var(--board-blue-ink)]")
+                            carte.sousTitre
                           }
                         >
                           {m.sousTitre}
@@ -649,17 +718,17 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
               {/* Les graduations défilent avec l'axe : c'est ce qui permet
                   de savoir où l'on est après trois écrans de défilement. */}
               <div
-                className="relative mt-2.5 border-t border-[color:var(--board-grey-line)] pt-3.5"
+                className="relative mt-2.5 border-t border-[color:var(--board-slate-line)] pt-3.5"
                 style={{ width: frise.largeur, height: 34 }}
               >
                 {frise.mois.map((m) => (
                   <span
                     key={m.cle}
                     className={
-                      "absolute top-3.5 truncate border-l border-[color:var(--board-grey-line)] pl-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] " +
+                      "absolute top-3.5 truncate border-l border-[color:var(--board-slate)] pl-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] " +
                       (m.estMoisCourant
                         ? "text-[color:var(--board-ink)]"
-                        : "text-[color:var(--board-grey-soft)]")
+                        : "text-[color:var(--board-slate-soft)]")
                     }
                     style={{ left: m.x, width: m.largeur }}
                   >
@@ -676,7 +745,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
         // Rien n'est caché : ce qui est trop rapproché pour tenir en
         // cartes distinctes est réuni en grappes. On le dit, sinon le
         // pastillage numéroté ressemble à une décoration.
-        <p className="mt-2 text-[11.5px] text-[color:var(--board-grey-soft)]">
+        <p className="mt-2 text-[11.5px] text-[color:var(--board-slate-soft)]">
           {frise.nbPlaces} échéances sur la période. Les plus rapprochées sont
           groupées — {echelle === "mois" ? "zoomez sur « 90 jours »" : "ouvrez la vue calendrier"}{" "}
           pour les détailler.
@@ -693,11 +762,15 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
 
   if (prochainesVerifs.length === 0) {
     return (
-      <CarteBoard rayon={26} className="justify-center px-[26px] py-6">
-        <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-grey-soft)]">
+      <CarteBoard
+        ton="sombre"
+        rayon={26}
+        className="justify-center px-[26px] py-6"
+      >
+        <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate)]">
           Prochaine échéance
         </p>
-        <p className="mt-3 text-[15px] text-[color:var(--board-grey-ink)]">
+        <p className="mt-3 text-[15px] text-white/70">
           Aucune vérification planifiée pour l&apos;instant.
         </p>
       </CarteBoard>
@@ -714,14 +787,18 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
   const enRetard = jours < 0;
 
   return (
-    <CarteBoard rayon={26} className="flex-row items-center gap-[18px] px-[26px] py-6">
+    <CarteBoard
+      ton="sombre"
+      rayon={26}
+      className="flex-row items-center gap-[18px] px-[26px] py-6"
+    >
       <div className="min-w-0 flex-1">
-        <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-grey-soft)]">
+        <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate)]">
           Prochaine échéance
         </p>
         <Link
           href={`/etablissements/${etablissementId}/verifications/${v.id}`}
-          className="mt-3 block text-[19px] font-semibold leading-[1.2] tracking-[-0.025em] text-[color:var(--board-ink)] hover:underline"
+          className="mt-3 block text-[19px] font-semibold leading-[1.2] tracking-[-0.025em] text-white hover:underline"
         >
           {v.libelleObligation}
         </Link>
@@ -735,12 +812,15 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
           </Pastille>
         </span>
       </div>
+      {/* Le compte à rebours est la seule surface claire de la carte :
+          sur le noir, le glacier devient un carton posé dessus plutôt
+          qu'une pastille de plus. */}
       <div
         className={
           "flex size-24 flex-none flex-col items-center justify-center rounded-[26px] " +
           (enRetard
             ? "bg-[color:var(--board-signal)]"
-            : "bg-[color:var(--board-canvas)]")
+            : "bg-[color:var(--board-blue-pale)]")
         }
       >
         <span
@@ -755,9 +835,12 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
         </span>
         <span
           className={
+            // Le chiffre reste quasi-noir dans les deux cas ; c'est le
+            // champ pastel et la légende colorée qui disent lequel des
+            // deux on regarde.
             "mt-[3px] font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] " +
             (enRetard
-              ? "text-[color:var(--board-signal-on)]/85"
+              ? "text-[color:var(--board-signal-ink)]"
               : "text-[color:var(--board-blue-ink)]")
           }
         >
@@ -777,7 +860,7 @@ export function BlocActionsEnRetard({ bundle }: { bundle: DashboardBundle }) {
   return (
     <CarteBoard rayon={26} className="flex-row items-center gap-[18px] px-[26px] py-6">
       <div className="min-w-0 flex-1">
-        <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-grey-soft)]">
+        <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate-soft)]">
           Actions en retard
         </p>
         <Link
@@ -821,7 +904,7 @@ export function BlocActionsEnRetard({ bundle }: { bundle: DashboardBundle }) {
           className={
             "mt-[3px] font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] " +
             (stats.nb > 0
-              ? "text-[color:var(--board-signal-on)]/85"
+              ? "text-[color:var(--board-signal-ink)]"
               : "text-[color:var(--board-green-ink)]")
           }
         >
@@ -887,7 +970,7 @@ export function BlocPlanActions({ bundle }: { bundle: DashboardBundle }) {
             background:
               total > 0
                 ? `conic-gradient(${stops})`
-                : "var(--board-grey-line)",
+                : "var(--board-slate-line)",
           }}
         >
           <div className="flex size-[74px] flex-col items-center justify-center rounded-full bg-[color:var(--board-card)]">
@@ -904,7 +987,7 @@ export function BlocPlanActions({ bundle }: { bundle: DashboardBundle }) {
           {arcs.map((a) => (
             <div
               key={a.cle}
-              className="flex items-center gap-[9px] text-[13px] text-[color:var(--board-text-strong)]"
+              className="flex items-center gap-[9px] text-[13px] text-[color:var(--board-slate-ink)]"
             >
               <span
                 className="size-[9px] rounded-[3px]"
@@ -924,8 +1007,8 @@ export function BlocPlanActions({ bundle }: { bundle: DashboardBundle }) {
               </span>
             </div>
           ))}
-          <div className="flex items-center gap-[9px] text-[13px] text-[color:var(--board-text-strong)]">
-            <span className="size-[9px] rounded-[3px] bg-[color:var(--board-signal)]" />
+          <div className="flex items-center gap-[9px] text-[13px] text-[color:var(--board-slate-ink)]">
+            <span className="size-[9px] rounded-[3px] bg-[color:var(--board-signal-mark)]" />
             <span className="flex-1">dont en retard</span>
             <span className="font-semibold text-[color:var(--board-ink)]">
               {c.actionsEnRetard}
@@ -934,7 +1017,7 @@ export function BlocPlanActions({ bundle }: { bundle: DashboardBundle }) {
         </div>
       </div>
 
-      <p className="mt-[22px] border-t border-[color:rgba(10,10,10,.10)] pt-[18px] text-[13px] leading-[1.5] text-[color:var(--board-text-muted)]">
+      <p className="mt-[22px] border-t border-[color:rgba(10,10,10,.10)] pt-[18px] text-[13px] leading-[1.5] text-[color:var(--board-slate-mid)]">
         {ouvertes === 0
           ? "Aucune action ouverte sur cet établissement."
           : c.actionsEnRetard === 0
@@ -983,7 +1066,7 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
 
       <div className="mt-5 flex flex-col gap-2">
         {rapportsRecents.length === 0 && !aFaire ? (
-          <p className="text-[13.5px] text-[color:var(--board-grey-ink)]">
+          <p className="text-[13.5px] text-[color:var(--board-slate-mid)]">
             Rien de neuf sur les derniers jours.
           </p>
         ) : null}
@@ -997,14 +1080,17 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
               // Le plus récent est mis en avant, comme dans le design.
               (i === 0
                 ? "bg-[color:var(--board-blue-pale)]"
-                : "bg-[color:var(--board-grey-pale)]")
+                : "bg-[color:var(--board-slate-pale)]")
             }
           >
             <span
               className={
+                // Dissymétrie voulue : le vert reste pastel (il n'a rien à
+                // réclamer), l'écart prend la marque saturée. À 22 px, elle
+                // se trouve d'un coup d'œil sans peser sur la page.
                 "flex size-[22px] flex-none items-center justify-center rounded-full text-[11px] " +
                 (r.resultat === "ecart_majeur"
-                  ? "bg-[color:var(--board-signal)] text-[color:var(--board-signal-on)]"
+                  ? "bg-[color:var(--board-signal-mark)] font-semibold text-white"
                   : "bg-[color:var(--board-green)] text-[color:var(--board-green-ink)]")
               }
             >
@@ -1014,7 +1100,7 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
               {r.verification.libelleObligation} —{" "}
               {LIBELLE_RESULTAT[r.resultat] ?? r.resultat}
             </span>
-            <span className="flex-none text-[11.5px] font-semibold text-[color:var(--board-grey-soft)]">
+            <span className="flex-none text-[11.5px] font-semibold text-[color:var(--board-slate-soft)]">
               {quand(r.dateRapport)}
             </span>
           </Link>
@@ -1023,15 +1109,15 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
         {aFaire ? (
           <Link
             href={aFaire.href}
-            className="flex items-center gap-3 rounded-full border border-[color:var(--board-signal)]/30 bg-[color:var(--board-signal-pale)] px-4 py-[13px] transition-opacity hover:opacity-85"
+            className="flex items-center gap-3 rounded-full border border-[color:var(--board-signal-line)] bg-[color:var(--board-signal-pale)] px-4 py-[13px] transition-opacity hover:opacity-85"
           >
-            <span className="flex size-[22px] flex-none items-center justify-center rounded-full bg-[color:var(--board-signal)] text-[11px] font-semibold text-[color:var(--board-signal-on)]">
+            <span className="flex size-[22px] flex-none items-center justify-center rounded-full bg-[color:var(--board-signal-mark)] text-[11px] font-semibold text-white">
               !
             </span>
             <span className="flex-1 text-[13.5px] font-medium leading-[1.35] text-[color:var(--board-ink)]">
               {aFaire.titre}
             </span>
-            <span className="flex-none text-[11.5px] font-semibold text-[color:var(--board-signal-ink-strong)]">
+            <span className="flex-none text-[11.5px] font-semibold text-[color:var(--board-signal-ink)]">
               À FAIRE
             </span>
           </Link>
@@ -1048,7 +1134,7 @@ function Rond({ etat }: { etat: EtatCellule }) {
     return (
       <span
         title="Sans objet pour cette ligne"
-        className="flex size-6 items-center justify-center text-[color:var(--board-grey-soft)]"
+        className="flex size-6 items-center justify-center text-[color:var(--board-slate-soft)]"
       >
         <span className="h-px w-2.5 bg-current" />
       </span>
@@ -1064,7 +1150,7 @@ function Rond({ etat }: { etat: EtatCellule }) {
   return (
     <span
       title="Reste à faire"
-      className="size-6 rounded-full bg-[color:var(--board-grey-line)]"
+      className="size-6 rounded-full bg-[color:var(--board-slate-line)]"
     />
   );
 }
@@ -1091,7 +1177,7 @@ export function BlocDocuments({ bundle }: { bundle: DashboardBundle }) {
         {COLONNES_MATRICE.map((c) => (
           <span
             key={c}
-            className="rounded-full bg-[color:var(--board-grey-pale)] px-2.5 py-2 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-[color:var(--board-grey-ink)]"
+            className="rounded-full bg-[color:var(--board-slate-pale)] px-2.5 py-2 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-[color:var(--board-slate-mid)]"
           >
             {c}
           </span>
@@ -1114,7 +1200,7 @@ export function BlocDocuments({ bundle }: { bundle: DashboardBundle }) {
         ))}
       </div>
 
-      <p className="mt-[18px] text-[13px] leading-[1.5] text-[color:var(--board-grey-ink)]">
+      <p className="mt-[18px] text-[13px] leading-[1.5] text-[color:var(--board-slate-mid)]">
         {restes === 0
           ? "Tout ce que l'outil sait mesurer est établi. Un tiret signale une colonne sans objet pour la ligne."
           : `Un rond vide n'est pas une faute : c'est ce qu'il reste à faire. ${restes} point${restes > 1 ? "s" : ""} ouvert${restes > 1 ? "s" : ""}.`}
@@ -1127,10 +1213,13 @@ export function BlocDocuments({ bundle }: { bundle: DashboardBundle }) {
 
 export function BlocControle({ bundle }: { bundle: DashboardBundle }) {
   return (
-    <CarteBoard className="overflow-hidden">
+    <CarteBoard ton="sombre" className="overflow-hidden">
+      {/* Le bloc s'inverse : la hachure passe en blanc très bas, et le
+          dossier devient la seule pièce claire — c'est lui qu'on tend à
+          l'inspecteur. */}
       <div
         aria-hidden
-        className="flex min-h-[240px] flex-1 items-center justify-center bg-[color:var(--board-blue-pale)] bg-[image:repeating-linear-gradient(135deg,rgba(47,95,133,.07)_0_10px,transparent_10px_20px)]"
+        className="flex min-h-[240px] flex-1 items-center justify-center bg-[image:repeating-linear-gradient(135deg,rgba(255,255,255,.028)_0_10px,transparent_10px_20px)]"
       >
         <svg viewBox="0 0 160 110" className="w-[52%]" fill="none">
           <rect
@@ -1139,7 +1228,7 @@ export function BlocControle({ bundle }: { bundle: DashboardBundle }) {
             width="92"
             height="72"
             rx="10"
-            fill="var(--board-card)"
+            fill="var(--board-blue-pale)"
           />
           <rect
             x="48"
@@ -1147,7 +1236,7 @@ export function BlocControle({ bundle }: { bundle: DashboardBundle }) {
             width="64"
             height="7"
             rx="3.5"
-            fill="var(--board-blue-soft)"
+            fill="var(--board-blue-mid)"
           />
           <rect
             x="48"
@@ -1155,7 +1244,7 @@ export function BlocControle({ bundle }: { bundle: DashboardBundle }) {
             width="46"
             height="7"
             rx="3.5"
-            fill="var(--board-blue-pale)"
+            fill="var(--board-blue-soft)"
           />
           <rect
             x="48"
@@ -1163,7 +1252,7 @@ export function BlocControle({ bundle }: { bundle: DashboardBundle }) {
             width="54"
             height="7"
             rx="3.5"
-            fill="var(--board-blue-pale)"
+            fill="var(--board-blue-soft)"
           />
           <circle cx="118" cy="80" r="16" fill="var(--board-green)" />
           <path
@@ -1177,17 +1266,19 @@ export function BlocControle({ bundle }: { bundle: DashboardBundle }) {
       </div>
       <Link
         href={`/etablissements/${bundle.etablissementId}/controle`}
-        className="flex items-center gap-3.5 px-6 py-5 transition-colors hover:bg-[color:var(--board-grey-pale)]"
+        className="flex items-center gap-3.5 px-6 py-5 transition-colors hover:bg-white/[.06]"
       >
         <div className="min-w-0">
-          <p className="m-0 text-[16px] font-semibold tracking-[-0.02em] text-[color:var(--board-ink)]">
+          <p className="m-0 text-[16px] font-semibold tracking-[-0.02em] text-white">
             Préparer un contrôle
           </p>
-          <p className="mt-1 text-[13px] text-[color:var(--board-grey-ink)]">
+          <p className="mt-1 text-[13px] text-[color:var(--board-slate)]">
             Rassemblez vos pièces avant la visite d&apos;un inspecteur.
           </p>
         </div>
-        <span className="ml-auto flex size-[38px] flex-none items-center justify-center rounded-full bg-[color:var(--board-ink)] text-white">
+        {/* Le bouton s'inverse avec la carte : c'est la même touche que
+            partout ailleurs, lue à l'envers. */}
+        <span className="ml-auto flex size-[38px] flex-none items-center justify-center rounded-full bg-white text-[color:var(--board-ink)]">
           <ArrowUpRight className="size-4" />
         </span>
       </Link>

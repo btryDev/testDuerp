@@ -53,6 +53,8 @@ export type MarqueurFrise = {
   cote: "haut" | "bas";
   /** Toutes les échéances du marqueur sont derrière nous. */
   passe: boolean;
+  /** Au moins une échéance tombe dans les JOURS_PROCHE jours à venir. */
+  proche: boolean;
 };
 
 export type GraduationMois = {
@@ -108,6 +110,11 @@ export const PX_PAR_JOUR = {
 } as const;
 
 export type EchelleFrise = keyof typeof PX_PAR_JOUR;
+
+/** Seuil « proche » : une échéance à moins de 30 jours mérite l'orange.
+ *  Même horizon que la promesse produit — « ce qu'il doit faire dans les
+ *  30 prochains jours ». */
+export const JOURS_PROCHE = 30;
 
 /** Profondeur de passé consultable, en jours. */
 export const JOURS_AVANT = 90;
@@ -229,6 +236,10 @@ export function construireFrise({
       xFin: x(dernier.date),
       cote: i % 2 === 0 ? "haut" : "bas",
       passe: evenements.every((e) => e.passe),
+      proche: groupe.some((e) => {
+        const j = joursEntre(aujourdhui, e.date);
+        return j >= 0 && j <= JOURS_PROCHE;
+      }),
     };
   });
 

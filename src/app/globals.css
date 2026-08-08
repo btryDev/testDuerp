@@ -98,43 +98,83 @@
 
   /* Palette « board éditorial » — direction 4a du design Rojer.
      Portée par le seul tableau de bord : canvas bleu, cartes blanches à
-     grands rayons, chrome noir, pastilles ambre/vert sémantiques. */
+     grands rayons, chrome noir, pastilles rose/vert sémantiques.
+     Le bleu est majeur : il tient le canvas, les champs neutres et les
+     deux tiers des repères. Les autres teintes n'entrent que là où elles
+     disent quelque chose — rose pour le retard, vert pour l'acquis. */
   /* Gouttière extérieure du board. Un seul endroit à régler : le hero
      s'en sert en marge négative pour son plein-fer, la grille et la
      pastille « Organiser » s'y alignent. */
   --board-gutter: 32px;
-  --board-canvas: #d3e7f7;
+  /* Famille bleue pervenche→indigo (référence : illustration sablier).
+     La teinte quitte le bleu ciel (H205) pour la pervenche (H228-232) :
+     corps lavande clair, gradients pervenche, aplats bleu roi. La
+     lisibilité gagne au passage — l'indigo descend plus bas que
+     l'ancien bleu acier, donc marques et textes portent davantage.
+     Ratios : ink 9,09 sur blanc, 7,46 sur le pâle, 6,50 sur le canvas ;
+     strong 4,84 sur blanc et 3,46 sur le canvas (seuil 3 pour un objet
+     graphique), blanc sur strong 4,84 ; noir 14,2 sur le canvas, 11,2
+     sur le soft, 16,3 sur le pâle. */
+  --board-canvas: #d3d9f5;
   --board-ink: #0a0a0a;
   --board-card: #ffffff;
-  --board-blue-pale: #e8f3fc;
-  --board-blue-soft: #b5d5ee;
-  --board-blue-mid: #7fafd4;
-  --board-blue-strong: #5c93be;
-  --board-blue-ink: #2f5f85;
-  /* Signal « en retard ». L'ambre pastel d'origine (#f7c07c) ne tenait
-     pas : 1,29 de contraste contre le canvas bleu, il décorait au lieu
-     d'alerter. Corail vif à la place, porté par du type quasi-noir plutôt
-     que du blanc. Le corail pur (#ff5a36) criait ; il est adouci d'une
-     pointe de blanc, mais ramené en luminosité — un simple éclaircissement
-     l'aurait fait passer sous le seuil de séparation d'avec la carte
-     blanche qui l'accueille. Résultat : 5,82 pour le noir sur l'aplat,
-     3,40 contre la carte, sans rien perdre de la fonction de signal. */
-  --board-signal: #e0664c;
+  /* Glacier. Le champ posé sur carte blanche : plus clair que le canvas
+     d'un cran net (1,15) pour ne pas ressembler à du fond qui
+     transparaît. Sur les cartes noires, c'est lui qui fait la surface
+     claire (16,3). */
+  --board-blue-pale: #e4e8fb;
+  --board-blue-soft: #b6c1f0;
+  --board-blue-mid: #8494e4;
+  --board-blue-strong: #5568d6;
+  --board-blue-ink: #2c3da4;
+  /* Signal « en retard ». Deux essais avant celui-ci : l'ambre pastel
+     (#f7c07c) ne portait rien, le corail vif (#e0664c) portait trop —
+     posé en aplat sur les tuiles-chiffre, les points de frise et les
+     puces, il prenait la tête du board et le bleu n'y était plus majeur.
+     La règle retenue sépare les deux rôles : le CHAMP reste pastel, comme
+     le bleu et le vert qui l'entourent, et c'est la MARQUE — point de
+     frise, puce de 22 px, filet — qui porte la saturation. Le rouge ne
+     couvre donc plus de grandes surfaces, mais il reste lisible partout.
+     Rosé plutôt qu'orangé : à côté d'un canvas bleu, l'orangé tire vers
+     la complémentaire et se bat avec lui.
+     Ratios : marque 4,87 sur carte blanche et 3,48 sur le canvas (seuil
+     3 pour un objet graphique), blanc sur la marque 4,87 ; ink 6,08 sur
+     le champ, 7,32 sur le pâle ; noir sur le champ 15,2. Le champ ne vaut
+     que 1,07 contre le canvas pervenche — il ne doit jamais s'y poser
+     directement, seulement sur carte blanche ou sur le rail noir. */
+  /* Signal « proche » — l'échéance qui tombe dans les 30 jours. Même
+     règle que le rouge : champ pastel, marque saturée. Ratios : encre
+     5,92 sur le champ et 7,29 sur blanc ; marque 4,63 sur carte blanche
+     et 3,31 sur le canvas ; noir sur le champ 16,1. */
+  --board-amber: #ffe3c8;
+  --board-amber-ink: #82480e;
+  --board-amber-mark: #b25f03;
+  --board-signal: #ffd8dd;
+  --board-signal-mid: #ffe7ea;
+  --board-signal-pale: #fff3f4;
+  --board-signal-line: #f0a4ae;
+  --board-signal-mark: #d43046;
+  --board-signal-ink: #9c1f2e;
   --board-signal-on: #0a0a0a;
-  --board-signal-mid: #ffd9cf;
-  --board-signal-pale: #fff0ec;
-  --board-signal-ink: #96280f;
-  --board-signal-ink-strong: #96280f;
   --board-green: #a8e585;
   --board-green-ink: #2a5f1d;
   --board-green-ink-soft: #3d7a29;
-  --board-grey-pale: #f4f6f8;
-  --board-grey-line: #edf1f4;
-  --board-grey-ink: #6b7078;
-  --board-grey-soft: #8a9099;
-  --board-text: #4c5560;
-  --board-text-muted: #5d636b;
-  --board-text-strong: #3d4148;
+
+  /* Ardoise — le registre calme, réaligné sur la pervenche (H228)
+     comme le reste de la charte : même principe que la version
+     précédente (une seule teinte, seule la luminosité descend), mais
+     la teinte suit désormais la famille bleue au lieu du bleu ciel
+     H208 d'origine — sinon les zones tranquilles auraient tiré vers
+     le cyan à côté du canvas pervenche.
+     Ratios sur blanc : soft 5,76 · mid 7,35 · ink 11,01 ; le plus
+     clair des trois tient encore 4,73 sur le pâle et 5,24 sur la
+     surface creuse. */
+  --board-slate-pale: #f2f4fa; /* surface creuse */
+  --board-slate-line: #e4e9f4; /* filets, séparateurs */
+  --board-slate: #c1c9e0; /* axe de frise, structure */
+  --board-slate-soft: #5b667e; /* petits labels, graduations */
+  --board-slate-mid: #4d566b; /* texte courant secondaire */
+  --board-slate-ink: #353c4e; /* texte appuyé */
 
   --background: var(--paper);
   --foreground: var(--ink);
