@@ -147,7 +147,7 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
     // Plein-fer : le bandeau blanc mord sur le padding du board et touche
     // les bords, le canvas bleu ne commence qu'en dessous. C'est le
     // `margin:-12px -12px 0` du design.
-    <div className="-mx-3 -mt-3 grid items-center gap-9 bg-[color:var(--board-card)] px-[46px] pb-[50px] pt-[56px] lg:grid-cols-[1.15fr_.85fr]">
+    <div className="-mx-[var(--board-gutter)] -mt-[var(--board-gutter)] grid items-center gap-9 bg-[color:var(--board-card)] px-[46px] pb-[50px] pt-[56px] lg:grid-cols-[1.15fr_.85fr]">
       <div>
         <span className="inline-block rounded-full bg-[color:var(--board-blue-pale)] px-[14px] py-[6px] text-[11.5px] font-semibold tracking-[0.06em] text-[color:var(--board-blue-ink)]">
           {brief.datePill}

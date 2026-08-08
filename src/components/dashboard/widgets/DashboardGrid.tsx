@@ -82,9 +82,9 @@ export function DashboardGrid({ bundle }: { bundle: DashboardBundle }) {
           le bloc éditorial. En édition il redescend dans le flux : le
           tiroir « Ajouter un widget » a besoin de la pleine largeur. */}
       {enEdition ? (
-        <div className="px-3 pt-3">{toolbar}</div>
+        <div className="px-[var(--board-gutter)] pt-[var(--board-gutter)]">{toolbar}</div>
       ) : (
-        <div className="absolute right-3 top-3 z-20">{toolbar}</div>
+        <div className="absolute right-[var(--board-gutter)] top-[var(--board-gutter)] z-20">{toolbar}</div>
       )}
 
       <DndContext
@@ -93,7 +93,7 @@ export function DashboardGrid({ bundle }: { bundle: DashboardBundle }) {
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={ids} strategy={rectSortingStrategy}>
-          <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2 lg:grid-cols-6 [grid-auto-flow:dense]">
+          <div className="grid grid-cols-1 gap-3 p-[var(--board-gutter)] sm:grid-cols-2 lg:grid-cols-6 [grid-auto-flow:dense]">
             {layout.items.map((item) => {
               const def = REGISTRY[item.widgetId];
               if (!def) return null;

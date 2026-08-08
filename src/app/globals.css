@@ -99,6 +99,10 @@
   /* Palette « board éditorial » — direction 4a du design Rojer.
      Portée par le seul tableau de bord : canvas bleu, cartes blanches à
      grands rayons, chrome noir, pastilles ambre/vert sémantiques. */
+  /* Gouttière extérieure du board. Un seul endroit à régler : le hero
+     s'en sert en marge négative pour son plein-fer, la grille et la
+     pastille « Organiser » s'y alignent. */
+  --board-gutter: 24px;
   --board-canvas: #d3e7f7;
   --board-ink: #0a0a0a;
   --board-card: #ffffff;

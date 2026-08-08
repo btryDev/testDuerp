@@ -222,7 +222,7 @@ export default async function EtablissementPage({
           bord, le reste de l'app garde la palette « papier ». */}
       <div className="flex min-h-full flex-col bg-[color:var(--board-canvas)] pb-8">
         {!onboardingFini ? (
-          <div className="p-3 pb-0">
+          <div className="p-[var(--board-gutter)] pb-0">
             <OnboardingChecklist
               etapes={etapesOnboarding}
               etablissementRaison={etab.raisonDisplay}
@@ -232,7 +232,7 @@ export default async function EtablissementPage({
 
         <DashboardGrid bundle={bundle} />
 
-        <footer className="flex flex-wrap items-center justify-between gap-6 px-7 pt-2 text-[11.5px] text-[color:var(--board-blue-ink)]">
+        <footer className="flex flex-wrap items-center justify-between gap-6 px-[calc(var(--board-gutter)+4px)] pt-2 text-[11.5px] text-[color:var(--board-blue-ink)]">
           <p className="m-0 max-w-[640px] leading-[1.55]">
             Outil d&apos;aide à la rédaction structuré sur les publications
             INRS / OiRA. La responsabilité de l&apos;évaluation des risques
