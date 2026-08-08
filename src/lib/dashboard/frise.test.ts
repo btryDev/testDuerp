@@ -84,6 +84,27 @@ describe("construireFrise — dégraissage", () => {
     expect(f.marqueurs).toHaveLength(2);
   });
 
+  it("étale la sélection sur une série régulière", () => {
+    // Régression : huit échéances tous les 11 jours sont toutes sous le
+    // seuil d'écart. Un filtre glouton n'en gardait qu'une et masquait les
+    // sept autres — la frise paraissait vide alors qu'elle était pleine.
+    const evs = Array.from({ length: 8 }, (_, i) => ev(`e${i}`, 4 + i * 11));
+    const f = frise(evs);
+    // 4 et non 5 : l'échantillonnage régulier en propose 5, dont deux
+    // finissent à 12 % l'un de l'autre — l'anti-chevauchement en écarte un.
+    expect(f.marqueurs).toHaveLength(4);
+    expect(f.nbMasques).toBe(4);
+    // Ce qui compte : la sélection couvre toute la largeur de l'axe.
+    expect(f.marqueurs[0].pct).toBeLessThan(15);
+    expect(f.marqueurs[f.marqueurs.length - 1].pct).toBeGreaterThan(80);
+  });
+
+  it("garde tous les événements quand ils sont peu nombreux et espacés", () => {
+    const f = frise([ev("a", 5), ev("b", 30), ev("c", 60)]);
+    expect(f.marqueurs.map((m) => m.id)).toEqual(["a", "b", "c"]);
+    expect(f.nbMasques).toBe(0);
+  });
+
   it("plafonne le nombre de marqueurs et comptabilise le reste", () => {
     // 9 événements espacés de 14 j : 7 tombent dans les 90 jours, on en
     // affiche 5. `nbMasques` ne compte que les 2 écartés de l'horizon —

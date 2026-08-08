@@ -2,6 +2,11 @@
 
 // Sidebar persistante (248px) pour le shell d'app.
 //
+// Habillage noir (#0A0A0A) repris du design Rojer : items en pilules,
+// actif en pilule blanche pleine, kickers de section en gris clair. Les
+// jetons `--board-*` sont partagés avec le tableau de bord — le rail et le
+// board parlent la même langue.
+//
 // L'arborescence elle-même vit dans `sidebar-nav.ts` (module pur, testé) :
 // trois sections adressées au dirigeant — « À faire », « Mon établissement »,
 // « Mes registres » — et divulgation progressive des registres de domaine.
@@ -72,11 +77,11 @@ export function AppSidebar({
 
   return (
     <aside
-      className="flex h-screen w-[248px] flex-col border-r border-rule-soft bg-paper-elevated"
+      className="flex h-screen w-[248px] flex-col bg-[color:var(--board-ink)] text-white"
       aria-label="Navigation principale"
     >
       {/* Brand : marque abstraite (cible) + nom */}
-      <div className="flex items-center gap-2.5 px-4 pb-[14px] pt-[18px]">
+      <div className="flex items-center gap-2.5 border-b border-white/10 px-5 py-5">
         <svg
           width="26"
           height="26"
@@ -85,11 +90,11 @@ export function AppSidebar({
           aria-hidden
           className="shrink-0"
         >
-          <circle cx="13" cy="13" r="11" stroke="var(--navy)" strokeWidth="1" opacity="0.3" />
-          <circle cx="13" cy="13" r="6.5" stroke="var(--navy)" strokeWidth="1.1" opacity="0.7" />
-          <circle cx="13" cy="13" r="2.4" fill="var(--navy)" />
+          <circle cx="13" cy="13" r="11" stroke="var(--board-canvas)" strokeWidth="1" opacity="0.35" />
+          <circle cx="13" cy="13" r="6.5" stroke="var(--board-canvas)" strokeWidth="1.1" opacity="0.75" />
+          <circle cx="13" cy="13" r="2.4" fill="var(--board-canvas)" />
         </svg>
-        <p className="text-[17px] font-semibold leading-none tracking-[-0.025em] text-ink">
+        <p className="text-[17px] font-semibold leading-none tracking-[-0.025em] text-white">
           Pilote
         </p>
       </div>
@@ -99,7 +104,7 @@ export function AppSidebar({
       <nav className="min-h-0 flex-1 overflow-auto px-2.5 pb-2">
         {sections.map((sec) => (
           <div key={sec.title}>
-            <p className="px-3 pb-1.5 pt-[18px] font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="px-4 pb-2 pt-[18px] font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">
               {sec.title}
             </p>
             {sec.items.map((it) => (
@@ -113,18 +118,18 @@ export function AppSidebar({
       </nav>
 
       {/* Footer : guide + aide + user chip */}
-      <div className="flex flex-col gap-1 border-t border-rule-soft px-3 py-3">
+      <div className="flex flex-col gap-1 border-t border-white/10 px-3 py-3">
         <Link
           href={`/etablissements/${etablissement.id}/guide`}
           aria-current={actif === "guide" ? "page" : undefined}
           className={
-            "flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] transition-colors hover:bg-paper-sunk hover:text-ink " +
-            (actif === "guide" ? "font-medium text-ink" : "text-ink/75")
+            "flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] transition-colors hover:bg-white/10 hover:text-white " +
+            (actif === "guide" ? "font-medium text-white" : "text-white/60")
           }
         >
           <Compass aria-hidden className="size-3.5" /> Guide
         </Link>
-        <span className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] text-ink/40">
+        <span className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] text-white/30">
           <HelpCircle aria-hidden className="size-3.5" /> Aide
           <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.1em]">
             bientôt
@@ -134,18 +139,18 @@ export function AppSidebar({
           <div className="mt-0.5 flex items-center gap-2.5 px-1 py-1.5">
             <div
               aria-hidden
-              className="grid size-8 place-items-center rounded-full bg-[color:var(--green-dash-soft)] font-mono text-[12px] font-semibold text-[color:var(--green-dash)]"
+              className="grid size-8 place-items-center rounded-full bg-[color:var(--board-canvas)] font-mono text-[12px] font-semibold text-[color:var(--board-blue-ink)]"
             >
               {initialUser}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[12.5px] font-medium">
+              <p className="truncate text-[12.5px] font-medium text-white">
                 {user.email ?? "Utilisateur"}
               </p>
               <form action={signOutAction}>
                 <button
                   type="submit"
-                  className="mt-0.5 flex items-center gap-1 text-[10.5px] text-muted-foreground transition-colors hover:text-ink"
+                  className="mt-0.5 flex items-center gap-1 text-[10.5px] text-white/45 transition-colors hover:text-white"
                 >
                   <LogOut aria-hidden className="size-3" />
                   Déconnexion
@@ -160,7 +165,7 @@ export function AppSidebar({
 }
 
 const CLASSES_ITEM =
-  "flex w-full items-center gap-3 rounded-[10px] px-3 py-[9px] text-[13.5px] transition-colors";
+  "flex w-full items-center gap-3 rounded-full px-3.5 py-[10px] text-[13.5px] transition-colors";
 
 function NavLink({ item, actif }: { item: NavItem; actif: SidebarItemId }) {
   const isActive = item.id === actif;
@@ -169,7 +174,7 @@ function NavLink({ item, actif }: { item: NavItem; actif: SidebarItemId }) {
   // qu'elle ne se confonde pas visuellement avec un lien réel.
   if (item.bientot) {
     return (
-      <span className={CLASSES_ITEM + " text-ink/35"} aria-disabled>
+      <span className={CLASSES_ITEM + " text-white/30"} aria-disabled>
         <item.Icon aria-hidden className="size-4 opacity-70" />
         <span className="flex-1 truncate">{item.label}</span>
         <span className="font-mono text-[9px] uppercase tracking-[0.1em]">
@@ -186,8 +191,8 @@ function NavLink({ item, actif }: { item: NavItem; actif: SidebarItemId }) {
       className={
         CLASSES_ITEM + " " +
         (isActive
-          ? "bg-[color:var(--navy)] font-medium text-white"
-          : "text-ink/75 hover:bg-paper-sunk hover:text-ink")
+          ? "bg-white font-semibold text-[color:var(--board-ink)]"
+          : "text-white/60 hover:bg-white/10 hover:text-white")
       }
     >
       <item.Icon aria-hidden className="size-4 opacity-90" />
@@ -197,10 +202,10 @@ function NavLink({ item, actif }: { item: NavItem; actif: SidebarItemId }) {
           className={
             "rounded-full px-[7px] py-px font-mono text-[11px] " +
             (isActive
-              ? "bg-white/15 text-white"
+              ? "bg-[color:var(--board-ink)]/10 text-[color:var(--board-ink)]"
               : item.alert
-                ? "bg-[color:var(--alert-soft)] text-[color:var(--alert)]"
-                : "bg-paper-sunk text-muted-foreground")
+                ? "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink-deep)]"
+                : "bg-white/10 text-white/60")
           }
         >
           {item.count}
@@ -232,7 +237,7 @@ function Divulgation({
         aria-expanded={ouvert}
         className={
           CLASSES_ITEM +
-          " text-[12.5px] text-muted-foreground hover:bg-paper-sunk hover:text-ink"
+          " text-[12.5px] text-white/45 hover:bg-white/10 hover:text-white"
         }
       >
         <ChevronDown

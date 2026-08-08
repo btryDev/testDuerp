@@ -7,8 +7,15 @@
  * établissement **existant**, pour juger le rendu sur de vraies requêtes
  * plutôt que sur des données de façade.
  *
- *   pnpm db:seed                  → premier établissement trouvé
+ *   pnpm db:seed                       → premier établissement trouvé
  *   pnpm db:seed <etablissementId>
+ *   pnpm db:seed --planifier           → pose aussi des dates sur les
+ *                                        vérifications encore à planifier
+ *
+ * `--planifier` est explicite parce qu'il ÉCRIT sur des lignes métier
+ * existantes (datePrevue et statut de `Verification`), contrairement au
+ * reste du seed qui ne fait qu'ajouter ses propres actions. À réserver à
+ * une base de développement.
  *
  * Idempotent : les actions posées portent un marqueur `[seed]` dans leur
  * description et sont remplacées à chaque exécution. Rien d'autre n'est
@@ -105,8 +112,59 @@ const ACTIONS: Gabarit[] = [
   },
 ];
 
+/**
+ * Étale les vérifications encore `a_planifier` sur l'année à venir.
+ *
+ * Sans ça, un établissement dont le calendrier a été généré mais jamais
+ * planifié n'a aucune échéance datée : la frise est vide, et c'est exact.
+ * Cette étape simule le travail de programmation qu'un dirigeant ferait
+ * dans l'app, pour pouvoir juger le rendu d'une frise remplie.
+ *
+ * Répartition : une poignée reste dépassée (le board doit montrer du
+ * retard), le reste s'échelonne sur 12 mois avec un écart suffisant pour
+ * que la frise 90 jours ait plusieurs marqueurs lisibles.
+ */
+async function planifierVerifications(etablissementId: string) {
+  const aPlanifier = await prisma.verification.findMany({
+    where: { etablissementId, statut: "a_planifier", dateRealisee: null },
+    select: { id: true },
+    orderBy: { datePrevue: "asc" },
+  });
+
+  if (aPlanifier.length === 0) {
+    console.log("  aucune vérification à planifier");
+    return;
+  }
+
+  // ~15 % restent en retard, le reste part dans le futur.
+  const nbEnRetard = Math.max(1, Math.round(aPlanifier.length * 0.15));
+
+  let n = 0;
+  for (const [i, v] of aPlanifier.entries()) {
+    const jours =
+      i < nbEnRetard
+        ? -(3 + i * 6) // retards échelonnés, pour une moyenne crédible
+        : Math.round(((i - nbEnRetard) / (aPlanifier.length - nbEnRetard)) * 350) + 4;
+
+    await prisma.verification.update({
+      where: { id: v.id },
+      data: {
+        datePrevue: dans(jours),
+        statut: jours < 0 ? "depassee" : "planifiee",
+      },
+    });
+    n += 1;
+  }
+
+  console.log(
+    `  ${n} vérification(s) programmée(s) — dont ${nbEnRetard} laissée(s) en retard`,
+  );
+}
+
 async function main() {
-  const cible = process.argv[2];
+  const args = process.argv.slice(2);
+  const planifier = args.includes("--planifier");
+  const cible = args.find((a) => !a.startsWith("--"));
 
   const etab = cible
     ? await prisma.etablissement.findUnique({ where: { id: cible } })
@@ -193,6 +251,14 @@ async function main() {
   // entrées de registre pointant vers un fichier absent — exactement le
   // genre de donnée de façade qu'on veut éviter. Le bloc « Ce qui a
   // changé » se nourrit des rapports réellement déposés via l'app.
+
+  if (planifier) {
+    await planifierVerifications(etab.id);
+  } else {
+    console.log(
+      "  (vérifications inchangées — relancez avec --planifier pour leur poser des dates)",
+    );
+  }
 
   console.log("Terminé.");
 }

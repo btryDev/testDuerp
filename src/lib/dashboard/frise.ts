@@ -73,22 +73,45 @@ export function construireFrise({
     })
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  // Dégraissage : on garde le premier événement, puis on n'ajoute les
-  // suivants que s'ils sont assez éloignés du dernier retenu. Les alertes
-  // priment — on ne masque jamais un événement `alerte` au profit d'un
-  // `ok` qui le précède de peu.
-  const retenus: EvenementFrise[] = [];
-  for (const e of dansHorizon) {
-    if (retenus.length >= MAX_MARQUEURS) break;
-    const pct = (joursEntre(aujourdhui, e.date) / horizonJours) * 100;
-    const dernier = retenus[retenus.length - 1];
-    if (!dernier) {
-      retenus.push(e);
-      continue;
+  // Sélection des marqueurs.
+  //
+  // Un filtre glouton « garde le premier, saute tout ce qui est trop
+  // proche » s'effondre sur une série régulière : huit échéances espacées
+  // de onze jours sur un axe de quatre-vingt-dix sont toutes sous le seuil
+  // d'écart, et l'on n'en affiche qu'une. On échantillonne donc d'abord de
+  // façon régulière sur toute la fenêtre, puis on ne recale que ce qui se
+  // chevauche encore.
+  const pctDe = (e: EvenementFrise) =>
+    (joursEntre(aujourdhui, e.date) / horizonJours) * 100;
+
+  const cible = Math.min(MAX_MARQUEURS, dansHorizon.length);
+  const echantillon: EvenementFrise[] = [];
+
+  if (cible > 0) {
+    // La première alerte de la fenêtre est retenue d'office : c'est
+    // l'information la moins remplaçable de la frise.
+    const premiereAlerte = dansHorizon.find((e) => e.tone === "alerte");
+    const indices = new Set<number>();
+    if (premiereAlerte) indices.add(dansHorizon.indexOf(premiereAlerte));
+
+    for (let i = 0; indices.size < cible && i < cible; i += 1) {
+      const idx =
+        cible === 1
+          ? 0
+          : Math.round((i * (dansHorizon.length - 1)) / (cible - 1));
+      indices.add(idx);
     }
-    const pctDernier =
-      (joursEntre(aujourdhui, dernier.date) / horizonJours) * 100;
-    if (pct - pctDernier >= ECART_MIN_PCT) {
+
+    echantillon.push(
+      ...[...indices].sort((a, b) => a - b).map((i) => dansHorizon[i]),
+    );
+  }
+
+  // Anti-chevauchement sur l'échantillon retenu.
+  const retenus: EvenementFrise[] = [];
+  for (const e of echantillon) {
+    const dernier = retenus[retenus.length - 1];
+    if (!dernier || pctDe(e) - pctDe(dernier) >= ECART_MIN_PCT) {
       retenus.push(e);
     } else if (e.tone === "alerte" && dernier.tone !== "alerte") {
       retenus[retenus.length - 1] = e;
