@@ -10,6 +10,10 @@ import { trouverReferentielParId } from "@/lib/referentiels";
  * Crée un DUERP vide rattaché à un établissement (ADR-001). L'utilisateur
  * est redirigé vers l'étape de choix de secteur qui alimente ensuite les
  * unités de travail.
+ *
+ * Idempotent : si un DUERP existe déjà (double-clic, onglets multiples,
+ * création silencieuse historique), on le réutilise au lieu d'en créer
+ * un second.
  */
 export async function creerDuerp(etablissementId: string): Promise<void> {
   const etablissement = await prisma.etablissement.findUnique({
@@ -17,19 +21,28 @@ export async function creerDuerp(etablissementId: string): Promise<void> {
   });
   if (!etablissement) throw new Error("Établissement introuvable");
 
-  const duerp = await prisma.duerp.create({
-    data: {
-      etablissementId,
-      unites: {
-        create: {
-          nom: "Risques transverses",
-          description:
-            "Risques transverses à l'entreprise (routier, RPS, TMS, écrans). Gérés via les questions détecteurs.",
-          estTransverse: true,
+  let duerp = await prisma.duerp.findFirst({
+    where: { etablissementId },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+
+  if (!duerp) {
+    duerp = await prisma.duerp.create({
+      data: {
+        etablissementId,
+        unites: {
+          create: {
+            nom: "Risques transverses",
+            description:
+              "Risques transverses à l'entreprise (routier, RPS, TMS, écrans). Gérés via les questions détecteurs.",
+            estTransverse: true,
+          },
         },
       },
-    },
-  });
+      select: { id: true },
+    });
+  }
 
   revalidatePath(`/entreprises/${etablissement.entrepriseId}`);
   redirect(`/duerp/${duerp.id}/secteur`);

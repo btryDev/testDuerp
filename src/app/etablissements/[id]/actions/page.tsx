@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/layout/EmptyState";
+import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeOrigine } from "@/components/actions/BadgeOrigine";
 import { BadgeStatutAction } from "@/components/actions/BadgeStatutAction";
 import { getEtablissement } from "@/lib/etablissements/queries";
@@ -92,8 +93,21 @@ export default async function PlanActionsPage({
           <p className="max-w-2xl text-[0.9rem] leading-relaxed text-muted-foreground">
             Vue unifiée des actions issues du DUERP (mesures de prévention
             prévues) et des rapports de vérification (levées d&apos;écart).
-            Hiérarchie L. 4121-2 appliquée aux mesures du DUERP.
           </p>
+          <div className="flex flex-wrap gap-2">
+            <LegalBadge
+              reference="Art. L. 4121-2 CT"
+              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033019913"
+              extrait="L'employeur met en œuvre les mesures prévues à l'article L. 4121-1 sur le fondement des principes généraux de prévention suivants : 1° Éviter les risques ; 2° Évaluer les risques qui ne peuvent pas être évités ; 3° Combattre les risques à la source ; […]"
+            >
+              <p>
+                C&apos;est la hiérarchie des mesures de prévention : supprimer
+                le risque vaut mieux que le réduire, le réduire vaut mieux
+                qu&apos;un équipement de protection. L&apos;outil applique ce
+                garde-fou aux mesures issues du DUERP.
+              </p>
+            </LegalBadge>
+          </div>
         </div>
         <a
           href={`/api/etablissements/${id}/plan-actions/pdf`}

@@ -84,6 +84,14 @@ describe("construireSections — structure", () => {
     }
   });
 
+  it("place le guide (« Comprendre ») en dernière position de « À faire »", () => {
+    const aFaire = sections(PROFIL_VIDE)[0];
+    const dernier = aFaire.items[aFaire.items.length - 1];
+    expect(dernier.id).toBe("guide");
+    expect(dernier.label).toBe("Comprendre");
+    expect(dernier.href).toBe(`/etablissements/${ID}/guide`);
+  });
+
   it("marque « Équipe » comme à venir plutôt qu'en lien mort", () => {
     const equipe = sections(PROFIL_VIDE)
       .flatMap((s) => s.items)

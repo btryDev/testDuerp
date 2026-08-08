@@ -86,7 +86,7 @@ export const obligationsElectricite: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "L. 4711-5",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903157/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389",
       },
       {
         source: "CODE_TRAVAIL",

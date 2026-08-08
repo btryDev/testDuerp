@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/layout/EmptyState";
+import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeResultat } from "@/components/rapports/BadgeResultat";
 import { SupprimerRapportButton } from "@/components/rapports/SupprimerRapportButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
@@ -77,10 +78,27 @@ export default async function RegistrePage({
           </h1>
           <p className="max-w-2xl text-[0.9rem] leading-relaxed text-muted-foreground">
             Centralisation horodatée des rapports de vérification
-            réglementaire. Article L. 4711-5 du Code du travail —
-            l&apos;ensemble doit être tenu à disposition de
+            réglementaire — l&apos;ensemble doit être tenu à disposition de
             l&apos;inspection et de la commission de sécurité.
           </p>
+          <div className="flex flex-wrap gap-2">
+            <LegalBadge
+              reference="Art. L. 4711-1 CT"
+              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903383"
+              extrait="Les attestations, consignes, résultats et rapports relatifs aux vérifications et contrôles mis à la charge de l'employeur au titre de la santé et de la sécurité au travail comportent des mentions obligatoires déterminées par voie réglementaire."
+            />
+            <LegalBadge
+              reference="Art. L. 4711-5 CT"
+              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389"
+              extrait="[…] l'employeur est autorisé à réunir ces informations dans un registre unique dès lors que cette mesure est de nature à faciliter la conservation et la consultation de ces informations."
+            >
+              <p>
+                C&apos;est le fondement du registre unique de sécurité :
+                regrouper tous les rapports au même endroit est explicitement
+                prévu par la loi.
+              </p>
+            </LegalBadge>
+          </div>
           <p className="max-w-2xl text-[0.82rem] leading-relaxed text-muted-foreground">
             <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em]">
               Note —

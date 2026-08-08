@@ -29,7 +29,7 @@ export const obligationsLevage: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "R. 4323-22",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490943/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531483",
       },
       {
         source: "ARRETE",

@@ -20,7 +20,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Compass, HelpCircle, LogOut } from "lucide-react";
+import { ChevronDown, HelpCircle, LogOut } from "lucide-react";
 import { signOutAction } from "@/lib/auth/actions";
 import {
   construireSections,
@@ -117,18 +117,9 @@ export function AppSidebar({
         ))}
       </nav>
 
-      {/* Footer : guide + aide + user chip */}
+      {/* Footer : aide + user chip. Le guide a rejoint la section
+          « À faire » de la nav (item « Comprendre ») — pas de doublon. */}
       <div className="flex flex-col gap-1 border-t border-white/10 px-3 py-3">
-        <Link
-          href={`/etablissements/${etablissement.id}/guide`}
-          aria-current={actif === "guide" ? "page" : undefined}
-          className={
-            "flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] transition-colors hover:bg-white/10 hover:text-white " +
-            (actif === "guide" ? "font-medium text-white" : "text-white/60")
-          }
-        >
-          <Compass aria-hidden className="size-3.5" /> Guide
-        </Link>
         <span className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] text-white/30">
           <HelpCircle aria-hidden className="size-3.5" /> Aide
           <span className="ml-auto font-mono text-[9px] uppercase tracking-[0.1em]">

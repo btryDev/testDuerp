@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/layout/EmptyState";
+import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
 import { GenererCalendrierButton } from "@/components/calendrier/GenererCalendrierButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
@@ -108,6 +109,24 @@ export default async function CalendrierPage({
             ou modifiez un équipement. Chaque occurrence cite son obligation
             légale et le profil de réalisateur requis.
           </p>
+          <div className="flex flex-wrap gap-2">
+            <LegalBadge
+              reference="Art. R. 4323-23 s. CT"
+              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479"
+              extrait="Des arrêtés […] déterminent les équipements de travail ou les catégories d'équipement de travail pour lesquels l'employeur procède ou fait procéder à des vérifications générales périodiques afin que soit décelée en temps utile toute détérioration susceptible de créer des dangers."
+            />
+            <LegalBadge
+              reference="Arrêté du 25 juin 1980 (ERP)"
+              href="https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/"
+            >
+              <p>
+                Règlement de sécurité contre les risques d&apos;incendie et
+                de panique dans les ERP — fonde les périodicités des
+                vérifications ERP (électricité, moyens de secours,
+                désenfumage…).
+              </p>
+            </LegalBadge>
+          </div>
         </div>
         <GenererCalendrierButton
           etablissementId={id}

@@ -41,6 +41,7 @@ import {
   Droplets,
   Ticket,
   ShieldCheck,
+  BookOpen,
 } from "lucide-react";
 
 /** Ids historiques — conservés tels quels pour la prop `active`. */
@@ -201,6 +202,15 @@ export function construireSections({
       label: "Préparer un contrôle",
       href: href("/controle"),
       Icon: ShieldCheck,
+    },
+    {
+      // Le guide pédagogique répond à la question implicite du dirigeant
+      // perdu — « par où je commence ? » — il vit donc dans « À faire »,
+      // en dernière position, et plus seulement dans le footer du rail.
+      id: "guide",
+      label: "Comprendre",
+      href: href("/guide"),
+      Icon: BookOpen,
     },
   ];
 
