@@ -17,6 +17,7 @@ import {
   getDashboardData,
   listerEvenementsFenetre,
 } from "@/lib/dashboard/queries";
+import { JOURS_APRES } from "@/lib/dashboard/frise";
 import { statsActionsEnRetard } from "@/lib/actions/queries";
 import { getOptionalUser } from "@/lib/auth/require-user";
 import { prisma } from "@/lib/prisma";
@@ -52,9 +53,10 @@ export default async function EtablissementPage({
     compterVerifsParEquipement(id),
     getDashboardData(id),
     compterObligationsParMois(id),
-    // 365 j : alimente les deux horizons de la frise (90 j / 12 mois),
-    // qui coupe côté client — une seule requête pour les deux vues.
-    listerEvenementsFenetre(id, 365),
+    // 730 j : la frise défile jusqu'à 24 mois et propose une vue
+    // calendrier sur la même donnée — une seule requête pour les deux
+    // vues, qui coupent côté client.
+    listerEvenementsFenetre(id, JOURS_APRES),
     listerEvenementsFenetre(id, 7),
     listerEvenementsFenetre(id, 30),
     statsActionsEnRetard(id),

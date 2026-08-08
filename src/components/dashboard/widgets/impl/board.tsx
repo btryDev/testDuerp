@@ -12,11 +12,24 @@
 // dérivations non triviales vivent dans `@/lib/dashboard/{brief,frise,
 // obligations}` où elles sont testées.
 
-import { Fragment, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
-import { ArrowUpRight, ChevronRight } from "lucide-react";
+import {
+  ArrowUpRight,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  GanttChart,
+} from "lucide-react";
 import { construireBrief } from "@/lib/dashboard/brief";
-import { construireFrise } from "@/lib/dashboard/frise";
+import { construireFrise, type EchelleFrise } from "@/lib/dashboard/frise";
+import { VueMois } from "@/components/calendrier/VueMois";
 import {
   COLONNES_MATRICE,
   compterRestes,
@@ -239,8 +252,14 @@ function MotifIsometrique() {
 
 /* ─── 2 · La frise ──────────────────────────────────────────── */
 
-/** Largeur de la voie « En retard » + respiration, en pixels. */
-const PISTE_DECALAGE = 196;
+/** Hauteur de la zone de marqueurs, en pixels. */
+const PISTE_HAUTEUR = 236;
+/** Ordonnée de l'axe dans cette zone. */
+const AXE_Y = 112;
+/** Demi-largeur d'une carte de marqueur — sert à la borner aux extrémités. */
+const DEMI_CARTE = 86;
+/** Marge à gauche d'aujourd'hui au cadrage initial, en pixels. */
+const CADRAGE_INITIAL = 130;
 
 const TON_POINT: Record<string, string> = {
   alerte: "var(--board-signal)",
@@ -248,49 +267,171 @@ const TON_POINT: Record<string, string> = {
   ok: "var(--board-blue-strong)",
 };
 
-export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
-  // Bascule inline, comme dans le design. Elle vit ici plutôt que dans le
-  // système de variants pour rester accessible hors mode « Organiser ».
-  const [horizon, setHorizon] = useState<90 | 365>(90);
+/** Flèche de défilement — desktop uniquement (au doigt, on fait glisser). */
+function FlecheDefilement({
+  sens,
+  onClick,
+  visible,
+}: {
+  sens: "gauche" | "droite";
+  onClick: () => void;
+  visible: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!visible}
+      aria-label={
+        sens === "gauche"
+          ? "Reculer dans la frise"
+          : "Avancer dans la frise"
+      }
+      className={
+        "absolute top-[100px] z-20 hidden size-10 items-center justify-center rounded-full border border-[color:rgba(10,10,10,.12)] bg-[color:var(--board-card)] text-[color:var(--board-ink)] shadow-[0_2px_10px_rgba(10,10,10,.10)] transition-opacity md:flex " +
+        (sens === "gauche" ? "left-1" : "right-1") +
+        (visible ? " opacity-100 hover:bg-[color:var(--board-blue-pale)]" : " opacity-0")
+      }
+    >
+      {sens === "gauche" ? (
+        <ChevronLeft className="size-4" />
+      ) : (
+        <ChevronRight className="size-4" />
+      )}
+    </button>
+  );
+}
 
-  // Une seule requête (365 j) alimente les deux horizons : `construireFrise`
-  // se charge de couper à la fenêtre demandée.
+export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
+  // Bascules inline, comme dans le design. Elles vivent ici plutôt que
+  // dans le système de variants pour rester accessibles hors mode
+  // « Organiser ».
+  const [echelle, setEchelle] = useState<EchelleFrise>("jours");
+  const [vue, setVue] = useState<"frise" | "calendrier">("frise");
+  const [mois, setMois] = useState(
+    () =>
+      new Date(
+        bundle.aujourdhui.getFullYear(),
+        bundle.aujourdhui.getMonth(),
+        1,
+      ),
+  );
+
+  const piste = useRef<HTMLDivElement | null>(null);
+  const [bords, setBords] = useState({ gauche: false, droite: false });
+
+  // La fenêtre couvre trois mois de passé et deux ans à venir : c'est le
+  // conteneur qui défile, l'échelle ne fait que zoomer.
   const frise = construireFrise({
     evenements: bundle.evenementsHorizon,
     aujourdhui: bundle.aujourdhui,
-    horizonJours: horizon,
+    echelle,
   });
+
+  const majBords = useCallback(() => {
+    const el = piste.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setBords({
+      gauche: el.scrollLeft > 4,
+      droite: el.scrollLeft < max - 4,
+    });
+  }, []);
+
+  // À l'ouverture — et à chaque changement d'échelle — la frise s'ouvre
+  // sur aujourd'hui, pas sur le premier jour consultable : le passé est
+  // atteignable, il n'est pas ce qu'on vient regarder.
+  useLayoutEffect(() => {
+    if (vue !== "frise") return;
+    const el = piste.current;
+    if (!el) return;
+    el.scrollLeft = Math.max(0, frise.xAujourdhui - CADRAGE_INITIAL);
+    majBords();
+  }, [vue, echelle, frise.xAujourdhui, majBords]);
+
+  const defiler = (sens: -1 | 1) => {
+    const el = piste.current;
+    if (!el) return;
+    const anime = !window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches;
+    el.scrollBy({
+      left: sens * el.clientWidth * 0.8,
+      behavior: anime ? "smooth" : "auto",
+    });
+  };
+
+  const hrefCalendrier = `/etablissements/${bundle.etablissementId}/calendrier`;
 
   return (
     <CarteBoard className="px-[30px] pb-5 pt-[26px]">
       <div className="flex items-start gap-4">
         <div>
           <h2 className="m-0 text-[30px] font-semibold leading-[1.1] tracking-[-0.035em] text-[color:var(--board-ink)]">
-            {horizon === 90 ? "Les 90 prochains jours" : "Les 12 prochains mois"}
+            {vue === "calendrier"
+              ? "Votre calendrier"
+              : echelle === "jours"
+                ? "Les 90 prochains jours"
+                : "Les 12 prochains mois"}
           </h2>
           <p className="mt-2 text-[13.5px] text-[color:var(--board-grey-ink)]">
-            Ce qui tombe, quand, et ce qui est déjà pris en charge.
+            {vue === "calendrier"
+              ? "Mois par mois, ce qui tombe et quel jour."
+              : "Ce qui tombe, quand, et ce qui est déjà pris en charge — faites défiler pour aller jusqu’à 24 mois."}
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {([90, 365] as const).map((h) => (
-            <button
-              key={h}
-              type="button"
-              onClick={() => setHorizon(h)}
-              aria-pressed={horizon === h}
-              className={
-                "rounded-full px-[13px] py-[6px] text-[11.5px] font-semibold transition-colors " +
-                (horizon === h
-                  ? "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
-                  : "bg-[color:var(--board-grey-pale)] text-[color:var(--board-grey-ink)] hover:text-[color:var(--board-ink)]")
-              }
-            >
-              {h === 90 ? "90 jours" : "12 mois"}
-            </button>
-          ))}
+          {frise.nbEnRetard > 0 ? (
+            <Link href={hrefCalendrier} className="hidden sm:inline-block">
+              <Pastille ton="alerte">
+                {frise.nbEnRetard} en retard
+              </Pastille>
+            </Link>
+          ) : null}
+          {vue === "frise"
+            ? (["jours", "mois"] as const).map((e) => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => setEchelle(e)}
+                  aria-pressed={echelle === e}
+                  className={
+                    "rounded-full px-[13px] py-[6px] text-[11.5px] font-semibold transition-colors " +
+                    (echelle === e
+                      ? "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
+                      : "bg-[color:var(--board-grey-pale)] text-[color:var(--board-grey-ink)] hover:text-[color:var(--board-ink)]")
+                  }
+                >
+                  {e === "jours" ? "90 jours" : "12 mois"}
+                </button>
+              ))
+            : null}
+          <button
+            type="button"
+            onClick={() => setVue(vue === "frise" ? "calendrier" : "frise")}
+            aria-pressed={vue === "calendrier"}
+            aria-label={
+              vue === "frise"
+                ? "Passer en vue calendrier"
+                : "Revenir à la frise"
+            }
+            title={
+              vue === "frise" ? "Vue calendrier" : "Vue frise"
+            }
+            className={
+              "flex size-9 flex-none items-center justify-center rounded-full transition-colors " +
+              (vue === "calendrier"
+                ? "bg-[color:var(--board-ink)] text-white"
+                : "border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] hover:bg-[color:var(--board-blue-pale)]")
+            }
+          >
+            {vue === "frise" ? (
+              <CalendarDays className="size-4" />
+            ) : (
+              <GanttChart className="size-4" />
+            )}
+          </button>
           <Link
-            href={`/etablissements/${bundle.etablissementId}/calendrier`}
+            href={hrefCalendrier}
             aria-label="Ouvrir le calendrier"
             className="flex size-9 flex-none items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] transition-colors hover:bg-[color:var(--board-blue-pale)]"
           >
@@ -299,9 +440,28 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
         </div>
       </div>
 
-      {frise.marqueurs.length === 0 ? (
+      {vue === "calendrier" ? (
+        <VueMois
+          mois={mois}
+          evenements={bundle.evenementsHorizon}
+          aujourdhui={bundle.aujourdhui}
+          hrefEvenement={(e) =>
+            `/etablissements/${bundle.etablissementId}/verifications/${e.id}`
+          }
+          onPrecedent={() =>
+            setMois((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))
+          }
+          onSuivant={() =>
+            setMois((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1))
+          }
+          // Même fenêtre que la frise : au-delà, la donnée n'est pas
+          // chargée, et une grille vide ne voudrait rien dire.
+          peutReculer={mois > frise.debut}
+          peutAvancer={mois < frise.fin}
+        />
+      ) : frise.marqueurs.length === 0 ? (
         // Rien à placer sur l'axe : on ne dessine pas une frise déserte de
-        // 196 px. On dit ce qui bloque, et on donne la porte de sortie.
+        // 236 px. On dit ce qui bloque, et on donne la porte de sortie.
         <div className="mt-7 flex flex-col items-start gap-3 rounded-[22px] bg-[color:var(--board-grey-pale)] px-6 py-7">
           {bundle.equipements.length === 0 ? (
             <>
@@ -326,15 +486,10 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
               </p>
               <p className="m-0 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-grey-ink)]">
                 Vos vérifications existent mais aucune n&apos;est encore
-                programmée : il n&apos;y a donc rien à poser sur les{" "}
-                {horizon === 90 ? "90 prochains jours" : "12 prochains mois"}.
-                Posez des dates et la frise se remplira.
+                programmée : il n&apos;y a donc rien à poser sur la frise.
+                Posez des dates et elle se remplira.
               </p>
-              <Lien
-                href={`/etablissements/${bundle.etablissementId}/calendrier`}
-              >
-                Programmer les vérifications
-              </Lien>
+              <Lien href={hrefCalendrier}>Programmer les vérifications</Lien>
             </>
           ) : (
             <p className="m-0 text-[13.5px] text-[color:var(--board-grey-ink)]">
@@ -343,97 +498,188 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
           )}
         </div>
       ) : (
-        <div className="relative mt-7 h-[236px]">
-          {/* Les retards ne sont pas un point dans le temps mais un cumul :
-              ils prennent leur propre voie à gauche, et l'axe des 90 jours
-              ne commence qu'après. C'est ce qui empêche la première
-              échéance de venir se superposer au bloc ambre. */}
-          {frise.nbEnRetard > 0 ? (
-            <Link
-              href={`/etablissements/${bundle.etablissementId}/calendrier`}
-              className="absolute left-0 top-1/2 w-[172px] -translate-y-1/2 rounded-[18px] bg-[color:var(--board-signal-mid)] px-[15px] py-3 transition-opacity hover:opacity-85"
-            >
-              <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-signal-ink)]">
-                En retard
-              </p>
-              <p className="mt-1.5 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] text-[color:var(--board-signal-ink)]">
-                {frise.nbEnRetard} échéance{frise.nbEnRetard > 1 ? "s" : ""}{" "}
-                dépassée{frise.nbEnRetard > 1 ? "s" : ""}
-              </p>
-            </Link>
-          ) : null}
+        // La frise déborde volontairement la carte : elle est plus longue
+        // que large, et c'est le conteneur qui défile. Le débord négatif
+        // ramène la zone de défilement aux bords de la carte, pour que
+        // rien ne paraisse coupé au milieu du texte.
+        <div className="relative -mx-[30px] mt-7">
+          <FlecheDefilement
+            sens="gauche"
+            visible={bords.gauche}
+            onClick={() => defiler(-1)}
+          />
+          <FlecheDefilement
+            sens="droite"
+            visible={bords.droite}
+            onClick={() => defiler(1)}
+          />
 
-          {/* Piste des 90 jours. */}
           <div
-            className="absolute inset-y-0 right-0"
-            style={{ left: frise.nbEnRetard > 0 ? PISTE_DECALAGE : 0 }}
+            ref={piste}
+            onScroll={majBords}
+            role="region"
+            aria-label="Frise des échéances, de 3 mois en arrière à 24 mois en avant"
+            className="overflow-x-auto overflow-y-hidden overscroll-x-contain"
           >
-            <div className="absolute inset-x-0 top-[112px] h-1 rounded-sm bg-[color:var(--board-grey-line)]" />
-            {frise.nbEnRetard > 0 ? (
-              <div className="absolute left-0 top-[112px] h-1 w-8 rounded-sm bg-[color:var(--board-signal)]" />
-            ) : null}
-
-            {frise.marqueurs.map((m) => (
-              <Fragment key={m.id}>
-                {/* Le point est à la date exacte — c'est lui qui dit vrai. */}
-                <span
-                  className="absolute z-10 size-3.5 -translate-x-1/2 rounded-full shadow-[0_0_0_4px_var(--board-card)]"
-                  style={{ left: `${m.pct}%`, top: 105, background: TON_POINT[m.tone] }}
+            <div className="w-max px-[30px]">
+              <div
+                className="relative"
+                style={{ width: frise.largeur, height: PISTE_HAUTEUR }}
+              >
+                <div
+                  className="absolute inset-x-0 h-1 rounded-sm bg-[color:var(--board-grey-line)]"
+                  style={{ top: AXE_Y }}
                 />
-                {/* La carte est centrée sur le point, mais bornée pour ne
-                    jamais déborder la piste : aux extrémités elle glisse
-                    légèrement, le point reste à sa place. */}
-                <Link
-                  href={`/etablissements/${bundle.etablissementId}/calendrier`}
-                  className="absolute w-[172px] -translate-x-1/2 rounded-[18px] bg-[color:var(--board-blue-pale)] px-[15px] py-3 text-center transition-opacity hover:opacity-85"
-                  style={{
-                    left: `clamp(86px, ${m.pct}%, calc(100% - 86px))`,
-                    ...(m.cote === "haut"
-                      ? { bottom: 236 - 96 }
-                      : { top: 128 }),
-                  }}
+
+                {/* Repère « aujourd'hui » : sans lui, un axe qui commence
+                    trois mois en arrière ne dit plus où l'on est. Le trait
+                    passe derrière les cartes — c'est un repère, pas un
+                    élément de premier plan — et l'étiquette se pose sous
+                    la voie basse, seule bande toujours libre. */}
+                <div
+                  className="absolute border-l border-dashed border-[color:var(--board-blue-mid)]"
+                  style={{ left: frise.xAujourdhui, top: 0, height: PISTE_HAUTEUR - 20 }}
+                />
+                <span
+                  className="absolute -translate-x-1/2 whitespace-nowrap rounded-full bg-[color:var(--board-blue-mid)] px-2 py-[3px] font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em] text-white"
+                  style={{ left: frise.xAujourdhui, top: PISTE_HAUTEUR - 20 }}
                 >
-                  <p className="m-0 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] text-[color:var(--board-ink)]">
-                    {m.libelle}
-                  </p>
-                  <p className="mt-[5px] text-[11.5px] font-semibold tracking-[0.06em] text-[color:var(--board-blue-ink)]">
-                    {m.libelleDate}
-                  </p>
-                </Link>
-              </Fragment>
-            ))}
+                  Aujourd&apos;hui
+                </span>
+
+                {frise.marqueurs.map((m) => {
+                  const grappe = m.evenements.length > 1;
+                  // Le rouge dit « c'est dépassé ou ça alerte » ; il ne
+                  // sert à rien d'autre sur cette frise.
+                  const chaud = m.passe || m.tone === "alerte";
+                  return (
+                    <Fragment key={m.cle}>
+                      {/* Une grappe couvre un intervalle réel : on le
+                          matérialise sur l'axe, sinon la carte laisserait
+                          croire à une date unique. */}
+                      {grappe && m.xFin > m.x ? (
+                        <span
+                          className="absolute h-1 rounded-sm"
+                          style={{
+                            left: m.x,
+                            width: m.xFin - m.x,
+                            top: AXE_Y,
+                            background: TON_POINT[m.tone],
+                            opacity: 0.45,
+                          }}
+                        />
+                      ) : null}
+                      {/* Le point est à la date exacte — c'est lui qui dit
+                          vrai. En grappe, il porte le nombre. */}
+                      {grappe ? (
+                        <span
+                          className="absolute z-10 flex h-5 min-w-5 -translate-x-1/2 items-center justify-center rounded-full px-1.5 text-[10.5px] font-semibold text-white shadow-[0_0_0_4px_var(--board-card)]"
+                          style={{
+                            left: m.x,
+                            top: AXE_Y - 8,
+                            background: TON_POINT[m.tone],
+                          }}
+                        >
+                          {m.evenements.length}
+                        </span>
+                      ) : (
+                        <span
+                          className="absolute z-10 size-3.5 -translate-x-1/2 rounded-full shadow-[0_0_0_4px_var(--board-card)]"
+                          style={{
+                            left: m.x,
+                            top: AXE_Y - 7,
+                            background: TON_POINT[m.tone],
+                          }}
+                        />
+                      )}
+                      {/* La carte est centrée sur le point, mais bornée aux
+                          extrémités de l'axe : elle y glisse légèrement, le
+                          point reste à sa place. */}
+                      <Link
+                        href={
+                          grappe
+                            ? hrefCalendrier
+                            : `/etablissements/${bundle.etablissementId}/verifications/${m.evenements[0].id}`
+                        }
+                        title={m.evenements
+                          .map((e) => `${e.libelleDate} · ${e.libelle} — ${e.equipement}`)
+                          .join("\n")}
+                        className={
+                          "absolute w-[172px] -translate-x-1/2 rounded-[18px] px-[15px] py-3 text-center transition-opacity hover:opacity-85 " +
+                          (chaud
+                            ? "bg-[color:var(--board-signal-mid)]"
+                            : "bg-[color:var(--board-blue-pale)]")
+                        }
+                        style={{
+                          left: Math.min(
+                            Math.max(m.x, DEMI_CARTE),
+                            frise.largeur - DEMI_CARTE,
+                          ),
+                          ...(m.cote === "haut"
+                            ? { bottom: PISTE_HAUTEUR - 96 }
+                            : { top: 128 }),
+                        }}
+                      >
+                        <p
+                          className={
+                            "m-0 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] " +
+                            (chaud
+                              ? "text-[color:var(--board-signal-ink)]"
+                              : "text-[color:var(--board-ink)]")
+                          }
+                        >
+                          {m.titre}
+                        </p>
+                        <p
+                          className={
+                            "mt-[5px] text-[11.5px] font-semibold tracking-[0.06em] " +
+                            (chaud
+                              ? "text-[color:var(--board-signal-ink)]"
+                              : "text-[color:var(--board-blue-ink)]")
+                          }
+                        >
+                          {m.sousTitre}
+                        </p>
+                      </Link>
+                    </Fragment>
+                  );
+                })}
+              </div>
+
+              {/* Les graduations défilent avec l'axe : c'est ce qui permet
+                  de savoir où l'on est après trois écrans de défilement. */}
+              <div
+                className="relative mt-2.5 border-t border-[color:var(--board-grey-line)] pt-3.5"
+                style={{ width: frise.largeur, height: 34 }}
+              >
+                {frise.mois.map((m) => (
+                  <span
+                    key={m.cle}
+                    className={
+                      "absolute top-3.5 truncate border-l border-[color:var(--board-grey-line)] pl-2 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] " +
+                      (m.estMoisCourant
+                        ? "text-[color:var(--board-ink)]"
+                        : "text-[color:var(--board-grey-soft)]")
+                    }
+                    style={{ left: m.x, width: m.largeur }}
+                  >
+                    {m.label}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Les graduations s'alignent sur la piste, pas sur la carte : avec
-          une voie « En retard » à gauche, une ligne pleine largeur ferait
-          mentir les mois. */}
-      <div
-        className="mt-2.5 flex justify-between border-t border-[color:var(--board-grey-line)] pt-3.5 font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-grey-soft)]"
-        style={{
-          marginLeft:
-            frise.marqueurs.length > 0 && frise.nbEnRetard > 0
-              ? PISTE_DECALAGE
-              : 0,
-        }}
-      >
-        {frise.mois.map((m, i) => (
-          <span
-            key={m.label}
-            className={i === 0 ? "text-[color:var(--board-ink)]" : undefined}
-          >
-            {m.label}
-          </span>
-        ))}
-      </div>
-
-      {frise.nbMasques > 0 ? (
+      {vue === "frise" && frise.nbPlaces > frise.marqueurs.length ? (
+        // Rien n'est caché : ce qui est trop rapproché pour tenir en
+        // cartes distinctes est réuni en grappes. On le dit, sinon le
+        // pastillage numéroté ressemble à une décoration.
         <p className="mt-2 text-[11.5px] text-[color:var(--board-grey-soft)]">
-          {frise.nbMasques} autre{frise.nbMasques > 1 ? "s" : ""} échéance
-          {frise.nbMasques > 1 ? "s" : ""} sur la période, trop rapprochée
-          {frise.nbMasques > 1 ? "s" : ""} pour être placée
-          {frise.nbMasques > 1 ? "s" : ""} — voir le calendrier.
+          {frise.nbPlaces} échéances sur la période. Les plus rapprochées sont
+          groupées — {echelle === "mois" ? "zoomez sur « 90 jours »" : "ouvrez la vue calendrier"}{" "}
+          pour les détailler.
         </p>
       ) : null}
     </CarteBoard>

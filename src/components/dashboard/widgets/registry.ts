@@ -261,7 +261,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     id: "calendrier-type",
     titre: "La frise des échéances",
     description:
-      "Frise horizontale de vos vérifications, avec bascule 90 jours / 12 mois et les retards épinglés en tête.",
+      "Frise horizontale défilante de vos vérifications, de 3 mois en arrière à 24 mois en avant, avec zoom 90 jours / 12 mois et bascule en vue calendrier.",
     taille: "large",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",

@@ -4,6 +4,14 @@
 // Pure et déterministe : on lui passe la date du jour, on ne lit jamais
 // l'horloge ici — c'est ce qui rend la frise testable et le rendu stable
 // entre serveur et client.
+//
+// La frise n'est plus bornée à la largeur de la carte : l'axe est bien
+// plus long que ce qu'on voit (trois mois de passé, deux ans à venir) et
+// c'est le conteneur qui défile. Les positions sont donc exprimées en
+// **pixels** — un pixel vaut `pxParJour`, constant sur tout l'axe — et
+// non plus en pourcentage d'un horizon fixe. Conséquence utile : deux
+// échéances distantes de dix jours sont toujours à la même distance
+// visuelle, quel que soit l'horizon affiché.
 
 import { raccourcirLibelle } from "./libelles";
 
@@ -15,153 +23,266 @@ export type EvenementFrise = {
   equipement: string;
 };
 
-export type MarqueurFrise = {
+/** Une échéance, telle qu'elle apparaît dans une carte de la frise. */
+export type EvenementMarqueur = {
   id: string;
   libelle: string;
   equipement: string;
   tone: EvenementFrise["tone"];
-  /** Position sur l'axe, en pourcentage de l'horizon. */
-  pct: number;
-  /** Alternance au-dessus / au-dessous de l'axe, comme dans le design. */
-  cote: "haut" | "bas";
   /** « 24 SEPT. » */
   libelleDate: string;
+  passe: boolean;
+};
+
+export type MarqueurFrise = {
+  /** Clé stable, dérivée de la première échéance du marqueur. */
+  cle: string;
+  /** Les échéances portées par ce marqueur — une seule, ou une grappe. */
+  evenements: EvenementMarqueur[];
+  /** Le libellé de l'échéance si elle est seule, « 3 échéances » sinon. */
+  titre: string;
+  /** « 24 SEPT. », ou la plage « 6 → 24 JUIL. » pour une grappe. */
+  sousTitre: string;
+  /** Le ton le plus alarmant du groupe : une alerte ne se dilue pas. */
+  tone: EvenementFrise["tone"];
+  /** Position de la première échéance, en pixels depuis le début. */
+  x: number;
+  /** Position de la dernière — égale à `x` hors grappe. */
+  xFin: number;
+  /** Alternance au-dessus / au-dessous de l'axe, comme dans le design. */
+  cote: "haut" | "bas";
+  /** Toutes les échéances du marqueur sont derrière nous. */
+  passe: boolean;
+};
+
+export type GraduationMois = {
+  /** Clé stable « 2026-08 ». */
+  cle: string;
+  /** « Août » — l'année n'apparaît qu'en janvier et au premier mois. */
+  label: string;
+  x: number;
+  largeur: number;
+  estMoisCourant: boolean;
 };
 
 export type Frise = {
-  /** Événements déjà dépassés — épinglés en tête de frise. */
+  /** Premier jour de la fenêtre (1er du mois). */
+  debut: Date;
+  /** Dernier jour de la fenêtre (fin de mois). */
+  fin: Date;
+  /** Largeur totale de l'axe, en pixels. */
+  largeur: number;
+  /** Abscisse d'aujourd'hui — sert à cadrer le défilement à l'ouverture. */
+  xAujourdhui: number;
+  /** Événements déjà dépassés, y compris hors fenêtre. */
   nbEnRetard: number;
   marqueurs: MarqueurFrise[];
-  /** Événements dans l'horizon mais écartés faute de place. */
-  nbMasques: number;
-  mois: Array<{ label: string; pct: number }>;
+  /** Échéances placées sur l'axe — grappes comprises. */
+  nbPlaces: number;
+  mois: GraduationMois[];
 };
 
-/** Écart minimal entre deux marqueurs, en % de l'axe, pour rester lisible. */
-export const ECART_MIN_PCT = 13;
-/** Nombre maximal de marqueurs affichés simultanément. */
-export const MAX_MARQUEURS = 5;
+/**
+ * Écart minimal entre deux marqueurs consécutifs, en pixels.
+ *
+ * Les cartes font 172 px et alternent au-dessus / au-dessous de l'axe :
+ * deux voisines ne partagent donc jamais la même ligne, et il suffit que
+ * `i` et `i+2` ne se recouvrent pas — soit 88 px entre voisins. On prend
+ * 92 pour garder un filet d'air.
+ *
+ * C'est aussi le seuil de **regroupement** : deux échéances plus proches
+ * que ça ne peuvent pas être distinguées à l'œil, on les réunit dans une
+ * seule carte plutôt que d'en cacher une. À l'échelle « 12 mois », ce
+ * seuil vaut ~35 jours — le regroupement y est donc, de fait, mensuel ;
+ * à l'échelle « 90 jours » il vaut ~9 jours. Le regroupement suit ainsi
+ * ce que l'écran peut montrer, pas une règle de calendrier arbitraire.
+ */
+export const ECART_MIN_PX = 92;
+
+/** Échelles disponibles, en pixels par jour. */
+export const PX_PAR_JOUR = {
+  /** Vue serrée : ~90 jours dans une carte de 900 px. */
+  jours: 10,
+  /** Vue large : ~12 mois dans la même carte. */
+  mois: 2.6,
+} as const;
+
+export type EchelleFrise = keyof typeof PX_PAR_JOUR;
+
+/** Profondeur de passé consultable, en jours. */
+export const JOURS_AVANT = 90;
+/** Profondeur d'avenir consultable, en jours (~24 mois). */
+export const JOURS_APRES = 730;
 
 const JOUR_MS = 86400000;
 
+function minuit(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+/** Jours pleins entre deux dates — insensible aux changements d'heure. */
 function joursEntre(a: Date, b: Date): number {
-  return (b.getTime() - a.getTime()) / JOUR_MS;
+  return Math.round((minuit(b).getTime() - minuit(a).getTime()) / JOUR_MS);
 }
 
 function libelleDate(d: Date): string {
+  return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" })
+    .format(d)
+    .toUpperCase();
+}
+
+function libelleDateLong(d: Date): string {
   return new Intl.DateTimeFormat("fr-FR", {
     day: "numeric",
     month: "short",
+    year: "numeric",
   })
     .format(d)
     .toUpperCase();
 }
 
+function cap(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 export function construireFrise({
   evenements,
   aujourdhui,
-  horizonJours = 90,
+  echelle = "jours",
+  joursAvant = JOURS_AVANT,
+  joursApres = JOURS_APRES,
 }: {
   evenements: EvenementFrise[];
   aujourdhui: Date;
-  horizonJours?: number;
+  echelle?: EchelleFrise;
+  joursAvant?: number;
+  joursApres?: number;
 }): Frise {
-  const enRetard = evenements.filter((e) => joursEntre(aujourdhui, e.date) < 0);
+  const pxParJour = PX_PAR_JOUR[echelle];
 
-  const dansHorizon = evenements
-    .filter((e) => {
-      const j = joursEntre(aujourdhui, e.date);
-      return j >= 0 && j <= horizonJours;
-    })
+  // La fenêtre s'aligne sur des mois entiers : les graduations mensuelles
+  // sont alors des blocs pleins, jamais un « Août » tronqué à cinq jours.
+  const brutDebut = new Date(minuit(aujourdhui).getTime() - joursAvant * JOUR_MS);
+  const debut = new Date(brutDebut.getFullYear(), brutDebut.getMonth(), 1);
+  const brutFin = new Date(minuit(aujourdhui).getTime() + joursApres * JOUR_MS);
+  const fin = new Date(brutFin.getFullYear(), brutFin.getMonth() + 1, 0);
+
+  const x = (d: Date) => joursEntre(debut, d) * pxParJour;
+  const largeur = (joursEntre(debut, fin) + 1) * pxParJour;
+
+  const nbEnRetard = evenements.filter(
+    (e) => joursEntre(aujourdhui, e.date) < 0,
+  ).length;
+
+  const dansFenetre = evenements
+    .filter((e) => e.date >= debut && e.date <= fin)
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  // Sélection des marqueurs.
-  //
-  // Un filtre glouton « garde le premier, saute tout ce qui est trop
-  // proche » s'effondre sur une série régulière : huit échéances espacées
-  // de onze jours sur un axe de quatre-vingt-dix sont toutes sous le seuil
-  // d'écart, et l'on n'en affiche qu'une. On échantillonne donc d'abord de
-  // façon régulière sur toute la fenêtre, puis on ne recale que ce qui se
-  // chevauche encore.
-  const pctDe = (e: EvenementFrise) =>
-    (joursEntre(aujourdhui, e.date) / horizonJours) * 100;
-
-  const cible = Math.min(MAX_MARQUEURS, dansHorizon.length);
-  const echantillon: EvenementFrise[] = [];
-
-  if (cible > 0) {
-    // La première alerte de la fenêtre est retenue d'office : c'est
-    // l'information la moins remplaçable de la frise.
-    const premiereAlerte = dansHorizon.find((e) => e.tone === "alerte");
-    const indices = new Set<number>();
-    if (premiereAlerte) indices.add(dansHorizon.indexOf(premiereAlerte));
-
-    for (let i = 0; indices.size < cible && i < cible; i += 1) {
-      const idx =
-        cible === 1
-          ? 0
-          : Math.round((i * (dansHorizon.length - 1)) / (cible - 1));
-      indices.add(idx);
-    }
-
-    echantillon.push(
-      ...[...indices].sort((a, b) => a - b).map((i) => dansHorizon[i]),
-    );
-  }
-
-  // Anti-chevauchement sur l'échantillon retenu.
-  const retenus: EvenementFrise[] = [];
-  for (const e of echantillon) {
-    const dernier = retenus[retenus.length - 1];
-    if (!dernier || pctDe(e) - pctDe(dernier) >= ECART_MIN_PCT) {
-      retenus.push(e);
-    } else if (e.tone === "alerte" && dernier.tone !== "alerte") {
-      retenus[retenus.length - 1] = e;
+  // Regroupement : rien n'est écarté. Tout ce qui tomberait à moins de
+  // ECART_MIN_PX de la première échéance du groupe rejoint ce groupe, et
+  // la carte annonce alors un compte et une plage de dates au lieu d'un
+  // libellé. Le groupe suivant démarre forcément au-delà du seuil, donc
+  // deux cartes ne se recouvrent jamais.
+  const groupes: EvenementFrise[][] = [];
+  for (const e of dansFenetre) {
+    const groupe = groupes[groupes.length - 1];
+    if (groupe && x(e.date) - x(groupe[0].date) < ECART_MIN_PX) {
+      groupe.push(e);
+    } else {
+      groupes.push([e]);
     }
   }
 
-  const marqueurs: MarqueurFrise[] = retenus.map((e, i) => ({
-    id: e.id,
-    // Les cartes font 172 px : un libellé réglementaire entier s'y fait
-    // couper au milieu d'un mot.
-    libelle: raccourcirLibelle(e.libelle),
-    equipement: e.equipement,
-    tone: e.tone,
-    pct: Math.min(
-      100,
-      Math.max(0, (joursEntre(aujourdhui, e.date) / horizonJours) * 100),
-    ),
-    cote: i % 2 === 0 ? "haut" : "bas",
-    libelleDate: libelleDate(e.date),
-  }));
+  const marqueurs: MarqueurFrise[] = groupes.map((groupe, i) => {
+    const evenements: EvenementMarqueur[] = groupe.map((e) => ({
+      id: e.id,
+      // Les cartes font 172 px : un libellé réglementaire entier s'y fait
+      // couper au milieu d'un mot.
+      libelle: raccourcirLibelle(e.libelle),
+      equipement: e.equipement,
+      tone: e.tone,
+      libelleDate: libelleDate(e.date),
+      passe: joursEntre(aujourdhui, e.date) < 0,
+    }));
+    const premier = groupe[0];
+    const dernier = groupe[groupe.length - 1];
+
+    return {
+      cle: premier.id,
+      evenements,
+      titre:
+        groupe.length === 1
+          ? evenements[0].libelle
+          : `${groupe.length} échéances`,
+      sousTitre:
+        groupe.length === 1
+          ? libelleDateLong(premier.date)
+          : libellePlage(premier.date, dernier.date),
+      // Une alerte au milieu d'un groupe calme reste visible : c'est elle
+      // qui décide de la couleur de la carte.
+      tone: groupe.some((e) => e.tone === "alerte")
+        ? "alerte"
+        : groupe.some((e) => e.tone === "warn")
+          ? "warn"
+          : "ok",
+      x: x(premier.date),
+      xFin: x(dernier.date),
+      cote: i % 2 === 0 ? "haut" : "bas",
+      passe: evenements.every((e) => e.passe),
+    };
+  });
 
   return {
-    nbEnRetard: enRetard.length,
+    debut,
+    fin,
+    largeur,
+    xAujourdhui: x(aujourdhui),
+    nbEnRetard,
     marqueurs,
-    nbMasques: dansHorizon.length - retenus.length,
-    mois: construireMois(aujourdhui, horizonJours),
+    nbPlaces: dansFenetre.length,
+    mois: construireMois(debut, fin, aujourdhui, pxParJour),
   };
 }
 
-/** Graduations mensuelles : le mois courant, puis chaque 1er du mois. */
+/** « 24 SEPT. », « 6 → 24 JUIL. », « 28 JUIL. → 3 SEPT. ». */
+function libellePlage(debut: Date, fin: Date): string {
+  if (debut.getMonth() === fin.getMonth() && debut.getDate() === fin.getDate()) {
+    return libelleDate(debut);
+  }
+  if (debut.getMonth() === fin.getMonth()) {
+    return `${debut.getDate()} → ${libelleDate(fin)}`;
+  }
+  return `${libelleDate(debut)} → ${libelleDate(fin)}`;
+}
+
+/** Graduations mensuelles : un bloc par mois couvert par la fenêtre. */
 function construireMois(
+  debut: Date,
+  fin: Date,
   aujourdhui: Date,
-  horizonJours: number,
-): Array<{ label: string; pct: number }> {
+  pxParJour: number,
+): GraduationMois[] {
   const fmt = new Intl.DateTimeFormat("fr-FR", { month: "long" });
-  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const out: GraduationMois[] = [];
 
-  const out = [{ label: cap(fmt.format(aujourdhui)), pct: 0 }];
-
-  const curseur = new Date(
-    aujourdhui.getFullYear(),
-    aujourdhui.getMonth() + 1,
-    1,
-  );
-  while (joursEntre(aujourdhui, curseur) <= horizonJours) {
+  const curseur = new Date(debut.getFullYear(), debut.getMonth(), 1);
+  while (curseur <= fin) {
+    const finMois = new Date(curseur.getFullYear(), curseur.getMonth() + 1, 0);
+    const nbJours = finMois.getDate();
+    // L'année n'est rappelée qu'aux frontières : en janvier, et sur le
+    // premier bloc de la fenêtre — ailleurs elle ne fait qu'encombrer.
+    const marqueAnnee =
+      out.length === 0 || curseur.getMonth() === 0;
     out.push({
-      label: cap(fmt.format(curseur)),
-      pct: (joursEntre(aujourdhui, curseur) / horizonJours) * 100,
+      cle: `${curseur.getFullYear()}-${String(curseur.getMonth() + 1).padStart(2, "0")}`,
+      label: marqueAnnee
+        ? `${cap(fmt.format(curseur))} ${String(curseur.getFullYear()).slice(2)}`
+        : cap(fmt.format(curseur)),
+      x: joursEntre(debut, curseur) * pxParJour,
+      largeur: nbJours * pxParJour,
+      estMoisCourant:
+        curseur.getFullYear() === aujourdhui.getFullYear() &&
+        curseur.getMonth() === aujourdhui.getMonth(),
     });
     curseur.setMonth(curseur.getMonth() + 1);
   }

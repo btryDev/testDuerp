@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   construireFrise,
-  ECART_MIN_PCT,
-  MAX_MARQUEURS,
+  ECART_MIN_PX,
+  PX_PAR_JOUR,
   type EvenementFrise,
 } from "./frise";
 
@@ -13,40 +13,95 @@ function ev(
   dansNJours: number,
   tone: EvenementFrise["tone"] = "ok",
 ): EvenementFrise {
+  const d = new Date(LE_8_AOUT);
+  d.setDate(d.getDate() + dansNJours);
   return {
     id,
     libelle: `Événement ${id}`,
     equipement: `Équipement ${id}`,
     tone,
-    date: new Date(LE_8_AOUT.getTime() + dansNJours * 86400000),
+    date: d,
   };
 }
 
-const frise = (evenements: EvenementFrise[], horizonJours = 90) =>
-  construireFrise({ evenements, aujourdhui: LE_8_AOUT, horizonJours });
+const frise = (
+  evenements: EvenementFrise[],
+  echelle: "jours" | "mois" = "jours",
+) => construireFrise({ evenements, aujourdhui: LE_8_AOUT, echelle });
 
-describe("construireFrise — retards", () => {
-  it("épingle les événements passés hors de l'axe", () => {
-    const f = frise([ev("a", -5), ev("b", -1), ev("c", 20)]);
-    expect(f.nbEnRetard).toBe(2);
-    expect(f.marqueurs.map((m) => m.id)).toEqual(["c"]);
+/** Distance en pixels correspondant à N jours à l'échelle « jours ». */
+const px = (jours: number) => jours * PX_PAR_JOUR.jours;
+
+describe("construireFrise — fenêtre", () => {
+  it("ouvre trois mois avant et deux ans après, sur des mois entiers", () => {
+    const f = frise([]);
+    // 8 août − 90 j = 10 mai → la fenêtre démarre au 1er mai.
+    expect(f.debut).toEqual(new Date(2026, 4, 1));
+    // 8 août + 730 j = 8 août 2028 → la fenêtre finit fin août 2028.
+    expect(f.fin).toEqual(new Date(2028, 7, 31));
   });
 
-  it("place un événement du jour à l'origine de l'axe", () => {
-    expect(frise([ev("a", 0)]).marqueurs[0].pct).toBe(0);
+  it("place aujourd'hui à sa distance réelle du début de fenêtre", () => {
+    // Du 1er mai au 8 août 2026 : 31 + 30 + 31 + 7 = 99 jours.
+    expect(frise([]).xAujourdhui).toBe(px(99));
+  });
+
+  it("dimensionne l'axe sur la fenêtre entière", () => {
+    const f = frise([]);
+    expect(f.largeur).toBeGreaterThan(f.xAujourdhui);
+    // Somme des blocs mensuels = largeur totale de l'axe.
+    const somme = f.mois.reduce((t, m) => t + m.largeur, 0);
+    expect(somme).toBeCloseTo(f.largeur, 5);
+  });
+
+  it("resserre l'axe à l'échelle « mois »", () => {
+    expect(frise([], "mois").largeur).toBeCloseTo(
+      (frise([]).largeur * PX_PAR_JOUR.mois) / PX_PAR_JOUR.jours,
+      5,
+    );
+  });
+});
+
+describe("construireFrise — retards", () => {
+  it("compte les événements passés et les garde sur l'axe", () => {
+    const f = frise([ev("a", -30), ev("b", -12), ev("c", 20)]);
+    expect(f.nbEnRetard).toBe(2);
+    // Le passé est désormais consultable : on défile vers la gauche.
+    expect(f.marqueurs.map((m) => m.cle)).toEqual(["a", "b", "c"]);
+    expect(f.marqueurs.map((m) => m.passe)).toEqual([true, true, false]);
+  });
+
+  it("compte les retards antérieurs à la fenêtre sans les placer", () => {
+    const f = frise([ev("vieux", -400), ev("recent", -10), ev("c", 20)]);
+    expect(f.nbEnRetard).toBe(2);
+    expect(f.marqueurs.map((m) => m.cle)).toEqual(["recent", "c"]);
+    expect(f.nbPlaces).toBe(2);
+  });
+
+  it("ne marque « passé » qu'une grappe entièrement derrière nous", () => {
+    // Une grappe à cheval sur aujourd'hui reste une échéance à venir.
+    const f = frise([ev("hier", -1), ev("demain", 1)]);
+    expect(f.marqueurs).toHaveLength(1);
+    expect(f.marqueurs[0].passe).toBe(false);
   });
 });
 
 describe("construireFrise — placement", () => {
-  it("positionne en pourcentage de l'horizon", () => {
+  it("positionne en pixels proportionnels au nombre de jours", () => {
     const f = frise([ev("a", 45)]);
-    expect(f.marqueurs[0].pct).toBeCloseTo(50, 5);
+    expect(f.marqueurs[0].x).toBe(frise([]).xAujourdhui + px(45));
   });
 
-  it("ignore ce qui dépasse l'horizon", () => {
-    const f = frise([ev("a", 30), ev("b", 120)]);
-    expect(f.marqueurs.map((m) => m.id)).toEqual(["a"]);
-    expect(f.nbMasques).toBe(0);
+  it("ignore ce qui dépasse la fenêtre", () => {
+    const f = frise([ev("a", 30), ev("b", 900)]);
+    expect(f.marqueurs.map((m) => m.cle)).toEqual(["a"]);
+    expect(f.nbPlaces).toBe(1);
+  });
+
+  it("garde les échéances lointaines, désormais atteignables au défilement", () => {
+    // 400 jours : hors des anciens 90 j comme des anciens 365 j.
+    const f = frise([ev("a", 400)]);
+    expect(f.marqueurs.map((m) => m.cle)).toEqual(["a"]);
   });
 
   it("alterne les côtés pour éviter le chevauchement", () => {
@@ -61,93 +116,121 @@ describe("construireFrise — placement", () => {
 
   it("trie par date même si l'entrée ne l'est pas", () => {
     const f = frise([ev("c", 60), ev("a", 10), ev("b", 35)]);
-    expect(f.marqueurs.map((m) => m.id)).toEqual(["a", "b", "c"]);
+    expect(f.marqueurs.map((m) => m.cle)).toEqual(["a", "b", "c"]);
   });
 
-  it("formate la date en libellé court majuscule", () => {
+  it("titre une échéance seule par son libellé et sa date complète", () => {
     // 8 août + 47 j = 24 septembre 2026
-    expect(frise([ev("a", 47)]).marqueurs[0].libelleDate).toBe("24 SEPT.");
+    const m = frise([ev("a", 47)]).marqueurs[0];
+    expect(m.titre).toBe("Événement a");
+    expect(m.sousTitre).toBe("24 SEPT. 2026");
+    expect(m.evenements[0].libelleDate).toBe("24 SEPT.");
   });
 });
 
-describe("construireFrise — dégraissage", () => {
-  it("écarte les événements trop rapprochés et le dit", () => {
-    // 4 événements sur 9 jours : moins de ECART_MIN_PCT % d'écart chacun.
+describe("construireFrise — regroupement", () => {
+  it("réunit les échéances trop rapprochées au lieu d'en cacher", () => {
+    // 4 événements sur 9 jours, soit 90 px : sous le seuil d'écart.
     const f = frise([ev("a", 1), ev("b", 3), ev("c", 6), ev("d", 9)]);
     expect(f.marqueurs).toHaveLength(1);
-    expect(f.nbMasques).toBe(3);
+    expect(f.marqueurs[0].evenements.map((e) => e.id)).toEqual([
+      "a",
+      "b",
+      "c",
+      "d",
+    ]);
+    // Rien n'est perdu : le compte placé égale le compte entrant.
+    expect(f.nbPlaces).toBe(4);
+  });
+
+  it("annonce le compte et la plage de dates d'une grappe", () => {
+    const f = frise([ev("a", 1), ev("b", 6)]);
+    expect(f.marqueurs[0].titre).toBe("2 échéances");
+    // 9 → 14 août : même mois, le mois n'est écrit qu'une fois.
+    expect(f.marqueurs[0].sousTitre).toBe("9 → 14 AOÛT");
+  });
+
+  it("écrit les deux mois quand la grappe est à cheval", () => {
+    const f = frise([ev("a", 22), ev("b", 26)], "mois");
+    expect(f.marqueurs[0].sousTitre).toBe("30 AOÛT → 3 SEPT.");
   });
 
   it("respecte le seuil d'écart minimal", () => {
-    const jours = Math.ceil((ECART_MIN_PCT / 100) * 90) + 1;
+    const jours = Math.ceil(ECART_MIN_PX / PX_PAR_JOUR.jours);
     const f = frise([ev("a", 0), ev("b", jours)]);
     expect(f.marqueurs).toHaveLength(2);
   });
 
-  it("étale la sélection sur une série régulière", () => {
-    // Régression : huit échéances tous les 11 jours sont toutes sous le
-    // seuil d'écart. Un filtre glouton n'en gardait qu'une et masquait les
-    // sept autres — la frise paraissait vide alors qu'elle était pleine.
-    const evs = Array.from({ length: 8 }, (_, i) => ev(`e${i}`, 4 + i * 11));
+  it("borne la grappe sur sa première échéance, pas en chaîne", () => {
+    // Régression possible d'un regroupement « de proche en proche » :
+    // dix échéances espacées de 8 jours n'en feraient qu'une seule grappe
+    // de bout en bout. Le seuil se mesure depuis la tête du groupe.
+    const evs = Array.from({ length: 10 }, (_, i) => ev(`e${i}`, i * 8));
     const f = frise(evs);
-    // 4 et non 5 : l'échantillonnage régulier en propose 5, dont deux
-    // finissent à 12 % l'un de l'autre — l'anti-chevauchement en écarte un.
-    expect(f.marqueurs).toHaveLength(4);
-    expect(f.nbMasques).toBe(4);
-    // Ce qui compte : la sélection couvre toute la largeur de l'axe.
-    expect(f.marqueurs[0].pct).toBeLessThan(15);
-    expect(f.marqueurs[f.marqueurs.length - 1].pct).toBeGreaterThan(80);
+    expect(f.marqueurs.length).toBeGreaterThan(3);
+    for (const m of f.marqueurs) {
+      expect(m.xFin - m.x).toBeLessThan(ECART_MIN_PX);
+    }
+  });
+
+  it("ne plafonne plus le nombre de marqueurs", () => {
+    // Régression : la frise n'affichait que 5 marqueurs, quelle que soit
+    // la charge. L'axe défilant, tout ce qui est lisible est affiché.
+    const evs = Array.from({ length: 12 }, (_, i) => ev(`e${i}`, i * 14));
+    const f = frise(evs);
+    expect(f.marqueurs).toHaveLength(12);
   });
 
   it("garde tous les événements quand ils sont peu nombreux et espacés", () => {
     const f = frise([ev("a", 5), ev("b", 30), ev("c", 60)]);
-    expect(f.marqueurs.map((m) => m.id)).toEqual(["a", "b", "c"]);
-    expect(f.nbMasques).toBe(0);
+    expect(f.marqueurs.map((m) => m.cle)).toEqual(["a", "b", "c"]);
+    expect(f.marqueurs.every((m) => m.evenements.length === 1)).toBe(true);
   });
 
-  it("plafonne le nombre de marqueurs et comptabilise le reste", () => {
-    // 9 événements espacés de 14 j : 7 tombent dans les 90 jours, on en
-    // affiche 5. `nbMasques` ne compte que les 2 écartés de l'horizon —
-    // pas les 2 qui sont simplement hors fenêtre.
-    const evs = Array.from({ length: 9 }, (_, i) => ev(`e${i}`, i * 14));
-    const f = frise(evs);
-    expect(f.marqueurs).toHaveLength(MAX_MARQUEURS);
-    expect(f.nbMasques).toBe(2);
+  it("regroupe par mois à l'échelle « 12 mois », par jours à l'échelle serrée", () => {
+    // 30 jours = 78 px à l'échelle mois : sous le seuil, donc une grappe
+    // — alors que la vue serrée les distingue.
+    const evs = [ev("a", 10), ev("b", 40)];
+    expect(frise(evs, "mois").marqueurs).toHaveLength(1);
+    expect(frise(evs).marqueurs).toHaveLength(2);
   });
 
-  it("laisse une alerte prendre la place d'un événement calme voisin", () => {
+  it("laisse l'alerte donner son ton à toute la grappe", () => {
     const f = frise([ev("calme", 2, "ok"), ev("urgent", 4, "alerte")]);
-    expect(f.marqueurs.map((m) => m.id)).toEqual(["urgent"]);
+    expect(f.marqueurs).toHaveLength(1);
+    expect(f.marqueurs[0].tone).toBe("alerte");
   });
 
-  it("ne remplace pas une alerte par une autre alerte voisine", () => {
-    const f = frise([ev("premier", 2, "alerte"), ev("second", 4, "alerte")]);
-    expect(f.marqueurs.map((m) => m.id)).toEqual(["premier"]);
+  it("ne surclasse pas un groupe calme", () => {
+    const f = frise([ev("a", 2, "ok"), ev("b", 4, "warn")]);
+    expect(f.marqueurs[0].tone).toBe("warn");
   });
 });
 
 describe("construireFrise — graduations", () => {
-  it("ouvre sur le mois courant à l'origine", () => {
-    expect(frise([]).mois[0]).toEqual({ label: "Août", pct: 0 });
+  it("gradue chaque mois de la fenêtre, du premier au dernier", () => {
+    const mois = frise([]).mois;
+    expect(mois[0].cle).toBe("2026-05");
+    expect(mois[mois.length - 1].cle).toBe("2028-08");
+    expect(mois).toHaveLength(28);
   });
 
-  it("gradue chaque 1er du mois compris dans l'horizon", () => {
-    expect(frise([]).mois.map((m) => m.label)).toEqual([
-      "Août",
-      "Septembre",
-      "Octobre",
-      "Novembre",
-    ]);
+  it("rappelle l'année au premier bloc et à chaque janvier", () => {
+    const mois = frise([]).mois;
+    expect(mois[0].label).toBe("Mai 26");
+    expect(mois[1].label).toBe("Juin");
+    expect(mois.find((m) => m.cle === "2027-01")?.label).toBe("Janvier 27");
   });
 
-  it("suit l'horizon quand il change", () => {
-    expect(frise([], 30).mois.map((m) => m.label)).toEqual(["Août", "Septembre"]);
+  it("marque le mois courant", () => {
+    const courants = frise([]).mois.filter((m) => m.estMoisCourant);
+    expect(courants.map((m) => m.cle)).toEqual(["2026-08"]);
   });
 
-  it("garde les graduations dans l'axe", () => {
-    for (const m of frise([]).mois) {
-      expect(m.pct).toBeGreaterThanOrEqual(0);
-      expect(m.pct).toBeLessThanOrEqual(100);
-    }
+  it("dimensionne chaque bloc sur le nombre de jours du mois", () => {
+    const mai = frise([]).mois[0];
+    expect(mai.x).toBe(0);
+    expect(mai.largeur).toBe(px(31));
+    expect(frise([]).mois[1].x).toBe(px(31));
   });
 });
