@@ -36,6 +36,7 @@ export default async function EtablissementLayout({
       adresse: true,
       effectifSurSite: true,
       entrepriseId: true,
+      estERP: true,
     },
   });
   if (!etab) notFound();
@@ -43,13 +44,27 @@ export default async function EtablissementLayout({
   // Counts pour les badges de la sidebar — lecture séparée pour pouvoir
   // paralléliser si besoin (aujourd'hui dashboard fait déjà ces queries
   // pour ses widgets, idempotent tant qu'on n'abuse pas).
-  const [dashboard, prestatairesAlertes, nbEquipements, risquesAReevaluer] =
-    await Promise.all([
-      getDashboardData(id),
-      countAlertesVigilance(id),
-      prisma.equipement.count({ where: { etablissementId: id } }),
-      countRisquesAReevaluer(id),
-    ]);
+  // `profil` : faits déclarés qui décident quels registres de domaine sont
+  // mis en avant dans le rail et lesquels sont repliés (cf. sidebar-nav.ts).
+  const [
+    dashboard,
+    prestatairesAlertes,
+    nbEquipements,
+    risquesAReevaluer,
+    aRegistreAccessibilite,
+    nbPermisFeu,
+    nbPlansPrevention,
+    aCarnetSanitaire,
+  ] = await Promise.all([
+    getDashboardData(id),
+    countAlertesVigilance(id),
+    prisma.equipement.count({ where: { etablissementId: id } }),
+    countRisquesAReevaluer(id),
+    prisma.registreAccessibilite.count({ where: { etablissementId: id } }),
+    prisma.permisFeu.count({ where: { etablissementId: id } }),
+    prisma.planPrevention.count({ where: { etablissementId: id } }),
+    prisma.carnetSanitaire.count({ where: { etablissementId: id } }),
+  ]);
 
   return (
     <div className="grid min-h-screen grid-cols-1 lg:h-screen lg:grid-cols-[248px_1fr] lg:overflow-hidden">
@@ -63,6 +78,13 @@ export default async function EtablissementLayout({
             dashboard.compteurs.actionsEnCours,
           prestatairesAlertes,
           risquesAReevaluer,
+        }}
+        profil={{
+          estERP: etab.estERP,
+          aRegistreAccessibilite: aRegistreAccessibilite > 0,
+          nbPermisFeu,
+          nbPlansPrevention,
+          aCarnetSanitaire: aCarnetSanitaire > 0,
         }}
         user={user}
       />
