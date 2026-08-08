@@ -7,6 +7,7 @@ import {
   type EtapeOnboarding,
 } from "@/components/layout/OnboardingChecklist";
 import { DashboardGrid } from "@/components/dashboard/widgets/DashboardGrid";
+import { BlocBrief } from "@/components/dashboard/widgets/impl/board";
 import type { DashboardBundle } from "@/components/dashboard/widgets/types";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
@@ -218,9 +219,16 @@ export default async function EtablissementPage({
         }
       />
 
-      {/* Canvas bleu du board éditorial — porté par le seul tableau de
-          bord, le reste de l'app garde la palette « papier ». */}
-      <div className="flex min-h-full flex-col bg-[color:var(--board-canvas)] pb-8">
+      {/* Le brief est une section à part entière : bandeau blanc pleine
+          largeur, sans rayon, hors du canvas bleu. Le laisser à
+          l'intérieur du bleu le faisait ressembler à un bloc posé dessus,
+          avec du canvas visible autour. */}
+      <BlocBrief bundle={bundle} />
+
+      {/* Canvas bleu du board — `flex-1` pour qu'il descende jusqu'au bas
+          du conteneur de défilement, même quand les widgets sont courts.
+          Le reste de l'app garde la palette « papier ». */}
+      <div className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-10">
         {!onboardingFini ? (
           <div className="p-[var(--board-gutter)] pb-0">
             <OnboardingChecklist

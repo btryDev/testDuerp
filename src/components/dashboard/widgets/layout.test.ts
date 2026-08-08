@@ -31,8 +31,9 @@ describe("registre de widgets", () => {
   });
 
   it("le layout par défaut est le board éditorial, dans l'ordre", () => {
+    // Le brief n'y figure pas : c'est le bandeau de tête de la page, pas
+    // un widget — ni déplaçable, ni retirable.
     expect(layoutParDefaut().map((i) => i.widgetId)).toEqual([
-      "brief",
       "calendrier-type",
       "countdown",
       "actions-retard",
@@ -44,30 +45,33 @@ describe("registre de widgets", () => {
   });
 
   it("le board tient exactement sur la grille 6 colonnes", () => {
-    // brief (6) · frise (6) · puis trois rangées de deux medium (3+3).
-    const cols = layoutParDefaut().map((i) => tailleEnCol(REGISTRY[i.widgetId].taille));
-    expect(cols).toEqual([6, 6, 3, 3, 3, 3, 3, 3]);
+    // frise (6) · puis trois rangées de deux medium (3+3).
+    const cols = layoutParDefaut().map(
+      (i) => tailleEnCol(REGISTRY[i.widgetId].taille),
+    );
+    expect(cols).toEqual([6, 3, 3, 3, 3, 3, 3]);
     expect(cols.reduce((a, b) => a + b, 0) % 6).toBe(0);
   });
 
-  it("un seul widget est obligatoire — l'ancre éditoriale du board", () => {
+  it("aucun widget n'est obligatoire", () => {
+    // L'ancre du tableau de bord est le brief, qui vit hors du registre :
+    // plus rien n'a besoin d'être réinjecté de force dans le layout.
     const obligatoires = Object.values(REGISTRY)
       .filter((d) => d.obligatoire)
       .map((d) => d.id);
-    expect(obligatoires).toEqual(["brief"]);
+    expect(obligatoires).toEqual([]);
   });
 });
 
 describe("useLayoutPerso — migration et normalisation", () => {
-  // Le widget « brief » est obligatoire et réinjecté en tête s'il manque
-  // au layout persisté. Les tests qui ne veulent pas s'en soucier
-  // l'incluent explicitement en entrée.
+  // Plus aucun widget n'est obligatoire depuis que le brief est sorti du
+  // registre : un layout personnalisé est restitué tel quel.
 
   it("migre un layout v1 valide sans le modifier", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
-        { widgetId: "brief", variant: "default" },
+        { widgetId: "indicateurs", variant: "default" },
         { widgetId: "score", variant: "anneau" },
         { widgetId: "bars-obligations", variant: "radial" },
       ],
@@ -77,7 +81,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     expect(sortie?.version).toBe(SCHEMA_VERSION);
     expect(sortie?.items).toHaveLength(3);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
-      "brief",
+      "indicateurs",
       "score",
       "bars-obligations",
     ]);
@@ -87,21 +91,24 @@ describe("useLayoutPerso — migration et normalisation", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
-        { widgetId: "brief", variant: "default" },
+        { widgetId: "indicateurs", variant: "default" },
         { widgetId: "score", variant: "anneau" },
         { widgetId: "widget-obsolete-v0", variant: "default" },
       ],
     };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.items).toHaveLength(2);
-    expect(sortie?.items.map((i) => i.widgetId)).toEqual(["brief", "score"]);
+    expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "indicateurs",
+      "score",
+    ]);
   });
 
   it("remplace un variant inexistant par le variant par défaut", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
-        { widgetId: "brief", variant: "default" },
+        { widgetId: "indicateurs", variant: "default" },
         { widgetId: "bars-obligations", variant: "fantaisie-inconnue" },
       ],
     };
@@ -127,7 +134,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
-        { widgetId: "brief", variant: "default" },
+        { widgetId: "indicateurs", variant: "default" },
         { widgetId: "guide", variant: "default" },
         { widgetId: "score", variant: "nombre" },
         { widgetId: "registre", variant: "default" },
@@ -135,14 +142,14 @@ describe("useLayoutPerso — migration et normalisation", () => {
     };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
-      "brief",
+      "indicateurs",
       "guide",
       "score",
       "registre",
     ]);
   });
 
-  it("ré-injecte les widgets obligatoires manquants en tête", () => {
+  it("n'injecte plus rien de force dans un layout personnalisé", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
@@ -151,10 +158,6 @@ describe("useLayoutPerso — migration et normalisation", () => {
       ],
     };
     const sortie = __internal.migrerLayout(entree);
-    expect(sortie?.items.map((i) => i.widgetId)).toEqual([
-      "brief",
-      "guide",
-      "score",
-    ]);
+    expect(sortie?.items.map((i) => i.widgetId)).toEqual(["guide", "score"]);
   });
 });

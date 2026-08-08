@@ -102,7 +102,7 @@
   /* Gouttière extérieure du board. Un seul endroit à régler : le hero
      s'en sert en marge négative pour son plein-fer, la grille et la
      pastille « Organiser » s'y alignent. */
-  --board-gutter: 24px;
+  --board-gutter: 32px;
   --board-canvas: #d3e7f7;
   --board-ink: #0a0a0a;
   --board-card: #ffffff;

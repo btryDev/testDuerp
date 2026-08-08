@@ -16,7 +16,6 @@ export type Taille = "small" | "medium" | "large";
 // small = 2 col · medium = 3 col · large = 6 col (grille à 6 colonnes)
 
 export type WidgetId =
-  | "brief"
   | "etablissement"
   | "score"
   | "indicateurs"

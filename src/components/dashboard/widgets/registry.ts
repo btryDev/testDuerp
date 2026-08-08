@@ -26,7 +26,6 @@ import {
 } from "./impl/groupes";
 import {
   BlocActionsEnRetard,
-  BlocBrief,
   BlocCeQuiAChange,
   BlocControle,
   BlocDocuments,
@@ -40,25 +39,11 @@ import { WidgetMeteo } from "./impl/meteo";
 import type { LayoutItem, WidgetDefinition, WidgetId } from "./types";
 
 export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
-  brief: {
-    id: "brief",
-    titre: "Le brief",
-    description:
-      "Bloc éditorial de tête : la date, la phrase qui résume la semaine, et les deux gestes à faire maintenant. Tout est déduit de vos compteurs.",
-    taille: "large",
-    variants: [{ id: "default", label: "Défaut" }],
-    defaultVariant: "default",
-    Component: BlocBrief,
-    // Ancre éditoriale du board : c'est le bloc qui répond à « qu'est-ce
-    // que je dois faire ». L'identité de l'établissement, qui portait ce
-    // rôle avant, vit désormais dans le rail de navigation.
-    obligatoire: true,
-  },
   etablissement: {
     id: "etablissement",
     titre: "Identité établissement",
     description:
-      "Carte d'identité de l'établissement — raison, adresse, effectif, NAF/SIRET, régimes, avec un CTA vers un préventeur. Widget obligatoire, non retirable.",
+      "Carte d'identité de l'établissement — raison, adresse, effectif, NAF/SIRET, régimes, avec un CTA vers un préventeur.",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
@@ -351,18 +336,17 @@ export function variantValide(
 
 /**
  * Ordre canonique du layout par défaut — le « board éditorial » (4a).
+ * Le brief n'y figure pas : c'est le bandeau de tête, rendu par la page.
  * Grille 6 colonnes :
- *   row 1 : le brief          (6)
- *   row 2 : la frise          (6)
- *   row 3 : prochaine échéance (3) + actions en retard (3)
- *   row 4 : plan d'actions     (3) + documents         (3)
- *   row 5 : ce qui a changé    (3) + préparer un contrôle (3)
+ *   row 1 : la frise          (6)
+ *   row 2 : prochaine échéance (3) + actions en retard (3)
+ *   row 3 : plan d'actions     (3) + documents         (3)
+ *   row 4 : ce qui a changé    (3) + préparer un contrôle (3)
  *
  * Tout le reste du registre demeure disponible dans le tiroir
  * « Ajouter un widget » — le board est un point de départ, pas un mur.
  */
 const ORDRE_DEFAUT: WidgetId[] = [
-  "brief",
   "calendrier-type",
   "countdown",
   "actions-retard",

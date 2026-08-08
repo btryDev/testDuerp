@@ -133,6 +133,13 @@ function Lien({
 
 /* ─── 1 · Le brief ──────────────────────────────────────────── */
 
+/**
+ * Le brief n'est pas un widget : c'est le bandeau de tête du tableau de
+ * bord, rendu par la page au-dessus de la grille. Il occupe donc toute la
+ * largeur, sans gouttière ni rayon — le canvas bleu ne commence qu'en
+ * dessous. Il n'est ni déplaçable ni retirable, et c'est voulu : c'est lui
+ * qui répond à « qu'est-ce que je dois faire aujourd'hui ».
+ */
 export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
   const { dashboard, nbRapports, aujourdhui } = bundle;
   const brief = construireBrief({
@@ -144,10 +151,11 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
   });
 
   return (
-    // Plein-fer : le bandeau blanc mord sur le padding du board et touche
-    // les bords, le canvas bleu ne commence qu'en dessous. C'est le
-    // `margin:-12px -12px 0` du design.
-    <div className="-mx-[var(--board-gutter)] -mt-[var(--board-gutter)] grid items-center gap-9 bg-[color:var(--board-card)] px-[46px] pb-[50px] pt-[56px] lg:grid-cols-[1.15fr_.85fr]">
+    // Écart assumé au mockup, qui pose le bandeau en plein-fer : ici il
+    // reste dans la gouttière, comme tous les autres blocs, pour que le
+    // canvas bleu encadre le board sur ses quatre côtés — y compris le
+    // long du rail noir.
+    <div className="grid items-center gap-9 bg-[color:var(--board-card)] px-[46px] pb-[50px] pt-[52px] lg:grid-cols-[1.15fr_.85fr]">
       <div>
         <span className="inline-block rounded-full bg-[color:var(--board-blue-pale)] px-[14px] py-[6px] text-[11.5px] font-semibold tracking-[0.06em] text-[color:var(--board-blue-ink)]">
           {brief.datePill}
