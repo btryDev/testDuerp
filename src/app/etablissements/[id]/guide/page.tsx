@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { AppTopbar } from "@/components/layout/AppTopbar";
+import { ChezVous } from "@/components/guide/ChezVous";
 import { GReveal } from "@/components/guide/GReveal";
 import { GuideHero } from "@/components/guide/GuideHero";
 import { OutilsConformite } from "@/components/guide/OutilsConformite";
@@ -11,6 +12,8 @@ import { EnCasControle } from "@/components/guide/EnCasControle";
 import { SourcesBloc } from "@/components/guide/SourcesBloc";
 import { PrintButton } from "@/components/guide/PrintButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
+import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
+import { construireChezVous } from "@/lib/guide/chez-vous";
 
 export const metadata = {
   title: "Comprendre vos obligations — Conformité santé-sécurité",
@@ -29,6 +32,41 @@ export default async function GuidePage({
   const { id } = await params;
   const etab = await getEtablissement(id);
   if (!etab) notFound();
+
+  // Section personnalisée « Chez vous » : résolution déterministe des
+  // obligations sur les déclarations réelles (même projection que le
+  // générateur de calendrier).
+  const equipements = await listerEquipementsDeLEtablissement(id);
+  const chezVous = construireChezVous(
+    {
+      id: etab.id,
+      effectifSurSite: etab.effectifSurSite,
+      estEtablissementTravail: etab.estEtablissementTravail,
+      estERP: etab.estERP,
+      estIGH: etab.estIGH,
+      estHabitation: etab.estHabitation,
+      typeErp: etab.typeErp,
+      categorieErp: etab.categorieErp,
+      classeIgh: etab.classeIgh,
+    },
+    equipements.map((eq) => ({
+      id: eq.id,
+      libelle: eq.libelle,
+      categorie: eq.categorie,
+      caracteristiques: (eq.caracteristiques ?? null) as Record<
+        string,
+        unknown
+      > | null,
+    })),
+  );
+
+  const regimes: string[] = [];
+  if (etab.estEtablissementTravail) regimes.push("Travail");
+  if (etab.estERP)
+    regimes.push(etab.categorieErp ? `ERP · ${etab.categorieErp}` : "ERP");
+  if (etab.estIGH)
+    regimes.push(etab.classeIgh ? `IGH · ${etab.classeIgh}` : "IGH");
+  if (etab.estHabitation) regimes.push("Habitation");
 
   return (
     <>
@@ -55,6 +93,15 @@ export default async function GuidePage({
       <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-20 px-6 py-10 pb-16 sm:gap-24 sm:px-10 sm:py-12">
         <GReveal delay={0}>
           <GuideHero />
+        </GReveal>
+
+        <GReveal delay={60}>
+          <ChezVous
+            data={chezVous}
+            etablissementId={id}
+            raisonDisplay={etab.raisonDisplay}
+            regimes={regimes}
+          />
         </GReveal>
 
         <GReveal delay={80}>

@@ -1,0 +1,192 @@
+import Link from "next/link";
+import { LegalBadge } from "@/components/ui-kit/LegalBadge";
+import {
+  LABEL_DOMAINE,
+  LABEL_PERIODICITE,
+  LABEL_REALISATEUR,
+} from "@/lib/calendrier/labels";
+import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
+import {
+  SEUIL_MAJ_ANNUELLE_DUERP,
+  type ChezVous as ChezVousData,
+} from "@/lib/guide/chez-vous";
+
+/**
+ * « Chez vous, concrètement » — la seule section personnalisée de la page
+ * Comprendre. Tout le reste du guide énonce des règles générales ; ici,
+ * chaque règle est résolue contre les déclarations réelles de
+ * l'établissement (effectif, régimes, équipements), via le moteur de
+ * matching — déterministe et sourcé.
+ *
+ * Garde-fou : on liste ce qui découle des déclarations, on ne dit jamais
+ * « vous êtes conforme ». Les absences sont dites (équipement déclaré qui
+ * ne déclenche rien), jamais masquées.
+ */
+export function ChezVous({
+  data,
+  etablissementId,
+  raisonDisplay,
+  regimes,
+}: {
+  data: ChezVousData;
+  etablissementId: string;
+  raisonDisplay: string;
+  /** Libellés courts des régimes déclarés, ex. ["Travail", "ERP · N5"]. */
+  regimes: string[];
+}) {
+  const base = `/etablissements/${etablissementId}`;
+
+  return (
+    <section>
+      <header className="mb-8">
+        <p className="g-kicker">§ Chez vous, concrètement</p>
+        <h2 className="g-h2 mt-3 max-w-[22ch]">
+          Vos obligations,
+          <br />
+          <span className="g-h2-em">résolues sur vos déclarations.</span>
+        </h2>
+        <p className="outils-intro-text mt-5">
+          Ce que vous lisez ici est calculé depuis votre dossier —{" "}
+          <strong>{raisonDisplay}</strong>, {data.duerp.effectif} salarié
+          {data.duerp.effectif > 1 ? "s" : ""} sur site
+          {regimes.length > 0 ? <> · {regimes.join(" · ")}</> : null}. Chaque
+          règle cite sa source ; modifiez vos déclarations et cette section
+          se recalcule.
+        </p>
+      </header>
+
+      {/* DUERP : seuil résolu */}
+      <div className="cartouche px-6 py-5 sm:px-8">
+        <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+          DUERP — rythme de mise à jour
+        </p>
+        <p className="mt-2 max-w-3xl text-[0.95rem] leading-relaxed">
+          Le document unique est obligatoire dès le premier salarié. Avec{" "}
+          <strong>
+            {data.duerp.effectif} salarié{data.duerp.effectif > 1 ? "s" : ""}
+          </strong>{" "}
+          sur site,{" "}
+          {data.duerp.misAJourAnnuel ? (
+            <>
+              vous êtes au-dessus du seuil de {SEUIL_MAJ_ANNUELLE_DUERP} :
+              la mise à jour est <strong>au moins annuelle</strong>, en plus
+              de toute mise à jour lors d&apos;un aménagement important ou
+              d&apos;une information nouvelle sur un risque.
+            </>
+          ) : (
+            <>
+              vous êtes sous le seuil de {SEUIL_MAJ_ANNUELLE_DUERP} :
+              l&apos;annualité n&apos;est pas imposée, mais la mise à jour
+              reste due <strong>lors de tout aménagement important</strong>{" "}
+              ou quand une information nouvelle sur un risque vous parvient.
+            </>
+          )}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <LegalBadge
+            reference="Art. R. 4121-2 CT"
+            href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000045386446"
+            extrait="La mise à jour du document unique d'évaluation des risques est réalisée : au moins chaque année dans les entreprises d'au moins onze salariés ; lors de toute décision d'aménagement important…"
+          />
+        </div>
+      </div>
+
+      {/* Vérifications : résumé par domaine */}
+      {data.aucunEquipement ? (
+        <div className="cartouche mt-4 px-6 py-5 sm:px-8">
+          <p className="max-w-3xl text-[0.95rem] leading-relaxed">
+            <strong>Aucun équipement déclaré pour l&apos;instant</strong> —
+            la plateforme ne peut donc calculer aucune vérification
+            périodique. Ce silence ne signifie pas qu&apos;aucune obligation
+            ne vous concerne : il signifie que rien n&apos;est déclaré.
+          </p>
+          <Link
+            href={`${base}/equipements`}
+            className="mt-3 inline-block text-[0.88rem] font-medium text-[color:var(--warm)] hover:underline"
+          >
+            Déclarer mes équipements →
+          </Link>
+        </div>
+      ) : (
+        <>
+          <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {data.domaines.map((d) => (
+              <li key={d.domaine} className="cartouche px-6 py-5">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="text-[1.02rem] font-semibold tracking-[-0.01em]">
+                    {LABEL_DOMAINE[d.domaine]}
+                  </p>
+                  <p className="shrink-0 font-mono text-[0.66rem] uppercase tracking-[0.14em] text-muted-foreground">
+                    {d.nbObligations} obligation
+                    {d.nbObligations > 1 ? "s" : ""}
+                  </p>
+                </div>
+                <p className="mt-2 text-[0.84rem] leading-relaxed text-muted-foreground">
+                  Rythmes :{" "}
+                  {d.periodicites
+                    .map((p) => LABEL_PERIODICITE[p])
+                    .join(" · ")}
+                  {d.realisateurs.length > 0 && (
+                    <>
+                      <br />
+                      Qui :{" "}
+                      {d.realisateurs
+                        .map((r) => LABEL_REALISATEUR[r])
+                        .join(" · ")}
+                    </>
+                  )}
+                </p>
+                <p className="mt-3 border-t border-dashed border-rule-soft pt-3 text-[0.8rem] leading-relaxed text-muted-foreground">
+                  <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em]">
+                    Pourquoi chez vous —{" "}
+                  </span>
+                  {d.raisons.join(" · ")}
+                  {d.equipements.length > 0 && (
+                    <> · déclenché par : {d.equipements.join(", ")}</>
+                  )}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-[0.82rem] text-muted-foreground">
+            Le détail daté de chaque vérification vit dans votre{" "}
+            <Link
+              href={`${base}/calendrier`}
+              className="font-medium text-[color:var(--warm)] hover:underline"
+            >
+              calendrier
+            </Link>
+            .
+          </p>
+        </>
+      )}
+
+      {/* Trous honnêtes */}
+      {data.categoriesSansObligation.length > 0 && (
+        <div className="mt-4 rounded-2xl border border-dashed border-rule px-6 py-4 sm:px-8">
+          <p className="max-w-3xl text-[0.84rem] leading-relaxed text-muted-foreground">
+            <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em]">
+              À noter —{" "}
+            </span>
+            {data.categoriesSansObligation.length > 1
+              ? "certaines catégories déclarées ne génèrent"
+              : "une catégorie déclarée ne génère"}{" "}
+            aucune vérification automatique dans votre situation :{" "}
+            {data.categoriesSansObligation
+              .map((c) => LABEL_CATEGORIE_EQUIPEMENT[c])
+              .join(", ")}
+            . Cela ne signifie pas qu&apos;aucune règle ne s&apos;y applique
+            — seulement que le référentiel de la plateforme n&apos;en couvre
+            pas encore les vérifications. En cas de doute, rapprochez-vous
+            d&apos;un professionnel de la prévention.
+          </p>
+        </div>
+      )}
+
+      <p className="mt-6 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+        Calcul déterministe depuis vos déclarations · ne vaut pas
+        attestation de conformité
+      </p>
+    </section>
+  );
+}
