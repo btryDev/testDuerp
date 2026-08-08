@@ -81,7 +81,7 @@ export function DashboardGrid({ bundle }: { bundle: DashboardBundle }) {
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={ids} strategy={rectSortingStrategy}>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-6 [grid-auto-flow:dense]">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6 [grid-auto-flow:dense]">
             {layout.items.map((item) => {
               const def = REGISTRY[item.widgetId];
               if (!def) return null;

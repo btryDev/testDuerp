@@ -96,6 +96,33 @@
   --alert: oklch(0.55 0.16 30); /* #B84A3C */
   --alert-soft: oklch(0.93 0.04 30); /* #F6E4E1 */
 
+  /* Palette « board éditorial » — direction 4a du design Rojer.
+     Portée par le seul tableau de bord : canvas bleu, cartes blanches à
+     grands rayons, chrome noir, pastilles ambre/vert sémantiques. */
+  --board-canvas: #d3e7f7;
+  --board-ink: #0a0a0a;
+  --board-card: #ffffff;
+  --board-blue-pale: #e8f3fc;
+  --board-blue-soft: #b5d5ee;
+  --board-blue-mid: #7fafd4;
+  --board-blue-strong: #5c93be;
+  --board-blue-ink: #2f5f85;
+  --board-amber: #f7c07c;
+  --board-amber-mid: #fce6c9;
+  --board-amber-pale: #fdf0de;
+  --board-amber-ink: #8a5410;
+  --board-amber-ink-strong: #a8410e;
+  --board-amber-ink-deep: #7a4a0b;
+  --board-green: #a8e585;
+  --board-green-ink: #2a5f1d;
+  --board-green-ink-soft: #3d7a29;
+  --board-grey-pale: #f4f6f8;
+  --board-grey-line: #edf1f4;
+  --board-grey-ink: #6b7078;
+  --board-grey-soft: #8a9099;
+  --board-text: #4c5560;
+  --board-text-strong: #3d4148;
+
   --background: var(--paper);
   --foreground: var(--ink);
   --card: var(--paper-elevated);

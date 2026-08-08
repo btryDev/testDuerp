@@ -1,7 +1,10 @@
 "use client";
 
-// Widgets « simples » sans variant — plan d'actions, registre, équipements,
-// DUERP, guide, recos. Chacun est une cellule bento ciblée.
+// Widgets « simples » sans variant — registre, équipements, DUERP, guide,
+// recos. Chacun est une cellule bento ciblée.
+//
+// Le plan d'actions a migré vers `impl/board.tsx` (rendu en anneau) lors
+// de la refonte du tableau de bord ; il garde le même id de registre.
 
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
@@ -13,98 +16,6 @@ function formatDateCourte(d: Date): string {
     day: "2-digit",
     month: "short",
   });
-}
-
-/* ─── Plan d'actions ────────────────────────────────────── */
-
-export function WidgetPlanActions({ bundle }: { bundle: DashboardBundle }) {
-  const { actionsEnCours, etablissementId, dashboard } = bundle;
-  const actionsACouvrir =
-    dashboard.compteurs.actionsOuvertes + dashboard.compteurs.actionsEnCours;
-  const actionsEnRetard = dashboard.compteurs.actionsEnRetard;
-
-  const sub =
-    actionsACouvrir === 0
-      ? "Rien à lever"
-      : `${actionsACouvrir} ouverte${actionsACouvrir > 1 ? "s" : ""}${actionsEnRetard > 0 ? ` · ${actionsEnRetard} en retard` : ""}`;
-
-  return (
-    <section className="bento-cell">
-      <header className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="v2-title">Plan d&apos;actions</h3>
-          <p className="v2-subtitle">
-            Actions correctives en cours · triées par échéance
-          </p>
-        </div>
-        {actionsEnCours.length > 0 ? (
-          <Link
-            href={`/etablissements/${etablissementId}/actions`}
-            className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink/75 hover:text-ink"
-          >
-            Voir les {actionsACouvrir} ↗
-          </Link>
-        ) : null}
-      </header>
-
-      {actionsEnCours.length === 0 ? (
-        <p className="text-[0.88rem] text-muted-foreground">
-          Aucune action en cours ✓ · {sub}
-        </p>
-      ) : (
-        <ul className="flex flex-col">
-          {actionsEnCours.map((a, i) => {
-            const enRetard = a.echeance != null && a.echeance < new Date();
-            const tone = enRetard ? "alert" : "amber";
-            const color =
-              tone === "alert" ? "var(--alert)" : "var(--amber)";
-            return (
-              <li
-                key={a.id}
-                style={{
-                  borderTop: i === 0 ? "0" : "1px dashed var(--rule)",
-                }}
-              >
-                <Link
-                  href={`/etablissements/${etablissementId}/actions/${a.id}`}
-                  className="grid grid-cols-[auto_1fr] items-start gap-3 rounded-md py-3 transition-colors hover:bg-paper-sunk"
-                >
-                  <div
-                    aria-hidden
-                    className="grid size-[26px] place-items-center rounded-md"
-                    style={{ border: `1px dashed ${color}` }}
-                  >
-                    <span
-                      className="inline-block size-1.5 rounded-full"
-                      style={{ background: color }}
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[13.5px] font-medium leading-[1.3]">
-                      {a.libelle}
-                    </p>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      <span className="pill-v2 pill-v2-neutral">
-                        {a.statut === "en_cours" ? "En cours" : "Ouverte"}
-                      </span>
-                      {a.echeance ? (
-                        <span className="font-mono text-[11px] text-muted-foreground">
-                          échéance ·{" "}
-                          <strong className="text-ink/75">
-                            {formatDateCourte(a.echeance)}
-                          </strong>
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </section>
-  );
 }
 
 /* ─── Registre ──────────────────────────────────────────── */

@@ -15,8 +15,8 @@ import {
   compterVerifsParEquipement,
   getDashboardData,
   listerEvenementsFenetre,
-  listerEvenementsParMois,
 } from "@/lib/dashboard/queries";
+import { statsActionsEnRetard } from "@/lib/actions/queries";
 import { getOptionalUser } from "@/lib/auth/require-user";
 import { prisma } from "@/lib/prisma";
 import { countAlertesVigilance } from "@/lib/prestataires/queries";
@@ -35,9 +35,10 @@ export default async function EtablissementPage({
     statsEquipements,
     dashboard,
     barsData,
-    evenementsAnnee,
+    evenementsHorizon,
     evenementsSemaine,
     evenementsMois,
+    statsRetardActions,
     nbVerifs,
     nbRapports,
     prochainesVerifs,
@@ -50,9 +51,12 @@ export default async function EtablissementPage({
     compterVerifsParEquipement(id),
     getDashboardData(id),
     compterObligationsParMois(id),
-    listerEvenementsParMois(id),
+    // 365 j : alimente les deux horizons de la frise (90 j / 12 mois),
+    // qui coupe côté client — une seule requête pour les deux vues.
+    listerEvenementsFenetre(id, 365),
     listerEvenementsFenetre(id, 7),
     listerEvenementsFenetre(id, 30),
+    statsActionsEnRetard(id),
     prisma.verification.count({ where: { etablissementId: id } }),
     prisma.rapportVerification.count({ where: { etablissementId: id } }),
     prisma.verification.findMany({
@@ -123,6 +127,11 @@ export default async function EtablissementPage({
       )
     : null;
 
+  // Date de référence unique, figée côté serveur : tous les blocs qui
+  // calculent un « dans N jours » partent de la même valeur, ce qui évite
+  // les écarts d'hydratation et rend les rendus reproductibles.
+  const aujourdhui = new Date();
+
   // Le bundle sérialise les champs nécessaires aux widgets. Date
   // objects traversent la frontière server/client via l'App Router.
   const bundle: DashboardBundle = {
@@ -155,9 +164,11 @@ export default async function EtablissementPage({
       stats: statsEquipements.get(e.id),
     })),
     barsData,
-    evenementsAnnee,
+    aujourdhui,
+    evenementsHorizon,
     evenementsSemaine,
     evenementsMois,
+    statsRetardActions,
     prochainesVerifs: prochainesVerifs.map((v) => ({
       id: v.id,
       libelleObligation: v.libelleObligation,
@@ -207,7 +218,9 @@ export default async function EtablissementPage({
         }
       />
 
-      <div className="flex flex-col gap-5 px-8 py-6 pb-12">
+      {/* Canvas bleu du board éditorial — porté par le seul tableau de
+          bord, le reste de l'app garde la palette « papier ». */}
+      <div className="flex min-h-full flex-col gap-5 bg-[color:var(--board-canvas)] p-3 pb-8">
         {!onboardingFini ? (
           <OnboardingChecklist
             etapes={etapesOnboarding}
@@ -217,8 +230,7 @@ export default async function EtablissementPage({
 
         <DashboardGrid bundle={bundle} />
 
-        <hr aria-hidden className="filet-pointille mt-2" />
-        <footer className="flex flex-wrap items-center justify-between gap-6 text-[11.5px] text-muted-foreground">
+        <footer className="flex flex-wrap items-center justify-between gap-6 px-4 pt-2 text-[11.5px] text-[color:var(--board-blue-ink)]">
           <p className="m-0 max-w-[640px] leading-[1.55]">
             Outil d&apos;aide à la rédaction structuré sur les publications
             INRS / OiRA. La responsabilité de l&apos;évaluation des risques

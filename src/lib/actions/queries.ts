@@ -150,3 +150,60 @@ export async function compterActions(etablissementId: string) {
     totalACouvrir: ouvertes + enCours,
   };
 }
+
+export type StatsRetardActions = {
+  nb: number;
+  /** Retard moyen en jours sur l'ensemble des actions en retard. */
+  retardMoyenJours: number;
+  /** L'action la plus anciennement dépassée, pour l'accroche du widget. */
+  plusAncienne: { id: string; libelle: string; joursRetard: number } | null;
+};
+
+/**
+ * Statistiques sur les actions dont l'échéance est dépassée.
+ *
+ * Volontairement une requête dédiée plutôt qu'un calcul sur la liste
+ * `actionsEnCours` du bundle : celle-ci est tronquée (take), donc une
+ * moyenne calculée dessus serait fausse dès que l'établissement dépasse
+ * la limite. Ici on lit toutes les échéances dépassées.
+ */
+export async function statsActionsEnRetard(
+  etablissementId: string,
+): Promise<StatsRetardActions> {
+  const user = await requireUser();
+  const now = new Date();
+
+  const enRetard = await prisma.action.findMany({
+    where: {
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+      statut: { in: ["ouverte", "en_cours"] },
+      echeance: { lt: now },
+    },
+    select: { id: true, libelle: true, echeance: true },
+    orderBy: { echeance: "asc" },
+  });
+
+  if (enRetard.length === 0) {
+    return { nb: 0, retardMoyenJours: 0, plusAncienne: null };
+  }
+
+  const joursDepuis = (d: Date) =>
+    Math.max(0, Math.floor((now.getTime() - d.getTime()) / 86400000));
+
+  // `echeance` est non-null par construction du filtre `lt: now`.
+  const retards = enRetard.map((a) => joursDepuis(a.echeance as Date));
+  const moyenne = Math.round(
+    retards.reduce((s, j) => s + j, 0) / retards.length,
+  );
+
+  return {
+    nb: enRetard.length,
+    retardMoyenJours: moyenne,
+    plusAncienne: {
+      id: enRetard[0].id,
+      libelle: enRetard[0].libelle,
+      joursRetard: retards[0],
+    },
+  };
+}

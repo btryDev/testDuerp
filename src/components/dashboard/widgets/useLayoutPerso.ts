@@ -16,7 +16,7 @@ import {
 } from "./registry";
 import type { LayoutItem, PersistedLayout } from "./types";
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 function cle(etablissementId: string): string {
   return `duerp.dashboard.${etablissementId}`;
@@ -52,8 +52,13 @@ function normaliser(items: LayoutItem[]): LayoutItem[] {
 
 /**
  * Migre un layout hérité d'une ancienne version de schéma.
- * Pour l'instant schéma v1 — aucune migration nécessaire. Le stub est
- * là pour que les futures évolutions soient triviales à brancher.
+ *
+ * v1 → v2 : refonte du tableau de bord en « board éditorial ». Plusieurs
+ * widgets ont changé de propos sous le même id (la frise, le plan
+ * d'actions, les documents), si bien qu'un layout v1 réordonné par
+ * l'utilisateur ne décrit plus la même chose. On le laisse donc expirer :
+ * les versions inconnues retombent sur le layout par défaut, c'est-à-dire
+ * le board. Une personnalisation faite après coup, elle, est conservée.
  */
 function migrerLayout(brut: unknown): PersistedLayout | null {
   if (!brut || typeof brut !== "object") return null;
@@ -61,7 +66,7 @@ function migrerLayout(brut: unknown): PersistedLayout | null {
   if (typeof obj.version !== "number") return null;
   if (!Array.isArray(obj.items)) return null;
 
-  // v1 → v1 : pass-through.
+  // Version courante : pass-through (après normalisation).
   if (obj.version === SCHEMA_VERSION) {
     return {
       version: SCHEMA_VERSION,
@@ -69,8 +74,7 @@ function migrerLayout(brut: unknown): PersistedLayout | null {
     };
   }
 
-  // Migration future v0 → v1, v1 → v2, etc. : ajouter un switch ici.
-  // Par défaut on ignore les versions inconnues → retour aux défauts.
+  // Versions antérieures : pas de migration, retour au layout par défaut.
   return null;
 }
 

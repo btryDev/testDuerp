@@ -21,94 +21,9 @@ export type BarMois = {
   retard: number;
 };
 
-export type EvenementMoisReel = {
-  mois: number; // 0-11
-  libelle: string;
-  tag: string;
-  hot: boolean;
-  /** Nombre d'autres événements dans ce mois, au-delà de celui représenté.
-   * Permet d'afficher un badge « +N » cliquable dans la frise. */
-  autres: number;
-  /** Les autres événements du mois, prêts à être dépliés sous la carte
-   * principale quand l'utilisateur clique sur le badge. */
-  autresItems: Array<{ libelle: string; tag: string; hot: boolean }>;
-};
-
 /**
- * Pour la frise "Calendrier" — pour chaque mois de l'année courante,
- * on retient **un seul événement** (la vérif la plus ancienne du mois)
- * avec son libellé et son tag périodicité. Les mois sans aucune vérif
- * renvoient `null` (affichage "période calme").
- *
- * `hot = true` si la vérif est dépassée OU si c'est la première
- * occurrence annuelle d'un DUERP ou contrôle majeur — simple heuristique.
- */
-export async function listerEvenementsParMois(
-  etablissementId: string,
-  annee: number = new Date().getFullYear(),
-): Promise<Array<EvenementMoisReel | null>> {
-  const user = await requireUser();
-  const debut = new Date(annee, 0, 1);
-  const fin = new Date(annee + 1, 0, 1);
-
-  const verifs = await prisma.verification.findMany({
-    where: {
-      etablissementId,
-      etablissement: { entreprise: { userId: user.id } },
-      OR: [
-        { datePrevue: { gte: debut, lt: fin } },
-        { dateRealisee: { gte: debut, lt: fin } },
-      ],
-    },
-    select: {
-      libelleObligation: true,
-      datePrevue: true,
-      dateRealisee: true,
-      periodicite: true,
-      statut: true,
-    },
-    orderBy: { datePrevue: "asc" },
-  });
-
-  const buckets: Array<EvenementMoisReel | null> = Array.from(
-    { length: 12 },
-    () => null,
-  );
-
-  for (const v of verifs) {
-    const ref = v.dateRealisee ?? v.datePrevue;
-    if (ref.getFullYear() !== annee) continue;
-    const m = ref.getMonth();
-    const existant = buckets[m];
-
-    if (!existant) {
-      buckets[m] = {
-        mois: m,
-        libelle: libelleCourt(v.libelleObligation),
-        tag: libellePeriodicite(v.periodicite),
-        hot: v.statut === "depassee",
-        autres: 0,
-        autresItems: [],
-      };
-    } else {
-      // Déjà un événement ce mois-ci — on incrémente le compteur et
-      // on empile le détail pour l'affichage déplié. Upgrade en "hot"
-      // si au moins un événement du mois est dépassé.
-      existant.autres += 1;
-      existant.autresItems.push({
-        libelle: libelleCourt(v.libelleObligation),
-        tag: libellePeriodicite(v.periodicite),
-        hot: v.statut === "depassee",
-      });
-      if (v.statut === "depassee") existant.hot = true;
-    }
-  }
-
-  return buckets;
-}
-
-/**
- * Raccourcit les libellés d'obligation verbeux pour la frise compacte.
+ * Raccourcit les libellés d'obligation verbeux pour les cartes
+ * compactes de la frise.
  * « Vérification périodique annuelle installation électrique »
  *    → « Installation électrique »
  */
@@ -173,7 +88,7 @@ export async function listerEvenementsFenetre(
         : "ok";
     return {
       id: v.id,
-      libelle: v.libelleObligation,
+      libelle: libelleCourt(v.libelleObligation),
       date: v.datePrevue,
       tone,
       equipement: v.equipement.libelle,
@@ -262,33 +177,6 @@ export async function compterVerifsParEquipement(
   }
 
   return map;
-}
-
-function libellePeriodicite(p: string): string {
-  switch (p) {
-    case "hebdomadaire":
-      return "Hebdo";
-    case "mensuelle":
-      return "Mensuel";
-    case "trimestrielle":
-      return "Trimestriel";
-    case "semestrielle":
-      return "Semestriel";
-    case "annuelle":
-      return "Annuel";
-    case "biennale":
-      return "Biennal";
-    case "triennale":
-      return "Triennal";
-    case "quinquennale":
-      return "Quinquennal";
-    case "decennale":
-      return "Décennal";
-    case "mise_en_service_uniquement":
-      return "Mise en service";
-    default:
-      return "Périodique";
-  }
 }
 
 /**

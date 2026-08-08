@@ -1,0 +1,153 @@
+import { describe, expect, it } from "vitest";
+import { construireBrief, type EntreeBrief } from "./brief";
+
+const LE_8_AOUT = new Date(2026, 7, 8);
+
+const CALME: EntreeBrief = {
+  aujourdhui: LE_8_AOUT,
+  compteurs: {
+    verifsEnRetard: 0,
+    verifsAPlanifier: 0,
+    verifsSous30j: 0,
+    actionsEnRetard: 0,
+    actionsOuvertes: 0,
+    actionsEnCours: 0,
+  },
+  duerp: { existe: true, estAJour: true },
+  recommandations: [],
+  nbRapports: 4,
+};
+
+describe("construireBrief — titre", () => {
+  it("compte ensemble les vérifications et les actions en retard", () => {
+    const b = construireBrief({
+      ...CALME,
+      compteurs: { ...CALME.compteurs, verifsEnRetard: 1, actionsEnRetard: 1 },
+    });
+    expect(b.titre).toBe("Deux échéances à traiter cette semaine");
+  });
+
+  it("accorde le singulier", () => {
+    const b = construireBrief({
+      ...CALME,
+      compteurs: { ...CALME.compteurs, verifsEnRetard: 1 },
+    });
+    expect(b.titre).toBe("Une échéance à traiter cette semaine");
+  });
+
+  it("bascule sur les trente jours quand rien n'est en retard", () => {
+    const b = construireBrief({
+      ...CALME,
+      compteurs: { ...CALME.compteurs, verifsSous30j: 3 },
+    });
+    expect(b.titre).toBe("Trois échéances dans les trente jours");
+  });
+
+  it("mentionne les vérifications à planifier en dernier recours", () => {
+    const b = construireBrief({
+      ...CALME,
+      compteurs: { ...CALME.compteurs, verifsAPlanifier: 2 },
+    });
+    expect(b.titre).toBe("Deux vérifications restent à planifier");
+  });
+
+  it("ne fabrique pas d'urgence quand tout est calme", () => {
+    expect(construireBrief(CALME).titre).toBe("Rien ne presse cette semaine");
+  });
+
+  it("passe aux chiffres au-delà de neuf", () => {
+    const b = construireBrief({
+      ...CALME,
+      compteurs: { ...CALME.compteurs, verifsEnRetard: 12 },
+    });
+    expect(b.titre).toBe("12 échéances à traiter cette semaine");
+  });
+});
+
+describe("construireBrief — paragraphe", () => {
+  it("n'énonce que des clauses vraies", () => {
+    const b = construireBrief(CALME);
+    expect(b.paragraphe).toContain("Votre DUERP est à jour");
+    expect(b.paragraphe).toContain("le registre compte 4 rapports");
+    expect(b.paragraphe).toContain("Rien n'est en retard");
+  });
+
+  it("tait le registre quand aucun rapport n'a été déposé", () => {
+    const b = construireBrief({ ...CALME, nbRapports: 0 });
+    expect(b.paragraphe).not.toContain("registre");
+  });
+
+  it("signale un DUERP absent avant tout le reste", () => {
+    const b = construireBrief({
+      ...CALME,
+      duerp: { existe: false, estAJour: false },
+    });
+    expect(b.paragraphe.startsWith("Votre DUERP n'est pas encore ouvert.")).toBe(
+      true,
+    );
+  });
+
+  it("signale un DUERP périmé", () => {
+    const b = construireBrief({
+      ...CALME,
+      duerp: { existe: true, estAJour: false },
+    });
+    expect(b.paragraphe).toContain("plus de douze mois");
+  });
+
+  it("énumère les restes en français", () => {
+    const b = construireBrief({
+      ...CALME,
+      compteurs: {
+        ...CALME.compteurs,
+        verifsEnRetard: 2,
+        verifsAPlanifier: 1,
+        actionsEnRetard: 3,
+      },
+    });
+    expect(b.paragraphe).toContain(
+      "Il reste 2 vérifications dépassées, 1 vérification à programmer et 3 actions dont la date est passée.",
+    );
+  });
+});
+
+describe("construireBrief — gestes", () => {
+  it("retient au plus deux recommandations et leur donne un verbe", () => {
+    const b = construireBrief({
+      ...CALME,
+      recommandations: [
+        { kind: "verif_depassee", titre: "Extincteurs", href: "/a" },
+        { kind: "action_en_retard", titre: "Fournil", href: "/b" },
+        { kind: "verif_proche", titre: "Électricité", href: "/c" },
+      ],
+    });
+    expect(b.gestes).toHaveLength(2);
+    expect(b.gestes[0]).toEqual({
+      tag: "Extincteurs",
+      label: "Programmer l'intervention",
+      href: "/a",
+      ton: "alerte",
+    });
+    expect(b.gestes[1].label).toBe("Replanifier");
+  });
+
+  it("distingue le ton alerte du ton neutre", () => {
+    const b = construireBrief({
+      ...CALME,
+      recommandations: [
+        { kind: "verif_proche", titre: "Électricité", href: "/c" },
+      ],
+    });
+    expect(b.gestes[0].ton).toBe("neutre");
+  });
+
+  it("n'invente pas de geste quand il n'y a pas de recommandation", () => {
+    expect(construireBrief(CALME).gestes).toEqual([]);
+  });
+});
+
+describe("construireBrief — date", () => {
+  it("rend la date du jour capitalisée", () => {
+    expect(construireBrief(CALME).datePill).toBe("Samedi 8 août 2026");
+  });
+});

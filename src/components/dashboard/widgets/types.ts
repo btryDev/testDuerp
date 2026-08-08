@@ -9,18 +9,21 @@ import type {
   BarMois,
   DashboardData,
   EvenementFenetre,
-  EvenementMoisReel,
 } from "@/lib/dashboard/queries";
+import type { StatsRetardActions } from "@/lib/actions/queries";
 
 export type Taille = "small" | "medium" | "large";
 // small = 2 col · medium = 3 col · large = 6 col (grille à 6 colonnes)
 
 export type WidgetId =
+  | "brief"
   | "etablissement"
   | "score"
   | "indicateurs"
   | "echeances"
   | "activite"
+  | "actions-retard"
+  | "controle"
   | "kpi-en-retard"
   | "kpi-sous-30j"
   | "kpi-actions"
@@ -35,7 +38,6 @@ export type WidgetId =
   | "recos"
   | "calendrier-type"
   | "documents"
-  | "focus-action"
   | "countdown"
   | "anciennete"
   | "semaine"
@@ -130,11 +132,17 @@ export type DashboardBundle = {
   dashboard: DashboardData;
   equipements: EquipementLite[];
   barsData: BarMois[];
-  evenementsAnnee: Array<EvenementMoisReel | null>;
+  /** Date de référence, calculée côté serveur : garantit un rendu
+   *  déterministe (pas d'écart d'hydratation) et des tests reproductibles. */
+  aujourdhui: Date;
+  /** Fenêtre glissante 365 j — alimente les deux horizons de la frise
+   *  (90 jours / 12 mois), qui coupe côté client. */
+  evenementsHorizon: EvenementFenetre[];
   /** Fenêtre glissante 7 j — widget « Semaine ». */
   evenementsSemaine?: EvenementFenetre[];
   /** Fenêtre glissante 30 j — widget « Météo ». */
   evenementsMois?: EvenementFenetre[];
+  statsRetardActions: StatsRetardActions;
   prochainesVerifs: VerificationLite[];
   actionsEnCours: ActionLite[];
   rapportsRecents: RapportLite[];

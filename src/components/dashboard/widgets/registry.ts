@@ -13,29 +13,47 @@ import {
 import { WidgetBarsObligations } from "./impl/bars";
 import { WidgetProchainesEcheances } from "./impl/echeances";
 import {
-  WidgetPlanActions,
   WidgetRegistre,
   WidgetEquipements,
   WidgetDuerp,
   WidgetGuide,
   WidgetRecos,
 } from "./impl/simples";
-import { WidgetCalendrierType } from "./impl/calendrier-type";
 import {
   WidgetIndicateurs,
   WidgetEcheances,
   WidgetActivite,
 } from "./impl/groupes";
-import { WidgetDocuments } from "./impl/documents";
-import { WidgetFocusAction } from "./impl/focus-action";
-import { WidgetCountdown } from "./impl/countdown";
+import {
+  BlocActionsEnRetard,
+  BlocBrief,
+  BlocCeQuiAChange,
+  BlocControle,
+  BlocDocuments,
+  BlocFrise,
+  BlocPlanActions,
+  BlocProchaineEcheance,
+} from "./impl/board";
 import { WidgetAnciennete } from "./impl/anciennete";
 import { WidgetSemaine } from "./impl/semaine";
-import { WidgetFluxRegistre } from "./impl/flux-registre";
 import { WidgetMeteo } from "./impl/meteo";
 import type { LayoutItem, WidgetDefinition, WidgetId } from "./types";
 
 export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
+  brief: {
+    id: "brief",
+    titre: "Le brief",
+    description:
+      "Bloc éditorial de tête : la date, la phrase qui résume la semaine, et les deux gestes à faire maintenant. Tout est déduit de vos compteurs.",
+    taille: "large",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: BlocBrief,
+    // Ancre éditoriale du board : c'est le bloc qui répond à « qu'est-ce
+    // que je dois faire ». L'identité de l'établissement, qui portait ce
+    // rôle avant, vit désormais dans le rail de navigation.
+    obligatoire: true,
+  },
   etablissement: {
     id: "etablissement",
     titre: "Identité établissement",
@@ -45,7 +63,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
     Component: WidgetEtablissement,
-    obligatoire: true,
+    exclueDuDefaut: true,
   },
   score: {
     id: "score",
@@ -166,12 +184,33 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
   },
   "plan-actions": {
     id: "plan-actions",
-    titre: "Plan d'actions",
-    description: "Actions correctives en cours, triées par échéance.",
+    titre: "Où en est le plan d'actions",
+    description:
+      "Répartition des actions en anneau — ouvertes, en cours, clôturées ce mois — avec le nombre d'échéances dépassées.",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
-    Component: WidgetPlanActions,
+    Component: BlocPlanActions,
+  },
+  "actions-retard": {
+    id: "actions-retard",
+    titre: "Actions en retard",
+    description:
+      "Combien d'actions dépassent leur échéance, de combien de jours en moyenne, et laquelle traîne depuis le plus longtemps.",
+    taille: "medium",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: BlocActionsEnRetard,
+  },
+  controle: {
+    id: "controle",
+    titre: "Préparer un contrôle",
+    description:
+      "Raccourci vers le dossier à présenter en cas de visite — inspection, assurance, bailleur.",
+    taille: "medium",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: BlocControle,
   },
   registre: {
     id: "registre",
@@ -193,13 +232,13 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
   },
   documents: {
     id: "documents",
-    titre: "Vos documents",
+    titre: "Vos documents, en un coup d'œil",
     description:
-      "Hub consolidé : DUERP, registre, plan d'actions, dossier complet — Voir · Télécharger · « à faire » contextuel par ligne.",
+      "Matrice en pastilles : pour le DUERP, le registre, les vérifications et le plan d'actions — en place, à jour, sans retard.",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
-    Component: WidgetDocuments,
+    Component: BlocDocuments,
   },
   duerp: {
     id: "duerp",
@@ -235,33 +274,23 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
   },
   "calendrier-type": {
     id: "calendrier-type",
-    titre: "Calendrier · 12 mois",
+    titre: "La frise des échéances",
     description:
-      "Frise de l'année — un événement par mois, construit à partir de vos vérifications. Retombe sur un exemple pédagogique si vos équipements ne sont pas encore déclarés.",
+      "Frise horizontale de vos vérifications, avec bascule 90 jours / 12 mois et les retards épinglés en tête.",
     taille: "large",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
-    Component: WidgetCalendrierType,
-  },
-  "focus-action": {
-    id: "focus-action",
-    titre: "Focus de la semaine",
-    description:
-      "La recommandation prioritaire du moment avec les 2-3 raisons qui la justifient. Déduite du moteur de recos.",
-    taille: "medium",
-    variants: [{ id: "default", label: "Défaut" }],
-    defaultVariant: "default",
-    Component: WidgetFocusAction,
+    Component: BlocFrise,
   },
   countdown: {
     id: "countdown",
     titre: "Prochaine échéance",
     description:
-      "Compte à rebours en gros chiffre (J-N / J+N / Aujourd'hui / À planifier) sur la vérification la plus urgente.",
+      "La vérification la plus proche, avec le nombre de jours restants en gros chiffre.",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
-    Component: WidgetCountdown,
+    Component: BlocProchaineEcheance,
   },
   anciennete: {
     id: "anciennete",
@@ -285,13 +314,13 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
   },
   "flux-registre": {
     id: "flux-registre",
-    titre: "Activité registre",
+    titre: "Ce qui a changé",
     description:
-      "Feed chronologique inverse des derniers rapports déposés avec leur résultat.",
+      "Les derniers rapports déposés au registre, avec leur résultat, et le premier « à faire » du moteur de recommandations.",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
-    Component: WidgetFluxRegistre,
+    Component: BlocCeQuiAChange,
   },
   meteo: {
     id: "meteo",
@@ -321,23 +350,26 @@ export function variantValide(
 }
 
 /**
- * Ordre canonique des widgets dans le layout par défaut.
- * Respecte l'équilibre de la grille 6-col :
- *   row 1 : score (6)
- *   row 2 : 3 petits KPIs (2+2+2)
- *   row 3 : 4ᵉ KPI (2) + bars (3) [+ trou d'1 col, comblé par dense]
- *   ...
+ * Ordre canonique du layout par défaut — le « board éditorial » (4a).
+ * Grille 6 colonnes :
+ *   row 1 : le brief          (6)
+ *   row 2 : la frise          (6)
+ *   row 3 : prochaine échéance (3) + actions en retard (3)
+ *   row 4 : plan d'actions     (3) + documents         (3)
+ *   row 5 : ce qui a changé    (3) + préparer un contrôle (3)
+ *
+ * Tout le reste du registre demeure disponible dans le tiroir
+ * « Ajouter un widget » — le board est un point de départ, pas un mur.
  */
 const ORDRE_DEFAUT: WidgetId[] = [
-  "etablissement",
-  "score",
-  "indicateurs",
+  "brief",
   "calendrier-type",
-  "prochaines-echeances",
-  "documents",
-  "equipements-grid",
+  "countdown",
+  "actions-retard",
   "plan-actions",
-  "guide",
+  "documents",
+  "flux-registre",
+  "controle",
 ];
 
 export function layoutParDefaut(): LayoutItem[] {
