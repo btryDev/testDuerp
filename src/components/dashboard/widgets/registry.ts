@@ -261,7 +261,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     id: "calendrier-type",
     titre: "La frise des échéances",
     description:
-      "Frise horizontale défilante de vos vérifications, de 3 mois en arrière à 24 mois en avant, avec zoom 90 jours / 12 mois et bascule en vue calendrier.",
+      "Vue calendrier mensuelle de vos vérifications, avec bascule en frise horizontale défilante (3 mois en arrière à 24 mois en avant, zoom 90 jours / 12 mois).",
     taille: "large",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
@@ -338,11 +338,12 @@ export function variantValide(
  * Ordre canonique du layout par défaut — le « board éditorial » (4a).
  * Le brief n'y figure pas : c'est le bandeau de tête, rendu par la page.
  * Grille 6 colonnes :
- *   row 1 : la frise          (6)
- *   row 2 : prochaine échéance (3) + actions en retard (3)
- *   row 3 : plan d'actions     (3) + documents         (3)
- *   row 4 : ce qui a changé    (3) + préparer un contrôle (3)
- *   row 5 : guide pédagogique  (3) — visible d'emblée pour le nouvel
+ *   row 1 : le calendrier      (6)
+ *   row 2 : équipements        (6)
+ *   row 3 : prochaine échéance (3) + actions en retard (3)
+ *   row 4 : plan d'actions     (3) + documents         (3)
+ *   row 5 : ce qui a changé    (3) + préparer un contrôle (3)
+ *   row 6 : guide pédagogique  (3) — visible d'emblée pour le nouvel
  *           inscrit ; les layouts déjà personnalisés ne sont pas réécrits.
  *
  * Tout le reste du registre demeure disponible dans le tiroir
@@ -350,6 +351,7 @@ export function variantValide(
  */
 const ORDRE_DEFAUT: WidgetId[] = [
   "calendrier-type",
+  "equipements-grid",
   "countdown",
   "actions-retard",
   "plan-actions",

@@ -47,7 +47,7 @@ import type { DashboardBundle } from "../types";
  * qu'on écraserait depuis l'appelant (l'ordre des classes Tailwind ne
  * décide pas de la priorité).
  */
-function CarteBoard({
+export function CarteBoard({
   children,
   className = "",
   rayon = 30,

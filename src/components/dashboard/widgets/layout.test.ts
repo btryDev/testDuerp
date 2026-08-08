@@ -36,6 +36,7 @@ describe("registre de widgets", () => {
     // visible d'emblée pour le nouvel inscrit (pédagogie d'amorçage).
     expect(layoutParDefaut().map((i) => i.widgetId)).toEqual([
       "calendrier-type",
+      "equipements-grid",
       "countdown",
       "actions-retard",
       "plan-actions",
@@ -47,14 +48,15 @@ describe("registre de widgets", () => {
   });
 
   it("le board s'aligne sur la grille 6 colonnes (unités de 3)", () => {
-    // frise (6) · trois rangées de deux medium (3+3) · guide (3).
+    // calendrier (6) · équipements (6) · trois rangées de deux medium
+    // (3+3) · guide (3).
     // La dernière rangée est volontairement incomplète : la grille CSS
     // auto-flow gère, et un board « point de départ » n'a pas à être
     // un mur plein.
     const cols = layoutParDefaut().map(
       (i) => tailleEnCol(REGISTRY[i.widgetId].taille),
     );
-    expect(cols).toEqual([6, 3, 3, 3, 3, 3, 3, 3]);
+    expect(cols).toEqual([6, 6, 3, 3, 3, 3, 3, 3, 3]);
     expect(cols.every((c) => c % 3 === 0)).toBe(true);
   });
 

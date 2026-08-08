@@ -106,27 +106,23 @@
      s'en sert en marge négative pour son plein-fer, la grille et la
      pastille « Organiser » s'y alignent. */
   --board-gutter: 32px;
-  /* Famille bleue pervenche→indigo (référence : illustration sablier).
-     La teinte quitte le bleu ciel (H205) pour la pervenche (H228-232) :
-     corps lavande clair, gradients pervenche, aplats bleu roi. La
-     lisibilité gagne au passage — l'indigo descend plus bas que
-     l'ancien bleu acier, donc marques et textes portent davantage.
-     Ratios : ink 9,09 sur blanc, 7,46 sur le pâle, 6,50 sur le canvas ;
-     strong 4,84 sur blanc et 3,46 sur le canvas (seuil 3 pour un objet
-     graphique), blanc sur strong 4,84 ; noir 14,2 sur le canvas, 11,2
-     sur le soft, 16,3 sur le pâle. */
-  --board-canvas: #d3d9f5;
+  /* Famille bleu ciel (H205) — retour à la référence Rojer d'origine
+     (« Tableau de bord Rojer.html ») après l'essai pervenche : canvas
+     ciel, champs glacier, aplats acier, encre bleu pétrole. Les
+     signaux restent ceux de la charte actuelle — rose pour le retard,
+     vert pour l'acquis — pas de retour à l'ambre/corail de la maquette.
+     Ratios : ink 6,68 sur blanc, 5,44 sur le pâle, 4,54 sur le canvas ;
+     noir 13,9 sur le canvas, 16,7 sur le pâle. */
+  --board-canvas: #d3e7f7;
   --board-ink: #0a0a0a;
   --board-card: #ffffff;
   /* Glacier. Le champ posé sur carte blanche : plus clair que le canvas
-     d'un cran net (1,15) pour ne pas ressembler à du fond qui
-     transparaît. Sur les cartes noires, c'est lui qui fait la surface
-     claire (16,3). */
-  --board-blue-pale: #e4e8fb;
-  --board-blue-soft: #b6c1f0;
-  --board-blue-mid: #8494e4;
-  --board-blue-strong: #5568d6;
-  --board-blue-ink: #2c3da4;
+     d'un cran net pour ne pas ressembler à du fond qui transparaît. */
+  --board-blue-pale: #e8f3fc;
+  --board-blue-soft: #b5d5ee;
+  --board-blue-mid: #7fafd4;
+  --board-blue-strong: #5c93be;
+  --board-blue-ink: #2f5f85;
   /* Signal « en retard ». Deux essais avant celui-ci : l'ambre pastel
      (#f7c07c) ne portait rien, le corail vif (#e0664c) portait trop —
      posé en aplat sur les tuiles-chiffre, les points de frise et les
@@ -160,12 +156,10 @@
   --board-green-ink: #2a5f1d;
   --board-green-ink-soft: #3d7a29;
 
-  /* Ardoise — le registre calme, réaligné sur la pervenche (H228)
-     comme le reste de la charte : même principe que la version
-     précédente (une seule teinte, seule la luminosité descend), mais
-     la teinte suit désormais la famille bleue au lieu du bleu ciel
-     H208 d'origine — sinon les zones tranquilles auraient tiré vers
-     le cyan à côté du canvas pervenche.
+  /* Ardoise — le registre calme : une seule teinte froide quasi
+     neutre, seule la luminosité descend. Héritée de l'essai pervenche
+     (H228) mais assez désaturée pour tenir aussi à côté du canvas
+     bleu ciel actuel.
      Ratios sur blanc : soft 5,76 · mid 7,35 · ink 11,01 ; le plus
      clair des trois tient encore 4,73 sur le pâle et 5,24 sur la
      surface creuse. */
@@ -742,42 +736,6 @@
     box-shadow: inset 0 0 0 1px var(--navy);
   }
 
-  /* Tuile équipement V2 — bande picto pleine hauteur à gauche (fond
-     navy pâle, filet pointillé), contenu à droite. Hover : anneau navy
-     inset, même affordance que la cellule courante du calendrier. */
-  .v2-equip-tile {
-    border-radius: 12px;
-    background: var(--paper-sunk);
-    display: flex;
-    align-items: stretch;
-    overflow: hidden;
-    min-height: 116px;
-    transition: box-shadow 160ms;
-  }
-  .v2-equip-tile:hover {
-    box-shadow: inset 0 0 0 1px var(--navy);
-  }
-  .v2-equip-tile-picto {
-    flex: 0 0 76px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--navy-soft);
-    border-right: 1px dashed var(--rule);
-  }
-  .v2-equip-tile-picto > * {
-    transition: transform 200ms ease;
-  }
-  .v2-equip-tile:hover .v2-equip-tile-picto > * {
-    transform: scale(1.05);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .v2-equip-tile-picto > *,
-    .v2-equip-tile:hover .v2-equip-tile-picto > * {
-      transition: none;
-      transform: none;
-    }
-  }
 }
 
 /* Rotation lente du tampon « prêt pour contrôle » — respecte

@@ -7,8 +7,10 @@
 // de la refonte du tableau de bord ; il garde le même id de registre.
 
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { BentoCell } from "@/components/dashboard/BentoCell";
+import { CarteBoard } from "@/components/dashboard/widgets/impl/board";
 import { PictoEquipement } from "@/components/equipements/PictoEquipement";
 import type { DashboardBundle } from "../types";
 
@@ -107,6 +109,36 @@ function libelleCategorie(c: string): string {
   return c.replace(/_/g, " ").toLowerCase();
 }
 
+/** Mini-pastille de signal sur tuile glacier : fond blanc, point de
+ *  marque saturée + texte encré. Le champ pastel (rose, vert) ne se pose
+ *  pas sur le glacier — trop proche en valeur — donc c'est la marque qui
+ *  porte la couleur, conformément à la règle de la charte pervenche. */
+function PastilleTuile({
+  point,
+  encre,
+  children,
+}: {
+  point?: string;
+  encre: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--board-card)] px-2.5 py-[5px] text-[10.5px] font-semibold"
+      style={{ color: encre }}
+    >
+      {point ? (
+        <span
+          aria-hidden
+          className="size-[7px] rounded-full"
+          style={{ background: point }}
+        />
+      ) : null}
+      {children}
+    </span>
+  );
+}
+
 export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
   const { equipements, etablissementId } = bundle;
   const totalEq = equipements.length;
@@ -114,104 +146,125 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
   const nbRestants = totalEq - tuiles.length;
 
   return (
-    <section className="bento-cell">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="v2-title">Équipements</h3>
-          <p className="v2-subtitle">
+    <CarteBoard className="gap-6 px-7 py-[26px]">
+      <div className="flex items-start gap-4">
+        <div className="min-w-0">
+          <h2 className="m-0 text-[26px] font-semibold leading-[1.1] tracking-[-0.035em] text-[color:var(--board-ink)]">
+            Équipements
+          </h2>
+          <p className="mt-[7px] text-[13.5px] text-[color:var(--board-slate-mid)]">
             {totalEq} type{totalEq > 1 ? "s" : ""} déclaré
             {totalEq > 1 ? "s" : ""}
             {nbRestants > 0 ? ` · ${nbRestants} autres non affichés` : ""}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/etablissements/${etablissementId}/equipements`}
-            className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink/75 hover:text-ink"
-          >
-            Gérer ↗
-          </Link>
+        <div className="ml-auto flex flex-none items-center gap-2.5">
           <Link
             href={`/etablissements/${etablissementId}/equipements/nouveau`}
-            className="inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-rule bg-paper-elevated px-2.5 text-[12px] transition-colors hover:bg-paper-sunk"
+            className="rounded-full bg-[color:var(--board-ink)] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-85"
           >
             + Ajouter
           </Link>
+          <Link
+            href={`/etablissements/${etablissementId}/equipements`}
+            aria-label="Gérer les équipements"
+            className="flex size-9 flex-none items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] transition-colors hover:bg-[color:var(--board-blue-pale)]"
+          >
+            <ChevronRight className="size-4" />
+          </Link>
         </div>
-      </header>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {tuiles.map((eq) => {
-          const s = eq.stats;
-          const fait = s?.derniereRealisee ? 1 : 0;
-          const retard = s?.enRetard ?? 0;
-          const aPlanif = s?.aPlanifier ?? 0;
-          const totalSignals = fait + retard + aPlanif;
-          const pct = totalSignals ? Math.round(100 * (fait / totalSignals)) : 0;
-          const alert = retard > 0;
-          return (
-            <Link
-              key={eq.id}
-              href={`/etablissements/${etablissementId}/equipements`}
-              className="v2-equip-tile"
-            >
-              <div className="v2-equip-tile-picto">
-                <PictoEquipement categorie={eq.categorie} taille={56} />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3.5">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="truncate font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
-                    {libelleCategorie(eq.categorie)}
-                  </span>
-                  <span aria-hidden className="text-[0.78rem] text-ink/50">
-                    ↗
-                  </span>
-                </div>
-                <div className="text-[14px] font-medium leading-[1.25]">
-                  {eq.libelle}
-                </div>
-                <div className="mt-auto flex items-center gap-2">
-                  <div
-                    className="v2-bar-track flex-1"
-                    style={{ height: 4 }}
-                    aria-hidden
-                  >
-                    <div
-                      className="v2-bar-fill"
-                      style={{
-                        width: `${pct}%`,
-                        background: alert ? "var(--alert)" : "var(--navy)",
-                      }}
-                    />
-                  </div>
-                  <span className="font-mono text-[10.5px] tabular-nums text-muted-foreground">
-                    {pct}%
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {fait > 0 ? (
-                    <span className="pill-v2 pill-v2-green">{fait} fait</span>
-                  ) : null}
-                  {retard > 0 ? (
-                    <span className="pill-v2 pill-v2-alert">
-                      {retard} dépassé{retard > 1 ? "s" : ""}
-                    </span>
-                  ) : null}
-                  {aPlanif > 0 ? (
-                    <span className="pill-v2 pill-v2-dashed">
-                      {aPlanif} à planif.
-                    </span>
-                  ) : null}
-                  {!fait && !retard && !aPlanif ? (
-                    <span className="pill-v2 pill-v2-dashed">Aucune vérif</span>
-                  ) : null}
-                </div>
-              </div>
-            </Link>
-          );
-        })}
       </div>
-    </section>
+
+      {totalEq === 0 ? (
+        <p className="text-[13.5px] text-[color:var(--board-slate-mid)]">
+          Aucun équipement déclaré pour l&apos;instant.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+          {tuiles.map((eq) => {
+            const s = eq.stats;
+            const fait = s?.derniereRealisee ? 1 : 0;
+            const retard = s?.enRetard ?? 0;
+            const aPlanif = s?.aPlanifier ?? 0;
+            const totalSignals = fait + retard + aPlanif;
+            const pct = totalSignals
+              ? Math.round(100 * (fait / totalSignals))
+              : 0;
+            const alert = retard > 0;
+            return (
+              <Link
+                key={eq.id}
+                href={`/etablissements/${etablissementId}/equipements`}
+                className="group flex min-h-[118px] overflow-hidden rounded-[20px] bg-[color:var(--board-blue-pale)] transition-colors hover:bg-[color:color-mix(in_oklch,var(--board-blue-pale)_70%,var(--board-blue-soft))]"
+              >
+                <div className="flex w-[84px] flex-none items-center justify-center">
+                  <PictoEquipement
+                    categorie={eq.categorie}
+                    taille={60}
+                    className="transition-transform duration-200 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                  />
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col py-4 pr-4">
+                  <p className="truncate text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[color:var(--board-blue-ink)]">
+                    {libelleCategorie(eq.categorie)}
+                  </p>
+                  <p className="mt-1 text-[14.5px] font-semibold leading-[1.25] text-[color:var(--board-ink)]">
+                    {eq.libelle}
+                  </p>
+                  <div className="mt-auto flex items-center gap-2 pt-2">
+                    <div
+                      className="relative h-[5px] flex-1 overflow-hidden rounded-full bg-[color:var(--board-card)]"
+                      aria-hidden
+                    >
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full"
+                        style={{
+                          width: `${pct}%`,
+                          background: alert
+                            ? "var(--board-signal-mark)"
+                            : "var(--board-blue-strong)",
+                        }}
+                      />
+                    </div>
+                    <span className="font-mono text-[10.5px] tabular-nums text-[color:var(--board-slate-soft)]">
+                      {pct}%
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 pt-2">
+                    {fait > 0 ? (
+                      <PastilleTuile
+                        point="var(--board-green)"
+                        encre="var(--board-green-ink)"
+                      >
+                        {fait} fait
+                      </PastilleTuile>
+                    ) : null}
+                    {retard > 0 ? (
+                      <PastilleTuile
+                        point="var(--board-signal-mark)"
+                        encre="var(--board-signal-ink)"
+                      >
+                        {retard} dépassé{retard > 1 ? "s" : ""}
+                      </PastilleTuile>
+                    ) : null}
+                    {aPlanif > 0 ? (
+                      <PastilleTuile encre="var(--board-slate-mid)">
+                        {aPlanif} à planif.
+                      </PastilleTuile>
+                    ) : null}
+                    {!fait && !retard && !aPlanif ? (
+                      <PastilleTuile encre="var(--board-slate-soft)">
+                        Aucune vérif
+                      </PastilleTuile>
+                    ) : null}
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </CarteBoard>
   );
 }
 
