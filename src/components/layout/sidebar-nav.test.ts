@@ -4,32 +4,17 @@ import {
   construireRail,
   construireSections,
   deduireActif,
-  type ProfilRegistres,
   type SidebarItemId,
 } from "./sidebar-nav";
 
 const ID = "etab_1";
 
-const PROFIL_VIDE: ProfilRegistres = {
-  estERP: false,
-  aRegistreAccessibilite: false,
-  nbPermisFeu: 0,
-  nbPlansPrevention: 0,
-  aCarnetSanitaire: false,
-};
-
-function sections(profil?: ProfilRegistres, actif: SidebarItemId = "tableau") {
-  return construireSections({ etablissementId: ID, profil, actif });
+function sections() {
+  return construireSections({ etablissementId: ID });
 }
 
-function idsVisibles(profil?: ProfilRegistres, actif: SidebarItemId = "tableau") {
-  return sections(profil, actif).flatMap((s) => s.items.map((i) => i.id));
-}
-
-function idsRepliables(profil?: ProfilRegistres, actif: SidebarItemId = "tableau") {
-  return sections(profil, actif).flatMap((s) =>
-    (s.repliables ?? []).map((i) => i.id),
-  );
+function idsVisibles() {
+  return sections().flatMap((s) => s.items.map((i) => i.id));
 }
 
 describe("deduireActif", () => {
@@ -55,7 +40,7 @@ describe("deduireActif", () => {
 
 describe("construireSections — structure", () => {
   it("expose les trois sections dans l'ordre des questions du dirigeant", () => {
-    expect(sections(PROFIL_VIDE).map((s) => s.title)).toEqual([
+    expect(sections().map((s) => s.title)).toEqual([
       "À faire",
       "Mon établissement",
       "Mes registres",
@@ -63,23 +48,29 @@ describe("construireSections — structure", () => {
   });
 
   it("place le tableau de bord en tête de « À faire »", () => {
-    expect(sections(PROFIL_VIDE)[0].items[0].id).toBe("tableau");
+    expect(sections()[0].items[0].id).toBe("tableau");
   });
 
-  it("garde DUERP et registre de sécurité toujours visibles", () => {
-    const ids = idsVisibles(PROFIL_VIDE);
-    expect(ids).toContain("duerp");
-    expect(ids).toContain("registre");
+  it("expose les six registres à plat, DUERP et registre de sécurité en tête", () => {
+    const registres = sections().find((s) => s.title === "Mes registres");
+    expect(registres?.items.map((i) => i.id)).toEqual([
+      "duerp",
+      "registre",
+      "accessibilite",
+      "permis-feu",
+      "plan-prevention",
+      "carnet-sanitaire",
+    ]);
   });
 
   it("n'expose aucun id en double", () => {
-    const tous = [...idsVisibles(PROFIL_VIDE), ...idsRepliables(PROFIL_VIDE)];
+    const tous = idsVisibles();
     expect(new Set(tous).size).toBe(tous.length);
   });
 
   it("préfixe toutes les destinations réelles par l'établissement", () => {
-    for (const sec of sections(PROFIL_VIDE)) {
-      for (const it of [...sec.items, ...(sec.repliables ?? [])]) {
+    for (const sec of sections()) {
+      for (const it of sec.items) {
         if (it.bientot) continue;
         expect(it.href.startsWith(`/etablissements/${ID}`)).toBe(true);
       }
@@ -87,7 +78,7 @@ describe("construireSections — structure", () => {
   });
 
   it("place le guide (« Comprendre ») en dernière position de « À faire »", () => {
-    const aFaire = sections(PROFIL_VIDE)[0];
+    const aFaire = sections()[0];
     const dernier = aFaire.items[aFaire.items.length - 1];
     expect(dernier.id).toBe("guide");
     expect(dernier.label).toBe("Comprendre");
@@ -95,71 +86,16 @@ describe("construireSections — structure", () => {
   });
 
   it("marque « Équipe » comme à venir plutôt qu'en lien mort", () => {
-    const equipe = sections(PROFIL_VIDE)
+    const equipe = sections()
       .flatMap((s) => s.items)
       .find((i) => i.id === "equipe");
     expect(equipe?.bientot).toBe(true);
   });
 });
 
-describe("construireSections — divulgation progressive", () => {
-  it("replie les quatre registres de domaine pour un établissement vierge", () => {
-    expect(idsRepliables(PROFIL_VIDE).sort()).toEqual([
-      "accessibilite",
-      "carnet-sanitaire",
-      "permis-feu",
-      "plan-prevention",
-    ]);
-  });
-
-  it("met l'accessibilité en avant dès que l'établissement est ERP", () => {
-    const profil = { ...PROFIL_VIDE, estERP: true };
-    expect(idsVisibles(profil)).toContain("accessibilite");
-    expect(idsRepliables(profil)).not.toContain("accessibilite");
-  });
-
-  it("met un registre de domaine en avant dès qu'il porte de la matière", () => {
-    const profil = {
-      ...PROFIL_VIDE,
-      nbPermisFeu: 2,
-      nbPlansPrevention: 1,
-      aCarnetSanitaire: true,
-    };
-    const visibles = idsVisibles(profil);
-    expect(visibles).toContain("permis-feu");
-    expect(visibles).toContain("plan-prevention");
-    expect(visibles).toContain("carnet-sanitaire");
-    expect(idsRepliables(profil)).toEqual(["accessibilite"]);
-  });
-
-  it("ne replie rien quand le profil est inconnu", () => {
-    expect(idsRepliables(undefined)).toEqual([]);
-    expect(idsVisibles(undefined)).toContain("carnet-sanitaire");
-  });
-
-  it("remonte l'item actif dans la liste principale même s'il est vide", () => {
-    // On navigue vers « Permis de feu » alors qu'aucun permis n'existe :
-    // le rail doit continuer à montrer où l'on se trouve.
-    expect(idsVisibles(PROFIL_VIDE, "permis-feu")).toContain("permis-feu");
-    expect(idsRepliables(PROFIL_VIDE, "permis-feu")).not.toContain("permis-feu");
-  });
-
-  it("laisse la section « Mes registres » sans divulgation quand tout est nourri", () => {
-    const profil: ProfilRegistres = {
-      estERP: true,
-      aRegistreAccessibilite: true,
-      nbPermisFeu: 1,
-      nbPlansPrevention: 1,
-      aCarnetSanitaire: true,
-    };
-    const registres = sections(profil).find((s) => s.title === "Mes registres");
-    expect(registres?.repliables).toBeUndefined();
-  });
-});
-
 describe("construireRail — rail à deux niveaux", () => {
-  function rail(actif: SidebarItemId = "tableau") {
-    return construireRail({ etablissementId: ID, profil: PROFIL_VIDE, actif });
+  function rail() {
+    return construireRail({ etablissementId: ID });
   }
 
   it("expose les catégories dans l'ordre du rail", () => {
@@ -181,31 +117,16 @@ describe("construireRail — rail à deux niveaux", () => {
   });
 
   it("reprend les mêmes items que les sections, guide excepté", () => {
-    const idsSections = construireSections({
-      etablissementId: ID,
-      profil: PROFIL_VIDE,
-      actif: "tableau",
-    }).flatMap((s) => [...s.items, ...(s.repliables ?? [])].map((i) => i.id));
-    const idsRail = rail().flatMap((c) =>
-      [...(c.items ?? []), ...(c.repliables ?? [])].map((i) => i.id),
+    const idsSections = construireSections({ etablissementId: ID }).flatMap(
+      (s) => s.items.map((i) => i.id),
     );
+    const idsRail = rail().flatMap((c) => (c.items ?? []).map((i) => i.id));
     expect([...idsRail, "guide"].sort()).toEqual(idsSections.sort());
-  });
-
-  it("porte la divulgation des registres sur la catégorie « registres »", () => {
-    const registres = rail().find((c) => c.id === "registres");
-    expect(registres?.repliables?.map((i) => i.id).sort()).toEqual([
-      "accessibilite",
-      "carnet-sanitaire",
-      "permis-feu",
-      "plan-prevention",
-    ]);
   });
 
   it("agrège les alertes des items au niveau de la catégorie", () => {
     const cats = construireRail({
       etablissementId: ID,
-      actif: "tableau",
       counts: { verificationsEnRetard: 2, prestatairesAlertes: 0 },
     });
     expect(cats.find((c) => c.id === "a-faire")?.alert).toBe(true);
@@ -214,7 +135,7 @@ describe("construireRail — rail à deux niveaux", () => {
 
   it("rattache chaque item à la catégorie qui le contient", () => {
     for (const cat of rail()) {
-      for (const it of [...(cat.items ?? []), ...(cat.repliables ?? [])]) {
+      for (const it of cat.items ?? []) {
         expect(categorieDeItem(it.id)).toBe(cat.id);
       }
     }
@@ -226,7 +147,6 @@ describe("construireSections — badges", () => {
   it("passe en alerte les compteurs de dette, pas les volumétries", () => {
     const items = construireSections({
       etablissementId: ID,
-      actif: "tableau",
       counts: {
         equipements: 13,
         verificationsEnRetard: 3,
@@ -250,7 +170,6 @@ describe("construireSections — badges", () => {
   it("n'affiche pas d'alerte quand les compteurs sont à zéro", () => {
     const items = construireSections({
       etablissementId: ID,
-      actif: "tableau",
       counts: { verificationsEnRetard: 0, prestatairesAlertes: 0 },
     }).flatMap((s) => s.items);
 

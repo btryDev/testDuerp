@@ -22,14 +22,13 @@
 // en-tête le replie. Le choix est mémorisé dans localStorage.
 //
 // L'arborescence vit dans `sidebar-nav.ts` (module pur, testé) : mêmes
-// items, mêmes règles de divulgation progressive, mêmes badges que le rail
-// simple qu'elle remplace. Ce fichier ne fait que le rendu.
+// items, mêmes badges que le rail simple qu'elle remplace. Ce fichier ne
+// fait que le rendu.
 
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ChevronDown,
   HelpCircle,
   LogOut,
   PanelLeftClose,
@@ -41,7 +40,6 @@ import {
   construireRail,
   deduireActif,
   type NavItem,
-  type ProfilRegistres,
   type RailCategorie,
   type RailCategorieId,
   type SidebarActive,
@@ -49,7 +47,7 @@ import {
   type SidebarItemId,
 } from "./sidebar-nav";
 
-export type { SidebarActive, ProfilRegistres };
+export type { SidebarActive };
 
 type Etablissement = {
   id: string;
@@ -67,16 +65,12 @@ export function AppSidebar({
   etablissement,
   active,
   counts,
-  profil,
   user,
 }: {
   etablissement: Etablissement;
   /** Item actif. Si omis, déduit automatiquement depuis `usePathname()`. */
   active?: SidebarActive;
   counts?: SidebarCounts;
-  /** Faits déclarés servant à replier les registres de domaine non nourris.
-   *  Omis → rien n'est replié. */
-  profil?: ProfilRegistres;
   user?: User | null;
 }) {
   const pathname = usePathname();
@@ -86,8 +80,6 @@ export function AppSidebar({
   const rail = construireRail({
     etablissementId: etablissement.id,
     counts,
-    profil,
-    actif,
   });
 
   // Panneau affiché : le choix manuel prime, sinon la catégorie de la page
@@ -243,9 +235,6 @@ export function AppSidebar({
               {panneau.items?.map((it) => (
                 <NavLink key={it.id} item={it} actif={actif} />
               ))}
-              {panneau.repliables ? (
-                <Divulgation items={panneau.repliables} actif={actif} />
-              ) : null}
             </nav>
           ) : null}
         </div>
@@ -453,47 +442,5 @@ function NavLink({ item, actif }: { item: NavItem; actif: SidebarItemId }) {
         </span>
       ) : null}
     </Link>
-  );
-}
-
-/**
- * Divulgation des registres de domaine non nourris. Le libellé est
- * volontairement neutre : on n'affirme pas qu'ils ne concernent pas
- * l'établissement, on dit seulement qu'ils sont vides.
- */
-function Divulgation({
-  items,
-  actif,
-}: {
-  items: NavItem[];
-  actif: SidebarItemId;
-}) {
-  const [ouvert, setOuvert] = useState(false);
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOuvert((v) => !v)}
-        aria-expanded={ouvert}
-        className={
-          CLASSES_ITEM +
-          " text-[12.5px] text-white/45 hover:bg-white/10 hover:text-white"
-        }
-      >
-        <ChevronDown
-          aria-hidden
-          className={
-            "size-4 transition-transform " + (ouvert ? "" : "-rotate-90")
-          }
-        />
-        <span className="flex-1 truncate text-left">
-          Autres registres ({items.length})
-        </span>
-      </button>
-      {ouvert
-        ? items.map((it) => <NavLink key={it.id} item={it} actif={actif} />)
-        : null}
-    </>
   );
 }

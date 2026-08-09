@@ -7,24 +7,12 @@
 // qu'il se pose : « qu'est-ce que je dois faire ? », « qu'est-ce que j'ai
 // déclaré ? », « qu'est-ce que je peux présenter ? ».
 //
-// Deux principes complémentaires :
-//
-//   1. Une seule porte par question. Calendrier / Plan d'actions /
-//      Interventions restent distincts mais sont regroupés sous « À faire »,
-//      en tête, avec le tableau de bord comme point d'entrée.
-//
-//   2. Divulgation progressive des registres de domaine. Un bureau de six
-//      personnes n'a pas à voir « Permis de feu » et « Carnet sanitaire »
-//      dans son rail permanent. Ces entrées sont repliées tant que
-//      l'établissement n'a rien déclaré dedans.
-//
-// Garde-fou important (cf. CLAUDE.md — « l'outil ne dit jamais vous êtes
-// conforme ») : replier n'est PAS déclarer inapplicable. On ne se sert
-// jamais d'une déduction juridique pour masquer une entrée — uniquement de
-// faits observables (il existe des permis de feu enregistrés, l'établissement
-// est déclaré ERP…). Les entrées repliées restent accessibles en un clic,
-// sous un libellé neutre, et rien dans l'UI n'affirme qu'elles ne concernent
-// pas l'utilisateur.
+// Principe : une seule porte par question. Calendrier / Plan d'actions /
+// Interventions restent distincts mais sont regroupés sous « À faire »,
+// en tête, avec le tableau de bord comme point d'entrée. Tous les registres
+// vivent à plat sous « Mes registres » — la divulgation progressive
+// (« Autres registres » replié) a été retirée : six entrées se lisent d'un
+// coup d'œil et un registre caché se cherchait.
 
 import {
   LayoutDashboard,
@@ -76,20 +64,6 @@ export type SidebarCounts = {
   risquesAReevaluer?: number;
 };
 
-/**
- * Faits observables servant à décider ce qui est replié. Volontairement
- * factuel : aucun champ ne porte de jugement d'applicabilité réglementaire.
- * Quand le profil est absent (ex. shell DUERP, qui ne charge pas ces
- * compteurs), on n'infère rien et on déplie tout.
- */
-export type ProfilRegistres = {
-  estERP: boolean;
-  aRegistreAccessibilite: boolean;
-  nbPermisFeu: number;
-  nbPlansPrevention: number;
-  aCarnetSanitaire: boolean;
-};
-
 export type NavItem = {
   id: SidebarItemId;
   label: string;
@@ -105,8 +79,6 @@ export type NavItem = {
 export type NavSection = {
   title: string;
   items: NavItem[];
-  /** Entrées repliées derrière une divulgation (« Autres registres »). */
-  repliables?: NavItem[];
 };
 
 /** Déduit l'item actif depuis le pathname, à défaut de prop explicite. */
@@ -134,40 +106,12 @@ export function deduireActif(
   return "tableau";
 }
 
-/**
- * Un registre de domaine est mis en avant s'il porte déjà de la matière,
- * ou si un fait déclaré le rend structurellement certain (ERP → registre
- * public d'accessibilité, art. L. 141-13 CCH). Sinon il est replié.
- */
-function estMisEnAvant(
-  id: SidebarItemId,
-  profil: ProfilRegistres | undefined,
-): boolean {
-  if (!profil) return true; // pas d'info → on ne masque rien
-  switch (id) {
-    case "accessibilite":
-      return profil.estERP || profil.aRegistreAccessibilite;
-    case "permis-feu":
-      return profil.nbPermisFeu > 0;
-    case "plan-prevention":
-      return profil.nbPlansPrevention > 0;
-    case "carnet-sanitaire":
-      return profil.aCarnetSanitaire;
-    default:
-      return true;
-  }
-}
-
 export function construireSections({
   etablissementId,
   counts,
-  profil,
-  actif,
 }: {
   etablissementId: string;
   counts?: SidebarCounts;
-  profil?: ProfilRegistres;
-  actif: SidebarItemId;
 }): NavSection[] {
   const href = (suffixe: string) =>
     `/etablissements/${etablissementId}${suffixe}`;
@@ -249,9 +193,7 @@ export function construireSections({
     },
   ];
 
-  // Toujours visibles : les deux registres transverses, quel que soit le
-  // profil de l'établissement.
-  const registresSocle: NavItem[] = [
+  const registres: NavItem[] = [
     {
       id: "duerp",
       label: "DUERP",
@@ -266,9 +208,6 @@ export function construireSections({
       href: href("/registre"),
       Icon: FileText,
     },
-  ];
-
-  const registresDomaine: NavItem[] = [
     {
       id: "accessibilite",
       label: "Accessibilité",
@@ -295,21 +234,10 @@ export function construireSections({
     },
   ];
 
-  // L'item actif remonte toujours dans la liste principale : sinon on
-  // navigue vers un registre replié et le rail « oublie » où l'on est.
-  const visibles = registresDomaine.filter(
-    (it) => it.id === actif || estMisEnAvant(it.id, profil),
-  );
-  const repliables = registresDomaine.filter((it) => !visibles.includes(it));
-
   return [
     { title: "À faire", items: aFaire },
     { title: "Mon établissement", items: monEtablissement },
-    {
-      title: "Mes registres",
-      items: [...registresSocle, ...visibles],
-      repliables: repliables.length > 0 ? repliables : undefined,
-    },
+    { title: "Mes registres", items: registres },
   ];
 }
 
@@ -341,7 +269,6 @@ export type RailCategorie = {
   /** Catégorie sans panneau : lien direct. */
   href?: string;
   items?: NavItem[];
-  repliables?: NavItem[];
   /** Au moins un item du panneau porte une alerte. */
   alert?: boolean;
 };
@@ -372,11 +299,9 @@ export function categorieDeItem(id: SidebarItemId): RailCategorieId {
 export function construireRail(params: {
   etablissementId: string;
   counts?: SidebarCounts;
-  profil?: ProfilRegistres;
-  actif: SidebarItemId;
 }): RailCategorie[] {
-  // On dérive du même arbre que le rail simple : mêmes items, mêmes règles
-  // de divulgation, mêmes badges — seule la présentation change.
+  // On dérive du même arbre que le rail simple : mêmes items, mêmes badges —
+  // seule la présentation change.
   const [aFaire, etablissement, registres] = construireSections(params);
 
   // « Comprendre » quitte le panneau « À faire » : il devient une entrée
@@ -407,7 +332,6 @@ export function construireRail(params: {
       labelCourt: "Registres",
       Icon: Archive,
       items: registres.items,
-      repliables: registres.repliables,
       alert: alerte(registres.items),
     },
     {
