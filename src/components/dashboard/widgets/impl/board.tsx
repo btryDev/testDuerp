@@ -21,15 +21,17 @@ import {
   useRef,
   useState,
 } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowUpRight,
   CalendarDays,
+  Check,
   ChevronLeft,
   ChevronRight,
   GanttChart,
 } from "lucide-react";
+import { construireBrief } from "@/lib/dashboard/brief";
+import type { Recommandation } from "@/lib/dashboard/recommandations";
 import { construireFrise, type EchelleFrise } from "@/lib/dashboard/frise";
 import { VueMois } from "@/components/calendrier/VueMois";
 import { VueAnnee } from "@/components/calendrier/VueAnnee";
@@ -176,199 +178,191 @@ function Lien({
 
 /**
  * Le brief n'est pas un widget : c'est le bandeau de tête du tableau de
- * bord, rendu par la page au-dessus de la grille. Il occupe donc toute la
- * largeur, sans gouttière ni rayon — le canvas bleu ne commence qu'en
- * dessous. Il n'est ni déplaçable ni retirable, et c'est voulu.
+ * bord, rendu par la page au-dessus de la grille — panneau bleu ciel à
+ * grand rayon, seule grande surface colorée de la page. Il n'est ni
+ * déplaçable ni retirable, et c'est voulu.
  *
- * Il ne décrit plus l'état du dossier — les widgets s'en chargent, chacun
- * sur son périmètre. Il montre la routine : à gauche les quatre gestes du
- * quotidien en pictogrammes cliquables, à droite une photo de terrain —
- * une cuisine en plein service, le décor réel de ces obligations. La mise
- * en place, elle, vit dans la checklist d'onboarding — le hero ne parle
- * que de ce qui recommence. Chaque geste porte la teinte que le board
- * donne déjà à son sujet : bleu = échéances, vert = preuve déposée,
- * ambre = écart à traiter, ardoise = intendance.
- *
- * Photo : « Restaurant Kitchen », Michael Browning, StockSnap, CC0 —
- * `public/photos/hero-cuisine.jpg`.
+ * Il dit ce qu'il y a à traiter, et rien d'autre : à gauche le compte
+ * (« 2 éléments à traiter ») et le paragraphe d'état dérivés des
+ * compteurs réels (`construireBrief`), à droite la file de travail —
+ * les deux recommandations les plus urgentes du moteur, numérotées dans
+ * l'ordre où les prendre, chacune avec sa porte « Ouvrir ». La ligne
+ * pointillée sous la file solde le reste : rien d'autre sous trente
+ * jours, ou le compte de ce qui s'y trouve, en lien vers le calendrier.
+ * Aucune chaîne décorative : tout vient du bundle.
  */
 
-type StationQuotidien = {
-  verbe: string;
-  detail: string;
-  segment: string;
-  /** Fond + encre du disque — la teinte que le sujet porte déjà ailleurs
-   *  sur le board. */
-  disque: string;
-  icone: React.ReactNode;
-};
+/** Tons d'une carte-tâche : l'ambre marque le dépassé (vérification ou
+ *  action en retard), le bleu tout le reste — y compris les amorces. */
+const KINDS_ALERTE: ReadonlySet<Recommandation["kind"]> = new Set([
+  "verif_depassee",
+  "action_en_retard",
+]);
 
-/** Pictogrammes maison, dessinés en `currentColor` et blanc : chaque
- *  disque leur donne son encre. Décoratifs — le texte porte tout. */
-const ICONES_QUOTIDIEN = {
-  echeances: (
-    <svg viewBox="0 0 32 32" className="size-[30px]" fill="none" aria-hidden>
-      <rect x="4" y="6" width="24" height="22" rx="4" fill="#fff" />
-      <path d="M4 10a4 4 0 0 1 4-4h16a4 4 0 0 1 4 4v3H4Z" fill="currentColor" />
-      <rect x="9" y="2" width="3" height="7" rx="1.5" fill="currentColor" />
-      <rect x="20" y="2" width="3" height="7" rx="1.5" fill="currentColor" />
-      <rect x="9" y="17" width="4" height="4" rx="1" fill="currentColor" opacity=".35" />
-      <rect x="15" y="17" width="4" height="4" rx="1" fill="currentColor" opacity=".35" />
-      <rect x="21" y="17" width="4" height="4" rx="1" fill="currentColor" />
-      <rect x="9" y="23" width="4" height="4" rx="1" fill="currentColor" opacity=".35" />
-    </svg>
-  ),
-  preuve: (
-    <svg viewBox="0 0 32 32" className="size-[30px]" fill="none" aria-hidden>
-      <rect x="7" y="3" width="18" height="26" rx="3" fill="#fff" />
-      <rect x="11" y="9" width="10" height="2.5" rx="1.25" fill="currentColor" opacity=".45" />
-      <rect x="11" y="14" width="7" height="2.5" rx="1.25" fill="currentColor" opacity=".45" />
-      <circle cx="22" cy="22" r="6" fill="currentColor" />
-      <path d="m19.4 22 1.8 1.8 3.2-3.6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-  ecart: (
-    <svg viewBox="0 0 32 32" className="size-[30px]" fill="none" aria-hidden>
-      <circle cx="14" cy="18" r="11" fill="#fff" />
-      <circle cx="14" cy="18" r="6.5" fill="currentColor" opacity=".3" />
-      <circle cx="14" cy="18" r="2.5" fill="currentColor" />
-      <path d="M14 18 26 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M22.5 5.5h4v4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-  maj: (
-    <svg viewBox="0 0 32 32" className="size-[30px]" fill="none" aria-hidden>
-      <path
-        d="M25.5 16a9.5 9.5 0 1 1-2.8-6.7"
-        stroke="#fff"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <path
-        d="M25.5 4v6h-6"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="16" cy="16" r="3.5" fill="currentColor" opacity=".4" />
-    </svg>
-  ),
-};
+const JOUR_MS_BRIEF = 86400000;
 
-/** La boucle du quotidien, dans l'ordre où on la vit. Aucune donnée ici :
- *  c'est la routine, pas l'état. */
-const STATIONS_QUOTIDIEN: StationQuotidien[] = [
-  {
-    verbe: "Suivez les échéances",
-    detail: "Le calendrier dit ce qui tombe, et quand.",
-    segment: "calendrier",
-    // Sur le hero bleu ciel, le glacier disparaissait : un cran plus
-    // soutenu, même encre.
-    disque:
-      "bg-[color:var(--board-blue-soft)] text-[color:var(--board-blue-ink)]",
-    icone: ICONES_QUOTIDIEN.echeances,
-  },
-  {
-    verbe: "Déposez les preuves",
-    detail: "Chaque rapport rejoint le registre, daté et classé.",
-    segment: "registre",
-    disque: "bg-[color:var(--board-green)] text-[color:var(--board-green-ink)]",
-    icone: ICONES_QUOTIDIEN.preuve,
-  },
-  {
-    verbe: "Corrigez les écarts",
-    detail: "Une action par écart, suivie jusqu'à sa levée.",
-    segment: "actions",
-    disque: "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]",
-    icone: ICONES_QUOTIDIEN.ecart,
-  },
-  {
-    verbe: "Mettez à jour",
-    detail: "Équipements et documents, dès que quelque chose change.",
-    segment: "equipements",
-    // Même cran que le bleu : l'ardoise pâle fondait dans le ciel.
-    disque:
-      "bg-[color:var(--board-slate)] text-[color:var(--board-slate-ink)]",
-    icone: ICONES_QUOTIDIEN.maj,
-  },
-];
+function libelleDateCourte(d: Date): string {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "short",
+  }).format(d);
+}
 
-export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
-  const { etablissementId, aujourdhui } = bundle;
+function CarteTache({
+  numero,
+  reco,
+  aujourdhui,
+}: {
+  numero: number;
+  reco: Recommandation;
+  aujourdhui: Date;
+}) {
+  const alerte = KINDS_ALERTE.has(reco.kind);
 
-  const datePill = (() => {
-    const s = new Intl.DateTimeFormat("fr-FR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }).format(aujourdhui);
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  })();
+  // Méta : le sous-titre du moteur, complété par la date quand elle
+  // existe — « depuis N j » pour le dépassé, la date courte sinon.
+  let meta = reco.sousTitre ?? "";
+  if (reco.date) {
+    if (alerte) {
+      const jours = Math.max(
+        1,
+        Math.floor((aujourdhui.getTime() - reco.date.getTime()) / JOUR_MS_BRIEF),
+      );
+      meta = `${meta} depuis ${jours} j`;
+    } else {
+      meta = meta
+        ? `${meta} · ${libelleDateCourte(reco.date)}`
+        : libelleDateCourte(reco.date);
+    }
+  }
 
   return (
-    // Fonds inversés : le hero porte désormais le ciel — seule grande
-    // surface bleue de la page — et le canvas dessous est quasi blanc.
-    // Noir 13,9 et ardoise ~5 sur le ciel : les encres du bandeau blanc
-    // passent telles quelles.
-    <div className="bg-[color:var(--board-sky)] px-[46px] pb-[44px] pt-[46px]">
-      <div className="grid items-center gap-10 lg:grid-cols-[1.02fr_.98fr]">
+    <li className="flex items-center gap-4 rounded-[24px] bg-[color:var(--board-card)] py-3.5 pl-4 pr-3.5 shadow-[0_14px_30px_-20px_rgba(13,18,36,.30)]">
+      <span
+        className={
+          "flex size-10 flex-none items-center justify-center rounded-full text-[15px] font-semibold tabular-nums " +
+          (alerte
+            ? "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]"
+            : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]")
+        }
+      >
+        {numero}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="m-0 truncate text-[15px] font-semibold tracking-[-0.015em] text-[color:var(--board-ink)]">
+          {reco.titre}
+        </p>
+        {meta ? (
+          <p className="m-0 mt-0.5 truncate text-[12.5px] text-[color:var(--board-slate-mid)]">
+            {meta}
+          </p>
+        ) : null}
+      </div>
+      <Link
+        href={reco.href}
+        aria-label={`Ouvrir : ${reco.titre}`}
+        className={
+          "flex-none rounded-full px-[18px] py-[9px] text-[12.5px] font-semibold transition-opacity hover:opacity-85 " +
+          (alerte
+            ? "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]"
+            : "bg-[color:var(--board-ink)] text-white")
+        }
+      >
+        Ouvrir
+      </Link>
+    </li>
+  );
+}
+
+export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
+  const { etablissementId, aujourdhui, dashboard, nbRapports } = bundle;
+  const { compteurs, duerp, recommandations } = dashboard;
+
+  const brief = construireBrief({
+    aujourdhui,
+    compteurs,
+    duerp: { existe: duerp.existe, estAJour: duerp.estAJour },
+    recommandations: recommandations.map((r) => ({
+      kind: r.kind,
+      titre: r.titre,
+      href: r.href,
+    })),
+    nbRapports,
+  });
+
+  // La file de travail : les urgences réelles d'abord (priorités 1-5 du
+  // moteur) ; sur un dossier en mise en place, les amorces la prennent.
+  const reelles = recommandations.filter((r) => r.priorite <= 5);
+  const file = (reelles.length > 0 ? reelles : recommandations).slice(0, 2);
+
+  // Le compte du titre est celui des urgences réelles — les amorces
+  // gardent leurs titres d'invitation (`construireBrief`).
+  const titre =
+    reelles.length > 0
+      ? `${reelles.length} élément${reelles.length > 1 ? "s" : ""} à traiter`
+      : brief.titre;
+
+  const sous30j = compteurs.verifsSous30j;
+  const hrefCalendrier = `/etablissements/${etablissementId}/calendrier`;
+
+  return (
+    // Fonds inversés : le hero porte le ciel en bandeau pleine largeur,
+    // sans rayon ni gouttière — le canvas quasi blanc ne commence qu'en
+    // dessous.
+    <div className="bg-[color:var(--board-sky)] px-[46px] pb-[44px] pt-[42px]">
+      <div className="grid items-center gap-x-12 gap-y-8 lg:grid-cols-[1fr_1.08fr]">
         <div>
           <span className="inline-block rounded-full bg-[color:var(--board-card)] px-[14px] py-[6px] text-[11.5px] font-semibold tracking-[0.06em] text-[color:var(--board-blue-ink)]">
-            {datePill}
+            {brief.datePill}
           </span>
-          <h1 className="mt-[24px] max-w-[480px] text-pretty text-[clamp(32px,3.6vw,50px)] font-semibold leading-[1.04] tracking-[-0.04em] text-[color:var(--board-ink)]">
-            Le quotidien tient en une boucle
+          <h1 className="mt-5 max-w-[480px] text-pretty text-[clamp(30px,3.2vw,44px)] font-semibold leading-[1.06] tracking-[-0.04em] text-[color:var(--board-ink)]">
+            {titre}
           </h1>
-          <p className="mt-4 max-w-[460px] text-[15.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
-            Suivre ce qui tombe, garder la preuve, corriger, tenir à jour.
-            L&apos;outil calcule les dates et classe vos pièces — la boucle,
-            elle, ne change jamais.
+          <p className="mt-3.5 max-w-[440px] text-[14.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
+            {brief.paragraphe}
           </p>
-
-          {/* Les quatre gestes du quotidien, en pictogrammes cliquables. */}
-          <ul className="mt-7 flex list-none flex-col gap-4 p-0">
-            {STATIONS_QUOTIDIEN.map((s) => (
-              <li key={s.segment}>
-                <Link
-                  href={`/etablissements/${etablissementId}/${s.segment}`}
-                  className="group flex items-center gap-4 transition-opacity hover:opacity-85"
-                >
-                  <span
-                    className={
-                      "flex size-[52px] flex-none items-center justify-center rounded-full " +
-                      s.disque
-                    }
-                  >
-                    {s.icone}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[15px] font-semibold leading-[1.25] tracking-[-0.02em] text-[color:var(--board-ink)] group-hover:underline">
-                      {s.verbe}
-                    </span>
-                    <span className="mt-0.5 block text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-                      {s.detail}
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
 
-        {/* La photo tient la moitié droite du hero : du terrain, pas un
-            schéma — le rayon 30 px la range dans la famille des grands
-            blocs du board. Masquée sur mobile, où la liste suffit. */}
-        <div className="relative hidden min-h-[300px] self-stretch overflow-hidden rounded-[30px] lg:block">
-          <Image
-            src="/photos/hero-cuisine.jpg"
-            alt="Cuisine professionnelle en plein service"
-            fill
-            sizes="(min-width: 1024px) 46vw, 1px"
-            className="object-cover"
-            priority
-          />
+        <div>
+          {file.length > 0 ? (
+            <ol className="m-0 flex list-none flex-col gap-3 p-0">
+              {file.map((r, i) => (
+                <CarteTache
+                  key={r.href}
+                  numero={i + 1}
+                  reco={r}
+                  aujourdhui={aujourdhui}
+                />
+              ))}
+            </ol>
+          ) : null}
+
+          {/* Le solde de la file. À zéro, on le dit — le silence se
+              lirait comme un oubli ; sinon, la ligne est la porte vers
+              le calendrier. */}
+          {sous30j > 0 ? (
+            <Link
+              href={hrefCalendrier}
+              className="mt-3 flex items-center gap-3 rounded-[18px] border border-dashed border-[color:rgba(10,10,10,.28)] px-4 py-3 transition-colors hover:border-solid hover:bg-[color:var(--board-card)]/40"
+            >
+              <span className="flex size-7 flex-none items-center justify-center rounded-full bg-[color:var(--board-card)]">
+                <CalendarDays className="size-3.5 text-[color:var(--board-ink)]" />
+              </span>
+              <span className="text-[13px] text-[color:var(--board-slate-ink)]">
+                {sous30j} échéance{sous30j > 1 ? "s" : ""} sous 30 jours —
+                voir le calendrier
+              </span>
+            </Link>
+          ) : (
+            <div className="mt-3 flex items-center gap-3 rounded-[18px] border border-dashed border-[color:rgba(10,10,10,.28)] px-4 py-3">
+              <span className="flex size-7 flex-none items-center justify-center rounded-full bg-[color:var(--board-card)]">
+                <Check className="size-3.5 text-[color:var(--board-ink)]" />
+              </span>
+              <span className="text-[13px] text-[color:var(--board-slate-ink)]">
+                Aucune autre échéance sous 30 jours.
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

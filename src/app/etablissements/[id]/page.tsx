@@ -220,9 +220,9 @@ export default async function EtablissementPage({
 
   return (
     <>
-      {/* Le brief est une section à part entière : bandeau bleu ciel
-          pleine largeur, sans rayon — la seule grande surface colorée de
-          la page, posée au-dessus du canvas quasi blanc. */}
+      {/* Le brief est une section à part entière : panneau bleu ciel à
+          grand rayon posé dans la gouttière — la seule grande surface
+          colorée de la page — qui annonce la file de travail du jour. */}
       <BlocBrief bundle={bundle} />
 
       {/* Canvas quasi blanc du board — `flex-1` pour qu'il descende
