@@ -214,6 +214,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
     Component: WidgetEquipements,
+    obligatoire: true,
   },
   documents: {
     id: "documents",
@@ -261,7 +262,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     id: "calendrier-type",
     titre: "La frise des échéances",
     description:
-      "Vue calendrier mensuelle de vos vérifications, avec bascule en frise horizontale défilante (3 mois en arrière à 24 mois en avant, zoom 90 jours / 12 mois).",
+      "Vue calendrier de vos vérifications — grille mensuelle ou année entière — avec bascule en frise horizontale défilante (3 mois en arrière à 24 mois en avant, zoom 90 jours / 12 mois).",
     taille: "large",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",

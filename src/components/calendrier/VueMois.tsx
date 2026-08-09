@@ -21,14 +21,16 @@ import {
 /** Nombre de pastilles affichées avant de replier en « +N ». */
 const MAX_PAR_JOUR = 3;
 
+// Les cases du calendrier sont déjà très claires : la pastille d'alerte
+// prend le champ plein (et non l'atténué de la frise, qui s'y noierait),
+// et c'est surtout son type brique qui la fait trouver.
 const TON_PASTILLE: Record<EvenementGrille["tone"], string> = {
-  alerte:
-    "bg-[color:var(--board-signal-mid)] text-[color:var(--board-signal-ink)]",
-  warn: "bg-[color:var(--board-grey-pale)] text-[color:var(--board-text)]",
+  alerte: "bg-[color:var(--board-signal)] text-[color:var(--board-signal-ink)]",
+  warn: "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]",
   ok: "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]",
 };
 
-function BoutonNav({
+export function BoutonNav({
   onClick,
   label,
   actif,
@@ -45,7 +47,7 @@ function BoutonNav({
       onClick={onClick}
       disabled={!actif}
       aria-label={label}
-      className="flex size-8 items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] transition-colors hover:bg-[color:var(--board-blue-pale)] disabled:cursor-not-allowed disabled:border-[color:var(--board-grey-line)] disabled:text-[color:var(--board-grey-soft)] disabled:hover:bg-transparent"
+      className="flex size-8 items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] transition-colors hover:bg-[color:var(--board-blue-pale)] disabled:cursor-not-allowed disabled:border-[color:var(--board-slate-line)] disabled:text-[color:var(--board-slate-soft)] disabled:hover:bg-transparent"
     >
       {children}
     </button>
@@ -95,7 +97,7 @@ export function VueMois({
         >
           <ChevronRight className="size-4" />
         </BoutonNav>
-        <p className="m-0 ml-auto text-[12.5px] text-[color:var(--board-grey-ink)]">
+        <p className="m-0 ml-auto text-[12.5px] text-[color:var(--board-slate-mid)]">
           {grille.nbEvenements === 0
             ? "Aucune échéance ce mois-ci"
             : `${grille.nbEvenements} échéance${grille.nbEvenements > 1 ? "s" : ""}`}
@@ -106,7 +108,7 @@ export function VueMois({
         {JOURS_SEMAINE.map((j) => (
           <div
             key={j}
-            className="pb-1 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-grey-soft)]"
+            className="pb-1 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate-soft)]"
           >
             {j}
           </div>
@@ -123,8 +125,8 @@ export function VueMois({
                 (jour.estAujourdhui
                   ? "bg-[color:var(--board-blue-pale)] ring-1 ring-[color:var(--board-blue-mid)]"
                   : jour.dansLeMois
-                    ? "bg-[color:var(--board-grey-pale)]"
-                    : "bg-[color:var(--board-grey-pale)]/40")
+                    ? "bg-[color:var(--board-slate-pale)]"
+                    : "bg-[color:var(--board-slate-pale)]/40")
               }
             >
               <span
@@ -134,7 +136,7 @@ export function VueMois({
                     ? "text-[color:var(--board-blue-ink)]"
                     : jour.dansLeMois
                       ? "text-[color:var(--board-ink)]"
-                      : "text-[color:var(--board-grey-soft)]")
+                      : "text-[color:var(--board-slate-soft)]")
                 }
               >
                 {jour.numero}
@@ -156,7 +158,7 @@ export function VueMois({
                   </li>
                 ))}
                 {reste > 0 ? (
-                  <li className="px-1.5 text-[10px] font-semibold text-[color:var(--board-grey-soft)]">
+                  <li className="px-1.5 text-[10px] font-semibold text-[color:var(--board-slate-soft)]">
                     +{reste}
                   </li>
                 ) : null}

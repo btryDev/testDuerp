@@ -1,4 +1,4 @@
-// Construction d'une grille mensuelle d'échéances.
+// Construction des grilles d'échéances — mensuelle et annuelle.
 //
 // Pure et déterministe, comme la frise : on injecte le mois affiché et la
 // date du jour, on ne lit jamais l'horloge. La semaine commence le lundi
@@ -117,4 +117,67 @@ export function construireGrilleMois({
     semaines,
     nbEvenements,
   };
+}
+
+export type MoisAnnee = {
+  /** 1er du mois. */
+  mois: Date;
+  /** « Janv. », « Août ». */
+  libelle: string;
+  estMoisCourant: boolean;
+  /** false si le mois est entièrement hors de la fenêtre chargée. */
+  dansFenetre: boolean;
+  nbParTon: Record<EvenementGrille["tone"], number>;
+  nbTotal: number;
+};
+
+export type GrilleAnnee = {
+  annee: number;
+  mois: MoisAnnee[];
+  /** Nombre d'événements tombant dans l'année affichée. */
+  nbEvenements: number;
+};
+
+export function construireGrilleAnnee({
+  annee,
+  evenements,
+  aujourdhui,
+  fenetre,
+}: {
+  annee: number;
+  evenements: EvenementGrille[];
+  aujourdhui: Date;
+  /** Bornes de la période chargée — un mois qui n'y touche pas est grisé. */
+  fenetre?: { debut: Date; fin: Date };
+}): GrilleAnnee {
+  const parMois: Record<EvenementGrille["tone"], number>[] = Array.from(
+    { length: 12 },
+    () => ({ alerte: 0, warn: 0, ok: 0 }),
+  );
+  let nbEvenements = 0;
+  for (const e of evenements) {
+    if (e.date.getFullYear() !== annee) continue;
+    parMois[e.date.getMonth()][e.tone] += 1;
+    nbEvenements += 1;
+  }
+
+  const format = new Intl.DateTimeFormat("fr-FR", { month: "short" });
+  const mois = parMois.map((nbParTon, m): MoisAnnee => {
+    const premier = new Date(annee, m, 1);
+    const dernier = new Date(annee, m + 1, 0);
+    const brut = format.format(premier);
+    return {
+      mois: premier,
+      libelle: brut.charAt(0).toUpperCase() + brut.slice(1),
+      estMoisCourant:
+        aujourdhui.getFullYear() === annee && aujourdhui.getMonth() === m,
+      dansFenetre: fenetre
+        ? dernier >= fenetre.debut && premier <= fenetre.fin
+        : true,
+      nbParTon,
+      nbTotal: nbParTon.alerte + nbParTon.warn + nbParTon.ok,
+    };
+  });
+
+  return { annee, mois, nbEvenements };
 }

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { construireGrilleMois, type EvenementGrille } from "./grille";
+import {
+  construireGrilleAnnee,
+  construireGrilleMois,
+  type EvenementGrille,
+} from "./grille";
 
 const LE_8_AOUT = new Date(2026, 7, 8);
 
@@ -88,5 +92,63 @@ describe("construireGrilleMois — événements", () => {
     const g = grille(LE_8_AOUT, [tard, tot]);
     const jour = g.semaines.flat().find((j) => j.cle === "2026-08-12");
     expect(jour?.evenements.map((e) => e.id)).toEqual(["tot", "tard"]);
+  });
+});
+
+const annee = (
+  a: number,
+  evenements: EvenementGrille[] = [],
+  fenetre?: { debut: Date; fin: Date },
+) => construireGrilleAnnee({ annee: a, evenements, aujourdhui: LE_8_AOUT, fenetre });
+
+describe("construireGrilleAnnee", () => {
+  it("aligne douze cartes-mois, libellées en français", () => {
+    const g = annee(2026);
+    expect(g.mois).toHaveLength(12);
+    expect(g.mois[0].libelle).toBe("Janv.");
+    expect(g.mois[7].libelle).toBe("Août");
+    expect(g.mois[7].mois).toEqual(new Date(2026, 7, 1));
+  });
+
+  it("compte les événements par mois et par ton", () => {
+    const g = annee(2026, [
+      { ...ev("a", 2026, 8, 3), tone: "alerte" },
+      { ...ev("b", 2026, 8, 20), tone: "warn" },
+      ev("c", 2026, 8, 24),
+      ev("d", 2026, 11, 2),
+    ]);
+    expect(g.mois[7].nbParTon).toEqual({ alerte: 1, warn: 1, ok: 1 });
+    expect(g.mois[7].nbTotal).toBe(3);
+    expect(g.mois[10].nbTotal).toBe(1);
+    expect(g.nbEvenements).toBe(4);
+  });
+
+  it("ignore les événements des autres années", () => {
+    const g = annee(2026, [ev("avant", 2025, 12, 31), ev("apres", 2027, 1, 1)]);
+    expect(g.nbEvenements).toBe(0);
+    expect(g.mois.every((m) => m.nbTotal === 0)).toBe(true);
+  });
+
+  it("marque le mois courant, sur la bonne année seulement", () => {
+    expect(annee(2026).mois.map((m) => m.estMoisCourant)).toEqual(
+      Array.from({ length: 12 }, (_, m) => m === 7),
+    );
+    expect(annee(2027).mois.some((m) => m.estMoisCourant)).toBe(false);
+  });
+
+  it("grise les mois entièrement hors de la fenêtre chargée", () => {
+    // Fenêtre mai 2026 → août 2028 : janvier–avril 2026 sont hors champ,
+    // mai reste dedans même si la fenêtre s'ouvre en cours de mois.
+    const g = annee(2026, [], {
+      debut: new Date(2026, 4, 15),
+      fin: new Date(2028, 7, 31),
+    });
+    expect(g.mois.map((m) => m.dansFenetre)).toEqual(
+      Array.from({ length: 12 }, (_, m) => m >= 4),
+    );
+  });
+
+  it("laisse tout accessible sans fenêtre déclarée", () => {
+    expect(annee(2030).mois.every((m) => m.dansFenetre)).toBe(true);
   });
 });
