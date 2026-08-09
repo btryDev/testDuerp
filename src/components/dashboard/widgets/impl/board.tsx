@@ -302,7 +302,10 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
       ? `${reelles.length} élément${reelles.length > 1 ? "s" : ""} à traiter`
       : brief.titre;
 
-  const sous30j = compteurs.verifsSous30j;
+  // « Autre » au sens strict : les vérifications proches déjà en carte
+  // ne sont pas recomptées dans le solde.
+  const prochesAffichees = file.filter((r) => r.kind === "verif_proche").length;
+  const sous30j = Math.max(0, compteurs.verifsSous30j - prochesAffichees);
   const hrefCalendrier = `/etablissements/${etablissementId}/calendrier`;
 
   return (
@@ -349,7 +352,8 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
                 <CalendarDays className="size-3.5 text-[color:var(--board-ink)]" />
               </span>
               <span className="text-[13px] text-[color:var(--board-slate-ink)]">
-                {sous30j} échéance{sous30j > 1 ? "s" : ""} sous 30 jours —
+                {sous30j} autre{sous30j > 1 ? "s" : ""} échéance
+                {sous30j > 1 ? "s" : ""} sous 30 jours —
                 voir le calendrier
               </span>
             </Link>
