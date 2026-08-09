@@ -109,9 +109,9 @@ function libelleCategorie(c: string): string {
   return c.replace(/_/g, " ").toLowerCase();
 }
 
-/** Mini-pastille de signal sur tuile glacier : fond blanc, point de
+/** Mini-pastille de signal sur tuile gris clair : fond blanc, point de
  *  marque saturée + texte encré. Le champ pastel (rose, vert) ne se pose
- *  pas sur le glacier — trop proche en valeur — donc c'est la marque qui
+ *  pas sur ce fond — trop proche en valeur — donc c'est la marque qui
  *  porte la couleur, conformément à la règle de la charte pervenche. */
 function PastilleTuile({
   point,
@@ -195,7 +195,7 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
               <Link
                 key={eq.id}
                 href={`/etablissements/${etablissementId}/equipements`}
-                className="group flex min-h-[118px] overflow-hidden rounded-[20px] bg-[color:var(--board-blue-pale)] transition-colors hover:bg-[color:color-mix(in_oklch,var(--board-blue-pale)_70%,var(--board-blue-soft))]"
+                className="group flex min-h-[118px] overflow-hidden rounded-[20px] bg-[color:var(--board-slate-pale)] transition-colors hover:bg-[color:color-mix(in_oklch,var(--board-slate-pale)_55%,var(--board-slate-line))]"
               >
                 <div className="flex w-[84px] flex-none items-center justify-center">
                   <PictoEquipement
@@ -205,7 +205,7 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
                   />
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col py-4 pr-4">
-                  <p className="truncate text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[color:var(--board-blue-ink)]">
+                  <p className="truncate text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[color:var(--board-slate-soft)]">
                     {libelleCategorie(eq.categorie)}
                   </p>
                   <p className="mt-1 text-[14.5px] font-semibold leading-[1.25] text-[color:var(--board-ink)]">
