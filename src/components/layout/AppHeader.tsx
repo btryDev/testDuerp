@@ -21,14 +21,14 @@ export async function AppHeader() {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-3 sm:px-10">
         <Link href="/" className="group flex items-center gap-3">
           <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-ink text-[0.6rem] font-bold uppercase tracking-widest text-paper">
-            SS
+            R
           </span>
           <span className="flex flex-col leading-tight">
             <span className="text-[0.88rem] font-semibold tracking-[-0.01em]">
-              Conformité santé-sécurité
+              Rojer
             </span>
             <span className="font-mono text-[0.56rem] uppercase tracking-[0.22em] text-muted-foreground">
-              TPE / PME — plateforme continue
+              Conformité santé-sécurité — TPE / PME
             </span>
           </span>
         </Link>

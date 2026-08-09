@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Vérifiez votre e-mail — Conformité santé-sécurité",
+  title: "Vérifiez votre e-mail — Rojer",
 };
 
 export default async function VerificationEnAttentePage({

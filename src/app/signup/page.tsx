@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SignupForm } from "./SignupForm";
 
 export const metadata = {
-  title: "Créer un compte — Conformité santé-sécurité",
+  title: "Créer un compte — Rojer",
 };
 
 export default async function SignupPage({

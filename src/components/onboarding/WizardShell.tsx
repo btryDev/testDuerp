@@ -181,7 +181,7 @@ export function WizardShell() {
           className="relative flex items-baseline gap-1.5 text-[1.08rem] font-semibold tracking-[-0.02em] text-[color:var(--accent-vif)]"
         >
           <span className="size-2 translate-y-[-1px] rounded-full bg-[color:var(--accent-vif)]" />
-          Pilote
+          Rojer
           <span className="text-[0.7rem] font-normal tracking-[0.18em] text-[color:color-mix(in_oklch,var(--paper-elevated)_65%,transparent)]">
             conformité
           </span>
@@ -254,7 +254,7 @@ export function WizardShell() {
             className="flex items-baseline gap-1.5 text-[1.02rem] font-semibold tracking-[-0.02em] text-[color:var(--accent-vif)]"
           >
             <span className="size-2 translate-y-[-1px] rounded-full bg-[color:var(--accent-vif)]" />
-            Pilote
+            Rojer
             <span className="text-[0.68rem] font-normal tracking-[0.18em] text-muted-foreground">
               conformité
             </span>

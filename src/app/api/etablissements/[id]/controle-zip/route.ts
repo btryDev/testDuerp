@@ -406,7 +406,7 @@ function genererReadme(args: {
     "",
     "────────────────────────────────────────────────────────────",
     "",
-    "Document généré automatiquement par Pilote conformité.",
+    "Document généré automatiquement par Rojer.",
     "Ne remplace pas un conseil juridique. Responsabilité finale : employeur.",
     "",
   );

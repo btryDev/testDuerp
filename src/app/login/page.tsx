@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LoginForm } from "./LoginForm";
 
 export const metadata = {
-  title: "Connexion — Conformité santé-sécurité",
+  title: "Connexion — Rojer",
 };
 
 export default async function LoginPage({

@@ -16,7 +16,7 @@ import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 import { construireChezVous } from "@/lib/guide/chez-vous";
 
 export const metadata = {
-  title: "Comprendre vos obligations — Conformité santé-sécurité",
+  title: "Comprendre vos obligations — Rojer",
 };
 
 /**

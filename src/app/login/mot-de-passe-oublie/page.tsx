@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ForgotPasswordForm } from "./ForgotPasswordForm";
 
 export const metadata = {
-  title: "Mot de passe oublié — Conformité santé-sécurité",
+  title: "Mot de passe oublié — Rojer",
 };
 
 export default function ForgotPasswordPage() {

@@ -1,7 +1,7 @@
 import { ResetPasswordForm } from "./ResetPasswordForm";
 
 export const metadata = {
-  title: "Nouveau mot de passe — Conformité santé-sécurité",
+  title: "Nouveau mot de passe — Rojer",
 };
 
 export default function ResetPasswordPage() {

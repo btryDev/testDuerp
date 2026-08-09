@@ -130,7 +130,7 @@ async function envoyerMailAcces(args: {
   lignes.push(
     `Lien valable jusqu'au ${expiration} (heure de Paris).`,
     "",
-    "— Pilote conformité (de la part de votre interlocuteur)",
+    "— Rojer (de la part de votre interlocuteur)",
     "",
     "Finalité : permettre une action ponctuelle demandée par votre interlocuteur.",
     "Droit d'accès / effacement : contactez l'émetteur du lien.",
