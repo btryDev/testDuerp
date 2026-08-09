@@ -106,76 +106,60 @@
      s'en sert en marge négative pour son plein-fer, la grille et la
      pastille « Organiser » s'y alignent. */
   --board-gutter: 32px;
-  /* Famille bleu ciel (H205) — référence Rojer d'origine (« Tableau de
-     bord Rojer.html ») : ciel, champs glacier, aplats acier, encre bleu
-     pétrole. Les signaux restent ceux de la charte actuelle — rose pour
-     le retard, vert pour l'acquis.
-     Ratios : ink 6,68 sur blanc, 5,44 sur le pâle, 4,54 sur le ciel ;
-     noir 13,9 sur le ciel, 16,7 sur le pâle. */
-  /* Le ciel — ex-canvas, devenu le champ du hero et les touches bleues
-     du chrome (sidebar). Éclairci d'un cran (#d3e7f7 → #daf3fc) : les
-     encres y gagnent encore en contraste. */
-  --board-sky: #daf3fc;
-  /* Le canvas quasi blanc derrière les cartes : le gris Apple #f5f5f7,
-     refroidi d'un souffle pour rester dans la famille ardoise. Écart
-     avec la carte blanche : 1,04 — c'est le filet et l'ombre des cartes
-     qui font la séparation, pas le fond. */
-  --board-canvas: #f5f6f9;
+  /* Famille bleu ciel (H205) — palette relevée sur la maquette d'août
+     2026 (capture « Rojer » ). Le principe des versions précédentes
+     — champ pastel + marque saturée — est abandonné : les champs sont
+     désormais saturés (rose #ff9d9e, jaune #fff3ba, vert #bdfdb5) et
+     portent une encre foncée de la même famille ; les points de frise
+     reprennent la couleur du champ (rose pour le retard, noir pour le
+     proche, ardoise pour le calme). */
+  /* Le ciel — champ du hero et touches bleues du chrome (sidebar).
+     Revenu au ciel d'origine de la maquette (#d5eafa). */
+  --board-sky: #d5eafa;
+  /* Le canvas quasi blanc derrière les cartes — gris neutre #f2f3f4 :
+     c'est le filet et l'ombre des cartes qui font la séparation. */
+  --board-canvas: #f2f3f4;
   --board-ink: #0a0a0a;
   --board-card: #ffffff;
-  /* Glacier. Le champ posé sur carte blanche : plus clair que le canvas
-     d'un cran net pour ne pas ressembler à du fond qui transparaît. */
-  --board-blue-pale: #e8f3fc;
-  --board-blue-soft: #b5d5ee;
-  --board-blue-mid: #7fafd4;
-  --board-blue-strong: #5c93be;
-  --board-blue-ink: #2f5f85;
-  /* Signal « en retard ». Deux essais avant celui-ci : l'ambre pastel
-     (#f7c07c) ne portait rien, le corail vif (#e0664c) portait trop —
-     posé en aplat sur les tuiles-chiffre, les points de frise et les
-     puces, il prenait la tête du board et le bleu n'y était plus majeur.
-     La règle retenue sépare les deux rôles : le CHAMP reste pastel, comme
-     le bleu et le vert qui l'entourent, et c'est la MARQUE — point de
-     frise, puce de 22 px, filet — qui porte la saturation. Le rouge ne
-     couvre donc plus de grandes surfaces, mais il reste lisible partout.
-     Rosé plutôt qu'orangé : à côté d'un canvas bleu, l'orangé tire vers
-     la complémentaire et se bat avec lui.
-     Ratios : marque 4,87 sur carte blanche et 3,48 sur le canvas (seuil
-     3 pour un objet graphique), blanc sur la marque 4,87 ; ink 6,08 sur
-     le champ, 7,32 sur le pâle ; noir sur le champ 15,2. Le champ ne vaut
-     que 1,07 contre le canvas pervenche — il ne doit jamais s'y poser
-     directement, seulement sur carte blanche ou sur le rail noir. */
-  /* Signal « proche » — l'échéance qui tombe dans les 30 jours. Même
-     règle que le rouge : champ pastel, marque saturée. Ratios : encre
-     5,92 sur le champ et 7,29 sur blanc ; marque 4,63 sur carte blanche
-     et 3,31 sur le canvas ; noir sur le champ 16,1. */
-  --board-amber: #ffe3c8;
-  --board-amber-ink: #82480e;
-  --board-amber-mark: #b25f03;
-  --board-signal: #ffd8dd;
-  --board-signal-mid: #ffe7ea;
-  --board-signal-pale: #fff3f4;
-  --board-signal-line: #f0a4ae;
-  --board-signal-mark: #d43046;
-  --board-signal-ink: #9c1f2e;
+  /* Glacier. Le champ bleu posé sur carte blanche (pilule « 90 jours »,
+     tuile compte à rebours, badge n°2 du hero). */
+  --board-blue-pale: #d8eef9;
+  --board-blue-soft: #a9d3ec;
+  --board-blue-mid: #7fb0d0;
+  --board-blue-strong: #5d93b8;
+  --board-blue-ink: #376881;
+  /* Signal « proche » — jaune paille : champ des cartes de frise et des
+     pilules d'équipement. Encre brune de la même famille.
+     Ratios : encre 6,5 sur le champ. La marque du proche est l'encre
+     noire — c'est elle que porte le point de frise. */
+  --board-amber: #fff3ba;
+  --board-amber-ink: #754d0a;
+  --board-amber-mark: #0a0a0a;
+  /* Signal « en retard » — rose saumon saturé, posé en champ partout :
+     pilules, cartes de frise, tuiles-chiffre, points de frise. L'encre
+     rouge sombre tient 4,7 sur le champ ; le noir 9,8. Le blanc ne
+     tient PAS sur ce rose (2,0) — jamais de texte blanc dessus. */
+  --board-signal: #ff9d9e;
+  --board-signal-mid: #ff9d9e;
+  --board-signal-pale: #ffeaea;
+  --board-signal-line: #f27e80;
+  --board-signal-mark: #ff9d9e;
+  --board-signal-ink: #8a2a23;
   --board-signal-on: #0a0a0a;
-  --board-green: #a8e585;
-  --board-green-ink: #2a5f1d;
-  --board-green-ink-soft: #3d7a29;
+  --board-green: #bdfdb5;
+  --board-green-ink: #216037;
+  --board-green-ink-soft: #2e7a45;
 
-  /* Ardoise — le registre calme : une seule teinte froide quasi
-     neutre, seule la luminosité descend. Héritée de l'essai pervenche
-     (H228) mais assez désaturée pour tenir aussi à côté du canvas
-     bleu ciel actuel.
-     Ratios sur blanc : soft 5,76 · mid 7,35 · ink 11,01 ; le plus
-     clair des trois tient encore 4,73 sur le pâle et 5,24 sur la
-     surface creuse. */
-  --board-slate-pale: #f2f4fa; /* surface creuse */
-  --board-slate-line: #e4e9f4; /* filets, séparateurs */
-  --board-slate: #c1c9e0; /* axe de frise, structure */
-  --board-slate-soft: #5b667e; /* petits labels, graduations */
-  --board-slate-mid: #4d566b; /* texte courant secondaire */
-  --board-slate-ink: #353c4e; /* texte appuyé */
+  /* Ardoise — le registre calme, réalignée sur la famille bleu ciel
+     (H205 désaturé) : surface creuse des pilules neutres et des cartes
+     d'équipement, graduations, texte secondaire.
+     Ratios sur blanc : soft 4,9 · mid 6,9 · ink 9,9. */
+  --board-slate-pale: #edf2f5; /* surface creuse */
+  --board-slate-line: #dfe8ee; /* filets, séparateurs */
+  --board-slate: #b5d1e3; /* graduations, structure */
+  --board-slate-soft: #5c7182; /* petits labels, points « calme » */
+  --board-slate-mid: #4d5d6b; /* texte courant secondaire */
+  --board-slate-ink: #304148; /* texte appuyé */
 
   --background: var(--paper);
   --foreground: var(--ink);

@@ -192,7 +192,7 @@ function Lien({
  * Aucune chaîne décorative : tout vient du bundle.
  */
 
-/** Tons d'une carte-tâche : l'ambre marque le dépassé (vérification ou
+/** Tons d'une carte-tâche : le rose marque le dépassé (vérification ou
  *  action en retard), le bleu tout le reste — y compris les amorces. */
 const KINDS_ALERTE: ReadonlySet<Recommandation["kind"]> = new Set([
   "verif_depassee",
@@ -242,7 +242,7 @@ function CarteTache({
         className={
           "flex size-10 flex-none items-center justify-center rounded-full text-[15px] font-semibold tabular-nums " +
           (alerte
-            ? "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]"
+            ? "bg-[color:var(--board-signal)] text-[color:var(--board-signal-ink)]"
             : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]")
         }
       >
@@ -262,10 +262,7 @@ function CarteTache({
         href={reco.href}
         aria-label={`Ouvrir : ${reco.titre}`}
         className={
-          "flex-none rounded-full px-[18px] py-[9px] text-[12.5px] font-semibold transition-opacity hover:opacity-85 " +
-          (alerte
-            ? "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]"
-            : "bg-[color:var(--board-ink)] text-white")
+          "flex-none rounded-full bg-[color:var(--board-ink)] px-[18px] py-[9px] text-[12.5px] font-semibold text-white transition-opacity hover:opacity-85"
         }
       >
         Ouvrir
@@ -399,12 +396,20 @@ function registreMarqueur(m: {
   return "calme";
 }
 
-/** Couleur du point posé sur l'axe. Petit repère sur carte blanche :
- *  seul endroit du bloc où rouge et orange sont servis saturés. */
+/** Couleur du point posé sur l'axe : rose du champ pour le chaud, noir
+ *  pour le proche, ardoise pour le calme. */
 const TON_POINT: Record<RegistreMarqueur, string> = {
   chaud: "var(--board-signal-mark)",
   proche: "var(--board-amber-mark)",
   calme: "var(--board-slate-soft)",
+};
+
+/** Texte posé sur le point en grappe. Le rose du chaud ne porte pas le
+ *  blanc — il prend l'encre rouge sombre ; noir et ardoise le gardent. */
+const TON_POINT_TEXTE: Record<RegistreMarqueur, string> = {
+  chaud: "var(--board-signal-ink)",
+  proche: "#fff",
+  calme: "#fff",
 };
 
 /** Champ et textes de la carte, par registre. */
@@ -734,12 +739,12 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                 className="relative"
                 style={{ width: frise.largeur, height: PISTE_HAUTEUR }}
               >
-                {/* L'axe porte l'ardoise pleine. C'est la ligne
+                {/* L'axe porte l'encre pleine. C'est la ligne
                     structurante du plus grand bloc du board : au filet
-                    précédent (1,14 sur la carte) elle disparaissait, et
-                    les points semblaient flotter sans support. */}
+                    précédent elle disparaissait, et les points
+                    semblaient flotter sans support. */}
                 <div
-                  className="absolute inset-x-0 h-1 rounded-sm bg-[color:var(--board-slate)]"
+                  className="absolute inset-x-0 h-1 rounded-sm bg-[color:var(--board-ink)]"
                   style={{ top: AXE_Y }}
                 />
 
@@ -749,11 +754,11 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                     élément de premier plan — et l'étiquette se pose sous
                     la voie basse, seule bande toujours libre. */}
                 <div
-                  className="absolute border-l border-dashed border-[color:var(--board-blue-mid)]"
+                  className="absolute border-l border-dashed border-[color:var(--board-slate)]"
                   style={{ left: frise.xAujourdhui, top: 0, height: PISTE_HAUTEUR - 20 }}
                 />
                 <span
-                  className="absolute -translate-x-1/2 whitespace-nowrap rounded-full bg-[color:var(--board-blue-mid)] px-2 py-[3px] font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em] text-white"
+                  className="absolute -translate-x-1/2 whitespace-nowrap rounded-full bg-[color:var(--board-ink)] px-2 py-[3px] font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em] text-white"
                   style={{ left: frise.xAujourdhui, top: PISTE_HAUTEUR - 20 }}
                 >
                   Aujourd&apos;hui
@@ -784,11 +789,12 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                           vrai. En grappe, il porte le nombre. */}
                       {grappe ? (
                         <span
-                          className="absolute z-10 flex h-5 min-w-5 -translate-x-1/2 items-center justify-center rounded-full px-1.5 text-[10.5px] font-semibold text-white shadow-[0_0_0_4px_var(--board-card)]"
+                          className="absolute z-10 flex h-5 min-w-5 -translate-x-1/2 items-center justify-center rounded-full px-1.5 text-[10.5px] font-semibold shadow-[0_0_0_4px_var(--board-card)]"
                           style={{
                             left: m.x,
                             top: AXE_Y - 8,
                             background: TON_POINT[registre],
+                            color: TON_POINT_TEXTE[registre],
                           }}
                         >
                           {m.evenements.length}
@@ -1221,12 +1227,9 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
           >
             <span
               className={
-                // Dissymétrie voulue : le vert reste pastel (il n'a rien à
-                // réclamer), l'écart prend la marque saturée. À 22 px, elle
-                // se trouve d'un coup d'œil sans peser sur la page.
                 "flex size-[22px] flex-none items-center justify-center rounded-full text-[11px] " +
                 (r.resultat === "ecart_majeur"
-                  ? "bg-[color:var(--board-signal-mark)] font-semibold text-white"
+                  ? "bg-[color:var(--board-signal-mark)] font-semibold text-[color:var(--board-signal-ink)]"
                   : "bg-[color:var(--board-green)] text-[color:var(--board-green-ink)]")
               }
             >
@@ -1247,7 +1250,7 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
             href={aFaire.href}
             className="flex items-center gap-3 rounded-full border border-[color:var(--board-signal-line)] bg-[color:var(--board-signal-pale)] px-4 py-[13px] transition-opacity hover:opacity-85"
           >
-            <span className="flex size-[22px] flex-none items-center justify-center rounded-full bg-[color:var(--board-signal-mark)] text-[11px] font-semibold text-white">
+            <span className="flex size-[22px] flex-none items-center justify-center rounded-full bg-[color:var(--board-signal-mark)] text-[11px] font-semibold text-[color:var(--board-signal-ink)]">
               !
             </span>
             <span className="flex-1 text-[13.5px] font-medium leading-[1.35] text-[color:var(--board-ink)]">
