@@ -312,7 +312,7 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
     // Fonds inversés : le hero porte le ciel en bandeau pleine largeur,
     // sans rayon ni gouttière — le canvas quasi blanc ne commence qu'en
     // dessous.
-    <div className="bg-[color:var(--board-sky)] px-[46px] pb-[44px] pt-[42px]">
+    <div className="bg-[color:var(--board-sky)] px-[46px] pb-[72px] pt-[68px]">
       <div className="grid items-center gap-x-12 gap-y-8 lg:grid-cols-[1fr_1.08fr]">
         <div>
           <span className="inline-block rounded-full bg-[color:var(--board-card)] px-[14px] py-[6px] text-[11.5px] font-semibold tracking-[0.06em] text-[color:var(--board-blue-ink)]">
