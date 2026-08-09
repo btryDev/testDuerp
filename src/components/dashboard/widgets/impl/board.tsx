@@ -6,7 +6,7 @@
 // carte à grand rayon sur le canvas quasi blanc — blanche à filet et
 // ombre douce (bento), sauf les deux qui passent au noir (voir
 // `CarteBoard`). Le système de
-// personnalisation (DashboardGrid + EditToolbar, le « ⠿ Organiser » du
+// personnalisation (DashboardGrid + EditToolbar, le « ⠿ Personnaliser » du
 // mockup) reste donc pleinement opérant — le board n'est que le layout
 // par défaut, pas une page figée.
 //
@@ -472,7 +472,7 @@ function FlecheDefilement({
 export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
   // Bascules inline, comme dans le design. Elles vivent ici plutôt que
   // dans le système de variants pour rester accessibles hors mode
-  // « Organiser ».
+  // « Personnaliser ».
   const [echelle, setEchelle] = useState<EchelleFrise>("jours");
   const [vue, setVue] = useState<"frise" | "calendrier">("calendrier");
   // Maille de la vue calendrier : l'année entière d'emblée — la grille

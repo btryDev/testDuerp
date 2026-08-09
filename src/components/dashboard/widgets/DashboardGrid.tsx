@@ -76,16 +76,19 @@ export function DashboardGrid({ bundle }: { bundle: DashboardBundle }) {
   );
 
   return (
-    <div className="relative flex flex-col">
-      {/* Hors édition, le contrôle flotte en haut à droite — c'est la place
-          qu'il occupe dans le design, et ça libère le bandeau de tête pour
-          le bloc éditorial. En édition il redescend dans le flux : le
-          tiroir « Ajouter un widget » a besoin de la pleine largeur. */}
-      {enEdition ? (
-        <div className="px-[var(--board-gutter)] pt-[var(--board-gutter)]">{toolbar}</div>
-      ) : (
-        <div className="absolute right-[var(--board-gutter)] top-[var(--board-gutter)] z-20">{toolbar}</div>
-      )}
+    <div className="flex flex-col">
+      {/* Le contrôle occupe sa propre rangée en tête du board : posé en
+          flottant il chevauchait le premier widget. Hors édition il se
+          range à droite ; en édition il prend la pleine largeur — le
+          tiroir « Ajouter un widget » en a besoin. */}
+      <div
+        className={
+          "px-[var(--board-gutter)] pt-[calc(var(--board-gutter)-8px)] " +
+          (enEdition ? "" : "flex justify-end")
+        }
+      >
+        {toolbar}
+      </div>
 
       <DndContext
         sensors={sensors}
@@ -93,7 +96,7 @@ export function DashboardGrid({ bundle }: { bundle: DashboardBundle }) {
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={ids} strategy={rectSortingStrategy}>
-          <div className="grid grid-cols-1 gap-3 p-[var(--board-gutter)] sm:grid-cols-2 lg:grid-cols-6 [grid-auto-flow:dense]">
+          <div className="grid grid-cols-1 gap-3 px-[var(--board-gutter)] pb-[var(--board-gutter)] pt-3 sm:grid-cols-2 lg:grid-cols-6 [grid-auto-flow:dense]">
             {layout.items.map((item) => {
               const def = REGISTRY[item.widgetId];
               if (!def) return null;

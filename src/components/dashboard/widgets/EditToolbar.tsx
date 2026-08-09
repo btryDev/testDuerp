@@ -2,9 +2,9 @@
 
 // Contrôles de mise en page du tableau de bord.
 //
-// Hors édition : une seule pastille « Organiser », flottante en haut à
-// droite du board — c'est la forme et la place qu'elle occupe dans le
-// design. Tout le reste (ajouter, réinitialiser, tiroir) n'apparaît qu'une
+// Hors édition : une seule pastille « Personnaliser », rangée à droite
+// de sa propre rangée en tête du board. Tout le reste (ajouter,
+// réinitialiser, tiroir) n'apparaît qu'une
 // fois en mode personnalisation : sur un tableau de bord qu'on consulte
 // dix fois par jour et qu'on réorganise deux fois par an, exposer trois
 // actions en permanence encombre le bandeau de tête pour rien.
@@ -35,11 +35,11 @@ export function EditToolbar({
       <button
         type="button"
         onClick={onToggle}
-        title="Réorganiser le tableau de bord"
+        title="Personnaliser le tableau de bord"
         className="inline-flex items-center gap-1.5 rounded-full border border-[color:rgba(10,10,10,.14)] bg-[color:var(--board-card)]/90 px-3.5 py-2 text-[12.5px] font-medium text-[color:var(--board-ink)] shadow-sm backdrop-blur transition-colors hover:bg-[color:var(--board-card)]"
       >
         <GripVertical aria-hidden className="size-3.5 opacity-60" />
-        Organiser
+        Personnaliser
       </button>
     );
   }
