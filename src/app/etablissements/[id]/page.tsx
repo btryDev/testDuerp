@@ -1,7 +1,4 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { buttonVariants } from "@/components/ui/button";
-import { AppTopbar } from "@/components/layout/AppTopbar";
 import {
   OnboardingChecklist,
   type EtapeOnboarding,
@@ -223,27 +220,16 @@ export default async function EtablissementPage({
 
   return (
     <>
-      <AppTopbar
-        title="Tableau de bord"
-        actions={
-          <Link
-            href={`/etablissements/${id}/controle`}
-            className={buttonVariants({ size: "sm" })}
-          >
-            Préparer un contrôle →
-          </Link>
-        }
-      />
-
-      {/* Le brief est une section à part entière : bandeau blanc pleine
-          largeur, sans rayon, hors du canvas bleu. Le laisser à
-          l'intérieur du bleu le faisait ressembler à un bloc posé dessus,
-          avec du canvas visible autour. */}
+      {/* Le brief est une section à part entière : bandeau bleu ciel
+          pleine largeur, sans rayon — la seule grande surface colorée de
+          la page, posée au-dessus du canvas quasi blanc. */}
       <BlocBrief bundle={bundle} />
 
-      {/* Canvas bleu du board — `flex-1` pour qu'il descende jusqu'au bas
-          du conteneur de défilement, même quand les widgets sont courts.
-          Le reste de l'app garde la palette « papier ». */}
+      {/* Canvas quasi blanc du board — `flex-1` pour qu'il descende
+          jusqu'au bas du conteneur de défilement, même quand les widgets
+          sont courts. Les cartes s'en détachent par filet et ombre douce
+          (bento), pas par l'aplat. Le reste de l'app garde la palette
+          « papier ». */}
       <div className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-10">
         {!onboardingFini ? (
           <div className="p-[var(--board-gutter)] pb-0">

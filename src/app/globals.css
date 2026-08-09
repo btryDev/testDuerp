@@ -96,24 +96,30 @@
   --alert: oklch(0.55 0.16 30); /* #B84A3C */
   --alert-soft: oklch(0.93 0.04 30); /* #F6E4E1 */
 
-  /* Palette « board éditorial » — direction 4a du design Rojer.
-     Portée par le seul tableau de bord : canvas bleu, cartes blanches à
-     grands rayons, chrome noir, pastilles rose/vert sémantiques.
-     Le bleu est majeur : il tient le canvas, les champs neutres et les
-     deux tiers des repères. Les autres teintes n'entrent que là où elles
-     disent quelque chose — rose pour le retard, vert pour l'acquis. */
+  /* Palette « board éditorial » — direction 4a du design Rojer, fonds
+     inversés : le bleu ciel qui tenait le canvas est remonté dans le
+     hero, le canvas est passé quasi blanc, et les cartes blanches se
+     détachent façon bento Apple — filet cheveu + ombre douce — plutôt
+     que par l'aplat coloré. Le bleu ne couvre plus, il touche : hero,
+     pilules, repères, sidebar. Rose pour le retard, vert pour l'acquis. */
   /* Gouttière extérieure du board. Un seul endroit à régler : le hero
      s'en sert en marge négative pour son plein-fer, la grille et la
      pastille « Organiser » s'y alignent. */
   --board-gutter: 32px;
-  /* Famille bleu ciel (H205) — retour à la référence Rojer d'origine
-     (« Tableau de bord Rojer.html ») après l'essai pervenche : canvas
-     ciel, champs glacier, aplats acier, encre bleu pétrole. Les
-     signaux restent ceux de la charte actuelle — rose pour le retard,
-     vert pour l'acquis — pas de retour à l'ambre/corail de la maquette.
-     Ratios : ink 6,68 sur blanc, 5,44 sur le pâle, 4,54 sur le canvas ;
-     noir 13,9 sur le canvas, 16,7 sur le pâle. */
-  --board-canvas: #d3e7f7;
+  /* Famille bleu ciel (H205) — référence Rojer d'origine (« Tableau de
+     bord Rojer.html ») : ciel, champs glacier, aplats acier, encre bleu
+     pétrole. Les signaux restent ceux de la charte actuelle — rose pour
+     le retard, vert pour l'acquis.
+     Ratios : ink 6,68 sur blanc, 5,44 sur le pâle, 4,54 sur le ciel ;
+     noir 13,9 sur le ciel, 16,7 sur le pâle. */
+  /* Le ciel — ex-canvas, devenu le champ du hero et les touches bleues
+     du chrome (sidebar). */
+  --board-sky: #d3e7f7;
+  /* Le canvas quasi blanc derrière les cartes : le gris Apple #f5f5f7,
+     refroidi d'un souffle pour rester dans la famille ardoise. Écart
+     avec la carte blanche : 1,04 — c'est le filet et l'ombre des cartes
+     qui font la séparation, pas le fond. */
+  --board-canvas: #f5f6f9;
   --board-ink: #0a0a0a;
   --board-card: #ffffff;
   /* Glacier. Le champ posé sur carte blanche : plus clair que le canvas

@@ -3,8 +3,9 @@
 // Blocs du « board éditorial » — direction 4a du design Rojer.
 //
 // Chaque bloc est un widget du registre : il reçoit le bundle et rend une
-// carte à grand rayon sur le canvas bleu — blanche, sauf les deux qui
-// passent au noir (voir `CarteBoard`). Le système de
+// carte à grand rayon sur le canvas quasi blanc — blanche à filet et
+// ombre douce (bento), sauf les deux qui passent au noir (voir
+// `CarteBoard`). Le système de
 // personnalisation (DashboardGrid + EditToolbar, le « ⠿ Organiser » du
 // mockup) reste donc pleinement opérant — le board n'est que le layout
 // par défaut, pas une page figée.
@@ -20,6 +21,7 @@ import {
   useRef,
   useState,
 } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -28,9 +30,9 @@ import {
   ChevronRight,
   GanttChart,
 } from "lucide-react";
-import { construireBrief } from "@/lib/dashboard/brief";
 import { construireFrise, type EchelleFrise } from "@/lib/dashboard/frise";
 import { VueMois } from "@/components/calendrier/VueMois";
+import { VueAnnee } from "@/components/calendrier/VueAnnee";
 import {
   COLONNES_MATRICE,
   compterRestes,
@@ -76,10 +78,12 @@ export function CarteBoard({
   return (
     <div
       className={
+        // Sur canvas quasi blanc, l'aplat ne sépare plus rien : c'est le
+        // filet cheveu et l'ombre douce qui détachent la carte — bento.
         "flex h-full flex-col " +
         (ton === "sombre"
-          ? "bg-[color:var(--board-ink)] "
-          : "bg-[color:var(--board-card)] ") +
+          ? "bg-[color:var(--board-ink)] shadow-[0_1px_2px_rgba(13,18,36,.06),0_16px_40px_-16px_rgba(13,18,36,.22)] "
+          : "bg-[color:var(--board-card)] ring-1 ring-[color:rgba(13,18,36,.06)] shadow-[0_1px_2px_rgba(13,18,36,.04),0_12px_32px_-14px_rgba(13,18,36,.10)] ") +
         (rayon === 26 ? "rounded-[26px] " : "rounded-[30px] ") +
         className
       }
@@ -174,111 +178,199 @@ function Lien({
  * Le brief n'est pas un widget : c'est le bandeau de tête du tableau de
  * bord, rendu par la page au-dessus de la grille. Il occupe donc toute la
  * largeur, sans gouttière ni rayon — le canvas bleu ne commence qu'en
- * dessous. Il n'est ni déplaçable ni retirable, et c'est voulu : c'est lui
- * qui répond à « qu'est-ce que je dois faire aujourd'hui ».
+ * dessous. Il n'est ni déplaçable ni retirable, et c'est voulu.
+ *
+ * Il ne décrit plus l'état du dossier — les widgets s'en chargent, chacun
+ * sur son périmètre. Il montre la routine : à gauche les quatre gestes du
+ * quotidien en pictogrammes cliquables, à droite une photo de terrain —
+ * une cuisine en plein service, le décor réel de ces obligations. La mise
+ * en place, elle, vit dans la checklist d'onboarding — le hero ne parle
+ * que de ce qui recommence. Chaque geste porte la teinte que le board
+ * donne déjà à son sujet : bleu = échéances, vert = preuve déposée,
+ * ambre = écart à traiter, ardoise = intendance.
+ *
+ * Photo : « Restaurant Kitchen », Michael Browning, StockSnap, CC0 —
+ * `public/photos/hero-cuisine.jpg`.
  */
+
+type StationQuotidien = {
+  verbe: string;
+  detail: string;
+  segment: string;
+  /** Fond + encre du disque — la teinte que le sujet porte déjà ailleurs
+   *  sur le board. */
+  disque: string;
+  icone: React.ReactNode;
+};
+
+/** Pictogrammes maison, dessinés en `currentColor` et blanc : chaque
+ *  disque leur donne son encre. Décoratifs — le texte porte tout. */
+const ICONES_QUOTIDIEN = {
+  echeances: (
+    <svg viewBox="0 0 32 32" className="size-[30px]" fill="none" aria-hidden>
+      <rect x="4" y="6" width="24" height="22" rx="4" fill="#fff" />
+      <path d="M4 10a4 4 0 0 1 4-4h16a4 4 0 0 1 4 4v3H4Z" fill="currentColor" />
+      <rect x="9" y="2" width="3" height="7" rx="1.5" fill="currentColor" />
+      <rect x="20" y="2" width="3" height="7" rx="1.5" fill="currentColor" />
+      <rect x="9" y="17" width="4" height="4" rx="1" fill="currentColor" opacity=".35" />
+      <rect x="15" y="17" width="4" height="4" rx="1" fill="currentColor" opacity=".35" />
+      <rect x="21" y="17" width="4" height="4" rx="1" fill="currentColor" />
+      <rect x="9" y="23" width="4" height="4" rx="1" fill="currentColor" opacity=".35" />
+    </svg>
+  ),
+  preuve: (
+    <svg viewBox="0 0 32 32" className="size-[30px]" fill="none" aria-hidden>
+      <rect x="7" y="3" width="18" height="26" rx="3" fill="#fff" />
+      <rect x="11" y="9" width="10" height="2.5" rx="1.25" fill="currentColor" opacity=".45" />
+      <rect x="11" y="14" width="7" height="2.5" rx="1.25" fill="currentColor" opacity=".45" />
+      <circle cx="22" cy="22" r="6" fill="currentColor" />
+      <path d="m19.4 22 1.8 1.8 3.2-3.6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  ecart: (
+    <svg viewBox="0 0 32 32" className="size-[30px]" fill="none" aria-hidden>
+      <circle cx="14" cy="18" r="11" fill="#fff" />
+      <circle cx="14" cy="18" r="6.5" fill="currentColor" opacity=".3" />
+      <circle cx="14" cy="18" r="2.5" fill="currentColor" />
+      <path d="M14 18 26 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M22.5 5.5h4v4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  maj: (
+    <svg viewBox="0 0 32 32" className="size-[30px]" fill="none" aria-hidden>
+      <path
+        d="M25.5 16a9.5 9.5 0 1 1-2.8-6.7"
+        stroke="#fff"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M25.5 4v6h-6"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="16" cy="16" r="3.5" fill="currentColor" opacity=".4" />
+    </svg>
+  ),
+};
+
+/** La boucle du quotidien, dans l'ordre où on la vit. Aucune donnée ici :
+ *  c'est la routine, pas l'état. */
+const STATIONS_QUOTIDIEN: StationQuotidien[] = [
+  {
+    verbe: "Suivez les échéances",
+    detail: "Le calendrier dit ce qui tombe, et quand.",
+    segment: "calendrier",
+    // Sur le hero bleu ciel, le glacier disparaissait : un cran plus
+    // soutenu, même encre.
+    disque:
+      "bg-[color:var(--board-blue-soft)] text-[color:var(--board-blue-ink)]",
+    icone: ICONES_QUOTIDIEN.echeances,
+  },
+  {
+    verbe: "Déposez les preuves",
+    detail: "Chaque rapport rejoint le registre, daté et classé.",
+    segment: "registre",
+    disque: "bg-[color:var(--board-green)] text-[color:var(--board-green-ink)]",
+    icone: ICONES_QUOTIDIEN.preuve,
+  },
+  {
+    verbe: "Corrigez les écarts",
+    detail: "Une action par écart, suivie jusqu'à sa levée.",
+    segment: "actions",
+    disque: "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]",
+    icone: ICONES_QUOTIDIEN.ecart,
+  },
+  {
+    verbe: "Mettez à jour",
+    detail: "Équipements et documents, dès que quelque chose change.",
+    segment: "equipements",
+    // Même cran que le bleu : l'ardoise pâle fondait dans le ciel.
+    disque:
+      "bg-[color:var(--board-slate)] text-[color:var(--board-slate-ink)]",
+    icone: ICONES_QUOTIDIEN.maj,
+  },
+];
+
 export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
-  const { dashboard, nbRapports, aujourdhui } = bundle;
-  const brief = construireBrief({
-    aujourdhui,
-    compteurs: dashboard.compteurs,
-    duerp: dashboard.duerp,
-    recommandations: dashboard.recommandations,
-    nbRapports,
-  });
+  const { etablissementId, aujourdhui } = bundle;
+
+  const datePill = (() => {
+    const s = new Intl.DateTimeFormat("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(aujourdhui);
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  })();
 
   return (
-    // Écart assumé au mockup, qui pose le bandeau en plein-fer : ici il
-    // reste dans la gouttière, comme tous les autres blocs, pour que le
-    // canvas bleu encadre le board sur ses quatre côtés — y compris le
-    // long du rail noir.
-    <div className="grid items-center gap-9 bg-[color:var(--board-card)] px-[46px] pb-[50px] pt-[52px] lg:grid-cols-[1.15fr_.85fr]">
-      <div>
-        <span className="inline-block rounded-full bg-[color:var(--board-blue-pale)] px-[14px] py-[6px] text-[11.5px] font-semibold tracking-[0.06em] text-[color:var(--board-blue-ink)]">
-          {brief.datePill}
-        </span>
-        <h1 className="mt-[26px] max-w-[520px] text-pretty text-[clamp(34px,4vw,56px)] font-semibold leading-[1.02] tracking-[-0.045em] text-[color:var(--board-ink)]">
-          {brief.titre}
-        </h1>
-        <p className="mt-[22px] max-w-[460px] text-[16px] leading-[1.6] text-[color:var(--board-slate-mid)]">
-          {brief.paragraphe}
-        </p>
+    // Fonds inversés : le hero porte désormais le ciel — seule grande
+    // surface bleue de la page — et le canvas dessous est quasi blanc.
+    // Noir 13,9 et ardoise ~5 sur le ciel : les encres du bandeau blanc
+    // passent telles quelles.
+    <div className="bg-[color:var(--board-sky)] px-[46px] pb-[44px] pt-[46px]">
+      <div className="grid items-center gap-10 lg:grid-cols-[1.02fr_.98fr]">
+        <div>
+          <span className="inline-block rounded-full bg-[color:var(--board-card)] px-[14px] py-[6px] text-[11.5px] font-semibold tracking-[0.06em] text-[color:var(--board-blue-ink)]">
+            {datePill}
+          </span>
+          <h1 className="mt-[24px] max-w-[480px] text-pretty text-[clamp(32px,3.6vw,50px)] font-semibold leading-[1.04] tracking-[-0.04em] text-[color:var(--board-ink)]">
+            Le quotidien tient en une boucle
+          </h1>
+          <p className="mt-4 max-w-[460px] text-[15.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+            Suivre ce qui tombe, garder la preuve, corriger, tenir à jour.
+            L&apos;outil calcule les dates et classe vos pièces — la boucle,
+            elle, ne change jamais.
+          </p>
 
-        {brief.gestes.length > 0 ? (
-          <div className="mt-7 flex flex-wrap gap-[9px]">
-            {brief.gestes.map((g, i) => {
-              // Deux axes distincts, longtemps confondus : le RANG décide
-              // du poids (le premier geste porte le slab noir, le suivant
-              // un slab bleu), le TON décide de la couleur du sujet. Peindre
-              // le second geste en rouge parce qu'il est second faisait
-              // crier une simple hiérarchie — et retirait au rouge sa
-              // valeur d'alerte partout ailleurs.
-              const primaire = i === 0;
-              const alerte = g.ton === "alerte";
-              return (
+          {/* Les quatre gestes du quotidien, en pictogrammes cliquables. */}
+          <ul className="mt-7 flex list-none flex-col gap-4 p-0">
+            {STATIONS_QUOTIDIEN.map((s) => (
+              <li key={s.segment}>
                 <Link
-                  key={g.href + g.tag}
-                  href={g.href}
-                  title={g.tagComplet}
-                  className="inline-flex max-w-full items-center overflow-hidden rounded-full text-[12.5px] font-medium transition-opacity hover:opacity-85"
+                  href={`/etablissements/${etablissementId}/${s.segment}`}
+                  className="group flex items-center gap-4 transition-opacity hover:opacity-85"
                 >
                   <span
                     className={
-                      "truncate px-[14px] py-[10px] " +
-                      (alerte
-                        ? "bg-[color:var(--board-signal)] text-[color:var(--board-signal-ink)]"
-                        : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]")
+                      "flex size-[52px] flex-none items-center justify-center rounded-full " +
+                      s.disque
                     }
                   >
-                    {g.tag}
+                    {s.icone}
                   </span>
-                  <span
-                    className={
-                      "flex-none px-4 py-[10px] font-semibold " +
-                      (primaire
-                        ? "bg-[color:var(--board-ink)] text-white"
-                        : "bg-[color:var(--board-blue-ink)] text-white")
-                    }
-                  >
-                    {g.label}
+                  <span className="min-w-0">
+                    <span className="block text-[15px] font-semibold leading-[1.25] tracking-[-0.02em] text-[color:var(--board-ink)] group-hover:underline">
+                      {s.verbe}
+                    </span>
+                    <span className="mt-0.5 block text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+                      {s.detail}
+                    </span>
                   </span>
                 </Link>
-              );
-            })}
-          </div>
-        ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* La photo tient la moitié droite du hero : du terrain, pas un
+            schéma — le rayon 30 px la range dans la famille des grands
+            blocs du board. Masquée sur mobile, où la liste suffit. */}
+        <div className="relative hidden min-h-[300px] self-stretch overflow-hidden rounded-[30px] lg:block">
+          <Image
+            src="/photos/hero-cuisine.jpg"
+            alt="Cuisine professionnelle en plein service"
+            fill
+            sizes="(min-width: 1024px) 46vw, 1px"
+            className="object-cover"
+            priority
+          />
+        </div>
       </div>
-
-      <MotifIsometrique />
-    </div>
-  );
-}
-
-/**
- * Le design réserve la moitié droite du hero à une illustration
- * isométrique. En l'absence d'illustration, on rend un motif décoratif
- * dans la même palette plutôt qu'un cartouche « placeholder » : le bloc
- * tient visuellement sans prétendre porter de l'information.
- */
-function MotifIsometrique() {
-  return (
-    <div
-      aria-hidden
-      // Le panneau porte le glacier plutôt que la hachure seule : sur le
-      // blanc du bandeau, des rayures sans fond ne faisaient pas un bloc,
-      // juste une texture. Le hero gagne du même coup sa surface bleue.
-      className="hidden min-h-[260px] items-center justify-center self-stretch rounded-[30px] bg-[color:var(--board-blue-pale)] bg-[image:repeating-linear-gradient(135deg,rgba(47,95,133,.05)_0_12px,transparent_12px_24px)] lg:flex"
-    >
-      <svg viewBox="0 0 200 140" className="w-[56%]" fill="none">
-        <ellipse cx="100" cy="112" rx="72" ry="18" fill="rgba(255,255,255,.55)" />
-        <path d="M100 34 168 72 100 110 32 72Z" fill="var(--board-blue-soft)" />
-        <path d="M100 34 168 72 100 110Z" fill="var(--board-blue-mid)" />
-        <path d="M100 12 140 34 100 56 60 34Z" fill="var(--board-card)" />
-        {/* Le glacier est désormais le fond du panneau : cette face y
-            disparaîtrait. */}
-        <path d="M100 12 140 34 100 56Z" fill="var(--board-blue-soft)" />
-        <circle cx="100" cy="34" r="6" fill="var(--board-ink)" />
-      </svg>
     </div>
   );
 }
@@ -379,7 +471,10 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
   // dans le système de variants pour rester accessibles hors mode
   // « Organiser ».
   const [echelle, setEchelle] = useState<EchelleFrise>("jours");
-  const [vue, setVue] = useState<"frise" | "calendrier">("frise");
+  const [vue, setVue] = useState<"frise" | "calendrier">("calendrier");
+  // Maille de la vue calendrier : l'année entière d'emblée — la grille
+  // d'un mois reste accessible via la bascule mois / année.
+  const [maille, setMaille] = useState<"mois" | "annee">("annee");
   const [mois, setMois] = useState(
     () =>
       new Date(
@@ -447,7 +542,9 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
           </h2>
           <p className="mt-2 text-[13.5px] text-[color:var(--board-slate-mid)]">
             {vue === "calendrier"
-              ? "Mois par mois, ce qui tombe et quel jour."
+              ? maille === "annee"
+                ? "L’année d’un bloc — cliquez un mois pour le détailler."
+                : "Mois par mois, ce qui tombe et quel jour."
               : "Ce qui tombe, quand, et ce qui est déjà pris en charge — faites défiler pour aller jusqu’à 24 mois."}
           </p>
         </div>
@@ -459,6 +556,24 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
               </Pastille>
             </Link>
           ) : null}
+          {vue === "calendrier"
+            ? (["mois", "annee"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMaille(m)}
+                  aria-pressed={maille === m}
+                  className={
+                    "rounded-full px-[13px] py-[6px] text-[11.5px] font-semibold transition-colors " +
+                    (maille === m
+                      ? "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
+                      : "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)] hover:text-[color:var(--board-ink)]")
+                  }
+                >
+                  {m === "mois" ? "Mois" : "Année"}
+                </button>
+              ))
+            : null}
           {vue === "frise"
             ? (["jours", "mois"] as const).map((e) => (
                 <button
@@ -513,24 +628,47 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
       </div>
 
       {vue === "calendrier" ? (
-        <VueMois
-          mois={mois}
-          evenements={bundle.evenementsHorizon}
-          aujourdhui={bundle.aujourdhui}
-          hrefEvenement={(e) =>
-            `/etablissements/${bundle.etablissementId}/verifications/${e.id}`
-          }
-          onPrecedent={() =>
-            setMois((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))
-          }
-          onSuivant={() =>
-            setMois((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1))
-          }
-          // Même fenêtre que la frise : au-delà, la donnée n'est pas
-          // chargée, et une grille vide ne voudrait rien dire.
-          peutReculer={mois > frise.debut}
-          peutAvancer={mois < frise.fin}
-        />
+        maille === "annee" ? (
+          <VueAnnee
+            annee={mois.getFullYear()}
+            evenements={bundle.evenementsHorizon}
+            aujourdhui={bundle.aujourdhui}
+            // Même fenêtre que la frise : au-delà, la donnée n'est pas
+            // chargée, et une carte-mois vide mentirait.
+            fenetre={{ debut: frise.debut, fin: frise.fin }}
+            onPrecedent={() =>
+              setMois((m) => new Date(m.getFullYear() - 1, m.getMonth(), 1))
+            }
+            onSuivant={() =>
+              setMois((m) => new Date(m.getFullYear() + 1, m.getMonth(), 1))
+            }
+            onChoisirMois={(m) => {
+              setMois(m);
+              setMaille("mois");
+            }}
+            peutReculer={new Date(mois.getFullYear() - 1, 11, 31) >= frise.debut}
+            peutAvancer={new Date(mois.getFullYear() + 1, 0, 1) <= frise.fin}
+          />
+        ) : (
+          <VueMois
+            mois={mois}
+            evenements={bundle.evenementsHorizon}
+            aujourdhui={bundle.aujourdhui}
+            hrefEvenement={(e) =>
+              `/etablissements/${bundle.etablissementId}/verifications/${e.id}`
+            }
+            onPrecedent={() =>
+              setMois((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))
+            }
+            onSuivant={() =>
+              setMois((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1))
+            }
+            // Même fenêtre que la frise : au-delà, la donnée n'est pas
+            // chargée, et une grille vide ne voudrait rien dire.
+            peutReculer={mois > frise.debut}
+            peutAvancer={mois < frise.fin}
+          />
+        )
       ) : frise.marqueurs.length === 0 ? (
         // Rien à placer sur l'axe : on ne dessine pas une frise déserte de
         // 236 px. On dit ce qui bloque, et on donne la porte de sortie.

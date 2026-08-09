@@ -17,14 +17,24 @@
 // sans naviguer. « Comprendre » n'a pas de panneau — quand on est sur le
 // guide, le panneau montre « À faire » (la porte d'entrée par défaut).
 //
+// Le panneau est rétractable, et replié par défaut : un bouton en pied de
+// rail — ou un clic sur une entrée du rail — le déplie, un bouton dans son
+// en-tête le replie. Le choix est mémorisé dans localStorage.
+//
 // L'arborescence vit dans `sidebar-nav.ts` (module pur, testé) : mêmes
 // items, mêmes règles de divulgation progressive, mêmes badges que le rail
 // simple qu'elle remplace. Ce fichier ne fait que le rendu.
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, HelpCircle, LogOut } from "lucide-react";
+import {
+  ChevronDown,
+  HelpCircle,
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import { signOutAction } from "@/lib/auth/actions";
 import {
   categorieDeItem,
@@ -93,6 +103,11 @@ export function AppSidebar({
   }
   const affichee = choix ?? catActive;
 
+  // Repli du panneau, persisté dans localStorage. Le serveur rend toujours
+  // replié (le défaut) ; le client se rattrape au premier rendu.
+  const replie = useSyncExternalStore(sAbonnerRepli, lireRepli, () => true);
+  const basculerRepli = ecrireRepli;
+
   const panneau =
     rail.find((c) => c.id === affichee && c.items) ??
     // « Comprendre » n'a pas de panneau → porte d'entrée par défaut.
@@ -110,9 +125,9 @@ export function AppSidebar({
         {/* Marque abstraite (cible) — le nom vit en tête du panneau */}
         <div className="grid h-[67px] shrink-0 place-items-center border-b border-white/10">
           <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden>
-            <circle cx="13" cy="13" r="11" stroke="var(--board-canvas)" strokeWidth="1" opacity="0.35" />
-            <circle cx="13" cy="13" r="6.5" stroke="var(--board-canvas)" strokeWidth="1.1" opacity="0.75" />
-            <circle cx="13" cy="13" r="2.4" fill="var(--board-canvas)" />
+            <circle cx="13" cy="13" r="11" stroke="var(--board-sky)" strokeWidth="1" opacity="0.35" />
+            <circle cx="13" cy="13" r="6.5" stroke="var(--board-sky)" strokeWidth="1.1" opacity="0.75" />
+            <circle cx="13" cy="13" r="2.4" fill="var(--board-sky)" />
           </svg>
         </div>
 
@@ -125,7 +140,10 @@ export function AppSidebar({
                 cat={c}
                 courante={affichee === c.id}
                 surPage={catActive === c.id}
-                onClick={() => setChoix(c.id)}
+                onClick={() => {
+                  setChoix(c.id);
+                  basculerRepli(false);
+                }}
               />
             ))}
 
@@ -138,11 +156,28 @@ export function AppSidebar({
             ))}
         </nav>
 
+        {replie ? (
+          <div className="shrink-0 px-2 pb-1">
+            <button
+              type="button"
+              onClick={() => basculerRepli(false)}
+              aria-label="Déplier le panneau"
+              aria-expanded={false}
+              className="grid w-full place-items-center rounded-xl py-2 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <PanelLeftOpen aria-hidden className="size-[18px]" />
+            </button>
+          </div>
+        ) : null}
+
         {/* Compte : cinquième entrée, en pied de rail */}
         <div className="shrink-0 border-t border-white/10 px-2 py-3">
           <button
             type="button"
-            onClick={() => setChoix("compte")}
+            onClick={() => {
+              setChoix("compte");
+              basculerRepli(false);
+            }}
             aria-pressed={affichee === "compte"}
             className="group flex w-full flex-col items-center gap-1.5 rounded-xl py-2 transition-colors hover:bg-white/10"
           >
@@ -152,7 +187,7 @@ export function AppSidebar({
                 "grid size-8 place-items-center rounded-full font-mono text-[11px] font-semibold transition-colors " +
                 (affichee === "compte"
                   ? "bg-white text-[color:var(--board-ink)]"
-                  : "bg-[color:var(--board-canvas)] text-[color:var(--board-blue-ink)]")
+                  : "bg-[color:var(--board-sky)] text-[color:var(--board-blue-ink)]")
               }
             >
               {initialUser}
@@ -170,31 +205,50 @@ export function AppSidebar({
       </div>
 
       {/* ---- Panneau : items de la catégorie choisie ---- */}
-      <div className="flex w-[224px] shrink-0 flex-col bg-white/[0.04]">
-        <div className="flex h-[67px] shrink-0 items-center border-b border-white/10 px-5">
-          <p className="text-[17px] font-semibold leading-none tracking-[-0.025em] text-white">
-            Pilote
-          </p>
-        </div>
-
-        {affichee === "compte" ? (
-          <PanneauCompte user={user} />
-        ) : panneau ? (
-          <nav
-            aria-label={panneau.label}
-            className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-4"
-          >
-            <p className="px-4 pb-2 pt-[18px] font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">
-              {panneau.label}
+      <div
+        inert={replie}
+        className={
+          "shrink-0 overflow-hidden bg-white/[0.04] transition-[width] duration-200 " +
+          (replie ? "w-0" : "w-[224px]")
+        }
+      >
+        {/* Largeur fixe interne : le contenu glisse sous le bord au lieu de
+            se recomposer pendant l'animation de largeur. */}
+        <div className="flex h-full w-[224px] flex-col">
+          <div className="flex h-[67px] shrink-0 items-center justify-between border-b border-white/10 pl-5 pr-3">
+            <p className="text-[17px] font-semibold leading-none tracking-[-0.025em] text-white">
+              Rojer
             </p>
-            {panneau.items?.map((it) => (
-              <NavLink key={it.id} item={it} actif={actif} />
-            ))}
-            {panneau.repliables ? (
-              <Divulgation items={panneau.repliables} actif={actif} />
-            ) : null}
-          </nav>
-        ) : null}
+            <button
+              type="button"
+              onClick={() => basculerRepli(true)}
+              aria-label="Replier le panneau"
+              aria-expanded
+              className="grid size-8 place-items-center rounded-lg text-white/40 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <PanelLeftClose aria-hidden className="size-4" />
+            </button>
+          </div>
+
+          {affichee === "compte" ? (
+            <PanneauCompte user={user} />
+          ) : panneau ? (
+            <nav
+              aria-label={panneau.label}
+              className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-4"
+            >
+              <p className="px-4 pb-2 pt-[18px] font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">
+                {panneau.label}
+              </p>
+              {panneau.items?.map((it) => (
+                <NavLink key={it.id} item={it} actif={actif} />
+              ))}
+              {panneau.repliables ? (
+                <Divulgation items={panneau.repliables} actif={actif} />
+              ) : null}
+            </nav>
+          ) : null}
+        </div>
       </div>
     </aside>
   );
@@ -309,6 +363,46 @@ function PanneauCompte({ user }: { user?: User | null }) {
       ) : null}
     </div>
   );
+}
+
+/**
+ * Mini-store du repli du panneau : la vérité vit en mémoire de module (le
+ * repli survit donc même sans localStorage, navigation privée par exemple),
+ * localStorage n'est que la persistance entre sessions. Lu au premier accès,
+ * consommé via `useSyncExternalStore` pour rester hydratation-sûr.
+ */
+const CLE_REPLI = "rojer-sidebar-panneau-replie";
+let etatRepli = true;
+let etatRepliLu = false;
+const ecouteursRepli = new Set<() => void>();
+
+function sAbonnerRepli(cb: () => void) {
+  ecouteursRepli.add(cb);
+  return () => ecouteursRepli.delete(cb);
+}
+
+function lireRepli() {
+  if (!etatRepliLu) {
+    etatRepliLu = true;
+    try {
+      // Replié par défaut : seul un « 0 » explicitement mémorisé déplie.
+      etatRepli = window.localStorage.getItem(CLE_REPLI) !== "0";
+    } catch {
+      // Stockage inaccessible : on reste sur la valeur en mémoire.
+    }
+  }
+  return etatRepli;
+}
+
+function ecrireRepli(v: boolean) {
+  etatRepli = v;
+  etatRepliLu = true;
+  try {
+    window.localStorage.setItem(CLE_REPLI, v ? "1" : "0");
+  } catch {
+    // Stockage inaccessible : le repli vaut pour la session en cours.
+  }
+  ecouteursRepli.forEach((cb) => cb());
 }
 
 const CLASSES_ITEM =
