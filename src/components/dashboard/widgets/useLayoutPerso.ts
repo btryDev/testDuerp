@@ -23,11 +23,44 @@ function cle(etablissementId: string): string {
 }
 
 /**
+ * Épingle les widgets obligatoires : chacun est replacé (ou injecté
+ * s'il manque) juste après le dernier widget présent qui le précède
+ * dans l'ordre du board par défaut — en tête si aucun. Pour le widget
+ * équipements, ça veut dire : toujours juste sous le calendrier.
+ * L'ordre choisi par l'utilisateur est conservé pour tout le reste.
+ */
+function epingler(items: LayoutItem[]): LayoutItem[] {
+  const resultat = items.filter((it) => !REGISTRY[it.widgetId].obligatoire);
+  const ordreDefaut = layoutParDefaut().map((it) => it.widgetId);
+
+  for (const def of Object.values(REGISTRY)) {
+    if (!def.obligatoire) continue;
+    const variant =
+      items.find((it) => it.widgetId === def.id)?.variant ??
+      def.defaultVariant;
+    const position = ordreDefaut.indexOf(def.id);
+    const precedents = new Set(
+      position === -1 ? [] : ordreDefaut.slice(0, position),
+    );
+    let ancre = -1;
+    for (let i = resultat.length - 1; i >= 0; i--) {
+      if (precedents.has(resultat[i].widgetId)) {
+        ancre = i;
+        break;
+      }
+    }
+    resultat.splice(ancre + 1, 0, { widgetId: def.id, variant });
+  }
+
+  return resultat;
+}
+
+/**
  * Normalise un layout lu depuis le storage :
  *  - filtre les widgetId inconnus du registre courant (nettoyage lent)
  *  - remplace les variants inexistants par le variant par défaut
- *  - ré-injecte les widgets obligatoires manquants (en tête)
- *  - conserve l'ordre utilisateur
+ *  - épingle les widgets obligatoires (voir `epingler`)
+ *  - conserve l'ordre utilisateur pour le reste
  */
 function normaliser(items: LayoutItem[]): LayoutItem[] {
   const valides = items
@@ -42,12 +75,7 @@ function normaliser(items: LayoutItem[]): LayoutItem[] {
       return { widgetId: it.widgetId, variant };
     });
 
-  const presents = new Set(valides.map((it) => it.widgetId));
-  const obligatoiresManquants = (Object.values(REGISTRY) as typeof REGISTRY[keyof typeof REGISTRY][])
-    .filter((d) => d.obligatoire && !presents.has(d.id))
-    .map((d) => ({ widgetId: d.id, variant: d.defaultVariant }));
-
-  return [...obligatoiresManquants, ...valides];
+  return epingler(valides);
 }
 
 /**
@@ -171,9 +199,10 @@ export function useLayoutPerso(etablissementId: string) {
   );
 
   /** Remplace l'ordre des items par l'array fourni (typiquement
-   *  retourné par @dnd-kit `arrayMove`). */
+   *  retourné par @dnd-kit `arrayMove`). L'épinglage garantit que les
+   *  widgets obligatoires gardent leur place quel que soit le drag. */
   const reordonner = useCallback((items: LayoutItem[]) => {
-    setLayout((l) => ({ ...l, items }));
+    setLayout((l) => ({ ...l, items: epingler(items) }));
   }, []);
 
   const reinitialiser = useCallback(() => {

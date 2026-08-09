@@ -60,21 +60,23 @@ describe("registre de widgets", () => {
     expect(cols.every((c) => c % 3 === 0)).toBe(true);
   });
 
-  it("aucun widget n'est obligatoire", () => {
-    // L'ancre du tableau de bord est le brief, qui vit hors du registre :
-    // plus rien n'a besoin d'être réinjecté de force dans le layout.
+  it("seul le widget équipements est obligatoire", () => {
+    // Les équipements sont le socle du calendrier de vérifications :
+    // le widget est fixe — non retirable, réinjecté s'il manque du
+    // layout persisté. Le reste du board demeure entièrement libre.
     const obligatoires = Object.values(REGISTRY)
       .filter((d) => d.obligatoire)
       .map((d) => d.id);
-    expect(obligatoires).toEqual([]);
+    expect(obligatoires).toEqual(["equipements-grid"]);
   });
 });
 
 describe("useLayoutPerso — migration et normalisation", () => {
-  // Plus aucun widget n'est obligatoire depuis que le brief est sorti du
-  // registre : un layout personnalisé est restitué tel quel.
+  // Un layout personnalisé est restitué dans l'ordre choisi par
+  // l'utilisateur ; seul le widget équipements (obligatoire) est
+  // réinjecté s'il manque — à sa place du board par défaut.
 
-  it("migre un layout v1 valide sans le modifier", () => {
+  it("migre un layout v1 valide en préservant l'ordre utilisateur", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
@@ -86,8 +88,8 @@ describe("useLayoutPerso — migration et normalisation", () => {
     const sortie = __internal.migrerLayout(entree);
     expect(sortie).not.toBeNull();
     expect(sortie?.version).toBe(SCHEMA_VERSION);
-    expect(sortie?.items).toHaveLength(3);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "equipements-grid",
       "indicateurs",
       "score",
       "bars-obligations",
@@ -104,8 +106,8 @@ describe("useLayoutPerso — migration et normalisation", () => {
       ],
     };
     const sortie = __internal.migrerLayout(entree);
-    expect(sortie?.items).toHaveLength(2);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "equipements-grid",
       "indicateurs",
       "score",
     ]);
@@ -141,6 +143,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
+        { widgetId: "equipements-grid", variant: "default" },
         { widgetId: "indicateurs", variant: "default" },
         { widgetId: "guide", variant: "default" },
         { widgetId: "score", variant: "nombre" },
@@ -149,6 +152,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "equipements-grid",
       "indicateurs",
       "guide",
       "score",
@@ -156,7 +160,44 @@ describe("useLayoutPerso — migration et normalisation", () => {
     ]);
   });
 
-  it("n'injecte plus rien de force dans un layout personnalisé", () => {
+  it("réinjecte le widget équipements manquant, juste sous le calendrier", () => {
+    const entree = {
+      version: SCHEMA_VERSION,
+      items: [
+        { widgetId: "guide", variant: "default" },
+        { widgetId: "calendrier-type", variant: "default" },
+        { widgetId: "score", variant: "anneau" },
+      ],
+    };
+    const sortie = __internal.migrerLayout(entree);
+    expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "guide",
+      "calendrier-type",
+      "equipements-grid",
+      "score",
+    ]);
+  });
+
+  it("repositionne le widget équipements sous le calendrier s'il est ailleurs", () => {
+    // Layout hérité où l'utilisateur avait le widget en fin de board :
+    // l'épinglage le ramène sous le calendrier, sans toucher au reste.
+    const entree = {
+      version: SCHEMA_VERSION,
+      items: [
+        { widgetId: "calendrier-type", variant: "default" },
+        { widgetId: "score", variant: "anneau" },
+        { widgetId: "equipements-grid", variant: "default" },
+      ],
+    };
+    const sortie = __internal.migrerLayout(entree);
+    expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "calendrier-type",
+      "equipements-grid",
+      "score",
+    ]);
+  });
+
+  it("épingle en tête si le calendrier n'est pas sur le board", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
@@ -165,6 +206,10 @@ describe("useLayoutPerso — migration et normalisation", () => {
       ],
     };
     const sortie = __internal.migrerLayout(entree);
-    expect(sortie?.items.map((i) => i.widgetId)).toEqual(["guide", "score"]);
+    expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "equipements-grid",
+      "guide",
+      "score",
+    ]);
   });
 });

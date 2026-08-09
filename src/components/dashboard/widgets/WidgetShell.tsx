@@ -34,6 +34,9 @@ export function WidgetShell({
 }) {
   const def = REGISTRY[widgetId];
   const aVariants = def.variants.length > 1;
+  // Un widget obligatoire est épinglé : ni retirable, ni déplaçable —
+  // sa position est recalculée par `epingler` (useLayoutPerso).
+  const epingle = Boolean(def.obligatoire);
 
   const {
     attributes,
@@ -45,7 +48,7 @@ export function WidgetShell({
     isDragging,
   } = useSortable({
     id: widgetId,
-    disabled: !enEdition,
+    disabled: !enEdition || epingle,
   });
 
   const style: React.CSSProperties = {
@@ -76,7 +79,8 @@ export function WidgetShell({
           variants={def.variants}
           aVariants={aVariants}
           onRetirer={onRetirer}
-          retirable={!def.obligatoire}
+          retirable={!epingle}
+          deplacable={!epingle}
           onChangerVariant={onChangerVariant}
           dragAttributes={attributes}
           dragListeners={listeners}
@@ -96,6 +100,7 @@ function ShellOverlay({
   aVariants,
   onRetirer,
   retirable,
+  deplacable,
   onChangerVariant,
   dragAttributes,
   dragListeners,
@@ -107,6 +112,7 @@ function ShellOverlay({
   aVariants: boolean;
   onRetirer: () => void;
   retirable: boolean;
+  deplacable: boolean;
   onChangerVariant: (variant: string) => void;
   dragAttributes: DraggableAttributes;
   dragListeners: SyntheticListenerMap | undefined;
@@ -117,17 +123,19 @@ function ShellOverlay({
   return (
     <>
       <div className="absolute -right-2 -top-2 z-10 flex items-center gap-1 rounded-full border border-rule bg-paper-elevated px-1.5 py-1 shadow-sm">
-        <button
-          ref={setDragActivator}
-          type="button"
-          title="Glisser pour déplacer"
-          aria-label={`Déplacer ${titre}`}
-          {...dragAttributes}
-          {...dragListeners}
-          className="flex size-6 cursor-grab items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-paper-sunk hover:text-ink active:cursor-grabbing"
-        >
-          <GripVertical className="size-3.5" />
-        </button>
+        {deplacable ? (
+          <button
+            ref={setDragActivator}
+            type="button"
+            title="Glisser pour déplacer"
+            aria-label={`Déplacer ${titre}`}
+            {...dragAttributes}
+            {...dragListeners}
+            className="flex size-6 cursor-grab items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-paper-sunk hover:text-ink active:cursor-grabbing"
+          >
+            <GripVertical className="size-3.5" />
+          </button>
+        ) : null}
         <span className="truncate px-1 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
           {titre}
         </span>
@@ -150,8 +158,8 @@ function ShellOverlay({
           </BoutonCtrl>
         ) : (
           <span
-            title="Widget obligatoire"
-            aria-label="Widget obligatoire, non retirable"
+            title="Widget épinglé"
+            aria-label="Widget épinglé : toujours affiché, ni retirable ni déplaçable"
             className="flex size-6 items-center justify-center rounded-full font-mono text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70"
           >
             §
