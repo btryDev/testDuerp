@@ -113,8 +113,9 @@
      Ratios : ink 6,68 sur blanc, 5,44 sur le pâle, 4,54 sur le ciel ;
      noir 13,9 sur le ciel, 16,7 sur le pâle. */
   /* Le ciel — ex-canvas, devenu le champ du hero et les touches bleues
-     du chrome (sidebar). */
-  --board-sky: #d3e7f7;
+     du chrome (sidebar). Éclairci d'un cran (#d3e7f7 → #daf3fc) : les
+     encres y gagnent encore en contraste. */
+  --board-sky: #daf3fc;
   /* Le canvas quasi blanc derrière les cartes : le gris Apple #f5f5f7,
      refroidi d'un souffle pour rester dans la famille ardoise. Écart
      avec la carte blanche : 1,04 — c'est le filet et l'ombre des cartes
