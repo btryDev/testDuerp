@@ -35,9 +35,15 @@ export function ResetPasswordForm() {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) setStatus("ready");
     });
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setStatus("ready");
-    });
+    // Même traitement que côté serveur (middleware, require-user) : un refresh
+    // token périmé fait rejeter getSession — on le traite comme « pas de
+    // session » au lieu de laisser la promesse rejeter sans handler.
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (data.session) setStatus("ready");
+      })
+      .catch(() => {});
     // Si aucune session n'apparaît (lien invalide, autre navigateur pour un
     // lien PKCE…), on bascule en erreur plutôt que d'attendre indéfiniment.
     const timer = setTimeout(() => {

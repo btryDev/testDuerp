@@ -55,9 +55,16 @@ export async function updateSession(request: NextRequest) {
 
   // Ne pas intercaler de logique entre createServerClient et getUser :
   // la doc @supabase/ssr insiste là-dessus (sinon risque de déconnexion aléatoire).
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // `getUser()` peut throw un AuthApiError quand le cookie contient un refresh
+  // token périmé — on traite ça comme « pas de user » pour ne pas 500 chaque
+  // requête tant que le cookie n'a pas été regénéré par un /login.
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"] = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    user = null;
+  }
 
   if (!user && !isPublicPath(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
