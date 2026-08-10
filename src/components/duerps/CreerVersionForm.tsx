@@ -4,12 +4,12 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { creerVersion } from "@/lib/versions/actions";
 import {
-  creerVersion,
   MOTIFS_VERSION,
   type MotifVersion,
   type VersionActionState,
-} from "@/lib/versions/actions";
+} from "@/lib/versions/motifs";
 
 export function CreerVersionForm({
   duerpId,
