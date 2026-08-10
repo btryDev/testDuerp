@@ -19,6 +19,8 @@ export function ForgotPasswordForm() {
   // L'origine est lue côté client : le lien de l'e-mail doit revenir sur le
   // même environnement (localhost en dev, prod en prod).
   const [origin, setOrigin] = useState("");
+  // Lecture client-only (window.location) : impossible au premier rendu SSR.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setOrigin(window.location.origin), []);
 
   if (state.message) {

@@ -13,8 +13,9 @@ const JOURS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
   const { evenementsSemaine = [], etablissementId } = bundle;
 
-  // Fenêtre 7 jours à partir d'aujourd'hui
-  const today = new Date();
+  // Fenêtre 7 jours à partir de la référence du bundle (jamais
+  // `new Date()` au rendu : écart d'hydratation SSR/CSR).
+  const today = new Date(bundle.aujourdhui);
   today.setHours(0, 0, 0, 0);
   const jours = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
@@ -98,7 +99,7 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
                         (e.tone === "alerte"
                           ? "bg-[color:color-mix(in_oklch,var(--minium)_15%,transparent)] text-[color:var(--minium)]"
                           : e.tone === "warn"
-                            ? "bg-[oklch(0.95_0.04_75)] text-[oklch(0.48_0.14_60)]"
+                            ? "bg-[color:var(--warn-soft)] text-[color:var(--warn-ink)]"
                             : "bg-paper-elevated text-ink")
                       }
                     >

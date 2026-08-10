@@ -33,8 +33,15 @@ function epingler(items: LayoutItem[]): LayoutItem[] {
   const resultat = items.filter((it) => !REGISTRY[it.widgetId].obligatoire);
   const ordreDefaut = layoutParDefaut().map((it) => it.widgetId);
 
-  for (const def of Object.values(REGISTRY)) {
-    if (!def.obligatoire) continue;
+  // Les obligatoires sont réinsérés dans l'ordre du board par défaut —
+  // pas dans l'ordre des clés du registre, qui n'engage rien.
+  const obligatoires = Object.values(REGISTRY)
+    .filter((def) => def.obligatoire)
+    .sort(
+      (a, b) => ordreDefaut.indexOf(a.id) - ordreDefaut.indexOf(b.id),
+    );
+
+  for (const def of obligatoires) {
     const variant =
       items.find((it) => it.widgetId === def.id)?.variant ??
       def.defaultVariant;
@@ -148,6 +155,9 @@ export function useLayoutPerso(etablissementId: string) {
   // premier rendu.
   useEffect(() => {
     const stored = lireDepuisStorage(etablissementId);
+    // Motif d'hydratation assumé : le premier rendu (SSR compris) sert
+    // le layout par défaut, le storage n'est relu qu'après montage.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (stored) setLayout(stored);
     initialise.current = true;
   }, [etablissementId]);

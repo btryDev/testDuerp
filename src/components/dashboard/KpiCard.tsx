@@ -6,18 +6,16 @@
 
 import type { ReactNode } from "react";
 
-export type KpiTone = "default" | "ok" | "warn" | "alerte";
+type KpiTone = "default" | "ok" | "warn" | "alerte";
 
 export function KpiCard({
   label,
   value,
-  suffix,
   trend,
   tone = "default",
 }: {
   label: string;
   value: ReactNode;
-  suffix?: string;
   trend?: {
     dir: "up" | "down" | "flat";
     label: string;
@@ -36,11 +34,6 @@ export function KpiCard({
         }
       >
         {value}
-        {suffix ? (
-          <span className="ml-1 text-[0.7em] font-normal not-italic text-muted-foreground">
-            {suffix}
-          </span>
-        ) : null}
       </div>
       {trend ? (
         <div className={"mt-2 text-[0.74rem] " + trendClass(trend.dir)}>
@@ -56,7 +49,7 @@ function toneClass(tone: KpiTone) {
     case "ok":
       return "text-[color:var(--accent-vif)]";
     case "warn":
-      return "text-[color:oklch(0.48_0.14_60)]";
+      return "text-[color:var(--warn-ink)]";
     case "alerte":
       return "text-[color:var(--minium)]";
     default:

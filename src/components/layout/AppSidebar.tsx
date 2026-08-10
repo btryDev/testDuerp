@@ -47,8 +47,6 @@ import {
   type SidebarItemId,
 } from "./sidebar-nav";
 
-export type { SidebarActive };
-
 type Etablissement = {
   id: string;
   raisonDisplay: string;

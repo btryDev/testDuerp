@@ -59,6 +59,8 @@ export default async function SynthesePage({
   const derniereVersion = versions[0];
   const joursDepuisDerniereVersion = derniereVersion
     ? Math.floor(
+        // Page serveur : un rendu par requête, l'horloge peut être lue.
+        // eslint-disable-next-line react-hooks/purity
         (Date.now() - derniereVersion.createdAt.getTime()) /
           (1000 * 60 * 60 * 24),
       )

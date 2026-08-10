@@ -61,19 +61,16 @@ export function CarteBoard({
   className?: string;
   rayon?: 26 | 30;
   /**
-   * Deux blocs sur sept passent au noir : la prochaine échéance et la
+   * Deux blocs passent au noir : la prochaine échéance et la
    * préparation d'un contrôle. Ce sont les deux qu'on vient chercher —
    * l'un dit combien de temps il reste, l'autre est la porte à pousser
    * quand un inspecteur se présente. Le reste du board les entoure et
-   * les explique. Dans le layout par défaut ils tombent en rangée 2 à
-   * gauche et en rangée 4 à droite : sur la diagonale, jamais côte à
-   * côte ni l'un sous l'autre, sinon la grille se raye. L'utilisateur
-   * peut les déplacer, c'est son tableau de bord.
+   * les explique ; leur position par défaut vient de `ORDRE_DEFAUT`
+   * (registry), et l'utilisateur peut les déplacer.
    *
-   * Sur fond noir, aucune encre foncée ne passe (blue-ink 2,9 ·
-   * green-ink 2,6) : le texte est blanc ou ardoise, et les champs
-   * colorés restent pastel — ils y gagnent même en présence (glacier
-   * 17,2 · rose 15,2 · vert 13,4).
+   * Sur fond noir, aucune encre foncée ne passe : le texte est blanc ou
+   * ardoise, et les champs colorés restent les champs clairs de la
+   * palette — ils y gagnent même en présence.
    */
   ton?: "clair" | "sombre";
 }) {
@@ -95,14 +92,20 @@ export function CarteBoard({
   );
 }
 
-function TitreBloc({
+/** En-tête standard d'un bloc du board : titre 26 px + sous-titre, et à
+ *  droite soit la porte ronde (href), soit des contrôles libres
+ *  (actions) — exporté pour que les widgets hors de ce fichier
+ *  (équipements) n'aient pas à recopier le motif. */
+export function TitreBloc({
   titre,
   sousTitre,
   href,
+  actions,
 }: {
   titre: string;
-  sousTitre?: string;
+  sousTitre?: React.ReactNode;
   href?: string;
+  actions?: React.ReactNode;
 }) {
   return (
     <div className="flex items-start gap-4">
@@ -116,7 +119,11 @@ function TitreBloc({
           </p>
         ) : null}
       </div>
-      {href ? (
+      {actions ? (
+        <div className="ml-auto flex flex-none items-center gap-2.5">
+          {actions}
+        </div>
+      ) : href ? (
         <Link
           href={href}
           aria-label={`Ouvrir ${titre}`}

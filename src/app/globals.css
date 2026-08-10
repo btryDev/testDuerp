@@ -50,16 +50,6 @@
   --color-minium: var(--minium);
   --color-warm: var(--warm);
   --color-warm-soft: var(--warm-soft);
-  --color-accent-vif: var(--accent-vif);
-  --color-accent-vif-soft: var(--accent-vif-soft);
-  --color-navy: var(--navy);
-  --color-navy-soft: var(--navy-soft);
-  --color-green-dash: var(--green-dash);
-  --color-green-dash-soft: var(--green-dash-soft);
-  --color-amber: var(--amber);
-  --color-amber-soft: var(--amber-soft);
-  --color-alert: var(--alert);
-  --color-alert-soft: var(--alert-soft);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -79,6 +69,12 @@
   --rule-soft: oklch(0.92 0.005 250); /* filet très discret */
   --seal: oklch(0.32 0.005 260); /* pour sceaux / numérotation */
   --minium: oklch(0.58 0.19 28); /* rouge — alertes uniquement */
+  /* Orange d'avertissement (ton « warn » des widgets papier) — était
+     répété en littéral oklch dans une douzaine de fichiers. */
+  --warn: var(--warn); /* marque : points, barres, bordures */
+  --warn-ink: var(--warn-ink); /* encre posée sur champ warn */
+  --warn-soft: var(--warn-soft); /* champ pâle */
+  --warn-pale: var(--warn-pale); /* champ à peine teinté */
   --warm: oklch(0.32 0.12 260); /* navy — accent d'impulsion */
   --warm-soft: oklch(0.94 0.025 260); /* fond navy très pâle */
   --accent-vif: oklch(0.62 0.18 150); /* vert « conformité » — accent d'app (ADR Direction B) */
@@ -102,10 +98,14 @@
      détachent façon bento Apple — filet cheveu + ombre douce — plutôt
      que par l'aplat coloré. Le bleu ne couvre plus, il touche : hero,
      pilules, repères, sidebar. Rose pour le retard, vert pour l'acquis. */
-  /* Gouttière extérieure du board. Un seul endroit à régler : le hero
-     s'en sert en marge négative pour son plein-fer, la grille et la
-     pastille « Organiser » s'y alignent. */
-  --board-gutter: 32px;
+  /* Gouttière extérieure du board. Un seul endroit à régler : la grille
+     de widgets, la pastille « Organiser », le footer et la checklist
+     d'onboarding s'y alignent. Fixe à 32 px jusqu'à 1500 px de
+     viewport ; au-delà, elle absorbe la moitié du surplus de chaque
+     côté — la zone de widgets cesse de s'élargir (~1190 px utiles) —
+     puis plafonne à 140 px pour laisser respirer les très grands
+     écrans. */
+  --board-gutter: clamp(32px, calc((100vw - 1560px) / 2 + 32px), 140px);
   /* Famille bleu ciel (H205) — palette relevée sur la maquette d'août
      2026 (capture « Rojer » ). Le principe des versions précédentes
      — champ pastel + marque saturée — est abandonné : les champs sont
@@ -140,10 +140,12 @@
      rouge sombre tient 4,7 sur le champ ; le noir 9,8. Le blanc ne
      tient PAS sur ce rose (2,0) — jamais de texte blanc dessus. */
   --board-signal: #ff9d9e;
-  --board-signal-mid: #ff9d9e;
+  /* Champ des cartes de frise et marque des points : le même rose que le
+     champ courant — alias, pour que la teinte ne se règle qu'une fois. */
+  --board-signal-mid: var(--board-signal);
+  --board-signal-mark: var(--board-signal);
   --board-signal-pale: #ffeaea;
   --board-signal-line: #f27e80;
-  --board-signal-mark: #ff9d9e;
   --board-signal-ink: #8a2a23;
   --board-signal-on: #0a0a0a;
   --board-green: #bdfdb5;
@@ -327,50 +329,6 @@
     color: color-mix(in oklch, var(--ink) 45%, var(--paper));
   }
 
-  .en-tete-officiel {
-    font-family: var(--font-body), sans-serif;
-    font-size: 0.95rem;
-    font-weight: 500;
-    letter-spacing: -0.005em;
-    color: color-mix(in oklch, var(--ink) 72%, var(--paper));
-  }
-
-  /* =============================================================
-     Pastilles (pills) — type « Step 1 » dans la référence
-     ============================================================= */
-
-  .pastille {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.325rem 0.75rem;
-    border-radius: 9999px;
-    background-color: var(--paper-sunk);
-    font-family: var(--font-mono), monospace;
-    font-size: 0.68rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: color-mix(in oklch, var(--ink) 70%, var(--paper));
-    transition: all 180ms cubic-bezier(0.2, 0.6, 0.2, 1);
-  }
-
-  .pastille-active {
-    background-color: var(--ink);
-    color: var(--paper-elevated);
-  }
-
-  .pastille-warm {
-    background-color: var(--warm-soft);
-    color: var(--warm);
-  }
-
-  .pastille-verrou {
-    background-color: transparent;
-    color: color-mix(in oklch, var(--ink) 35%, var(--paper));
-    border: 1px dashed var(--rule);
-  }
-
   /* =============================================================
      Filets (dividers)
      ============================================================= */
@@ -390,25 +348,6 @@
     );
     background-size: 7px 1px;
     background-repeat: repeat-x;
-  }
-
-  /* Filet fileté dense — pour les séparateurs intérieurs */
-  .filet-dense {
-    border: 0;
-    height: 1px;
-    background-image: linear-gradient(
-      to right,
-      var(--rule) 50%,
-      transparent 50%
-    );
-    background-size: 4px 1px;
-    background-repeat: repeat-x;
-  }
-
-  .filet-double {
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
-    height: 4px;
   }
 
   /* Séparateur vertical pointillé */
@@ -437,14 +376,6 @@
     background-color: var(--paper-sunk);
     border-radius: calc(var(--radius) * 1.4);
     box-shadow: inset 0 0 0 1px var(--rule-soft);
-  }
-
-  /* Carte étape — type « Team installs once » dans la référence */
-  .cartouche-etape {
-    background-color: var(--paper-elevated);
-    border-radius: 0;
-    padding: 1.75rem 1.5rem;
-    position: relative;
   }
 
   /* =============================================================
@@ -480,22 +411,6 @@
   }
 
   /* =============================================================
-     Visualisations pointillées (inspiré image 2)
-     ============================================================= */
-
-  .dotted-bar {
-    --cell: 6px;
-    display: block;
-    background-image: radial-gradient(
-      circle,
-      var(--ink) 1.2px,
-      transparent 1.3px
-    );
-    background-size: var(--cell) var(--cell);
-    background-repeat: repeat;
-  }
-
-  /* =============================================================
      Accent serif éditorial — usage parcimonieux (titres marqués,
      accent sur un mot, citation). Instrument Serif — italique
      présente.
@@ -507,17 +422,6 @@
     font-weight: 400;
     letter-spacing: -0.01em;
   }
-}
-
-/* Static composition — no entry animations, aligned with the editorial aesthetic. */
-.animer-monter,
-.animer-monter-delai-1,
-.animer-monter-delai-2,
-.animer-monter-delai-3,
-.animer-monter-delai-4,
-.animer-monter-delai-5,
-.animer-monter-delai-6 {
-  opacity: 1;
 }
 
 /* =============================================================
@@ -567,8 +471,8 @@
     align-items: center;
     padding: 0.125rem 0.625rem;
     border-radius: 9999px;
-    background: oklch(0.95 0.04 75);
-    color: oklch(0.48 0.14 60);
+    background: var(--warn-soft);
+    color: var(--warn-ink);
     font-family: var(--font-mono), monospace;
     font-size: 0.7rem;
     font-weight: 600;
@@ -612,17 +516,6 @@
     font-style: italic;
     font-weight: 400;
     color: var(--accent-vif);
-  }
-
-  .g-sub {
-    font-size: 1rem;
-    line-height: 1.55;
-    color: var(--muted-foreground);
-    max-width: 64ch;
-  }
-  .g-sub strong {
-    color: var(--foreground);
-    font-weight: 600;
   }
 
   .outils-intro-text {
@@ -677,10 +570,6 @@
     background: var(--alert-soft);
     color: var(--alert);
   }
-  .pill-v2-neutral {
-    background: var(--paper-sunk);
-    color: color-mix(in oklch, var(--ink) 70%, transparent);
-  }
   .pill-v2-dashed {
     background: transparent;
     color: var(--muted-foreground);
@@ -712,19 +601,6 @@
     position: absolute;
     inset: 0 auto 0 0;
     border-radius: 9999px;
-  }
-
-  /* Cellule de calendrier 12 mois */
-  .v2-cal-cell {
-    border-radius: 10px;
-    padding: 10px 11px;
-    background: var(--paper-sunk);
-    position: relative;
-    min-height: 78px;
-  }
-  .v2-cal-cell-current {
-    background: var(--navy-soft);
-    box-shadow: inset 0 0 0 1px var(--navy);
   }
 
 }

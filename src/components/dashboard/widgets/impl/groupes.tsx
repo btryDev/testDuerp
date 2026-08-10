@@ -60,8 +60,14 @@ function Kpi({ def, first }: { def: KpiDef; first: boolean }) {
       </div>
       <div className="text-[11.5px] leading-[1.35] text-muted-foreground">
         {def.hint}
-        <br />
-        <span className="text-ink/75">{def.trend}</span>
+        {/* Certains états font converger trend et hint sur la même
+            phrase — on ne l'affiche pas deux fois. */}
+        {def.trend !== def.hint ? (
+          <>
+            <br />
+            <span className="text-ink/75">{def.trend}</span>
+          </>
+        ) : null}
       </div>
     </div>
   );
@@ -85,10 +91,7 @@ export function WidgetIndicateurs({ bundle }: { bundle: DashboardBundle }) {
     {
       k: "En retard",
       v: verifsEnRetard,
-      trend:
-        verifsEnRetard === 0
-          ? "à jour"
-          : `${verifsEnRetard > 1 ? "vérifications dépassées" : "vérification dépassée"}`,
+      trend: verifsEnRetard === 0 ? "à jour" : "vérifications dépassées",
       tone: verifsEnRetard > 0 ? "alert" : "neutral",
       hint: "vérifications dépassées",
     },

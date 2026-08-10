@@ -162,10 +162,9 @@ export type StatsRetardActions = {
 /**
  * Statistiques sur les actions dont l'échéance est dépassée.
  *
- * Volontairement une requête dédiée plutôt qu'un calcul sur la liste
- * `actionsEnCours` du bundle : celle-ci est tronquée (take), donc une
- * moyenne calculée dessus serait fausse dès que l'établissement dépasse
- * la limite. Ici on lit toutes les échéances dépassées.
+ * Requête dédiée qui lit TOUTES les échéances dépassées : une moyenne
+ * calculée sur une liste tronquée serait fausse dès que l'établissement
+ * dépasse la limite.
  */
 export async function statsActionsEnRetard(
   etablissementId: string,

@@ -20,6 +20,8 @@ export function GReveal({
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // Lecture client-only (matchMedia) : impossible au premier rendu SSR.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setReduced(mq.matches);
     const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
     mq.addEventListener("change", handler);
@@ -30,6 +32,8 @@ export function GReveal({
     const el = ref.current;
     if (!el) return;
     if (reduced) {
+      // Idem : dépend d'un état résolu après montage.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSeen(true);
       return;
     }

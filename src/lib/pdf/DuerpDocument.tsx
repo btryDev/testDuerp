@@ -171,8 +171,9 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
       return b.criticiteRisque - a.criticiteRisque;
     });
 
-  const Bandeau = () =>
-    brouillon ? (
+  // Élément (pas un composant défini au rendu — react-hooks/static-components) :
+  // le bandeau est identique sur toutes les pages.
+  const bandeau = brouillon ? (
       <View style={s.watermarkBand} fixed>
         <Text style={s.watermarkLabel}>
           DOCUMENT NON VALIDÉ — APERÇU
@@ -181,7 +182,7 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
           Aucune valeur légale avant validation d&apos;une version
         </Text>
       </View>
-    ) : null;
+  ) : null;
 
   return (
     <Document
@@ -194,7 +195,7 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
     >
       {/* Page de garde */}
       <Page size="A4" style={s.page}>
-        <Bandeau />
+        {bandeau}
         <View style={{ marginTop: 120 }}>
           <Text style={s.small}>Document Unique d&apos;Évaluation des Risques Professionnels</Text>
           <Text style={[s.h1, { fontSize: 28, marginTop: 12 }]}>
@@ -236,7 +237,7 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
 
       {/* Méthodologie + unités */}
       <Page size="A4" style={s.page}>
-        <Bandeau />
+        {bandeau}
         <Text style={s.h2}>Méthodologie d&apos;évaluation</Text>
         <Text style={s.h3}>Modalités et découpage</Text>
         <Text>
@@ -324,7 +325,7 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
 
       {/* Risques par unité */}
       <Page size="A4" style={s.page}>
-        <Bandeau />
+        {bandeau}
         <Text style={s.h2}>Inventaire des risques</Text>
         {unites
           .filter((u) => u.risques.length > 0)
@@ -500,7 +501,7 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
 
       {/* Plan d'actions priorisé */}
       <Page size="A4" style={s.page}>
-        <Bandeau />
+        {bandeau}
         <Text style={s.h2}>Plan d&apos;actions priorisé</Text>
         <Text style={[s.small, { marginBottom: 8 }]}>
           Risques triés par criticité décroissante (gravité en second critère).
@@ -593,7 +594,7 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
         ),
       ) && (
         <Page size="A4" style={s.page}>
-          <Bandeau />
+          {bandeau}
           <Text style={s.h2}>Annexe — Exposition (R. 4121-1-1)</Text>
           <Text style={[s.small, { marginBottom: 8 }]}>
             Article R. 4121-1-1 : données utiles à l&apos;évaluation des
@@ -659,7 +660,7 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
 
       {/* Historique + mentions légales */}
       <Page size="A4" style={s.page}>
-        <Bandeau />
+        {bandeau}
         <Text style={s.h2}>Historique des versions</Text>
         <View style={s.thead}>
           <Text style={[s.th, { width: "15%" }]}>Version</Text>

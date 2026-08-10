@@ -17,7 +17,7 @@ export const metadata = {
 
 const COLONNES: { statut: StatutIntervention; ton: string }[] = [
   { statut: "ouvert", ton: "var(--minium)" },
-  { statut: "assigne", ton: "oklch(0.72 0.15 70)" },
+  { statut: "assigne", ton: "var(--warn)" },
   { statut: "en_cours", ton: "var(--warm)" },
   { statut: "fait", ton: "var(--accent-vif)" },
 ];

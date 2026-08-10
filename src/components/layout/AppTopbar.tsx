@@ -11,11 +11,6 @@ export type Crumb = {
   label: string;
 };
 
-/** Élément affiché à droite du kicker dans le sous-titre (pills régimes). */
-export type TopbarRegime = {
-  label: string;
-};
-
 export function AppTopbar({
   title,
   subtitle,

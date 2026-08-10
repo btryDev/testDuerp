@@ -26,6 +26,8 @@ export function ResetPasswordForm() {
   useEffect(() => {
     // Lien expiré ou déjà utilisé : Supabase renvoie l'erreur dans le hash.
     if (/error/.test(window.location.hash)) {
+      // Lecture client-only (hash d'URL) : impossible au premier rendu SSR.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus("invalid");
       return;
     }

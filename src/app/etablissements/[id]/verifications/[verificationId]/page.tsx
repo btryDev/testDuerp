@@ -56,7 +56,7 @@ function BandeStatut({ statut }: { statut: string }) {
     statut === "depassee" || statut === "realisee_ecart_majeur"
       ? "var(--minium)"
       : statut === "realisee_observations" || statut === "a_planifier"
-        ? "oklch(0.72 0.15 70)"
+        ? "var(--warn)"
         : "var(--accent-vif)";
   return (
     <span
@@ -72,7 +72,7 @@ function BandeResultat({ resultat }: { resultat: string }) {
     resultat === "ecart_majeur"
       ? "var(--minium)"
       : resultat === "observations_mineures"
-        ? "oklch(0.72 0.15 70)"
+        ? "var(--warn)"
         : resultat === "non_verifiable"
           ? "var(--seal)"
           : "var(--accent-vif)";
@@ -165,7 +165,7 @@ export default async function VerificationDetailPage({
               style={{
                 color: enRetard
                   ? "var(--minium)"
-                  : "oklch(0.48 0.14 60)",
+                  : "var(--warn-ink)",
               }}
             >
               {enRetard

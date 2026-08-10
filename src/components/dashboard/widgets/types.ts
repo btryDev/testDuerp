@@ -101,13 +101,6 @@ type VerificationLite = {
   equipement: { libelle: string };
 };
 
-type ActionLite = {
-  id: string;
-  libelle: string;
-  statut: string;
-  echeance: Date | null;
-};
-
 type RapportLite = {
   id: string;
   verificationId: string;
@@ -143,7 +136,6 @@ export type DashboardBundle = {
   evenementsMois?: EvenementFenetre[];
   statsRetardActions: StatsRetardActions;
   prochainesVerifs: VerificationLite[];
-  actionsEnCours: ActionLite[];
   rapportsRecents: RapportLite[];
   nbVerifs: number;
   nbRapports: number;

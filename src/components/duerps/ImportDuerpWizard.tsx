@@ -142,7 +142,7 @@ export function ImportDuerpWizard({
               background:
                 previewState.nbErreurs === 0
                   ? "var(--accent-vif)"
-                  : "oklch(0.72 0.15 70)",
+                  : "var(--warn)",
             }}
           />
           <div className="px-7 pb-4 pt-7 sm:px-9">

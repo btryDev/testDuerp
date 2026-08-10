@@ -146,7 +146,7 @@ export default async function ControlePage({
                 pourcentPret >= 90
                   ? "var(--accent-vif)"
                   : pourcentPret >= 60
-                    ? "oklch(0.72 0.15 70)"
+                    ? "var(--warn)"
                     : "var(--minium)",
             }}
           />
@@ -201,7 +201,7 @@ export default async function ControlePage({
                       pourcentPret >= 90
                         ? "var(--accent-vif)"
                         : pourcentPret >= 60
-                          ? "oklch(0.72 0.15 70)"
+                          ? "var(--warn)"
                           : "var(--minium)"
                     }
                     strokeWidth="2"

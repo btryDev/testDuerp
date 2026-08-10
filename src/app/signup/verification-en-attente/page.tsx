@@ -72,7 +72,7 @@ export default async function VerificationEnAttentePage({
           href="/login"
           className="font-mono text-[0.64rem] uppercase tracking-[0.2em] text-ink underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-ink"
         >
-          J'ai déjà cliqué · Me connecter →
+          J&apos;ai déjà cliqué · Me connecter →
         </Link>
         <span className="font-mono text-[0.58rem] uppercase tracking-[0.22em] text-muted-foreground">
           Mail absent ?{" "}

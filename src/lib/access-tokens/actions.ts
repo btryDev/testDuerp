@@ -12,7 +12,7 @@ import {
   hashToken,
   ttlHoursFor,
 } from "./token";
-import { generateOtp, hashOtp, otpExpirationDate } from "@/lib/signatures/otp";
+import { generateOtp, hashOtp } from "@/lib/signatures/otp";
 
 /**
  * Émet un token d'accès externe et envoie par email le lien magique au
@@ -145,7 +145,6 @@ async function envoyerMailAcces(args: {
   // Aussi utile en dev : log le from configuré pour que l'utilisateur voie
   // l'identité d'expéditeur qui sortirait en prod.
   if (process.env.EMAIL_DRIVER !== "resend") {
-    // eslint-disable-next-line no-console
     console.log(`   (From : ${mailFrom()})`);
   }
 }

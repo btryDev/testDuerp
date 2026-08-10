@@ -1,17 +1,17 @@
 "use client";
 
 // Widget « Âge des documents ».
-// 3 lignes : DUERP · Dernier rapport · Dernière formation/exercice.
+// 2 lignes : DUERP · Dernier rapport.
 // Mesure d'ancienneté utile pour anticiper un contrôle.
 
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import type { DashboardBundle } from "../types";
 
-function joursDepuis(d: Date | null): number | null {
+function joursDepuis(reference: Date, d: Date | null): number | null {
   if (!d) return null;
   return Math.max(
     0,
-    Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24)),
+    Math.floor((reference.getTime() - d.getTime()) / (1000 * 60 * 60 * 24)),
   );
 }
 
@@ -27,11 +27,11 @@ function toneFromAge(
 }
 
 export function WidgetAnciennete({ bundle }: { bundle: DashboardBundle }) {
-  const { duerpDernier, rapportsRecents, dashboard } = bundle;
+  const { duerpDernier, rapportsRecents, dashboard, aujourdhui } = bundle;
   const duerpAge = dashboard.duerp.ageJours;
   const duerpLast = dashboard.duerp.derniereVersionAu;
   const rapport = rapportsRecents[0] ?? null;
-  const rapportAge = joursDepuis(rapport?.dateRapport ?? null);
+  const rapportAge = joursDepuis(aujourdhui, rapport?.dateRapport ?? null);
 
   return (
     <BentoCell kicker="Âge des documents">
@@ -87,7 +87,7 @@ function LigneAge({
     tone === "alerte"
       ? "text-[color:var(--minium)]"
       : tone === "warn"
-        ? "text-[color:oklch(0.48_0.14_60)]"
+        ? "text-[color:var(--warn-ink)]"
         : tone === "ok"
           ? "text-[color:var(--accent-vif)]"
           : "text-muted-foreground";

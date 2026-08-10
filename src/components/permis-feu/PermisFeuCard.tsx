@@ -13,7 +13,7 @@ const LABEL_STATUT: Record<StatutPermisFeu, string> = {
 
 const COULEUR_STATUT: Record<StatutPermisFeu, string> = {
   brouillon: "var(--seal)",
-  attente_signatures: "oklch(0.72 0.15 70)",
+  attente_signatures: "var(--warn)",
   valide: "var(--accent-vif)",
   en_cours: "var(--minium)",
   termine: "var(--seal)",

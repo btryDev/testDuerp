@@ -10,7 +10,8 @@ import type { DashboardBundle } from "../types";
 export function WidgetMeteo({ bundle }: { bundle: DashboardBundle }) {
   const { evenementsMois = [] } = bundle;
 
-  const today = new Date();
+  // Référence du bundle, jamais `new Date()` : rendu identique SSR/CSR.
+  const today = new Date(bundle.aujourdhui);
   today.setHours(0, 0, 0, 0);
   const jours = Array.from({ length: 30 }, (_, i) => {
     const d = new Date(today);
@@ -54,7 +55,7 @@ export function WidgetMeteo({ bundle }: { bundle: DashboardBundle }) {
             ? tone === "alerte"
               ? "var(--minium)"
               : tone === "warn"
-                ? "oklch(0.72 0.15 70)"
+                ? "var(--warn)"
                 : "var(--accent-vif)"
             : "var(--rule-soft)";
           const isToday = idx === 0;
@@ -81,7 +82,7 @@ export function WidgetMeteo({ bundle }: { bundle: DashboardBundle }) {
       <div className="mt-auto flex flex-wrap items-center gap-3 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-muted-foreground">
         <LegendePt color="var(--minium)" label={`${compte.alerte} retard`} />
         <LegendePt
-          color="oklch(0.72 0.15 70)"
+          color="var(--warn)"
           label={`${compte.warn} à planifier`}
         />
         <LegendePt color="var(--accent-vif)" label={`${compte.ok} planifié`} />

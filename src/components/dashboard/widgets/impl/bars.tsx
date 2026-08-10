@@ -34,7 +34,7 @@ export function WidgetBarsObligations({
     );
     return (
       <BentoCell
-        kicker={`Obligations ${new Date().getFullYear()}`}
+        kicker={`Obligations ${bundle.aujourdhui.getFullYear()}`}
         sub="Répartition par statut"
       >
         {vide ? <EmptyBars /> : <DonutStatuts totaux={totaux} />}
@@ -45,7 +45,7 @@ export function WidgetBarsObligations({
   // Variant "bars" (défaut)
   return (
     <BentoCell
-      kicker={`Obligations ${new Date().getFullYear()}`}
+      kicker={`Obligations ${bundle.aujourdhui.getFullYear()}`}
       legend={<LegendeBarsObligations />}
     >
       {vide ? (

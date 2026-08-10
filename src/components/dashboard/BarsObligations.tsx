@@ -25,7 +25,7 @@ export function BarsObligations({
 
   return (
     <div className="grid h-[160px] grid-cols-12 items-end gap-2.5">
-      {data.map((d, i) => {
+      {data.map((d) => {
         const total = d.couvert + d.aVenir + d.retard;
         const heightPct = (total / max) * 100;
         const isCourant = d.mois === moisCourant;

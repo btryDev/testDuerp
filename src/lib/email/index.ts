@@ -22,17 +22,11 @@ export interface EmailDriver {
 
 class ConsoleEmailDriver implements EmailDriver {
   async send(payload: EmailPayload): Promise<void> {
-    // eslint-disable-next-line no-console
     console.log("\n" + "─".repeat(72));
-    // eslint-disable-next-line no-console
     console.log(`✉  [email:console] À : ${payload.to}`);
-    // eslint-disable-next-line no-console
     console.log(`   Sujet : ${payload.subject}`);
-    // eslint-disable-next-line no-console
     console.log(`   ${"─".repeat(66)}`);
-    // eslint-disable-next-line no-console
     console.log(payload.text);
-    // eslint-disable-next-line no-console
     console.log("─".repeat(72) + "\n");
   }
 }

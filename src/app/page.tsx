@@ -102,7 +102,7 @@ export default async function Home({
                       href="/login"
                       className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-ink underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-ink"
                     >
-                      J'ai déjà un compte · Me connecter
+                      J&apos;ai déjà un compte · Me connecter
                     </Link>
                   )}
                 </div>

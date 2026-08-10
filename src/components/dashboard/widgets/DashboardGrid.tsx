@@ -4,9 +4,8 @@
 // Grille bento 6 colonnes + grid-auto-flow dense pour remplir les
 // interstices. Drag-and-drop via @dnd-kit — seul le handle GripVertical
 // dans l'overlay d'édition est « activable », les autres contrôles ne
-// déclenchent pas de drag. Les mouvements sont restreints à l'axe
-// vertical/horizontal combiné (pas de contrainte). Animation smooth
-// des voisins par CSS.Transform.toString.
+// déclenchent pas de drag. Aucun modificateur d'axe n'est appliqué.
+// Animation smooth des voisins par CSS.Transform.toString.
 
 import { useState } from "react";
 import {
@@ -96,7 +95,7 @@ export function DashboardGrid({ bundle }: { bundle: DashboardBundle }) {
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={ids} strategy={rectSortingStrategy}>
-          <div className="grid grid-cols-1 gap-3 px-[var(--board-gutter)] pb-[var(--board-gutter)] pt-3 sm:grid-cols-2 lg:grid-cols-6 [grid-auto-flow:dense]">
+          <div className="grid grid-cols-1 gap-5 px-[var(--board-gutter)] pb-[var(--board-gutter)] pt-3 sm:grid-cols-2 lg:grid-cols-6 [grid-auto-flow:dense]">
             {layout.items.map((item) => {
               const def = REGISTRY[item.widgetId];
               if (!def) return null;

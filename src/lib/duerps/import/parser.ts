@@ -92,7 +92,7 @@ function detecterColonnes(
   // pour les alias ≥ 3 caractères (évite que « p » matche « description »).
   for (const col of Object.keys(ALIASES) as ColonneAttendue[]) {
     const aliases = ALIASES[col] as readonly string[];
-    let match =
+    const match =
       entries.find((e) => aliases.includes(e.normal)) ??
       entries.find((e) =>
         aliases.some((a) => a.length >= 3 && e.normal.includes(a)),

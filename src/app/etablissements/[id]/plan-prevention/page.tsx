@@ -30,7 +30,7 @@ const LABEL_STATUT = {
 const COULEUR_STATUT = {
   brouillon: "var(--seal)",
   inspection_faite: "var(--warm)",
-  attente_signatures: "oklch(0.72 0.15 70)",
+  attente_signatures: "var(--warn)",
   valide: "var(--accent-vif)",
   clos: "var(--seal)",
   annule: "var(--muted-foreground)",

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppTopbar } from "@/components/layout/AppTopbar";
 import { LegalBadge, SignatureBlock, StatusPill } from "@/components/ui-kit";
@@ -87,7 +86,7 @@ export default async function PermisFeuDetailPage({
                   ? "var(--minium)"
                   : permis.statut === "valide" || permis.statut === "termine"
                     ? "var(--accent-vif)"
-                    : "oklch(0.72 0.15 70)",
+                    : "var(--warn)",
             }}
           />
           <div className="grid gap-0 md:grid-cols-[1fr_auto]">

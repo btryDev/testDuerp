@@ -88,6 +88,7 @@ export function PublicationPanel({
         {/* QR code */}
         <div className="flex items-center justify-center border-b border-dashed border-rule/60 bg-[color:var(--paper-sunk)] px-8 py-8 md:border-b-0 md:border-r">
           <div className="space-y-3">
+            {/* eslint-disable-next-line @next/next/no-img-element -- data-URL locale, next/image n'optimiserait rien */}
             <img
               src={qrDataUrl}
               alt={`QR code vers le registre d'accessibilité — ${urlPublique}`}

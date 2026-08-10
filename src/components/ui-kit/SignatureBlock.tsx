@@ -125,7 +125,7 @@ export function SignatureBlock({
               href={verifierHref}
               className="inline-flex items-center gap-1 rounded-full border border-[color:var(--accent-vif)] px-3 py-1 font-mono text-[0.7rem] font-medium uppercase tracking-[0.1em] text-[color:var(--accent-vif)] hover:bg-[color:var(--accent-vif)] hover:text-[color:var(--paper-elevated)]"
             >
-              Vérifier l'intégrité →
+              Vérifier l&apos;intégrité →
             </a>
           )}
         </div>

@@ -16,9 +16,12 @@ function formatDateCourte(d: Date): string {
   });
 }
 
-function formatDans(datePrevue: Date): string {
+// Toutes les fonctions temporelles reçoivent la date de référence du
+// bundle (`aujourdhui`, figée côté serveur) : un `new Date()` au rendu
+// créerait un écart d'hydratation SSR/CSR.
+function formatDans(datePrevue: Date, aujourdhui: Date): string {
   const diff = Math.round(
-    (datePrevue.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    (datePrevue.getTime() - aujourdhui.getTime()) / (1000 * 60 * 60 * 24),
   );
   if (diff === 0) return "Aujourd'hui";
   if (diff > 0) return `J+${diff}`;
@@ -28,9 +31,9 @@ function formatDans(datePrevue: Date): string {
 function classifier(
   statut: string,
   datePrevue: Date,
+  aujourdhui: Date,
 ): { tone: "alerte" | "warn" | "ok"; libelleDate: string } {
-  const now = new Date();
-  if (statut === "depassee" || (statut === "planifiee" && datePrevue < now)) {
+  if (statut === "depassee" || (statut === "planifiee" && datePrevue < aujourdhui)) {
     return { tone: "alerte", libelleDate: formatDateCourte(datePrevue) };
   }
   if (statut === "a_planifier") {
@@ -46,7 +49,7 @@ export function WidgetProchainesEcheances({
   bundle: DashboardBundle;
   variant: string;
 }) {
-  const { prochainesVerifs, etablissementId } = bundle;
+  const { prochainesVerifs, etablissementId, aujourdhui } = bundle;
 
   if (prochainesVerifs.length === 0) {
     return (
@@ -76,6 +79,7 @@ export function WidgetProchainesEcheances({
         <TimelineEcheances
           verifs={prochainesVerifs}
           etablissementId={etablissementId}
+          aujourdhui={aujourdhui}
         />
       </BentoCell>
     );
@@ -98,7 +102,7 @@ export function WidgetProchainesEcheances({
       </header>
       <ul className="flex flex-col">
         {prochainesVerifs.map((v, i) => {
-          const c = classifier(v.statut, v.datePrevue);
+          const c = classifier(v.statut, v.datePrevue, aujourdhui);
           const pillClass =
             c.tone === "alerte"
               ? "pill-v2 pill-v2-alert"
@@ -114,7 +118,7 @@ export function WidgetProchainesEcheances({
           const dans =
             v.statut === "a_planifier"
               ? "À planifier"
-              : formatDans(v.datePrevue);
+              : formatDans(v.datePrevue, aujourdhui);
           const dansColor =
             c.tone === "alerte" ? "text-[color:var(--alert)]" : "text-muted-foreground";
           return (
@@ -161,14 +165,15 @@ export function WidgetProchainesEcheances({
 function TimelineEcheances({
   verifs,
   etablissementId,
+  aujourdhui,
 }: {
   verifs: DashboardBundle["prochainesVerifs"];
   etablissementId: string;
+  aujourdhui: Date;
 }) {
   // Axe temporel : de aujourd'hui à la dernière date prévue (au moins
   // 30 jours d'horizon pour ne pas écraser si toutes proches).
-  const now = new Date();
-  const toJour = now.getTime();
+  const toJour = aujourdhui.getTime();
   const maxFutur = Math.max(
     ...verifs.map((v) => v.datePrevue.getTime()),
     toJour + 30 * 86_400_000,
@@ -197,14 +202,14 @@ function TimelineEcheances({
         </div>
         {/* Markers des échéances */}
         {verifs.map((v) => {
-          const c = classifier(v.statut, v.datePrevue);
+          const c = classifier(v.statut, v.datePrevue, aujourdhui);
           const left =
             ((v.datePrevue.getTime() - minPasse) / span) * 100;
           const color =
             c.tone === "alerte"
               ? "var(--minium)"
               : c.tone === "warn"
-                ? "oklch(0.72 0.15 70)"
+                ? "var(--warn)"
                 : "var(--accent-vif)";
           return (
             <div
@@ -231,12 +236,12 @@ function TimelineEcheances({
       {/* Légende / liste compacte */}
       <ul className="flex flex-col gap-1.5">
         {verifs.slice(0, 5).map((v) => {
-          const c = classifier(v.statut, v.datePrevue);
+          const c = classifier(v.statut, v.datePrevue, aujourdhui);
           const dotColor =
             c.tone === "alerte"
               ? "var(--minium)"
               : c.tone === "warn"
-                ? "oklch(0.72 0.15 70)"
+                ? "var(--warn)"
                 : "var(--accent-vif)";
           return (
             <li key={v.id}>

@@ -220,7 +220,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     id: "documents",
     titre: "Vos documents, en un coup d'œil",
     description:
-      "Matrice en pastilles : pour le DUERP, le registre, les vérifications et le plan d'actions — en place, à jour, sans retard.",
+      "Matrice en ronds : pour le DUERP, le registre, les vérifications et le plan d'actions — en place, à jour, sans retard.",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
@@ -260,7 +260,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
   },
   "calendrier-type": {
     id: "calendrier-type",
-    titre: "La frise des échéances",
+    titre: "Votre calendrier",
     description:
       "Vue calendrier de vos vérifications — grille mensuelle ou année entière — avec bascule en frise horizontale défilante (3 mois en arrière à 24 mois en avant, zoom 90 jours / 12 mois).",
     taille: "large",

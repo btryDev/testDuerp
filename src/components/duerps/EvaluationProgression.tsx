@@ -124,7 +124,7 @@ export function EvaluationProgression({
       {/* Pied : rappel du couplage */}
       <p className="border-t border-dashed border-rule/60 px-6 py-3.5 text-[0.78rem] leading-relaxed text-muted-foreground sm:px-7">
         La maîtrise notée en{" "}
-        <span className="font-medium text-ink">01</span> décrit l'état actuel ;
+        <span className="font-medium text-ink">01</span> décrit l&apos;état actuel ;
         les mesures de <span className="font-medium text-ink">02</span> la
         documentent et peuvent vous amener à la réajuster.
       </p>

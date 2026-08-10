@@ -18,8 +18,9 @@ import { BoutonNav } from "./VueMois";
 /** Nombre de points posés dans une carte-mois avant de replier en « +N ». */
 const MAX_POINTS = 8;
 
-// Mêmes teintes que les pastilles de la grille mensuelle : rouge pour le
-// dépassé, gris pour l'à-planifier, bleu pour le programmé.
+// Mêmes familles que les pastilles de la grille mensuelle, servies en
+// marque : rose pour le dépassé, ardoise pour l'à-planifier, bleu pour
+// le programmé.
 const TON_POINT: Record<EvenementGrille["tone"], string> = {
   alerte: "bg-[color:var(--board-signal-mark)]",
   warn: "bg-[color:var(--board-slate-soft)]",

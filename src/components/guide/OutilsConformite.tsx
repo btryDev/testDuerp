@@ -130,7 +130,6 @@ function OutilCard({ outil }: { outil: Outil }) {
   const bientot = outil.statut === "bientot";
   return (
     <li
-      aria-disabled={bientot || undefined}
       className={
         "relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-rule-soft bg-paper-elevated p-6 transition-colors hover:border-rule " +
         (bientot ? "opacity-[0.75]" : "")
