@@ -17,6 +17,7 @@ import {
   JOURS_SEMAINE,
   type EvenementGrille,
 } from "@/lib/calendrier/grille";
+import { MarqueurFamille } from "./MarqueurFamille";
 
 /** Nombre de pastilles affichées avant de replier en « +N ». */
 const MAX_PAR_JOUR = 3;
@@ -146,14 +147,17 @@ export function VueMois({
                 {visibles.map((e) => (
                   <li key={e.id}>
                     <Link
-                      href={hrefEvenement(e)}
+                      href={e.href ?? hrefEvenement(e)}
                       title={`${e.libelle} — ${e.equipement}`}
                       className={
-                        "block truncate rounded-[7px] px-1.5 py-1 text-[10.5px] font-semibold leading-tight transition-opacity hover:opacity-80 " +
+                        "flex items-center gap-1 rounded-[7px] px-1.5 py-1 text-[10.5px] font-semibold leading-tight transition-opacity hover:opacity-80 " +
                         TON_PASTILLE[e.tone]
                       }
                     >
-                      {e.libelle}
+                      {/* L'icône dit la famille ; la pastille garde la
+                          couleur de son urgence. */}
+                      <MarqueurFamille famille={e.famille} className="size-2.5" />
+                      <span className="min-w-0 truncate">{e.libelle}</span>
                     </Link>
                   </li>
                 ))}

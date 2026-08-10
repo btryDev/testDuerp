@@ -6,12 +6,18 @@
 // débordants du mois précédent et du suivant pour former des semaines
 // entières.
 
+import type { FamilleEcheance } from "./echeances";
+
 export type EvenementGrille = {
   id: string;
   libelle: string;
   date: Date;
   tone: "alerte" | "warn" | "ok";
   equipement: string;
+  /** Famille de l'échéance — absente = contrôle (compat board). */
+  famille?: FamilleEcheance;
+  /** Porte de la pastille — absente = `hrefEvenement` de l'appelant. */
+  href?: string;
 };
 
 export type JourGrille = {
@@ -119,6 +125,14 @@ export function construireGrilleMois({
   };
 }
 
+/** Point d'un mois de la vue année : le ton porte l'urgence, la famille
+ *  la forme du marqueur. Ordonnés alerte → warn → ok, pour que le
+ *  dépassé reste visible quand la place manque. */
+export type PointAnnee = {
+  tone: EvenementGrille["tone"];
+  famille: FamilleEcheance;
+};
+
 export type MoisAnnee = {
   /** 1er du mois. */
   mois: Date;
@@ -128,6 +142,7 @@ export type MoisAnnee = {
   /** false si le mois est entièrement hors de la fenêtre chargée. */
   dansFenetre: boolean;
   nbParTon: Record<EvenementGrille["tone"], number>;
+  points: PointAnnee[];
   nbTotal: number;
 };
 
@@ -154,11 +169,26 @@ export function construireGrilleAnnee({
     { length: 12 },
     () => ({ alerte: 0, warn: 0, ok: 0 }),
   );
+  const pointsParMois: PointAnnee[][] = Array.from({ length: 12 }, () => []);
   let nbEvenements = 0;
   for (const e of evenements) {
     if (e.date.getFullYear() !== annee) continue;
     parMois[e.date.getMonth()][e.tone] += 1;
+    pointsParMois[e.date.getMonth()].push({
+      tone: e.tone,
+      famille: e.famille ?? "controle",
+    });
     nbEvenements += 1;
+  }
+
+  // Le dépassé d'abord : quand la place manque, c'est lui qu'on montre.
+  const ORDRE_TONS: Record<EvenementGrille["tone"], number> = {
+    alerte: 0,
+    warn: 1,
+    ok: 2,
+  };
+  for (const points of pointsParMois) {
+    points.sort((a, b) => ORDRE_TONS[a.tone] - ORDRE_TONS[b.tone]);
   }
 
   const format = new Intl.DateTimeFormat("fr-FR", { month: "short" });
@@ -175,6 +205,7 @@ export function construireGrilleAnnee({
         ? dernier >= fenetre.debut && premier <= fenetre.fin
         : true,
       nbParTon,
+      points: pointsParMois[m],
       nbTotal: nbParTon.alerte + nbParTon.warn + nbParTon.ok,
     };
   });

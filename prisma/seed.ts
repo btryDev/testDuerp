@@ -33,8 +33,11 @@
 
 import {
   PrismaClient,
+  type DomainePrestataire,
   type Periodicite,
+  type PrioriteIntervention,
   type StatutAction,
+  type StatutIntervention,
   type TypeAction,
 } from "@prisma/client";
 
@@ -148,6 +151,79 @@ const ACTIONS: Gabarit[] = [
     echeanceJours: -30,
     criticite: 1,
     leveeIlYaJours: 19,
+  },
+];
+
+// Des signalements plausibles, pour nourrir la famille « Corrections »
+// du calendrier : un retard, un assigné, un en cours.
+const INTERVENTIONS: {
+  titre: string;
+  priorite: PrioriteIntervention;
+  statut: StatutIntervention;
+  echeanceJours: number;
+  localisation: string;
+  assigneA?: string;
+}[] = [
+  {
+    titre: "Fuite au plafond de la réserve",
+    priorite: "urgente",
+    statut: "ouvert",
+    echeanceJours: -5,
+    localisation: "Réserve sèche",
+  },
+  {
+    titre: "Poignée de la chambre froide à refixer",
+    priorite: "moyenne",
+    statut: "assigne",
+    echeanceJours: 9,
+    localisation: "Chambre froide",
+    assigneA: "Karim (maintenance)",
+  },
+  {
+    titre: "Néon qui clignote en salle",
+    priorite: "basse",
+    statut: "en_cours",
+    echeanceJours: 25,
+    localisation: "Salle",
+  },
+];
+
+// Trois prestataires aux pièces de vigilance datées — une expirée, une
+// qui expire bientôt, une à jour — pour nourrir la famille « Documents »
+// du calendrier et les alertes vigilance.
+const PRESTATAIRES: {
+  raisonSociale: string;
+  domaines: DomainePrestataire[];
+  contactNom: string;
+  contactEmail: string;
+  estOrganismeAgree?: boolean;
+  urssafJours: number;
+  rcProJours: number;
+}[] = [
+  {
+    raisonSociale: "Vérif Élec Atlantique",
+    domaines: ["electricite", "bureau_controle"],
+    contactNom: "M. Lopez",
+    contactEmail: "contact@verif-elec-atlantique.fr",
+    estOrganismeAgree: true,
+    urssafJours: 18, // expire bientôt (seuil d'alerte : 30 j)
+    rcProJours: 210,
+  },
+  {
+    raisonSociale: "Sécurité Incendie Ouest",
+    domaines: ["incendie"],
+    contactNom: "Mme Robin",
+    contactEmail: "sav@securite-incendie-ouest.fr",
+    urssafJours: -12, // expirée
+    rcProJours: 90,
+  },
+  {
+    raisonSociale: "Nettoyage Pro Services",
+    domaines: ["nettoyage"],
+    contactNom: "M. Diallo",
+    contactEmail: "contact@nettoyage-pro-services.fr",
+    urssafJours: 150,
+    rcProJours: 320,
   },
 ];
 
@@ -281,8 +357,14 @@ async function main() {
   const cible = args.find((a) => !a.startsWith("--"));
 
   const etab = cible
-    ? await prisma.etablissement.findUnique({ where: { id: cible } })
-    : await prisma.etablissement.findFirst({ orderBy: { createdAt: "asc" } });
+    ? await prisma.etablissement.findUnique({
+        where: { id: cible },
+        include: { entreprise: { select: { userId: true } } },
+      })
+    : await prisma.etablissement.findFirst({
+        orderBy: { createdAt: "asc" },
+        include: { entreprise: { select: { userId: true } } },
+      });
 
   if (!etab) {
     console.error(
@@ -365,6 +447,140 @@ async function main() {
   // entrées de registre pointant vers un fichier absent — exactement le
   // genre de donnée de façade qu'on veut éviter. Le bloc « Ce qui a
   // changé » se nourrit des rapports réellement déposés via l'app.
+
+  // 4. Interventions — même idempotence que les actions (marqueur en
+  //    description), numéros à la suite des existants (contrainte
+  //    d'unicité etablissementId × numero).
+  const purgeInterventions = await prisma.intervention.deleteMany({
+    where: { etablissementId: etab.id, description: { startsWith: MARQUEUR } },
+  });
+  console.log(`  ${purgeInterventions.count} intervention(s) de seed retirée(s)`);
+
+  const auteurId = etab.entreprise.userId;
+  if (auteurId === null) {
+    console.log(
+      "  (pas d'interventions semées — l'entreprise n'a pas d'utilisateur rattaché)",
+    );
+  } else {
+    const dernierNumero = await prisma.intervention.aggregate({
+      where: { etablissementId: etab.id },
+      _max: { numero: true },
+    });
+    let numero = (dernierNumero._max.numero ?? 0) + 1;
+    for (const g of INTERVENTIONS) {
+      await prisma.intervention.create({
+        data: {
+          etablissementId: etab.id,
+          numero: numero++,
+          titre: g.titre,
+          description: `${MARQUEUR} donnée de démonstration`,
+          priorite: g.priorite,
+          statut: g.statut,
+          localisation: g.localisation,
+          assigneA: g.assigneA ?? null,
+          echeance: dans(g.echeanceJours),
+          creeParUserId: auteurId,
+        },
+      });
+    }
+    console.log(`  ${INTERVENTIONS.length} intervention(s) créée(s)`);
+  }
+
+  // 5. Prestataires — marqueur en notes internes. Les dates de validité
+  //    existent sans fichier déposé : c'est un état plausible (date
+  //    saisie, pièce pas encore uploadée) et suffisant pour la vigilance
+  //    comme pour le calendrier.
+  const purgePresta = await prisma.prestataire.deleteMany({
+    where: {
+      etablissementId: etab.id,
+      notesInternes: { startsWith: MARQUEUR },
+    },
+  });
+  console.log(`  ${purgePresta.count} prestataire(s) de seed retiré(s)`);
+
+  for (const g of PRESTATAIRES) {
+    await prisma.prestataire.create({
+      data: {
+        etablissementId: etab.id,
+        raisonSociale: g.raisonSociale,
+        domaines: g.domaines,
+        contactNom: g.contactNom,
+        contactEmail: g.contactEmail,
+        estOrganismeAgree: g.estOrganismeAgree ?? false,
+        attestationUrssafValableJusquA: dans(g.urssafJours),
+        assuranceRcProValableJusquA: dans(g.rcProJours),
+        notesInternes: `${MARQUEUR} donnée de démonstration`,
+      },
+    });
+  }
+  console.log(`  ${PRESTATAIRES.length} prestataire(s) créé(s)`);
+
+  // 6. Un permis de feu à venir et un plan de prévention en cours sans
+  //    inspection commune — pour vérifier que le registre d'échéances
+  //    (ADR-010) les fait bien remonter dans le calendrier, avec
+  //    l'alerte R. 4512-7 sur le plan.
+  const purgePermis = await prisma.permisFeu.deleteMany({
+    where: {
+      etablissementId: etab.id,
+      descriptionTravaux: { startsWith: MARQUEUR },
+    },
+  });
+  const purgePlans = await prisma.planPrevention.deleteMany({
+    where: {
+      etablissementId: etab.id,
+      naturesTravaux: { startsWith: MARQUEUR },
+    },
+  });
+  console.log(
+    `  ${purgePermis.count} permis de feu et ${purgePlans.count} plan(s) de prévention de seed retirés`,
+  );
+
+  const maxPermis = await prisma.permisFeu.aggregate({
+    where: { etablissementId: etab.id },
+    _max: { numero: true },
+  });
+  await prisma.permisFeu.create({
+    data: {
+      etablissementId: etab.id,
+      numero: (maxPermis._max.numero ?? 0) + 1,
+      prestataireRaison: "BTP Ouest Couverture",
+      prestataireContact: "M. Ferreira",
+      prestataireEmail: "chantier@btp-ouest-couverture.fr",
+      donneurOrdreNom: "Direction de l'établissement",
+      dateDebut: dans(11),
+      dateFin: dans(12),
+      lieu: "Toiture — zone d'étanchéité",
+      naturesTravaux: ["travaux_etancheite", "chalumeau"],
+      descriptionTravaux: `${MARQUEUR} Reprise d'étanchéité au chalumeau`,
+      statut: "attente_signatures",
+    },
+  });
+
+  const maxPlans = await prisma.planPrevention.aggregate({
+    where: { etablissementId: etab.id },
+    _max: { numero: true },
+  });
+  await prisma.planPrevention.create({
+    data: {
+      etablissementId: etab.id,
+      numero: (maxPlans._max.numero ?? 0) + 1,
+      entrepriseExterieureRaison: "Clim Service Atlantique",
+      efChefNom: "Mme Petit",
+      efChefEmail: "interventions@clim-service-atlantique.fr",
+      efEffectifIntervenant: 2,
+      euChefNom: "Direction de l'établissement",
+      dateDebut: dans(-2), // commencé sans inspection commune → alerte
+      dateFin: dans(19),
+      lieux: "Locaux techniques, cuisine",
+      naturesTravaux: `${MARQUEUR} Remplacement des groupes froids`,
+      travauxDangereux: true,
+    },
+  });
+  console.log("  1 permis de feu et 1 plan de prévention créés");
+
+  // Pas de version DUERP semée : une version est un document à valeur
+  // légale (figé, conservé 40 ans) — validez-en une dans l'app pour voir
+  // apparaître l'échéance « mise à jour annuelle » dans Documents.
 
   if (planifier) {
     await planifierVerifications(etab.id);

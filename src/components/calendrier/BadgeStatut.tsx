@@ -11,25 +11,28 @@ const LABEL: Record<StatutVerification, string> = {
   depassee: "En retard",
 };
 
+// Champs saturés du board éditorial, encre de la même famille : rose
+// pour le dépassé et l'écart majeur, paille pour ce qui attend, glacier
+// pour le programmé, vert pour l'acquis. Jamais de blanc sur le rose.
 const CLASSE: Record<StatutVerification, string> = {
   a_planifier:
-    "bg-amber-100 text-amber-900 border-amber-300",
+    "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]",
   planifiee:
-    "bg-slate-100 text-slate-800 border-slate-300",
+    "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]",
   realisee_conforme:
-    "bg-emerald-100 text-emerald-900 border-emerald-300",
+    "bg-[color:var(--board-green)] text-[color:var(--board-green-ink)]",
   realisee_observations:
-    "bg-yellow-100 text-yellow-900 border-yellow-300",
+    "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]",
   realisee_ecart_majeur:
-    "bg-rose-100 text-rose-900 border-rose-300",
+    "bg-[color:var(--board-signal)] text-[color:var(--board-signal-ink)]",
   depassee:
-    "bg-rose-100 text-rose-900 border-rose-300",
+    "bg-[color:var(--board-signal)] text-[color:var(--board-signal-ink)]",
 };
 
 export function BadgeStatut({ statut }: Props) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-[0.14em] ${CLASSE[statut]}`}
+      className={`inline-flex items-center whitespace-nowrap rounded-full px-[13px] py-[6px] text-[12px] font-semibold ${CLASSE[statut]}`}
     >
       {LABEL[statut]}
     </span>

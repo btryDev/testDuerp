@@ -20,15 +20,13 @@ const MAX_POINTS = 8;
 
 // Mêmes familles que les pastilles de la grille mensuelle, servies en
 // marque : rose pour le dépassé, ardoise pour l'à-planifier, bleu pour
-// le programmé.
+// le programmé. À cette maille, les points ne portent que l'urgence —
+// la famille (icône) se lit dans la grille mensuelle et la liste.
 const TON_POINT: Record<EvenementGrille["tone"], string> = {
   alerte: "bg-[color:var(--board-signal-mark)]",
   warn: "bg-[color:var(--board-slate-soft)]",
   ok: "bg-[color:var(--board-blue-mid)]",
 };
-
-// Le dépassé d'abord : quand la place manque, c'est lui qu'on montre.
-const ORDRE_TONS: EvenementGrille["tone"][] = ["alerte", "warn", "ok"];
 
 export function VueAnnee({
   annee,
@@ -89,12 +87,8 @@ export function VueAnnee({
 
       <div className="mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
         {grille.mois.map((m) => {
-          const points = ORDRE_TONS.flatMap((ton) =>
-            Array.from({ length: m.nbParTon[ton] }, (_, i) => ({
-              cle: `${ton}-${i}`,
-              ton,
-            })),
-          ).slice(0, MAX_POINTS);
+          // Déjà ordonnés alerte → warn → ok par `construireGrilleAnnee`.
+          const points = m.points.slice(0, MAX_POINTS);
           const reste = m.nbTotal - points.length;
           return (
             <button
@@ -138,10 +132,10 @@ export function VueAnnee({
               </span>
 
               <span className="mt-auto flex flex-wrap items-center gap-1 pt-2">
-                {points.map((p) => (
+                {points.map((p, i) => (
                   <span
-                    key={p.cle}
-                    className={"size-2 rounded-full " + TON_POINT[p.ton]}
+                    key={i}
+                    className={"size-2 rounded-full " + TON_POINT[p.tone]}
                   />
                 ))}
                 {reste > 0 ? (

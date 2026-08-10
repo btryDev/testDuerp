@@ -78,6 +78,13 @@ export async function compterEtatCalendrier(etablissementId: string) {
     etablissement: { entreprise: { userId: user.id } },
   } as const;
   const now = new Date();
+  // « En retard » se juge au jour calendaire : une échéance datée
+  // d'aujourd'hui n'est pas dépassée — même règle que `tonPourDate`.
+  const debutDuJour = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
   const dans30j = new Date(now.getTime());
   dans30j.setDate(dans30j.getDate() + 30);
   const ilYaUnAn = new Date(now.getTime());
@@ -96,7 +103,7 @@ export async function compterEtatCalendrier(etablissementId: string) {
         ...scope,
         OR: [
           { statut: "depassee" },
-          { statut: "planifiee", datePrevue: { lt: now } },
+          { statut: "planifiee", datePrevue: { lt: debutDuJour } },
         ],
       },
     }),
@@ -107,7 +114,10 @@ export async function compterEtatCalendrier(etablissementId: string) {
       where: {
         ...scope,
         statut: "planifiee",
-        datePrevue: { gte: now, lte: dans30j },
+        // Borne basse au début du jour : sans elle, une vérification
+        // datée d'aujourd'hui tomberait dans un trou (ni en retard,
+        // ni à venir).
+        datePrevue: { gte: debutDuJour, lte: dans30j },
       },
     }),
     prisma.verification.count({
