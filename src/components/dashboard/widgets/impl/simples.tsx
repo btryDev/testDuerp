@@ -6,11 +6,12 @@
 // Le plan d'actions a migré vers `impl/board.tsx` (rendu en anneau) lors
 // de la refonte du tableau de bord ; il garde le même id de registre.
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Layers, LayoutGrid } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { BentoCell } from "@/components/dashboard/BentoCell";
-import { CarteBoard } from "@/components/dashboard/widgets/impl/board";
+import { CarteBoard, TitreBloc } from "@/components/dashboard/widgets/impl/board";
 import { PictoEquipement } from "@/components/equipements/PictoEquipement";
 import type { DashboardBundle } from "../types";
 
@@ -109,10 +110,10 @@ function libelleCategorie(c: string): string {
   return c.replace(/_/g, " ").toLowerCase();
 }
 
-/** Mini-pastille de signal sur tuile gris clair : fond blanc, point de
- *  marque saturée + texte encré. Le champ pastel (rose, vert) ne se pose
- *  pas sur ce fond — trop proche en valeur — donc c'est la marque qui
- *  porte la couleur, conformément à la règle de la charte pervenche. */
+/** Mini-pastille de signal sur tuile blanche : creux ardoise, point de
+ *  couleur + texte encré. Le champ pastel (rose, vert) ne se pose pas
+ *  en fond — trop proche en valeur du creux — donc c'est le point qui
+ *  porte la couleur. */
 function PastilleTuile({
   point,
   encre,
@@ -124,7 +125,7 @@ function PastilleTuile({
 }) {
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--board-card)] px-2.5 py-[5px] text-[10.5px] font-semibold"
+      className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--board-slate-pale)] px-2.5 py-[5px] text-[10.5px] font-semibold"
       style={{ color: encre }}
     >
       {point ? (
@@ -139,53 +140,229 @@ function PastilleTuile({
   );
 }
 
+/** Filet cheveu + ombre douce des tuiles blanches (bento) — même
+ *  recette au repos et au survol, partagée par la tuile appareil et la
+ *  ligne de groupe. */
+const OMBRE_TUILE =
+  "shadow-[0_0_0_1px_rgba(10,10,10,.07),0_14px_30px_-24px_rgba(13,18,36,.35)] transition-shadow hover:shadow-[0_0_0_1px_rgba(10,10,10,.12),0_18px_34px_-22px_rgba(13,18,36,.45)]";
+
+/** Au-delà d'une rangée, le widget se replie : le reste des tuiles se
+ *  déplie à la demande pour que la grille ne mange pas toute la page. */
+const TUILES_REPLIEES = 4;
+
+/** Signaux d'un équipement, tels que les pastilles les racontent :
+ *  « fait » vaut 1 si une vérification a déjà été réalisée. Seule
+ *  lecture des stats du bundle — la tuile et le groupe la partagent. */
+function signauxEquipement(eq: DashboardBundle["equipements"][number]) {
+  return {
+    fait: eq.stats?.derniereRealisee ? 1 : 0,
+    retard: eq.stats?.enRetard ?? 0,
+    aPlanif: eq.stats?.aPlanifier ?? 0,
+  };
+}
+
+/** Regroupe les équipements par catégorie et agrège leurs signaux —
+ *  la vue « par type » quand plusieurs appareils partagent le même
+ *  picto. Tri : les familles nombreuses d'abord, alphabétique ensuite. */
+function grouperParCategorie(equipements: DashboardBundle["equipements"]) {
+  const groupes = new Map<
+    string,
+    { categorie: string; nb: number; fait: number; retard: number; aPlanif: number }
+  >();
+  for (const eq of equipements) {
+    const g = groupes.get(eq.categorie) ?? {
+      categorie: eq.categorie,
+      nb: 0,
+      fait: 0,
+      retard: 0,
+      aPlanif: 0,
+    };
+    const s = signauxEquipement(eq);
+    g.nb += 1;
+    g.fait += s.fait;
+    g.retard += s.retard;
+    g.aPlanif += s.aPlanif;
+    groupes.set(eq.categorie, g);
+  }
+  return [...groupes.values()].sort(
+    (a, b) => b.nb - a.nb || a.categorie.localeCompare(b.categorie),
+  );
+}
+
+/** Clé de la vue préférée, voisine du layout perso du board
+ *  (`duerp.dashboard.<id>`, cf. useLayoutPerso). */
+function cleVueEquipements(etablissementId: string): string {
+  return `duerp.equipements-vue.${etablissementId}`;
+}
+
 export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
   const { equipements, etablissementId } = bundle;
+  const [deplie, setDeplie] = useState(false);
   const totalEq = equipements.length;
-  const tuiles = equipements.slice(0, 8);
-  const nbRestants = totalEq - tuiles.length;
+  const tuiles = deplie ? equipements : equipements.slice(0, TUILES_REPLIEES);
+  const nbReplies = totalEq - TUILES_REPLIEES;
+  const groupes = grouperParCategorie(equipements);
+
+  // Deux lectures : la grille de tuiles (un appareil = une carte) ou le
+  // regroupement par type — plus lisible quand le parc répète les mêmes
+  // catégories. Défaut : la vue regroupée dès qu'un type compte
+  // plusieurs appareils ; le choix de l'utilisateur, lui, est mémorisé
+  // et prime sur ce défaut (relu après montage — le localStorage
+  // n'existe pas côté serveur).
+  const [vueTypes, setVueTypes] = useState(
+    groupes.some((g) => g.nb > 1),
+  );
+  useEffect(() => {
+    // Même motif d'hydratation que useLayoutPerso : le premier rendu
+    // (SSR compris) sert le défaut, le storage n'est relu qu'après
+    // montage — d'où le setState dans l'effet.
+    try {
+      const memo = window.localStorage.getItem(
+        cleVueEquipements(etablissementId),
+      );
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (memo === "types") setVueTypes(true);
+      else if (memo === "tuiles") setVueTypes(false);
+    } catch {
+      // Storage indisponible (navigation privée…) : on garde le défaut.
+    }
+  }, [etablissementId]);
+
+  // L'écriture storage reste hors de l'updater : un updater doit être
+  // pur (StrictMode l'invoque deux fois).
+  const basculerVue = () => {
+    const suivante = !vueTypes;
+    try {
+      window.localStorage.setItem(
+        cleVueEquipements(etablissementId),
+        suivante ? "types" : "tuiles",
+      );
+    } catch {
+      // Tant pis pour la mémorisation, la bascule reste fonctionnelle.
+    }
+    setVueTypes(suivante);
+  };
 
   return (
     <CarteBoard className="gap-6 px-7 py-[26px]">
-      <div className="flex items-start gap-4">
-        <div className="min-w-0">
-          <h2 className="m-0 text-[26px] font-semibold leading-[1.1] tracking-[-0.035em] text-[color:var(--board-ink)]">
-            Équipements
-          </h2>
-          <p className="mt-[7px] text-[13.5px] text-[color:var(--board-slate-mid)]">
-            {totalEq} type{totalEq > 1 ? "s" : ""} déclaré
-            {totalEq > 1 ? "s" : ""}
-            {nbRestants > 0 ? ` · ${nbRestants} autres non affichés` : ""}
-          </p>
-        </div>
-        <div className="ml-auto flex flex-none items-center gap-2.5">
-          <Link
-            href={`/etablissements/${etablissementId}/equipements/nouveau`}
-            className="rounded-full bg-[color:var(--board-ink)] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-85"
-          >
-            + Ajouter
-          </Link>
-          <Link
-            href={`/etablissements/${etablissementId}/equipements`}
-            aria-label="Gérer les équipements"
-            className="flex size-9 flex-none items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] transition-colors hover:bg-[color:var(--board-blue-pale)]"
-          >
-            <ChevronRight className="size-4" />
-          </Link>
-        </div>
-      </div>
+      <TitreBloc
+        titre="Équipements"
+        sousTitre={
+          /* `totalEq` compte des appareils, pas des types — le compte
+             de types est celui des groupes. */
+          `${totalEq} appareil${totalEq > 1 ? "s" : ""} déclaré${totalEq > 1 ? "s" : ""}` +
+          (groupes.length > 0 && groupes.length < totalEq
+            ? ` · ${groupes.length} type${groupes.length > 1 ? "s" : ""}`
+            : "") +
+          (!vueTypes && !deplie && nbReplies > 0
+            ? ` · ${nbReplies} repliés`
+            : "")
+        }
+        actions={
+          <>
+            <Link
+              href={`/etablissements/${etablissementId}/equipements/nouveau`}
+              className="rounded-full bg-[color:var(--board-ink)] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-85"
+            >
+              + Ajouter
+            </Link>
+            {totalEq > 1 ? (
+              <button
+                type="button"
+                onClick={basculerVue}
+                aria-pressed={vueTypes}
+                aria-label={
+                  vueTypes
+                    ? "Revenir à la vue par appareil"
+                    : "Regrouper par type d'équipement"
+                }
+                title={vueTypes ? "Vue par appareil" : "Vue par type"}
+                className={
+                  "flex size-9 flex-none items-center justify-center rounded-full transition-colors " +
+                  (vueTypes
+                    ? "bg-[color:var(--board-ink)] text-white"
+                    : "border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] hover:bg-[color:var(--board-blue-pale)]")
+                }
+              >
+                {vueTypes ? (
+                  <LayoutGrid className="size-4" />
+                ) : (
+                  <Layers className="size-4" />
+                )}
+              </button>
+            ) : null}
+            <Link
+              href={`/etablissements/${etablissementId}/equipements`}
+              aria-label="Gérer les équipements"
+              className="flex size-9 flex-none items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] transition-colors hover:bg-[color:var(--board-blue-pale)]"
+            >
+              <ChevronRight className="size-4" />
+            </Link>
+          </>
+        }
+      />
 
       {totalEq === 0 ? (
         <p className="text-[13.5px] text-[color:var(--board-slate-mid)]">
           Aucun équipement déclaré pour l&apos;instant.
         </p>
+      ) : vueTypes ? (
+        // Vue « par type » : une ligne par catégorie, signaux agrégés —
+        // le parc se lit d'un coup d'œil quand les appareils se répètent.
+        <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
+          {groupes.map((g) => (
+            <li key={g.categorie}>
+              <Link
+                href={`/etablissements/${etablissementId}/equipements`}
+                className={"flex items-center gap-3.5 rounded-[18px] bg-[color:var(--board-card)] px-3.5 py-3 " + OMBRE_TUILE}
+              >
+                <span className="flex size-12 flex-none items-center justify-center rounded-[14px] bg-[color:var(--board-blue-pale)]">
+                  <PictoEquipement categorie={g.categorie} taille={34} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[14.5px] font-semibold capitalize leading-[1.25] text-[color:var(--board-ink)]">
+                    {libelleCategorie(g.categorie)}
+                  </span>
+                  <span className="mt-0.5 block text-[12px] text-[color:var(--board-slate-mid)]">
+                    {g.nb} appareil{g.nb > 1 ? "s" : ""}
+                  </span>
+                </span>
+                <span className="flex flex-none flex-wrap justify-end gap-1.5">
+                  {g.retard > 0 ? (
+                    <PastilleTuile
+                      point="var(--board-signal-mark)"
+                      encre="var(--board-signal-ink)"
+                    >
+                      {g.retard} dépassé{g.retard > 1 ? "s" : ""}
+                    </PastilleTuile>
+                  ) : null}
+                  {g.fait > 0 ? (
+                    <PastilleTuile
+                      point="var(--board-green)"
+                      encre="var(--board-green-ink)"
+                    >
+                      {g.fait} fait{g.fait > 1 ? "s" : ""}
+                    </PastilleTuile>
+                  ) : null}
+                  {g.aPlanif > 0 ? (
+                    <PastilleTuile encre="var(--board-slate-mid)">
+                      {g.aPlanif} à planif.
+                    </PastilleTuile>
+                  ) : null}
+                  {!g.fait && !g.retard && !g.aPlanif ? (
+                    <PastilleTuile encre="var(--board-slate-soft)">
+                      Aucune vérif
+                    </PastilleTuile>
+                  ) : null}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       ) : (
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {tuiles.map((eq) => {
-            const s = eq.stats;
-            const fait = s?.derniereRealisee ? 1 : 0;
-            const retard = s?.enRetard ?? 0;
-            const aPlanif = s?.aPlanifier ?? 0;
+            const { fait, retard, aPlanif } = signauxEquipement(eq);
             const totalSignals = fait + retard + aPlanif;
             const pct = totalSignals
               ? Math.round(100 * (fait / totalSignals))
@@ -195,25 +372,27 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
               <Link
                 key={eq.id}
                 href={`/etablissements/${etablissementId}/equipements`}
-                className="group flex min-h-[118px] overflow-hidden rounded-[20px] bg-[color:var(--board-slate-pale)] transition-colors hover:bg-[color:color-mix(in_oklch,var(--board-slate-pale)_55%,var(--board-slate-line))]"
+                className={"group flex flex-col overflow-hidden rounded-[22px] bg-[color:var(--board-card)] " + OMBRE_TUILE}
               >
-                <div className="flex w-[84px] flex-none items-center justify-center">
+                {/* Vitrine : champ bleu glacier, pastille de catégorie
+                    posée dessus, picto centré. */}
+                <div className="relative flex h-[150px] flex-none items-center justify-center bg-[color:var(--board-blue-pale)]">
+                  <span className="absolute left-3 top-3 max-w-[calc(100%-24px)] truncate rounded-full bg-[color:var(--board-card)] px-3 py-[6px] font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-ink)]">
+                    {libelleCategorie(eq.categorie)}
+                  </span>
                   <PictoEquipement
                     categorie={eq.categorie}
-                    taille={60}
-                    className="transition-transform duration-200 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                    taille={92}
+                    className="mt-3 transition-transform duration-200 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                   />
                 </div>
-                <div className="flex min-w-0 flex-1 flex-col py-4 pr-4">
-                  <p className="truncate text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[color:var(--board-slate-soft)]">
-                    {libelleCategorie(eq.categorie)}
-                  </p>
-                  <p className="mt-1 text-[14.5px] font-semibold leading-[1.25] text-[color:var(--board-ink)]">
+                <div className="flex min-w-0 flex-1 flex-col px-4 pb-4 pt-3.5">
+                  <p className="truncate text-[15px] font-semibold leading-[1.25] text-[color:var(--board-ink)]">
                     {eq.libelle}
                   </p>
-                  <div className="mt-auto flex items-center gap-2 pt-2">
+                  <div className="mt-auto flex items-center gap-2 pt-3">
                     <div
-                      className="relative h-[5px] flex-1 overflow-hidden rounded-full bg-[color:var(--board-card)]"
+                      className="relative h-[5px] flex-1 overflow-hidden rounded-full bg-[color:var(--board-slate-pale)]"
                       aria-hidden
                     >
                       <div
@@ -230,21 +409,21 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
                       {pct}%
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-1.5 pt-2">
-                    {fait > 0 ? (
-                      <PastilleTuile
-                        point="var(--board-green)"
-                        encre="var(--board-green-ink)"
-                      >
-                        {fait} fait
-                      </PastilleTuile>
-                    ) : null}
+                  <div className="flex flex-wrap gap-1.5 pt-2.5">
                     {retard > 0 ? (
                       <PastilleTuile
                         point="var(--board-signal-mark)"
                         encre="var(--board-signal-ink)"
                       >
                         {retard} dépassé{retard > 1 ? "s" : ""}
+                      </PastilleTuile>
+                    ) : null}
+                    {fait > 0 ? (
+                      <PastilleTuile
+                        point="var(--board-green)"
+                        encre="var(--board-green-ink)"
+                      >
+                        {fait} fait
                       </PastilleTuile>
                     ) : null}
                     {aPlanif > 0 ? (
@@ -264,6 +443,23 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
           })}
         </div>
       )}
+
+      {!vueTypes && nbReplies > 0 ? (
+        <button
+          type="button"
+          onClick={() => setDeplie((d) => !d)}
+          className="-mt-2 flex items-center justify-center gap-2 self-center rounded-full bg-[color:var(--board-slate-pale)] px-4 py-2 text-[12.5px] font-semibold text-[color:var(--board-slate-mid)] transition-colors hover:bg-[color:var(--board-slate-line)] hover:text-[color:var(--board-ink)]"
+        >
+          {deplie
+            ? "Réduire"
+            : `Afficher les ${nbReplies} autres`}
+          <ChevronDown
+            className={
+              "size-3.5 transition-transform " + (deplie ? "rotate-180" : "")
+            }
+          />
+        </button>
+      ) : null}
     </CarteBoard>
   );
 }
@@ -392,13 +588,13 @@ export function WidgetRecos({ bundle }: { bundle: DashboardBundle }) {
               tone === "alerte"
                 ? "border-l-[color:var(--minium)] bg-[color:color-mix(in_oklch,var(--minium)_4%,var(--paper-sunk))]"
                 : tone === "warn"
-                  ? "border-l-[color:oklch(0.72_0.15_70)] bg-[oklch(0.98_0.03_75)]"
+                  ? "border-l-[color:var(--warn)] bg-[color:var(--warn-pale)]"
                   : "border-l-[color:var(--accent-vif)] bg-paper-sunk";
             const dotColor =
               tone === "alerte"
                 ? "var(--minium)"
                 : tone === "warn"
-                  ? "oklch(0.72 0.15 70)"
+                  ? "var(--warn)"
                   : "var(--accent-vif)";
             return (
               <li
