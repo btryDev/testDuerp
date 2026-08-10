@@ -10,6 +10,7 @@ import type {
   DashboardData,
   EvenementFenetre,
 } from "@/lib/dashboard/queries";
+import type { ModulesMatrice } from "@/lib/dashboard/obligations";
 import type { StatsRetardActions } from "@/lib/actions/queries";
 
 export type Taille = "small" | "medium" | "large";
@@ -21,6 +22,7 @@ export type WidgetId =
   | "indicateurs"
   | "echeances"
   | "activite"
+  | "a-faire"
   | "actions-retard"
   | "controle"
   | "kpi-en-retard"
@@ -135,6 +137,9 @@ export type DashboardBundle = {
   /** Fenêtre glissante 30 j — widget « Météo ». */
   evenementsMois?: EvenementFenetre[];
   statsRetardActions: StatsRetardActions;
+  /** Lignes conditionnelles de la matrice « Vos documents » —
+   *  registres complémentaires (accessibilité, permis de feu…). */
+  modulesMatrice: ModulesMatrice;
   prochainesVerifs: VerificationLite[];
   rapportsRecents: RapportLite[];
   nbVerifs: number;

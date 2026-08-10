@@ -16,7 +16,7 @@ import {
 } from "./registry";
 import type { LayoutItem, PersistedLayout } from "./types";
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 function cle(etablissementId: string): string {
   return `duerp.dashboard.${etablissementId}`;
@@ -86,6 +86,31 @@ function normaliser(items: LayoutItem[]): LayoutItem[] {
 }
 
 /**
+ * v2 → v3 : les cartes-compteur « Prochaine échéance » (countdown) et
+ * « Actions en retard » sont fusionnées dans la liste « À faire ».
+ * On remplace la première des deux par « à-faire » à sa position et on
+ * retire l'autre — le reste de l'ordre utilisateur est conservé. Si
+ * l'utilisateur avait retiré les deux, on respecte ce choix : rien
+ * n'est injecté.
+ */
+function migrerV2VersV3(items: LayoutItem[]): LayoutItem[] {
+  const fusionnes = new Set<string>(["countdown", "actions-retard"]);
+  let remplace = false;
+  const resultat: LayoutItem[] = [];
+  for (const it of items) {
+    if (typeof it?.widgetId === "string" && fusionnes.has(it.widgetId)) {
+      if (!remplace) {
+        resultat.push({ widgetId: "a-faire", variant: "default" });
+        remplace = true;
+      }
+      continue;
+    }
+    resultat.push(it);
+  }
+  return resultat;
+}
+
+/**
  * Migre un layout hérité d'une ancienne version de schéma.
  *
  * v1 → v2 : refonte du tableau de bord en « board éditorial ». Plusieurs
@@ -106,6 +131,14 @@ function migrerLayout(brut: unknown): PersistedLayout | null {
     return {
       version: SCHEMA_VERSION,
       items: normaliser(obj.items as LayoutItem[]),
+    };
+  }
+
+  // v2 : même grammaire de board, seule la fusion « À faire » change.
+  if (obj.version === 2) {
+    return {
+      version: SCHEMA_VERSION,
+      items: normaliser(migrerV2VersV3(obj.items as LayoutItem[])),
     };
   }
 

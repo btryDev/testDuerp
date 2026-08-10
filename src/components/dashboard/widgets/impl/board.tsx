@@ -61,12 +61,11 @@ export function CarteBoard({
   className?: string;
   rayon?: 26 | 30;
   /**
-   * Deux blocs passent au noir : la prochaine échéance et la
-   * préparation d'un contrôle. Ce sont les deux qu'on vient chercher —
-   * l'un dit combien de temps il reste, l'autre est la porte à pousser
-   * quand un inspecteur se présente. Le reste du board les entoure et
-   * les explique ; leur position par défaut vient de `ORDRE_DEFAUT`
-   * (registry), et l'utilisateur peut les déplacer.
+   * Les blocs sombres sont l'exception : la préparation d'un contrôle
+   * (la porte à pousser quand un inspecteur se présente) et, hors
+   * défaut, la carte-compteur « Prochaine échéance ». Le reste du board
+   * les entoure et les explique ; leur position par défaut vient de
+   * `ORDRE_DEFAUT` (registry), et l'utilisateur peut les déplacer.
    *
    * Sur fond noir, aucune encre foncée ne passe : le texte est blanc ou
    * ardoise, et les champs colorés restent les champs clairs de la
@@ -904,7 +903,144 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
   );
 }
 
-/* ─── 3 · Prochaine échéance ────────────────────────────────── */
+/* ─── 3 · À faire ───────────────────────────────────────────── */
+
+/** Étiquette de type par kind de recommandation. Les amorces n'en ont
+ *  pas : ce sont des invitations, leur sous-titre suffit. */
+const TYPE_RECO: Partial<Record<Recommandation["kind"], string>> = {
+  verif_depassee: "Vérification",
+  verif_proche: "Vérification",
+  action_en_retard: "Action",
+  action_proche: "Action",
+  duerp_a_jour: "DUERP",
+};
+
+/**
+ * La to-do du dossier : vérifications ET actions mélangées, triées par
+ * urgence réelle par le moteur de recommandations — l'utilisateur n'a
+ * pas à savoir si « ce qui presse » est une échéance de vérification ou
+ * une action corrective, c'est la même liste. Ce bloc remplace les deux
+ * cartes-compteur « Prochaine échéance » et « Actions en retard » du
+ * board par défaut (toujours disponibles dans le tiroir).
+ *
+ * Le brief du haut garde son rôle : les 2 items les plus urgents, à
+ * traiter maintenant. Ici, la profondeur — jusqu'à 5 items datés, et le
+ * solde sous 30 jours en pied de carte.
+ */
+export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
+  const { etablissementId, aujourdhui, dashboard } = bundle;
+  const { recommandations, compteurs } = dashboard;
+
+  // Même partition que le brief : les urgences réelles d'abord
+  // (priorités 1-5) ; sur un dossier en mise en place, les amorces.
+  const reelles = recommandations.filter((r) => r.priorite <= 5);
+  const file = (reelles.length > 0 ? reelles : recommandations).slice(0, 5);
+
+  // Le solde ne recompte pas les vérifications proches déjà listées.
+  const prochesAffichees = file.filter(
+    (r) => r.kind === "verif_proche",
+  ).length;
+  const solde = Math.max(0, compteurs.verifsSous30j - prochesAffichees);
+  const hrefCalendrier = `/etablissements/${etablissementId}/calendrier`;
+
+  return (
+    <CarteBoard className="px-7 py-[26px]">
+      <TitreBloc
+        titre="À faire"
+        sousTitre="Vérifications et actions, par ordre d'urgence."
+        href={hrefCalendrier}
+      />
+
+      {file.length === 0 ? (
+        <div className="mt-5 flex flex-1 flex-col items-start justify-center gap-2.5 rounded-[18px] bg-[color:var(--board-slate-pale)] px-5 py-6">
+          <span className="inline-block rounded-full bg-[color:var(--board-green)] px-[13px] py-[6px] text-[12px] font-semibold text-[color:var(--board-green-ink)]">
+            À jour
+          </span>
+          <p className="m-0 text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+            Rien à traiter : aucune vérification ni action ne réclame
+            votre attention.
+          </p>
+        </div>
+      ) : (
+        <ul className="m-0 mt-3 flex flex-1 list-none flex-col p-0">
+          {file.map((r, i) => {
+            const alerte = KINDS_ALERTE.has(r.kind);
+            const type = TYPE_RECO[r.kind];
+            const jours = r.date
+              ? Math.round(
+                  (r.date.getTime() - aujourdhui.getTime()) / JOUR_MS_BRIEF,
+                )
+              : null;
+            const badge =
+              jours === null
+                ? null
+                : jours === 0
+                  ? "Auj."
+                  : jours > 0
+                    ? `J+${jours}`
+                    : `J−${-jours}`;
+            // Méta : le type d'objet d'abord — c'est lui qui lève
+            // l'ambiguïté — puis « en retard » ou la date.
+            const meta = type
+              ? `${type} · ${
+                  alerte
+                    ? "en retard"
+                    : r.date
+                      ? libelleDateCourte(r.date)
+                      : (r.sousTitre ?? "")
+                }`
+              : (r.sousTitre ?? "");
+            return (
+              <li
+                key={r.href}
+                className={
+                  i === 0
+                    ? ""
+                    : "border-t border-[color:rgba(10,10,10,.07)]"
+                }
+              >
+                <Link
+                  href={r.href}
+                  className="-mx-2 flex items-center gap-3 rounded-[14px] px-2 py-[11px] transition-colors hover:bg-[color:var(--board-slate-pale)]"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="m-0 truncate text-[14px] font-semibold leading-[1.3] tracking-[-0.015em] text-[color:var(--board-ink)]">
+                      {r.titre}
+                    </p>
+                    <p className="m-0 mt-0.5 truncate text-[12px] text-[color:var(--board-slate-mid)]">
+                      {meta}
+                    </p>
+                  </div>
+                  {badge ? (
+                    <Pastille ton={alerte ? "alerte" : "neutre"}>
+                      {badge}
+                    </Pastille>
+                  ) : null}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <p className="m-0 mt-auto border-t border-[color:rgba(10,10,10,.10)] pt-[14px] text-[13px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+        {solde > 0 ? (
+          <Link
+            href={hrefCalendrier}
+            className="text-[color:var(--board-ink)] underline-offset-2 hover:underline"
+          >
+            {solde} autre{solde > 1 ? "s" : ""} échéance
+            {solde > 1 ? "s" : ""} sous 30 jours — voir le calendrier
+          </Link>
+        ) : (
+          "Rien d'autre sous 30 jours."
+        )}
+      </p>
+    </CarteBoard>
+  );
+}
+
+/* ─── 3bis · Prochaine échéance (hors défaut — repris dans « À faire ») ── */
 
 export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
   const { prochainesVerifs, aujourdhui, etablissementId } = bundle;
@@ -1000,7 +1136,7 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
   );
 }
 
-/* ─── 4 · Actions en retard ─────────────────────────────────── */
+/* ─── 4 · Actions en retard (hors défaut — repris dans « À faire ») ── */
 
 export function BlocActionsEnRetard({ bundle }: { bundle: DashboardBundle }) {
   const stats = bundle.statsRetardActions;
@@ -1309,6 +1445,7 @@ export function BlocDocuments({ bundle }: { bundle: DashboardBundle }) {
     nbVerifs: bundle.nbVerifs,
     jourDernierRapport: bundle.jourDernierRapport,
     compteurs: bundle.dashboard.compteurs,
+    modules: bundle.modulesMatrice,
   });
   const restes = compterRestes(lignes);
 

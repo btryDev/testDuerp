@@ -2,6 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { compterActions } from "@/lib/actions/queries";
 import { compterEtatCalendrier } from "@/lib/calendrier/queries";
+import { computeVigilance } from "@/lib/prestataires/vigilance";
+import { obligationParId } from "@/lib/referentiels/conformite";
+import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
+import type { ModulesMatrice } from "./obligations";
 import {
   calculerScoreConformite,
   type Score,
@@ -58,9 +62,21 @@ export type EvenementFenetre = {
 export async function listerEvenementsFenetre(
   etablissementId: string,
   joursHorizon: number,
+  filtres?: {
+    domaine?: DomaineObligation;
+    /** Même sémantique que `listerVerifications` : a_planifier + depassee. */
+    urgentsSeulement?: boolean;
+  },
 ): Promise<EvenementFenetre[]> {
   const user = await requireUser();
   const now = new Date();
+  // Même règle de jour calendaire que `compterEtatCalendrier` et
+  // `tonPourDate` : daté d'aujourd'hui ≠ en retard.
+  const debutDuJour = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
   const fin = new Date(now.getTime() + joursHorizon * 86400000);
 
   const verifs = await prisma.verification.findMany({
@@ -71,15 +87,26 @@ export async function listerEvenementsFenetre(
       // On garde tout ce qui est non réalisé — pour matérialiser les
       // retards et la charge à venir.
       dateRealisee: null,
+      ...(filtres?.urgentsSeulement
+        ? { statut: { in: ["a_planifier", "depassee"] } }
+        : {}),
     },
     include: { equipement: { select: { libelle: true } } },
     orderBy: { datePrevue: "asc" },
   });
 
-  return verifs.map((v) => {
+  // Filtre par domaine côté TS, comme `listerVerifications` : le domaine
+  // est porté par l'obligation en référentiel, pas en base.
+  const retenues = filtres?.domaine
+    ? verifs.filter(
+        (v) => obligationParId(v.obligationId)?.domaine === filtres.domaine,
+      )
+    : verifs;
+
+  return retenues.map((v) => {
     const enRetard =
       v.statut === "depassee" ||
-      (v.statut === "planifiee" && v.datePrevue < now);
+      (v.statut === "planifiee" && v.datePrevue < debutDuJour);
     const aPlanifier = v.statut === "a_planifier";
     const tone: "alerte" | "warn" | "ok" = enRetard
       ? "alerte"
@@ -247,6 +274,126 @@ export async function compterObligationsParMois(
   }
 
   return buckets;
+}
+
+/**
+ * Alimente les lignes « modules complémentaires » de la matrice
+ * « Vos documents, en un coup d'œil » (voir `ModulesMatrice` pour les
+ * règles d'apparition de chaque ligne). Uniquement des comptages et
+ * des dates — les faits sont interprétés par `construireMatrice`.
+ */
+export async function getModulesMatrice(
+  etablissementId: string,
+  estERP: boolean,
+): Promise<ModulesMatrice> {
+  const user = await requireUser();
+  const scope = {
+    etablissementId,
+    etablissement: { entreprise: { userId: user.id } },
+  } as const;
+  const now = new Date();
+  // Statuts « encore ouverts » : tout sauf l'état final ou l'abandon.
+  const permisOuverts = ["brouillon", "attente_signatures", "valide", "en_cours"] as const;
+  const plansOuverts = ["brouillon", "inspection_faite", "attente_signatures", "valide"] as const;
+
+  const [
+    accessibilite,
+    nbPermis,
+    nbPermisEchus,
+    nbPlans,
+    nbPlansSansInspection,
+    nbPlansEchus,
+    carnet,
+    prestataires,
+  ] = await Promise.all([
+    prisma.registreAccessibilite.findFirst({
+      where: scope,
+      select: { publie: true },
+    }),
+    prisma.permisFeu.count({ where: scope }),
+    prisma.permisFeu.count({
+      where: {
+        ...scope,
+        dateFin: { lt: now },
+        statut: { in: [...permisOuverts] },
+      },
+    }),
+    prisma.planPrevention.count({ where: scope }),
+    prisma.planPrevention.count({
+      where: {
+        ...scope,
+        statut: { in: [...plansOuverts] },
+        inspectionDate: null,
+      },
+    }),
+    prisma.planPrevention.count({
+      where: {
+        ...scope,
+        dateFin: { lt: now },
+        statut: { in: [...plansOuverts] },
+      },
+    }),
+    prisma.carnetSanitaire.findFirst({
+      where: scope,
+      select: {
+        id: true,
+        _count: { select: { pointsReleve: { where: { actif: true } } } },
+        analyses: {
+          orderBy: { dateAnalyse: "desc" },
+          take: 1,
+          select: { dateAnalyse: true },
+        },
+      },
+    }),
+    prisma.prestataire.findMany({ where: scope }),
+  ]);
+
+  let jourDernierReleve: number | null = null;
+  if (carnet) {
+    const dernier = await prisma.releveTemperature.findFirst({
+      where: { pointReleve: { carnetId: carnet.id, actif: true } },
+      orderBy: { dateReleve: "desc" },
+      select: { dateReleve: true },
+    });
+    if (dernier) {
+      jourDernierReleve = Math.max(
+        0,
+        Math.floor((now.getTime() - dernier.dateReleve.getTime()) / JOUR_MS),
+      );
+    }
+  }
+  const derniereAnalyse = carnet?.analyses[0]?.dateAnalyse ?? null;
+
+  return {
+    estERP,
+    accessibilite: {
+      existe: accessibilite !== null,
+      publie: accessibilite?.publie ?? false,
+    },
+    permisFeu: { total: nbPermis, echusNonClos: nbPermisEchus },
+    plansPrevention: {
+      total: nbPlans,
+      sansInspection: nbPlansSansInspection,
+      echusNonClos: nbPlansEchus,
+    },
+    carnetSanitaire: {
+      existe: carnet !== null,
+      nbPoints: carnet?._count.pointsReleve ?? 0,
+      jourDernierReleve,
+      jourDerniereAnalyse: derniereAnalyse
+        ? Math.max(
+            0,
+            Math.floor((now.getTime() - derniereAnalyse.getTime()) / JOUR_MS),
+          )
+        : null,
+    },
+    prestataires: {
+      total: prestataires.length,
+      enAlerte: prestataires.filter(
+        (p) => computeVigilance(p).alertesOuvertes > 0,
+      ).length,
+    },
+  };
 }
 
 export type DashboardData = {

@@ -25,6 +25,7 @@ import {
   WidgetActivite,
 } from "./impl/groupes";
 import {
+  BlocAFaire,
   BlocActionsEnRetard,
   BlocCeQuiAChange,
   BlocControle,
@@ -167,6 +168,16 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     defaultVariant: "list",
     Component: WidgetProchainesEcheances,
   },
+  "a-faire": {
+    id: "a-faire",
+    titre: "À faire",
+    description:
+      "La to-do du dossier : vérifications et actions mélangées, triées par urgence, avec date et retard. Remplace les cartes « Prochaine échéance » et « Actions en retard ».",
+    taille: "medium",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: BlocAFaire,
+  },
   "plan-actions": {
     id: "plan-actions",
     titre: "Où en est le plan d'actions",
@@ -181,11 +192,12 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     id: "actions-retard",
     titre: "Actions en retard",
     description:
-      "Combien d'actions dépassent leur échéance, de combien de jours en moyenne, et laquelle traîne depuis le plus longtemps.",
+      "Compteur des actions dépassées, retard moyen et plus ancienne — déjà couvert par la liste « À faire ».",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
     Component: BlocActionsEnRetard,
+    exclueDuDefaut: true,
   },
   controle: {
     id: "controle",
@@ -220,7 +232,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     id: "documents",
     titre: "Vos documents, en un coup d'œil",
     description:
-      "Matrice en ronds : pour le DUERP, le registre, les vérifications et le plan d'actions — en place, à jour, sans retard.",
+      "Matrice en ronds — en place, à jour, sans retard — pour le DUERP, le registre, les vérifications, le plan d'actions, et chaque registre actif chez vous (accessibilité, permis de feu, plans de prévention, carnet sanitaire, prestataires).",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
@@ -272,11 +284,12 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     id: "countdown",
     titre: "Prochaine échéance",
     description:
-      "La vérification la plus proche, avec le nombre de jours restants en gros chiffre.",
+      "La vérification la plus proche, avec le nombre de jours restants en gros chiffre — déjà couverte par la liste « À faire ».",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
     Component: BlocProchaineEcheance,
+    exclueDuDefaut: true,
   },
   anciennete: {
     id: "anciennete",
@@ -341,11 +354,15 @@ export function variantValide(
  * Grille 6 colonnes :
  *   row 1 : le calendrier      (6)
  *   row 2 : équipements        (6)
- *   row 3 : prochaine échéance (3) + actions en retard (3)
- *   row 4 : plan d'actions     (3) + documents         (3)
- *   row 5 : ce qui a changé    (3) + préparer un contrôle (3)
- *   row 6 : guide pédagogique  (3) — visible d'emblée pour le nouvel
- *           inscrit ; les layouts déjà personnalisés ne sont pas réécrits.
+ *   row 3 : à faire            (3) + plan d'actions       (3)
+ *   row 4 : documents          (3) + ce qui a changé      (3)
+ *   row 5 : préparer un contrôle (3) + guide pédagogique  (3) — le guide
+ *           est visible d'emblée pour le nouvel inscrit ; les layouts
+ *           déjà personnalisés ne sont pas réécrits.
+ *
+ * « À faire » fusionne les anciennes cartes « Prochaine échéance » et
+ * « Actions en retard » : une seule to-do, l'utilisateur n'a pas à
+ * trier lui-même entre échéances de vérification et actions.
  *
  * Tout le reste du registre demeure disponible dans le tiroir
  * « Ajouter un widget » — le board est un point de départ, pas un mur.
@@ -353,8 +370,7 @@ export function variantValide(
 const ORDRE_DEFAUT: WidgetId[] = [
   "calendrier-type",
   "equipements-grid",
-  "countdown",
-  "actions-retard",
+  "a-faire",
   "plan-actions",
   "documents",
   "flux-registre",

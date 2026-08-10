@@ -12,6 +12,7 @@ import {
   compterObligationsParMois,
   compterVerifsParEquipement,
   getDashboardData,
+  getModulesMatrice,
   listerEvenementsFenetre,
 } from "@/lib/dashboard/queries";
 import { JOURS_APRES } from "@/lib/dashboard/frise";
@@ -36,6 +37,7 @@ export default async function EtablissementPage({
     evenementsSemaine,
     evenementsMois,
     statsRetardActions,
+    modulesMatrice,
     nbVerifs,
     nbRapports,
     prochainesVerifs,
@@ -52,6 +54,7 @@ export default async function EtablissementPage({
     listerEvenementsFenetre(id, 7),
     listerEvenementsFenetre(id, 30),
     statsActionsEnRetard(id),
+    getModulesMatrice(id, etab.estERP),
     prisma.verification.count({ where: { etablissementId: id } }),
     prisma.rapportVerification.count({ where: { etablissementId: id } }),
     prisma.verification.findMany({
@@ -168,6 +171,7 @@ export default async function EtablissementPage({
     evenementsSemaine,
     evenementsMois,
     statsRetardActions,
+    modulesMatrice,
     prochainesVerifs: prochainesVerifs.map((v) => ({
       id: v.id,
       libelleObligation: v.libelleObligation,

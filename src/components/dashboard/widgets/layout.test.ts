@@ -28,17 +28,21 @@ describe("registre de widgets", () => {
     expect(ids).not.toContain("activite");
     // L'identité de l'établissement vit désormais dans le rail de nav.
     expect(ids).not.toContain("etablissement");
+    // Prochaine échéance / Actions en retard : fusionnés dans « À faire ».
+    expect(ids).not.toContain("countdown");
+    expect(ids).not.toContain("actions-retard");
   });
 
   it("le layout par défaut est le board éditorial, dans l'ordre", () => {
     // Le brief n'y figure pas : c'est le bandeau de tête de la page, pas
     // un widget — ni déplaçable, ni retirable. Le guide clôt le board :
     // visible d'emblée pour le nouvel inscrit (pédagogie d'amorçage).
+    // « À faire » (fusion prochaine échéance + actions en retard) ouvre
+    // la rangée 3 : une seule to-do vérifs + actions, triée par urgence.
     expect(layoutParDefaut().map((i) => i.widgetId)).toEqual([
       "calendrier-type",
       "equipements-grid",
-      "countdown",
-      "actions-retard",
+      "a-faire",
       "plan-actions",
       "documents",
       "flux-registre",
@@ -49,14 +53,12 @@ describe("registre de widgets", () => {
 
   it("le board s'aligne sur la grille 6 colonnes (unités de 3)", () => {
     // calendrier (6) · équipements (6) · trois rangées de deux medium
-    // (3+3) · guide (3).
-    // La dernière rangée est volontairement incomplète : la grille CSS
-    // auto-flow gère, et un board « point de départ » n'a pas à être
-    // un mur plein.
+    // (3+3) — le board par défaut est un mur plein depuis la fusion des
+    // deux cartes-compteur dans « À faire ».
     const cols = layoutParDefaut().map(
       (i) => tailleEnCol(REGISTRY[i.widgetId].taille),
     );
-    expect(cols).toEqual([6, 6, 3, 3, 3, 3, 3, 3, 3]);
+    expect(cols).toEqual([6, 6, 3, 3, 3, 3, 3, 3]);
     expect(cols.every((c) => c % 3 === 0)).toBe(true);
   });
 
@@ -130,6 +132,64 @@ describe("useLayoutPerso — migration et normalisation", () => {
     const entree = { version: 999, items: [] };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie).toBeNull();
+  });
+
+  it("v2 → v3 : remplace countdown + actions-retard par « à faire », en place", () => {
+    const entree = {
+      version: 2,
+      items: [
+        { widgetId: "calendrier-type", variant: "default" },
+        { widgetId: "equipements-grid", variant: "default" },
+        { widgetId: "countdown", variant: "default" },
+        { widgetId: "actions-retard", variant: "default" },
+        { widgetId: "plan-actions", variant: "default" },
+      ],
+    };
+    const sortie = __internal.migrerLayout(entree);
+    expect(sortie?.version).toBe(SCHEMA_VERSION);
+    expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "calendrier-type",
+      "equipements-grid",
+      "a-faire",
+      "plan-actions",
+    ]);
+  });
+
+  it("v2 → v3 : une seule des deux cartes présente → remplacée à sa position", () => {
+    const entree = {
+      version: 2,
+      items: [
+        { widgetId: "calendrier-type", variant: "default" },
+        { widgetId: "equipements-grid", variant: "default" },
+        { widgetId: "guide", variant: "default" },
+        { widgetId: "actions-retard", variant: "default" },
+      ],
+    };
+    const sortie = __internal.migrerLayout(entree);
+    expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "calendrier-type",
+      "equipements-grid",
+      "guide",
+      "a-faire",
+    ]);
+  });
+
+  it("v2 → v3 : les deux cartes retirées par l'utilisateur → rien d'injecté", () => {
+    const entree = {
+      version: 2,
+      items: [
+        { widgetId: "calendrier-type", variant: "default" },
+        { widgetId: "equipements-grid", variant: "default" },
+        { widgetId: "score", variant: "anneau" },
+      ],
+    };
+    const sortie = __internal.migrerLayout(entree);
+    expect(sortie?.version).toBe(SCHEMA_VERSION);
+    expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "calendrier-type",
+      "equipements-grid",
+      "score",
+    ]);
   });
 
   it("rejette un JSON structurellement invalide", () => {

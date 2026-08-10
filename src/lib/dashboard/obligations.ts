@@ -19,10 +19,52 @@ export type EtatCellule = "ok" | "todo" | "na";
 export const COLONNES_MATRICE = ["En place", "À jour", "Sans retard"] as const;
 
 export type LigneMatrice = {
-  id: "duerp" | "registre" | "verifications" | "actions";
+  id:
+    | "duerp"
+    | "registre"
+    | "verifications"
+    | "actions"
+    | "accessibilite"
+    | "permis-feu"
+    | "plans-prevention"
+    | "carnet-sanitaire"
+    | "prestataires";
   libelle: string;
   href: string;
   cellules: [EtatCellule, EtatCellule, EtatCellule];
+};
+
+/**
+ * Modules complémentaires — chacun ajoute une ligne à la matrice, mais
+ * seulement quand il concerne l'établissement :
+ *
+ *   - accessibilité : tout ERP doit tenir le registre (D111-19-33 CCH),
+ *     la ligne apparaît donc dès que l'établissement est ERP, même si
+ *     rien n'a été créé — c'est précisément le « reste à faire » ;
+ *   - permis de feu, plans de prévention, prestataires : événementiels,
+ *     la ligne n'apparaît que s'il y a de l'activité — un commerce sans
+ *     travaux par point chaud ne doit pas voir une ligne trouée ;
+ *   - carnet sanitaire : dépend de la présence d'un réseau ECS, que
+ *     l'outil ne sait pas déduire — la ligne suit la création du carnet.
+ */
+export type ModulesMatrice = {
+  estERP: boolean;
+  accessibilite: { existe: boolean; publie: boolean };
+  permisFeu: { total: number; echusNonClos: number };
+  plansPrevention: {
+    total: number;
+    sansInspection: number;
+    echusNonClos: number;
+  };
+  carnetSanitaire: {
+    existe: boolean;
+    nbPoints: number;
+    /** Jours depuis le dernier relevé de température, null si aucun. */
+    jourDernierReleve: number | null;
+    /** Jours depuis la dernière analyse légionelles, null si aucune. */
+    jourDerniereAnalyse: number | null;
+  };
+  prestataires: { total: number; enAlerte: number };
 };
 
 export type EntreeMatrice = {
@@ -40,13 +82,111 @@ export type EntreeMatrice = {
     actionsEnRetard: number;
     actionsLeveesRecemment: number;
   };
+  /** Absent = matrice socle uniquement (4 lignes). */
+  modules?: ModulesMatrice;
 };
 
 /** Un registre alimenté dans l'année est considéré « à jour ». */
 export const SEUIL_REGISTRE_JOURS = 365;
 
+/** Relevé de température ECS : rythme hebdomadaire minimum
+ *  (arrêté du 1er février 2010). */
+export const SEUIL_RELEVE_CARNET_JOURS = 7;
+
+/** Analyse légionelles : rythme annuel (arrêté du 1er février 2010). */
+export const SEUIL_ANALYSE_LEGIONELLE_JOURS = 365;
+
 function oui(v: boolean): EtatCellule {
   return v ? "ok" : "todo";
+}
+
+function lignesModules(
+  base: string,
+  m: ModulesMatrice | undefined,
+): LigneMatrice[] {
+  if (!m) return [];
+  const lignes: LigneMatrice[] = [];
+
+  // Tout ERP doit tenir le registre — la ligne apparaît donc dès que le
+  // régime est déclaré. Un registre déjà créé reste visible même si le
+  // régime ERP a été décoché depuis : on ne cache pas une donnée existante.
+  if (m.estERP || m.accessibilite.existe) {
+    lignes.push({
+      id: "accessibilite",
+      libelle: "Accessibilité",
+      href: `${base}/accessibilite`,
+      cellules: [
+        oui(m.accessibilite.existe),
+        // Le registre n'a de valeur que consultable par le public.
+        oui(m.accessibilite.publie),
+        "na",
+      ],
+    });
+  }
+
+  if (m.permisFeu.total > 0) {
+    lignes.push({
+      id: "permis-feu",
+      libelle: "Permis de feu",
+      href: `${base}/permis-feu`,
+      cellules: [
+        "ok", // la ligne n'existe que si des permis sont tracés
+        "na", // un permis n'a pas de notion de péremption propre
+        oui(m.permisFeu.echusNonClos === 0),
+      ],
+    });
+  }
+
+  if (m.plansPrevention.total > 0) {
+    lignes.push({
+      id: "plans-prevention",
+      libelle: "Plans de prévention",
+      href: `${base}/plan-prevention`,
+      cellules: [
+        "ok",
+        // « À jour » = inspection commune préalable renseignée sur
+        // chaque plan actif (art. R4512-7).
+        oui(m.plansPrevention.sansInspection === 0),
+        oui(m.plansPrevention.echusNonClos === 0),
+      ],
+    });
+  }
+
+  if (m.carnetSanitaire.existe) {
+    lignes.push({
+      id: "carnet-sanitaire",
+      libelle: "Carnet sanitaire",
+      href: `${base}/carnet-sanitaire`,
+      cellules: [
+        oui(m.carnetSanitaire.nbPoints > 0),
+        oui(
+          m.carnetSanitaire.jourDernierReleve !== null &&
+            m.carnetSanitaire.jourDernierReleve <= SEUIL_RELEVE_CARNET_JOURS,
+        ),
+        oui(
+          m.carnetSanitaire.jourDerniereAnalyse !== null &&
+            m.carnetSanitaire.jourDerniereAnalyse <=
+              SEUIL_ANALYSE_LEGIONELLE_JOURS,
+        ),
+      ],
+    });
+  }
+
+  if (m.prestataires.total > 0) {
+    lignes.push({
+      id: "prestataires",
+      libelle: "Prestataires",
+      href: `${base}/prestataires`,
+      cellules: [
+        "ok",
+        "na", // « à jour » et « sans retard » se confondent ici
+        // Aucune pièce de vigilance manquante, expirée ou à renouveler.
+        oui(m.prestataires.enAlerte === 0),
+      ],
+    });
+  }
+
+  return lignes;
 }
 
 export function construireMatrice(e: EntreeMatrice): LigneMatrice[] {
@@ -55,7 +195,7 @@ export function construireMatrice(e: EntreeMatrice): LigneMatrice[] {
   const totalActions =
     c.actionsOuvertes + c.actionsEnCours + c.actionsLeveesRecemment;
 
-  return [
+  const socle: LigneMatrice[] = [
     {
       id: "duerp",
       libelle: "DUERP",
@@ -104,6 +244,8 @@ export function construireMatrice(e: EntreeMatrice): LigneMatrice[] {
       ],
     },
   ];
+
+  return [...socle, ...lignesModules(base, e.modules)];
 }
 
 /** Nombre de faits restant à établir — sert d'accroche sous le tableau. */

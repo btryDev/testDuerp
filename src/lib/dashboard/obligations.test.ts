@@ -3,6 +3,7 @@ import {
   compterRestes,
   construireMatrice,
   type EntreeMatrice,
+  type ModulesMatrice,
 } from "./obligations";
 
 const VIERGE: EntreeMatrice = {
@@ -20,6 +21,26 @@ const VIERGE: EntreeMatrice = {
     actionsLeveesRecemment: 0,
   },
 };
+
+// Aucun module actif : la matrice doit rester identique au socle.
+const MODULES_NEUTRES: ModulesMatrice = {
+  estERP: false,
+  accessibilite: { existe: false, publie: false },
+  permisFeu: { total: 0, echusNonClos: 0 },
+  plansPrevention: { total: 0, sansInspection: 0, echusNonClos: 0 },
+  carnetSanitaire: {
+    existe: false,
+    nbPoints: 0,
+    jourDernierReleve: null,
+    jourDerniereAnalyse: null,
+  },
+  prestataires: { total: 0, enAlerte: 0 },
+};
+
+const avecModules = (m: Partial<ModulesMatrice>): EntreeMatrice => ({
+  ...VIERGE,
+  modules: { ...MODULES_NEUTRES, ...m },
+});
 
 const ligne = (e: EntreeMatrice, id: string) =>
   construireMatrice(e).find((l) => l.id === id)!;
@@ -169,6 +190,13 @@ describe("construireMatrice — plan d'actions", () => {
 });
 
 describe("compterRestes", () => {
+  it("compte aussi les faits des lignes modules", () => {
+    // Socle vierge : 9 — plus accessibilité ERP non créée : 2.
+    expect(compterRestes(construireMatrice(avecModules({ estERP: true })))).toBe(
+      11,
+    );
+  });
+
   it("compte les faits restant à établir, sans les « sans objet »", () => {
     // 2 (DUERP) + 2 (registre) + 3 (vérifications) + 2 (actions) ; les
     // trois cellules « sans objet » ne comptent pas.
@@ -185,5 +213,196 @@ describe("compterRestes", () => {
       compteurs: { ...VIERGE.compteurs, actionsOuvertes: 1 },
     };
     expect(compterRestes(construireMatrice(complet))).toBe(0);
+  });
+});
+
+describe("construireMatrice — lignes modules", () => {
+  it("reste identique au socle sans modules ni activité", () => {
+    expect(construireMatrice(VIERGE)).toHaveLength(4);
+    expect(construireMatrice(avecModules({}))).toHaveLength(4);
+  });
+
+  it("ordonne les lignes modules après le socle", () => {
+    const ids = construireMatrice(
+      avecModules({
+        estERP: true,
+        permisFeu: { total: 1, echusNonClos: 0 },
+        plansPrevention: { total: 1, sansInspection: 0, echusNonClos: 0 },
+        carnetSanitaire: { ...MODULES_NEUTRES.carnetSanitaire, existe: true },
+        prestataires: { total: 1, enAlerte: 0 },
+      }),
+    ).map((l) => l.id);
+    expect(ids).toEqual([
+      "duerp",
+      "registre",
+      "verifications",
+      "actions",
+      "accessibilite",
+      "permis-feu",
+      "plans-prevention",
+      "carnet-sanitaire",
+      "prestataires",
+    ]);
+  });
+});
+
+describe("construireMatrice — accessibilité", () => {
+  it("apparaît pour tout ERP, même sans registre créé", () => {
+    const l = ligne(avecModules({ estERP: true }), "accessibilite");
+    expect(l.cellules).toEqual(["todo", "todo", "na"]);
+    expect(l.href).toBe("/etablissements/etab_1/accessibilite");
+  });
+
+  it("distingue créé de publié", () => {
+    const l = ligne(
+      avecModules({
+        estERP: true,
+        accessibilite: { existe: true, publie: false },
+      }),
+      "accessibilite",
+    );
+    expect(l.cellules).toEqual(["ok", "todo", "na"]);
+  });
+
+  it("coche les deux faits une fois publié", () => {
+    const l = ligne(
+      avecModules({
+        estERP: true,
+        accessibilite: { existe: true, publie: true },
+      }),
+      "accessibilite",
+    );
+    expect(l.cellules).toEqual(["ok", "ok", "na"]);
+  });
+
+  it("reste visible si le registre existe alors que le régime ERP a été décoché", () => {
+    const m = avecModules({
+      estERP: false,
+      accessibilite: { existe: true, publie: true },
+    });
+    expect(ligne(m, "accessibilite")).toBeDefined();
+  });
+});
+
+describe("construireMatrice — permis de feu", () => {
+  it("n'apparaît pas sans permis tracé", () => {
+    expect(
+      construireMatrice(avecModules({})).find((l) => l.id === "permis-feu"),
+    ).toBeUndefined();
+  });
+
+  it("signale un permis échu non clôturé", () => {
+    const l = ligne(
+      avecModules({ permisFeu: { total: 3, echusNonClos: 1 } }),
+      "permis-feu",
+    );
+    expect(l.cellules).toEqual(["ok", "na", "todo"]);
+  });
+
+  it("est sain quand tous les permis échus sont clos", () => {
+    const l = ligne(
+      avecModules({ permisFeu: { total: 3, echusNonClos: 0 } }),
+      "permis-feu",
+    );
+    expect(l.cellules).toEqual(["ok", "na", "ok"]);
+  });
+});
+
+describe("construireMatrice — plans de prévention", () => {
+  it("exige l'inspection commune sur les plans actifs", () => {
+    const l = ligne(
+      avecModules({
+        plansPrevention: { total: 2, sansInspection: 1, echusNonClos: 0 },
+      }),
+      "plans-prevention",
+    );
+    expect(l.cellules).toEqual(["ok", "todo", "ok"]);
+  });
+
+  it("signale un plan échu non clos", () => {
+    const l = ligne(
+      avecModules({
+        plansPrevention: { total: 2, sansInspection: 0, echusNonClos: 1 },
+      }),
+      "plans-prevention",
+    );
+    expect(l.cellules).toEqual(["ok", "ok", "todo"]);
+  });
+});
+
+describe("construireMatrice — carnet sanitaire", () => {
+  const carnet = (
+    c: Partial<ModulesMatrice["carnetSanitaire"]>,
+  ): EntreeMatrice =>
+    avecModules({
+      carnetSanitaire: {
+        ...MODULES_NEUTRES.carnetSanitaire,
+        existe: true,
+        ...c,
+      },
+    });
+
+  it("suit la création du carnet, pas le régime", () => {
+    expect(
+      construireMatrice(avecModules({})).find(
+        (l) => l.id === "carnet-sanitaire",
+      ),
+    ).toBeUndefined();
+    expect(ligne(carnet({}), "carnet-sanitaire")).toBeDefined();
+  });
+
+  it("attend des points de relevé pour « en place »", () => {
+    expect(ligne(carnet({}), "carnet-sanitaire").cellules[0]).toBe("todo");
+    expect(ligne(carnet({ nbPoints: 2 }), "carnet-sanitaire").cellules[0]).toBe(
+      "ok",
+    );
+  });
+
+  it("considère à jour un relevé de la semaine (rythme hebdo)", () => {
+    expect(
+      ligne(carnet({ jourDernierReleve: 3 }), "carnet-sanitaire").cellules[1],
+    ).toBe("ok");
+    expect(
+      ligne(carnet({ jourDernierReleve: 10 }), "carnet-sanitaire").cellules[1],
+    ).toBe("todo");
+    expect(
+      ligne(carnet({ jourDernierReleve: null }), "carnet-sanitaire")
+        .cellules[1],
+    ).toBe("todo");
+  });
+
+  it("attend une analyse légionelles de moins d'un an", () => {
+    expect(
+      ligne(carnet({ jourDerniereAnalyse: 100 }), "carnet-sanitaire")
+        .cellules[2],
+    ).toBe("ok");
+    expect(
+      ligne(carnet({ jourDerniereAnalyse: 400 }), "carnet-sanitaire")
+        .cellules[2],
+    ).toBe("todo");
+  });
+});
+
+describe("construireMatrice — prestataires", () => {
+  it("n'apparaît pas sans prestataire déclaré", () => {
+    expect(
+      construireMatrice(avecModules({})).find((l) => l.id === "prestataires"),
+    ).toBeUndefined();
+  });
+
+  it("signale les alertes de vigilance ouvertes", () => {
+    const l = ligne(
+      avecModules({ prestataires: { total: 2, enAlerte: 1 } }),
+      "prestataires",
+    );
+    expect(l.cellules).toEqual(["ok", "na", "todo"]);
+  });
+
+  it("est sain quand toutes les pièces sont à jour", () => {
+    const l = ligne(
+      avecModules({ prestataires: { total: 2, enAlerte: 0 } }),
+      "prestataires",
+    );
+    expect(l.cellules).toEqual(["ok", "na", "ok"]);
   });
 });
