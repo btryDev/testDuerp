@@ -5,11 +5,11 @@
  * pure, pas d'accès DB, pas d'horloge implicite (horloge injectable).
  *
  * Règles de priorité :
- *   1. Vérifications dépassées (statut = depassee) — la plus ancienne d'abord
- *   2. Actions correctives en retard (echeance < now, statut ∈ {ouverte, en_cours})
- *   3. Vérifications à venir sous 7 jours
+ *   1. Vérifications en retard — la plus ancienne échéance d'abord
+ *   2. Actions correctives en retard
+ *   3. Vérifications planifiées dans les 7 jours
  *   4. Actions à venir sous 15 jours
- *   5. DUERP à mettre à jour (> 11 mois sans nouvelle version)
+ *   5. DUERP : première version à valider, ou mise à jour annuelle
  *   6. Amorçage : aucun équipement déclaré → « Déclarez vos équipements »
  *   7. Amorçage : équipements présents mais DUERP sans secteur choisi
  *      → « Ouvrez votre DUERP »
@@ -20,10 +20,41 @@
  * ils ne passent jamais devant une urgence réelle (priorités 1-5) et ne
  * s'affichent que sur un dossier en cours de mise en place.
  *
+ * **Ce module ne définit plus ce qu'est un retard** : il applique les
+ * prédicats canoniques de `@/lib/dates/retard` (ADR-011). Il en avait
+ * inventé deux, tous les deux faux :
+ *
+ *  - une vérification `planifiee` dont la date était passée n'entrait dans
+ *    aucune règle (la règle 1 ne regardait que `depassee` et `a_planifier`,
+ *    la règle 3 excluait tout ce qui datait d'avant aujourd'hui). Or le
+ *    statut `depassee` n'est écrit qu'à la génération du calendrier et
+ *    n'est jamais réévalué : « planifiée puis oubliée » est l'état *normal*
+ *    d'une vérification en retard. Le bandeau annonçait « deux échéances à
+ *    traiter » et la file de travail ne proposait rien ;
+ *  - une occurrence `a_planifier` datée du jour même était étiquetée
+ *    « échéance dépassée » (comparaison `<= now`), alors que le reste du
+ *    produit dit l'inverse : l'utilisateur a toute sa journée.
+ *
  * Toutes les catégories contribuent à la liste ; le tri par priorité +
  * date (tie-breaker) fait remonter les items les plus urgents. Le total
  * est tronqué à 5 (paramétrable).
  */
+
+import {
+  estActionEnRetard,
+  estActionOuverte,
+  estDansLesProchainsJours,
+  estVerificationAVenir,
+  estVerificationEnRetard,
+} from "@/lib/dates/retard";
+import { ageEnMois, type EtatDuerp } from "./duerp";
+
+/** Fenêtre « ça arrive » pour une vérification déjà planifiée. Plus courte
+ *  que l'horizon proche du produit (30 j) : la file de travail du board dit
+ *  ce qu'il faut faire *cette semaine*. */
+export const JOURS_VERIF_PROCHE = 7;
+/** Même idée pour une action corrective, qui demande souvent un devis. */
+export const JOURS_ACTION_PROCHE = 15;
 
 export type Recommandation = {
   kind:
@@ -49,6 +80,10 @@ export type EntreeRecos = {
     id: string;
     statut: "a_planifier" | "planifiee" | "depassee" | string;
     datePrevue: Date;
+    /** Présente dès qu'un rapport a été déposé. Absente = non réalisée :
+     *  les prédicats partagés en ont besoin pour ne jamais compter en
+     *  retard une occurrence déjà couverte par une preuve. */
+    dateRealisee?: Date | null;
     libelleObligation: string;
     equipementLibelle: string;
   }>;
@@ -58,7 +93,8 @@ export type EntreeRecos = {
     echeance: Date | null;
     libelle: string;
   }>;
-  duerpAgeJours?: number; // âge de la dernière version validée
+  /** État d'ancienneté du DUERP (cf. `./duerp`). Absent = pas de DUERP. */
+  duerp?: EtatDuerp;
   etablissementId: string;
   /** DUERPs actifs : pour le lien "mettre à jour". */
   duerpId?: string;
@@ -74,8 +110,6 @@ export type EntreeRecos = {
   nbRapports: number;
 };
 
-const JOUR_MS = 1000 * 60 * 60 * 24;
-
 export type OptionsRecommandations = {
   /** Horloge injectable pour tests. */
   now?: Date;
@@ -89,17 +123,23 @@ export function genererRecommandations(
 ): Recommandation[] {
   const now = options.now ?? new Date();
   const limite = options.limite ?? 5;
-  const nowMs = now.getTime();
 
   const etab = e.etablissementId;
   const acc: Recommandation[] = [];
 
-  // 1. Vérifications dépassées
-  for (const v of e.verifications) {
-    const depassee =
-      v.statut === "depassee" ||
-      (v.statut === "a_planifier" && v.datePrevue.getTime() <= nowMs);
-    if (!depassee) continue;
+  // Les prédicats partagés raisonnent sur une occurrence complète : les
+  // entrées qui ne portent pas `dateRealisee` sont, par construction de
+  // l'appelant, des occurrences ouvertes.
+  const verifs = e.verifications.map((v) => ({
+    ...v,
+    dateRealisee: v.dateRealisee ?? null,
+  }));
+
+  // 1. Vérifications en retard — quel que soit le statut porté en base
+  //    (`depassee` n'est écrit qu'à la génération, il ne peut pas servir de
+  //    seule preuve du retard).
+  for (const v of verifs) {
+    if (!estVerificationEnRetard(v, now)) continue;
     acc.push({
       kind: "verif_depassee",
       titre: v.libelleObligation,
@@ -112,60 +152,79 @@ export function genererRecommandations(
 
   // 2. Actions en retard
   for (const a of e.actions) {
-    if (a.statut !== "ouverte" && a.statut !== "en_cours") continue;
-    if (a.echeance === null || a.echeance.getTime() >= nowMs) continue;
+    if (!estActionEnRetard(a, now)) continue;
     acc.push({
       kind: "action_en_retard",
       titre: a.libelle,
       sousTitre: "Action corrective en retard",
       href: `/etablissements/${etab}/actions/${a.id}`,
       priorite: 2,
-      date: a.echeance,
+      date: a.echeance ?? undefined,
     });
   }
 
-  // 3. Vérifications à venir sous 7 jours
-  const horizon7j = nowMs + 7 * JOUR_MS;
-  for (const v of e.verifications) {
-    if (v.statut !== "planifiee") continue;
-    if (v.datePrevue.getTime() < nowMs || v.datePrevue.getTime() > horizon7j)
-      continue;
+  // 3. Vérifications planifiées dans les 7 jours (aujourd'hui compris).
+  for (const v of verifs) {
+    if (!estVerificationAVenir(v, now, JOURS_VERIF_PROCHE)) continue;
     acc.push({
       kind: "verif_proche",
       titre: v.libelleObligation,
-      sousTitre: `${v.equipementLibelle} — dans les 7 jours`,
+      sousTitre: `${v.equipementLibelle} — dans les ${JOURS_VERIF_PROCHE} jours`,
       href: `/etablissements/${etab}/verifications/${v.id}`,
       priorite: 3,
       date: v.datePrevue,
     });
   }
 
-  // 4. Actions à venir sous 15 jours
-  const horizon15j = nowMs + 15 * JOUR_MS;
+  // 4. Actions à venir sous 15 jours. Disjoint de la règle 2 : une échéance
+  //    passée est un retard, jamais un « à venir ».
   for (const a of e.actions) {
-    if (a.statut !== "ouverte" && a.statut !== "en_cours") continue;
+    if (!estActionOuverte(a)) continue;
     if (a.echeance === null) continue;
-    if (a.echeance.getTime() < nowMs || a.echeance.getTime() > horizon15j)
-      continue;
+    if (!estDansLesProchainsJours(a.echeance, now, JOURS_ACTION_PROCHE)) continue;
     acc.push({
       kind: "action_proche",
       titre: a.libelle,
-      sousTitre: "Action à réaliser sous 15 jours",
+      sousTitre: `Action à réaliser sous ${JOURS_ACTION_PROCHE} jours`,
       href: `/etablissements/${etab}/actions/${a.id}`,
       priorite: 4,
       date: a.echeance,
     });
   }
 
-  // 5. DUERP à mettre à jour (> 11 mois)
-  if (e.duerpAgeJours !== undefined && e.duerpAgeJours > 330 && e.duerpId) {
-    acc.push({
-      kind: "duerp_a_jour",
-      titre: "DUERP à mettre à jour",
-      sousTitre: `Dernière version il y a ${Math.round(e.duerpAgeJours / 30)} mois`,
-      href: `/duerp/${e.duerpId}`,
-      priorite: 5,
-    });
+  // 5. DUERP — deux situations distinctes, deux libellés distincts. Dire
+  //    « à mettre à jour » d'un document dont aucune version n'a jamais été
+  //    validée décrit une réalité qui n'existe pas.
+  const duerp = e.duerp;
+  if (duerp?.ouvert && e.duerpId) {
+    const href = `/duerp/${e.duerpId}`;
+    if (duerp.jamaisValide) {
+      acc.push({
+        kind: "duerp_a_jour",
+        titre: "Validez la première version de votre DUERP",
+        sousTitre: "Aucune version n'a encore été figée",
+        href,
+        priorite: 5,
+      });
+    } else if (duerp.majEchue) {
+      acc.push({
+        kind: "duerp_a_jour",
+        titre: "DUERP à mettre à jour",
+        sousTitre: `Dernière version il y a ${ageEnMois(duerp.ageJours ?? 0)} mois`,
+        href,
+        priorite: 5,
+        date: duerp.dateLimiteMaj ?? undefined,
+      });
+    } else if (duerp.rappelMajProche) {
+      acc.push({
+        kind: "duerp_a_jour",
+        titre: "DUERP à mettre à jour",
+        sousTitre: "Mise à jour annuelle à prévoir",
+        href,
+        priorite: 5,
+        date: duerp.dateLimiteMaj ?? undefined,
+      });
+    }
   }
 
   // 6-8. Amorçage — invitations neutres pour un dossier en mise en place.

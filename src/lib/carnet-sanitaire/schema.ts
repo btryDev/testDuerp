@@ -1,3 +1,4 @@
+import { depuisCleJourCivil } from "@/lib/dates";
 import { z } from "zod";
 import { TypeReseauEau } from "@prisma/client";
 
@@ -36,7 +37,7 @@ export const releveTemperatureSchema = z.object({
   dateReleve: z
     .string()
     .regex(DATE_FMT, "Format attendu : AAAA-MM-JJ")
-    .transform((v) => new Date(v)),
+    .transform((v) => depuisCleJourCivil(v)),
   temperatureCelsius: z.coerce.number().min(0).max(100),
   operateur: z.preprocess(
     (v) => (typeof v === "string" ? v.trim() || undefined : v),
@@ -52,7 +53,7 @@ export const analyseLegionelleSchema = z.object({
   dateAnalyse: z
     .string()
     .regex(DATE_FMT, "Format attendu : AAAA-MM-JJ")
-    .transform((v) => new Date(v)),
+    .transform((v) => depuisCleJourCivil(v)),
   laboratoire: z.preprocess(
     (v) => (typeof v === "string" ? v.trim() || undefined : v),
     z.string().max(200).optional(),

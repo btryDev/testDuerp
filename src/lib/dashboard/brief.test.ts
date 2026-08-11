@@ -1,8 +1,25 @@
 import { describe, expect, it } from "vitest";
+import { instantCivil } from "@/lib/dates";
 import { construireBrief, type EntreeBrief } from "./brief";
+import { evaluerEtatDuerp } from "./duerp";
 import { LONGUEUR_LIBELLE_MAX, raccourcirLibelle } from "./libelles";
 
 const LE_8_AOUT = new Date(2026, 7, 8);
+
+/** État de DUERP à la date du brief : `ageJours` à `null` = aucune version
+ *  validée. */
+function duerpDe(ageJours: number | null, effectif = 20) {
+  const now = instantCivil(2026, 8, 8, 10);
+  return evaluerEtatDuerp(
+    {
+      ouvert: true,
+      dateDerniereVersion:
+        ageJours === null ? null : new Date(now.getTime() - ageJours * 86_400_000),
+      effectif,
+    },
+    now,
+  );
+}
 
 const CALME: EntreeBrief = {
   aujourdhui: LE_8_AOUT,
@@ -89,11 +106,51 @@ describe("construireBrief — paragraphe", () => {
   });
 
   it("signale un DUERP périmé", () => {
+    const etat = duerpDe(400);
+    const b = construireBrief({
+      ...CALME,
+      duerp: { existe: true, estAJour: etat.estAJour, etat },
+    });
+    expect(b.paragraphe).toContain(
+      "La dernière version de votre DUERP a plus de douze mois.",
+    );
+  });
+
+  it("ne dit pas « plus de douze mois » d'un DUERP sans version validée", () => {
+    // Le dirigeant venait d'ouvrir son DUERP et s'entendait reprocher son
+    // ancienneté : l'âge était `null`, donc « pas à jour », donc « périmé ».
+    const etat = duerpDe(null);
+    const b = construireBrief({
+      ...CALME,
+      duerp: { existe: true, estAJour: etat.estAJour, etat },
+    });
+    expect(b.paragraphe).toContain(
+      "Aucune version de votre DUERP n'a encore été validée.",
+    );
+    expect(b.paragraphe).not.toContain("plus de douze mois");
+    expect(b.paragraphe).not.toContain("Votre DUERP est à jour");
+  });
+
+  it("ne reproche aucune ancienneté sous onze salariés (art. R. 4121-2)", () => {
+    const etat = duerpDe(400, 4);
+    const b = construireBrief({
+      ...CALME,
+      duerp: { existe: true, estAJour: etat.estAJour, etat },
+    });
+    expect(b.paragraphe).not.toContain("douze mois");
+    // Rien n'est reproché, mais rien n'est promis non plus : la version
+    // n'est pas récente, l'acquis « à jour » ne s'affiche pas.
+    expect(b.paragraphe).not.toContain("DUERP est à jour");
+  });
+
+  it("sans état détaillé, s'en tient à une formulation vraie dans les deux cas", () => {
     const b = construireBrief({
       ...CALME,
       duerp: { existe: true, estAJour: false },
     });
-    expect(b.paragraphe).toContain("plus de douze mois");
+    expect(b.paragraphe).toContain(
+      "Votre DUERP n'a pas de version validée de moins de douze mois.",
+    );
   });
 
   it("énumère les restes en français", () => {

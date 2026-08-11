@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { depuisCleJourCivil, depuisSaisieDateHeure } from "@/lib/dates";
 
 /**
  * Plan de prévention — art. R4512-6 à R4512-12 CT (décret 92-158).
@@ -27,7 +28,8 @@ const optionalTrimmed = (max = 2000) =>
 const dateFromDatetime = z
   .string()
   .regex(DATETIME_FMT, "Format attendu : AAAA-MM-JJTHH:MM")
-  .transform((v) => new Date(v));
+  // Ancré sur Europe/Paris — cf. ADR-011 et `depuisSaisieDateHeure`.
+  .transform((v) => depuisSaisieDateHeure(v));
 
 const dateFromDate = z.preprocess(
   (v) => (v === "" || v === null ? undefined : v),
@@ -35,7 +37,7 @@ const dateFromDate = z.preprocess(
     .string()
     .regex(DATE_FMT, "Format attendu : AAAA-MM-JJ")
     .optional()
-    .transform((v) => (v ? new Date(v) : undefined)),
+    .transform((v) => (v ? depuisCleJourCivil(v) : undefined)),
 );
 
 export const ligneSchema = z.object({

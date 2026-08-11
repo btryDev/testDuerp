@@ -1,21 +1,72 @@
+// Lectures du tableau de bord.
+//
+// Une règle traverse ce fichier : **aucune définition du retard n'est écrite
+// ici**. Elles vivent toutes dans `@/lib/dates/retard` (ADR-011), et ce
+// module se contente de les appliquer. Il en hébergeait trois différentes —
+// une par fonction — avec des conséquences visibles à l'écran : la pastille
+// rouge « en retard » apparaissait sur la carte de l'équipement et la barre
+// rouge dans le graphe mensuel le matin même de l'échéance, pendant que le
+// bandeau du calendrier disait « rien en retard ».
+//
+// Deuxième règle : **les compteurs affichés se calculent sur l'ensemble
+// complet**, jamais sur la liste tronquée envoyée au moteur de
+// recommandations (même réflexe que `statsActionsEnRetard`, qui refuse de
+// moyenner un retard sur une liste coupée).
+
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { compterActions } from "@/lib/actions/queries";
-import { compterEtatCalendrier } from "@/lib/calendrier/queries";
 import { computeVigilance } from "@/lib/prestataires/vigilance";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
-import type { ModulesMatrice } from "./obligations";
 import {
-  calculerScoreConformite,
-  type Score,
-} from "./score";
+  MOIS_FENETRE_HISTORIQUE,
+  JOURS_HORIZON_PROCHE,
+  ajouterJours,
+  ajouterMois,
+  composantesCiviles,
+  debutDuJour,
+  instantCivil,
+  joursCivilsEntre,
+} from "@/lib/dates";
+import {
+  estActionEnRetard,
+  estEnRetard,
+  estVerificationAPlanifier,
+  estVerificationAVenir,
+  estVerificationEnRetard,
+} from "@/lib/dates/retard";
+import { repartirVerifications } from "@/lib/pdf/etat-verifications";
+import type { ModulesMatrice } from "./obligations";
+import { evaluerEtatDuerp, type EtatDuerp } from "./duerp";
+import { calculerScoreDepuisEtat, type Score } from "./score";
 import {
   genererRecommandations,
   type Recommandation,
 } from "./recommandations";
 
-const JOUR_MS = 1000 * 60 * 60 * 24;
+/**
+ * Statuts d'une occurrence **ouverte** : elle attend encore sa réalisation.
+ * Le pendant des statuts « réalisées », qui restent en base à vie (le
+ * registre de sécurité en dépend) et qu'aucune requête d'échéances ne doit
+ * ramener.
+ */
+const STATUTS_VERIF_OUVERTE = ["a_planifier", "planifiee", "depassee"] as const;
+
+/** Statuts d'un permis de feu / plan de prévention encore ouvert : tout sauf
+ *  l'état final ou l'abandon. */
+const STATUTS_PERMIS_OUVERTS = [
+  "brouillon",
+  "attente_signatures",
+  "valide",
+  "en_cours",
+] as const;
+const STATUTS_PLAN_OUVERTS = [
+  "brouillon",
+  "inspection_faite",
+  "attente_signatures",
+  "valide",
+] as const;
 
 export type BarMois = {
   mois: number; // 0-11
@@ -52,12 +103,13 @@ export type EvenementFenetre = {
 /**
  * Liste tous les événements de vérification sur une fenêtre glissante
  * de `joursHorizon` jours à partir d'aujourd'hui. Utilisé par les
- * widgets « Semaine » (7 j) et « Météo » (30 j).
+ * widgets « Semaine » (7 j) et « Météo » (30 j), et par le flux calendrier.
  *
- * Classification des tons :
- *   - alerte : statut depassee, ou planifiee dont la date est déjà passée
- *   - warn   : statut a_planifier (pas encore fixé)
- *   - ok     : planifiee dans le futur
+ * Classification des tons, alignée sur les prédicats partagés :
+ *   - alerte : occurrence en retard (`estVerificationEnRetard`) — statut
+ *     `depassee`, ou date passée sans réalisation, `a_planifier` compris
+ *   - warn   : `a_planifier` pas encore en retard (date non arrêtée)
+ *   - ok     : planifiée à venir
  */
 export async function listerEvenementsFenetre(
   etablissementId: string,
@@ -70,14 +122,9 @@ export async function listerEvenementsFenetre(
 ): Promise<EvenementFenetre[]> {
   const user = await requireUser();
   const now = new Date();
-  // Même règle de jour calendaire que `compterEtatCalendrier` et
-  // `tonPourDate` : daté d'aujourd'hui ≠ en retard.
-  const debutDuJour = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-  );
-  const fin = new Date(now.getTime() + joursHorizon * 86400000);
+  // Borne haute prise en jours civils : la fenêtre « 30 jours » couvre le
+  // trentième jour en entier, changements d'heure compris.
+  const fin = ajouterJours(debutDuJour(now), joursHorizon);
 
   const verifs = await prisma.verification.findMany({
     where: {
@@ -104,13 +151,9 @@ export async function listerEvenementsFenetre(
     : verifs;
 
   return retenues.map((v) => {
-    const enRetard =
-      v.statut === "depassee" ||
-      (v.statut === "planifiee" && v.datePrevue < debutDuJour);
-    const aPlanifier = v.statut === "a_planifier";
-    const tone: "alerte" | "warn" | "ok" = enRetard
+    const tone: "alerte" | "warn" | "ok" = estVerificationEnRetard(v, now)
       ? "alerte"
-      : aPlanifier
+      : v.statut === "a_planifier"
         ? "warn"
         : "ok";
     return {
@@ -137,14 +180,19 @@ export type StatsEquipement = {
  * Retourne une map `equipementId → stats`. Les équipements sans aucune
  * vérification n'apparaissent pas dans la map (l'appelant traite ça
  * comme « aucune vérification »).
+ *
+ * `enRetard` et `aPlanifier` sont **disjoints** (prédicats partagés) : une
+ * occurrence `a_planifier` dont la date est passée compte une fois, comme
+ * retard. Elle était auparavant comptée dans les deux pastilles.
  */
 export async function compterVerifsParEquipement(
   etablissementId: string,
 ): Promise<Map<string, StatsEquipement>> {
   const user = await requireUser();
   const now = new Date();
-  const dans30j = new Date(now.getTime() + 30 * 86400000);
-  const ilYaUnAn = new Date(now.getTime() - 365 * 86400000);
+  const debutFenetreHistorique = debutDuJour(
+    ajouterMois(now, -MOIS_FENETRE_HISTORIQUE),
+  );
 
   const verifs = await prisma.verification.findMany({
     where: {
@@ -177,26 +225,24 @@ export async function compterVerifsParEquipement(
 
   for (const v of verifs) {
     const s = getStats(v.equipementId);
-    const enRetard =
-      v.statut === "depassee" ||
-      (v.statut === "planifiee" && v.datePrevue < now);
-    if (enRetard) s.enRetard += 1;
-    if (v.statut === "a_planifier") s.aPlanifier += 1;
-    if (
-      v.statut === "planifiee" &&
-      v.datePrevue >= now &&
-      v.datePrevue <= dans30j
-    )
-      s.sous30j += 1;
+    if (estVerificationEnRetard(v, now)) s.enRetard += 1;
+    if (estVerificationAPlanifier(v, now)) s.aPlanifier += 1;
+    if (estVerificationAVenir(v, now, JOURS_HORIZON_PROCHE)) s.sous30j += 1;
 
-    if (v.dateRealisee && v.dateRealisee >= ilYaUnAn) {
+    if (
+      v.dateRealisee &&
+      v.dateRealisee.getTime() >= debutFenetreHistorique.getTime()
+    ) {
       if (!s.derniereRealisee || v.dateRealisee > s.derniereRealisee) {
         s.derniereRealisee = v.dateRealisee;
       }
     }
+    // Prochaine échéance annoncée : seulement une date arrêtée avec le
+    // prestataire, et pas encore passée.
     if (
       v.statut === "planifiee" &&
-      v.datePrevue >= now &&
+      v.dateRealisee === null &&
+      !estEnRetard(v.datePrevue, now) &&
       (!s.prochaineDate || v.datePrevue < s.prochaineDate)
     ) {
       s.prochaineDate = v.datePrevue;
@@ -213,19 +259,22 @@ export async function compterVerifsParEquipement(
  *
  * Classification :
  *  - `couvert`  : dateRealisee dans le mois (quel que soit le résultat)
- *  - `retard`   : statut depassee, ou (a_planifier/planifiee avec datePrevue < aujourd'hui)
- *  - `aVenir`   : planifiée/a_planifier dans le futur
+ *  - `retard`   : occurrence en retard au sens des prédicats partagés
+ *  - `aVenir`   : le reste des occurrences ouvertes
  *
  * On bucket sur `dateRealisee ?? datePrevue` — un rapport réalisé en mai
  * apparaît bien dans le mois de mai, même si la datePrevue était ailleurs.
+ * Le mois est lu en heure de Paris, comme partout ailleurs : sur un serveur
+ * en UTC, une échéance du 1er du mois à minuit basculait dans le mois
+ * précédent.
  */
 export async function compterObligationsParMois(
   etablissementId: string,
-  annee: number = new Date().getFullYear(),
+  annee: number = composantesCiviles(new Date()).annee,
 ): Promise<BarMois[]> {
   const user = await requireUser();
-  const debut = new Date(annee, 0, 1);
-  const fin = new Date(annee + 1, 0, 1);
+  const debut = instantCivil(annee, 1, 1);
+  const fin = instantCivil(annee + 1, 1, 1);
 
   const verifs = await prisma.verification.findMany({
     where: {
@@ -254,19 +303,13 @@ export async function compterObligationsParMois(
   const now = new Date();
   for (const v of verifs) {
     const ref = v.dateRealisee ?? v.datePrevue;
-    if (ref.getFullYear() !== annee) continue;
-    const m = ref.getMonth();
+    const c = composantesCiviles(ref);
+    if (c.annee !== annee) continue;
+    const m = c.mois - 1;
 
     if (v.dateRealisee) {
       buckets[m].couvert += 1;
-    } else if (
-      v.statut === "depassee" ||
-      (v.statut === "planifiee" && v.datePrevue < now)
-    ) {
-      // Retard strict : la date prévue est passée sans rapport.
-      // `a_planifier` n'est PAS un retard — l'utilisateur n'a simplement
-      // pas encore planifié (cas typique d'un équipement nouvellement
-      // déclaré). Il est comptabilisé comme « à venir ».
+    } else if (estVerificationEnRetard(v, now)) {
       buckets[m].retard += 1;
     } else {
       buckets[m].aVenir += 1;
@@ -292,9 +335,10 @@ export async function getModulesMatrice(
     etablissement: { entreprise: { userId: user.id } },
   } as const;
   const now = new Date();
-  // Statuts « encore ouverts » : tout sauf l'état final ou l'abandon.
-  const permisOuverts = ["brouillon", "attente_signatures", "valide", "en_cours"] as const;
-  const plansOuverts = ["brouillon", "inspection_faite", "attente_signatures", "valide"] as const;
+  // Échu = la date de fin est **antérieure au jour courant**. Comparer à
+  // `now` brut faisait passer « échu » un permis qui court encore jusqu'à
+  // ce soir.
+  const debutJour = debutDuJour(now);
 
   const [
     accessibilite,
@@ -314,30 +358,29 @@ export async function getModulesMatrice(
     prisma.permisFeu.count({
       where: {
         ...scope,
-        dateFin: { lt: now },
-        statut: { in: [...permisOuverts] },
+        dateFin: { lt: debutJour },
+        statut: { in: [...STATUTS_PERMIS_OUVERTS] },
       },
     }),
     prisma.planPrevention.count({ where: scope }),
     prisma.planPrevention.count({
       where: {
         ...scope,
-        statut: { in: [...plansOuverts] },
+        statut: { in: [...STATUTS_PLAN_OUVERTS] },
         inspectionDate: null,
       },
     }),
     prisma.planPrevention.count({
       where: {
         ...scope,
-        dateFin: { lt: now },
-        statut: { in: [...plansOuverts] },
+        dateFin: { lt: debutJour },
+        statut: { in: [...STATUTS_PLAN_OUVERTS] },
       },
     }),
     prisma.carnetSanitaire.findFirst({
       where: scope,
       select: {
         id: true,
-        _count: { select: { pointsReleve: { where: { actif: true } } } },
         analyses: {
           orderBy: { dateAnalyse: "desc" },
           take: 1,
@@ -348,18 +391,41 @@ export async function getModulesMatrice(
     prisma.prestataire.findMany({ where: scope }),
   ]);
 
-  let jourDernierReleve: number | null = null;
+  // Fraîcheur du carnet sanitaire : mesurée **point par point**.
+  //
+  // La mesure portait auparavant sur le dernier relevé toutes sondes
+  // confondues — un seul point relevé cette semaine suffisait à faire
+  // passer la ligne au vert alors que dix autres n'avaient pas été mesurés
+  // depuis un an. La pastille n'établissait pas le fait qu'elle prétendait
+  // établir. On retient donc le point **le plus en retard**, et on compte à
+  // part ceux qui n'ont jamais été relevés (leur ancienneté n'est pas
+  // mesurable : elle ne peut pas entrer dans un maximum).
+  let jourPointLePlusEnRetard: number | null = null;
+  let nbPointsJamaisReleves = 0;
+  let nbPoints = 0;
   if (carnet) {
-    const dernier = await prisma.releveTemperature.findFirst({
-      where: { pointReleve: { carnetId: carnet.id, actif: true } },
-      orderBy: { dateReleve: "desc" },
-      select: { dateReleve: true },
+    const points = await prisma.pointReleve.findMany({
+      where: { carnetId: carnet.id, actif: true },
+      select: {
+        id: true,
+        releves: {
+          orderBy: { dateReleve: "desc" },
+          take: 1,
+          select: { dateReleve: true },
+        },
+      },
     });
-    if (dernier) {
-      jourDernierReleve = Math.max(
-        0,
-        Math.floor((now.getTime() - dernier.dateReleve.getTime()) / JOUR_MS),
-      );
+    nbPoints = points.length;
+    for (const p of points) {
+      const dernier = p.releves[0]?.dateReleve ?? null;
+      if (dernier === null) {
+        nbPointsJamaisReleves += 1;
+        continue;
+      }
+      const jours = Math.max(0, joursCivilsEntre(dernier, now));
+      if (jourPointLePlusEnRetard === null || jours > jourPointLePlusEnRetard) {
+        jourPointLePlusEnRetard = jours;
+      }
     }
   }
   const derniereAnalyse = carnet?.analyses[0]?.dateAnalyse ?? null;
@@ -378,13 +444,11 @@ export async function getModulesMatrice(
     },
     carnetSanitaire: {
       existe: carnet !== null,
-      nbPoints: carnet?._count.pointsReleve ?? 0,
-      jourDernierReleve,
+      nbPoints,
+      nbPointsJamaisReleves,
+      jourPointLePlusEnRetard,
       jourDerniereAnalyse: derniereAnalyse
-        ? Math.max(
-            0,
-            Math.floor((now.getTime() - derniereAnalyse.getTime()) / JOUR_MS),
-          )
+        ? Math.max(0, joursCivilsEntre(derniereAnalyse, now))
         : null,
     },
     prestataires: {
@@ -408,15 +472,39 @@ export type DashboardData = {
     actionsEnCours: number;
     actionsEnRetard: number;
     actionsLeveesRecemment: number;
+    /** Toutes les actions jamais créées, quel que soit leur statut — y
+     *  compris levées il y a plus de trente jours et abandonnées. Sans lui,
+     *  un établissement ayant clôturé ses vingt actions il y a trois mois
+     *  s'entendait dire « Plan d'actions : rien en place ». */
+    actionsTotal: number;
   };
   duerp: {
     existe: boolean;
     duerpId: string | null;
     derniereVersionAu: Date | null;
     ageJours: number | null;
-    estAJour: boolean; // < 12 mois
+    /** Aucune échéance de mise à jour dépassée — cf. `EtatDuerp.estAJour`.
+     *  Faux tant qu'aucune version n'a été validée. */
+    estAJour: boolean;
+    /** L'état détaillé, seule source des libellés et du score. */
+    etat: EtatDuerp;
   };
 };
+
+/**
+ * Nombre maximal de vérifications ouvertes transmises au moteur de
+ * recommandations. Le moteur n'en retient que cinq ; le plafond n'est là
+ * que pour borner la charge d'un dossier très fourni.
+ *
+ * Il ne s'applique **qu'à la file de propositions** : les compteurs
+ * (`verifsEnRetard`…) et le score sont calculés plus haut, sur l'ensemble
+ * complet des occurrences. La requête historique, elle, prenait les
+ * 30 premières `datePrevue` **sans filtrer les réalisées** : au bout de deux
+ * ans d'usage, ces trente lignes étaient toutes des vérifications archivées,
+ * le moteur ne voyait plus aucun retard, et le board annonçait « rien à
+ * traiter » à côté d'un compteur affichant douze retards.
+ */
+const MAX_VERIFS_RECOS = 40;
 
 export async function getDashboardData(
   etablissementId: string,
@@ -426,40 +514,48 @@ export async function getDashboardData(
     etablissementId,
     etablissement: { entreprise: { userId: user.id } },
   } as const;
+  const now = new Date();
+  const debutFenetreHistorique = debutDuJour(
+    ajouterMois(now, -MOIS_FENETRE_HISTORIQUE),
+  );
 
-  // Agrégats existants déjà optimisés
-  const [etatCalendrier, compteursActions, duerp] = await Promise.all([
-    compterEtatCalendrier(etablissementId),
-    compterActions(etablissementId),
-    prisma.duerp.findFirst({
-      where: {
-        etablissementId,
-        etablissement: { entreprise: { userId: user.id } },
-      },
-      orderBy: { updatedAt: "desc" },
-      include: {
-        versions: { orderBy: { numero: "desc" }, take: 1 },
-      },
-    }),
-  ]);
-
-  // Données brutes pour recommandations (15 vérifs + 15 actions suffisent
-  // — le moteur de reco limite à 5 de toute façon). Les deux counts
-  // alimentent les règles d'amorçage (6-8).
-  const [verifications, actionsOuvertes, nbEquipements, nbRapports] =
-    await Promise.all([
+  const [
+    verifications,
+    actionsOuvertes,
+    compteursActions,
+    actionsTotal,
+    duerp,
+    nbEquipements,
+    nbRapports,
+  ] = await Promise.all([
+    // Un seul passage sur les vérifications qui comptent : les occurrences
+    // ouvertes (toutes, sans plafond — leur nombre est borné par le
+    // calendrier généré) et celles réalisées sur la fenêtre d'historique.
+    // Les compteurs, le score et la file de propositions décrivent ainsi le
+    // même ensemble, comme le fait déjà le dossier de conformité PDF.
     prisma.verification.findMany({
-      where: scope,
+      where: {
+        ...scope,
+        OR: [
+          { dateRealisee: null, statut: { in: [...STATUTS_VERIF_OUVERTE] } },
+          { dateRealisee: { gte: debutFenetreHistorique } },
+        ],
+      },
       select: {
         id: true,
         statut: true,
         datePrevue: true,
+        dateRealisee: true,
         libelleObligation: true,
         equipement: { select: { libelle: true } },
       },
       orderBy: { datePrevue: "asc" },
-      take: 30,
     }),
+    // Toutes les actions encore à traiter. Le compteur « en retard » est
+    // recalculé dessus avec le prédicat partagé plutôt que repris de
+    // l'agrégat SQL : les deux appliquent la même règle, mais le compteur
+    // affiché et la file de propositions décrivent ainsi, par construction,
+    // le même ensemble de lignes.
     prisma.action.findMany({
       where: {
         ...scope,
@@ -472,7 +568,23 @@ export async function getDashboardData(
         libelle: true,
       },
       orderBy: { echeance: "asc" },
-      take: 30,
+    }),
+    compterActions(etablissementId),
+    prisma.action.count({ where: scope }),
+    prisma.duerp.findFirst({
+      where: {
+        etablissementId,
+        etablissement: { entreprise: { userId: user.id } },
+      },
+      orderBy: { updatedAt: "desc" },
+      include: {
+        versions: { orderBy: { numero: "desc" }, take: 1 },
+        // L'effectif de l'entreprise conditionne la mise à jour annuelle
+        // (art. R. 4121-2) — cf. `./duerp`.
+        etablissement: {
+          select: { entreprise: { select: { effectif: true } } },
+        },
+      },
     }),
     prisma.equipement.count({ where: scope }),
     prisma.rapportVerification.count({
@@ -480,42 +592,57 @@ export async function getDashboardData(
     }),
   ]);
 
-  const now = new Date();
-  const derniereVersion = duerp?.versions[0] ?? null;
-  const ageJours =
-    derniereVersion !== null
-      ? Math.round((now.getTime() - derniereVersion.createdAt.getTime()) / JOUR_MS)
-      : null;
+  // Répartition unique, partagée avec les documents générés : quatre
+  // ensembles disjoints, dont la somme sert de dénominateur au score.
+  const etatVerifs = repartirVerifications(verifications, now);
+  const actionsEnRetard = actionsOuvertes.filter((a) =>
+    estActionEnRetard(a, now),
+  ).length;
 
-  const score = calculerScoreConformite({
-    verifsTotal:
-      etatCalendrier.enRetard +
-      etatCalendrier.aPlanifier +
-      etatCalendrier.aVenir +
-      etatCalendrier.realisees12m,
-    verifsEnRetard: etatCalendrier.enRetard,
-    actionsOuvertesTotal: compteursActions.totalACouvrir,
-    actionsEnRetard: compteursActions.enRetard,
-    duerpAgeJours: ageJours ?? undefined,
+  const derniereVersion = duerp?.versions[0] ?? null;
+  const etatDuerp = evaluerEtatDuerp(
+    {
+      ouvert: duerp !== null,
+      dateDerniereVersion: derniereVersion?.createdAt ?? null,
+      effectif: duerp?.etablissement.entreprise.effectif ?? 0,
+    },
+    now,
+  );
+
+  const score = calculerScoreDepuisEtat({
+    verifs: { total: etatVerifs.total, enRetard: etatVerifs.enRetard.length },
+    actions: {
+      ouvertesTotal: compteursActions.totalACouvrir,
+      enRetard: actionsEnRetard,
+    },
+    duerp: etatDuerp.ouvert ? etatDuerp : null,
   });
 
   const recommandations = genererRecommandations(
     {
       etablissementId,
-      verifications: verifications.map((v) => ({
-        id: v.id,
-        statut: v.statut,
-        datePrevue: v.datePrevue,
-        libelleObligation: v.libelleObligation,
-        equipementLibelle: v.equipement.libelle,
-      })),
+      // Ordre d'urgence réelle : les retards d'abord (échéance croissante,
+      // la plus ancienne en tête), puis ce qui arrive, puis les occurrences
+      // sans date arrêtée — dont aucune règle ne tire de proposition, mais
+      // dont la seule présence déclenche l'amorçage « premier rapport ».
+      // Le plafond ne peut donc jamais faire disparaître un retard.
+      verifications: [...etatVerifs.enRetard, ...etatVerifs.aVenir, ...etatVerifs.aPlanifier]
+        .slice(0, MAX_VERIFS_RECOS)
+        .map((v) => ({
+          id: v.id,
+          statut: v.statut,
+          datePrevue: v.datePrevue,
+          dateRealisee: v.dateRealisee,
+          libelleObligation: v.libelleObligation,
+          equipementLibelle: v.equipement.libelle,
+        })),
       actions: actionsOuvertes.map((a) => ({
         id: a.id,
         statut: a.statut,
         echeance: a.echeance,
         libelle: a.libelle,
       })),
-      duerpAgeJours: ageJours ?? undefined,
+      duerp: etatDuerp,
       duerpId: duerp?.id,
       nbEquipements,
       duerpSecteurChoisi: duerp?.referentielSecteurId != null,
@@ -528,21 +655,23 @@ export async function getDashboardData(
     score,
     recommandations,
     compteurs: {
-      verifsEnRetard: etatCalendrier.enRetard,
-      verifsAPlanifier: etatCalendrier.aPlanifier,
-      verifsSous30j: etatCalendrier.aVenir,
-      verifsRealisees12m: etatCalendrier.realisees12m,
+      verifsEnRetard: etatVerifs.enRetard.length,
+      verifsAPlanifier: etatVerifs.aPlanifier.length,
+      verifsSous30j: etatVerifs.aVenir.length,
+      verifsRealisees12m: etatVerifs.realisees12m.length,
       actionsOuvertes: compteursActions.ouvertes,
       actionsEnCours: compteursActions.enCours,
-      actionsEnRetard: compteursActions.enRetard,
+      actionsEnRetard,
       actionsLeveesRecemment: compteursActions.leveesRecemment,
+      actionsTotal,
     },
     duerp: {
-      existe: Boolean(duerp),
+      existe: etatDuerp.ouvert,
       duerpId: duerp?.id ?? null,
       derniereVersionAu: derniereVersion?.createdAt ?? null,
-      ageJours,
-      estAJour: ageJours !== null && ageJours < 365,
+      ageJours: etatDuerp.ageJours,
+      estAJour: etatDuerp.estAJour,
+      etat: etatDuerp,
     },
   };
 }

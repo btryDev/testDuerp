@@ -63,8 +63,12 @@ describe("construireFrise — fenêtre", () => {
 });
 
 describe("construireFrise — retards", () => {
-  it("compte les événements passés et les garde sur l'axe", () => {
-    const f = frise([ev("a", -30), ev("b", -12), ev("c", 20)]);
+  it("compte les événements passés en alerte et les garde sur l'axe", () => {
+    const f = frise([
+      ev("a", -30, "alerte"),
+      ev("b", -12, "alerte"),
+      ev("c", 20),
+    ]);
     expect(f.nbEnRetard).toBe(2);
     // Le passé est désormais consultable : on défile vers la gauche.
     expect(f.marqueurs.map((m) => m.cle)).toEqual(["a", "b", "c"]);
@@ -72,10 +76,34 @@ describe("construireFrise — retards", () => {
   });
 
   it("compte les retards antérieurs à la fenêtre sans les placer", () => {
-    const f = frise([ev("vieux", -400), ev("recent", -10), ev("c", 20)]);
+    const f = frise([
+      ev("vieux", -400, "alerte"),
+      ev("recent", -10, "alerte"),
+      ev("c", 20),
+    ]);
     expect(f.nbEnRetard).toBe(2);
     expect(f.marqueurs.map((m) => m.cle)).toEqual(["recent", "c"]);
     expect(f.nbPlaces).toBe(2);
+  });
+
+  it("ne compte pas en retard un événement passé qui n'en est pas un", () => {
+    // La frise comptait toute date passée : une vérification « à planifier »
+    // (ton `warn` — date de génération, pas de rendez-vous) et une opération
+    // déjà commencée mais régulière (ton `ok`) gonflaient le compteur, qui
+    // ne disait alors plus la même chose que le reste du produit.
+    const f = frise([
+      ev("a-planifier", -10, "warn"),
+      ev("reguliere", -5, "ok"),
+      ev("vrai-retard", -2, "alerte"),
+    ]);
+    expect(f.nbEnRetard).toBe(1);
+    // Elles restent visibles sur l'axe : rien n'est masqué, seul le
+    // compteur est honnête.
+    expect(f.nbPlaces).toBe(3);
+  });
+
+  it("ne compte jamais en retard une alerte à venir", () => {
+    expect(frise([ev("futur", 5, "alerte")]).nbEnRetard).toBe(0);
   });
 
   it("ne marque « passé » qu'une grappe entièrement derrière nous", () => {

@@ -13,6 +13,7 @@
 // échéances distantes de dix jours sont toujours à la même distance
 // visuelle, quel que soit l'horizon affiché.
 
+import { FUSEAU_REFERENCE } from "@/lib/dates";
 import { raccourcirLibelle } from "./libelles";
 
 export type EvenementFrise = {
@@ -21,6 +22,11 @@ export type EvenementFrise = {
   date: Date;
   tone: "alerte" | "warn" | "ok";
   equipement: string;
+  /** Porte de sortie de l'échéance. Absente = vérification périodique,
+   *  l'appelant sait la construire depuis l'`id`. Toutes les autres
+   *  familles (action, permis, attestation…) la portent : leur `id` est
+   *  préfixé par module et ne désigne pas une vérification. */
+  href?: string;
 };
 
 /** Une échéance, telle qu'elle apparaît dans une carte de la frise. */
@@ -32,6 +38,7 @@ export type EvenementMarqueur = {
   /** « 24 SEPT. » */
   libelleDate: string;
   passe: boolean;
+  href?: string;
 };
 
 export type MarqueurFrise = {
@@ -123,6 +130,11 @@ export const JOURS_APRES = 730;
 
 const JOUR_MS = 86400000;
 
+// `minuit` et `joursEntre` servent la **géométrie** de l'axe (abscisses,
+// largeurs de mois, « derrière nous / à venir ») : ce sont des mesures
+// d'écran, pas des règles métier. La qualification d'un événement — en
+// retard, à planifier, à venir — arrive déjà faite dans `tone`, calculée par
+// les prédicats partagés (`@/lib/dates/retard`, ADR-011).
 function minuit(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
@@ -132,24 +144,29 @@ function joursEntre(a: Date, b: Date): number {
   return Math.round((minuit(b).getTime() - minuit(a).getTime()) / JOUR_MS);
 }
 
+// Fuseau épinglé sur les libellés de l'axe : une échéance stockée à
+// minuit UTC s'affichait « 23 SEPT. » au lieu de « 24 SEPT. » dès que le
+// serveur tournait en UTC, alors que son marqueur était bien placé au
+// 24 (la géométrie, elle, passe par `minuit`).
+const FMT_JOUR_MOIS = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: FUSEAU_REFERENCE,
+  day: "numeric",
+  month: "short",
+});
+
+const FMT_JOUR_MOIS_AN = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: FUSEAU_REFERENCE,
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+
 function libelleDate(d: Date): string {
-  return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" })
-    .format(d)
-    .toUpperCase();
+  return FMT_JOUR_MOIS.format(d).toUpperCase();
 }
 
 function libelleDateLong(d: Date): string {
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
-    .format(d)
-    .toUpperCase();
-}
-
-function cap(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return FMT_JOUR_MOIS_AN.format(d).toUpperCase();
 }
 
 export function construireFrise({
@@ -177,8 +194,18 @@ export function construireFrise({
   const x = (d: Date) => joursEntre(debut, d) * pxParJour;
   const largeur = (joursEntre(debut, fin) + 1) * pxParJour;
 
+  // « En retard » n'est pas une définition de plus : la frise n'a que des
+  // événements déjà qualifiés en amont (`listerEvenementsFenetre` et
+  // `listerAutresEcheances`, tous deux assis sur les prédicats partagés de
+  // `@/lib/dates/retard`). Le ton `alerte` **est** le retard.
+  //
+  // Compter toute date passée, comme avant, gonflait le compteur de deux
+  // familles qui ne sont pas des retards : une vérification « à planifier »
+  // (ton `warn`, date de génération et non de rendez-vous) et une opération
+  // déjà commencée dont l'inspection commune a bien eu lieu (ton `ok`).
+  // La contrainte de date reste, elle : rien à venir n'est un retard.
   const nbEnRetard = evenements.filter(
-    (e) => joursEntre(aujourdhui, e.date) < 0,
+    (e) => e.tone === "alerte" && joursEntre(aujourdhui, e.date) < 0,
   ).length;
 
   const dansFenetre = evenements
@@ -210,6 +237,7 @@ export function construireFrise({
       tone: e.tone,
       libelleDate: libelleDate(e.date),
       passe: joursEntre(aujourdhui, e.date) < 0,
+      href: e.href,
     }));
     const premier = groupe[0];
     const dernier = groupe[groupe.length - 1];
@@ -266,6 +294,28 @@ function libellePlage(debut: Date, fin: Date): string {
   return `${libelleDate(debut)} → ${libelleDate(fin)}`;
 }
 
+// Noms de mois capitalisés, indexés comme `Date#getMonth()` (0 = janvier).
+// Pas d'`Intl` ici, volontairement : le curseur des graduations est un
+// repère **local** (`new Date(annee, mois, 1)`), cohérent avec la
+// géométrie de l'axe. Le formater dans un fuseau fixe l'aurait désynchronisé
+// du bloc qu'il légende sur tout serveur qui n'est pas à Paris — un bloc
+// « Août » posé sur les pixels de juillet. Une table statique n'a ni
+// fuseau ni locale à négocier.
+const MOIS_LONGS = [
+  "Janvier",
+  "Février",
+  "Mars",
+  "Avril",
+  "Mai",
+  "Juin",
+  "Juillet",
+  "Août",
+  "Septembre",
+  "Octobre",
+  "Novembre",
+  "Décembre",
+] as const;
+
 /** Graduations mensuelles : un bloc par mois couvert par la fenêtre. */
 function construireMois(
   debut: Date,
@@ -273,7 +323,6 @@ function construireMois(
   aujourdhui: Date,
   pxParJour: number,
 ): GraduationMois[] {
-  const fmt = new Intl.DateTimeFormat("fr-FR", { month: "long" });
   const out: GraduationMois[] = [];
 
   const curseur = new Date(debut.getFullYear(), debut.getMonth(), 1);
@@ -287,8 +336,8 @@ function construireMois(
     out.push({
       cle: `${curseur.getFullYear()}-${String(curseur.getMonth() + 1).padStart(2, "0")}`,
       label: marqueAnnee
-        ? `${cap(fmt.format(curseur))} ${String(curseur.getFullYear()).slice(2)}`
-        : cap(fmt.format(curseur)),
+        ? `${MOIS_LONGS[curseur.getMonth()]} ${String(curseur.getFullYear()).slice(2)}`
+        : MOIS_LONGS[curseur.getMonth()],
       x: joursEntre(debut, curseur) * pxParJour,
       largeur: nbJours * pxParJour,
       estMoisCourant:

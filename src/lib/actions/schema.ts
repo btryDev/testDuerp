@@ -1,3 +1,4 @@
+import { depuisCleJourCivil } from "@/lib/dates";
 import { z } from "zod";
 import type { TypeAction, StatutAction } from "@prisma/client";
 
@@ -53,7 +54,7 @@ export const actionVerificationSchema = z.object({
       .string()
       .regex(DATE_FMT, "Format attendu : AAAA-MM-JJ")
       .optional()
-      .transform((v) => (v ? new Date(v) : undefined)),
+      .transform((v) => (v ? depuisCleJourCivil(v) : undefined)),
   ),
   responsable: z.preprocess(
     (v) => (typeof v === "string" ? v.trim() || undefined : v),
@@ -101,7 +102,7 @@ export const modifierActionSchema = z.object({
         z
           .string()
           .regex(DATE_FMT, "Format attendu : AAAA-MM-JJ")
-          .transform((v) => new Date(v)),
+          .transform((v) => depuisCleJourCivil(v)),
       ])
       .optional(),
   ),

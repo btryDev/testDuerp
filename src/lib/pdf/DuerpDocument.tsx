@@ -6,6 +6,7 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 import { prioriser } from "@/lib/cotation";
+import { formaterDateCourteFr, formaterDateLongueFr } from "@/lib/dates";
 import { LABEL_STATUT, LABEL_TYPE_MESURE } from "@/lib/mesures/labels";
 import type { DuerpSnapshot } from "@/lib/versions/snapshot";
 import type { TypeMesure } from "@/lib/referentiels/types";
@@ -105,23 +106,17 @@ function badgeColor(criticite: number): string {
   return "#bbf7d0";
 }
 
+// Les dates du snapshot sont sérialisées en ISO : on les reconstruit puis on
+// les formate en heure de Paris (`@/lib/dates`). Sans `timeZone` explicite,
+// le rendu dépendait du fuseau du serveur — un DUERP imprimé pouvait dater
+// une mesure de la veille.
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
-  const d = new Date(iso);
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return formaterDateCourteFr(new Date(iso));
 }
 
 function formatDateTime(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return formaterDateLongueFr(new Date(iso));
 }
 
 export type Props = {

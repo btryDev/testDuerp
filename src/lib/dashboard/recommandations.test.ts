@@ -1,14 +1,31 @@
 import { describe, expect, it } from "vitest";
+import { ajouterJours, instantCivil } from "@/lib/dates";
+import { evaluerEtatDuerp } from "./duerp";
 import {
   genererRecommandations,
   type EntreeRecos,
 } from "./recommandations";
 
-const NOW = new Date("2026-04-20T10:00:00Z");
-const JOUR_MS = 86_400_000;
+// 20 avril 2026, 10:00 heure de Paris.
+const NOW = instantCivil(2026, 4, 20, 10);
 
+/** Une date civile décalée de N jours — jamais un `+ N × 86 400 000`, qui
+ *  décale d'une heure aux changements d'heure. */
 function dateDecalee(joursDeNow: number): Date {
-  return new Date(NOW.getTime() + joursDeNow * JOUR_MS);
+  return ajouterJours(instantCivil(2026, 4, 20), joursDeNow);
+}
+
+/** État de DUERP dont la dernière version a `ageJours` jours, dans une
+ *  entreprise soumise à la mise à jour annuelle. */
+function duerpDe(ageJours: number | null, effectif = 20) {
+  return evaluerEtatDuerp(
+    {
+      ouvert: true,
+      dateDerniereVersion: ageJours === null ? null : dateDecalee(-ageJours),
+      effectif,
+    },
+    NOW,
+  );
 }
 
 /**
@@ -160,20 +177,58 @@ describe("genererRecommandations — catégories", () => {
     expect(recs[0].kind).toBe("action_proche");
   });
 
-  it("DUERP > 11 mois → recommande mise à jour", () => {
+  it("DUERP périmé → recommande la mise à jour", () => {
     const e: EntreeRecos = {
       ...baseEntree(),
-      duerpAgeJours: 400,
+      duerp: duerpDe(400),
       duerpId: "duerp-x",
     };
     const recs = genererRecommandations(e, { now: NOW });
-    expect(recs.some((r) => r.kind === "duerp_a_jour")).toBe(true);
+    const reco = recs.find((r) => r.kind === "duerp_a_jour");
+    expect(reco?.titre).toBe("DUERP à mettre à jour");
+    expect(reco?.sousTitre).toBe("Dernière version il y a 13 mois");
   });
 
-  it("DUERP < 11 mois → pas de recommandation", () => {
+  it("DUERP récent → pas de recommandation", () => {
     const e: EntreeRecos = {
       ...baseEntree(),
-      duerpAgeJours: 100,
+      duerp: duerpDe(100),
+      duerpId: "duerp-x",
+    };
+    const recs = genererRecommandations(e, { now: NOW });
+    expect(recs.some((r) => r.kind === "duerp_a_jour")).toBe(false);
+  });
+
+  it("prévient un mois avant l'échéance annuelle", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      duerp: duerpDe(350),
+      duerpId: "duerp-x",
+    };
+    const reco = genererRecommandations(e, { now: NOW }).find(
+      (r) => r.kind === "duerp_a_jour",
+    );
+    expect(reco?.sousTitre).toBe("Mise à jour annuelle à prévoir");
+  });
+
+  it("ne parle pas de « mise à jour » quand aucune version n'a été validée", () => {
+    // Un DUERP tout juste ouvert n'a pas « plus de douze mois » : il n'a
+    // simplement rien de figé. Deux situations, deux libellés.
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      duerp: duerpDe(null),
+      duerpId: "duerp-x",
+    };
+    const reco = genererRecommandations(e, { now: NOW }).find(
+      (r) => r.kind === "duerp_a_jour",
+    );
+    expect(reco?.titre).toBe("Validez la première version de votre DUERP");
+  });
+
+  it("ne reproche pas l'ancienneté sous onze salariés (art. R. 4121-2)", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      duerp: duerpDe(400, 4),
       duerpId: "duerp-x",
     };
     const recs = genererRecommandations(e, { now: NOW });
@@ -193,6 +248,121 @@ describe("genererRecommandations — catégories", () => {
       ],
     };
     expect(genererRecommandations(e, { now: NOW }).length).toBe(0);
+  });
+});
+
+describe("genererRecommandations — définition du retard (ADR-011)", () => {
+  it("remonte une vérification « planifiee » dont la date est passée", () => {
+    // Le statut `depassee` n'est écrit qu'à la génération du calendrier et
+    // n'est jamais réévalué : « planifiée puis oubliée » est l'état normal
+    // d'un contrôle en retard. Il n'entrait dans aucune règle — le bandeau
+    // annonçait des échéances à traiter, la file de travail restait vide.
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      verifications: [
+        {
+          id: "v1",
+          statut: "planifiee",
+          datePrevue: dateDecalee(-40),
+          libelleObligation: "Vérification élec",
+          equipementLibelle: "TGBT",
+        },
+      ],
+    };
+    const recs = genererRecommandations(e, { now: NOW });
+    expect(recs[0].kind).toBe("verif_depassee");
+    expect(recs[0].sousTitre).toContain("échéance dépassée");
+  });
+
+  it("remonte une vérification « a_planifier » dont la date est passée", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      verifications: [
+        {
+          id: "v1",
+          statut: "a_planifier",
+          datePrevue: dateDecalee(-3),
+          libelleObligation: "Extincteurs",
+          equipementLibelle: "Extincteurs",
+        },
+      ],
+    };
+    expect(genererRecommandations(e, { now: NOW })[0].kind).toBe(
+      "verif_depassee",
+    );
+  });
+
+  it("n'étiquette pas « dépassée » une occurrence datée d'aujourd'hui", () => {
+    // Deux règles opposées cohabitaient dans le même dossier : la requête
+    // du dashboard documentait qu'`a_planifier` n'est pas un retard, le
+    // moteur de recos la classait « échéance dépassée » dès le jour même.
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      verifications: [
+        {
+          id: "v1",
+          statut: "a_planifier",
+          datePrevue: dateDecalee(0),
+          libelleObligation: "Extincteurs",
+          equipementLibelle: "Extincteurs",
+        },
+      ],
+    };
+    expect(
+      genererRecommandations(e, { now: NOW }).some(
+        (r) => r.kind === "verif_depassee",
+      ),
+    ).toBe(false);
+  });
+
+  it("ignore une occurrence déjà réalisée, même datée d'hier", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      verifications: [
+        {
+          id: "v1",
+          statut: "planifiee",
+          datePrevue: dateDecalee(-1),
+          dateRealisee: dateDecalee(-1),
+          libelleObligation: "Contrôle fait",
+          equipementLibelle: "TGBT",
+        },
+      ],
+    };
+    expect(genererRecommandations(e, { now: NOW })).toHaveLength(0);
+  });
+
+  it("retient une vérification planifiée aujourd'hui comme « proche »", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      verifications: [
+        {
+          id: "v1",
+          statut: "planifiee",
+          datePrevue: dateDecalee(0),
+          libelleObligation: "Contrôle alarme",
+          equipementLibelle: "SSI",
+        },
+      ],
+    };
+    expect(genererRecommandations(e, { now: NOW })[0].kind).toBe("verif_proche");
+  });
+
+  it("une action dont l'échéance tombe aujourd'hui est « à venir », pas en retard", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      actions: [
+        {
+          id: "a1",
+          statut: "en_cours",
+          echeance: dateDecalee(0),
+          libelle: "Remplacer BAES",
+        },
+      ],
+    };
+    const recs = genererRecommandations(e, { now: NOW });
+    expect(recs).toHaveLength(1);
+    expect(recs[0].kind).toBe("action_proche");
   });
 });
 

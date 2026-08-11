@@ -1,0 +1,85 @@
+// Répartition des occurrences de vérification pour les documents générés.
+//
+// Module **pur** (aucun accès base, aucune horloge implicite) pour deux
+// raisons : il est testable seul, et il oblige les builders PDF à passer par
+// les prédicats canoniques de `@/lib/dates/retard` (ADR-011) plutôt qu'à
+// réinventer une règle de retard maison — ce qu'ils faisaient, avec pour
+// résultat un dossier de contrôle dont le compteur et la liste détaillée
+// décrivaient deux ensembles différents.
+
+import {
+  JOURS_HORIZON_PROCHE,
+  MOIS_FENETRE_HISTORIQUE,
+  ajouterMois,
+  debutDuJour,
+} from "@/lib/dates";
+import {
+  estVerificationAPlanifier,
+  estVerificationAVenir,
+  estVerificationEnRetard,
+  type VerificationDatee,
+} from "@/lib/dates/retard";
+
+/** Répartition en quatre catégories **disjointes**. */
+export type EtatVerifications<T> = {
+  /** Échéance passée sans réalisation — la non-conformité réelle. */
+  enRetard: T[];
+  /** Sans date de rendez-vous, mais pas encore en retard. */
+  aPlanifier: T[];
+  /** Planifiées dans l'horizon proche (30 jours). */
+  aVenir: T[];
+  /** Réalisées sur la fenêtre d'historique (12 mois). */
+  realisees12m: T[];
+  /** Somme des quatre — dénominateur du score de conformité. */
+  total: number;
+};
+
+/**
+ * Répartit une liste de vérifications à un instant donné.
+ *
+ * Les quatre ensembles sont disjoints par construction : une occurrence
+ * réalisée est exclue des trois premiers (`dateRealisee` non nulle), et
+ * `estVerificationEnRetard` / `estVerificationAPlanifier` ne sont jamais
+ * vrais ensemble. La somme est donc un dénominateur honnête, sans double
+ * compte.
+ *
+ * Une vérification planifiée au-delà de l'horizon proche n'entre dans aucune
+ * catégorie : ce n'est ni un engagement de la période, ni un retard. Même
+ * convention que le tableau de bord, pour que les deux affichent le même
+ * score à la même seconde.
+ *
+ * L'horloge est injectée (jamais `new Date()` ici) : c'est ce qui rend le
+ * document reproductible et le test possible.
+ */
+export function repartirVerifications<
+  T extends VerificationDatee,
+>(verifs: readonly T[], now: Date): EtatVerifications<T> {
+  // Borne de la fenêtre d'historique : le **jour civil** situé douze mois en
+  // arrière, pris à minuit heure de Paris. Sans `debutDuJour`, la borne
+  // hérite de l'heure courante et une vérification réalisée pile douze mois
+  // plus tôt (date stockée à minuit) tombe du dossier l'après-midi mais y
+  // figure le matin.
+  const debutFenetreHistorique = debutDuJour(
+    ajouterMois(now, -MOIS_FENETRE_HISTORIQUE),
+  );
+
+  const enRetard = verifs.filter((v) => estVerificationEnRetard(v, now));
+  const aPlanifier = verifs.filter((v) => estVerificationAPlanifier(v, now));
+  const aVenir = verifs.filter((v) =>
+    estVerificationAVenir(v, now, JOURS_HORIZON_PROCHE),
+  );
+  const realisees12m = verifs.filter(
+    (v) =>
+      v.dateRealisee !== null &&
+      v.dateRealisee.getTime() >= debutFenetreHistorique.getTime(),
+  );
+
+  return {
+    enRetard,
+    aPlanifier,
+    aVenir,
+    realisees12m,
+    total:
+      enRetard.length + aPlanifier.length + aVenir.length + realisees12m.length,
+  };
+}

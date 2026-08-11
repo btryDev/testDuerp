@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import { compterActions, listerActions, origineDeLAction } from "@/lib/actions/queries";
-import { compterEtatCalendrier, listerVerifications } from "@/lib/calendrier/queries";
+import { listerVerifications, type VerificationListee } from "@/lib/calendrier/queries";
 import { listerRapportsDeLEtablissement } from "@/lib/rapports/queries";
 import { obligationParId } from "@/lib/referentiels/conformite";
-import { calculerScoreConformite } from "@/lib/dashboard/score";
+import { calculerScoreDepuisEtat } from "@/lib/dashboard/score";
+import { evaluerEtatDuerp } from "@/lib/dashboard/duerp";
+import { repartirVerifications } from "./etat-verifications";
 import type { LignePlanActions, PlanActionsData } from "./PlanActionsDocument";
 import type { LigneRapport, LigneVerif, RegistreData } from "./RegistreDocument";
 import type { DossierData } from "./DossierConformiteDocument";
@@ -13,9 +16,35 @@ import type { DossierData } from "./DossierConformiteDocument";
  * à fournir aux composants PDF. Pas de renduHTML ici — uniquement du
  * shaping de données. Cela permet de tester les builders sans rendre
  * de PDF et de garder les composants PDF purs.
+ *
+ * Deux règles valent pour tout ce fichier :
+ *
+ *  1. **Rien n'est lu hors du périmètre du user connecté.** Les listes
+ *     passent par des queries déjà scopées (`listerActions`,
+ *     `listerVerifications`, `listerRapportsDeLEtablissement`) ; les lectures
+ *     directes d'établissement passent par `chargerEtablissementDuUser`
+ *     ci-dessous. Un `findUnique` sur l'identifiant seul produisait un
+ *     document hybride — en-tête d'un tiers, tableaux vides — donc à la fois
+ *     une fuite de données et un document faux.
+ *
+ *  2. **Aucune règle de retard n'est réécrite ici.** Les prédicats viennent
+ *     de `@/lib/dates/retard` (ADR-011), qui est la source de vérité unique
+ *     du produit. Un dossier remis à un inspecteur ne peut pas afficher un
+ *     compteur différent de celui que l'écran montre à la même seconde.
  */
 
-const JOUR_MS = 1000 * 60 * 60 * 24;
+/**
+ * Charge un établissement (et son entreprise) en le bornant au user
+ * connecté. Retourne `null` aussi bien pour un établissement inexistant que
+ * pour celui d'un tiers : l'appelant ne doit pas pouvoir les distinguer.
+ */
+async function chargerEtablissementDuUser(etablissementId: string) {
+  const user = await requireUser();
+  return prisma.etablissement.findFirst({
+    where: { id: etablissementId, entreprise: { userId: user.id } },
+    include: { entreprise: true },
+  });
+}
 
 function regimesTexte(etab: {
   estEtablissementTravail: boolean;
@@ -58,13 +87,24 @@ function contexteAction(a: {
   return "Libre";
 }
 
+/** Projection d'une vérification vers la ligne imprimée. Partagée par le
+ *  registre et le dossier de conformité pour que la même occurrence s'y
+ *  affiche à l'identique. */
+function ligneVerif(v: VerificationListee): LigneVerif {
+  return {
+    id: v.id,
+    libelleObligation: v.libelleObligation,
+    equipementLibelle: v.equipement.libelle,
+    datePrevue: v.datePrevue,
+    statut: v.statut,
+    domaine: obligationParId(v.obligationId)?.domaine ?? null,
+  };
+}
+
 export async function construirePlanActionsData(
   etablissementId: string,
 ): Promise<PlanActionsData | null> {
-  const etab = await prisma.etablissement.findUnique({
-    where: { id: etablissementId },
-    include: { entreprise: true },
-  });
+  const etab = await chargerEtablissementDuUser(etablissementId);
   if (!etab) return null;
 
   // Le PDF Plan d'actions documente ce qui reste à faire à la date
@@ -106,10 +146,7 @@ export async function construirePlanActionsData(
 export async function construireRegistreData(
   etablissementId: string,
 ): Promise<RegistreData | null> {
-  const etab = await prisma.etablissement.findUnique({
-    where: { id: etablissementId },
-    include: { entreprise: true },
-  });
+  const etab = await chargerEtablissementDuUser(etablissementId);
   if (!etab) return null;
 
   const [rapports, verifs] = await Promise.all([
@@ -129,18 +166,13 @@ export async function construireRegistreData(
     commentaires: r.commentaires,
   }));
 
+  // « En attente » = tout ce qui n'a pas encore de rapport, quelle que soit
+  // la date : c'est le pendant documentaire des rapports listés au-dessus.
   const verifsEnAttente: LigneVerif[] = verifs
     .filter((v) =>
       ["a_planifier", "planifiee", "depassee"].includes(v.statut),
     )
-    .map((v) => ({
-      id: v.id,
-      libelleObligation: v.libelleObligation,
-      equipementLibelle: v.equipement.libelle,
-      datePrevue: v.datePrevue,
-      statut: v.statut,
-      domaine: obligationParId(v.obligationId)?.domaine ?? null,
-    }));
+    .map(ligneVerif);
 
   return {
     entreprise: etab.entreprise.raisonSociale,
@@ -155,8 +187,9 @@ export async function construireRegistreData(
 export async function construireDossierConformiteData(
   etablissementId: string,
 ): Promise<DossierData | null> {
-  const etab = await prisma.etablissement.findUnique({
-    where: { id: etablissementId },
+  const user = await requireUser();
+  const etab = await prisma.etablissement.findFirst({
+    where: { id: etablissementId, entreprise: { userId: user.id } },
     include: {
       entreprise: true,
       duerps: {
@@ -171,27 +204,52 @@ export async function construireDossierConformiteData(
   });
   if (!etab) return null;
 
-  const [compteursActions, etatCalendrier, plan, registre] = await Promise.all([
+  // Les vérifications et les rapports sont lus **une seule fois** : les
+  // compteurs de la synthèse et les listes détaillées en dessous doivent
+  // décrire le même ensemble. Avant, le compteur venait d'un agrégat SQL et
+  // la liste d'un filtre TypeScript portant sur d'autres statuts — le PDF
+  // annonçait « 5 vérifications en retard » puis en détaillait 3.
+  const [compteursActions, plan, rapports, verifs] = await Promise.all([
     compterActions(etablissementId),
-    compterEtatCalendrier(etablissementId),
     construirePlanActionsData(etablissementId),
-    construireRegistreData(etablissementId),
+    listerRapportsDeLEtablissement(etablissementId),
+    listerVerifications(etablissementId),
   ]);
 
   const now = new Date();
+  const etatVerifs = repartirVerifications(verifs, now);
+
   const duerp = etab.duerps[0] ?? null;
   const derniereVersion = duerp?.versions[0] ?? null;
-  const ageJours = derniereVersion
-    ? Math.round((now.getTime() - derniereVersion.createdAt.getTime()) / JOUR_MS)
-    : null;
+  // Le score passe par **la même** entrée que le tableau de bord. L'entrée
+  // historique, qui ne recevait qu'un âge en jours, ignorait deux choses que
+  // `evaluerEtatDuerp` sait : le seuil d'effectif de la mise à jour annuelle
+  // (art. R. 4121-2) et le cas « DUERP ouvert, aucune version validée ». Deux
+  // dossiers sortaient donc notés différemment à l'écran et dans le document
+  // remis à l'inspecteur, à la même seconde.
+  const etatDuerp = evaluerEtatDuerp(
+    {
+      ouvert: duerp !== null,
+      dateDerniereVersion: derniereVersion?.createdAt ?? null,
+      effectif: etab.entreprise.effectif,
+    },
+    now,
+  );
 
-  const score = calculerScoreConformite({
-    verifsTotal:
-      etatCalendrier.enRetard + etatCalendrier.aVenir + etatCalendrier.realisees12m,
-    verifsEnRetard: etatCalendrier.enRetard,
-    actionsOuvertesTotal: compteursActions.totalACouvrir,
-    actionsEnRetard: compteursActions.enRetard,
-    duerpAgeJours: ageJours ?? undefined,
+  const score = calculerScoreDepuisEtat({
+    // Dénominateur = tous les engagements de la période. `aPlanifier` en
+    // fait partie : l'omettre rétrécissait le dénominateur et faisait
+    // sortir un score inférieur à celui du tableau de bord, au même
+    // instant, dans le document remis à l'inspecteur.
+    verifs: {
+      total: etatVerifs.total,
+      enRetard: etatVerifs.enRetard.length,
+    },
+    actions: {
+      ouvertesTotal: compteursActions.totalACouvrir,
+      enRetard: compteursActions.enRetard,
+    },
+    duerp: etatDuerp.ouvert ? etatDuerp : null,
   });
 
   const criticiteMax =
@@ -201,6 +259,18 @@ export async function construireDossierConformiteData(
         (max, r) => (max === null || r.criticite > max ? r.criticite : max),
         null,
       ) ?? null;
+
+  const rapportsRecents: LigneRapport[] = rapports.slice(0, 10).map((r) => ({
+    id: r.id,
+    dateRapport: r.dateRapport,
+    resultat: r.resultat,
+    organismeVerif: r.organismeVerif,
+    libelleObligation: r.verification.libelleObligation,
+    equipementLibelle: r.verification.equipement.libelle,
+    domaine: obligationParId(r.verification.obligationId)?.domaine ?? null,
+    fichierNomOriginal: r.fichierNomOriginal,
+    commentaires: r.commentaires,
+  }));
 
   return {
     entreprise: etab.entreprise.raisonSociale,
@@ -227,17 +297,17 @@ export async function construireDossierConformiteData(
             criticiteMax,
           },
     compteurs: {
-      verifsEnRetard: etatCalendrier.enRetard,
-      verifsPlanifiees: etatCalendrier.aVenir,
-      verifsRealisees12m: etatCalendrier.realisees12m,
+      verifsEnRetard: etatVerifs.enRetard.length,
+      verifsPlanifiees: etatVerifs.aVenir.length,
+      verifsRealisees12m: etatVerifs.realisees12m.length,
       actionsOuvertes: compteursActions.ouvertes + compteursActions.enCours,
       actionsEnRetard: compteursActions.enRetard,
     },
-    rapportsRecents: registre?.rapports.slice(0, 10) ?? [],
-    verifsEnRetard:
-      registre?.verifsEnAttente.filter(
-        (v) => v.statut === "depassee" || v.statut === "a_planifier",
-      ) ?? [],
+    rapportsRecents,
+    // Exactement les occurrences comptées juste au-dessus, projetées en
+    // lignes de tableau : le nombre annoncé et le détail imprimé ne peuvent
+    // plus diverger.
+    verifsEnRetard: etatVerifs.enRetard.map(ligneVerif),
     actionsEnCours:
       plan?.actions.filter(
         (a) => a.statut === "ouverte" || a.statut === "en_cours",

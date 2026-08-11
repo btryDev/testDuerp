@@ -7,16 +7,19 @@ import { construireEtapes } from "@/lib/duerps/etapes";
 import { getDuerp } from "@/lib/duerps/queries";
 import { construireSynthese } from "@/lib/duerps/synthese";
 import { LABEL_TYPE_MESURE } from "@/lib/mesures/labels";
+import {
+  formaterDateCourteFr,
+  formaterDateFr,
+  formaterDateLongueFr,
+  joursCivilsEntre,
+} from "@/lib/dates";
+import { evaluerEtatDuerp } from "@/lib/dashboard/duerp";
 import { listerVersions } from "@/lib/versions/queries";
 import type { TypeMesure } from "@/lib/referentiels/types";
 
 function formatDate(d: Date | null) {
   if (!d) return "—";
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return formaterDateCourteFr(d);
 }
 
 function classeCriticite(c: number) {
@@ -55,23 +58,32 @@ export default async function SynthesePage({
   // Rappel de mise à jour annuelle — art. R. 4121-2 : obligatoire pour les
   // entreprises de 11 salariés et plus. On signale aussi le cas où aucune
   // version n'a jamais été validée (DUERP en cours de constitution).
-  const effectifSoumisAMajAnnuelle = duerp.entreprise.effectif >= 11;
   const derniereVersion = versions[0];
+  // Page serveur : un rendu par requête, l'horloge peut être lue — une
+  // seule fois, pour que l'ancienneté affichée et le verdict d'échéance
+  // reposent sur le même instant.
+  const aujourdhui = new Date();
+  // Ancienneté en **jours civils** : la division de l'écart en
+  // millisecondes par 86 400 000 perdait un jour à chaque passage à
+  // l'heure d'hiver traversé.
   const joursDepuisDerniereVersion = derniereVersion
-    ? Math.floor(
-        // Page serveur : un rendu par requête, l'horloge peut être lue.
-        // eslint-disable-next-line react-hooks/purity
-        (Date.now() - derniereVersion.createdAt.getTime()) /
-          (1000 * 60 * 60 * 24),
-      )
+    ? joursCivilsEntre(derniereVersion.createdAt, aujourdhui)
     : null;
-  const majEchue =
-    effectifSoumisAMajAnnuelle &&
-    derniereVersion !== undefined &&
-    joursDepuisDerniereVersion !== null &&
-    joursDepuisDerniereVersion > 365;
-  const jamaisValide =
-    effectifSoumisAMajAnnuelle && derniereVersion === undefined;
+  // La règle de mise à jour annuelle (seuil d'effectif de l'art. R. 4121-2,
+  // distinction « jamais validé » / « échéance dépassée », arithmétique en
+  // années calendaires) vit dans `evaluerEtatDuerp` et NULLE PART AILLEURS.
+  // Cette page la réécrivait en local avec un seuil d'effectif en dur : le
+  // tableau de bord et le dossier DUERP se contredisaient sur le même
+  // établissement, chacun appliquant sa propre variante.
+  const etatDuerp = evaluerEtatDuerp(
+    {
+      ouvert: true,
+      dateDerniereVersion: derniereVersion?.createdAt ?? null,
+      effectif: duerp.entreprise.effectif,
+    },
+    aujourdhui,
+  );
+  const { majEchue, jamaisValide } = etatDuerp;
 
   return (
     <div className="space-y-14">
@@ -379,11 +391,7 @@ export default async function SynthesePage({
                   </span>
                   <div>
                     <p className="text-sm">
-                      {v.createdAt.toLocaleDateString("fr-FR", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })}
+                      {formaterDateLongueFr(v.createdAt)}
                     </p>
                     {v.motif && (
                       <p className="text-sm italic text-muted-foreground">
@@ -421,7 +429,7 @@ export default async function SynthesePage({
           ← Étape précédente
         </Link>
         <p className="text-xs italic text-muted-foreground">
-          Fait à {new Date().toLocaleDateString("fr-FR")}
+          Fait à {formaterDateFr(aujourdhui)}
         </p>
       </div>
     </div>

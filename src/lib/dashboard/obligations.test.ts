@@ -31,7 +31,8 @@ const MODULES_NEUTRES: ModulesMatrice = {
   carnetSanitaire: {
     existe: false,
     nbPoints: 0,
-    jourDernierReleve: null,
+    nbPointsJamaisReleves: 0,
+    jourPointLePlusEnRetard: null,
     jourDerniereAnalyse: null,
   },
   prestataires: { total: 0, enAlerte: 0 },
@@ -171,6 +172,30 @@ describe("construireMatrice — plan d'actions", () => {
     );
     expect(l.cellules[0]).toBe("ok");
     expect(l.cellules[2]).toBe("ok");
+  });
+
+  it("compte un plan intégralement clôturé depuis longtemps", () => {
+    // Vingt actions levées il y a trois mois : la somme partielle
+    // (ouvertes + en cours + levées sur trente jours) valait zéro et le
+    // tableau annonçait « Plan d'actions : rien en place » à un
+    // établissement exemplaire. La donnée existait, elle ne remontait pas.
+    const l = ligne(
+      { ...VIERGE, compteurs: { ...VIERGE.compteurs, actionsTotal: 20 } },
+      "actions",
+    );
+    expect(l.cellules[0]).toBe("ok");
+    expect(l.cellules[2]).toBe("ok");
+  });
+
+  it("retombe sur la somme partielle quand le total n'est pas transmis", () => {
+    const l = ligne(
+      {
+        ...VIERGE,
+        compteurs: { ...VIERGE.compteurs, actionsOuvertes: 2 },
+      },
+      "actions",
+    );
+    expect(l.cellules[0]).toBe("ok");
   });
 
   it("signale les actions en retard", () => {
@@ -358,17 +383,49 @@ describe("construireMatrice — carnet sanitaire", () => {
     );
   });
 
-  it("considère à jour un relevé de la semaine (rythme hebdo)", () => {
+  it("considère à jour un carnet dont tous les points ont été relevés dans la semaine", () => {
     expect(
-      ligne(carnet({ jourDernierReleve: 3 }), "carnet-sanitaire").cellules[1],
+      ligne(
+        carnet({ nbPoints: 4, jourPointLePlusEnRetard: 3 }),
+        "carnet-sanitaire",
+      ).cellules[1],
     ).toBe("ok");
     expect(
-      ligne(carnet({ jourDernierReleve: 10 }), "carnet-sanitaire").cellules[1],
+      ligne(
+        carnet({ nbPoints: 4, jourPointLePlusEnRetard: 10 }),
+        "carnet-sanitaire",
+      ).cellules[1],
     ).toBe("todo");
     expect(
-      ligne(carnet({ jourDernierReleve: null }), "carnet-sanitaire")
-        .cellules[1],
+      ligne(
+        carnet({ nbPoints: 4, jourPointLePlusEnRetard: null }),
+        "carnet-sanitaire",
+      ).cellules[1],
     ).toBe("todo");
+  });
+
+  it("se juge sur le point le plus en retard, pas sur le plus récent", () => {
+    // Onze points, un relevé avant-hier, dix muets depuis un an : la mesure
+    // portait sur le dernier relevé toutes sondes confondues et passait au
+    // vert. La pastille n'établissait pas le fait qu'elle prétendait
+    // établir (doctrine en tête de `obligations.ts`).
+    const l = ligne(
+      carnet({ nbPoints: 11, jourPointLePlusEnRetard: 365 }),
+      "carnet-sanitaire",
+    );
+    expect(l.cellules[1]).toBe("todo");
+  });
+
+  it("un seul point jamais relevé suffit à empêcher la pastille", () => {
+    const l = ligne(
+      carnet({
+        nbPoints: 5,
+        nbPointsJamaisReleves: 1,
+        jourPointLePlusEnRetard: 2,
+      }),
+      "carnet-sanitaire",
+    );
+    expect(l.cellules[1]).toBe("todo");
   });
 
   it("attend une analyse légionelles de moins d'un an", () => {

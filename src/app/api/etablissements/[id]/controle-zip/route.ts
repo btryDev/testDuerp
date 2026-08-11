@@ -6,14 +6,24 @@ import { prisma } from "@/lib/prisma";
 import { getStorage } from "@/lib/storage";
 import { publicAppUrl } from "@/lib/email";
 import {
+  MOIS_FENETRE_HISTORIQUE,
+  ajouterMois,
+  cleJourCivil,
+  debutDuJour,
+  formaterDateFr,
+  formaterDateHeureFr,
+} from "@/lib/dates";
+import {
   construireDossierConformiteData,
   construirePlanActionsData,
   construireRegistreData,
 } from "@/lib/pdf/builders";
 import { DossierConformiteDocument } from "@/lib/pdf/DossierConformiteDocument";
+import { DuerpDocument } from "@/lib/pdf/DuerpDocument";
 import { PlanActionsDocument } from "@/lib/pdf/PlanActionsDocument";
 import { RegistreDocument } from "@/lib/pdf/RegistreDocument";
 import { slugifyFilename } from "@/lib/pdf/styles";
+import type { DuerpSnapshot } from "@/lib/versions/snapshot";
 
 /**
  * Assemble en un ZIP **tous** les documents qu'un inspecteur, un assureur,
@@ -37,7 +47,10 @@ export async function GET(
   const { etablissement } = await requireEtablissement(id);
 
   const zip = new JSZip();
-  const dateNow = new Date().toLocaleDateString("fr-FR");
+  // Horloge lue une seule fois : toutes les fenêtres et toutes les dates
+  // imprimées dans le dossier décrivent le même instant.
+  const maintenant = new Date();
+  const dateNow = formaterDateFr(maintenant);
 
   // ── 01 Dossier de conformité ────────────────────────────────────────
   try {
@@ -51,29 +64,51 @@ export async function GET(
   }
 
   // ── 02 DUERP (dernière version figée) ───────────────────────────────
-  // L'ownership a déjà été vérifié par requireEtablissement en haut.
+  //
+  // Le PDF est **rendu à la volée depuis le snapshot** de la dernière
+  // version, pas relu depuis un fichier stocké. Trois raisons :
+  //   - le rendu depuis le snapshot est déterministe : la même version
+  //     produit toujours le même document, c'est ce qui fait sa valeur de
+  //     preuve (conservation 40 ans) ;
+  //   - il ne dépend d'aucun stockage de fichier, donc le DUERP est
+  //     toujours présent dans le dossier remis à l'inspecteur ;
+  //   - c'est exactement le chemin de `/duerp/[id]/versions/[numero]/pdf`,
+  //     donc le fichier du ZIP est bit à bit celui que l'écran propose.
+  //
+  // Auparavant le ZIP cherchait `DuerpVersion.pdfUrl`, colonne qu'aucun
+  // code n'écrit : la branche était toujours fausse et le 02_DUERP.pdf
+  // annoncé par le README manquait systématiquement.
+  //
+  // L'ownership a déjà été vérifié par requireEtablissement en haut ; la
+  // requête reste néanmoins bornée par `duerp.etablissementId`.
   let duerpNumeroVersion: number | null = null;
   try {
-    const versionCourante = await prisma.duerpVersion.findFirst({
+    const versions = await prisma.duerpVersion.findMany({
       where: { duerp: { etablissementId: id } },
       orderBy: { numero: "desc" },
-      select: { numero: true, pdfUrl: true, duerpId: true },
+      select: { numero: true, snapshot: true, motif: true, createdAt: true },
     });
-    if (versionCourante?.pdfUrl) {
-      try {
-        const storage = getStorage();
-        const buf = await storage.get(versionCourante.pdfUrl);
-        zip.file(
-          `02_DUERP_v${versionCourante.numero}.pdf`,
-          new Uint8Array(buf),
-        );
-        duerpNumeroVersion = versionCourante.numero;
-      } catch {
-        // fichier pdf absent du storage — on laisse le README en parler
-      }
+    const versionCourante = versions[0] ?? null;
+    if (versionCourante) {
+      // L'historique imprimé en fin de document liste toutes les versions
+      // du DUERP — la traçabilité exigée par l'art. R. 4121-2.
+      const historique = versions.map((v) => ({
+        numero: v.numero,
+        genereLe: v.createdAt.toISOString(),
+        motif: v.motif,
+      }));
+      const buf = await renderToBuffer(
+        DuerpDocument({
+          snapshot: versionCourante.snapshot as unknown as DuerpSnapshot,
+          historique,
+        }),
+      );
+      zip.file(`02_DUERP_v${versionCourante.numero}.pdf`, new Uint8Array(buf));
+      duerpNumeroVersion = versionCourante.numero;
     }
   } catch {
-    /* noop */
+    // On continue même si une brique échoue : le README dira que le DUERP
+    // n'est pas inclus plutôt que de faire échouer tout le dossier.
   }
 
   // ── 03 Registre de sécurité ─────────────────────────────────────────
@@ -142,7 +177,15 @@ export async function GET(
   }
 
   // ── 06 Permis de feu (12 derniers mois) ─────────────────────────────
-  const ilYaUnAn = new Date(Date.now() - 365 * 24 * 3600 * 1000);
+  // Fenêtre en **mois calendaires** : `Date.now() - 365 jours` glisse d'un
+  // jour à chaque année bissextile et d'une heure à chaque changement
+  // d'heure — un permis du 12 août de l'an dernier disparaissait du dossier
+  // le 12 août suivant, alors qu'il a bien moins de douze mois.
+  // La borne est ramenée à minuit (heure de Paris) : les dates de début de
+  // permis et de plan sont des dates civiles, une borne qui garderait
+  // l'heure courante ferait disparaître du dossier, l'après-midi, une pièce
+  // encore présente le matin.
+  const ilYaUnAn = debutDuJour(ajouterMois(maintenant, -MOIS_FENETRE_HISTORIQUE));
   const permisFeuList = await prisma.permisFeu.findMany({
     where: {
       etablissementId: id,
@@ -161,7 +204,7 @@ export async function GET(
         `PF-${String(p.numero).padStart(3, "0")} · ${p.statut.toUpperCase()}`,
         `  Prestataire : ${p.prestataireRaison} (${p.prestataireContact})`,
         `  Lieu : ${p.lieu}`,
-        `  Période : ${p.dateDebut.toLocaleString("fr-FR")} → ${p.dateFin.toLocaleString("fr-FR")}`,
+        `  Période : ${formaterDateHeureFr(p.dateDebut)} → ${formaterDateHeureFr(p.dateFin)}`,
         `  Surveillance : ${Math.round(p.dureeSurveillanceMinutes / 60)}h`,
         `  Travaux : ${p.naturesTravaux.join(", ")}`,
         `  Description : ${p.descriptionTravaux}`,
@@ -194,11 +237,11 @@ export async function GET(
         `  Chef EE : ${p.efChefNom} (${p.efChefEmail})`,
         `  Effectif EE : ${p.efEffectifIntervenant}`,
         `  Chef EU : ${p.euChefNom}${p.euChefFonction ? ` (${p.euChefFonction})` : ""}`,
-        `  Période : ${p.dateDebut.toLocaleDateString("fr-FR")} → ${p.dateFin.toLocaleDateString("fr-FR")}${p.dureeHeuresEstimee ? ` · ${p.dureeHeuresEstimee} h` : ""}`,
+        `  Période : ${formaterDateFr(p.dateDebut)} → ${formaterDateFr(p.dateFin)}${p.dureeHeuresEstimee ? ` · ${p.dureeHeuresEstimee} h` : ""}`,
         `  Lieux : ${p.lieux}`,
         `  Travaux dangereux : ${p.travauxDangereux ? "OUI" : "non"}`,
         p.inspectionDate
-          ? `  Inspection commune : ${p.inspectionDate.toLocaleDateString("fr-FR")}`
+          ? `  Inspection commune : ${formaterDateFr(p.inspectionDate)}`
           : `  Inspection commune : NON RÉALISÉE`,
         `  Risques identifiés (${p.lignes.length}) :`,
         ...p.lignes.map(
@@ -242,7 +285,7 @@ export async function GET(
         `  10 derniers relevés :`,
         ...pt.releves.map(
           (r) =>
-            `    ${r.dateReleve.toLocaleDateString("fr-FR")} · ${r.temperatureCelsius.toFixed(1)}°C · ${r.conforme ? "CONFORME" : "NON CONFORME"}${r.operateur ? ` (${r.operateur})` : ""}`,
+            `    ${formaterDateFr(r.dateReleve)} · ${r.temperatureCelsius.toFixed(1)}°C · ${r.conforme ? "CONFORME" : "NON CONFORME"}${r.operateur ? ` (${r.operateur})` : ""}`,
         ),
         "",
       ]),
@@ -250,7 +293,7 @@ export async function GET(
       `Analyses légionelles récentes (${carnetSan.analyses.length}) :`,
       "────────────────────────────────────────────────────────────",
       ...carnetSan.analyses.flatMap((a) => [
-        `  ${a.dateAnalyse.toLocaleDateString("fr-FR")} · ${a.valeurUfcParL ?? "—"} UFC/L · ${a.conforme ? "CONFORME (<1000 UFC/L)" : "ACTION REQUISE"}${a.laboratoire ? ` · ${a.laboratoire}` : ""}`,
+        `  ${formaterDateFr(a.dateAnalyse)} · ${a.valeurUfcParL ?? "—"} UFC/L · ${a.conforme ? "CONFORME (<1000 UFC/L)" : "ACTION REQUISE"}${a.laboratoire ? ` · ${a.laboratoire}` : ""}`,
         a.commentaire ? `    ${a.commentaire}` : "",
       ]),
       "",
@@ -280,10 +323,10 @@ export async function GET(
         it.localisation ? `  Lieu : ${it.localisation}` : "",
         it.assigneA ? `  Assigné à : ${it.assigneA}` : "",
         it.echeance
-          ? `  Échéance : ${it.echeance.toLocaleDateString("fr-FR")}`
+          ? `  Échéance : ${formaterDateFr(it.echeance)}`
           : "",
         it.description ? `  Description : ${it.description}` : "",
-        `  Créé le ${it.createdAt.toLocaleDateString("fr-FR")}`,
+        `  Créé le ${formaterDateFr(it.createdAt)}`,
         "",
       ]),
     ]
@@ -313,7 +356,7 @@ export async function GET(
 
   // ── Génération ──────────────────────────────────────────────────────
   const buffer = await zip.generateAsync({ type: "uint8array" });
-  const filename = `Dossier_controle_${slugifyFilename(etablissement.raisonDisplay)}_${new Date().toISOString().slice(0, 10)}.zip`;
+  const filename = `Dossier_controle_${slugifyFilename(etablissement.raisonDisplay)}_${cleJourCivil(maintenant)}.zip`;
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {

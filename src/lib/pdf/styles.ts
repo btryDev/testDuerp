@@ -1,4 +1,5 @@
 import { StyleSheet } from "@react-pdf/renderer";
+import { formaterDateFr, formaterDateLongueFr } from "@/lib/dates";
 
 /**
  * Styles PDF partagés entre tous les documents générés par la plateforme
@@ -102,22 +103,23 @@ export const stylesCommuns = StyleSheet.create({
   },
 });
 
+/**
+ * Dates imprimées dans les PDF. Elles délèguent aux formateurs de
+ * `@/lib/dates`, qui épinglent `Europe/Paris`.
+ *
+ * `toLocaleDateString("fr-FR")` sans `timeZone` prend le fuseau du process :
+ * un serveur en UTC imprimait « 31/12/2025 » sur une échéance stockée au
+ * 1er janvier 2026 à minuit… c'est-à-dire une date fausse dans un document
+ * remis à un tiers.
+ */
 export function formatDateCourte(d: Date | null | undefined): string {
   if (!d) return "—";
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  return formaterDateFr(d);
 }
 
 export function formatDateLongue(d: Date | null | undefined): string {
   if (!d) return "—";
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return formaterDateLongueFr(d);
 }
 
 export function slugifyFilename(s: string): string {

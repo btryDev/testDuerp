@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import type { StatutAction } from "@prisma/client";
+import { JOURS_HORIZON_PROCHE, ajouterJours, debutDuJour } from "@/lib/dates";
+import { STATUTS_ACTION_OUVERTE, joursDeRetard } from "@/lib/dates/retard";
 
 export type OrigineAction = "duerp" | "verification" | "libre";
 
@@ -106,46 +108,73 @@ export async function getAction(id: string) {
 }
 
 /**
- * Compteurs pour le tableau de bord étape 9. Agrégats calculés en base
- * pour rester performants même à volume.
+ * Compteurs du plan d'actions (tableau de bord, en-tête de la page,
+ * synthèses PDF). Agrégats calculés en base pour rester performants même
+ * à volume.
+ *
+ * Toutes les bornes de date sont prises au **début du jour civil de
+ * Paris** (ADR-011). Comparer `echeance` à `new Date()` brut faisait
+ * basculer « en retard » une action due aujourd'hui dès 02:00 heure de
+ * Paris — l'échéance est stockée à minuit UTC — alors que l'utilisateur a
+ * toute sa journée. Le calendrier, lui, normalisait déjà : les deux
+ * écrans annonçaient des nombres différents le matin.
  */
-export async function compterActions(etablissementId: string) {
+export async function compterActions(
+  etablissementId: string,
+  now: Date = new Date(),
+) {
   const user = await requireUser();
   const scope = {
     etablissementId,
     etablissement: { entreprise: { userId: user.id } },
   } as const;
-  const now = new Date();
+  const debut = debutDuJour(now);
+  // Le module de dates expose la liste en `readonly string[]` — il reste
+  // utilisable côté client, sans importer l'enum Prisma. Le cast n'élargit
+  // rien : les deux littéraux sont bien des `StatutAction`.
+  const ouvertesOuEnCours = {
+    in: [...STATUTS_ACTION_OUVERTE] as StatutAction[],
+  };
 
-  const [ouvertes, enCours, enRetard, leveesRecemment] = await Promise.all([
-    prisma.action.count({
-      where: { ...scope, statut: "ouverte" },
-    }),
-    prisma.action.count({
-      where: { ...scope, statut: "en_cours" },
-    }),
-    prisma.action.count({
-      where: {
-        ...scope,
-        statut: { in: ["ouverte", "en_cours"] },
-        echeance: { lt: now },
-      },
-    }),
-    prisma.action.count({
-      where: {
-        ...scope,
-        statut: "levee",
-        leveeLe: {
-          gte: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 30),
+  const [ouvertes, enCours, enRetard, sansEcheance, leveesRecemment] =
+    await Promise.all([
+      prisma.action.count({
+        where: { ...scope, statut: "ouverte" },
+      }),
+      prisma.action.count({
+        where: { ...scope, statut: "en_cours" },
+      }),
+      prisma.action.count({
+        where: {
+          ...scope,
+          statut: ouvertesOuEnCours,
+          echeance: { lt: debut },
         },
-      },
-    }),
-  ]);
+      }),
+      // Angle mort du plan d'actions : sans date, une action n'apparaît
+      // ni au calendrier, ni dans la frise, ni dans les « 30 prochains
+      // jours », et ne peut par construction jamais être « en retard ».
+      // Elle n'est pas fautive — elle est invisible. Ce compteur permet à
+      // l'interface d'inviter à la dater, sur le modèle du « sans date »
+      // déjà affiché pour les vérifications à planifier.
+      prisma.action.count({
+        where: { ...scope, statut: ouvertesOuEnCours, echeance: null },
+      }),
+      prisma.action.count({
+        where: {
+          ...scope,
+          statut: "levee",
+          leveeLe: { gte: ajouterJours(debut, -JOURS_HORIZON_PROCHE) },
+        },
+      }),
+    ]);
 
   return {
     ouvertes,
     enCours,
     enRetard,
+    /** Actions ouvertes qu'aucune date ne porte — à dater, pas à traiter. */
+    sansEcheance,
     leveesRecemment, // sur 30 derniers jours
     totalACouvrir: ouvertes + enCours,
   };
@@ -165,19 +194,25 @@ export type StatsRetardActions = {
  * Requête dédiée qui lit TOUTES les échéances dépassées : une moyenne
  * calculée sur une liste tronquée serait fausse dès que l'établissement
  * dépasse la limite.
+ *
+ * Même borne que `compterActions` — le début du jour civil. Avec la borne
+ * précédente (`new Date()` brut), les actions dues **aujourd'hui**
+ * entraient dans le lot avec un retard de zéro jour et tiraient la
+ * moyenne vers le bas : le widget annonçait « 4 jours de retard moyen »
+ * sur un plan d'actions qui en accusait le double.
  */
 export async function statsActionsEnRetard(
   etablissementId: string,
+  now: Date = new Date(),
 ): Promise<StatsRetardActions> {
   const user = await requireUser();
-  const now = new Date();
 
   const enRetard = await prisma.action.findMany({
     where: {
       etablissementId,
       etablissement: { entreprise: { userId: user.id } },
-      statut: { in: ["ouverte", "en_cours"] },
-      echeance: { lt: now },
+      statut: { in: [...STATUTS_ACTION_OUVERTE] as StatutAction[] },
+      echeance: { lt: debutDuJour(now) },
     },
     select: { id: true, libelle: true, echeance: true },
     orderBy: { echeance: "asc" },
@@ -187,11 +222,9 @@ export async function statsActionsEnRetard(
     return { nb: 0, retardMoyenJours: 0, plusAncienne: null };
   }
 
-  const joursDepuis = (d: Date) =>
-    Math.max(0, Math.floor((now.getTime() - d.getTime()) / 86400000));
-
-  // `echeance` est non-null par construction du filtre `lt: now`.
-  const retards = enRetard.map((a) => joursDepuis(a.echeance as Date));
+  // `echeance` est non-null par construction du filtre de date, et le
+  // retard se compte en **jours civils** : la veille vaut 1, jamais 0.
+  const retards = enRetard.map((a) => joursDeRetard(a.echeance as Date, now));
   const moyenne = Math.round(
     retards.reduce((s, j) => s + j, 0) / retards.length,
   );

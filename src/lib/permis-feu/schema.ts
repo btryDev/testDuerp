@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { depuisSaisieDateHeure } from "@/lib/dates";
 import { NatureTravauxPointChaud } from "@prisma/client";
 
 const DATETIME_FMT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
@@ -69,11 +70,15 @@ export const permisFeuSchema = z
     dateDebut: z
       .string()
       .regex(DATETIME_FMT, "Format attendu : AAAA-MM-JJTHH:MM")
-      .transform((v) => new Date(v)),
+      // Ancré sur Europe/Paris : `new Date(v)` sur une chaîne sans offset suit
+      // le fuseau du serveur (ADR-011).
+      .transform((v) => depuisSaisieDateHeure(v)),
     dateFin: z
       .string()
       .regex(DATETIME_FMT, "Format attendu : AAAA-MM-JJTHH:MM")
-      .transform((v) => new Date(v)),
+      // Ancré sur Europe/Paris : `new Date(v)` sur une chaîne sans offset suit
+      // le fuseau du serveur (ADR-011).
+      .transform((v) => depuisSaisieDateHeure(v)),
     lieu: z.string().trim().min(1, "Lieu requis").max(500),
     naturesTravaux: z
       .array(z.enum(NATURES_TRAVAUX))
