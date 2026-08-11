@@ -12,10 +12,15 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+// Deux entrées, deux destinations à venir : aucune des deux pages
+// n'existe encore. On les affiche quand même — la barre doit montrer la
+// forme définitive du site. `#comprendre` et `#tarif` ne correspondent à
+// aucune ancre de la page : le clic ne fait donc rien, il ne casse rien
+// non plus. À rebrancher sur /comprendre et /tarif le jour où ces pages
+// existent.
 const LIENS = [
-  { href: "#documents", label: "Les documents" },
-  { href: "#metiers", label: "Par métier" },
-  { href: "#questions", label: "Questions" },
+  { href: "#comprendre", label: "Comprendre" },
+  { href: "#tarif", label: "Tarif" },
 ];
 
 export function LandingHeader({

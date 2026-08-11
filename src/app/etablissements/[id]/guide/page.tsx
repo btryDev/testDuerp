@@ -6,6 +6,7 @@ import { ChezVous } from "@/components/guide/ChezVous";
 import { GReveal } from "@/components/guide/GReveal";
 import { GuideHero } from "@/components/guide/GuideHero";
 import { OutilsConformite } from "@/components/guide/OutilsConformite";
+import { ParMetier } from "@/components/guide/ParMetier";
 import { OutilDetails } from "@/components/guide/OutilDetails";
 import { QuiFaitQuoi } from "@/components/guide/QuiFaitQuoi";
 import { EnCasControle } from "@/components/guide/EnCasControle";
@@ -14,6 +15,7 @@ import { PrintButton } from "@/components/guide/PrintButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 import { construireChezVous } from "@/lib/guide/chez-vous";
+import { METIERS } from "@/lib/guide/metiers";
 
 export const metadata = {
   title: "Comprendre vos obligations — Rojer",
@@ -102,6 +104,10 @@ export default async function GuidePage({
             raisonDisplay={etab.raisonDisplay}
             regimes={regimes}
           />
+        </GReveal>
+
+        <GReveal delay={70}>
+          <ParMetier metiers={METIERS} etablissementId={id} />
         </GReveal>
 
         <GReveal delay={80}>

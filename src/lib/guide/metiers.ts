@@ -1,10 +1,14 @@
-// Ce que la page publique montre « par métier ».
+// Ce que la page « Comprendre » montre « par métier ».
+//
+// Ce module servait la page publique ; il a suivi la section quand elle
+// est passée dans l'application, là où elle sert vraiment : le dirigeant
+// y voit pourquoi son voisin n'a pas la même liste que lui.
 //
 // Les libellés, les périodicités et les références légales ne sont pas
 // retapés ici : ils sont lus dans le référentiel de conformité (ADR-003).
-// Une périodicité corrigée dans le référentiel se corrige donc aussi sur
-// la page d'accueil, sans que personne n'ait à y penser. Seuls le nom
-// court (celui que le dirigeant emploie) et l'ordre d'affichage sont
+// Une périodicité corrigée dans le référentiel se corrige donc aussi
+// dans le guide, sans que personne n'ait à y penser. Seuls le nom court
+// (celui que le dirigeant emploie) et l'ordre d'affichage sont
 // éditoriaux.
 //
 // Les trois métiers listés sont ceux du périmètre DUERP validé —
@@ -44,8 +48,8 @@ const DUERP: LigneMetier = {
 
 function ligne(nom: string, id: string): LigneMetier | null {
   const o = obligationParId(id);
-  // Une obligation retirée du référentiel disparaît de la page plutôt que
-  // d'y afficher un trou — la page publique ne doit jamais bloquer l'app.
+  // Une obligation retirée du référentiel disparaît de la liste plutôt
+  // que d'y afficher un trou.
   if (!o) return null;
   return {
     nom,

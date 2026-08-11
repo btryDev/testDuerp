@@ -5,11 +5,9 @@ import { Etapes } from "@/components/landing/Etapes";
 import { HeroBrief } from "@/components/landing/HeroBrief";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { Manifeste } from "@/components/landing/Manifeste";
-import { ParMetier } from "@/components/landing/ParMetier";
 import { Questions } from "@/components/landing/Questions";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { TableauDeBord } from "@/components/landing/TableauDeBord";
-import { METIERS } from "@/lib/landing/metiers";
 import { getOptionalUser } from "@/lib/auth/require-user";
 import { getOptionalUserEtablissement } from "@/lib/auth/scope";
 import { RecoveryHashRedirect } from "./RecoveryHashRedirect";
@@ -111,7 +109,6 @@ export default async function Home({
         ctaLabel={ctaLabel}
         connecte={Boolean(user)}
       />
-      <ParMetier metiers={METIERS} ctaHref={ctaHref} />
       <Questions />
       <SiteFooter />
     </main>
