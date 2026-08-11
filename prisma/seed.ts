@@ -11,20 +11,21 @@
  *   pnpm db:seed <etablissementId>
  *   pnpm db:seed --planifier           → pose aussi des dates sur les
  *                                        vérifications encore à planifier
- *   pnpm db:seed --serie               → ajoute les occurrences suivantes
- *                                        de chaque vérification, jusqu'à
- *                                        24 mois (implique --planifier)
  *
- * `--planifier` et `--serie` sont explicites parce qu'ils ÉCRIVENT sur des
- * lignes métier existantes (datePrevue et statut de `Verification`),
- * contrairement au reste du seed qui ne fait qu'ajouter ses propres
- * actions. À réserver à une base de développement.
+ * `--planifier` est explicite parce qu'il ÉCRIT sur des lignes métier
+ * existantes (datePrevue et statut de `Verification`), contrairement au reste
+ * du seed qui ne fait qu'ajouter ses propres actions. À réserver à une base de
+ * développement.
  *
- * Note : la régénération du calendrier depuis l'app (`genererCalendrier`)
- * supprime les occurrences non réalisées et n'en recrée qu'une par couple
- * (obligation × équipement). Les séries semées ici sont donc du décor de
- * développement, effacé au premier « Actualiser » — c'est voulu, elles ne
- * doivent jamais devenir une source de vérité.
+ * L'option `--serie`, qui semait les occurrences suivantes de chaque
+ * vérification sur 24 mois, a été retirée : la table `Verification` porte
+ * désormais un index unique (etablissementId, obligationId, equipementId).
+ * Une seule occurrence « courante » existe par couple obligation × équipement,
+ * elle avance dans le temps à chaque réalisation, et l'historique vit dans
+ * `RapportVerification`. Fabriquer des occurrences futures est donc devenu
+ * impossible en base — et c'était de toute façon du décor, effacé au premier
+ * « Actualiser ». Une frise dense se construit maintenant en projetant les
+ * périodicités à la lecture, pas en écrivant des lignes.
  *
  * Idempotent : les actions posées portent un marqueur `[seed]` dans leur
  * description et sont remplacées à chaque exécution. Rien d'autre n'est
@@ -34,7 +35,6 @@
 import {
   PrismaClient,
   type DomainePrestataire,
-  type Periodicite,
   type PrioriteIntervention,
   type StatutAction,
   type StatutIntervention,
@@ -48,32 +48,6 @@ const JOUR = 86400000;
 
 /** Fenêtre consultable de la frise, en jours — cf. `lib/dashboard/frise`. */
 const HORIZON = 730;
-/**
- * Occurrences semées au maximum par couple obligation × équipement.
- *
- * Une obligation hebdomadaire produirait sinon une centaine de lignes sur
- * deux ans, pour un axe illisible et une base de dev inutilement lourde.
- */
-const MAX_OCCURRENCES = 8;
-
-/**
- * Copie locale de `PERIODICITE_EN_JOURS` (`lib/referentiels/types-communs`).
- * Le seed tourne hors du bundle Next : on ne traverse pas l'alias `@/`
- * pour une table de onze entrées, mais elle doit rester alignée.
- */
-const PERIODICITE_EN_JOURS: Record<Periodicite, number | null> = {
-  hebdomadaire: 7,
-  mensuelle: 30,
-  trimestrielle: 91,
-  semestrielle: 182,
-  annuelle: 365,
-  biennale: 730,
-  triennale: 1095,
-  quinquennale: 1825,
-  decennale: 3650,
-  mise_en_service_uniquement: null,
-  autre: null,
-};
 
 /** Date décalée de `jours` par rapport à maintenant (négatif = passé). */
 function dans(jours: number): Date {
@@ -279,81 +253,9 @@ async function planifierVerifications(etablissementId: string) {
   );
 }
 
-/**
- * Ajoute les occurrences suivantes de chaque vérification, à sa propre
- * périodicité, jusqu'au bout de la fenêtre consultable.
- *
- * L'app, elle, ne matérialise que la **prochaine** occurrence par couple
- * (obligation × équipement) : c'est un choix produit — on ne veut pas
- * afficher un calendrier prédictif qui se périmerait à la première vérif
- * réalisée. Une frise de 24 mois nourrie de cette seule occurrence est
- * donc creuse au-delà du premier trimestre. On sème ici la suite, pour
- * juger le rendu d'une charge réaliste.
- */
-async function semerSeries(etablissementId: string) {
-  const base = await prisma.verification.findMany({
-    where: { etablissementId, dateRealisee: null },
-    orderBy: { datePrevue: "asc" },
-  });
-
-  // Idempotence : on retombe d'abord sur l'invariant de l'app — une seule
-  // occurrence non réalisée par couple — puis on resème par-dessus.
-  const vues = new Set<string>();
-  const surplus: string[] = [];
-  const tetes: typeof base = [];
-  for (const v of base) {
-    const cle = `${v.obligationId}::${v.equipementId}`;
-    if (vues.has(cle)) surplus.push(v.id);
-    else {
-      vues.add(cle);
-      tetes.push(v);
-    }
-  }
-  if (surplus.length > 0) {
-    await prisma.verification.deleteMany({ where: { id: { in: surplus } } });
-    console.log(`  ${surplus.length} occurrence(s) de seed retirée(s)`);
-  }
-
-  const aCreer = tetes.flatMap((v) => {
-    const pas = PERIODICITE_EN_JOURS[v.periodicite];
-    if (pas === null) return []; // one-shot ou obligation permanente
-
-    const suite = [];
-    const depart = v.datePrevue.getTime();
-    for (let k = 1; k <= MAX_OCCURRENCES; k += 1) {
-      const date = new Date(depart + k * pas * JOUR);
-      if (date.getTime() > Date.now() + HORIZON * JOUR) break;
-      suite.push({
-        etablissementId,
-        equipementId: v.equipementId,
-        obligationId: v.obligationId,
-        libelleObligation: v.libelleObligation,
-        periodicite: v.periodicite,
-        realisateurRequis: v.realisateurRequis,
-        datePrevue: date,
-        statut: "planifiee" as const,
-      });
-    }
-    return suite;
-  });
-
-  if (aCreer.length === 0) {
-    console.log("  aucune occurrence suivante à semer");
-    return;
-  }
-
-  await prisma.verification.createMany({ data: aCreer });
-  console.log(
-    `  ${aCreer.length} occurrence(s) suivante(s) semée(s) sur ${Math.round(HORIZON / 30)} mois`,
-  );
-}
-
 async function main() {
   const args = process.argv.slice(2);
-  const serie = args.includes("--serie");
-  // Semer des occurrences suivantes sur des vérifications sans date ne
-  // produirait qu'un tas au même jour : `--serie` implique `--planifier`.
-  const planifier = serie || args.includes("--planifier");
+  const planifier = args.includes("--planifier");
   const cible = args.find((a) => !a.startsWith("--"));
 
   const etab = cible
@@ -588,10 +490,6 @@ async function main() {
     console.log(
       "  (vérifications inchangées — relancez avec --planifier pour leur poser des dates)",
     );
-  }
-
-  if (serie) {
-    await semerSeries(etab.id);
   }
 
   console.log("Terminé.");

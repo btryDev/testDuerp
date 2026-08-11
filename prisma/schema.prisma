@@ -20,10 +20,16 @@ datasource db {
 // userId est un UUID stocké en texte, pas de FK cross-schéma : auth.* est
 // géré par Supabase, on n'y projette pas de contrainte Prisma. Le scoping
 // par user est assuré au niveau applicatif (helper requireUser + WHERE userId).
+//
+// Invariant produit « 1 utilisateur = 1 entreprise » : jusqu'ici il n'était
+// affirmé que par des findFirst applicatifs, non atomiques. Il est désormais
+// porté par la base (@unique sur userId). Postgres considère les NULL comme
+// distincts : plusieurs entreprises sans utilisateur rattaché restent possibles,
+// ce qui est voulu (données de démo, entreprise créée avant l'auth).
 
 model Entreprise {
   id             String          @id @default(cuid())
-  userId         String?         @db.Uuid
+  userId         String?         @unique @db.Uuid
   raisonSociale  String
   siret          String?
   codeNaf        String
@@ -32,15 +38,22 @@ model Entreprise {
   etablissements Etablissement[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
-
-  @@index([userId])
 }
 
 // ADR-001 : Etablissement est l'ancrage des obligations réglementaires.
 // ADR-004 : régimes cumulables (travail / ERP / IGH / habitation) via flags.
+//
+// Invariant produit « 1 entreprise = 1 établissement », désormais porté par la
+// base (@unique sur entrepriseId). La relation inverse `Entreprise.etablissements`
+// reste volontairement typée en liste : côté client Prisma la cardinalité est
+// déterminée par le type du champ inverse, pas par la contrainte. On garde donc
+// l'API existante (`entreprise.etablissements`) tout en garantissant en base
+// qu'elle ne contiendra jamais plus d'un élément. Le jour où le multi-site
+// entrera au périmètre, il suffira de retirer le @unique — sans réécrire le code
+// appelant.
 model Etablissement {
   id           String     @id @default(cuid())
-  entrepriseId String
+  entrepriseId String     @unique
   entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
 
   raisonDisplay   String
@@ -71,10 +84,23 @@ model Etablissement {
   carnetSanitaire       CarnetSanitaire?
   interventions         Intervention[]
 
+  /**
+   * Version du référentiel de conformité avec laquelle le calendrier de cet
+   * établissement a été généré (cf. `REFERENTIEL_VERSION`, ADR-003).
+   *
+   * Le référentiel vit en TypeScript versionné, mais ses effets sont écrits en
+   * base : chaque `Verification` fige une périodicité et un libellé. Sans ce
+   * repère, une correction du référentiel — périodicité rectifiée, obligation
+   * retirée — ne se propageait qu'au hasard d'une mutation d'équipement, et une
+   * obligation supprimée laissait des lignes orphelines invisibles des filtres.
+   *
+   * `null` = calendrier jamais réconcilié depuis l'introduction du mécanisme :
+   * il sera réaligné au prochain affichage.
+   */
+  referentielVersionCalendrier String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@index([entrepriseId])
 }
 
 enum TypeErp {
@@ -122,11 +148,45 @@ enum ClasseIgh {
 
 // ----------------------------------------------------------------------------
 // Module DUERP — existant, rattaché à Etablissement
+//
+// CONSERVATION 40 ANS (art. R. 4121-4 CT, cf. docs/rgpd.md) : une DuerpVersion
+// figée est une pièce à valeur légale, elle ne peut pas être détruite par un
+// effet de bord. La chaîne Etablissement → Duerp → DuerpVersion était en
+// cascade complète : supprimer un établissement effaçait silencieusement toutes
+// les versions archivées.
+//
+// Le garde-fou porte donc sur le SEUL maillon qui porte la preuve :
+// `DuerpVersion.duerp` est en `Restrict`. Tant qu'une version figée existe, la
+// base REFUSE la suppression — et comme `Duerp.etablissement` est en `Cascade`,
+// ce refus remonte toute la chaîne : supprimer l'établissement (ou l'entreprise)
+// tente de cascader sur le Duerp, le `Restrict` de DuerpVersion s'y oppose, et
+// toute la transaction est annulée. Rien n'est perdu.
+//
+// `Duerp.etablissement` a lui-même été en `Restrict` un temps : c'était trop
+// large. Un DUERP ouvert mais jamais validé ne porte aucune obligation de
+// conservation ; le mettre en `Restrict` rendait tout établissement indélébile
+// dès qu'on avait cliqué une fois sur « Commencer mon DUERP », sans aucun motif
+// légal. Un garde-fou doit être exactement aussi large que l'obligation qu'il
+// sert (cf. ADR-012, section C).
+//
+// Conséquence pour l'applicatif : `prisma.etablissement.delete` et
+// `prisma.entreprise.delete` peuvent lever P2003 (violation de clé étrangère)
+// quand — et seulement quand — une version figée existe. Les server actions
+// traduisent ce refus en message explicite et orientent l'utilisateur vers
+// l'export de ses versions avant suppression.
 // ----------------------------------------------------------------------------
 
 model Duerp {
   id                   String         @id @default(cuid())
-  etablissementId      String
+  // Invariant produit « 1 établissement = 1 DUERP » : sans lui, chaque module
+  // choisissait un DUERP différent (createdAt desc / updatedAt desc / aucun tri)
+  // et le tableau de bord pouvait lire un document pendant que le wizard éditait
+  // l'autre. Comme pour Etablissement, la relation inverse reste une liste :
+  // `etablissement.duerps[0]` continue de fonctionner, la base garantit
+  // désormais qu'il n'y a rien après l'index 0.
+  etablissementId      String         @unique
+  // Cascade — cf. bloc de conservation ci-dessus : un DUERP sans version figée
+  // ne se conserve pas, c'est `DuerpVersion.duerp` (Restrict) qui bloque.
   etablissement        Etablissement  @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
   versions             DuerpVersion[]
   unites               UniteTravail[]
@@ -134,14 +194,13 @@ model Duerp {
   transversesRepondues Boolean        @default(false)
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
-
-  @@index([etablissementId])
 }
 
 model DuerpVersion {
   id        String   @id @default(cuid())
   duerpId   String
-  duerp     Duerp    @relation(fields: [duerpId], references: [id], onDelete: Cascade)
+  // Restrict — cf. bloc de conservation 40 ans ci-dessus.
+  duerp     Duerp    @relation(fields: [duerpId], references: [id], onDelete: Restrict)
   numero    Int
   snapshot  Json
   pdfUrl    String?
@@ -161,12 +220,16 @@ model UniteTravail {
   estTransverse      Boolean  @default(false)
   aucunRisqueJustif  String?
   risques            Risque[]
+
+  // Clé étrangère sans index jusqu'ici : scan séquentiel à chaque construction
+  // de snapshot et à chaque cascade partant du DUERP.
+  @@index([duerpId])
 }
 
 model Risque {
-  id                    String       @id @default(cuid())
+  id                    String         @id @default(cuid())
   uniteId               String
-  unite                 UniteTravail @relation(fields: [uniteId], references: [id], onDelete: Cascade)
+  unite                 UniteTravail   @relation(fields: [uniteId], references: [id], onDelete: Cascade)
   referentielId         String?
   libelle               String
   description           String?
@@ -174,11 +237,12 @@ model Risque {
   probabilite           Int
   maitrise              Int
   criticite             Int
-  cotationSaisie        Boolean      @default(false)
+  cotationSaisie        Boolean        @default(false)
   nombreSalariesExposes Int?
   dateMesuresPhysiques  DateTime?
-  exposeCMR             Boolean      @default(false)
+  exposeCMR             Boolean        @default(false)
   actions               Action[]
+  interventions         Intervention[]
 
   @@unique([uniteId, referentielId])
 }
@@ -238,6 +302,23 @@ model Verification {
   periodicite       Periodicite
   realisateurRequis Realisateur[]
 
+  // Version du référentiel de conformité (ADR-003 : le référentiel vit en
+  // TypeScript versionné, pas en base) avec laquelle cette ligne a été générée
+  // ou réalignée pour la dernière fois.
+  //
+  // Sans cette colonne, une évolution du référentiel passe inaperçue : les
+  // lignes déjà en base gardent l'ancienne périodicité, et une obligation
+  // retirée rend la ligne orpheline — `obligationParId()` renvoie `undefined`,
+  // le domaine devient `null`, et la ligne disparaît silencieusement des filtres
+  // du registre et du dossier PDF sans que rien ne le signale. Cas vécu : l'id
+  // `aeration-hotte-pro-annuelle` a été retiré (fusion d'un doublon) et les
+  // vérifications qui le portaient ont survécu.
+  //
+  // `null` = ligne écrite avant l'introduction du suivi de version : à traiter
+  // comme périmée, donc à resynchroniser. La resynchronisation elle-même n'est
+  // pas portée ici : cette colonne est la donnée dont elle a besoin.
+  referentielVersion String?
+
   datePrevue   DateTime
   dateRealisee DateTime?
   statut       StatutVerification @default(a_planifier)
@@ -248,6 +329,15 @@ model Verification {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Clé d'idempotence du calendrier. Le générateur produit déjà une
+  // `cleUnique` « obligationId::equipementId » (lib/calendrier/generateur.ts)
+  // qui n'était jamais matérialisée : la régénération procédait donc par
+  // delete + create, ce qui détruisait l'historique et les rapports liés.
+  // Avec cette contrainte, la régénération devient un upsert sur le triplet.
+  // etablissementId est inclus bien qu'il soit déductible de equipementId :
+  // il rend la clé utilisable directement dans un `where` scopé par
+  // établissement, sans jointure.
+  @@unique([etablissementId, obligationId, equipementId])
   @@index([etablissementId, datePrevue])
   @@index([equipementId])
   @@index([statut])
@@ -318,8 +408,26 @@ enum ResultatVerification {
 
 // ----------------------------------------------------------------------------
 // Action unifiée — ADR-002
-// Remplace l'ancien modèle `Mesure`. XOR (risqueId, verificationId) imposé
-// par CHECK constraint SQL ajouté dans la migration.
+// Remplace l'ancien modèle `Mesure`.
+//
+// ⚠ INVARIANT NON REPRÉSENTABLE EN PRISMA SCHEMA ⚠
+// Une action a exactement une origine : soit un risque du DUERP, soit une
+// vérification réglementaire, jamais les deux, jamais aucune. Cet invariant est
+// porté par une CHECK constraint SQL nommée `Action_origine_xor` :
+//
+//     CHECK (("risqueId" IS NULL) <> ("verificationId" IS NULL))
+//
+// déclarée dans prisma/migrations/20260421140000_v2_etablissement_et_conformite.
+// Le langage Prisma ne sait pas exprimer un CHECK : la contrainte est donc
+// invisible ici et n'existe QUE dans les fichiers de migration. Conséquence
+// pratique : un `prisma db push` (dev, CI) recrée la table SANS le CHECK.
+// Sur ces bases-là, l'invariant n'est garanti que par le code applicatif.
+//
+// Règle : ne jamais recréer la table `Action` sans réappliquer ce CHECK, et
+// ne jamais utiliser `db push` comme substitut de `migrate deploy` sur une base
+// qui doit refléter la production. Un test de non-régression
+// (src/lib/migrations-contraintes.test.ts) relit les migrations et échoue si la
+// contrainte disparaît du SQL.
 // ----------------------------------------------------------------------------
 
 model Action {
@@ -412,9 +520,24 @@ model Prestataire {
 
   notesInternes String?
 
+  // Objets qui référencent ce prestataire. Ces relations sont en SetNull :
+  // retirer un prestataire de l'annuaire ne doit jamais effacer un permis de
+  // feu ou un plan de prévention — ce sont des pièces de traçabilité. Elles
+  // conservent leur snapshot texte (prestataireRaison, entrepriseExterieureRaison)
+  // et perdent seulement le lien vers la fiche.
+  permisFeu       PermisFeu[]
+  plansPrevention PlanPrevention[]
+  accessTokens    AccessToken[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Un même SIRET ne peut pas être saisi deux fois dans l'annuaire d'un même
+  // établissement — c'est le doublon qui casse le suivi de vigilance (deux
+  // fiches, deux attestations URSSAF, une seule à jour). Les NULL restent
+  // distincts pour Postgres : les prestataires sans SIRET connu ne sont pas
+  // contraints.
+  @@unique([etablissementId, siret])
   @@index([etablissementId])
   @@index([etablissementId, raisonSociale])
 }
@@ -502,12 +625,20 @@ model AccessToken {
   objetType     String
   objetId       String
   prestataireId String?
+  prestataire   Prestataire?     @relation(fields: [prestataireId], references: [id], onDelete: SetNull)
 
   emailDestinataire String
   nomDestinataire   String?
 
   otpHash           String?
-  otpEssaisRestants Int     @default(3)
+  otpEssaisRestants Int       @default(3)
+  // Expiration propre au code OTP, distincte de `expireLe` qui borne la durée
+  // de vie du lien magique (72 h à 7 jours). Sans cette colonne, l'OTP restait
+  // valable aussi longtemps que le lien, alors que lib/signatures/otp.ts fixe
+  // OTP_TTL_MINUTES = 10 et que l'email annonce « Valable 10 minutes ».
+  // Nullable : un token de scope `consultation` n'exige pas forcément d'OTP,
+  // et un OTP non encore émis n'a pas de date d'expiration.
+  otpExpireLe       DateTime?
 
   expireLe     DateTime
   utiliseLe    DateTime?
@@ -580,7 +711,8 @@ model RegistreAccessibilite {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([slugPublic])
+  // Pas d'index sur slugPublic : le @unique du champ en crée déjà un, et un
+  // second index sur la même colonne ne fait que coûter à l'écriture.
 }
 
 enum HandicapAccessible {
@@ -614,8 +746,12 @@ model PermisFeu {
   // Numérotation auto par établissement (pour traçabilité)
   numero Int
 
-  // Qui intervient — soit prestataire de l'annuaire (FK), soit saisie libre
+  // Qui intervient — soit prestataire de l'annuaire (FK), soit saisie libre.
+  // SetNull : la suppression d'une fiche prestataire ne doit pas emporter le
+  // permis, qui reste opposable ; le snapshot texte ci-dessous suffit à savoir
+  // qui est intervenu.
   prestataireId      String?
+  prestataire        Prestataire? @relation(fields: [prestataireId], references: [id], onDelete: SetNull)
   prestataireRaison  String // snapshot pour affichage
   prestataireContact String // nom du technicien
   prestataireEmail   String
@@ -687,8 +823,11 @@ model PlanPrevention {
 
   numero Int
 
-  // Entreprise extérieure
+  // Entreprise extérieure — SetNull pour les mêmes raisons que PermisFeu :
+  // le plan de prévention est une pièce de traçabilité, il survit au retrait
+  // du prestataire de l'annuaire.
   prestataireId              String?
+  prestataire                Prestataire? @relation(fields: [prestataireId], references: [id], onDelete: SetNull)
   entrepriseExterieureRaison String
   entrepriseExterieureSiret  String?
   efChefNom                  String // chef de l'entreprise extérieure
@@ -855,7 +994,13 @@ model Intervention {
 
   // Liens optionnels
   uniteTravailId String?
-  risqueId       String? // si le ticket impacte un risque du DUERP
+  // ADR-009 — boucle ticket ↔ DUERP. Vraie clé étrangère en SetNull : jusqu'ici
+  // la colonne était seulement indexée, si bien que supprimer une unité de
+  // travail (cascade sur ses risques) laissait des tickets pointant dans le
+  // vide. SetNull plutôt que Cascade : le ticket décrit un fait réel survenu
+  // sur le terrain, il doit survivre à la réorganisation du DUERP.
+  risqueId       String?
+  risque         Risque? @relation(fields: [risqueId], references: [id], onDelete: SetNull)
   prestataireId  String?
 
   // Cycle de vie
