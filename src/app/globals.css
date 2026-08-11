@@ -9,7 +9,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-titre), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-body);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -113,9 +113,14 @@
      portent une encre foncée de la même famille ; les points de frise
      reprennent la couleur du champ (rose pour le retard, noir pour le
      proche, ardoise pour le calme). */
-  /* Le ciel — champ du hero et touches bleues du chrome (sidebar).
-     Revenu au ciel d'origine de la maquette (#d5eafa). */
-  --board-sky: #d5eafa;
+  /* Le ciel — champ du hero, sections pleines de la page publique et
+     touches bleues du chrome (sidebar). Relevé d'un cran en août 2026
+     (#d5eafa → #b2daf2) : le bleu de marque devait tenir seul en grand
+     aplat sur la landing sans virer au gris de fond. Le glacier
+     (--board-blue-pale) reste le champ posé sur carte blanche, et
+     --board-blue-ink l'encre de la famille. Un seul réglage : l'app et
+     la page publique portent le même bleu. */
+  --board-sky: #b2daf2;
   /* Le canvas quasi blanc derrière les cartes — gris neutre #f2f3f4 :
      c'est le filet et l'ombre des cartes qui font la séparation. */
   --board-canvas: #f2f3f4;
@@ -249,9 +254,13 @@
     @apply border-border outline-ring/50;
   }
 
+  /* `clip` et non `hidden` : `overflow-x: hidden` fait de l'élément un
+     conteneur de défilement, ce qui neutralise tout `position: sticky`
+     à l'intérieur (le cadran de la page publique ne se figeait plus).
+     `clip` découpe le débord sans créer de scrolleur. */
   html,
   body {
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   /* Fond : blanc quasi pur, sans voile — style Union */
@@ -617,4 +626,564 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .g-stamp-ring { animation: none; }
+}
+
+/* =============================================================
+   Page publique (landing) — « le ciel ne couvre pas, il ponctue »
+   -------------------------------------------------------------
+   Même famille que le board : cartes blanches à filet cheveu, rayons
+   généreux, encre #0a0a0a, signaux rose/paille/vert. La différence
+   tient à deux choses : les titres passent en Instrument Sans
+   (--font-titre) et le bleu ciel arrive en aplats pleine largeur,
+   jamais en bandeau de tête.
+   ============================================================= */
+@layer components {
+  .lp-shell {
+    margin-inline: auto;
+    width: 100%;
+    /* 1600 et non 1240 : la scène du hero (texte + photo + fiches) a
+       besoin de cette largeur pour que rien ne se touche, et tout le
+       reste de la page s'aligne dessus — en-tête compris. Sur un écran
+       large, 1400 laissait des gouttières trop grasses de chaque côté. */
+    max-width: 1600px;
+    padding-inline: clamp(20px, 5vw, 64px);
+  }
+
+  /* En-tête de la page publique — plein cadre en haut, îlot au défilement
+     -------------------------------------------------------------------
+     En tête de page, la barre suit la même gouttière que le reste (elle
+     n'existe pas visuellement : pas de champ, pas de filet). Dès que la
+     page défile, elle se resserre en un îlot flottant en verre.
+
+     Le verre n'est pas qu'un flou : c'est un flou saturé (le fond qui
+     passe dessous garde ses couleurs au lieu de virer au gris), une
+     arête haute lumineuse (la lumière frappe le bord supérieur), un
+     filet sombre très ténu qui détache l'îlot d'un fond clair, et une
+     ombre courte qui le décolle de la page. La géométrie et la matière
+     ne bougent pas au même rythme : la forme prend son temps (courbe
+     lente, 620 ms), la matière suit plus vite (380 ms). */
+  .lp-nav {
+    position: relative;
+    margin-inline: auto;
+    margin-top: 0;
+    width: 100%;
+    max-width: 1600px;
+    padding-inline: clamp(20px, 5vw, 64px);
+    border-radius: 0;
+    background-color: transparent;
+    backdrop-filter: blur(0px) saturate(100%);
+    -webkit-backdrop-filter: blur(0px) saturate(100%);
+    box-shadow: none;
+    transition:
+      width 620ms cubic-bezier(0.32, 0.72, 0, 1),
+      max-width 620ms cubic-bezier(0.32, 0.72, 0, 1),
+      padding 620ms cubic-bezier(0.32, 0.72, 0, 1),
+      margin-top 620ms cubic-bezier(0.32, 0.72, 0, 1),
+      border-radius 620ms cubic-bezier(0.32, 0.72, 0, 1),
+      background-color 380ms ease,
+      backdrop-filter 380ms ease,
+      box-shadow 380ms ease;
+  }
+
+  .lp-nav--ilot {
+    /* 1120 et non 1600 : l'îlot doit se lire comme un objet posé sur la
+       page, pas comme un bandeau. La marge latérale en clamp évite qu'il
+       colle aux bords sur mobile, où il occupe toute la largeur utile. */
+    width: calc(100% - 2 * clamp(16px, 4vw, 40px));
+    max-width: 1120px;
+    margin-top: 10px;
+    /* Asymétrique : la marque a besoin d'air à gauche, le bouton-pilule
+       de droite apporte déjà le sien. */
+    padding-inline: 22px 8px;
+    border-radius: 9999px;
+    background-color: color-mix(in srgb, var(--board-card) 58%, transparent);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+      0 0 0 1px rgba(10, 10, 10, 0.05),
+      0 2px 8px -4px rgba(13, 18, 36, 0.16),
+      0 14px 34px -14px rgba(13, 18, 36, 0.3);
+  }
+
+  /* Reflet spéculaire — la lumière qui glisse sur une surface bombée.
+     Posé sous le contenu (z-index 0 contre 1 pour la barre) : un voile
+     blanc par-dessus l'encre la délaverait. */
+  .lp-nav::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.5) 0%,
+        rgba(255, 255, 255, 0.1) 44%,
+        rgba(255, 255, 255, 0) 62%
+      ),
+      linear-gradient(
+        100deg,
+        rgba(255, 255, 255, 0) 32%,
+        rgba(255, 255, 255, 0.3) 48%,
+        rgba(255, 255, 255, 0) 64%
+      );
+    transition: opacity 420ms ease;
+  }
+  .lp-nav--ilot::after {
+    opacity: 1;
+  }
+
+  .lp-nav-barre {
+    position: relative;
+    z-index: 1;
+    height: 68px;
+    transition: height 620ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .lp-nav--ilot .lp-nav-barre {
+    height: 54px;
+  }
+
+  /* Sans backdrop-filter (Firefox si l'option est coupée), le flou ne
+     rend rien : on remonte l'opacité du champ pour que l'îlot reste
+     lisible au lieu de laisser passer le texte de la page. */
+  @supports not (backdrop-filter: blur(1px)) {
+    .lp-nav--ilot {
+      background-color: color-mix(in srgb, var(--board-card) 92%, transparent);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lp-nav,
+    .lp-nav::after,
+    .lp-nav-barre {
+      transition-duration: 1ms;
+    }
+  }
+
+  /* Titrage — la voix de la page. Serré, jamais criard. */
+  .lp-titre {
+    font-family: var(--font-titre), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.038em;
+    line-height: 1.02;
+    text-wrap: balance;
+    color: var(--board-ink);
+  }
+  .lp-h1 {
+    font-size: clamp(2.6rem, 5.6vw, 4.5rem);
+  }
+  .lp-h2 {
+    font-size: clamp(1.9rem, 3.6vw, 3.1rem);
+  }
+  .lp-h3 {
+    font-size: clamp(1.15rem, 1.5vw, 1.35rem);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  /* Sur-titre mono — encode la famille, pas la décoration. */
+  .lp-eyebrow {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--board-blue-ink);
+  }
+
+  .lp-lede {
+    font-size: clamp(1rem, 1.25vw, 1.125rem);
+    line-height: 1.62;
+    color: var(--board-slate-ink);
+    text-wrap: pretty;
+  }
+  .lp-texte {
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: var(--board-slate-mid);
+    text-wrap: pretty;
+  }
+
+  /* Carte blanche du board, reprise telle quelle. */
+  .lp-carte {
+    background: var(--board-card);
+    border-radius: 26px;
+    box-shadow:
+      0 0 0 1px rgba(13, 18, 36, 0.06),
+      0 1px 2px rgba(13, 18, 36, 0.04),
+      0 18px 44px -22px rgba(13, 18, 36, 0.18);
+  }
+
+  /* Boutons — pilule d'encre pour l'action principale, contour pour
+     la secondaire. Un seul niveau d'emphase par écran. */
+  .lp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.8125rem 1.375rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    transition:
+      background-color 200ms ease,
+      color 200ms ease,
+      border-color 200ms ease,
+      transform 200ms ease;
+  }
+  .lp-btn-ink {
+    background: var(--board-ink);
+    color: #fff;
+  }
+  .lp-btn-ink:hover {
+    background: #262626;
+  }
+  .lp-btn-clair {
+    background: transparent;
+    color: var(--board-ink);
+    box-shadow: inset 0 0 0 1px rgba(10, 10, 10, 0.18);
+  }
+  .lp-btn-clair:hover {
+    background: var(--board-card);
+    box-shadow: inset 0 0 0 1px rgba(10, 10, 10, 0.32);
+  }
+  .lp-btn .lp-fleche {
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .lp-btn:hover .lp-fleche {
+    transform: translateX(3px);
+  }
+
+  /* Pilules de statut — mêmes champs que la frise du board. */
+  .lp-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    border-radius: 9999px;
+    padding: 0.3125rem 0.6875rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .lp-pill-retard {
+    background: var(--board-signal);
+    color: var(--board-signal-ink);
+  }
+  .lp-pill-proche {
+    background: var(--board-amber);
+    color: var(--board-amber-ink);
+  }
+  .lp-pill-fait {
+    background: var(--board-green);
+    color: var(--board-green-ink);
+  }
+  .lp-pill-bleu {
+    background: var(--board-blue-pale);
+    color: var(--board-blue-ink);
+  }
+  .lp-pill-neutre {
+    background: var(--board-slate-pale);
+    color: var(--board-slate-mid);
+  }
+
+  /* Apparition au défilement — 12 px et une seule fois. */
+  .lp-reveal {
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--lp-delai, 0ms);
+  }
+  .lp-reveal[data-vu="true"] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Les lignes du brief tombent une à une à l'ouverture. En CSS, pour que
+   `prefers-reduced-motion` les serve immédiatement sans détour par JS. */
+@keyframes lp-tombe {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lp-tombe {
+  animation: lp-tombe 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-tombe {
+    animation: none;
+  }
+}
+
+/* =============================================================
+   La scène du hero — plusieurs fiches détachées, posées à plat
+   -------------------------------------------------------------
+   La perspective a été retirée : à ces angles-là, l'œil lisait des
+   cartes de travers plutôt qu'une profondeur. Ce qui reste fait le
+   même travail sans tordre une seule ligne — décalages latéraux,
+   chevauchements, et surtout des ombres empilées qui écartent les
+   fiches les unes des autres.
+   Pas de neumorphisme au sens strict non plus (relief embossé,
+   contrastes trop faibles pour un texte réglementaire) : ce qu'on
+   garde de cette famille, c'est la matière.
+   ============================================================= */
+/* Ombres empilées, toutes issues d'une même lumière haute : un contact
+   net, une diffusion moyenne, une longue portée. Aucune n'est décalée
+   latéralement — la lumière ne vient pas de côté. */
+.lp-fiche-carte {
+  background: var(--board-card);
+  border-radius: 24px;
+  box-shadow:
+    0 0 0 1px rgba(13, 18, 36, 0.05),
+    0 2px 4px rgba(13, 18, 36, 0.04),
+    0 16px 32px -18px rgba(13, 18, 36, 0.18),
+    0 56px 90px -56px rgba(13, 18, 36, 0.42);
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms ease;
+}
+/* Deux variantes de la même matière. Elles vivent ici plutôt qu'en
+   utilitaires Tailwind parce que `.lp-fiche-carte` n'est pas dans une
+   couche : en CSS cascade layers, une règle hors couche l'emporte sur
+   tout `@layer utilities`, donc un `bg-[…]` ou un `rounded-full` posé
+   sur la fiche serait silencieusement ignoré. */
+.lp-fiche-encre {
+  background: var(--board-ink);
+}
+.lp-fiche-pastille {
+  border-radius: 999px;
+}
+
+/* Sous le doigt : la fiche s'enfonce d'un cheveu et son ombre se
+   resserre. C'est tout ce qu'il faut pour lire « on a cliqué ». */
+.lp-fiche-carte[data-presse="true"] {
+  transform: scale(0.984);
+  box-shadow:
+    0 0 0 1px rgba(13, 18, 36, 0.06),
+    0 1px 2px rgba(13, 18, 36, 0.05),
+    0 6px 14px -8px rgba(13, 18, 36, 0.18),
+    0 20px 40px -28px rgba(13, 18, 36, 0.35);
+}
+
+/* Chaque fiche surgit de son ombre. Peu de course, beaucoup de durée :
+   c'est ce rapport-là qui fait un mouvement calme plutôt qu'un ressort. */
+@keyframes lp-surgit {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lp-surgit {
+  animation: lp-surgit 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-surgit {
+    animation: none;
+  }
+}
+
+/* Les barres du graphe montent de leur socle. */
+@keyframes lp-barre {
+  from {
+    transform: scaleY(0.04);
+    opacity: 0.3;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.lp-barre {
+  transform-origin: bottom;
+  animation: lp-barre 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-barre {
+    animation: none;
+  }
+}
+
+/* Les jours de la semaine se posent un à un. */
+@keyframes lp-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lp-pop {
+  animation: lp-pop 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* L'onde du clic simulé : un rond qui s'ouvre sous le doigt. */
+@keyframes lp-onde {
+  from {
+    opacity: 0.5;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.8);
+  }
+}
+.lp-onde {
+  animation: lp-onde 620ms ease-out forwards;
+}
+
+/* Le halo de l'alerte — deux battements, puis plus rien. */
+@keyframes lp-halo {
+  0% {
+    box-shadow: 0 0 0 0 var(--board-signal-line);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(242, 126, 128, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(242, 126, 128, 0);
+  }
+}
+.lp-halo {
+  animation: lp-halo 1800ms ease-out 1200ms 2;
+}
+
+/* LES MODULES QU'ON RÉORDONNE — section « tableau de bord » de la page
+   publique. Deux voisins échangent leur place, en boucle lente : c'est la
+   façon la plus courte de montrer que le board est personnalisable sans
+   écrire « glisser-déposer ».
+   Le pas d'une colonne est passé en variable (`--lp-pas`) : la largeur de
+   tuile et la gouttière ne se règlent qu'à un seul endroit, dans le
+   composant. La tuile qui se déplace reste au-dessus de l'autre pendant
+   le croisement. */
+@keyframes lp-module-mene {
+  0%,
+  16% {
+    transform: none;
+    box-shadow:
+      0 0 0 1px rgba(13, 18, 36, 0.05),
+      0 1px 2px rgba(13, 18, 36, 0.04);
+  }
+  22%,
+  42% {
+    box-shadow:
+      0 0 0 1px rgba(13, 18, 36, 0.06),
+      0 10px 22px -10px rgba(13, 18, 36, 0.3),
+      0 30px 50px -30px rgba(13, 18, 36, 0.38);
+  }
+  22% {
+    transform: translateY(-8px) scale(1.03);
+  }
+  42%,
+  62% {
+    transform: translate(var(--lp-pas), -8px) scale(1.03);
+    box-shadow:
+      0 0 0 1px rgba(13, 18, 36, 0.06),
+      0 10px 22px -10px rgba(13, 18, 36, 0.3),
+      0 30px 50px -30px rgba(13, 18, 36, 0.38);
+  }
+  82% {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow:
+      0 0 0 1px rgba(13, 18, 36, 0.06),
+      0 10px 22px -10px rgba(13, 18, 36, 0.3),
+      0 30px 50px -30px rgba(13, 18, 36, 0.38);
+  }
+  90%,
+  100% {
+    transform: none;
+    box-shadow:
+      0 0 0 1px rgba(13, 18, 36, 0.05),
+      0 1px 2px rgba(13, 18, 36, 0.04);
+  }
+}
+@keyframes lp-module-cede {
+  0%,
+  22% {
+    transform: none;
+  }
+  42%,
+  62% {
+    transform: translateX(calc(var(--lp-pas) * -1));
+  }
+  84%,
+  100% {
+    transform: none;
+  }
+}
+/* La tuile qui mène reste au-dessus de sa voisine pendant le croisement.
+   L'échange ne joue qu'à partir de `sm` : en dessous la grille passe à
+   deux colonnes, et les deux tuiles concernées ne sont plus voisines sur
+   la même rangée — le pas d'une colonne pousserait la première hors de
+   la grille et ouvrirait un défilement horizontal. */
+.lp-module-mene {
+  position: relative;
+  z-index: 2;
+}
+@media (min-width: 640px) {
+  .lp-module-mene {
+    will-change: transform;
+    animation: lp-module-mene 7500ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .lp-module-cede {
+    will-change: transform;
+    animation: lp-module-cede 7500ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-module-mene,
+  .lp-module-cede {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-pop,
+  .lp-halo,
+  .lp-onde {
+    animation: none;
+  }
+}
+
+/* Le compteur du brief : le chiffre remplacé monte d'un cran. */
+@keyframes lp-monte {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .lp-btn:hover .lp-fleche {
+    transform: none;
+  }
 }

@@ -1,0 +1,114 @@
+// Ce que la page publique montre « par métier ».
+//
+// Les libellés, les périodicités et les références légales ne sont pas
+// retapés ici : ils sont lus dans le référentiel de conformité (ADR-003).
+// Une périodicité corrigée dans le référentiel se corrige donc aussi sur
+// la page d'accueil, sans que personne n'ait à y penser. Seuls le nom
+// court (celui que le dirigeant emploie) et l'ordre d'affichage sont
+// éditoriaux.
+//
+// Les trois métiers listés sont ceux du périmètre DUERP validé —
+// restauration, commerce de détail, bureau/tertiaire. Rien d'autre.
+
+import { obligationParId } from "@/lib/referentiels/conformite";
+import { LABEL_PERIODICITE } from "@/lib/calendrier/labels";
+
+export type LigneMetier = {
+  /** Nom court, celui qu'emploie le dirigeant. */
+  nom: string;
+  /** Libellé exact du référentiel — l'intitulé réglementaire. */
+  libelle: string;
+  /** Première référence primaire citée (Légifrance). */
+  reference: string;
+  /** Périodicité indicative, telle que portée par le référentiel. */
+  rythme: string;
+};
+
+export type Metier = {
+  id: string;
+  label: string;
+  /** Ce que le métier a de particulier, en une phrase. */
+  note: string;
+  lignes: LigneMetier[];
+};
+
+/** Le DUERP ne vient pas du référentiel de conformité : c'est un
+ *  document, pas une vérification d'équipement. On le pose en tête,
+ *  partout, avec sa référence. */
+const DUERP: LigneMetier = {
+  nom: "DUERP",
+  libelle: "Évaluation des risques professionnels, transcrite et mise à jour",
+  reference: "C. trav. R. 4121-1 et R. 4121-2",
+  rythme: "annuelle",
+};
+
+function ligne(nom: string, id: string): LigneMetier | null {
+  const o = obligationParId(id);
+  // Une obligation retirée du référentiel disparaît de la page plutôt que
+  // d'y afficher un trou — la page publique ne doit jamais bloquer l'app.
+  if (!o) return null;
+  return {
+    nom,
+    libelle: o.libelle,
+    reference: o.referencesLegales[0]?.reference ?? "",
+    rythme: LABEL_PERIODICITE[o.periodicite],
+  };
+}
+
+function metier(
+  id: string,
+  label: string,
+  note: string,
+  paires: [string, string][],
+): Metier {
+  return {
+    id,
+    label,
+    note,
+    lignes: [DUERP, ...paires.map(([nom, obl]) => ligne(nom, obl))].filter(
+      (l): l is LigneMetier => l !== null,
+    ),
+  };
+}
+
+export const METIERS: Metier[] = [
+  metier(
+    "restauration",
+    "Restauration",
+    "La cuisine ajoute le gaz, la hotte et les conduits d'extraction à la liste commune.",
+    [
+      ["Extincteurs", "incendie-erp-extincteurs-annuelle"],
+      ["Hotte et conduits d'extraction", "cuisson-erp-circuits-extraction-nettoyage"],
+      ["Appareils de cuisson", "cuisson-erp-appareils-annuelle"],
+      ["Éclairage de sécurité (BAES)", "incendie-erp-baes-annuelle"],
+      ["Installation électrique", "elec-erp-cat5-quinquennale"],
+      ["Ventilation", "aeration-travail-entretien-annuel"],
+    ],
+  ),
+  metier(
+    "commerce",
+    "Commerce de détail",
+    "Recevoir du public déplace le curseur : c'est le règlement ERP qui commande, pas seulement le Code du travail.",
+    [
+      ["Extincteurs", "incendie-erp-extincteurs-annuelle"],
+      ["Éclairage de sécurité (BAES)", "incendie-erp-baes-annuelle"],
+      ["Porte automatique", "porte-auto-verification-semestrielle"],
+      ["Installation électrique", "elec-erp-cat5-quinquennale"],
+      ["Consigne incendie", "incendie-travail-consigne-affichee"],
+      ["Registre de sécurité", "incendie-registre-securite"],
+    ],
+  ),
+  metier(
+    "bureaux",
+    "Bureau et services",
+    "Peu d'équipements, mais les mêmes obligations de fond — et un exercice d'évacuation qu'on oublie souvent.",
+    [
+      ["Installation électrique", "elec-travail-periodique-annuelle"],
+      ["Moyens de lutte contre l'incendie", "incendie-travail-moyens-lutte"],
+      ["Exercice d'évacuation", "incendie-travail-exercice-semestriel"],
+      ["Ventilation", "aeration-travail-entretien-annuel"],
+      ["Ascenseur", "ascenseur-examen-annuel-securite"],
+      ["Registre de sécurité", "incendie-registre-securite"],
+    ],
+  ),
+];
