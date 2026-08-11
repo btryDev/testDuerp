@@ -29,6 +29,7 @@ import {
   type Periodicite,
   type Realisateur,
 } from "@/lib/referentiels/types-communs";
+import { estEnRetard } from "@/lib/dates/retard";
 import type { ObligationApplicable } from "@/lib/matching";
 
 export type StatutVerificationGen =
@@ -176,4 +177,302 @@ export function comparerParUrgence(
   if (da !== db) return da - db;
   // 3. Criticité décroissante
   return b.criticiteObligation - a.criticiteObligation;
+}
+
+// ===========================================================================
+// Réconciliation idempotente du calendrier — ADR-012
+//
+// POURQUOI CE MODULE EXISTE
+// -------------------------
+// La régénération procédait par `deleteMany` (toutes les occurrences non
+// réalisées) puis `createMany`. Trois conséquences, toutes silencieuses :
+//
+//  1. `Action.verificationId` est en `onDelete: Cascade`. Une action
+//     corrective créée sur une vérification dépassée (« faire intervenir un
+//     organisme agréé », avec responsable et échéance) disparaissait dès que
+//     l'utilisateur déclarait un nouvel équipement — la déclaration régénère.
+//  2. Un rapport déposé avec le résultat « non vérifiable » plaçait la
+//     vérification en `a_planifier` : la régénération qui suivait dans la
+//     même requête supprimait la vérification, donc le rapport en cascade,
+//     et laissait le fichier orphelin dans le stockage.
+//  3. Les identifiants changeaient à chaque passage : tout lien externe
+//     (URL de la fiche vérification, `leveeRapportId`) pointait dans le vide.
+//
+// Depuis la migration `20260810120000_integrite_et_conservation`, la base
+// porte `@@unique([etablissementId, obligationId, equipementId])`. Une
+// `Verification` n'est donc plus « une occurrence » mais **la ligne de suivi**
+// d'une obligation sur un équipement — un objet durable, dont l'identifiant
+// est stable pour toute la vie de l'équipement.
+//
+// SÉMANTIQUE DE LA LIGNE DE SUIVI
+// -------------------------------
+//   `datePrevue`   : prochaine échéance réglementaire ;
+//   `dateRealisee` : réalisation **du cycle en cours**, `null` tant que le
+//                    cycle n'est pas soldé ;
+//   `statut`       : état du cycle en cours ;
+//   `rapports`     : l'historique complet, cycle après cycle — c'est lui qui
+//                    porte la preuve, jamais le statut.
+//
+// Quand la période s'écoule (`dateRealisee + périodicité` est atteinte), le
+// cycle est **relancé** : `dateRealisee` repasse à `null` et le statut à
+// `depassee`. Rien n'est perdu — les rapports du cycle précédent restent
+// attachés à la même ligne. C'est ce qui permet à l'outil de ne pas continuer
+// d'afficher « Conforme » sur un contrôle annuel réalisé il y a deux ans.
+// ===========================================================================
+
+/** Statuts que peut porter une ligne en base (miroir de l'enum Prisma
+ *  `StatutVerification`). Typé en union locale et non importé de
+ *  `@prisma/client` pour que ce module reste pur et testable sans base. */
+export type StatutVerificationPersiste =
+  | StatutVerificationGen
+  | "realisee_conforme"
+  | "realisee_observations"
+  | "realisee_ecart_majeur";
+
+const STATUTS_REALISES: readonly StatutVerificationPersiste[] = [
+  "realisee_conforme",
+  "realisee_observations",
+  "realisee_ecart_majeur",
+];
+
+export function estStatutRealise(s: string): boolean {
+  return (STATUTS_REALISES as readonly string[]).includes(s);
+}
+
+/**
+ * Marqueur d'archivage. Une obligation peut cesser de s'appliquer (équipement
+ * désactivé, régime de l'établissement modifié, obligation retirée du
+ * référentiel). Si la ligne ne porte aucune preuve, on la supprime ; si elle
+ * en porte une, la détruire reviendrait à effacer un rapport de vérification
+ * ou une action corrective — on la **marque** au lieu de la supprimer.
+ *
+ * Le marqueur vit dans `libelleObligation`, qui est déjà un instantané texte
+ * recopié du référentiel : il apparaît donc partout où la ligne apparaît
+ * (calendrier, registre, exports PDF), sans colonne supplémentaire.
+ *
+ * Limite assumée et documentée en ADR-012 : l'enum Prisma `StatutVerification`
+ * n'a pas de valeur `archivee`. Le statut d'une ligne archivée est donc **gelé**
+ * dans son dernier état connu. L'ajout d'une valeur d'enum dédiée relève du
+ * propriétaire de `prisma/schema.prisma`.
+ */
+export const MARQUEUR_NON_APPLICABLE = "Ne s'applique plus — ";
+
+export function estMarqueeNonApplicable(libelle: string): boolean {
+  return libelle.startsWith(MARQUEUR_NON_APPLICABLE);
+}
+
+export function marquerNonApplicable(libelle: string): string {
+  return estMarqueeNonApplicable(libelle)
+    ? libelle
+    : `${MARQUEUR_NON_APPLICABLE}${libelle}`;
+}
+
+/** Retire le marqueur — utilisé quand une obligation redevient applicable
+ *  (l'équipement est réactivé, l'établissement redevient ERP…). */
+export function libelleSansMarqueur(libelle: string): string {
+  return estMarqueeNonApplicable(libelle)
+    ? libelle.slice(MARQUEUR_NON_APPLICABLE.length)
+    : libelle;
+}
+
+/** Ligne de suivi telle qu'elle existe en base, réduite à ce dont la
+ *  réconciliation a besoin. */
+export type OccurrenceExistante = {
+  id: string;
+  obligationId: string;
+  equipementId: string;
+  libelleObligation: string;
+  periodicite: Periodicite;
+  realisateurRequis: Realisateur[];
+  datePrevue: Date;
+  dateRealisee: Date | null;
+  statut: StatutVerificationPersiste;
+  /** La ligne porte-t-elle au moins un rapport de vérification ou une action
+   *  corrective ? C'est le seul critère qui autorise — ou interdit — la
+   *  suppression physique. */
+  porteUnePreuve: boolean;
+};
+
+/** Ce qu'il faut écrire sur une ligne existante. `id` n'y figure jamais en
+ *  cible d'écriture : il est stable par construction. */
+export type MiseAJourOccurrence = {
+  id: string;
+  libelleObligation: string;
+  periodicite: Periodicite;
+  realisateurRequis: Realisateur[];
+  datePrevue: Date;
+  dateRealisee: Date | null;
+  statut: StatutVerificationPersiste;
+};
+
+export type PlanReconciliation = {
+  /** Couples (obligation, équipement) sans ligne de suivi : à insérer. */
+  aCreer: VerificationGenere[];
+  /** Lignes existantes dont au moins un champ change. */
+  aMettreAJour: MiseAJourOccurrence[];
+  /** Lignes devenues non applicables mais porteuses de preuve : marquées,
+   *  jamais supprimées. */
+  aArchiver: { id: string; libelleObligation: string }[];
+  /** Lignes devenues non applicables et vides de toute preuve : supprimables
+   *  sans perte. */
+  aSupprimer: string[];
+  /** Lignes strictement inchangées — le compteur qui prouve l'idempotence. */
+  inchangees: number;
+};
+
+/**
+ * Statut à porter sur une ligne dont le cycle courant n'est **pas** soldé.
+ *
+ * Le retard se juge au jour civil (ADR-011) et non à l'horodatage : une
+ * échéance datée d'aujourd'hui n'est pas dépassée. `planifiee` n'est conservé
+ * que s'il était déjà là — il signifie « une date a été arrêtée avec le
+ * prestataire », information que la régénération n'a aucune raison d'effacer.
+ */
+function statutCycleOuvert(
+  datePrevue: Date,
+  statutExistant: StatutVerificationPersiste,
+  now: Date,
+): StatutVerificationGen {
+  if (estEnRetard(datePrevue, now)) return "depassee";
+  return statutExistant === "planifiee" ? "planifiee" : "a_planifier";
+}
+
+function memeListe(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+function memeInstant(a: Date | null, b: Date | null): boolean {
+  if (a === null || b === null) return a === b;
+  return a.getTime() === b.getTime();
+}
+
+/**
+ * Rapproche l'état souhaité (sortie du matching + du générateur) de l'état
+ * en base, et produit le **plan minimal** d'écritures.
+ *
+ * Fonction pure : aucune I/O, horloge injectable. C'est elle qui porte toutes
+ * les décisions de conservation ; `lib/calendrier/actions.ts` ne fait
+ * qu'exécuter le plan dans une transaction.
+ *
+ * `aGenerer` doit être produit **sans** historique (`verificationsPrecedentes`
+ * vide) : le générateur y décrit simplement l'ensemble des couples applicables
+ * et leurs attributs de référentiel. Le calcul des dates à partir de
+ * l'historique est fait ici, ligne par ligne, à partir de ce qu'il y a
+ * réellement en base. Passer l'historique au générateur ferait disparaître de
+ * `aGenerer` les obligations « mise en service » déjà réalisées, qui seraient
+ * alors prises pour des obligations retirées du référentiel — et archivées à
+ * tort.
+ */
+export function reconcilierCalendrier(
+  existantes: OccurrenceExistante[],
+  aGenerer: VerificationGenere[],
+  options: OptionsGenerateur = {},
+): PlanReconciliation {
+  const now = options.now ?? new Date();
+
+  const parCle = new Map<string, OccurrenceExistante>();
+  for (const ex of existantes) {
+    parCle.set(`${ex.obligationId}::${ex.equipementId}`, ex);
+  }
+
+  const plan: PlanReconciliation = {
+    aCreer: [],
+    aMettreAJour: [],
+    aArchiver: [],
+    aSupprimer: [],
+    inchangees: 0,
+  };
+  const vues = new Set<string>();
+
+  for (const g of aGenerer) {
+    const ex = parCle.get(g.cleUnique);
+    if (!ex) {
+      plan.aCreer.push(g);
+      continue;
+    }
+    vues.add(g.cleUnique);
+
+    // Attributs de référentiel : toujours réalignés. C'est ce qui fait
+    // qu'une correction de libellé ou de périodicité dans
+    // `lib/referentiels/conformite/` se propage sans détruire la ligne.
+    // Le marqueur d'archivage tombe de lui-même puisqu'on réécrit le libellé
+    // depuis le référentiel : une obligation qui redevient applicable
+    // redevient normale.
+    let datePrevue: Date;
+    let dateRealisee: Date | null;
+    let statut: StatutVerificationPersiste;
+
+    if (ex.dateRealisee !== null) {
+      const prochaine = prochaineDate(ex.dateRealisee, g.periodicite);
+      if (prochaine === null) {
+        // Périodicité sans échéance suivante (`mise_en_service_uniquement`,
+        // `autre`) : le one-shot est consommé, plus rien à replanifier.
+        datePrevue = ex.datePrevue;
+        dateRealisee = ex.dateRealisee;
+        statut = ex.statut;
+      } else if (!estEnRetard(prochaine, now)) {
+        // Cycle encore valide : on affiche la prochaine échéance sans toucher
+        // au résultat du contrôle déjà réalisé.
+        datePrevue = prochaine;
+        dateRealisee = ex.dateRealisee;
+        statut = estStatutRealise(ex.statut) ? ex.statut : "planifiee";
+      } else {
+        // Période écoulée : nouveau cycle. Les rapports du cycle précédent
+        // restent attachés à cette même ligne — c'est eux, la preuve.
+        datePrevue = prochaine;
+        dateRealisee = null;
+        statut = "depassee";
+      }
+    } else {
+      // Cycle ouvert : l'échéance réglementaire ne bouge pas parce que
+      // l'utilisateur a déclaré un extincteur de plus. Repousser `datePrevue`
+      // à `now` à chaque régénération — ce que faisait le delete/create —
+      // effaçait le retard accumulé.
+      datePrevue = ex.datePrevue;
+      dateRealisee = null;
+      statut = statutCycleOuvert(ex.datePrevue, ex.statut, now);
+    }
+
+    const cible: MiseAJourOccurrence = {
+      id: ex.id,
+      libelleObligation: g.libelleObligation,
+      periodicite: g.periodicite,
+      realisateurRequis: g.realisateurRequis,
+      datePrevue,
+      dateRealisee,
+      statut,
+    };
+
+    const identique =
+      cible.libelleObligation === ex.libelleObligation &&
+      cible.periodicite === ex.periodicite &&
+      memeListe(cible.realisateurRequis, ex.realisateurRequis) &&
+      memeInstant(cible.datePrevue, ex.datePrevue) &&
+      memeInstant(cible.dateRealisee, ex.dateRealisee) &&
+      cible.statut === ex.statut;
+
+    if (identique) plan.inchangees += 1;
+    else plan.aMettreAJour.push(cible);
+  }
+
+  // Ce qui reste : des lignes de suivi dont l'obligation ne s'applique plus.
+  for (const [cle, ex] of parCle) {
+    if (vues.has(cle)) continue;
+    // `dateRealisee` compte comme une trace au même titre qu'un rapport : elle
+    // atteste qu'un contrôle a eu lieu, même si la pièce jointe a depuis été
+    // retirée du registre.
+    const porteUneTrace = ex.porteUnePreuve || ex.dateRealisee !== null;
+    if (!porteUneTrace) {
+      plan.aSupprimer.push(ex.id);
+    } else if (!estMarqueeNonApplicable(ex.libelleObligation)) {
+      plan.aArchiver.push({
+        id: ex.id,
+        libelleObligation: marquerNonApplicable(ex.libelleObligation),
+      });
+    } else {
+      plan.inchangees += 1;
+    }
+  }
+
+  return plan;
 }

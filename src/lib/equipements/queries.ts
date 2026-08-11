@@ -2,6 +2,22 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 
+/**
+ * Lectures du parc d'équipements.
+ *
+ * `Equipement.actif` matérialise la **suppression logique** (ADR-012) : un
+ * équipement retiré du parc mais porteur d'historique (rapports de
+ * vérification, actions correctives) n'est pas détruit, il est désactivé.
+ * Toute liste destinée à l'utilisateur ou au moteur de matching ne doit donc
+ * voir que les équipements `actif: true` — sans quoi un équipement retiré
+ * continuerait de générer des échéances.
+ */
+
+/**
+ * Fiche d'un équipement, actif ou non : la page de détail et le formulaire de
+ * modification doivent rester atteignables pour un équipement désactivé, ne
+ * serait-ce que pour le remettre en service.
+ */
 export async function getEquipement(id: string) {
   const user = await requireUser();
   return prisma.equipement.findFirst({
@@ -10,6 +26,7 @@ export async function getEquipement(id: string) {
   });
 }
 
+/** Le parc en service — la liste de référence du produit. */
 export async function listerEquipementsDeLEtablissement(
   etablissementId: string,
 ) {
@@ -17,9 +34,27 @@ export async function listerEquipementsDeLEtablissement(
   return prisma.equipement.findMany({
     where: {
       etablissementId,
+      actif: true,
       etablissement: { entreprise: { userId: user.id } },
     },
     orderBy: [{ categorie: "asc" }, { createdAt: "asc" }],
+  });
+}
+
+/**
+ * Les équipements retirés du parc. Séparés volontairement : ils ne comptent
+ * dans aucun indicateur de conformité, mais l'utilisateur doit pouvoir les
+ * retrouver — pour consulter leur historique ou les remettre en service.
+ */
+export async function listerEquipementsDesactives(etablissementId: string) {
+  const user = await requireUser();
+  return prisma.equipement.findMany({
+    where: {
+      etablissementId,
+      actif: false,
+      etablissement: { entreprise: { userId: user.id } },
+    },
+    orderBy: [{ categorie: "asc" }, { updatedAt: "desc" }],
   });
 }
 

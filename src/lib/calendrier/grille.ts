@@ -5,7 +5,20 @@
 // (convention française), et la grille est complétée par les jours
 // débordants du mois précédent et du suivant pour former des semaines
 // entières.
+//
+// Tout le découpage se fait en **jours civils de Paris** (ADR-011). Les
+// dates d'échéance sont stockées à minuit UTC : lues avec `getDate()` sur
+// un serveur en UTC elles tombent juste par hasard, mais un horodatage
+// réel de soirée (23:30 à Paris en été = 21:30 UTC) et, surtout, un
+// serveur dans un autre fuseau font glisser la case d'un jour — et le
+// libellé du mois d'un mois entier, un 1er tombant à 22:00 UTC la veille.
 
+import {
+  MS_PAR_JOUR,
+  cleJourCivil,
+  composantesCiviles,
+  instantCivil,
+} from "@/lib/dates";
 import type { FamilleEcheance } from "./echeances";
 
 export type EvenementGrille = {
@@ -43,17 +56,24 @@ export type GrilleMois = {
 
 export const JOURS_SEMAINE = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
-const JOUR_MS = 86400000;
-
-function cleJour(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate(),
-  ).padStart(2, "0")}`;
+/**
+ * Repère de calcul : le jour civil (année, mois, jour) projeté sur l'axe
+ * UTC. UTC ignore les changements d'heure, l'arithmétique en jours y est
+ * donc exacte ; l'instant réel n'est reconstruit qu'à la fin, par
+ * `instantCivil`.
+ */
+function reperUtc(annee: number, mois: number, jour: number): Date {
+  return new Date(Date.UTC(annee, mois - 1, jour));
 }
 
 /** Décalage du 1er du mois par rapport au lundi précédent (0 à 6). */
-function decalageLundi(premier: Date): number {
-  return (premier.getDay() + 6) % 7;
+function decalageLundi(annee: number, mois: number): number {
+  return (reperUtc(annee, mois, 1).getUTCDay() + 6) % 7;
+}
+
+/** Nombre de jours du mois civil — le « jour 0 » du mois suivant. */
+function joursDansLeMois(annee: number, mois: number): number {
+  return reperUtc(annee, mois + 1, 0).getUTCDate();
 }
 
 export function construireGrilleMois({
@@ -66,14 +86,14 @@ export function construireGrilleMois({
   evenements: EvenementGrille[];
   aujourdhui: Date;
 }): GrilleMois {
-  const premier = new Date(mois.getFullYear(), mois.getMonth(), 1);
-  const dernier = new Date(mois.getFullYear(), mois.getMonth() + 1, 0);
+  const c = composantesCiviles(mois);
+  const premier = instantCivil(c.annee, c.mois, 1);
 
   // Regroupement par jour : une seule passe sur les événements, la grille
   // ne fait ensuite que des lectures de map.
   const parJour = new Map<string, EvenementGrille[]>();
   for (const e of evenements) {
-    const cle = cleJour(e.date);
+    const cle = cleJourCivil(e.date);
     const liste = parJour.get(cle);
     if (liste) liste.push(e);
     else parJour.set(cle, [e]);
@@ -82,27 +102,32 @@ export function construireGrilleMois({
     liste.sort((a, b) => a.date.getTime() - b.date.getTime());
   }
 
-  const debut = new Date(premier.getTime() - decalageLundi(premier) * JOUR_MS);
+  const decalage = decalageLundi(c.annee, c.mois);
   // Semaines entières couvrant tout le mois : 4 à 6 lignes selon le mois.
-  const nbJours = Math.ceil(
-    (decalageLundi(premier) + dernier.getDate()) / 7,
-  ) * 7;
+  const nbCases =
+    Math.ceil((decalage + joursDansLeMois(c.annee, c.mois)) / 7) * 7;
+  const originUtc = reperUtc(c.annee, c.mois, 1).getTime();
 
-  const cleAujourdhui = cleJour(aujourdhui);
+  const cleAujourdhui = cleJourCivil(aujourdhui);
   const semaines: JourGrille[][] = [];
   let nbEvenements = 0;
 
-  for (let i = 0; i < nbJours; i += 1) {
-    const d = new Date(debut.getFullYear(), debut.getMonth(), debut.getDate() + i);
-    const cle = cleJour(d);
-    const dansLeMois = d.getMonth() === premier.getMonth();
+  for (let i = 0; i < nbCases; i += 1) {
+    const utc = new Date(originUtc + (i - decalage) * MS_PAR_JOUR);
+    const d = instantCivil(
+      utc.getUTCFullYear(),
+      utc.getUTCMonth() + 1,
+      utc.getUTCDate(),
+    );
+    const cle = cleJourCivil(d);
+    const dansLeMois = utc.getUTCMonth() + 1 === c.mois;
     const evts = parJour.get(cle) ?? [];
     if (dansLeMois) nbEvenements += evts.length;
 
     const jour: JourGrille = {
       cle,
       date: d,
-      numero: d.getDate(),
+      numero: utc.getUTCDate(),
       dansLeMois,
       estAujourdhui: cle === cleAujourdhui,
       evenements: evts,
@@ -112,10 +137,7 @@ export function construireGrilleMois({
     else semaines[semaines.length - 1].push(jour);
   }
 
-  const libelle = new Intl.DateTimeFormat("fr-FR", {
-    month: "long",
-    year: "numeric",
-  }).format(premier);
+  const libelle = FMT_MOIS_LONG.format(premier);
 
   return {
     mois: premier,
@@ -124,6 +146,20 @@ export function construireGrilleMois({
     nbEvenements,
   };
 }
+
+// Formateurs instanciés une fois, fuseau explicite : sans `timeZone`, un
+// 1er du mois pris à minuit heure de Paris (22:00 UTC la veille en été)
+// s'affiche avec le mois **précédent** sur un serveur en UTC.
+const FMT_MOIS_LONG = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: "Europe/Paris",
+  month: "long",
+  year: "numeric",
+});
+
+const FMT_MOIS_COURT = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: "Europe/Paris",
+  month: "short",
+});
 
 /** Point d'un mois de la vue année : le ton porte l'urgence, la famille
  *  la forme du marqueur. Ordonnés alerte → warn → ok, pour que le
@@ -172,9 +208,11 @@ export function construireGrilleAnnee({
   const pointsParMois: PointAnnee[][] = Array.from({ length: 12 }, () => []);
   let nbEvenements = 0;
   for (const e of evenements) {
-    if (e.date.getFullYear() !== annee) continue;
-    parMois[e.date.getMonth()][e.tone] += 1;
-    pointsParMois[e.date.getMonth()].push({
+    const c = composantesCiviles(e.date);
+    if (c.annee !== annee) continue;
+    const index = c.mois - 1;
+    parMois[index][e.tone] += 1;
+    pointsParMois[index].push({
       tone: e.tone,
       famille: e.famille ?? "controle",
     });
@@ -191,16 +229,15 @@ export function construireGrilleAnnee({
     points.sort((a, b) => ORDRE_TONS[a.tone] - ORDRE_TONS[b.tone]);
   }
 
-  const format = new Intl.DateTimeFormat("fr-FR", { month: "short" });
+  const cAujourdhui = composantesCiviles(aujourdhui);
   const mois = parMois.map((nbParTon, m): MoisAnnee => {
-    const premier = new Date(annee, m, 1);
-    const dernier = new Date(annee, m + 1, 0);
-    const brut = format.format(premier);
+    const premier = instantCivil(annee, m + 1, 1);
+    const dernier = instantCivil(annee, m + 1, joursDansLeMois(annee, m + 1));
+    const brut = FMT_MOIS_COURT.format(premier);
     return {
       mois: premier,
       libelle: brut.charAt(0).toUpperCase() + brut.slice(1),
-      estMoisCourant:
-        aujourdhui.getFullYear() === annee && aujourdhui.getMonth() === m,
+      estMoisCourant: cAujourdhui.annee === annee && cAujourdhui.mois === m + 1,
       dansFenetre: fenetre
         ? dernier >= fenetre.debut && premier <= fenetre.fin
         : true,

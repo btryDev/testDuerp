@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { cleJourCivil } from "@/lib/dates";
 import {
+  MOIS_ANALYSE_LEGIONELLES,
+  MOIS_MAJ_DUERP,
   echeanceDuerp,
   echeanceLegionelles,
   echeancePermisFeu,
@@ -9,24 +12,37 @@ import {
   tonPourDate,
 } from "./echeances";
 
-const AUJOURDHUI = new Date(2026, 7, 10); // 10 août 2026
+/**
+ * Toutes les dates sont écrites comme Prisma les rend : **minuit UTC**
+ * pour une date civile saisie en « AAAA-MM-JJ » (ADR-011). Les horloges,
+ * elles, sont des instants réels — heure ouvrée ou fin de soirée à Paris.
+ * Écrire `new Date(2026, 7, 10)` ferait dépendre le résultat du fuseau du
+ * processus, et masquerait précisément les décalages qu'on teste ici.
+ */
+const jour = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
+
+/** 10 août 2026, 9 h à Paris. */
+const AUJOURDHUI = new Date("2026-08-10T07:00:00Z");
+/** Même jour civil, 23 h 30 à Paris. */
+const CE_SOIR = new Date("2026-08-10T21:30:00Z");
 
 describe("tonPourDate", () => {
   it("classe en alerte une date passée", () => {
-    expect(tonPourDate(new Date(2026, 7, 9), AUJOURDHUI)).toBe("alerte");
+    expect(tonPourDate(jour("2026-08-09"), AUJOURDHUI)).toBe("alerte");
   });
 
   it("classe en ok le jour même et le futur", () => {
-    expect(tonPourDate(new Date(2026, 7, 10), AUJOURDHUI)).toBe("ok");
-    expect(tonPourDate(new Date(2026, 11, 1), AUJOURDHUI)).toBe("ok");
+    expect(tonPourDate(jour("2026-08-10"), AUJOURDHUI)).toBe("ok");
+    expect(tonPourDate(jour("2026-12-01"), AUJOURDHUI)).toBe("ok");
   });
 
-  it("juge au jour calendaire, pas à la minute : une échéance de ce matin n'est pas en retard cet après-midi", () => {
-    const cetApresMidi = new Date(2026, 7, 10, 18, 30);
-    expect(tonPourDate(new Date(2026, 7, 10, 0, 0), cetApresMidi)).toBe("ok");
-    expect(tonPourDate(new Date(2026, 7, 9, 23, 59), cetApresMidi)).toBe(
-      "alerte",
-    );
+  it("laisse toute sa journée à une échéance du jour, du matin au soir", () => {
+    // La date est stockée à 00:00 UTC, soit 02:00 à Paris en été : une
+    // comparaison à l'horodatage brut l'aurait déclarée dépassée dès 2 h
+    // du matin.
+    expect(tonPourDate(jour("2026-08-10"), AUJOURDHUI)).toBe("ok");
+    expect(tonPourDate(jour("2026-08-10"), CE_SOIR)).toBe("ok");
+    expect(tonPourDate(jour("2026-08-09"), CE_SOIR)).toBe("alerte");
   });
 });
 
@@ -54,27 +70,58 @@ describe("origineAction", () => {
 });
 
 describe("echeanceDuerp", () => {
-  it("pose l'échéance un an après la dernière version", () => {
+  it("pose l'échéance un an après la dernière version, au même jour civil", () => {
     const e = echeanceDuerp({
       etablissementId: "etab1",
-      dateDerniereVersion: new Date(2026, 1, 10),
+      dateDerniereVersion: jour("2026-02-10"),
       aujourdhui: AUJOURDHUI,
     });
     expect(e).not.toBeNull();
-    expect(e!.date.getFullYear()).toBe(2027);
-    expect(e!.date.getMonth()).toBe(1);
+    // Arithmétique calendaire : le 10 février reste le 10 février. Le
+    // `+ 365 × 86 400 000` d'avant tombait au 9 dès qu'une bissextile ou
+    // un changement d'heure s'intercalait.
+    expect(cleJourCivil(e!.date)).toBe("2027-02-10");
     expect(e!.tone).toBe("ok");
     expect(e!.famille).toBe("papiers");
     expect(e!.href).toBe("/etablissements/etab1/duerp");
   });
 
+  it("ne dérive pas d'un jour sur une année bissextile", () => {
+    const e = echeanceDuerp({
+      etablissementId: "etab1",
+      dateDerniereVersion: jour("2027-03-01"),
+      aujourdhui: AUJOURDHUI,
+    });
+    // 2028 est bissextile : + 365 jours aurait donné le 29 février.
+    expect(cleJourCivil(e!.date)).toBe("2028-03-01");
+  });
+
+  it("écrête le 29 février sur une année commune", () => {
+    const e = echeanceDuerp({
+      etablissementId: "etab1",
+      dateDerniereVersion: jour("2028-02-29"),
+      aujourdhui: AUJOURDHUI,
+    });
+    expect(cleJourCivil(e!.date)).toBe("2029-02-28");
+  });
+
   it("passe en alerte quand la version a plus d'un an", () => {
     const e = echeanceDuerp({
       etablissementId: "etab1",
-      dateDerniereVersion: new Date(2025, 3, 1),
+      dateDerniereVersion: jour("2025-04-01"),
       aujourdhui: AUJOURDHUI,
     });
     expect(e!.tone).toBe("alerte");
+  });
+
+  it("n'est pas encore en alerte le jour anniversaire", () => {
+    const e = echeanceDuerp({
+      etablissementId: "etab1",
+      dateDerniereVersion: jour("2025-08-10"),
+      aujourdhui: AUJOURDHUI,
+    });
+    expect(cleJourCivil(e!.date)).toBe("2026-08-10");
+    expect(e!.tone).toBe("ok");
   });
 
   it("ne produit rien sans version validée", () => {
@@ -85,6 +132,11 @@ describe("echeanceDuerp", () => {
         aujourdhui: AUJOURDHUI,
       }),
     ).toBeNull();
+  });
+
+  it("exprime la périodicité en mois calendaires", () => {
+    expect(MOIS_MAJ_DUERP).toBe(12);
+    expect(MOIS_ANALYSE_LEGIONELLES).toBe(12);
   });
 });
 
@@ -98,8 +150,8 @@ describe("echeancesPrestataire", () => {
     const out = echeancesPrestataire(
       {
         ...base,
-        attestationUrssafValableJusquA: new Date(2026, 6, 1), // passée
-        assuranceRcProValableJusquA: new Date(2026, 11, 31), // à venir
+        attestationUrssafValableJusquA: jour("2026-07-01"), // passée
+        assuranceRcProValableJusquA: jour("2026-12-31"), // à venir
       },
       AUJOURDHUI,
       "etab1",
@@ -129,7 +181,13 @@ describe("echeancesPrestataire", () => {
 });
 
 describe("echeancePermisFeu", () => {
-  const base = { id: "pf1", numero: 3, lieu: "Toiture", dateDebut: new Date(2026, 7, 20) };
+  const base = {
+    id: "pf1",
+    numero: 3,
+    lieu: "Toiture",
+    dateDebut: jour("2026-08-20"),
+    dateFin: jour("2026-08-21"),
+  };
 
   it("reste ok tant que la date de début n'est pas passée", () => {
     const e = echeancePermisFeu(
@@ -144,20 +202,60 @@ describe("echeancePermisFeu", () => {
 
   it("alerte si le début est passé sans que les travaux soient en cours", () => {
     const e = echeancePermisFeu(
-      { ...base, dateDebut: new Date(2026, 7, 1), statut: "brouillon" },
+      {
+        ...base,
+        dateDebut: jour("2026-08-01"),
+        dateFin: jour("2026-08-30"),
+        statut: "brouillon",
+      },
       AUJOURDHUI,
       "etab1",
     );
     expect(e.tone).toBe("alerte");
   });
 
-  it("pas d'alerte si les travaux sont en cours", () => {
+  it("pas d'alerte si les travaux sont en cours et pas encore finis", () => {
     const e = echeancePermisFeu(
-      { ...base, dateDebut: new Date(2026, 7, 1), statut: "en_cours" },
+      {
+        ...base,
+        dateDebut: jour("2026-08-01"),
+        dateFin: jour("2026-08-30"),
+        statut: "en_cours",
+      },
       AUJOURDHUI,
       "etab1",
     );
     expect(e.tone).toBe("ok");
+  });
+
+  it("alerte sur un permis échu non soldé — la pastille du board doit mener quelque part", () => {
+    const e = echeancePermisFeu(
+      {
+        ...base,
+        dateDebut: jour("2026-07-01"),
+        dateFin: jour("2026-07-02"),
+        statut: "en_cours",
+      },
+      AUJOURDHUI,
+      "etab1",
+    );
+    expect(e.tone).toBe("alerte");
+  });
+
+  it("se tait sur un permis terminé ou annulé, quelles que soient ses dates", () => {
+    for (const statut of ["termine", "annule"]) {
+      const e = echeancePermisFeu(
+        {
+          ...base,
+          dateDebut: jour("2026-07-01"),
+          dateFin: jour("2026-07-02"),
+          statut,
+        },
+        AUJOURDHUI,
+        "etab1",
+      );
+      expect(e.tone).toBe("ok");
+    }
   });
 });
 
@@ -166,7 +264,9 @@ describe("echeancePlanPrevention", () => {
     id: "pp1",
     numero: 2,
     entrepriseExterieureRaison: "BTP Ouest",
-    dateDebut: new Date(2026, 7, 1),
+    dateDebut: jour("2026-08-01"),
+    dateFin: jour("2026-08-31"),
+    statut: "valide",
   };
 
   it("alerte si l'opération a commencé sans inspection commune", () => {
@@ -180,12 +280,57 @@ describe("echeancePlanPrevention", () => {
 
   it("ok si l'inspection commune a eu lieu", () => {
     const e = echeancePlanPrevention(
-      { ...base, inspectionDate: new Date(2026, 6, 28) },
+      { ...base, inspectionDate: jour("2026-07-28") },
       AUJOURDHUI,
       "etab1",
     );
     expect(e.tone).toBe("ok");
     expect(e.famille).toBe("travaux");
+  });
+
+  it("alerte sur une opération échue non close, inspection faite ou non", () => {
+    const e = echeancePlanPrevention(
+      {
+        ...base,
+        dateDebut: jour("2026-06-01"),
+        dateFin: jour("2026-06-30"),
+        inspectionDate: jour("2026-05-28"),
+      },
+      AUJOURDHUI,
+      "etab1",
+    );
+    expect(e.tone).toBe("alerte");
+  });
+
+  it("se tait sur une opération close ou annulée", () => {
+    for (const statut of ["clos", "annule"]) {
+      const e = echeancePlanPrevention(
+        {
+          ...base,
+          statut,
+          dateDebut: jour("2026-06-01"),
+          dateFin: jour("2026-06-30"),
+          inspectionDate: null,
+        },
+        AUJOURDHUI,
+        "etab1",
+      );
+      expect(e.tone).toBe("ok");
+    }
+  });
+
+  it("n'alerte pas le dernier jour de l'opération", () => {
+    const e = echeancePlanPrevention(
+      {
+        ...base,
+        dateDebut: jour("2026-08-05"),
+        dateFin: jour("2026-08-10"),
+        inspectionDate: jour("2026-08-04"),
+      },
+      AUJOURDHUI,
+      "etab1",
+    );
+    expect(e.tone).toBe("ok");
   });
 });
 
@@ -193,12 +338,12 @@ describe("echeanceLegionelles", () => {
   it("pose la prochaine analyse un an après la dernière, en famille contrôles", () => {
     const e = echeanceLegionelles({
       etablissementId: "etab1",
-      dateDerniereAnalyse: new Date(2026, 1, 10),
+      dateDerniereAnalyse: jour("2026-02-10"),
       aujourdhui: AUJOURDHUI,
     });
     expect(e).not.toBeNull();
     expect(e!.famille).toBe("controle");
-    expect(e!.date.getFullYear()).toBe(2027);
+    expect(cleJourCivil(e!.date)).toBe("2027-02-10");
     expect(e!.tone).toBe("ok");
   });
 

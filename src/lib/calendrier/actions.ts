@@ -5,44 +5,62 @@ import type { Realisateur } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import { determineObligationsApplicables } from "@/lib/matching";
+import { REFERENTIEL_VERSION } from "@/lib/referentiels/conformite";
 import {
   genererProchainesVerifications,
-  type VerificationsPrecedentes,
+  reconcilierCalendrier,
+  type OccurrenceExistante,
+  type StatutVerificationPersiste,
 } from "./generateur";
 
 export type GenerationResult = {
+  /** Lignes de suivi nouvellement ouvertes (nouvel équipement, nouvelle
+   *  obligation applicable). */
   created: number;
+  /** Lignes existantes réalignées — identifiants inchangés. */
   updated: number;
+  /** Lignes supprimées : uniquement celles qui ne portaient ni rapport, ni
+   *  action corrective, ni date de réalisation. */
   deleted: number;
+  /** Lignes devenues non applicables mais porteuses de preuve : marquées
+   *  « Ne s'applique plus », conservées. */
+  archived: number;
+  /** Lignes que la régénération n'a pas eu à toucher. */
+  unchanged: number;
 };
 
 /**
- * (Re)génère le calendrier de vérifications d'un établissement :
- *  1. Lit l'établissement + ses équipements (avec caractéristiques).
- *  2. Passe par le moteur de matching pour déterminer les obligations
- *     applicables (sortie étape 5).
- *  3. Construit la map `verificationsPrecedentes` à partir des vérifs
- *     déjà réalisées (dateRealisee non null) — on garde la plus récente
- *     par couple (obligationId, equipementId).
- *  4. Passe au générateur (étape 6) qui produit la prochaine occurrence
- *     par couple.
- *  5. Supprime les vérifications encore non réalisées (a_planifier,
- *     planifiee, depassee) — leur régénération est la source de vérité.
- *  6. Insère les nouvelles occurrences.
+ * (Re)génère le calendrier de vérifications d'un établissement, **de façon
+ * idempotente** — cf. ADR-012.
  *
- * Les rapports de vérification (entité `RapportVerification`) pointent
- * vers `verification.dateRealisee` ; on ne supprime **jamais** une
- * vérification déjà réalisée, ce qui préserve l'historique.
+ * Déroulé :
+ *  1. Lit l'établissement et ses équipements **actifs** (un équipement
+ *     désactivé ne génère plus d'obligation, cf. `lib/equipements/actions.ts`).
+ *  2. Passe par le moteur de matching pour déterminer les obligations
+ *     applicables.
+ *  3. Demande au générateur l'ensemble des couples (obligation, équipement)
+ *     applicables — **sans** historique : les dates réelles sont recalculées
+ *     ligne par ligne par le réconciliateur, à partir de ce qu'il y a en base.
+ *  4. Réconcilie (fonction pure) : créations, mises à jour, archivages,
+ *     suppressions.
+ *  5. Applique le plan dans **une seule transaction**.
+ *
+ * Ce que cette fonction ne fait plus, et ne doit jamais refaire : supprimer
+ * les vérifications non réalisées pour les recréer. `Action.verificationId`
+ * et `RapportVerification.verificationId` sont en `onDelete: Cascade` — un
+ * `deleteMany` sur les vérifications emporte silencieusement les actions
+ * correctives du dirigeant et les rapports déposés par ses prestataires.
  */
 export async function genererCalendrier(
   etablissementId: string,
 ): Promise<GenerationResult> {
   await assertEtablissementOwnership(etablissementId);
+  const now = new Date();
 
-  // 1. Lecture établissement + équipements
+  // 1. Lecture établissement + équipements encore en service.
   const etab = await prisma.etablissement.findUnique({
     where: { id: etablissementId },
-    include: { equipements: true },
+    include: { equipements: { where: { actif: true } } },
   });
   if (!etab) throw new Error("Établissement introuvable");
 
@@ -70,61 +88,114 @@ export async function genererCalendrier(
     })),
   );
 
-  // 3. Historique — dernière vérif réalisée par couple (obligationId, equipementId)
-  const realisees = await prisma.verification.findMany({
-    where: {
-      etablissementId,
-      dateRealisee: { not: null },
-    },
-    orderBy: { dateRealisee: "desc" },
+  // 3. Ensemble des couples applicables. Historique volontairement vide :
+  //    cf. la doc de `reconcilierCalendrier`.
+  const aGenerer = genererProchainesVerifications(obligations, new Map(), {
+    now,
+  });
+
+  // 4. État en base. `_count` sert au seul arbitrage qui autorise une
+  //    suppression : une ligne sans rapport ni action ne porte aucune preuve.
+  const existantesBrutes = await prisma.verification.findMany({
+    where: { etablissementId },
     select: {
+      id: true,
       obligationId: true,
       equipementId: true,
+      libelleObligation: true,
+      periodicite: true,
+      realisateurRequis: true,
+      datePrevue: true,
       dateRealisee: true,
+      statut: true,
+      _count: { select: { rapports: true, actions: true } },
     },
   });
 
-  const prec: VerificationsPrecedentes = new Map();
-  for (const r of realisees) {
-    const cle = `${r.obligationId}::${r.equipementId}`;
-    if (!prec.has(cle) && r.dateRealisee) {
-      prec.set(cle, r.dateRealisee);
+  const existantes: OccurrenceExistante[] = existantesBrutes.map((v) => ({
+    id: v.id,
+    obligationId: v.obligationId,
+    equipementId: v.equipementId,
+    libelleObligation: v.libelleObligation,
+    periodicite: v.periodicite,
+    realisateurRequis: v.realisateurRequis,
+    datePrevue: v.datePrevue,
+    dateRealisee: v.dateRealisee,
+    statut: v.statut as StatutVerificationPersiste,
+    porteUnePreuve: v._count.rapports > 0 || v._count.actions > 0,
+  }));
+
+  const plan = reconcilierCalendrier(existantes, aGenerer, { now });
+
+  // 5. Application du plan — tout ou rien. Un calendrier à moitié régénéré
+  //    (créations passées, mises à jour perdues) afficherait des échéances
+  //    incohérentes sans que personne ne le sache.
+  await prisma.$transaction(async (tx) => {
+    if (plan.aSupprimer.length > 0) {
+      await tx.verification.deleteMany({
+        where: { id: { in: plan.aSupprimer }, etablissementId },
+      });
     }
-  }
 
-  // 4. Génération
-  const aGenerer = genererProchainesVerifications(obligations, prec);
+    if (plan.aCreer.length > 0) {
+      // `skipDuplicates` : deux régénérations concurrentes (déclaration
+      // d'équipement dans un onglet, dépôt de rapport dans l'autre) peuvent
+      // calculer la même création. La contrainte d'unicité tranche, sans
+      // faire échouer la transaction.
+      await tx.verification.createMany({
+        data: plan.aCreer.map((v) => ({
+          etablissementId,
+          equipementId: v.equipementId,
+          obligationId: v.obligationId,
+          libelleObligation: v.libelleObligation,
+          periodicite: v.periodicite,
+          realisateurRequis: v.realisateurRequis as Realisateur[],
+          datePrevue: v.datePrevue,
+          statut: v.statut,
+        })),
+        skipDuplicates: true,
+      });
+    }
 
-  // 5. Suppression des occurrences non réalisées (statuts planifiables)
-  const suppr = await prisma.verification.deleteMany({
-    where: {
-      etablissementId,
-      statut: { in: ["a_planifier", "planifiee", "depassee"] },
-    },
-  });
+    for (const m of plan.aMettreAJour) {
+      await tx.verification.update({
+        where: { id: m.id },
+        data: {
+          libelleObligation: m.libelleObligation,
+          periodicite: m.periodicite,
+          realisateurRequis: m.realisateurRequis as Realisateur[],
+          datePrevue: m.datePrevue,
+          dateRealisee: m.dateRealisee,
+          statut: m.statut,
+        },
+      });
+    }
 
-  // 6. Insertion
-  if (aGenerer.length === 0) {
-    revalidatePath(`/etablissements/${etablissementId}/calendrier`);
-    revalidatePath(`/etablissements/${etablissementId}`);
-    return { created: 0, updated: 0, deleted: suppr.count };
-  }
+    for (const a of plan.aArchiver) {
+      await tx.verification.update({
+        where: { id: a.id },
+        data: { libelleObligation: a.libelleObligation },
+      });
+    }
 
-  const result = await prisma.verification.createMany({
-    data: aGenerer.map((v) => ({
-      etablissementId,
-      equipementId: v.equipementId,
-      obligationId: v.obligationId,
-      libelleObligation: v.libelleObligation,
-      periodicite: v.periodicite,
-      realisateurRequis: v.realisateurRequis as Realisateur[],
-      datePrevue: v.datePrevue,
-      statut: v.statut,
-    })),
+    // Le calendrier est désormais aligné sur cette version du référentiel.
+    // Écrit **dans** la transaction : si le plan échoue, l'établissement reste
+    // marqué comme désynchronisé et sera repris au prochain affichage, plutôt
+    // que d'être considéré à tort comme à jour.
+    await tx.etablissement.update({
+      where: { id: etablissementId },
+      data: { referentielVersionCalendrier: REFERENTIEL_VERSION },
+    });
   });
 
   revalidatePath(`/etablissements/${etablissementId}/calendrier`);
   revalidatePath(`/etablissements/${etablissementId}`);
 
-  return { created: result.count, updated: 0, deleted: suppr.count };
+  return {
+    created: plan.aCreer.length,
+    updated: plan.aMettreAJour.length,
+    deleted: plan.aSupprimer.length,
+    archived: plan.aArchiver.length,
+    unchanged: plan.inchangees,
+  };
 }

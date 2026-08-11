@@ -4,7 +4,12 @@ import type { Obligation } from "@/lib/referentiels/conformite/types";
 import type { EquipementMatching } from "@/lib/matching/types";
 import {
   comparerParUrgence,
+  estMarqueeNonApplicable,
   genererProchainesVerifications,
+  libelleSansMarqueur,
+  MARQUEUR_NON_APPLICABLE,
+  reconcilierCalendrier,
+  type OccurrenceExistante,
   type VerificationsPrecedentes,
 } from "./generateur";
 
@@ -262,5 +267,404 @@ describe("générateur calendrier — déterminisme", () => {
       now,
     });
     expect(a).toEqual(b);
+  });
+});
+
+// ============================================================================
+// Réconciliation idempotente — ADR-012
+//
+// Ces tests décrivent les pertes de données silencieuses que le motif
+// « delete puis create » provoquait, et qui ne doivent plus jamais se produire.
+// ============================================================================
+
+const NOW = new Date("2026-08-11T09:00:00Z");
+
+/** Une ligne de suivi en base, avec des valeurs déjà alignées sur le
+ *  référentiel — de sorte qu'une régénération n'ait rien à changer. */
+function ligneExistante(
+  over: Partial<OccurrenceExistante> &
+    Pick<OccurrenceExistante, "id" | "obligationId" | "equipementId">,
+): OccurrenceExistante {
+  return {
+    libelleObligation: `Obligation ${over.obligationId}`,
+    periodicite: "annuelle",
+    realisateurRequis: ["personne_qualifiee"],
+    datePrevue: new Date("2026-12-01T00:00:00Z"),
+    dateRealisee: null,
+    statut: "a_planifier",
+    porteUnePreuve: false,
+    ...over,
+  };
+}
+
+describe("réconciliation — survie des actions correctives", () => {
+  // Scénario du chantier : le dirigeant crée une action corrective sur sa
+  // vérification électrique dépassée (responsable, échéance), puis déclare un
+  // extincteur le lendemain. La déclaration régénère le calendrier.
+  it("ne supprime pas une vérification dépassée porteuse d'une action", () => {
+    const o = fakeObligation({ id: "elec", periodicite: "annuelle" });
+    const eq = fakeEquipement("eq-elec");
+    const aGenerer = genererProchainesVerifications(
+      [applique(o, [eq])],
+      new Map(),
+      { now: NOW },
+    );
+
+    const existante = ligneExistante({
+      id: "v-elec",
+      obligationId: "elec",
+      equipementId: "eq-elec",
+      libelleObligation: "Obligation elec",
+      datePrevue: new Date("2026-02-01T00:00:00Z"), // passée
+      statut: "depassee",
+      porteUnePreuve: true, // une action corrective y est rattachée
+    });
+
+    const plan = reconcilierCalendrier([existante], aGenerer, { now: NOW });
+
+    expect(plan.aSupprimer).toEqual([]);
+    expect(plan.aCreer).toEqual([]);
+    expect(plan.aArchiver).toEqual([]);
+    // La ligne est reconnue applicable et strictement inchangée : même id,
+    // donc l'action rattachée survit.
+    expect(plan.inchangees).toBe(1);
+  });
+
+  it("ne repousse jamais l'échéance d'un cycle encore ouvert", () => {
+    const o = fakeObligation({ id: "elec", periodicite: "annuelle" });
+    const eq = fakeEquipement("eq-elec");
+    const aGenerer = genererProchainesVerifications(
+      [applique(o, [eq])],
+      new Map(),
+      { now: NOW },
+    );
+    const datePrevue = new Date("2026-02-01T00:00:00Z");
+
+    const plan = reconcilierCalendrier(
+      [
+        ligneExistante({
+          id: "v-elec",
+          obligationId: "elec",
+          equipementId: "eq-elec",
+          datePrevue,
+          statut: "a_planifier", // statut à requalifier : la date est passée
+        }),
+      ],
+      aGenerer,
+      { now: NOW },
+    );
+
+    expect(plan.aMettreAJour).toHaveLength(1);
+    expect(plan.aMettreAJour[0].datePrevue).toEqual(datePrevue);
+    expect(plan.aMettreAJour[0].statut).toBe("depassee");
+  });
+});
+
+describe("réconciliation — idempotence et stabilité des identifiants", () => {
+  it("deux régénérations successives produisent le même état", () => {
+    const o1 = fakeObligation({ id: "o1", periodicite: "annuelle" });
+    const o2 = fakeObligation({ id: "o2", periodicite: "trimestrielle" });
+    const eq = fakeEquipement("eq-1");
+    const aGenerer = genererProchainesVerifications(
+      [applique(o1, [eq]), applique(o2, [eq])],
+      new Map(),
+      { now: NOW },
+    );
+
+    // 1er passage : calendrier vide → deux créations.
+    const plan1 = reconcilierCalendrier([], aGenerer, { now: NOW });
+    expect(plan1.aCreer).toHaveLength(2);
+    expect(plan1.aMettreAJour).toEqual([]);
+    expect(plan1.aSupprimer).toEqual([]);
+
+    // Les créations sont matérialisées avec des identifiants stables.
+    const enBase: OccurrenceExistante[] = plan1.aCreer.map((v, i) => ({
+      id: `v-${i}`,
+      obligationId: v.obligationId,
+      equipementId: v.equipementId,
+      libelleObligation: v.libelleObligation,
+      periodicite: v.periodicite,
+      realisateurRequis: v.realisateurRequis,
+      datePrevue: v.datePrevue,
+      dateRealisee: null,
+      statut: v.statut,
+      porteUnePreuve: false,
+    }));
+
+    // 2e passage, à horloge identique : plus rien à faire.
+    const plan2 = reconcilierCalendrier(enBase, aGenerer, { now: NOW });
+    expect(plan2.aCreer).toEqual([]);
+    expect(plan2.aMettreAJour).toEqual([]);
+    expect(plan2.aSupprimer).toEqual([]);
+    expect(plan2.aArchiver).toEqual([]);
+    expect(plan2.inchangees).toBe(2);
+
+    // 3e passage : toujours rien — l'idempotence n'est pas un coup de chance.
+    const plan3 = reconcilierCalendrier(enBase, aGenerer, { now: NOW });
+    expect(plan3).toEqual(plan2);
+  });
+
+  it("une mise à jour ne change jamais l'identifiant de la ligne", () => {
+    const o = fakeObligation({
+      id: "o1",
+      periodicite: "biennale",
+      libelle: "Libellé corrigé au référentiel",
+    });
+    const eq = fakeEquipement("eq-1");
+    const aGenerer = genererProchainesVerifications(
+      [applique(o, [eq])],
+      new Map(),
+      { now: NOW },
+    );
+
+    const plan = reconcilierCalendrier(
+      [
+        ligneExistante({
+          id: "v-stable",
+          obligationId: "o1",
+          equipementId: "eq-1",
+          libelleObligation: "Ancien libellé",
+          periodicite: "annuelle",
+        }),
+      ],
+      aGenerer,
+      { now: NOW },
+    );
+
+    expect(plan.aSupprimer).toEqual([]);
+    expect(plan.aMettreAJour).toHaveLength(1);
+    expect(plan.aMettreAJour[0].id).toBe("v-stable");
+    expect(plan.aMettreAJour[0].libelleObligation).toBe(
+      "Libellé corrigé au référentiel",
+    );
+    expect(plan.aMettreAJour[0].periodicite).toBe("biennale");
+  });
+});
+
+describe("réconciliation — cycles de vérification", () => {
+  it("un contrôle encore valide garde son résultat et reçoit sa prochaine échéance", () => {
+    const o = fakeObligation({ id: "o1", periodicite: "annuelle" });
+    const eq = fakeEquipement("eq-1");
+    const aGenerer = genererProchainesVerifications(
+      [applique(o, [eq])],
+      new Map(),
+      { now: NOW },
+    );
+    const dateRealisee = new Date("2026-03-01T00:00:00Z");
+
+    const plan = reconcilierCalendrier(
+      [
+        ligneExistante({
+          id: "v-1",
+          obligationId: "o1",
+          equipementId: "eq-1",
+          dateRealisee,
+          statut: "realisee_conforme",
+          datePrevue: new Date("2026-03-01T00:00:00Z"),
+          porteUnePreuve: true,
+        }),
+      ],
+      aGenerer,
+      { now: NOW },
+    );
+
+    expect(plan.aMettreAJour).toHaveLength(1);
+    const maj = plan.aMettreAJour[0];
+    expect(maj.statut).toBe("realisee_conforme");
+    expect(maj.dateRealisee).toEqual(dateRealisee);
+    // dateRealisee + 365 j
+    expect(maj.datePrevue.getUTCFullYear()).toBe(2027);
+  });
+
+  it("un contrôle dont la période est écoulée rouvre un cycle « dépassée »", () => {
+    const o = fakeObligation({ id: "o1", periodicite: "annuelle" });
+    const eq = fakeEquipement("eq-1");
+    const aGenerer = genererProchainesVerifications(
+      [applique(o, [eq])],
+      new Map(),
+      { now: NOW },
+    );
+
+    const plan = reconcilierCalendrier(
+      [
+        ligneExistante({
+          id: "v-1",
+          obligationId: "o1",
+          equipementId: "eq-1",
+          dateRealisee: new Date("2024-01-01T00:00:00Z"),
+          statut: "realisee_conforme",
+          datePrevue: new Date("2024-01-01T00:00:00Z"),
+          porteUnePreuve: true,
+        }),
+      ],
+      aGenerer,
+      { now: NOW },
+    );
+
+    expect(plan.aMettreAJour).toHaveLength(1);
+    const maj = plan.aMettreAJour[0];
+    // L'outil cesse d'afficher « Conforme » sur un contrôle annuel vieux de
+    // deux ans — sans détruire les rapports, qui restent sur la même ligne.
+    expect(maj.statut).toBe("depassee");
+    expect(maj.dateRealisee).toBeNull();
+    expect(maj.id).toBe("v-1");
+  });
+
+  it("une obligation one-shot déjà réalisée n'est ni archivée ni replanifiée", () => {
+    const o = fakeObligation({
+      id: "mes",
+      periodicite: "mise_en_service_uniquement",
+    });
+    const eq = fakeEquipement("eq-1");
+    // L'historique n'est volontairement pas passé au générateur : sans cela
+    // l'occurrence disparaîtrait de `aGenerer` et serait prise pour une
+    // obligation retirée du référentiel.
+    const aGenerer = genererProchainesVerifications(
+      [applique(o, [eq])],
+      new Map(),
+      { now: NOW },
+    );
+    const datePrevue = new Date("2025-05-01T00:00:00Z");
+
+    const plan = reconcilierCalendrier(
+      [
+        ligneExistante({
+          id: "v-mes",
+          obligationId: "mes",
+          equipementId: "eq-1",
+          libelleObligation: "Obligation mes",
+          periodicite: "mise_en_service_uniquement",
+          datePrevue,
+          dateRealisee: new Date("2025-05-01T00:00:00Z"),
+          statut: "realisee_conforme",
+          porteUnePreuve: true,
+        }),
+      ],
+      aGenerer,
+      { now: NOW },
+    );
+
+    expect(plan.aArchiver).toEqual([]);
+    expect(plan.aSupprimer).toEqual([]);
+    expect(plan.aMettreAJour).toEqual([]);
+    expect(plan.inchangees).toBe(1);
+  });
+});
+
+describe("réconciliation — obligations devenues non applicables", () => {
+  it("supprime une ligne sans aucune preuve", () => {
+    const plan = reconcilierCalendrier(
+      [
+        ligneExistante({
+          id: "v-orphelin",
+          obligationId: "retiree",
+          equipementId: "eq-supprime",
+        }),
+      ],
+      [],
+      { now: NOW },
+    );
+
+    expect(plan.aSupprimer).toEqual(["v-orphelin"]);
+    expect(plan.aArchiver).toEqual([]);
+  });
+
+  it("archive au lieu de supprimer dès qu'une preuve existe", () => {
+    const plan = reconcilierCalendrier(
+      [
+        ligneExistante({
+          id: "v-preuve",
+          obligationId: "retiree",
+          equipementId: "eq-desactive",
+          libelleObligation: "Vérification annuelle de l'installation",
+          porteUnePreuve: true,
+        }),
+      ],
+      [],
+      { now: NOW },
+    );
+
+    expect(plan.aSupprimer).toEqual([]);
+    expect(plan.aArchiver).toEqual([
+      {
+        id: "v-preuve",
+        libelleObligation: `${MARQUEUR_NON_APPLICABLE}Vérification annuelle de l'installation`,
+      },
+    ]);
+  });
+
+  it("une date de réalisation suffit à interdire la suppression", () => {
+    const plan = reconcilierCalendrier(
+      [
+        ligneExistante({
+          id: "v-realisee",
+          obligationId: "retiree",
+          equipementId: "eq-1",
+          dateRealisee: new Date("2025-01-01T00:00:00Z"),
+          statut: "realisee_conforme",
+          porteUnePreuve: false, // rapport retiré du registre depuis
+        }),
+      ],
+      [],
+      { now: NOW },
+    );
+
+    expect(plan.aSupprimer).toEqual([]);
+    expect(plan.aArchiver).toHaveLength(1);
+  });
+
+  it("n'archive pas deux fois la même ligne (idempotence de l'archivage)", () => {
+    const dejaMarquee = ligneExistante({
+      id: "v-preuve",
+      obligationId: "retiree",
+      equipementId: "eq-1",
+      libelleObligation: `${MARQUEUR_NON_APPLICABLE}Vérification annuelle`,
+      porteUnePreuve: true,
+    });
+
+    const plan = reconcilierCalendrier([dejaMarquee], [], { now: NOW });
+    expect(plan.aArchiver).toEqual([]);
+    expect(plan.aSupprimer).toEqual([]);
+    expect(plan.inchangees).toBe(1);
+  });
+
+  it("retire le marqueur si l'obligation redevient applicable", () => {
+    const o = fakeObligation({ id: "o1", periodicite: "annuelle" });
+    const eq = fakeEquipement("eq-1");
+    const aGenerer = genererProchainesVerifications(
+      [applique(o, [eq])],
+      new Map(),
+      { now: NOW },
+    );
+
+    const plan = reconcilierCalendrier(
+      [
+        ligneExistante({
+          id: "v-1",
+          obligationId: "o1",
+          equipementId: "eq-1",
+          libelleObligation: `${MARQUEUR_NON_APPLICABLE}Obligation o1`,
+          porteUnePreuve: true,
+        }),
+      ],
+      aGenerer,
+      { now: NOW },
+    );
+
+    expect(plan.aMettreAJour).toHaveLength(1);
+    expect(
+      estMarqueeNonApplicable(plan.aMettreAJour[0].libelleObligation),
+    ).toBe(false);
+  });
+});
+
+describe("marqueur de non-applicabilité", () => {
+  it("est idempotent et réversible", () => {
+    const brut = "Vérification quinquennale";
+    const marque = `${MARQUEUR_NON_APPLICABLE}${brut}`;
+    expect(estMarqueeNonApplicable(brut)).toBe(false);
+    expect(estMarqueeNonApplicable(marque)).toBe(true);
+    expect(libelleSansMarqueur(marque)).toBe(brut);
+    expect(libelleSansMarqueur(brut)).toBe(brut);
   });
 });

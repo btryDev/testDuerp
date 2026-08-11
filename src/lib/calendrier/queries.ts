@@ -1,28 +1,100 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
-import { obligationParId } from "@/lib/referentiels/conformite";
+import {
+  REFERENTIEL_VERSION,
+  obligationParId,
+} from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
+import { JOURS_APRES } from "@/lib/dashboard/frise";
+import { ajouterJours, cleJourCivil, debutDuJour } from "@/lib/dates";
+// Module **pur** : c'est lui qui détient la partition en quatre ensembles
+// disjoints (retard / à planifier / à venir / réalisées 12 mois), déjà
+// utilisée par les documents générés. Le compteur du calendrier passe par
+// lui pour que l'en-tête de la page, le tableau de bord et le dossier de
+// conformité annoncent nécessairement les mêmes nombres.
+import { repartirVerifications } from "@/lib/pdf/etat-verifications";
+
+/**
+ * Lectures du calendrier des vérifications périodiques.
+ *
+ * Deux lectures cohabitent sur la page : la **grille** (quel jour) et la
+ * **liste mensuelle** (dans quel ordre). Elles doivent décrire le même
+ * ensemble — c'est la promesse écrite en toutes lettres sur la page
+ * (« mêmes événements, deux lectures »). Ce fichier fournit donc, à côté
+ * de la lecture documentaire complète (`listerVerifications`, dont les
+ * PDF ont besoin avec tout l'historique), une lecture calendaire
+ * (`listerVerificationsCalendrier`) alignée sur la fenêtre et les
+ * exclusions du flux qui alimente la grille.
+ *
+ * Les comparaisons de dates passent toutes par `@/lib/dates` (ADR-011) :
+ * une échéance datée d'aujourd'hui n'est jamais en retard.
+ */
 
 export type FiltresCalendrier = {
   domaine?: DomaineObligation;
   /**
-   * Filtre sur "retard/urgent" : statut `a_planifier` ou `depassee`.
-   * Quand true, on masque les vérifications planifiées et les réalisées.
+   * Ne garder que ce qui est réellement **en retard** : statut `depassee`,
+   * ou `planifiee` / `a_planifier` dont la `datePrevue` est passée, sans
+   * date de réalisation. Même définition que `estVerificationEnRetard`
+   * (ADR-011).
+   *
+   * L'ancien filtre retenait `a_planifier` **quelle que soit sa date** :
+   * une occurrence générée le matin même pour l'an prochain apparaissait
+   * dans « urgents », pendant qu'une occurrence planifiée et dépassée en
+   * sortait. C'était l'inverse de ce que le mot annonce.
    */
   urgentsSeulement?: boolean;
+  /**
+   * Écarte l'historique déjà réalisé. Faux par défaut : les lectures
+   * documentaires (registre de sécurité, dossier de conformité) ont
+   * besoin des occurrences réalisées.
+   */
+  masquerRealisees?: boolean;
+  /**
+   * Borne haute, en jours civils à partir d'aujourd'hui. Absente par
+   * défaut — même raison.
+   */
+  joursHorizon?: number;
 };
+
+/** Statuts marquant une occurrence comme réalisée (le rapport existe). */
+const STATUTS_REALISES = [
+  "realisee_conforme",
+  "realisee_observations",
+  "realisee_ecart_majeur",
+] as const;
 
 export async function listerVerifications(
   etablissementId: string,
   filtres: FiltresCalendrier = {},
 ) {
   const user = await requireUser();
+  // L'horloge est capturée **au bord**, une seule fois, et n'est plus
+  // relue au fil des comparaisons (ADR-011).
+  const now = new Date();
+  const debut = debutDuJour(now);
+
   const verifs = await prisma.verification.findMany({
     where: {
       etablissementId,
       etablissement: { entreprise: { userId: user.id } },
       ...(filtres.urgentsSeulement
-        ? { statut: { in: ["a_planifier", "depassee"] } }
+        ? {
+            dateRealisee: null,
+            OR: [
+              { statut: "depassee" as const },
+              {
+                statut: { in: ["planifiee" as const, "a_planifier" as const] },
+                datePrevue: { lt: debut },
+              },
+            ],
+          }
+        : {}),
+      ...(filtres.masquerRealisees
+        ? { dateRealisee: null, statut: { notIn: [...STATUTS_REALISES] } }
+        : {}),
+      ...(filtres.joursHorizon !== undefined
+        ? { datePrevue: { lte: ajouterJours(debut, filtres.joursHorizon) } }
         : {}),
     },
     include: { equipement: true },
@@ -37,6 +109,33 @@ export async function listerVerifications(
     );
   }
   return verifs;
+}
+
+/**
+ * La liste mensuelle du calendrier — **même ensemble que la grille**.
+ *
+ * La grille est alimentée par `listerEvenementsFenetre`, qui écarte les
+ * occurrences réalisées (`dateRealisee: null`) et s'arrête à
+ * `JOURS_APRES`. La liste, elle, n'écartait rien : les compteurs par mois
+ * incluaient tout l'historique réalisé que la grille ne montrait pas, et
+ * la frise s'arrêtait deux ans avant la liste.
+ *
+ * **Une différence subsiste, assumée** : la grille écarte aussi les
+ * occurrences `a_planifier` (ton `warn`), dont la `datePrevue` est une
+ * date de génération et non une date convenue — les poser sur un jour
+ * mentirait ; elle les annonce à part, par son compteur « sans date ». La
+ * liste les garde, parce qu'elle affiche un badge de statut à côté de
+ * chaque ligne : « à planifier » y est lisible, pas déguisé en rendez-vous.
+ */
+export async function listerVerificationsCalendrier(
+  etablissementId: string,
+  filtres: Omit<FiltresCalendrier, "masquerRealisees" | "joursHorizon"> = {},
+) {
+  return listerVerifications(etablissementId, {
+    ...filtres,
+    masquerRealisees: true,
+    joursHorizon: JOURS_APRES,
+  });
 }
 
 export type VerificationListee = Awaited<
@@ -66,70 +165,52 @@ export async function getVerification(id: string) {
 }
 
 /**
- * Agrégats pour le tableau de bord / vue synthétique :
- *  - nombre en retard (a_planifier + depassee)
- *  - nombre à venir sous 30 jours (planifiee avec datePrevue ≤ now+30j)
- *  - nombre total réalisées sur les 12 derniers mois
+ * Agrégats pour l'en-tête du calendrier et le tableau de bord :
+ *  - `enRetard`     : échéance passée sans réalisation
+ *  - `aPlanifier`   : sans date convenue, mais pas encore en retard
+ *  - `aVenir`       : planifiées dans l'horizon proche (30 jours)
+ *  - `realisees12m` : réalisées sur la fenêtre d'historique
+ *
+ * Les quatre ensembles sont **disjoints** : leur somme est le
+ * dénominateur du score de conformité, sans double compte. La partition
+ * n'est pas refaite ici — elle est déléguée à `repartirVerifications`,
+ * qui sert aussi les documents générés. Avant, chaque écran écrivait sa
+ * propre requête : `a_planifier` était compté en entier d'un côté (y
+ * compris les occurrences déjà dépassées, donc en double avec les
+ * retards) et ignoré de l'autre, et les bornes de fenêtre étaient prises
+ * à l'heure courante plutôt qu'au début du jour.
+ *
+ * Une seule lecture, trois colonnes : moins coûteux que les quatre
+ * `count` qu'elle remplace, et exact par construction.
  */
-export async function compterEtatCalendrier(etablissementId: string) {
+export async function compterEtatCalendrier(
+  etablissementId: string,
+  now: Date = new Date(),
+) {
   const user = await requireUser();
-  const scope = {
-    etablissementId,
-    etablissement: { entreprise: { userId: user.id } },
-  } as const;
-  const now = new Date();
-  // « En retard » se juge au jour calendaire : une échéance datée
-  // d'aujourd'hui n'est pas dépassée — même règle que `tonPourDate`.
-  const debutDuJour = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-  );
-  const dans30j = new Date(now.getTime());
-  dans30j.setDate(dans30j.getDate() + 30);
-  const ilYaUnAn = new Date(now.getTime());
-  ilYaUnAn.setFullYear(ilYaUnAn.getFullYear() - 1);
+  const verifs = await prisma.verification.findMany({
+    where: {
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
+    select: { statut: true, datePrevue: true, dateRealisee: true },
+  });
 
-  // Sémantique distinguée :
-  //  - `enRetard`    : statut `depassee`, ou `planifiee` dont la datePrevue
-  //    est déjà passée sans dateRealisee — situation réelle de non-conformité
-  //  - `aPlanifier`  : statut `a_planifier` — nouvelle occurrence générée à
-  //    la création d'un équipement, l'utilisateur n'a pas encore fixé de
-  //    date. Non pénalisant : c'est un simple « à faire ».
-  //  - `aVenir`      : `planifiee` dans les 30 prochains jours
-  const [enRetard, aPlanifier, aVenir, realisees12m] = await Promise.all([
-    prisma.verification.count({
-      where: {
-        ...scope,
-        OR: [
-          { statut: "depassee" },
-          { statut: "planifiee", datePrevue: { lt: debutDuJour } },
-        ],
-      },
-    }),
-    prisma.verification.count({
-      where: { ...scope, statut: "a_planifier" },
-    }),
-    prisma.verification.count({
-      where: {
-        ...scope,
-        statut: "planifiee",
-        // Borne basse au début du jour : sans elle, une vérification
-        // datée d'aujourd'hui tomberait dans un trou (ni en retard,
-        // ni à venir).
-        datePrevue: { gte: debutDuJour, lte: dans30j },
-      },
-    }),
-    prisma.verification.count({
-      where: { ...scope, dateRealisee: { gte: ilYaUnAn } },
-    }),
-  ]);
-
-  return { enRetard, aPlanifier, aVenir, realisees12m };
+  const etat = repartirVerifications(verifs, now);
+  return {
+    enRetard: etat.enRetard.length,
+    aPlanifier: etat.aPlanifier.length,
+    aVenir: etat.aVenir.length,
+    realisees12m: etat.realisees12m.length,
+  };
 }
 
 /**
  * Regroupement par mois (pour l'affichage calendrier).
+ *
+ * La clé est calculée sur le **jour civil de Paris** : sur une date
+ * stockée à minuit UTC, `getMonth()` du serveur tombe juste par hasard,
+ * mais un horodatage de fin de soirée bascule d'un mois le 31.
  */
 export function grouperParMois(
   verifs: VerificationListee[],
@@ -137,11 +218,34 @@ export function grouperParMois(
   const out = new Map<string, VerificationListee[]>();
   for (const v of verifs) {
     // Clé tri-friendly : YYYY-MM
-    const d = v.datePrevue;
-    const cle = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const cle = cleJourCivil(v.datePrevue).slice(0, 7);
     const bucket = out.get(cle) ?? [];
     bucket.push(v);
     out.set(cle, bucket);
   }
   return out;
+}
+
+/**
+ * Le calendrier de cet établissement a-t-il été généré avec une version
+ * antérieure du référentiel de conformité ?
+ *
+ * `null` en base signifie « jamais réconcilié depuis l'introduction du
+ * mécanisme » : ces établissements sont rattrapés au premier affichage.
+ *
+ * Le référentiel vit en TypeScript versionné (ADR-003), mais ses effets sont
+ * figés en base à la génération. Sans cette comparaison, une correction du
+ * référentiel n'atteignait les calendriers existants qu'au hasard d'une
+ * mutation d'équipement ou d'un dépôt de rapport.
+ */
+export async function calendrierDesynchronise(
+  etablissementId: string,
+): Promise<boolean> {
+  const user = await requireUser();
+  const etab = await prisma.etablissement.findFirst({
+    where: { id: etablissementId, entreprise: { userId: user.id } },
+    select: { referentielVersionCalendrier: true },
+  });
+  if (!etab) return false;
+  return etab.referentielVersionCalendrier !== REFERENTIEL_VERSION;
 }

@@ -1,0 +1,135 @@
+import { describe, expect, it } from "vitest";
+import { fusionnerEvenements } from "./evenements";
+import type { EcheanceCalendrier } from "./echeances";
+import type { EvenementFenetre } from "@/lib/dashboard/queries";
+
+const ETAB = "etab-1";
+
+/** Date civile telle que Prisma la rend : minuit UTC (ADR-011). Écrire
+ *  `new Date(2026, 6, j)` ferait dépendre le tri et les regroupements du
+ *  fuseau du processus de test. */
+const jour = (j: number) =>
+  new Date(`2026-07-${String(j).padStart(2, "0")}T00:00:00.000Z`);
+
+function verif(
+  id: string,
+  j: number,
+  tone: EvenementFenetre["tone"] = "ok",
+): EvenementFenetre {
+  return {
+    id,
+    libelle: `Vérification ${id}`,
+    date: jour(j),
+    tone,
+    equipement: "Tableau électrique",
+  };
+}
+
+function autre(
+  id: string,
+  j: number,
+  famille: EcheanceCalendrier["famille"],
+  tone: EcheanceCalendrier["tone"] = "alerte",
+): EcheanceCalendrier {
+  return {
+    id,
+    famille,
+    libelle: `Échéance ${id}`,
+    origine: "Origine lisible",
+    date: jour(j),
+    tone,
+    href: `/etablissements/${ETAB}/actions/${id}`,
+  };
+}
+
+const fusion = (
+  verifications: EvenementFenetre[],
+  autres: EcheanceCalendrier[],
+  filtres = {},
+) =>
+  fusionnerEvenements({
+    verifications,
+    autres,
+    etablissementId: ETAB,
+    filtres,
+  });
+
+describe("fusionnerEvenements — assemblage", () => {
+  it("réunit vérifications et registre dans un seul flux trié par date", () => {
+    const out = fusion(
+      [verif("v1", 20)],
+      [autre("action-a1", 5, "travaux"), autre("duerp-maj", 28, "papiers")],
+    );
+    expect(out.map((e) => e.id)).toEqual(["action-a1", "v1", "duerp-maj"]);
+  });
+
+  it("donne aux vérifications la famille contrôle et leur porte de sortie", () => {
+    const [e] = fusion([verif("v1", 20)], []);
+    expect(e.famille).toBe("controle");
+    expect(e.href).toBe(`/etablissements/${ETAB}/verifications/v1`);
+  });
+
+  it("reporte la porte et la famille du registre, et son origine en sous-titre", () => {
+    const [e] = fusion([], [autre("action-a1", 5, "travaux")]);
+    expect(e.famille).toBe("travaux");
+    expect(e.href).toBe(`/etablissements/${ETAB}/actions/action-a1`);
+    // La grille lit `equipement` sous le libellé : pour une échéance du
+    // registre, c'est l'origine qui s'y affiche.
+    expect(e.equipement).toBe("Origine lisible");
+  });
+
+  it("écarte les vérifications à planifier — leur date n'est pas choisie", () => {
+    const out = fusion([verif("v1", 20, "warn"), verif("v2", 22)], []);
+    expect(out.map((e) => e.id)).toEqual(["v2"]);
+  });
+
+  it("garde les retards du registre : c'est ce que le board taisait", () => {
+    const out = fusion(
+      [],
+      [
+        autre("permis-feu-p1", 3, "travaux", "alerte"),
+        autre("prestataire-x-urssaf", 9, "papiers", "alerte"),
+      ],
+    );
+    expect(out).toHaveLength(2);
+    expect(out.every((e) => e.tone === "alerte")).toBe(true);
+  });
+});
+
+describe("fusionnerEvenements — filtres", () => {
+  it("une famille choisie écarte toutes les autres", () => {
+    const out = fusion(
+      [verif("v1", 20)],
+      [autre("action-a1", 5, "travaux"), autre("duerp-maj", 28, "papiers")],
+      { famille: "papiers" },
+    );
+    expect(out.map((e) => e.id)).toEqual(["duerp-maj"]);
+  });
+
+  it("la famille contrôle garde les vérifications et les contrôles du registre", () => {
+    const out = fusion(
+      [verif("v1", 20)],
+      [autre("legionelles-analyse", 6, "controle"), autre("a1", 7, "travaux")],
+      { famille: "controle" },
+    );
+    expect(out.map((e) => e.id)).toEqual(["legionelles-analyse", "v1"]);
+  });
+
+  it("un domaine ne qualifie que les contrôles : le registre sort", () => {
+    // Le filtrage par domaine des vérifications est fait en amont par la
+    // requête — ici il ne reste qu'à écarter les autres familles.
+    const out = fusion([verif("v1", 20)], [autre("action-a1", 5, "travaux")], {
+      domaine: "electricite",
+    });
+    expect(out.map((e) => e.id)).toEqual(["v1"]);
+  });
+
+  it("l'urgence ne garde que le dépassé, registre compris", () => {
+    const out = fusion(
+      [verif("v1", 20, "alerte")],
+      [autre("a1", 5, "travaux", "ok"), autre("a2", 6, "travaux", "alerte")],
+      { urgentsSeulement: true },
+    );
+    expect(out.map((e) => e.id)).toEqual(["a2", "v1"]);
+  });
+});

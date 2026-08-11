@@ -3,10 +3,14 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { StatutVerification } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import { cleRapport, getStorage } from "@/lib/storage";
 import { genererCalendrier } from "@/lib/calendrier/actions";
+import { estEnRetard } from "@/lib/dates/retard";
 import {
+  estResultatRealise,
   rapportMetadataSchema,
   STATUT_DEPUIS_RESULTAT,
 } from "./schema";
@@ -26,12 +30,15 @@ export type UploadRapportState =
  *
  * Flux :
  *  1. Valide métadonnées (Zod) et fichier (MIME/taille).
- *  2. Crée la ligne `RapportVerification` (id = cuid).
- *  3. Écrit le fichier via l'abstraction `FileStorage`.
- *  4. Met à jour la `Verification` parente (dateRealisee + statut selon
- *     le résultat saisi).
- *  5. Régénère le calendrier pour recalculer la prochaine échéance de
- *     cette vérification (cf. règle étape 6).
+ *  2. Écrit le fichier via l'abstraction `FileStorage`.
+ *  3. Crée la ligne `RapportVerification` et met à jour la `Verification`
+ *     parente dans une **transaction** ; si la base refuse, le fichier tout
+ *     juste écrit est nettoyé (best-effort).
+ *  4. Régénère le calendrier pour recalculer la prochaine échéance.
+ *
+ * Le résultat « non vérifiable » suit un chemin distinct — cf. le commentaire
+ * de `STATUT_DEPUIS_RESULTAT` : le contrôle n'a pas eu lieu, donc ni
+ * `dateRealisee`, ni report de l'échéance.
  */
 export async function uploadRapport(
   verificationId: string,
@@ -71,14 +78,22 @@ export async function uploadRapport(
     };
   }
 
-  // 3. Contexte vérification
+  // 3. Contexte vérification. `datePrevue` et `statut` sont lus ici car le
+  //    cas « non vérifiable » en dépend : on n'a pas le droit d'inventer une
+  //    nouvelle échéance, on garde celle qui court.
   const verif = await prisma.verification.findUnique({
     where: { id: verificationId },
-    select: { id: true, etablissementId: true },
+    select: {
+      id: true,
+      etablissementId: true,
+      datePrevue: true,
+      dateRealisee: true,
+    },
   });
   if (!verif) {
     return { status: "error", message: "Vérification introuvable" };
   }
+  await assertEtablissementOwnership(verif.etablissementId);
 
   // 4. Lire le fichier en buffer + stocker
   const buffer = Buffer.from(await fichier.arrayBuffer());
@@ -88,7 +103,32 @@ export async function uploadRapport(
   const storage = getStorage();
   await storage.put(cle, buffer, val.mime);
 
-  // 5. Persistance DB (rapport + mise à jour vérification) dans une
+  // 5. Effet du résultat sur la ligne de suivi.
+  const resultat = parsed.data.resultat;
+  let majVerification: {
+    dateRealisee?: Date;
+    statut: StatutVerification;
+  };
+  if (estResultatRealise(resultat)) {
+    majVerification = {
+      dateRealisee: parsed.data.dateRapport,
+      statut: STATUT_DEPUIS_RESULTAT[resultat],
+    };
+  } else {
+    // Non vérifiable : le contrôle reste dû. `dateRealisee` n'est jamais
+    // écrite — rien n'a été vérifié — et `datePrevue` n'est pas repoussée :
+    // l'échéance réglementaire qui courait court toujours. Elle est seulement
+    // requalifiée « à replanifier », ou « dépassée » si la date est passée.
+    const cycleOuvert = verif.dateRealisee === null;
+    majVerification = {
+      statut:
+        cycleOuvert && estEnRetard(verif.datePrevue, new Date())
+          ? "depassee"
+          : "a_planifier",
+    };
+  }
+
+  // 6. Persistance DB (rapport + mise à jour vérification) dans une
   // transaction pour éviter un état incohérent si la mise à jour casse.
   try {
     await prisma.$transaction([
@@ -109,10 +149,7 @@ export async function uploadRapport(
       }),
       prisma.verification.update({
         where: { id: verif.id },
-        data: {
-          dateRealisee: parsed.data.dateRapport,
-          statut: STATUT_DEPUIS_RESULTAT[parsed.data.resultat],
-        },
+        data: majVerification,
       }),
     ]);
   } catch (err) {
@@ -121,8 +158,9 @@ export async function uploadRapport(
     throw err;
   }
 
-  // 6. Régénération du calendrier (la prochaine occurrence se recale sur
-  // la date du rapport).
+  // 7. Régénération du calendrier. Elle est désormais idempotente (ADR-012) :
+  // elle recale la prochaine échéance sans supprimer la ligne de suivi, donc
+  // sans emporter le rapport qui vient d'être déposé.
   await genererCalendrier(verif.etablissementId);
 
   revalidatePath(`/etablissements/${verif.etablissementId}/calendrier`);
@@ -133,6 +171,19 @@ export async function uploadRapport(
   return { status: "success", rapportId };
 }
 
+/**
+ * Retire un rapport du registre.
+ *
+ * Cinq opérations s'enchaînaient sans transaction : `delete`, suppression du
+ * fichier, `count`, `update` de la vérification, régénération. Une coupure
+ * après le `delete` laissait une vérification `realisee_conforme`, avec une
+ * `dateRealisee`, sans le moindre justificatif — exactement l'état qu'un
+ * contrôle ne pardonne pas.
+ *
+ * Ordre retenu : tout ce qui touche la base dans une transaction, puis
+ * seulement le fichier. Un fichier orphelin se rattrape ; une ligne de
+ * registre sans pièce, non.
+ */
 export async function supprimerRapport(rapportId: string): Promise<void> {
   const rap = await prisma.rapportVerification.findUnique({
     where: { id: rapportId },
@@ -141,28 +192,37 @@ export async function supprimerRapport(rapportId: string): Promise<void> {
       etablissementId: true,
       verificationId: true,
       fichierCle: true,
+      verification: { select: { datePrevue: true } },
     },
   });
   if (!rap) return;
+  await assertEtablissementOwnership(rap.etablissementId);
 
-  const storage = getStorage();
+  const now = new Date();
+  await prisma.$transaction(async (tx) => {
+    await tx.rapportVerification.delete({ where: { id: rapportId } });
 
-  await prisma.rapportVerification.delete({ where: { id: rapportId } });
-  await storage.delete(rap.fichierCle).catch(() => {});
-
-  // Si c'était le seul rapport lié à la vérification et qu'elle est marquée
-  // comme réalisée, on la remet en "à planifier" pour permettre une
-  // nouvelle saisie.
-  const restants = await prisma.rapportVerification.count({
-    where: { verificationId: rap.verificationId },
-  });
-  if (restants === 0) {
-    await prisma.verification.update({
-      where: { id: rap.verificationId },
-      data: { statut: "a_planifier", dateRealisee: null },
+    // Si c'était le seul rapport lié à la vérification, la réalisation n'est
+    // plus prouvée : la ligne de suivi retourne à un cycle ouvert.
+    const restants = await tx.rapportVerification.count({
+      where: { verificationId: rap.verificationId },
     });
-    await genererCalendrier(rap.etablissementId);
-  }
+    if (restants === 0) {
+      await tx.verification.update({
+        where: { id: rap.verificationId },
+        data: {
+          dateRealisee: null,
+          statut: estEnRetard(rap.verification.datePrevue, now)
+            ? "depassee"
+            : "a_planifier",
+        },
+      });
+    }
+  });
+
+  // La base a tranché : on peut libérer le fichier.
+  await getStorage().delete(rap.fichierCle).catch(() => {});
+  await genererCalendrier(rap.etablissementId);
 
   revalidatePath(`/etablissements/${rap.etablissementId}/calendrier`);
   revalidatePath(`/etablissements/${rap.etablissementId}/registre`);

@@ -1,11 +1,28 @@
 import { describe, expect, it } from "vitest";
+import { instantCivil } from "@/lib/dates";
 import {
   construireGrilleAnnee,
   construireGrilleMois,
   type EvenementGrille,
 } from "./grille";
 
-const LE_8_AOUT = new Date(2026, 7, 8);
+/**
+ * La grille range des dates civiles. Deux formes cohabitent en base et
+ * doivent tomber dans la même case (ADR-011) :
+ *   - la date **saisie** (« AAAA-MM-JJ »), stockée à minuit UTC ;
+ *   - l'horodatage **réel** d'un événement de soirée, où l'heure de Paris
+ *     et l'heure UTC ne désignent déjà plus le même jour.
+ * Les tests n'utilisent donc jamais `new Date(2026, 7, 8)`, dont le
+ * résultat dépend du fuseau du processus.
+ */
+
+/** Date civile telle que Prisma la rend : minuit UTC. */
+const jourUtc = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
+/** Minuit heure de Paris — le repère des cases de la grille. */
+const paris = (annee: number, mois: number, j: number, h = 0, min = 0) =>
+  instantCivil(annee, mois, j, h, min);
+
+const LE_8_AOUT = paris(2026, 8, 8);
 
 function ev(id: string, y: number, m: number, d: number): EvenementGrille {
   return {
@@ -13,7 +30,7 @@ function ev(id: string, y: number, m: number, d: number): EvenementGrille {
     libelle: `Événement ${id}`,
     equipement: `Équipement ${id}`,
     tone: "ok",
-    date: new Date(y, m - 1, d, 9, 30),
+    date: paris(y, m, d, 9, 30),
   };
 }
 
@@ -25,7 +42,7 @@ describe("construireGrilleMois — structure", () => {
     const g = grille(LE_8_AOUT);
     for (const s of g.semaines) expect(s).toHaveLength(7);
     // 1er août 2026 = samedi → la grille ouvre le lundi 27 juillet.
-    expect(g.semaines[0][0].date).toEqual(new Date(2026, 6, 27));
+    expect(g.semaines[0][0].date).toEqual(paris(2026, 7, 27));
     expect(g.semaines[0][0].dansLeMois).toBe(false);
   });
 
@@ -33,7 +50,9 @@ describe("construireGrilleMois — structure", () => {
     // Août 2026 : 31 jours, démarre un samedi → 6 semaines.
     expect(grille(LE_8_AOUT).semaines).toHaveLength(6);
     // Février 2027 : 28 jours, démarre un lundi → 4 semaines pile.
-    expect(grille(new Date(2027, 1, 15)).semaines).toHaveLength(4);
+    expect(grille(paris(2027, 2, 15)).semaines).toHaveLength(4);
+    // Février 2028, bissextile : 29 jours, démarre un mardi → 5 semaines.
+    expect(grille(paris(2028, 2, 15)).semaines).toHaveLength(5);
   });
 
   it("marque les jours du mois affiché et les jours de débordement", () => {
@@ -49,13 +68,28 @@ describe("construireGrilleMois — structure", () => {
     expect(marques.map((j) => j.cle)).toEqual(["2026-08-08"]);
   });
 
+  it("marque encore le bon jour tard le soir", () => {
+    // 23:30 à Paris le 8 août = 21:30 UTC : le jour civil n'a pas changé.
+    const g = construireGrilleMois({
+      mois: LE_8_AOUT,
+      evenements: [],
+      aujourdhui: paris(2026, 8, 8, 23, 30),
+    });
+    expect(
+      g.semaines.flat().filter((j) => j.estAujourdhui).map((j) => j.cle),
+    ).toEqual(["2026-08-08"]);
+  });
+
   it("ne marque aucun jour courant sur un autre mois", () => {
-    const g = grille(new Date(2026, 10, 3));
+    const g = grille(paris(2026, 11, 3));
     expect(g.semaines.flat().some((j) => j.estAujourdhui)).toBe(false);
   });
 
   it("titre le mois en français, initiale capitale", () => {
     expect(grille(LE_8_AOUT).libelle).toBe("Août 2026");
+    // Un 1er de mois pris à minuit à Paris tombe la veille en UTC : sans
+    // fuseau explicite, le libellé annonçait le mois précédent.
+    expect(grille(paris(2026, 7, 1)).libelle).toBe("Juillet 2026");
   });
 });
 
@@ -64,6 +98,23 @@ describe("construireGrilleMois — événements", () => {
     const g = grille(LE_8_AOUT, [ev("a", 2026, 8, 24), ev("b", 2026, 8, 24)]);
     const jour = g.semaines.flat().find((j) => j.cle === "2026-08-24");
     expect(jour?.evenements.map((e) => e.id)).toEqual(["a", "b"]);
+  });
+
+  it("range une date saisie (minuit UTC) dans son jour civil", () => {
+    // 00:00 UTC = 02:00 à Paris en été : c'est bien le 24, pas le 23.
+    const g = grille(LE_8_AOUT, [
+      { ...ev("saisie", 2026, 8, 24), date: jourUtc("2026-08-24") },
+    ]);
+    const jour = g.semaines.flat().find((j) => j.cle === "2026-08-24");
+    expect(jour?.evenements.map((e) => e.id)).toEqual(["saisie"]);
+  });
+
+  it("range un événement de soirée dans le jour de Paris, pas dans celui d'UTC", () => {
+    const g = grille(LE_8_AOUT, [
+      { ...ev("soir", 2026, 8, 24), date: paris(2026, 8, 24, 23, 30) },
+    ]);
+    const jour = g.semaines.flat().find((j) => j.cle === "2026-08-24");
+    expect(jour?.evenements.map((e) => e.id)).toEqual(["soir"]);
   });
 
   it("affiche les événements des jours de débordement sans les compter", () => {
@@ -85,10 +136,8 @@ describe("construireGrilleMois — événements", () => {
   });
 
   it("trie les événements d'une même journée", () => {
-    const tard = ev("tard", 2026, 8, 12);
-    tard.date = new Date(2026, 7, 12, 17, 0);
-    const tot = ev("tot", 2026, 8, 12);
-    tot.date = new Date(2026, 7, 12, 8, 0);
+    const tard = { ...ev("tard", 2026, 8, 12), date: paris(2026, 8, 12, 17) };
+    const tot = { ...ev("tot", 2026, 8, 12), date: paris(2026, 8, 12, 8) };
     const g = grille(LE_8_AOUT, [tard, tot]);
     const jour = g.semaines.flat().find((j) => j.cle === "2026-08-12");
     expect(jour?.evenements.map((e) => e.id)).toEqual(["tot", "tard"]);
@@ -107,7 +156,7 @@ describe("construireGrilleAnnee", () => {
     expect(g.mois).toHaveLength(12);
     expect(g.mois[0].libelle).toBe("Janv.");
     expect(g.mois[7].libelle).toBe("Août");
-    expect(g.mois[7].mois).toEqual(new Date(2026, 7, 1));
+    expect(g.mois[7].mois).toEqual(paris(2026, 8, 1));
   });
 
   it("compte les événements par mois et par ton", () => {
@@ -121,6 +170,15 @@ describe("construireGrilleAnnee", () => {
     expect(g.mois[7].nbTotal).toBe(3);
     expect(g.mois[10].nbTotal).toBe(1);
     expect(g.nbEvenements).toBe(4);
+  });
+
+  it("range les dates saisies dans le bon mois, y compris le 1er", () => {
+    const g = annee(2026, [
+      { ...ev("premier", 2026, 9, 1), date: jourUtc("2026-09-01") },
+      { ...ev("dernier", 2026, 8, 31), date: paris(2026, 8, 31, 23, 30) },
+    ]);
+    expect(g.mois[8].nbTotal).toBe(1);
+    expect(g.mois[7].nbTotal).toBe(1);
   });
 
   it("ignore les événements des autres années", () => {
@@ -140,8 +198,8 @@ describe("construireGrilleAnnee", () => {
     // Fenêtre mai 2026 → août 2028 : janvier–avril 2026 sont hors champ,
     // mai reste dedans même si la fenêtre s'ouvre en cours de mois.
     const g = annee(2026, [], {
-      debut: new Date(2026, 4, 15),
-      fin: new Date(2028, 7, 31),
+      debut: paris(2026, 5, 15),
+      fin: paris(2028, 8, 31),
     });
     expect(g.mois.map((m) => m.dansFenetre)).toEqual(
       Array.from({ length: 12 }, (_, m) => m >= 4),

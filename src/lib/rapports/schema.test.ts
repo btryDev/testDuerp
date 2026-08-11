@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  estResultatRealise,
   rapportMetadataSchema,
+  RESULTATS,
   STATUT_DEPUIS_RESULTAT,
 } from "./schema";
 
@@ -51,12 +53,34 @@ describe("rapportMetadataSchema", () => {
 });
 
 describe("STATUT_DEPUIS_RESULTAT", () => {
-  it("mappe chaque résultat sur un statut Prisma cohérent", () => {
+  it("mappe chaque résultat réalisé sur un statut Prisma cohérent", () => {
     expect(STATUT_DEPUIS_RESULTAT.conforme).toBe("realisee_conforme");
     expect(STATUT_DEPUIS_RESULTAT.observations_mineures).toBe(
       "realisee_observations",
     );
     expect(STATUT_DEPUIS_RESULTAT.ecart_majeur).toBe("realisee_ecart_majeur");
-    expect(STATUT_DEPUIS_RESULTAT.non_verifiable).toBe("a_planifier");
+  });
+
+  // Garde-fou de non-régression : c'est cette entrée, avec sa valeur
+  // « a_planifier », qui faisait passer une vérification non réalisable pour
+  // réalisée (dateRealisee écrite) puis détruire le rapport à la régénération
+  // suivante. Elle ne doit jamais réapparaître.
+  it("n'expose aucun statut pour « non vérifiable »", () => {
+    expect(
+      Object.keys(STATUT_DEPUIS_RESULTAT).includes("non_verifiable"),
+    ).toBe(false);
+  });
+
+  it("couvre exactement les résultats valant réalisation du contrôle", () => {
+    const realises = RESULTATS.filter(estResultatRealise);
+    expect(realises).toEqual([
+      "conforme",
+      "observations_mineures",
+      "ecart_majeur",
+    ]);
+    expect(estResultatRealise("non_verifiable")).toBe(false);
+    expect(Object.keys(STATUT_DEPUIS_RESULTAT).sort()).toEqual(
+      [...realises].sort(),
+    );
   });
 });

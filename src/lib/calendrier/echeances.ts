@@ -1,5 +1,14 @@
+import type { StatutPermisFeu, StatutPlanPrevention } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
+import { JOURS_APRES } from "@/lib/dashboard/frise";
+import {
+  MOIS_PERIODE_ANNUELLE,
+  ajouterJours,
+  ajouterMois,
+  debutDuJour,
+} from "@/lib/dates";
+import { estEnRetard } from "@/lib/dates/retard";
 
 /**
  * Registre des sources d'échéances du calendrier — cf. ADR-010.
@@ -53,26 +62,45 @@ type ContexteSource = {
 
 type SourceEcheances = (ctx: ContexteSource) => Promise<EcheanceCalendrier[]>;
 
-const JOUR_MS = 86400000;
-/** Un an — la mise à jour du DUERP est au moins annuelle (R. 4121-2 CT). */
-export const JOURS_MAJ_DUERP = 365;
+/** Un an — la mise à jour du DUERP est au moins annuelle (R. 4121-2 CT).
+ *  Exprimé en **mois calendaires** : `+ 365 jours` dérive d'un jour à
+ *  chaque bissextile traversée et d'une heure à chaque changement
+ *  d'heure, ce qui suffit à faire changer de jour une date stockée à
+ *  minuit (ADR-011). */
+export const MOIS_MAJ_DUERP = MOIS_PERIODE_ANNUELLE;
 /** Un an — analyses légionelles ECS (arrêté du 1er février 2010, cité
- *  par le module carnet sanitaire). */
-export const JOURS_ANALYSE_LEGIONELLES = 365;
+ *  par le module carnet sanitaire). Même arithmétique calendaire. */
+export const MOIS_ANALYSE_LEGIONELLES = MOIS_PERIODE_ANNUELLE;
+
+/** Statuts qui soldent un permis de feu — au-delà, plus rien à faire.
+ *  Miroir exact des `permisOuverts` du tableau de bord : les deux écrans
+ *  doivent parler du même ensemble. Le `satisfies` garantit qu'un statut
+ *  ajouté à l'enum ne passe pas inaperçu ici. */
+export const STATUTS_PERMIS_FEU_CLOS = [
+  "termine",
+  "annule",
+] as const satisfies readonly StatutPermisFeu[];
+/** Idem pour une opération avec entreprise extérieure. */
+export const STATUTS_PLAN_PREVENTION_CLOS = [
+  "clos",
+  "annule",
+] as const satisfies readonly StatutPlanPrevention[];
+
+/** Le statut lu depuis une donnée non typée (test, snapshot) est une
+ *  chaîne : on compare sans forcer l'enum. */
+function estClos(statuts: readonly string[], statut: string): boolean {
+  return statuts.includes(statut);
+}
 
 /** Dépassé au lendemain, pas à la minute : une échéance datée
- *  d'aujourd'hui n'est pas « en retard » — la comparaison se fait au
- *  jour calendaire, pas à l'horodatage. */
+ *  d'aujourd'hui n'est pas « en retard ». Simple habillage du prédicat
+ *  canonique (`estEnRetard`) dans le vocabulaire de tons de la grille —
+ *  la règle de retard, elle, n'existe qu'à un seul endroit (ADR-011). */
 export function tonPourDate(
   date: Date,
   aujourdhui: Date,
 ): "alerte" | "ok" {
-  const debutDuJour = new Date(
-    aujourdhui.getFullYear(),
-    aujourdhui.getMonth(),
-    aujourdhui.getDate(),
-  );
-  return date.getTime() < debutDuJour.getTime() ? "alerte" : "ok";
+  return estEnRetard(date, aujourdhui) ? "alerte" : "ok";
 }
 
 /* ─── Classements purs (testés) ─────────────────────────────── */
@@ -104,9 +132,7 @@ export function echeanceDuerp({
   aujourdhui: Date;
 }): EcheanceCalendrier | null {
   if (!dateDerniereVersion) return null;
-  const date = new Date(
-    dateDerniereVersion.getTime() + JOURS_MAJ_DUERP * JOUR_MS,
-  );
+  const date = ajouterMois(dateDerniereVersion, MOIS_MAJ_DUERP);
   return {
     id: "duerp-maj",
     famille: "papiers",
@@ -158,10 +184,19 @@ export function echeancesPrestataire(
   return out;
 }
 
-/** Un permis de feu non soldé est un travau planifié : il apparaît à sa
- *  date de début. Alerte si cette date est passée sans que les travaux
- *  soient en cours — permis resté en brouillon ou en attente de
- *  signatures, c'est lui qu'il faut solder ou annuler. */
+/** Un permis de feu non soldé est un travail planifié : il apparaît à sa
+ *  date de début. Deux motifs d'alerte, et un seul motif de silence :
+ *
+ *   - la date de début est passée sans que les travaux soient en cours —
+ *     permis resté en brouillon ou en attente de signatures, c'est lui
+ *     qu'il faut solder ou annuler ;
+ *   - la date de fin est passée et le permis n'est toujours pas soldé —
+ *     exactement ce que la matrice « Vos documents » du tableau de bord
+ *     compte en « échus non clos ». Sans cette branche, la pastille du
+ *     board renvoyait vers un calendrier qui ne montrait rien.
+ *
+ *  Un permis terminé ou annulé n'alerte jamais, quelles que soient ses
+ *  dates. */
 export function echeancePermisFeu(
   p: {
     id: string;
@@ -169,49 +204,59 @@ export function echeancePermisFeu(
     lieu: string;
     statut: string;
     dateDebut: Date;
+    dateFin: Date;
   },
   aujourdhui: Date,
   etablissementId: string,
 ): EcheanceCalendrier {
+  const clos = estClos(STATUTS_PERMIS_FEU_CLOS, p.statut);
   const demarre = p.statut === "en_cours";
+  const debutManque = !demarre && estEnRetard(p.dateDebut, aujourdhui);
+  const finDepassee = estEnRetard(p.dateFin, aujourdhui);
   return {
     id: `permis-feu-${p.id}`,
     famille: "travaux",
     libelle: `Permis de feu n°${p.numero} — ${p.lieu}`,
     origine: "Travaux par point chaud",
     date: p.dateDebut,
-    tone:
-      !demarre && tonPourDate(p.dateDebut, aujourdhui) === "alerte"
-        ? "alerte"
-        : "ok",
+    tone: !clos && (debutManque || finDepassee) ? "alerte" : "ok",
     href: `/etablissements/${etablissementId}/permis-feu/${p.id}`,
   };
 }
 
 /** Une opération avec entreprise extérieure apparaît à sa date de début.
- *  Alerte si elle a commencé sans inspection commune préalable — c'est
- *  l'exigence de l'art. R. 4512-7. */
+ *  Mêmes deux motifs d'alerte que le permis de feu, son module jumeau :
+ *
+ *   - elle a commencé sans inspection commune préalable — exigence de
+ *     l'art. R. 4512-7 ;
+ *   - sa date de fin est passée et l'opération n'est ni close ni annulée
+ *     (« échue non close » du tableau de bord).
+ *
+ *  Une opération close ou annulée n'alerte jamais. */
 export function echeancePlanPrevention(
   p: {
     id: string;
     numero: number;
     entrepriseExterieureRaison: string;
+    statut: string;
     dateDebut: Date;
+    dateFin: Date;
     inspectionDate: Date | null;
   },
   aujourdhui: Date,
   etablissementId: string,
 ): EcheanceCalendrier {
+  const clos = estClos(STATUTS_PLAN_PREVENTION_CLOS, p.statut);
   const commenceSansInspection =
-    p.inspectionDate === null &&
-    tonPourDate(p.dateDebut, aujourdhui) === "alerte";
+    p.inspectionDate === null && estEnRetard(p.dateDebut, aujourdhui);
+  const finDepassee = estEnRetard(p.dateFin, aujourdhui);
   return {
     id: `plan-prevention-${p.id}`,
     famille: "travaux",
     libelle: `Plan de prévention n°${p.numero} — ${p.entrepriseExterieureRaison}`,
     origine: "Opération avec entreprise extérieure",
     date: p.dateDebut,
-    tone: commenceSansInspection ? "alerte" : "ok",
+    tone: !clos && (commenceSansInspection || finDepassee) ? "alerte" : "ok",
     href: `/etablissements/${etablissementId}/plan-prevention/${p.id}`,
   };
 }
@@ -229,9 +274,7 @@ export function echeanceLegionelles({
   aujourdhui: Date;
 }): EcheanceCalendrier | null {
   if (!dateDerniereAnalyse) return null;
-  const date = new Date(
-    dateDerniereAnalyse.getTime() + JOURS_ANALYSE_LEGIONELLES * JOUR_MS,
-  );
+  const date = ajouterMois(dateDerniereAnalyse, MOIS_ANALYSE_LEGIONELLES);
   return {
     id: "legionelles-analyse",
     famille: "controle",
@@ -245,6 +288,17 @@ export function echeanceLegionelles({
 
 /* ─── Les sources (une par module) ──────────────────────────── */
 
+/**
+ * Actions correctives ouvertes.
+ *
+ * **Angle mort assumé** : une action sans échéance n'a pas de jour où se
+ * poser — le calendrier ne montre que du daté, et inventer une date
+ * serait un mensonge d'affichage. Elle n'est pas perdue pour autant :
+ * `compterActions().sansEcheance` (`src/lib/actions/queries.ts`) la
+ * dénombre pour que l'interface puisse inviter à la dater, sur le modèle
+ * du `nbSansDate` déjà affiché par la grille pour les vérifications à
+ * planifier.
+ */
 const sourceActions: SourceEcheances = async ({
   scope,
   aujourdhui,
@@ -319,11 +373,21 @@ const sourceDuerp: SourceEcheances = async ({
   aujourdhui,
   etablissementId,
 }) => {
+  // Sélection **déterministe**, et identique à celle du tableau de bord :
+  // `findFirst` sans `orderBy` laisse Postgres rendre la ligne qu'il veut.
+  // Avec plusieurs DUERP, l'échéance « mise à jour annuelle » et l'âge
+  // affiché au board pouvaient porter sur deux documents différents. La
+  // contrainte d'unicité `Duerp.etablissementId` rend le cas impossible en
+  // base, mais l'ordre reste explicite : une requête ne doit pas dépendre
+  // d'un invariant écrit ailleurs. Les versions sont ordonnées par
+  // `numero` (unique par DUERP), et non par `createdAt` qui peut être
+  // partagé par deux lignes d'une même transaction.
   const duerp = await prisma.duerp.findFirst({
     where: scope,
+    orderBy: { updatedAt: "desc" },
     select: {
       versions: {
-        orderBy: { createdAt: "desc" },
+        orderBy: { numero: "desc" },
         take: 1,
         select: { createdAt: true },
       },
@@ -364,7 +428,10 @@ const sourcePermisFeu: SourceEcheances = async ({
   const permis = await prisma.permisFeu.findMany({
     where: {
       ...scope,
-      statut: { notIn: ["termine", "annule"] },
+      // Seul le cycle de vie décide de la sortie du calendrier — jamais la
+      // date : un permis échu mais non soldé doit rester visible, c'est
+      // précisément l'anomalie à traiter.
+      statut: { notIn: [...STATUTS_PERMIS_FEU_CLOS] },
     },
     select: {
       id: true,
@@ -372,6 +439,7 @@ const sourcePermisFeu: SourceEcheances = async ({
       lieu: true,
       statut: true,
       dateDebut: true,
+      dateFin: true,
     },
   });
   return permis.map((p) => echeancePermisFeu(p, aujourdhui, etablissementId));
@@ -385,14 +453,22 @@ const sourcePlansPrevention: SourceEcheances = async ({
   const plans = await prisma.planPrevention.findMany({
     where: {
       ...scope,
-      // L'opération n'apparaît que tant qu'elle n'est pas finie.
-      dateFin: { gte: aujourdhui },
+      // Le cycle de vie décide, pas la date — symétriquement au module
+      // jumeau (permis de feu). L'ancien filtre `dateFin >= aujourd'hui`
+      // faisait disparaître du calendrier les opérations échues et non
+      // closes, celles-là mêmes que le tableau de bord compte en « échues
+      // non closes » : l'utilisateur cliquait sur la pastille et ne
+      // trouvait rien. Il laissait à l'inverse une opération soldée mais
+      // datée du mois prochain s'afficher comme travaux à venir.
+      statut: { notIn: [...STATUTS_PLAN_PREVENTION_CLOS] },
     },
     select: {
       id: true,
       numero: true,
       entrepriseExterieureRaison: true,
+      statut: true,
       dateDebut: true,
+      dateFin: true,
       inspectionDate: true,
     },
   });
@@ -406,11 +482,15 @@ const sourceLegionelles: SourceEcheances = async ({
   aujourdhui,
   etablissementId,
 }) => {
+  // `CarnetSanitaire.etablissementId` est unique : la ligne est
+  // déterminée. Le départage des analyses, lui, ne l'est pas — deux
+  // analyses peuvent porter la même `dateAnalyse` (deux points de relevé
+  // le même jour) : on tranche par ordre d'enregistrement.
   const carnet = await prisma.carnetSanitaire.findFirst({
     where: scope,
     select: {
       analyses: {
-        orderBy: { dateAnalyse: "desc" },
+        orderBy: [{ dateAnalyse: "desc" }, { createdAt: "desc" }],
         take: 1,
         select: { dateAnalyse: true },
       },
@@ -439,10 +519,21 @@ const SOURCES_ECHEANCES: SourceEcheances[] = [
   sourceLegionelles,
 ];
 
-/** Toutes les échéances datées hors vérifications périodiques, triées
- *  par date — l'agrégation du registre, rien d'autre. */
+/**
+ * Toutes les échéances datées hors vérifications périodiques, triées par
+ * date — l'agrégation du registre, rien d'autre.
+ *
+ * **Fenêtre** : la même que le flux des vérifications
+ * (`listerEvenementsFenetre`, bornée à `JOURS_APRES`). Pas de borne
+ * basse — un retard remonte quelle que soit son ancienneté ; borne haute
+ * à deux ans, sans quoi une attestation valable jusqu'en 2031 se posait
+ * seule sur la frise, dans une période où aucune vérification n'était
+ * chargée : l'utilisateur y lisait « rien d'autre à faire » alors que
+ * seule la moitié des sources y était représentée.
+ */
 export async function listerAutresEcheances(
   etablissementId: string,
+  aujourdhui: Date = new Date(),
 ): Promise<EcheanceCalendrier[]> {
   const user = await requireUser();
   const ctx: ContexteSource = {
@@ -451,9 +542,13 @@ export async function listerAutresEcheances(
       etablissementId,
       etablissement: { entreprise: { userId: user.id } },
     },
-    aujourdhui: new Date(),
+    aujourdhui,
   };
 
+  const finFenetre = ajouterJours(debutDuJour(aujourdhui), JOURS_APRES);
   const listes = await Promise.all(SOURCES_ECHEANCES.map((s) => s(ctx)));
-  return listes.flat().sort((a, b) => a.date.getTime() - b.date.getTime());
+  return listes
+    .flat()
+    .filter((e) => e.date.getTime() <= finFenetre.getTime())
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
 }

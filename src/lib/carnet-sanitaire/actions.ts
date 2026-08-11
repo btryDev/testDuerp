@@ -170,19 +170,30 @@ export async function ajouterAnalyseLegionelle(
     parsed.data.valeurUfcParL === undefined ||
     parsed.data.valeurUfcParL < SEUIL_LEGIONELLE_UFC_PAR_L;
 
-  await prisma.analyseLegionelle.create({
-    data: {
-      id: `ana_${randomUUID()}`,
-      carnetId: carnet.id,
-      dateAnalyse: parsed.data.dateAnalyse,
-      laboratoire: parsed.data.laboratoire,
-      valeurUfcParL: parsed.data.valeurUfcParL,
-      conforme,
-      rapportCle,
-      rapportNom,
-      commentaire: parsed.data.commentaire,
-    },
-  });
+  // Le fichier est déjà sur le disque : si l'insert échoue, il faut le
+  // reprendre, sinon le stockage accumule des rapports que plus aucune ligne
+  // ne référence. Même nettoyage best-effort que les trois autres modules
+  // d'upload (rapports, interventions, prestataires).
+  try {
+    await prisma.analyseLegionelle.create({
+      data: {
+        id: `ana_${randomUUID()}`,
+        carnetId: carnet.id,
+        dateAnalyse: parsed.data.dateAnalyse,
+        laboratoire: parsed.data.laboratoire,
+        valeurUfcParL: parsed.data.valeurUfcParL,
+        conforme,
+        rapportCle,
+        rapportNom,
+        commentaire: parsed.data.commentaire,
+      },
+    });
+  } catch (e) {
+    if (rapportCle) {
+      await getStorage().delete(rapportCle).catch(() => {});
+    }
+    throw e;
+  }
   revalidatePath(`/etablissements/${etablissementId}/carnet-sanitaire`);
   return { status: "success" };
 }
