@@ -14,7 +14,36 @@
  * équipements complexes sortent du périmètre V2 (cf. CLAUDE.md).
  */
 
-import type { Obligation } from "./types";
+import type { ConditionApplication, Obligation } from "./types";
+
+/**
+ * Garde-fou de périmètre (amendement 2026-08).
+ *
+ * Les cinq obligations issues de l'arrêté du 20 novembre 2017 ne visent que les
+ * équipements effectivement soumis au suivi en service : l'arrêté fixe des
+ * seuils de pression maximale admissible (PS) et de volume (produit PS × V) en
+ * dessous desquels un récipient n'est pas concerné. Ces seuils ne sont **pas**
+ * encodés ici : ils forment un tableau par catégorie de fluide et de récipient
+ * qu'on ne recopie pas sans l'avoir relu article par article sur Légifrance
+ * (CLAUDE.md — ne jamais inventer une référence ni un seuil).
+ *
+ * En attendant, la portée est portée par une réponse explicite du dirigeant.
+ * Sans elle, un petit compresseur d'atelier héritait d'une requalification
+ * décennale par organisme habilité. La forme `non_infirmee` garantit qu'aucun
+ * équipement déjà déclaré ne perd ces obligations en silence : elles restent
+ * affichées tant que la réponse « non » n'a pas été donnée.
+ *
+ * `esp-personnel-formation` n'est volontairement pas conditionnée : elle
+ * découle du Code du travail (R. 4323-55 et s.), qui s'applique à tout
+ * équipement de travail indépendamment des seuils de l'arrêté.
+ */
+const CONDITION_SUIVI_EN_SERVICE: ConditionApplication[] = [
+  {
+    type: "equipement_propriete_non_infirmee",
+    categorie: "EQUIPEMENT_SOUS_PRESSION",
+    propriete: "estSoumisSuiviEnService",
+  },
+];
 
 export const obligationsEquipementSousPression: Obligation[] = [
   {
@@ -42,6 +71,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
     criticite: 5,
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_SOUS_PRESSION"],
+    conditions: CONDITION_SUIVI_EN_SERVICE,
   },
   {
     id: "esp-inspection-periodique",
@@ -62,6 +92,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
     criticite: 5,
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_SOUS_PRESSION"],
+    conditions: CONDITION_SUIVI_EN_SERVICE,
     notesInternes:
       "Périodicité modélisée triennale en MVP (proxy des 40 mois réglementaires). La valeur exacte dépend du type et du régime — à affiner avec une propriété d'équipement en étape ultérieure.",
   },
@@ -84,6 +115,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
     criticite: 5,
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_SOUS_PRESSION"],
+    conditions: CONDITION_SUIVI_EN_SERVICE,
   },
   {
     id: "esp-dossier-suivi",
@@ -104,6 +136,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
     criticite: 3,
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_SOUS_PRESSION"],
+    conditions: CONDITION_SUIVI_EN_SERVICE,
   },
   {
     id: "esp-intervention-reparation",
@@ -124,6 +157,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
     criticite: 5,
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_SOUS_PRESSION"],
+    conditions: CONDITION_SUIVI_EN_SERVICE,
     notesInternes:
       "Événementiel — une occurrence par intervention notable. Le générateur MVP la traite en mise_en_service_uniquement ; à affiner étape 12 avec un déclenchement manuel.",
   },

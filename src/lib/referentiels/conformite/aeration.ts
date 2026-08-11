@@ -204,28 +204,14 @@ export const obligationsAeration: Obligation[] = [
       },
     ],
   },
-  {
-    id: "aeration-hotte-pro-annuelle",
-    domaine: "aeration",
-    libelle: "Ramonage et vérification annuelle des hottes et conduits d'extraction (grandes cuisines ERP)",
-    description:
-      "Les circuits d'extraction d'air vicié et de buées (hottes, conduits) des grandes cuisines situées dans un ERP font l'objet d'un ramonage et d'une vérification au moins annuels, au titre de l'article GC 20 du règlement ERP et des règlements sanitaires départementaux.",
-    referencesLegales: [
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. GC 20",
-        urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
-      },
-    ],
-    periodicite: "annuelle",
-    realisateurs: ["personne_qualifiee"],
-    criticite: 4,
-    typologies: { erp: { categories: ["N1", "N2", "N3", "N4", "N5"] } },
-    categoriesEquipement: ["HOTTE_PRO"],
-    notesInternes:
-      "Applicable quand le type ERP est N (restaurant, débit de boissons) et qu'une hotte professionnelle est déclarée. Le moteur de matching (étape 5) affinera sur le type ERP.",
-  },
+  // Note (amendement 2026-08) : l'obligation « aeration-hotte-pro-annuelle »
+  // (ramonage annuel des circuits d'extraction, art. GC 20) vivait ici ET dans
+  // `cuisson-hotte.ts` sous l'id `cuisson-erp-circuits-extraction-nettoyage` —
+  // même article, même périodicité, même catégorie d'équipement. Les deux
+  // entrées ont été fusionnées dans `cuisson-hotte.ts`, dont le domaine
+  // (`cuisson_hotte`) correspond au chapitre « Grandes cuisines » du règlement
+  // ERP d'où l'obligation est issue. L'id `aeration-hotte-pro-annuelle` est
+  // retiré et ne doit jamais être réutilisé.
 
   // ---------------------------------------------------------------------------
   // Habitation — VMC-Gaz (arrêté du 25 avril 1985)
@@ -249,7 +235,14 @@ export const obligationsAeration: Obligation[] = [
     criticite: 5,
     typologies: { habitation: true },
     categoriesEquipement: ["VMC"],
+    conditions: [
+      {
+        type: "equipement_propriete_non_infirmee",
+        categorie: "VMC",
+        propriete: "estVmcGaz",
+      },
+    ],
     notesInternes:
-      "Hors périmètre principal TPE/PME mais retenu car une TPE peut gérer un immeuble d'habitation (cf. flag estHabitation, ADR-004).",
+      "Hors périmètre principal TPE/PME mais retenu car une TPE peut gérer un immeuble d'habitation (cf. flag estHabitation, ADR-004). L'arrêté du 25 avril 1985 ne vise QUE les VMC desservant des appareils à gaz (VMC-Gaz) : la condition `estVmcGaz` évite d'appliquer la règle à toute VMC d'habitation. Forme `non_infirmee` obligatoire ici (criticité 5) — les VMC déjà déclarées gardent l'obligation tant que le dirigeant n'a pas répondu « non » à la question du raccordement gaz.",
   },
 ];

@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { equipementSchema, serialiserCaracteristiques } from "./schema";
+import { obligationsConformite } from "@/lib/referentiels/conformite";
+import {
+  CATEGORIES_TRI_ETAT,
+  CHAMPS_TRI_ETAT,
+  equipementSchema,
+  normaliserFormDataEquipement,
+  normaliserTriEtat,
+  serialiserCaracteristiques,
+  valeurTriEtat,
+} from "./schema";
 
 const base = {
   libelle: "TGBT principal",
@@ -136,6 +145,173 @@ describe("serialiserCaracteristiques", () => {
         nombre: 3,
         notes: "Sur façade ouest",
       });
+    }
+  });
+});
+
+// =============================================================================
+// Questions à trois états (amendement 2026-08)
+// =============================================================================
+
+describe("normaliserTriEtat", () => {
+  it("reconnaît les formes affirmatives", () => {
+    for (const v of ["oui", "true", "on", "1", "  OUI  ", true]) {
+      expect(normaliserTriEtat(v)).toBe(true);
+    }
+  });
+
+  it("reconnaît les formes négatives", () => {
+    for (const v of ["non", "false", "off", "0", " NON ", false]) {
+      expect(normaliserTriEtat(v)).toBe(false);
+    }
+  });
+
+  it("ne fabrique JAMAIS un « non » depuis une valeur inconnue ou absente", () => {
+    // Point de sécurité : un `false` implicite éteindrait une obligation de
+    // criticité élevée sans que personne n'ait répondu quoi que ce soit.
+    for (const v of ["", "  ", undefined, null, 42, {}, "peut-être"]) {
+      expect(normaliserTriEtat(v)).toBeUndefined();
+    }
+  });
+});
+
+describe("valeurTriEtat", () => {
+  it("fait l'aller-retour avec normaliserTriEtat", () => {
+    for (const v of [true, false, undefined]) {
+      expect(normaliserTriEtat(valeurTriEtat(v))).toBe(v);
+    }
+    expect(normaliserTriEtat(valeurTriEtat(null))).toBeUndefined();
+  });
+});
+
+describe("equipementSchema — questions à trois états", () => {
+  it("accepte oui / non / absence sur la bonne catégorie", () => {
+    for (const [valeur, attendu] of [
+      ["oui", true],
+      ["non", false],
+      ["", undefined],
+    ] as const) {
+      const res = equipementSchema.safeParse({
+        libelle: "Extincteurs du hall",
+        categorie: "EXTINCTEUR",
+        aRobinetsIncendieArmes: valeur,
+      });
+      expect(res.success).toBe(true);
+      if (res.success) expect(res.data.aRobinetsIncendieArmes).toBe(attendu);
+    }
+  });
+
+  it("refuse une réponse posée sur une catégorie incompatible", () => {
+    for (const { champ, categories } of CATEGORIES_TRI_ETAT) {
+      const categorieHorsChamp = "BAES";
+      expect(categories).not.toContain(categorieHorsChamp);
+      const res = equipementSchema.safeParse({
+        libelle: "Bloc de secours",
+        categorie: categorieHorsChamp,
+        [champ]: "oui",
+      });
+      expect(res.success, champ).toBe(false);
+    }
+  });
+
+  it("refuse aussi une réponse « non » hors catégorie", () => {
+    const res = equipementSchema.safeParse({
+      libelle: "Bloc de secours",
+      categorie: "BAES",
+      sertAuLevageDePersonnes: "non",
+    });
+    expect(res.success).toBe(false);
+  });
+
+  it("sérialise « non » (distinct de l'absence de réponse)", () => {
+    const res = equipementSchema.safeParse({
+      libelle: "Transpalette",
+      categorie: "EQUIPEMENT_LEVAGE",
+      sertAuLevageDePersonnes: "non",
+    });
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(serialiserCaracteristiques(res.data)).toEqual({
+        sertAuLevageDePersonnes: false,
+      });
+    }
+  });
+
+  it("ne sérialise rien quand la question n'a pas reçu de réponse", () => {
+    const res = equipementSchema.safeParse({
+      libelle: "Transpalette",
+      categorie: "EQUIPEMENT_LEVAGE",
+      sertAuLevageDePersonnes: "",
+    });
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(serialiserCaracteristiques(res.data)).toBeNull();
+    }
+  });
+});
+
+describe("normaliserFormDataEquipement", () => {
+  function fd(entries: Record<string, string>): FormData {
+    const f = new FormData();
+    for (const [k, v] of Object.entries(entries)) f.append(k, v);
+    return f;
+  }
+
+  it("case à cocher absente ⇒ false ; question à trois états absente ⇒ undefined", () => {
+    const out = normaliserFormDataEquipement(
+      fd({ libelle: "Transpalette", categorie: "EQUIPEMENT_LEVAGE" }),
+    );
+    expect(out.aGroupeElectrogene).toBe(false);
+    expect(out.sertAuLevageDePersonnes).toBeUndefined();
+    expect(out.aAccessoiresDeLevage).toBeUndefined();
+  });
+
+  it("transmet les réponses explicites au schéma", () => {
+    const out = normaliserFormDataEquipement(
+      fd({
+        libelle: "Nacelle",
+        categorie: "EQUIPEMENT_LEVAGE",
+        sertAuLevageDePersonnes: "oui",
+        aAccessoiresDeLevage: "non",
+      }),
+    );
+    const res = equipementSchema.safeParse(out);
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(res.data.sertAuLevageDePersonnes).toBe(true);
+      expect(res.data.aAccessoiresDeLevage).toBe(false);
+    }
+  });
+});
+
+describe("cohérence schéma ↔ référentiel d'obligations", () => {
+  it("toute propriété conditionnant une obligation est collectée par le formulaire", () => {
+    // Une condition qui porte sur une propriété que rien ne renseigne est une
+    // condition que l'utilisateur ne peut jamais satisfaire ni infirmer.
+    const collectees = new Set<string>([
+      ...CHAMPS_TRI_ETAT,
+      "aGroupeElectrogene",
+      "estLocalPollutionSpecifique",
+      "nbVehiculesParkingCouvert",
+    ]);
+    for (const o of obligationsConformite) {
+      for (const c of o.conditions ?? []) {
+        expect(collectees, `${o.id} → ${c.propriete}`).toContain(c.propriete);
+      }
+    }
+  });
+
+  it("la catégorie visée par une condition accepte bien la propriété côté schéma", () => {
+    for (const o of obligationsConformite) {
+      for (const c of o.conditions ?? []) {
+        const regle = CATEGORIES_TRI_ETAT.find(
+          (r) => r.champ === c.propriete,
+        );
+        if (!regle) continue;
+        expect(regle.categories, `${o.id} → ${c.propriete}`).toContain(
+          c.categorie,
+        );
+      }
     }
   });
 });

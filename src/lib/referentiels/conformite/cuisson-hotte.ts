@@ -7,9 +7,16 @@
  *     « Installations aux gaz combustibles et aux hydrocarbures liquéfiés »
  *     (art. GZ 29 pour vérifications périodiques).
  *
- * La hotte d'extraction (ramonage annuel des conduits) est déjà couverte
- * par `aeration-hotte-pro-annuelle` (art. GC 20). Ce fichier ajoute les
- * obligations sur les appareils de cuisson et les installations de gaz.
+ * Amendement 2026-08 — fusion du doublon de ramonage. Le nettoyage/ramonage
+ * annuel des circuits d'extraction de buées (art. GC 20) était déclaré deux
+ * fois : ici sous `cuisson-erp-circuits-extraction-nettoyage` et dans
+ * `aeration.ts` sous `aeration-hotte-pro-annuelle`. Même article, même
+ * périodicité annuelle, même catégorie d'équipement `HOTTE_PRO` : un
+ * restaurant avec une hotte recevait deux échéances pour une seule
+ * obligation, ce qui faussait aussi les agrégats de conformité. La règle
+ * survit ici (le domaine `cuisson_hotte` correspond au chapitre « Grandes
+ * cuisines » du règlement ERP dont l'article GC 20 est issu) ; l'id
+ * `aeration-hotte-pro-annuelle` a été retiré du référentiel.
  */
 
 import type { Obligation } from "./types";
@@ -80,13 +87,13 @@ export const obligationsCuissonHotte: Obligation[] = [
   {
     id: "cuisson-erp-circuits-extraction-nettoyage",
     domaine: "cuisson_hotte",
-    libelle: "Nettoyage périodique des circuits d'extraction de buées (grandes cuisines ERP)",
+    libelle: "Ramonage et nettoyage annuels des circuits d'extraction de buées (grandes cuisines ERP)",
     description:
-      "Les circuits d'extraction, y compris les filtres et les conduits, doivent être maintenus en état de propreté. Le nettoyage est réalisé aussi souvent que nécessaire et au moins une fois par an, en cohérence avec l'obligation de ramonage annuel (GC 20).",
+      "Les circuits d'extraction d'air vicié et de buées des grandes cuisines — hottes, filtres, conduits — sont maintenus en état de propreté et font l'objet d'un ramonage et d'un nettoyage aussi souvent que nécessaire, et au moins une fois par an.",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. GC 20 § 2",
+        reference: "Arrêté du 25 juin 1980, art. GC 20",
         urlLegifrance:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
@@ -96,6 +103,8 @@ export const obligationsCuissonHotte: Obligation[] = [
     criticite: 4,
     typologies: { erp: true },
     categoriesEquipement: ["HOTTE_PRO"],
+    notesInternes:
+      "Obligation unique issue de la fusion de l'ancien doublon `aeration-hotte-pro-annuelle` (retiré). Typologie `erp: true` — l'article GC 20 ne restreint pas par catégorie ; écrire `categories: [N1…N5]` reviendrait à exiger en plus une catégorie renseignée et créerait un faux négatif sur les établissements dont la catégorie est inconnue.",
   },
   {
     id: "cuisson-erp-extinction-automatique-annuelle",
@@ -116,7 +125,14 @@ export const obligationsCuissonHotte: Obligation[] = [
     criticite: 5,
     typologies: { erp: true },
     categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
+    conditions: [
+      {
+        type: "equipement_propriete_non_infirmee",
+        categorie: "APPAREIL_CUISSON_ERP",
+        propriete: "aExtinctionAutomatique",
+      },
+    ],
     notesInternes:
-      "Applicable si l'établissement déclare la présence d'un système d'extinction automatique — à affiner via une propriété d'équipement dédiée lorsque l'UI le supportera.",
+      "La portée est dans le texte de l'obligation elle-même (« lorsque l'établissement est équipé d'un système d'extinction automatique ») : elle est désormais portée par une condition déclarative, plus par un commentaire. Forme `non_infirmee` obligatoire (criticité 5) — les appareils de cuisson déjà déclarés conservent l'obligation tant que le dirigeant n'a pas répondu « non ».",
   },
 ];

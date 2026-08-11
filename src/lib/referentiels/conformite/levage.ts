@@ -121,6 +121,15 @@ export const obligationsLevage: Obligation[] = [
     criticite: 5,
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
+    conditions: [
+      {
+        type: "equipement_propriete_non_infirmee",
+        categorie: "EQUIPEMENT_LEVAGE",
+        propriete: "sertAuLevageDePersonnes",
+      },
+    ],
+    notesInternes:
+      "EQUIPEMENT_LEVAGE est une catégorie fourre-tout : sans condition, un simple transpalette héritait d'une VGP semestrielle « levage de personnes » juridiquement inapplicable. La périodicité de six mois ne vaut que pour les équipements servant — même occasionnellement — au levage de personnes (arrêté du 2 mars 2004). Forme `non_infirmee` (criticité 5) : un appareil déjà déclaré conserve la VGP semestrielle tant que le dirigeant n'a pas répondu « non » à la question du levage de personnes.",
   },
   {
     id: "levage-vgp-accessoires-annuelle",
@@ -147,6 +156,15 @@ export const obligationsLevage: Obligation[] = [
     criticite: 4,
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
+    conditions: [
+      {
+        type: "equipement_propriete_non_infirmee",
+        categorie: "EQUIPEMENT_LEVAGE",
+        propriete: "aAccessoiresDeLevage",
+      },
+    ],
+    notesInternes:
+      "Vérification des ACCESSOIRES (élingues, chaînes, câbles, crochets, anneaux, manilles, palonniers), pas de l'appareil lui-même : elle n'a pas d'objet pour un appareil utilisé sans accessoire, typiquement un transpalette. Forme `non_infirmee` (criticité 4) : l'obligation reste affichée tant que le dirigeant n'a pas répondu « non ».",
   },
   {
     id: "levage-examen-etat-conservation",

@@ -75,7 +75,7 @@ export const obligationsIncendie: Obligation[] = [
     domaine: "incendie",
     libelle: "Exercice d'évacuation et de maniement des moyens de secours (semestriel)",
     description:
-      "Dans les établissements où le Code du travail impose un équipement d'alarme de type 4 a minima (≥ 50 salariés ou matières inflammables), des exercices et essais périodiques ont lieu au moins tous les six mois et sont consignés au registre de sécurité.",
+      "Dans les établissements où sont habituellement réunies plus de 50 personnes, qui doivent à ce titre être équipés d'un système d'alarme sonore, des essais et visites périodiques du matériel et des exercices d'évacuation ont lieu au moins tous les six mois et sont consignés au registre de sécurité.",
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
@@ -83,12 +83,19 @@ export const obligationsIncendie: Obligation[] = [
         urlLegifrance:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531805/",
       },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4227-34",
+        note: "Article qui pose le seuil : établissements où peuvent se trouver occupées ou réunies habituellement plus de cinquante personnes, ainsi que ceux, quelle que soit leur importance, où sont manipulées et mises en œuvre des matières inflammables.",
+      },
     ],
     periodicite: "semestrielle",
     realisateurs: ["exploitant"],
     criticite: 4,
-    typologies: { travail: true },
+    typologies: { travail: true, effectifMin: 51 },
     categoriesEquipement: ["ALARME_INCENDIE"],
+    notesInternes:
+      "Seuil enfin encodé (amendement 2026-08) : sans `effectifMin`, la règle s'appliquait à un salon de coiffure de deux personnes alors que sa propre description citait un seuil. « Plus de cinquante » ⇒ effectifMin 51, bornes incluses. Deux limites assumées et documentées dans docs/regles-matching.md : (1) le texte parle de personnes occupées OU réunies, le moteur ne dispose que de `effectifSurSite` ; (2) la seconde branche du seuil — matières inflammables, quel que soit l'effectif — n'est pas automatisable en l'état (le moteur ne sait pas exprimer un OU entre effectif et présence d'un équipement).",
   },
   {
     id: "incendie-registre-securite",
@@ -261,8 +268,15 @@ export const obligationsIncendie: Obligation[] = [
     criticite: 4,
     typologies: { erp: true },
     categoriesEquipement: ["EXTINCTEUR"],
+    conditions: [
+      {
+        type: "equipement_propriete_non_infirmee",
+        categorie: "EXTINCTEUR",
+        propriete: "aRobinetsIncendieArmes",
+      },
+    ],
     notesInternes:
-      "Modélisé via la catégorie EXTINCTEUR en première approche ; à scinder si on ajoute une catégorie RIA dédiée en étape 11.",
+      "L'enum Prisma `CategorieEquipement` n'a pas de catégorie RIA dédiée : l'obligation reste rattachée à EXTINCTEUR (les moyens d'extinction manuels), mais elle est désormais bornée par la propriété `aRobinetsIncendieArmes`, sans quoi tout ERP déclarant des extincteurs recevait une échéance « vérification des RIA » sans posséder le moindre RIA. Forme `non_infirmee` (criticité 4) : les établissements existants gardent la ligne jusqu'à une réponse « non » explicite. À rebasculer sur une condition stricte le jour où une catégorie d'équipement RIA sera ajoutée à l'enum Prisma.",
   },
   {
     id: "incendie-erp-5-visite-commission",

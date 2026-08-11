@@ -6,9 +6,12 @@ import {
   PERIODICITES,
   REALISATEURS,
 } from "../types-communs";
+import type { Obligation } from "./types";
 import {
   DOMAINES_OBLIGATION,
+  REFERENTIEL_VERSION,
   SOURCES_LEGALES,
+  empreinteReferentiel,
   obligationParId,
   obligationsAeration,
   obligationsAscenseurs,
@@ -183,5 +186,276 @@ describe("référentiel conformité — cohérence sémantique", () => {
     for (const o of mes) {
       expect(o.realisateurs.length).toBeGreaterThan(0);
     }
+  });
+});
+
+// =============================================================================
+// Invariants durcis (amendement 2026-08)
+//
+// Le fichier ne vérifiait auparavant que l'unicité des id. Les quatre familles
+// de tests ci-dessous verrouillent les défauts trouvés à l'audit : conditions
+// mortes, doublons réels, seuils d'effectif écrits en prose mais jamais
+// encodés, et perte silencieuse d'obligations vitales.
+// =============================================================================
+
+describe("référentiel conformité — conditions bien formées", () => {
+  it("toute catégorie citée dans conditions[] appartient à categoriesEquipement", () => {
+    // Une condition qui cible une catégorie absente de `categoriesEquipement`
+    // est une condition MORTE : le moteur ne la rencontre jamais, l'obligation
+    // s'applique donc sans restriction alors que le rédacteur croyait l'avoir
+    // bornée. C'est le pire des cas — un faux positif déguisé en règle fine.
+    for (const o of obligationsConformite) {
+      for (const c of o.conditions ?? []) {
+        expect(
+          o.categoriesEquipement,
+          `${o.id} : condition sur ${c.categorie}, absente de categoriesEquipement`,
+        ).toContain(c.categorie);
+      }
+    }
+  });
+
+  it("un tableau conditions[] déclaré n'est jamais vide", () => {
+    for (const o of obligationsConformite) {
+      if (o.conditions !== undefined) {
+        expect(o.conditions.length, o.id).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("toute propriété conditionnée porte un nom exploitable (non vide)", () => {
+    for (const o of obligationsConformite) {
+      for (const c of o.conditions ?? []) {
+        expect(c.propriete.trim().length, o.id).toBeGreaterThan(0);
+      }
+    }
+  });
+});
+
+describe("référentiel conformité — anti-doublon", () => {
+  /**
+   * Normalise une référence légale pour la comparaison : casse, espaces et
+   * numéros de paragraphe sont ignorés, de sorte que « art. GC 20 » et
+   * « art. GC 20 § 2 » désignent bien le même article — c'était exactement
+   * le doublon ramonage/nettoyage de hotte trouvé à l'audit.
+   */
+  function normaliserReference(r: string): string {
+    return r
+      .toLowerCase()
+      .replace(/§\s*\d+/g, " ")
+      .replace(/\s+/g, " ")
+      .replace(/[\s,.]+$/, "")
+      .trim();
+  }
+
+  /**
+   * Deux obligations distinguées par des conditions différentes ne sont pas
+   * des doublons : elles couvrent des périmètres disjoints ou emboîtés
+   * (ex. RIA vs extincteurs, tous deux sur MS 73).
+   */
+  function signatureConditions(o: Obligation): string {
+    return JSON.stringify(
+      (o.conditions ?? [])
+        .map((c) => JSON.stringify(c))
+        .sort()
+        .join("|"),
+    );
+  }
+
+  it("pas deux obligations partageant catégorie d'équipement, périodicité et article fondateur", () => {
+    // On compare l'article FONDATEUR (`referencesLegales[0]`, cf. convention
+    // documentée sur le type `Obligation`) et non l'ensemble des références :
+    // deux obligations distinctes citent légitimement un même article en
+    // contexte — le dossier de maintenance et le maintien en état d'une porte
+    // automatique renvoient tous deux à R. 4224-15 sans être un doublon.
+    const doublons: string[] = [];
+    for (let i = 0; i < obligationsConformite.length; i++) {
+      for (let j = i + 1; j < obligationsConformite.length; j++) {
+        const a = obligationsConformite[i];
+        const b = obligationsConformite[j];
+        if (a.periodicite !== b.periodicite) continue;
+        if (signatureConditions(a) !== signatureConditions(b)) continue;
+        const memeCategorie = a.categoriesEquipement.some((c) =>
+          b.categoriesEquipement.includes(c),
+        );
+        if (!memeCategorie) continue;
+        if (
+          normaliserReference(a.referencesLegales[0].reference) ===
+          normaliserReference(b.referencesLegales[0].reference)
+        ) {
+          doublons.push(`${a.id} ↔ ${b.id}`);
+        }
+      }
+    }
+    expect(doublons).toEqual([]);
+  });
+
+  it("l'id retiré `aeration-hotte-pro-annuelle` n'est pas réintroduit", () => {
+    // Fusionné dans `cuisson-erp-circuits-extraction-nettoyage`. Un id retiré
+    // ne doit jamais réapparaître : des Verification en base le référencent.
+    expect(obligationParId("aeration-hotte-pro-annuelle")).toBeUndefined();
+    expect(
+      obligationParId("cuisson-erp-circuits-extraction-nettoyage"),
+    ).toBeDefined();
+  });
+});
+
+describe("référentiel conformité — seuils d'effectif", () => {
+  /**
+   * Un seuil d'effectif écrit dans la description mais absent de la typologie
+   * est un seuil qui n'existe pas : le moteur applique l'obligation à tout le
+   * monde, description trompeuse à l'appui.
+   */
+  const MENTION_SEUIL_EFFECTIF =
+    /\d+\s*(salari[ée]s?|personnes?|travailleurs?)/i;
+
+  it("toute description citant un seuil d'effectif le déclare dans la typologie", () => {
+    for (const o of obligationsConformite) {
+      if (!o.description) continue;
+      if (!MENTION_SEUIL_EFFECTIF.test(o.description)) continue;
+      const t = o.typologies;
+      expect(
+        t.effectifMin !== undefined || t.effectifMax !== undefined,
+        `${o.id} : la description mentionne un seuil d'effectif jamais encodé`,
+      ).toBe(true);
+    }
+  });
+
+  it("les plages d'effectif déclarées sont cohérentes", () => {
+    for (const o of obligationsConformite) {
+      const { effectifMin, effectifMax } = o.typologies;
+      if (effectifMin !== undefined) {
+        expect(effectifMin, o.id).toBeGreaterThanOrEqual(0);
+      }
+      if (effectifMin !== undefined && effectifMax !== undefined) {
+        expect(effectifMin, o.id).toBeLessThanOrEqual(effectifMax);
+      }
+    }
+  });
+
+  it("le seuil de l'exercice semestriel d'évacuation est bien encodé", () => {
+    const o = obligationParId("incendie-travail-exercice-semestriel");
+    expect(o?.typologies.effectifMin).toBe(51);
+  });
+});
+
+describe("référentiel conformité — non-régression des obligations critiques", () => {
+  /**
+   * Conditions strictes antérieures à l'amendement 2026-08. Elles sont
+   * légitimes : l'obligation n'a JAMAIS été appliquée sans réponse, donc
+   * aucun établissement ne peut la perdre. Toute nouvelle condition stricte
+   * sur une obligation de criticité ≥ 4 doit être ajoutée ici en connaissance
+   * de cause — ou, bien plus probablement, rédigée en `non_infirmee`.
+   */
+  const CONDITIONS_STRICTES_HISTORIQUES = new Set([
+    "elec-erp-groupe-electrogene-annuel",
+    "aeration-travail-locaux-pollution-specifique",
+    "aeration-erp-ps-surveillance-qualite-air-sup-250",
+  ]);
+
+  it("une obligation criticité ≥ 4 ne se conditionne qu'en « non infirmée »", () => {
+    // Sans cette règle, ajouter une condition à une obligation déjà publiée
+    // ferait disparaître l'obligation pour TOUS les équipements déjà en base
+    // — qui n'ont évidemment pas la nouvelle propriété — sans le moindre
+    // signal. Inacceptable sur une obligation de criticité élevée.
+    for (const o of obligationsConformite) {
+      if (o.criticite < 4) continue;
+      if (!o.conditions || o.conditions.length === 0) continue;
+      if (CONDITIONS_STRICTES_HISTORIQUES.has(o.id)) continue;
+      for (const c of o.conditions) {
+        expect(
+          c.type,
+          `${o.id} : condition stricte sur une obligation criticité ${o.criticite}`,
+        ).toBe("equipement_propriete_non_infirmee");
+      }
+    }
+  });
+
+  it("l'allowlist historique ne contient que des obligations réellement existantes", () => {
+    for (const id of CONDITIONS_STRICTES_HISTORIQUES) {
+      const o = obligationParId(id);
+      expect(o, id).toBeDefined();
+      expect(o?.conditions?.length, id).toBeGreaterThan(0);
+    }
+  });
+
+  it("les obligations bornées à l'audit 2026-08 portent bien leur condition", () => {
+    const attendus: [string, string][] = [
+      ["incendie-erp-ria-annuelle", "aRobinetsIncendieArmes"],
+      ["aeration-habitation-vmc-gaz-annuelle", "estVmcGaz"],
+      ["cuisson-erp-extinction-automatique-annuelle", "aExtinctionAutomatique"],
+      ["levage-vgp-semestrielle-personnes", "sertAuLevageDePersonnes"],
+      ["levage-vgp-accessoires-annuelle", "aAccessoiresDeLevage"],
+      ["esp-requalification-decennale", "estSoumisSuiviEnService"],
+      ["esp-inspection-periodique", "estSoumisSuiviEnService"],
+    ];
+    for (const [id, propriete] of attendus) {
+      const o = obligationParId(id);
+      expect(o, id).toBeDefined();
+      expect(
+        o?.conditions?.some(
+          (c) =>
+            c.type === "equipement_propriete_non_infirmee" &&
+            c.propriete === propriete,
+        ),
+        `${id} attend une condition non infirmée sur ${propriete}`,
+      ).toBe(true);
+    }
+  });
+});
+
+describe("référentiel conformité — forme normalisée des typologies", () => {
+  it("aucune obligation ne liste les 5 catégories ERP (écrire `erp: true`)", () => {
+    // `erp: { categories: ["N1"…"N5"] }` et `erp: true` ne sont PAS
+    // équivalents : la première forme exige en plus une `categorieErp` non
+    // nulle et crée donc un faux négatif sur tout ERP dont la catégorie n'est
+    // pas renseignée. Une restriction qui n'exclut rien ne doit pas s'écrire
+    // comme une restriction.
+    for (const o of obligationsConformite) {
+      if (typeof o.typologies.erp === "object") {
+        expect(
+          o.typologies.erp.categories.length,
+          `${o.id} : liste exhaustive de catégories, écrire \`erp: true\``,
+        ).toBeLessThan(CATEGORIES_ERP.length);
+      }
+    }
+  });
+
+  it("une restriction de catégorie ou de classe n'est jamais vide", () => {
+    for (const o of obligationsConformite) {
+      if (typeof o.typologies.erp === "object") {
+        expect(o.typologies.erp.categories.length, o.id).toBeGreaterThan(0);
+      }
+      if (typeof o.typologies.igh === "object") {
+        expect(o.typologies.igh.classes.length, o.id).toBeGreaterThan(0);
+      }
+    }
+  });
+});
+
+describe("référentiel conformité — version et empreinte", () => {
+  // Le référentiel vit en TypeScript (ADR-003) mais ses effets sont écrits en
+  // base : chaque `Verification` fige une périodicité et un libellé. Sans
+  // repère de version, une correction du référentiel ne se propageait qu'au
+  // hasard d'une mutation d'équipement, et deux établissements identiques
+  // pouvaient afficher deux échéances différentes selon la date de leur
+  // dernière modification.
+  //
+  // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
+  // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
+  // version PUIS recopiez l'empreinte que le message d'échec affiche.
+  const EMPREINTE_ATTENDUE = "64-16cf3df27173b376";
+
+  it("l'empreinte du contenu correspond à la version déclarée", () => {
+    expect(
+      empreinteReferentiel(),
+      "Le contenu du référentiel a changé. Incrémentez " +
+        "`REFERENTIEL_VERSION` dans `index.ts`, puis mettez `EMPREINTE_ATTENDUE` " +
+        "à jour avec la valeur reçue ci-dessus. Les calendriers déjà générés " +
+        "seront réconciliés automatiquement à la version suivante.",
+    ).toBe(EMPREINTE_ATTENDUE);
+  });
+
+  it("la version est datée et incrémentable", () => {
+    expect(REFERENTIEL_VERSION).toMatch(/^\d{4}-\d{2}-\d{2}\.\d+$/);
   });
 });

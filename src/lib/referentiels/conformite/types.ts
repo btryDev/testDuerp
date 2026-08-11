@@ -64,7 +64,31 @@ export type ReferenceLegale = {
 /**
  * Condition d'application complémentaire à la typologie. Couvre les règles
  * qui dépendent d'attributs portés par un équipement (ex. parking couvert
- * avec > 250 véhicules). Reste déclaratif pour rester auditable.
+ * avec > 250 véhicules). Reste déclaratif pour rester auditable : aucune
+ * fonction TypeScript arbitraire n'entre dans le référentiel (ADR-003).
+ *
+ * Trois formes, qui se distinguent par leur comportement **quand la propriété
+ * n'est pas renseignée** — c'est le point de sécurité du modèle :
+ *
+ *  - `equipement_propriete_numerique` : propriété absente ⇒ condition NON
+ *    satisfaite. À réserver aux obligations dont la portée exacte dépend d'un
+ *    chiffre que l'utilisateur doit fournir (capacité de parking…), et dont la
+ *    sur-application serait aussi fausse que la sous-application.
+ *  - `equipement_propriete_booleenne` : propriété absente ⇒ condition NON
+ *    satisfaite. Sémantique « opt-in » : l'obligation n'apparaît qu'après une
+ *    réponse positive explicite.
+ *  - `equipement_propriete_non_infirmee` : la condition est satisfaite **tant
+ *    que l'utilisateur n'a pas répondu « non »** (propriété absente, ou d'un
+ *    type inattendu ⇒ satisfaite ; seule la valeur booléenne `false` la rend
+ *    non satisfaite). Sémantique « opt-out ».
+ *
+ * Règle de rédaction (verrouillée par `conformite.test.ts`) : ajouter une
+ * condition sur une obligation **déjà publiée** de criticité ≥ 4 impose la
+ * forme `non_infirmee`. Sinon, tous les équipements déjà déclarés en base —
+ * qui n'ont évidemment pas la nouvelle propriété — perdraient l'obligation en
+ * silence, sans que personne ne soit averti. Sur une obligation de criticité
+ * élevée, une sur-application visible et corrigeable par une réponse « non »
+ * est toujours préférable à un faux négatif muet.
  */
 export type ConditionApplication =
   | {
@@ -79,6 +103,11 @@ export type ConditionApplication =
       categorie: CategorieEquipement;
       propriete: string;
       valeur: boolean;
+    }
+  | {
+      type: "equipement_propriete_non_infirmee";
+      categorie: CategorieEquipement;
+      propriete: string;
     };
 
 export type Obligation = {
@@ -89,7 +118,16 @@ export type Obligation = {
   libelle: string;
   /** Texte long optionnel pour la fiche détaillée et le registre. */
   description?: string;
-  /** Liste non vide de références. Au moins une source primaire opposable. */
+  /**
+   * Liste non vide de références. Au moins une source primaire opposable.
+   *
+   * Convention d'ordre : `referencesLegales[0]` est l'article qui **fonde**
+   * l'obligation — celui qu'on citerait seul devant un inspecteur. Les
+   * suivantes sont du contexte (article qui pose un seuil, texte d'application,
+   * fiche INRS). Le test anti-doublon du référentiel s'appuie sur cette
+   * convention : deux obligations fondées sur le même article, pour la même
+   * catégorie d'équipement et la même périodicité, sont un doublon.
+   */
   referencesLegales: [ReferenceLegale, ...ReferenceLegale[]];
   periodicite: Periodicite;
   /** Réalisateurs acceptés. Au moins un. En général 1, parfois 2 (ex. "personne qualifiée OU organisme agréé"). */

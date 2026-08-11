@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
-  obligationsAeration,
   obligationsConformite,
   obligationsElectricite,
   obligationsIncendie,
 } from "@/lib/referentiels/conformite";
 import type { Obligation } from "@/lib/referentiels/conformite/types";
+import { CATEGORIES_EQUIPEMENT } from "@/lib/referentiels/types-communs";
 import {
   determineObligationsApplicables,
   evaluerObligation,
@@ -529,7 +529,12 @@ describe("moteur matching — scénarios intégrés", () => {
     // Aération
     expect(ids).toContain("aeration-travail-entretien-annuel");
     expect(ids).toContain("aeration-erp-chauffage-ventilation-annuelle");
-    expect(ids).toContain("aeration-hotte-pro-annuelle");
+    // Ramonage annuel des circuits d'extraction (GC 20) : une seule entrée
+    // depuis la fusion du doublon `aeration-hotte-pro-annuelle`.
+    expect(ids).toContain("cuisson-erp-circuits-extraction-nettoyage");
+    expect(
+      ids.filter((i) => i === "cuisson-erp-circuits-extraction-nettoyage"),
+    ).toHaveLength(1);
   });
 
   it("bureau minimaliste (travail uniquement) — pas d'obligations ERP ni IGH", () => {
@@ -698,19 +703,324 @@ describe("moteur matching — cohérence avec le référentiel", () => {
     expect(res).toBeNull();
   });
 
-  it("evaluerObligation : hotte pro ne déclenche pas sans ERP", () => {
-    const hotteObli = obligationsAeration.find(
-      (o) => o.id === "aeration-hotte-pro-annuelle",
+  it("evaluerObligation : ramonage de hotte ne déclenche pas sans ERP", () => {
+    const hotteObli = obligationsConformite.find(
+      (o) => o.id === "cuisson-erp-circuits-extraction-nettoyage",
     )!;
     expect(evaluerObligation(hotteObli, etabBureau(), [hotte()])).toBeNull();
   });
 
-  it("evaluerObligation : hotte pro déclenche dans un ERP cat 5 avec hotte", () => {
-    const hotteObli = obligationsAeration.find(
-      (o) => o.id === "aeration-hotte-pro-annuelle",
+  it("evaluerObligation : ramonage de hotte déclenche dans un ERP cat 5 avec hotte", () => {
+    const hotteObli = obligationsConformite.find(
+      (o) => o.id === "cuisson-erp-circuits-extraction-nettoyage",
     )!;
     const res = evaluerObligation(hotteObli, etabRestoErpCat5(), [hotte()]);
     expect(res).not.toBeNull();
     expect(res?.equipementsConcernes.map((e) => e.id)).toEqual(["eq-hotte"]);
+  });
+
+  it("le ramonage de hotte s'applique aussi à un ERP dont la catégorie est inconnue", () => {
+    // Régression de la normalisation `erp: true` : la forme
+    // `erp: { categories: ["N1"…"N5"] }` exigeait en plus une catégorie
+    // renseignée et perdait donc l'obligation sur un ERP mal qualifié.
+    const erpSansCategorie = etabRestoErpCat5({ categorieErp: null });
+    const ids = idsObligations(
+      determineObligationsApplicables(erpSansCategorie, [hotte()]),
+    );
+    expect(ids).toContain("cuisson-erp-circuits-extraction-nettoyage");
+  });
+});
+
+// ============================================================================
+// TESTS — amendements 2026-08 : conditions « non infirmées », restrictions de
+// catégorie conjonctives, seuils d'effectif
+// ============================================================================
+
+describe("moteur matching — condition « non infirmée » (opt-out)", () => {
+  const OBLIGATION_RIA = "incendie-erp-ria-annuelle";
+
+  it("propriété non renseignée → obligation MAINTENUE", () => {
+    // C'est tout l'objet de l'opérateur : un établissement déjà en base, dont
+    // les extincteurs n'ont jamais porté la propriété `aRobinetsIncendieArmes`,
+    // ne doit pas perdre l'obligation en silence.
+    const res = determineObligationsApplicables(etabErpCat3(), [extincteur()]);
+    expect(idsObligations(res)).toContain(OBLIGATION_RIA);
+  });
+
+  it("réponse « oui » explicite → obligation maintenue", () => {
+    const res = determineObligationsApplicables(etabErpCat3(), [
+      { ...extincteur(), caracteristiques: { aRobinetsIncendieArmes: true } },
+    ]);
+    expect(idsObligations(res)).toContain(OBLIGATION_RIA);
+  });
+
+  it("réponse « non » explicite → obligation retirée", () => {
+    const res = determineObligationsApplicables(etabErpCat3(), [
+      { ...extincteur(), caracteristiques: { aRobinetsIncendieArmes: false } },
+    ]);
+    expect(idsObligations(res)).not.toContain(OBLIGATION_RIA);
+    // …sans emporter la vérification annuelle des extincteurs eux-mêmes.
+    expect(idsObligations(res)).toContain("incendie-erp-extincteurs-annuelle");
+  });
+
+  it("valeur d'un type inattendu → traitée comme « pas de réponse »", () => {
+    const res = determineObligationsApplicables(etabErpCat3(), [
+      {
+        ...extincteur(),
+        caracteristiques: { aRobinetsIncendieArmes: "non" },
+      },
+    ]);
+    expect(idsObligations(res)).toContain(OBLIGATION_RIA);
+  });
+});
+
+describe("moteur matching — faux positifs structurels corrigés", () => {
+  function levage(caracteristiques: Record<string, unknown> | null = null) {
+    return {
+      id: "eq-transpalette",
+      libelle: "Transpalette électrique",
+      categorie: "EQUIPEMENT_LEVAGE" as const,
+      caracteristiques,
+    };
+  }
+
+  it("un transpalette dont on a répondu « non » perd la VGP semestrielle « personnes »", () => {
+    const res = determineObligationsApplicables(etabBureau(), [
+      levage({ sertAuLevageDePersonnes: false, aAccessoiresDeLevage: false }),
+    ]);
+    const ids = idsObligations(res);
+    expect(ids).not.toContain("levage-vgp-semestrielle-personnes");
+    expect(ids).not.toContain("levage-vgp-accessoires-annuelle");
+    // La VGP annuelle de levage de charges, elle, reste due.
+    expect(ids).toContain("levage-vgp-annuelle-charges");
+  });
+
+  it("une nacelle déclarée comme telle conserve la VGP semestrielle", () => {
+    const res = determineObligationsApplicables(etabBureau(), [
+      levage({ sertAuLevageDePersonnes: true }),
+    ]);
+    expect(idsObligations(res)).toContain("levage-vgp-semestrielle-personnes");
+  });
+
+  it("un compresseur hors champ de l'arrêté du 20 novembre 2017 perd la requalification décennale", () => {
+    const res = determineObligationsApplicables(etabBureau(), [
+      {
+        id: "eq-compresseur",
+        libelle: "Compresseur d'atelier",
+        categorie: "EQUIPEMENT_SOUS_PRESSION",
+        caracteristiques: { estSoumisSuiviEnService: false },
+      },
+    ]);
+    const ids = idsObligations(res);
+    expect(ids).not.toContain("esp-requalification-decennale");
+    expect(ids).not.toContain("esp-inspection-periodique");
+    // La formation des opérateurs relève du Code du travail : elle demeure.
+    expect(ids).toContain("esp-personnel-formation");
+  });
+
+  it("une VMC d'habitation non raccordée au gaz perd l'obligation VMC-Gaz", () => {
+    const res = determineObligationsApplicables(etabHabitationPure(), [
+      vmc({ caracteristiques: { estVmcGaz: false } }),
+    ]);
+    expect(idsObligations(res)).not.toContain(
+      "aeration-habitation-vmc-gaz-annuelle",
+    );
+  });
+
+  it("une cuisine sans extinction automatique perd la vérification correspondante", () => {
+    const res = determineObligationsApplicables(etabRestoErpCat5(), [
+      { ...cuissonErp(), caracteristiques: { aExtinctionAutomatique: false } },
+    ]);
+    const ids = idsObligations(res);
+    expect(ids).not.toContain("cuisson-erp-extinction-automatique-annuelle");
+    expect(ids).toContain("cuisson-erp-appareils-annuelle");
+  });
+});
+
+describe("moteur matching — aucun établissement existant ne perd une obligation criticité ≥ 4", () => {
+  /**
+   * Verrou central de l'amendement 2026-08. Un établissement « existant » est
+   * un établissement dont les équipements n'ont AUCUNE caractéristique
+   * renseignée — situation de tous ceux qui sont en base avant l'ajout des
+   * nouvelles questions. Le test reconstitue ce cas et vérifie que le parc
+   * d'obligations de criticité ≥ 4 est identique à celui qu'on obtiendrait
+   * sans aucune condition, c'est-à-dire avant l'amendement.
+   */
+  const etabTousRegimes: EtablissementMatching = {
+    id: "etab-legacy",
+    effectifSurSite: 80,
+    estEtablissementTravail: true,
+    estERP: true,
+    estIGH: true,
+    estHabitation: true,
+    typeErp: "N",
+    categorieErp: "N2",
+    classeIgh: "GHZ",
+  };
+
+  /** Un équipement sans caractéristiques pour chacune des catégories. */
+  const parcSansCaracteristiques: EquipementMatching[] =
+    CATEGORIES_EQUIPEMENT.map((categorie) => ({
+      id: `eq-${categorie}`,
+      libelle: categorie,
+      categorie,
+      caracteristiques: null,
+    }));
+
+  it("le résultat inclut toutes les obligations criticité ≥ 4 conditionnées en « non infirmée »", () => {
+    const ids = new Set(
+      idsObligations(
+        determineObligationsApplicables(
+          etabTousRegimes,
+          parcSansCaracteristiques,
+        ),
+      ),
+    );
+
+    const perdues = obligationsConformite
+      .filter((o) => o.criticite >= 4)
+      .filter((o) =>
+        (o.conditions ?? []).every(
+          (c) => c.type === "equipement_propriete_non_infirmee",
+        ),
+      )
+      // Restrictions de typologie / d'effectif hors sujet ici : on ne garde
+      // que les obligations que cet établissement « tous régimes » satisfait
+      // par ailleurs, en les réévaluant sans leurs conditions.
+      .filter(
+        (o) =>
+          evaluerObligation(
+            { ...o, conditions: undefined },
+            etabTousRegimes,
+            parcSansCaracteristiques,
+          ) !== null,
+      )
+      .map((o) => o.id)
+      .filter((id) => !ids.has(id));
+
+    expect(perdues).toEqual([]);
+  });
+
+  it("aucune condition stricte n'a été ajoutée sur une obligation criticité ≥ 4 hors allowlist", () => {
+    // Doublon volontaire de l'invariant du référentiel : si quelqu'un
+    // contourne la règle côté référentiel, le moteur le signale aussi.
+    const strictes = obligationsConformite
+      .filter((o) => o.criticite >= 4)
+      .filter((o) =>
+        (o.conditions ?? []).some(
+          (c) => c.type !== "equipement_propriete_non_infirmee",
+        ),
+      )
+      .map((o) => o.id)
+      .sort();
+    expect(strictes).toEqual([
+      "aeration-erp-ps-surveillance-qualite-air-sup-250",
+      "aeration-travail-locaux-pollution-specifique",
+      "elec-erp-groupe-electrogene-annuel",
+    ]);
+  });
+});
+
+describe("moteur matching — restriction de catégorie ERP en ET avec les autres régimes", () => {
+  it("un ERP hors catégories ne contourne PAS la restriction via travail: true", () => {
+    // Piège latent identifié à l'audit : les régimes positifs sont en OU. Une
+    // obligation qui restreint la catégorie ERP tout en acceptant le régime
+    // travail serait matchée par un ERP employeur hors catégories, via la
+    // seule branche « travail ». La restriction doit primer.
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-restriction-categorie-et",
+      typologies: { travail: true, erp: { categories: ["N1", "N2"] } },
+    };
+    const erpCat5Employeur = etabRestoErpCat5(); // travail + ERP N5
+    expect(
+      determineObligationsApplicables(erpCat5Employeur, [elec()], {
+        obligations: [synthetique],
+      }),
+    ).toHaveLength(0);
+
+    // …et l'ERP dans la liste, lui, matche bien.
+    expect(
+      determineObligationsApplicables(etabErpCat3(), [elec()], {
+        obligations: [
+          {
+            ...synthetique,
+            typologies: { travail: true, erp: { categories: ["N3"] } },
+          },
+        ],
+      }),
+    ).toHaveLength(1);
+  });
+
+  it("un établissement NON-ERP n'est pas concerné par la restriction de catégorie", () => {
+    // La restriction ne s'applique qu'aux établissements du régime restreint :
+    // un bureau non-ERP reste éligible par la branche « travail ».
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-restriction-categorie-non-erp",
+      typologies: { travail: true, erp: { categories: ["N1", "N2"] } },
+    };
+    expect(
+      determineObligationsApplicables(etabBureau(), [elec()], {
+        obligations: [synthetique],
+      }),
+    ).toHaveLength(1);
+  });
+
+  it("même règle pour les classes IGH", () => {
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-restriction-classe-igh-et",
+      typologies: { travail: true, igh: { classes: ["GHA"] } },
+    };
+    // etabIgh() est un GHW employeur : la restriction GHA doit rejeter.
+    expect(
+      determineObligationsApplicables(etabIgh(), [elec()], {
+        obligations: [synthetique],
+      }),
+    ).toHaveLength(0);
+  });
+
+  it("un ERP dont la catégorie est inconnue est rejeté par une restriction de catégorie", () => {
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-restriction-categorie-inconnue",
+      typologies: { erp: { categories: ["N1", "N2"] } },
+    };
+    const erpSansCategorie = etabErpCat3();
+    erpSansCategorie.categorieErp = null;
+    expect(
+      determineObligationsApplicables(erpSansCategorie, [elec()], {
+        obligations: [synthetique],
+      }),
+    ).toHaveLength(0);
+  });
+});
+
+describe("moteur matching — seuil d'effectif de l'exercice semestriel d'évacuation", () => {
+  const EXERCICE = "incendie-travail-exercice-semestriel";
+
+  it("un salon de coiffure de 2 personnes ne reçoit plus l'exercice semestriel", () => {
+    const res = determineObligationsApplicables(
+      etabBureau({ effectifSurSite: 2 }),
+      [alarme()],
+    );
+    expect(idsObligations(res)).not.toContain(EXERCICE);
+  });
+
+  it("50 personnes exactement : sous le seuil (« plus de cinquante »)", () => {
+    const res = determineObligationsApplicables(
+      etabBureau({ effectifSurSite: 50 }),
+      [alarme()],
+    );
+    expect(idsObligations(res)).not.toContain(EXERCICE);
+  });
+
+  it("51 personnes : l'obligation s'applique", () => {
+    const res = determineObligationsApplicables(
+      etabBureau({ effectifSurSite: 51 }),
+      [alarme()],
+    );
+    expect(idsObligations(res)).toContain(EXERCICE);
   });
 });

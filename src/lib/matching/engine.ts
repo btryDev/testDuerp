@@ -14,7 +14,8 @@
  * Règles (doc : `docs/regles-matching.md`) :
  *   1. La typologie de l'obligation doit matcher l'établissement — les
  *      régimes positifs (travail/ERP/IGH/habitation) en OU entre eux, les
- *      exclusions (`false`) et l'effectif en ET (amendement 2026-08).
+ *      exclusions (`false`), les restrictions de catégorie ERP / classe IGH
+ *      et l'effectif en ET (amendements 2026-08).
  *   2. Au moins un équipement de l'établissement doit avoir sa catégorie
  *      dans `obligation.categoriesEquipement`.
  *   3. Si l'obligation a des `conditions[]`, elles sont regroupées par
@@ -104,7 +105,7 @@ function evaluerIgh(
 }
 
 /**
- * Sémantique (amendement 2026-08, cf. `docs/regles-matching.md`) :
+ * Sémantique (amendements 2026-08, cf. `docs/regles-matching.md`) :
  *   - Les critères de régime **positifs** (`travail: true`, `erp: true |
  *     {categories}`, `igh: true | {classes}`, `habitation: true`) forment
  *     une **disjonction** : l'établissement doit en satisfaire AU MOINS UN.
@@ -113,6 +114,14 @@ function evaluerIgh(
  *     (cas des ascenseurs).
  *   - Les critères **négatifs** (`travail: false`, `erp: false`, …) restent
  *     des **exclusions en ET** : un seul violé suffit à rejeter.
+ *   - Les **restrictions de catégorie ERP / classe IGH** sont en ET, et non
+ *     dans la disjonction : si l'obligation écrit `erp: { categories: [...] }`
+ *     et que l'établissement EST un ERP, sa catégorie doit appartenir à la
+ *     liste — même si un autre régime positif (`travail: true`) matche par
+ *     ailleurs. Sans cette règle, une obligation `{ travail: true,
+ *     erp: { categories: ["N1"] } }` s'appliquerait à un ERP de 5ᵉ catégorie
+ *     employeur via la seule branche « travail », contournant en silence la
+ *     restriction de catégorie que le rédacteur a explicitement posée.
  *   - `effectifMin`/`effectifMax` restent en ET avec le reste.
  *   - Les `raisons` ne contiennent que les régimes effectivement matchés.
  */
@@ -125,6 +134,27 @@ function matchTypologie(
   if (t.erp === false && etab.estERP) return { ok: false };
   if (t.igh === false && etab.estIGH) return { ok: false };
   if (t.habitation === false && etab.estHabitation) return { ok: false };
+
+  // 1 bis. Restrictions de catégorie / classe (ET). Elles ne s'appliquent qu'aux
+  // établissements qui relèvent effectivement du régime restreint : un bureau
+  // non-ERP n'est pas concerné par une restriction « ERP 1ʳᵉ à 4ᵉ catégorie »,
+  // il est simplement hors de cette branche de la disjonction.
+  if (
+    typeof t.erp === "object" &&
+    t.erp.categories.length > 0 &&
+    etab.estERP &&
+    (!etab.categorieErp || !t.erp.categories.includes(etab.categorieErp))
+  ) {
+    return { ok: false };
+  }
+  if (
+    typeof t.igh === "object" &&
+    t.igh.classes.length > 0 &&
+    etab.estIGH &&
+    (!etab.classeIgh || !t.igh.classes.includes(etab.classeIgh))
+  ) {
+    return { ok: false };
+  }
 
   // 2. Régimes positifs (OU) — au moins un déclaré doit matcher.
   const regimes: EvalRegime[] = [
@@ -195,10 +225,26 @@ function lireProprieteBooleenne(
   return typeof v === "boolean" ? v : undefined;
 }
 
+/**
+ * Évaluation d'une condition pour un équipement donné.
+ *
+ * Le point sensible est le traitement de la propriété **non renseignée** :
+ *   - `numerique` et `booleenne` : non renseignée ⇒ NON satisfaite (opt-in).
+ *     L'obligation n'apparaît qu'après une réponse explicite de l'utilisateur.
+ *   - `non_infirmee` : non renseignée ⇒ SATISFAITE (opt-out). Seule la valeur
+ *     booléenne `false` — c'est-à-dire une réponse « non » explicite — rend la
+ *     condition non satisfaite. C'est la forme imposée aux obligations de
+ *     criticité ≥ 4 auxquelles on ajoute une condition après coup : les
+ *     équipements déjà en base ne peuvent alors pas perdre l'obligation en
+ *     silence (cf. `ConditionApplication` dans le référentiel).
+ */
 function conditionSatisfaite(
   cond: ConditionApplication,
   eq: EquipementMatching,
 ): boolean {
+  if (cond.type === "equipement_propriete_non_infirmee") {
+    return lireProprieteBooleenne(eq, cond.propriete) !== false;
+  }
   if (cond.type === "equipement_propriete_numerique") {
     const v = lireProprieteNumerique(eq, cond.propriete);
     if (v === undefined) return false;

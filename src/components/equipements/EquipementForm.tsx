@@ -7,7 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { PictoEquipement } from "@/components/equipements/PictoEquipement";
-import { CATEGORIES_EQUIPEMENT } from "@/lib/equipements/schema";
+import {
+  CATEGORIES_EQUIPEMENT,
+  CATEGORIES_TRI_ETAT,
+  VALEURS_TRI_ETAT,
+  valeurTriEtat,
+  type ChampTriEtat,
+} from "@/lib/equipements/schema";
 import {
   DESCRIPTION_CATEGORIE,
   LABEL_CATEGORIE_EQUIPEMENT,
@@ -25,6 +31,52 @@ type Valeurs = {
   estLocalPollutionSpecifique?: boolean;
   nbVehiculesParkingCouvert?: number | null;
   notes?: string | null;
+} & Partial<Record<ChampTriEtat, boolean | null>>;
+
+/**
+ * Libellés des six questions à trois états.
+ *
+ * Elles bornent des obligations réelles : y répondre « non » retire une
+ * échéance du calendrier. Deux exigences de rédaction, donc — être
+ * compréhensible sans connaître le règlement (on décrit l'objet physique, pas
+ * l'article), et dire ce que la réponse déclenche, pour que le dirigeant
+ * comprenne l'enjeu de la question plutôt que de cliquer au hasard.
+ *
+ * « Je ne sais pas encore » est une réponse légitime et le défaut : tant
+ * qu'elle est retenue, l'obligation reste affichée. On ne fait jamais
+ * disparaître une vérification faute de réponse.
+ */
+const QUESTIONS_TRI_ETAT: Record<
+  ChampTriEtat,
+  { question: string; aide: string }
+> = {
+  estVmcGaz: {
+    question: "Cette VMC est-elle raccordée à des appareils à gaz ?",
+    aide: "On parle de « VMC-Gaz » : la ventilation évacue aussi les produits de combustion de chaudières ou de chauffe-eau au gaz. Si oui, entretien et vérification annuels par un professionnel sous contrat écrit (arrêté du 25 avril 1985).",
+  },
+  aRobinetsIncendieArmes: {
+    question:
+      "Votre établissement dispose-t-il de robinets d'incendie armés (RIA) ?",
+    aide: "Un RIA est un tuyau souple enroulé dans un coffret mural, relié en permanence à l'eau — à ne pas confondre avec un extincteur. Si oui, vérification annuelle (débit, pression, fonctionnement).",
+  },
+  aExtinctionAutomatique: {
+    question:
+      "Un système d'extinction automatique est-il installé sur les appareils de cuisson ?",
+    aide: "Dispositif fixé au-dessus des friteuses ou des plaques, qui projette un agent extincteur en cas de départ de feu. Si oui, vérification annuelle des cartouches, capteurs et circuits de déclenchement.",
+  },
+  sertAuLevageDePersonnes: {
+    question: "Cet appareil sert-il à lever des personnes ?",
+    aide: "Nacelle, plate-forme élévatrice, ou tout appareil utilisé même occasionnellement pour élever quelqu'un. Si oui, la vérification générale passe de annuelle à semestrielle. Un transpalette ou un monte-charge de marchandises : répondez « non ».",
+  },
+  aAccessoiresDeLevage: {
+    question: "Utilisez-vous des accessoires de levage avec cet appareil ?",
+    aide: "Élingues, chaînes, câbles, crochets, anneaux, manilles, palonniers. Si oui, ces accessoires font l'objet d'une vérification annuelle distincte de celle de l'appareil.",
+  },
+  estSoumisSuiviEnService: {
+    question:
+      "Cet équipement est-il suivi en service au titre de l'arrêté du 20 novembre 2017 ?",
+    aide: "Les récipients sous pression ne sont concernés qu'au-delà de seuils de pression et de volume. Votre notice, votre plaque signalétique ou votre installateur l'indiquent. En cas de doute, laissez « Je ne sais pas encore » : les échéances restent affichées.",
+  },
 };
 
 type Props = {
@@ -70,6 +122,13 @@ export function EquipementForm({
   const estElec = categorie === "INSTALLATION_ELECTRIQUE";
   const estAeration = CATEGORIES_AERATION.includes(categorie);
   const estVmc = categorie === "VMC";
+
+  // Questions à trois états applicables à la catégorie sélectionnée.
+  const questions = CATEGORIES_TRI_ETAT.filter((r) =>
+    r.categories.includes(categorie),
+  );
+  const afficherCaracteristiques =
+    estElec || estAeration || questions.length > 0;
 
   return (
     <form action={formAction} className="space-y-8">
@@ -190,7 +249,7 @@ export function EquipementForm({
       </section>
 
       {/* Caractéristiques spécifiques — dépliage conditionnel */}
-      {(estElec || estAeration) && (
+      {afficherCaracteristiques && (
         <section className="cartouche overflow-hidden">
           <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
             <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
@@ -282,6 +341,15 @@ export function EquipementForm({
                 )}
               </div>
             )}
+
+            {questions.map(({ champ }) => (
+              <QuestionTriEtat
+                key={champ}
+                champ={champ}
+                defaut={valeurTriEtat(valeursInitiales?.[champ])}
+                erreur={err(champ)}
+              />
+            ))}
           </div>
         </section>
       )}
@@ -319,5 +387,47 @@ export function EquipementForm({
         )}
       </div>
     </form>
+  );
+}
+
+/**
+ * Question à trois états. Un `<select>` plutôt qu'une case à cocher : une case
+ * décochée ne dit pas si l'utilisateur a répondu « non » ou n'a simplement pas
+ * répondu, et cette nuance décide ici du maintien d'une obligation
+ * réglementaire de criticité élevée.
+ */
+function QuestionTriEtat({
+  champ,
+  defaut,
+  erreur,
+}: {
+  champ: ChampTriEtat;
+  defaut: string;
+  erreur?: string;
+}) {
+  const { question, aide } = QUESTIONS_TRI_ETAT[champ];
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={champ} className="block text-[0.95rem] font-semibold">
+        {question}
+      </Label>
+      <p className="text-[0.82rem] leading-relaxed text-muted-foreground">
+        {aide}
+      </p>
+      <select
+        id={champ}
+        name={champ}
+        defaultValue={defaut}
+        className="h-9 w-full rounded-md border border-rule bg-background px-3 py-1 text-sm shadow-sm sm:w-64"
+        aria-invalid={Boolean(erreur)}
+      >
+        {VALEURS_TRI_ETAT.map((v) => (
+          <option key={v.value} value={v.value}>
+            {v.label}
+          </option>
+        ))}
+      </select>
+      {erreur && <p className="text-sm text-destructive">{erreur}</p>}
+    </div>
   );
 }
