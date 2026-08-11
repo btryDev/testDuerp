@@ -36,7 +36,10 @@ const DOCUMENTS: Document[] = [
     famille: "Échéances",
     titre: "Le calendrier des vérifications",
     corps: "Vous déclarez vos équipements une fois. Rojer en déduit les contrôles obligatoires, pose les dates et les repousse à mesure que les rapports arrivent.",
-    reperes: ["65 obligations · 9 domaines", "Sources Légifrance et INRS"],
+    // Compté sur `obligationsConformite` (src/lib/referentiels/conformite).
+    // À recompter quand le référentiel s'étend — un chiffre faux sur une
+    // page publique se paie plus cher que pas de chiffre du tout.
+    reperes: ["64 obligations · 9 domaines", "Sources Légifrance et INRS"],
   },
   {
     numero: "03",

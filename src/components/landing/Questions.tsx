@@ -1,34 +1,57 @@
 import { Reveal } from "./Reveal";
 
-// Les questions qu'on pose vraiment avant de créer un compte. Réponses
-// courtes, sans promesse : ce que l'outil fait, et ce qu'il ne fait pas.
+// Les questions posées avant de créer un compte. Registre sobre, réponses
+// courtes, sans promesse : ce que l'outil fait, et surtout ce qu'il ne
+// fait pas. Trois d'entre elles disent « non » — c'est voulu, une FAQ qui
+// n'écarte rien ne rassure personne.
+//
 // Accordéon en <details> natif — pas de JavaScript, ouvrable au clavier,
 // et le contenu reste dans le document pour la recherche.
+//
+// Une seule référence réglementaire est citée, l'art. R. 4121-2, et elle
+// a été relue sur Légifrance : mise à jour au moins annuelle à partir de
+// onze salariés, sinon à chaque aménagement important ou information
+// nouvelle. Le seuil est bien celui qu'applique le moteur
+// (`SEUIL_MAJ_ANNUELLE_DUERP`). Ne pas ajouter de montant d'amende ni de
+// texte non relu à la source : sur une page publique, une référence
+// approximative coûte plus cher que pas de référence du tout.
+//
+// La question sur l'absence d'IA a été retirée : le sujet est traité sans
+// détour dans la bande noire, et une FAQ n'est pas l'endroit où défendre
+// un choix d'architecture.
 
 const QUESTIONS = [
   {
-    q: "Rojer dit-il que je suis en règle ?",
-    r: "Non, et il ne le dira jamais. Il montre ce qui est fait, ce qui manque et à quelle date — la conformité se constate sur pièces, elle ne se décrète pas depuis un logiciel.",
+    q: "Rojer atteste-t-il de ma conformité ?",
+    r: "Non, et il ne le fera jamais. Il présente ce qui est fait, ce qui manque et à quelle échéance. La conformité se constate sur pièces, par une personne habilitée : elle ne se décrète pas depuis un logiciel.",
   },
   {
-    q: "Est-ce qu'il y a de l'intelligence artificielle là-dedans ?",
-    r: "Aucune. Le référentiel est construit à la main depuis Légifrance et l'INRS, et les règles qui en déduisent vos obligations sont déterministes. Sur un document à valeur légale, on doit pouvoir expliquer chaque ligne.",
+    q: "Mon DUERP doit-il être mis à jour chaque année ?",
+    r: "À partir de onze salariés, oui : au moins une fois par an (art. R. 4121-2 du Code du travail). En dessous de ce seuil, la mise à jour annuelle n'est pas exigée, mais elle reste obligatoire à chaque aménagement important et à chaque information nouvelle sur un risque. Rojer applique la règle qui correspond à votre effectif.",
   },
   {
-    q: "J'ai déjà un DUERP sur tableur.",
-    r: "Vous l'importez : un gabarit XLSX ou CSV à télécharger, vos unités de travail et vos risques repris tels quels. Vous reprenez là où vous en étiez, vous ne recommencez pas.",
+    q: "Rojer remplace-t-il mon organisme de vérification ?",
+    r: "Non. Les vérifications périodiques restent réalisées par un organisme agréé ou une personne compétente. Rojer tient le calendrier, vous indique ce qui arrive, et range le rapport à côté de l'échéance qu'il solde.",
   },
   {
-    q: "Et le jour où on me demande mes documents ?",
-    r: "Vous exportez le dossier en une fois : une archive datée, avec l'index des pièces. Inspection, assurance, bailleur ou acquéreur — c'est le même geste, et il prend un clic.",
+    // Fonctionnalité livrée : `src/lib/duerps/import/parser.ts` (Excel, xls
+    // et CSV, 20 Mo), modèle XLSX servi par /api/duerp/import/template,
+    // rattachement manuel des colonnes non reconnues dans le wizard. Le
+    // gabarit est en XLSX seul — c'est l'import qui accepte aussi le CSV.
+    q: "Puis-je reprendre un DUERP existant ?",
+    r: "Oui. Vous déposez votre fichier Excel ou CSV : unités de travail, risques, cotation et mesures déjà en place sont repris tels quels. Un modèle est téléchargeable, et les colonnes qui ne sont pas reconnues se rattachent à la main.",
   },
   {
-    q: "Où sont mes données ?",
-    r: "Hébergées dans l'Union européenne. Vous exportez ou supprimez votre dossier à tout moment. Les versions de DUERP, elles, sont conservées 40 ans — c'est la loi, pas notre choix.",
+    q: "Mon activité est-elle couverte ?",
+    r: "L'évaluation des risques couvre aujourd'hui la restauration, le commerce de détail et les activités de bureau. Le suivi des vérifications et des registres, lui, ne dépend pas du secteur : il découle de vos équipements et de votre type d'établissement.",
   },
   {
-    q: "Combien de temps pour démarrer ?",
-    r: "Une demi-heure pour déclarer l'établissement et les équipements. Le calendrier et la liste d'obligations se génèrent ensuite tout seuls.",
+    q: "Comment présenter mon dossier lors d'un contrôle ?",
+    r: "En une archive datée, accompagnée de l'index des pièces, générée en une fois. Inspection du travail, assurance, bailleur ou acquéreur : le geste est le même.",
+  },
+  {
+    q: "Où sont hébergées mes données ?",
+    r: "Dans l'Union européenne. Vous exportez ou supprimez votre dossier à tout moment. Les versions de DUERP font exception : leur conservation pendant quarante ans est une obligation légale, pas un choix de notre part.",
   },
 ];
 
@@ -41,8 +64,8 @@ export function Questions() {
       <div className="lp-shell grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         <Reveal as="header">
           <p className="lp-eyebrow">Questions</p>
-          <h2 className="lp-titre lp-h2 mt-4 max-w-[12ch]">
-            Ce qu&apos;on nous demande avant de s&apos;inscrire
+          <h2 className="lp-titre lp-h2 mt-4 max-w-[13ch]">
+            Avant de créer un compte
           </h2>
         </Reveal>
 

@@ -124,6 +124,20 @@ export function Etapes({
             ))}
           </ol>
 
+          {/* La provenance du référentiel. Elle est en note de bas de
+              liste plutôt que dans un cran : elle ne décrit pas une étape,
+              elle répond à la question que les trois posent ensemble —
+              « sur quoi vous vous basez pour me dire tout ça ? ». Les
+              chiffres sont comptés sur `obligationsConformite`, à
+              recompter quand le référentiel s'étend. */}
+          {/* Calée à gauche, sous la colonne des crans et non dans leur
+              retrait : à l'aplomb du corps de texte, elle se lisait comme
+              une quatrième ligne de l'étape 3. */}
+          <p className="mt-9 font-mono text-[0.68rem] uppercase leading-[1.8] tracking-[0.14em] text-[color:var(--board-slate-soft)]">
+            Référentiel construit depuis Légifrance et l&apos;INRS · 64
+            obligations sur 9 domaines · source citée pour chacune
+          </p>
+
           <Reveal delai={300}>
             <div className="mt-10 flex flex-wrap items-center gap-4 border-t border-[rgba(10,10,10,.12)] pt-10">
               <Link href={ctaHref} className="lp-btn lp-btn-ink">
