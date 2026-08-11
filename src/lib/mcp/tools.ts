@@ -1,0 +1,274 @@
+// Outils exposés par le serveur MCP — **définis hors du transport**.
+//
+// Un outil est ici une donnée : un nom, une description, un schéma d'entrée,
+// et une fonction qui rend du texte. Rien dans ce fichier ne sait qu'il
+// tourne derrière stdio. C'est ce découplage qui doit permettre de brancher
+// un jour le même jeu d'outils derrière un serveur HTTP authentifié en OAuth
+// sans y toucher : seul le code qui fabrique le `ContexteMcp` change.
+//
+// Deux règles de sécurité s'écrivent dans les types plutôt que dans un
+// commentaire :
+//
+//   1. **La portée n'est pas un argument d'outil.** `executer` reçoit un
+//      `ContexteMcp` d'un côté (fourni par le serveur) et les arguments du
+//      client de l'autre. Aucun schéma d'entrée ne comporte
+//      d'`etablissementId` : un client qui en enverrait un ne serait pas
+//      seulement rejeté, il n'a aucun champ où l'écrire.
+//   2. **Lecture seule.** Les outils sont annoncés `readOnlyHint` au
+//      protocole, et aucun n'appelle autre chose que les lectures de
+//      `./queries`.
+//
+// L'horloge est injectée (ADR-011) : `now` vient du contexte, jamais d'un
+// `new Date()` planté au milieu d'un formatage.
+
+import { z } from "zod";
+import type { StatutAction } from "@prisma/client";
+import { formaterDateFr } from "@/lib/dates";
+import { ageEnMois } from "@/lib/dashboard/duerp";
+import {
+  getEtatDuerp,
+  getFicheEtablissement,
+  listerActions,
+  type ActionLue,
+  type EtatDuerpLu,
+  type FicheEtablissement,
+} from "./queries";
+
+/** Portée de la session : l'établissement que le serveur a le droit de lire. */
+export type ScopeMcp = { etablissementId: string };
+
+export type ContexteMcp = {
+  scope: ScopeMcp;
+  /** Horloge injectée — cf. ADR-011. */
+  now: Date;
+};
+
+export type OutilMcp<Schema extends z.ZodTypeAny> = {
+  nom: string;
+  titre: string;
+  description: string;
+  schema: Schema;
+  executer: (ctx: ContexteMcp, args: z.infer<Schema>) => Promise<string>;
+};
+
+// ---------------------------------------------------------------------
+// Formatage
+// ---------------------------------------------------------------------
+
+const tiret = (v: string | null | undefined) => v ?? "—";
+
+function formaterRegimes(f: FicheEtablissement): string {
+  const regimes: string[] = [];
+  if (f.estEtablissementTravail) regimes.push("établissement de travail");
+  if (f.estERP) {
+    const precisions = [f.typeErp, f.categorieErp ? `catégorie ${f.categorieErp}` : null]
+      .filter(Boolean)
+      .join(", ");
+    regimes.push(precisions ? `ERP (${precisions})` : "ERP");
+  }
+  if (f.estIGH) regimes.push("IGH");
+  if (f.estHabitation) regimes.push("habitation");
+  return regimes.length > 0 ? regimes.join(" · ") : "aucun régime déclaré";
+}
+
+function formaterFiche(f: FicheEtablissement): string {
+  return [
+    `Établissement : ${f.raisonDisplay}`,
+    `Adresse : ${f.adresse}`,
+    `Régimes : ${formaterRegimes(f)}`,
+    `Effectif sur site : ${f.effectifSurSite}`,
+    `Code NAF : ${tiret(f.codeNaf ?? f.entreprise.codeNaf)}`,
+    "",
+    `Entreprise : ${f.entreprise.raisonSociale}`,
+    `SIRET : ${tiret(f.entreprise.siret)}`,
+    `Effectif entreprise : ${f.entreprise.effectif}`,
+    "",
+    `Équipements déclarés : ${f._count.equipements}`,
+    `Vérifications au calendrier : ${f._count.verifications}`,
+    `Actions au plan d'actions : ${f._count.actions}`,
+  ].join("\n");
+}
+
+/**
+ * Résumé d'ancienneté du DUERP.
+ *
+ * Le vocabulaire est contraint par la règle n°8 du projet : l'outil
+ * constate qu'une échéance de mise à jour est ou non dépassée, il ne dit
+ * jamais que le dossier est « conforme ».
+ */
+function formaterEtatDuerp(d: EtatDuerpLu): string {
+  if (!d.existe || !d.etat) {
+    return "Aucun DUERP n'a encore été ouvert pour cet établissement.";
+  }
+
+  const e = d.etat;
+  const lignes: string[] = [];
+
+  if (e.jamaisValide) {
+    lignes.push(
+      "Le DUERP est ouvert mais aucune version n'a encore été validée (art. R. 4121-1).",
+    );
+  } else if (d.derniereVersionAu) {
+    const age = e.ageJours !== null ? ` (il y a ${ageEnMois(e.ageJours)} mois)` : "";
+    lignes.push(
+      `Dernière version validée : n°${d.derniereVersionNumero} du ${formaterDateFr(d.derniereVersionAu)}${age}.`,
+    );
+  }
+
+  if (!e.soumisMajAnnuelle) {
+    lignes.push(
+      `Effectif de ${d.effectifEntreprise} salariés : la mise à jour annuelle de l'art. R. 4121-2 ne s'applique pas (seuil de 11 salariés). La mise à jour reste exigée lors de tout aménagement important ou information nouvelle.`,
+    );
+  } else if (e.majEchue) {
+    lignes.push(
+      e.dateLimiteMaj
+        ? `Mise à jour annuelle échue depuis le ${formaterDateFr(e.dateLimiteMaj)}.`
+        : "Mise à jour annuelle échue.",
+    );
+  } else if (e.rappelMajProche && e.dateLimiteMaj) {
+    lignes.push(`Mise à jour annuelle à prévoir avant le ${formaterDateFr(e.dateLimiteMaj)}.`);
+  } else if (e.dateLimiteMaj) {
+    lignes.push(`Prochaine mise à jour annuelle attendue le ${formaterDateFr(e.dateLimiteMaj)}.`);
+  }
+
+  const nbRisques = d.unites.reduce((s, u) => s + u.risques.length, 0);
+  lignes.push("", `${d.unites.length} unité(s) de travail, ${nbRisques} risque(s) coté(s).`);
+
+  for (const u of d.unites) {
+    lignes.push("", `— ${u.nom}${u.estTransverse ? " (transverse)" : ""}`);
+    if (u.risques.length === 0) {
+      lignes.push("   aucun risque coté");
+      continue;
+    }
+    for (const r of u.risques) {
+      const marqueurs = [
+        `criticité ${r.criticite}`,
+        `G${r.gravite}/P${r.probabilite}/M${r.maitrise}`,
+        r.exposeCMR ? "CMR" : null,
+        r.nbActions > 0 ? `${r.nbActions} action(s)` : "aucune action",
+      ]
+        .filter(Boolean)
+        .join(", ");
+      lignes.push(`   • ${r.libelle} — ${marqueurs}`);
+    }
+  }
+
+  return lignes.join("\n");
+}
+
+const LIBELLE_ORIGINE: Record<ActionLue["origine"], string> = {
+  duerp: "DUERP",
+  verification: "vérification",
+  libre: "libre",
+};
+
+function formaterActions(actions: ActionLue[]): string {
+  if (actions.length === 0) {
+    return "Aucune action ne correspond à ces critères.";
+  }
+
+  const enRetard = actions.filter((a) => a.enRetard).length;
+  const entete =
+    enRetard > 0
+      ? `${actions.length} action(s), dont ${enRetard} en retard.`
+      : `${actions.length} action(s), aucune en retard.`;
+
+  const lignes = actions.map((a) => {
+    const details = [
+      `statut ${a.statut}`,
+      a.criticite !== null ? `criticité ${a.criticite}` : null,
+      a.echeance
+        ? `échéance ${formaterDateFr(a.echeance)}${a.enRetard ? " — en retard" : ""}`
+        : "sans échéance",
+      `origine ${LIBELLE_ORIGINE[a.origine]}${a.origineLibelle ? ` : ${a.origineLibelle}` : ""}`,
+      a.responsable ? `responsable ${a.responsable}` : null,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    return `• ${a.libelle} — ${details}`;
+  });
+
+  return [entete, "", ...lignes].join("\n");
+}
+
+// ---------------------------------------------------------------------
+// Outils
+// ---------------------------------------------------------------------
+
+const STATUTS: readonly [StatutAction, ...StatutAction[]] = [
+  "ouverte",
+  "en_cours",
+  "levee",
+  "abandonnee",
+];
+
+const outilFiche: OutilMcp<z.ZodObject<Record<string, never>>> = {
+  nom: "fiche_etablissement",
+  titre: "Fiche de l'établissement",
+  description:
+    "Identité de l'établissement suivi : raison sociale, adresse, régimes réglementaires (travail, ERP, IGH, habitation), effectifs, et volume du dossier (équipements, vérifications, actions). À appeler en premier pour savoir de quel établissement on parle.",
+  schema: z.object({}),
+  executer: async (ctx) => {
+    const fiche = await getFicheEtablissement(ctx.scope.etablissementId);
+    if (!fiche) return "Établissement introuvable.";
+    return formaterFiche(fiche);
+  },
+};
+
+const outilDuerp: OutilMcp<z.ZodObject<Record<string, never>>> = {
+  nom: "etat_duerp",
+  titre: "État du DUERP",
+  description:
+    "État du document unique d'évaluation des risques professionnels : ancienneté de la dernière version validée, échéance de mise à jour annuelle (art. R. 4121-2, applicable à partir de 11 salariés), unités de travail et risques cotés avec leur criticité. À appeler pour toute question sur les risques évalués ou la fraîcheur du DUERP.",
+  schema: z.object({}),
+  executer: async (ctx) => {
+    const etat = await getEtatDuerp(ctx.scope.etablissementId, ctx.now);
+    return formaterEtatDuerp(etat);
+  },
+};
+
+const schemaActions = z.object({
+  statut: z
+    .enum(STATUTS)
+    .optional()
+    .describe("Ne garder que les actions de ce statut."),
+  enCoursSeulement: z
+    .boolean()
+    .optional()
+    .describe("Ne garder que les actions encore à traiter (ouverte ou en cours)."),
+  enRetardSeulement: z
+    .boolean()
+    .optional()
+    .describe("Ne garder que les actions dont l'échéance est dépassée."),
+  criticiteMin: z
+    .number()
+    .int()
+    .min(0)
+    .max(100)
+    .optional()
+    .describe("Criticité minimale des actions retournées."),
+});
+
+const outilActions: OutilMcp<typeof schemaActions> = {
+  nom: "plan_actions",
+  titre: "Plan d'actions",
+  description:
+    "Actions correctives de l'établissement, qu'elles viennent du DUERP, d'un rapport de vérification ou d'une saisie libre : libellé, statut, criticité, échéance, retard éventuel et responsable. Filtrable par statut, criticité, actions en cours ou en retard.",
+  schema: schemaActions,
+  executer: async (ctx, args) => {
+    const actions = await listerActions(ctx.scope.etablissementId, args, ctx.now);
+    return formaterActions(actions);
+  },
+};
+
+/**
+ * Les outils servis par le serveur. Tous en lecture seule — l'ajout d'une
+ * écriture ici ne serait pas un détail d'implémentation mais un changement
+ * de nature du serveur, à instruire séparément.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- collection hétérogène : chaque outil porte son propre schéma zod.
+export const OUTILS_MCP: readonly OutilMcp<any>[] = [
+  outilFiche,
+  outilDuerp,
+  outilActions,
+];
