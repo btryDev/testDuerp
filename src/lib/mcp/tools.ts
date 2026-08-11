@@ -34,6 +34,36 @@ import {
   type FicheEtablissement,
 } from "./queries";
 
+/**
+ * Consigne transmise au client à l'ouverture de session, et relayée par lui
+ * au modèle.
+ *
+ * C'est le seul levier que le protocole offre pour cadrer l'interprétation :
+ * une **consigne**, pas une contrainte. Le client reste libre de la
+ * présenter comme il veut, et le modèle d'en dévier — on réduit la
+ * probabilité d'une extrapolation, on ne l'empêche pas. La seule garantie
+ * dure resterait de ne pas exposer la donnée.
+ *
+ * Ce qu'elle vise précisément : Rojer produit des documents à valeur légale
+ * par des règles déterministes, sans IA (principe fondateur du projet). Un
+ * assistant qui, par-dessus, qualifie juridiquement un état applicatif —
+ * « ce document n'est pas opposable », « vous êtes en infraction » — rend
+ * une réponse qui sera lue comme venant de l'outil. D'où la distinction
+ * demandée ici : restituer ce que les outils rendent, et signaler comme
+ * sienne toute lecture qui va au-delà.
+ */
+export const CONSIGNE_SERVEUR = `Ce serveur donne accès en lecture au dossier de conformité santé-sécurité d'un établissement, tenu dans Rojer.
+
+Restitue ce que les outils rendent, sans le compléter.
+
+- Ne qualifie jamais juridiquement un état : ni « conforme », ni « en infraction », ni « opposable ». Les outils rendent des faits (dates, statuts, cotations) et les articles qui fondent une obligation ; ils ne rendent jamais de conclusion de droit, et il n'y en a pas à en tirer.
+- Ne cite aucune référence réglementaire qui ne figure pas dans une réponse d'outil.
+- « Version validée » est un état de l'application, pas une catégorie juridique : n'en déduis aucune conséquence de droit.
+- Si tu ajoutes une analyse, une priorisation ou une recommandation, dis explicitement qu'elle vient de toi et non de Rojer.
+- Quand une information manque, dis-le plutôt que de l'inférer.
+
+Rojer calcule, il n'avise pas.`;
+
 /** Portée de la session : l'établissement que le serveur a le droit de lire. */
 export type ScopeMcp = { etablissementId: string };
 

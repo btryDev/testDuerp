@@ -29,7 +29,7 @@ import {
   originValidationResponse,
   McpServer,
 } from "@modelcontextprotocol/server";
-import { OUTILS_MCP, type ScopeMcp } from "./tools";
+import { CONSIGNE_SERVEUR, OUTILS_MCP, type ScopeMcp } from "./tools";
 
 export const NOM_SERVEUR = "rojer";
 export const VERSION_SERVEUR = "0.1.0";
@@ -62,7 +62,10 @@ export type OptionsServeurHttp = {
  * d'entrée ne comporte d'identifiant d'établissement.
  */
 function construireServeur(scope: ScopeMcp): McpServer {
-  const server = new McpServer({ name: NOM_SERVEUR, version: VERSION_SERVEUR });
+  const server = new McpServer(
+    { name: NOM_SERVEUR, version: VERSION_SERVEUR },
+    { instructions: CONSIGNE_SERVEUR },
+  );
 
   for (const outil of OUTILS_MCP) {
     server.registerTool(

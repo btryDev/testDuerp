@@ -30,7 +30,7 @@
 
 import { McpServer } from "@modelcontextprotocol/server";
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
-import { OUTILS_MCP, type ScopeMcp } from "@/lib/mcp/tools";
+import { CONSIGNE_SERVEUR, OUTILS_MCP, type ScopeMcp } from "@/lib/mcp/tools";
 import { prismaMcp } from "@/lib/mcp/prisma";
 
 const NOM_SERVEUR = "rojer-demo";
@@ -83,10 +83,10 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const server = new McpServer({
-    name: NOM_SERVEUR,
-    version: VERSION_SERVEUR,
-  });
+  const server = new McpServer(
+    { name: NOM_SERVEUR, version: VERSION_SERVEUR },
+    { instructions: CONSIGNE_SERVEUR },
+  );
 
   for (const outil of OUTILS_MCP) {
     server.registerTool(
