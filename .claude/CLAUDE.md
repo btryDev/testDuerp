@@ -138,6 +138,7 @@ Toute nouvelle décision structurante → nouvel ADR avant de coder.
 - **Mon établissement** : Équipements · Prestataires · Fiche établissement · (Équipe, à venir)
 - **Mes registres** (à plat) : DUERP · Registre de sécurité · Accessibilité · Permis de feu · Plans de prévention · Carnet sanitaire
 - **Comprendre** : guide pédagogique
+- **Connecter** : brancher un assistant en lecture seule sur le dossier (serveur MCP local — spike, cf. `scripts/mcp-server.ts`)
 - **Compte**
 
 ### Tableau de bord

@@ -36,6 +36,12 @@ describe("deduireActif", () => {
   it("ne confond pas deux établissements", () => {
     expect(deduireActif(`/etablissements/autre/actions`, ID)).toBe("tableau");
   });
+
+  it("reconnaît la page « Connecter »", () => {
+    expect(deduireActif(`/etablissements/${ID}/connecter`, ID)).toBe(
+      "connecter",
+    );
+  });
 });
 
 describe("construireSections — structure", () => {
@@ -104,7 +110,17 @@ describe("construireRail — rail à deux niveaux", () => {
       "etablissement",
       "registres",
       "comprendre",
+      "connecter",
     ]);
+  });
+
+  it("fait de « Connecter » un lien direct, hors des trois panneaux", () => {
+    const connecter = rail().find((c) => c.id === "connecter");
+    expect(connecter?.items).toBeUndefined();
+    expect(connecter?.href).toBe(`/etablissements/${ID}/connecter`);
+    // Ce n'est ni une tâche ni un registre : il n'a pas à apparaître dans
+    // les sections, sous peine de se retrouver dans deux endroits du rail.
+    expect(idsVisibles()).not.toContain("connecter");
   });
 
   it("sort « Comprendre » du panneau « À faire » pour en faire un lien direct", () => {
@@ -140,6 +156,7 @@ describe("construireRail — rail à deux niveaux", () => {
       }
     }
     expect(categorieDeItem("guide")).toBe("comprendre");
+    expect(categorieDeItem("connecter")).toBe("connecter");
   });
 });
 
