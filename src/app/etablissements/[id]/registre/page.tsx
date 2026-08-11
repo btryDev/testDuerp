@@ -10,15 +10,12 @@ import { listerRapportsDeLEtablissement } from "@/lib/rapports/queries";
 import { LABEL_DOMAINE } from "@/lib/calendrier/labels";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
+import { formaterDateCourteFr } from "@/lib/dates";
 
 const DOMAINES_P1: DomaineObligation[] = ["electricite", "incendie", "aeration"];
 
 function formatDate(d: Date): string {
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return formaterDateCourteFr(d);
 }
 
 function formatTaille(octets: number): string {

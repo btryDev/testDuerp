@@ -13,14 +13,11 @@ import {
   type OrigineAction,
 } from "@/lib/actions/queries";
 import { LABEL_TYPE_ACTION } from "@/lib/actions/labels";
+import { formaterDateCourteFr } from "@/lib/dates";
 
 function formatDate(d: Date | null): string {
   if (!d) return "—";
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return formaterDateCourteFr(d);
 }
 
 const ORIGINES_UI: { key: OrigineAction; label: string }[] = [

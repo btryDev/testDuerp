@@ -4,6 +4,7 @@ import { verifierAccessToken } from "@/lib/access-tokens/verify";
 import { WhyCard, LegalBadge } from "@/components/ui-kit";
 import { SignatureExterneForm } from "@/components/signatures/SignatureExterneForm";
 import { prisma } from "@/lib/prisma";
+import { formaterDateFr } from "@/lib/dates";
 
 /**
  * Page publique non authentifiée : un prestataire arrive ici via un lien
@@ -38,7 +39,7 @@ export default async function AccesParTokenPage({
               `Demandez un nouveau lien à la personne qui vous l'a envoyé.`}
             {res.raison === "revoque" && res.motif}
             {res.raison === "deja_utilise" &&
-              `Le document a été signé le ${res.utiliseLe.toLocaleDateString("fr-FR")}.`}
+              `Le document a été signé le ${formaterDateFr(res.utiliseLe)}.`}
             {res.raison === "inexistant" &&
               `Vérifiez que vous avez bien cliqué sur le dernier lien reçu.`}
           </p>
@@ -142,7 +143,7 @@ async function libelleObjetSignable(objetType: string, objetId: string) {
     if (r) {
       return {
         titre: r.verification.libelleObligation,
-        description: `Rapport du ${r.dateRapport.toLocaleDateString("fr-FR")} — fichier « ${r.fichierNomOriginal} ».`,
+        description: `Rapport du ${formaterDateFr(r.dateRapport)} — fichier « ${r.fichierNomOriginal} ».`,
       };
     }
   }

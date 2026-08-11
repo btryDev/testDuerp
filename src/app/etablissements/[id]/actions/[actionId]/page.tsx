@@ -7,14 +7,11 @@ import { SupprimerActionButton } from "@/components/actions/SupprimerActionButto
 import { cloturerAction } from "@/lib/actions/plan";
 import { getAction, origineDeLAction } from "@/lib/actions/queries";
 import { LABEL_TYPE_ACTION } from "@/lib/actions/labels";
+import { formaterDateFr, formaterDateLongueFr } from "@/lib/dates";
 
 function formatDate(d: Date | null): string {
   if (!d) return "—";
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return formaterDateLongueFr(d);
 }
 
 export default async function ActionDetailPage({
@@ -198,7 +195,7 @@ export default async function ActionDetailPage({
                 action={boundCloture}
                 rapportsDisponibles={a.verification?.rapports.map((r) => ({
                   id: r.id,
-                  label: `${r.dateRapport.toLocaleDateString("fr-FR")} — ${
+                  label: `${formaterDateFr(r.dateRapport)} — ${
                     r.fichierNomOriginal
                   }`,
                 }))}

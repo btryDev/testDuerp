@@ -1,4 +1,5 @@
 import type { ReleveTemperature } from "@prisma/client";
+import { formaterJourMoisFr } from "@/lib/dates";
 
 /**
  * Graph SVG simple de l'évolution des températures pour un point de
@@ -173,10 +174,7 @@ export function GraphTemperatures({
           fill="var(--seal)"
           fontFamily="var(--font-mono), monospace"
         >
-          {ordered[0].dateReleve.toLocaleDateString("fr-FR", {
-            day: "2-digit",
-            month: "short",
-          })}
+          {formaterJourMoisFr(ordered[0].dateReleve)}
         </text>
         <text
           x={width - padR}
@@ -186,10 +184,7 @@ export function GraphTemperatures({
           textAnchor="end"
           fontFamily="var(--font-mono), monospace"
         >
-          {ordered[ordered.length - 1].dateReleve.toLocaleDateString("fr-FR", {
-            day: "2-digit",
-            month: "short",
-          })}
+          {formaterJourMoisFr(ordered[ordered.length - 1].dateReleve)}
         </text>
       </svg>
     </div>

@@ -34,6 +34,11 @@ export default async function InterventionsPage({
     listRisquesEtablissement(id),
   ]);
 
+  // Horloge lue une fois pour toute la page : deux `new Date()` séparés
+  // peuvent tomber de part et d'autre de minuit et faire diverger deux
+  // cartes du même tableau (ADR-011).
+  const aujourdhui = new Date();
+
   const parColonne = new Map<StatutIntervention, Intervention[]>();
   for (const col of COLONNES) parColonne.set(col.statut, []);
   for (const it of interventions) {
@@ -132,6 +137,7 @@ export default async function InterventionsPage({
                             <TicketCard
                               etablissementId={id}
                               intervention={it}
+                              aujourdhui={aujourdhui}
                             />
                           </li>
                         ))

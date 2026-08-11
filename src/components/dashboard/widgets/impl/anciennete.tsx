@@ -5,14 +5,15 @@
 // Mesure d'ancienneté utile pour anticiper un contrôle.
 
 import { BentoCell } from "@/components/dashboard/BentoCell";
+import { formaterDateCourteFr, joursCivilsEntre } from "@/lib/dates";
 import type { DashboardBundle } from "../types";
 
+/** Ancienneté en **jours civils** de Paris : la division de l'écart en
+ *  millisecondes par 86 400 000 perdait un jour dès qu'un changement
+ *  d'heure était traversé, et sous-estimait donc l'âge affiché. */
 function joursDepuis(reference: Date, d: Date | null): number | null {
   if (!d) return null;
-  return Math.max(
-    0,
-    Math.floor((reference.getTime() - d.getTime()) / (1000 * 60 * 60 * 24)),
-  );
+  return Math.max(0, joursCivilsEntre(d, reference));
 }
 
 function toneFromAge(
@@ -40,7 +41,7 @@ export function WidgetAnciennete({ bundle }: { bundle: DashboardBundle }) {
           label="DUERP"
           sousLibelle={
             duerpLast
-              ? `v${duerpDernier?.versions[0]?.numero ?? 1} — ${duerpLast.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}`
+              ? `v${duerpDernier?.versions[0]?.numero ?? 1} — ${formaterDateCourteFr(duerpLast)}`
               : "non initié"
           }
           age={duerpAge}

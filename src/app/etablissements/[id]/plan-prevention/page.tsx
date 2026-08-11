@@ -5,17 +5,14 @@ import { EmptyState } from "@/components/layout/EmptyState";
 import { LegalBadge, WhyCard } from "@/components/ui-kit";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { listPlansPrevention } from "@/lib/plan-prevention/queries";
+import { formaterDateCourteFr } from "@/lib/dates";
 
 export const metadata = {
   title: "Plans de prévention",
 };
 
 function formatDateCourte(d: Date): string {
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return formaterDateCourteFr(d);
 }
 
 const LABEL_STATUT = {

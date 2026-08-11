@@ -33,6 +33,15 @@ import {
 import { construireBrief } from "@/lib/dashboard/brief";
 import type { Recommandation } from "@/lib/dashboard/recommandations";
 import { construireFrise, type EchelleFrise } from "@/lib/dashboard/frise";
+import { composantesCiviles } from "@/lib/dates";
+import { estEnRetard, estVerificationEnRetard } from "@/lib/dates/retard";
+import {
+  badgeEcart,
+  compteARebours,
+  libelleAnciennete,
+  libelleAnteriorite,
+  libelleDateCourte,
+} from "../temps";
 import { VueMois } from "@/components/calendrier/VueMois";
 import { VueAnnee } from "@/components/calendrier/VueAnnee";
 import {
@@ -205,15 +214,6 @@ const KINDS_ALERTE: ReadonlySet<Recommandation["kind"]> = new Set([
   "action_en_retard",
 ]);
 
-const JOUR_MS_BRIEF = 86400000;
-
-function libelleDateCourte(d: Date): string {
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "short",
-  }).format(d);
-}
-
 function CarteTache({
   numero,
   reco,
@@ -227,19 +227,19 @@ function CarteTache({
 
   // Méta : le sous-titre du moteur, complété par la date quand elle
   // existe — « depuis N j » pour le dépassé, la date courte sinon.
+  //
+  // L'ancienneté est comptée en jours civils et vaut `null` le jour de
+  // l'échéance : le `Math.max(1, …)` d'avant annonçait « depuis 1 j » dès
+  // le jour dit, sur une échéance que le produit ne tient pas encore pour
+  // dépassée. Dans ce cas on retombe sur la date, qui ne ment pas.
   let meta = reco.sousTitre ?? "";
   if (reco.date) {
-    if (alerte) {
-      const jours = Math.max(
-        1,
-        Math.floor((aujourdhui.getTime() - reco.date.getTime()) / JOUR_MS_BRIEF),
-      );
-      meta = `${meta} depuis ${jours} j`;
-    } else {
-      meta = meta
+    const anciennete = alerte ? libelleAnciennete(reco.date, aujourdhui) : null;
+    meta = anciennete
+      ? `${meta} ${anciennete}`
+      : meta
         ? `${meta} · ${libelleDateCourte(reco.date)}`
         : libelleDateCourte(reco.date);
-    }
   }
 
   return (
@@ -284,7 +284,14 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
   const brief = construireBrief({
     aujourdhui,
     compteurs,
-    duerp: { existe: duerp.existe, estAJour: duerp.estAJour },
+    // `etat` transmis : sans lui le brief se rabattait sur sa formulation de
+    // repli et n'annonçait jamais « aucune version validée » — il disait
+    // « votre DUERP a plus de douze mois » à quelqu'un qui venait de l'ouvrir.
+    duerp: {
+      existe: duerp.existe,
+      estAJour: duerp.estAJour,
+      etat: duerp.etat,
+    },
     recommandations: recommandations.map((r) => ({
       kind: r.kind,
       titre: r.titre,
@@ -298,12 +305,18 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
   const reelles = recommandations.filter((r) => r.priorite <= 5);
   const file = (reelles.length > 0 ? reelles : recommandations).slice(0, 2);
 
-  // Le compte du titre est celui des urgences réelles — les amorces
-  // gardent leurs titres d'invitation (`construireBrief`).
-  const titre =
-    reelles.length > 0
-      ? `${reelles.length} élément${reelles.length > 1 ? "s" : ""} à traiter`
-      : brief.titre;
+  // Le titre est celui de `construireBrief`, dérivé des **compteurs** de
+  // l'établissement. Il était auparavant écrasé par `reelles.length`,
+  // c'est-à-dire par le nombre de recommandations — que le moteur plafonne
+  // à cinq (`genererRecommandations`, limite par défaut). Un dossier avec
+  // quarante échéances dépassées annonçait donc « 5 éléments à traiter » :
+  // l'outil minorait la non-conformité, ce qu'il s'interdit.
+  const titre = brief.titre;
+
+  // Le total réellement à traiter, pour dire que la file n'en est qu'un
+  // extrait. Même agrégat que `construireBrief` : ce qui est dépassé.
+  const totalUrgent = compteurs.verifsEnRetard + compteurs.actionsEnRetard;
+  const extrait = reelles.length > 0 && totalUrgent > file.length;
 
   // « Autre » au sens strict : les vérifications proches déjà en carte
   // ne sont pas recomptées dans le solde.
@@ -330,6 +343,15 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
         </div>
 
         <div>
+          {/* La file n'est pas la liste : elle montre par où commencer.
+              Le dire explicitement évite de lire deux cartes comme
+              « il n'y a que ça ». */}
+          {extrait ? (
+            <p className="m-0 mb-2.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-[color:var(--board-slate-mid)]">
+              Par où commencer — {file.length} sur {totalUrgent}
+            </p>
+          ) : null}
+
           {file.length > 0 ? (
             <ol className="m-0 flex list-none flex-col gap-3 p-0">
               {file.map((r, i) => (
@@ -484,14 +506,14 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
   // Maille de la vue calendrier : l'année entière d'emblée — la grille
   // d'un mois reste accessible via la bascule mois / année.
   const [maille, setMaille] = useState<"mois" | "annee">("annee");
-  const [mois, setMois] = useState(
-    () =>
-      new Date(
-        bundle.aujourdhui.getFullYear(),
-        bundle.aujourdhui.getMonth(),
-        1,
-      ),
-  );
+  // Le mois affiché est lu en heure de Paris, pas dans le fuseau du
+  // navigateur : ce composant est client, et `getMonth()` sur un instant
+  // proche de minuit ouvrait le calendrier sur le mois précédent pour un
+  // utilisateur à l'ouest de UTC.
+  const [mois, setMois] = useState(() => {
+    const c = composantesCiviles(bundle.aujourdhui);
+    return new Date(c.annee, c.mois - 1, 1);
+  });
 
   const piste = useRef<HTMLDivElement | null>(null);
   const [bords, setBords] = useState({ gauche: false, droite: false });
@@ -536,7 +558,17 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
     });
   };
 
+  // Le compte « en retard » de l'en-tête ne vient pas de la frise :
+  // `construireFrise` place ses marqueurs avec un `minuit()` calculé dans
+  // le fuseau du **navigateur** (cf. `lib/dashboard/frise.ts`), ce qui
+  // décale le compte d'un jour à l'ouest de UTC. Ici on applique le
+  // prédicat de retard partagé (ADR-011), qui répond la même chose partout.
+  const nbEnRetard = bundle.evenementsHorizon.filter((e) =>
+    estEnRetard(e.date, bundle.aujourdhui),
+  ).length;
+
   const hrefCalendrier = `/etablissements/${bundle.etablissementId}/calendrier`;
+  const nbSansDate = bundle.dashboard.compteurs.verifsAPlanifier;
 
   return (
     <CarteBoard className="px-[30px] pb-5 pt-[26px]">
@@ -558,10 +590,17 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {frise.nbEnRetard > 0 ? (
-            <Link href={hrefCalendrier} className="hidden sm:inline-block">
+          {nbEnRetard > 0 ? (
+            <Link
+              href={hrefCalendrier}
+              // Toutes familles confondues, comme le calendrier — et non
+              // les seules vérifications, comme le badge de la barre
+              // latérale. Les deux nombres peuvent donc différer.
+              title="Échéances en retard, toutes familles confondues (contrôles, travaux, papiers)"
+              className="hidden sm:inline-block"
+            >
               <Pastille ton="alerte">
-                {frise.nbEnRetard} en retard
+                {nbEnRetard} en retard
               </Pastille>
             </Link>
           ) : null}
@@ -697,18 +736,19 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                 Déclarer un équipement
               </Lien>
             </>
-          ) : frise.nbEnRetard > 0 ? (
+          ) : nbEnRetard > 0 ? (
             <>
               <p className="m-0 text-[15px] font-semibold tracking-[-0.015em] text-[color:var(--board-ink)]">
-                {frise.nbEnRetard} échéance{frise.nbEnRetard > 1 ? "s" : ""} sans
-                date, aucune à venir
+                {nbEnRetard} échéance{nbEnRetard > 1 ? "s" : ""} en
+                retard, aucune à venir
               </p>
               <p className="m-0 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-                Vos vérifications existent mais aucune n&apos;est encore
-                programmée : il n&apos;y a donc rien à poser sur la frise.
-                Posez des dates et elle se remplira.
+                {nbEnRetard > 1 ? "Elles datent" : "Elle date"} d&apos;avant
+                la période affichée — trois mois en arrière au plus — et rien
+                n&apos;est programmé ensuite : il n&apos;y a donc rien à poser
+                sur la frise.
               </p>
-              <Lien href={hrefCalendrier}>Programmer les vérifications</Lien>
+              <Lien href={hrefCalendrier}>Voir le calendrier</Lien>
             </>
           ) : (
             <p className="m-0 text-[13.5px] text-[color:var(--board-slate-mid)]">
@@ -822,7 +862,8 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                         href={
                           grappe
                             ? hrefCalendrier
-                            : `/etablissements/${bundle.etablissementId}/verifications/${m.evenements[0].id}`
+                            : (m.evenements[0].href ??
+                              `/etablissements/${bundle.etablissementId}/verifications/${m.evenements[0].id}`)
                         }
                         title={m.evenements
                           .map((e) => `${e.libelleDate} · ${e.libelle} — ${e.equipement}`)
@@ -889,6 +930,20 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
         </div>
       )}
 
+      {/* Une vérification « à planifier » n'a pas de date choisie : ni la
+          frise ni la grille ne la posent, les y placer à leur date de
+          génération mentirait. Même note que la page Calendrier — sinon
+          elles disparaîtraient sans explication. */}
+      {nbSansDate > 0 ? (
+        <p className="mt-2 text-[11.5px] text-[color:var(--board-slate-soft)]">
+          {nbSansDate > 1
+            ? `${nbSansDate} vérifications à planifier n'ont pas encore de date`
+            : "1 vérification à planifier n'a pas encore de date"}{" "}
+          — <Lien href={hrefCalendrier}>datez-les au calendrier</Lien> pour
+          qu&apos;elles apparaissent ici.
+        </p>
+      ) : null}
+
       {vue === "frise" && frise.nbPlaces > frise.marqueurs.length ? (
         // Rien n'est caché : ce qui est trop rapproché pour tenir en
         // cartes distinctes est réuni en grappes. On le dit, sinon le
@@ -941,13 +996,26 @@ export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
     (r) => r.kind === "verif_proche",
   ).length;
   const solde = Math.max(0, compteurs.verifsSous30j - prochesAffichees);
+
+  // Le moteur de recommandations plafonne à cinq items : la carte ne peut
+  // donc pas être la liste exhaustive du retard. Le reste est compté
+  // depuis les compteurs, sans quoi un dossier à quarante retards se
+  // lirait « cinq choses à faire, rien d'autre sous 30 jours ».
+  const totalUrgent = compteurs.verifsEnRetard + compteurs.actionsEnRetard;
+  const urgentsAffiches = file.filter((r) => KINDS_ALERTE.has(r.kind)).length;
+  const resteUrgent = Math.max(0, totalUrgent - urgentsAffiches);
+
   const hrefCalendrier = `/etablissements/${etablissementId}/calendrier`;
 
   return (
     <CarteBoard className="px-7 py-[26px]">
       <TitreBloc
         titre="À faire"
-        sousTitre="Vérifications et actions, par ordre d'urgence."
+        sousTitre={
+          resteUrgent > 0
+            ? "Les cinq plus urgentes — vérifications et actions mêlées."
+            : "Vérifications et actions, par ordre d'urgence."
+        }
         href={hrefCalendrier}
       />
 
@@ -966,19 +1034,10 @@ export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
           {file.map((r, i) => {
             const alerte = KINDS_ALERTE.has(r.kind);
             const type = TYPE_RECO[r.kind];
-            const jours = r.date
-              ? Math.round(
-                  (r.date.getTime() - aujourdhui.getTime()) / JOUR_MS_BRIEF,
-                )
-              : null;
-            const badge =
-              jours === null
-                ? null
-                : jours === 0
-                  ? "Auj."
-                  : jours > 0
-                    ? `J+${jours}`
-                    : `J−${-jours}`;
+            // Écart en jours civils : le badge ne change qu'à minuit,
+            // heure de Paris. Avec la division par 86 400 000, une
+            // échéance du jour passait de « Auj. » à « J−1 » vers 14 h.
+            const badge = r.date ? badgeEcart(r.date, aujourdhui) : null;
             // Méta : le type d'objet d'abord — c'est lui qui lève
             // l'ambiguïté — puis « en retard » ou la date.
             const meta = type
@@ -1024,7 +1083,18 @@ export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
       )}
 
       <p className="m-0 mt-auto border-t border-[color:rgba(10,10,10,.10)] pt-[14px] text-[13px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-        {solde > 0 ? (
+        {resteUrgent > 0 ? (
+          <Link
+            href={hrefCalendrier}
+            className="text-[color:var(--board-ink)] underline-offset-2 hover:underline"
+          >
+            {resteUrgent} autre{resteUrgent > 1 ? "s" : ""} en retard
+            {solde > 0
+              ? `, et ${solde} échéance${solde > 1 ? "s" : ""} sous 30 jours`
+              : ""}{" "}
+            — voir le calendrier
+          </Link>
+        ) : solde > 0 ? (
           <Link
             href={hrefCalendrier}
             className="text-[color:var(--board-ink)] underline-offset-2 hover:underline"
@@ -1066,10 +1136,15 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
     (a, b) => a.datePrevue.getTime() - b.datePrevue.getTime(),
   );
   const v = trie[0];
-  const jours = Math.round(
-    (v.datePrevue.getTime() - aujourdhui.getTime()) / 86400000,
+  // Le compte à rebours est en jours civils, et le rouge suit le prédicat
+  // partagé (ADR-011) : une échéance datée d'aujourd'hui n'est pas en
+  // retard. Avec la division par 86 400 000, la carte virait au rouge
+  // l'après-midi du jour dit, sans que rien n'ait changé.
+  const { nombre, legende } = compteARebours(v.datePrevue, aujourdhui);
+  const enRetard = estVerificationEnRetard(
+    { statut: v.statut, datePrevue: v.datePrevue, dateRealisee: null },
+    aujourdhui,
   );
-  const enRetard = jours < 0;
 
   return (
     <CarteBoard
@@ -1089,11 +1164,7 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
         </Link>
         <span className="mt-2.5 inline-block">
           <Pastille ton={enRetard ? "alerte" : "neutre"}>
-            {new Intl.DateTimeFormat("fr-FR", {
-              day: "numeric",
-              month: "short",
-            }).format(v.datePrevue)}{" "}
-            · {v.equipement.libelle}
+            {libelleDateCourte(v.datePrevue)} · {v.equipement.libelle}
           </Pastille>
         </span>
       </div>
@@ -1116,7 +1187,7 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
               : "text-[color:var(--board-ink)]")
           }
         >
-          {Math.abs(jours)}
+          {nombre}
         </span>
         <span
           className={
@@ -1129,7 +1200,7 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
               : "text-[color:var(--board-blue-ink)]")
           }
         >
-          {enRetard ? "j. de retard" : "jours"}
+          {legende}
         </span>
       </div>
     </CarteBoard>
@@ -1325,17 +1396,10 @@ const LIBELLE_RESULTAT: Record<string, string> = {
 export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
   const { rapportsRecents, aujourdhui, etablissementId, dashboard } = bundle;
 
-  const joursDepuis = (d: Date) =>
-    Math.floor((aujourdhui.getTime() - d.getTime()) / 86400000);
-
-  const quand = (d: Date) => {
-    const j = joursDepuis(d);
-    if (j <= 0) return "AUJOURD'HUI";
-    if (j === 1) return "HIER";
-    return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" })
-      .format(d)
-      .toUpperCase();
-  };
+  // Ancienneté en jours civils : un rapport déposé ce matin est « du
+  // jour » même s'il n'a pas encore 24 h, et un rapport d'hier soir reste
+  // « d'hier » toute la journée.
+  const quand = (d: Date) => libelleAnteriorite(d, aujourdhui).toUpperCase();
 
   // Le premier « à faire » du moteur de recos ferme la liste, comme la
   // ligne ambre du design.

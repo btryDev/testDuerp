@@ -1,15 +1,23 @@
 import Link from "next/link";
 import type { Intervention } from "@prisma/client";
 import { COULEUR_PRIORITE, LABEL_PRIORITE } from "@/lib/interventions/schema";
+import { formaterJourMoisFr, joursCivilsEntre } from "@/lib/dates";
+import { estEnRetard } from "@/lib/dates/retard";
 
 function formatDateCourte(d: Date | null): string | null {
   if (!d) return null;
-  return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+  return formaterJourMoisFr(d);
 }
 
-function rapportRelatif(d: Date): string {
-  const now = Date.now();
-  const diff = Math.floor((now - d.getTime()) / (1000 * 60 * 60 * 24));
+/**
+ * Ancienneté du ticket, en jours civils de Paris. Le décompte passait par
+ * une division de l'écart en millisecondes par 86 400 000 : un ticket créé
+ * hier à 23 h et consulté ce matin à 8 h donnait `0`, donc « aujourd'hui »,
+ * alors qu'un minuit a bien été franchi. `joursCivilsEntre` compte les
+ * minuits, pas les 24 h.
+ */
+function rapportRelatif(d: Date, aujourdhui: Date): string {
+  const diff = joursCivilsEntre(d, aujourdhui);
   if (diff < 1) return "aujourd'hui";
   if (diff < 7) return `${diff}j`;
   if (diff < 30) return `${Math.floor(diff / 7)}s`;
@@ -19,14 +27,22 @@ function rapportRelatif(d: Date): string {
 export function TicketCard({
   etablissementId,
   intervention,
+  aujourdhui,
 }: {
   etablissementId: string;
   intervention: Intervention;
+  /** Horloge figée par la page serveur. Jamais `new Date()` au rendu :
+   *  ce composant est aussi rendu côté client, et deux horloges donnent
+   *  deux couleurs d'échéance (écart d'hydratation). */
+  aujourdhui: Date;
 }) {
   const color = COULEUR_PRIORITE[intervention.priorite];
+  // Retard = prédicat partagé (ADR-011) : une échéance datée d'aujourd'hui
+  // n'est pas en retard. La comparaison brute `echeance < new Date()`
+  // faisait rougir dès 02:00 (heure d'été) une échéance du jour même.
   const enRetard =
-    intervention.echeance &&
-    intervention.echeance < new Date() &&
+    intervention.echeance !== null &&
+    estEnRetard(intervention.echeance, aujourdhui) &&
     intervention.statut !== "fait" &&
     intervention.statut !== "annule";
   return (
@@ -69,7 +85,7 @@ export function TicketCard({
           </>
         )}
         <span>·</span>
-        <span>{rapportRelatif(intervention.createdAt)}</span>
+        <span>{rapportRelatif(intervention.createdAt, aujourdhui)}</span>
       </div>
       {intervention.photos.length > 0 && (
         <div className="mt-2 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-muted-foreground">

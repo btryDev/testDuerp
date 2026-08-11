@@ -9,6 +9,7 @@ import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 import { genererCalendrier } from "@/lib/calendrier/actions";
 import {
+  calendrierDesynchronise,
   compterEtatCalendrier,
   listerVerifications,
 } from "@/lib/calendrier/queries";
@@ -18,6 +19,7 @@ import {
   type EcheanceCalendrier,
   type FamilleEcheance,
 } from "@/lib/calendrier/echeances";
+import { fusionnerEvenements } from "@/lib/calendrier/evenements";
 import { SectionMois } from "@/components/calendrier/SectionMois";
 import {
   LABEL_FAMILLE_SINGULIER,
@@ -31,6 +33,12 @@ import {
 } from "@/lib/calendrier/labels";
 import { listerEvenementsFenetre } from "@/lib/dashboard/queries";
 import { JOURS_APRES } from "@/lib/dashboard/frise";
+import {
+  FUSEAU_REFERENCE,
+  JOURS_HORIZON_PROCHE,
+  composantesCiviles,
+} from "@/lib/dates";
+import { estDansLesProchainsJours } from "@/lib/dates/retard";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 
@@ -43,8 +51,16 @@ const FAMILLES_FILTRABLES: FamilleEcheance[] = [
   "papiers",
 ];
 
-const FMT_JOUR = new Intl.DateTimeFormat("fr-FR", { day: "2-digit" });
-const FMT_MOIS_COURT = new Intl.DateTimeFormat("fr-FR", { month: "short" });
+// Fuseau épinglé : sans lui, le numéro de jour et le mois d'une date
+// stockée à minuit UTC reculaient d'une case sur un serveur en UTC.
+const FMT_JOUR = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: FUSEAU_REFERENCE,
+  day: "2-digit",
+});
+const FMT_MOIS_COURT = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: FUSEAU_REFERENCE,
+  month: "short",
+});
 
 /**
  * Tuile-chiffre du bandeau — le motif des cartes-compteur du board :
@@ -196,21 +212,36 @@ export default async function CalendrierPage({
       : undefined;
   const filtreUrgent = urgent === "1";
 
-  // Self-healing : si l'utilisateur a des équipements déclarés mais aucune
-  // vérification en base, on génère automatiquement. Couvre les anciens
-  // comptes pré-auto-génération et les rares cas où une mutation a échoué
-  // silencieusement à régénérer.
+  // Rattrapage à l'affichage, pour deux motifs distincts :
+  //
+  //  1. **Calendrier vide alors que des équipements sont déclarés** — anciens
+  //     comptes d'avant la génération automatique, ou mutation qui a échoué
+  //     silencieusement à régénérer.
+  //  2. **Calendrier généré avec une version antérieure du référentiel** — le
+  //     référentiel vit en TypeScript (ADR-003) et ses corrections (périodicité
+  //     rectifiée, obligation retirée, libellé reformulé) n'étaient jusqu'ici
+  //     propagées qu'au hasard d'une mutation d'équipement. Deux établissements
+  //     identiques pouvaient afficher deux échéances différentes, et une
+  //     obligation supprimée du référentiel laissait des lignes orphelines
+  //     invisibles des filtres du registre et du dossier de contrôle.
+  //
+  // La réconciliation est idempotente et ne détruit jamais une ligne portant un
+  // rapport, une action ou une date de réalisation (cf. ADR-012) : la relancer
+  // est sans risque, et elle ne réécrit que ce qui a réellement changé.
   const etat0 = await compterEtatCalendrier(id);
-  if (
+  const aucuneOccurrenceEnBase =
     etat0.enRetard === 0 &&
     etat0.aPlanifier === 0 &&
     etat0.aVenir === 0 &&
-    etat0.realisees12m === 0
-  ) {
+    etat0.realisees12m === 0;
+
+  if (aucuneOccurrenceEnBase) {
     const nbEquipements = (await listerEquipementsDeLEtablissement(id)).length;
     if (nbEquipements > 0) {
       await genererCalendrier(id);
     }
+  } else if (await calendrierDesynchronise(id)) {
+    await genererCalendrier(id);
   }
 
   const [verifsBruts, etat, evenementsVerifs, autresEcheances] =
@@ -250,43 +281,34 @@ export default async function CalendrierPage({
   // en retard » pendant que la grille montre du rouge (actions,
   // attestations…). Les compteurs vérifications (`etat`) sont complétés
   // par les échéances du registre.
-  const JOUR_MS = 86400000;
-  const dans30j = new Date(aujourdhui.getTime() + 30 * JOUR_MS);
+  //
+  // La fenêtre « sous 30 jours » se compte en **jours civils**, bornes
+  // incluses (cf. `estDansLesProchainsJours`) : l'ancien `aujourdhui +
+  // 30 × 86 400 000` comparait des instants, et écartait le trentième
+  // jour dès que l'heure courante dépassait minuit.
   const nbAutresEnRetard = autresEcheances.filter(
     (e) => e.tone === "alerte",
   ).length;
   const nbAutresSous30j = autresEcheances.filter(
-    (e) => e.tone === "ok" && e.date <= dans30j,
+    (e) =>
+      e.tone === "ok" &&
+      estDansLesProchainsJours(e.date, aujourdhui, JOURS_HORIZON_PROCHE),
   ).length;
   const totalEnRetard = etat.enRetard + nbAutresEnRetard;
   const totalSous30j = etat.aVenir + nbAutresSous30j;
 
-  // La grille reçoit tout dans le même format : les contrôles avec leur
-  // porte, les autres familles avec la leur. Les vérifications « à
-  // planifier » (ton warn) n'y figurent pas : leur datePrevue est une
-  // date de génération, pas une date choisie — les poser sur un jour
-  // mentirait. Une note sous la grille les signale.
-  const evenementsGrille = [
-    ...(filtreFamille && filtreFamille !== "controle"
-      ? []
-      : evenementsVerifs
-    )
-      .filter((e) => e.tone !== "warn")
-      .map((e) => ({
-      ...e,
-      famille: "controle" as const,
-      href: `/etablissements/${id}/verifications/${e.id}`,
-    })),
-    ...autresVisibles.map((e) => ({
-      id: e.id,
-      libelle: e.libelle,
-      date: e.date,
-      tone: e.tone,
-      equipement: e.origine,
-      famille: e.famille,
-      href: e.href,
-    })),
-  ];
+  // La grille reçoit tout dans le même format — la même fusion que le
+  // board, pour que les deux écrans montrent le même contenu.
+  const evenementsGrille = fusionnerEvenements({
+    verifications: evenementsVerifs,
+    autres: autresEcheances,
+    etablissementId: id,
+    filtres: {
+      famille: filtreFamille,
+      domaine: filtreDomaine,
+      urgentsSeulement: filtreUrgent,
+    },
+  });
 
   // La liste mensuelle mêle les deux, triés par date dans chaque mois.
   type LigneMois =
@@ -302,7 +324,11 @@ export default async function CalendrierPage({
   ];
   const parMois = new Map<string, LigneMois[]>();
   for (const l of lignes) {
-    const cle = `${l.date.getFullYear()}-${String(l.date.getMonth() + 1).padStart(2, "0")}`;
+    // Mois civil lu en heure de Paris : `getMonth()` sur une date stockée
+    // à minuit UTC dépend du fuseau du serveur, et rangeait une échéance
+    // du 1er du mois dans le mois précédent sur un hôte à l'ouest de UTC.
+    const c = composantesCiviles(l.date);
+    const cle = `${c.annee}-${String(c.mois).padStart(2, "0")}`;
     const bucket = parMois.get(cle) ?? [];
     bucket.push(l);
     parMois.set(cle, bucket);
@@ -376,27 +402,41 @@ export default async function CalendrierPage({
           </div>
 
           {/* Les compteurs, en tuiles-chiffre façon cartes du board. */}
-          <div className="flex flex-wrap gap-3">
-            <TuileChiffre
-              valeur={totalEnRetard}
-              legende={totalEnRetard > 0 ? "en retard" : "rien en retard"}
-              registre={totalEnRetard > 0 ? "alerte" : "acquis"}
-            />
-            <TuileChiffre
-              valeur={etat.aPlanifier}
-              legende="à planifier"
-              registre="calme"
-            />
-            <TuileChiffre
-              valeur={totalSous30j}
-              legende="sous 30 jours"
-              registre={totalSous30j > 0 ? "proche" : "calme"}
-            />
-            <TuileChiffre
-              valeur={etat.realisees12m}
-              legende="faites sur 12 mois"
-              registre={etat.realisees12m > 0 ? "acquis" : "calme"}
-            />
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-wrap gap-3">
+              <TuileChiffre
+                valeur={totalEnRetard}
+                legende={totalEnRetard > 0 ? "en retard" : "rien en retard"}
+                registre={totalEnRetard > 0 ? "alerte" : "acquis"}
+              />
+              <TuileChiffre
+                valeur={etat.aPlanifier}
+                legende="à planifier"
+                registre="calme"
+              />
+              <TuileChiffre
+                valeur={totalSous30j}
+                legende="sous 30 jours"
+                registre={totalSous30j > 0 ? "proche" : "calme"}
+              />
+              <TuileChiffre
+                valeur={etat.realisees12m}
+                legende="faites sur 12 mois"
+                registre={etat.realisees12m > 0 ? "acquis" : "calme"}
+              />
+            </div>
+            {/* Deux écrans voisins affichent « en retard » sans compter la
+                même chose : ici toutes les familles d'échéances, dans la
+                barre latérale les seules vérifications périodiques. Tant
+                que les deux nombres cohabitent, on dit lequel est lequel
+                plutôt que de laisser l'utilisateur arbitrer. */}
+            <p className="m-0 max-w-[420px] text-right text-[11.5px] leading-[1.45] text-[color:var(--board-slate-mid)]">
+              Ces compteurs réunissent toutes les familles d&apos;échéances —
+              contrôles, travaux et papiers.
+              {nbAutresEnRetard > 0
+                ? ` Le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques : ${etat.enRetard} sur ${totalEnRetard}.`
+                : " Le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques."}
+            </p>
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { formaterDateCourteFr } from "@/lib/dates";
 import { StatusPill, type StatusKind } from "./StatusPill";
 
 export type TimelineItem = {
@@ -72,11 +73,7 @@ export function ComplianceTimeline({
             <div className="flex-1">
               <div className="flex flex-wrap items-baseline gap-2">
                 <span className="font-mono text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-[color:var(--seal)]">
-                  {d.toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  {formaterDateCourteFr(d)}
                 </span>
                 <StatusPill status={item.statut} size="sm" />
               </div>

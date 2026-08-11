@@ -6,40 +6,38 @@
 
 import Link from "next/link";
 import { BentoCell } from "@/components/dashboard/BentoCell";
+import { formaterDateCourteFr } from "@/lib/dates";
+import { estVerificationEnRetard } from "@/lib/dates/retard";
+import { libelleEcart } from "../temps";
 import type { DashboardBundle } from "../types";
-
-function formatDateCourte(d: Date): string {
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 // Toutes les fonctions temporelles reçoivent la date de référence du
 // bundle (`aujourdhui`, figée côté serveur) : un `new Date()` au rendu
-// créerait un écart d'hydratation SSR/CSR.
-function formatDans(datePrevue: Date, aujourdhui: Date): string {
-  const diff = Math.round(
-    (datePrevue.getTime() - aujourdhui.getTime()) / (1000 * 60 * 60 * 24),
-  );
-  if (diff === 0) return "Aujourd'hui";
-  if (diff > 0) return `J+${diff}`;
-  return `J${diff}`; // diff < 0 → "J-N"
-}
+// créerait un écart d'hydratation SSR/CSR. L'écart, lui, se compte en
+// jours civils (cf. `../temps`) : comparer des instants faisait basculer
+// une échéance du jour en « J−1 » vers 14 h, heure de Paris.
 
 function classifier(
   statut: string,
   datePrevue: Date,
   aujourdhui: Date,
 ): { tone: "alerte" | "warn" | "ok"; libelleDate: string } {
-  if (statut === "depassee" || (statut === "planifiee" && datePrevue < aujourdhui)) {
-    return { tone: "alerte", libelleDate: formatDateCourte(datePrevue) };
+  // Même prédicat que partout ailleurs (ADR-011) : le retard commence à
+  // minuit, heure de Paris, du jour qui suit l'échéance — et c'est la
+  // date qui le décide, pas le statut. La liste ne porte que des
+  // occurrences non réalisées.
+  if (
+    estVerificationEnRetard(
+      { statut, datePrevue, dateRealisee: null },
+      aujourdhui,
+    )
+  ) {
+    return { tone: "alerte", libelleDate: formaterDateCourteFr(datePrevue) };
   }
   if (statut === "a_planifier") {
     return { tone: "warn", libelleDate: "—" };
   }
-  return { tone: "ok", libelleDate: formatDateCourte(datePrevue) };
+  return { tone: "ok", libelleDate: formaterDateCourteFr(datePrevue) };
 }
 
 export function WidgetProchainesEcheances({
@@ -118,7 +116,7 @@ export function WidgetProchainesEcheances({
           const dans =
             v.statut === "a_planifier"
               ? "À planifier"
-              : formatDans(v.datePrevue, aujourdhui);
+              : libelleEcart(v.datePrevue, aujourdhui);
           const dansColor =
             c.tone === "alerte" ? "text-[color:var(--alert)]" : "text-muted-foreground";
           return (

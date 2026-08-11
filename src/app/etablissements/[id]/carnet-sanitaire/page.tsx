@@ -10,17 +10,14 @@ import {
   LABEL_RESEAU,
   SEUIL_LEGIONELLE_UFC_PAR_L,
 } from "@/lib/carnet-sanitaire/schema";
+import { formaterDateCourteFr } from "@/lib/dates";
 
 export const metadata = {
   title: "Carnet sanitaire eau",
 };
 
 function formatDate(d: Date): string {
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return formaterDateCourteFr(d);
 }
 
 export default async function CarnetSanitairePage({
@@ -253,6 +250,7 @@ export default async function CarnetSanitairePage({
                               : "var(--minium)",
                           }}
                         >
+                          {/* nombre, pas une date : séparateurs de milliers */}
                           {a.valeurUfcParL.toLocaleString("fr-FR")}
                           <span className="ml-1 text-[0.7rem] text-muted-foreground">
                             UFC/L

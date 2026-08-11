@@ -9,25 +9,26 @@ import {
 import { getPlanPrevention } from "@/lib/plan-prevention/queries";
 import { diagnostiquerPlan } from "@/lib/plan-prevention/schema";
 import { requireEtablissement } from "@/lib/auth/scope";
+import { FUSEAU_REFERENCE, formaterDateLongueFr } from "@/lib/dates";
+
+// Format long avec heure, propre à cette page : le fuseau vient de la
+// constante produit, jamais d'un littéral recopié.
+const FMT_DATE_HEURE = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: FUSEAU_REFERENCE,
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
 
 function fmtDateTime(d: Date): string {
-  return d.toLocaleString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Paris",
-  });
+  return FMT_DATE_HEURE.format(d);
 }
 
 function fmtDate(d: Date | null): string | null {
   if (!d) return null;
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return formaterDateLongueFr(d);
 }
 
 export default async function PlanPreventionDetailPage({

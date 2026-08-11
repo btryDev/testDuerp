@@ -12,14 +12,11 @@ import {
 } from "@/lib/equipements/queries";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import { suggererEquipements } from "@/lib/equipements/pre-remplissage";
+import { formaterDateLongueFr } from "@/lib/dates";
 
 function formatDate(d: Date | null): string | null {
   if (!d) return null;
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return formaterDateLongueFr(d);
 }
 
 export default async function EquipementsPage({

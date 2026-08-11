@@ -15,9 +15,10 @@ import {
   getModulesMatrice,
   listerEvenementsFenetre,
 } from "@/lib/dashboard/queries";
-import { JOURS_APRES } from "@/lib/dashboard/frise";
+import { listerEvenementsCalendrier } from "@/lib/calendrier/evenements";
 import { statsActionsEnRetard } from "@/lib/actions/queries";
 import { prisma } from "@/lib/prisma";
+import { composantesCiviles, joursCivilsEntre } from "@/lib/dates";
 
 export default async function EtablissementPage({
   params,
@@ -47,10 +48,11 @@ export default async function EtablissementPage({
     compterVerifsParEquipement(id),
     getDashboardData(id),
     compterObligationsParMois(id),
-    // 730 j : la frise défile jusqu'à 24 mois et propose une vue
-    // calendrier sur la même donnée — une seule requête pour les deux
-    // vues, qui coupent côté client.
-    listerEvenementsFenetre(id, JOURS_APRES),
+    // La frise défile jusqu'à 24 mois et propose une vue calendrier sur
+    // la même donnée — une seule collecte pour les deux vues, qui coupent
+    // côté client. Toutes familles confondues, comme la page Calendrier :
+    // un permis de feu ou une attestation en retard doit se voir ici.
+    listerEvenementsCalendrier(id),
     listerEvenementsFenetre(id, 7),
     listerEvenementsFenetre(id, 30),
     statsActionsEnRetard(id),
@@ -124,14 +126,12 @@ export default async function EtablissementPage({
   // les écarts d'hydratation et rend les rendus reproductibles.
   const aujourdhui = new Date();
 
+  // Ancienneté du dernier rapport, en **jours civils** (Europe/Paris) :
+  // une division par 86 400 000 comptait des tranches de 24 h, et un
+  // rapport déposé la veille au soir n'était « d'hier » qu'à partir de la
+  // même heure le lendemain (cf. ADR-011).
   const jourDernierRapport = rapportsRecents[0]
-    ? Math.max(
-        0,
-        Math.floor(
-          (aujourdhui.getTime() - rapportsRecents[0].dateRapport.getTime()) /
-            (1000 * 60 * 60 * 24),
-        ),
-      )
+    ? Math.max(0, joursCivilsEntre(rapportsRecents[0].dateRapport, aujourdhui))
     : null;
 
   // Le bundle sérialise les champs nécessaires aux widgets. Date
@@ -198,7 +198,10 @@ export default async function EtablissementPage({
         }
       : null,
     jourDernierRapport,
-    moisCourant: aujourdhui.getMonth(),
+    // Mois courant lu en heure de Paris, pas dans le fuseau du
+    // serveur : `getMonth()` sur un instant de fin de mois à 23 h
+    // renvoyait le mois suivant sur un hôte à l'est de Paris.
+    moisCourant: composantesCiviles(aujourdhui).mois - 1,
   };
 
   return (

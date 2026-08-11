@@ -6,22 +6,21 @@
 
 import Link from "next/link";
 import { BentoCell } from "@/components/dashboard/BentoCell";
+import { cleJourCivil } from "@/lib/dates";
+import { colonnesJours } from "../temps";
 import type { DashboardBundle } from "../types";
-
-const JOURS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
 export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
   const { evenementsSemaine = [], etablissementId } = bundle;
 
   // Fenêtre 7 jours à partir de la référence du bundle (jamais
   // `new Date()` au rendu : écart d'hydratation SSR/CSR).
-  const today = new Date(bundle.aujourdhui);
-  today.setHours(0, 0, 0, 0);
-  const jours = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() + i);
-    return d;
-  });
+  //
+  // Colonnes et événements sont indexés par la **même** clé de jour civil
+  // Europe/Paris. Les colonnes étaient auparavant posées à minuit local
+  // puis indexées en UTC : à Paris, chaque cellule portait la clé de la
+  // veille, et toute la semaine s'affichait décalée d'une colonne.
+  const jours = colonnesJours(bundle.aujourdhui, 7);
 
   const eventsParJour = new Map<
     string,
@@ -33,7 +32,7 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
     }[]
   >();
   for (const e of evenementsSemaine) {
-    const key = e.date.toISOString().slice(0, 10);
+    const key = cleJourCivil(e.date);
     const arr = eventsParJour.get(key) ?? [];
     arr.push({
       id: e.id,
@@ -56,13 +55,12 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
       }
     >
       <ol className="grid grid-cols-7 gap-1.5">
-        {jours.map((d, idx) => {
-          const key = d.toISOString().slice(0, 10);
-          const events = eventsParJour.get(key) ?? [];
-          const isToday = idx === 0;
+        {jours.map((jour) => {
+          const events = eventsParJour.get(jour.cle) ?? [];
+          const isToday = jour.estAujourdhui;
           return (
             <li
-              key={key}
+              key={jour.cle}
               className={
                 "flex min-h-[96px] flex-col rounded-lg p-2 " +
                 (isToday
@@ -78,7 +76,7 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
                     : "text-muted-foreground")
                 }
               >
-                {JOURS[d.getDay()]}
+                {jour.libelleJour}
               </div>
               <div
                 className={
@@ -86,7 +84,7 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
                   (isToday ? "text-[color:var(--accent-vif)]" : "text-ink")
                 }
               >
-                {d.getDate()}
+                {jour.numero}
               </div>
               <ul className="mt-1.5 flex flex-col gap-0.5">
                 {events.slice(0, 3).map((e) => (

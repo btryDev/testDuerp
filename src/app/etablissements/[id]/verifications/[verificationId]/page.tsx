@@ -9,6 +9,17 @@ import { BadgeStatutAction } from "@/components/actions/BadgeStatutAction";
 import { CreerActionVerifForm } from "@/components/actions/CreerActionVerifForm";
 import { getVerification } from "@/lib/calendrier/queries";
 import {
+  JOURS_HORIZON_PROCHE,
+  formaterDateCourteFr,
+  formaterDateLongueFr,
+  joursCivilsEntre,
+} from "@/lib/dates";
+import {
+  estActionEnRetard,
+  estVerificationEnRetard,
+  joursDeRetard,
+} from "@/lib/dates/retard";
+import {
   LABEL_DOMAINE,
   LABEL_PERIODICITE,
   LABEL_REALISATEUR,
@@ -22,28 +33,20 @@ import { DemanderSignatureForm } from "@/components/signatures/DemanderSignature
 import { SignatureBlock } from "@/components/ui-kit";
 import { listSignatures } from "@/lib/signatures/queries";
 
+// Les dates sont formatées et comparées dans le fuseau de référence du
+// produit (Europe/Paris, cf. ADR-011), jamais dans celui du serveur :
+// `toLocaleDateString` sans `timeZone` rendait la page dépendante de
+// l'hôte, et `Math.round((d - now) / 86 400 000)` comptait des tranches
+// de 24 h plutôt que des jours civils — l'en-tête annonçait « échéance
+// dépassée de 1 j » à partir de 14 h le jour même de l'échéance.
 function formatDate(d: Date | null): string | null {
   if (!d) return null;
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return formaterDateLongueFr(d);
 }
 
 function formatDateCourte(d: Date | null): string | null {
   if (!d) return null;
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function joursEntre(d: Date): number {
-  const now = new Date();
-  const msJour = 1000 * 60 * 60 * 24;
-  return Math.round((d.getTime() - now.getTime()) / msJour);
+  return formaterDateCourteFr(d);
 }
 
 /**
@@ -114,9 +117,16 @@ export default async function VerificationDetailPage({
     );
   }
 
-  const joursRestants = joursEntre(v.datePrevue);
-  const enRetard = joursRestants < 0 && !v.dateRealisee;
-  const urgent = joursRestants >= 0 && joursRestants <= 30 && !v.dateRealisee;
+  // Horloge lue une fois pour toute la page : deux appels à `new Date()`
+  // séparés par un await peuvent tomber de part et d'autre de minuit.
+  const aujourdhui = new Date();
+  const joursRestants = joursCivilsEntre(aujourdhui, v.datePrevue);
+  const enRetard = estVerificationEnRetard(v, aujourdhui);
+  const urgent =
+    !enRetard &&
+    !v.dateRealisee &&
+    joursRestants >= 0 &&
+    joursRestants <= JOURS_HORIZON_PROCHE;
   const aUnRapport = v.rapports.length > 0;
 
   return (
@@ -169,8 +179,10 @@ export default async function VerificationDetailPage({
               }}
             >
               {enRetard
-                ? `Échéance dépassée de ${Math.abs(joursRestants)} j. À régulariser dès que possible.`
-                : `Échéance dans ${joursRestants} j.`}
+                ? `Échéance dépassée de ${joursDeRetard(v.datePrevue, aujourdhui)} j. À régulariser dès que possible.`
+                : joursRestants === 0
+                  ? "Échéance aujourd'hui."
+                  : `Échéance dans ${joursRestants} j.`}
             </p>
           )}
         </div>
@@ -545,8 +557,10 @@ export default async function VerificationDetailPage({
         {actionsLiees.length > 0 ? (
           <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {actionsLiees.map((a) => {
-              const enRetardAction =
-                a.echeance && a.echeance < new Date() && a.statut !== "levee";
+              // Même prédicat que le plan d'actions : une action dont
+              // l'échéance tombe aujourd'hui n'est pas en retard, et une
+              // action abandonnée ne l'est jamais non plus.
+              const enRetardAction = estActionEnRetard(a, aujourdhui);
               return (
                 <li key={a.id}>
                   <Link

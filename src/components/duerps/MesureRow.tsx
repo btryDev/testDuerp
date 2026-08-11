@@ -7,9 +7,13 @@ import { Input } from "@/components/ui/input";
 import { modifierMesure, supprimerMesure } from "@/lib/mesures/actions";
 import { LABEL_TYPE_MESURE } from "@/lib/mesures/labels";
 import type { TypeMesure } from "@/lib/referentiels/types";
+import { cleJourCivil } from "@/lib/dates";
 
+// Valeur d'un `<input type="date">` : le jour civil de Paris. Composant
+// client, donc `toISOString()` y décalait la date d'un jour dès que
+// l'instant lu n'était pas exactement minuit UTC (cf. ADR-011).
 function formatDateISO(d: Date | null): string {
-  return d ? d.toISOString().slice(0, 10) : "";
+  return d ? cleJourCivil(d) : "";
 }
 
 type Statut = "existante" | "prevue";

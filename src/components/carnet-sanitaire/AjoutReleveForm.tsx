@@ -8,6 +8,7 @@ import {
   ajouterReleve,
   type CarnetActionState,
 } from "@/lib/carnet-sanitaire/actions";
+import { cleJourCivil } from "@/lib/dates";
 
 /**
  * Formulaire compact de saisie d'un relevé de température. Pensé pour
@@ -53,7 +54,10 @@ export function AjoutReleveForm({
     );
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  // Jour civil de Paris, pas la date UTC du navigateur : entre 00:00 et
+  // 02:00 heure d'été, `toISOString()` renvoie encore la veille et le
+  // formulaire proposait la mauvaise date de relevé (cf. ADR-011).
+  const today = cleJourCivil(new Date());
 
   return (
     <form action={formAction} className="space-y-4 rounded-xl border border-dashed border-[color:var(--rule)] bg-[color:var(--paper-sunk)] p-5">

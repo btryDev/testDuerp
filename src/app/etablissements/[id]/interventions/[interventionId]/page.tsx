@@ -11,17 +11,23 @@ import { requireEtablissement } from "@/lib/auth/scope";
 import { getIntervention } from "@/lib/interventions/queries";
 import { COULEUR_PRIORITE, LABEL_STATUT } from "@/lib/interventions/schema";
 import { getOptionalUser } from "@/lib/auth/require-user";
+import { FUSEAU_REFERENCE } from "@/lib/dates";
+import { estEnRetard } from "@/lib/dates/retard";
+
+// Format long avec heure, propre à cette page (« 10 août 2026 14:30 ») :
+// le fuseau vient de la constante produit, jamais d'un littéral recopié.
+const FMT = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: FUSEAU_REFERENCE,
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
 
 function fmtDate(d: Date | null): string | null {
   if (!d) return null;
-  return d.toLocaleString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Paris",
-  });
+  return FMT.format(d);
 }
 
 export default async function InterventionDetailPage({
@@ -38,6 +44,17 @@ export default async function InterventionDetailPage({
   if (!it) notFound();
 
   const color = COULEUR_PRIORITE[it.priorite];
+  // Page serveur : horloge lue une fois par requête.
+  const aujourdhui = new Date();
+  // Retard = prédicat partagé (ADR-011). La comparaison brute
+  // `echeance < new Date()` colorait en minium une échéance datée du jour
+  // même dès 02:00 heure d'été, en contradiction avec la carte du même
+  // ticket sur la page liste.
+  const echeanceEnRetard =
+    it.echeance !== null &&
+    estEnRetard(it.echeance, aujourdhui) &&
+    it.statut !== "fait" &&
+    it.statut !== "annule";
 
   return (
     <>
@@ -98,12 +115,7 @@ export default async function InterventionDetailPage({
                   <dd
                     className="mt-1 font-semibold tabular-nums"
                     style={{
-                      color:
-                        it.echeance < new Date() &&
-                        it.statut !== "fait" &&
-                        it.statut !== "annule"
-                          ? "var(--minium)"
-                          : undefined,
+                      color: echeanceEnRetard ? "var(--minium)" : undefined,
                     }}
                   >
                     {fmtDate(it.echeance)?.split(" à ")[0] ?? ""}

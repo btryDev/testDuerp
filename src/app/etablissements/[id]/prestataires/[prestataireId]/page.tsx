@@ -6,14 +6,11 @@ import { VigilancePiecePill } from "@/components/prestataires/VigilancePills";
 import { SupprimerPrestataireButton } from "@/components/prestataires/SupprimerPrestataireButton";
 import { getPrestataire } from "@/lib/prestataires/queries";
 import { LABEL_DOMAINE } from "@/lib/prestataires/schema";
+import { formaterDateLongueFr } from "@/lib/dates";
 
 function formatDate(d: Date | null): string | null {
   if (!d) return null;
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return formaterDateLongueFr(d);
 }
 
 export default async function PrestataireDetailPage({

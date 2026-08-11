@@ -5,6 +5,7 @@ import { requireEtablissement } from "@/lib/auth/scope";
 import { getDashboardData } from "@/lib/dashboard/queries";
 import { countAlertesVigilance } from "@/lib/prestataires/queries";
 import { prisma } from "@/lib/prisma";
+import { formaterDateFr } from "@/lib/dates";
 
 export const metadata = {
   title: "Préparer un contrôle — Dossier 1 clic",
@@ -59,7 +60,7 @@ export default async function ControlePage({
     {
       titre: "DUERP versionné",
       description: duerpVersion
-        ? `Version v${duerpVersion.numero} figée le ${duerpVersion.createdAt.toLocaleDateString("fr-FR")}.`
+        ? `Version v${duerpVersion.numero} figée le ${formaterDateFr(duerpVersion.createdAt)}.`
         : "Aucune version figée. Créez-en une depuis le DUERP.",
       present: !!duerpVersion,
       etat: duerpVersion ? "a_jour" : "a_planifier",

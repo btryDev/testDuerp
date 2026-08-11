@@ -56,9 +56,16 @@ export function VigilancePiecePill({
         <div className="mt-0.5 text-[0.85rem] font-medium text-[color:var(--ink)]">
           {LABEL[statut]}
         </div>
-        <div className="text-[0.72rem] text-[color:var(--muted-foreground)]">
-          {messageExpiration(jours)}
-        </div>
+        {/* L'échéance en toutes lettres vient de `messageExpiration` : la
+            règle (« expire aujourd'hui » le jour dit, expirée seulement à
+            partir du lendemain) est tenue par `lib/prestataires/vigilance`,
+            source unique — le composant ne la recalcule pas.
+            Sur une pièce absente, la ligne répéterait le statut : on la tait. */}
+        {statut === "manquante" ? null : (
+          <div className="text-[0.72rem] text-[color:var(--muted-foreground)]">
+            {messageExpiration(jours)}
+          </div>
+        )}
       </div>
     </div>
   );

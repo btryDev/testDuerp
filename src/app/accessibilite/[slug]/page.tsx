@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getRegistrePublicParSlug } from "@/lib/accessibilite/queries";
 import { LABEL_HANDICAP, LABEL_REGIME } from "@/lib/accessibilite/schema";
+import { formaterDateLongueFr } from "@/lib/dates";
 
 export const metadata = {
   title: "Registre d'accessibilité",
@@ -10,11 +11,7 @@ export const metadata = {
 
 function formatDate(d: Date | null): string | null {
   if (!d) return null;
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return formaterDateLongueFr(d);
 }
 
 const PICTO: Record<keyof typeof LABEL_HANDICAP, string> = {

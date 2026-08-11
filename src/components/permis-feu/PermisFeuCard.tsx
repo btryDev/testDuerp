@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { PermisFeu, StatutPermisFeu } from "@prisma/client";
 import { LABEL_NATURE } from "@/lib/permis-feu/schema";
+import { formaterDateCourteFr } from "@/lib/dates";
 
 const LABEL_STATUT: Record<StatutPermisFeu, string> = {
   brouillon: "Brouillon",
@@ -21,11 +22,7 @@ const COULEUR_STATUT: Record<StatutPermisFeu, string> = {
 };
 
 function formatDateCourte(d: Date): string {
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return formaterDateCourteFr(d);
 }
 
 export function PermisFeuCard({

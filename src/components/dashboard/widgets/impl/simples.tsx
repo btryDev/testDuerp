@@ -13,13 +13,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import { CarteBoard, TitreBloc } from "@/components/dashboard/widgets/impl/board";
 import { PictoEquipement } from "@/components/equipements/PictoEquipement";
+import { formaterDateFr, formaterJourMoisFr } from "@/lib/dates";
 import type { DashboardBundle } from "../types";
 
 function formatDateCourte(d: Date): string {
-  return d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-  });
+  return formaterJourMoisFr(d);
 }
 
 /* ─── Registre ──────────────────────────────────────────── */
@@ -488,7 +486,7 @@ export function WidgetDuerp({ bundle }: { bundle: DashboardBundle }) {
           </p>
           <p className="mt-0.5 text-[0.78rem] text-muted-foreground">
             {derniereVersion
-              ? `v${derniereVersion.numero} du ${derniereVersion.createdAt.toLocaleDateString("fr-FR")}`
+              ? `v${derniereVersion.numero} du ${formaterDateFr(derniereVersion.createdAt)}`
               : "En cours — pas encore validé"}
           </p>
         </div>

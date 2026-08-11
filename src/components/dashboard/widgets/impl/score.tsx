@@ -12,6 +12,7 @@
 
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { formaterDateFr } from "@/lib/dates";
 import type { DashboardBundle } from "../types";
 
 const LIBELLE_NIVEAU = {
@@ -76,7 +77,7 @@ export function WidgetScore({
     const actionsACouvrir =
       dashboard.compteurs.actionsOuvertes + dashboard.compteurs.actionsEnCours;
     const sub = dashboard.duerp.derniereVersionAu
-      ? `DUERP ${dashboard.duerp.derniereVersionAu.toLocaleDateString("fr-FR")}`
+      ? `DUERP ${formaterDateFr(dashboard.duerp.derniereVersionAu)}`
       : dashboard.duerp.existe
         ? "DUERP en cours"
         : "Pas encore de DUERP";

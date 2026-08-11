@@ -11,6 +11,7 @@ import { VueMois } from "./VueMois";
 import { VueAnnee } from "./VueAnnee";
 import { LABEL_FAMILLE, MarqueurFamille } from "./MarqueurFamille";
 import { JOURS_APRES, JOURS_AVANT } from "@/lib/dashboard/frise";
+import { ajouterJours, composantesCiviles } from "@/lib/dates";
 import type { EvenementGrille } from "@/lib/calendrier/grille";
 import type { FamilleEcheance } from "@/lib/calendrier/echeances";
 
@@ -21,8 +22,6 @@ const ORDRE_LEGENDE: FamilleEcheance[] = [
   "papiers",
   "personnel",
 ];
-
-const JOUR_MS = 86400000;
 
 export function CalendrierGrille({
   etablissementId,
@@ -40,17 +39,24 @@ export function CalendrierGrille({
   // La grille d'un mois d'abord — on est sur la page du détail ; l'année
   // d'un bloc reste à une bascule.
   const [maille, setMaille] = useState<"mois" | "annee">("mois");
-  const [mois, setMois] = useState(
-    () => new Date(aujourdhui.getFullYear(), aujourdhui.getMonth(), 1),
-  );
+  // Mois courant lu en heure de Paris — ce composant est client, et
+  // `getMonth()` sur un instant proche de minuit ouvrait la grille sur le
+  // mois précédent pour un utilisateur à l'ouest de UTC (cf. ADR-011).
+  const [mois, setMois] = useState(() => {
+    const c = composantesCiviles(aujourdhui);
+    return new Date(c.annee, c.mois - 1, 1);
+  });
 
   // Même fenêtre que la frise du board : 90 j en arrière, 24 mois en
   // avant, bornée au mois entier — au-delà, la donnée n'est pas chargée
-  // et une grille vide mentirait.
-  const brutDebut = new Date(aujourdhui.getTime() - JOURS_AVANT * JOUR_MS);
-  const debut = new Date(brutDebut.getFullYear(), brutDebut.getMonth(), 1);
-  const brutFin = new Date(aujourdhui.getTime() + JOURS_APRES * JOUR_MS);
-  const fin = new Date(brutFin.getFullYear(), brutFin.getMonth() + 1, 0);
+  // et une grille vide mentirait. Les bornes sont posées en jours civils
+  // (`ajouterJours`), qui ne dérivent pas d'une heure aux changements
+  // d'heure là où `± n × 86 400 000` le fait.
+  const bornes = (n: number) => composantesCiviles(ajouterJours(aujourdhui, n));
+  const cDebut = bornes(-JOURS_AVANT);
+  const debut = new Date(cDebut.annee, cDebut.mois - 1, 1);
+  const cFin = bornes(JOURS_APRES);
+  const fin = new Date(cFin.annee, cFin.mois, 0);
 
   // La légende n'enseigne que ce qui est là : les familles effectivement
   // présentes dans la donnée (les contrôles, toujours — le socle).

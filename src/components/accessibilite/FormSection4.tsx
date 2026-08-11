@@ -6,10 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { sauverSection4 } from "@/lib/accessibilite/actions";
 import type { RegistreActionState } from "@/lib/accessibilite/actions";
+import { cleJourCivil } from "@/lib/dates";
 
+// Valeur d'un `<input type="date">` : le jour civil de Paris, jamais la
+// date UTC. Sur une date stockée à minuit UTC les deux coïncident, mais
+// pas sur un horodatage réel — et le composant est client (cf. ADR-011).
 function fmtDate(d: Date | null): string {
   if (!d) return "";
-  return d.toISOString().slice(0, 10);
+  return cleJourCivil(d);
 }
 
 export function FormSection4({

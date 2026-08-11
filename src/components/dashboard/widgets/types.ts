@@ -10,6 +10,7 @@ import type {
   DashboardData,
   EvenementFenetre,
 } from "@/lib/dashboard/queries";
+import type { EvenementGrille } from "@/lib/calendrier/grille";
 import type { ModulesMatrice } from "@/lib/dashboard/obligations";
 import type { StatsRetardActions } from "@/lib/actions/queries";
 
@@ -129,9 +130,10 @@ export type DashboardBundle = {
   /** Date de référence, calculée côté serveur : garantit un rendu
    *  déterministe (pas d'écart d'hydratation) et des tests reproductibles. */
   aujourdhui: Date;
-  /** Fenêtre glissante 365 j — alimente les deux horizons de la frise
-   *  (90 jours / 12 mois), qui coupe côté client. */
-  evenementsHorizon: EvenementFenetre[];
+  /** Toutes les échéances datées, toutes familles confondues (contrôles,
+   *  travaux, papiers) — alimente la frise et la vue calendrier du bloc,
+   *  qui coupent côté client. Même donnée que la page Calendrier. */
+  evenementsHorizon: EvenementGrille[];
   /** Fenêtre glissante 7 j — widget « Semaine ». */
   evenementsSemaine?: EvenementFenetre[];
   /** Fenêtre glissante 30 j — widget « Météo ». */

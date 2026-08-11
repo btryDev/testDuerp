@@ -5,26 +5,26 @@
 // la pire urgence du jour (retard > à planifier > OK > rien).
 
 import { BentoCell } from "@/components/dashboard/BentoCell";
+import { cleJourCivil } from "@/lib/dates";
+import { colonnesJours } from "../temps";
 import type { DashboardBundle } from "../types";
 
 export function WidgetMeteo({ bundle }: { bundle: DashboardBundle }) {
   const { evenementsMois = [] } = bundle;
 
   // Référence du bundle, jamais `new Date()` : rendu identique SSR/CSR.
-  const today = new Date(bundle.aujourdhui);
-  today.setHours(0, 0, 0, 0);
-  const jours = Array.from({ length: 30 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() + i);
-    return d;
-  });
+  //
+  // Cases et événements partagent la même clé de jour civil Europe/Paris.
+  // Les cases étaient posées à minuit local puis indexées en UTC : à
+  // Paris, la heatmap peignait chaque jour sur la case du lendemain.
+  const jours = colonnesJours(bundle.aujourdhui, 30);
 
   // Pour chaque jour : tone dominant.
   type Tone = "alerte" | "warn" | "ok";
   const tonePriorite: Record<Tone, number> = { alerte: 3, warn: 2, ok: 1 };
   const toneParJour = new Map<string, Tone>();
   for (const e of evenementsMois) {
-    const key = e.date.toISOString().slice(0, 10);
+    const key = cleJourCivil(e.date);
     const actuel = toneParJour.get(key);
     const etone = e.tone as Tone;
     if (!actuel || tonePriorite[etone] > tonePriorite[actuel]) {
@@ -48,9 +48,8 @@ export function WidgetMeteo({ bundle }: { bundle: DashboardBundle }) {
       }
     >
       <div className="grid grid-cols-10 gap-1.5">
-        {jours.map((d, idx) => {
-          const key = d.toISOString().slice(0, 10);
-          const tone = toneParJour.get(key);
+        {jours.map((jour) => {
+          const tone = toneParJour.get(jour.cle);
           const bg = tone
             ? tone === "alerte"
               ? "var(--minium)"
@@ -58,14 +57,14 @@ export function WidgetMeteo({ bundle }: { bundle: DashboardBundle }) {
                 ? "var(--warn)"
                 : "var(--accent-vif)"
             : "var(--rule-soft)";
-          const isToday = idx === 0;
+          const isToday = jour.estAujourdhui;
           return (
             <div
-              key={key}
+              key={jour.cle}
               title={
                 tone
-                  ? `${d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long" })} — ${tone === "alerte" ? "retard" : tone === "warn" ? "à planifier" : "planifié"}`
-                  : `${d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long" })} — libre`
+                  ? `${jour.libelleLong} — ${tone === "alerte" ? "retard" : tone === "warn" ? "à planifier" : "planifié"}`
+                  : `${jour.libelleLong} — libre`
               }
               className={
                 "aspect-square rounded " +

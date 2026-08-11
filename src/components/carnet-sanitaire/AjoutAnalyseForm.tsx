@@ -10,6 +10,7 @@ import {
   type CarnetActionState,
 } from "@/lib/carnet-sanitaire/actions";
 import { SEUIL_LEGIONELLE_UFC_PAR_L } from "@/lib/carnet-sanitaire/schema";
+import { cleJourCivil } from "@/lib/dates";
 
 export function AjoutAnalyseForm({
   etablissementId,
@@ -39,7 +40,9 @@ export function AjoutAnalyseForm({
     );
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  // Jour civil de Paris : entre 00:00 et 02:00 heure d'été,
+  // `toISOString()` renvoie encore la veille (cf. ADR-011).
+  const today = cleJourCivil(new Date());
 
   return (
     <form
