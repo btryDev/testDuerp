@@ -19,6 +19,7 @@
 // la route qui change — les gardes de transport et les outils, non.
 
 import { createHash, timingSafeEqual } from "node:crypto";
+import { lireHotesAutorises } from "./hotes";
 import type { ScopeMcp } from "./tools";
 
 /** Longueur minimale de la clé, en caractères. 32 caractères tirés au
@@ -59,18 +60,9 @@ export function lireConfigAccesHttp(
   }
 
   // Hôtes : le domaine de déploiement doit être déclaré. Vercel expose le
-  // sien, et on accepte localhost pour le développement.
-  const declares =
-    env.MCP_HOTES?.split(",")
-      .map((h) => h.trim())
-      .filter(Boolean) ?? [];
-  const vercel = [env.VERCEL_PROJECT_PRODUCTION_URL, env.VERCEL_URL]
-    .filter((v): v is string => Boolean(v))
-    .map((v) => v.replace(/^https?:\/\//, "").split("/")[0]);
-
-  const hotesAutorises = [
-    ...new Set([...declares, ...vercel, "localhost", "127.0.0.1"]),
-  ];
+  // sien, et on accepte localhost pour le développement. La liste est
+  // construite par `./hotes`, partagé avec l'accès OAuth (ADR-013).
+  const hotesAutorises = lireHotesAutorises(env);
 
   return {
     cleAttendue,

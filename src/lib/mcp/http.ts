@@ -44,6 +44,15 @@ export type OptionsServeurHttp = {
   hotesAutorises: string[];
   /** Origines acceptées dans l'en-tête `Origin`. */
   originesAutorisees: string[];
+  /**
+   * Réponse rendue quand `resoudreScope` refuse. La forme du refus dépend du
+   * mécanisme d'authentification, pas du transport : un secret dans l'URL se
+   * refuse en `404` muet (cf. `./acces-http`), un jeton OAuth en `401`
+   * désignant les métadonnées de ressource (cf. `./acces-oauth`).
+   *
+   * Par défaut, le `404` muet.
+   */
+  reponseRefus?: (request: Request) => Response;
 };
 
 /**
@@ -98,8 +107,8 @@ function construireServeur(scope: ScopeMcp): McpServer {
   return server;
 }
 
-/** Réponse d'échec volontairement muette — cf. `servir`. */
-const refus = () =>
+/** Refus par défaut, volontairement muet — cf. `servir`. */
+const refusMuet = () =>
   new Response(JSON.stringify({ error: "not_found" }), {
     status: 404,
     headers: { "content-type": "application/json" },
@@ -131,10 +140,7 @@ export function creerHandlerMcpHttp(options: OptionsServeurHttp) {
     if (rejete) return rejete;
 
     const scope = await options.resoudreScope(request);
-    // 404 plutôt que 401 : le secret vit dans l'URL, et une réponse qui
-    // distingue « mauvaise clé » de « route inconnue » confirmerait à un
-    // visiteur qu'il y a bien quelque chose à trouver ici.
-    if (!scope) return refus();
+    if (!scope) return (options.reponseRefus ?? refusMuet)(request);
 
     return handler.fetch(request, {
       authInfo: {
