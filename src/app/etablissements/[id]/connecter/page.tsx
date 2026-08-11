@@ -46,13 +46,28 @@ export default async function ConnecterPage({
   const executable = path.join(racine, "node_modules", ".bin", "tsx");
   const serveur = path.join(racine, "scripts", "mcp-server.ts");
 
+  // Désigner l'exécutable ne suffit pas : le lanceur `tsx` est un script
+  // shell qui termine par `exec node`. Sous nvm, node vit dans un répertoire
+  // versionné qu'une application graphique n'a pas dans son PATH, et le
+  // serveur meurt sur « node: not found » avant d'avoir dit un mot. On
+  // publie donc le répertoire du node qui fait tourner cette page, qui est
+  // par construction celui qui sait exécuter le projet.
+  const dossierNode = path.dirname(process.execPath);
+  const cheminGraphique = [
+    dossierNode,
+    "/opt/homebrew/bin",
+    "/usr/local/bin",
+    "/usr/bin",
+    "/bin",
+  ].join(":");
+
   const configDesktop = JSON.stringify(
     {
       mcpServers: {
         rojer: {
           command: executable,
           args: [serveur],
-          env: { MCP_ETABLISSEMENT_ID: id },
+          env: { MCP_ETABLISSEMENT_ID: id, PATH: cheminGraphique },
         },
       },
     },
