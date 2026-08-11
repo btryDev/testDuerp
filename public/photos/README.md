@@ -7,12 +7,17 @@ texte alternatif) pour qu'il entre dans la page.
 
 ## Ce qui est en place
 
-| Fichier            | Emplacement          | Cadrage      |
-| ------------------ | -------------------- | ------------ |
-| `hero-terrain.jpg` | Hero, tuile centrale | 4/5 vertical |
+| Fichier               | Emplacement            | Cadrage      |
+| --------------------- | ---------------------- | ------------ |
+| `hero-terrain.jpg`    | Hero, tuile centrale   | 4/5 vertical |
+| `etapes-atelier.jpg`  | « Trois étapes », gauche | 4/5 vertical |
 
 Origine de `hero-terrain.jpg` : [Pexels 8986129](https://www.pexels.com/photo/a-mechanic-using-a-cellphone-at-an-auto-repair-shop-8986129/),
 licence Pexels (usage commercial libre, sans attribution obligatoire).
+
+Origine de `etapes-atelier.jpg` : [Pexels 6790046](https://www.pexels.com/photo/6790046/),
+même licence. Référencée par la constante `PHOTO_ETAPES` en tête de
+`src/components/landing/Etapes.tsx`.
 
 `hero-cuisine.jpg` n'est plus référencé : la bande « Sur le terrain » qui
 l'accueillait a été fusionnée dans la section noire, désormais en frise sans
