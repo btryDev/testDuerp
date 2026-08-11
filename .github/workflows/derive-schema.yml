@@ -1,0 +1,82 @@
+# Garde-fou anti-dérive : le dossier de migrations doit produire exactement le
+# schéma déclaré dans `prisma/schema.prisma`.
+#
+# Motivation — un champ ajouté au schéma sans l'ALTER correspondant reste
+# indétectable par `prisma migrate status`, qui répond « up to date » dès lors
+# que toutes les migrations *existantes* sont appliquées. La colonne manquante
+# n'est dans aucune d'elles : il n'y a donc rien en attente, et rien à
+# signaler. Le défaut ne se manifeste qu'au runtime, en P2022, quand le client
+# généré réclame une colonne absente de la base (cf. commit 42b723f).
+#
+# `migrate diff --from-migrations` rejoue les migrations sur une base jetable,
+# puis compare le résultat au schéma. `--exit-code` fait sortir en 2 dès qu'un
+# écart subsiste, ce qui casse le job.
+#
+# Aucun secret, aucun accès à la base de production : la comparaison porte sur
+# le dépôt seul, contre un Postgres éphémère du runner.
+
+name: Dérive schéma ↔ migrations
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  derive:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: shadow
+        ports:
+          - 5432:5432
+        # Sans ce healthcheck, l'étape suivante démarre avant que Postgres
+        # n'accepte les connexions et le diff échoue pour une raison sans
+        # rapport avec la dérive.
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # `schema.prisma` lit ces deux variables. Elles ne servent pas au diff
+      # — qui travaille sur --from-migrations et --shadow-database-url — mais
+      # Prisma refuse de charger un schéma dont un `env()` est vide.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/shadow
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/shadow
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Installer les dépendances
+        run: pnpm install --frozen-lockfile
+
+      - name: Comparer les migrations au schéma
+        run: |
+          pnpm exec prisma migrate diff \
+            --from-migrations prisma/migrations \
+            --to-schema-datamodel prisma/schema.prisma \
+            --shadow-database-url "postgresql://postgres:postgres@localhost:5432/shadow" \
+            --exit-code
+
+      - name: Expliquer l'échec
+        if: failure()
+        run: |
+          echo "::error::Le dossier de migrations ne reproduit pas prisma/schema.prisma."
+          echo "Un champ a probablement été ajouté au schéma sans sa migration."
+          echo "Le SQL manquant s'obtient en local avec la même commande, sans --exit-code :"
+          echo "  prisma migrate diff --from-migrations prisma/migrations \\"
+          echo "    --to-schema-datamodel prisma/schema.prisma --script"
