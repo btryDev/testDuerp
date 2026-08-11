@@ -53,6 +53,134 @@ export async function requireDuerp(duerpId: string) {
 }
 
 /**
+ * Récupère une unité de travail dont le DUERP → établissement → entreprise
+ * appartient au user, ou 404.
+ *
+ * Les server actions du wizard DUERP ne reçoivent souvent qu'un `uniteId`
+ * (une entité « profonde », à deux jointures de l'entreprise). Sans ce
+ * helper, chaque action devait remonter la chaîne à la main — et ne le
+ * faisait pas. On retourne aussi `duerpId` / `etablissementId` déjà résolus,
+ * pour que l'appelant n'ait pas à requêter une seconde fois pour construire
+ * ses `revalidatePath`.
+ */
+export async function requireUnite(uniteId: string) {
+  const user = await requireUser();
+  const unite = await prisma.uniteTravail.findFirst({
+    where: {
+      id: uniteId,
+      duerp: { etablissement: { entreprise: { userId: user.id } } },
+    },
+    include: { duerp: { select: { id: true, etablissementId: true } } },
+  });
+  if (!unite) notFound();
+  return {
+    user,
+    unite,
+    duerpId: unite.duerpId,
+    etablissementId: unite.duerp.etablissementId,
+  };
+}
+
+/**
+ * Récupère un risque dont l'unité → DUERP → établissement → entreprise
+ * appartient au user, ou 404. Trois jointures : c'est l'entité la plus
+ * profonde du modèle DUERP, et celle que les actions de cotation et de
+ * suppression manipulaient jusqu'ici sur un `id` brut reçu du client.
+ */
+export async function requireRisque(risqueId: string) {
+  const user = await requireUser();
+  const risque = await prisma.risque.findFirst({
+    where: {
+      id: risqueId,
+      unite: { duerp: { etablissement: { entreprise: { userId: user.id } } } },
+    },
+    include: {
+      unite: {
+        select: {
+          id: true,
+          duerpId: true,
+          duerp: { select: { etablissementId: true } },
+        },
+      },
+    },
+  });
+  if (!risque) notFound();
+  return {
+    user,
+    risque,
+    uniteId: risque.uniteId,
+    duerpId: risque.unite.duerpId,
+    etablissementId: risque.unite.duerp.etablissementId,
+  };
+}
+
+/**
+ * Récupère une action corrective (modèle unifié, ADR-002) dont
+ * l'établissement appartient au user, ou 404.
+ */
+export async function requireAction(actionId: string) {
+  const user = await requireUser();
+  const action = await prisma.action.findFirst({
+    where: {
+      id: actionId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
+  });
+  if (!action) notFound();
+  return { user, action, etablissementId: action.etablissementId };
+}
+
+/**
+ * Alias de lecture pour le wizard DUERP : une « mesure » de prévention au
+ * sens L. 4121-2 est une `Action` rattachée à un risque depuis l'absorption
+ * du modèle `Mesure` (ADR-002). Le nom est conservé pour que les appels dans
+ * `lib/actions/actions.ts` restent lisibles, mais c'est bien le même garde —
+ * on ne recrée pas un second concept.
+ */
+export const requireMesure = requireAction;
+
+/**
+ * Récupère une occurrence de vérification dont l'établissement appartient au
+ * user, ou 404. Utilisé avant de créer une action corrective depuis un écart.
+ */
+export async function requireVerification(verificationId: string) {
+  const user = await requireUser();
+  const verification = await prisma.verification.findFirst({
+    where: {
+      id: verificationId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
+  });
+  if (!verification) notFound();
+  return { user, verification, etablissementId: verification.etablissementId };
+}
+
+/**
+ * Récupère une intervention (ticket) dont l'établissement appartient au user,
+ * ou 404.
+ *
+ * Ce garde existe parce que vérifier l'`etablissementId` **reçu du client** ne
+ * prouve rien sur le ticket visé : l'utilisateur est libre d'envoyer son propre
+ * établissement avec l'identifiant du ticket d'un autre. C'est la propriété de
+ * l'objet manipulé qu'il faut établir, jamais celle du contexte annoncé.
+ */
+export async function requireIntervention(interventionId: string) {
+  const user = await requireUser();
+  const intervention = await prisma.intervention.findFirst({
+    where: {
+      id: interventionId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
+  });
+  if (!intervention) notFound();
+  return {
+    user,
+    intervention,
+    etablissementId: intervention.etablissementId,
+  };
+}
+
+/**
  * Vérifie (sans retourner l'entité) qu'un etablissementId appartient au user.
  * Utile dans les server actions où on veut juste un garde-fou.
  */

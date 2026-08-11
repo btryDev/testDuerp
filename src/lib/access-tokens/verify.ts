@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { AccessToken } from "@prisma/client";
+import { OTP_ESSAIS_MAX } from "@/lib/signatures/otp";
 import { hashToken } from "./token";
 
 /**
@@ -60,6 +61,31 @@ export async function decrementOtpEssais(accessTokenId: string): Promise<{
     revoque = true;
   }
   return { restants, revoque };
+}
+
+/**
+ * Remplace le code OTP d'un token : nouveau hash, nouvelle expiration, et
+ * compteur d'essais remis à son maximum.
+ *
+ * La remise à zéro du compteur est volontaire — un nouveau code mérite ses
+ * essais — mais elle serait un contournement de l'anti-bruteforce si le
+ * renvoi était illimité. C'est l'appelant qui doit avoir vérifié
+ * `renvoiOtpAutorise` (délai minimal entre deux envois) avant d'arriver
+ * ici. Un token déjà révoqué pour épuisement d'essais ne repasse pas par
+ * ce chemin : `verifierAccessToken` le rejette en amont.
+ */
+export async function renouvelerOtp(
+  accessTokenId: string,
+  params: { otpHash: string; otpExpireLe: Date },
+): Promise<void> {
+  await prisma.accessToken.update({
+    where: { id: accessTokenId },
+    data: {
+      otpHash: params.otpHash,
+      otpExpireLe: params.otpExpireLe,
+      otpEssaisRestants: OTP_ESSAIS_MAX,
+    },
+  });
 }
 
 /**

@@ -1,3 +1,4 @@
+import { depuisCleJourCivil } from "@/lib/dates";
 import { z } from "zod";
 import { PrioriteIntervention, StatutIntervention } from "@prisma/client";
 
@@ -59,7 +60,7 @@ export const interventionSchema = z.object({
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Format AAAA-MM-JJ")
       .optional()
-      .transform((v) => (v ? new Date(v) : undefined)),
+      .transform((v) => (v ? depuisCleJourCivil(v) : undefined)),
   ),
   risqueId: z.preprocess(
     (v) => (typeof v === "string" && v.trim() ? v : undefined),

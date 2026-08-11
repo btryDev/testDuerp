@@ -3,134 +3,47 @@
 import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { getStorage } from "@/lib/storage";
 import { requireUser } from "@/lib/auth/require-user";
+import { assertEtablissementOwnership } from "@/lib/auth/scope";
+import { formaterDateFr } from "@/lib/dates";
 import { emettreAccessToken } from "@/lib/access-tokens/actions";
+import { envoyerMailAcces, urlAccesPourToken } from "@/lib/access-tokens/mail";
 import {
   decrementOtpEssais,
   marquerUtilise,
+  renouvelerOtp,
   verifierAccessToken,
 } from "@/lib/access-tokens/verify";
-import { verifyOtp } from "./otp";
-import { sha256Hex } from "./hash";
-import type { ObjetSignable } from "@prisma/client";
+import {
+  generateOtp,
+  hashOtp,
+  otpEstExpire,
+  otpExpirationDate,
+  renvoiOtpAutorise,
+  verifyOtp,
+} from "./otp";
+import { calculerHashObjet } from "./hash-objet";
+import type { MethodeSignature, ObjetSignable } from "@prisma/client";
 
 /**
- * Calcule le hash d'un objet signable à la volée. Pour un rapport de
- * vérification : hash du fichier stocké. Pour d'autres objets (permis de
- * feu, plan de prévention…), on hashe une représentation canonique JSON.
- * Clé : le hash doit être stable et reproductible à la demande (vérif
- * d'intégrité ultérieure).
+ * Server actions de signature électronique simple (ADR-006 / ADR-008).
  *
- * Retourne un Result discriminé plutôt que de throw : les deux cas
- * « pas trouvé » (objet DB absent / fichier binaire absent) sont
- * remontés proprement jusqu'à l'UI.
+ * Rappel de sécurité : dans un module `"use server"`, **tout export est un
+ * point d'entrée réseau**. Chaque fonction ci-dessous doit donc porter
+ * elle-même son autorisation — soit un user connecté propriétaire de
+ * l'établissement, soit un token d'accès dont la connaissance vaut
+ * autorisation. C'est la raison pour laquelle `calculerHashObjet` a été
+ * déplacée dans `./hash-objet` : exportée d'ici, elle exposait l'empreinte
+ * et le nom des documents de n'importe quel établissement.
  */
-export type HashResult =
-  | { ok: true; hash: string; nomDocument: string | null }
-  | { ok: false; raison: "objet_introuvable" | "fichier_introuvable" | "non_implemente" };
-
-export async function calculerHashObjet(
-  objetType: ObjetSignable,
-  objetId: string,
-): Promise<HashResult> {
-  if (objetType === "rapport_verification") {
-    const rapport = await prisma.rapportVerification.findUnique({
-      where: { id: objetId },
-      select: { fichierCle: true, fichierNomOriginal: true },
-    });
-    if (!rapport) return { ok: false, raison: "objet_introuvable" };
-    try {
-      const buf = await getStorage().get(rapport.fichierCle);
-      return {
-        ok: true,
-        hash: sha256Hex(buf),
-        nomDocument: rapport.fichierNomOriginal,
-      };
-    } catch {
-      return { ok: false, raison: "fichier_introuvable" };
-    }
-  }
-
-  if (objetType === "plan_prevention") {
-    const plan = await prisma.planPrevention.findUnique({
-      where: { id: objetId },
-      include: { lignes: { orderBy: { ordre: "asc" } } },
-    });
-    if (!plan) return { ok: false, raison: "objet_introuvable" };
-    const canonique = JSON.stringify({
-      numero: plan.numero,
-      entrepriseExterieureRaison: plan.entrepriseExterieureRaison,
-      entrepriseExterieureSiret: plan.entrepriseExterieureSiret,
-      efChefNom: plan.efChefNom,
-      efChefEmail: plan.efChefEmail,
-      efEffectifIntervenant: plan.efEffectifIntervenant,
-      euChefNom: plan.euChefNom,
-      euChefFonction: plan.euChefFonction,
-      dateDebut: plan.dateDebut,
-      dateFin: plan.dateFin,
-      lieux: plan.lieux,
-      naturesTravaux: plan.naturesTravaux,
-      travauxDangereux: plan.travauxDangereux,
-      inspectionDate: plan.inspectionDate,
-      inspectionParticipants: plan.inspectionParticipants,
-      lignes: plan.lignes.map((l) => ({
-        ordre: l.ordre,
-        risque: l.risque,
-        mesureEntrepriseUtilisatrice: l.mesureEntrepriseUtilisatrice,
-        mesureEntrepriseExterieure: l.mesureEntrepriseExterieure,
-      })),
-    });
-    return {
-      ok: true,
-      hash: sha256Hex(canonique),
-      nomDocument: `Plan de prévention PP-${String(plan.numero).padStart(3, "0")}`,
-    };
-  }
-
-  if (objetType === "permis_feu") {
-    // Représentation canonique d'un permis de feu : on sérialise les champs
-    // immuables juridiquement. Les champs de cycle de vie (statut, signatures
-    // elles-mêmes) sont exclus — ils évoluent après signature sans invalider
-    // l'accord initial.
-    const permis = await prisma.permisFeu.findUnique({
-      where: { id: objetId },
-      select: {
-        numero: true,
-        prestataireRaison: true,
-        prestataireContact: true,
-        prestataireEmail: true,
-        donneurOrdreNom: true,
-        donneurOrdreFonction: true,
-        dateDebut: true,
-        dateFin: true,
-        lieu: true,
-        naturesTravaux: true,
-        descriptionTravaux: true,
-        mesuresValidees: true,
-        mesuresNotes: true,
-        dureeSurveillanceMinutes: true,
-      },
-    });
-    if (!permis) return { ok: false, raison: "objet_introuvable" };
-    // Clés triées pour stabilité du hash
-    const canonique = JSON.stringify(permis, Object.keys(permis).sort());
-    return {
-      ok: true,
-      hash: sha256Hex(canonique),
-      nomDocument: `Permis de feu PF-${String(permis.numero).padStart(3, "0")}`,
-    };
-  }
-
-  // Pour les autres objets (plan de prévention, registre accessibilité…),
-  // chaque module livrera sa représentation canonique au fur et à mesure.
-  return { ok: false, raison: "non_implemente" };
-}
 
 /**
  * Émet une demande de signature : crée un AccessToken scope "signature",
  * envoie le lien par email. Le destinataire viendra signer via OTP sur
  * `/acces/[token]`.
+ *
+ * L'autorisation est portée par `emettreAccessToken`, qui exige un user
+ * connecté propriétaire de `etablissementId`.
  */
 export async function demanderSignature(params: {
   etablissementId: string;
@@ -170,7 +83,7 @@ export async function demanderSignature(params: {
  */
 export type PoserSignatureState =
   | { status: "idle" }
-  | { status: "error"; message: string; restants?: number }
+  | { status: "error"; message: string; restants?: number; otpExpire?: boolean }
   | { status: "success"; signatureId: string };
 
 export async function poserSignatureAvecToken(
@@ -189,7 +102,7 @@ export async function poserSignatureAvecToken(
       case "expire":
         return {
           status: "error",
-          message: `Ce lien a expiré le ${res.expireLe.toLocaleDateString("fr-FR")}.`,
+          message: `Ce lien a expiré le ${formaterDateFr(res.expireLe)}.`,
         };
       case "revoque":
         return {
@@ -210,6 +123,19 @@ export async function poserSignatureAvecToken(
   if (!token.otpHash) {
     return { status: "error", message: "Configuration OTP manquante." };
   }
+
+  // Expiration du **code**, distincte de celle du lien. Elle se vérifie
+  // avant le hash : un code périmé n'a pas à consommer un essai, et le
+  // message doit orienter vers le renvoi plutôt que vers une ressaisie.
+  if (otpEstExpire(token.otpExpireLe, new Date())) {
+    return {
+      status: "error",
+      message:
+        "Ce code de confirmation a expiré (validité 10 minutes). Demandez un nouveau code pour continuer.",
+      otpExpire: true,
+    };
+  }
+
   if (!verifyOtp(otp, token.otpHash)) {
     const dec = await decrementOtpEssais(token.id);
     if (dec.revoque) {
@@ -225,10 +151,12 @@ export async function poserSignatureAvecToken(
     };
   }
 
-  // OTP ok → calcul du hash + création de la signature.
+  // OTP ok → calcul du hash + création de la signature. Le périmètre vient
+  // du token lui-même (`token.etablissementId`), jamais du formulaire.
   const h = await calculerHashObjet(
     token.objetType as ObjetSignable,
     token.objetId,
+    token.etablissementId,
   );
   if (!h.ok) {
     return {
@@ -271,8 +199,94 @@ export async function poserSignatureAvecToken(
 }
 
 /**
+ * Renvoie un nouveau code de confirmation sur un lien encore valide.
+ *
+ * Indispensable depuis que le code expire au bout de 10 minutes : sans ce
+ * chemin, un destinataire qui ouvre son mail le lendemain se retrouve avec
+ * un lien encore valide (72 h) mais un code mort, donc un document
+ * impossible à signer.
+ *
+ * Autorisation : la connaissance du token clair, comme pour la signature
+ * elle-même. Le nouveau code part à l'adresse enregistrée sur le token, pas
+ * à une adresse fournie par l'appelant — un tiers qui aurait intercepté le
+ * lien ne peut pas se faire adresser le code ailleurs.
+ *
+ * Le délai minimal entre deux envois (`renvoiOtpAutorise`) évite d'en faire
+ * un outil de saturation de boîte mail et de remise à zéro illimitée du
+ * compteur d'essais.
+ */
+export type RenvoiOtpState =
+  | { status: "idle" }
+  | { status: "error"; message: string }
+  | { status: "success"; message: string };
+
+export async function renvoyerCodeOtp(
+  tokenClair: string,
+): Promise<RenvoiOtpState> {
+  const res = await verifierAccessToken(tokenClair);
+  if (!res.ok) {
+    return {
+      status: "error",
+      message:
+        res.raison === "expire"
+          ? `Ce lien a expiré le ${formaterDateFr(res.expireLe)}. Demandez-en un nouveau à votre interlocuteur.`
+          : res.raison === "revoque"
+            ? "Ce lien a été révoqué."
+            : res.raison === "deja_utilise"
+              ? "Ce lien a déjà servi."
+              : "Ce lien est invalide.",
+    };
+  }
+
+  const token = res.token;
+  if (!token.otpHash) {
+    return {
+      status: "error",
+      message: "Ce lien ne demande pas de code de confirmation.",
+    };
+  }
+
+  const maintenant = new Date();
+  const renvoi = renvoiOtpAutorise(token.otpExpireLe, maintenant);
+  if (!renvoi.autorise) {
+    return {
+      status: "error",
+      message: `Un code vient d'être envoyé. Patientez ${renvoi.attendreSecondes} seconde${renvoi.attendreSecondes > 1 ? "s" : ""} avant d'en demander un autre.`,
+    };
+  }
+
+  const otp = generateOtp();
+  await renouvelerOtp(token.id, {
+    otpHash: hashOtp(otp),
+    otpExpireLe: otpExpirationDate(maintenant),
+  });
+
+  await envoyerMailAcces({
+    to: token.emailDestinataire,
+    nom: token.nomDestinataire,
+    sujet: "Votre nouveau code de confirmation",
+    message:
+      "Voici un nouveau code de confirmation pour l'action qui vous a été demandée. " +
+      "Le précédent n'est plus valable.",
+    urlAcces: urlAccesPourToken(tokenClair),
+    otp,
+    expireLe: token.expireLe,
+  });
+
+  return {
+    status: "success",
+    message: `Un nouveau code vient d'être envoyé à ${token.emailDestinataire}.`,
+  };
+}
+
+/**
  * Signature directe par un utilisateur connecté (pas de token externe).
  * Utilisé pour la co-signature du donneur d'ordre sur ses propres documents.
+ *
+ * `assertEtablissementOwnership` est le garde décisif : `requireUser` seul
+ * établissait qu'il y a *un* utilisateur, pas qu'il a quoi que ce soit à
+ * voir avec `etablissementId` et `objetId`. On pouvait ainsi signer le
+ * document d'un tiers — et en récupérer l'empreinte au passage.
  */
 export async function signerEnCompteConnecte(params: {
   etablissementId: string;
@@ -284,7 +298,15 @@ export async function signerEnCompteConnecte(params: {
   | { ok: false; raison: "objet_introuvable" | "fichier_introuvable" | "non_implemente" }
 > {
   const user = await requireUser();
-  const h = await calculerHashObjet(params.objetType, params.objetId);
+  await assertEtablissementOwnership(params.etablissementId);
+
+  // L'objet est cherché dans ce seul établissement : un objetId d'un autre
+  // périmètre ressort « introuvable ».
+  const h = await calculerHashObjet(
+    params.objetType,
+    params.objetId,
+    params.etablissementId,
+  );
   if (!h.ok) return { ok: false, raison: h.raison };
   const { hash, nomDocument } = h;
   const hh = await headers();
@@ -312,20 +334,55 @@ export async function signerEnCompteConnecte(params: {
 }
 
 /**
+ * Élément de preuve exposé publiquement par `/verifier/[signatureId]`.
+ *
+ * **Volontairement restreint.** La page de vérification est publique par
+ * conception : un tiers (inspecteur, assureur, acquéreur) doit pouvoir
+ * contrôler qu'une signature porte bien sur un document non modifié, sans
+ * compte. Elle n'expose donc que ce qui sert la preuve — identité du
+ * signataire, horodatage, méthode, empreinte, nom du document. L'adresse
+ * IP, le user-agent, l'identifiant d'établissement et l'objet signé
+ * restent côté serveur : ils n'apportent rien à la vérification et
+ * dessineraient la carte interne du compte.
+ */
+export type PreuveSignature = {
+  id: string;
+  signataireNom: string;
+  signataireEmail: string;
+  signataireRole: string | null;
+  horodatageIso: Date;
+  methode: MethodeSignature;
+  hashDocument: string;
+  nomDocument: string | null;
+};
+
+/**
  * Vérifie l'intégrité d'une signature : recalcule le hash du document et
  * le compare à la valeur stockée.
+ *
+ * Accessible sans authentification (page publique de vérification). Le
+ * recalcul est borné à l'établissement porté par la signature elle-même :
+ * l'appelant ne choisit ni l'objet, ni le périmètre, il ne fournit qu'un
+ * identifiant de signature.
  */
 export async function verifierIntegriteSignature(
   signatureId: string,
 ): Promise<
-  | { ok: true; signature: Awaited<ReturnType<typeof prisma.signature.findUnique>> }
+  | { ok: true; signature: PreuveSignature }
   | { ok: false; raison: "inexistante" }
   | { ok: false; raison: "document_modifie"; hashAttendu: string; hashActuel: string }
   | { ok: false; raison: "document_introuvable" }
 > {
-  const signature = await prisma.signature.findUnique({ where: { id: signatureId } });
+  const signature = await prisma.signature.findUnique({
+    where: { id: signatureId },
+  });
   if (!signature) return { ok: false, raison: "inexistante" };
-  const h = await calculerHashObjet(signature.objetType, signature.objetId);
+
+  const h = await calculerHashObjet(
+    signature.objetType,
+    signature.objetId,
+    signature.etablissementId,
+  );
   if (!h.ok) return { ok: false, raison: "document_introuvable" };
   if (h.hash !== signature.hashDocument) {
     return {
@@ -335,5 +392,18 @@ export async function verifierIntegriteSignature(
       hashActuel: h.hash,
     };
   }
-  return { ok: true, signature };
+
+  return {
+    ok: true,
+    signature: {
+      id: signature.id,
+      signataireNom: signature.signataireNom,
+      signataireEmail: signature.signataireEmail,
+      signataireRole: signature.signataireRole,
+      horodatageIso: signature.horodatageIso,
+      methode: signature.methode,
+      hashDocument: signature.hashDocument,
+      nomDocument: signature.nomDocument,
+    },
+  };
 }

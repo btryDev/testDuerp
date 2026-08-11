@@ -4,7 +4,20 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import {
+  requireDuerp,
+  requireEtablissement,
+  requireUnite,
+} from "@/lib/auth/scope";
 import { trouverReferentielParId } from "@/lib/referentiels";
+
+/**
+ * Cloisonnement : aucune de ces actions ne peut faire confiance à
+ * l'identifiant qu'elle reçoit (etablissementId, duerpId, uniteId viennent
+ * tous du client). Chacune commence donc par un helper de `lib/auth/scope`
+ * qui remonte jusqu'à `Entreprise.userId` et répond 404 si l'objet n'est pas
+ * au user — la RLS PostgreSQL n'étant pas effective, c'est le seul rempart.
+ */
 
 /**
  * Crée un DUERP vide rattaché à un établissement (ADR-001). L'utilisateur
@@ -16,10 +29,7 @@ import { trouverReferentielParId } from "@/lib/referentiels";
  * un second.
  */
 export async function creerDuerp(etablissementId: string): Promise<void> {
-  const etablissement = await prisma.etablissement.findUnique({
-    where: { id: etablissementId },
-  });
-  if (!etablissement) throw new Error("Établissement introuvable");
+  const { etablissement } = await requireEtablissement(etablissementId);
 
   let duerp = await prisma.duerp.findFirst({
     where: { etablissementId },
@@ -56,16 +66,18 @@ export async function choisirSecteur(
   duerpId: string,
   secteurId: string,
 ): Promise<void> {
+  await requireDuerp(duerpId);
+
   const ref = trouverReferentielParId(secteurId);
   if (!ref) throw new Error(`Secteur inconnu : ${secteurId}`);
 
-  const duerp = await prisma.duerp.findUnique({
-    where: { id: duerpId },
-    include: { unites: true },
+  const unitesExistantes = await prisma.uniteTravail.findMany({
+    where: { duerpId },
+    select: { nom: true },
   });
-  if (!duerp) throw new Error("DUERP introuvable");
-
-  const nomsExistants = new Set(duerp.unites.map((u) => u.nom.toLowerCase()));
+  const nomsExistants = new Set(
+    unitesExistantes.map((u) => u.nom.toLowerCase()),
+  );
 
   await prisma.$transaction([
     prisma.duerp.update({
@@ -111,6 +123,8 @@ export async function ajouterUnite(
   _prev: UniteActionState,
   formData: FormData,
 ): Promise<UniteActionState> {
+  await requireDuerp(duerpId);
+
   const parsed = uniteSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return {
@@ -136,18 +150,22 @@ export async function renommerUnite(
   uniteId: string,
   nouveauNom: string,
 ): Promise<void> {
+  const { duerpId } = await requireUnite(uniteId);
+
   const nom = nouveauNom.trim();
   if (!nom) return;
-  const unite = await prisma.uniteTravail.update({
+  await prisma.uniteTravail.update({
     where: { id: uniteId },
     data: { nom },
   });
-  revalidatePath(`/duerp/${unite.duerpId}/unites`);
+  revalidatePath(`/duerp/${duerpId}/unites`);
 }
 
 export async function supprimerUnite(uniteId: string): Promise<void> {
-  const unite = await prisma.uniteTravail.delete({ where: { id: uniteId } });
-  revalidatePath(`/duerp/${unite.duerpId}/unites`);
+  const { duerpId } = await requireUnite(uniteId);
+
+  await prisma.uniteTravail.delete({ where: { id: uniteId } });
+  revalidatePath(`/duerp/${duerpId}/unites`);
 }
 
 /**
@@ -160,11 +178,13 @@ export async function declarerAucunRisque(
   uniteId: string,
   justification: string | null,
 ): Promise<void> {
+  const { duerpId } = await requireUnite(uniteId);
+
   const justif = justification?.trim() || null;
-  const unite = await prisma.uniteTravail.update({
+  await prisma.uniteTravail.update({
     where: { id: uniteId },
     data: { aucunRisqueJustif: justif },
   });
-  revalidatePath(`/duerp/${unite.duerpId}/risques`);
-  revalidatePath(`/duerp/${unite.duerpId}/risques/${uniteId}`);
+  revalidatePath(`/duerp/${duerpId}/risques`);
+  revalidatePath(`/duerp/${duerpId}/risques/${uniteId}`);
 }

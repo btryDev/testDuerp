@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/lib/auth/require-user";
 import { prisma } from "@/lib/prisma";
 import { getStorage } from "@/lib/storage";
 
@@ -10,18 +11,31 @@ import { getStorage } from "@/lib/storage";
  *     et un Content-Disposition inline (affichage si navigateur le permet,
  *     téléchargement sinon).
  *
- * NB : pas d'auth en V2 MVP (auth reportée post-validation). Quand elle
- * sera remise en place, ajouter ici une vérification que l'utilisateur a
- * bien accès à `rapport.etablissementId`.
+ * **Scoping (ADR-005).** Le rapport n'est servi que si son établissement
+ * appartient au user connecté : la relation complète
+ * `RapportVerification → Etablissement → Entreprise → userId` est vérifiée
+ * dans le `findFirst` ci-dessous — même modèle que
+ * `src/app/api/interventions/photos/route.ts`. Avant ce garde, un simple
+ * identifiant suffisait à télécharger le rapport de vérification de
+ * n'importe quel client : un rapport porte la raison sociale, l'adresse et
+ * les écarts constatés chez un tiers.
+ *
+ * On répond 403 (et non 404) pour un rapport existant hors périmètre comme
+ * pour un rapport inexistant : la réponse ne doit pas permettre de
+ * distinguer les deux cas, sans quoi elle devient un oracle d'existence.
  */
 export async function GET(
   _req: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
+  const user = await requireUser();
   const { id } = await context.params;
 
-  const rapport = await prisma.rapportVerification.findUnique({
-    where: { id },
+  const rapport = await prisma.rapportVerification.findFirst({
+    where: {
+      id,
+      etablissement: { entreprise: { userId: user.id } },
+    },
     select: {
       fichierCle: true,
       fichierMime: true,
@@ -29,7 +43,9 @@ export async function GET(
     },
   });
   if (!rapport) {
-    return new NextResponse("Rapport introuvable", { status: 404 });
+    return new NextResponse("Rapport introuvable ou hors périmètre", {
+      status: 403,
+    });
   }
 
   const storage = getStorage();

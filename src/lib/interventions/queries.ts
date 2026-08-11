@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { requireEtablissement } from "@/lib/auth/scope";
+import {
+  assertEtablissementOwnership,
+  requireEtablissement,
+} from "@/lib/auth/scope";
 
 export async function listInterventions(etablissementId: string) {
   const { etablissement } = await requireEtablissement(etablissementId);
@@ -47,8 +50,15 @@ export async function nextNumeroIntervention(
 /**
  * Liste les risques du DUERP courant pour permettre de lier un ticket
  * à un risque existant. Renvoie triée par unité.
+ *
+ * Le garde est indispensable ici : la fonction est appelée depuis une page
+ * avec un `etablissementId` d'URL, et elle rend le libellé de tous les
+ * risques du DUERP — c'est-à-dire l'évaluation complète d'un client. Sans
+ * scope, changer l'id dans l'URL suffisait à la lire.
  */
 export async function listRisquesEtablissement(etablissementId: string) {
+  await assertEtablissementOwnership(etablissementId);
+
   const risques = await prisma.risque.findMany({
     where: {
       unite: { duerp: { etablissementId } },

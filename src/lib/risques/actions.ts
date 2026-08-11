@@ -3,8 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { requireRisque, requireUnite } from "@/lib/auth/scope";
 import { calculerCriticite } from "@/lib/cotation";
 import { tousRisquesConnus } from "@/lib/referentiels";
+
+/**
+ * Cloisonnement entre clients : il n'y a pas de RLS effective en base (le
+ * rôle Prisma la contourne), donc chaque action qui reçoit un identifiant du
+ * client doit remonter la chaîne unité → DUERP → établissement → entreprise
+ * jusqu'à `userId` AVANT toute lecture ou écriture. Les helpers
+ * `requireUnite` / `requireRisque` font ça et répondent 404 (pas 403) quand
+ * l'objet n'appartient pas au user : on ne révèle même pas son existence.
+ */
 
 function defautCotation(
   ref: ReturnType<typeof tousRisquesConnus> extends Map<string, infer V>
@@ -31,10 +41,7 @@ export async function toggleRisqueReferentiel(
   uniteId: string,
   referentielId: string,
 ): Promise<void> {
-  const unite = await prisma.uniteTravail.findUnique({
-    where: { id: uniteId },
-  });
-  if (!unite) throw new Error("Unité introuvable");
+  const { unite } = await requireUnite(uniteId);
 
   const existant = await prisma.risque.findUnique({
     where: { uniteId_referentielId: { uniteId, referentielId } },
@@ -81,6 +88,10 @@ export async function ajouterRisqueCustom(
   _prev: RisqueActionState,
   formData: FormData,
 ): Promise<RisqueActionState> {
+  // Garde d'abord, validation ensuite : un id d'unité qui n'est pas au user
+  // ne doit même pas atteindre le parsing du formulaire.
+  const { unite } = await requireUnite(uniteId);
+
   const parsed = risqueCustomSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return {
@@ -88,13 +99,6 @@ export async function ajouterRisqueCustom(
       message: "Formulaire invalide",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
-  }
-
-  const unite = await prisma.uniteTravail.findUnique({
-    where: { id: uniteId },
-  });
-  if (!unite) {
-    return { status: "error", message: "Unité introuvable" };
   }
 
   const cot = defautCotation(undefined);
@@ -113,12 +117,11 @@ export async function ajouterRisqueCustom(
 }
 
 export async function supprimerRisque(risqueId: string): Promise<void> {
-  const r = await prisma.risque.delete({
-    where: { id: risqueId },
-    include: { unite: true },
-  });
-  revalidatePath(`/duerp/${r.unite.duerpId}/risques`);
-  revalidatePath(`/duerp/${r.unite.duerpId}/risques/${r.uniteId}`);
+  const { duerpId, uniteId } = await requireRisque(risqueId);
+
+  await prisma.risque.delete({ where: { id: risqueId } });
+  revalidatePath(`/duerp/${duerpId}/risques`);
+  revalidatePath(`/duerp/${duerpId}/risques/${uniteId}`);
 }
 
 export async function modifierRisqueCustom(
@@ -126,6 +129,8 @@ export async function modifierRisqueCustom(
   _prev: RisqueActionState,
   formData: FormData,
 ): Promise<RisqueActionState> {
+  const { risque: existant, duerpId, uniteId } = await requireRisque(risqueId);
+
   const parsed = risqueCustomSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return {
@@ -135,11 +140,6 @@ export async function modifierRisqueCustom(
     };
   }
 
-  const existant = await prisma.risque.findUnique({
-    where: { id: risqueId },
-    include: { unite: true },
-  });
-  if (!existant) return { status: "error", message: "Risque introuvable" };
   if (existant.referentielId) {
     return {
       status: "error",
@@ -155,8 +155,8 @@ export async function modifierRisqueCustom(
     },
   });
 
-  revalidatePath(`/duerp/${existant.unite.duerpId}/risques`);
-  revalidatePath(`/duerp/${existant.unite.duerpId}/risques/${existant.uniteId}`);
+  revalidatePath(`/duerp/${duerpId}/risques`);
+  revalidatePath(`/duerp/${duerpId}/risques/${uniteId}`);
   return { status: "success" };
 }
 
@@ -197,6 +197,8 @@ export async function enregistrerCotation(
   _prev: CotationActionState,
   formData: FormData,
 ): Promise<CotationActionState> {
+  const { duerpId, uniteId } = await requireRisque(risqueId);
+
   const entries = Object.fromEntries(formData);
   const parsed = cotationSchema.safeParse(entries);
   if (!parsed.success) {
@@ -223,7 +225,6 @@ export async function enregistrerCotation(
       criticite,
       cotationSaisie: true,
     },
-    include: { unite: true },
   });
 
   // Alerte de sous-évaluation : on compare la gravité et la probabilité
@@ -253,8 +254,8 @@ export async function enregistrerCotation(
     }
   }
 
-  revalidatePath(`/duerp/${risque.unite.duerpId}/risques`);
-  revalidatePath(`/duerp/${risque.unite.duerpId}/risques/${risque.uniteId}`);
+  revalidatePath(`/duerp/${duerpId}/risques`);
+  revalidatePath(`/duerp/${duerpId}/risques/${uniteId}`);
   return { status: "success", criticite, alerte };
 }
 

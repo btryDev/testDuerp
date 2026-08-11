@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import type {
   DuerpSnapshot,
   MesureSnapshot,
@@ -11,6 +12,14 @@ import type { TypeMesure } from "@/lib/referentiels/types";
  * Partagé entre la validation de version et l'aperçu brouillon du PDF.
  * Ne persiste rien — la persistance reste à la charge de l'appelant.
  *
+ * **Scoping (ADR-005).** La lecture est bornée au user connecté :
+ * `Duerp → Etablissement → Entreprise → userId`. C'est indispensable ici et
+ * pas seulement chez l'appelant, parce que le snapshot embarque l'intégralité
+ * du document — raison sociale, SIRET, adresse, unités de travail, risques,
+ * cotations et mesures. Sans ce filtre, l'aperçu PDF rendait le DUERP d'un
+ * autre utilisateur à qui connaissait un identifiant. Un DUERP hors périmètre
+ * est indistinguable d'un DUERP inexistant : les deux renvoient `null`.
+ *
  * Le format `mesures: [...]` est conservé dans le snapshot malgré le passage
  * à `Action` en base (ADR-002) : les snapshots sont des documents versionnés
  * à valeur légale, consommés tels quels par le moteur PDF. La conversion
@@ -20,8 +29,12 @@ export async function construireSnapshot(
   duerpId: string,
   options: { numero: number; motif: string | null },
 ): Promise<DuerpSnapshot | null> {
-  const duerp = await prisma.duerp.findUnique({
-    where: { id: duerpId },
+  const user = await requireUser();
+  const duerp = await prisma.duerp.findFirst({
+    where: {
+      id: duerpId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
     include: {
       etablissement: { include: { entreprise: true } },
       unites: {

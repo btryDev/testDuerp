@@ -1,6 +1,5 @@
 import { renderToBuffer } from "@react-pdf/renderer";
 import { DuerpDocument } from "@/lib/pdf/DuerpDocument";
-import { prisma } from "@/lib/prisma";
 import { listerVersions } from "@/lib/versions/queries";
 import { construireSnapshot } from "@/lib/versions/snapshot-builder";
 
@@ -8,6 +7,14 @@ import { construireSnapshot } from "@/lib/versions/snapshot-builder";
  * Aperçu PDF de l'état courant du DUERP, sans créer de version en base.
  * Utile pour vérifier le rendu avant de figer une version officielle.
  * Le document est tagué comme brouillon dans le motif.
+ *
+ * **Scoping (ADR-005).** Les deux lectures sont bornées au user connecté :
+ * `listerVersions` l'était déjà, `construireSnapshot` l'est désormais. Ce
+ * point comptait : le snapshot embarque la raison sociale, le SIRET,
+ * l'adresse, les unités de travail, les risques, leurs cotations et les
+ * mesures — l'aperçu rendait donc le DUERP complet d'un autre utilisateur à
+ * qui connaissait un identifiant, là où la route des versions figées
+ * (`/duerp/[id]/versions/[numero]/pdf`) passait, elle, par une query scopée.
  */
 export async function GET(
   _req: Request,
@@ -15,12 +22,10 @@ export async function GET(
 ) {
   const { id } = await context.params;
 
-  const derniere = await prisma.duerpVersion.findFirst({
-    where: { duerpId: id },
-    orderBy: { numero: "desc" },
-    select: { numero: true },
-  });
-  const numeroProvisoire = (derniere?.numero ?? 0) + 1;
+  // Le numéro provisoire se déduit de l'historique scopé — inutile d'aller
+  // le chercher par une lecture séparée non filtrée.
+  const versions = await listerVersions(id);
+  const numeroProvisoire = (versions[0]?.numero ?? 0) + 1;
 
   const snapshot = await construireSnapshot(id, {
     numero: numeroProvisoire,
@@ -30,7 +35,6 @@ export async function GET(
     return new Response("DUERP introuvable", { status: 404 });
   }
 
-  const versions = await listerVersions(id);
   const historique = versions.map((v) => ({
     numero: v.numero,
     genereLe: v.createdAt.toISOString(),

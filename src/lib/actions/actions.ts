@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { requireMesure, requireRisque } from "@/lib/auth/scope";
 import { tousRisquesConnus } from "@/lib/referentiels";
 import { statutUIVersAction } from "./mapping";
+import { assertOrigineActionValide } from "./origine";
 
 /**
  * Server actions pour l'entité `Action` — unifiée DUERP + vérifications
@@ -12,6 +14,11 @@ import { statutUIVersAction } from "./mapping";
  * Les libellés UI « mesure » sont préservés dans le wizard DUERP : une
  * `Action` dont `risqueId` est non-null est sémantiquement une mesure de
  * prévention au sens L. 4121-2.
+ *
+ * Cloisonnement : `risqueId` et `mesureId` arrivent du client. Chaque action
+ * commence par `requireRisque` / `requireMesure`, qui remontent jusqu'à
+ * `Entreprise.userId` et répondent 404 quand l'objet est celui d'un autre
+ * client — la RLS PostgreSQL n'étant pas effective, c'est le seul rempart.
  */
 
 const TYPES_ACTION = [
@@ -33,35 +40,25 @@ export type MesureActionState =
   | { status: "error"; message: string; fieldErrors?: Record<string, string[]> }
   | { status: "success" };
 
-async function revalidateMesure(risqueId: string) {
-  const r = await prisma.risque.findUnique({
-    where: { id: risqueId },
-    include: { unite: true },
-  });
-  if (!r) return;
-  revalidatePath(
-    `/duerp/${r.unite.duerpId}/risques/${r.uniteId}/${risqueId}/mesures`,
-  );
-  revalidatePath(`/duerp/${r.unite.duerpId}/risques/${r.uniteId}`);
-}
-
-async function resoudreEtablissementViaRisque(
+// Invalidation des pages du wizard qui affichent les mesures d'un risque.
+// Les identifiants sont passés par l'appelant, qui les tient déjà de
+// `requireRisque` : pas de relecture non scopée juste pour construire un
+// chemin de cache.
+function revalidateMesure(
+  duerpId: string,
+  uniteId: string,
   risqueId: string,
-): Promise<string> {
-  const r = await prisma.risque.findUnique({
-    where: { id: risqueId },
-    include: { unite: { include: { duerp: true } } },
-  });
-  if (!r) throw new Error("Risque introuvable");
-  return r.unite.duerp.etablissementId;
+): void {
+  revalidatePath(`/duerp/${duerpId}/risques/${uniteId}/${risqueId}/mesures`);
+  revalidatePath(`/duerp/${duerpId}/risques/${uniteId}`);
 }
 
 export async function toggleMesureReferentiel(
   risqueId: string,
   referentielMesureId: string,
 ): Promise<void> {
-  const risque = await prisma.risque.findUnique({ where: { id: risqueId } });
-  if (!risque) throw new Error("Risque introuvable");
+  const { risque, duerpId, uniteId, etablissementId } =
+    await requireRisque(risqueId);
 
   const existant = await prisma.action.findUnique({
     where: {
@@ -81,7 +78,9 @@ export async function toggleMesureReferentiel(
     );
     if (!mesureRef) throw new Error("Mesure référentielle inconnue");
 
-    const etablissementId = await resoudreEtablissementViaRisque(risqueId);
+    // XOR d'origine (ADR-002) : une mesure du wizard se rattache au risque,
+    // jamais à une vérification.
+    assertOrigineActionValide({ risqueId, verificationId: null });
     await prisma.action.create({
       data: {
         etablissementId,
@@ -95,7 +94,7 @@ export async function toggleMesureReferentiel(
     });
   }
 
-  await revalidateMesure(risqueId);
+  revalidateMesure(duerpId, uniteId, risqueId);
 }
 
 const mesureCustomSchema = z.object({
@@ -121,6 +120,8 @@ export async function ajouterMesureCustom(
   _prev: MesureActionState,
   formData: FormData,
 ): Promise<MesureActionState> {
+  const { duerpId, uniteId, etablissementId } = await requireRisque(risqueId);
+
   const parsed = mesureCustomSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return {
@@ -130,12 +131,12 @@ export async function ajouterMesureCustom(
     };
   }
 
-  const etablissementId = await resoudreEtablissementViaRisque(risqueId);
   const statutAction = statutUIVersAction(
     parsed.data.statut,
     parsed.data.echeance ?? null,
   );
 
+  assertOrigineActionValide({ risqueId, verificationId: null });
   await prisma.action.create({
     data: {
       etablissementId,
@@ -149,7 +150,7 @@ export async function ajouterMesureCustom(
     },
   });
 
-  await revalidateMesure(risqueId);
+  revalidateMesure(duerpId, uniteId, risqueId);
   return { status: "success" };
 }
 
@@ -170,16 +171,14 @@ export async function modifierMesure(
   mesureId: string,
   patch: z.input<typeof patchSchema>,
 ): Promise<void> {
+  const { action: actuelle } = await requireMesure(mesureId);
+
   const parsed = patchSchema.safeParse(patch);
   if (!parsed.success) throw new Error("Patch invalide");
 
   const { statut: statutDuerp, ...rest } = parsed.data;
   const data: Parameters<typeof prisma.action.update>[0]["data"] = { ...rest };
   if (statutDuerp !== undefined) {
-    const actuelle = await prisma.action.findUnique({
-      where: { id: mesureId },
-    });
-    if (!actuelle) throw new Error("Action introuvable");
     const echeanceEff =
       rest.echeance !== undefined ? rest.echeance : actuelle.echeance;
     const nouveau = statutUIVersAction(statutDuerp, echeanceEff);
@@ -187,14 +186,27 @@ export async function modifierMesure(
     data.leveeLe = nouveau === "levee" ? actuelle.leveeLe ?? new Date() : null;
   }
 
-  const m = await prisma.action.update({
+  await prisma.action.update({
     where: { id: mesureId },
     data,
   });
-  if (m.risqueId) await revalidateMesure(m.risqueId);
+
+  if (actuelle.risqueId) {
+    const { duerpId, uniteId } = await requireRisque(actuelle.risqueId);
+    revalidateMesure(duerpId, uniteId, actuelle.risqueId);
+  }
 }
 
 export async function supprimerMesure(mesureId: string): Promise<void> {
-  const m = await prisma.action.delete({ where: { id: mesureId } });
-  if (m.risqueId) await revalidateMesure(m.risqueId);
+  const { action } = await requireMesure(mesureId);
+
+  // Le risque porteur est résolu (et re-scopé) avant la suppression : c'est
+  // lui qui donne les chemins de cache du wizard à invalider.
+  const cible = action.risqueId ? await requireRisque(action.risqueId) : null;
+
+  await prisma.action.delete({ where: { id: mesureId } });
+
+  if (cible && action.risqueId) {
+    revalidateMesure(cible.duerpId, cible.uniteId, action.risqueId);
+  }
 }

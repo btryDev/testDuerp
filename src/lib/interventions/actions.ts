@@ -4,7 +4,10 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { assertEtablissementOwnership } from "@/lib/auth/scope";
+import {
+  assertEtablissementOwnership,
+  requireIntervention,
+} from "@/lib/auth/scope";
 import { requireUser } from "@/lib/auth/require-user";
 import { getStorage } from "@/lib/storage";
 import { validerFichier } from "@/lib/rapports/validator";
@@ -63,6 +66,27 @@ export async function creerIntervention(
     };
   }
 
+  // Le risque lié arrive du formulaire : on ne le stocke qu'après avoir vérifié
+  // qu'il appartient au même établissement. Sans ce contrôle, un ticket légitime
+  // pouvait pointer vers le risque d'un autre client, et sa clôture avec
+  // « réévaluer » allait écrire chez lui (boucle ADR-009).
+  if (parsed.data.risqueId) {
+    const risqueLie = await prisma.risque.findFirst({
+      where: {
+        id: parsed.data.risqueId,
+        unite: { duerp: { etablissementId } },
+      },
+      select: { id: true },
+    });
+    if (!risqueLie) {
+      return {
+        status: "error",
+        message: "Le risque sélectionné n'appartient pas à cet établissement.",
+        fieldErrors: { risqueId: ["Risque introuvable"] },
+      };
+    }
+  }
+
   const numero = await nextNumeroIntervention(etablissementId);
   const id = `itv_${randomUUID()}`;
 
@@ -115,12 +139,14 @@ export async function creerIntervention(
 }
 
 export async function changerStatutIntervention(
-  etablissementId: string,
+  _etablissementId: string,
   interventionId: string,
   statut: StatutIntervention,
 ): Promise<void> {
   if (!(STATUTS as readonly string[]).includes(statut)) return;
-  await assertEtablissementOwnership(etablissementId);
+  // L'établissement de rattachement est celui du ticket, pas celui annoncé par
+  // l'appelant : c'est la seule valeur dont on ait prouvé la propriété.
+  const { etablissementId } = await requireIntervention(interventionId);
   const data: {
     statut: StatutIntervention;
     dateCloture?: Date | null;
@@ -141,12 +167,12 @@ export async function changerStatutIntervention(
 }
 
 export async function changerPrioriteIntervention(
-  etablissementId: string,
+  _etablissementId: string,
   interventionId: string,
   priorite: PrioriteIntervention,
 ): Promise<void> {
   if (!(PRIORITES as readonly string[]).includes(priorite)) return;
-  await assertEtablissementOwnership(etablissementId);
+  const { etablissementId } = await requireIntervention(interventionId);
   await prisma.intervention.update({
     where: { id: interventionId },
     data: { priorite },
@@ -157,12 +183,12 @@ export async function changerPrioriteIntervention(
 }
 
 export async function ajouterCommentaire(
-  etablissementId: string,
+  _etablissementId: string,
   interventionId: string,
   _prev: InterventionActionState,
   formData: FormData,
 ): Promise<InterventionActionState> {
-  await assertEtablissementOwnership(etablissementId);
+  const { etablissementId } = await requireIntervention(interventionId);
   const parsed = commentaireSchema.safeParse({
     auteurNom: formData.get("auteurNom"),
     contenu: formData.get("contenu"),
@@ -192,34 +218,55 @@ export async function ajouterCommentaire(
  * Clôture avec option de demander une réévaluation du risque DUERP lié.
  * Quand l'utilisateur coche « réévaluer », on met `Risque.cotationSaisie = false`
  * pour inviter visuellement à refaire la cotation dans le wizard DUERP.
+ *
+ * **Les deux écritures sont atomiques** — c'est tout l'ADR-009. Séparées,
+ * comme elles l'étaient, un échec sur la seconde laissait le ticket clos et le
+ * risque jamais reproposé à réévaluation : `boucle-duerp.ts` ne liste que les
+ * risques à `cotationSaisie: false`, et un ticket « fait » ne se reclôture pas.
+ * La boucle ticket ↔ DUERP se cassait donc en silence, définitivement.
  */
 export async function cloturerIntervention(
-  etablissementId: string,
+  _etablissementId: string,
   interventionId: string,
   motif: string,
   reevaluerRisque: boolean,
 ): Promise<void> {
-  await assertEtablissementOwnership(etablissementId);
-  const intervention = await prisma.intervention.findUnique({
-    where: { id: interventionId },
-    select: { risqueId: true },
-  });
-  await prisma.intervention.update({
-    where: { id: interventionId },
-    data: {
-      statut: "fait",
-      dateCloture: new Date(),
-      motifCloture: motif,
-    },
-  });
-  if (reevaluerRisque && intervention?.risqueId) {
-    await prisma.risque.update({
-      where: { id: intervention.risqueId },
-      data: { cotationSaisie: false },
+  const { etablissementId } = await requireIntervention(interventionId);
+
+  await prisma.$transaction(async (tx) => {
+    // Le risque lié est relu **dans** la transaction : entre la lecture et
+    // l'écriture, le ticket a pu être rattaché à un autre risque.
+    const intervention = await tx.intervention.update({
+      where: { id: interventionId },
+      data: {
+        statut: "fait",
+        dateCloture: new Date(),
+        motifCloture: motif,
+      },
+      select: { risqueId: true },
     });
-  }
+
+    if (reevaluerRisque && intervention.risqueId) {
+      // `updateMany` et non `update` : le filtre remonte la chaîne
+      // Risque → UniteTravail → Duerp → Etablissement pour garantir que le
+      // risque réévalué appartient bien au même établissement que le ticket.
+      // `Intervention.risqueId` est une donnée reçue à la création : elle ne
+      // vaut pas preuve d'appartenance, même une fois le ticket authentifié.
+      await tx.risque.updateMany({
+        where: {
+          id: intervention.risqueId,
+          unite: { duerp: { etablissementId } },
+        },
+        data: { cotationSaisie: false },
+      });
+    }
+  });
+
   revalidatePath(`/etablissements/${etablissementId}/interventions`);
   revalidatePath(
     `/etablissements/${etablissementId}/interventions/${interventionId}`,
   );
+  // La réévaluation demandée se voit sur le tableau de bord (widget « À faire »)
+  // et dans le wizard DUERP.
+  revalidatePath(`/etablissements/${etablissementId}`);
 }

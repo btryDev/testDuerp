@@ -2,8 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireDuerp } from "@/lib/auth/scope";
 import { calculerCriticite } from "@/lib/cotation";
 import { risquesTransverses } from "@/lib/referentiels";
+
+/**
+ * Cloisonnement : `duerpId` vient du client. Sans garde, `validerTransverses`
+ * marquait n'importe quel DUERP comme « transverses répondues » et le toggle
+ * créait/supprimait des risques chez un autre client. `requireDuerp` remonte
+ * jusqu'à `Entreprise.userId` et répond 404 sinon.
+ */
 
 async function obtenirUniteTransverse(duerpId: string) {
   const existante = await prisma.uniteTravail.findFirst({
@@ -28,6 +36,8 @@ export async function toggleRisqueTransverse(
   duerpId: string,
   referentielId: string,
 ): Promise<void> {
+  await requireDuerp(duerpId);
+
   const ref = risquesTransverses.find((r) => r.id === referentielId);
   if (!ref) throw new Error(`Risque transverse inconnu : ${referentielId}`);
 
@@ -64,6 +74,8 @@ export async function toggleRisqueTransverse(
 }
 
 export async function validerTransverses(duerpId: string): Promise<void> {
+  await requireDuerp(duerpId);
+
   await prisma.duerp.update({
     where: { id: duerpId },
     data: { transversesRepondues: true },
