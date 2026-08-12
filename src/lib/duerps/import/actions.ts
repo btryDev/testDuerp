@@ -2,8 +2,10 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
+import { construireEcrituresImport } from "./ecritures";
 import { parserFichierDuerp, planifierImport } from "./parser";
 import { validerFichier } from "@/lib/rapports/validator";
 
@@ -151,61 +153,46 @@ export async function commitImport(
   }
 
   const duerpId = duerp.id;
-  let nbRisquesCrees = 0;
 
-  // Transaction unique : toutes les écritures ou rien.
-  await prisma.$transaction(async (tx) => {
-    for (const u of plan.unites) {
-      // Unité : réutilise si existe par nom, sinon crée.
-      const existing = await tx.uniteTravail.findFirst({
-        where: { duerpId, nom: u.nom },
-      });
-      const unite =
-        existing ??
-        (await tx.uniteTravail.create({
-          data: { duerpId, nom: u.nom },
-        }));
-
-      for (const r of u.risques) {
-        const criticite = Math.max(
-          1,
-          Math.min(16, Math.round((r.gravite * r.probabilite) / r.maitrise)),
-        );
-        const risque = await tx.risque.create({
-          data: {
-            id: `risq_${randomUUID()}`,
-            uniteId: unite.id,
-            libelle: r.libelleRisque,
-            description: r.description,
-            gravite: r.gravite,
-            probabilite: r.probabilite,
-            maitrise: r.maitrise,
-            criticite,
-            cotationSaisie: true,
-          },
-        });
-
-        nbRisquesCrees++;
-
-        // Chaque mesure listée → Action avec statut « levee » (elle est
-        // déjà en place selon la convention d'import d'un DUERP existant).
-        for (const libelle of r.mesuresExistantes) {
-          await tx.action.create({
-            data: {
-              id: `act_${randomUUID()}`,
-              etablissementId,
-              risqueId: risque.id,
-              libelle,
-              type: "organisationnelle", // défaut prudent — l'utilisateur peut retyper
-              statut: "levee",
-              leveeLe: new Date(),
-              leveeCommentaire: "Importé depuis le DUERP initial",
-            },
-          });
-        }
-      }
-    }
+  // Unités déjà en base, lues **avant** la transaction et en une fois. La
+  // version précédente les cherchait une par une depuis l'intérieur de la
+  // transaction, ce qui forçait celle-ci à rester interactive et à payer un
+  // aller-retour réseau par ligne du fichier.
+  const unitesExistantes = await prisma.uniteTravail.findMany({
+    where: { duerpId, nom: { in: plan.unites.map((u) => u.nom) } },
+    select: { id: true, nom: true },
   });
+
+  // Les identifiants sont générés ici, donc plus aucune écriture n'attend le
+  // résultat d'une autre : les trois listes partent en autant de `createMany`,
+  // dans une transaction séquentielle envoyée en un seul lot.
+  const ecritures = construireEcrituresImport({
+    plan,
+    unitesExistantes,
+    duerpId,
+    etablissementId,
+    genererId: (prefixe) => `${prefixe}_${randomUUID()}`,
+    maintenant: new Date(),
+  });
+
+  const nbRisquesCrees = ecritures.risques.length;
+
+  // Transaction unique : toutes les écritures ou rien. L'ordre du tableau est
+  // celui de l'exécution — les unités avant les risques qui les référencent,
+  // les risques avant leurs actions.
+  const operations: Prisma.PrismaPromise<unknown>[] = [];
+  if (ecritures.unitesACreer.length > 0) {
+    operations.push(
+      prisma.uniteTravail.createMany({ data: ecritures.unitesACreer }),
+    );
+  }
+  if (ecritures.risques.length > 0) {
+    operations.push(prisma.risque.createMany({ data: ecritures.risques }));
+  }
+  if (ecritures.actions.length > 0) {
+    operations.push(prisma.action.createMany({ data: ecritures.actions }));
+  }
+  await prisma.$transaction(operations);
 
   revalidatePath(`/etablissements/${etablissementId}`);
   revalidatePath(`/duerp/${duerpId}/risques`);
