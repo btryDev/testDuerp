@@ -29,9 +29,13 @@ import {
   getEtatDuerp,
   getFicheEtablissement,
   listerActions,
+  listerEquipements,
+  listerVerifications,
   type ActionLue,
+  type EquipementLu,
   type EtatDuerpLu,
   type FicheEtablissement,
+  type VerificationLue,
 } from "./queries";
 
 /**
@@ -291,6 +295,156 @@ const outilActions: OutilMcp<typeof schemaActions> = {
   },
 };
 
+// ---------------------------------------------------------------------
+// Équipements et calendrier
+// ---------------------------------------------------------------------
+
+/** Catégories du référentiel, rendues lisibles sans les traduire. */
+const LIBELLE_CATEGORIE: Record<string, string> = {
+  INSTALLATION_ELECTRIQUE: "installation électrique",
+  EXTINCTEUR: "extincteur",
+  BAES: "bloc autonome d'éclairage de sécurité",
+  ALARME_INCENDIE: "alarme incendie",
+  DESENFUMAGE: "désenfumage",
+  VMC: "ventilation mécanique",
+  CTA: "centrale de traitement d'air",
+  HOTTE_PRO: "hotte professionnelle",
+  APPAREIL_CUISSON_ERP: "appareil de cuisson",
+  ASCENSEUR: "ascenseur",
+  PORTE_AUTO: "porte automatique",
+  PORTAIL_AUTO: "portail automatique",
+  EQUIPEMENT_SOUS_PRESSION: "équipement sous pression",
+  STOCKAGE_MATIERE_DANGEREUSE: "stockage de matières dangereuses",
+  EQUIPEMENT_LEVAGE: "équipement de levage",
+  AUTRE: "autre",
+};
+
+const categorieLisible = (c: string) => LIBELLE_CATEGORIE[c] ?? c.toLowerCase();
+
+function formaterEquipements(equipements: EquipementLu[]): string {
+  if (equipements.length === 0) {
+    return "Aucun équipement déclaré pour cet établissement.";
+  }
+
+  const lignes = equipements.map((e) => {
+    const v = e.verifications;
+    const etat =
+      v.total === 0
+        ? "aucune vérification au calendrier"
+        : [
+            `${v.total} vérification(s)`,
+            v.enRetard > 0 ? `${v.enRetard} en retard` : null,
+            v.aPlanifier > 0 ? `${v.aPlanifier} à planifier` : null,
+          ]
+            .filter(Boolean)
+            .join(", ");
+
+    const details = [
+      categorieLisible(e.categorie),
+      e.localisation ?? null,
+      e.dateMiseEnService
+        ? `en service depuis le ${formaterDateFr(e.dateMiseEnService)}`
+        : null,
+      e.actif ? null : "hors service",
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+    return `• ${e.libelle} — ${details}\n  ${etat}`;
+  });
+
+  return [`${equipements.length} équipement(s) déclaré(s).`, "", ...lignes].join(
+    "\n",
+  );
+}
+
+const LIBELLE_ETAT: Record<VerificationLue["etat"], string> = {
+  en_retard: "en retard",
+  a_planifier: "à planifier",
+  a_venir: "à venir",
+  planifiee: "planifiée",
+  realisee: "réalisée",
+};
+
+function formaterVerifications(verifs: VerificationLue[]): string {
+  if (verifs.length === 0) {
+    return "Aucune vérification ne correspond à ces critères.";
+  }
+
+  const enRetard = verifs.filter((v) => v.etat === "en_retard").length;
+  const entete =
+    enRetard > 0
+      ? `${verifs.length} vérification(s), dont ${enRetard} en retard.`
+      : `${verifs.length} vérification(s), aucune en retard.`;
+
+  const lignes = verifs.map((v) => {
+    const details = [
+      `${categorieLisible(v.categorie)} « ${v.equipement} »`,
+      `périodicité ${v.periodicite}`,
+      v.dateRealisee
+        ? `réalisée le ${formaterDateFr(v.dateRealisee)}`
+        : `échéance ${formaterDateFr(v.datePrevue)}`,
+      LIBELLE_ETAT[v.etat],
+      v.joursRetard > 0 ? `${v.joursRetard} jour(s) de retard` : null,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    return `• ${v.libelleObligation} — ${details}`;
+  });
+
+  return [entete, "", ...lignes].join("\n");
+}
+
+const outilEquipements: OutilMcp<z.ZodObject<Record<string, never>>> = {
+  nom: "equipements",
+  titre: "Équipements déclarés",
+  description:
+    "Équipements déclarés de l'établissement (extincteurs, installation électrique, blocs de secours, ventilation, ascenseur…) avec leur catégorie, leur localisation, leur date de mise en service, et le nombre de vérifications réglementaires en retard ou à planifier pour chacun. À appeler pour savoir de quel matériel dispose l'établissement.",
+  schema: z.object({}),
+  executer: async (ctx) => {
+    const equipements = await listerEquipements(ctx.scope.etablissementId, ctx.now);
+    return formaterEquipements(equipements);
+  },
+};
+
+const schemaVerifications = z.object({
+  recherche: z
+    .string()
+    .optional()
+    .describe(
+      "Filtre texte sur l'obligation, l'équipement ou sa catégorie — par exemple « extincteur » ou « électrique ».",
+    ),
+  enRetardSeulement: z
+    .boolean()
+    .optional()
+    .describe("Ne garder que les vérifications dont l'échéance est dépassée."),
+  horizonJours: z
+    .number()
+    .int()
+    .min(1)
+    .max(3650)
+    .optional()
+    .describe(
+      "Ne garder que les vérifications non réalisées dont l'échéance tombe dans ce nombre de jours.",
+    ),
+});
+
+const outilVerifications: OutilMcp<typeof schemaVerifications> = {
+  nom: "verifications",
+  titre: "Calendrier des vérifications",
+  description:
+    "Calendrier réglementaire de l'établissement : vérifications périodiques obligatoires par équipement, avec périodicité, échéance, état (en retard, à planifier, à venir, réalisée) et ancienneté du retard. C'est l'outil à appeler pour toute question sur les contrôles obligatoires — « mes extincteurs sont-ils à jour ? », « qu'est-ce qui est en retard ? », « qu'est-ce qui arrive le mois prochain ? ».",
+  schema: schemaVerifications,
+  executer: async (ctx, args) => {
+    const verifs = await listerVerifications(
+      ctx.scope.etablissementId,
+      args,
+      ctx.now,
+    );
+    return formaterVerifications(verifs);
+  },
+};
+
 /**
  * Les outils servis par le serveur. Tous en lecture seule — l'ajout d'une
  * écriture ici ne serait pas un détail d'implémentation mais un changement
@@ -299,6 +453,8 @@ const outilActions: OutilMcp<typeof schemaActions> = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- collection hétérogène : chaque outil porte son propre schéma zod.
 export const OUTILS_MCP: readonly OutilMcp<any>[] = [
   outilFiche,
+  outilEquipements,
+  outilVerifications,
   outilDuerp,
   outilActions,
 ];

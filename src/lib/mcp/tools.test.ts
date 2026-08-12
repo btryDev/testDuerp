@@ -25,6 +25,8 @@ const { prismaMock } = vi.hoisted(() => ({
     etablissement: { findUnique: vi.fn() },
     duerp: { findFirst: vi.fn() },
     action: { findMany: vi.fn() },
+    equipement: { findMany: vi.fn() },
+    verification: { findMany: vi.fn() },
   },
 }));
 
@@ -56,6 +58,8 @@ beforeEach(() => {
   prismaMock.etablissement.findUnique.mockReset().mockResolvedValue(null);
   prismaMock.duerp.findFirst.mockReset().mockResolvedValue(null);
   prismaMock.action.findMany.mockReset().mockResolvedValue([]);
+  prismaMock.equipement.findMany.mockReset().mockResolvedValue([]);
+  prismaMock.verification.findMany.mockReset().mockResolvedValue([]);
 });
 
 describe("portée des lectures", () => {
@@ -227,5 +231,101 @@ describe("plan d'actions", () => {
   it("rejette une criticité hors bornes", () => {
     const parse = outil("plan_actions").schema.safeParse({ criticiteMin: -3 });
     expect(parse.success).toBe(false);
+  });
+});
+
+describe("équipements et calendrier", () => {
+  const verif = (over: Partial<Record<string, unknown>> = {}) => ({
+    libelleObligation: "Vérification périodique annuelle des extincteurs",
+    periodicite: "annuelle",
+    datePrevue: jour("2026-07-01"),
+    dateRealisee: null,
+    statut: "planifiee",
+    equipement: { libelle: "Extincteur hall", categorie: "EXTINCTEUR" },
+    ...over,
+  });
+
+  it("lit les équipements de l'établissement de la session", async () => {
+    await outil("equipements").executer(ctx, {});
+    expect(prismaMock.equipement.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { etablissementId: ETABLISSEMENT_ID } }),
+    );
+  });
+
+  it("lit le calendrier de l'établissement de la session", async () => {
+    await outil("verifications").executer(ctx, {});
+    expect(prismaMock.verification.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { etablissementId: ETABLISSEMENT_ID } }),
+    );
+  });
+
+  it("compte les retards d'un équipement avec le prédicat partagé", async () => {
+    prismaMock.equipement.findMany.mockResolvedValue([
+      {
+        libelle: "Extincteur hall",
+        categorie: "EXTINCTEUR",
+        localisation: "Entrée",
+        dateMiseEnService: jour("2023-04-01"),
+        actif: true,
+        verifications: [
+          // Échéance passée, non réalisée : en retard.
+          { statut: "planifiee", datePrevue: jour("2026-07-01"), dateRealisee: null },
+          // Échéance du jour même : jamais en retard.
+          { statut: "planifiee", datePrevue: jour("2026-08-10"), dateRealisee: null },
+        ],
+      },
+    ]);
+
+    const texte = await outil("equipements").executer(ctx, {});
+    expect(texte).toContain("Extincteur hall");
+    expect(texte).toContain("extincteur");
+    expect(texte).toContain("2 vérification(s), 1 en retard");
+  });
+
+  it("trouve une vérification par le nom courant de sa catégorie", async () => {
+    // Le client ne connaît pas la nomenclature interne : « extincteur »
+    // doit suffire, sans que personne ait à écrire EXTINCTEUR.
+    prismaMock.verification.findMany.mockResolvedValue([
+      verif(),
+      verif({
+        libelleObligation: "Vérification des installations électriques",
+        equipement: { libelle: "TGBT", categorie: "INSTALLATION_ELECTRIQUE" },
+      }),
+    ]);
+
+    const texte = await outil("verifications").executer(ctx, {
+      recherche: "extincteur",
+    });
+
+    expect(texte).toContain("1 vérification(s)");
+    expect(texte).toContain("Extincteur hall");
+    expect(texte).not.toContain("TGBT");
+  });
+
+  it("annonce le retard en jours civils", async () => {
+    prismaMock.verification.findMany.mockResolvedValue([verif()]);
+    const texte = await outil("verifications").executer(ctx, {});
+    // Du 01/07 au 10/08 : 40 jours.
+    expect(texte).toContain("en retard");
+    expect(texte).toContain("40 jour(s) de retard");
+  });
+
+  it("ne compte jamais une occurrence réalisée comme en retard", async () => {
+    // La preuve prime sur l'état : un rapport déposé purge l'échéance,
+    // même si le statut n'a pas été rafraîchi.
+    prismaMock.verification.findMany.mockResolvedValue([
+      verif({ dateRealisee: jour("2026-07-15") }),
+    ]);
+
+    const texte = await outil("verifications").executer(ctx, {});
+    expect(texte).toContain("aucune en retard");
+    expect(texte).toContain("réalisée le 15/07/2026");
+  });
+
+  it("le dit franchement quand rien ne correspond", async () => {
+    const texte = await outil("verifications").executer(ctx, {
+      recherche: "ascenseur",
+    });
+    expect(texte).toContain("Aucune vérification");
   });
 });

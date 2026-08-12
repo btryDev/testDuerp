@@ -20,9 +20,17 @@
 //
 // Lecture seule : aucune fonction d'écriture n'a sa place dans ce fichier.
 
-import type { StatutAction } from "@prisma/client";
+import type { CategorieEquipement, StatutAction } from "@prisma/client";
 import { evaluerEtatDuerp, type EtatDuerp } from "@/lib/dashboard/duerp";
-import { estActionEnRetard, STATUTS_ACTION_OUVERTE } from "@/lib/dates/retard";
+import {
+  estActionEnRetard,
+  estVerificationAPlanifier,
+  estVerificationAVenir,
+  estVerificationEnRetard,
+  joursDeRetard,
+  STATUTS_ACTION_OUVERTE,
+} from "@/lib/dates/retard";
+import { JOURS_HORIZON_PROCHE } from "@/lib/dates";
 import { prismaMcp } from "./prisma";
 
 // ---------------------------------------------------------------------
@@ -264,4 +272,170 @@ export async function listerActions(
   }));
 
   return filtres.enRetardSeulement ? lues.filter((a) => a.enRetard) : lues;
+}
+
+// ---------------------------------------------------------------------
+// Équipements et calendrier des vérifications
+// ---------------------------------------------------------------------
+
+/**
+ * État d'une occurrence, tel que le produit le définit.
+ *
+ * Les trois prédicats viennent de `@/lib/dates/retard` et sont **disjoints
+ * par construction** : une occurrence `a_planifier` dont la date est passée
+ * compte comme un retard, jamais comme les deux. Les redéfinir ici ferait
+ * diverger le serveur du calendrier et du tableau de bord — c'est
+ * exactement le défaut que ce module partagé a supprimé.
+ */
+export type EtatVerification =
+  | "en_retard"
+  | "a_planifier"
+  | "a_venir"
+  | "realisee"
+  | "planifiee";
+
+function etatDe(
+  v: { statut: string; datePrevue: Date; dateRealisee: Date | null },
+  now: Date,
+): EtatVerification {
+  if (v.dateRealisee !== null) return "realisee";
+  if (estVerificationEnRetard(v, now)) return "en_retard";
+  if (estVerificationAPlanifier(v, now)) return "a_planifier";
+  if (estVerificationAVenir(v, now, JOURS_HORIZON_PROCHE)) return "a_venir";
+  return "planifiee";
+}
+
+export type EquipementLu = {
+  libelle: string;
+  categorie: CategorieEquipement;
+  localisation: string | null;
+  dateMiseEnService: Date | null;
+  actif: boolean;
+  verifications: { total: number; enRetard: number; aPlanifier: number };
+};
+
+/**
+ * Équipements déclarés, avec l'état de leurs vérifications.
+ *
+ * Les occurrences sont chargées puis comptées en mémoire plutôt qu'agrégées
+ * en base : le retard n'est pas une colonne, c'est un prédicat qui compare
+ * une date au début du jour civil (ADR-011). Le calculer en SQL demanderait
+ * de le réécrire, donc de le dupliquer.
+ */
+export async function listerEquipements(
+  etablissementId: string,
+  now: Date,
+): Promise<EquipementLu[]> {
+  const equipements = await prismaMcp.equipement.findMany({
+    where: { etablissementId },
+    orderBy: [{ categorie: "asc" }, { libelle: "asc" }],
+    select: {
+      libelle: true,
+      categorie: true,
+      localisation: true,
+      dateMiseEnService: true,
+      actif: true,
+      verifications: {
+        select: { statut: true, datePrevue: true, dateRealisee: true },
+      },
+    },
+  });
+
+  return equipements.map((e) => {
+    const etats = e.verifications.map((v) => etatDe(v, now));
+    return {
+      libelle: e.libelle,
+      categorie: e.categorie,
+      localisation: e.localisation,
+      dateMiseEnService: e.dateMiseEnService,
+      actif: e.actif,
+      verifications: {
+        total: e.verifications.length,
+        enRetard: etats.filter((s) => s === "en_retard").length,
+        aPlanifier: etats.filter((s) => s === "a_planifier").length,
+      },
+    };
+  });
+}
+
+export type VerificationLue = {
+  libelleObligation: string;
+  equipement: string;
+  categorie: CategorieEquipement;
+  periodicite: string;
+  datePrevue: Date;
+  dateRealisee: Date | null;
+  statut: string;
+  etat: EtatVerification;
+  joursRetard: number;
+};
+
+export type FiltresVerificationsMcp = {
+  /** Ne garder que les occurrences en retard. */
+  enRetardSeulement?: boolean;
+  /** Ne garder que les occurrences dont l'échéance tombe dans N jours. */
+  horizonJours?: number;
+  /** Filtre texte sur l'équipement ou l'obligation (« extincteur »…). */
+  recherche?: string;
+};
+
+/**
+ * Calendrier réglementaire de l'établissement.
+ *
+ * Le filtre texte s'applique en mémoire, sur le libellé de l'obligation, le
+ * libellé de l'équipement et sa catégorie : c'est ce qui permet de répondre
+ * à « où en sont mes extincteurs ? » sans que le client ait à connaître la
+ * nomenclature interne des catégories.
+ */
+export async function listerVerifications(
+  etablissementId: string,
+  filtres: FiltresVerificationsMcp,
+  now: Date,
+): Promise<VerificationLue[]> {
+  const brutes = await prismaMcp.verification.findMany({
+    where: { etablissementId },
+    orderBy: { datePrevue: "asc" },
+    select: {
+      libelleObligation: true,
+      periodicite: true,
+      datePrevue: true,
+      dateRealisee: true,
+      statut: true,
+      equipement: { select: { libelle: true, categorie: true } },
+    },
+  });
+
+  let lues: VerificationLue[] = brutes.map((v) => ({
+    libelleObligation: v.libelleObligation,
+    equipement: v.equipement.libelle,
+    categorie: v.equipement.categorie,
+    periodicite: v.periodicite,
+    datePrevue: v.datePrevue,
+    dateRealisee: v.dateRealisee,
+    statut: v.statut,
+    etat: etatDe(v, now),
+    joursRetard: v.dateRealisee ? 0 : joursDeRetard(v.datePrevue, now),
+  }));
+
+  if (filtres.recherche) {
+    const q = filtres.recherche.toLowerCase();
+    lues = lues.filter(
+      (v) =>
+        v.libelleObligation.toLowerCase().includes(q) ||
+        v.equipement.toLowerCase().includes(q) ||
+        v.categorie.toLowerCase().includes(q.replace(/\s+/g, "_")),
+    );
+  }
+
+  if (filtres.enRetardSeulement) {
+    lues = lues.filter((v) => v.etat === "en_retard");
+  }
+
+  if (filtres.horizonJours !== undefined) {
+    const borne = new Date(now);
+    borne.setDate(borne.getDate() + filtres.horizonJours);
+    lues = lues.filter((v) => v.dateRealisee === null && v.datePrevue <= borne);
+  }
+
+  return lues;
 }
