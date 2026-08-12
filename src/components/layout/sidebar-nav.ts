@@ -33,6 +33,7 @@ import {
   BookOpen,
   Building2,
   Archive,
+  Plug,
 } from "lucide-react";
 
 /** Ids historiques — conservés tels quels pour la prop `active`. */
@@ -50,7 +51,8 @@ export type SidebarActive =
   | "interventions"
   | "controle"
   | "duerp"
-  | "guide";
+  | "guide"
+  | "connecter";
 
 /** Ids réellement présents dans le rail (les deux derniers n'étaient pas
  *  adressables auparavant : `/modifier` surlignait « Tableau de bord »). */
@@ -103,6 +105,7 @@ export function deduireActif(
   if (pathname.startsWith(`${base}/controle`)) return "controle";
   if (pathname.startsWith(`${base}/duerp`)) return "duerp";
   if (pathname.startsWith(`${base}/guide`)) return "guide";
+  if (pathname.startsWith(`${base}/connecter`)) return "connecter";
   return "tableau";
 }
 
@@ -257,6 +260,7 @@ export type RailCategorieId =
   | "etablissement"
   | "registres"
   | "comprendre"
+  | "connecter"
   | "compte";
 
 export type RailCategorie = {
@@ -279,6 +283,8 @@ export function categorieDeItem(id: SidebarItemId): RailCategorieId {
   switch (id) {
     case "guide":
       return "comprendre";
+    case "connecter":
+      return "connecter";
     case "equipements":
     case "prestataires":
     case "fiche":
@@ -340,6 +346,16 @@ export function construireRail(params: {
       labelCourt: "Comprendre",
       Icon: BookOpen,
       href: `/etablissements/${params.etablissementId}/guide`,
+    },
+    {
+      // Comme « Comprendre » : une entrée de premier niveau sans panneau.
+      // Elle n'apparaît pas dans `construireSections` — ce n'est pas un
+      // registre ni une tâche, mais un mode d'accès au dossier.
+      id: "connecter",
+      label: "Connecter",
+      labelCourt: "Connecter",
+      Icon: Plug,
+      href: `/etablissements/${params.etablissementId}/connecter`,
     },
   ];
 }

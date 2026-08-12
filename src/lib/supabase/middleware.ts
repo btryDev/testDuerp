@@ -22,12 +22,26 @@ const PUBLIC_PREFIXES = [
   "/accessibilite",
   // Route API qui sert l'affiche A4 du registre (QR + URL).
   "/api/accessibilite",
+  // ADR-013 : serveur MCP distant. Ces routes portent leur propre
+  // authentification — secret d'URL ou jeton porteur OAuth — et doivent
+  // répondre à des clients qui n'ont pas de session Supabase par
+  // construction : ce sont des programmes, pas des navigateurs. Sans cette
+  // exception, le middleware leur renvoie une redirection vers /login et le
+  // serveur n'est jamais atteint. Les laisser passer ici ne les ouvre pas :
+  // c'est leur propre garde qui décide, et elle refuse par défaut.
+  "/api/mcp",
+  // Découverte OAuth (RFC 9728) : document public par nature, lu par un
+  // client *avant* qu'il ait le moindre jeton.
+  "/.well-known/",
 ];
 
 function isPublicPath(pathname: string): boolean {
   if (pathname === "/") return true;
   return PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
 }
+
+/** Exporté pour les tests — la règle mérite d'être vérifiée directement. */
+export const cheminPublic = isPublicPath;
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });

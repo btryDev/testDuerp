@@ -15,7 +15,12 @@
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "mcp": "tsx scripts/mcp-server.ts",
+    "mcp:test": "tsx scripts/mcp-http-test.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "fix:libelles": "tsx scripts/corriger-libelles-demo.ts",
+    "etaler:echeances": "tsx scripts/etaler-echeances-demo.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
@@ -45,6 +50,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

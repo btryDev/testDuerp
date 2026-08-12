@@ -1,0 +1,57 @@
+// Point d'entrée HTTP du serveur MCP, authentifié en OAuth 2.1 — ADR-013.
+//
+// Le pendant de `./[cle]/route.ts`, dont il a vocation à prendre la place.
+// La différence tient en une ligne : la portée vient du jeton porteur, donc
+// de l'identité du dirigeant, et non plus d'un secret partagé figé dans
+// l'environnement du déploiement.
+//
+// Le refus est ici un `401` porteur d'un en-tête `WWW-Authenticate` — et non
+// le `404` muet de la route à clé. Les deux choix sont cohérents avec leur
+// mécanisme : là-bas le secret était dans l'URL, et distinguer « mauvaise
+// clé » de « route inconnue » aurait confirmé qu'il y avait quelque chose à
+// trouver. Ici l'existence du serveur n'est pas un secret — c'est même ce
+// qu'il faut annoncer pour que le client sache où aller s'authentifier.
+//
+// Le protocole utilise POST pour les échanges, GET pour les flux d'événements
+// et DELETE pour la fin de session : les trois pointent sur le même
+// gestionnaire, qui route lui-même selon la méthode.
+
+import {
+  lireConfigOauthMcp,
+  reponseAuthentificationRequise,
+  resoudreScopeDepuisJeton,
+} from "@/lib/mcp/acces-oauth";
+import {
+  chercherEtablissementDeUtilisateur,
+  creerVerificateurSupabase,
+} from "@/lib/mcp/acces-oauth-deps";
+import { creerHandlerMcpHttp } from "@/lib/mcp/http";
+
+// Le serveur lit la base à chaque appel d'outil, et la portée dépend du
+// porteur : une réponse mise en cache serait une fuite entre utilisateurs.
+export const dynamic = "force-dynamic";
+
+const config = lireConfigOauthMcp();
+const verifier = creerVerificateurSupabase();
+
+const handler = creerHandlerMcpHttp({
+  hotesAutorises: config?.hotesAutorises ?? [],
+  originesAutorisees: config?.originesAutorisees ?? [],
+  // C'est ce 401 qui déclenche le flux OAuth côté client : un refus muet
+  // laisserait l'utilisateur devant une erreur, sans bouton « Connecter ».
+  reponseRefus: (request) => reponseAuthentificationRequise(config, request),
+  resoudreScope: async (request) => {
+    // Sans configuration ni vérificateur, aucune requête n'est servie : on
+    // ne devine pas une identité, on refuse.
+    if (!config || !verifier) return null;
+
+    return resoudreScopeDepuisJeton(request, {
+      verifier,
+      chercherEtablissement: chercherEtablissementDeUtilisateur,
+    });
+  },
+});
+
+export const POST = (request: Request) => handler.servir(request);
+export const GET = (request: Request) => handler.servir(request);
+export const DELETE = (request: Request) => handler.servir(request);
