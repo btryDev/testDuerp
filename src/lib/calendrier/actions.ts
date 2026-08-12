@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { Realisateur } from "@prisma/client";
+import { Prisma, type Realisateur } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import { determineObligationsApplicables } from "@/lib/matching";
@@ -130,19 +130,33 @@ export async function genererCalendrier(
   // 5. Application du plan — tout ou rien. Un calendrier à moitié régénéré
   //    (créations passées, mises à jour perdues) afficherait des échéances
   //    incohérentes sans que personne ne le sache.
-  await prisma.$transaction(async (tx) => {
-    if (plan.aSupprimer.length > 0) {
-      await tx.verification.deleteMany({
-        where: { id: { in: plan.aSupprimer }, etablissementId },
-      });
-    }
+  //
+  //    Le plan est entièrement calculé avant d'ouvrir la transaction : aucune
+  //    opération ci-dessous ne lit la base, et aucune ne dépend du résultat
+  //    d'une autre. La forme **séquentielle** de `$transaction` convient donc,
+  //    et c'est elle qu'il faut : elle envoie tout le lot en un seul
+  //    aller-retour, là où la forme interactive payait la latence réseau une
+  //    fois par écriture. Sur 43 occurrences, cela faisait 46 allers-retours
+  //    dans une même transaction, assez pour en dépasser le délai — et comme le
+  //    repère de version s'écrit dans le lot, l'échec relançait l'opération au
+  //    chargement suivant, indéfiniment (P2028).
+  const operations: Prisma.PrismaPromise<unknown>[] = [];
 
-    if (plan.aCreer.length > 0) {
-      // `skipDuplicates` : deux régénérations concurrentes (déclaration
-      // d'équipement dans un onglet, dépôt de rapport dans l'autre) peuvent
-      // calculer la même création. La contrainte d'unicité tranche, sans
-      // faire échouer la transaction.
-      await tx.verification.createMany({
+  if (plan.aSupprimer.length > 0) {
+    operations.push(
+      prisma.verification.deleteMany({
+        where: { id: { in: plan.aSupprimer }, etablissementId },
+      }),
+    );
+  }
+
+  if (plan.aCreer.length > 0) {
+    // `skipDuplicates` : deux régénérations concurrentes (déclaration
+    // d'équipement dans un onglet, dépôt de rapport dans l'autre) peuvent
+    // calculer la même création. La contrainte d'unicité tranche, sans
+    // faire échouer la transaction.
+    operations.push(
+      prisma.verification.createMany({
         data: plan.aCreer.map((v) => ({
           etablissementId,
           equipementId: v.equipementId,
@@ -154,11 +168,13 @@ export async function genererCalendrier(
           statut: v.statut,
         })),
         skipDuplicates: true,
-      });
-    }
+      }),
+    );
+  }
 
-    for (const m of plan.aMettreAJour) {
-      await tx.verification.update({
+  for (const m of plan.aMettreAJour) {
+    operations.push(
+      prisma.verification.update({
         where: { id: m.id },
         data: {
           libelleObligation: m.libelleObligation,
@@ -168,25 +184,32 @@ export async function genererCalendrier(
           dateRealisee: m.dateRealisee,
           statut: m.statut,
         },
-      });
-    }
+      }),
+    );
+  }
 
-    for (const a of plan.aArchiver) {
-      await tx.verification.update({
+  for (const a of plan.aArchiver) {
+    operations.push(
+      prisma.verification.update({
         where: { id: a.id },
         data: { libelleObligation: a.libelleObligation },
-      });
-    }
+      }),
+    );
+  }
 
-    // Le calendrier est désormais aligné sur cette version du référentiel.
-    // Écrit **dans** la transaction : si le plan échoue, l'établissement reste
-    // marqué comme désynchronisé et sera repris au prochain affichage, plutôt
-    // que d'être considéré à tort comme à jour.
-    await tx.etablissement.update({
+  // Le calendrier est désormais aligné sur cette version du référentiel.
+  // Écrit **dans** la transaction, et en dernier : si le plan échoue,
+  // l'établissement reste marqué comme désynchronisé et sera repris au prochain
+  // affichage, plutôt que d'être considéré à tort comme à jour.
+  operations.push(
+    prisma.etablissement.update({
       where: { id: etablissementId },
       data: { referentielVersionCalendrier: REFERENTIEL_VERSION },
-    });
-  });
+    }),
+  );
+
+  // Les opérations s'exécutent dans l'ordre du tableau, en une transaction.
+  await prisma.$transaction(operations);
 
   revalidatePath(`/etablissements/${etablissementId}/calendrier`);
   revalidatePath(`/etablissements/${etablissementId}`);
