@@ -13,6 +13,7 @@
 // recommandations (même réflexe que `statsActionsEnRetard`, qui refuse de
 // moyenner un retard sur une liste coupée).
 
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { compterActions } from "@/lib/actions/queries";
@@ -506,7 +507,14 @@ export type DashboardData = {
  */
 const MAX_VERIFS_RECOS = 40;
 
-export async function getDashboardData(
+/**
+ * Mémoïsé par `cache()` : le layout d'établissement s'en sert pour les badges
+ * de la sidebar et la page pour ses widgets, sur le même identifiant et dans le
+ * même rendu. Les six requêtes ci-dessous partaient donc en double à chaque
+ * chargement du tableau de bord. La portée est celle de la requête HTTP, jamais
+ * plus : deux visiteurs ne partagent rien.
+ */
+export const getDashboardData = cache(async function getDashboardData(
   etablissementId: string,
 ): Promise<DashboardData> {
   const user = await requireUser();
@@ -674,4 +682,4 @@ export async function getDashboardData(
       etat: etatDuerp,
     },
   };
-}
+});
