@@ -18,7 +18,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "mcp": "tsx scripts/mcp-server.ts",
     "mcp:test": "tsx scripts/mcp-http-test.ts",
-    "seed:demo": "tsx scripts/seed-demo.ts"
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "fix:libelles": "tsx scripts/corriger-libelles-demo.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
