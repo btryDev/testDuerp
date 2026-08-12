@@ -27,6 +27,7 @@ import { formaterDateFr } from "@/lib/dates";
 import { ageEnMois } from "@/lib/dashboard/duerp";
 import {
   getEtatDuerp,
+  getNomEtablissement,
   getFicheEtablissement,
   listerActions,
   listerEquipements,
@@ -106,8 +107,8 @@ function formaterRegimes(f: FicheEtablissement): string {
 }
 
 function formaterFiche(f: FicheEtablissement): string {
+  // Le nom est déjà porté par le préfixe commun (cf. `avecEtablissement`).
   return [
-    `Établissement : ${f.raisonDisplay}`,
     `Adresse : ${f.adresse}`,
     `Régimes : ${formaterRegimes(f)}`,
     `Effectif sur site : ${f.effectifSurSite}`,
@@ -453,10 +454,48 @@ const outilVerifications: OutilMcp<typeof schemaVerifications> = {
  * de nature du serveur, à instruire séparément.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- collection hétérogène : chaque outil porte son propre schéma zod.
-export const OUTILS_MCP: readonly OutilMcp<any>[] = [
+const OUTILS_BRUTS: readonly OutilMcp<any>[] = [
   outilFiche,
   outilEquipements,
   outilVerifications,
   outilDuerp,
   outilActions,
 ];
+
+/**
+ * Préfixe chaque réponse par l'établissement qui a répondu.
+ *
+ * Un même client peut avoir plusieurs connecteurs Rojer branchés sur des
+ * dossiers différents — les outils portent alors les mêmes noms et les mêmes
+ * descriptions, et rien dans une réponse ne dit lequel a répondu. Une
+ * réponse juste sur le mauvais dossier se lit exactement comme une réponse
+ * fausse : c'est ce qui a fait chercher des extincteurs absents et une
+ * échéance de juillet introuvable.
+ *
+ * Le rappel est posé ici, sur la sortie, et pas dans la consigne serveur :
+ * une consigne, le client peut la diluer et le modèle l'oublier ; une ligne
+ * de texte dans le résultat d'outil, non.
+ */
+function avecEtablissement<S extends z.ZodTypeAny>(
+  outil: OutilMcp<S>,
+): OutilMcp<S> {
+  return {
+    ...outil,
+    executer: async (ctx, args) => {
+      const [nom, texte] = await Promise.all([
+        getNomEtablissement(ctx.scope.etablissementId),
+        outil.executer(ctx, args),
+      ]);
+      return nom ? `Établissement : ${nom}\n\n${texte}` : texte;
+    },
+  };
+}
+
+/**
+ * Les outils servis par le serveur. Tous en lecture seule — l'ajout d'une
+ * écriture ici ne serait pas un détail d'implémentation mais un changement
+ * de nature du serveur, à instruire séparément.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- collection hétérogène : chaque outil porte son propre schéma zod.
+export const OUTILS_MCP: readonly OutilMcp<any>[] =
+  OUTILS_BRUTS.map(avecEtablissement);

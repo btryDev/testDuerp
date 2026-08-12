@@ -439,3 +439,26 @@ export async function listerVerifications(
 
   return lues;
 }
+
+/**
+ * Nom d'affichage de l'établissement servi.
+ *
+ * Sert à préfixer chaque réponse d'outil : un client peut avoir plusieurs
+ * connecteurs Rojer branchés sur des dossiers différents, avec les mêmes
+ * outils et les mêmes noms. Sans ce rappel, rien dans une réponse ne dit
+ * quel dossier a répondu — et une réponse juste sur le mauvais dossier se
+ * lit comme une réponse fausse.
+ */
+export async function getNomEtablissement(
+  etablissementId: string,
+): Promise<string | null> {
+  const e = await prismaMcp.etablissement.findUnique({
+    where: { id: etablissementId },
+    select: { raisonDisplay: true, adresse: true },
+  });
+  if (!e) return null;
+  // La ville suffit à lever l'ambiguïté entre deux établissements
+  // homonymes, sans étaler l'adresse complète en tête de chaque réponse.
+  const ville = e.adresse.split(",").pop()?.trim().replace(/^\d{5}\s*/, "");
+  return ville ? `${e.raisonDisplay} (${ville})` : e.raisonDisplay;
+}

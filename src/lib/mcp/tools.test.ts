@@ -329,3 +329,58 @@ describe("équipements et calendrier", () => {
     expect(texte).toContain("Aucune vérification");
   });
 });
+
+describe("provenance de la réponse", () => {
+  const fiche = {
+    raisonDisplay: "Maak",
+    adresse: "rue pepouze, 31300 Toulouse",
+    codeNaf: "47.25Z",
+    effectifSurSite: 2,
+    estEtablissementTravail: true,
+    estERP: true,
+    estIGH: false,
+    estHabitation: false,
+    typeErp: "M",
+    categorieErp: "cinq",
+    entreprise: {
+      raisonSociale: "Maak",
+      siret: "93476576900039",
+      codeNaf: "47.25Z",
+      effectif: 2,
+    },
+    _count: { equipements: 13, verifications: 43, actions: 21 },
+  };
+
+  it("nomme l'établissement en tête de chaque réponse", async () => {
+    // Un même client peut brancher deux connecteurs Rojer sur deux dossiers,
+    // avec les mêmes outils et les mêmes noms. Sans ce rappel, une réponse
+    // juste sur le mauvais dossier se lit comme une réponse fausse.
+    prismaMock.etablissement.findUnique.mockResolvedValue(fiche);
+
+    for (const o of OUTILS_MCP) {
+      const texte = await o.executer(ctx, {});
+      expect(texte.startsWith("Établissement : Maak")).toBe(true);
+    }
+  });
+
+  it("ajoute la ville, pour départager deux homonymes", async () => {
+    prismaMock.etablissement.findUnique.mockResolvedValue(fiche);
+    const texte = await outil("plan_actions").executer(ctx, {});
+    expect(texte).toContain("Établissement : Maak (Toulouse)");
+  });
+
+  it("ne répète pas le nom dans la fiche, qui le portait déjà", async () => {
+    prismaMock.etablissement.findUnique.mockResolvedValue(fiche);
+    const texte = await outil("fiche_etablissement").executer(ctx, {});
+    expect(texte.match(/Maak \(Toulouse\)/g)).toHaveLength(1);
+  });
+
+  it("rend la réponse sans préfixe plutôt que d'échouer si le nom manque", async () => {
+    // Un établissement supprimé entre deux appels ne doit pas faire tomber
+    // l'outil : la donnée compte plus que son étiquette.
+    prismaMock.etablissement.findUnique.mockResolvedValue(null);
+    const texte = await outil("plan_actions").executer(ctx, {});
+    expect(texte).not.toContain("Établissement :");
+    expect(texte).toContain("Aucune action");
+  });
+});
