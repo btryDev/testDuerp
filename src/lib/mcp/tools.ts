@@ -287,7 +287,8 @@ const outilActions: OutilMcp<typeof schemaActions> = {
   nom: "plan_actions",
   titre: "Plan d'actions",
   description:
-    "Actions correctives de l'établissement, qu'elles viennent du DUERP, d'un rapport de vérification ou d'une saisie libre : libellé, statut, criticité, échéance, retard éventuel et responsable. Filtrable par statut, criticité, actions en cours ou en retard.",
+    "Actions correctives de l'établissement, qu'elles viennent du DUERP, d'un rapport de vérification ou d'une saisie libre : libellé, statut, criticité, échéance, retard éventuel et responsable. Filtrable par statut, criticité, actions en cours ou en retard. " +
+    "Attention : les échéances rendues ici sont des échéances de **traitement**, que l'établissement se fixe. Elles sont distinctes des échéances réglementaires des contrôles périodiques, rendues par l'outil `verifications`. Avant de conclure qu'une date n'existe pas dans le dossier, interroger les deux.",
   schema: schemaActions,
   executer: async (ctx, args) => {
     const actions = await listerActions(ctx.scope.etablissementId, args, ctx.now);
@@ -433,7 +434,8 @@ const outilVerifications: OutilMcp<typeof schemaVerifications> = {
   nom: "verifications",
   titre: "Calendrier des vérifications",
   description:
-    "Calendrier réglementaire de l'établissement : vérifications périodiques obligatoires par équipement, avec périodicité, échéance, état (en retard, à planifier, à venir, réalisée) et ancienneté du retard. C'est l'outil à appeler pour toute question sur les contrôles obligatoires — « mes extincteurs sont-ils à jour ? », « qu'est-ce qui est en retard ? », « qu'est-ce qui arrive le mois prochain ? ».",
+    "Calendrier réglementaire de l'établissement : vérifications périodiques obligatoires par équipement, avec périodicité, échéance, état (en retard, à planifier, à venir, réalisée) et ancienneté du retard. C'est l'outil à appeler pour toute question sur les contrôles obligatoires — « mes extincteurs sont-ils à jour ? », « qu'est-ce qui est en retard ? », « qu'est-ce qui arrive le mois prochain ? ». " +
+    "Attention : Rojer distingue deux échéances qui ne se recouvrent pas. Celles rendues ici sont les échéances **réglementaires** des contrôles à faire réaliser. Les échéances de traitement des actions correctives sont d'autres dates, rendues par l'outil `plan_actions`. Avant de conclure qu'une date n'existe pas dans le dossier, interroger les deux.",
   schema: schemaVerifications,
   executer: async (ctx, args) => {
     const verifs = await listerVerifications(
