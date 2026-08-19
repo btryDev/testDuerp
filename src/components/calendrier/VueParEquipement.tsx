@@ -95,6 +95,12 @@ export type LigneEquipement = {
   aVenir: number;
   faite: number;
   aPlanifier: number;
+  /**
+   * Occurrences datées hors de l'année affichée. Les compteurs de la
+   * carte comptent ce que sa règle montre — ce qui déborde se dit à part
+   * plutôt que de gonfler un chiffre que rien ne vient justifier.
+   */
+  horsAnnee: number;
   /** La prochaine échéance non réalisée, si elle existe. */
   prochaine: { libelle: string; etat: EtatMois } | null;
   /** Les occurrences de l'année, pour le dépli d'un mois. */
@@ -153,6 +159,7 @@ export function VueParEquipement({
         <GroupeCategorie
           key={g.categorieCode}
           groupe={g}
+          annee={annee}
           moisCourant={moisCourant}
           // Un seul groupe ouvert à l'arrivée : celui qui coûte le plus,
           // puisque l'ordre met le retard devant. Les autres annoncent
@@ -176,10 +183,12 @@ export function VueParEquipement({
 
 function GroupeCategorie({
   groupe: g,
+  annee,
   moisCourant,
   ouvertParDefaut,
 }: {
   groupe: GroupeEquipement;
+  annee: number;
   moisCourant: number;
   ouvertParDefaut: boolean;
 }) {
@@ -242,6 +251,7 @@ function GroupeCategorie({
               <CarteEquipement
                 key={l.id}
                 ligne={l}
+                annee={annee}
                 moisCourant={moisCourant}
                 // Le groupe ouvert d'emblée l'est pour être lu : ses
                 // cartes arrivent dépliées, sinon dérouler la catégorie
@@ -258,10 +268,12 @@ function GroupeCategorie({
 
 function CarteEquipement({
   ligne: l,
+  annee,
   moisCourant,
   ouverteParDefaut = false,
 }: {
   ligne: LigneEquipement;
+  annee: number;
   moisCourant: number;
   /** Vrai dans le groupe ouvert à l'arrivée. */
   ouverteParDefaut?: boolean;
@@ -398,12 +410,17 @@ function CarteEquipement({
         {/* Ce que porte l'appareil, dans les deux états : repliée, une
             carte qui ne dirait que « dépassée de 103 j » tairait qu'il y
             en a quatre. */}
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <Compte n={l.enRetard} libelle="dépassée" registre="enRetard" />
           <Compte n={l.proche} libelle="sous 30 j" registre="proche" />
           <Compte n={l.aVenir} libelle="à venir" registre="aVenir" />
           <Compte n={l.faite} libelle="faite" registre="faite" />
           <Compte n={l.aPlanifier} libelle="à planifier" registre={null} />
+          {l.horsAnnee > 0 ? (
+            <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-[color:var(--board-slate-soft)]">
+              +{l.horsAnnee} hors {annee}
+            </span>
+          ) : null}
         </div>
 
         {/* Le mois déplié, à sa place : sous l'appareil, pas ailleurs. */}

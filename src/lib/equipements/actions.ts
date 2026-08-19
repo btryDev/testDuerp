@@ -5,10 +5,8 @@ import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
-import {
-  genererCalendrier,
-  marquerCalendrierPerime,
-} from "@/lib/calendrier/actions";
+import { genererCalendrier } from "@/lib/calendrier/actions";
+import { marquerCalendrierPerime } from "@/lib/calendrier/reconciliation";
 import { equipementSchema, serialiserCaracteristiques } from "./schema";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 

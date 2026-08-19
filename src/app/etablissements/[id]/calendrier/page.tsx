@@ -398,6 +398,8 @@ export default async function CalendrierPage({
       mois: EtatMois[];
       compte: Record<EtatEcheance, number>;
       aPlanifier: number;
+      /** Occurrences datées hors de l'année affichée. */
+      horsAnnee: number;
       dates: { date: Date; etat: EtatEcheance }[];
       occurrences: OccurrenceEquipement[];
     }
@@ -414,6 +416,7 @@ export default async function CalendrierPage({
         mois: Array.from({ length: 12 }, () => null),
         compte: { enRetard: 0, proche: 0, aVenir: 0, faite: 0 },
         aPlanifier: 0,
+        horsAnnee: 0,
         dates: [],
         occurrences: [],
       };
@@ -425,11 +428,24 @@ export default async function CalendrierPage({
     }
     const ligne = { genre: "verif" as const, date: v.datePrevue, v };
     const etat = etatDeLaLigne(ligne);
-    e.compte[etat] += 1;
+    // `dates` sert la « prochaine échéance », qui n'est bornée par aucune
+    // année : une dette de l'an dernier compte toujours.
     e.dates.push({ date: v.datePrevue, etat });
 
+    // Les compteurs décrivent l'APPAREIL, pas l'année : une dette de l'an
+    // dernier reste une dette, et une vérification faite en septembre
+    // dernier reste faite. Les borner à l'année civile les faisait
+    // disparaître de l'écran au 1er janvier — ce qui est faux, et pire
+    // que l'écart qu'on cherchait à éviter.
+    e.compte[etat] += 1;
+
     const c = composantesCiviles(v.datePrevue);
-    if (c.annee === anneeCourante) {
+    if (c.annee !== anneeCourante) {
+      // La règle, elle, ne montre qu'une année. L'écart entre ce qu'elle
+      // marque et ce que comptent les pilules se dit plutôt qu'il ne se
+      // corrige : « +1 hors 2026 ».
+      e.horsAnnee += 1;
+    } else {
       const i = c.mois - 1;
       const actuel = e.mois[i];
       // Une case ne peut porter qu'un état : c'est le plus urgent du
@@ -479,6 +495,7 @@ export default async function CalendrierPage({
         aVenir: e.compte.aVenir,
         faite: e.compte.faite,
         aPlanifier: e.aPlanifier,
+        horsAnnee: e.horsAnnee,
         occurrences: [...e.occurrences].sort((a, b) =>
           a.mois - b.mois || a.jour.localeCompare(b.jour),
         ),
@@ -545,6 +562,7 @@ export default async function CalendrierPage({
     {
       mois: EtatMois[];
       compte: Record<EtatEcheance, number>;
+      horsAnnee: number;
       dates: { date: Date; etat: EtatEcheance }[];
       occurrences: OccurrenceEquipement[];
     }
@@ -556,17 +574,20 @@ export default async function CalendrierPage({
       f = {
         mois: Array.from({ length: 12 }, () => null),
         compte: { enRetard: 0, proche: 0, aVenir: 0, faite: 0 },
+        horsAnnee: 0,
         dates: [],
         occurrences: [],
       };
       parFamille.set(e.famille, f);
     }
     const etat = etatDeLaLigne({ genre: "autre", date: e.date, e });
-    f.compte[etat] += 1;
     f.dates.push({ date: e.date, etat });
+    f.compte[etat] += 1;
 
     const c = composantesCiviles(e.date);
-    if (c.annee === anneeCourante) {
+    if (c.annee !== anneeCourante) {
+      f.horsAnnee += 1;
+    } else {
       const i = c.mois - 1;
       const actuel = f.mois[i];
       if (!actuel || PRIORITE_ETAT[etat] > PRIORITE_ETAT[actuel]) {
@@ -611,6 +632,7 @@ export default async function CalendrierPage({
         aVenir: f.compte.aVenir,
         faite: f.compte.faite,
         aPlanifier: 0,
+        horsAnnee: f.horsAnnee,
         occurrences: [...f.occurrences].sort(
           (a, b) => a.mois - b.mois || a.jour.localeCompare(b.jour),
         ),

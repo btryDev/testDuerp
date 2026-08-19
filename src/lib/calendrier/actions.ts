@@ -13,39 +13,6 @@ import {
   type StatutVerificationPersiste,
 } from "./generateur";
 
-/**
- * Marque le calendrier d'un établissement comme périmé.
- *
- * Sert au seul cas que l'auto-réparation ne voyait pas : une mutation
- * d'équipement réussit, la régénération qui la suit échoue, et le
- * calendrier reste ni vide ni périmé en version — juste faux. Personne ne
- * le sait, et il faudrait un geste de l'utilisateur pour le rattraper.
- *
- * En effaçant la version de référentiel, on replace l'établissement dans
- * l'état « désynchronisé » que `calendrierDesynchronise` détecte déjà :
- * la prochaine ouverture du calendrier le régénère toute seule. Aucun
- * nouveau concept, aucun bouton — le mécanisme existait, il lui manquait
- * d'être armé quand ça casse.
- *
- * N'échoue jamais : elle s'exécute dans un `catch`, et si la base est
- * elle-même indisponible il n'y a rien à marquer.
- */
-export async function marquerCalendrierPerime(
-  etablissementId: string,
-): Promise<void> {
-  try {
-    await prisma.etablissement.update({
-      where: { id: etablissementId },
-      data: { referentielVersionCalendrier: null },
-    });
-  } catch (err) {
-    console.error(
-      `[calendrier] impossible de marquer ${etablissementId} comme périmé`,
-      err,
-    );
-  }
-}
-
 export type GenerationResult = {
   /** Lignes de suivi nouvellement ouvertes (nouvel équipement, nouvelle
    *  obligation applicable). */

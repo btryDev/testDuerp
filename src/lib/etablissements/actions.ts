@@ -7,10 +7,8 @@ import {
   assertEntrepriseOwnership,
   assertEtablissementOwnership,
 } from "@/lib/auth/scope";
-import {
-  genererCalendrier,
-  marquerCalendrierPerime,
-} from "@/lib/calendrier/actions";
+import { genererCalendrier } from "@/lib/calendrier/actions";
+import { marquerCalendrierPerime } from "@/lib/calendrier/reconciliation";
 import { etablissementSchema } from "./schema";
 
 export type EtablissementActionState =

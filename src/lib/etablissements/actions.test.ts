@@ -72,6 +72,8 @@ vi.mock("@/lib/auth/scope", () => ({
 }));
 vi.mock("@/lib/calendrier/actions", () => ({
   genererCalendrier: h.genererCalendrier,
+}));
+vi.mock("@/lib/calendrier/reconciliation", () => ({
   marquerCalendrierPerime: h.marquerCalendrierPerime,
 }));
 
