@@ -131,14 +131,14 @@ export function VueParEquipement({
   }
 
   return (
-    <div className="flex flex-col gap-9">
+    <div className="flex flex-col gap-14">
       {groupes.map((g) => (
         <section key={g.categorie}>
           {/* Le titre du groupe porte la catégorie et son solde : c'est à
               ce niveau qu'on décide d'appeler un prestataire, pas
               appareil par appareil. */}
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 border-b border-[color:var(--board-slate-line)] pb-3">
-            <h3 className="board-titre m-0 text-[19px]">{g.categorie}</h3>
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 border-b-2 border-[color:var(--board-slate)] pb-3.5">
+            <h3 className="board-titre m-0 text-[21px]">{g.categorie}</h3>
             <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
               {g.lignes.length} appareil{g.lignes.length > 1 ? "s" : ""}
             </span>
@@ -154,7 +154,7 @@ export function VueParEquipement({
           {/* Deux colonnes sur grand écran : une carte n'a pas besoin de
               mille pixels. `items-start` pour qu'une carte ouverte n'étire
               pas sa voisine restée repliée. */}
-          <div className="mt-4 grid grid-cols-1 items-start gap-x-5 gap-y-4 xl:grid-cols-2">
+          <div className="mt-5 grid grid-cols-1 items-start gap-x-5 gap-y-5 xl:grid-cols-2">
             {g.lignes.map((l) => (
               <CarteEquipement
                 key={l.id}
@@ -225,26 +225,10 @@ function CarteEquipement({
       {/* En se resserrant, l'en-tête s'empile : le nom, puis l'échéance
           et la porte sur une ligne. C'est la disposition en colonne, sans
           second composant à tenir. */}
-      {/* L'en-tête EST la commande : tout le bandeau déplie, la porte
-          vers la fiche de l'appareil reste un lien à part. */}
       <header className="flex flex-col gap-3 border-b border-[color:var(--board-blue-soft)] bg-[color:var(--board-blue-pale)] px-6 py-4 @md:flex-row @md:items-center @md:gap-5">
-        <button
-          type="button"
-          onClick={() => setOuverte((o) => !o)}
-          aria-expanded={ouverte}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left"
-        >
-          <ChevronDown
-            aria-hidden
-            className={
-              "size-4 flex-none text-[color:var(--board-blue-ink)] transition-transform " +
-              (ouverte ? "rotate-180" : "")
-            }
-          />
-          <h4 className="board-titre m-0 min-w-0 truncate text-[19px]">
-            {l.libelle}
-          </h4>
-        </button>
+        <h4 className="board-titre m-0 min-w-0 flex-1 truncate text-[19px]">
+          {l.libelle}
+        </h4>
 
         <div className="flex flex-none items-center justify-between gap-4 @md:justify-end">
           <div className="@md:text-right">
@@ -312,82 +296,100 @@ function CarteEquipement({
           })}
         </div>
 
-        {/* Repliée, la carte garde sa règle — c'est elle qu'on est venu
-            lire — mais se passe du nom des mois, des compteurs et du
-            tiroir. Ouverte, elle rend le tout. */}
+        {/* Le nom des mois n'a de sens qu'ouverte : repliée, la carte
+            montre la forme de l'année, pas son détail. */}
         {ouverte ? (
-          <>
-            <div className="mt-2 grid grid-cols-12 gap-1.5 border-t border-[color:var(--board-slate-line)] pt-2">
-              {MOIS_FR_COURT.map((m, i) => (
-                <span
-                  key={m}
-                  className={
-                    "text-center font-mono text-[10px] uppercase tracking-[0.06em] " +
-                    (moisOuvert === i + 1
-                      ? "font-semibold text-[color:var(--board-ink)]"
-                      : l.mois[i]
-                        ? "text-[color:var(--board-slate-ink)]"
-                        : "text-[color:var(--board-slate)]")
-                  }
-                >
-                  {m.slice(0, 1)}
-                </span>
+          <div className="mt-2 grid grid-cols-12 gap-1.5 border-t border-[color:var(--board-slate-line)] pt-2">
+            {MOIS_FR_COURT.map((m, i) => (
+              <span
+                key={m}
+                className={
+                  "text-center font-mono text-[10px] uppercase tracking-[0.06em] " +
+                  (moisOuvert === i + 1
+                    ? "font-semibold text-[color:var(--board-ink)]"
+                    : l.mois[i]
+                      ? "text-[color:var(--board-slate-ink)]"
+                      : "text-[color:var(--board-slate)]")
+                }
+              >
+                {m.slice(0, 1)}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
+        {/* Ce que porte l'appareil, dans les deux états : repliée, une
+            carte qui ne dirait que « dépassée de 103 j » tairait qu'il y
+            en a quatre. */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Compte n={l.enRetard} libelle="dépassée" registre="enRetard" />
+          <Compte n={l.proche} libelle="sous 30 j" registre="proche" />
+          <Compte n={l.aVenir} libelle="à venir" registre="aVenir" />
+          <Compte n={l.faite} libelle="faite" registre="faite" />
+          <Compte n={l.aPlanifier} libelle="à planifier" registre={null} />
+        </div>
+
+        {/* Le mois déplié, à sa place : sous l'appareil, pas ailleurs. */}
+        {ouverte && moisOuvert && details.length > 0 ? (
+          <div className="mt-[22px] rounded-[22px] bg-[color:var(--board-slate-pale)] px-4 py-4">
+            <p className="m-0 mb-2 px-1 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]">
+              {MOIS_FR[moisOuvert - 1]} · {details.length} échéance
+              {details.length > 1 ? "s" : ""}
+            </p>
+            <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+              {details.map((o) => (
+                <li key={o.id}>
+                  <Link
+                    href={o.href}
+                    className="flex items-center gap-3.5 rounded-[16px] bg-[color:var(--board-card)] px-3.5 py-2.5 transition-opacity hover:opacity-85"
+                  >
+                    <span
+                      className="flex size-[42px] flex-none flex-col items-center justify-center rounded-[14px]"
+                      style={{
+                        background: CHAMP_ETAT[o.etat],
+                      }}
+                    >
+                      <span className="board-titre text-[15px] leading-none tabular-nums">
+                        {o.jour}
+                      </span>
+                      <span className="mt-0.5 font-mono text-[8.5px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate-ink)]">
+                        {o.moisCourt}
+                      </span>
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="line-clamp-2 text-[13.5px] font-semibold leading-[1.35] tracking-[-0.01em] text-[color:var(--board-ink)]">
+                        {o.titre}
+                      </span>
+                      <span className="mt-0.5 block truncate text-[12px] text-[color:var(--board-slate-mid)]">
+                        {o.meta}
+                      </span>
+                    </span>
+                    <BadgeStatut statut={o.statut} />
+                  </Link>
+                </li>
               ))}
-            </div>
-
-            <div className="mt-[22px] flex flex-wrap gap-2">
-              <Compte n={l.enRetard} libelle="dépassée" registre="enRetard" />
-              <Compte n={l.proche} libelle="sous 30 j" registre="proche" />
-              <Compte n={l.aVenir} libelle="à venir" registre="aVenir" />
-              <Compte n={l.faite} libelle="faite" registre="faite" />
-              <Compte n={l.aPlanifier} libelle="à planifier" registre={null} />
-            </div>
-
-            {/* Le mois déplié, à sa place : sous l'appareil, pas ailleurs. */}
-            {moisOuvert && details.length > 0 ? (
-              <div className="mt-[22px] rounded-[22px] bg-[color:var(--board-slate-pale)] px-4 py-4">
-                <p className="m-0 mb-2 px-1 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]">
-                  {MOIS_FR[moisOuvert - 1]} · {details.length} échéance
-                  {details.length > 1 ? "s" : ""}
-                </p>
-                <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
-                  {details.map((o) => (
-                    <li key={o.id}>
-                      <Link
-                        href={o.href}
-                        className="flex items-center gap-3.5 rounded-[16px] bg-[color:var(--board-card)] px-3.5 py-2.5 transition-opacity hover:opacity-85"
-                      >
-                        <span
-                          className="flex size-[42px] flex-none flex-col items-center justify-center rounded-[14px]"
-                          style={{
-                            background: CHAMP_ETAT[o.etat],
-                          }}
-                        >
-                          <span className="board-titre text-[15px] leading-none tabular-nums">
-                            {o.jour}
-                          </span>
-                          <span className="mt-0.5 font-mono text-[8.5px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate-ink)]">
-                            {o.moisCourt}
-                          </span>
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="line-clamp-2 text-[13.5px] font-semibold leading-[1.35] tracking-[-0.01em] text-[color:var(--board-ink)]">
-                            {o.titre}
-                          </span>
-                          <span className="mt-0.5 block truncate text-[12px] text-[color:var(--board-slate-mid)]">
-                            {o.meta}
-                          </span>
-                        </span>
-                        <BadgeStatut statut={o.statut} />
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </>
+            </ul>
+          </div>
         ) : null}
       </div>
+
+      {/* La commande de dépliage est en pied de carte, en toutes lettres :
+          un chevron collé au titre laissait croire à une décoration, et
+          rien ne disait ce qu'il y avait à voir de plus. */}
+      <button
+        type="button"
+        onClick={() => setOuverte((o) => !o)}
+        aria-expanded={ouverte}
+        className="flex w-full items-center justify-center gap-2 border-t border-[color:var(--board-slate-line)] px-6 py-3 text-[12.5px] font-semibold text-[color:var(--board-slate-mid)] transition-colors hover:bg-[color:var(--board-slate-pale)] hover:text-[color:var(--board-ink)]"
+      >
+        {ouverte ? "Replier" : "Voir le détail du mois"}
+        <ChevronDown
+          aria-hidden
+          className={
+            "size-4 transition-transform " + (ouverte ? "rotate-180" : "")
+          }
+        />
+      </button>
     </article>
   );
 }
