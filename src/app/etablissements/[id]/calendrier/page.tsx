@@ -688,7 +688,7 @@ export default async function CalendrierPage({
           le board déroule une frise horizontale. */}
       {bandeTitre}
 
-      <div className="flex flex-1 flex-col bg-[color:var(--board-canvas)] px-[var(--board-gutter)] pb-14 pt-6">
+      <div className="flex flex-1 flex-col bg-[color:var(--board-card)] px-[var(--board-gutter)] pb-14 pt-6">
         {notesDeCadrage}
 
         {lignes.length === 0 ? (
