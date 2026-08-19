@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cheminPublic } from "./middleware";
+import { cheminPublic, refreshTokenPerime } from "./middleware";
 
 /**
  * Chemins que le middleware laisse passer sans session Supabase.
@@ -65,5 +65,42 @@ describe("chemins publics", () => {
     ]) {
       expect(cheminPublic(p)).toBe(false);
     }
+  });
+});
+
+/**
+ * Le middleware efface les cookies de session sur cette erreur-là, et
+ * seulement sur celle-là. Se tromper de côté coûte cher dans les deux sens :
+ * trop laxiste, on déconnecte un utilisateur valide au premier hoquet réseau ;
+ * trop strict, le navigateur rejoue indéfiniment un jeton mort et l'écran
+ * reste bloqué sur « Invalid Refresh Token » jusqu'à un vidage manuel des
+ * cookies.
+ */
+describe("détection d'une session irrécupérable", () => {
+  it("reconnaît un refresh token que le serveur Auth ne connaît plus", () => {
+    expect(
+      refreshTokenPerime({
+        code: "refresh_token_not_found",
+        message: "Invalid Refresh Token: Refresh Token Not Found",
+        status: 400,
+      }),
+    ).toBe(true);
+    expect(
+      refreshTokenPerime({ code: "refresh_token_already_used" }),
+    ).toBe(true);
+    // Sans code, le message suffit : les versions d'auth-js n'en portent pas
+    // toutes un.
+    expect(
+      refreshTokenPerime({ message: "Invalid Refresh Token: Already Used" }),
+    ).toBe(true);
+  });
+
+  it("laisse passer les pannes passagères sans détruire la session", () => {
+    expect(refreshTokenPerime(new TypeError("fetch failed"))).toBe(false);
+    expect(
+      refreshTokenPerime({ code: "over_request_rate_limit", status: 429 }),
+    ).toBe(false);
+    expect(refreshTokenPerime(null)).toBe(false);
+    expect(refreshTokenPerime(undefined)).toBe(false);
   });
 });
