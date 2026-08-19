@@ -30,6 +30,7 @@ import {
 import {
   VueParEquipement,
   type EtatMois,
+  type GroupeEquipement,
   type LigneEquipement,
   type OccurrenceEquipement,
 } from "@/components/calendrier/VueParEquipement";
@@ -492,6 +493,40 @@ export default async function CalendrierPage({
     })
     .sort((a, b) => b.enRetard - a.enRetard || a.libelle.localeCompare(b.libelle));
 
+  // Les appareils se lisent par catégorie : six extincteurs dispersés
+  // dans une liste triée par retard, c'est six fois la même question
+  // posée à six endroits, alors qu'on les traite ensemble — un seul
+  // prestataire, une seule visite. Le groupe porte donc le solde de la
+  // catégorie, et l'ordre met devant celle qui coûte le plus.
+  const groupesEquipement: GroupeEquipement[] = [
+    ...lignesEquipement
+      .reduce((acc, l) => {
+        const g = acc.get(l.categorie) ?? {
+          categorie: l.categorie,
+          lignes: [],
+          enRetard: 0,
+          proche: 0,
+          aVenir: 0,
+          faite: 0,
+          aPlanifier: 0,
+        };
+        g.lignes.push(l);
+        g.enRetard += l.enRetard;
+        g.proche += l.proche;
+        g.aVenir += l.aVenir;
+        g.faite += l.faite;
+        g.aPlanifier += l.aPlanifier;
+        acc.set(l.categorie, g);
+        return acc;
+      }, new Map<string, GroupeEquipement>())
+      .values(),
+  ].sort(
+    (a, b) =>
+      b.enRetard - a.enRetard ||
+      b.proche - a.proche ||
+      a.categorie.localeCompare(b.categorie),
+  );
+
   // Les équipements déclarés qui ne portent aucune occurrence : ils ne
   // font pas de ligne, mais leur nombre se dit.
   const sansEcheance = Math.max(
@@ -726,7 +761,7 @@ export default async function CalendrierPage({
                 <VueParEquipement
                   annee={anneeCourante}
                   moisCourant={composantesCiviles(aujourdhui).mois}
-                  lignes={lignesEquipement}
+                  groupes={groupesEquipement}
                   etablissementId={id}
                   sansEquipement={sansEquipement}
                   sansEcheance={sansEcheance}

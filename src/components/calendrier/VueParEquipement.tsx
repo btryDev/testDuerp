@@ -22,10 +22,23 @@
 // l'appareil, à sa place. Renvoyer vers la vue par mois ferait perdre
 // l'appareil qu'on était en train de regarder — or la question posée
 // ici, c'est « et celui-là, qu'est-ce qu'il me demande en août ? ».
+//
+// Deux regroupements, deux niveaux :
+//
+//   - les appareils sont **groupés par catégorie**. Six extincteurs
+//     dispersés dans une liste triée par retard, c'est six fois la même
+//     question posée à six endroits : on les traite ensemble ou pas du
+//     tout. La catégorie quitte donc la carte (elle titre le groupe) et
+//     le nom de l'appareil reste seul à porter la carte ;
+//   - une carte a deux états. **Repliée** — le défaut — elle tient son
+//     nom, sa prochaine échéance et sa règle : de quoi parcourir un parc
+//     de treize appareils d'un écran. **Ouverte**, elle ajoute les mois
+//     nommés, les compteurs et le tiroir du mois visé. La règle reste
+//     visible dans les deux : c'est elle qu'on est venu lire.
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import type { StatutVerification } from "@prisma/client";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
 import { MOIS_FR, MOIS_FR_COURT } from "@/lib/calendrier/labels";
@@ -38,6 +51,17 @@ import {
 
 /** État d'un mois pour un équipement — le plus urgent qu'il porte. */
 export type EtatMois = EtatEcheance | null;
+
+export type GroupeEquipement = {
+  /** Libellé de la catégorie — « Extincteurs », « Ventilation (VMC) »… */
+  categorie: string;
+  lignes: LigneEquipement[];
+  enRetard: number;
+  proche: number;
+  aVenir: number;
+  faite: number;
+  aPlanifier: number;
+};
 
 export type LigneEquipement = {
   id: string;
@@ -77,22 +101,22 @@ export type OccurrenceEquipement = {
 export function VueParEquipement({
   annee,
   moisCourant,
-  lignes,
+  groupes,
   etablissementId,
   sansEquipement,
   sansEcheance,
 }: {
   annee: number;
-  /** Mois civil courant, de 1 à 12 — le mois déplié d'emblée. */
+  /** Mois civil courant, de 1 à 12 — celui qu'une carte ouvre en premier. */
   moisCourant: number;
-  lignes: LigneEquipement[];
+  groupes: GroupeEquipement[];
   etablissementId: string;
   /** Échéances qui ne tiennent à aucun équipement. */
   sansEquipement: number;
   /** Équipements déclarés qui n'ont aucune échéance cette année. */
   sansEcheance: number;
 }) {
-  if (lignes.length === 0) {
+  if (groupes.length === 0) {
     return (
       <section className="rounded-[30px] bg-[color:var(--board-slate-pale)] px-6 py-7">
         <p className="m-0 text-[15px] font-semibold tracking-[-0.015em] text-[color:var(--board-ink)]">
@@ -107,24 +131,46 @@ export function VueParEquipement({
   }
 
   return (
-    // Deux colonnes sur grand écran : treize appareils en pile font du
-    // scroll pour rien, alors qu'une carte n'a pas besoin de mille pixels.
-    // `items-start` pour qu'une carte au tiroir ouvert n'étire pas sa
-    // voisine restée fermée.
-    <div className="grid grid-cols-1 items-start gap-x-5 gap-y-8 xl:grid-cols-2">
-      {lignes.map((l) => (
-        <CarteEquipement
-          key={l.id}
-          ligne={l}
-          moisCourant={moisCourant}
-          etablissementId={etablissementId}
-        />
+    <div className="flex flex-col gap-9">
+      {groupes.map((g) => (
+        <section key={g.categorie}>
+          {/* Le titre du groupe porte la catégorie et son solde : c'est à
+              ce niveau qu'on décide d'appeler un prestataire, pas
+              appareil par appareil. */}
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 border-b border-[color:var(--board-slate-line)] pb-3">
+            <h3 className="board-titre m-0 text-[19px]">{g.categorie}</h3>
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
+              {g.lignes.length} appareil{g.lignes.length > 1 ? "s" : ""}
+            </span>
+            <span className="ml-auto flex flex-wrap gap-2">
+              <Compte n={g.enRetard} libelle="dépassée" registre="enRetard" />
+              <Compte n={g.proche} libelle="sous 30 j" registre="proche" />
+              <Compte n={g.aVenir} libelle="à venir" registre="aVenir" />
+              <Compte n={g.faite} libelle="faite" registre="faite" />
+              <Compte n={g.aPlanifier} libelle="à planifier" registre={null} />
+            </span>
+          </div>
+
+          {/* Deux colonnes sur grand écran : une carte n'a pas besoin de
+              mille pixels. `items-start` pour qu'une carte ouverte n'étire
+              pas sa voisine restée repliée. */}
+          <div className="mt-4 grid grid-cols-1 items-start gap-x-5 gap-y-4 xl:grid-cols-2">
+            {g.lignes.map((l) => (
+              <CarteEquipement
+                key={l.id}
+                ligne={l}
+                moisCourant={moisCourant}
+                etablissementId={etablissementId}
+              />
+            ))}
+          </div>
+        </section>
       ))}
 
       {/* Ce que la lecture par appareil laisse forcément dehors. Le taire
           ferait croire que le parc porte toute la conformité. */}
       {sansEquipement > 0 || sansEcheance > 0 ? (
-        <p className="m-0 mt-1 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)] xl:col-span-2">
+        <p className="m-0 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
           {sansEcheance > 0
             ? `${sansEcheance} équipement${sansEcheance > 1 ? "s" : ""} déclaré${sansEcheance > 1 ? "s" : ""} sans aucune échéance en ${annee}.`
             : ""}
@@ -146,17 +192,29 @@ function CarteEquipement({
   moisCourant: number;
   etablissementId: string;
 }) {
+  // La carte arrive repliée : sur un parc de treize appareils, treize
+  // cartes ouvertes font une page qu'on ne parcourt plus, on la subit.
+  const [ouverte, setOuverte] = useState(false);
+
   // Mois déplié, de 1 à 12. Un seul à la fois : la carte doit rester une
   // ligne de lecture, pas un second calendrier.
   //
-  // À l'arrivée, c'est le mois courant qui s'ouvre — la question qu'on se
-  // pose devant un appareil, c'est d'abord « et ce mois-ci ? ». Mais
+  // Le mois courant est le mois visé par défaut — la question qu'on se
+  // pose devant un appareil, c'est d'abord « et ce mois-ci ? » — mais
   // seulement s'il porte quelque chose : un mois vide ouvrirait un tiroir
   // sur rien, et la case surlignée annoncerait un contenu absent.
-  const [moisOuvert, setMoisOuvert] = useState<number | null>(
-    l.occurrences.some((o) => o.mois === moisCourant) ? moisCourant : null,
-  );
+  const moisParDefaut = l.occurrences.some((o) => o.mois === moisCourant)
+    ? moisCourant
+    : null;
+  const [moisOuvert, setMoisOuvert] = useState<number | null>(moisParDefaut);
   const details = l.occurrences.filter((o) => o.mois === moisOuvert);
+
+  // Viser une case déplie la carte : le geste dit « montre-moi ce mois »,
+  // il serait absurde qu'il faille l'ouvrir d'abord.
+  const viserMois = (mois: number) => {
+    setMoisOuvert((courant) => (courant === mois && ouverte ? null : mois));
+    setOuverte(true);
+  };
 
   return (
     // La carte se lit en deux zones : l'identité de l'appareil sur un
@@ -167,13 +225,26 @@ function CarteEquipement({
       {/* En se resserrant, l'en-tête s'empile : le nom, puis l'échéance
           et la porte sur une ligne. C'est la disposition en colonne, sans
           second composant à tenir. */}
-      <header className="flex flex-col gap-4 border-b border-[color:var(--board-blue-soft)] bg-[color:var(--board-blue-pale)] px-7 py-[18px] @md:flex-row @md:items-center @md:justify-between @md:gap-6">
-        <div className="min-w-0">
-          <p className="m-0 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-[color:var(--board-blue-ink)]">
-            {l.categorie}
-          </p>
-          <h3 className="board-titre m-0 mt-[7px] text-[21px]">{l.libelle}</h3>
-        </div>
+      {/* L'en-tête EST la commande : tout le bandeau déplie, la porte
+          vers la fiche de l'appareil reste un lien à part. */}
+      <header className="flex flex-col gap-3 border-b border-[color:var(--board-blue-soft)] bg-[color:var(--board-blue-pale)] px-6 py-4 @md:flex-row @md:items-center @md:gap-5">
+        <button
+          type="button"
+          onClick={() => setOuverte((o) => !o)}
+          aria-expanded={ouverte}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <ChevronDown
+            aria-hidden
+            className={
+              "size-4 flex-none text-[color:var(--board-blue-ink)] transition-transform " +
+              (ouverte ? "rotate-180" : "")
+            }
+          />
+          <h4 className="board-titre m-0 min-w-0 truncate text-[19px]">
+            {l.libelle}
+          </h4>
+        </button>
 
         <div className="flex flex-none items-center justify-between gap-4 @md:justify-end">
           <div className="@md:text-right">
@@ -193,7 +264,7 @@ function CarteEquipement({
           </div>
           <Link
             href={`/etablissements/${etablissementId}/equipements/${l.id}/modifier`}
-            aria-label={`Ouvrir ${l.libelle}`}
+            aria-label={`Ouvrir la fiche de ${l.libelle}`}
             className="flex size-[34px] flex-none items-center justify-center rounded-full bg-[color:var(--board-card)] text-[color:var(--board-ink)] shadow-[inset_0_0_0_1px_rgba(10,10,10,.14)] transition-colors hover:bg-[color:var(--board-slate-pale)]"
           >
             <ChevronRight className="size-4" />
@@ -221,7 +292,7 @@ function CarteEquipement({
                     ? "aucune échéance"
                     : `${nb} échéance${nb > 1 ? "s" : ""}`
                 }`}
-                onClick={() => setMoisOuvert(ouvert ? null : mois)}
+                onClick={() => viserMois(mois)}
                 className={
                   "h-[18px] rounded-[5px] transition-shadow " +
                   (nb === 0
@@ -241,73 +312,80 @@ function CarteEquipement({
           })}
         </div>
 
-        <div className="mt-2 grid grid-cols-12 gap-1.5 border-t border-[color:var(--board-slate-line)] pt-2">
-          {MOIS_FR_COURT.map((m, i) => (
-            <span
-              key={m}
-              className={
-                "text-center font-mono text-[10px] uppercase tracking-[0.06em] " +
-                (moisOuvert === i + 1
-                  ? "font-semibold text-[color:var(--board-ink)]"
-                  : l.mois[i]
-                    ? "text-[color:var(--board-slate-ink)]"
-                    : "text-[color:var(--board-slate)]")
-              }
-            >
-              {m.slice(0, 1)}
-            </span>
-          ))}
-        </div>
-
-        <div className="mt-[22px] flex flex-wrap gap-2">
-          <Compte n={l.enRetard} libelle="dépassée" registre="enRetard" />
-          <Compte n={l.proche} libelle="sous 30 j" registre="proche" />
-          <Compte n={l.aVenir} libelle="à venir" registre="aVenir" />
-          <Compte n={l.faite} libelle="faite" registre="faite" />
-          <Compte n={l.aPlanifier} libelle="à planifier" registre={null} />
-        </div>
-
-        {/* Le mois déplié, à sa place : sous l'appareil, pas ailleurs. */}
-        {moisOuvert && details.length > 0 ? (
-          <div className="mt-[22px] rounded-[22px] bg-[color:var(--board-slate-pale)] px-4 py-4">
-            <p className="m-0 mb-2 px-1 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]">
-              {MOIS_FR[moisOuvert - 1]} · {details.length} échéance
-              {details.length > 1 ? "s" : ""}
-            </p>
-            <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
-              {details.map((o) => (
-                <li key={o.id}>
-                  <Link
-                    href={o.href}
-                    className="flex items-center gap-3.5 rounded-[16px] bg-[color:var(--board-card)] px-3.5 py-2.5 transition-opacity hover:opacity-85"
-                  >
-                    <span
-                      className="flex size-[42px] flex-none flex-col items-center justify-center rounded-[14px]"
-                      style={{
-                        background: CHAMP_ETAT[o.etat],
-                      }}
-                    >
-                      <span className="board-titre text-[15px] leading-none tabular-nums">
-                        {o.jour}
-                      </span>
-                      <span className="mt-0.5 font-mono text-[8.5px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate-ink)]">
-                        {o.moisCourt}
-                      </span>
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="line-clamp-2 text-[13.5px] font-semibold leading-[1.35] tracking-[-0.01em] text-[color:var(--board-ink)]">
-                        {o.titre}
-                      </span>
-                      <span className="mt-0.5 block truncate text-[12px] text-[color:var(--board-slate-mid)]">
-                        {o.meta}
-                      </span>
-                    </span>
-                    <BadgeStatut statut={o.statut} />
-                  </Link>
-                </li>
+        {/* Repliée, la carte garde sa règle — c'est elle qu'on est venu
+            lire — mais se passe du nom des mois, des compteurs et du
+            tiroir. Ouverte, elle rend le tout. */}
+        {ouverte ? (
+          <>
+            <div className="mt-2 grid grid-cols-12 gap-1.5 border-t border-[color:var(--board-slate-line)] pt-2">
+              {MOIS_FR_COURT.map((m, i) => (
+                <span
+                  key={m}
+                  className={
+                    "text-center font-mono text-[10px] uppercase tracking-[0.06em] " +
+                    (moisOuvert === i + 1
+                      ? "font-semibold text-[color:var(--board-ink)]"
+                      : l.mois[i]
+                        ? "text-[color:var(--board-slate-ink)]"
+                        : "text-[color:var(--board-slate)]")
+                  }
+                >
+                  {m.slice(0, 1)}
+                </span>
               ))}
-            </ul>
-          </div>
+            </div>
+
+            <div className="mt-[22px] flex flex-wrap gap-2">
+              <Compte n={l.enRetard} libelle="dépassée" registre="enRetard" />
+              <Compte n={l.proche} libelle="sous 30 j" registre="proche" />
+              <Compte n={l.aVenir} libelle="à venir" registre="aVenir" />
+              <Compte n={l.faite} libelle="faite" registre="faite" />
+              <Compte n={l.aPlanifier} libelle="à planifier" registre={null} />
+            </div>
+
+            {/* Le mois déplié, à sa place : sous l'appareil, pas ailleurs. */}
+            {moisOuvert && details.length > 0 ? (
+              <div className="mt-[22px] rounded-[22px] bg-[color:var(--board-slate-pale)] px-4 py-4">
+                <p className="m-0 mb-2 px-1 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]">
+                  {MOIS_FR[moisOuvert - 1]} · {details.length} échéance
+                  {details.length > 1 ? "s" : ""}
+                </p>
+                <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+                  {details.map((o) => (
+                    <li key={o.id}>
+                      <Link
+                        href={o.href}
+                        className="flex items-center gap-3.5 rounded-[16px] bg-[color:var(--board-card)] px-3.5 py-2.5 transition-opacity hover:opacity-85"
+                      >
+                        <span
+                          className="flex size-[42px] flex-none flex-col items-center justify-center rounded-[14px]"
+                          style={{
+                            background: CHAMP_ETAT[o.etat],
+                          }}
+                        >
+                          <span className="board-titre text-[15px] leading-none tabular-nums">
+                            {o.jour}
+                          </span>
+                          <span className="mt-0.5 font-mono text-[8.5px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate-ink)]">
+                            {o.moisCourt}
+                          </span>
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="line-clamp-2 text-[13.5px] font-semibold leading-[1.35] tracking-[-0.01em] text-[color:var(--board-ink)]">
+                            {o.titre}
+                          </span>
+                          <span className="mt-0.5 block truncate text-[12px] text-[color:var(--board-slate-mid)]">
+                            {o.meta}
+                          </span>
+                        </span>
+                        <BadgeStatut statut={o.statut} />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </>
         ) : null}
       </div>
     </article>
