@@ -351,14 +351,20 @@ export default async function CalendrierPage({
         : classerDate(l.date, aujourdhui);
     }
     const c = classerVerification(l.v, aujourdhui);
-    // « À planifier » est écarté en amont (cf. `datable`) ; si la ligne
-    // arrive quand même ici, sa date de génération se classe comme une
-    // date ordinaire plutôt que d'inventer un cinquième état de barre.
+    // « À planifier » (donc à date future — le classifieur a déjà rangé
+    // les dates passées en retard) est écarté des barres par `datable` ;
+    // si la ligne arrive quand même ici, sa date de génération se classe
+    // comme une date ordinaire plutôt que d'inventer un état de barre.
     return c === "aPlanifier" ? classerDate(l.date, aujourdhui) : c;
   };
 
+  // « Datable » : mérite une place sur les barres. Une `a_planifier` qui
+  // attend son rendez-vous n'en a pas (sa date est une date de
+  // génération) ; une `a_planifier` en retard en a une — le mois où elle
+  // est devenue due — comme sur la frise du tableau de bord.
   const datable = (l: LigneMois) =>
-    l.genre !== "verif" || l.v.statut !== "a_planifier";
+    l.genre !== "verif" ||
+    classerVerification(l.v, aujourdhui) !== "aPlanifier";
 
   const moisRegle: MoisRegle[] = Array.from({ length: 12 }, (_, i) => {
     const cle = `${anneeCourante}-${String(i + 1).padStart(2, "0")}`;
@@ -426,12 +432,12 @@ export default async function CalendrierPage({
       };
       parEquipement.set(cle, e);
     }
-    if (v.statut === "a_planifier") {
+    const classe = classerVerification(v, aujourdhui);
+    if (classe === "aPlanifier") {
       e.aPlanifier += 1;
       continue;
     }
-    const ligne = { genre: "verif" as const, date: v.datePrevue, v };
-    const etat = etatDeLaLigne(ligne);
+    const etat = classe;
     // `dates` sert la « prochaine échéance », qui n'est bornée par aucune
     // année : une dette de l'an dernier compte toujours.
     e.dates.push({ date: v.datePrevue, etat });
@@ -921,7 +927,9 @@ export default async function CalendrierPage({
                 // Ce que la règle ne place pas : la carte le dit, sans
                 // quoi son total et celui de l'instrument se contredisent.
                 nbAPlanifier: liste.filter(
-                  (l) => l.genre === "verif" && l.v.statut === "a_planifier",
+                  (l) =>
+                    l.genre === "verif" &&
+                    classerVerification(l.v, aujourdhui) === "aPlanifier",
                 ).length,
                 contenu: (
                   // La clé n'est pas décorative : le contenu du mois est
@@ -958,11 +966,7 @@ export default async function CalendrierPage({
                                 (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : "")
                               }
                               pastille={<BadgeStatut statut={v.statut} />}
-                              registre={
-                                v.statut === "a_planifier"
-                                  ? "aPlanifier"
-                                  : etatDeLaLigne(ligne)
-                              }
+                              registre={classerVerification(v, aujourdhui)}
                             />
                           </li>
                         );

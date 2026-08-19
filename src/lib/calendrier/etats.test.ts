@@ -40,12 +40,23 @@ describe("classerVerification", () => {
     expect(classerVerification(planifiee(jours(200)), NOW)).toBe("lointain");
   });
 
-  it("« à planifier » n'est jamais classé par sa date", () => {
-    // Sa date est une date de génération, pas un rendez-vous : passée ou
-    // future, elle ne doit produire ni retard ni proche.
+  it("« à planifier » à date passée est un retard — doctrine de retard.ts", () => {
+    // Le contrôle n'a pas été fait dans les temps, rendez-vous pris ou
+    // non : c'est la convention de `estVerificationEnRetard`, celle que
+    // comptent l'en-tête, le PDF et le serveur MCP. La page calendrier a
+    // contredit les trois pendant une journée — ce test est là pour que
+    // ça ne revienne pas.
     expect(
       classerVerification(
         { statut: "a_planifier", datePrevue: jours(-40), dateRealisee: null },
+        NOW,
+      ),
+    ).toBe("enRetard");
+    // À date future, en revanche, elle attend son rendez-vous : sa date
+    // de génération ne la classe ni proche ni lointaine.
+    expect(
+      classerVerification(
+        { statut: "a_planifier", datePrevue: jours(10), dateRealisee: null },
         NOW,
       ),
     ).toBe("aPlanifier");

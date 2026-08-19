@@ -91,19 +91,25 @@ export function classerDate(
  * prédicats de `lib/dates/retard` : utilisable côté client et en test,
  * sans `@prisma/client`.
  *
- * L'ordre des tests est celui du sens : « à planifier » avant tout (sa
- * date est une date de génération, pas un rendez-vous — la classer par
- * date mentirait), puis le réalisé (une vérification faite n'est jamais
- * en retard), puis le retard, puis la fenêtre.
+ * L'ordre des tests est celui de `retard.ts`, et il n'est pas négociable :
+ * le réalisé d'abord (une vérification faite n'est jamais en retard — la
+ * preuve prime sur l'état), puis le retard, puis seulement « à
+ * planifier ». Une `a_planifier` dont la date est passée est donc **en
+ * retard**, pas « à planifier » : le contrôle n'a pas été fait dans les
+ * temps, rendez-vous pris ou non, et prétendre le contraire minorerait la
+ * non-conformité. C'est la convention de `estVerificationEnRetard`, de
+ * l'en-tête, du PDF et du serveur MCP — une première version de ce
+ * classifieur court-circuitait `a_planifier` avant le retard, et la page
+ * calendrier contredisait les trois autres surfaces.
  */
 export function classerVerification(
   v: { statut: string; datePrevue: Date; dateRealisee: Date | null },
   now: Date,
 ): RegistreLigne {
-  if (v.statut === "a_planifier") return "aPlanifier";
   if (v.dateRealisee !== null || v.statut.startsWith("realisee")) {
     return "faite";
   }
   if (estVerificationEnRetard(v, now)) return "enRetard";
+  if (v.statut === "a_planifier") return "aPlanifier";
   return classerDate(v.datePrevue, now);
 }
