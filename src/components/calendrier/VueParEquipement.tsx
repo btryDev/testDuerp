@@ -155,153 +155,157 @@ function CarteEquipement({
   const details = l.occurrences.filter((o) => o.mois === moisOuvert);
 
   return (
-        <article
-          className="rounded-[30px] bg-[color:var(--board-card)] px-[26px] py-[22px] shadow-[0_1px_2px_rgba(13,18,36,.04),0_12px_32px_-14px_rgba(13,18,36,.10)] ring-1 ring-[color:rgba(13,18,36,.06)]"
-        >
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-6">
-            <div className="min-w-0 lg:w-[290px] lg:flex-none">
-              <p className="m-0 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-[color:var(--board-slate-soft)]">
-                {l.categorie}
-              </p>
-              <h3 className="board-titre m-0 mt-1.5 text-[18px]">
-                {l.libelle}
-              </h3>
-            </div>
+    // La carte se lit en deux zones : l'identité de l'appareil sur un
+    // champ ardoise, la mesure sur le blanc. Le nom y prend sa propre
+    // ligne — partagée avec la règle il perdait à chaque fois, alors
+    // qu'il est ce qu'on cherche quand on parcourt douze cartes.
+    <article className="overflow-hidden rounded-[30px] bg-[color:var(--board-card)] shadow-[0_1px_2px_rgba(13,18,36,.04),0_12px_32px_-14px_rgba(13,18,36,.10)] ring-1 ring-[color:rgba(13,18,36,.06)]">
+      {/* En se resserrant, l'en-tête s'empile : le nom, puis l'échéance
+          et la porte sur une ligne. C'est la disposition en colonne, sans
+          second composant à tenir. */}
+      <header className="flex flex-col gap-4 border-b border-[color:var(--board-blue-soft)] bg-[color:var(--board-blue-pale)] px-7 py-[18px] sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <div className="min-w-0">
+          <p className="m-0 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-[color:var(--board-blue-ink)]">
+            {l.categorie}
+          </p>
+          <h3 className="board-titre m-0 mt-[7px] text-[21px]">{l.libelle}</h3>
+        </div>
 
-            {/* La réduction de la règle : une case par mois. */}
-            <div className="min-w-0 flex-1">
-              <div className="grid grid-cols-12 gap-1">
-                {l.mois.map((etat, i) => {
-                  const mois = i + 1;
-                  const nb = l.occurrences.filter(
-                    (o) => o.mois === mois,
-                  ).length;
-                  const ouvert = moisOuvert === mois;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      disabled={nb === 0}
-                      aria-expanded={nb > 0 ? ouvert : undefined}
-                      aria-label={`${MOIS_FR[i]} — ${
-                        nb === 0
-                          ? "aucune échéance"
-                          : `${nb} échéance${nb > 1 ? "s" : ""}`
-                      }`}
-                      onClick={() => setMoisOuvert(ouvert ? null : mois)}
-                      className={
-                        "h-[18px] rounded-[5px] transition-shadow " +
-                        (nb === 0
-                          ? "cursor-default"
-                          : "cursor-pointer hover:shadow-[0_0_0_2px_var(--board-card),0_0_0_3px_rgba(10,10,10,.2)]") +
-                        (ouvert
-                          ? " shadow-[0_0_0_2px_var(--board-card),0_0_0_4px_var(--board-ink)]"
-                          : "")
-                      }
-                      style={{
-                        background: etat
-                          ? CHAMP_ETAT[etat]
-                          : "var(--board-slate-pale)",
-                      }}
-                    />
-                  );
-                })}
-              </div>
-              <div className="mt-1.5 grid grid-cols-12 gap-1 border-t border-[color:var(--board-slate-line)] pt-1.5">
-                {MOIS_FR_COURT.map((m, i) => (
-                  <span
-                    key={m}
-                    className={
-                      "text-center font-mono text-[9.5px] uppercase tracking-[0.06em] " +
-                      (moisOuvert === i + 1
-                        ? "font-semibold text-[color:var(--board-ink)]"
-                        : l.mois[i]
-                          ? "text-[color:var(--board-slate-ink)]"
-                          : "text-[color:var(--board-slate)]")
-                    }
+        <div className="flex flex-none items-center justify-between gap-4 sm:justify-end">
+          <div className="sm:text-right">
+            <p className="m-0 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-blue-ink)]">
+              Prochaine
+            </p>
+            <p
+              className="m-0 mt-1 text-[14px] font-semibold"
+              style={{
+                color: l.prochaine?.etat
+                  ? ENCRE_ETAT[l.prochaine.etat]
+                  : "var(--board-slate-ink)",
+              }}
+            >
+              {l.prochaine ? l.prochaine.libelle : "Rien de prévu"}
+            </p>
+          </div>
+          <Link
+            href={`/etablissements/${etablissementId}/equipements/${l.id}/modifier`}
+            aria-label={`Ouvrir ${l.libelle}`}
+            className="flex size-[34px] flex-none items-center justify-center rounded-full bg-[color:var(--board-card)] text-[color:var(--board-ink)] shadow-[inset_0_0_0_1px_rgba(10,10,10,.14)] transition-colors hover:bg-[color:var(--board-slate-pale)]"
+          >
+            <ChevronRight className="size-4" />
+          </Link>
+        </div>
+      </header>
+
+      <div className="px-7 pb-6 pt-[22px]">
+        {/* La réduction de la règle : une case par mois, sur toute la
+            largeur de la carte — douze cases coincées dans 600 px se
+            lisaient mal. */}
+        <div className="grid grid-cols-12 gap-1.5">
+          {l.mois.map((etat, i) => {
+            const mois = i + 1;
+            const nb = l.occurrences.filter((o) => o.mois === mois).length;
+            const ouvert = moisOuvert === mois;
+            return (
+              <button
+                key={i}
+                type="button"
+                disabled={nb === 0}
+                aria-expanded={nb > 0 ? ouvert : undefined}
+                aria-label={`${MOIS_FR[i]} — ${
+                  nb === 0
+                    ? "aucune échéance"
+                    : `${nb} échéance${nb > 1 ? "s" : ""}`
+                }`}
+                onClick={() => setMoisOuvert(ouvert ? null : mois)}
+                className={
+                  "h-[18px] rounded-[5px] transition-shadow " +
+                  (nb === 0
+                    ? "cursor-default"
+                    : "cursor-pointer hover:shadow-[0_0_0_2px_var(--board-card),0_0_0_3px_rgba(10,10,10,.2)]") +
+                  (ouvert
+                    ? " shadow-[0_0_0_2px_var(--board-card),0_0_0_4px_var(--board-ink)]"
+                    : "")
+                }
+                style={{
+                  background: etat
+                    ? CHAMP_ETAT[etat]
+                    : "var(--board-slate-pale)",
+                }}
+              />
+            );
+          })}
+        </div>
+
+        <div className="mt-2 grid grid-cols-12 gap-1.5 border-t border-[color:var(--board-slate-line)] pt-2">
+          {MOIS_FR_COURT.map((m, i) => (
+            <span
+              key={m}
+              className={
+                "text-center font-mono text-[10px] uppercase tracking-[0.06em] " +
+                (moisOuvert === i + 1
+                  ? "font-semibold text-[color:var(--board-ink)]"
+                  : l.mois[i]
+                    ? "text-[color:var(--board-slate-ink)]"
+                    : "text-[color:var(--board-slate)]")
+              }
+            >
+              {m.slice(0, 1)}
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-[22px] flex flex-wrap gap-2">
+          <Compte n={l.enRetard} libelle="dépassée" registre="enRetard" />
+          <Compte n={l.proche} libelle="sous 30 j" registre="proche" />
+          <Compte n={l.aVenir} libelle="à venir" registre="aVenir" />
+          <Compte n={l.faite} libelle="faite" registre="faite" />
+          <Compte n={l.aPlanifier} libelle="à planifier" registre={null} />
+        </div>
+
+        {/* Le mois déplié, à sa place : sous l'appareil, pas ailleurs. */}
+        {moisOuvert && details.length > 0 ? (
+          <div className="mt-[22px] rounded-[22px] bg-[color:var(--board-slate-pale)] px-4 py-4">
+            <p className="m-0 mb-2 px-1 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]">
+              {MOIS_FR[moisOuvert - 1]} · {details.length} échéance
+              {details.length > 1 ? "s" : ""}
+            </p>
+            <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+              {details.map((o) => (
+                <li key={o.id}>
+                  <Link
+                    href={o.href}
+                    className="flex items-center gap-3.5 rounded-[16px] bg-[color:var(--board-card)] px-3.5 py-2.5 transition-opacity hover:opacity-85"
                   >
-                    {m.slice(0, 1)}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 lg:w-[230px] lg:flex-none lg:justify-end">
-              <div className="text-left lg:text-right">
-                <p className="m-0 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-soft)]">
-                  Prochaine
-                </p>
-                <p
-                  className="m-0 mt-1 text-[13.5px] font-semibold"
-                  style={{
-                    color: l.prochaine?.etat
-                      ? ENCRE_ETAT[l.prochaine.etat]
-                      : "var(--board-slate-ink)",
-                  }}
-                >
-                  {l.prochaine ? l.prochaine.libelle : "Rien de prévu"}
-                </p>
-              </div>
-              <Link
-                href={`/etablissements/${etablissementId}/equipements/${l.id}/modifier`}
-                aria-label={`Ouvrir ${l.libelle}`}
-                className="flex size-[34px] flex-none items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] transition-colors hover:bg-[color:var(--board-blue-pale)]"
-              >
-                <ChevronRight className="size-4" />
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2 border-t border-[color:var(--board-slate-line)] pt-3.5">
-            <Compte n={l.enRetard} libelle="dépassée" registre="enRetard" />
-            <Compte n={l.proche} libelle="sous 30 j" registre="proche" />
-            <Compte n={l.aVenir} libelle="à venir" registre="aVenir" />
-            <Compte n={l.faite} libelle="faite" registre="faite" />
-            <Compte n={l.aPlanifier} libelle="à planifier" registre={null} />
-          </div>
-
-          {/* Le mois déplié, à sa place : sous l'appareil, pas ailleurs. */}
-          {moisOuvert && details.length > 0 ? (
-            <div className="mt-4 rounded-[22px] bg-[color:var(--board-slate-pale)] px-4 py-3.5">
-              <p className="m-0 mb-2 px-1 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]">
-                {MOIS_FR[moisOuvert - 1]} · {details.length} échéance
-                {details.length > 1 ? "s" : ""}
-              </p>
-              <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
-                {details.map((o) => (
-                  <li key={o.id}>
-                    <Link
-                      href={o.href}
-                      className="flex items-center gap-3.5 rounded-[16px] bg-[color:var(--board-card)] px-3.5 py-2.5 transition-opacity hover:opacity-85"
+                    <span
+                      className="flex size-[42px] flex-none flex-col items-center justify-center rounded-[14px]"
+                      style={{
+                        background: CHAMP_ETAT[o.etat],
+                      }}
                     >
-                      <span
-                        className="flex size-[42px] flex-none flex-col items-center justify-center rounded-[14px]"
-                        style={{
-                          background: CHAMP_ETAT[o.etat],
-                        }}
-                      >
-                        <span className="board-titre text-[15px] leading-none tabular-nums">
-                          {o.jour}
-                        </span>
-                        <span className="mt-0.5 font-mono text-[8.5px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate-ink)]">
-                          {o.moisCourt}
-                        </span>
+                      <span className="board-titre text-[15px] leading-none tabular-nums">
+                        {o.jour}
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[13.5px] font-semibold tracking-[-0.01em] text-[color:var(--board-ink)]">
-                          {o.titre}
-                        </span>
-                        <span className="mt-0.5 block truncate text-[12px] text-[color:var(--board-slate-mid)]">
-                          {o.meta}
-                        </span>
+                      <span className="mt-0.5 font-mono text-[8.5px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate-ink)]">
+                        {o.moisCourt}
                       </span>
-                      <BadgeStatut statut={o.statut} />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13.5px] font-semibold tracking-[-0.01em] text-[color:var(--board-ink)]">
+                        {o.titre}
+                      </span>
+                      <span className="mt-0.5 block truncate text-[12px] text-[color:var(--board-slate-mid)]">
+                        {o.meta}
+                      </span>
+                    </span>
+                    <BadgeStatut statut={o.statut} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
     </article>
   );
 }
