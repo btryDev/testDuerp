@@ -712,6 +712,7 @@ export default async function CalendrierPage({
               parEquipement={
                 <VueParEquipement
                   annee={anneeCourante}
+                  moisCourant={composantesCiviles(aujourdhui).mois}
                   lignes={lignesEquipement}
                   etablissementId={id}
                   sansEquipement={sansEquipement}

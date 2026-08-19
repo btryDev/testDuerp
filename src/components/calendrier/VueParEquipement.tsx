@@ -76,12 +76,15 @@ export type OccurrenceEquipement = {
 
 export function VueParEquipement({
   annee,
+  moisCourant,
   lignes,
   etablissementId,
   sansEquipement,
   sansEcheance,
 }: {
   annee: number;
+  /** Mois civil courant, de 1 à 12 — le mois déplié d'emblée. */
+  moisCourant: number;
   lignes: LigneEquipement[];
   etablissementId: string;
   /** Échéances qui ne tiennent à aucun équipement. */
@@ -106,7 +109,12 @@ export function VueParEquipement({
   return (
     <div className="flex flex-col gap-3.5">
       {lignes.map((l) => (
-        <CarteEquipement key={l.id} ligne={l} etablissementId={etablissementId} />
+        <CarteEquipement
+          key={l.id}
+          ligne={l}
+          moisCourant={moisCourant}
+          etablissementId={etablissementId}
+        />
       ))}
 
       {/* Ce que la lecture par appareil laisse forcément dehors. Le taire
@@ -127,14 +135,23 @@ export function VueParEquipement({
 
 function CarteEquipement({
   ligne: l,
+  moisCourant,
   etablissementId,
 }: {
   ligne: LigneEquipement;
+  moisCourant: number;
   etablissementId: string;
 }) {
   // Mois déplié, de 1 à 12. Un seul à la fois : la carte doit rester une
   // ligne de lecture, pas un second calendrier.
-  const [moisOuvert, setMoisOuvert] = useState<number | null>(null);
+  //
+  // À l'arrivée, c'est le mois courant qui s'ouvre — la question qu'on se
+  // pose devant un appareil, c'est d'abord « et ce mois-ci ? ». Mais
+  // seulement s'il porte quelque chose : un mois vide ouvrirait un tiroir
+  // sur rien, et la case surlignée annoncerait un contenu absent.
+  const [moisOuvert, setMoisOuvert] = useState<number | null>(
+    l.occurrences.some((o) => o.mois === moisCourant) ? moisCourant : null,
+  );
   const details = l.occurrences.filter((o) => o.mois === moisOuvert);
 
   return (
