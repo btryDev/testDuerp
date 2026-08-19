@@ -13,10 +13,12 @@
 // 20 px elle ne dirait rien de fiable ; le compte passe donc en pilules,
 // à droite.
 //
-// Ce que cette vue ne montre pas, et le dit : les échéances qui ne
-// tiennent pas à un équipement (attestations de prestataires, analyses,
-// travaux du plan d'actions). Elles n'ont pas d'appareil auquel se
-// rattacher, et les inventer sous un équipement serait faux.
+// Les échéances qui ne tiennent à aucun appareil — attestations de
+// prestataires, corrections du plan d'actions, analyses — ne sont pas
+// renvoyées ailleurs : elles forment leur propre groupe, où le porteur
+// est la famille et non l'appareil. Les ranger sous un équipement aurait
+// été faux ; les taire aurait fait croire que le parc porte toute la
+// conformité.
 //
 // Une case de mois s'ouvre : le détail se déplie SOUS la carte de
 // l'appareil, à sa place. Renvoyer vers la vue par mois ferait perdre
@@ -57,6 +59,13 @@ export type GroupeEquipement = {
   categorie: string;
   /** Code de la catégorie, pour son picto. */
   categorieCode: string;
+  /**
+   * Ce que compte le groupe, au singulier : « appareil » dans le parc,
+   * « famille » pour les échéances qui n'ont pas d'appareil. Un groupe
+   * qui annoncerait « 2 appareils » pour deux familles de documents
+   * mentirait sur ce qu'il montre.
+   */
+  uniteLigne: string;
   lignes: LigneEquipement[];
   enRetard: number;
   proche: number;
@@ -65,11 +74,20 @@ export type GroupeEquipement = {
   aPlanifier: number;
 };
 
+/**
+ * Un porteur d'échéances. C'est un appareil dans la plupart des cas —
+ * mais une attestation de prestataire ou une correction du plan d'actions
+ * n'en a pas, et elles doivent bien se ranger quelque part : leur porteur
+ * est alors leur famille (« Documents », « Corrections »). Le reste du
+ * composant ne fait pas la différence, et c'est voulu.
+ */
 export type LigneEquipement = {
   id: string;
   libelle: string;
   categorie: string;
   categorieCode: string;
+  /** Fiche du porteur, quand il en a une. */
+  hrefFiche: string | null;
   /** Douze cases, de janvier à décembre de l'année affichée. */
   mois: EtatMois[];
   enRetard: number;
@@ -98,24 +116,20 @@ export type OccurrenceEquipement = {
   titre: string;
   meta: string;
   etat: RegistreLigne;
-  statut: StatutVerification;
+  /** Statut de vérification — absent hors du parc, où il n'existe pas. */
+  statut?: StatutVerification;
 };
 
 export function VueParEquipement({
   annee,
   moisCourant,
   groupes,
-  etablissementId,
-  sansEquipement,
   sansEcheance,
 }: {
   annee: number;
   /** Mois civil courant, de 1 à 12 — celui qu'une carte ouvre en premier. */
   moisCourant: number;
   groupes: GroupeEquipement[];
-  etablissementId: string;
-  /** Échéances qui ne tiennent à aucun équipement. */
-  sansEquipement: number;
   /** Équipements déclarés qui n'ont aucune échéance cette année. */
   sansEcheance: number;
 }) {
@@ -140,7 +154,6 @@ export function VueParEquipement({
           key={g.categorieCode}
           groupe={g}
           moisCourant={moisCourant}
-          etablissementId={etablissementId}
           // Un seul groupe ouvert à l'arrivée : celui qui coûte le plus,
           // puisque l'ordre met le retard devant. Les autres annoncent
           // leur solde depuis leur titre — c'est ce qu'on vient lire en
@@ -151,14 +164,10 @@ export function VueParEquipement({
 
       {/* Ce que la lecture par appareil laisse forcément dehors. Le taire
           ferait croire que le parc porte toute la conformité. */}
-      {sansEquipement > 0 || sansEcheance > 0 ? (
+      {sansEcheance > 0 ? (
         <p className="m-0 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-          {sansEcheance > 0
-            ? `${sansEcheance} équipement${sansEcheance > 1 ? "s" : ""} déclaré${sansEcheance > 1 ? "s" : ""} sans aucune échéance en ${annee}.`
-            : ""}
-          {sansEquipement > 0
-            ? `${sansEcheance > 0 ? " " : ""}${sansEquipement} échéance${sansEquipement > 1 ? "s" : ""} ne tien${sansEquipement > 1 ? "nent" : "t"} à aucun appareil — attestations, analyses, travaux — et n'apparaî${sansEquipement > 1 ? "ssent" : "t"} que dans la vue par mois.`
-            : ""}
+          {sansEcheance} équipement{sansEcheance > 1 ? "s" : ""} déclaré
+          {sansEcheance > 1 ? "s" : ""} sans aucune échéance en {annee}.
         </p>
       ) : null}
     </div>
@@ -168,12 +177,10 @@ export function VueParEquipement({
 function GroupeCategorie({
   groupe: g,
   moisCourant,
-  etablissementId,
   ouvertParDefaut,
 }: {
   groupe: GroupeEquipement;
   moisCourant: number;
-  etablissementId: string;
   ouvertParDefaut: boolean;
 }) {
   const [ouvert, setOuvert] = useState(ouvertParDefaut);
@@ -196,7 +203,8 @@ function GroupeCategorie({
               titre — `categorieCode` la tient prête. */}
           <span className="board-titre text-[21px]">{g.categorie}</span>
           <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
-            {g.lignes.length} appareil{g.lignes.length > 1 ? "s" : ""}
+            {g.lignes.length} {g.uniteLigne}
+            {g.lignes.length > 1 ? "s" : ""}
           </span>
           <span className="ml-auto flex flex-wrap items-center gap-2">
             <Compte n={g.enRetard} libelle="dépassée" registre="enRetard" />
@@ -204,11 +212,17 @@ function GroupeCategorie({
             <Compte n={g.aVenir} libelle="à venir" registre="aVenir" />
             <Compte n={g.faite} libelle="faite" registre="faite" />
             <Compte n={g.aPlanifier} libelle="à planifier" registre={null} />
+          </span>
+          {/* La même pastille que les cartes-mois : collé aux pilules, le
+              chevron se lisait comme une de plus. Détaché et cerclé, il
+              redevient une commande. */}
+          <span
+            aria-hidden
+            className="ml-1 flex size-8 flex-none items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)]"
+          >
             <ChevronDown
-              aria-hidden
               className={
-                "size-[18px] text-[color:var(--board-slate-mid)] transition-transform " +
-                (ouvert ? "rotate-180" : "")
+                "size-4 transition-transform " + (ouvert ? "rotate-180" : "")
               }
             />
           </span>
@@ -229,7 +243,10 @@ function GroupeCategorie({
                 key={l.id}
                 ligne={l}
                 moisCourant={moisCourant}
-                etablissementId={etablissementId}
+                // Le groupe ouvert d'emblée l'est pour être lu : ses
+                // cartes arrivent dépliées, sinon dérouler la catégorie
+                // ne montre que des en-têtes de plus.
+                ouverteParDefaut={ouvertParDefaut}
               />
             ))}
           </div>
@@ -242,15 +259,17 @@ function GroupeCategorie({
 function CarteEquipement({
   ligne: l,
   moisCourant,
-  etablissementId,
+  ouverteParDefaut = false,
 }: {
   ligne: LigneEquipement;
   moisCourant: number;
-  etablissementId: string;
+  /** Vrai dans le groupe ouvert à l'arrivée. */
+  ouverteParDefaut?: boolean;
 }) {
-  // La carte arrive repliée : sur un parc de treize appareils, treize
-  // cartes ouvertes font une page qu'on ne parcourt plus, on la subit.
-  const [ouverte, setOuverte] = useState(false);
+  // Ailleurs, la carte arrive repliée : sur un parc de treize appareils,
+  // treize cartes ouvertes font une page qu'on ne parcourt plus, on la
+  // subit.
+  const [ouverte, setOuverte] = useState(ouverteParDefaut);
 
   // Mois déplié, de 1 à 12. Un seul à la fois : la carte doit rester une
   // ligne de lecture, pas un second calendrier.
@@ -302,13 +321,15 @@ function CarteEquipement({
               {l.prochaine ? l.prochaine.libelle : "Rien de prévu"}
             </p>
           </div>
-          <Link
-            href={`/etablissements/${etablissementId}/equipements/${l.id}/modifier`}
-            aria-label={`Ouvrir la fiche de ${l.libelle}`}
-            className="flex size-[34px] flex-none items-center justify-center rounded-full bg-[color:var(--board-card)] text-[color:var(--board-ink)] shadow-[inset_0_0_0_1px_rgba(10,10,10,.14)] transition-colors hover:bg-[color:var(--board-slate-pale)]"
-          >
-            <ChevronRight className="size-4" />
-          </Link>
+          {l.hrefFiche ? (
+            <Link
+              href={l.hrefFiche}
+              aria-label={`Ouvrir ${l.libelle}`}
+              className="flex size-[34px] flex-none items-center justify-center rounded-full bg-[color:var(--board-card)] text-[color:var(--board-ink)] shadow-[inset_0_0_0_1px_rgba(10,10,10,.14)] transition-colors hover:bg-[color:var(--board-slate-pale)]"
+            >
+              <ChevronRight className="size-4" />
+            </Link>
+          ) : null}
         </div>
       </header>
 
@@ -420,7 +441,13 @@ function CarteEquipement({
                         {o.meta}
                       </span>
                     </span>
-                    <BadgeStatut statut={o.statut} />
+                    {o.statut ? (
+                        <BadgeStatut statut={o.statut} />
+                      ) : o.etat === "enRetard" ? (
+                        <span className="inline-flex items-center whitespace-nowrap rounded-full bg-[color:var(--board-signal)] px-[13px] py-[6px] text-[12px] font-semibold text-[color:var(--board-signal-ink)]">
+                          En retard
+                        </span>
+                      ) : null}
                   </Link>
                 </li>
               ))}

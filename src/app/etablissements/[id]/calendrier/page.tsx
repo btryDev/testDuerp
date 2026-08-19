@@ -36,6 +36,7 @@ import {
 } from "@/components/calendrier/VueParEquipement";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import {
+  LABEL_FAMILLE,
   LABEL_FAMILLE_SINGULIER,
   MarqueurFamille,
 } from "@/components/calendrier/MarqueurFamille";
@@ -472,6 +473,7 @@ export default async function CalendrierPage({
         libelle: e.libelle,
         categorie: e.categorie,
         categorieCode: e.categorieCode,
+        hrefFiche: `/etablissements/${id}/equipements/${idEq}/modifier`,
         mois: e.mois,
         enRetard: e.compte.enRetard,
         proche: e.compte.proche,
@@ -507,6 +509,7 @@ export default async function CalendrierPage({
         const g = acc.get(l.categorieCode) ?? {
           categorie: l.categorie,
           categorieCode: l.categorieCode,
+          uniteLigne: "appareil",
           lignes: [],
           enRetard: 0,
           proche: 0,
@@ -531,13 +534,123 @@ export default async function CalendrierPage({
       a.categorie.localeCompare(b.categorie),
   );
 
+
+  // Ce qui ne tient à aucun appareil — attestation de prestataire,
+  // correction du plan d'actions, analyse du carnet sanitaire — se rangeait
+  // jusqu'ici dans une note de bas de vue, c'est-à-dire nulle part. Ces
+  // échéances ont pourtant un porteur naturel : leur famille. Le groupe
+  // « Autres échéances » les accueille, une carte par famille, avec la
+  // même règle annuelle et le même tiroir que les appareils.
+  const parFamille = new Map<
+    FamilleEcheance,
+    {
+      mois: EtatMois[];
+      compte: Record<EtatEcheance, number>;
+      dates: { date: Date; etat: EtatEcheance }[];
+      occurrences: OccurrenceEquipement[];
+    }
+  >();
+
+  for (const e of autresVisibles) {
+    let f = parFamille.get(e.famille);
+    if (!f) {
+      f = {
+        mois: Array.from({ length: 12 }, () => null),
+        compte: { enRetard: 0, proche: 0, aVenir: 0, faite: 0 },
+        dates: [],
+        occurrences: [],
+      };
+      parFamille.set(e.famille, f);
+    }
+    const etat = etatDeLaLigne({ genre: "autre", date: e.date, e });
+    f.compte[etat] += 1;
+    f.dates.push({ date: e.date, etat });
+
+    const c = composantesCiviles(e.date);
+    if (c.annee === anneeCourante) {
+      const i = c.mois - 1;
+      const actuel = f.mois[i];
+      if (!actuel || PRIORITE_ETAT[etat] > PRIORITE_ETAT[actuel]) {
+        f.mois[i] = etat;
+      }
+      f.occurrences.push({
+        id: e.id,
+        href: e.href,
+        mois: c.mois,
+        jour: FMT_JOUR.format(e.date),
+        moisCourt: FMT_MOIS_COURT.format(e.date),
+        titre: e.libelle,
+        meta: e.origine,
+        etat,
+      });
+    }
+  }
+
+  const lignesAutres: LigneEquipement[] = [...parFamille.entries()]
+    .map(([famille, f]) => {
+      const enRetard = f.dates
+        .filter((d) => d.etat === "enRetard")
+        .sort((a, b) => a.date.getTime() - b.date.getTime());
+      const aVenir = f.dates
+        .filter((d) => d.etat === "proche" || d.etat === "aVenir")
+        .sort((a, b) => a.date.getTime() - b.date.getTime());
+      const cible = enRetard[0] ?? aVenir[0] ?? null;
+      const jours = cible
+        ? Math.abs(joursCivilsEntre(aujourdhui, cible.date))
+        : 0;
+      return {
+        id: `famille-${famille}`,
+        libelle: LABEL_FAMILLE[famille],
+        categorie: "Autres échéances",
+        categorieCode: "AUTRES",
+        // Une famille n'a pas de fiche : sa porte, c'est la liste
+        // mensuelle filtrée sur elle.
+        hrefFiche: `/etablissements/${id}/calendrier?famille=${famille}`,
+        mois: f.mois,
+        enRetard: f.compte.enRetard,
+        proche: f.compte.proche,
+        aVenir: f.compte.aVenir,
+        faite: f.compte.faite,
+        aPlanifier: 0,
+        occurrences: [...f.occurrences].sort(
+          (a, b) => a.mois - b.mois || a.jour.localeCompare(b.jour),
+        ),
+        prochaine: cible
+          ? {
+              etat: cible.etat,
+              libelle:
+                cible.etat === "enRetard"
+                  ? `Dépassée de ${jours} j`
+                  : jours === 0
+                    ? "Aujourd'hui"
+                    : `Dans ${jours} jour${jours > 1 ? "s" : ""}`,
+            }
+          : null,
+      };
+    })
+    .sort((a, b) => b.enRetard - a.enRetard || a.libelle.localeCompare(b.libelle));
+
+  // En queue, jamais mêlé au parc : ce groupe ne parle pas d'appareils.
+  if (lignesAutres.length > 0) {
+    groupesEquipement.push({
+      categorie: "Autres échéances",
+      categorieCode: "AUTRES",
+      uniteLigne: "famille",
+      lignes: lignesAutres,
+      enRetard: lignesAutres.reduce((n, l) => n + l.enRetard, 0),
+      proche: lignesAutres.reduce((n, l) => n + l.proche, 0),
+      aVenir: lignesAutres.reduce((n, l) => n + l.aVenir, 0),
+      faite: 0,
+      aPlanifier: 0,
+    });
+  }
+
   // Les équipements déclarés qui ne portent aucune occurrence : ils ne
   // font pas de ligne, mais leur nombre se dit.
   const sansEcheance = Math.max(
     0,
     equipements.length - lignesEquipement.length,
   );
-  const sansEquipement = autresVisibles.length;
 
   // Le mois déplié à l'arrivée : celui où l'on est, s'il porte quelque
   // chose ; sinon le premier mois qui a du retard — c'est là que se joue
@@ -766,8 +879,6 @@ export default async function CalendrierPage({
                   annee={anneeCourante}
                   moisCourant={composantesCiviles(aujourdhui).mois}
                   groupes={groupesEquipement}
-                  etablissementId={id}
-                  sansEquipement={sansEquipement}
                   sansEcheance={sansEcheance}
                 />
               }
