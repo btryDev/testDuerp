@@ -115,25 +115,28 @@ export function RegleAnnuelle({
   return (
     <section
       aria-labelledby={titreId}
-      className="flex h-full flex-col rounded-[30px] bg-[color:var(--board-card)] px-[30px] pb-[22px] pt-6 shadow-[0_1px_2px_rgba(13,18,36,.04),0_12px_32px_-14px_rgba(13,18,36,.10)] ring-1 ring-[color:rgba(13,18,36,.06)]"
+      className="flex flex-col"
     >
-      <div>
-        <p className="board-eyebrow m-0">L&apos;année d&apos;un bloc</p>
-        <h2 id={titreId} className="board-titre m-0 mt-2 text-[26px]">
-          {total} échéance{total > 1 ? "s" : ""} en {annee}
+      {/* Une ligne de repères, pas un titre de carte : l'instrument est
+          posé sur le canvas, il n'a plus à s'annoncer comme un objet.
+          La clé de lecture se donne avant le graphique, jamais après —
+          deux dimensions qui ne disent pas la même chose, ça s'annonce. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <h2
+          id={titreId}
+          className="m-0 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]"
+        >
+          L&apos;année d&apos;un bloc · {total} échéance{total > 1 ? "s" : ""} en{" "}
+          {annee}
         </h2>
-        {/* La clé de lecture se donne avant le graphique, pas après :
-            deux dimensions qui ne disent pas la même chose, ça s'annonce. */}
-        <p className="m-0 mt-2.5 font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
+        <p className="m-0 font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
           Hauteur = volume · couleur = état · cliquez un mois
         </p>
       </div>
 
       {/* L'instrument. Chaque graduation est un bouton : c'est bien une
           commande, pas une image — le clavier doit y arriver. */}
-      {/* L'instrument prend appui sur le bas de la carte : posé en haut,
-          il flotterait dès que la colonne voisine est plus haute. */}
-      <div className="mt-auto grid grid-cols-12 gap-1.5 pt-6">
+      <div className="mt-4 grid grid-cols-12 gap-1.5">
         {mois.map((m) => {
           const nb = totalDuMois(m);
           const segments = segmentsDuMois(m, maxTotal);
@@ -241,7 +244,7 @@ export function RegleAnnuelle({
 
       {/* La légende. Elle nomme les champs : sans elle, trois couleurs
           côte à côte se lisent comme une échelle de gravité continue. */}
-      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[color:var(--board-slate-line)] pt-4">
+      <div className="mt-3.5 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[color:var(--board-slate-line)] pt-3.5">
         <Cle etat="enRetard" libelle="en retard" />
         <Cle etat="proche" libelle="sous 30 jours" />
         <Cle etat="aVenir" libelle="à venir" />

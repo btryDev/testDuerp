@@ -107,7 +107,11 @@ export function VueParEquipement({
   }
 
   return (
-    <div className="flex flex-col gap-3.5">
+    // Deux colonnes sur grand écran : treize appareils en pile font du
+    // scroll pour rien, alors qu'une carte n'a pas besoin de mille pixels.
+    // `items-start` pour qu'une carte au tiroir ouvert n'étire pas sa
+    // voisine restée fermée.
+    <div className="grid grid-cols-1 items-start gap-x-5 gap-y-8 xl:grid-cols-2">
       {lignes.map((l) => (
         <CarteEquipement
           key={l.id}
@@ -120,7 +124,7 @@ export function VueParEquipement({
       {/* Ce que la lecture par appareil laisse forcément dehors. Le taire
           ferait croire que le parc porte toute la conformité. */}
       {sansEquipement > 0 || sansEcheance > 0 ? (
-        <p className="m-0 mt-1 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+        <p className="m-0 mt-1 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)] xl:col-span-2">
           {sansEcheance > 0
             ? `${sansEcheance} équipement${sansEcheance > 1 ? "s" : ""} déclaré${sansEcheance > 1 ? "s" : ""} sans aucune échéance en ${annee}.`
             : ""}
@@ -159,11 +163,11 @@ function CarteEquipement({
     // champ ardoise, la mesure sur le blanc. Le nom y prend sa propre
     // ligne — partagée avec la règle il perdait à chaque fois, alors
     // qu'il est ce qu'on cherche quand on parcourt douze cartes.
-    <article className="overflow-hidden rounded-[30px] bg-[color:var(--board-card)] shadow-[0_1px_2px_rgba(13,18,36,.04),0_12px_32px_-14px_rgba(13,18,36,.10)] ring-1 ring-[color:rgba(13,18,36,.06)]">
+    <article className="@container overflow-hidden rounded-[30px] bg-[color:var(--board-card)] shadow-[0_1px_2px_rgba(13,18,36,.04),0_12px_32px_-14px_rgba(13,18,36,.10)] ring-1 ring-[color:rgba(13,18,36,.06)]">
       {/* En se resserrant, l'en-tête s'empile : le nom, puis l'échéance
           et la porte sur une ligne. C'est la disposition en colonne, sans
           second composant à tenir. */}
-      <header className="flex flex-col gap-4 border-b border-[color:var(--board-blue-soft)] bg-[color:var(--board-blue-pale)] px-7 py-[18px] sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <header className="flex flex-col gap-4 border-b border-[color:var(--board-blue-soft)] bg-[color:var(--board-blue-pale)] px-7 py-[18px] @md:flex-row @md:items-center @md:justify-between @md:gap-6">
         <div className="min-w-0">
           <p className="m-0 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-[color:var(--board-blue-ink)]">
             {l.categorie}
@@ -171,8 +175,8 @@ function CarteEquipement({
           <h3 className="board-titre m-0 mt-[7px] text-[21px]">{l.libelle}</h3>
         </div>
 
-        <div className="flex flex-none items-center justify-between gap-4 sm:justify-end">
-          <div className="sm:text-right">
+        <div className="flex flex-none items-center justify-between gap-4 @md:justify-end">
+          <div className="@md:text-right">
             <p className="m-0 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-blue-ink)]">
               Prochaine
             </p>
@@ -291,7 +295,7 @@ function CarteEquipement({
                       </span>
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13.5px] font-semibold tracking-[-0.01em] text-[color:var(--board-ink)]">
+                      <span className="line-clamp-2 text-[13.5px] font-semibold leading-[1.35] tracking-[-0.01em] text-[color:var(--board-ink)]">
                         {o.titre}
                       </span>
                       <span className="mt-0.5 block truncate text-[12px] text-[color:var(--board-slate-mid)]">

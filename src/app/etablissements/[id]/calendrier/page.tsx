@@ -83,46 +83,36 @@ const FMT_MOIS_COURT = new Intl.DateTimeFormat("fr-FR", {
  * planifier, paille proche, vert acquis.
  */
 /**
- * Une ligne de la cartouche de compteurs : libellé mono à gauche, chiffre
- * à droite, filet au-dessus. La lecture est verticale — c'est ce qui la
- * distingue des tuiles carrées du tableau de bord, qui disent la même
- * chose à l'horizontale.
+ * Compteur de la bande de titre. Sur l'encre, un champ coloré est le seul
+ * moyen d'être lu sans crier : le chiffre et le libellé portent l'encre
+ * sombre de leur propre famille, jamais du blanc sur rose (2,0 de
+ * contraste — la palette l'interdit).
  */
-function LigneCompteur({
-  libelle,
+function PiluleCompteur({
   valeur,
+  libelle,
   registre,
 }: {
-  libelle: string;
   valeur: number;
-  registre: "alerte" | "calme" | "proche" | "acquis";
+  libelle: string;
+  /** `null` : registre calme — champ blanc discret sur l'encre. */
+  registre: EtatEcheance | null;
 }) {
-  const ENCRE: Record<typeof registre, string> = {
-    alerte: "text-[color:var(--board-signal-ink)]",
-    proche: "text-[color:var(--board-amber-ink)]",
-    acquis: "text-[color:var(--board-green-ink)]",
-    calme: "text-[color:var(--board-ink)]",
-  };
   return (
-    <div className="flex items-baseline justify-between gap-3 border-t border-[color:rgba(10,10,10,.14)] py-[11px]">
-      <span className="font-mono text-[10.5px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-ink)]">
-        {libelle}
-      </span>
-      <span
-        className={"board-titre text-[26px] tabular-nums " + ENCRE[registre]}
-      >
-        {valeur}
-      </span>
-    </div>
+    <span
+      className="inline-flex items-center gap-2 rounded-full px-[13px] py-[7px] text-[12.5px] font-semibold leading-none"
+      style={
+        registre
+          ? { background: CHAMP_ETAT[registre], color: ENCRE_ETAT[registre] }
+          : { background: "rgba(255,255,255,.12)", color: "#fff" }
+      }
+    >
+      <span className="tabular-nums">{valeur}</span>
+      {libelle}
+    </span>
   );
 }
 
-/**
- * Ligne de la liste mensuelle, commune à toutes les natures : tuile-date
- * (le jour dit vrai), marqueur de nature devant le titre (le même
- * vocabulaire de formes que la grille), méta explicite, pastille d'état
- * à droite. Toute la ligne est la porte.
- */
 /**
  * La tuile-date porte la couleur de l'état parce que c'est l'objet que
  * l'œil trouve en premier dans une liste de vingt lignes : la date EST
@@ -537,20 +527,85 @@ export default async function CalendrierPage({
     etat.aVenir === 0 &&
     etat.realisees12m === 0;
 
-  const carteTitre = (
-    <div className="flex flex-col rounded-[30px] bg-[color:var(--board-sky)] px-7 py-[26px]">
-      <p className="board-eyebrow m-0 text-[color:var(--board-ink)]">
-        Échéances · {anneeCourante}
+  // La bande de titre : pleine largeur, en encre.
+  //
+  // Elle a été un bandeau ciel, puis une carte du bento. Les deux
+  // posaient un objet de plus avant la liste : sur un écran où chaque
+  // équipement est déjà une carte, trois blocs à ombre se disputaient le
+  // premier regard. La bande ne flotte pas, elle borne — et l'encre
+  // plutôt que le ciel, parce que le bleu revenait trois fois sur la même
+  // page (bandeau, en-têtes de carte, pilules) et finissait par ne plus
+  // rien désigner.
+  const bandeTitre = (
+    <div className="bg-[color:var(--board-ink)] px-[var(--board-gutter)] py-[22px] text-white">
+      <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-5">
+        <div className="flex min-w-0 items-center gap-[18px]">
+          <Link
+            href={`/etablissements/${id}`}
+            aria-label="Retour au tableau de bord"
+            className="flex size-8 flex-none items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+          >
+            <ChevronRight className="size-4 rotate-180" />
+          </Link>
+          <div className="min-w-0">
+            <p className="board-eyebrow m-0 text-[color:var(--board-blue-soft)]">
+              Échéances · {anneeCourante}
+            </p>
+            <h1 className="board-titre m-0 mt-1.5 text-[clamp(22px,2.2vw,27px)] text-white">
+              Vérifications périodiques
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <PiluleCompteur
+            valeur={totalEnRetard}
+            libelle={totalEnRetard > 0 ? "en retard" : "rien en retard"}
+            registre={totalEnRetard > 0 ? "enRetard" : "faite"}
+          />
+          <PiluleCompteur
+            valeur={totalSous30j}
+            libelle="sous 30 jours"
+            registre={totalSous30j > 0 ? "proche" : null}
+          />
+          <PiluleCompteur
+            valeur={etat.aPlanifier}
+            libelle="à planifier"
+            registre={null}
+          />
+          <PiluleCompteur
+            valeur={etat.realisees12m}
+            libelle="faites sur 12 mois"
+            registre={etat.realisees12m > 0 ? "faite" : null}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  // Ce que la page doit dire mais qui n'est pas un objet : d'où vient le
+  // calendrier, sur quoi il se fonde, et pourquoi deux compteurs voisins
+  // n'annoncent pas le même nombre. Une ligne de texte et deux badges,
+  // posés sur le canvas — la version en carte les rangeait dans un bloc
+  // qui pesait autant que la liste.
+  const notesDeCadrage = (
+    <div className="flex flex-col gap-3 pb-6">
+      <p className="m-0 max-w-[880px] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+        Le calendrier se met à jour tout seul dès que vous ajoutez ou modifiez
+        un équipement — chaque occurrence cite son obligation légale et le
+        profil de réalisateur requis.{" "}
+        {/* Deux écrans voisins affichent « en retard » sans compter la même
+            chose : ici toutes les familles d'échéances, dans la barre
+            latérale les seules vérifications périodiques. Tant que les deux
+            nombres cohabitent, on dit lequel est lequel plutôt que de laisser
+            l'utilisateur arbitrer. */}
+        Les compteurs ci-dessus réunissent toutes les familles — contrôles,
+        travaux et papiers ;
+        {nbAutresEnRetard > 0
+          ? ` le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques : ${etat.enRetard} sur ${totalEnRetard}.`
+          : " le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques."}
       </p>
-      <h1 className="board-titre m-0 mt-3 text-[clamp(26px,2.4vw,34px)] tracking-[-0.042em]">
-        Vérifications périodiques
-      </h1>
-      <p className="m-0 mt-3.5 text-[14px] leading-[1.6] text-[color:var(--board-slate-ink)]">
-        Le calendrier se met à jour tout seul dès que vous ajoutez ou
-        modifiez un équipement — chaque occurrence cite son obligation
-        légale et le profil de réalisateur requis.
-      </p>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         <LegalBadge
           reference="Art. R. 4323-23 s. CT"
           href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479"
@@ -562,48 +617,10 @@ export default async function CalendrierPage({
         >
           <p>
             Règlement de sécurité contre les risques d&apos;incendie et de
-            panique dans les ERP — fonde les périodicités des vérifications
-            ERP (électricité, moyens de secours, désenfumage…).
+            panique dans les ERP — fonde les périodicités des vérifications ERP
+            (électricité, moyens de secours, désenfumage…).
           </p>
         </LegalBadge>
-      </div>
-
-      {/* Les compteurs en cartouche : une ligne par registre, séparées
-          par des filets. Le board les pose en tuiles carrées côte à
-          côte — deux objets différents pour deux écrans différents. */}
-      <div className="mt-auto pt-7">
-        <LigneCompteur
-          libelle="En retard"
-          valeur={totalEnRetard}
-          registre={totalEnRetard > 0 ? "alerte" : "acquis"}
-        />
-        <LigneCompteur
-          libelle="Sous 30 jours"
-          valeur={totalSous30j}
-          registre={totalSous30j > 0 ? "proche" : "calme"}
-        />
-        <LigneCompteur
-          libelle="À planifier"
-          valeur={etat.aPlanifier}
-          registre="calme"
-        />
-        <LigneCompteur
-          libelle="Faites sur 12 mois"
-          valeur={etat.realisees12m}
-          registre={etat.realisees12m > 0 ? "acquis" : "calme"}
-        />
-        {/* Deux écrans voisins affichent « en retard » sans compter la
-            même chose : ici toutes les familles d'échéances, dans la
-            barre latérale les seules vérifications périodiques. Tant que
-            les deux nombres cohabitent, on dit lequel est lequel plutôt
-            que de laisser l'utilisateur arbitrer. */}
-        <p className="m-0 mt-4 text-[11.5px] leading-[1.45] text-[color:var(--board-slate-mid)]">
-          Ces compteurs réunissent toutes les familles d&apos;échéances —
-          contrôles, travaux et papiers.
-          {nbAutresEnRetard > 0
-            ? ` Le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques : ${etat.enRetard} sur ${totalEnRetard}.`
-            : " Le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques."}
-        </p>
       </div>
     </div>
   );
@@ -634,13 +651,10 @@ export default async function CalendrierPage({
           écran du tableau de bord — même bleu, même famille, mais une
           lecture verticale (titre en pile, compteurs en cartouche) là où
           le board déroule une frise horizontale. */}
-      <div className="flex flex-1 flex-col bg-[color:var(--board-canvas)] px-[var(--board-gutter)] pb-14 pt-7">
-        <Link
-          href={`/etablissements/${id}`}
-          className="mb-4 inline-flex w-fit items-center rounded-full bg-[color:var(--board-card)] px-[14px] py-[7px] text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] shadow-[0_0_0_1px_rgba(13,18,36,.06)] transition-opacity hover:opacity-80"
-        >
-          ← Tableau de bord
-        </Link>
+      {bandeTitre}
+
+      <div className="flex flex-1 flex-col bg-[color:var(--board-canvas)] px-[var(--board-gutter)] pb-14 pt-6">
+        {notesDeCadrage}
 
         {lignes.length === 0 ? (
           <div>
@@ -694,7 +708,6 @@ export default async function CalendrierPage({
         ) : (
           <div>
             <AnneeCalendrier
-              entete={carteTitre}
               annee={anneeCourante}
               moisRegle={moisRegle}
               totalAnnee={totalAnnee}

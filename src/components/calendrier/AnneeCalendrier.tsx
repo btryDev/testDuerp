@@ -1,8 +1,12 @@
 "use client";
 
-// L'année du calendrier : la règle graduée en tête, puis la liste — par
-// mois ou par équipement. Ce composant n'existe que pour tenir les deux
-// états que ces morceaux partagent :
+// L'année du calendrier : la règle graduée posée sur le canvas, puis la
+// liste — par mois ou par équipement. Le titre de la page vit au-dessus,
+// dans sa bande pleine largeur : ici il n'y a plus que des repères et du
+// contenu, aucun objet flottant avant les cartes.
+//
+// Ce composant n'existe que pour tenir les deux états que ces morceaux
+// partagent :
 //
 //   - **la lecture choisie** (mois ou équipement). Elle a d'abord vécu
 //     dans l'URL. C'était défendable — ça se partage, ça se met en favori
@@ -47,7 +51,6 @@ export function AnneeCalendrier({
   horsAnnee,
   moisInitial,
   outils,
-  entete,
   parEquipement,
   lectureInitiale,
 }: {
@@ -64,13 +67,6 @@ export function AnneeCalendrier({
    * ce que les deux montrent, elle n'appartient à aucune des deux.
    */
   outils?: React.ReactNode;
-  /**
-   * Le bloc de titre, posé dans la même rangée que l'instrument : le ciel
-   * n'est plus un bandeau pleine largeur (c'est la signature du tableau
-   * de bord) mais une carte du bento, à hauteur de la règle. Sans lui, la
-   * règle occupe toute la largeur.
-   */
-  entete?: React.ReactNode;
   /** La même année, groupée par appareil. */
   parEquipement?: React.ReactNode;
   lectureInitiale?: Lecture;
@@ -100,25 +96,17 @@ export function AnneeCalendrier({
 
   return (
     <div className="flex flex-col gap-5">
-      <div
-        className={
-          "grid items-stretch gap-4 " +
-          (entete ? "lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1fr)]" : "")
-        }
-      >
-        {entete}
-        <RegleAnnuelle
-          annee={annee}
-          mois={moisRegle}
-          moisOuvert={lecture === "mois" ? ouvert : null}
-          onChoisirMois={viser}
-          total={totalAnnee}
-          sansDate={sansDate}
-          horsAnnee={horsAnnee}
-        />
-      </div>
+      <RegleAnnuelle
+        annee={annee}
+        mois={moisRegle}
+        moisOuvert={lecture === "mois" ? ouvert : null}
+        onChoisirMois={viser}
+        total={totalAnnee}
+        sansDate={sansDate}
+        horsAnnee={horsAnnee}
+      />
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 border-t border-[color:var(--board-slate-line)] pt-5">
         {parEquipement ? (
           <div className="flex items-center gap-1 rounded-full bg-[color:var(--board-card)] p-1 shadow-[0_0_0_1px_rgba(13,18,36,.06)]">
             <BoutonLecture
