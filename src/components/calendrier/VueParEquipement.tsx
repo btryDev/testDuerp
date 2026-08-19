@@ -131,24 +131,15 @@ export function VueParEquipement({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-20">
       {groupes.map((g) => (
-        // Un fond commun plutôt qu'un filet : ce qui fait le groupe, c'est
-        // le sol partagé par ses cartes. Un trait, même épais, ne dit que
-        // « ça commence ici » — il ne dit pas jusqu'où ça va.
-        //
-        // Le gris neutre du board (`--board-canvas`) et non l'ardoise :
-        // l'ardoise est bleutée, et sur une page blanche elle ajoutait une
-        // troisième teinte à une famille qui en a déjà deux — le glacier
-        // des bandeaux de carte et le creux des tiroirs.
-        <section
-          key={g.categorie}
-          className="rounded-[30px] bg-[color:var(--board-canvas)] p-5 ring-1 ring-[color:rgba(13,18,36,.06)] sm:p-6"
-        >
-          {/* Le titre du groupe porte la catégorie et son solde : c'est à
-              ce niveau qu'on décide d'appeler un prestataire, pas
-              appareil par appareil. */}
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 px-1">
+        <section key={g.categorie}>
+          {/* Le titre du groupe reste dehors, sur le blanc de la page :
+              il annonce le panneau, il n'en fait pas partie. Le filet
+              sous lui tient lieu de barre de section — c'est à ce niveau
+              qu'on décide d'appeler un prestataire, pas appareil par
+              appareil, et le solde de la catégorie se lit donc là. */}
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 border-b border-[color:rgba(13,18,36,.12)] pb-3">
             <h3 className="board-titre m-0 text-[21px]">{g.categorie}</h3>
             <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
               {g.lignes.length} appareil{g.lignes.length > 1 ? "s" : ""}
@@ -162,18 +153,24 @@ export function VueParEquipement({
             </span>
           </div>
 
-          {/* Deux colonnes sur grand écran : une carte n'a pas besoin de
-              mille pixels. `items-start` pour qu'une carte ouverte n'étire
-              pas sa voisine restée repliée. */}
-          <div className="mt-4 grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
-            {g.lignes.map((l) => (
-              <CarteEquipement
-                key={l.id}
-                ligne={l}
-                moisCourant={moisCourant}
-                etablissementId={etablissementId}
-              />
-            ))}
+          {/* Le sol commun : ce qui fait le groupe, c'est le fond partagé
+              par ses cartes. Un filet seul ne dirait que « ça commence
+              ici », jamais jusqu'où ça va — sur deux colonnes, la
+              deuxième rangée se retrouvait orpheline de son titre.
+              Gris neutre du board plutôt qu'ardoise : l'ardoise est
+              bleutée, et le bleu est déjà pris par les bandeaux de carte
+              et le creux des tiroirs. */}
+          <div className="mt-4 rounded-[30px] bg-[color:var(--board-canvas)] p-4 ring-1 ring-[color:rgba(13,18,36,.06)]">
+            <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
+              {g.lignes.map((l) => (
+                <CarteEquipement
+                  key={l.id}
+                  ligne={l}
+                  moisCourant={moisCourant}
+                  etablissementId={etablissementId}
+                />
+              ))}
+            </div>
           </div>
         </section>
       ))}
