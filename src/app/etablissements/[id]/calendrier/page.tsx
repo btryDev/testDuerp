@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
+import { AideEcran } from "@/components/ui-kit/AideEcran";
 import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
 import { getEtablissement } from "@/lib/etablissements/queries";
@@ -58,7 +59,11 @@ import { estDansLesProchainsJours } from "@/lib/dates/retard";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 
-const DOMAINES_P1: DomaineObligation[] = ["electricite", "incendie", "aeration"];
+const DOMAINES_P1: DomaineObligation[] = [
+  "electricite",
+  "incendie",
+  "aeration",
+];
 
 /** Familles filtrables — « personnel » attendra ses modules. */
 const FAMILLES_FILTRABLES: FamilleEcheance[] = [
@@ -197,9 +202,7 @@ export default async function CalendrierPage({
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
-  const filtreFamille = FAMILLES_FILTRABLES.includes(
-    famille as FamilleEcheance,
-  )
+  const filtreFamille = FAMILLES_FILTRABLES.includes(famille as FamilleEcheance)
     ? (famille as FamilleEcheance)
     : undefined;
   // Le domaine est un attribut des contrôles : il n'a de sens que sur
@@ -307,7 +310,11 @@ export default async function CalendrierPage({
       date: v.datePrevue,
       v,
     })),
-    ...autresVisibles.map((e) => ({ genre: "autre" as const, date: e.date, e })),
+    ...autresVisibles.map((e) => ({
+      genre: "autre" as const,
+      date: e.date,
+      e,
+    })),
   ];
   const parMois = new Map<string, LigneMois[]>();
   for (const l of lignes) {
@@ -388,8 +395,7 @@ export default async function CalendrierPage({
   // Ce que la règle ne peut pas montrer sans mentir : les mois d'une
   // autre année. Elles restent dans la liste, et la règle le dit.
   const horsAnnee = lignes.filter(
-    (l) =>
-      datable(l) && composantesCiviles(l.date).annee !== anneeCourante,
+    (l) => datable(l) && composantesCiviles(l.date).annee !== anneeCourante,
   ).length;
 
   // ─────────────────────────────────────────────────────────────────
@@ -460,7 +466,8 @@ export default async function CalendrierPage({
       const actuel = e.mois[i];
       // Une case ne peut porter qu'un état : c'est le plus urgent du
       // mois qui gagne. Mélanger les teintes sur 18 px ne se lirait pas.
-      if (!actuel || PRIORITE_ETAT[etat] > PRIORITE_ETAT[actuel]) e.mois[i] = etat;
+      if (!actuel || PRIORITE_ETAT[etat] > PRIORITE_ETAT[actuel])
+        e.mois[i] = etat;
 
       const o = obligationParId(v.obligationId);
       e.occurrences.push({
@@ -506,8 +513,8 @@ export default async function CalendrierPage({
         faite: e.compte.faite,
         aPlanifier: e.aPlanifier,
         horsAnnee: e.horsAnnee,
-        occurrences: [...e.occurrences].sort((a, b) =>
-          a.mois - b.mois || a.jour.localeCompare(b.jour),
+        occurrences: [...e.occurrences].sort(
+          (a, b) => a.mois - b.mois || a.jour.localeCompare(b.jour),
         ),
         prochaine: cible
           ? {
@@ -522,7 +529,9 @@ export default async function CalendrierPage({
           : null,
       };
     })
-    .sort((a, b) => b.enRetard - a.enRetard || a.libelle.localeCompare(b.libelle));
+    .sort(
+      (a, b) => b.enRetard - a.enRetard || a.libelle.localeCompare(b.libelle),
+    );
 
   // Les appareils se lisent par catégorie : six extincteurs dispersés
   // dans une liste triée par retard, c'est six fois la même question
@@ -559,7 +568,6 @@ export default async function CalendrierPage({
       b.proche - a.proche ||
       a.categorie.localeCompare(b.categorie),
   );
-
 
   // Ce qui ne tient à aucun appareil — attestation de prestataire,
   // correction du plan d'actions, analyse du carnet sanitaire — se rangeait
@@ -659,7 +667,9 @@ export default async function CalendrierPage({
           : null,
       };
     })
-    .sort((a, b) => b.enRetard - a.enRetard || a.libelle.localeCompare(b.libelle));
+    .sort(
+      (a, b) => b.enRetard - a.enRetard || a.libelle.localeCompare(b.libelle),
+    );
 
   // En queue, jamais mêlé au parc : ce groupe ne parle pas d'appareils.
   if (lignesAutres.length > 0) {
@@ -698,8 +708,7 @@ export default async function CalendrierPage({
   // Pilules de famille : seules celles qui ont au moins une échéance —
   // une famille vide n'a pas à encombrer la rangée.
   const famillesPresentes = FAMILLES_FILTRABLES.filter(
-    (f) =>
-      f === "controle" || autresEcheances.some((e) => e.famille === f),
+    (f) => f === "controle" || autresEcheances.some((e) => e.famille === f),
   );
 
   const baseHref = `/etablissements/${id}/calendrier`;
@@ -766,29 +775,39 @@ export default async function CalendrierPage({
     </div>
   );
 
-  // Ce que la page doit dire mais qui n'est pas un objet : d'où vient le
-  // calendrier, sur quoi il se fonde, et pourquoi deux compteurs voisins
-  // n'annoncent pas le même nombre. Une ligne de texte et deux badges,
-  // posés sur le canvas — la version en carte les rangeait dans un bloc
-  // qui pesait autant que la liste.
-  const notesDeCadrage = (
-    <div className="flex flex-col gap-3 pb-6">
-      <p className="m-0 max-w-[880px] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+  // Ce que la page doit expliquer mais qu'on ne lit qu'une fois — d'où
+  // vient le calendrier, ce que comptent les compteurs, les articles qui
+  // fondent l'obligation, comment lire la règle. En texte courant au-dessus
+  // du contenu, ces notes coûtaient trois lignes et deux badges à chaque
+  // visite ; elles vivent désormais derrière le « ? » de la barre d'outils,
+  // et les autres pages rangeront les leurs au même endroit (`AideEcran`).
+  const aide = (
+    <AideEcran titre="Comment lire cette page">
+      <p className="m-0">
         Le calendrier se met à jour tout seul dès que vous ajoutez ou modifiez
         un équipement — chaque occurrence cite son obligation légale et le
-        profil de réalisateur requis.{" "}
-        {/* Deux écrans voisins affichent « en retard » sans compter la même
-            chose : ici toutes les familles d'échéances, dans la barre
-            latérale les seules vérifications périodiques. Tant que les deux
-            nombres cohabitent, on dit lequel est lequel plutôt que de laisser
-            l'utilisateur arbitrer. */}
-        Les compteurs ci-dessus réunissent toutes les familles — contrôles,
-        travaux et papiers ;
-        {nbAutresEnRetard > 0
-          ? ` le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques : ${etat.enRetard} sur ${totalEnRetard}.`
-          : " le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques."}
+        profil de réalisateur requis.
       </p>
-      <div className="flex flex-wrap gap-2">
+      <p className="m-0">
+        La règle en tête montre l&apos;année d&apos;un bloc : la hauteur
+        d&apos;une barre dit le volume du mois, sa couleur l&apos;état le plus
+        urgent, et cliquer un mois ouvre son détail. Les occurrences « à
+        planifier » n&apos;y figurent pas tant qu&apos;aucune date n&apos;est
+        convenue — elles sont comptées à part.
+      </p>
+      {/* Deux écrans voisins affichent « en retard » sans compter la même
+          chose : ici toutes les familles d'échéances, dans la barre
+          latérale les seules vérifications périodiques. Tant que les deux
+          nombres cohabitent, on dit lequel est lequel plutôt que de laisser
+          l'utilisateur arbitrer. */}
+      <p className="m-0">
+        Les compteurs du bandeau réunissent toutes les familles — contrôles,
+        travaux et papiers.
+        {nbAutresEnRetard > 0
+          ? ` Le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques : ${etat.enRetard} sur ${totalEnRetard}.`
+          : " Le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques."}
+      </p>
+      <div className="flex flex-wrap gap-2 pt-1">
         <LegalBadge
           reference="Art. R. 4323-23 s. CT"
           href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479"
@@ -805,7 +824,7 @@ export default async function CalendrierPage({
           </p>
         </LegalBadge>
       </div>
-    </div>
+    </AideEcran>
   );
 
   // Un seul point d'entrée pour filtrer : le panneau « Filtres » (types en
@@ -814,17 +833,20 @@ export default async function CalendrierPage({
   // l'instrument et la liste, la branche « calendrier vide » le pose
   // seul — d'où la variable.
   const barreOutils = (
-    <FiltresCalendrier
-      baseHref={baseHref}
-      famillesDisponibles={famillesPresentes}
-      domaines={DOMAINES_P1.map((d) => ({ id: d, label: LABEL_DOMAINE[d] }))}
-      filtres={{
-        famille: filtreFamille,
-        domaine: filtreDomaine,
-        urgent: filtreUrgent,
-      }}
-      vue={vueEquipement ? "equipement" : undefined}
-    />
+    <>
+      <FiltresCalendrier
+        baseHref={baseHref}
+        famillesDisponibles={famillesPresentes}
+        domaines={DOMAINES_P1.map((d) => ({ id: d, label: LABEL_DOMAINE[d] }))}
+        filtres={{
+          famille: filtreFamille,
+          domaine: filtreDomaine,
+          urgent: filtreUrgent,
+        }}
+        vue={vueEquipement ? "equipement" : undefined}
+      />
+      <span className="ml-auto">{aide}</span>
+    </>
   );
 
   return (
@@ -836,56 +858,54 @@ export default async function CalendrierPage({
           le board déroule une frise horizontale. */}
       {bandeTitre}
 
-      <div className="flex flex-1 flex-col bg-[color:var(--board-card)] px-[var(--board-gutter)] pb-14 pt-6">
-        {notesDeCadrage}
-
+      <div className="flex flex-1 flex-col bg-[color:var(--board-card)] px-[var(--board-gutter)] pb-14 pt-7">
         {lignes.length === 0 ? (
           <div>
             {barreOutils}
             {calendrierVide && autresEcheances.length === 0 ? (
-            // Calendrier vraiment vide : on explique d'où viendraient les
-            // échéances, et on donne la porte de sortie — même motif que
-            // l'état vide de la frise du board.
-            <section className="mt-6 rounded-[30px] bg-[color:var(--board-card)] px-8 py-10 shadow-[0_1px_2px_rgba(13,18,36,.04),0_12px_32px_-14px_rgba(13,18,36,.10)] ring-1 ring-[color:rgba(13,18,36,.06)]">
-              <div className="flex max-w-[560px] flex-col items-start gap-3">
-                <h2 className="m-0 text-[22px] font-semibold leading-[1.15] tracking-[-0.03em] text-[color:var(--board-ink)]">
-                  Votre calendrier se remplit tout seul
-                </h2>
-                <p className="m-0 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
-                  Le Code du travail et le règlement ERP imposent de vérifier
-                  certains équipements à fréquence fixe — extincteurs tous les
-                  ans, installation électrique tous les ans, etc. L&apos;outil
-                  calcule ces échéances à partir des équipements que vous avez
-                  déclarés : il n&apos;y en a pas encore.
+              // Calendrier vraiment vide : on explique d'où viendraient les
+              // échéances, et on donne la porte de sortie — même motif que
+              // l'état vide de la frise du board.
+              <section className="mt-6 rounded-[30px] bg-[color:var(--board-card)] px-8 py-10 shadow-[0_1px_2px_rgba(13,18,36,.04),0_12px_32px_-14px_rgba(13,18,36,.10)] ring-1 ring-[color:rgba(13,18,36,.06)]">
+                <div className="flex max-w-[560px] flex-col items-start gap-3">
+                  <h2 className="m-0 text-[22px] font-semibold leading-[1.15] tracking-[-0.03em] text-[color:var(--board-ink)]">
+                    Votre calendrier se remplit tout seul
+                  </h2>
+                  <p className="m-0 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+                    Le Code du travail et le règlement ERP imposent de vérifier
+                    certains équipements à fréquence fixe — extincteurs tous les
+                    ans, installation électrique tous les ans, etc. L&apos;outil
+                    calcule ces échéances à partir des équipements que vous avez
+                    déclarés : il n&apos;y en a pas encore.
+                  </p>
+                  <Link
+                    href={`/etablissements/${id}/equipements`}
+                    className="mt-1 inline-flex items-center gap-2 rounded-full bg-[color:var(--board-ink)] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-85"
+                  >
+                    Déclarer mes équipements
+                    <ArrowUpRight className="size-3.5" />
+                  </Link>
+                </div>
+              </section>
+            ) : (
+              // Des vérifications existent, mais les filtres les masquent
+              // toutes : on le dit, et la pilule ramène à la vue complète.
+              <section className="mt-6 flex flex-col items-start gap-3 rounded-[22px] bg-[color:var(--board-slate-pale)] px-6 py-7">
+                <p className="m-0 text-[15px] font-semibold tracking-[-0.015em] text-[color:var(--board-ink)]">
+                  Rien ne correspond à ces filtres
+                </p>
+                <p className="m-0 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+                  Vos échéances existent, mais aucune ne relève de la famille,
+                  du domaine ou de l&apos;urgence sélectionnés.
                 </p>
                 <Link
-                  href={`/etablissements/${id}/equipements`}
+                  href={baseHref}
                   className="mt-1 inline-flex items-center gap-2 rounded-full bg-[color:var(--board-ink)] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-85"
                 >
-                  Déclarer mes équipements
+                  Retirer les filtres
                   <ArrowUpRight className="size-3.5" />
                 </Link>
-              </div>
-            </section>
-          ) : (
-            // Des vérifications existent, mais les filtres les masquent
-            // toutes : on le dit, et la pilule ramène à la vue complète.
-            <section className="mt-6 flex flex-col items-start gap-3 rounded-[22px] bg-[color:var(--board-slate-pale)] px-6 py-7">
-              <p className="m-0 text-[15px] font-semibold tracking-[-0.015em] text-[color:var(--board-ink)]">
-                Rien ne correspond à ces filtres
-              </p>
-              <p className="m-0 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-                Vos échéances existent, mais aucune ne relève de la famille, du
-                domaine ou de l&apos;urgence sélectionnés.
-              </p>
-              <Link
-                href={baseHref}
-                className="mt-1 inline-flex items-center gap-2 rounded-full bg-[color:var(--board-ink)] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-85"
-              >
-                Retirer les filtres
-                <ArrowUpRight className="size-3.5" />
-              </Link>
-            </section>
+              </section>
             )}
           </div>
         ) : (
@@ -1000,7 +1020,6 @@ export default async function CalendrierPage({
             />
           </div>
         )}
-
       </div>
     </>
   );

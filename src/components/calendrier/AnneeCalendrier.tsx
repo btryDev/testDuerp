@@ -96,17 +96,10 @@ export function AnneeCalendrier({
 
   return (
     <div className="flex flex-col gap-5">
-      <RegleAnnuelle
-        annee={annee}
-        mois={moisRegle}
-        moisOuvert={lecture === "mois" ? ouvert : null}
-        onChoisirMois={viser}
-        total={totalAnnee}
-        sansDate={sansDate}
-        horsAnnee={horsAnnee}
-      />
-
-      <div className="flex flex-wrap items-center gap-2 border-t border-[color:var(--board-slate-line)] pt-5">
+      {/* La bascule et les filtres ouvrent la page : ce sont eux qui
+          décident de ce que la règle et les listes montrent — les poser
+          sous l'instrument les faisait lire comme un pied de section. */}
+      <div className="flex flex-wrap items-center gap-2">
         {parEquipement ? (
           <div className="flex items-center gap-1 rounded-full bg-[color:var(--board-card)] p-1 shadow-[0_0_0_1px_rgba(13,18,36,.06)]">
             <BoutonLecture
@@ -125,6 +118,16 @@ export function AnneeCalendrier({
         ) : null}
         {outils}
       </div>
+
+      <RegleAnnuelle
+        annee={annee}
+        mois={moisRegle}
+        moisOuvert={lecture === "mois" ? ouvert : null}
+        onChoisirMois={viser}
+        total={totalAnnee}
+        sansDate={sansDate}
+        horsAnnee={horsAnnee}
+      />
 
       {/* `hidden` plutôt qu'un démontage : la lecture inactive garde ses
           cartes ouvertes, et la bascule ne coûte rien. */}

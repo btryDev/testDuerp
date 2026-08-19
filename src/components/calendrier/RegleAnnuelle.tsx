@@ -117,26 +117,17 @@ export function RegleAnnuelle({
       aria-labelledby={titreId}
       className="flex flex-col"
     >
-      {/* Une ligne de repères, pas un titre de carte : l'instrument est
-          posé sur le canvas, il n'a plus à s'annoncer comme un objet.
-          La clé de lecture se donne avant le graphique, jamais après —
-          deux dimensions qui ne disent pas la même chose, ça s'annonce. */}
-      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-        <h2
-          id={titreId}
-          className="m-0 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]"
-        >
-          L&apos;année d&apos;un bloc · {total} échéance{total > 1 ? "s" : ""} en{" "}
-          {annee}
-        </h2>
-        <p className="m-0 font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
-          Hauteur = volume · couleur = état · cliquez un mois
-        </p>
-      </div>
+      {/* Le titre existe pour les lecteurs d'écran ; à l'œil, l'instrument
+          se présente seul — sa clé de lecture (hauteur = volume, couleur =
+          état) vit dans l'aide d'écran, avec le reste des explications. */}
+      <h2 id={titreId} className="sr-only">
+        L&apos;année d&apos;un bloc — {total} échéance{total > 1 ? "s" : ""} en{" "}
+        {annee}
+      </h2>
 
       {/* L'instrument. Chaque graduation est un bouton : c'est bien une
           commande, pas une image — le clavier doit y arriver. */}
-      <div className="mt-4 grid grid-cols-12 gap-1.5">
+      <div className="grid grid-cols-12 gap-1.5">
         {mois.map((m) => {
           const nb = totalDuMois(m);
           const segments = segmentsDuMois(m, maxTotal);
