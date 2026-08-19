@@ -236,7 +236,7 @@ function GroupeCategorie({
           qu'ardoise : l'ardoise est bleutée, et le bleu est déjà pris par
           les bandeaux de carte et le creux des tiroirs. */}
       {ouvert ? (
-        <div className="mt-4 rounded-[30px] bg-[color:var(--board-canvas)] p-4 ring-1 ring-[color:rgba(13,18,36,.06)]">
+        <div className="mt-4 rounded-[30px] bg-[color:var(--board-canvas)] px-5 py-8 ring-1 ring-[color:rgba(13,18,36,.06)]">
           <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
             {g.lignes.map((l) => (
               <CarteEquipement
@@ -296,7 +296,7 @@ function CarteEquipement({
     // champ ardoise, la mesure sur le blanc. Le nom y prend sa propre
     // ligne — partagée avec la règle il perdait à chaque fois, alors
     // qu'il est ce qu'on cherche quand on parcourt douze cartes.
-    <article className="@container overflow-hidden rounded-[30px] bg-[color:var(--board-card)] shadow-[0_1px_2px_rgba(13,18,36,.04),0_12px_32px_-14px_rgba(13,18,36,.10)] ring-1 ring-[color:rgba(13,18,36,.06)]">
+    <article className="@container overflow-hidden rounded-[30px] bg-[color:var(--board-card)] shadow-[0_1px_2px_rgba(13,18,36,.06),0_6px_16px_-6px_rgba(13,18,36,.14)] ring-1 ring-[color:rgba(13,18,36,.06)]">
       {/* En se resserrant, l'en-tête s'empile : le nom, puis l'échéance
           et la porte sur une ligne. C'est la disposition en colonne, sans
           second composant à tenir. */}

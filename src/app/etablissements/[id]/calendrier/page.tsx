@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
-import { GenererCalendrierButton } from "@/components/calendrier/GenererCalendrierButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 import { genererCalendrier } from "@/lib/calendrier/actions";
@@ -974,28 +973,6 @@ export default async function CalendrierPage({
           </div>
         )}
 
-        {/* Le recalcul n'est pas une commande de tous les jours : les
-            échéances se régénèrent seules à chaque changement d'équipement,
-            au premier chargement d'un calendrier vide, et quand le
-            référentiel change de version. Ce bouton ne sert qu'au cas que
-            l'auto-réparation ne voit pas — une régénération qui a échoué
-            derrière une modification réussie, laissant un calendrier ni
-            vide ni périmé, seulement faux. À ce titre il vit en pied de
-            page, pas dans la barre d'outils : posé à côté de « Filtres »,
-            il se lisait comme une action courante et son libellé
-            « Actualiser » ne disait pas qu'il réécrit des occurrences. */}
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-[color:var(--board-slate-line)] pt-6">
-          <p className="m-0 max-w-[620px] text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-            Vos échéances se recalculent toutes seules dès que vous ajoutez ou
-            modifiez un équipement. Ce bouton ne sert que si l&apos;une de ces
-            mises à jour a échoué — il ne touche jamais une occurrence portant
-            un rapport, une action ou une date de réalisation.
-          </p>
-          <GenererCalendrierButton
-            etablissementId={id}
-            libelle="Recalculer les échéances"
-          />
-        </div>
       </div>
     </>
   );
