@@ -785,14 +785,35 @@
     line-height: 1.2;
   }
 
-  /* Sur-titre mono — encode la famille, pas la décoration. */
-  .lp-eyebrow {
+  /* Sur-titre mono — encode la famille, pas la décoration.
+     `.board-eyebrow` est le même objet dans l'application : une seule
+     déclaration pour les deux, sinon les deux dérivent. */
+  .lp-eyebrow,
+  .board-eyebrow {
     font-family: var(--font-mono), monospace;
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--board-blue-ink);
+  }
+
+  /* Titrage de l'application — même voix que `.lp-titre` (Instrument Sans,
+     grotesque serré), réglée pour des titres d'interface plutôt que pour
+     une couverture : l'approche est un cran moins serrée et l'interligne
+     laisse passer un titre sur deux lignes.
+
+     C'est le seul écart qui restait audible entre la page publique et le
+     board : les mêmes couleurs, les mêmes cartes, mais deux polices de
+     titre. La marque parle maintenant d'une seule voix des deux côtés de
+     la connexion. */
+  .board-titre {
+    font-family: var(--font-titre), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.032em;
+    line-height: 1.12;
+    color: var(--board-ink);
+    text-wrap: balance;
   }
 
   .lp-lede {

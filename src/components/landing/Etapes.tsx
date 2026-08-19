@@ -94,10 +94,25 @@ export function Etapes({
         </Reveal>
 
         <div>
+          {/* Le surtitre et le chapeau disent à qui la section s'adresse et
+              ce qu'elle épargne — c'est là que se joue l'écart avec les
+              outils de préventeur, qui arrivent vides et attendent qu'un
+              spécialiste les configure (grille de cotation, périodicités,
+              activités). Le surtitre reprend la voix mono de la note de
+              provenance en bas de liste : même registre, ouverture et
+              fermeture de la section. */}
           <Reveal as="header">
-            <h2 className="lp-titre lp-h2 sm:whitespace-nowrap">
+            <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
+              Fait pour ceux qui n&apos;ont pas de service QHSE
+            </p>
+            <h2 className="lp-titre lp-h2 mt-4 sm:whitespace-nowrap">
               Une prise en main rapide
             </h2>
+            <p className="lp-lede mt-5 max-w-[48ch]">
+              Rien à paramétrer&nbsp;: tout est déjà écrit. Vous n&apos;inventez
+              ni votre grille de cotation, ni vos périodicités — le référentiel
+              est fourni, pas à construire.
+            </p>
           </Reveal>
 
           <ol className="m-0 mt-12 flex list-none flex-col p-0">
