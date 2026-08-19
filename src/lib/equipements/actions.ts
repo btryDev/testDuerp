@@ -24,8 +24,8 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  */
 const MESSAGE_REGEN_ECHEC =
   "Modification enregistrée, mais le calendrier des vérifications n'a pas pu " +
-  "être mis à jour. Ouvrez la page « Calendrier » et cliquez sur « Actualiser » " +
-  "pour recalculer vos échéances.";
+  "être mis à jour. Ouvrez la page « Calendrier » et cliquez sur " +
+  "« Recalculer les échéances », en bas de page.";
 
 async function regenererCalendrier(
   etablissementId: string,

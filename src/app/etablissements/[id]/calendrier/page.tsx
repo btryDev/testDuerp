@@ -21,6 +21,20 @@ import {
 import { AnneeCalendrier } from "@/components/calendrier/AnneeCalendrier";
 import type { MoisRegle } from "@/components/calendrier/RegleAnnuelle";
 import {
+  CHAMP_ETAT,
+  ENCRE_ETAT,
+  PRIORITE_ETAT,
+  type EtatEcheance,
+  type RegistreLigne,
+} from "@/lib/calendrier/etats";
+import {
+  VueParEquipement,
+  type EtatMois,
+  type LigneEquipement,
+  type OccurrenceEquipement,
+} from "@/components/calendrier/VueParEquipement";
+import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
+import {
   LABEL_FAMILLE_SINGULIER,
   MarqueurFamille,
 } from "@/components/calendrier/MarqueurFamille";
@@ -36,6 +50,7 @@ import {
   FUSEAU_REFERENCE,
   JOURS_HORIZON_PROCHE,
   composantesCiviles,
+  joursCivilsEntre,
 } from "@/lib/dates";
 import { estDansLesProchainsJours } from "@/lib/dates/retard";
 import { obligationParId } from "@/lib/referentiels/conformite";
@@ -108,6 +123,13 @@ function LigneCompteur({
  * vocabulaire de formes que la grille), méta explicite, pastille d'état
  * à droite. Toute la ligne est la porte.
  */
+/**
+ * La tuile-date porte la couleur de l'état parce que c'est l'objet que
+ * l'œil trouve en premier dans une liste de vingt lignes : la date EST
+ * l'information urgente. La pastille de droite garde, elle, le
+ * vocabulaire de statut de l'application (« Conforme », « À planifier »…),
+ * qui dit autre chose que le retard.
+ */
 function LigneEcheance({
   href,
   date,
@@ -115,6 +137,7 @@ function LigneEcheance({
   titre,
   meta,
   pastille,
+  registre,
 }: {
   href: string;
   date: Date;
@@ -122,29 +145,36 @@ function LigneEcheance({
   titre: string;
   meta: string;
   pastille: React.ReactNode;
+  registre: RegistreLigne;
 }) {
   return (
     <Link
       href={href}
-      className="-mx-2 flex items-center gap-4 rounded-[14px] px-2 py-[11px] transition-colors hover:bg-[color:var(--board-slate-pale)]"
+      className="-mx-3 flex items-center gap-4 rounded-[20px] px-3 py-3 transition-colors hover:bg-[color:var(--board-slate-pale)]"
     >
-      <span className="flex w-[46px] flex-none flex-col items-center">
-        <span className="text-[19px] font-semibold leading-none tracking-[-0.02em] tabular-nums text-[color:var(--board-ink)]">
+      <span
+        className="flex size-[50px] flex-none flex-col items-center justify-center rounded-[17px]"
+        style={{ background: CHAMP_ETAT[registre] }}
+      >
+        <span className="board-titre text-[18px] leading-none tabular-nums">
           {FMT_JOUR.format(date)}
         </span>
-        <span className="mt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate-soft)]">
+        <span
+          className="mt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.1em]"
+          style={{ color: ENCRE_ETAT[registre] }}
+        >
           {FMT_MOIS_COURT.format(date)}
         </span>
       </span>
       <div className="min-w-0 flex-1">
-        <p className="m-0 flex items-center gap-2 truncate text-[14px] font-semibold leading-[1.3] tracking-[-0.015em] text-[color:var(--board-ink)]">
+        <p className="m-0 flex items-center gap-2 truncate text-[14.5px] font-semibold leading-[1.3] tracking-[-0.015em] text-[color:var(--board-ink)]">
           <MarqueurFamille
             famille={famille}
             className="size-3.5 text-[color:var(--board-slate-soft)]"
           />
           <span className="min-w-0 truncate">{titre}</span>
         </p>
-        <p className="m-0 mt-0.5 truncate text-[12px] text-[color:var(--board-slate-mid)]">
+        <p className="m-0 mt-1 truncate text-[12.5px] text-[color:var(--board-slate-mid)]">
           {meta}
         </p>
       </div>
@@ -163,10 +193,15 @@ export default async function CalendrierPage({
     domaine?: string;
     urgent?: string;
     famille?: string;
+    vue?: string;
   }>;
 }) {
   const { id } = await params;
-  const { domaine, urgent, famille } = await searchParams;
+  const { domaine, urgent, famille, vue } = await searchParams;
+  // Deux lectures de la même donnée : « que dois-je faire en août ? » et
+  // « qu'est-ce que cet appareil me demande ? ». Le choix vit dans l'URL —
+  // il se partage, se met en favori, et survit à un rechargement.
+  const vueEquipement = vue === "equipement";
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
@@ -216,13 +251,17 @@ export default async function CalendrierPage({
     await genererCalendrier(id);
   }
 
-  const [verifsBruts, etat, autresEcheances] = await Promise.all([
+  const [verifsBruts, etat, autresEcheances, equipements] = await Promise.all([
     listerVerifications(id, {
       domaine: filtreDomaine,
       urgentsSeulement: filtreUrgent,
     }),
     compterEtatCalendrier(id),
     listerAutresEcheances(id),
+    // Le parc entier, pas seulement les appareils qui portent une
+    // échéance : la lecture par équipement doit pouvoir dire combien
+    // n'en ont aucune.
+    listerEquipementsDeLEtablissement(id),
   ]);
   const aujourdhui = new Date();
 
@@ -305,8 +344,7 @@ export default async function CalendrierPage({
   //      `RegleAnnuelle`).
   const anneeCourante = composantesCiviles(aujourdhui).annee;
 
-  type EtatRegle = "enRetard" | "proche" | "aVenir" | "faite";
-  const etatDeLaLigne = (l: LigneMois): EtatRegle => {
+  const etatDeLaLigne = (l: LigneMois): EtatEcheance => {
     if (l.genre === "verif") {
       const v = l.v;
       if (v.dateRealisee || v.statut.startsWith("realisee")) return "faite";
@@ -353,6 +391,125 @@ export default async function CalendrierPage({
       datable(l) && composantesCiviles(l.date).annee !== anneeCourante,
   ).length;
 
+  // ─────────────────────────────────────────────────────────────────
+  // La lecture par équipement : mêmes occurrences, autre regroupement.
+  //
+  // Seuls les contrôles s'y rattachent — une attestation de prestataire ou
+  // un travail du plan d'actions ne tient à aucun appareil. Les compter
+  // sous un équipement serait faux, les taire ferait croire que le parc
+  // porte toute la conformité : la vue les annonce à part.
+  const parEquipement = new Map<
+    string,
+    {
+      libelle: string;
+      categorie: string;
+      mois: EtatMois[];
+      compte: Record<EtatEcheance, number>;
+      aPlanifier: number;
+      dates: { date: Date; etat: EtatEcheance }[];
+      occurrences: OccurrenceEquipement[];
+    }
+  >();
+
+  for (const v of verifsVisibles) {
+    const cle = v.equipement.id;
+    let e = parEquipement.get(cle);
+    if (!e) {
+      e = {
+        libelle: v.equipement.libelle,
+        categorie: LABEL_CATEGORIE_EQUIPEMENT[v.equipement.categorie],
+        mois: Array.from({ length: 12 }, () => null),
+        compte: { enRetard: 0, proche: 0, aVenir: 0, faite: 0 },
+        aPlanifier: 0,
+        dates: [],
+        occurrences: [],
+      };
+      parEquipement.set(cle, e);
+    }
+    if (v.statut === "a_planifier") {
+      e.aPlanifier += 1;
+      continue;
+    }
+    const ligne = { genre: "verif" as const, date: v.datePrevue, v };
+    const etat = etatDeLaLigne(ligne);
+    e.compte[etat] += 1;
+    e.dates.push({ date: v.datePrevue, etat });
+
+    const c = composantesCiviles(v.datePrevue);
+    if (c.annee === anneeCourante) {
+      const i = c.mois - 1;
+      const actuel = e.mois[i];
+      // Une case ne peut porter qu'un état : c'est le plus urgent du
+      // mois qui gagne. Mélanger les teintes sur 18 px ne se lirait pas.
+      if (!actuel || PRIORITE_ETAT[etat] > PRIORITE_ETAT[actuel]) e.mois[i] = etat;
+
+      const o = obligationParId(v.obligationId);
+      e.occurrences.push({
+        id: v.id,
+        href: `/etablissements/${id}/verifications/${v.id}`,
+        mois: c.mois,
+        jour: FMT_JOUR.format(v.datePrevue),
+        moisCourt: FMT_MOIS_COURT.format(v.datePrevue),
+        titre: v.libelleObligation,
+        meta:
+          LABEL_PERIODICITE[v.periodicite] +
+          (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : ""),
+        etat,
+        statut: v.statut,
+      });
+    }
+  }
+
+  const lignesEquipement: LigneEquipement[] = [...parEquipement.entries()]
+    .map(([idEq, e]) => {
+      const enRetard = e.dates
+        .filter((d) => d.etat === "enRetard")
+        .sort((a, b) => a.date.getTime() - b.date.getTime());
+      const aVenir = e.dates
+        .filter((d) => d.etat === "proche" || d.etat === "aVenir")
+        .sort((a, b) => a.date.getTime() - b.date.getTime());
+      // La plus ancienne dette d'abord : c'est elle qui coûte. À défaut,
+      // la prochaine échéance.
+      const cible = enRetard[0] ?? aVenir[0] ?? null;
+      const jours = cible
+        ? Math.abs(joursCivilsEntre(aujourdhui, cible.date))
+        : 0;
+      return {
+        id: idEq,
+        libelle: e.libelle,
+        categorie: e.categorie,
+        mois: e.mois,
+        enRetard: e.compte.enRetard,
+        proche: e.compte.proche,
+        aVenir: e.compte.aVenir,
+        faite: e.compte.faite,
+        aPlanifier: e.aPlanifier,
+        occurrences: [...e.occurrences].sort((a, b) =>
+          a.mois - b.mois || a.jour.localeCompare(b.jour),
+        ),
+        prochaine: cible
+          ? {
+              etat: cible.etat,
+              libelle:
+                cible.etat === "enRetard"
+                  ? `Dépassée de ${jours} j`
+                  : jours === 0
+                    ? "Aujourd'hui"
+                    : `Dans ${jours} jour${jours > 1 ? "s" : ""}`,
+            }
+          : null,
+      };
+    })
+    .sort((a, b) => b.enRetard - a.enRetard || a.libelle.localeCompare(b.libelle));
+
+  // Les équipements déclarés qui ne portent aucune occurrence : ils ne
+  // font pas de ligne, mais leur nombre se dit.
+  const sansEcheance = Math.max(
+    0,
+    equipements.length - lignesEquipement.length,
+  );
+  const sansEquipement = autresVisibles.length;
+
   // Le mois déplié à l'arrivée : celui où l'on est, s'il porte quelque
   // chose ; sinon le premier mois qui a du retard — c'est là que se joue
   // la conformité —, sinon le premier mois tout court.
@@ -380,10 +537,6 @@ export default async function CalendrierPage({
     etat.aVenir === 0 &&
     etat.realisees12m === 0;
 
-  // Un seul point d'entrée pour filtrer : le panneau « Filtres » (types en
-  // toutes lettres, domaines, urgence) ; les filtres actifs restent
-  // lisibles en chips retirables. La barre sert les deux branches du
-  // rendu — calendrier peuplé ou non —, d'où la variable.
   const carteTitre = (
     <div className="flex flex-col rounded-[30px] bg-[color:var(--board-sky)] px-7 py-[26px]">
       <p className="board-eyebrow m-0 text-[color:var(--board-ink)]">
@@ -455,25 +608,23 @@ export default async function CalendrierPage({
     </div>
   );
 
+  // Un seul point d'entrée pour filtrer : le panneau « Filtres » (types en
+  // toutes lettres, domaines, urgence) ; les filtres actifs restent
+  // lisibles en chips retirables. `AnneeCalendrier` le pose entre
+  // l'instrument et la liste, la branche « calendrier vide » le pose
+  // seul — d'où la variable.
   const barreOutils = (
-    <div className="flex flex-wrap items-center gap-2">
-      <FiltresCalendrier
-        baseHref={baseHref}
-        famillesDisponibles={famillesPresentes}
-        domaines={DOMAINES_P1.map((d) => ({
-          id: d,
-          label: LABEL_DOMAINE[d],
-        }))}
-        filtres={{
-          famille: filtreFamille,
-          domaine: filtreDomaine,
-          urgent: filtreUrgent,
-        }}
-      />
-      <div className="ml-auto">
-        <GenererCalendrierButton etablissementId={id} libelle="Actualiser" />
-      </div>
-    </div>
+    <FiltresCalendrier
+      baseHref={baseHref}
+      famillesDisponibles={famillesPresentes}
+      domaines={DOMAINES_P1.map((d) => ({ id: d, label: LABEL_DOMAINE[d] }))}
+      filtres={{
+        famille: filtreFamille,
+        domaine: filtreDomaine,
+        urgent: filtreUrgent,
+      }}
+      vue={vueEquipement ? "equipement" : undefined}
+    />
   );
 
   return (
@@ -556,7 +707,17 @@ export default async function CalendrierPage({
                   : 0
               }
               moisInitial={moisInitial}
+              lectureInitiale={vueEquipement ? "equipement" : "mois"}
               outils={barreOutils}
+              parEquipement={
+                <VueParEquipement
+                  annee={anneeCourante}
+                  lignes={lignesEquipement}
+                  etablissementId={id}
+                  sansEquipement={sansEquipement}
+                  sansEcheance={sansEcheance}
+                />
+              }
               sections={moisTries.map(([cleMois, liste]) => ({
                 cle: cleMois,
                 titre: libelleMois(cleMois),
@@ -610,6 +771,11 @@ export default async function CalendrierPage({
                                 (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : "")
                               }
                               pastille={<BadgeStatut statut={v.statut} />}
+                              registre={
+                                v.statut === "a_planifier"
+                                  ? "aPlanifier"
+                                  : etatDeLaLigne(ligne)
+                              }
                             />
                           </li>
                         );
@@ -625,6 +791,7 @@ export default async function CalendrierPage({
                             meta={`${LABEL_FAMILLE_SINGULIER[e.famille]} · ${e.origine}`}
                             // La tuile-date suffit pour le futur : seule
                             // l'alerte mérite une pastille.
+                            registre={etatDeLaLigne(ligne)}
                             pastille={
                               e.tone === "alerte" ? (
                                 <span className="inline-flex items-center whitespace-nowrap rounded-full bg-[color:var(--board-signal)] px-[13px] py-[6px] text-[12px] font-semibold text-[color:var(--board-signal-ink)]">
@@ -642,6 +809,29 @@ export default async function CalendrierPage({
             />
           </div>
         )}
+
+        {/* Le recalcul n'est pas une commande de tous les jours : les
+            échéances se régénèrent seules à chaque changement d'équipement,
+            au premier chargement d'un calendrier vide, et quand le
+            référentiel change de version. Ce bouton ne sert qu'au cas que
+            l'auto-réparation ne voit pas — une régénération qui a échoué
+            derrière une modification réussie, laissant un calendrier ni
+            vide ni périmé, seulement faux. À ce titre il vit en pied de
+            page, pas dans la barre d'outils : posé à côté de « Filtres »,
+            il se lisait comme une action courante et son libellé
+            « Actualiser » ne disait pas qu'il réécrit des occurrences. */}
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-[color:var(--board-slate-line)] pt-6">
+          <p className="m-0 max-w-[620px] text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+            Vos échéances se recalculent toutes seules dès que vous ajoutez ou
+            modifiez un équipement. Ce bouton ne sert que si l&apos;une de ces
+            mises à jour a échoué — il ne touche jamais une occurrence portant
+            un rapport, une action ou une date de réalisation.
+          </p>
+          <GenererCalendrierButton
+            etablissementId={id}
+            libelle="Recalculer les échéances"
+          />
+        </div>
       </div>
     </>
   );

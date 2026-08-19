@@ -27,12 +27,23 @@ export type FiltresActifs = {
 
 function construireHref(
   baseHref: string,
-  filtres: { famille?: string; domaine?: string; urgent?: boolean },
+  filtres: {
+    famille?: string;
+    domaine?: string;
+    urgent?: boolean;
+    /**
+     * La lecture en cours (mois ou équipement). Elle n'est pas un filtre,
+     * mais elle vit dans la même URL : sans la reconduire ici, régler un
+     * filtre depuis la vue par équipement renvoyait à la vue par mois.
+     */
+    vue?: string;
+  },
 ): string {
   const p = new URLSearchParams();
   if (filtres.famille) p.set("famille", filtres.famille);
   if (filtres.domaine) p.set("domaine", filtres.domaine);
   if (filtres.urgent) p.set("urgent", "1");
+  if (filtres.vue) p.set("vue", filtres.vue);
   const q = p.toString();
   return q ? `${baseHref}?${q}` : baseHref;
 }
@@ -113,12 +124,15 @@ export function FiltresCalendrier({
   famillesDisponibles,
   domaines,
   filtres,
+  vue,
 }: {
   baseHref: string;
   /** Familles ayant au moins une échéance — les seules proposées. */
   famillesDisponibles: FamilleEcheance[];
   domaines: { id: string; label: string }[];
   filtres: FiltresActifs;
+  /** Lecture en cours, reconduite dans chaque lien de filtre. */
+  vue?: string;
 }) {
   const [ouvert, setOuvert] = useState(false);
   const racine = useRef<HTMLDivElement | null>(null);
@@ -156,6 +170,7 @@ export function FiltresCalendrier({
       famille: over.famille ?? filtres.famille,
       domaine: over.domaine ?? filtres.domaine,
       urgent: over.urgent ?? filtres.urgent,
+      vue,
     });
 
   const labelDomaine = (id: string | undefined) =>

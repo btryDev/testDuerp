@@ -176,7 +176,7 @@ export async function modifierEtablissement(
         message:
           "Fiche enregistrée, mais vos obligations n'ont pas pu être " +
           "recalculées. Ouvrez la page « Calendrier » et cliquez sur " +
-          "« Actualiser ».",
+          "« Recalculer les échéances », en bas de page.",
       };
     }
   }

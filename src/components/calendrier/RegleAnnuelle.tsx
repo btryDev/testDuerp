@@ -20,6 +20,7 @@
 // c'est la même, vue de loin.
 
 import { useId } from "react";
+import { CHAMP_ETAT, type EtatEcheance } from "@/lib/calendrier/etats";
 
 /** Un mois de la règle. Les quatre compteurs sont exclusifs entre eux. */
 export type MoisRegle = {
@@ -65,12 +66,14 @@ function segmentsDuMois(m: MoisRegle, maxTotal: number): Segment[] {
   const total = totalDuMois(m);
   if (total === 0) return [];
 
-  const parts = [
-    { cle: "faite", n: m.faite, fond: "var(--board-green)" },
-    { cle: "avenir", n: m.aVenir, fond: "var(--board-blue-soft)" },
-    { cle: "proche", n: m.proche, fond: "var(--board-amber)" },
-    { cle: "retard", n: m.enRetard, fond: "var(--board-signal)" },
-  ].filter((p) => p.n > 0);
+  const parts = (
+    [
+      { cle: "faite", n: m.faite },
+      { cle: "aVenir", n: m.aVenir },
+      { cle: "proche", n: m.proche },
+      { cle: "enRetard", n: m.enRetard },
+    ] satisfies { cle: EtatEcheance; n: number }[]
+  ).filter((p) => p.n > 0);
 
   // La hauteur visée suit la proportion, mais ne descend jamais sous le
   // plancher cumulé des segments qu'elle doit contenir.
@@ -80,7 +83,7 @@ function segmentsDuMois(m: MoisRegle, maxTotal: number): Segment[] {
 
   return parts.map((p) => ({
     cle: p.cle,
-    fond: p.fond,
+    fond: CHAMP_ETAT[p.cle],
     hauteur: Math.max(H_MIN_SEGMENT, Math.round((p.n / total) * hauteur)),
   }));
 }
@@ -137,6 +140,12 @@ export function RegleAnnuelle({
           const actif = m.cle === moisOuvert;
           const vide = nb === 0;
 
+          const resume = `${m.labelLong} — ${
+            vide
+              ? "aucune échéance"
+              : `${nb} échéance${nb > 1 ? "s" : ""}` +
+                (m.enRetard > 0 ? `, dont ${m.enRetard} en retard` : "")
+          }`;
           return (
             <button
               key={m.cle}
@@ -144,14 +153,9 @@ export function RegleAnnuelle({
               onClick={() => onChoisirMois(m.cle)}
               disabled={vide}
               aria-pressed={actif}
-              aria-label={`${m.labelLong} — ${
-                vide
-                  ? "aucune échéance"
-                  : `${nb} échéance${nb > 1 ? "s" : ""}` +
-                    (m.enRetard > 0 ? `, dont ${m.enRetard} en retard` : "")
-              }`}
+              aria-label={resume}
               className={
-                "group flex flex-col items-center gap-2 rounded-[14px] px-1 pb-2 pt-1 transition-colors " +
+                "flex flex-col items-center gap-2 rounded-[14px] px-1 pb-2 pt-1 transition-colors " +
                 (vide
                   ? "cursor-default"
                   : "hover:bg-[color:var(--board-slate-pale)]")
@@ -238,10 +242,10 @@ export function RegleAnnuelle({
       {/* La légende. Elle nomme les champs : sans elle, trois couleurs
           côte à côte se lisent comme une échelle de gravité continue. */}
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[color:var(--board-slate-line)] pt-4">
-        <Cle fond="var(--board-signal)" libelle="en retard" />
-        <Cle fond="var(--board-amber)" libelle="sous 30 jours" />
-        <Cle fond="var(--board-blue-soft)" libelle="à venir" />
-        <Cle fond="var(--board-green)" libelle="faite" />
+        <Cle etat="enRetard" libelle="en retard" />
+        <Cle etat="proche" libelle="sous 30 jours" />
+        <Cle etat="aVenir" libelle="à venir" />
+        <Cle etat="faite" libelle="faite" />
         <Cle fond="var(--board-slate-pale)" libelle="aucune échéance" />
         <span className="ml-auto flex flex-wrap items-center gap-2">
           {horsAnnee > 0 ? (
@@ -260,13 +264,22 @@ export function RegleAnnuelle({
   );
 }
 
-function Cle({ fond, libelle }: { fond: string; libelle: string }) {
+function Cle({
+  etat,
+  fond,
+  libelle,
+}: {
+  etat?: EtatEcheance;
+  /** Champ libre — le mois vide n'est pas un état d'échéance. */
+  fond?: string;
+  libelle: string;
+}) {
   return (
     <span className="flex items-center gap-2 text-[12px] text-[color:var(--board-slate-mid)]">
       <span
         aria-hidden
         className="size-[9px] rounded-[3px]"
-        style={{ background: fond }}
+        style={{ background: etat ? CHAMP_ETAT[etat] : fond }}
       />
       {libelle}
     </span>

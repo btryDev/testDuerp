@@ -1,13 +1,26 @@
 "use client";
 
-// L'année du calendrier : la règle graduée en tête, les cartes-mois
-// dessous. Ce composant n'existe que pour tenir l'état commun aux deux —
-// quel mois est ouvert — parce que viser une graduation doit ouvrir la
-// carte correspondante.
+// L'année du calendrier : la règle graduée en tête, puis la liste — par
+// mois ou par équipement. Ce composant n'existe que pour tenir les deux
+// états que ces morceaux partagent :
 //
-// Le contenu des mois reste rendu côté serveur : il descend ici en
-// `ReactNode` dans `sections`. Rien de la liste n'a besoin du navigateur,
-// seul l'accordéon en a besoin.
+//   - **la lecture choisie** (mois ou équipement). Elle a d'abord vécu
+//     dans l'URL. C'était défendable — ça se partage, ça se met en favori
+//     — mais chaque bascule repassait par le serveur : la page entière
+//     re-rendue, ses requêtes refaites, un temps mort pour changer de
+//     regard sur des données déjà chargées. Les deux listes viennent du
+//     même calcul : elles sont rendues ensemble, et basculer ne coûte
+//     plus qu'un `display: none`. Le paramètre d'URL survit comme valeur
+//     initiale, pour qu'un lien partagé ouvre la bonne lecture ;
+//   - **le mois déplié**, parce que viser une graduation doit ouvrir la
+//     carte correspondante.
+//
+// Les deux listes restent montées : revenir d'une lecture à l'autre
+// retrouve les cartes qu'on avait ouvertes, ce qu'un démontage perdrait.
+//
+// Le contenu, lui, est rendu côté serveur et descend ici en `ReactNode`.
+// Rien de ces listes n'a besoin du navigateur — seuls l'accordéon et la
+// bascule en ont besoin.
 
 import { useState } from "react";
 import { RegleAnnuelle, type MoisRegle } from "./RegleAnnuelle";
@@ -23,6 +36,8 @@ export type SectionMoisData = {
   contenu: React.ReactNode;
 };
 
+export type Lecture = "mois" | "equipement";
+
 export function AnneeCalendrier({
   annee,
   moisRegle,
@@ -33,6 +48,8 @@ export function AnneeCalendrier({
   moisInitial,
   outils,
   entete,
+  parEquipement,
+  lectureInitiale,
 }: {
   annee: number;
   moisRegle: MoisRegle[];
@@ -43,8 +60,8 @@ export function AnneeCalendrier({
   /** Mois déplié au chargement — le premier qui porte quelque chose. */
   moisInitial: string | null;
   /**
-   * Barre de filtres, posée entre l'instrument et les cartes : elle règle
-   * ce que les deux montrent, elle n'appartient à aucun des deux.
+   * Barre de filtres, posée entre l'instrument et les listes : elle règle
+   * ce que les deux montrent, elle n'appartient à aucune des deux.
    */
   outils?: React.ReactNode;
   /**
@@ -54,10 +71,18 @@ export function AnneeCalendrier({
    * règle occupe toute la largeur.
    */
   entete?: React.ReactNode;
+  /** La même année, groupée par appareil. */
+  parEquipement?: React.ReactNode;
+  lectureInitiale?: Lecture;
 }) {
   const [ouvert, setOuvert] = useState<string | null>(moisInitial);
+  const [lecture, setLecture] = useState<Lecture>(lectureInitiale ?? "mois");
 
   const viser = (cle: string) => {
+    // Viser un mois depuis la lecture par équipement n'aurait pas de
+    // cible : la règle est l'index de l'année, elle ramène donc à la
+    // liste mensuelle.
+    setLecture("mois");
     setOuvert(cle);
     // Le défilement attend la peinture : la carte grandit en s'ouvrant,
     // et viser sa position d'avant la ferait manquer la cible.
@@ -85,7 +110,7 @@ export function AnneeCalendrier({
         <RegleAnnuelle
           annee={annee}
           mois={moisRegle}
-          moisOuvert={ouvert}
+          moisOuvert={lecture === "mois" ? ouvert : null}
           onChoisirMois={viser}
           total={totalAnnee}
           sansDate={sansDate}
@@ -93,19 +118,77 @@ export function AnneeCalendrier({
         />
       </div>
 
-      {outils}
+      <div className="flex flex-wrap items-center gap-2">
+        {parEquipement ? (
+          <div className="flex items-center gap-1 rounded-full bg-[color:var(--board-card)] p-1 shadow-[0_0_0_1px_rgba(13,18,36,.06)]">
+            <BoutonLecture
+              actif={lecture === "mois"}
+              onClick={() => setLecture("mois")}
+            >
+              Par mois
+            </BoutonLecture>
+            <BoutonLecture
+              actif={lecture === "equipement"}
+              onClick={() => setLecture("equipement")}
+            >
+              Par équipement
+            </BoutonLecture>
+          </div>
+        ) : null}
+        {outils}
+      </div>
 
-      {sections.map((s) => (
-        <SectionMoisControlee
-          key={s.cle}
-          data={s}
-          ouvert={ouvert === s.cle}
-          onToggle={() =>
-            setOuvert((courant) => (courant === s.cle ? null : s.cle))
-          }
-        />
-      ))}
+      {/* `hidden` plutôt qu'un démontage : la lecture inactive garde ses
+          cartes ouvertes, et la bascule ne coûte rien. */}
+      <div
+        className={
+          "flex flex-col gap-5 " + (lecture === "mois" ? "" : "hidden")
+        }
+      >
+        {sections.map((s) => (
+          <SectionMoisControlee
+            key={s.cle}
+            data={s}
+            ouvert={ouvert === s.cle}
+            onToggle={() =>
+              setOuvert((courant) => (courant === s.cle ? null : s.cle))
+            }
+          />
+        ))}
+      </div>
+
+      {parEquipement ? (
+        <div className={lecture === "equipement" ? "" : "hidden"}>
+          {parEquipement}
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+function BoutonLecture({
+  actif,
+  onClick,
+  children,
+}: {
+  actif: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={actif}
+      className={
+        "rounded-full px-4 py-2 text-[13px] font-semibold leading-none transition-colors " +
+        (actif
+          ? "bg-[color:var(--board-ink)] text-white"
+          : "text-[color:var(--board-slate-mid)] hover:text-[color:var(--board-ink)]")
+      }
+    >
+      {children}
+    </button>
   );
 }
 
