@@ -99,7 +99,7 @@ export function AnneeCalendrier({
       {/* La bascule et les filtres ouvrent la page : ce sont eux qui
           décident de ce que la règle et les listes montrent — les poser
           sous l'instrument les faisait lire comme un pied de section. */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         {parEquipement ? (
           <div className="flex items-center gap-1 rounded-full bg-[color:var(--board-card)] p-1 shadow-[0_0_0_1px_rgba(13,18,36,.06)]">
             <BoutonLecture
@@ -119,23 +119,26 @@ export function AnneeCalendrier({
         {outils}
       </div>
 
-      <RegleAnnuelle
-        annee={annee}
-        mois={moisRegle}
-        moisOuvert={lecture === "mois" ? ouvert : null}
-        onChoisirMois={viser}
-        total={totalAnnee}
-        sansDate={sansDate}
-        horsAnnee={horsAnnee}
-      />
-
       {/* `hidden` plutôt qu'un démontage : la lecture inactive garde ses
-          cartes ouvertes, et la bascule ne coûte rien. */}
+          cartes ouvertes, et la bascule ne coûte rien. La règle vit DANS
+          le bloc de la lecture par mois — elle en est l'index, et par
+          équipement chaque carte porte déjà son année en réduction : la
+          grande au-dessus ferait deux fois le même dessin. */}
       <div
         className={
           "flex flex-col gap-5 " + (lecture === "mois" ? "" : "hidden")
         }
       >
+        <RegleAnnuelle
+          annee={annee}
+          mois={moisRegle}
+          moisOuvert={ouvert}
+          onChoisirMois={viser}
+          total={totalAnnee}
+          sansDate={sansDate}
+          horsAnnee={horsAnnee}
+        />
+
         {sections.map((s) => (
           <SectionMoisControlee
             key={s.cle}
