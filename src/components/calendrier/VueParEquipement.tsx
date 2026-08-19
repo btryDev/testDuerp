@@ -136,9 +136,14 @@ export function VueParEquipement({
         // Un fond commun plutôt qu'un filet : ce qui fait le groupe, c'est
         // le sol partagé par ses cartes. Un trait, même épais, ne dit que
         // « ça commence ici » — il ne dit pas jusqu'où ça va.
+        //
+        // Le gris neutre du board (`--board-canvas`) et non l'ardoise :
+        // l'ardoise est bleutée, et sur une page blanche elle ajoutait une
+        // troisième teinte à une famille qui en a déjà deux — le glacier
+        // des bandeaux de carte et le creux des tiroirs.
         <section
           key={g.categorie}
-          className="rounded-[30px] bg-[color:var(--board-slate-pale)] p-5 ring-1 ring-[color:var(--board-slate-line)] sm:p-6"
+          className="rounded-[30px] bg-[color:var(--board-canvas)] p-5 ring-1 ring-[color:rgba(13,18,36,.06)] sm:p-6"
         >
           {/* Le titre du groupe porte la catégorie et son solde : c'est à
               ce niveau qu'on décide d'appeler un prestataire, pas
