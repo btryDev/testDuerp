@@ -394,6 +394,7 @@ export default async function CalendrierPage({
     {
       libelle: string;
       categorie: string;
+      categorieCode: string;
       mois: EtatMois[];
       compte: Record<EtatEcheance, number>;
       aPlanifier: number;
@@ -409,6 +410,7 @@ export default async function CalendrierPage({
       e = {
         libelle: v.equipement.libelle,
         categorie: LABEL_CATEGORIE_EQUIPEMENT[v.equipement.categorie],
+        categorieCode: v.equipement.categorie,
         mois: Array.from({ length: 12 }, () => null),
         compte: { enRetard: 0, proche: 0, aVenir: 0, faite: 0 },
         aPlanifier: 0,
@@ -469,6 +471,7 @@ export default async function CalendrierPage({
         id: idEq,
         libelle: e.libelle,
         categorie: e.categorie,
+        categorieCode: e.categorieCode,
         mois: e.mois,
         enRetard: e.compte.enRetard,
         proche: e.compte.proche,
@@ -501,8 +504,9 @@ export default async function CalendrierPage({
   const groupesEquipement: GroupeEquipement[] = [
     ...lignesEquipement
       .reduce((acc, l) => {
-        const g = acc.get(l.categorie) ?? {
+        const g = acc.get(l.categorieCode) ?? {
           categorie: l.categorie,
+          categorieCode: l.categorieCode,
           lignes: [],
           enRetard: 0,
           proche: 0,
@@ -516,7 +520,7 @@ export default async function CalendrierPage({
         g.aVenir += l.aVenir;
         g.faite += l.faite;
         g.aPlanifier += l.aPlanifier;
-        acc.set(l.categorie, g);
+        acc.set(l.categorieCode, g);
         return acc;
       }, new Map<string, GroupeEquipement>())
       .values(),

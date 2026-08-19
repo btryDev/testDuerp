@@ -55,6 +55,8 @@ export type EtatMois = EtatEcheance | null;
 export type GroupeEquipement = {
   /** Libellé de la catégorie — « Extincteurs », « Ventilation (VMC) »… */
   categorie: string;
+  /** Code de la catégorie, pour son picto. */
+  categorieCode: string;
   lignes: LigneEquipement[];
   enRetard: number;
   proche: number;
@@ -67,6 +69,7 @@ export type LigneEquipement = {
   id: string;
   libelle: string;
   categorie: string;
+  categorieCode: string;
   /** Douze cases, de janvier à décembre de l'année affichée. */
   mois: EtatMois[];
   enRetard: number;
@@ -131,48 +134,19 @@ export function VueParEquipement({
   }
 
   return (
-    <div className="flex flex-col gap-20">
-      {groupes.map((g) => (
-        <section key={g.categorie}>
-          {/* Le titre du groupe reste dehors, sur le blanc de la page :
-              il annonce le panneau, il n'en fait pas partie. Le filet
-              sous lui tient lieu de barre de section — c'est à ce niveau
-              qu'on décide d'appeler un prestataire, pas appareil par
-              appareil, et le solde de la catégorie se lit donc là. */}
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 border-b border-[color:rgba(13,18,36,.12)] pb-3">
-            <h3 className="board-titre m-0 text-[21px]">{g.categorie}</h3>
-            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
-              {g.lignes.length} appareil{g.lignes.length > 1 ? "s" : ""}
-            </span>
-            <span className="ml-auto flex flex-wrap gap-2">
-              <Compte n={g.enRetard} libelle="dépassée" registre="enRetard" />
-              <Compte n={g.proche} libelle="sous 30 j" registre="proche" />
-              <Compte n={g.aVenir} libelle="à venir" registre="aVenir" />
-              <Compte n={g.faite} libelle="faite" registre="faite" />
-              <Compte n={g.aPlanifier} libelle="à planifier" registre={null} />
-            </span>
-          </div>
-
-          {/* Le sol commun : ce qui fait le groupe, c'est le fond partagé
-              par ses cartes. Un filet seul ne dirait que « ça commence
-              ici », jamais jusqu'où ça va — sur deux colonnes, la
-              deuxième rangée se retrouvait orpheline de son titre.
-              Gris neutre du board plutôt qu'ardoise : l'ardoise est
-              bleutée, et le bleu est déjà pris par les bandeaux de carte
-              et le creux des tiroirs. */}
-          <div className="mt-4 rounded-[30px] bg-[color:var(--board-canvas)] p-4 ring-1 ring-[color:rgba(13,18,36,.06)]">
-            <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
-              {g.lignes.map((l) => (
-                <CarteEquipement
-                  key={l.id}
-                  ligne={l}
-                  moisCourant={moisCourant}
-                  etablissementId={etablissementId}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+    <div className="flex flex-col gap-10">
+      {groupes.map((g, i) => (
+        <GroupeCategorie
+          key={g.categorieCode}
+          groupe={g}
+          moisCourant={moisCourant}
+          etablissementId={etablissementId}
+          // Un seul groupe ouvert à l'arrivée : celui qui coûte le plus,
+          // puisque l'ordre met le retard devant. Les autres annoncent
+          // leur solde depuis leur titre — c'est ce qu'on vient lire en
+          // premier, et ça n'oblige pas à dérouler pour le savoir.
+          ouvertParDefaut={i === 0}
+        />
       ))}
 
       {/* Ce que la lecture par appareil laisse forcément dehors. Le taire
@@ -188,6 +162,80 @@ export function VueParEquipement({
         </p>
       ) : null}
     </div>
+  );
+}
+
+function GroupeCategorie({
+  groupe: g,
+  moisCourant,
+  etablissementId,
+  ouvertParDefaut,
+}: {
+  groupe: GroupeEquipement;
+  moisCourant: number;
+  etablissementId: string;
+  ouvertParDefaut: boolean;
+}) {
+  const [ouvert, setOuvert] = useState(ouvertParDefaut);
+
+  return (
+    <section>
+      {/* Le titre du groupe reste dehors, sur le blanc de la page : il
+          annonce le panneau, il n'en fait pas partie. Le filet sous lui
+          tient lieu de barre de section, et toute la ligne déplie — le
+          solde reste lisible replié, c'est à ce niveau qu'on décide
+          d'appeler un prestataire. */}
+      <h3 className="m-0">
+        <button
+          type="button"
+          onClick={() => setOuvert((o) => !o)}
+          aria-expanded={ouvert}
+          className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 border-b border-[color:rgba(13,18,36,.12)] pb-3 text-left"
+        >
+          {/* La place d'un picto de catégorie est ici, à gauche du
+              titre — `categorieCode` la tient prête. */}
+          <span className="board-titre text-[21px]">{g.categorie}</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
+            {g.lignes.length} appareil{g.lignes.length > 1 ? "s" : ""}
+          </span>
+          <span className="ml-auto flex flex-wrap items-center gap-2">
+            <Compte n={g.enRetard} libelle="dépassée" registre="enRetard" />
+            <Compte n={g.proche} libelle="sous 30 j" registre="proche" />
+            <Compte n={g.aVenir} libelle="à venir" registre="aVenir" />
+            <Compte n={g.faite} libelle="faite" registre="faite" />
+            <Compte n={g.aPlanifier} libelle="à planifier" registre={null} />
+            <ChevronDown
+              aria-hidden
+              className={
+                "size-[18px] text-[color:var(--board-slate-mid)] transition-transform " +
+                (ouvert ? "rotate-180" : "")
+              }
+            />
+          </span>
+        </button>
+      </h3>
+
+      {/* Le sol commun : ce qui fait le groupe, c'est le fond partagé par
+          ses cartes. Un filet seul ne dirait que « ça commence ici »,
+          jamais jusqu'où ça va — sur deux colonnes, la deuxième rangée se
+          retrouvait orpheline de son titre. Gris neutre du board plutôt
+          qu'ardoise : l'ardoise est bleutée, et le bleu est déjà pris par
+          les bandeaux de carte et le creux des tiroirs. */}
+      {ouvert ? (
+        <div className="mt-4 rounded-[30px] bg-[color:var(--board-canvas)] p-4 ring-1 ring-[color:rgba(13,18,36,.06)]">
+          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
+            {g.lignes.map((l) => (
+              <CarteEquipement
+                key={l.id}
+                ligne={l}
+                moisCourant={moisCourant}
+                etablissementId={etablissementId}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </section>
   );
 }
 
