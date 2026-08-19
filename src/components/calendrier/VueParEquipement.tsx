@@ -131,13 +131,19 @@ export function VueParEquipement({
   }
 
   return (
-    <div className="flex flex-col gap-14">
+    <div className="flex flex-col gap-6">
       {groupes.map((g) => (
-        <section key={g.categorie}>
+        // Un fond commun plutôt qu'un filet : ce qui fait le groupe, c'est
+        // le sol partagé par ses cartes. Un trait, même épais, ne dit que
+        // « ça commence ici » — il ne dit pas jusqu'où ça va.
+        <section
+          key={g.categorie}
+          className="rounded-[30px] bg-[color:var(--board-slate-pale)] p-5 ring-1 ring-[color:var(--board-slate-line)] sm:p-6"
+        >
           {/* Le titre du groupe porte la catégorie et son solde : c'est à
               ce niveau qu'on décide d'appeler un prestataire, pas
               appareil par appareil. */}
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 border-b-2 border-[color:var(--board-slate)] pb-3.5">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 px-1">
             <h3 className="board-titre m-0 text-[21px]">{g.categorie}</h3>
             <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
               {g.lignes.length} appareil{g.lignes.length > 1 ? "s" : ""}
@@ -154,7 +160,7 @@ export function VueParEquipement({
           {/* Deux colonnes sur grand écran : une carte n'a pas besoin de
               mille pixels. `items-start` pour qu'une carte ouverte n'étire
               pas sa voisine restée repliée. */}
-          <div className="mt-5 grid grid-cols-1 items-start gap-x-5 gap-y-5 xl:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
             {g.lignes.map((l) => (
               <CarteEquipement
                 key={l.id}
