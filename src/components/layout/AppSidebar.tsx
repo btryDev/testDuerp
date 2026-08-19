@@ -45,6 +45,7 @@ import {
   type SidebarActive,
   type SidebarCounts,
   type SidebarItemId,
+  type SidebarModules,
 } from "./sidebar-nav";
 
 type Etablissement = {
@@ -63,12 +64,15 @@ export function AppSidebar({
   etablissement,
   active,
   counts,
+  modules,
   user,
 }: {
   etablissement: Etablissement;
   /** Item actif. Si omis, déduit automatiquement depuis `usePathname()`. */
   active?: SidebarActive;
   counts?: SidebarCounts;
+  /** État des registres pour cet établissement. Omis, aucun n'est qualifié. */
+  modules?: SidebarModules;
   user?: User | null;
 }) {
   const pathname = usePathname();
@@ -78,6 +82,7 @@ export function AppSidebar({
   const rail = construireRail({
     etablissementId: etablissement.id,
     counts,
+    modules,
   });
 
   // Panneau affiché : le choix manuel prime, sinon la catégorie de la page
@@ -395,8 +400,26 @@ function ecrireRepli(v: boolean) {
 const CLASSES_ITEM =
   "flex w-full items-center gap-3 rounded-full px-3.5 py-[10px] text-[13.5px] transition-colors";
 
+/**
+ * Étiquette d'un registre qui ne concerne pas (encore) l'établissement.
+ *
+ * « au besoin » plutôt que « à ouvrir » : l'entrée annonce une disponibilité,
+ * elle ne réclame rien. Un dirigeant qui n'a pas de travaux par point chaud
+ * n'a rien à faire de ce registre, et la sidebar ne doit pas lui inventer une
+ * tâche — c'est le contraire de ce que promet « À faire ».
+ */
+const ETIQUETTE_ETAT: Record<string, string> = {
+  "non-ouvert": "au besoin",
+  "non-applicable": "non applicable",
+};
+
 function NavLink({ item, actif }: { item: NavItem; actif: SidebarItemId }) {
   const isActive = item.id === actif;
+  // Un registre qualifié reste un lien : c'est par là qu'on l'ouvre le jour
+  // venu, et la page « non applicable » explique et permet de corriger le
+  // régime déclaré. Seule sa présentation s'efface.
+  const etiquette =
+    item.etat && item.etat !== "actif" ? ETIQUETTE_ETAT[item.etat] : null;
 
   // Destination pas encore implémentée : rendue inerte et étiquetée, pour
   // qu'elle ne se confonde pas visuellement avec un lien réel.
@@ -420,11 +443,21 @@ function NavLink({ item, actif }: { item: NavItem; actif: SidebarItemId }) {
         CLASSES_ITEM + " " +
         (isActive
           ? "bg-white font-semibold text-[color:var(--board-ink)]"
-          : "text-white/60 hover:bg-white/10 hover:text-white")
+          : etiquette
+            ? "text-white/35 hover:bg-white/10 hover:text-white/70"
+            : "text-white/60 hover:bg-white/10 hover:text-white")
       }
     >
-      <item.Icon aria-hidden className="size-4 opacity-90" />
+      <item.Icon
+        aria-hidden
+        className={"size-4 " + (etiquette && !isActive ? "opacity-50" : "opacity-90")}
+      />
       <span className="flex-1 truncate">{item.label}</span>
+      {etiquette && !isActive ? (
+        <span className="flex-none font-mono text-[9px] uppercase tracking-[0.1em]">
+          {etiquette}
+        </span>
+      ) : null}
       {typeof item.count === "number" && item.count > 0 ? (
         <span
           className={

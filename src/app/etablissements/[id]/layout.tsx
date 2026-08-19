@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { getDashboardData } from "@/lib/dashboard/queries";
 import { countAlertesVigilance } from "@/lib/prestataires/queries";
 import { countRisquesAReevaluer } from "@/lib/interventions/boucle-duerp";
+import { getEtatModules } from "@/lib/etablissements/modules";
 
 /**
  * Layout imbriqué pour toutes les pages d'un établissement.
@@ -36,6 +37,8 @@ export default async function EtablissementLayout({
       adresse: true,
       effectifSurSite: true,
       entrepriseId: true,
+      // Qualifie le registre d'accessibilité dans la sidebar (ERP seulement).
+      estERP: true,
     },
   });
   if (!etab) notFound();
@@ -43,13 +46,19 @@ export default async function EtablissementLayout({
   // Counts pour les badges de la sidebar — lecture séparée pour pouvoir
   // paralléliser si besoin (aujourd'hui dashboard fait déjà ces queries
   // pour ses widgets, idempotent tant qu'on n'abuse pas).
-  const [dashboard, prestatairesAlertes, nbEquipements, risquesAReevaluer] =
-    await Promise.all([
-      getDashboardData(id),
-      countAlertesVigilance(id),
-      prisma.equipement.count({ where: { etablissementId: id } }),
-      countRisquesAReevaluer(id),
-    ]);
+  const [
+    dashboard,
+    prestatairesAlertes,
+    nbEquipements,
+    risquesAReevaluer,
+    modules,
+  ] = await Promise.all([
+    getDashboardData(id),
+    countAlertesVigilance(id),
+    prisma.equipement.count({ where: { etablissementId: id } }),
+    countRisquesAReevaluer(id),
+    getEtatModules(id, etab.estERP),
+  ]);
 
   return (
     <div className="grid min-h-screen grid-cols-1 lg:h-screen lg:grid-cols-[auto_1fr] lg:overflow-hidden">
@@ -64,6 +73,7 @@ export default async function EtablissementLayout({
           prestatairesAlertes,
           risquesAReevaluer,
         }}
+        modules={modules}
         user={user}
       />
       <div className="flex min-w-0 flex-col lg:overflow-y-auto">

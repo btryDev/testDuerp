@@ -13,6 +13,25 @@
 // vivent à plat sous « Mes registres » — la divulgation progressive
 // (« Autres registres » replié) a été retirée : six entrées se lisent d'un
 // coup d'œil et un registre caché se cherchait.
+//
+// Les registres sont **qualifiés, jamais masqués**. La navigation était le
+// seul endroit du produit à ne rien savoir de l'établissement : elle offrait
+// « Accessibilité » à un non-ERP, dont la page répond « Non applicable », et
+// alignait six portes dont trois ou quatre ouvraient sur une pièce vide au
+// lendemain de l'onboarding. Elle applique désormais la même doctrine que la
+// matrice du tableau de bord (cf. `src/lib/dashboard/obligations.ts`) :
+//
+//   actif          — le registre concerne l'établissement, traitement normal
+//   non-ouvert     — événementiel, pas encore commencé ; l'entrée reste un
+//                    lien (c'est par là qu'on ouvre le registre le jour venu)
+//   non-applicable — l'obligation ne vise pas cet établissement ; l'entrée
+//                    reste un lien, la page explique et permet de corriger
+//                    le régime si la déclaration était fausse
+//
+// Rien ne disparaît donc de la liste : masquer rendrait un registre
+// introuvable le jour où il devient nécessaire, et c'est exactement ce qui
+// avait fait retirer la divulgation progressive. L'entrée dit son état plutôt
+// que de laisser croire à un dossier vide.
 
 import {
   LayoutDashboard,
@@ -66,6 +85,41 @@ export type SidebarCounts = {
   risquesAReevaluer?: number;
 };
 
+/**
+ * État d'un registre vis-à-vis de l'établissement. Voir l'en-tête du fichier
+ * pour la doctrine — et `EtatModule` n'est jamais un jugement de conformité :
+ * il dit si l'obligation vise l'établissement et si le registre est commencé,
+ * pas si le dossier est en règle.
+ */
+export type EtatModule = "actif" | "non-ouvert" | "non-applicable";
+
+/**
+ * Ce que la sidebar a besoin de savoir de l'établissement pour qualifier les
+ * registres. Mêmes signaux que `ModulesMatrice` côté tableau de bord, réduits
+ * à ce qui change l'état d'une entrée.
+ *
+ * Optionnel à l'appel : sans lui, tout est rendu « actif » — la sidebar se
+ * comporte alors comme avant. Un appelant qui ne peut pas fournir l'état vaut
+ * mieux qu'une entrée qualifiée à tort.
+ */
+export type SidebarModules = {
+  estERP: boolean;
+  /** Permis de feu créés, tous statuts confondus. */
+  nbPermisFeu: number;
+  /** Plans de prévention créés, tous statuts confondus. */
+  nbPlansPrevention: number;
+  /** Le carnet sanitaire a été ouvert (la présence d'un réseau ECS ne se
+   *  déduit pas : c'est la création du carnet qui fait foi). */
+  carnetSanitaireExiste: boolean;
+};
+
+/** Ordre d'affichage des registres : ce qui concerne l'établissement d'abord. */
+const RANG_ETAT: Record<EtatModule, number> = {
+  actif: 0,
+  "non-ouvert": 1,
+  "non-applicable": 2,
+};
+
 export type NavItem = {
   id: SidebarItemId;
   label: string;
@@ -76,6 +130,8 @@ export type NavItem = {
   /** Destination pas encore implémentée : rendue inerte et signalée comme
    *  telle plutôt qu'en lien mort indiscernable d'un lien réel. */
   bientot?: boolean;
+  /** Registres uniquement. Absent = rien à qualifier (item toujours actif). */
+  etat?: EtatModule;
 };
 
 export type NavSection = {
@@ -112,9 +168,11 @@ export function deduireActif(
 export function construireSections({
   etablissementId,
   counts,
+  modules,
 }: {
   etablissementId: string;
   counts?: SidebarCounts;
+  modules?: SidebarModules;
 }): NavSection[] {
   const href = (suffixe: string) =>
     `/etablissements/${etablissementId}${suffixe}`;
@@ -196,6 +254,27 @@ export function construireSections({
     },
   ];
 
+  // Qualification des registres. Les règles reprennent une à une celles de
+  // `ModulesMatrice` (`src/lib/dashboard/obligations.ts`), pour que la
+  // navigation et la matrice ne racontent jamais deux choses différentes du
+  // même établissement.
+  //
+  //   · DUERP et registre de sécurité : jamais qualifiés. Tout employeur tient
+  //     un DUERP (R. 4121-1) ; le registre de sécurité reçoit les rapports de
+  //     n'importe quelle vérification, donc de tout établissement.
+  //   · Accessibilité : obligation propre aux ERP. Elle reste « actif » dès que
+  //     l'établissement est ERP, même si le registre n'est pas encore créé —
+  //     c'est précisément ce qu'il reste à faire.
+  //   · Permis de feu et plans de prévention : événementiels. Ils s'ouvrent le
+  //     jour d'un travail par point chaud ou de la venue d'une entreprise
+  //     extérieure, pas avant.
+  //   · Carnet sanitaire : la présence d'un réseau d'eau chaude collectif ne se
+  //     déduit d'aucune donnée déclarée ; l'ouverture du carnet fait foi.
+  const etat = (valeur: EtatModule): EtatModule | undefined =>
+    modules ? valeur : undefined;
+  const evenementiel = (enCours: boolean) =>
+    etat(enCours ? "actif" : "non-ouvert");
+
   const registres: NavItem[] = [
     {
       id: "duerp",
@@ -216,26 +295,37 @@ export function construireSections({
       label: "Accessibilité",
       href: href("/accessibilite"),
       Icon: Accessibility,
+      etat: etat(modules?.estERP ? "actif" : "non-applicable"),
     },
     {
       id: "permis-feu",
       label: "Permis de feu",
       href: href("/permis-feu"),
       Icon: Flame,
+      etat: evenementiel((modules?.nbPermisFeu ?? 0) > 0),
     },
     {
       id: "plan-prevention",
       label: "Plans de prévention",
       href: href("/plan-prevention"),
       Icon: HandshakeIcon,
+      etat: evenementiel((modules?.nbPlansPrevention ?? 0) > 0),
     },
     {
       id: "carnet-sanitaire",
       label: "Carnet sanitaire",
       href: href("/carnet-sanitaire"),
       Icon: Droplets,
+      etat: evenementiel(modules?.carnetSanitaireExiste ?? false),
     },
   ];
+
+  // Ce qui concerne l'établissement remonte, le reste suit dans l'ordre
+  // d'origine. Tri stable : sans `modules`, tous les rangs valent 0 et la
+  // liste garde exactement l'ordre déclaré ci-dessus.
+  registres.sort(
+    (a, b) => RANG_ETAT[a.etat ?? "actif"] - RANG_ETAT[b.etat ?? "actif"],
+  );
 
   return [
     { title: "À faire", items: aFaire },
@@ -305,6 +395,7 @@ export function categorieDeItem(id: SidebarItemId): RailCategorieId {
 export function construireRail(params: {
   etablissementId: string;
   counts?: SidebarCounts;
+  modules?: SidebarModules;
 }): RailCategorie[] {
   // On dérive du même arbre que le rail simple : mêmes items, mêmes badges —
   // seule la présentation change.
