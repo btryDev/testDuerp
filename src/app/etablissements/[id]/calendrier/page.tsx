@@ -13,7 +13,6 @@ import {
 } from "@/lib/calendrier/queries";
 import {
   listerAutresEcheances,
-  tonPourDate,
   type EcheanceCalendrier,
   type FamilleEcheance,
 } from "@/lib/calendrier/echeances";
@@ -23,6 +22,8 @@ import {
   CHAMP_ETAT,
   ENCRE_ETAT,
   PRIORITE_ETAT,
+  classerDate,
+  classerVerification,
   type EtatEcheance,
   type RegistreLigne,
 } from "@/lib/calendrier/etats";
@@ -233,13 +234,16 @@ export default async function CalendrierPage({
     etat0.aVenir === 0 &&
     etat0.realisees12m === 0;
 
+  let regenere = false;
   if (aucuneOccurrenceEnBase) {
     const nbEquipements = (await listerEquipementsDeLEtablissement(id)).length;
     if (nbEquipements > 0) {
       await genererCalendrier(id);
+      regenere = true;
     }
   } else if (await calendrierDesynchronise(id)) {
     await genererCalendrier(id);
+    regenere = true;
   }
 
   const [verifsBruts, etat, autresEcheances, equipements] = await Promise.all([
@@ -247,7 +251,9 @@ export default async function CalendrierPage({
       domaine: filtreDomaine,
       urgentsSeulement: filtreUrgent,
     }),
-    compterEtatCalendrier(id),
+    // Les compteurs viennent d'être calculés trois lignes plus haut : on
+    // ne les refait que si une régénération a changé la donnée entre-temps.
+    regenere ? compterEtatCalendrier(id) : Promise.resolve(etat0),
     listerAutresEcheances(id),
     // Le parc entier, pas seulement les appareils qui portent une
     // échéance : la lecture par équipement doit pouvoir dire combien
@@ -335,22 +341,20 @@ export default async function CalendrierPage({
   //      `RegleAnnuelle`).
   const anneeCourante = composantesCiviles(aujourdhui).annee;
 
+  // Le classement vit dans `lib/calendrier/etats` (bâti sur les prédicats
+  // de `lib/dates/retard`) : cette page l'a redérivé à la main une fois,
+  // et ça a produit deux compteurs contradictoires sur le même écran.
   const etatDeLaLigne = (l: LigneMois): EtatEcheance => {
-    if (l.genre === "verif") {
-      const v = l.v;
-      if (v.dateRealisee || v.statut.startsWith("realisee")) return "faite";
-      if (
-        v.statut === "depassee" ||
-        tonPourDate(v.datePrevue, aujourdhui) === "alerte"
-      ) {
-        return "enRetard";
-      }
-    } else if (l.e.tone === "alerte") {
-      return "enRetard";
+    if (l.genre !== "verif") {
+      return l.e.tone === "alerte"
+        ? "enRetard"
+        : classerDate(l.date, aujourdhui);
     }
-    return estDansLesProchainsJours(l.date, aujourdhui, JOURS_HORIZON_PROCHE)
-      ? "proche"
-      : "aVenir";
+    const c = classerVerification(l.v, aujourdhui);
+    // « À planifier » est écarté en amont (cf. `datable`) ; si la ligne
+    // arrive quand même ici, sa date de génération se classe comme une
+    // date ordinaire plutôt que d'inventer un cinquième état de barre.
+    return c === "aPlanifier" ? classerDate(l.date, aujourdhui) : c;
   };
 
   const datable = (l: LigneMois) =>
@@ -358,7 +362,7 @@ export default async function CalendrierPage({
 
   const moisRegle: MoisRegle[] = Array.from({ length: 12 }, (_, i) => {
     const cle = `${anneeCourante}-${String(i + 1).padStart(2, "0")}`;
-    const compte = { enRetard: 0, proche: 0, aVenir: 0, faite: 0 };
+    const compte = { enRetard: 0, proche: 0, lointain: 0, faite: 0 };
     for (const l of parMois.get(cle) ?? []) {
       if (!datable(l)) continue;
       compte[etatDeLaLigne(l)] += 1;
@@ -372,7 +376,7 @@ export default async function CalendrierPage({
   });
 
   const totalAnnee = moisRegle.reduce(
-    (n, m) => n + m.enRetard + m.proche + m.aVenir + m.faite,
+    (n, m) => n + m.enRetard + m.proche + m.lointain + m.faite,
     0,
   );
   // Ce que la règle ne peut pas montrer sans mentir : les mois d'une
@@ -414,7 +418,7 @@ export default async function CalendrierPage({
         categorie: LABEL_CATEGORIE_EQUIPEMENT[v.equipement.categorie],
         categorieCode: v.equipement.categorie,
         mois: Array.from({ length: 12 }, () => null),
-        compte: { enRetard: 0, proche: 0, aVenir: 0, faite: 0 },
+        compte: { enRetard: 0, proche: 0, lointain: 0, faite: 0 },
         aPlanifier: 0,
         horsAnnee: 0,
         dates: [],
@@ -474,12 +478,12 @@ export default async function CalendrierPage({
       const enRetard = e.dates
         .filter((d) => d.etat === "enRetard")
         .sort((a, b) => a.date.getTime() - b.date.getTime());
-      const aVenir = e.dates
-        .filter((d) => d.etat === "proche" || d.etat === "aVenir")
+      const futures = e.dates
+        .filter((d) => d.etat === "proche" || d.etat === "lointain")
         .sort((a, b) => a.date.getTime() - b.date.getTime());
       // La plus ancienne dette d'abord : c'est elle qui coûte. À défaut,
       // la prochaine échéance.
-      const cible = enRetard[0] ?? aVenir[0] ?? null;
+      const cible = enRetard[0] ?? futures[0] ?? null;
       const jours = cible
         ? Math.abs(joursCivilsEntre(aujourdhui, cible.date))
         : 0;
@@ -492,7 +496,7 @@ export default async function CalendrierPage({
         mois: e.mois,
         enRetard: e.compte.enRetard,
         proche: e.compte.proche,
-        aVenir: e.compte.aVenir,
+        lointain: e.compte.lointain,
         faite: e.compte.faite,
         aPlanifier: e.aPlanifier,
         horsAnnee: e.horsAnnee,
@@ -529,14 +533,14 @@ export default async function CalendrierPage({
           lignes: [],
           enRetard: 0,
           proche: 0,
-          aVenir: 0,
+          lointain: 0,
           faite: 0,
           aPlanifier: 0,
         };
         g.lignes.push(l);
         g.enRetard += l.enRetard;
         g.proche += l.proche;
-        g.aVenir += l.aVenir;
+        g.lointain += l.lointain;
         g.faite += l.faite;
         g.aPlanifier += l.aPlanifier;
         acc.set(l.categorieCode, g);
@@ -573,7 +577,7 @@ export default async function CalendrierPage({
     if (!f) {
       f = {
         mois: Array.from({ length: 12 }, () => null),
-        compte: { enRetard: 0, proche: 0, aVenir: 0, faite: 0 },
+        compte: { enRetard: 0, proche: 0, lointain: 0, faite: 0 },
         horsAnnee: 0,
         dates: [],
         occurrences: [],
@@ -611,10 +615,10 @@ export default async function CalendrierPage({
       const enRetard = f.dates
         .filter((d) => d.etat === "enRetard")
         .sort((a, b) => a.date.getTime() - b.date.getTime());
-      const aVenir = f.dates
-        .filter((d) => d.etat === "proche" || d.etat === "aVenir")
+      const futures = f.dates
+        .filter((d) => d.etat === "proche" || d.etat === "lointain")
         .sort((a, b) => a.date.getTime() - b.date.getTime());
-      const cible = enRetard[0] ?? aVenir[0] ?? null;
+      const cible = enRetard[0] ?? futures[0] ?? null;
       const jours = cible
         ? Math.abs(joursCivilsEntre(aujourdhui, cible.date))
         : 0;
@@ -629,7 +633,7 @@ export default async function CalendrierPage({
         mois: f.mois,
         enRetard: f.compte.enRetard,
         proche: f.compte.proche,
-        aVenir: f.compte.aVenir,
+        lointain: f.compte.lointain,
         faite: f.compte.faite,
         aPlanifier: 0,
         horsAnnee: f.horsAnnee,
@@ -660,7 +664,7 @@ export default async function CalendrierPage({
       lignes: lignesAutres,
       enRetard: lignesAutres.reduce((n, l) => n + l.enRetard, 0),
       proche: lignesAutres.reduce((n, l) => n + l.proche, 0),
-      aVenir: lignesAutres.reduce((n, l) => n + l.aVenir, 0),
+      lointain: lignesAutres.reduce((n, l) => n + l.lointain, 0),
       faite: 0,
       aPlanifier: 0,
     });
@@ -911,9 +915,7 @@ export default async function CalendrierPage({
                 // ne doit jamais cacher un retard.
                 nbEnRetard: liste.filter((l) =>
                   l.genre === "verif"
-                    ? l.v.statut === "depassee" ||
-                      (l.v.statut === "planifiee" &&
-                        tonPourDate(l.v.datePrevue, aujourdhui) === "alerte")
+                    ? classerVerification(l.v, aujourdhui) === "enRetard"
                     : l.e.tone === "alerte",
                 ).length,
                 // Ce que la règle ne place pas : la carte le dit, sans

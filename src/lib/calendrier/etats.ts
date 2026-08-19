@@ -8,12 +8,30 @@
 // futur comme un retard.
 //
 // La règle, tenue ici une fois : la couleur dit l'ÉTAT, jamais le volume.
+//
+// Le classement lui-même vit ici aussi, bâti sur les prédicats de
+// `lib/dates/retard` — la page calendrier le redérivait à la main, et
+// c'est le genre de doublon qui a déjà produit deux compteurs
+// contradictoires sur le même écran.
+
+import {
+  estDansLesProchainsJours,
+  estEnRetard,
+  estVerificationEnRetard,
+} from "@/lib/dates/retard";
+import { JOURS_HORIZON_PROCHE } from "@/lib/dates";
 
 /**
  * Les quatre états qu'une occurrence datée peut prendre. Exclusifs entre
  * eux, et ordonnés par urgence décroissante dans `PRIORITE_ETAT`.
+ *
+ * `lointain` — planifié au-delà de l'horizon proche — et non « aVenir » :
+ * `estVerificationAVenir` (lib/dates) désigne déjà l'inverse, une
+ * échéance **dans** les 30 jours, et c'est elle qui nourrit la pilule
+ * « sous 30 jours » de l'en-tête. Deux `aVenir` aux fenêtres opposées,
+ * c'est le bug de la prochaine personne qui branche l'un sur l'autre.
  */
-export type EtatEcheance = "enRetard" | "proche" | "aVenir" | "faite";
+export type EtatEcheance = "enRetard" | "proche" | "lointain" | "faite";
 
 /**
  * Ce que porte une ligne de liste : les quatre états, plus « à planifier ».
@@ -27,12 +45,12 @@ export type RegistreLigne = EtatEcheance | "aPlanifier";
 
 /**
  * Urgence relative, pour trancher quand une case ne peut porter qu'un
- * état — un mois qui mêle du retard et de l'à-venir se lit rouge.
+ * état — un mois qui mêle du retard et du lointain se lit rouge.
  */
 export const PRIORITE_ETAT: Record<EtatEcheance, number> = {
   enRetard: 3,
   proche: 2,
-  aVenir: 1,
+  lointain: 1,
   faite: 0,
 };
 
@@ -40,7 +58,7 @@ export const PRIORITE_ETAT: Record<EtatEcheance, number> = {
 export const CHAMP_ETAT: Record<RegistreLigne, string> = {
   enRetard: "var(--board-signal)",
   proche: "var(--board-amber)",
-  aVenir: "var(--board-blue-soft)",
+  lointain: "var(--board-blue-soft)",
   faite: "var(--board-green)",
   aPlanifier: "var(--board-slate-pale)",
 };
@@ -49,7 +67,43 @@ export const CHAMP_ETAT: Record<RegistreLigne, string> = {
 export const ENCRE_ETAT: Record<RegistreLigne, string> = {
   enRetard: "var(--board-signal-ink)",
   proche: "var(--board-amber-ink)",
-  aVenir: "var(--board-blue-ink)",
+  lointain: "var(--board-blue-ink)",
   faite: "var(--board-green-ink)",
   aPlanifier: "var(--board-slate-mid)",
 };
+
+/**
+ * Classe une date nue — une échéance qui n'a ni statut ni réalisation,
+ * comme les attestations ou les travaux du plan d'actions.
+ */
+export function classerDate(
+  date: Date,
+  now: Date,
+): Extract<EtatEcheance, "enRetard" | "proche" | "lointain"> {
+  if (estEnRetard(date, now)) return "enRetard";
+  return estDansLesProchainsJours(date, now, JOURS_HORIZON_PROCHE)
+    ? "proche"
+    : "lointain";
+}
+
+/**
+ * Classe une vérification périodique. Même forme structurelle que les
+ * prédicats de `lib/dates/retard` : utilisable côté client et en test,
+ * sans `@prisma/client`.
+ *
+ * L'ordre des tests est celui du sens : « à planifier » avant tout (sa
+ * date est une date de génération, pas un rendez-vous — la classer par
+ * date mentirait), puis le réalisé (une vérification faite n'est jamais
+ * en retard), puis le retard, puis la fenêtre.
+ */
+export function classerVerification(
+  v: { statut: string; datePrevue: Date; dateRealisee: Date | null },
+  now: Date,
+): RegistreLigne {
+  if (v.statut === "a_planifier") return "aPlanifier";
+  if (v.dateRealisee !== null || v.statut.startsWith("realisee")) {
+    return "faite";
+  }
+  if (estVerificationEnRetard(v, now)) return "enRetard";
+  return classerDate(v.datePrevue, now);
+}

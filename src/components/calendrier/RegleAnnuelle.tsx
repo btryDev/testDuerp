@@ -32,7 +32,7 @@ export type MoisRegle = {
   labelLong: string;
   enRetard: number;
   proche: number;
-  aVenir: number;
+  lointain: number;
   /** Occurrences déjà réalisées — le mois n'est pas qu'une dette. */
   faite: number;
 };
@@ -54,7 +54,7 @@ type Segment = { cle: string; hauteur: number; fond: string };
 
 /** Total d'un mois, tous états confondus. */
 export function totalDuMois(m: MoisRegle): number {
-  return m.enRetard + m.proche + m.aVenir + m.faite;
+  return m.enRetard + m.proche + m.lointain + m.faite;
 }
 
 /**
@@ -69,7 +69,7 @@ function segmentsDuMois(m: MoisRegle, maxTotal: number): Segment[] {
   const parts = (
     [
       { cle: "faite", n: m.faite },
-      { cle: "aVenir", n: m.aVenir },
+      { cle: "lointain", n: m.lointain },
       { cle: "proche", n: m.proche },
       { cle: "enRetard", n: m.enRetard },
     ] satisfies { cle: EtatEcheance; n: number }[]
@@ -247,7 +247,7 @@ export function RegleAnnuelle({
       <div className="mt-3.5 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[color:var(--board-slate-line)] pt-3.5">
         <Cle etat="enRetard" libelle="en retard" />
         <Cle etat="proche" libelle="sous 30 jours" />
-        <Cle etat="aVenir" libelle="à venir" />
+        <Cle etat="lointain" libelle="à venir" />
         <Cle etat="faite" libelle="faite" />
         <Cle fond="var(--board-slate-pale)" libelle="aucune échéance" />
         <span className="ml-auto flex flex-wrap items-center gap-2">

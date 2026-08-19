@@ -69,7 +69,7 @@ export type GroupeEquipement = {
   lignes: LigneEquipement[];
   enRetard: number;
   proche: number;
-  aVenir: number;
+  lointain: number;
   faite: number;
   aPlanifier: number;
 };
@@ -92,7 +92,7 @@ export type LigneEquipement = {
   mois: EtatMois[];
   enRetard: number;
   proche: number;
-  aVenir: number;
+  lointain: number;
   faite: number;
   aPlanifier: number;
   /**
@@ -218,7 +218,7 @@ function GroupeCategorie({
           <span className="ml-auto flex flex-wrap items-center gap-2">
             <Compte n={g.enRetard} libelle="dépassée" registre="enRetard" />
             <Compte n={g.proche} libelle="sous 30 j" registre="proche" />
-            <Compte n={g.aVenir} libelle="à venir" registre="aVenir" />
+            <Compte n={g.lointain} libelle="à venir" registre="lointain" />
             <Compte n={g.faite} libelle="faite" registre="faite" />
             <Compte n={g.aPlanifier} libelle="à planifier" registre={null} />
           </span>
@@ -413,7 +413,7 @@ function CarteEquipement({
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Compte n={l.enRetard} libelle="dépassée" registre="enRetard" />
           <Compte n={l.proche} libelle="sous 30 j" registre="proche" />
-          <Compte n={l.aVenir} libelle="à venir" registre="aVenir" />
+          <Compte n={l.lointain} libelle="à venir" registre="lointain" />
           <Compte n={l.faite} libelle="faite" registre="faite" />
           <Compte n={l.aPlanifier} libelle="à planifier" registre={null} />
           {l.horsAnnee > 0 ? (
