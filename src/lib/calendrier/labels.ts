@@ -55,6 +55,27 @@ export const MOIS_FR = [
   "décembre",
 ] as const;
 
+/**
+ * Libellés de trois à quatre lettres pour les graduations de la règle
+ * annuelle. Tronquer `MOIS_FR` à trois lettres ne suffit pas : juin et
+ * juillet donnent tous deux « jui », et l'année devient illisible là où
+ * elle doit se lire d'un coup d'œil.
+ */
+export const MOIS_FR_COURT = [
+  "Jan",
+  "Fév",
+  "Mar",
+  "Avr",
+  "Mai",
+  "Juin",
+  "Juil",
+  "Août",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Déc",
+] as const;
+
 export function libelleMois(cle: string): string {
   // cle = "YYYY-MM"
   const [annee, mois] = cle.split("-");
