@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  lireProvenance,
+  retourDistinct,
+} from "@/lib/navigation/provenance";
 import { AppTopbar } from "@/components/layout/AppTopbar";
 import { ChangerStatutButtons } from "@/components/interventions/ChangerStatutButtons";
 import { CloturerTicketForm } from "@/components/interventions/CloturerTicketForm";
@@ -32,10 +36,19 @@ function fmtDate(d: Date | null): string | null {
 
 export default async function InterventionDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; interventionId: string }>;
+  searchParams: Promise<{ de?: string }>;
 }) {
   const { id, interventionId } = await params;
+  const { de } = await searchParams;
+  // Le fil d'Ariane dit où cette fiche vit ; le retour dit d'où l'on
+  // arrive — le calendrier, par exemple. Les deux cohabitent.
+  const retour = retourDistinct(
+    lireProvenance(de, id),
+    `/etablissements/${id}/interventions`,
+  );
   const { etablissement } = await requireEtablissement(id);
   const [it, user] = await Promise.all([
     getIntervention(id, interventionId),
@@ -60,6 +73,7 @@ export default async function InterventionDetailPage({
     <>
       <AppTopbar
         title={`Ticket #${String(it.numero).padStart(3, "0")}`}
+        retour={retour ?? undefined}
         crumbs={[
           { href: `/etablissements/${id}`, label: etablissement.raisonDisplay },
           {
@@ -262,10 +276,10 @@ export default async function InterventionDetailPage({
         {/* Retour */}
         <footer className="mt-10">
           <Link
-            href={`/etablissements/${id}/interventions`}
+            href={retour?.href ?? `/etablissements/${id}/interventions`}
             className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground hover:text-ink"
           >
-            ← Retour au tableau
+            ← {retour ? retour.label : "Retour au tableau"}
           </Link>
         </footer>
       </main>

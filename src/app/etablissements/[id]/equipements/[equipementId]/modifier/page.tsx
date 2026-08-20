@@ -1,9 +1,10 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FilRetour } from "@/components/ui-kit";
 import { EquipementForm } from "@/components/equipements/EquipementForm";
 import { modifierEquipement } from "@/lib/equipements/actions";
 import { getEquipement } from "@/lib/equipements/queries";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
+import { lireProvenance } from "@/lib/navigation/provenance";
 
 type Caracteristiques = {
   nombre?: number;
@@ -15,26 +16,32 @@ type Caracteristiques = {
 
 export default async function ModifierEquipementPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; equipementId: string }>;
+  searchParams: Promise<{ de?: string }>;
 }) {
   const { id, equipementId } = await params;
+  const { de } = await searchParams;
   const eq = await getEquipement(equipementId);
   if (!eq || eq.etablissementId !== id) notFound();
+
+  // La fiche d'un équipement s'ouvre depuis le parc, mais aussi depuis la
+  // lecture par équipement du calendrier.
+  const provenance = lireProvenance(de, id);
 
   const caracs = (eq.caracteristiques ?? {}) as Caracteristiques;
   const action = modifierEquipement.bind(null, equipementId);
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-14 sm:px-10">
-      <nav>
-        <Link
-          href={`/etablissements/${id}/equipements`}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
-        >
-          ← Équipements
-        </Link>
-      </nav>
+      <FilRetour
+        provenance={provenance}
+        canonique={{
+          href: `/etablissements/${id}/equipements`,
+          label: "Équipements",
+        }}
+      />
 
       <header className="mt-8 space-y-3">
         <p className="label-admin">Modifier l&apos;équipement</p>

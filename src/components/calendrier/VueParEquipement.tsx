@@ -39,7 +39,7 @@
 //     visible dans les deux : c'est elle qu'on est venu lire.
 
 import { useState } from "react";
-import Link from "next/link";
+import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import type { StatutVerification } from "@prisma/client";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
@@ -334,13 +334,13 @@ function CarteEquipement({
             </p>
           </div>
           {l.hrefFiche ? (
-            <Link
+            <LienProvenance
               href={l.hrefFiche}
               aria-label={`Ouvrir ${l.libelle}`}
               className="flex size-[34px] flex-none items-center justify-center rounded-full bg-[color:var(--board-card)] text-[color:var(--board-ink)] shadow-[inset_0_0_0_1px_rgba(10,10,10,.14)] transition-colors hover:bg-[color:var(--board-slate-pale)]"
             >
               <ChevronRight className="size-4" />
-            </Link>
+            </LienProvenance>
           ) : null}
         </div>
       </header>
@@ -433,7 +433,7 @@ function CarteEquipement({
             <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
               {details.map((o) => (
                 <li key={o.id}>
-                  <Link
+                  <LienProvenance
                     href={o.href}
                     className="flex items-center gap-3.5 rounded-[16px] bg-[color:var(--board-card)] px-3.5 py-2.5 transition-opacity hover:opacity-85"
                   >
@@ -465,7 +465,7 @@ function CarteEquipement({
                           En retard
                         </span>
                       ) : null}
-                  </Link>
+                  </LienProvenance>
                 </li>
               ))}
             </ul>

@@ -1,4 +1,8 @@
 import { notFound } from "next/navigation";
+import {
+  lireProvenance,
+  retourDistinct,
+} from "@/lib/navigation/provenance";
 import { AppTopbar } from "@/components/layout/AppTopbar";
 import { LegalBadge, SignatureBlock, StatusPill } from "@/components/ui-kit";
 import { DemanderSignatureForm } from "@/components/signatures/DemanderSignatureForm";
@@ -35,10 +39,19 @@ function dureeHhMm(minutes: number): string {
 
 export default async function PermisFeuDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; permisFeuId: string }>;
+  searchParams: Promise<{ de?: string }>;
 }) {
   const { id, permisFeuId } = await params;
+  const { de } = await searchParams;
+  // Le fil d'Ariane dit où cette fiche vit ; le retour dit d'où l'on
+  // arrive — le calendrier, par exemple. Les deux cohabitent.
+  const retour = retourDistinct(
+    lireProvenance(de, id),
+    `/etablissements/${id}/permis-feu`,
+  );
   const { etablissement } = await requireEtablissement(id);
   const permis = await getPermisFeu(id, permisFeuId);
   if (!permis) notFound();
@@ -67,6 +80,7 @@ export default async function PermisFeuDetailPage({
     <>
       <AppTopbar
         title={`Permis de feu PF-${String(permis.numero).padStart(3, "0")}`}
+        retour={retour ?? undefined}
         crumbs={[
           { href: `/etablissements/${id}`, label: etablissement.raisonDisplay },
           { href: `/etablissements/${id}/permis-feu`, label: "Permis de feu" },

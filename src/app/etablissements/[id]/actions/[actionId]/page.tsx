@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FilRetour } from "@/components/ui-kit";
 import { BadgeOrigine } from "@/components/actions/BadgeOrigine";
 import { BadgeStatutAction } from "@/components/actions/BadgeStatutAction";
 import { CloturerActionForm } from "@/components/actions/CloturerActionForm";
@@ -8,6 +9,7 @@ import { cloturerAction } from "@/lib/actions/plan";
 import { getAction, origineDeLAction } from "@/lib/actions/queries";
 import { LABEL_TYPE_ACTION } from "@/lib/actions/labels";
 import { formaterDateFr, formaterDateLongueFr } from "@/lib/dates";
+import { avecProvenance, lireProvenance } from "@/lib/navigation/provenance";
 
 function formatDate(d: Date | null): string {
   if (!d) return "—";
@@ -16,12 +18,26 @@ function formatDate(d: Date | null): string {
 
 export default async function ActionDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; actionId: string }>;
+  searchParams: Promise<{ de?: string }>;
 }) {
   const { id, actionId } = await params;
+  const { de } = await searchParams;
   const a = await getAction(actionId);
   if (!a || a.etablissementId !== id) notFound();
+
+  // D'où l'on vient (calendrier, tableau de bord, une vérification…), et où
+  // cette fiche vit de toute façon — le plan d'actions.
+  const provenance = lireProvenance(de, id);
+  const planActions = {
+    href: `/etablissements/${id}/actions`,
+    label: "Plan d'actions",
+  };
+  // Les liens que cette fiche pose s'annoncent eux-mêmes, sans réexpédier
+  // la provenance reçue : la chaîne reste bornée à un saut.
+  const depuisCetteFiche = `/etablissements/${id}/actions/${actionId}`;
 
   const origine = origineDeLAction(a);
   const boundCloture = cloturerAction.bind(null, actionId);
@@ -33,14 +49,7 @@ export default async function ActionDetailPage({
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-14 sm:px-10">
-      <nav>
-        <Link
-          href={`/etablissements/${id}/actions`}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
-        >
-          ← Plan d&apos;actions
-        </Link>
-      </nav>
+      <FilRetour provenance={provenance} canonique={planActions} />
 
       <header className="mt-8 flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0 flex-1 space-y-3">
@@ -61,7 +70,7 @@ export default async function ActionDetailPage({
         <div className="flex gap-2">
           <SupprimerActionButton
             id={a.id}
-            redirectTo={`/etablissements/${id}/actions`}
+            redirectTo={(provenance ?? planActions).href}
           />
         </div>
       </header>
@@ -151,7 +160,10 @@ export default async function ActionDetailPage({
             </p>
             <p className="pt-2">
               <Link
-                href={`/etablissements/${id}/verifications/${a.verification.id}`}
+                href={avecProvenance(
+                  `/etablissements/${id}/verifications/${a.verification.id}`,
+                  depuisCetteFiche,
+                )}
                 className="text-[0.82rem] underline underline-offset-2"
               >
                 Ouvrir la vérification →

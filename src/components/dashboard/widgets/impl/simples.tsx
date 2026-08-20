@@ -8,6 +8,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { ChevronDown, ChevronRight, Layers, LayoutGrid } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { BentoCell } from "@/components/dashboard/BentoCell";
@@ -69,29 +70,29 @@ export function WidgetRegistre({ bundle }: { bundle: DashboardBundle }) {
                 className="group cursor-pointer border-b border-dashed border-rule-soft transition-colors last:border-b-0 hover:bg-paper-sunk"
               >
                 <td className="py-2.5 font-mono text-[0.82rem] text-muted-foreground">
-                  <Link
+                  <LienProvenance
                     href={`/etablissements/${etablissementId}/verifications/${r.verificationId}`}
                     className="block"
                     aria-label={`Ouvrir ${r.verification.libelleObligation}`}
                   >
                     {formatDateCourte(r.dateRapport)}
-                  </Link>
+                  </LienProvenance>
                 </td>
                 <td className="truncate py-2.5">
-                  <Link
+                  <LienProvenance
                     href={`/etablissements/${etablissementId}/verifications/${r.verificationId}`}
                     className="block group-hover:underline"
                   >
                     {r.verification.libelleObligation}
-                  </Link>
+                  </LienProvenance>
                 </td>
                 <td className="py-2.5 text-right">
-                  <Link
+                  <LienProvenance
                     href={`/etablissements/${etablissementId}/verifications/${r.verificationId}`}
                     className="inline-block"
                   >
                     <PillResultat resultat={r.resultat} />
-                  </Link>
+                  </LienProvenance>
                 </td>
               </tr>
             ))}
