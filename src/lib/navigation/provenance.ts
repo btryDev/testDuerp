@@ -112,6 +112,13 @@ export function nommerEcran(
   const segments = segmentsSousEtablissement(pathname, etablissementId);
   if (!segments) return null;
   const item = deduireActif(pathname, etablissementId);
+  // `deduireActif` rend « tableau » pour la racine de l'établissement, mais
+  // aussi, par défaut, pour un chemin qu'il ne reconnaît pas. Sous
+  // l'établissement, un premier segment inconnu n'est donc pas le tableau
+  // de bord : c'est une route qui n'existe pas — un `de` forgé, ou une
+  // route renommée depuis. Mieux vaut retomber sur le parent canonique que
+  // d'afficher « ← Tableau de bord » au-dessus d'un lien qui mène à un 404.
+  if (segments.length > 0 && item === "tableau") return null;
   // Deux segments ou plus : on est sous une liste, donc sur une fiche.
   if (segments.length >= 2) return LABEL_DETAIL[item] ?? LABEL_ITEM[item];
   return LABEL_ITEM[item];
@@ -192,6 +199,12 @@ export function avecProvenance(
 ): string {
   if (!origine) return href;
   if (chemin(href) === chemin(origine)) return href;
-  const separateur = href.includes("?") ? "&" : "?";
-  return `${href}${separateur}${PARAM_PROVENANCE}=${encodeURIComponent(origine)}`;
+  // Le fragment ferme l'URL : un paramètre ajouté après lui atterrirait
+  // *dans* l'ancre, et ne serait jamais lu.
+  const diese = href.indexOf("#");
+  const avant = diese === -1 ? href : href.slice(0, diese);
+  const fragment = diese === -1 ? "" : href.slice(diese);
+  const separateur = avant.includes("?") ? "&" : "?";
+  const param = `${PARAM_PROVENANCE}=${encodeURIComponent(origine)}`;
+  return `${avant}${separateur}${param}${fragment}`;
 }

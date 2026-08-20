@@ -30,5 +30,6 @@ export function LienProvenance({
   href,
   ...reste
 }: Omit<ComponentProps<typeof Link>, "href"> & { href: string }) {
-  return <Link href={avecProvenance(href, useOrigine())} {...reste} />;
+  const origine = useOrigine();
+  return <Link href={avecProvenance(href, origine)} {...reste} />;
 }
