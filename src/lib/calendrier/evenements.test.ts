@@ -34,7 +34,7 @@ function autre(
   return {
     id,
     // La famille est ce que le test pilote ; le type n'a qu'à être cohérent.
-    type: famille === "controle" ? "verification" : "intervention",
+    type: famille === "controle" ? "verification" : "action-duerp",
     famille,
     libelle: `Échéance ${id}`,
     origine: "Origine lisible",

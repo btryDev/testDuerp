@@ -1,8 +1,8 @@
 // L'enveloppe d'une fiche de détail.
 //
 // Trois enveloppes cohabitaient jusqu'ici : `AppTopbar` collante + colonne
-// centrée (tickets, permis de feu, plans de prévention), colonne centrée
-// nue (action, vérification), et la gouttière pleine largeur du board
+// centrée (permis de feu, plans de prévention), colonne centrée nue
+// (action, vérification), et la gouttière pleine largeur du board
 // (calendrier, tableau de bord). Une fiche ouverte depuis le calendrier
 // passait donc d'une mise en page à une autre au clic.
 //

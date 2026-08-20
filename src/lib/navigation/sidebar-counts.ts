@@ -14,18 +14,16 @@ import type { SidebarCounts } from "@/components/layout/sidebar-nav";
 import { compterEnRetardParFamille } from "@/lib/calendrier/retards";
 import { compterActions } from "@/lib/actions/queries";
 import { countAlertesVigilance } from "@/lib/prestataires/queries";
-import { countRisquesAReevaluer } from "@/lib/interventions/boucle-duerp";
 
 export async function chargerSidebarCounts(
   etablissementId: string,
 ): Promise<SidebarCounts> {
-  const [retards, actions, prestatairesAlertes, equipements, risques] =
+  const [retards, actions, prestatairesAlertes, equipements] =
     await Promise.all([
       compterEnRetardParFamille(etablissementId),
       compterActions(etablissementId),
       countAlertesVigilance(etablissementId),
       prisma.equipement.count({ where: { etablissementId } }),
-      countRisquesAReevaluer(etablissementId),
     ]);
 
   return {
@@ -33,6 +31,5 @@ export async function chargerSidebarCounts(
     enRetardTotal: retards.total,
     actions: actions.totalACouvrir,
     prestatairesAlertes,
-    risquesAReevaluer: risques,
   };
 }

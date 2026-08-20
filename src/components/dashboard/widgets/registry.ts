@@ -305,7 +305,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     id: "semaine",
     titre: "Semaine en cours",
     description:
-      "Mini-agenda 7 jours — intervention(s) par jour, aujourd'hui mis en évidence.",
+      "Mini-agenda 7 jours — échéance(s) par jour, aujourd'hui mis en évidence.",
     taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",

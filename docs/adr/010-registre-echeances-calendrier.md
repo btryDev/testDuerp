@@ -56,7 +56,6 @@ injectée), conformément au principe zéro-IA / déterminisme.
 | Vérifications périodiques | controle | `datePrevue` | moteur de matching (hors registre : flux historique dédié) |
 | Analyse légionelles | controle | dernière analyse + 1 an | arrêté du 1er février 2010 (déjà cité au module) |
 | Actions correctives | travaux | `echeance` | statuts ouverte / en cours |
-| Interventions | travaux | `echeance` | statuts non clos |
 | Permis de feu | operations | `dateDebut` | non terminés/annulés ; alerte si la date de début est passée sans être en cours |
 | Plans de prévention | operations | `dateDebut` | opérations non finies ; alerte si commencé sans inspection commune (R. 4512-7) |
 | Mise à jour DUERP | papiers | dernière version + 1 an | R. 4121-2 |

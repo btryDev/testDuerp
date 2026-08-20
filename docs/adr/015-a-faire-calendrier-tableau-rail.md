@@ -3,7 +3,10 @@
 - Statut : acceptée, **révisée le jour même** (voir « Révision » en fin de
   page), puis **amendée par l'ADR-017** (une cinquième entrée de rail,
   « Opérations », recueille le permis de feu et le plan de prévention, qui
-  n'étaient pas des registres)
+  n'étaient pas des registres), puis **révisée une seconde fois** : le
+  tableau de bord n'a plus d'entrée de rail du tout (voir « Révision — la
+  marque remplace l'entrée », en fin de page). L'ADR-018, lui, a retiré
+  « Interventions » du panneau « À faire » avec son module
 - Date : 2026-08-20
 - Portée : `src/components/layout/sidebar-nav.ts`, `AppSidebar.tsx`,
   `src/lib/navigation/`, `src/lib/calendrier/retards.ts`, la page calendrier
@@ -163,6 +166,35 @@ Le besoin d'origine — « où en est chaque appareil ? » — n'est pas satisfa
 une entrée de navigation de plus, mais par la page **Équipements**, aujourd'hui
 un inventaire nu (catégorie, libellé, localisation) qui ne dit rien de l'état de
 vérification de chaque appareil. C'est là que la question se pose.
+
+## Révision — la marque remplace l'entrée « Tableau de bord »
+
+La décision 1 sortait le tableau de bord du panneau « À faire » pour lui
+donner une entrée de rail : un résumé n'est pas une tâche, et la porte
+d'entrée du produit ne devait plus être rangée dans un tiroir. Le diagnostic
+tient, le remède était une entrée de trop.
+
+Le rail porte les **questions du dirigeant** — qu'est-ce que je dois faire,
+qu'est-ce qui est encadré, qu'est-ce que j'ai déclaré, qu'est-ce que je peux
+présenter. Le tableau de bord n'en est pas une : il y répond toutes. Le
+mettre au même rang, avec la même tuile et le même libellé, en faisait une
+cinquième question — et sa tuile allumée, sur l'écran d'atterrissage,
+signalait un endroit où l'on est toujours arrivé sans l'avoir demandé.
+
+**Le retour au tableau de bord passe désormais par la marque**, en tête de
+rail : « Rojer » en toutes lettres, à la place du logo abstrait. Un logo
+ramène à l'accueil — c'est le seul geste de navigation que tout le monde
+connaît déjà, et il n'occupe pas une place dans la liste des questions.
+Conséquences :
+
+- Le panneau ne répète plus le nom du produit : il était affiché deux fois
+  côte à côte dès que le panneau s'ouvrait. Son en-tête ne porte plus que le
+  bouton de repli.
+- `construireRail` ne rend plus de catégorie `tableau`. `categorieDeItem`
+  continue d'en rendre l'id — c'est ainsi que le panneau sait qu'il n'a rien
+  à montrer sur cet écran, et le rail reste seul.
+- Aucune tuile n'est allumée sur le tableau de bord. C'est exact : on n'y est
+  dans aucune des quatre catégories.
 
 ## Lexique — un mot par objet
 

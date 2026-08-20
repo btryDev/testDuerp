@@ -6,7 +6,7 @@
 
 **Rojer** (nom du produit, ex-DUERP.fr) est une application Next.js qui accompagne un **dirigeant de TPE/PME (non-expert)** dans le pilotage **continu** de sa conformité santé-sécurité réglementaire.
 
-Le DUERP a été le socle historique du produit, mais il n'en est plus qu'une composante. Rojer centralise aujourd'hui l'ensemble des registres, données et acteurs de la prévention : vérifications périodiques, registre de sécurité, plan d'actions, registre d'accessibilité, permis de feu, plans de prévention, carnet sanitaire, prestataires, interventions, signatures.
+Le DUERP a été le socle historique du produit, mais il n'en est plus qu'une composante. Rojer centralise aujourd'hui l'ensemble des registres, données et acteurs de la prévention : vérifications périodiques, registre de sécurité, plan d'actions, registre d'accessibilité, permis de feu, plans de prévention, carnet sanitaire, prestataires, signatures.
 
 Le dirigeant se connecte et voit, en un coup d'œil :
 - Où il en est de ses obligations (à jour, en retard, à venir)
@@ -54,8 +54,7 @@ Pas de LLM pour traiter les réponses, pas de reformulation automatique, pas de 
 
 ### Vie quotidienne
 
-12. **Interventions (tickets)** — signalements avec photos, priorité, assignation, commentaires, clôture ; **boucle vers le DUERP** : une clôture peut déclencher la réévaluation d'un risque (le DUERP comme document vivant). Cf. ADR-009.
-13. **Guide pédagogique « Comprendre »** — obligations « chez vous » expliquées (mode explain déterministe du moteur de matching), rôles, rythme annuel, comportement en cas de contrôle.
+12. **Guide pédagogique « Comprendre »** — obligations « chez vous » expliquées (mode explain déterministe du moteur de matching), rôles, rythme annuel, comportement en cas de contrôle.
 
 Tous ces modules partagent un **modèle de données unifié** : un établissement, des équipements, des obligations applicables, des vérifications, des actions, des acteurs. Le DUERP n'est pas un silo, c'est une vue spécifique sur cette donnée.
 
@@ -92,6 +91,7 @@ Livré : **65 obligations sur 9 domaines** (P1 + P2 + P3) — électricité, inc
 - Paiement / abonnement / gestion commerciale
 - Intégration SIRENE pour auto-complétion SIRET
 - Analyses comparatives / benchmarks sectoriels
+- Signalements de terrain / ticketing : le module Interventions a été retiré (ADR-018) ; rien ne relie plus un constat à une action datée
 - Registres non couverts : accidents du travail / AT bénins, registre unique du personnel, dangers graves et imminents, suivi nominatif formations/habilitations, EPI, visites médicales
 
 ## Stack technique
@@ -114,7 +114,9 @@ Le stockage des fichiers uploadés passe par une **abstraction** (`src/lib/stora
 
 Cœur : `Entreprise` → `Etablissement` (régimes cumulables travail/ERP/IGH/habitation, ADR-001/004) → `UniteTravail`, `Equipement`, `Duerp`/`DuerpVersion`, `Risque`, `Verification`, `RapportVerification`, `Action` (unifiée, XOR risque/vérification — ADR-002 ; `Mesure` a été supprimée).
 
-Modules complémentaires : `Prestataire`, `AccessToken`, `Signature`, `RegistreAccessibilite`, `PermisFeu`, `PlanPrevention`/`LignePlanPrevention`, `CarnetSanitaire`/`PointReleve`/`ReleveTemperature`/`AnalyseLegionelle`, `Intervention`/`CommentaireIntervention`.
+Modules complémentaires : `Prestataire`, `AccessToken`, `Signature`, `RegistreAccessibilite`, `PermisFeu`, `PlanPrevention`/`LignePlanPrevention`, `CarnetSanitaire`/`PointReleve`/`ReleveTemperature`/`AnalyseLegionelle`.
+
+`Intervention`/`CommentaireIntervention` restent dans le schéma sans aucun code qui les lise : le module a été retiré (ADR-018), le `drop` des tables viendra dans une migration dédiée.
 
 Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligations est du TypeScript (ADR-003).
 
@@ -127,15 +129,16 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
 6. **006** — Signature électronique horodatée
 7. **007** — Prestataires & accès externe par token
 8. **008** — Signature multi-objets (JSON canonique)
-9. **009** — Boucle tickets ↔ DUERP
+9. **009** — Boucle tickets ↔ DUERP (**annulée par l'ADR-018**)
 10. **010** — Registre de sources d'échéances du calendrier
 11. **011** — Dates civiles, fuseau de référence et prédicats de retard
 12. **012** — Conservation des preuves : régénération idempotente, suppression logique
 13. **013** — Serveur MCP distant authentifié en OAuth 2.1
 14. **014** — Le retour dit d'où l'on vient, le fil d'Ariane dit où la fiche vit
-15. **015** — « À faire » est un écran (le calendrier), tableau de bord au rail
+15. **015** — « À faire » est un écran (le calendrier)
 16. **016** — La nature d'une échéance est un type fermé, la famille s'en déduit
 17. **017** — Les opérations ponctuelles ne sont ni des corrections ni des registres
+18. **018** — Le module Interventions est retiré
 
 Toute nouvelle décision structurante → nouvel ADR avant de coder.
 
@@ -146,8 +149,8 @@ Toute nouvelle décision structurante → nouvel ADR avant de coder.
 Une entrée de rail = une **page d'entrée** + un **panneau** : cliquer navigue
 et ouvre le panneau (ADR-015).
 
-- **Tableau de bord** : lien direct, sans panneau — le board de widgets
-- **À faire** (→ le calendrier, toutes familles) : Calendrier · Plan d'actions · Interventions · Préparer un contrôle — que des **activités**, jamais l'état filtré d'une autre entrée ; un filtre vit dans l'écran
+- **La marque « Rojer »**, en tête de rail : le retour au **tableau de bord**, qui n'a pas d'entrée de navigation — un résumé n'est pas une des questions du dirigeant, il y répond toutes (ADR-015, seconde révision)
+- **À faire** (→ le calendrier, toutes familles) : Calendrier · Plan d'actions · Préparer un contrôle — que des **activités**, jamais l'état filtré d'une autre entrée ; un filtre vit dans l'écran
 - **Opérations** (→ Permis de feu) : Permis de feu · Plans de prévention — le
   **ponctuel encadré**, qui naît d'un chantier daté et meurt clos ; ce n'est
   ni une correction ni un registre tenu en continu (ADR-017)
@@ -181,7 +184,7 @@ Sorties générées côté serveur, en mode déterministe, avec mentions légale
 
 ## État d'avancement
 
-Les étapes 0 à 11 de `spec/PLAN.md` sont livrées. Le travail actuel dépasse le PLAN d'origine : marque Rojer, board à widgets, double sidebar, et les modules 5 à 13 ci-dessus. Reste notamment : e2e Playwright, polish/a11y/RGPD (étape 12), et les registres listés hors périmètre.
+Les étapes 0 à 11 de `spec/PLAN.md` sont livrées. Le travail actuel dépasse le PLAN d'origine : marque Rojer, board à widgets, double sidebar, et les modules 5 à 12 ci-dessus. Reste notamment : e2e Playwright, polish/a11y/RGPD (étape 12), et les registres listés hors périmètre.
 
 ## Règles de conduite pour Claude Code
 

@@ -14,8 +14,7 @@ import { getStorage } from "@/lib/storage";
  * **Scoping (ADR-005).** Le rapport n'est servi que si son établissement
  * appartient au user connecté : la relation complète
  * `RapportVerification → Etablissement → Entreprise → userId` est vérifiée
- * dans le `findFirst` ci-dessous — même modèle que
- * `src/app/api/interventions/photos/route.ts`. Avant ce garde, un simple
+ * dans le `findFirst` ci-dessous. Avant ce garde, un simple
  * identifiant suffisait à télécharger le rapport de vérification de
  * n'importe quel client : un rapport porte la raison sociale, l'adresse et
  * les écarts constatés chez un tiers.

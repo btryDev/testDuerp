@@ -103,7 +103,6 @@ describe("construireSections — structure", () => {
     expect(aFaire.items.map((i) => i.id)).toEqual([
       "calendrier",
       "actions",
-      "interventions",
       "controle",
     ]);
     // Aucune destination du panneau ne porte de query : un filtre est un
@@ -113,9 +112,10 @@ describe("construireSections — structure", () => {
     }
   });
 
-  it("garde hors des sections ce qui vit au rail", () => {
-    // Un résumé n'est pas une tâche, et le guide a son entrée de premier
-    // niveau : les laisser ici les afficherait deux fois (ADR-015).
+  it("garde hors des sections ce qui vit ailleurs", () => {
+    // Un résumé n'est pas une tâche — on y revient par la marque (ADR-015,
+    // seconde révision) ; le guide a son entrée de premier niveau : les
+    // laisser ici les afficherait deux fois.
     expect(idsVisibles()).not.toContain("tableau");
     expect(idsVisibles()).not.toContain("guide");
   });
@@ -159,7 +159,6 @@ describe("construireRail — rail à deux niveaux", () => {
   it("expose les catégories dans l'ordre du rail", () => {
     // Les deux catégories d'activité d'abord, les descriptives ensuite.
     expect(rail().map((c) => c.id)).toEqual([
-      "tableau",
       "a-faire",
       "operations",
       "etablissement",
@@ -186,10 +185,12 @@ describe("construireRail — rail à deux niveaux", () => {
     }
   });
 
-  it("fait du tableau de bord une entrée de rail sans panneau", () => {
-    const tableau = rail().find((c) => c.id === "tableau");
-    expect(tableau?.items).toBeUndefined();
-    expect(tableau?.href).toBe(`/etablissements/${ID}`);
+  it("ne donne pas d'entrée de rail au tableau de bord", () => {
+    // On y revient par la marque en tête de rail, comme un logo ramène à
+    // l'accueil. Une entrée de plus l'aurait mis au rang des quatre
+    // questions du dirigeant, alors qu'il y répond toutes.
+    expect(rail().some((c) => c.id === "tableau")).toBe(false);
+    expect(idsVisibles()).not.toContain("tableau");
   });
 
   it("fait de « Connecter » un lien direct, hors des trois panneaux", () => {
@@ -250,7 +251,6 @@ describe("construireSections — badges", () => {
         equipements: 13,
         enRetardTotal: 5,
         prestatairesAlertes: 1,
-        risquesAReevaluer: 2,
         actions: 5,
       },
     }).flatMap((s) => s.items);
@@ -262,7 +262,6 @@ describe("construireSections — badges", () => {
     expect(parId("actions")?.count).toBe(5);
     expect(parId("actions")?.alert).toBeFalsy();
     expect(parId("prestataires")).toMatchObject({ count: 1, alert: true });
-    expect(parId("duerp")).toMatchObject({ count: 2, alert: true });
   });
 
   it("donne au calendrier le retard de toutes les familles", () => {

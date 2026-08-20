@@ -20,7 +20,6 @@ import {
   HandshakeIcon,
   HardHat,
   ListChecks,
-  Ticket,
   Users,
 } from "lucide-react";
 import type { FamilleEcheance, TypeEcheance } from "@/lib/calendrier/echeances";
@@ -80,11 +79,11 @@ const ICONE: Record<FamilleEcheance, typeof ClipboardCheck> = {
 //
 // La famille regroupe pour filtrer, le type nomme. « Corrections » ne dit
 // pas si le dirigeant a devant lui une mesure qu'il a inscrite à son DUERP
-// ou un signalement de son cuisinier ; le type le dit.
+// ou une action née d'un rapport de vérification ; le type le dit.
 
 /**
  * Le mot posé devant une ligne. Lexique de l'ADR-015 : « Vérification » et
- * non « Contrôle », « Intervention » et non « Ticket ».
+ * non « Contrôle ».
  *
  * Les deux actions sont **toutes deux** qualifiées. « Action DUERP » face à
  * « Action » laissait croire à une action générique et à un cas particulier,
@@ -96,7 +95,6 @@ export const LABEL_TYPE: Record<TypeEcheance, string> = {
   verification: "Vérification",
   "action-duerp": "Action DUERP",
   "action-verification": "Action vérification",
-  intervention: "Intervention",
   "permis-feu": "Permis de feu",
   "plan-prevention": "Plan de prévention",
   "duerp-maj": "DUERP",
@@ -113,7 +111,6 @@ const ICONE_TYPE: Record<TypeEcheance, typeof ClipboardCheck> = {
   verification: ClipboardCheck,
   "action-duerp": FileCheck2,
   "action-verification": ListChecks,
-  intervention: Ticket,
   "permis-feu": Flame,
   "plan-prevention": HandshakeIcon,
   "duerp-maj": FileCheck2,

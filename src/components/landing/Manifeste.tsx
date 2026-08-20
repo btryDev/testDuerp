@@ -27,12 +27,12 @@ const CHARGES = [
   },
   {
     // Pas seulement des rapports : le stockage reçoit aussi les
-    // attestations de prestataires (URSSAF, RC Pro, Kbis), les bulletins
-    // d'analyse du carnet sanitaire et les photos d'interventions.
+    // attestations de prestataires (URSSAF, RC Pro, Kbis) et les bulletins
+    // d'analyse du carnet sanitaire.
     numero: "02",
     titre: "Vos pièces, classées à l'arrivée",
     corps:
-      "Rapport, attestation, analyse d'eau, photo d'intervention : chacune se range là où elle sert, horodatée.",
+      "Rapport, attestation, analyse d'eau, permis signé : chacune se range là où elle sert, horodatée.",
   },
   {
     numero: "03",

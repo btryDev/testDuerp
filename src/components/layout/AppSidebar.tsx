@@ -4,11 +4,16 @@
 //
 // Deux niveaux accolés, tous deux sur l'encre (#0A0A0A) du design Rojer :
 //
-//   1. Le rail (88px) porte les entrées de premier niveau — « Tableau de
-//      bord », « À faire », « Opérations », « Mon établissement », « Mes
+//   1. Le rail (88px) porte la marque en tête, puis les entrées de premier
+//      niveau — « À faire », « Opérations », « Mon établissement », « Mes
 //      registres », puis « Comprendre » et « Connecter », et « Compte » en
 //      pied. Icône + libellé, pastille signal quand la catégorie contient
 //      une alerte.
+//
+//      La marque est le retour au tableau de bord — un logo ramène à
+//      l'accueil, c'est le seul geste de navigation que tout le monde
+//      connaît déjà. Le résumé du dossier n'a donc plus d'entrée de rail :
+//      il n'est pas une des questions du dirigeant, il y répond toutes.
 //
 //   2. Le panneau (224px) affiche les items de la catégorie choisie, avec
 //      les mêmes pilules qu'avant (actif = pilule blanche pleine).
@@ -22,7 +27,7 @@
 // catégorie de l'item actif. Entre deux navigations, un clic sur le rail le
 // fait basculer sans quitter la page — d'où la distinction entre « la page
 // est ici » (tuile allumée) et « le panneau montre ceci ». Sur une catégorie
-// sans panneau (Tableau de bord, Comprendre, Connecter), le panneau
+// sans panneau (tableau de bord, Comprendre, Connecter), le panneau
 // s'efface : montrer celui de « À faire », sans rien y surligner, décrivait
 // un endroit où l'on n'est pas — et le board de widgets récupère la
 // largeur.
@@ -49,6 +54,7 @@ import {
   categorieDeItem,
   construireRail,
   deduireActif,
+  LABEL_ITEM,
   type NavItem,
   type RailCategorie,
   type RailCategorieId,
@@ -135,13 +141,22 @@ export function AppSidebar({
     >
       {/* ---- Rail : entrées de premier niveau ---- */}
       <div className="flex w-[88px] shrink-0 flex-col border-r border-white/10">
-        {/* Marque abstraite (cible) — le nom vit en tête du panneau */}
+        {/* Marque : le nom en toutes lettres, et le retour au tableau de
+            bord. Le panneau, lui, ne la répète plus — elle était affichée
+            deux fois côte à côte. */}
         <div className="grid h-[67px] shrink-0 place-items-center border-b border-white/10">
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden>
-            <circle cx="13" cy="13" r="11" stroke="var(--board-sky)" strokeWidth="1" opacity="0.35" />
-            <circle cx="13" cy="13" r="6.5" stroke="var(--board-sky)" strokeWidth="1.1" opacity="0.75" />
-            <circle cx="13" cy="13" r="2.4" fill="var(--board-sky)" />
-          </svg>
+          <Link
+            href={`/etablissements/${etablissement.id}`}
+            onClick={() => setChoix(null)}
+            aria-current={catActive === "tableau" ? "page" : undefined}
+            aria-label={`${LABEL_ITEM.tableau} — Rojer`}
+            className={
+              "rounded-lg px-2 py-1 text-[17px] font-semibold leading-none tracking-[-0.025em] transition-colors hover:text-white " +
+              (catActive === "tableau" ? "text-white" : "text-white/70")
+            }
+          >
+            Rojer
+          </Link>
         </div>
 
         <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2 py-3">
@@ -229,10 +244,7 @@ export function AppSidebar({
         {/* Largeur fixe interne : le contenu glisse sous le bord au lieu de
             se recomposer pendant l'animation de largeur. */}
         <div className="flex h-full w-[224px] flex-col">
-          <div className="flex h-[67px] shrink-0 items-center justify-between border-b border-white/10 pl-5 pr-3">
-            <p className="text-[17px] font-semibold leading-none tracking-[-0.025em] text-white">
-              Rojer
-            </p>
+          <div className="flex h-[67px] shrink-0 items-center justify-end border-b border-white/10 pl-5 pr-3">
             <button
               type="button"
               onClick={() => basculerRepli(true)}
