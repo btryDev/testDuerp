@@ -58,7 +58,7 @@ describe("origineAction", () => {
       type: "action-verification",
       // Le complément ne répète pas le mot porté par le type, et n'emploie
       // pas « contrôle », réservé à la visite d'un tiers (ADR-015).
-      origine: "suite à la vérification « Vérification annuelle des extincteurs »",
+      origine: "suite à « Vérification annuelle des extincteurs »",
     });
   });
 

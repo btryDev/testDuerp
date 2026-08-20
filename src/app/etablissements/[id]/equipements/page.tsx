@@ -243,8 +243,11 @@ function EtatVerifications({
 
       {etat.prochaine ? (
         <span>
-          Prochaine : {formaterDateCourteFr(etat.prochaine.date)} —{" "}
-          {etat.prochaine.libelle}
+          {/* Une occurrence dépassée est la « prochaine » au sens du
+              calcul, jamais au sens de la langue : annoncer « Prochaine :
+              4 août » un 20 août serait faux. */}
+          {etat.prochaine.etat === "enRetard" ? "Attendue le " : "Prochaine : "}
+          {formaterDateCourteFr(etat.prochaine.date)} — {etat.prochaine.libelle}
         </span>
       ) : null}
 

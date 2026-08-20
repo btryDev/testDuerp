@@ -162,7 +162,10 @@ export function origineAction(a: {
   if (a.verificationLibelle) {
     return {
       type: "action-verification",
-      origine: `suite à la vérification « ${a.verificationLibelle} »`,
+      // « suite à » et non « suite à la vérification » : les libellés
+      // d'obligation commencent presque tous par le mot « Vérification »,
+      // et la phrase bégayait.
+      origine: `suite à « ${a.verificationLibelle} »`,
     };
   }
   if (a.duerp) return { type: "action-duerp", origine: "prévue au DUERP" };
