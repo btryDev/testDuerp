@@ -68,6 +68,11 @@ const QUESTIONS_TRI_ETAT: Record<
     question: "Cet appareil sert-il à lever des personnes ?",
     aide: "Nacelle, plate-forme élévatrice, ou tout appareil utilisé même occasionnellement pour élever quelqu'un. Si oui, la vérification générale passe de annuelle à semestrielle. Un transpalette ou un monte-charge de marchandises : répondez « non ».",
   },
+  estChariotOuGerbeur: {
+    question:
+      "Cet appareil est-il un chariot élévateur, un gerbeur ou un hayon élévateur ?",
+    aide: "Un engin qui soulève une charge en hauteur, au-delà de ce qu'il faut pour la décoller du sol. Si oui, la vérification générale a lieu tous les six mois et non tous les ans. Un transpalette qui ne fait que décoller la palette pour la rouler : répondez « non », il n'est pas concerné par ces vérifications.",
+  },
   aAccessoiresDeLevage: {
     question: "Utilisez-vous des accessoires de levage avec cet appareil ?",
     aide: "Élingues, chaînes, câbles, crochets, anneaux, manilles, palonniers. Si oui, ces accessoires font l'objet d'une vérification annuelle distincte de celle de l'appareil.",

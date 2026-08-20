@@ -106,9 +106,17 @@ export const obligationsIncendie: Obligation[] = [
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
+        reference: "R. 4227-39",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769386",
+        note: "Consignation sur registre des essais et exercices périodiques, avec leur date et les observations auxquelles ils ont donné lieu.",
+      },
+      {
+        source: "CODE_TRAVAIL",
         reference: "L. 4711-5",
         urlLegifrance:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389",
+        note: "N'institue pas le registre : autorise seulement à réunir en un registre unique les informations que d'autres textes imposent de consigner (L. 4711-1 et L. 4711-2). À citer comme faculté de regroupement, jamais comme fondement de l'obligation.",
       },
       {
         source: "CCH",
@@ -129,7 +137,7 @@ export const obligationsIncendie: Obligation[] = [
     typologies: { travail: true },
     categoriesEquipement: ["EXTINCTEUR", "ALARME_INCENDIE"],
     notesInternes:
-      "Obligation permanente (pas d'échéance périodique). Modélisée sur travail=true en MVP : en pratique tout établissement du scope V2 emploie au moins un salarié (L. 4711-5 CT). Les références CCH R. 143-44 / R. 146-21 restent citées pour information.",
+      "Obligation permanente (pas d'échéance périodique). Modélisée sur travail=true en MVP : en pratique tout établissement du scope V2 emploie au moins un salarié. Les références CCH R. 143-44 / R. 146-21 restent citées pour information. Correction 2026-08 : L. 4711-5 était cité en tête comme fondement du registre alors qu'il n'ouvre qu'une faculté de regroupement ; le fondement de la consignation des essais et exercices est R. 4227-39.",
   },
 
   // ---------------------------------------------------------------------------

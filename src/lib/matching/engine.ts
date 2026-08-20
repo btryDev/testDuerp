@@ -237,6 +237,11 @@ function lireProprieteBooleenne(
  *     criticité ≥ 4 auxquelles on ajoute une condition après coup : les
  *     équipements déjà en base ne peuvent alors pas perdre l'obligation en
  *     silence (cf. `ConditionApplication` dans le référentiel).
+ *   - `infirmee` : miroir de la précédente. Non renseignée ⇒ SATISFAITE ;
+ *     seule une réponse « oui » explicite l'infirme. Elle porte la règle
+ *     générale d'un couple d'obligations qui s'excluent, l'obligation
+ *     spécifique portant l'opt-in correspondant. Tant que la question n'a pas
+ *     été posée, c'est la règle générale qui s'applique — jamais aucune.
  */
 function conditionSatisfaite(
   cond: ConditionApplication,
@@ -244,6 +249,9 @@ function conditionSatisfaite(
 ): boolean {
   if (cond.type === "equipement_propriete_non_infirmee") {
     return lireProprieteBooleenne(eq, cond.propriete) !== false;
+  }
+  if (cond.type === "equipement_propriete_infirmee") {
+    return lireProprieteBooleenne(eq, cond.propriete) !== true;
   }
   if (cond.type === "equipement_propriete_numerique") {
     const v = lireProprieteNumerique(eq, cond.propriete);

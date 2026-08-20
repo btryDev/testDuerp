@@ -74,9 +74,9 @@ export default async function RisquesOverviewPage({
             },
             {
               n: "02",
-              titre: "Décocher ce qui ne s'applique pas",
+              titre: "Cocher ce qui s'applique",
               corps:
-                "Les risques du référentiel sectoriel arrivent pré-cochés. Retirez ceux qui ne vous concernent pas.",
+                "Les risques types de votre secteur vous sont proposés, décochés. Cochez ceux qui vous concernent — les autres seront considérés comme écartés.",
             },
             {
               n: "03",

@@ -802,6 +802,37 @@ describe("moteur matching — faux positifs structurels corrigés", () => {
     expect(idsObligations(res)).toContain("levage-vgp-semestrielle-personnes");
   });
 
+  // Arrêté du 1er mars 2004 : douze mois par principe (art. 23), six mois pour
+  // les chariots élévateurs et gerbeurs (art. 20-II). Les deux périodicités
+  // s'excluent — un appareil ne doit jamais en recevoir deux, ni aucune.
+  it("un gerbeur déclaré passe à la VGP semestrielle et perd l'annuelle", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [
+        levage({ estChariotOuGerbeur: true }),
+      ]),
+    );
+    expect(ids).toContain("levage-vgp-semestrielle-chariot-gerbeur");
+    expect(ids).not.toContain("levage-vgp-annuelle-charges");
+  });
+
+  it("un appareil déclaré « non » garde la VGP annuelle et n'a pas la semestrielle", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [
+        levage({ estChariotOuGerbeur: false }),
+      ]),
+    );
+    expect(ids).toContain("levage-vgp-annuelle-charges");
+    expect(ids).not.toContain("levage-vgp-semestrielle-chariot-gerbeur");
+  });
+
+  it("sans réponse, la VGP annuelle reste due — le silence n'éteint aucune échéance", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [levage(null)]),
+    );
+    expect(ids).toContain("levage-vgp-annuelle-charges");
+    expect(ids).not.toContain("levage-vgp-semestrielle-chariot-gerbeur");
+  });
+
   it("un compresseur hors champ de l'arrêté du 20 novembre 2017 perd la requalification décennale", () => {
     const res = determineObligationsApplicables(etabBureau(), [
       {
@@ -904,12 +935,18 @@ describe("moteur matching — aucun établissement existant ne perd une obligati
   it("aucune condition stricte n'a été ajoutée sur une obligation criticité ≥ 4 hors allowlist", () => {
     // Doublon volontaire de l'invariant du référentiel : si quelqu'un
     // contourne la règle côté référentiel, le moteur le signale aussi.
+    // Ce qui compte n'est pas la forme retenue mais son comportement au
+    // silence : `non_infirmee` et `infirmee` restent toutes deux satisfaites
+    // quand la propriété est absente, donc aucune obligation ne s'éteint
+    // faute de réponse.
+    const formesSures = new Set([
+      "equipement_propriete_non_infirmee",
+      "equipement_propriete_infirmee",
+    ]);
     const strictes = obligationsConformite
       .filter((o) => o.criticite >= 4)
       .filter((o) =>
-        (o.conditions ?? []).some(
-          (c) => c.type !== "equipement_propriete_non_infirmee",
-        ),
+        (o.conditions ?? []).some((c) => !formesSures.has(c.type)),
       )
       .map((o) => o.id)
       .sort();
@@ -917,6 +954,9 @@ describe("moteur matching — aucun établissement existant ne perd une obligati
       "aeration-erp-ps-surveillance-qualite-air-sup-250",
       "aeration-travail-locaux-pollution-specifique",
       "elec-erp-groupe-electrogene-annuel",
+      // Obligation neuve : personne ne peut la perdre, et la VGP annuelle
+      // couvre l'appareil tant que la question n'a pas reçu « oui ».
+      "levage-vgp-semestrielle-chariot-gerbeur",
     ]);
   });
 });

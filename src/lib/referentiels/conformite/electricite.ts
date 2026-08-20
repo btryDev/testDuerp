@@ -80,19 +80,21 @@ export const obligationsElectricite: Obligation[] = [
     domaine: "electricite",
     libelle: "Consignation des rapports de vérification électrique au registre",
     description:
-      "Les rapports des vérifications électriques et les justificatifs des mesures prises pour remédier aux anomalies sont tenus à la disposition de l'inspection du travail dans le dossier technique prévu à l'article L. 4711-5.",
+      "Les résultats des vérifications électriques et les justifications des travaux menés pour remédier aux anomalies relevées sont consignés sur un registre. Lorsque la vérification est réalisée par un organisme accrédité, son rapport est annexé à ce registre.",
     referencesLegales: [
-      {
-        source: "CODE_TRAVAIL",
-        reference: "L. 4711-5",
-        urlLegifrance:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389",
-      },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-19",
         urlLegifrance:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810023/",
+        note: "Fondement de la consignation pour le domaine électrique.",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "L. 4711-5",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389",
+        note: "N'institue pas le registre : autorise seulement à réunir en un registre unique les informations que d'autres textes imposent de consigner (L. 4711-1 et L. 4711-2). À citer comme faculté de regroupement, jamais comme fondement de l'obligation.",
       },
     ],
     periodicite: "autre",

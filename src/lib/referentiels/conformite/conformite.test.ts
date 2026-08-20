@@ -340,19 +340,39 @@ describe("référentiel conformité — seuils d'effectif", () => {
 
 describe("référentiel conformité — non-régression des obligations critiques", () => {
   /**
-   * Conditions strictes antérieures à l'amendement 2026-08. Elles sont
-   * légitimes : l'obligation n'a JAMAIS été appliquée sans réponse, donc
-   * aucun établissement ne peut la perdre. Toute nouvelle condition stricte
-   * sur une obligation de criticité ≥ 4 doit être ajoutée ici en connaissance
-   * de cause — ou, bien plus probablement, rédigée en `non_infirmee`.
+   * Conditions strictes tolérées sur une obligation de criticité ≥ 4, chacune
+   * pour une raison nommée. Le critère commun : aucun établissement ne peut
+   * perdre en silence une obligation qu'il avait déjà.
+   *
+   *  - les trois premières sont antérieures à l'amendement 2026-08 :
+   *    l'obligation n'a JAMAIS été appliquée sans réponse ;
+   *  - `levage-vgp-semestrielle-chariot-gerbeur` est une obligation neuve, que
+   *    personne ne peut donc perdre, et dont la couverture par défaut reste
+   *    assurée par `levage-vgp-annuelle-charges` tant que la question n'a pas
+   *    reçu « oui ».
+   *
+   * Toute autre condition stricte sur une obligation de criticité ≥ 4 doit
+   * être ajoutée ici en connaissance de cause — ou, bien plus probablement,
+   * rédigée en `non_infirmee` ou en `infirmee`.
    */
-  const CONDITIONS_STRICTES_HISTORIQUES = new Set([
+  const CONDITIONS_STRICTES_JUSTIFIEES = new Set([
     "elec-erp-groupe-electrogene-annuel",
     "aeration-travail-locaux-pollution-specifique",
     "aeration-erp-ps-surveillance-qualite-air-sup-250",
+    "levage-vgp-semestrielle-chariot-gerbeur",
   ]);
 
-  it("une obligation criticité ≥ 4 ne se conditionne qu'en « non infirmée »", () => {
+  /**
+   * Les deux formes qui restent satisfaites quand la propriété est absente.
+   * C'est la seule propriété qui compte pour ce garde-fou : une obligation
+   * déjà publiée ne doit pas s'éteindre au silence.
+   */
+  const FORMES_SANS_EXTINCTION_AU_SILENCE = new Set([
+    "equipement_propriete_non_infirmee",
+    "equipement_propriete_infirmee",
+  ]);
+
+  it("une obligation criticité ≥ 4 ne se conditionne pas sur le silence", () => {
     // Sans cette règle, ajouter une condition à une obligation déjà publiée
     // ferait disparaître l'obligation pour TOUS les équipements déjà en base
     // — qui n'ont évidemment pas la nouvelle propriété — sans le moindre
@@ -360,18 +380,43 @@ describe("référentiel conformité — non-régression des obligations critique
     for (const o of obligationsConformite) {
       if (o.criticite < 4) continue;
       if (!o.conditions || o.conditions.length === 0) continue;
-      if (CONDITIONS_STRICTES_HISTORIQUES.has(o.id)) continue;
+      if (CONDITIONS_STRICTES_JUSTIFIEES.has(o.id)) continue;
       for (const c of o.conditions) {
         expect(
-          c.type,
-          `${o.id} : condition stricte sur une obligation criticité ${o.criticite}`,
-        ).toBe("equipement_propriete_non_infirmee");
+          FORMES_SANS_EXTINCTION_AU_SILENCE.has(c.type),
+          `${o.id} : condition stricte (${c.type}) sur une obligation criticité ${o.criticite}`,
+        ).toBe(true);
       }
     }
   });
 
-  it("l'allowlist historique ne contient que des obligations réellement existantes", () => {
-    for (const id of CONDITIONS_STRICTES_HISTORIQUES) {
+  it("les deux VGP de levage s'excluent sur la même propriété", () => {
+    // Le couple annuelle / semestrielle doit couvrir les trois états de la
+    // réponse sans jamais laisser un appareil sans échéance, ni lui en donner
+    // deux pour un seul acte de vérification.
+    const annuelle = obligationParId("levage-vgp-annuelle-charges");
+    const semestrielle = obligationParId(
+      "levage-vgp-semestrielle-chariot-gerbeur",
+    );
+    expect(annuelle?.conditions).toEqual([
+      {
+        type: "equipement_propriete_infirmee",
+        categorie: "EQUIPEMENT_LEVAGE",
+        propriete: "estChariotOuGerbeur",
+      },
+    ]);
+    expect(semestrielle?.conditions).toEqual([
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "EQUIPEMENT_LEVAGE",
+        propriete: "estChariotOuGerbeur",
+        valeur: true,
+      },
+    ]);
+  });
+
+  it("l'allowlist ne contient que des obligations réellement existantes", () => {
+    for (const id of CONDITIONS_STRICTES_JUSTIFIEES) {
       const o = obligationParId(id);
       expect(o, id).toBeDefined();
       expect(o?.conditions?.length, id).toBeGreaterThan(0);
@@ -443,7 +488,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
   // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
   // version PUIS recopiez l'empreinte que le message d'échec affiche.
-  const EMPREINTE_ATTENDUE = "64-16cf3df27173b376";
+  const EMPREINTE_ATTENDUE = "65-a0f7b5a5268e0f27";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(

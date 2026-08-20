@@ -81,10 +81,21 @@ export type ReferenceLegale = {
  *    que l'utilisateur n'a pas répondu « non »** (propriété absente, ou d'un
  *    type inattendu ⇒ satisfaite ; seule la valeur booléenne `false` la rend
  *    non satisfaite). Sémantique « opt-out ».
+ *  - `equipement_propriete_infirmee` : le miroir de la précédente. La
+ *    condition est satisfaite **tant que l'utilisateur n'a pas répondu
+ *    « oui »** (seule la valeur booléenne `true` la rend non satisfaite).
+ *    Elle sert à écarter une obligation générale au profit d'une obligation
+ *    plus spécifique, sans jamais créer de trou : si la question n'a pas été
+ *    posée, c'est la règle générale qui continue de s'appliquer. C'est le cas
+ *    de la VGP de levage, annuelle par principe et semestrielle pour les
+ *    chariots élévateurs et gerbeurs (arrêté du 1er mars 2004, art. 20-II
+ *    et 23) — les deux périodicités s'excluent, et l'absence de réponse
+ *    laisse la périodicité annuelle en place plutôt que de tout éteindre.
  *
  * Règle de rédaction (verrouillée par `conformite.test.ts`) : ajouter une
- * condition sur une obligation **déjà publiée** de criticité ≥ 4 impose la
- * forme `non_infirmee`. Sinon, tous les équipements déjà déclarés en base —
+ * condition sur une obligation **déjà publiée** de criticité ≥ 4 impose une
+ * forme qui reste satisfaite quand la propriété est absente, c'est-à-dire
+ * `non_infirmee` ou `infirmee`. Sinon, tous les équipements déjà déclarés —
  * qui n'ont évidemment pas la nouvelle propriété — perdraient l'obligation en
  * silence, sans que personne ne soit averti. Sur une obligation de criticité
  * élevée, une sur-application visible et corrigeable par une réponse « non »
@@ -106,6 +117,11 @@ export type ConditionApplication =
     }
   | {
       type: "equipement_propriete_non_infirmee";
+      categorie: CategorieEquipement;
+      propriete: string;
+    }
+  | {
+      type: "equipement_propriete_infirmee";
       categorie: CategorieEquipement;
       propriete: string;
     };

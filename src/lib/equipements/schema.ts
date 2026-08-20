@@ -66,12 +66,13 @@ const triEtat = z.preprocess(
   z.boolean().optional(),
 );
 
-/** Les six questions à trois états, dans l'ordre d'affichage. */
+/** Les sept questions à trois états, dans l'ordre d'affichage. */
 export const CHAMPS_TRI_ETAT = [
   "estVmcGaz",
   "aRobinetsIncendieArmes",
   "aExtinctionAutomatique",
   "sertAuLevageDePersonnes",
+  "estChariotOuGerbeur",
   "aAccessoiresDeLevage",
   "estSoumisSuiviEnService",
 ] as const;
@@ -104,6 +105,11 @@ export const CATEGORIES_TRI_ETAT: readonly {
   },
   {
     champ: "sertAuLevageDePersonnes",
+    categories: ["EQUIPEMENT_LEVAGE"],
+    message: "Spécifique aux équipements de levage",
+  },
+  {
+    champ: "estChariotOuGerbeur",
     categories: ["EQUIPEMENT_LEVAGE"],
     message: "Spécifique aux équipements de levage",
   },
@@ -172,6 +178,7 @@ export const equipementSchema = z
     aRobinetsIncendieArmes: triEtat,
     aExtinctionAutomatique: triEtat,
     sertAuLevageDePersonnes: triEtat,
+    estChariotOuGerbeur: triEtat,
     aAccessoiresDeLevage: triEtat,
     estSoumisSuiviEnService: triEtat,
     notes: z.preprocess(

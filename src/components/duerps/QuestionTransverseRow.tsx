@@ -4,6 +4,17 @@ import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { toggleRisqueTransverse } from "@/lib/transverses/actions";
 
+/**
+ * Une question transverse, et son couple Oui / Non.
+ *
+ * Seul « Oui » peut apparaître sélectionné : `active` se déduit de l'existence
+ * d'un `Risque` en base, et répondre « Non » supprime cette ligne
+ * (`toggleRisqueTransverse`). Un « non » délibéré et une question jamais lue
+ * produisent donc le même état — mettre « Non » en évidence par défaut
+ * afficherait une réponse que personne n'a donnée, sur un document à valeur
+ * légale. Tant que le refus n'est pas persisté, l'absence de réponse se montre
+ * comme telle : aucun des deux boutons n'est mis en avant.
+ */
 type Props = {
   duerpId: string;
   referentielId: string;
@@ -45,7 +56,7 @@ export function QuestionTransverseRow({
         </Button>
         <Button
           size="sm"
-          variant={!active ? "default" : "outline"}
+          variant="outline"
           disabled={pending}
           onClick={() => set(false)}
         >
