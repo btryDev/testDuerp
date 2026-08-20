@@ -43,15 +43,13 @@ import {
 } from "@/components/calendrier/VueParEquipement";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import {
+  DESCRIPTION_FAMILLE,
   LABEL_FAMILLE,
   MarqueurEcheance,
 } from "@/components/calendrier/MarqueurFamille";
 import { LABEL_ITEM } from "@/components/layout/sidebar-nav";
 import { compterActions } from "@/lib/actions/queries";
-import {
-  ChipsFamille,
-  FiltresCalendrier,
-} from "@/components/calendrier/FiltresCalendrier";
+import { FiltresCalendrier } from "@/components/calendrier/FiltresCalendrier";
 import { SelecteurLecture } from "@/components/calendrier/SelecteurLecture";
 import {
   LABEL_DOMAINE,
@@ -729,26 +727,21 @@ export default async function CalendrierPage({
             <ChevronRight className="size-4 rotate-180" />
           </Link>
           <div className="min-w-0">
-            {/* Un titre stable. Il a suivi le filtre un temps — il
-                répétait alors la puce active posée trois lignes plus bas,
-                et l'écran annonçait deux fois la même chose. L'eyebrow
-                « Échéances · 2026 » a sauté pour la même raison : le
-                sélecteur d'année, plus bas, porte déjà l'année et le
-                nombre d'échéances. */}
+            {/* Un titre stable, et une phrase. « Calendrier » ne disait
+                pas ce qu'on y trouve : quatre flux y sont réunis depuis
+                l'ADR-010 et rien ne l'annonçait. La phrase dit ce qu'on
+                voit et ce qu'on peut en faire — ce qui vaut mieux qu'une
+                rangée de filtres, qui montrait des commandes sans jamais
+                expliquer l'écran. */}
             <h1 className="board-titre m-0 text-[clamp(22px,2.2vw,27px)] text-white">
               {LABEL_ITEM.calendrier}
             </h1>
-            {/* « Calendrier » ne disait pas ce qu'on y trouve : quatre
-                flux y sont réunis depuis l'ADR-010 et rien ne l'annonçait.
-                Les puces les nomment, avec le pictogramme que portent les
-                lignes — et réduisent l'écran d'un clic. */}
-            <ChipsFamille
-              baseHref={baseHref}
-              famillesDisponibles={famillesPresentes}
-              famille={filtreFamille}
-              domaine={filtreDomaine}
-              urgent={filtreUrgent}
-            />
+            <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.5] text-white/60">
+              {filtreFamille
+                ? DESCRIPTION_FAMILLE[filtreFamille]
+                : "Suivez les vérifications de vos équipements, les corrections à mener et le renouvellement de vos documents."}{" "}
+              Cliquez une ligne pour la traiter.
+            </p>
           </div>
         </div>
 

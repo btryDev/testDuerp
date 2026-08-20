@@ -30,6 +30,27 @@ export const LABEL_FAMILLE: Record<FamilleEcheance, string> = {
   personnel: "Personnel",
 };
 
+/**
+ * Ce que chaque famille contient, en une phrase.
+ *
+ * Reprend la définition de l'ADR-010 mot pour mot, et notamment le
+ * troisième terme de `travaux` — « opérations de travaux » — que le
+ * libellé « Corrections & réparations » taisait. C'est lui qui explique
+ * qu'un permis de feu s'y trouve.
+ */
+export const DESCRIPTION_FAMILLE: Record<FamilleEcheance, string> = {
+  controle: "Suivez les vérifications à faire réaliser sur vos équipements.",
+  // Le permis de feu et le plan de prévention sont ici parce que leur
+  // échéance porte sur l'**opération**, pas sur la pièce : elle alerte
+  // quand l'opération n'a pas démarré, n'est pas close, ou a commencé
+  // sans inspection commune. Le document, lui, existe déjà.
+  travaux:
+    "Suivez les corrections à mener et les opérations à démarrer ou à clore.",
+  papiers:
+    "Suivez le renouvellement de vos documents : mise à jour du DUERP et attestations de prestataires.",
+  personnel: "Suivez le dossier de vos salariés.",
+};
+
 /** Libellés longs, pour le panneau de filtres — explicites sans contexte. */
 export const LABEL_FAMILLE_LONG: Record<FamilleEcheance, string> = {
   controle: "Vérifications périodiques",
