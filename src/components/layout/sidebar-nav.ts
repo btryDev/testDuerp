@@ -106,6 +106,11 @@ export const LABEL_ITEM: Record<SidebarItemId, string> = {
 
 export type SidebarCounts = {
   equipements?: number;
+  /** Échéances dépassées, **toutes familles** (vérifications + registre
+   *  d'échéances, ADR-010). Porté par l'item « Tout ». */
+  enRetardTotal?: number;
+  /** Vérifications périodiques dépassées **seules**. Porté par l'item
+   *  « Contrôles matériel ». Cf. `repartirRetards` et ADR-015. */
   verificationsEnRetard?: number;
   actions?: number;
   prestatairesAlertes?: number;

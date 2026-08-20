@@ -2,9 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { AppSidebar } from "@/components/layout/AppSidebar";
-import { getDashboardData } from "@/lib/dashboard/queries";
-import { countAlertesVigilance } from "@/lib/prestataires/queries";
-import { countRisquesAReevaluer } from "@/lib/interventions/boucle-duerp";
+import { chargerSidebarCounts } from "@/lib/navigation/sidebar-counts";
 import { getEtatModules } from "@/lib/etablissements/modules";
 
 /**
@@ -43,20 +41,10 @@ export default async function EtablissementLayout({
   });
   if (!etab) notFound();
 
-  // Counts pour les badges de la sidebar — lecture séparée pour pouvoir
-  // paralléliser si besoin (aujourd'hui dashboard fait déjà ces queries
-  // pour ses widgets, idempotent tant qu'on n'abuse pas).
-  const [
-    dashboard,
-    prestatairesAlertes,
-    nbEquipements,
-    risquesAReevaluer,
-    modules,
-  ] = await Promise.all([
-    getDashboardData(id),
-    countAlertesVigilance(id),
-    prisma.equipement.count({ where: { etablissementId: id } }),
-    countRisquesAReevaluer(id),
+  // Pastilles de la sidebar : même chargement que le shell DUERP, pour
+  // que les deux annoncent les mêmes nombres (ADR-015).
+  const [counts, modules] = await Promise.all([
+    chargerSidebarCounts(id),
     getEtatModules(id, etab.estERP),
   ]);
 
@@ -64,15 +52,7 @@ export default async function EtablissementLayout({
     <div className="grid min-h-screen grid-cols-1 lg:h-screen lg:grid-cols-[auto_1fr] lg:overflow-hidden">
       <AppSidebar
         etablissement={etab}
-        counts={{
-          equipements: nbEquipements,
-          verificationsEnRetard: dashboard.compteurs.verifsEnRetard,
-          actions:
-            dashboard.compteurs.actionsOuvertes +
-            dashboard.compteurs.actionsEnCours,
-          prestatairesAlertes,
-          risquesAReevaluer,
-        }}
+        counts={counts}
         modules={modules}
         user={user}
       />
