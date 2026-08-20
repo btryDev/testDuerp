@@ -75,9 +75,11 @@ dirigeant de TPE saisit-il vraiment ses signalements au fil de l'eau ? — mais
 c'est une question de valeur produit, pas de rangement. Et sa réponse
 engagerait davantage : Interventions est aujourd'hui le seul chemin pour
 qu'un constat de terrain devienne une action datée, et le seul déclencheur
-de la boucle de l'ADR-009. Le remplacement naturel serait l'**action libre**
-(le type `action-libre` existe déjà côté calendrier), ce qui suppose
-d'assouplir le XOR de l'ADR-002 en « au plus une origine ». À traiter pour
+de la boucle de l'ADR-009. Le remplacement naturel serait l'**action libre**,
+qui n'existe pas : le type `action-libre` figurait dans l'ADR-016 mais aucune
+donnée ne pouvait le produire, et il a été supprimé. L'ouvrir supposerait
+d'assouplir le XOR de l'ADR-002 en « au plus une origine » — c'est-à-dire de
+défaire l'invariant, pas d'en réutiliser un existant. À traiter pour
 elle-même.
 
 ## Conséquences
