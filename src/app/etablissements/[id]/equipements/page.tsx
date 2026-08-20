@@ -12,7 +12,10 @@ import {
 } from "@/lib/equipements/queries";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import { suggererEquipements } from "@/lib/equipements/pre-remplissage";
-import { formaterDateLongueFr } from "@/lib/dates";
+import { etatVerificationsParEquipement } from "@/lib/equipements/etat-verifications";
+import type { EtatEquipement } from "@/lib/equipements/etat-verifications";
+import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
+import { formaterDateLongueFr, formaterDateCourteFr } from "@/lib/dates";
 
 function formatDate(d: Date | null): string | null {
   if (!d) return null;
@@ -31,7 +34,12 @@ export default async function EquipementsPage({
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
-  const equipements = await listerEquipementsDeLEtablissement(id);
+  const [equipements, etatsVerifs] = await Promise.all([
+    listerEquipementsDeLEtablissement(id),
+    // Le parc ne disait rien de son état de vérification : on lisait un
+    // inventaire, pas une situation.
+    etatVerificationsParEquipement(id),
+  ]);
   const parCategorie = grouperParCategorie(equipements);
 
   const suggestions = suggererEquipements({
@@ -135,6 +143,7 @@ export default async function EquipementsPage({
               <ul className="cartouche divide-y divide-dashed divide-rule/50">
                 {liste.map((eq) => {
                   const mes = formatDate(eq.dateMiseEnService);
+                  const etat = etatsVerifs.get(eq.id);
                   return (
                     <li
                       key={eq.id}
@@ -153,6 +162,10 @@ export default async function EquipementsPage({
                             </>
                           )}
                         </p>
+                        <EtatVerifications
+                          etat={etat}
+                          href={`/etablissements/${id}/calendrier`}
+                        />
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Link
@@ -175,5 +188,71 @@ export default async function EquipementsPage({
         </section>
       )}
     </main>
+  );
+}
+
+/**
+ * L'état de vérification d'un appareil, en une ligne.
+ *
+ * Trois faits, jamais un jugement : ce qui est dépassé, le prochain
+ * rendez-vous, la dernière vérification connue. L'absence de vérification
+ * connue est dite en clair — elle n'est pas la même chose qu'« à jour », et
+ * l'outil ne certifie rien (cf. garde-fous produit).
+ */
+function EtatVerifications({
+  etat,
+  href,
+}: {
+  etat: EtatEquipement | undefined;
+  href: string;
+}) {
+  if (!etat) {
+    return (
+      <p className="mt-2 text-[0.8rem] text-muted-foreground">
+        Aucune vérification périodique rattachée à cet équipement.
+      </p>
+    );
+  }
+
+  return (
+    <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.8rem] text-muted-foreground">
+      {etat.enRetard > 0 ? (
+        <Link
+          href={href}
+          className="rounded-full px-2 py-0.5 text-[0.72rem] font-semibold underline-offset-4 hover:underline"
+          style={{
+            background: CHAMP_ETAT.enRetard,
+            color: ENCRE_ETAT.enRetard,
+          }}
+        >
+          {etat.enRetard} vérification{etat.enRetard > 1 ? "s" : ""} en retard
+        </Link>
+      ) : null}
+
+      {etat.aPlanifier > 0 ? (
+        <span
+          className="rounded-full px-2 py-0.5 text-[0.72rem] font-semibold"
+          style={{
+            background: CHAMP_ETAT.aPlanifier,
+            color: ENCRE_ETAT.aPlanifier,
+          }}
+        >
+          {etat.aPlanifier} à planifier
+        </span>
+      ) : null}
+
+      {etat.prochaine ? (
+        <span>
+          Prochaine : {formaterDateCourteFr(etat.prochaine.date)} —{" "}
+          {etat.prochaine.libelle}
+        </span>
+      ) : null}
+
+      <span>
+        {etat.derniere
+          ? `Dernière vérification le ${formaterDateCourteFr(etat.derniere)}`
+          : "Aucune vérification connue à ce jour"}
+      </span>
+    </p>
   );
 }
