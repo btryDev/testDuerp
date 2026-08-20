@@ -10,6 +10,7 @@ import {
   MARQUEUR_NON_APPLICABLE,
   reconcilierCalendrier,
   type OccurrenceExistante,
+  type VerificationGenere,
   type VerificationsPrecedentes,
 } from "./generateur";
 
@@ -86,6 +87,71 @@ describe("générateur calendrier — aucune vérif précédente", () => {
       applique(o, [fakeEquipement()]),
     ]);
     expect(res).toHaveLength(0);
+  });
+});
+
+describe("générateur calendrier — mise en service comme point de départ", () => {
+  const o = () => fakeObligation({ id: "o-annuelle", periodicite: "annuelle" });
+  const NOW = new Date("2026-01-15T00:00:00Z");
+
+  it("date le premier cycle d'un équipement neuf, sans le dire urgent", () => {
+    // Un extincteur posé le 1er décembre se vérifie le 1er décembre suivant :
+    // l'outil sait le déduire, il n'a pas à réclamer la date.
+    const res = genererProchainesVerifications(
+      [applique(o(), [fakeEquipement()])],
+      new Map(),
+      {
+        now: NOW,
+        misesEnService: new Map([["eq-1", new Date("2025-12-01T00:00:00Z")]]),
+      },
+    );
+
+    expect(res[0].statut).toBe("planifiee");
+    expect(res[0].estUrgent).toBe(false);
+    expect(res[0].datePrevue).toEqual(new Date("2026-12-01T00:00:00Z"));
+  });
+
+  it("ne conclut rien quand le premier cycle est déjà écoulé", () => {
+    // Mise en service en 2018 et aucune vérification connue : l'équipement a
+    // vécu sans que le dossier le sache. Afficher « en retard depuis 2019 »
+    // serait inventer un passé — on dit « à planifier ».
+    const res = genererProchainesVerifications(
+      [applique(o(), [fakeEquipement()])],
+      new Map(),
+      {
+        now: NOW,
+        misesEnService: new Map([["eq-1", new Date("2018-03-01T00:00:00Z")]]),
+      },
+    );
+
+    expect(res[0].statut).toBe("a_planifier");
+    expect(res[0].estUrgent).toBe(true);
+    expect(res[0].datePrevue).toEqual(NOW);
+  });
+
+  it("laisse la vérification connue primer sur la mise en service", () => {
+    const res = genererProchainesVerifications(
+      [applique(o(), [fakeEquipement()])],
+      new Map([["o-annuelle::eq-1", new Date("2025-06-10T00:00:00Z")]]),
+      {
+        now: NOW,
+        misesEnService: new Map([["eq-1", new Date("2025-12-01T00:00:00Z")]]),
+      },
+    );
+
+    // 2025-06-10 + 1 an, et non 2025-12-01 + 1 an : un contrôle réalisé est
+    // une preuve, une mise en service n'est qu'un point de départ par défaut.
+    expect(res[0].datePrevue).toEqual(new Date("2026-06-10T00:00:00Z"));
+  });
+
+  it("retombe sur « à planifier » sans mise en service connue", () => {
+    const res = genererProchainesVerifications(
+      [applique(o(), [fakeEquipement()])],
+      new Map(),
+      { now: NOW, misesEnService: new Map() },
+    );
+
+    expect(res[0].statut).toBe("a_planifier");
   });
 });
 
@@ -438,6 +504,78 @@ describe("réconciliation — idempotence et stabilité des identifiants", () =>
       "Libellé corrigé au référentiel",
     );
     expect(plan.aMettreAJour[0].periodicite).toBe("biennale");
+  });
+});
+
+describe("réconciliation — un placeholder cède devant une vraie date", () => {
+  const genere = (over: Partial<VerificationGenere> = {}): VerificationGenere => ({
+    cleUnique: "o-1::eq-1",
+    obligationId: "o-1",
+    libelleObligation: "Obligation o-1",
+    equipementId: "eq-1",
+    periodicite: "annuelle",
+    realisateurRequis: ["personne_qualifiee"],
+    datePrevue: new Date("2026-12-01T00:00:00Z"),
+    statut: "a_planifier",
+    estUrgent: true,
+    criticiteObligation: 3,
+    raisons: ["test"],
+    ...over,
+  });
+
+  it("pose la date calculée sur une ligne qui n'avait jamais de rendez-vous", () => {
+    // « À planifier » n'est pas un rendez-vous, c'est son absence : la
+    // remplacer par une date déduite de la mise en service n'efface rien.
+    const existante = ligneExistante({
+      id: "v-1",
+      obligationId: "o-1",
+      equipementId: "eq-1",
+      statut: "a_planifier",
+      datePrevue: NOW,
+    });
+    const plan = reconcilierCalendrier(
+      [existante],
+      [
+        genere({
+          statut: "planifiee",
+          datePrevue: new Date("2027-03-01T00:00:00Z"),
+        }),
+      ],
+      { now: NOW },
+    );
+
+    expect(plan.aMettreAJour[0].datePrevue).toEqual(
+      new Date("2027-03-01T00:00:00Z"),
+    );
+    expect(plan.aMettreAJour[0].statut).toBe("planifiee");
+  });
+
+  it("n'efface pas un retard déjà constaté", () => {
+    // Une ligne dépassée porte un vrai rendez-vous, manqué. Le générateur ne
+    // doit pas pouvoir le repousser — c'est la régression que le
+    // delete/create causait autrefois.
+    const existante = ligneExistante({
+      id: "v-1",
+      obligationId: "o-1",
+      equipementId: "eq-1",
+      statut: "depassee",
+      datePrevue: new Date("2026-02-01T00:00:00Z"),
+    });
+    const plan = reconcilierCalendrier(
+      [existante],
+      [
+        genere({
+          statut: "planifiee",
+          datePrevue: new Date("2027-03-01T00:00:00Z"),
+        }),
+      ],
+      { now: NOW },
+    );
+
+    // Rien à mettre à jour : la ligne garde sa date manquée, et c'est
+    // précisément ce qu'on vérifie — la réconciliation n'a pas à y toucher.
+    expect(plan.aMettreAJour).toHaveLength(0);
+    expect(plan.inchangees).toBe(1);
   });
 });
 

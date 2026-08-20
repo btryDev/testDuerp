@@ -48,8 +48,6 @@ import {
   MarqueurEcheance,
 } from "@/components/calendrier/MarqueurFamille";
 import { LABEL_ITEM } from "@/components/layout/sidebar-nav";
-import { compterActions } from "@/lib/actions/queries";
-import { exigenceEcheanceActions } from "@/lib/actions/echeance-exigee";
 import { FiltresCalendrier } from "@/components/calendrier/FiltresCalendrier";
 import { SelecteurLecture } from "@/components/calendrier/SelecteurLecture";
 import {
@@ -223,7 +221,7 @@ export default async function CalendrierPage({
     regenere = true;
   }
 
-  const [verifsBruts, etat, autresEcheances, equipements, compteursActions] =
+  const [verifsBruts, etat, autresEcheances, equipements] =
     await Promise.all([
       listerVerifications(id, {
         domaine: filtreDomaine,
@@ -237,9 +235,6 @@ export default async function CalendrierPage({
       // échéance : la lecture par équipement doit pouvoir dire combien
       // n'en ont aucune.
       listerEquipementsDeLEtablissement(id),
-      // Ce que cet écran ne peut pas montrer : une action sans échéance n'a
-      // pas de jour où se poser (ADR-010). Elle est annoncée plutôt que tue.
-      compterActions(id),
     ]);
   const aujourdhui = new Date();
 
@@ -740,7 +735,7 @@ export default async function CalendrierPage({
             <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.5] text-white/60">
               {filtreFamille
                 ? DESCRIPTION_FAMILLE[filtreFamille]
-                : "Suivez les vérifications de vos équipements, les corrections à mener et le renouvellement de vos documents."}{" "}
+                : "Suivez les échéances datées : vérifications de vos équipements, corrections à mener, renouvellement de vos documents."}{" "}
               Cliquez une ligne pour la traiter.
             </p>
           </div>
@@ -907,21 +902,6 @@ export default async function CalendrierPage({
               /* Seulement sur la lecture d'ensemble : sous un filtre, la
                  remarque porterait sur un périmètre qu'elle ne décrit
                  pas. */
-              /* Ce que dit la pilule dépend de l'effectif **déclaré** :
-                 le calendrier de mise en œuvre n'est imposé qu'à partir
-                 de cinquante salariés (L. 4121-3-1). En dessous, on
-                 énonce un fait d'outil, jamais une obligation. */
-              actionsSansEcheance={
-                filtreFamille
-                  ? null
-                  : {
-                      nb: compteursActions.sansEcheance,
-                      href: `/etablissements/${id}/actions`,
-                      mention: exigenceEcheanceActions(
-                        etab.entreprise.effectif,
-                      ).mention,
-                    }
-              }
               moisInitial={moisInitial}
               cleMoisCourant={cleMoisCourant}
               outils={barreOutils}
