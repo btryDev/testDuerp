@@ -7,12 +7,19 @@
 // qu'il se pose : « qu'est-ce que je dois faire ? », « qu'est-ce que j'ai
 // déclaré ? », « qu'est-ce que je peux présenter ? ».
 //
-// Principe : une seule porte par question. Calendrier / Plan d'actions /
-// Interventions restent distincts mais sont regroupés sous « À faire »,
-// en tête, avec le tableau de bord comme point d'entrée. Tous les registres
-// vivent à plat sous « Mes registres » — la divulgation progressive
-// (« Autres registres » replié) a été retirée : six entrées se lisent d'un
-// coup d'œil et un registre caché se cherchait.
+// Principe : une seule porte par question. « À faire » n'est pas un dossier
+// mais un **écran** — le calendrier, qui fusionne déjà les quatre familles
+// d'échéances (ADR-010) : contrôles, corrections, papiers, personnel. Son
+// panneau en offre les lectures (Tout, Contrôles matériel) et les écrans
+// voisins qui portent aussi du non-daté (Plan d'actions, Interventions).
+//
+// Le tableau de bord, lui, n'est pas une chose à faire : c'est un résumé. Il
+// a quitté ce panneau pour une entrée de rail à part entière (ADR-015), sans
+// quoi la porte d'entrée du produit restait rangée dans un tiroir.
+//
+// Tous les registres vivent à plat sous « Mes registres » — la divulgation
+// progressive (« Autres registres » replié) a été retirée : six entrées se
+// lisent d'un coup d'œil et un registre caché se cherchait.
 //
 // Les registres sont **qualifiés, jamais masqués**. La navigation était le
 // seul endroit du produit à ne rien savoir de l'établissement : elle offrait
@@ -37,6 +44,7 @@ import {
   LayoutDashboard,
   Wrench,
   Calendar,
+  ClipboardCheck,
   FileText,
   ListChecks,
   ListTodo,
@@ -60,6 +68,7 @@ export type SidebarActive =
   | "tableau"
   | "equipements"
   | "calendrier"
+  | "controles"
   | "registre"
   | "actions"
   | "prestataires"
@@ -86,7 +95,11 @@ export type SidebarItemId = SidebarActive | "fiche" | "equipe";
  */
 export const LABEL_ITEM: Record<SidebarItemId, string> = {
   tableau: "Tableau de bord",
-  calendrier: "Calendrier",
+  // Le nom de l'**écran**, pas celui de l'item : le panneau intitule son
+  // entrée « Tout » (on y est déjà, sous le titre « À faire »), mais un fil
+  // de retour venu d'ailleurs doit dire « ← À faire ».
+  calendrier: "À faire",
+  controles: "Contrôles matériel",
   actions: "Plan d'actions",
   interventions: "Interventions",
   controle: "Préparer un contrôle",
@@ -171,16 +184,33 @@ export type NavSection = {
   items: NavItem[];
 };
 
-/** Déduit l'item actif depuis le pathname, à défaut de prop explicite. */
+/**
+ * Déduit l'item actif depuis le pathname, à défaut de prop explicite.
+ *
+ * La query n'entre en jeu que pour **un** paramètre, `famille`, et une
+ * seule de ses valeurs : le calendrier sert deux entrées du panneau, la
+ * lecture d'ensemble (« Tout ») et celle des contrôles matériel. Sans
+ * elle, cliquer « Contrôles matériel » surlignerait « Tout ». C'est la
+ * seule exception à la règle « l'arborescence tient dans le chemin » ;
+ * toute autre famille reste une lecture de « Tout », pas une entrée.
+ */
 export function deduireActif(
   pathname: string,
   etablissementId: string,
+  search?: string | URLSearchParams | null,
 ): SidebarItemId {
   const base = `/etablissements/${etablissementId}`;
+  const params =
+    typeof search === "string" ? new URLSearchParams(search) : search;
+
   if (pathname === `${base}/modifier`) return "fiche";
   if (pathname === base) return "tableau";
-  if (pathname.startsWith(`${base}/calendrier`)) return "calendrier";
-  if (pathname.startsWith(`${base}/verifications`)) return "calendrier";
+  if (pathname.startsWith(`${base}/calendrier`)) {
+    return params?.get("famille") === "controle" ? "controles" : "calendrier";
+  }
+  // Une vérification est un contrôle : elle surligne l'entrée qui la range,
+  // pas la lecture d'ensemble.
+  if (pathname.startsWith(`${base}/verifications`)) return "controles";
   if (pathname.startsWith(`${base}/actions`)) return "actions";
   if (pathname.startsWith(`${base}/registre`)) return "registre";
   if (pathname.startsWith(`${base}/equipements`)) return "equipements";
@@ -211,16 +241,24 @@ export function construireSections({
 
   const aFaire: NavItem[] = [
     {
-      id: "tableau",
-      label: LABEL_ITEM.tableau,
-      href: href(""),
-      Icon: LayoutDashboard,
+      // « Tout » et non « Calendrier » : la section s'intitule déjà « À
+      // faire » et c'est le même écran. `LABEL_ITEM.calendrier` garde le
+      // nom d'écran pour les fils de retour venus d'ailleurs.
+      id: "calendrier",
+      label: "Tout",
+      href: href("/calendrier"),
+      Icon: ListTodo,
+      count: counts?.enRetardTotal,
+      alert: (counts?.enRetardTotal ?? 0) > 0,
     },
     {
-      id: "calendrier",
-      label: LABEL_ITEM.calendrier,
-      href: href("/calendrier"),
-      Icon: Calendar,
+      // Une lecture du même écran, promue en entrée de navigation : le
+      // filtre existait déjà mais dormait dans un popover, et le dirigeant
+      // qui demande « où sont mes contrôles ? » n'avait rien à cliquer.
+      id: "controles",
+      label: LABEL_ITEM.controles,
+      href: href("/calendrier?famille=controle"),
+      Icon: ClipboardCheck,
       count: counts?.verificationsEnRetard,
       alert: (counts?.verificationsEnRetard ?? 0) > 0,
     },
@@ -242,15 +280,6 @@ export function construireSections({
       label: LABEL_ITEM.controle,
       href: href("/controle"),
       Icon: ShieldCheck,
-    },
-    {
-      // Le guide pédagogique répond à la question implicite du dirigeant
-      // perdu — « par où je commence ? » — il vit donc dans « À faire »,
-      // en dernière position, et plus seulement dans le footer du rail.
-      id: "guide",
-      label: LABEL_ITEM.guide,
-      href: href("/guide"),
-      Icon: BookOpen,
     },
   ];
 
@@ -371,13 +400,20 @@ export function construireSections({
 //
 // Le rail principal ne porte plus les items mais les *questions* du
 // dirigeant (À faire / Mon établissement / Mes registres) ; les items d'une
-// catégorie s'affichent dans un second panneau accolé. « Comprendre » sort
-// de la section « À faire » pour devenir une entrée de premier niveau sans
-// panneau (lien direct), conformément au découpage demandé. « Compte » est
-// la cinquième entrée, rendue par le composant (elle dépend de l'user, pas
-// de l'établissement).
+// catégorie s'affichent dans un second panneau accolé.
+//
+// Règle (ADR-015) : **une entrée de rail = une page d'entrée + un panneau**.
+// Toute catégorie porte donc un `href` : cliquer navigue *et* ouvre le
+// panneau. Auparavant, une icône de premier niveau n'était qu'un tiroir —
+// deux clics obligatoires pour arriver quelque part.
+//
+// « Tableau de bord » ouvre le rail : c'est l'écran d'atterrissage, et un
+// résumé n'a pas sa place dans une liste de tâches. « Comprendre » et
+// « Connecter » ferment la marche, sans panneau. « Compte » est rendue par
+// le composant (elle dépend de l'user, pas de l'établissement).
 
 export type RailCategorieId =
+  | "tableau"
   | "a-faire"
   | "etablissement"
   | "registres"
@@ -392,17 +428,24 @@ export type RailCategorie = {
   /** Libellé court affiché sous l'icône du rail. */
   labelCourt: string;
   Icon: typeof LayoutDashboard;
-  /** Catégorie sans panneau : lien direct. */
-  href?: string;
+  /** Page d'entrée de la catégorie — toujours présente : cliquer une
+   *  entrée de rail navigue (ADR-015). */
+  href: string;
+  /** Absent = catégorie sans panneau (lien seul). */
   items?: NavItem[];
   /** Au moins un item du panneau porte une alerte. */
   alert?: boolean;
+  /** Marque la césure entre les catégories du dossier et les modes
+   *  d'accès. Portée par la donnée plutôt que devinée au rendu. */
+  separateurAvant?: boolean;
 };
 
 /** Catégorie du rail à laquelle appartient un item — sert à savoir quel
  *  panneau ouvrir et quelle entrée du rail surligner. */
 export function categorieDeItem(id: SidebarItemId): RailCategorieId {
   switch (id) {
+    case "tableau":
+      return "tableau";
     case "guide":
       return "comprendre";
     case "connecter":
@@ -432,26 +475,34 @@ export function construireRail(params: {
   // On dérive du même arbre que le rail simple : mêmes items, mêmes badges —
   // seule la présentation change.
   const [aFaire, etablissement, registres] = construireSections(params);
-
-  // « Comprendre » quitte le panneau « À faire » : il devient une entrée
-  // de premier niveau, en lien direct.
-  const itemsAFaire = aFaire.items.filter((it) => it.id !== "guide");
+  const base = `/etablissements/${params.etablissementId}`;
   const alerte = (items: NavItem[]) => items.some((it) => it.alert);
 
   return [
+    {
+      // Sans panneau, et c'est le propos : le tableau de bord n'a rien à
+      // ranger, il montre.
+      id: "tableau",
+      label: LABEL_ITEM.tableau,
+      labelCourt: "Tableau",
+      Icon: LayoutDashboard,
+      href: base,
+    },
     {
       id: "a-faire",
       label: "À faire",
       labelCourt: "À faire",
       Icon: ListTodo,
-      items: itemsAFaire,
-      alert: alerte(itemsAFaire),
+      href: `${base}/calendrier`,
+      items: aFaire.items,
+      alert: alerte(aFaire.items),
     },
     {
       id: "etablissement",
       label: "Mon établissement",
       labelCourt: "Établissement",
       Icon: Building2,
+      href: `${base}/equipements`,
       items: etablissement.items,
       alert: alerte(etablissement.items),
     },
@@ -460,6 +511,7 @@ export function construireRail(params: {
       label: "Mes registres",
       labelCourt: "Registres",
       Icon: Archive,
+      href: `${base}/duerp`,
       items: registres.items,
       alert: alerte(registres.items),
     },
@@ -468,7 +520,8 @@ export function construireRail(params: {
       label: "Comprendre",
       labelCourt: "Comprendre",
       Icon: BookOpen,
-      href: `/etablissements/${params.etablissementId}/guide`,
+      href: `${base}/guide`,
+      separateurAvant: true,
     },
     {
       // Comme « Comprendre » : une entrée de premier niveau sans panneau.
@@ -478,7 +531,7 @@ export function construireRail(params: {
       label: "Connecter",
       labelCourt: "Connecter",
       Icon: Plug,
-      href: `/etablissements/${params.etablissementId}/connecter`,
+      href: `${base}/connecter`,
     },
   ];
 }

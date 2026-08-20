@@ -30,6 +30,7 @@ import { obligationParId } from "@/lib/referentiels/conformite";
 import { uploadRapport } from "@/lib/rapports/actions";
 import { creerActionDepuisVerification } from "@/lib/actions/plan";
 import { prisma } from "@/lib/prisma";
+import { LABEL_ITEM } from "@/components/layout/sidebar-nav";
 import { DemanderSignatureForm } from "@/components/signatures/DemanderSignatureForm";
 import {
   CarteFiche,
@@ -75,9 +76,12 @@ export default async function VerificationDetailPage({
   // Une vérification s'ouvre depuis le calendrier, mais aussi depuis le
   // registre de sécurité, une action corrective ou le tableau de bord.
   const provenance = lireProvenance(de, id);
+  // Le parent canonique est la lecture qui la range — « Contrôles
+  // matériel », pas l'ensemble du calendrier —, et il est nommé par la
+  // table de la sidebar plutôt qu'en dur : les deux disent le même mot.
   const calendrier = {
-    href: `/etablissements/${id}/calendrier`,
-    label: "Calendrier",
+    href: `/etablissements/${id}/calendrier?famille=controle`,
+    label: LABEL_ITEM.controles,
   };
   const depuisCetteFiche = `/etablissements/${id}/verifications/${verificationId}`;
 

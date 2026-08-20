@@ -42,8 +42,8 @@ export type Provenance = {
 
 /**
  * Le nom d'un écran de détail, quand la provenance ne pointe pas sur une
- * liste. « Vérification » plutôt que « Calendrier » : `deduireActif` range
- * `/verifications/{id}` sous l'entrée Calendrier du rail — c'est juste pour
+ * liste. « Vérification » plutôt que « Contrôles matériel » : `deduireActif`
+ * range `/verifications/{id}` sous cette entrée du rail — c'est juste pour
  * surligner le rail, ça ne l'est plus pour nommer un lien de retour.
  *
  * Les libellés restent génériques et fermés : jamais le titre de l'objet.
@@ -51,7 +51,7 @@ export type Provenance = {
  * l'appelant, affiché comme s'il venait du produit.
  */
 const LABEL_DETAIL: Partial<Record<SidebarItemId, string>> = {
-  calendrier: "Vérification",
+  controles: "Vérification",
   actions: "Action",
   interventions: "Intervention",
   prestataires: "Prestataire",
@@ -104,14 +104,22 @@ function segmentsSousEtablissement(
     .filter((s) => s.length > 0);
 }
 
-/** Le nom d'un écran de l'établissement, liste ou détail. */
+/**
+ * Le nom d'un écran de l'établissement, liste ou détail.
+ *
+ * La query compte : le calendrier s'annonce « À faire » ou « Contrôles
+ * matériel » selon la lecture quittée (ADR-015). Le fil de retour nomme
+ * ainsi l'écran que le dirigeant vient de cliquer, et non le module dont
+ * il dépend.
+ */
 export function nommerEcran(
   pathname: string,
   etablissementId: string,
+  search?: string,
 ): string | null {
   const segments = segmentsSousEtablissement(pathname, etablissementId);
   if (!segments) return null;
-  const item = deduireActif(pathname, etablissementId);
+  const item = deduireActif(pathname, etablissementId, search);
   // `deduireActif` rend « tableau » pour la racine de l'établissement, mais
   // aussi, par défaut, pour un chemin qu'il ne reconnaît pas. Sous
   // l'établissement, un premier segment inconnu n'est donc pas le tableau
@@ -138,7 +146,7 @@ export function lireProvenance(
   if (typeof valeur !== "string") return null;
   const chemin = decouperCheminInterne(valeur);
   if (!chemin) return null;
-  const label = nommerEcran(chemin.pathname, etablissementId);
+  const label = nommerEcran(chemin.pathname, etablissementId, chemin.search);
   if (!label) return null;
   return { href: `${chemin.pathname}${chemin.search}`, label };
 }

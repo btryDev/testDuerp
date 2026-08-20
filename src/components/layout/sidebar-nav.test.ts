@@ -45,9 +45,28 @@ describe("deduireActif", () => {
     expect(deduireActif(`/etablissements/${ID}/modifier`, ID)).toBe("fiche");
   });
 
-  it("rattache les vérifications au calendrier", () => {
+  it("rattache les vérifications aux contrôles matériel", () => {
     expect(deduireActif(`/etablissements/${ID}/verifications/v1`, ID)).toBe(
-      "calendrier",
+      "controles",
+    );
+  });
+
+  it("sépare la lecture d'ensemble du calendrier de celle des contrôles", () => {
+    const calendrier = `/etablissements/${ID}/calendrier`;
+    expect(deduireActif(calendrier, ID)).toBe("calendrier");
+    expect(deduireActif(calendrier, ID, "famille=controle")).toBe("controles");
+    // Les autres familles restent des lectures de « Tout » : ce ne sont pas
+    // des entrées du panneau, et surligner ailleurs mentirait.
+    expect(deduireActif(calendrier, ID, "famille=travaux")).toBe("calendrier");
+    expect(deduireActif(calendrier, ID, "vue=equipement")).toBe("calendrier");
+  });
+
+  it("accepte la query sous forme d'URLSearchParams", () => {
+    // C'est ce que rend `useSearchParams()` côté client : la sidebar le
+    // passe tel quel, sans le sérialiser.
+    const params = new URLSearchParams({ famille: "controle" });
+    expect(deduireActif(`/etablissements/${ID}/calendrier`, ID, params)).toBe(
+      "controles",
     );
   });
 
@@ -75,8 +94,28 @@ describe("construireSections — structure", () => {
     ]);
   });
 
-  it("place le tableau de bord en tête de « À faire »", () => {
-    expect(sections()[0].items[0].id).toBe("tableau");
+  it("ouvre « À faire » sur l'ensemble puis les contrôles matériel", () => {
+    const aFaire = sections()[0];
+    expect(aFaire.items.map((i) => i.id)).toEqual([
+      "calendrier",
+      "controles",
+      "actions",
+      "interventions",
+      "controle",
+    ]);
+    // Le panneau s'intitule déjà « À faire » : l'item dit « Tout », pas
+    // « Calendrier ». Le nom d'écran, lui, sert aux fils de retour.
+    expect(aFaire.items[0].label).toBe("Tout");
+    expect(aFaire.items[1].href).toBe(
+      `/etablissements/${ID}/calendrier?famille=controle`,
+    );
+  });
+
+  it("garde hors des sections ce qui vit au rail", () => {
+    // Un résumé n'est pas une tâche, et le guide a son entrée de premier
+    // niveau : les laisser ici les afficherait deux fois (ADR-015).
+    expect(idsVisibles()).not.toContain("tableau");
+    expect(idsVisibles()).not.toContain("guide");
   });
 
   it("expose les six registres à plat, DUERP et registre de sécurité en tête", () => {
@@ -105,14 +144,6 @@ describe("construireSections — structure", () => {
     }
   });
 
-  it("place le guide (« Comprendre ») en dernière position de « À faire »", () => {
-    const aFaire = sections()[0];
-    const dernier = aFaire.items[aFaire.items.length - 1];
-    expect(dernier.id).toBe("guide");
-    expect(dernier.label).toBe("Comprendre");
-    expect(dernier.href).toBe(`/etablissements/${ID}/guide`);
-  });
-
   it("marque « Équipe » comme à venir plutôt qu'en lien mort", () => {
     const equipe = sections()
       .flatMap((s) => s.items)
@@ -128,12 +159,36 @@ describe("construireRail — rail à deux niveaux", () => {
 
   it("expose les catégories dans l'ordre du rail", () => {
     expect(rail().map((c) => c.id)).toEqual([
+      "tableau",
       "a-faire",
       "etablissement",
       "registres",
       "comprendre",
       "connecter",
     ]);
+  });
+
+  it("donne une page d'entrée à chaque catégorie, panneau ou non", () => {
+    // ADR-015 : cliquer une entrée de rail navigue. Une icône de premier
+    // niveau qui ne mène nulle part n'est qu'un tiroir.
+    for (const cat of rail()) {
+      expect(cat.href.startsWith(`/etablissements/${ID}`)).toBe(true);
+    }
+  });
+
+  it("fait entrer chaque panneau par son premier item", () => {
+    // Sans quoi le rail déposerait sur un écran que le panneau ne montre
+    // pas, et aucun item ne serait surligné à l'arrivée.
+    for (const cat of rail()) {
+      if (!cat.items) continue;
+      expect(cat.href).toBe(cat.items[0].href);
+    }
+  });
+
+  it("fait du tableau de bord une entrée de rail sans panneau", () => {
+    const tableau = rail().find((c) => c.id === "tableau");
+    expect(tableau?.items).toBeUndefined();
+    expect(tableau?.href).toBe(`/etablissements/${ID}`);
   });
 
   it("fait de « Connecter » un lien direct, hors des trois panneaux", () => {
@@ -145,21 +200,24 @@ describe("construireRail — rail à deux niveaux", () => {
     expect(idsVisibles()).not.toContain("connecter");
   });
 
-  it("sort « Comprendre » du panneau « À faire » pour en faire un lien direct", () => {
+  it("garde « Comprendre » en lien direct hors du panneau « À faire »", () => {
     const cats = rail();
-    const aFaire = cats.find((c) => c.id === "a-faire");
-    expect(aFaire?.items?.map((i) => i.id)).not.toContain("guide");
+    expect(cats.find((c) => c.id === "a-faire")?.items?.map((i) => i.id))
+      .not.toContain("guide");
     const comprendre = cats.find((c) => c.id === "comprendre");
     expect(comprendre?.items).toBeUndefined();
     expect(comprendre?.href).toBe(`/etablissements/${ID}/guide`);
+    // La césure entre le dossier et les modes d'accès est portée par la
+    // donnée, pas devinée au rendu.
+    expect(comprendre?.separateurAvant).toBe(true);
   });
 
-  it("reprend les mêmes items que les sections, guide excepté", () => {
+  it("reprend exactement les items des sections", () => {
     const idsSections = construireSections({ etablissementId: ID }).flatMap(
       (s) => s.items.map((i) => i.id),
     );
     const idsRail = rail().flatMap((c) => (c.items ?? []).map((i) => i.id));
-    expect([...idsRail, "guide"].sort()).toEqual(idsSections.sort());
+    expect(idsRail.sort()).toEqual(idsSections.sort());
   });
 
   it("agrège les alertes des items au niveau de la catégorie", () => {
@@ -171,12 +229,24 @@ describe("construireRail — rail à deux niveaux", () => {
     expect(cats.find((c) => c.id === "etablissement")?.alert).toBe(false);
   });
 
+  it("alerte « À faire » sur le retard d'une famille sans vérification", () => {
+    // Un permis de feu ou une attestation expirée doit allumer le rail :
+    // c'est tout l'objet de la réconciliation des compteurs.
+    const cats = construireRail({
+      etablissementId: ID,
+      counts: { enRetardTotal: 2, verificationsEnRetard: 0 },
+    });
+    expect(cats.find((c) => c.id === "a-faire")?.alert).toBe(true);
+  });
+
   it("rattache chaque item à la catégorie qui le contient", () => {
     for (const cat of rail()) {
       for (const it of cat.items ?? []) {
         expect(categorieDeItem(it.id)).toBe(cat.id);
       }
     }
+    expect(categorieDeItem("tableau")).toBe("tableau");
+    expect(categorieDeItem("controles")).toBe("a-faire");
     expect(categorieDeItem("guide")).toBe("comprendre");
     expect(categorieDeItem("connecter")).toBe("connecter");
   });
@@ -188,6 +258,7 @@ describe("construireSections — badges", () => {
       etablissementId: ID,
       counts: {
         equipements: 13,
+        enRetardTotal: 5,
         verificationsEnRetard: 3,
         prestatairesAlertes: 1,
         risquesAReevaluer: 2,
@@ -201,18 +272,41 @@ describe("construireSections — badges", () => {
     expect(parId("equipements")?.alert).toBeFalsy();
     expect(parId("actions")?.count).toBe(5);
     expect(parId("actions")?.alert).toBeFalsy();
-    expect(parId("calendrier")).toMatchObject({ count: 3, alert: true });
     expect(parId("prestataires")).toMatchObject({ count: 1, alert: true });
     expect(parId("duerp")).toMatchObject({ count: 2, alert: true });
+  });
+
+  it("donne à chaque lecture du calendrier le compteur de son périmètre", () => {
+    // « Tout » annonce toutes les familles, « Contrôles matériel » les
+    // seules vérifications : deux nombres différents, et c'est correct —
+    // chacun est nommé par son item (ADR-015).
+    const items = construireSections({
+      etablissementId: ID,
+      counts: { enRetardTotal: 5, verificationsEnRetard: 3 },
+    }).flatMap((s) => s.items);
+
+    expect(items.find((i) => i.id === "calendrier")).toMatchObject({
+      count: 5,
+      alert: true,
+    });
+    expect(items.find((i) => i.id === "controles")).toMatchObject({
+      count: 3,
+      alert: true,
+    });
   });
 
   it("n'affiche pas d'alerte quand les compteurs sont à zéro", () => {
     const items = construireSections({
       etablissementId: ID,
-      counts: { verificationsEnRetard: 0, prestatairesAlertes: 0 },
+      counts: {
+        enRetardTotal: 0,
+        verificationsEnRetard: 0,
+        prestatairesAlertes: 0,
+      },
     }).flatMap((s) => s.items);
 
     expect(items.find((i) => i.id === "calendrier")?.alert).toBe(false);
+    expect(items.find((i) => i.id === "controles")?.alert).toBe(false);
     expect(items.find((i) => i.id === "prestataires")?.alert).toBe(false);
   });
 });
