@@ -5,8 +5,7 @@ import {
   obligationParId,
 } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
-import { JOURS_APRES } from "@/lib/dashboard/frise";
-import { ajouterJours, cleJourCivil, debutDuJour } from "@/lib/dates";
+import { cleJourCivil, debutDuJour } from "@/lib/dates";
 // Module **pur** : c'est lui qui détient la partition en quatre ensembles
 // disjoints (retard / à planifier / à venir / réalisées 12 mois), déjà
 // utilisée par les documents générés. Le compteur du calendrier passe par
@@ -17,14 +16,9 @@ import { repartirVerifications } from "@/lib/pdf/etat-verifications";
 /**
  * Lectures du calendrier des vérifications périodiques.
  *
- * Deux lectures cohabitent sur la page : la **grille** (quel jour) et la
- * **liste mensuelle** (dans quel ordre). Elles doivent décrire le même
- * ensemble — c'est la promesse écrite en toutes lettres sur la page
- * (« mêmes événements, deux lectures »). Ce fichier fournit donc, à côté
- * de la lecture documentaire complète (`listerVerifications`, dont les
- * PDF ont besoin avec tout l'historique), une lecture calendaire
- * (`listerVerificationsCalendrier`) alignée sur la fenêtre et les
- * exclusions du flux qui alimente la grille.
+ * `listerVerifications` rend les lignes de suivi complètes, historique
+ * réalisé compris : la page calendrier les déplie ensuite en événements
+ * (`lecturesCalendrier`), et les PDF en ont besoin telles quelles.
  *
  * Les comparaisons de dates passent toutes par `@/lib/dates` (ADR-011) :
  * une échéance datée d'aujourd'hui n'est jamais en retard.
@@ -44,25 +38,7 @@ export type FiltresCalendrier = {
    * sortait. C'était l'inverse de ce que le mot annonce.
    */
   urgentsSeulement?: boolean;
-  /**
-   * Écarte l'historique déjà réalisé. Faux par défaut : les lectures
-   * documentaires (registre de sécurité, dossier de conformité) ont
-   * besoin des occurrences réalisées.
-   */
-  masquerRealisees?: boolean;
-  /**
-   * Borne haute, en jours civils à partir d'aujourd'hui. Absente par
-   * défaut — même raison.
-   */
-  joursHorizon?: number;
 };
-
-/** Statuts marquant une occurrence comme réalisée (le rapport existe). */
-const STATUTS_REALISES = [
-  "realisee_conforme",
-  "realisee_observations",
-  "realisee_ecart_majeur",
-] as const;
 
 export async function listerVerifications(
   etablissementId: string,
@@ -90,12 +66,6 @@ export async function listerVerifications(
             ],
           }
         : {}),
-      ...(filtres.masquerRealisees
-        ? { dateRealisee: null, statut: { notIn: [...STATUTS_REALISES] } }
-        : {}),
-      ...(filtres.joursHorizon !== undefined
-        ? { datePrevue: { lte: ajouterJours(debut, filtres.joursHorizon) } }
-        : {}),
     },
     include: { equipement: true },
     orderBy: [{ datePrevue: "asc" }],
@@ -109,33 +79,6 @@ export async function listerVerifications(
     );
   }
   return verifs;
-}
-
-/**
- * La liste mensuelle du calendrier — **même ensemble que la grille**.
- *
- * La grille est alimentée par `listerEvenementsFenetre`, qui écarte les
- * occurrences réalisées (`dateRealisee: null`) et s'arrête à
- * `JOURS_APRES`. La liste, elle, n'écartait rien : les compteurs par mois
- * incluaient tout l'historique réalisé que la grille ne montrait pas, et
- * la frise s'arrêtait deux ans avant la liste.
- *
- * **Une différence subsiste, assumée** : la grille écarte aussi les
- * occurrences `a_planifier` (ton `warn`), dont la `datePrevue` est une
- * date de génération et non une date convenue — les poser sur un jour
- * mentirait ; elle les annonce à part, par son compteur « sans date ». La
- * liste les garde, parce qu'elle affiche un badge de statut à côté de
- * chaque ligne : « à planifier » y est lisible, pas déguisé en rendez-vous.
- */
-export async function listerVerificationsCalendrier(
-  etablissementId: string,
-  filtres: Omit<FiltresCalendrier, "masquerRealisees" | "joursHorizon"> = {},
-) {
-  return listerVerifications(etablissementId, {
-    ...filtres,
-    masquerRealisees: true,
-    joursHorizon: JOURS_APRES,
-  });
 }
 
 export type VerificationListee = Awaited<

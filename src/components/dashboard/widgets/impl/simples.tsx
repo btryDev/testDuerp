@@ -244,6 +244,7 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
   return (
     <CarteBoard className="gap-6 px-7 py-[26px]">
       <TitreBloc
+        famille="Inventaire"
         titre="Équipements"
         sousTitre={
           /* `totalEq` compte des appareils, pas des types — le compte
@@ -513,14 +514,18 @@ const GUIDE_ETAPES = [
 export function WidgetGuide({ bundle }: { bundle: DashboardBundle }) {
   const { etablissementId } = bundle;
   return (
+    // Même carte sombre que « Préparer un contrôle », son voisin de rangée :
+    // rayon 30, encre du board. Elle était restée en rayon 14 sur l'ancien
+    // `--ink`, avec un bleu lavande hors palette — deux cartes noires côte à
+    // côte qui ne se ressemblaient pas.
     <section
-      className="relative flex flex-col gap-3 overflow-hidden rounded-[14px] px-6 py-[22px]"
-      style={{ background: "var(--ink)", color: "#fff" }}
+      className="relative flex h-full flex-col gap-3 overflow-hidden rounded-[30px] px-7 py-[26px]"
+      style={{ background: "var(--board-ink)", color: "#fff" }}
     >
-      <p className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-white/55">
+      <p className="board-eyebrow m-0 text-[color:var(--board-blue-soft)]">
         Guide pédagogique
       </p>
-      <h3 className="max-w-[320px] text-[18px] font-semibold leading-[1.2] tracking-[-0.015em]">
+      <h3 className="board-titre max-w-[320px] text-[20px] text-white">
         Ce qu&apos;on attend de vous,
         <br />
         <span
@@ -528,7 +533,8 @@ export function WidgetGuide({ bundle }: { bundle: DashboardBundle }) {
           style={{
             fontFamily: "var(--font-serif), Georgia, serif",
             fontWeight: 400,
-            color: "#9AB7FF",
+            letterSpacing: "normal",
+            color: "var(--board-blue-soft)",
           }}
         >
           par obligation légale.
@@ -538,16 +544,19 @@ export function WidgetGuide({ bundle }: { bundle: DashboardBundle }) {
         {GUIDE_ETAPES.map((x) => (
           <li
             key={x.k}
-            className="grid grid-cols-[auto_1fr] items-center gap-2.5 rounded-[10px] px-2.5 py-2"
-            style={{ background: "rgba(255,255,255,0.04)" }}
+            className="grid grid-cols-[auto_1fr] items-center gap-2.5 rounded-[14px] px-3 py-2.5"
+            style={{ background: "rgba(255,255,255,0.05)" }}
           >
             <span
               className="font-mono tabular-nums text-[11px]"
-              style={{ color: "#9AB7FF", letterSpacing: "0.08em" }}
+              style={{
+                color: "var(--board-blue-soft)",
+                letterSpacing: "0.08em",
+              }}
             >
               {x.k}
             </span>
-            <span className="text-[13px]" style={{ color: "#D4DAE6" }}>
+            <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.82)" }}>
               {x.t}
             </span>
           </li>
@@ -555,7 +564,7 @@ export function WidgetGuide({ bundle }: { bundle: DashboardBundle }) {
       </ul>
       <Link
         href={`/etablissements/${etablissementId}/guide`}
-        className="mt-2 inline-flex h-[34px] w-fit items-center gap-1.5 rounded-[10px] bg-white px-3.5 text-[12.5px] font-medium text-ink transition-colors hover:bg-white/90"
+        className="mt-3 inline-flex h-[38px] w-fit items-center gap-1.5 rounded-full bg-white px-4 text-[12.5px] font-semibold text-[color:var(--board-ink)] transition-colors hover:bg-white/90"
       >
         Lire le guide complet →
       </Link>

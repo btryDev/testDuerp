@@ -45,7 +45,12 @@ const h = vi.hoisted(() => {
     },
   };
 
-  return { db, prisma, genererCalendrier: vi.fn(async () => ({})) };
+  return {
+    db,
+    prisma,
+    genererCalendrier: vi.fn(async () => ({})),
+    marquerCalendrierPerime: vi.fn(async () => {}),
+  };
 });
 
 vi.mock("@/lib/prisma", () => ({ prisma: h.prisma }));
@@ -61,6 +66,9 @@ vi.mock("@/lib/auth/scope", () => ({
 vi.mock("@/lib/calendrier/actions", () => ({
   genererCalendrier: h.genererCalendrier,
 }));
+vi.mock("@/lib/calendrier/reconciliation", () => ({
+  marquerCalendrierPerime: h.marquerCalendrierPerime,
+}));
 
 const { reactiverEquipement, supprimerEquipement } = await import("./actions");
 
@@ -70,6 +78,7 @@ beforeEach(() => {
   h.db.supprimesPhysiquement = [];
   h.genererCalendrier.mockClear();
   h.genererCalendrier.mockImplementation(async () => ({}));
+  h.marquerCalendrierPerime.mockClear();
 });
 
 describe("supprimerEquipement", () => {
@@ -117,6 +126,34 @@ describe("supprimerEquipement", () => {
     expect(res.statut).toBe("erreur");
     if (res.statut !== "erreur") return;
     expect(res.message).toContain("Calendrier");
+  });
+
+  /**
+   * C'est ici que se joue la promesse « ça se remet à jour tout seul ».
+   *
+   * Une régénération qui échoue derrière une mutation réussie laisse un
+   * calendrier ni vide ni périmé en version : l'auto-réparation à
+   * l'affichage ne le reprend pas, et sans marque il resterait faux
+   * jusqu'à la prochaine modification d'équipement — sans que personne le
+   * sache. Marquer l'établissement périmé le fait recalculer à la
+   * prochaine ouverture du calendrier. Sans cette ligne, il faudrait
+   * rendre la main à l'utilisateur — un bouton « recalculer », c'est-à-dire
+   * lui demander de réparer nos pannes.
+   */
+  it("marque le calendrier périmé quand la régénération échoue", async () => {
+    h.genererCalendrier.mockImplementation(async () => {
+      throw new Error("base indisponible");
+    });
+
+    await supprimerEquipement("eq-1");
+
+    expect(h.marquerCalendrierPerime).toHaveBeenCalledWith("etab-1");
+  });
+
+  it("ne marque rien quand la régénération passe", async () => {
+    await supprimerEquipement("eq-1");
+
+    expect(h.marquerCalendrierPerime).not.toHaveBeenCalled();
   });
 });
 

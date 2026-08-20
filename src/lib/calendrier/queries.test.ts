@@ -35,7 +35,6 @@ import {
   compterEtatCalendrier,
   grouperParMois,
   listerVerifications,
-  listerVerificationsCalendrier,
   type VerificationListee,
 } from "./queries";
 
@@ -100,32 +99,6 @@ describe("listerVerifications — filtre « urgents »", () => {
     // à Paris) est postérieure à cette borne : elle n'est pas urgente.
     expect(jour("2026-08-10").getTime()).toBeGreaterThan(borne.getTime());
     expect(jour("2026-08-09").getTime()).toBeLessThan(borne.getTime());
-  });
-});
-
-describe("listerVerificationsCalendrier — même ensemble que la grille", () => {
-  it("écarte l'historique réalisé et borne la fenêtre à deux ans", async () => {
-    await listerVerificationsCalendrier("etab-1");
-    const where = dernierWhere();
-    expect(where.dateRealisee).toBeNull();
-    expect(where.statut).toEqual({
-      notIn: [
-        "realisee_conforme",
-        "realisee_observations",
-        "realisee_ecart_majeur",
-      ],
-    });
-    // 730 jours civils après le minuit du 10 août 2026 → le 9 août 2028
-    // (2028 est bissextile : deux ans font ici 731 jours). La borne est
-    // un minuit de Paris, pas un minuit UTC.
-    expect((where.datePrevue.lte as Date).toISOString()).toBe(
-      "2028-08-08T22:00:00.000Z",
-    );
-  });
-
-  it("laisse passer les filtres de la page", async () => {
-    await listerVerificationsCalendrier("etab-1", { urgentsSeulement: true });
-    expect(dernierWhere().OR).toBeDefined();
   });
 });
 

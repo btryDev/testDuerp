@@ -51,7 +51,12 @@ const h = vi.hoisted(() => {
     },
   };
 
-  return { db, prisma, genererCalendrier: vi.fn(async () => ({})) };
+  return {
+    db,
+    prisma,
+    genererCalendrier: vi.fn(async () => ({})),
+    marquerCalendrierPerime: vi.fn(async () => {}),
+  };
 });
 
 vi.mock("@/lib/prisma", () => ({ prisma: h.prisma }));
@@ -67,6 +72,9 @@ vi.mock("@/lib/auth/scope", () => ({
 }));
 vi.mock("@/lib/calendrier/actions", () => ({
   genererCalendrier: h.genererCalendrier,
+}));
+vi.mock("@/lib/calendrier/reconciliation", () => ({
+  marquerCalendrierPerime: h.marquerCalendrierPerime,
 }));
 
 const { modifierEtablissement, supprimerEtablissement } = await import(

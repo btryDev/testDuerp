@@ -6,6 +6,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import { genererCalendrier } from "@/lib/calendrier/actions";
+import { marquerCalendrierPerime } from "@/lib/calendrier/reconciliation";
 import { equipementSchema, serialiserCaracteristiques } from "./schema";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 
@@ -23,9 +24,9 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  * `message` en avertissement explicite avec la marche à suivre.
  */
 const MESSAGE_REGEN_ECHEC =
-  "Modification enregistrée, mais le calendrier des vérifications n'a pas pu " +
-  "être mis à jour. Ouvrez la page « Calendrier » et cliquez sur « Actualiser » " +
-  "pour recalculer vos échéances.";
+  "Modification enregistrée. Le calendrier des vérifications n'a pas pu être " +
+  "recalculé à l'instant : il le sera automatiquement à la prochaine " +
+  "ouverture de la page « Calendrier ».";
 
 async function regenererCalendrier(
   etablissementId: string,
@@ -38,6 +39,11 @@ async function regenererCalendrier(
       `[equipements] regen calendrier a échoué pour ${etablissementId}`,
       err,
     );
+    // Sans cette marque, l'échec passerait inaperçu : le calendrier n'est
+    // ni vide ni périmé en version, donc l'auto-réparation à l'affichage
+    // ne le reprendrait pas. On le replace dans l'état « désynchronisé »,
+    // que la prochaine ouverture du calendrier corrige d'elle-même.
+    await marquerCalendrierPerime(etablissementId);
     return { ok: false, message: MESSAGE_REGEN_ECHEC };
   }
 }

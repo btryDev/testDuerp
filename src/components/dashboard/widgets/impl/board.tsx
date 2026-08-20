@@ -100,16 +100,26 @@ export function CarteBoard({
   );
 }
 
-/** En-tête standard d'un bloc du board : titre 26 px + sous-titre, et à
- *  droite soit la porte ronde (href), soit des contrôles libres
- *  (actions) — exporté pour que les widgets hors de ce fichier
+/** En-tête standard d'un bloc du board : famille + titre 26 px +
+ *  sous-titre, et à droite soit la porte ronde (href), soit des contrôles
+ *  libres (actions) — exporté pour que les widgets hors de ce fichier
  *  (équipements) n'aient pas à recopier le motif. */
 export function TitreBloc({
+  famille,
   titre,
   sousTitre,
   href,
   actions,
 }: {
+  /**
+   * Sur-titre mono, repris du cadran de la page publique : il dit de
+   * quelle famille relève le bloc (« ÉCHÉANCES », « SUIVI », « PREUVE »)
+   * avant que le titre ne dise ce qu'il montre. C'est un repère de
+   * lecture, pas une décoration — un board de douze cartes se parcourt
+   * mieux quand chacune annonce son registre. Les blocs dont le titre
+   * porte déjà sa famille s'en passent.
+   */
+  famille?: string;
   titre: string;
   sousTitre?: React.ReactNode;
   href?: string;
@@ -118,9 +128,10 @@ export function TitreBloc({
   return (
     <div className="flex items-start gap-4">
       <div className="min-w-0">
-        <h2 className="m-0 text-[26px] font-semibold leading-[1.1] tracking-[-0.035em] text-[color:var(--board-ink)]">
-          {titre}
-        </h2>
+        {famille ? (
+          <p className="board-eyebrow m-0 mb-2">{famille}</p>
+        ) : null}
+        <h2 className="board-titre m-0 text-[26px]">{titre}</h2>
         {sousTitre ? (
           <p className="mt-[7px] text-[13.5px] text-[color:var(--board-slate-mid)]">
             {sousTitre}
@@ -331,10 +342,19 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
     <div className="bg-[color:var(--board-sky)] px-[46px] pb-[72px] pt-[68px]">
       <div className="grid items-center gap-x-12 gap-y-8 lg:grid-cols-[1fr_1.08fr]">
         <div>
-          <span className="inline-block rounded-full bg-[color:var(--board-card)] px-[14px] py-[6px] text-[11.5px] font-semibold tracking-[0.06em] text-[color:var(--board-blue-ink)]">
+          {/* Même badge que le hero de la page publique : pilule blanche,
+              mono capitales, point de la famille bleue en tête. */}
+          <span className="board-eyebrow inline-flex items-center gap-2.5 rounded-full bg-[color:var(--board-card)] px-[14px] py-[7px]">
+            <span
+              aria-hidden
+              className="size-1.5 rounded-full bg-[color:var(--board-blue-ink)]"
+            />
             {brief.datePill}
           </span>
-          <h1 className="mt-5 max-w-[480px] text-pretty text-[clamp(30px,3.2vw,44px)] font-semibold leading-[1.06] tracking-[-0.04em] text-[color:var(--board-ink)]">
+          {/* `text-pretty` plutôt que l'équilibrage de `.board-titre` : sur un
+              titre de trois mots-clés, équilibrer les lignes en fabrique une
+              troisième et casse le bloc. */}
+          <h1 className="board-titre mt-5 max-w-[480px] text-pretty text-[clamp(30px,3.2vw,44px)] leading-[1.04] tracking-[-0.04em]">
             {titre}
           </h1>
           <p className="mt-3.5 max-w-[440px] text-[14.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
@@ -347,7 +367,7 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
               Le dire explicitement évite de lire deux cartes comme
               « il n'y a que ça ». */}
           {extrait ? (
-            <p className="m-0 mb-2.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-[color:var(--board-slate-mid)]">
+            <p className="board-eyebrow m-0 mb-2.5">
               Par où commencer — {file.length} sur {totalUrgent}
             </p>
           ) : null}
@@ -574,7 +594,8 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
     <CarteBoard className="px-[30px] pb-5 pt-[26px]">
       <div className="flex items-start gap-4">
         <div>
-          <h2 className="m-0 text-[30px] font-semibold leading-[1.1] tracking-[-0.035em] text-[color:var(--board-ink)]">
+          <p className="board-eyebrow m-0 mb-2">Échéances</p>
+          <h2 className="board-titre m-0 text-[30px]">
             {vue === "calendrier"
               ? "Votre calendrier"
               : echelle === "jours"
@@ -1010,6 +1031,7 @@ export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
   return (
     <CarteBoard className="px-7 py-[26px]">
       <TitreBloc
+        famille="Priorités"
         titre="À faire"
         sousTitre={
           resteUrgent > 0
@@ -1315,6 +1337,7 @@ export function BlocPlanActions({ bundle }: { bundle: DashboardBundle }) {
   return (
     <CarteBoard className="px-7 py-[26px]">
       <TitreBloc
+        famille="Suivi"
         titre="Où en est le plan d'actions"
         href={`/etablissements/${bundle.etablissementId}/actions`}
       />
@@ -1408,6 +1431,7 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
   return (
     <CarteBoard className="px-7 py-[26px]">
       <TitreBloc
+        famille="Preuve"
         titre="Ce qui a changé"
         sousTitre="Les derniers mouvements sur votre dossier."
         href={`/etablissements/${etablissementId}/registre`}
@@ -1515,7 +1539,7 @@ export function BlocDocuments({ bundle }: { bundle: DashboardBundle }) {
 
   return (
     <CarteBoard className="px-7 py-[26px]">
-      <TitreBloc titre="Vos documents, en un coup d'œil" />
+      <TitreBloc famille="Dossier" titre="Vos documents, en un coup d'œil" />
 
       <div className="mt-[22px] grid grid-cols-[1.6fr_1fr_1fr_1fr] items-center gap-[7px]">
         <span className="rounded-full bg-[color:var(--board-blue-ink)] px-3.5 py-2 text-center font-mono text-[11px] font-semibold uppercase tracking-[0.06em] text-white">

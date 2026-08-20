@@ -66,7 +66,7 @@ export function WidgetShell({
       className={
         "relative " +
         (enEdition
-          ? "rounded-2xl ring-1 ring-dashed ring-[color:var(--accent-vif)]/50 ring-offset-2 ring-offset-paper"
+          ? "rounded-[30px] ring-1 ring-dashed ring-[color:var(--board-blue-strong)]/60 ring-offset-4 ring-offset-[color:var(--board-canvas)]"
           : "")
       }
     >
@@ -122,7 +122,7 @@ function ShellOverlay({
 
   return (
     <>
-      <div className="absolute -right-2 -top-2 z-10 flex items-center gap-1 rounded-full border border-rule bg-paper-elevated px-1.5 py-1 shadow-sm">
+      <div className="absolute -right-2 -top-2 z-10 flex items-center gap-1 rounded-full bg-[color:var(--board-card)] px-1.5 py-1 shadow-[0_0_0_1px_rgba(13,18,36,.08),0_6px_18px_-10px_rgba(13,18,36,.35)]">
         {deplacable ? (
           <button
             ref={setDragActivator}
@@ -131,12 +131,12 @@ function ShellOverlay({
             aria-label={`Déplacer ${titre}`}
             {...dragAttributes}
             {...dragListeners}
-            className="flex size-6 cursor-grab items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-paper-sunk hover:text-ink active:cursor-grabbing"
+            className="flex size-6 cursor-grab items-center justify-center rounded-full text-[color:var(--board-slate-mid)] transition-colors hover:bg-[color:var(--board-slate-pale)] hover:text-[color:var(--board-ink)] active:cursor-grabbing"
           >
             <GripVertical className="size-3.5" />
           </button>
         ) : null}
-        <span className="truncate px-1 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <span className="truncate px-1 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[color:var(--board-slate-mid)]">
           {titre}
         </span>
         {aVariants ? (
@@ -160,7 +160,7 @@ function ShellOverlay({
           <span
             title="Widget épinglé"
             aria-label="Widget épinglé : toujours affiché, ni retirable ni déplaçable"
-            className="flex size-6 items-center justify-center rounded-full font-mono text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70"
+            className="flex size-6 items-center justify-center rounded-full font-mono text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--board-slate-soft)]"
           >
             §
           </span>
@@ -168,8 +168,8 @@ function ShellOverlay({
       </div>
 
       {aVariants && ouvertVariants ? (
-        <div className="absolute right-0 top-8 z-20 min-w-[170px] rounded-lg border border-rule bg-paper-elevated p-1.5 shadow-md">
-          <p className="px-2 pb-1 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="absolute right-0 top-8 z-20 min-w-[180px] rounded-[18px] bg-[color:var(--board-card)] p-2 shadow-[0_0_0_1px_rgba(13,18,36,.08),0_18px_40px_-20px_rgba(13,18,36,.35)]">
+          <p className="px-2 pb-1.5 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[color:var(--board-slate-soft)]">
             Visualisation
           </p>
           {variants.map((v) => {
@@ -183,10 +183,10 @@ function ShellOverlay({
                   setOuvertVariants(false);
                 }}
                 className={
-                  "flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-left text-[0.82rem] transition-colors " +
+                  "flex w-full items-center justify-between gap-2 rounded-full px-3 py-1.5 text-left text-[0.82rem] transition-colors " +
                   (actif
-                    ? "bg-[color:var(--accent-vif-soft)] text-[color:var(--accent-vif)]"
-                    : "hover:bg-paper-sunk")
+                    ? "bg-[color:var(--board-blue-pale)] font-semibold text-[color:var(--board-blue-ink)]"
+                    : "text-[color:var(--board-slate-ink)] hover:bg-[color:var(--board-slate-pale)]")
                 }
               >
                 {v.label}
@@ -216,10 +216,10 @@ function BoutonCtrl({
   const classes =
     "flex size-6 items-center justify-center rounded-full transition-colors " +
     (variant === "destructive"
-      ? "text-[color:var(--minium)] hover:bg-[color:color-mix(in_oklch,var(--minium)_10%,transparent)]"
+      ? "text-[color:var(--board-signal-ink)] hover:bg-[color:var(--board-signal-pale)]"
       : actif
-        ? "bg-[color:var(--accent-vif-soft)] text-[color:var(--accent-vif)]"
-        : "text-ink/70 hover:bg-paper-sunk hover:text-ink");
+        ? "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
+        : "text-[color:var(--board-slate-mid)] hover:bg-[color:var(--board-slate-pale)] hover:text-[color:var(--board-ink)]");
   return (
     <button
       type="button"

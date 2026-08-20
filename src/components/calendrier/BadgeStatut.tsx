@@ -12,11 +12,18 @@ const LABEL: Record<StatutVerification, string> = {
 };
 
 // Champs saturés du board éditorial, encre de la même famille : rose
-// pour le dépassé et l'écart majeur, paille pour ce qui attend, glacier
-// pour le programmé, vert pour l'acquis. Jamais de blanc sur le rose.
+// pour le dépassé et l'écart majeur, glacier pour le programmé, vert pour
+// l'acquis. Jamais de blanc sur le rose.
+//
+// « À planifier » porte l'ardoise, pas la paille : ce n'est pas une
+// urgence, c'est l'absence de rendez-vous — un état calme. L'ambre est
+// réservé aux signaux d'attention (échéance sous 30 jours, réalisation
+// avec observations) ; le même statut arborait deux couleurs selon
+// l'endroit de l'écran, et la légende de la règle annuelle disait une
+// troisième chose du même jaune.
 const CLASSE: Record<StatutVerification, string> = {
   a_planifier:
-    "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]",
+    "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]",
   planifiee:
     "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]",
   realisee_conforme:

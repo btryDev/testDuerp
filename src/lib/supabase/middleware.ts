@@ -69,23 +69,62 @@ export async function updateSession(request: NextRequest) {
 
   // Ne pas intercaler de logique entre createServerClient et getUser :
   // la doc @supabase/ssr insiste là-dessus (sinon risque de déconnexion aléatoire).
-  // `getUser()` peut throw un AuthApiError quand le cookie contient un refresh
-  // token périmé — on traite ça comme « pas de user » pour ne pas 500 chaque
-  // requête tant que le cookie n'a pas été regénéré par un /login.
+  // `getUser()` peut échouer — throw ou `error` — quand le cookie porte un
+  // refresh token que le serveur Auth ne connaît plus (« Invalid Refresh Token:
+  // Refresh Token Not Found »). On traite ça comme « pas de user » pour ne pas
+  // 500 chaque requête, et on purge le cookie : tant qu'il traîne, le navigateur
+  // rejoue le même jeton mort à chaque navigation et l'erreur revient en boucle.
   let user: Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"] = null;
+  let sessionMorte = false;
   try {
-    const { data } = await supabase.auth.getUser();
+    const { data, error } = await supabase.auth.getUser();
     user = data.user;
-  } catch {
+    if (error && refreshTokenPerime(error)) sessionMorte = true;
+  } catch (erreur) {
     user = null;
+    sessionMorte = refreshTokenPerime(erreur);
   }
 
   if (!user && !isPublicPath(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", request.nextUrl.pathname);
-    return NextResponse.redirect(url);
+    const redirection = NextResponse.redirect(url);
+    if (sessionMorte) purgerCookiesAuth(request, redirection);
+    return redirection;
   }
 
+  if (sessionMorte) purgerCookiesAuth(request, supabaseResponse);
+
   return supabaseResponse;
+}
+
+/**
+ * Une erreur d'auth dont on ne se relèvera pas sans nouvelle connexion : le
+ * refresh token présenté n'existe plus côté serveur Auth (session révoquée,
+ * jeton déjà consommé, projet Supabase changé). À distinguer d'une panne
+ * réseau ou d'un 5xx passager — sur ceux-là, effacer les cookies
+ * déconnecterait un utilisateur parfaitement valide.
+ */
+export function refreshTokenPerime(erreur: unknown): boolean {
+  if (typeof erreur !== "object" || erreur === null) return false;
+  const e = erreur as { code?: string; message?: string };
+  if (typeof e.code === "string" && e.code.startsWith("refresh_token")) {
+    return true;
+  }
+  return /refresh token/i.test(e.message ?? "");
+}
+
+/**
+ * Efface les cookies de session Supabase (`sb-<ref>-auth-token`, éventuellement
+ * découpés en `.0`, `.1`…) sur la réponse. Sans ça, le navigateur continue de
+ * présenter un jeton mort à chaque requête et l'application reste bloquée sur
+ * la même erreur, y compris après un rechargement.
+ */
+function purgerCookiesAuth(request: NextRequest, reponse: NextResponse): void {
+  for (const cookie of request.cookies.getAll()) {
+    if (cookie.name.startsWith("sb-")) {
+      reponse.cookies.set(cookie.name, "", { maxAge: 0, path: "/" });
+    }
+  }
 }

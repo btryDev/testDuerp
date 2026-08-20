@@ -8,6 +8,7 @@ import {
   assertEtablissementOwnership,
 } from "@/lib/auth/scope";
 import { genererCalendrier } from "@/lib/calendrier/actions";
+import { marquerCalendrierPerime } from "@/lib/calendrier/reconciliation";
 import { etablissementSchema } from "./schema";
 
 export type EtablissementActionState =
@@ -170,13 +171,16 @@ export async function modifierEtablissement(
         `[etablissements] regen calendrier a échoué pour ${id}`,
         err,
       );
+      // Marqué périmé : la prochaine ouverture du calendrier le
+      // recalculera d'elle-même (cf. `marquerCalendrierPerime`).
+      await marquerCalendrierPerime(id);
       return {
         status: "success_avec_avertissement",
         id,
         message:
-          "Fiche enregistrée, mais vos obligations n'ont pas pu être " +
-          "recalculées. Ouvrez la page « Calendrier » et cliquez sur " +
-          "« Actualiser ».",
+          "Fiche enregistrée. Vos obligations n'ont pas pu être recalculées " +
+          "à l'instant : elles le seront automatiquement à la prochaine " +
+          "ouverture de la page « Calendrier ».",
       };
     }
   }

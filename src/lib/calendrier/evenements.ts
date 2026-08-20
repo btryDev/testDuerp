@@ -36,14 +36,15 @@ export type FiltresEvenements = {
  *
  * Les vérifications « à planifier » (ton `warn`) sont écartées : leur
  * `datePrevue` est une date de génération, pas une date choisie — les
- * poser sur un jour mentirait. Les appelants les signalent à part
- * (`nbSansDate` de `CalendrierGrille`).
+ * poser sur un jour mentirait. Les appelants les signalent à part (le
+ * bandeau « à planifier » du board, le compteur « sans date » de la
+ * règle annuelle).
  *
- * C'est **la seule** différence assumée entre la grille et la liste
- * mensuelle de la page calendrier, qui les garde parce qu'elle affiche
- * un badge de statut à côté de chaque ligne (cf.
- * `listerVerificationsCalendrier`). Toute autre divergence entre les deux
- * lectures est un défaut, pas un choix.
+ * C'est **la seule** différence assumée avec la liste mensuelle de la
+ * page calendrier, qui les garde parce qu'elle affiche un badge de
+ * statut à côté de chaque ligne : « à planifier » y est lisible, pas
+ * déguisé en rendez-vous. Toute autre divergence entre les lectures est
+ * un défaut, pas un choix.
  *
  * Le filtrage domaine / urgence des **vérifications** est fait en amont
  * par la requête (le domaine vit dans le référentiel, pas en base) : ce

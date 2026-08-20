@@ -22,7 +22,6 @@ import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 import {
   MOIS_FENETRE_HISTORIQUE,
-  JOURS_HORIZON_PROCHE,
   ajouterJours,
   ajouterMois,
   composantesCiviles,
@@ -30,13 +29,8 @@ import {
   instantCivil,
   joursCivilsEntre,
 } from "@/lib/dates";
-import {
-  estActionEnRetard,
-  estEnRetard,
-  estVerificationAPlanifier,
-  estVerificationAVenir,
-  estVerificationEnRetard,
-} from "@/lib/dates/retard";
+import { estActionEnRetard } from "@/lib/dates/retard";
+import { TON_REGISTRE, lecturesCalendrier } from "@/lib/calendrier/etats";
 import { repartirVerifications } from "@/lib/pdf/etat-verifications";
 import type { ModulesMatrice } from "./obligations";
 import { evaluerEtatDuerp, type EtatDuerp } from "./duerp";
@@ -106,11 +100,19 @@ export type EvenementFenetre = {
  * de `joursHorizon` jours à partir d'aujourd'hui. Utilisé par les
  * widgets « Semaine » (7 j) et « Météo » (30 j), et par le flux calendrier.
  *
- * Classification des tons, alignée sur les prédicats partagés :
- *   - alerte : occurrence en retard (`estVerificationEnRetard`) — statut
- *     `depassee`, ou date passée sans réalisation, `a_planifier` compris
- *   - warn   : `a_planifier` pas encore en retard (date non arrêtée)
- *   - ok     : planifiée à venir
+ * Le classement passe par `lecturesCalendrier` — LA règle, partagée avec
+ * la page calendrier : une ligne soldée porte encore le rendez-vous
+ * suivant de son cycle (`datePrevue` avancée par la réconciliation), et
+ * ce rendez-vous entre dans la fenêtre comme n'importe quel futur. La
+ * fenêtre l'ignorait (`dateRealisee: null` en base) : un contrôle annuel
+ * fait l'an dernier disparaissait de la « Météo 30 j » jusqu'à la relance
+ * du cycle. Les lectures « realisation » (le fait, daté au passé) sont
+ * écartées : la fenêtre montre la charge, pas l'historique.
+ *
+ * Tons : `TON_REGISTRE` (alerte = en retard, warn = à planifier, ok = le
+ * reste). L'id reste celui de la ligne — une ligne n'émet qu'un événement
+ * ici (sa lecture courante OU son prochain rendez-vous), et les appelants
+ * s'en servent pour la porte `/verifications/{id}`.
  */
 export async function listerEvenementsFenetre(
   etablissementId: string,
@@ -132,9 +134,6 @@ export async function listerEvenementsFenetre(
       etablissementId,
       etablissement: { entreprise: { userId: user.id } },
       datePrevue: { lte: fin },
-      // On garde tout ce qui est non réalisé — pour matérialiser les
-      // retards et la charge à venir.
-      dateRealisee: null,
       ...(filtres?.urgentsSeulement
         ? { statut: { in: ["a_planifier", "depassee"] } }
         : {}),
@@ -151,20 +150,20 @@ export async function listerEvenementsFenetre(
       )
     : verifs;
 
-  return retenues.map((v) => {
-    const tone: "alerte" | "warn" | "ok" = estVerificationEnRetard(v, now)
-      ? "alerte"
-      : v.statut === "a_planifier"
-        ? "warn"
-        : "ok";
-    return {
-      id: v.id,
-      libelle: libelleCourt(v.libelleObligation),
-      date: v.datePrevue,
-      tone,
-      equipement: v.equipement.libelle,
-    };
-  });
+  return retenues.flatMap((v) =>
+    lecturesCalendrier(v, now)
+      .filter(
+        (lec) =>
+          lec.lecture !== "realisation" && lec.date.getTime() <= fin.getTime(),
+      )
+      .map((lec) => ({
+        id: v.id,
+        libelle: libelleCourt(v.libelleObligation),
+        date: lec.date,
+        tone: TON_REGISTRE[lec.registre],
+        equipement: v.equipement.libelle,
+      })),
+  );
 }
 
 export type StatsEquipement = {
@@ -205,6 +204,7 @@ export async function compterVerifsParEquipement(
       statut: true,
       datePrevue: true,
       dateRealisee: true,
+      periodicite: true,
     },
   });
 
@@ -226,9 +226,29 @@ export async function compterVerifsParEquipement(
 
   for (const v of verifs) {
     const s = getStats(v.equipementId);
-    if (estVerificationEnRetard(v, now)) s.enRetard += 1;
-    if (estVerificationAPlanifier(v, now)) s.aPlanifier += 1;
-    if (estVerificationAVenir(v, now, JOURS_HORIZON_PROCHE)) s.sous30j += 1;
+    // Même dépli que le calendrier : une ligne soldée compte son
+    // rendez-vous suivant dans la charge — un appareil à jour dont le
+    // prochain contrôle tombe sous 30 jours a une pastille et une
+    // « prochaine échéance », plus un silence.
+    for (const lec of lecturesCalendrier(v, now)) {
+      if (lec.lecture === "realisation") continue;
+      if (lec.registre === "enRetard") s.enRetard += 1;
+      else if (lec.registre === "aPlanifier") s.aPlanifier += 1;
+      else if (lec.registre === "proche") s.sous30j += 1;
+
+      // Prochaine échéance annoncée : seulement une date arrêtée — par le
+      // prestataire (`planifiee`) ou par le cycle soldé — et pas passée.
+      const dateArretee =
+        lec.lecture === "prochaine" ||
+        (lec.lecture === "courante" && v.statut === "planifiee");
+      if (
+        dateArretee &&
+        lec.registre !== "enRetard" &&
+        (!s.prochaineDate || lec.date < s.prochaineDate)
+      ) {
+        s.prochaineDate = lec.date;
+      }
+    }
 
     if (
       v.dateRealisee &&
@@ -237,16 +257,6 @@ export async function compterVerifsParEquipement(
       if (!s.derniereRealisee || v.dateRealisee > s.derniereRealisee) {
         s.derniereRealisee = v.dateRealisee;
       }
-    }
-    // Prochaine échéance annoncée : seulement une date arrêtée avec le
-    // prestataire, et pas encore passée.
-    if (
-      v.statut === "planifiee" &&
-      v.dateRealisee === null &&
-      !estEnRetard(v.datePrevue, now) &&
-      (!s.prochaineDate || v.datePrevue < s.prochaineDate)
-    ) {
-      s.prochaineDate = v.datePrevue;
     }
   }
 
@@ -290,6 +300,7 @@ export async function compterObligationsParMois(
       datePrevue: true,
       dateRealisee: true,
       statut: true,
+      periodicite: true,
     },
   });
 
@@ -301,19 +312,20 @@ export async function compterObligationsParMois(
     retard: 0,
   }));
 
+  // Même dépli que le calendrier (`lecturesCalendrier`) : une ligne
+  // soldée pose sa couverture au mois du fait ET son rendez-vous suivant
+  // en charge à venir — la barre ne peint plus la prochaine échéance en
+  // « couvert » un cycle trop tôt.
   const now = new Date();
   for (const v of verifs) {
-    const ref = v.dateRealisee ?? v.datePrevue;
-    const c = composantesCiviles(ref);
-    if (c.annee !== annee) continue;
-    const m = c.mois - 1;
+    for (const lec of lecturesCalendrier(v, now)) {
+      const c = composantesCiviles(lec.date);
+      if (c.annee !== annee) continue;
+      const m = c.mois - 1;
 
-    if (v.dateRealisee) {
-      buckets[m].couvert += 1;
-    } else if (estVerificationEnRetard(v, now)) {
-      buckets[m].retard += 1;
-    } else {
-      buckets[m].aVenir += 1;
+      if (lec.registre === "faite") buckets[m].couvert += 1;
+      else if (lec.registre === "enRetard") buckets[m].retard += 1;
+      else buckets[m].aVenir += 1;
     }
   }
 
