@@ -141,7 +141,6 @@ export function RegleAnnuelle({
     }),
     { enRetard: 0, proche: 0, lointain: 0, faite: 0 },
   );
-  const moisVides = mois.filter((m) => totalDuMois(m) === 0).length;
 
   return (
     // L'instrument n'est pas une carte : deux strates pleine largeur —
@@ -331,17 +330,13 @@ export function RegleAnnuelle({
         <Cle etat="proche" libelle="sous 30 jours" valeur={totaux.proche} />
         <Cle etat="lointain" libelle="à venir" valeur={totaux.lointain} />
         <Cle etat="faite" libelle="faite" valeur={totaux.faite} />
-        {/* Elle se compte en mois, pas en échéances — le libellé le dit. */}
-        <Cle
-          fond="var(--board-slate-line)"
-          libelle="mois sans échéance"
-          valeur={moisVides}
-        />
         {/* « Hors année » n'a plus de badge : les flèches du cadran font
-            le voyage que le badge se contentait d'annoncer. */}
+            le voyage que le badge se contentait d'annoncer. Le badge « à
+            planifier » parle, lui, le vocabulaire des pastilles de statut
+            — « sans date » disait la même chose avec d'autres mots. */}
         {sansDate > 0 ? (
           <span className="ml-auto rounded-full bg-[color:var(--board-card)] px-3 py-1.5 text-[12px] font-semibold text-[color:var(--board-slate-mid)]">
-            {sansDate} sans date
+            {sansDate} à planifier
           </span>
         ) : null}
       </div>
@@ -382,13 +377,10 @@ function FlecheAnnee({
  */
 function Cle({
   etat,
-  fond,
   libelle,
   valeur,
 }: {
-  etat?: EtatEcheance;
-  /** Champ libre — le mois vide n'est pas un état d'échéance. */
-  fond?: string;
+  etat: EtatEcheance;
   libelle: string;
   /** Le solde de l'état sur l'année affichée. */
   valeur: number;
@@ -397,10 +389,7 @@ function Cle({
     <span className="flex items-center gap-2 text-[12px] text-[color:var(--board-slate-mid)]">
       <span
         className="flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold leading-none tabular-nums"
-        style={{
-          background: etat ? CHAMP_ETAT[etat] : fond,
-          color: etat ? ENCRE_ETAT[etat] : "var(--board-slate-ink)",
-        }}
+        style={{ background: CHAMP_ETAT[etat], color: ENCRE_ETAT[etat] }}
       >
         {valeur}
       </span>
