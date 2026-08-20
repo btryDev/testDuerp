@@ -17,15 +17,19 @@ import {
   type EcheanceCalendrier,
   type FamilleEcheance,
 } from "@/lib/calendrier/echeances";
-import { AnneeCalendrier } from "@/components/calendrier/AnneeCalendrier";
+import {
+  AnneeCalendrier,
+  type AnneeRegle,
+} from "@/components/calendrier/AnneeCalendrier";
 import type { MoisRegle } from "@/components/calendrier/RegleAnnuelle";
 import {
   CHAMP_ETAT,
   ENCRE_ETAT,
   PRIORITE_ETAT,
   classerDate,
-  classerVerification,
+  lecturesCalendrier,
   type EtatEcheance,
+  type LectureCalendrier,
   type RegistreLigne,
 } from "@/lib/calendrier/etats";
 import {
@@ -42,6 +46,7 @@ import {
   MarqueurFamille,
 } from "@/components/calendrier/MarqueurFamille";
 import { FiltresCalendrier } from "@/components/calendrier/FiltresCalendrier";
+import { SelecteurLecture } from "@/components/calendrier/SelecteurLecture";
 import {
   LABEL_DOMAINE,
   LABEL_PERIODICITE,
@@ -51,11 +56,9 @@ import {
 } from "@/lib/calendrier/labels";
 import {
   FUSEAU_REFERENCE,
-  JOURS_HORIZON_PROCHE,
   composantesCiviles,
   joursCivilsEntre,
 } from "@/lib/dates";
-import { estDansLesProchainsJours } from "@/lib/dates/retard";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 
@@ -82,43 +85,6 @@ const FMT_MOIS_COURT = new Intl.DateTimeFormat("fr-FR", {
   timeZone: FUSEAU_REFERENCE,
   month: "short",
 });
-
-/**
- * Tuile-chiffre du bandeau — le motif des cartes-compteur du board :
- * champ saturé à grand rayon, chiffre quasi noir, légende mono de la
- * famille du champ. Le registre dit l'état : rose en retard, ardoise à
- * planifier, paille proche, vert acquis.
- */
-/**
- * Compteur de la bande de titre. Sur l'encre, un champ coloré est le seul
- * moyen d'être lu sans crier : le chiffre et le libellé portent l'encre
- * sombre de leur propre famille, jamais du blanc sur rose (2,0 de
- * contraste — la palette l'interdit).
- */
-function PiluleCompteur({
-  valeur,
-  libelle,
-  registre,
-}: {
-  valeur: number;
-  libelle: string;
-  /** `null` : registre calme — champ blanc discret sur l'encre. */
-  registre: EtatEcheance | null;
-}) {
-  return (
-    <span
-      className="inline-flex items-center gap-2 rounded-full px-[13px] py-[7px] text-[12.5px] font-semibold leading-none"
-      style={
-        registre
-          ? { background: CHAMP_ETAT[registre], color: ENCRE_ETAT[registre] }
-          : { background: "rgba(255,255,255,.12)", color: "#fff" }
-      }
-    >
-      <span className="tabular-nums">{valeur}</span>
-      {libelle}
-    </span>
-  );
-}
 
 /**
  * La tuile-date porte la couleur de l'état parce que c'est l'objet que
@@ -194,11 +160,7 @@ export default async function CalendrierPage({
   }>;
 }) {
   const { id } = await params;
-  const { domaine, urgent, famille, vue } = await searchParams;
-  // Deux lectures de la même donnée : « que dois-je faire en août ? » et
-  // « qu'est-ce que cet appareil me demande ? ». Le choix vit dans l'URL —
-  // il se partage, se met en favori, et survit à un rechargement.
-  const vueEquipement = vue === "equipement";
+  const { domaine, urgent, famille } = await searchParams;
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
@@ -280,36 +242,40 @@ export default async function CalendrierPage({
           (!filtreUrgent || e.tone === "alerte"),
       );
 
-  // Le header compte toutes les familles — sans quoi il dirait « rien
-  // en retard » pendant que la grille montre du rouge (actions,
-  // attestations…). Les compteurs vérifications (`etat`) sont complétés
-  // par les échéances du registre.
-  //
-  // La fenêtre « sous 30 jours » se compte en **jours civils**, bornes
-  // incluses (cf. `estDansLesProchainsJours`) : l'ancien `aujourdhui +
-  // 30 × 86 400 000` comparait des instants, et écartait le trentième
-  // jour dès que l'heure courante dépassait minuit.
+  // Toutes familles confondues — l'aide d'écran s'en sert pour expliquer
+  // l'écart avec le badge de la barre latérale, qui ne compte que les
+  // vérifications périodiques.
   const nbAutresEnRetard = autresEcheances.filter(
     (e) => e.tone === "alerte",
   ).length;
-  const nbAutresSous30j = autresEcheances.filter(
-    (e) =>
-      e.tone === "ok" &&
-      estDansLesProchainsJours(e.date, aujourdhui, JOURS_HORIZON_PROCHE),
-  ).length;
   const totalEnRetard = etat.enRetard + nbAutresEnRetard;
-  const totalSous30j = etat.aVenir + nbAutresSous30j;
 
   // La liste mensuelle mêle les deux, triés par date dans chaque mois.
+  //
+  // Une vérification n'est pas posée telle quelle : `lecturesCalendrier`
+  // déplie la ligne de suivi — un cycle soldé donne DEUX événements, le
+  // fait au jour du fait et le rendez-vous suivant à sa date, classé
+  // comme un futur ordinaire. Sans ce dépli, la prochaine échéance d'un
+  // contrôle annuel soldé s'affichait en vert « faite »… un an trop tôt.
   type LigneMois =
-    | { genre: "verif"; date: Date; v: (typeof verifsBruts)[number] }
+    | {
+        genre: "verif";
+        date: Date;
+        v: (typeof verifsBruts)[number];
+        registre: RegistreLigne;
+        lecture: LectureCalendrier["lecture"];
+      }
     | { genre: "autre"; date: Date; e: EcheanceCalendrier };
   const lignes: LigneMois[] = [
-    ...verifsVisibles.map((v) => ({
-      genre: "verif" as const,
-      date: v.datePrevue,
-      v,
-    })),
+    ...verifsVisibles.flatMap((v) =>
+      lecturesCalendrier(v, aujourdhui).map((lec) => ({
+        genre: "verif" as const,
+        date: lec.date,
+        v,
+        registre: lec.registre,
+        lecture: lec.lecture,
+      })),
+    ),
     ...autresVisibles.map((e) => ({
       genre: "autre" as const,
       date: e.date,
@@ -350,19 +316,22 @@ export default async function CalendrierPage({
 
   // Le classement vit dans `lib/calendrier/etats` (bâti sur les prédicats
   // de `lib/dates/retard`) : cette page l'a redérivé à la main une fois,
-  // et ça a produit deux compteurs contradictoires sur le même écran.
+  // et ça a produit deux compteurs contradictoires sur le même écran. Le
+  // registre d'une ligne de vérification est figé au dépli
+  // (`lecturesCalendrier`), plus jamais recalculé.
   const etatDeLaLigne = (l: LigneMois): EtatEcheance => {
     if (l.genre !== "verif") {
       return l.e.tone === "alerte"
         ? "enRetard"
         : classerDate(l.date, aujourdhui);
     }
-    const c = classerVerification(l.v, aujourdhui);
     // « À planifier » (donc à date future — le classifieur a déjà rangé
     // les dates passées en retard) est écarté des barres par `datable` ;
     // si la ligne arrive quand même ici, sa date de génération se classe
     // comme une date ordinaire plutôt que d'inventer un état de barre.
-    return c === "aPlanifier" ? classerDate(l.date, aujourdhui) : c;
+    return l.registre === "aPlanifier"
+      ? classerDate(l.date, aujourdhui)
+      : l.registre;
   };
 
   // « Datable » : mérite une place sur les barres. Une `a_planifier` qui
@@ -370,33 +339,36 @@ export default async function CalendrierPage({
   // génération) ; une `a_planifier` en retard en a une — le mois où elle
   // est devenue due — comme sur la frise du tableau de bord.
   const datable = (l: LigneMois) =>
-    l.genre !== "verif" ||
-    classerVerification(l.v, aujourdhui) !== "aPlanifier";
+    l.genre !== "verif" || l.registre !== "aPlanifier";
 
-  const moisRegle: MoisRegle[] = Array.from({ length: 12 }, (_, i) => {
-    const cle = `${anneeCourante}-${String(i + 1).padStart(2, "0")}`;
-    const compte = { enRetard: 0, proche: 0, lointain: 0, faite: 0 };
-    for (const l of parMois.get(cle) ?? []) {
-      if (!datable(l)) continue;
-      compte[etatDeLaLigne(l)] += 1;
-    }
-    return {
-      cle,
-      label: MOIS_FR_COURT[i],
-      labelLong: `${MOIS_FR[i]} ${anneeCourante}`,
-      ...compte,
-    };
-  });
+  const regleDeLAnnee = (a: number): MoisRegle[] =>
+    Array.from({ length: 12 }, (_, i) => {
+      const cle = `${a}-${String(i + 1).padStart(2, "0")}`;
+      const compte = { enRetard: 0, proche: 0, lointain: 0, faite: 0 };
+      for (const l of parMois.get(cle) ?? []) {
+        if (!datable(l)) continue;
+        compte[etatDeLaLigne(l)] += 1;
+      }
+      return {
+        cle,
+        label: MOIS_FR_COURT[i],
+        labelLong: `${MOIS_FR[i]} ${a}`,
+        ...compte,
+      };
+    });
 
-  const totalAnnee = moisRegle.reduce(
-    (n, m) => n + m.enRetard + m.proche + m.lointain + m.faite,
-    0,
+  // La règle couvre TOUTES les années du dossier, d'un seul tenant : de
+  // la plus ancienne dette au contrôle quinquennal le plus lointain, sans
+  // trou — une année déserte entre deux se feuillette comme les autres,
+  // sinon les flèches sauteraient des pages. L'année courante est toujours
+  // du voyage : c'est la page ouverte à l'arrivée.
+  const anneesAvecLignes = [...parMois.keys()].map((k) => Number(k.slice(0, 4)));
+  const anneeMin = Math.min(anneeCourante, ...anneesAvecLignes);
+  const anneeMax = Math.max(anneeCourante, ...anneesAvecLignes);
+  const anneesRegle: AnneeRegle[] = Array.from(
+    { length: anneeMax - anneeMin + 1 },
+    (_, i) => ({ annee: anneeMin + i, mois: regleDeLAnnee(anneeMin + i) }),
   );
-  // Ce que la règle ne peut pas montrer sans mentir : les mois d'une
-  // autre année. Elles restent dans la liste, et la règle le dit.
-  const horsAnnee = lignes.filter(
-    (l) => datable(l) && composantesCiviles(l.date).annee !== anneeCourante,
-  ).length;
 
   // ─────────────────────────────────────────────────────────────────
   // La lecture par équipement : mêmes occurrences, autre regroupement.
@@ -438,51 +410,59 @@ export default async function CalendrierPage({
       };
       parEquipement.set(cle, e);
     }
-    const classe = classerVerification(v, aujourdhui);
-    if (classe === "aPlanifier") {
-      e.aPlanifier += 1;
-      continue;
-    }
-    const etat = classe;
-    // `dates` sert la « prochaine échéance », qui n'est bornée par aucune
-    // année : une dette de l'an dernier compte toujours.
-    e.dates.push({ date: v.datePrevue, etat });
+    // Même dépli que la liste mensuelle : un cycle soldé pose le fait au
+    // jour du fait ET le rendez-vous suivant à sa date — sans quoi la
+    // carte de l'appareil peignait sa prochaine échéance en vert.
+    for (const lec of lecturesCalendrier(v, aujourdhui)) {
+      if (lec.registre === "aPlanifier") {
+        e.aPlanifier += 1;
+        continue;
+      }
+      const etat = lec.registre;
+      // `dates` sert la « prochaine échéance », qui n'est bornée par
+      // aucune année : une dette de l'an dernier compte toujours.
+      e.dates.push({ date: lec.date, etat });
 
-    // Les compteurs décrivent l'APPAREIL, pas l'année : une dette de l'an
-    // dernier reste une dette, et une vérification faite en septembre
-    // dernier reste faite. Les borner à l'année civile les faisait
-    // disparaître de l'écran au 1er janvier — ce qui est faux, et pire
-    // que l'écart qu'on cherchait à éviter.
-    e.compte[etat] += 1;
+      // Les compteurs décrivent l'APPAREIL, pas l'année : une dette de
+      // l'an dernier reste une dette, et une vérification faite en
+      // septembre dernier reste faite. Les borner à l'année civile les
+      // faisait disparaître de l'écran au 1er janvier — ce qui est faux,
+      // et pire que l'écart qu'on cherchait à éviter.
+      e.compte[etat] += 1;
 
-    const c = composantesCiviles(v.datePrevue);
-    if (c.annee !== anneeCourante) {
-      // La règle, elle, ne montre qu'une année. L'écart entre ce qu'elle
-      // marque et ce que comptent les pilules se dit plutôt qu'il ne se
-      // corrige : « +1 hors 2026 ».
-      e.horsAnnee += 1;
-    } else {
-      const i = c.mois - 1;
-      const actuel = e.mois[i];
-      // Une case ne peut porter qu'un état : c'est le plus urgent du
-      // mois qui gagne. Mélanger les teintes sur 18 px ne se lirait pas.
-      if (!actuel || PRIORITE_ETAT[etat] > PRIORITE_ETAT[actuel])
-        e.mois[i] = etat;
+      const c = composantesCiviles(lec.date);
+      if (c.annee !== anneeCourante) {
+        // La règle, elle, ne montre qu'une année. L'écart entre ce
+        // qu'elle marque et ce que comptent les pilules se dit plutôt
+        // qu'il ne se corrige : « +1 hors 2026 ».
+        e.horsAnnee += 1;
+      } else {
+        const i = c.mois - 1;
+        const actuel = e.mois[i];
+        // Une case ne peut porter qu'un état : c'est le plus urgent du
+        // mois qui gagne. Mélanger les teintes sur 18 px ne se lirait pas.
+        if (!actuel || PRIORITE_ETAT[etat] > PRIORITE_ETAT[actuel])
+          e.mois[i] = etat;
 
-      const o = obligationParId(v.obligationId);
-      e.occurrences.push({
-        id: v.id,
-        href: `/etablissements/${id}/verifications/${v.id}`,
-        mois: c.mois,
-        jour: FMT_JOUR.format(v.datePrevue),
-        moisCourt: FMT_MOIS_COURT.format(v.datePrevue),
-        titre: v.libelleObligation,
-        meta:
-          LABEL_PERIODICITE[v.periodicite] +
-          (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : ""),
-        etat,
-        statut: v.statut,
-      });
+        const o = obligationParId(v.obligationId);
+        e.occurrences.push({
+          // Deux lectures d'une même ligne peuvent cohabiter dans
+          // l'année : la clé porte la lecture pour rester unique.
+          id: `${v.id}:${lec.lecture}`,
+          href: `/etablissements/${id}/verifications/${v.id}`,
+          mois: c.mois,
+          jour: FMT_JOUR.format(lec.date),
+          moisCourt: FMT_MOIS_COURT.format(lec.date),
+          titre: v.libelleObligation,
+          meta:
+            LABEL_PERIODICITE[v.periodicite] +
+            (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : ""),
+          etat,
+          // Le rendez-vous suivant n'hérite pas du statut réalisé de la
+          // ligne : sa pastille dit ce qu'il est — planifié.
+          statut: lec.lecture === "prochaine" ? "planifiee" : v.statut,
+        });
+      }
     }
   }
 
@@ -701,7 +681,7 @@ export default async function CalendrierPage({
   ).padStart(2, "0")}`;
   const moisInitial =
     (parMois.has(cleMoisCourant) ? cleMoisCourant : null) ??
-    moisRegle.find((m) => m.enRetard > 0)?.cle ??
+    anneesRegle.flatMap((a) => a.mois).find((m) => m.enRetard > 0)?.cle ??
     moisTries[0]?.[0] ??
     null;
 
@@ -749,28 +729,12 @@ export default async function CalendrierPage({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <PiluleCompteur
-            valeur={totalEnRetard}
-            libelle={totalEnRetard > 0 ? "en retard" : "rien en retard"}
-            registre={totalEnRetard > 0 ? "enRetard" : "faite"}
-          />
-          <PiluleCompteur
-            valeur={totalSous30j}
-            libelle="sous 30 jours"
-            registre={totalSous30j > 0 ? "proche" : null}
-          />
-          <PiluleCompteur
-            valeur={etat.aPlanifier}
-            libelle="à planifier"
-            registre={null}
-          />
-          <PiluleCompteur
-            valeur={etat.realisees12m}
-            libelle="faites sur 12 mois"
-            registre={etat.realisees12m > 0 ? "faite" : null}
-          />
-        </div>
+        {/* Les compteurs qui vivaient ici doublonnaient la règle et les
+            pilules des cartes ; la bande porte plutôt le choix qui
+            commande tout l'écran : la lecture. Il n'apparaît que si le
+            calendrier a des lignes — deux onglets sur du vide seraient un
+            décor. */}
+        {lignes.length > 0 ? <SelecteurLecture /> : null}
       </div>
     </div>
   );
@@ -789,11 +753,18 @@ export default async function CalendrierPage({
         profil de réalisateur requis.
       </p>
       <p className="m-0">
-        La règle en tête montre l&apos;année d&apos;un bloc : la hauteur
+        La règle en tête montre une année d&apos;un bloc : la hauteur
         d&apos;une barre dit le volume du mois, sa couleur l&apos;état le plus
         urgent, et cliquer un mois ouvre son détail. Les occurrences « à
         planifier » n&apos;y figurent pas tant qu&apos;aucune date n&apos;est
         convenue — elles sont comptées à part.
+      </p>
+      <p className="m-0">
+        Les flèches changent d&apos;année, et les cartes du dessous suivent :
+        chaque année se lit entière, mois vides compris. Sur l&apos;année en
+        cours, la liste s&apos;ouvre sur le mois d&apos;aujourd&apos;hui et
+        les mois déjà passés restent repliés — leur pli affiche toujours son
+        nombre de retards.
       </p>
       {/* Deux écrans voisins affichent « en retard » sans compter la même
           chose : ici toutes les familles d'échéances, dans la barre
@@ -829,11 +800,11 @@ export default async function CalendrierPage({
 
   // Un seul point d'entrée pour filtrer : le panneau « Filtres » (types en
   // toutes lettres, domaines, urgence) ; les filtres actifs restent
-  // lisibles en chips retirables. `AnneeCalendrier` le pose entre
-  // l'instrument et la liste, la branche « calendrier vide » le pose
-  // seul — d'où la variable.
+  // lisibles en chips retirables. La barre vit SOUS la bascule
+  // mois/équipement : on choisit d'abord sa lecture, puis on affine — et
+  // les filtres règlent ce que les deux lectures montrent.
   const barreOutils = (
-    <>
+    <div className="flex flex-1 flex-wrap items-center gap-2">
       <FiltresCalendrier
         baseHref={baseHref}
         famillesDisponibles={famillesPresentes}
@@ -843,10 +814,9 @@ export default async function CalendrierPage({
           domaine: filtreDomaine,
           urgent: filtreUrgent,
         }}
-        vue={vueEquipement ? "equipement" : undefined}
       />
       <span className="ml-auto">{aide}</span>
-    </>
+    </div>
   );
 
   return (
@@ -912,9 +882,7 @@ export default async function CalendrierPage({
           <div>
             <AnneeCalendrier
               annee={anneeCourante}
-              moisRegle={moisRegle}
-              totalAnnee={totalAnnee}
-              horsAnnee={horsAnnee}
+              anneesRegle={anneesRegle}
               /* « Sans date » ne concerne que les contrôles : sous un
                  filtre de famille qui les écarte, le compteur mentirait. */
               sansDate={
@@ -923,7 +891,7 @@ export default async function CalendrierPage({
                   : 0
               }
               moisInitial={moisInitial}
-              lectureInitiale={vueEquipement ? "equipement" : "mois"}
+              cleMoisCourant={cleMoisCourant}
               outils={barreOutils}
               parEquipement={
                 <VueParEquipement
@@ -941,15 +909,13 @@ export default async function CalendrierPage({
                 // ne doit jamais cacher un retard.
                 nbEnRetard: liste.filter((l) =>
                   l.genre === "verif"
-                    ? classerVerification(l.v, aujourdhui) === "enRetard"
+                    ? l.registre === "enRetard"
                     : l.e.tone === "alerte",
                 ).length,
                 // Ce que la règle ne place pas : la carte le dit, sans
                 // quoi son total et celui de l'instrument se contredisent.
                 nbAPlanifier: liste.filter(
-                  (l) =>
-                    l.genre === "verif" &&
-                    classerVerification(l.v, aujourdhui) === "aPlanifier",
+                  (l) => l.genre === "verif" && l.registre === "aPlanifier",
                 ).length,
                 contenu: (
                   // La clé n'est pas décorative : le contenu du mois est
@@ -973,10 +939,13 @@ export default async function CalendrierPage({
                         const v = ligne.v;
                         const o = obligationParId(v.obligationId);
                         return (
-                          <li key={v.id} className={sep}>
+                          // Deux lectures d'une même ligne (fait +
+                          // prochain rendez-vous) peuvent tomber dans le
+                          // même mois : la clé porte la lecture.
+                          <li key={`${v.id}:${ligne.lecture}`} className={sep}>
                             <LigneEcheance
                               href={`/etablissements/${id}/verifications/${v.id}`}
-                              date={v.datePrevue}
+                              date={ligne.date}
                               famille="controle"
                               titre={v.libelleObligation}
                               meta={
@@ -985,8 +954,19 @@ export default async function CalendrierPage({
                                 LABEL_PERIODICITE[v.periodicite] +
                                 (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : "")
                               }
-                              pastille={<BadgeStatut statut={v.statut} />}
-                              registre={classerVerification(v, aujourdhui)}
+                              pastille={
+                                // Le rendez-vous suivant d'un cycle soldé
+                                // n'hérite pas du badge « Conforme » : sa
+                                // pastille dit ce qu'il est — planifié.
+                                <BadgeStatut
+                                  statut={
+                                    ligne.lecture === "prochaine"
+                                      ? "planifiee"
+                                      : v.statut
+                                  }
+                                />
+                              }
+                              registre={ligne.registre}
                             />
                           </li>
                         );

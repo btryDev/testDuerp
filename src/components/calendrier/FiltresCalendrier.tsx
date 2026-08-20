@@ -3,15 +3,19 @@
 // Filtres du calendrier — un seul point d'entrée : le bouton « Filtres »
 // ouvre un panneau à trois groupes explicites (type d'échéance, domaine
 // des contrôles, urgence), et les filtres actifs restent visibles en
-// chips retirables à côté du bouton. Remplace la rangée de pilules qui
-// doublonnait avec la légende de la carte calendrier.
+// chips retirables à côté du bouton.
 //
-// Les choix s'appliquent par navigation (params d'URL) : le filtrage
-// reste côté serveur, l'état du panneau est le seul état client.
+// Les options sont de vrais inputs (radio, case à cocher) : cocher
+// s'applique immédiatement, le panneau reste ouvert et l'on peut régler
+// plusieurs filtres d'affilée. L'état filtré vit toujours dans l'URL —
+// il se partage, se met en favori — mais la navigation passe par
+// `router.replace` dans une transition : l'écran ne saute pas, et
+// l'input coché est reflété tout de suite par un état optimiste pendant
+// que le serveur recalcule les listes.
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { Check, SlidersHorizontal, X } from "lucide-react";
+import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { LoaderCircle, SlidersHorizontal, X } from "lucide-react";
 import {
   LABEL_FAMILLE,
   LABEL_FAMILLE_LONG,
@@ -36,7 +40,7 @@ function construireHref(
      * mais elle vit dans la même URL : sans la reconduire ici, régler un
      * filtre depuis la vue par équipement renvoyait à la vue par mois.
      */
-    vue?: string;
+    vue?: string | null;
   },
 ): string {
   const p = new URLSearchParams();
@@ -48,63 +52,101 @@ function construireHref(
   return q ? `${baseHref}?${q}` : baseHref;
 }
 
-/** Rangée d'option du panneau : icône éventuelle + libellé, coche à
- *  droite quand elle est active — le motif du menu de variants du board. */
+/** Puce d'input : cercle pour un radio, carré arrondi pour une case. */
+function Puce({ actif, forme }: { actif: boolean; forme: "radio" | "case" }) {
+  return (
+    <span
+      aria-hidden
+      className={
+        "flex size-4 flex-none items-center justify-center border transition-colors " +
+        (forme === "radio" ? "rounded-full " : "rounded-[5px] ") +
+        (actif
+          ? "border-[color:var(--board-blue-ink)] "
+          : "border-[color:rgba(10,10,10,.28)] ")
+      }
+    >
+      {actif ? (
+        <span
+          className={
+            "bg-[color:var(--board-blue-ink)] " +
+            (forme === "radio"
+              ? "size-2 rounded-full"
+              : "size-2 rounded-[2px]")
+          }
+        />
+      ) : null}
+    </span>
+  );
+}
+
+/**
+ * Rangée d'option du panneau : un vrai input (radio ou case à cocher),
+ * masqué mais focusable — les flèches naviguent dans un groupe de
+ * radios, Espace coche — avec sa puce dessinée à gauche du libellé.
+ */
 function Option({
-  href,
+  forme,
+  name,
   actif,
-  onNaviguer,
+  onChoisir,
   icone,
   children,
 }: {
-  href: string;
+  forme: "radio" | "case";
+  /** Groupe HTML des radios — sans lui, pas de navigation aux flèches. */
+  name?: string;
   actif: boolean;
-  onNaviguer: () => void;
+  onChoisir: () => void;
   icone?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      onClick={onNaviguer}
-      aria-current={actif ? "true" : undefined}
+    <label
       className={
-        "flex w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] transition-colors " +
+        "flex w-full cursor-pointer items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[13px] transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[color:var(--board-blue-ink)] " +
         (actif
           ? "bg-[color:var(--board-blue-pale)] font-semibold text-[color:var(--board-blue-ink)]"
           : "text-[color:var(--board-slate-ink)] hover:bg-[color:var(--board-slate-pale)]")
       }
     >
+      <input
+        type={forme === "radio" ? "radio" : "checkbox"}
+        name={name}
+        checked={actif}
+        onChange={onChoisir}
+        className="sr-only"
+      />
+      <Puce actif={actif} forme={forme} />
       {icone}
       <span className="flex-1">{children}</span>
-      {actif ? <Check className="size-3.5 flex-none" /> : null}
-    </Link>
+    </label>
   );
 }
 
 function TitreGroupe({ children }: { children: React.ReactNode }) {
   return (
-    <p className="m-0 px-2.5 pb-1 pt-3 font-mono text-[9.5px] font-semibold uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)] first:pt-0">
+    <legend className="m-0 px-2.5 pb-1 pt-3 font-mono text-[9.5px] font-semibold uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
       {children}
-    </p>
+    </legend>
   );
 }
 
 /** Chip d'un filtre actif — toujours visible, retirable d'un clic. */
 function Chip({
-  href,
+  onRetirer,
   ton = "neutre",
   icone,
   children,
 }: {
-  href: string;
+  onRetirer: () => void;
   ton?: "neutre" | "alerte";
   icone?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <Link
-      href={href}
+    <button
+      type="button"
+      onClick={onRetirer}
       className={
         "inline-flex items-center gap-1.5 rounded-full px-3 py-[6px] text-[11.5px] font-semibold transition-opacity hover:opacity-80 " +
         (ton === "alerte"
@@ -115,7 +157,7 @@ function Chip({
       {icone}
       {children}
       <X className="size-3" />
-    </Link>
+    </button>
   );
 }
 
@@ -124,16 +166,19 @@ export function FiltresCalendrier({
   famillesDisponibles,
   domaines,
   filtres,
-  vue,
 }: {
   baseHref: string;
   /** Familles ayant au moins une échéance — les seules proposées. */
   famillesDisponibles: FamilleEcheance[];
   domaines: { id: string; label: string }[];
   filtres: FiltresActifs;
-  /** Lecture en cours, reconduite dans chaque lien de filtre. */
-  vue?: string;
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [enCours, demarrerTransition] = useTransition();
+  // Cocher doit se voir tout de suite : l'état optimiste tient la valeur
+  // choisie pendant que le serveur recalcule, puis les props reprennent.
+  const [optimistes, poserOptimistes] = useOptimistic(filtres);
   const [ouvert, setOuvert] = useState(false);
   const racine = useRef<HTMLDivElement | null>(null);
 
@@ -157,20 +202,40 @@ export function FiltresCalendrier({
     };
   }, [ouvert]);
 
-  const fermer = () => setOuvert(false);
+  const f = optimistes;
   const nbActifs =
-    (filtres.famille ? 1 : 0) + (filtres.domaine ? 1 : 0) + (filtres.urgent ? 1 : 0);
+    (f.famille ? 1 : 0) + (f.domaine ? 1 : 0) + (f.urgent ? 1 : 0);
 
-  const href = (over: {
-    famille?: string;
-    domaine?: string;
-    urgent?: boolean;
-  }) =>
-    construireHref(baseHref, {
-      famille: over.famille ?? filtres.famille,
-      domaine: over.domaine ?? filtres.domaine,
-      urgent: over.urgent ?? filtres.urgent,
-      vue,
+  const appliquer = (suivants: FiltresActifs) => {
+    demarrerTransition(() => {
+      poserOptimistes(suivants);
+      router.replace(
+        construireHref(baseHref, {
+          ...suivants,
+          // La lecture se lit dans l'URL courante, pas dans une prop : la
+          // bascule mois/équipement la met à jour sans repasser serveur.
+          vue: searchParams.get("vue"),
+        }),
+        { scroll: false },
+      );
+    });
+  };
+
+  const choisirFamille = (famille?: FamilleEcheance) =>
+    appliquer({
+      famille,
+      // Quitter les contrôles lâche leur domaine.
+      domaine: famille && famille !== "controle" ? undefined : f.domaine,
+      urgent: f.urgent,
+    });
+
+  const choisirDomaine = (domaine?: string) =>
+    appliquer({
+      // Choisir un domaine recentre sur les contrôles : c'est leur
+      // attribut, le panneau le montre en cochant les deux.
+      famille: domaine ? "controle" : f.famille,
+      domaine,
+      urgent: f.urgent,
     });
 
   const labelDomaine = (id: string | undefined) =>
@@ -183,7 +248,7 @@ export function FiltresCalendrier({
           type="button"
           onClick={() => setOuvert((o) => !o)}
           aria-expanded={ouvert}
-          aria-haspopup="menu"
+          aria-haspopup="dialog"
           className={
             "inline-flex items-center gap-2 rounded-full border px-4 py-[9px] text-[12.5px] font-semibold transition-colors " +
             (ouvert
@@ -191,7 +256,11 @@ export function FiltresCalendrier({
               : "border-[color:rgba(10,10,10,.16)] bg-[color:var(--board-card)] text-[color:var(--board-ink)] hover:bg-[color:var(--board-blue-pale)]")
           }
         >
-          <SlidersHorizontal className="size-3.5" />
+          {enCours ? (
+            <LoaderCircle className="size-3.5 animate-spin" />
+          ) : (
+            <SlidersHorizontal className="size-3.5" />
+          )}
           Filtres
           {nbActifs > 0 ? (
             <span
@@ -208,82 +277,107 @@ export function FiltresCalendrier({
         </button>
 
         {ouvert ? (
-          <div className="absolute left-0 top-full z-30 mt-2 w-[300px] rounded-[18px] bg-[color:var(--board-card)] p-2.5 shadow-[0_1px_2px_rgba(13,18,36,.06),0_18px_44px_-16px_rgba(13,18,36,.28)] ring-1 ring-[color:rgba(13,18,36,.08)]">
-            <TitreGroupe>Type d&apos;échéance</TitreGroupe>
-            <Option
-              href={href({ famille: "" })}
-              actif={!filtres.famille}
-              onNaviguer={fermer}
-            >
-              Tout le calendrier
-            </Option>
-            {famillesDisponibles.map((f) => (
+          <div
+            role="dialog"
+            aria-label="Filtres du calendrier"
+            className="absolute left-0 top-full z-30 mt-2 w-[300px] rounded-[18px] bg-[color:var(--board-card)] p-2.5 shadow-[0_1px_2px_rgba(13,18,36,.06),0_18px_44px_-16px_rgba(13,18,36,.28)] ring-1 ring-[color:rgba(13,18,36,.08)]"
+          >
+            <fieldset className="m-0 border-0 p-0">
+              <TitreGroupe>Type d&apos;échéance</TitreGroupe>
               <Option
-                key={f}
-                href={href({
-                  famille: f,
-                  // Quitter les contrôles lâche leur domaine.
-                  domaine: f === "controle" ? undefined : "",
-                })}
-                actif={filtres.famille === f}
-                onNaviguer={fermer}
-                icone={<MarqueurFamille famille={f} className="size-4" />}
+                forme="radio"
+                name="filtre-famille"
+                actif={!f.famille}
+                onChoisir={() => choisirFamille(undefined)}
               >
-                {LABEL_FAMILLE_LONG[f]}
+                Tout le calendrier
               </Option>
-            ))}
+              {famillesDisponibles.map((fam) => (
+                <Option
+                  key={fam}
+                  forme="radio"
+                  name="filtre-famille"
+                  actif={f.famille === fam}
+                  onChoisir={() => choisirFamille(fam)}
+                  icone={<MarqueurFamille famille={fam} className="size-4" />}
+                >
+                  {LABEL_FAMILLE_LONG[fam]}
+                </Option>
+              ))}
+            </fieldset>
 
             <div className="mx-2.5 mt-2 border-t border-[color:rgba(10,10,10,.08)]" />
-            <TitreGroupe>Domaine des contrôles</TitreGroupe>
-            <Option
-              href={href({ domaine: "" })}
-              actif={!filtres.domaine}
-              onNaviguer={fermer}
-            >
-              Tous les domaines
-            </Option>
-            {domaines.map((d) => (
+            <fieldset className="m-0 border-0 p-0">
+              <TitreGroupe>Domaine des contrôles</TitreGroupe>
               <Option
-                key={d.id}
-                // Choisir un domaine recentre sur les contrôles : c'est
-                // leur attribut, le panneau le montre en cochant les deux.
-                href={href({ domaine: d.id, famille: "controle" })}
-                actif={filtres.domaine === d.id}
-                onNaviguer={fermer}
+                forme="radio"
+                name="filtre-domaine"
+                actif={!f.domaine}
+                onChoisir={() => choisirDomaine(undefined)}
               >
-                {d.label}
+                Tous les domaines
               </Option>
-            ))}
+              {domaines.map((d) => (
+                <Option
+                  key={d.id}
+                  forme="radio"
+                  name="filtre-domaine"
+                  actif={f.domaine === d.id}
+                  onChoisir={() => choisirDomaine(d.id)}
+                >
+                  {d.label}
+                </Option>
+              ))}
+            </fieldset>
 
             <div className="mx-2.5 mt-2 border-t border-[color:rgba(10,10,10,.08)]" />
-            <TitreGroupe>Urgence</TitreGroupe>
-            <Option
-              href={href({ urgent: !filtres.urgent })}
-              actif={filtres.urgent}
-              onNaviguer={fermer}
-            >
-              En retard seulement
-            </Option>
+            <fieldset className="m-0 border-0 p-0">
+              <TitreGroupe>Urgence</TitreGroupe>
+              <Option
+                forme="case"
+                actif={f.urgent}
+                onChoisir={() => appliquer({ ...f, urgent: !f.urgent })}
+              >
+                En retard seulement
+              </Option>
+            </fieldset>
+
+            {nbActifs > 0 ? (
+              <>
+                <div className="mx-2.5 mt-2 border-t border-[color:rgba(10,10,10,.08)]" />
+                <button
+                  type="button"
+                  onClick={() => appliquer({ urgent: false })}
+                  className="mt-1.5 flex w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-left text-[13px] font-semibold text-[color:var(--board-slate-mid)] transition-colors hover:bg-[color:var(--board-slate-pale)] hover:text-[color:var(--board-ink)]"
+                >
+                  <X className="size-3.5" />
+                  Tout effacer
+                </button>
+              </>
+            ) : null}
           </div>
         ) : null}
       </div>
 
       {/* Les filtres actifs restent lisibles sans ouvrir le panneau. */}
-      {filtres.famille ? (
+      {f.famille ? (
         <Chip
-          href={href({ famille: "" })}
-          icone={
-            <MarqueurFamille famille={filtres.famille} className="size-3" />
-          }
+          onRetirer={() => choisirFamille(undefined)}
+          icone={<MarqueurFamille famille={f.famille} className="size-3" />}
         >
-          {LABEL_FAMILLE[filtres.famille]}
+          {LABEL_FAMILLE[f.famille]}
         </Chip>
       ) : null}
-      {filtres.domaine ? (
-        <Chip href={href({ domaine: "" })}>{labelDomaine(filtres.domaine)}</Chip>
+      {f.domaine ? (
+        <Chip onRetirer={() => choisirDomaine(undefined)}>
+          {labelDomaine(f.domaine)}
+        </Chip>
       ) : null}
-      {filtres.urgent ? (
-        <Chip href={href({ urgent: false })} ton="alerte">
+      {f.urgent ? (
+        <Chip
+          onRetirer={() => appliquer({ ...f, urgent: false })}
+          ton="alerte"
+        >
           En retard seulement
         </Chip>
       ) : null}
