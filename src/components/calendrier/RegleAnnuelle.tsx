@@ -24,6 +24,7 @@
 // quinquennal ne sont plus invisibles, ils sont à un cran de flèche.
 
 import { useId } from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   CHAMP_ETAT,
@@ -103,6 +104,7 @@ export function RegleAnnuelle({
   moisOuvert,
   onChoisirMois,
   sansDate,
+  actionsSansEcheance,
   onAnneePrecedente,
   onAnneeSuivante,
   verre = false,
@@ -115,6 +117,14 @@ export function RegleAnnuelle({
   onChoisirMois: (cle: string) => void;
   /** Occurrences sans date — hors règle par nature, jamais oubliées. */
   sansDate: number;
+  /**
+   * Actions correctives ouvertes sans échéance. Le calendrier ne peut pas
+   * les poser — inventer un jour serait un mensonge d'affichage (ADR-010) —
+   * mais il les annonce : sinon la seule trace de leur absence était un
+   * commentaire dans le code. `null` quand la vue est filtrée : la
+   * remarque ne vaut que pour la lecture d'ensemble.
+   */
+  actionsSansEcheance?: { nb: number; href: string } | null;
   /** `undefined` : plus rien dans cette direction, la flèche se grise. */
   onAnneePrecedente?: () => void;
   onAnneeSuivante?: () => void;
@@ -338,6 +348,15 @@ export function RegleAnnuelle({
           <span className="ml-auto rounded-full bg-[color:var(--board-card)] px-3 py-1.5 text-[12px] font-semibold text-[color:var(--board-slate-mid)]">
             {sansDate} à planifier
           </span>
+        ) : null}
+        {actionsSansEcheance && actionsSansEcheance.nb > 0 ? (
+          <Link
+            href={actionsSansEcheance.href}
+            className={`rounded-full bg-[color:var(--board-card)] px-3 py-1.5 text-[12px] font-semibold text-[color:var(--board-slate-mid)] underline-offset-4 transition-colors hover:text-[color:var(--board-ink)] hover:underline ${sansDate > 0 ? "" : "ml-auto"}`}
+          >
+            {actionsSansEcheance.nb} action
+            {actionsSansEcheance.nb > 1 ? "s" : ""} sans échéance — les dater
+          </Link>
         ) : null}
       </div>
       </div>

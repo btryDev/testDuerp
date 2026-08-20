@@ -21,7 +21,9 @@ export const LABEL_FAMILLE: Record<FamilleEcheance, string> = {
 
 /** Libellés longs, pour le panneau de filtres — explicites sans contexte. */
 export const LABEL_FAMILLE_LONG: Record<FamilleEcheance, string> = {
-  controle: "Contrôles d'équipements",
+  // Le même mot que l'entrée du panneau « À faire » : filtrer par cette
+  // famille et cliquer cette entrée mènent au même écran (ADR-015).
+  controle: "Contrôles matériel",
   travaux: "Corrections & réparations",
   papiers: "Documents à renouveler",
   personnel: "Personnel",

@@ -50,6 +50,7 @@ export function AnneeCalendrier({
   anneesRegle,
   sections,
   sansDate,
+  actionsSansEcheance,
   moisInitial,
   cleMoisCourant,
   outils,
@@ -61,6 +62,8 @@ export function AnneeCalendrier({
   anneesRegle: AnneeRegle[];
   sections: SectionMoisData[];
   sansDate: number;
+  /** Ce que le calendrier ne peut pas poser, mais annonce. Cf. RegleAnnuelle. */
+  actionsSansEcheance?: { nb: number; href: string } | null;
   /** Mois déplié au chargement — le premier qui porte quelque chose. */
   moisInitial: string | null;
   /** Clé `AAAA-MM` du mois d'aujourd'hui — la charnière de la liste. */
@@ -208,6 +211,7 @@ export function AnneeCalendrier({
             moisOuvert={ouvert}
             onChoisirMois={viser}
             sansDate={sansDate}
+            actionsSansEcheance={actionsSansEcheance}
             onAnneePrecedente={
               idxRegle > 0
                 ? () => setAnneeRegle(anneesRegle[idxRegle - 1].annee)
