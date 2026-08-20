@@ -106,7 +106,15 @@ function LigneEcheance({
   registre,
 }: {
   href: string;
-  date: Date;
+  /**
+   * `null` quand la ligne n'a **jamais eu de rendez-vous** : une occurrence
+   * `a_planifier` porte bien une `datePrevue`, mais c'est la date à laquelle
+   * le calendrier a été généré, pas une date choisie (ADR-010). L'afficher
+   * donnait un jour et un mois qui ressemblaient à une échéance, et — sa
+   * date étant vite passée — un « dépassée depuis N jours » où N mesurait
+   * l'âge du dossier, pas un retard réglementaire.
+   */
+  date: Date | null;
   /** Ce que c'est. La famille regroupait trop gros : « Correction » ne
    *  disait pas si l'on voyait une mesure du DUERP ou un signalement. */
   type: TypeEcheance;
@@ -128,16 +136,29 @@ function LigneEcheance({
       <span
         className="flex size-[50px] flex-none flex-col items-center justify-center rounded-[17px]"
         style={{ background: CHAMP_ETAT[registre] }}
+        aria-label={date ? undefined : "Date à renseigner"}
       >
-        <span className="board-titre text-[18px] leading-none tabular-nums">
-          {FMT_JOUR.format(date)}
-        </span>
-        <span
-          className="mt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.1em]"
-          style={{ color: ENCRE_ETAT[registre] }}
-        >
-          {FMT_MOIS_COURT.format(date)}
-        </span>
+        {date ? (
+          <>
+            <span className="board-titre text-[18px] leading-none tabular-nums">
+              {FMT_JOUR.format(date)}
+            </span>
+            <span
+              className="mt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.1em]"
+              style={{ color: ENCRE_ETAT[registre] }}
+            >
+              {FMT_MOIS_COURT.format(date)}
+            </span>
+          </>
+        ) : (
+          <span
+            className="font-mono text-[9px] font-semibold uppercase leading-[1.3] tracking-[0.08em]"
+            style={{ color: ENCRE_ETAT[registre] }}
+            aria-hidden
+          >
+            à<br />dater
+          </span>
+        )}
       </span>
       <div className="min-w-0 flex-1">
         <p className="m-0 truncate text-[14.5px] font-semibold leading-[1.3] tracking-[-0.015em] text-[color:var(--board-ink)]">
@@ -957,7 +978,12 @@ export default async function CalendrierPage({
                           <li key={`${v.id}:${ligne.lecture}`} className={sep}>
                             <LigneEcheance
                               href={`/etablissements/${id}/verifications/${v.id}`}
-                              date={ligne.date}
+                              /* Une occurrence jamais planifiée ne porte
+                                 pas de date : la sienne est celle de la
+                                 génération du calendrier. */
+                              date={
+                                v.statut === "a_planifier" ? null : ligne.date
+                              }
                               type="verification"
                               titre={v.libelleObligation}
                               meta={

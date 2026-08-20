@@ -140,13 +140,22 @@ export function genererRecommandations(
   //    seule preuve du retard).
   for (const v of verifs) {
     if (!estVerificationEnRetard(v, now)) continue;
+    // Une occurrence restée `a_planifier` n'a jamais eu de rendez-vous : sa
+    // `datePrevue` est la date de génération du calendrier. La transmettre
+    // faisait afficher « dépassée depuis 107 j », où 107 mesurait l'âge du
+    // dossier et non un retard réglementaire. Le fait est qu'aucune
+    // vérification n'est enregistrée — on le dit, sans compter des jours
+    // qui ne veulent rien dire.
+    const jamaisPlanifiee = v.statut === "a_planifier";
     acc.push({
       kind: "verif_depassee",
       titre: v.libelleObligation,
-      sousTitre: `${v.equipementLibelle} — échéance dépassée`,
+      sousTitre: jamaisPlanifiee
+        ? `${v.equipementLibelle} — aucune vérification enregistrée`
+        : `${v.equipementLibelle} — échéance dépassée`,
       href: `/etablissements/${etab}/verifications/${v.id}`,
       priorite: 1,
-      date: v.datePrevue,
+      date: jamaisPlanifiee ? undefined : v.datePrevue,
     });
   }
 
