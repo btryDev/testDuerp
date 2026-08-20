@@ -44,7 +44,6 @@ export type TypeEcheance =
   | "verification"          // vérification périodique d'un équipement
   | "action-duerp"          // action née d'un risque du DUERP
   | "action-verification"   // action née d'un écart constaté en vérification
-  | "action-libre"          // action saisie hors des deux origines
   | "intervention"          // signalement de terrain
   | "permis-feu"
   | "plan-prevention"
@@ -95,6 +94,24 @@ d'elle.
 iconifiée mais aucune source ne la produit, et `FAMILLES_FILTRABLES` l'exclut.
 `FAMILLE_DE_TYPE` ne la référence donc pas encore ; le jour où un module la
 produira, il déclarera son type et la table le rattachera.
+
+## Correction — `action-libre` n'a jamais pu exister
+
+La liste ci-dessus comptait un dixième type, `action-libre`, « action saisie
+hors des deux origines ». Il contredisait l'ADR-002 : le XOR y impose
+*exactement* une origine, ni deux ni zéro, et l'invariant est tenu à trois
+endroits (contrainte SQL `Action_origine_xor`, `assertOrigineActionValide`
+appelée dans les trois chemins de création, import DUERP et seeds). La branche
+qui produisait ce type était donc inatteignable depuis son écriture.
+
+Elle a été supprimée, avec son libellé et son icône. `origineAction` ne prend
+plus qu'un `verificationLibelle` : `Verification.libelleObligation` étant non
+nul en base, son absence signifie exactement « pas de vérification », donc
+« rattachée à un risque ». Le paramètre `duerp` doublait cette information et
+pouvait la contredire.
+
+Ce que l'erreur enseigne : un ADR qui énonce un invariant de données doit
+livrer son test. L'ADR-002 l'a fait et a tenu ; celle-ci ne l'a pas fait.
 
 ## Conséquences
 
