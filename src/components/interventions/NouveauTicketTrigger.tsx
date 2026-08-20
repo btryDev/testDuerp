@@ -14,7 +14,7 @@ type RisqueLite = { id: string; libelle: string; uniteNom: string };
 export function NouveauTicketTrigger({
   etablissementId,
   risques,
-  label = "+ Nouveau ticket",
+  label = "+ Nouvelle intervention",
 }: {
   etablissementId: string;
   risques: RisqueLite[];

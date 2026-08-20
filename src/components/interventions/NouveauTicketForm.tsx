@@ -202,7 +202,7 @@ export function NouveauTicketForm({
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={pending}>
-          {pending ? "Création…" : "Créer le ticket"}
+          {pending ? "Création…" : "Créer l’intervention"}
         </Button>
       </div>
     </form>

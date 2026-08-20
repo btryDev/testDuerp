@@ -411,8 +411,8 @@ function genererReadme(args: {
       ? " 08_Carnet_sanitaire.txt       Relevés ECS + analyses légionelles (arrêté 01-02-2010)"
       : " 08_Carnet_sanitaire.txt       Non configuré",
     args.nbInterventionsOuvertes > 0
-      ? ` 09_Interventions_en_cours.txt ${args.nbInterventionsOuvertes} ticket(s) ouvert(s)`
-      : " 09_Interventions_en_cours.txt Aucun ticket ouvert",
+      ? ` 09_Interventions_en_cours.txt ${args.nbInterventionsOuvertes} intervention(s) ouverte(s)`
+      : " 09_Interventions_en_cours.txt Aucune intervention ouverte",
     args.nbPrestataires > 0
       ? ` Prestataires/                 Attestations URSSAF, RC Pro, Kbis (${args.nbPrestataires})`
       : " Prestataires/                 Aucun prestataire déclaré",
@@ -431,7 +431,7 @@ function genererReadme(args: {
     " [ ] Permis de feu signés avant tout travail par point chaud",
     " [ ] Plans de prévention signés avant toute intervention EE > 400h",
     " [ ] Carnet sanitaire renseigné (si ECS) — relevés hebdo",
-    " [ ] Tickets ouverts ont un responsable et une échéance",
+    " [ ] Interventions ouvertes ont un responsable et une échéance",
     "",
     "────────────────────────────────────────────────────────────",
     " CADRE LÉGAL DES OBLIGATIONS",

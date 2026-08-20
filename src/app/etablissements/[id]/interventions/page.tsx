@@ -40,6 +40,15 @@ export default async function InterventionsPage({
   const aujourdhui = new Date();
 
   const parColonne = new Map<StatutIntervention, Intervention[]>();
+  // Ce que le calendrier ne peut pas montrer : sans échéance, une
+  // intervention n'a pas de jour où se poser (ADR-010). Le plan d'actions
+  // annonce déjà ses actions « à dater » ; les interventions, elles,
+  // n'avaient aucun compteur — cet écran était leur seul lieu d'existence,
+  // et il ne le disait pas.
+  const sansEcheance = interventions.filter(
+    (i) => i.echeance === null && i.statut !== "fait" && i.statut !== "annule",
+  ).length;
+
   for (const col of COLONNES) parColonne.set(col.statut, []);
   for (const it of interventions) {
     if (it.statut === "annule") continue;
@@ -52,7 +61,7 @@ export default async function InterventionsPage({
     <>
       <AppTopbar
         title="Interventions"
-        subtitle="Tickets de maintenance et de dysfonctionnement — boucle avec le DUERP."
+        subtitle="Dysfonctionnements signalés et suivis jusqu'à leur clôture — boucle avec le DUERP."
         crumbs={[
           { href: `/etablissements/${id}`, label: etablissement.raisonDisplay },
           { label: "Interventions" },
@@ -68,24 +77,25 @@ export default async function InterventionsPage({
 
       <main className="mx-auto max-w-7xl px-8 py-8 pb-16">
         <WhyCard
-          kicker="Pourquoi les tickets"
+          kicker="Pourquoi les interventions"
           titre="Le quotidien, c'est 80% du risque réel."
-          enjeu="Un extincteur déplacé, une porte qui coince, une ampoule grillée, une fuite — chaque petit ticket que vous tracez aujourd'hui est une preuve de diligence demain."
+          enjeu="Un extincteur déplacé, une porte qui coince, une ampoule grillée, une fuite — chaque signalement que vous tracez aujourd'hui est une preuve de diligence demain."
           tonalite="info"
         >
           <p>
             L&apos;article <strong>R4224-17 du Code du travail</strong> impose
             le maintien des lieux de travail en conformité. L&apos;inspection
-            du travail vérifie la <strong>traçabilité</strong> — un tableau de
-            tickets vaut mille classeurs.
+            du travail vérifie la <strong>traçabilité</strong> — un tableau
+            d&apos;interventions vaut mille classeurs.
           </p>
           <div className="mt-3">
             <LegalBadge
               reference="Art. R4224-17 CT"
               href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530333"
             >
-              Chaque ticket lié à un risque du DUERP déclenche automatiquement
-              sa réévaluation à la clôture. Votre DUERP reste <em>vivant</em>.
+              Chaque intervention liée à un risque du DUERP déclenche
+              automatiquement sa réévaluation à la clôture. Votre DUERP reste{" "}
+              <em>vivant</em>.
             </LegalBadge>
           </div>
         </WhyCard>
@@ -93,20 +103,30 @@ export default async function InterventionsPage({
         {interventions.length === 0 ? (
           <div className="mt-10">
             <EmptyState
-              titre="Votre tableau de bord des tickets"
+              titre="Vos interventions"
               pourquoi="Chaque dysfonctionnement constaté doit être tracé : c'est la preuve que vous gérez activement la conformité quotidienne. En cas d'accident ou de contrôle, c'est cet historique qui protège."
-              quoiFaire="Créez votre premier ticket. Une photo depuis votre téléphone, un titre, une priorité — et c'est tracé."
+              quoiFaire="Créez votre première intervention. Une photo depuis votre téléphone, un titre, une priorité — et c'est tracé."
             />
             <div className="mt-4">
               <NouveauTicketTrigger
                 etablissementId={id}
                 risques={risques}
-                label="+ Créer mon premier ticket"
+                label="+ Créer ma première intervention"
               />
             </div>
           </div>
         ) : (
           <section className="mt-10">
+            {sansEcheance > 0 ? (
+              <p className="mb-4 text-[0.85rem] text-muted-foreground">
+                <strong className="font-semibold text-foreground">
+                  {sansEcheance} intervention{sansEcheance > 1 ? "s" : ""} sans
+                  échéance
+                </strong>{" "}
+                — elle{sansEcheance > 1 ? "s n'apparaissent" : " n'apparaît"} pas
+                au calendrier tant qu&apos;aucune date ne leur est donnée.
+              </p>
+            ) : null}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {COLONNES.map((col) => {
                 const items = parColonne.get(col.statut) ?? [];

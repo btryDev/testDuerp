@@ -178,3 +178,9 @@ qui vient**. L'objet périodique reprend le mot du droit — art. R. 4323-23,
 « vérifications générales périodiques ». Un extincteur se *vérifie*, une
 inspection se *subit*. Les libellés de la famille `controle` suivent :
 « Vérifications », « Vérifications périodiques », « Vérification ».
+
+**Exception : les citations réglementaires gardent leurs mots.** Le référentiel
+(`src/lib/referentiels/`) reproduit des intitulés officiels — « arrêté du
+8 octobre 1987 relatif au **contrôle** périodique des installations » — et une
+référence ne se réécrit pas pour la confort d'un lexique produit. Le lexique
+régit ce que Rojer dit en son nom propre, jamais ce qu'il cite.

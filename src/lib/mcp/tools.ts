@@ -289,7 +289,7 @@ const outilActions: OutilMcp<typeof schemaActions> = {
   titre: "Plan d'actions",
   description:
     "Actions correctives de l'établissement, qu'elles viennent du DUERP, d'un rapport de vérification ou d'une saisie libre : libellé, statut, criticité, échéance, retard éventuel et responsable. Filtrable par statut, criticité, actions en cours ou en retard. " +
-    "Attention : les échéances rendues ici sont des échéances de **traitement**, que l'établissement se fixe. Elles sont distinctes des échéances réglementaires des contrôles périodiques, rendues par l'outil `verifications`. Avant de conclure qu'une date n'existe pas dans le dossier, interroger les deux.",
+    "Attention : les échéances rendues ici sont des échéances de **traitement**, que l'établissement se fixe. Elles sont distinctes des échéances réglementaires des vérifications périodiques, rendues par l'outil `verifications`. Avant de conclure qu'une date n'existe pas dans le dossier, interroger les deux.",
   schema: schemaActions,
   executer: async (ctx, args) => {
     const actions = await listerActions(ctx.scope.etablissementId, args, ctx.now);
