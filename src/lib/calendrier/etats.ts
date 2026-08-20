@@ -20,6 +20,7 @@ import {
   estVerificationEnRetard,
 } from "@/lib/dates/retard";
 import { JOURS_HORIZON_PROCHE } from "@/lib/dates";
+import { PERIODICITE_EN_JOURS } from "@/lib/referentiels/types-communs";
 
 /**
  * Les quatre états qu'une occurrence datée peut prendre. Exclusifs entre
@@ -52,6 +53,20 @@ export const PRIORITE_ETAT: Record<EtatEcheance, number> = {
   proche: 2,
   lointain: 1,
   faite: 0,
+};
+
+/**
+ * Passerelle vers le vocabulaire de la fenêtre du board (`tone` des
+ * `EvenementFenetre`) : trois tons là où le registre a cinq états. La
+ * correspondance vivait en dur dans `listerEvenementsFenetre` — la tenir
+ * ici, à côté du classement, empêche les deux vocabulaires de dériver.
+ */
+export const TON_REGISTRE: Record<RegistreLigne, "alerte" | "warn" | "ok"> = {
+  enRetard: "alerte",
+  aPlanifier: "warn",
+  proche: "ok",
+  lointain: "ok",
+  faite: "ok",
 };
 
 /** Champ (fond) de chaque état, en jetons du board. */
@@ -112,4 +127,75 @@ export function classerVerification(
   if (estVerificationEnRetard(v, now)) return "enRetard";
   if (v.statut === "a_planifier") return "aPlanifier";
   return classerDate(v.datePrevue, now);
+}
+
+/**
+ * Une lecture calendrier d'une ligne de suivi : un événement posable sur
+ * un mois, avec son état.
+ */
+export type LectureCalendrier = {
+  date: Date;
+  registre: RegistreLigne;
+  /**
+   * `courante` — le cycle n'est pas soldé, la ligne se lit telle quelle ;
+   * `realisation` — le contrôle fait, posé au jour où il l'a été ;
+   * `prochaine` — le rendez-vous suivant d'un cycle soldé.
+   */
+  lecture: "courante" | "realisation" | "prochaine";
+};
+
+/**
+ * Déplie une ligne de suivi en événements de calendrier.
+ *
+ * Une `Verification` n'est pas une occurrence : c'est la ligne de suivi
+ * d'une obligation sur un équipement (cf. generateur.ts). Quand un cycle
+ * est soldé, la réconciliation avance `datePrevue` au rendez-vous
+ * suivant (`dateRealisee + périodicité`) en gardant le statut réalisé —
+ * la même ligne dit donc DEUX choses : « fait le 22/01/2026 » et
+ * « prochaine échéance le 22/01/2027 ». La poser une seule fois à
+ * `datePrevue` peignait la prochaine échéance en vert « faite », un an
+ * trop tôt.
+ *
+ * Ici : le fait au jour du fait, le rendez-vous au jour du rendez-vous —
+ * classé comme n'importe quelle date future. Un contrôle sans périodicité
+ * (mise en service, « autre ») n'a pas de rendez-vous suivant : sa
+ * `datePrevue` est l'ancienne échéance, pas un engagement.
+ */
+export function lecturesCalendrier(
+  v: {
+    statut: string;
+    datePrevue: Date;
+    dateRealisee: Date | null;
+    periodicite: string;
+  },
+  now: Date,
+): LectureCalendrier[] {
+  const classe = classerVerification(v, now);
+  if (classe !== "faite") {
+    return [{ date: v.datePrevue, registre: classe, lecture: "courante" }];
+  }
+
+  const lectures: LectureCalendrier[] = [
+    {
+      date: v.dateRealisee ?? v.datePrevue,
+      registre: "faite",
+      lecture: "realisation",
+    },
+  ];
+
+  const cyclique =
+    (PERIODICITE_EN_JOURS as Record<string, number | null>)[v.periodicite] !=
+    null;
+  if (
+    cyclique &&
+    v.dateRealisee !== null &&
+    v.datePrevue.getTime() > v.dateRealisee.getTime()
+  ) {
+    lectures.push({
+      date: v.datePrevue,
+      registre: classerDate(v.datePrevue, now),
+      lecture: "prochaine",
+    });
+  }
+  return lectures;
 }
