@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
-import { LegalBadge, WhyCard } from "@/components/ui-kit";
+import { FilRetour, LegalBadge, WhyCard } from "@/components/ui-kit";
+import { lireProvenance } from "@/lib/navigation/provenance";
 import { VigilancePiecePill } from "@/components/prestataires/VigilancePills";
 import { SupprimerPrestataireButton } from "@/components/prestataires/SupprimerPrestataireButton";
 import { getPrestataire } from "@/lib/prestataires/queries";
@@ -15,25 +16,29 @@ function formatDate(d: Date | null): string | null {
 
 export default async function PrestataireDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; prestataireId: string }>;
+  searchParams: Promise<{ de?: string }>;
 }) {
   const { id, prestataireId } = await params;
+  const { de } = await searchParams;
   const p = await getPrestataire(id, prestataireId);
   if (!p) notFound();
+
+  // Une fiche prestataire s'ouvre depuis l'annuaire, mais aussi depuis le
+  // calendrier — une attestation qui expire y est une échéance.
+  const provenance = lireProvenance(de, id);
+  const annuaire = {
+    href: `/etablissements/${id}/prestataires`,
+    label: "Annuaire",
+  };
 
   const nbAlertes = p.vigilance.alertesOuvertes;
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-14 sm:px-10">
-      <nav>
-        <Link
-          href={`/etablissements/${id}/prestataires`}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
-        >
-          ← Annuaire
-        </Link>
-      </nav>
+      <FilRetour provenance={provenance} canonique={annuaire} />
 
       <header className="mt-8 flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0 flex-1 space-y-3">
@@ -174,10 +179,10 @@ export default async function PrestataireDetailPage({
       <footer className="mt-10 flex items-center justify-between border-t border-[color:var(--rule-soft)] pt-4 text-[0.75rem] text-[color:var(--muted-foreground)]">
         <span>Ajouté le {formatDate(p.createdAt)}</span>
         <Link
-          href={`/etablissements/${id}/prestataires`}
+          href={(provenance ?? annuaire).href}
           className={buttonVariants({ variant: "outline", size: "sm" })}
         >
-          ← Retour à l&apos;annuaire
+          ← {provenance ? provenance.label : "Retour à l'annuaire"}
         </Link>
       </footer>
     </main>

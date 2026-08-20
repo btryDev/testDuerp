@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { AideEcran } from "@/components/ui-kit/AideEcran";
+import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
 import { getEtablissement } from "@/lib/etablissements/queries";
@@ -111,7 +112,11 @@ function LigneEcheance({
   registre: RegistreLigne;
 }) {
   return (
-    <Link
+    // `LienProvenance` et non `Link` : la fiche ouverte doit pouvoir
+    // revenir *ici*, dans la lecture et les filtres du moment. La lecture
+    // vivant hors du serveur (`history.replaceState`), seul un lien client
+    // la connaît au clic.
+    <LienProvenance
       href={href}
       className="-mx-3 flex items-center gap-4 rounded-[20px] px-3 py-3 transition-colors hover:bg-[color:var(--board-slate-pale)]"
     >
@@ -143,7 +148,7 @@ function LigneEcheance({
       </div>
       {pastille}
       <ChevronRight className="size-4 flex-none text-[color:var(--board-slate-soft)]" />
-    </Link>
+    </LienProvenance>
   );
 }
 

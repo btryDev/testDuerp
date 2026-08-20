@@ -10,7 +10,7 @@
 // Les couleurs sont celles du board éditorial : ce composant est monté
 // dans une carte blanche du tableau de bord.
 
-import Link from "next/link";
+import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   construireGrilleMois,
@@ -146,7 +146,7 @@ export function VueMois({
               <ul className="mt-1 flex flex-col gap-1">
                 {visibles.map((e) => (
                   <li key={e.id}>
-                    <Link
+                    <LienProvenance
                       href={e.href ?? hrefEvenement(e)}
                       title={`${e.libelle} — ${e.equipement}`}
                       className={
@@ -158,7 +158,7 @@ export function VueMois({
                           couleur de son urgence. */}
                       <MarqueurFamille famille={e.famille} className="size-2.5" />
                       <span className="min-w-0 truncate">{e.libelle}</span>
-                    </Link>
+                    </LienProvenance>
                   </li>
                 ))}
                 {reste > 0 ? (

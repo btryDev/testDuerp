@@ -18,6 +18,7 @@ export function AppTopbar({
   kicker,
   statut,
   crumbs,
+  retour,
   actions,
 }: {
   title: string;
@@ -32,6 +33,11 @@ export function AppTopbar({
   /** Pastille de statut à droite du kicker (ex. « ● Actif »). */
   statut?: { label: string; tone: "ok" | "warn" | "alerte" };
   crumbs?: Crumb[];
+  /** D'où l'on vient — la provenance, cf. `src/lib/navigation/provenance.ts`.
+   *  Distinct du fil d'Ariane : celui-ci dit où la fiche *vit*, celui-là
+   *  d'où l'on *arrive*. Une fiche ouverte depuis le calendrier doit pouvoir
+   *  y revenir sans que son arborescence en soit réécrite. */
+  retour?: Crumb & { href: string };
   actions?: ReactNode;
 }) {
   const toneToPill =
@@ -58,6 +64,17 @@ export function AppTopbar({
               </span>
             ) : null}
           </div>
+        ) : null}
+
+        {retour ? (
+          <nav aria-label="Retour" className="mb-1.5">
+            <Link
+              href={retour.href}
+              className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
+            >
+              ← {retour.label}
+            </Link>
+          </nav>
         ) : null}
 
         {crumbs && crumbs.length > 0 ? (

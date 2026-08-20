@@ -14,6 +14,7 @@ import {
 } from "@/lib/actions/queries";
 import { LABEL_TYPE_ACTION } from "@/lib/actions/labels";
 import { formaterDateCourteFr } from "@/lib/dates";
+import { avecProvenance, origineDepuis } from "@/lib/navigation/provenance";
 
 function formatDate(d: Date | null): string {
   if (!d) return "—";
@@ -55,6 +56,9 @@ export default async function PlanActionsPage({
   const maintenant = Date.now();
 
   const baseHref = `/etablissements/${id}/actions`;
+  // Ce que les fiches ouvertes d'ici devront savoir pour y revenir : le
+  // plan d'actions *avec ses filtres*, pas la liste par défaut.
+  const depuisCetteListe = origineDepuis(baseHref, { origine, enCours });
   const makeHref = (over: {
     origine?: string;
     enCours?: string;
@@ -281,7 +285,10 @@ export default async function PlanActionsPage({
                     </span>
                   )}
                   <Link
-                    href={`/etablissements/${id}/actions/${a.id}`}
+                    href={avecProvenance(
+                      `/etablissements/${id}/actions/${a.id}`,
+                      depuisCetteListe,
+                    )}
                     className={buttonVariants({
                       variant: "outline",
                       size: "sm",

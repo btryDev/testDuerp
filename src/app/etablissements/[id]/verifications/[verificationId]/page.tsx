@@ -30,7 +30,8 @@ import { uploadRapport } from "@/lib/rapports/actions";
 import { creerActionDepuisVerification } from "@/lib/actions/plan";
 import { prisma } from "@/lib/prisma";
 import { DemanderSignatureForm } from "@/components/signatures/DemanderSignatureForm";
-import { SignatureBlock } from "@/components/ui-kit";
+import { FilRetour, SignatureBlock } from "@/components/ui-kit";
+import { avecProvenance, lireProvenance } from "@/lib/navigation/provenance";
 import { listSignatures } from "@/lib/signatures/queries";
 
 // Les dates sont formatées et comparées dans le fuseau de référence du
@@ -90,12 +91,24 @@ function BandeResultat({ resultat }: { resultat: string }) {
 
 export default async function VerificationDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; verificationId: string }>;
+  searchParams: Promise<{ de?: string }>;
 }) {
   const { id, verificationId } = await params;
+  const { de } = await searchParams;
   const v = await getVerification(verificationId);
   if (!v || v.etablissementId !== id) notFound();
+
+  // Une vérification s'ouvre depuis le calendrier, mais aussi depuis le
+  // registre de sécurité, une action corrective ou le tableau de bord.
+  const provenance = lireProvenance(de, id);
+  const calendrier = {
+    href: `/etablissements/${id}/calendrier`,
+    label: "Calendrier",
+  };
+  const depuisCetteFiche = `/etablissements/${id}/verifications/${verificationId}`;
 
   const obligation = obligationParId(v.obligationId);
   const actionsLiees = await prisma.action.findMany({
@@ -131,15 +144,11 @@ export default async function VerificationDetailPage({
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-12 sm:px-10">
-      {/* Retour */}
-      <nav className="mb-10">
-        <Link
-          href={`/etablissements/${id}/calendrier`}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
-        >
-          ← Calendrier
-        </Link>
-      </nav>
+      <FilRetour
+        provenance={provenance}
+        canonique={calendrier}
+        className="mb-10"
+      />
 
       {/* ╔══════════════════════════════════════════════════════════════╗
           HERO — dossier d'identification de la vérification
@@ -564,7 +573,10 @@ export default async function VerificationDetailPage({
               return (
                 <li key={a.id}>
                   <Link
-                    href={`/etablissements/${id}/actions/${a.id}`}
+                    href={avecProvenance(
+                      `/etablissements/${id}/actions/${a.id}`,
+                      depuisCetteFiche,
+                    )}
                     className="cartouche group block h-full p-5 transition-colors hover:bg-paper-sunk"
                   >
                     <div className="flex items-start justify-between gap-3">

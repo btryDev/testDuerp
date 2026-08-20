@@ -1,4 +1,8 @@
 import { notFound } from "next/navigation";
+import {
+  lireProvenance,
+  retourDistinct,
+} from "@/lib/navigation/provenance";
 import { AppTopbar } from "@/components/layout/AppTopbar";
 import { LegalBadge, SignatureBlock, StatusPill } from "@/components/ui-kit";
 import { DemanderSignatureForm } from "@/components/signatures/DemanderSignatureForm";
@@ -33,10 +37,19 @@ function fmtDate(d: Date | null): string | null {
 
 export default async function PlanPreventionDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; planId: string }>;
+  searchParams: Promise<{ de?: string }>;
 }) {
   const { id, planId } = await params;
+  const { de } = await searchParams;
+  // Le fil d'Ariane dit où cette fiche vit ; le retour dit d'où l'on
+  // arrive — le calendrier, par exemple. Les deux cohabitent.
+  const retour = retourDistinct(
+    lireProvenance(de, id),
+    `/etablissements/${id}/plan-prevention`,
+  );
   const { etablissement } = await requireEtablissement(id);
   const plan = await getPlanPrevention(id, planId);
   if (!plan) notFound();
@@ -64,6 +77,7 @@ export default async function PlanPreventionDetailPage({
     <>
       <AppTopbar
         title={`Plan PP-${String(plan.numero).padStart(3, "0")}`}
+        retour={retour ?? undefined}
         crumbs={[
           { href: `/etablissements/${id}`, label: etablissement.raisonDisplay },
           {

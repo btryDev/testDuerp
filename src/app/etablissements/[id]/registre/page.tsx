@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  avecProvenance,
+  origineDepuis,
+} from "@/lib/navigation/provenance";
 import { EmptyState } from "@/components/layout/EmptyState";
 import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeResultat } from "@/components/rapports/BadgeResultat";
@@ -46,6 +50,10 @@ export default async function RegistrePage({
   });
 
   const baseHref = `/etablissements/${id}/registre`;
+  // Le registre n'est pas le parent d'une vérification — le calendrier
+  // l'est. Le lien emporte donc le registre, filtres compris, pour que le
+  // retour ne renvoie pas ailleurs.
+  const depuisCeRegistre = origineDepuis(baseHref, { domaine, q });
   const makeHref = (over: { domaine?: string; q?: string }) => {
     const p = new URLSearchParams();
     const d = over.domaine ?? filtreDomaine;
@@ -255,7 +263,10 @@ export default async function RegistrePage({
                       Ouvrir
                     </a>
                     <Link
-                      href={`/etablissements/${id}/verifications/${r.verificationId}`}
+                      href={avecProvenance(
+                        `/etablissements/${id}/verifications/${r.verificationId}`,
+                        depuisCeRegistre,
+                      )}
                       className={buttonVariants({
                         variant: "outline",
                         size: "sm",

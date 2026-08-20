@@ -22,6 +22,7 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
+import { LienProvenance } from "@/components/navigation/LienProvenance";
 import {
   ArrowUpRight,
   CalendarDays,
@@ -275,7 +276,7 @@ function CarteTache({
           </p>
         ) : null}
       </div>
-      <Link
+      <LienProvenance
         href={reco.href}
         aria-label={`Ouvrir : ${reco.titre}`}
         className={
@@ -283,7 +284,7 @@ function CarteTache({
         }
       >
         Ouvrir
-      </Link>
+      </LienProvenance>
     </li>
   );
 }
@@ -879,7 +880,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                       {/* La carte est centrée sur le point, mais bornée aux
                           extrémités de l'axe : elle y glisse légèrement, le
                           point reste à sa place. */}
-                      <Link
+                      <LienProvenance
                         href={
                           grappe
                             ? hrefCalendrier
@@ -919,7 +920,7 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                         >
                           {m.sousTitre}
                         </p>
-                      </Link>
+                      </LienProvenance>
                     </Fragment>
                   );
                 })}
@@ -1080,7 +1081,7 @@ export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
                     : "border-t border-[color:rgba(10,10,10,.07)]"
                 }
               >
-                <Link
+                <LienProvenance
                   href={r.href}
                   className="-mx-2 flex items-center gap-3 rounded-[14px] px-2 py-[11px] transition-colors hover:bg-[color:var(--board-slate-pale)]"
                 >
@@ -1097,7 +1098,7 @@ export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
                       {badge}
                     </Pastille>
                   ) : null}
-                </Link>
+                </LienProvenance>
               </li>
             );
           })}
@@ -1178,12 +1179,12 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
         <p className="m-0 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-slate)]">
           Prochaine échéance
         </p>
-        <Link
+        <LienProvenance
           href={`/etablissements/${etablissementId}/verifications/${v.id}`}
           className="mt-3 block text-[19px] font-semibold leading-[1.2] tracking-[-0.025em] text-white hover:underline"
         >
           {v.libelleObligation}
-        </Link>
+        </LienProvenance>
         <span className="mt-2.5 inline-block">
           <Pastille ton={enRetard ? "alerte" : "neutre"}>
             {libelleDateCourte(v.datePrevue)} · {v.equipement.libelle}
@@ -1445,7 +1446,7 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
         ) : null}
 
         {rapportsRecents.slice(0, 3).map((r, i) => (
-          <Link
+          <LienProvenance
             key={r.id}
             href={`/etablissements/${etablissementId}/verifications/${r.verificationId}`}
             className={
@@ -1473,11 +1474,11 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
             <span className="flex-none text-[11.5px] font-semibold text-[color:var(--board-slate-soft)]">
               {quand(r.dateRapport)}
             </span>
-          </Link>
+          </LienProvenance>
         ))}
 
         {aFaire ? (
-          <Link
+          <LienProvenance
             href={aFaire.href}
             className="flex items-center gap-3 rounded-full border border-[color:var(--board-signal-line)] bg-[color:var(--board-signal-pale)] px-4 py-[13px] transition-opacity hover:opacity-85"
           >
@@ -1490,7 +1491,7 @@ export function BlocCeQuiAChange({ bundle }: { bundle: DashboardBundle }) {
             <span className="flex-none text-[11.5px] font-semibold text-[color:var(--board-signal-ink)]">
               À FAIRE
             </span>
-          </Link>
+          </LienProvenance>
         ) : null}
       </div>
     </CarteBoard>

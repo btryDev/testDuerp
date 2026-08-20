@@ -77,6 +77,33 @@ export type SidebarActive =
  *  adressables auparavant : `/modifier` surlignait « Tableau de bord »). */
 export type SidebarItemId = SidebarActive | "fiche" | "equipe";
 
+/**
+ * Le nom de chaque écran, en un seul endroit. La sidebar s'en sert pour
+ * intituler ses entrées ; `src/lib/navigation/provenance.ts` s'en sert pour
+ * intituler un lien de retour. Les deux doivent nommer un écran de la même
+ * façon, sans quoi le fil de retour dit « Calendrier » là où le rail dit
+ * autre chose.
+ */
+export const LABEL_ITEM: Record<SidebarItemId, string> = {
+  tableau: "Tableau de bord",
+  calendrier: "Calendrier",
+  actions: "Plan d'actions",
+  interventions: "Interventions",
+  controle: "Préparer un contrôle",
+  guide: "Comprendre",
+  connecter: "Connecter",
+  equipements: "Équipements",
+  prestataires: "Prestataires",
+  fiche: "Fiche établissement",
+  equipe: "Équipe",
+  duerp: "DUERP",
+  registre: "Registre de sécurité",
+  accessibilite: "Accessibilité",
+  "permis-feu": "Permis de feu",
+  "plan-prevention": "Plans de prévention",
+  "carnet-sanitaire": "Carnet sanitaire",
+};
+
 export type SidebarCounts = {
   equipements?: number;
   verificationsEnRetard?: number;
@@ -180,13 +207,13 @@ export function construireSections({
   const aFaire: NavItem[] = [
     {
       id: "tableau",
-      label: "Tableau de bord",
+      label: LABEL_ITEM.tableau,
       href: href(""),
       Icon: LayoutDashboard,
     },
     {
       id: "calendrier",
-      label: "Calendrier",
+      label: LABEL_ITEM.calendrier,
       href: href("/calendrier"),
       Icon: Calendar,
       count: counts?.verificationsEnRetard,
@@ -194,20 +221,20 @@ export function construireSections({
     },
     {
       id: "actions",
-      label: "Plan d'actions",
+      label: LABEL_ITEM.actions,
       href: href("/actions"),
       Icon: ListChecks,
       count: counts?.actions,
     },
     {
       id: "interventions",
-      label: "Interventions",
+      label: LABEL_ITEM.interventions,
       href: href("/interventions"),
       Icon: Ticket,
     },
     {
       id: "controle",
-      label: "Préparer un contrôle",
+      label: LABEL_ITEM.controle,
       href: href("/controle"),
       Icon: ShieldCheck,
     },
@@ -216,7 +243,7 @@ export function construireSections({
       // perdu — « par où je commence ? » — il vit donc dans « À faire »,
       // en dernière position, et plus seulement dans le footer du rail.
       id: "guide",
-      label: "Comprendre",
+      label: LABEL_ITEM.guide,
       href: href("/guide"),
       Icon: BookOpen,
     },
@@ -225,14 +252,14 @@ export function construireSections({
   const monEtablissement: NavItem[] = [
     {
       id: "equipements",
-      label: "Équipements",
+      label: LABEL_ITEM.equipements,
       href: href("/equipements"),
       Icon: Wrench,
       count: counts?.equipements,
     },
     {
       id: "prestataires",
-      label: "Prestataires",
+      label: LABEL_ITEM.prestataires,
       href: href("/prestataires"),
       Icon: Users,
       count: counts?.prestatairesAlertes,
@@ -240,13 +267,13 @@ export function construireSections({
     },
     {
       id: "fiche",
-      label: "Fiche établissement",
+      label: LABEL_ITEM.fiche,
       href: href("/modifier"),
       Icon: Settings,
     },
     {
       id: "equipe",
-      label: "Équipe",
+      label: LABEL_ITEM.equipe,
       href: "#",
       Icon: Users,
       // Multi-utilisateurs hors périmètre V2 (cf. CLAUDE.md).
@@ -278,7 +305,7 @@ export function construireSections({
   const registres: NavItem[] = [
     {
       id: "duerp",
-      label: "DUERP",
+      label: LABEL_ITEM.duerp,
       href: href("/duerp"),
       Icon: FileCheck2,
       count: counts?.risquesAReevaluer,
@@ -286,34 +313,34 @@ export function construireSections({
     },
     {
       id: "registre",
-      label: "Registre de sécurité",
+      label: LABEL_ITEM.registre,
       href: href("/registre"),
       Icon: FileText,
     },
     {
       id: "accessibilite",
-      label: "Accessibilité",
+      label: LABEL_ITEM.accessibilite,
       href: href("/accessibilite"),
       Icon: Accessibility,
       etat: etat(modules?.estERP ? "actif" : "non-applicable"),
     },
     {
       id: "permis-feu",
-      label: "Permis de feu",
+      label: LABEL_ITEM["permis-feu"],
       href: href("/permis-feu"),
       Icon: Flame,
       etat: evenementiel((modules?.nbPermisFeu ?? 0) > 0),
     },
     {
       id: "plan-prevention",
-      label: "Plans de prévention",
+      label: LABEL_ITEM["plan-prevention"],
       href: href("/plan-prevention"),
       Icon: HandshakeIcon,
       etat: evenementiel((modules?.nbPlansPrevention ?? 0) > 0),
     },
     {
       id: "carnet-sanitaire",
-      label: "Carnet sanitaire",
+      label: LABEL_ITEM["carnet-sanitaire"],
       href: href("/carnet-sanitaire"),
       Icon: Droplets,
       etat: evenementiel(modules?.carnetSanitaireExiste ?? false),

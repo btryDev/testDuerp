@@ -5,6 +5,7 @@
 // avec les vérifications planifiées dans cette fenêtre.
 
 import Link from "next/link";
+import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import { cleJourCivil } from "@/lib/dates";
 import { colonnesJours } from "../temps";
@@ -89,7 +90,7 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
               <ul className="mt-1.5 flex flex-col gap-0.5">
                 {events.slice(0, 3).map((e) => (
                   <li key={e.id}>
-                    <Link
+                    <LienProvenance
                       href={`/etablissements/${etablissementId}/verifications/${e.id}`}
                       title={`${e.libelle} — ${e.equipement}`}
                       className={
@@ -102,7 +103,7 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
                       }
                     >
                       {e.libelle}
-                    </Link>
+                    </LienProvenance>
                   </li>
                 ))}
                 {events.length > 3 ? (

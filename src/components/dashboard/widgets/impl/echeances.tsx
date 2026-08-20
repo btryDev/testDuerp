@@ -5,6 +5,7 @@
 //  - timeline : axe horizontal avec dots marqués aux dates (historique)
 
 import Link from "next/link";
+import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import { formaterDateCourteFr } from "@/lib/dates";
 import { estVerificationEnRetard } from "@/lib/dates/retard";
@@ -126,7 +127,7 @@ export function WidgetProchainesEcheances({
                 borderTop: i === 0 ? "0" : "1px dashed var(--rule)",
               }}
             >
-              <Link
+              <LienProvenance
                 href={`/etablissements/${etablissementId}/verifications/${v.id}`}
                 className="grid grid-cols-[1fr_auto] items-start gap-3 rounded-md py-3 transition-colors hover:bg-paper-sunk"
               >
@@ -151,7 +152,7 @@ export function WidgetProchainesEcheances({
                     <span className={pillClass}>{pillLabel}</span>
                   </div>
                 </div>
-              </Link>
+              </LienProvenance>
             </li>
           );
         })}
@@ -243,7 +244,7 @@ function TimelineEcheances({
                 : "var(--accent-vif)";
           return (
             <li key={v.id}>
-              <Link
+              <LienProvenance
                 href={`/etablissements/${etablissementId}/verifications/${v.id}`}
                 className="flex items-center gap-3 rounded-md px-1 py-1 text-[0.82rem] transition-colors hover:bg-paper-sunk"
               >
@@ -256,7 +257,7 @@ function TimelineEcheances({
                 <span className="font-mono text-[0.76rem] text-muted-foreground">
                   {c.libelleDate}
                 </span>
-              </Link>
+              </LienProvenance>
             </li>
           );
         })}
