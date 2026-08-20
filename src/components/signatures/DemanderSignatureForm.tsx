@@ -2,8 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { demanderSignature } from "@/lib/signatures/actions";
 import type { ObjetSignable } from "@prisma/client";
 import { SignaturePreviewModal } from "./SignaturePreviewModal";
@@ -76,7 +75,7 @@ export function DemanderSignatureForm({
       <button
         type="button"
         onClick={() => setOuvert(true)}
-        className={buttonVariants({ variant: "outline", size: "sm" })}
+        className={cn(buttonVariants({ variant: "boardClair", size: "boardSm" }))}
       >
         Demander signature
       </button>
@@ -86,8 +85,10 @@ export function DemanderSignatureForm({
   if (result && result.ok) {
     return (
       <>
-        <div className="mt-3 rounded-lg border border-[color:var(--accent-vif)]/40 bg-[color:var(--accent-vif-soft)] p-4 text-[0.85rem]">
-          <p className="label-admin">Lien envoyé</p>
+        <div className="mt-3 rounded-[18px] bg-[color:var(--board-green)] p-4 text-[13px]">
+          <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-green-ink)]">
+            Lien envoyé
+          </p>
           <p className="mt-1 text-[color:var(--ink)]">
             Le destinataire va recevoir un email avec le lien et le code OTP.
           </p>
@@ -96,7 +97,7 @@ export function DemanderSignatureForm({
               <button
                 type="button"
                 onClick={() => setPreviewOuvert(true)}
-                className={buttonVariants({ size: "sm" })}
+                className={cn(buttonVariants({ variant: "board", size: "boardSm" }))}
               >
                 Tester la signature ici (mode dev)
               </button>
@@ -104,7 +105,7 @@ export function DemanderSignatureForm({
                 href={result.urlAcces}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={buttonVariants({ variant: "outline", size: "sm" })}
+                className={cn(buttonVariants({ variant: "boardClair", size: "boardSm" }))}
               >
                 Ouvrir dans un nouvel onglet ↗
               </a>
@@ -116,7 +117,7 @@ export function DemanderSignatureForm({
               setResult(null);
               setOuvert(false);
             }}
-            className="mt-3 font-mono text-[0.7rem] uppercase tracking-[0.1em] text-[color:var(--muted-foreground)] hover:text-[color:var(--ink)]"
+            className="mt-3 text-[12.5px] font-semibold text-[color:var(--board-slate-mid)] hover:text-[color:var(--board-ink)]"
           >
             Fermer
           </button>
@@ -136,15 +137,17 @@ export function DemanderSignatureForm({
   return (
     <form
       action={onSubmit}
-      className="mt-3 space-y-3 rounded-lg border border-[color:var(--rule-soft)] bg-[color:var(--paper-sunk)] p-4"
+      className="mt-3 space-y-3 rounded-[18px] bg-[color:var(--board-card)] p-4 ring-1 ring-[color:var(--board-slate-line)]"
     >
-      <p className="label-admin">Demander une signature électronique</p>
+      <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+        Demander une signature électronique
+      </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="space-y-1">
-          <Label htmlFor="sigNom" className="text-[0.78rem]">
+        <div>
+          <label className="label-board" htmlFor="sigNom">
             Nom du signataire *
-          </Label>
-          <Input
+          </label>
+          <input className="champ-board"
             id="sigNom"
             name="signataireNom"
             defaultValue={nomDefaut}
@@ -153,11 +156,11 @@ export function DemanderSignatureForm({
             placeholder="Jean Dupond"
           />
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="sigEmail" className="text-[0.78rem]">
+        <div>
+          <label className="label-board" htmlFor="sigEmail">
             Email *
-          </Label>
-          <Input
+          </label>
+          <input className="champ-board"
             id="sigEmail"
             name="signataireEmail"
             type="email"
@@ -168,11 +171,11 @@ export function DemanderSignatureForm({
           />
         </div>
       </div>
-      <div className="space-y-1">
-        <Label htmlFor="sigRole" className="text-[0.78rem]">
+      <div>
+        <label className="label-board" htmlFor="sigRole">
           Fonction (facultatif)
-        </Label>
-        <Input
+        </label>
+        <input className="champ-board"
           id="sigRole"
           name="signataireRole"
           maxLength={120}
@@ -180,10 +183,12 @@ export function DemanderSignatureForm({
         />
       </div>
       {result && !result.ok && (
-        <p className="text-[0.82rem] text-[color:var(--minium)]">{result.message}</p>
+        <p className="text-[13px] text-[color:var(--board-signal-ink)]">
+          {result.message}
+        </p>
       )}
       <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={pending}>
+        <Button type="submit" variant="board" size="boardSm" disabled={pending}>
           {pending ? "Envoi…" : "Envoyer le lien de signature"}
         </Button>
         <button
@@ -192,7 +197,7 @@ export function DemanderSignatureForm({
             setOuvert(false);
             setResult(null);
           }}
-          className="font-mono text-[0.7rem] uppercase tracking-[0.1em] text-[color:var(--muted-foreground)] hover:text-[color:var(--ink)]"
+          className="text-[12.5px] font-semibold text-[color:var(--board-slate-mid)] hover:text-[color:var(--board-ink)]"
         >
           Annuler
         </button>

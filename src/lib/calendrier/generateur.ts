@@ -13,7 +13,16 @@
  *        - dernière vérif connue          → pas de nouvelle occurrence (one-shot)
  *   3. Si la périodicité est `autre` → aucune occurrence (obligation permanente
  *      sans échéance périodique, ex. tenue du registre de sécurité).
- *   4. Si pas de dernière vérif connue → datePrevue = `now`, statut = `a_planifier`.
+ *   4. Si pas de dernière vérif connue mais une **mise en service** qui place
+ *      la première échéance dans le futur → datePrevue = `miseEnService +
+ *      periodicite`, statut = `planifiee`. C'est le cas de l'équipement neuf :
+ *      un extincteur installé le 15 mars se vérifie le 15 mars suivant, et
+ *      l'outil n'a pas à demander une date qu'il sait déduire.
+ *   4 bis. Si la mise en service place cette échéance dans le passé, on ne
+ *      conclut rien : l'équipement n'est plus dans son premier cycle et des
+ *      vérifications ont pu avoir lieu sans être saisies. Annoncer un retard
+ *      de sept ans serait inventer. → statut = `a_planifier`.
+ *   4 ter. Si rien n'est connu → datePrevue = `now`, statut = `a_planifier`.
  *   5. Si dernière vérif connue → datePrevue = `dateRealisee + periodicite`,
  *      statut = `planifiee` si datePrevue ≥ now, `depassee` sinon.
  *
@@ -63,6 +72,12 @@ export type VerificationsPrecedentes = Map<string, Date>;
 export type OptionsGenerateur = {
   /** Horloge injectable pour les tests. Défaut = `new Date()`. */
   now?: Date;
+  /**
+   * Date de mise en service, par identifiant d'équipement. Sert de point de
+   * départ **à défaut** de vérification connue — un équipement neuf n'a pas
+   * d'historique, mais sa première échéance est calculable.
+   */
+  misesEnService?: Map<string, Date>;
 };
 
 function ajouterJours(d: Date, jours: number): Date {
@@ -139,7 +154,17 @@ export function genererProchainesVerifications(
           raisons: oa.raisons,
         });
       } else {
-        // Aucune vérif précédente connue → urgence.
+        // Pas d'historique. La mise en service peut tenir lieu de départ,
+        // mais seulement tant qu'elle place la première échéance devant
+        // nous : au-delà, l'équipement a vécu sans que le dossier le sache,
+        // et un retard calculé sur ce silence serait une invention.
+        const miseEnService = options.misesEnService?.get(eq.id);
+        const premiere = miseEnService
+          ? prochaineDate(miseEnService, o.periodicite)
+          : null;
+        const premiereEncoreAVenir =
+          premiere !== null && premiere.getTime() >= now.getTime();
+
         out.push({
           cleUnique,
           obligationId: o.id,
@@ -147,9 +172,9 @@ export function genererProchainesVerifications(
           equipementId: eq.id,
           periodicite: o.periodicite,
           realisateurRequis: o.realisateurs,
-          datePrevue: now,
-          statut: "a_planifier",
-          estUrgent: true,
+          datePrevue: premiereEncoreAVenir ? premiere : now,
+          statut: premiereEncoreAVenir ? "planifiee" : "a_planifier",
+          estUrgent: !premiereEncoreAVenir,
           criticiteObligation: o.criticite,
           raisons: oa.raisons,
         });
@@ -423,6 +448,14 @@ export function reconcilierCalendrier(
         dateRealisee = null;
         statut = "depassee";
       }
+    } else if (ex.statut === "a_planifier" && g.statut === "planifiee") {
+      // La ligne n'avait qu'un **placeholder** — « à planifier » n'est pas
+      // un rendez-vous, c'est son absence — et le générateur sait désormais
+      // en calculer un depuis la mise en service. Poser cette date n'efface
+      // aucun retard : il n'y en avait pas à effacer.
+      datePrevue = g.datePrevue;
+      dateRealisee = null;
+      statut = "planifiee";
     } else {
       // Cycle ouvert : l'échéance réglementaire ne bouge pas parce que
       // l'utilisateur a déclaré un extincteur de plus. Repousser `datePrevue`

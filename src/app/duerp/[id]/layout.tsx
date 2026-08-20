@@ -6,6 +6,7 @@ import { AppTopbar } from "@/components/layout/AppTopbar";
 import { getDuerp } from "@/lib/duerps/queries";
 import { getOptionalUser } from "@/lib/auth/require-user";
 import { getEtatModules } from "@/lib/etablissements/modules";
+import { chargerSidebarCounts } from "@/lib/navigation/sidebar-counts";
 import {
   trouverReferentielParId,
   trouverReferentielParNaf,
@@ -34,9 +35,14 @@ export default async function DuerpLayout({
   if (!duerp) notFound();
 
   const etab = duerp.etablissement;
-  // Le DUERP partage la sidebar de l'établissement : sans cet état, les
-  // registres y seraient qualifiés autrement qu'ailleurs dans le produit.
-  const modules = await getEtatModules(etab.id, etab.estERP);
+  // Le DUERP partage la sidebar de l'établissement : sans cet état ni ces
+  // compteurs, registres et pastilles y seraient qualifiés autrement
+  // qu'ailleurs dans le produit — entrer dans le wizard faisait
+  // disparaître les retards (ADR-015).
+  const [modules, counts] = await Promise.all([
+    getEtatModules(etab.id, etab.estERP),
+    chargerSidebarCounts(etab.id),
+  ]);
   // Secteur affiché en pill : celui choisi dans le wizard en priorité,
   // sinon suggestion par NAF (même règle que la page secteur elle-même).
   const refChoisi = duerp.referentielSecteurId
@@ -63,6 +69,7 @@ export default async function DuerpLayout({
           entrepriseId: etab.entrepriseId,
         }}
         active="duerp"
+        counts={counts}
         modules={modules}
         user={user}
       />

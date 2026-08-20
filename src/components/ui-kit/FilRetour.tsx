@@ -13,8 +13,11 @@
 import Link from "next/link";
 import { retourDistinct, type Provenance } from "@/lib/navigation/provenance";
 
+// Jetons du board, pas du papier : le fil ouvre une fiche qui vit dans la
+// même page que le calendrier — `text-muted-foreground` y posait un gris
+// d'une autre famille, visible à côté de l'ardoise H205.
 const STYLE_LIEN =
-  "font-mono text-[0.68rem] uppercase tracking-[0.16em] transition-colors";
+  "font-mono text-[10.5px] uppercase tracking-[0.16em] transition-colors";
 
 export function FilRetour({
   provenance,
@@ -42,18 +45,18 @@ export function FilRetour({
     >
       <Link
         href={retour.href}
-        className={`${STYLE_LIEN} text-muted-foreground hover:text-ink`}
+        className={`${STYLE_LIEN} text-[color:var(--board-slate-soft)] hover:text-[color:var(--board-ink)]`}
       >
         ← {retour.label}
       </Link>
       {ailleurs && (
         <>
-          <span aria-hidden className="text-rule">
+          <span aria-hidden className="text-[color:var(--board-slate)]">
             ·
           </span>
           <Link
             href={canonique.href}
-            className={`${STYLE_LIEN} text-muted-foreground/70 hover:text-ink`}
+            className={`${STYLE_LIEN} text-[color:var(--board-slate)] hover:text-[color:var(--board-ink)]`}
           >
             {canonique.label}
           </Link>

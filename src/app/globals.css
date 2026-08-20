@@ -70,11 +70,17 @@
   --seal: oklch(0.32 0.005 260); /* pour sceaux / numérotation */
   --minium: oklch(0.58 0.19 28); /* rouge — alertes uniquement */
   /* Orange d'avertissement (ton « warn » des widgets papier) — était
-     répété en littéral oklch dans une douzaine de fichiers. */
-  --warn: var(--warn); /* marque : points, barres, bordures */
-  --warn-ink: var(--warn-ink); /* encre posée sur champ warn */
-  --warn-soft: var(--warn-soft); /* champ pâle */
-  --warn-pale: var(--warn-pale); /* champ à peine teinté */
+     répété en littéral oklch dans une douzaine de fichiers.
+     La factorisation (2545f0d) avait laissé quatre auto-références
+     `--warn: var(--warn)` : des déclarations invalides, donc l'état
+     « attention » n'avait aucune couleur dans les onze fichiers qui les
+     consomment. Les trois premières valeurs sont celles des littéraux
+     d'origine, relues dans ce commit ; `--warn-pale` n'en a jamais eu et
+     suit la convention des paires soft/pale du fichier. */
+  --warn: oklch(0.72 0.15 70); /* marque : points, barres, bordures */
+  --warn-ink: oklch(0.48 0.14 60); /* encre posée sur champ warn */
+  --warn-soft: oklch(0.95 0.04 75); /* champ pâle */
+  --warn-pale: oklch(0.97 0.02 75); /* champ à peine teinté */
   --warm: oklch(0.32 0.12 260); /* navy — accent d'impulsion */
   --warm-soft: oklch(0.94 0.025 260); /* fond navy très pâle */
   --accent-vif: oklch(0.62 0.18 150); /* vert « conformité » — accent d'app (ADR Direction B) */
@@ -814,6 +820,73 @@
     line-height: 1.12;
     color: var(--board-ink);
     text-wrap: balance;
+  }
+
+  /* Carte blanche du board — le filet cheveu et l'ombre douce que
+     portent la carte-mois du calendrier et les widgets du tableau de
+     bord. Elle vivait recopiée en littéral dans chaque appelant : trois
+     copies d'un même objet, qui dérivent au premier ajustement de rayon.
+     Les fiches de détail s'y branchent plutôt que d'en fabriquer une
+     quatrième. */
+  .carte-board {
+    background: var(--board-card);
+    border-radius: 30px;
+    box-shadow:
+      0 0 0 1px rgba(13, 18, 36, 0.06),
+      0 1px 2px rgba(13, 18, 36, 0.04),
+      0 12px 32px -14px rgba(13, 18, 36, 0.1);
+  }
+
+  /* Pastille du board — la forme, pas la couleur : le champ et l'encre
+     viennent des jetons d'état (cf. `CHAMP_ETAT` / `ENCRE_ETAT`) ou des
+     classes de statut de chaque module. Mesures relevées sur la pilule
+     du calendrier, à ne pas réinventer d'un écran à l'autre. */
+  .pastille-board {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    border-radius: 9999px;
+    padding: 6px 13px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* Champ de saisie du board — creux ardoise, filet discret, rayon large.
+     Les formulaires posés DANS une fiche (clôture d'action, dépôt de
+     rapport, commentaire de ticket) portaient encore la bordure grise et
+     le rayon 6 px du papier : au milieu d'une carte à rayon 30, le champ
+     avait l'air collé là par un autre logiciel. */
+  .champ-board {
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid var(--board-slate-line);
+    background: var(--board-slate-pale);
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--board-ink);
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease;
+  }
+  .champ-board::placeholder {
+    color: var(--board-slate-soft);
+  }
+  .champ-board:focus-visible {
+    outline: 2px solid var(--board-blue-strong);
+    outline-offset: 1px;
+    background: var(--board-card);
+  }
+
+  .label-board {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--board-slate-ink);
   }
 
   .lp-lede {

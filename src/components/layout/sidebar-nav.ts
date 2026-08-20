@@ -7,12 +7,25 @@
 // qu'il se pose : « qu'est-ce que je dois faire ? », « qu'est-ce que j'ai
 // déclaré ? », « qu'est-ce que je peux présenter ? ».
 //
-// Principe : une seule porte par question. Calendrier / Plan d'actions /
-// Interventions restent distincts mais sont regroupés sous « À faire »,
-// en tête, avec le tableau de bord comme point d'entrée. Tous les registres
-// vivent à plat sous « Mes registres » — la divulgation progressive
-// (« Autres registres » replié) a été retirée : six entrées se lisent d'un
-// coup d'œil et un registre caché se cherchait.
+// Principe : une seule porte par question. Le panneau « À faire » ne porte que
+// des **activités** — jamais l'état filtré d'une autre entrée. Un filtre est
+// un réglage d'écran, il vit dans l'écran ; le promouvoir en entrée de
+// navigation crée deux lignes voisines qui décrivent partiellement le même
+// objet avec deux compteurs différents (cf. ADR-015, révision).
+//
+// Le tableau de bord, lui, n'est pas une chose à faire : c'est un résumé. Il
+// a quitté ce panneau pour une entrée de rail à part entière (ADR-015), sans
+// quoi la porte d'entrée du produit restait rangée dans un tiroir.
+//
+// Tous les registres vivent à plat sous « Mes registres » — la divulgation
+// progressive (« Autres registres » replié) a été retirée : les entrées se
+// lisent d'un coup d'œil et un registre caché se cherchait.
+//
+// Ce qui fait un registre : il se tient **en continu** et s'ouvre une fois.
+// Le permis de feu et le plan de prévention n'en sont pas — ils naissent
+// d'un chantier daté et meurent clos. Ils ont leur propre catégorie,
+// « Opérations » (ADR-017), qui porte le même mot que la famille d'échéance
+// correspondante au calendrier : l'utilisateur l'apprend une fois.
 //
 // Les registres sont **qualifiés, jamais masqués**. La navigation était le
 // seul endroit du produit à ne rien savoir de l'établissement : elle offrait
@@ -51,6 +64,7 @@ import {
   ShieldCheck,
   BookOpen,
   Building2,
+  HardHat,
   Archive,
   Plug,
 } from "lucide-react";
@@ -106,7 +120,11 @@ export const LABEL_ITEM: Record<SidebarItemId, string> = {
 
 export type SidebarCounts = {
   equipements?: number;
-  verificationsEnRetard?: number;
+  /** Échéances dépassées, **toutes familles** (vérifications + registre
+   *  d'échéances, ADR-010). Un seul nombre, un seul périmètre : deux
+   *  compteurs voisins de périmètres différents se sont déjà contredits
+   *  une fois (ADR-015). Cf. `repartirRetards`. */
+  enRetardTotal?: number;
   actions?: number;
   prestatairesAlertes?: number;
   risquesAReevaluer?: number;
@@ -157,7 +175,7 @@ export type NavItem = {
   /** Destination pas encore implémentée : rendue inerte et signalée comme
    *  telle plutôt qu'en lien mort indiscernable d'un lien réel. */
   bientot?: boolean;
-  /** Registres uniquement. Absent = rien à qualifier (item toujours actif). */
+  /** Registres et opérations. Absent = rien à qualifier (toujours actif). */
   etat?: EtatModule;
 };
 
@@ -166,7 +184,13 @@ export type NavSection = {
   items: NavItem[];
 };
 
-/** Déduit l'item actif depuis le pathname, à défaut de prop explicite. */
+/**
+ * Déduit l'item actif depuis le pathname, à défaut de prop explicite.
+ *
+ * L'arborescence tient **entièrement dans le chemin**. Un filtre d'écran
+ * (`?famille=`, `?vue=`) est un réglage, pas une place dans l'arbre : le
+ * panneau ne porte aucune entrée qui soit l'état filtré d'une autre.
+ */
 export function deduireActif(
   pathname: string,
   etablissementId: string,
@@ -206,18 +230,12 @@ export function construireSections({
 
   const aFaire: NavItem[] = [
     {
-      id: "tableau",
-      label: LABEL_ITEM.tableau,
-      href: href(""),
-      Icon: LayoutDashboard,
-    },
-    {
       id: "calendrier",
       label: LABEL_ITEM.calendrier,
       href: href("/calendrier"),
       Icon: Calendar,
-      count: counts?.verificationsEnRetard,
-      alert: (counts?.verificationsEnRetard ?? 0) > 0,
+      count: counts?.enRetardTotal,
+      alert: (counts?.enRetardTotal ?? 0) > 0,
     },
     {
       id: "actions",
@@ -237,15 +255,6 @@ export function construireSections({
       label: LABEL_ITEM.controle,
       href: href("/controle"),
       Icon: ShieldCheck,
-    },
-    {
-      // Le guide pédagogique répond à la question implicite du dirigeant
-      // perdu — « par où je commence ? » — il vit donc dans « À faire »,
-      // en dernière position, et plus seulement dans le footer du rail.
-      id: "guide",
-      label: LABEL_ITEM.guide,
-      href: href("/guide"),
-      Icon: BookOpen,
     },
   ];
 
@@ -292,15 +301,34 @@ export function construireSections({
   //   · Accessibilité : obligation propre aux ERP. Elle reste « actif » dès que
   //     l'établissement est ERP, même si le registre n'est pas encore créé —
   //     c'est précisément ce qu'il reste à faire.
-  //   · Permis de feu et plans de prévention : événementiels. Ils s'ouvrent le
-  //     jour d'un travail par point chaud ou de la venue d'une entreprise
-  //     extérieure, pas avant.
   //   · Carnet sanitaire : la présence d'un réseau d'eau chaude collectif ne se
   //     déduit d'aucune donnée déclarée ; l'ouverture du carnet fait foi.
   const etat = (valeur: EtatModule): EtatModule | undefined =>
     modules ? valeur : undefined;
   const evenementiel = (enCours: boolean) =>
     etat(enCours ? "actif" : "non-ouvert");
+
+  // Les deux opérations ponctuelles sont **événementielles** au même titre
+  // qu'un registre non ouvert : l'entrée reste un lien, c'est par là qu'on
+  // ouvre le permis le jour du chantier. Elles ne sont pas triées — à deux,
+  // le rang n'ordonne rien, et la page d'entrée de la catégorie doit rester
+  // stable.
+  const operations: NavItem[] = [
+    {
+      id: "permis-feu",
+      label: LABEL_ITEM["permis-feu"],
+      href: href("/permis-feu"),
+      Icon: Flame,
+      etat: evenementiel((modules?.nbPermisFeu ?? 0) > 0),
+    },
+    {
+      id: "plan-prevention",
+      label: LABEL_ITEM["plan-prevention"],
+      href: href("/plan-prevention"),
+      Icon: HandshakeIcon,
+      etat: evenementiel((modules?.nbPlansPrevention ?? 0) > 0),
+    },
+  ];
 
   const registres: NavItem[] = [
     {
@@ -325,20 +353,6 @@ export function construireSections({
       etat: etat(modules?.estERP ? "actif" : "non-applicable"),
     },
     {
-      id: "permis-feu",
-      label: LABEL_ITEM["permis-feu"],
-      href: href("/permis-feu"),
-      Icon: Flame,
-      etat: evenementiel((modules?.nbPermisFeu ?? 0) > 0),
-    },
-    {
-      id: "plan-prevention",
-      label: LABEL_ITEM["plan-prevention"],
-      href: href("/plan-prevention"),
-      Icon: HandshakeIcon,
-      etat: evenementiel((modules?.nbPlansPrevention ?? 0) > 0),
-    },
-    {
       id: "carnet-sanitaire",
       label: LABEL_ITEM["carnet-sanitaire"],
       href: href("/carnet-sanitaire"),
@@ -356,6 +370,7 @@ export function construireSections({
 
   return [
     { title: "À faire", items: aFaire },
+    { title: "Opérations", items: operations },
     { title: "Mon établissement", items: monEtablissement },
     { title: "Mes registres", items: registres },
   ];
@@ -365,15 +380,27 @@ export function construireSections({
 // Rail à deux niveaux.
 //
 // Le rail principal ne porte plus les items mais les *questions* du
-// dirigeant (À faire / Mon établissement / Mes registres) ; les items d'une
-// catégorie s'affichent dans un second panneau accolé. « Comprendre » sort
-// de la section « À faire » pour devenir une entrée de premier niveau sans
-// panneau (lien direct), conformément au découpage demandé. « Compte » est
-// la cinquième entrée, rendue par le composant (elle dépend de l'user, pas
-// de l'établissement).
+// dirigeant (À faire / Opérations / Mon établissement / Mes registres) ; les
+// items d'une catégorie s'affichent dans un second panneau accolé.
+//
+// Ordre : les deux catégories d'activité d'abord — ce qui revient tout seul
+// (« À faire ») puis ce qu'un chantier déclenche (« Opérations ») —, les deux
+// catégories descriptives ensuite (ADR-017).
+//
+// Règle (ADR-015) : **une entrée de rail = une page d'entrée + un panneau**.
+// Toute catégorie porte donc un `href` : cliquer navigue *et* ouvre le
+// panneau. Auparavant, une icône de premier niveau n'était qu'un tiroir —
+// deux clics obligatoires pour arriver quelque part.
+//
+// « Tableau de bord » ouvre le rail : c'est l'écran d'atterrissage, et un
+// résumé n'a pas sa place dans une liste de tâches. « Comprendre » et
+// « Connecter » ferment la marche, sans panneau. « Compte » est rendue par
+// le composant (elle dépend de l'user, pas de l'établissement).
 
 export type RailCategorieId =
+  | "tableau"
   | "a-faire"
+  | "operations"
   | "etablissement"
   | "registres"
   | "comprendre"
@@ -387,17 +414,24 @@ export type RailCategorie = {
   /** Libellé court affiché sous l'icône du rail. */
   labelCourt: string;
   Icon: typeof LayoutDashboard;
-  /** Catégorie sans panneau : lien direct. */
-  href?: string;
+  /** Page d'entrée de la catégorie — toujours présente : cliquer une
+   *  entrée de rail navigue (ADR-015). */
+  href: string;
+  /** Absent = catégorie sans panneau (lien seul). */
   items?: NavItem[];
   /** Au moins un item du panneau porte une alerte. */
   alert?: boolean;
+  /** Marque la césure entre les catégories du dossier et les modes
+   *  d'accès. Portée par la donnée plutôt que devinée au rendu. */
+  separateurAvant?: boolean;
 };
 
 /** Catégorie du rail à laquelle appartient un item — sert à savoir quel
  *  panneau ouvrir et quelle entrée du rail surligner. */
 export function categorieDeItem(id: SidebarItemId): RailCategorieId {
   switch (id) {
+    case "tableau":
+      return "tableau";
     case "guide":
       return "comprendre";
     case "connecter":
@@ -407,11 +441,12 @@ export function categorieDeItem(id: SidebarItemId): RailCategorieId {
     case "fiche":
     case "equipe":
       return "etablissement";
+    case "permis-feu":
+    case "plan-prevention":
+      return "operations";
     case "duerp":
     case "registre":
     case "accessibilite":
-    case "permis-feu":
-    case "plan-prevention":
     case "carnet-sanitaire":
       return "registres";
     default:
@@ -426,27 +461,48 @@ export function construireRail(params: {
 }): RailCategorie[] {
   // On dérive du même arbre que le rail simple : mêmes items, mêmes badges —
   // seule la présentation change.
-  const [aFaire, etablissement, registres] = construireSections(params);
-
-  // « Comprendre » quitte le panneau « À faire » : il devient une entrée
-  // de premier niveau, en lien direct.
-  const itemsAFaire = aFaire.items.filter((it) => it.id !== "guide");
+  const [aFaire, operations, etablissement, registres] =
+    construireSections(params);
+  const base = `/etablissements/${params.etablissementId}`;
   const alerte = (items: NavItem[]) => items.some((it) => it.alert);
 
   return [
+    {
+      // Sans panneau, et c'est le propos : le tableau de bord n'a rien à
+      // ranger, il montre.
+      id: "tableau",
+      label: LABEL_ITEM.tableau,
+      labelCourt: "Tableau",
+      Icon: LayoutDashboard,
+      href: base,
+    },
     {
       id: "a-faire",
       label: "À faire",
       labelCourt: "À faire",
       Icon: ListTodo,
-      items: itemsAFaire,
-      alert: alerte(itemsAFaire),
+      href: `${base}/calendrier`,
+      items: aFaire.items,
+      alert: alerte(aFaire.items),
+    },
+    {
+      // Le ponctuel encadré : un permis de feu naît le jour d'un chantier,
+      // un plan de prévention le jour où un tiers intervient. Ni des
+      // corrections, ni des registres tenus en continu (ADR-017).
+      id: "operations",
+      label: "Opérations",
+      labelCourt: "Opérations",
+      Icon: HardHat,
+      href: `${base}/permis-feu`,
+      items: operations.items,
+      alert: alerte(operations.items),
     },
     {
       id: "etablissement",
       label: "Mon établissement",
       labelCourt: "Établissement",
       Icon: Building2,
+      href: `${base}/equipements`,
       items: etablissement.items,
       alert: alerte(etablissement.items),
     },
@@ -455,6 +511,7 @@ export function construireRail(params: {
       label: "Mes registres",
       labelCourt: "Registres",
       Icon: Archive,
+      href: `${base}/duerp`,
       items: registres.items,
       alert: alerte(registres.items),
     },
@@ -463,7 +520,8 @@ export function construireRail(params: {
       label: "Comprendre",
       labelCourt: "Comprendre",
       Icon: BookOpen,
-      href: `/etablissements/${params.etablissementId}/guide`,
+      href: `${base}/guide`,
+      separateurAvant: true,
     },
     {
       // Comme « Comprendre » : une entrée de premier niveau sans panneau.
@@ -473,7 +531,7 @@ export function construireRail(params: {
       label: "Connecter",
       labelCourt: "Connecter",
       Icon: Plug,
-      href: `/etablissements/${params.etablissementId}/connecter`,
+      href: `${base}/connecter`,
     },
   ];
 }

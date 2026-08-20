@@ -43,7 +43,7 @@ export function ChangerStatutButtons({
               );
             })
           }
-          className="rounded-md border border-[color:var(--rule)] bg-[color:var(--paper-elevated)] px-3 py-1.5 text-[0.78rem] font-medium transition-colors hover:border-[color:var(--warm)] hover:bg-[color:var(--warm-soft)] disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold text-[color:var(--board-ink)] ring-1 ring-[color:rgba(10,10,10,.18)] transition-colors hover:bg-[color:var(--board-slate-pale)] disabled:opacity-60"
         >
           → {LABEL_STATUT[cible]}
         </button>

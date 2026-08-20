@@ -84,6 +84,7 @@ export function fusionnerEvenements({
     ...verifsVisibles.map(
       (e): EvenementGrille => ({
         ...e,
+        type: "verification",
         famille: "controle",
         href: `/etablissements/${etablissementId}/verifications/${e.id}`,
       }),
@@ -94,6 +95,7 @@ export function fusionnerEvenements({
         libelle: e.libelle,
         date: e.date,
         tone: e.tone,
+        type: e.type,
         // La grille appelle « equipement » ce qui se lit sous le libellé :
         // l'équipement pour un contrôle, l'origine pour le reste.
         equipement: e.origine,

@@ -39,8 +39,12 @@ export type GenerationResult = {
  *  2. Passe par le moteur de matching pour déterminer les obligations
  *     applicables.
  *  3. Demande au générateur l'ensemble des couples (obligation, équipement)
- *     applicables — **sans** historique : les dates réelles sont recalculées
- *     ligne par ligne par le réconciliateur, à partir de ce qu'il y a en base.
+ *     applicables — **sans** historique de vérifications : les dates réelles
+ *     sont recalculées ligne par ligne par le réconciliateur, à partir de ce
+ *     qu'il y a en base. Les **mises en service**, elles, sont transmises :
+ *     elles ne décrivent pas un passé de contrôles, elles donnent son point
+ *     de départ à un équipement neuf, que le réconciliateur ne peut pas
+ *     deviner depuis une ligne qui n'a jamais eu de rendez-vous.
  *  4. Réconcilie (fonction pure) : créations, mises à jour, archivages,
  *     suppressions.
  *  5. Applique le plan dans **une seule transaction**.
@@ -89,9 +93,16 @@ export async function genererCalendrier(
   );
 
   // 3. Ensemble des couples applicables. Historique volontairement vide :
-  //    cf. la doc de `reconcilierCalendrier`.
+  //    cf. la doc de `reconcilierCalendrier`. Les mises en service, elles,
+  //    donnent au générateur de quoi dater le premier cycle d'un équipement
+  //    neuf plutôt que de le poser « à planifier » faute de mieux.
+  const misesEnService = new Map<string, Date>();
+  for (const eq of etab.equipements) {
+    if (eq.dateMiseEnService) misesEnService.set(eq.id, eq.dateMiseEnService);
+  }
   const aGenerer = genererProchainesVerifications(obligations, new Map(), {
     now,
+    misesEnService,
   });
 
   // 4. État en base. `_count` sert au seul arbitrage qui autorise une

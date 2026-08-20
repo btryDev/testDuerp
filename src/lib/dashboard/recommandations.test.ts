@@ -292,6 +292,49 @@ describe("genererRecommandations — définition du retard (ADR-011)", () => {
     );
   });
 
+  it("ne compte pas les jours d'une occurrence jamais planifiée", () => {
+    // Sa `datePrevue` est la date de génération du calendrier, pas un
+    // rendez-vous : la transmettre faisait afficher « dépassée depuis
+    // 107 j », où 107 mesurait l'âge du dossier. Le fait vrai est
+    // qu'aucune vérification n'est enregistrée.
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      verifications: [
+        {
+          id: "v1",
+          statut: "a_planifier",
+          datePrevue: dateDecalee(-107),
+          libelleObligation: "Extincteurs",
+          equipementLibelle: "Extincteurs",
+        },
+      ],
+    };
+    const reco = genererRecommandations(e, { now: NOW })[0];
+
+    expect(reco.date).toBeUndefined();
+    expect(reco.sousTitre).toContain("aucune vérification enregistrée");
+    expect(reco.sousTitre).not.toContain("dépassée");
+  });
+
+  it("garde la date d'une échéance réellement manquée", () => {
+    const e: EntreeRecos = {
+      ...baseEntree(),
+      verifications: [
+        {
+          id: "v1",
+          statut: "planifiee",
+          datePrevue: dateDecalee(-40),
+          libelleObligation: "Vérification élec",
+          equipementLibelle: "TGBT",
+        },
+      ],
+    };
+    const reco = genererRecommandations(e, { now: NOW })[0];
+
+    expect(reco.date).toEqual(dateDecalee(-40));
+    expect(reco.sousTitre).toContain("échéance dépassée");
+  });
+
   it("n'étiquette pas « dépassée » une occurrence datée d'aujourd'hui", () => {
     // Deux règles opposées cohabitaient dans le même dossier : la requête
     // du dashboard documentait qu'`a_planifier` n'est pas un retard, le

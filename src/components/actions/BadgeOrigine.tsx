@@ -6,17 +6,14 @@ const LABEL: Record<OrigineAction, string> = {
   libre: "Libre",
 };
 
-const CLASSE: Record<OrigineAction, string> = {
-  duerp: "border-indigo-300 bg-indigo-50 text-indigo-900",
-  verification: "border-teal-300 bg-teal-50 text-teal-900",
-  libre: "border-slate-300 bg-slate-50 text-slate-700",
-};
-
+// L'origine n'est pas un état : elle ne prend donc aucun champ du
+// vocabulaire d'urgence (rose, ambre, vert). Ardoise pour les trois — ce
+// qui les distingue est le mot, pas la couleur. Trois teintes de plus sur
+// une fiche qui en porte déjà deux, c'était trois signaux qui ne
+// signalaient rien.
 export function BadgeOrigine({ origine }: { origine: OrigineAction }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-[0.14em] ${CLASSE[origine]}`}
-    >
+    <span className="pastille-board bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]">
       {LABEL[origine]}
     </span>
   );

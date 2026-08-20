@@ -22,26 +22,77 @@ import { estEnRetard } from "@/lib/dates/retard";
  * puisqu'ils sont pilotés par la donnée.
  *
  * Les grandes familles, pensées pour un dirigeant non-expert :
- *   - `controle`  — faire vérifier (vérifs périodiques, légionelles) ;
- *   - `travaux`   — « Corrections & réparations » (actions, tickets,
- *     permis de feu, plans de prévention) ;
- *   - `papiers`   — « Documents à renouveler » (DUERP, attestations) ;
- *   - `personnel` — réservée aux modules à venir.
+ *   - `controle`   — faire vérifier (vérifs périodiques, légionelles) ;
+ *   - `travaux`    — « Corrections & réparations » : un écart constaté à
+ *     reprendre (actions du DUERP, actions de vérification, tickets) ;
+ *   - `operations` — « Opérations encadrées » : un chantier daté dont le
+ *     préalable est obligatoire (permis de feu, plan de prévention) ;
+ *   - `papiers`    — « Documents à renouveler » (DUERP, attestations) ;
+ *   - `personnel`  — réservée aux modules à venir.
  *
  * Chaque ligne dit d'où elle sort en toutes lettres (`origine`) —
  * jamais de jargon interne en interface. Les classements par date sont
  * des fonctions pures, testées, à horloge injectée.
  */
 
-export type FamilleEcheance = "controle" | "travaux" | "papiers" | "personnel";
+export type FamilleEcheance =
+  | "controle"
+  | "travaux"
+  | "operations"
+  | "papiers"
+  | "personnel";
+
+/**
+ * Ce qu'une échéance **est** (ADR-016).
+ *
+ * La famille regroupe pour filtrer ; le type nomme. `travaux` fusionne quatre
+ * objets — une action née du DUERP et un signalement de terrain y voisinent —
+ * et un dirigeant qui lit « Corrections » ne sait pas lequel il a sous les
+ * yeux. (L'ADR-017 en a sorti les deux qui n'y étaient pas des corrections.)
+ */
+export type TypeEcheance =
+  | "verification"
+  | "action-duerp"
+  | "action-verification"
+  | "intervention"
+  | "permis-feu"
+  | "plan-prevention"
+  | "duerp-maj"
+  | "attestation"
+  | "legionelles";
+
+/**
+ * La famille se **déduit** du type : une source ne la pose plus à la main,
+ * donc ne peut plus s'en tromper, ni deux sources se contredire. Ajouter un
+ * type sans le rattacher ici ne compile pas.
+ */
+export const FAMILLE_DE_TYPE: Record<TypeEcheance, FamilleEcheance> = {
+  verification: "controle",
+  legionelles: "controle",
+  "action-duerp": "travaux",
+  "action-verification": "travaux",
+  intervention: "travaux",
+  // Ni des corrections ni des registres : des opérations ponctuelles.
+  // Un permis de feu ne répare rien, il autorise un travail par point
+  // chaud et impose une surveillance après ; un plan de prévention
+  // encadre la venue d'un tiers et impose une inspection commune avant
+  // (ADR-017).
+  "permis-feu": "operations",
+  "plan-prevention": "operations",
+  "duerp-maj": "papiers",
+  attestation: "papiers",
+};
 
 export type EcheanceCalendrier = {
   /** Unique inter-modules : préfixé par le module (`action-…`). */
   id: string;
+  /** Ce que c'est. La famille en dérive — cf. `FAMILLE_DE_TYPE`. */
+  type: TypeEcheance;
   famille: FamilleEcheance;
   libelle: string;
-  /** D'où sort l'échéance, en langage courant (« Suite au contrôle… »,
-   *  « Signalement n°7 », « À redemander au prestataire »). */
+  /** Le **complément** que le type ne dit pas : le libellé de la
+   *  vérification dont sort une action, le numéro d'un signalement. Le mot
+   *  standard, lui, vient du type (ADR-016). */
   origine: string;
   date: Date;
   /** Mêmes tons que la grille : dépassé = alerte, sinon ok. */
@@ -105,18 +156,39 @@ export function tonPourDate(
 
 /* ─── Classements purs (testés) ─────────────────────────────── */
 
-/** Origine d'une action corrective, en clair : elle naît soit d'un
- *  rapport de vérification (écart constaté), soit du DUERP (mesure de
- *  prévention à mettre en place) — cf. ADR-002. */
+/**
+ * Ce qu'une action est, et le complément qui la situe (ADR-002, ADR-016).
+ *
+ * Le XOR du modèle tranche le type sans colonne nouvelle, et il ne laisse
+ * que **deux** cas : une action se rattache à exactement un risque du DUERP
+ * ou une vérification, jamais aux deux, jamais à aucun. Une troisième
+ * branche « action sans origine » a existé ici ; elle décrivait un état que
+ * la contrainte `Action_origine_xor` et `assertOrigineActionValide`
+ * interdisent tous deux, et n'a donc jamais pu s'afficher.
+ *
+ * `libelleObligation` étant non nul en base, son absence signifie
+ * exactement « pas de vérification » — donc « rattachée à un risque ». Un
+ * second paramètre `duerp` doublait cette information et pouvait la
+ * contredire.
+ *
+ * `origine` ne répète pas le mot porté par le type : elle ne dit que ce
+ * qu'il ignore — de quelle vérification l'écart provient. Écrire « Suite au
+ * contrôle "X" » dupliquait le marqueur de nature posé juste à côté, et
+ * employait « contrôle » au sens réservé à la visite d'un tiers (ADR-015).
+ */
 export function origineAction(a: {
   verificationLibelle: string | null;
-  duerp: boolean;
-}): string {
+}): { type: TypeEcheance; origine: string } {
   if (a.verificationLibelle) {
-    return `Suite au contrôle « ${a.verificationLibelle} »`;
+    return {
+      type: "action-verification",
+      // « suite à » et non « suite à la vérification » : les libellés
+      // d'obligation commencent presque tous par le mot « Vérification »,
+      // et la phrase bégayait.
+      origine: `suite à « ${a.verificationLibelle} »`,
+    };
   }
-  if (a.duerp) return "Mesure prévue au DUERP";
-  return "À faire sur place";
+  return { type: "action-duerp", origine: "prévue au DUERP" };
 }
 
 /** Échéance de mise à jour annuelle du DUERP : dernière version + 1 an.
@@ -135,9 +207,10 @@ export function echeanceDuerp({
   const date = ajouterMois(dateDerniereVersion, MOIS_MAJ_DUERP);
   return {
     id: "duerp-maj",
-    famille: "papiers",
+    type: "duerp-maj",
+    famille: FAMILLE_DE_TYPE["duerp-maj"],
     libelle: "Mise à jour annuelle du DUERP",
-    origine: "À refaire chaque année",
+    origine: "à refaire chaque année",
     date,
     tone: tonPourDate(date, aujourdhui),
     href: `/etablissements/${etablissementId}/duerp`,
@@ -162,9 +235,10 @@ export function echeancesPrestataire(
   if (p.attestationUrssafValableJusquA) {
     out.push({
       id: `prestataire-${p.id}-urssaf`,
-      famille: "papiers",
+      type: "attestation",
+      famille: FAMILLE_DE_TYPE.attestation,
       libelle: `Attestation URSSAF — ${p.raisonSociale}`,
-      origine: "À redemander au prestataire",
+      origine: "à redemander au prestataire",
       date: p.attestationUrssafValableJusquA,
       tone: tonPourDate(p.attestationUrssafValableJusquA, aujourdhui),
       href,
@@ -173,9 +247,10 @@ export function echeancesPrestataire(
   if (p.assuranceRcProValableJusquA) {
     out.push({
       id: `prestataire-${p.id}-rcpro`,
-      famille: "papiers",
+      type: "attestation",
+      famille: FAMILLE_DE_TYPE.attestation,
       libelle: `Assurance RC Pro — ${p.raisonSociale}`,
-      origine: "À redemander au prestataire",
+      origine: "à redemander au prestataire",
       date: p.assuranceRcProValableJusquA,
       tone: tonPourDate(p.assuranceRcProValableJusquA, aujourdhui),
       href,
@@ -215,9 +290,10 @@ export function echeancePermisFeu(
   const finDepassee = estEnRetard(p.dateFin, aujourdhui);
   return {
     id: `permis-feu-${p.id}`,
-    famille: "travaux",
+    type: "permis-feu",
+    famille: FAMILLE_DE_TYPE["permis-feu"],
     libelle: `Permis de feu n°${p.numero} — ${p.lieu}`,
-    origine: "Travaux par point chaud",
+    origine: "travaux par point chaud",
     date: p.dateDebut,
     tone: !clos && (debutManque || finDepassee) ? "alerte" : "ok",
     href: `/etablissements/${etablissementId}/permis-feu/${p.id}`,
@@ -252,9 +328,10 @@ export function echeancePlanPrevention(
   const finDepassee = estEnRetard(p.dateFin, aujourdhui);
   return {
     id: `plan-prevention-${p.id}`,
-    famille: "travaux",
+    type: "plan-prevention",
+    famille: FAMILLE_DE_TYPE["plan-prevention"],
     libelle: `Plan de prévention n°${p.numero} — ${p.entrepriseExterieureRaison}`,
-    origine: "Opération avec entreprise extérieure",
+    origine: "opération avec entreprise extérieure",
     date: p.dateDebut,
     tone: !clos && (commenceSansInspection || finDepassee) ? "alerte" : "ok",
     href: `/etablissements/${etablissementId}/plan-prevention/${p.id}`,
@@ -277,9 +354,10 @@ export function echeanceLegionelles({
   const date = ajouterMois(dateDerniereAnalyse, MOIS_ANALYSE_LEGIONELLES);
   return {
     id: "legionelles-analyse",
-    famille: "controle",
+    type: "legionelles",
+    famille: FAMILLE_DE_TYPE.legionelles,
     libelle: "Analyse légionelles (eau chaude sanitaire)",
-    origine: "Carnet sanitaire · rythme annuel",
+    origine: "carnet sanitaire · rythme annuel",
     date,
     tone: tonPourDate(date, aujourdhui),
     href: `/etablissements/${etablissementId}/carnet-sanitaire`,
@@ -314,7 +392,6 @@ const sourceActions: SourceEcheances = async ({
       id: true,
       libelle: true,
       echeance: true,
-      risqueId: true,
       verification: { select: { libelleObligation: true } },
     },
   });
@@ -323,12 +400,11 @@ const sourceActions: SourceEcheances = async ({
       ? [
           {
             id: `action-${a.id}`,
+            ...origineAction({
+              verificationLibelle: a.verification?.libelleObligation ?? null,
+            }),
             famille: "travaux" as const,
             libelle: a.libelle,
-            origine: origineAction({
-              verificationLibelle: a.verification?.libelleObligation ?? null,
-              duerp: a.risqueId !== null,
-            }),
             date: a.echeance,
             tone: tonPourDate(a.echeance, aujourdhui),
             href: `/etablissements/${etablissementId}/actions/${a.id}`,
@@ -356,9 +432,10 @@ const sourceInterventions: SourceEcheances = async ({
       ? [
           {
             id: `intervention-${i.id}`,
-            famille: "travaux" as const,
+            type: "intervention" as const,
+            famille: FAMILLE_DE_TYPE.intervention,
             libelle: i.titre,
-            origine: `Signalement n°${i.numero}`,
+            origine: `n°${i.numero}`,
             date: i.echeance,
             tone: tonPourDate(i.echeance, aujourdhui),
             href: `/etablissements/${etablissementId}/interventions/${i.id}`,

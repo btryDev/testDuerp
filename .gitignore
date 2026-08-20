@@ -50,3 +50,6 @@ next-env.d.ts
 
 # Exports Claude Design déposés à la racine — références de travail.
 /Tableau de bord Rojer.html
+
+# Worktrees Claude Code (dépôts imbriqués, hors dépôt principal)
+.claude/worktrees/

@@ -17,6 +17,7 @@ import {
   listerAutresEcheances,
   type EcheanceCalendrier,
   type FamilleEcheance,
+  type TypeEcheance,
 } from "@/lib/calendrier/echeances";
 import {
   AnneeCalendrier,
@@ -42,10 +43,11 @@ import {
 } from "@/components/calendrier/VueParEquipement";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import {
+  DESCRIPTION_FAMILLE,
   LABEL_FAMILLE,
-  LABEL_FAMILLE_SINGULIER,
-  MarqueurFamille,
+  MarqueurEcheance,
 } from "@/components/calendrier/MarqueurFamille";
+import { LABEL_ITEM } from "@/components/layout/sidebar-nav";
 import { FiltresCalendrier } from "@/components/calendrier/FiltresCalendrier";
 import { SelecteurLecture } from "@/components/calendrier/SelecteurLecture";
 import {
@@ -73,6 +75,7 @@ const DOMAINES_P1: DomaineObligation[] = [
 const FAMILLES_FILTRABLES: FamilleEcheance[] = [
   "controle",
   "travaux",
+  "operations",
   "papiers",
 ];
 
@@ -97,16 +100,27 @@ const FMT_MOIS_COURT = new Intl.DateTimeFormat("fr-FR", {
 function LigneEcheance({
   href,
   date,
-  famille,
+  type,
   titre,
   meta,
   pastille,
   registre,
 }: {
   href: string;
-  date: Date;
-  famille: FamilleEcheance;
+  /**
+   * `null` quand la ligne n'a **jamais eu de rendez-vous** : une occurrence
+   * `a_planifier` porte bien une `datePrevue`, mais c'est la date à laquelle
+   * le calendrier a été généré, pas une date choisie (ADR-010). L'afficher
+   * donnait un jour et un mois qui ressemblaient à une échéance, et — sa
+   * date étant vite passée — un « dépassée depuis N jours » où N mesurait
+   * l'âge du dossier, pas un retard réglementaire.
+   */
+  date: Date | null;
+  /** Ce que c'est. La famille regroupait trop gros : « Correction » ne
+   *  disait pas si l'on voyait une mesure du DUERP ou un signalement. */
+  type: TypeEcheance;
   titre: string;
+  /** Le complément — le mot de nature est posé par le marqueur. */
   meta: string;
   pastille: React.ReactNode;
   registre: RegistreLigne;
@@ -123,27 +137,40 @@ function LigneEcheance({
       <span
         className="flex size-[50px] flex-none flex-col items-center justify-center rounded-[17px]"
         style={{ background: CHAMP_ETAT[registre] }}
+        aria-label={date ? undefined : "Date à renseigner"}
       >
-        <span className="board-titre text-[18px] leading-none tabular-nums">
-          {FMT_JOUR.format(date)}
-        </span>
-        <span
-          className="mt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.1em]"
-          style={{ color: ENCRE_ETAT[registre] }}
-        >
-          {FMT_MOIS_COURT.format(date)}
-        </span>
+        {date ? (
+          <>
+            <span className="board-titre text-[18px] leading-none tabular-nums">
+              {FMT_JOUR.format(date)}
+            </span>
+            <span
+              className="mt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.1em]"
+              style={{ color: ENCRE_ETAT[registre] }}
+            >
+              {FMT_MOIS_COURT.format(date)}
+            </span>
+          </>
+        ) : (
+          <span
+            className="font-mono text-[9px] font-semibold uppercase leading-[1.3] tracking-[0.08em]"
+            style={{ color: ENCRE_ETAT[registre] }}
+            aria-hidden
+          >
+            à<br />dater
+          </span>
+        )}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="m-0 flex items-center gap-2 truncate text-[14.5px] font-semibold leading-[1.3] tracking-[-0.015em] text-[color:var(--board-ink)]">
-          <MarqueurFamille
-            famille={famille}
-            className="size-3.5 text-[color:var(--board-slate-soft)]"
-          />
-          <span className="min-w-0 truncate">{titre}</span>
+        <p className="m-0 truncate text-[14.5px] font-semibold leading-[1.3] tracking-[-0.015em] text-[color:var(--board-ink)]">
+          {titre}
         </p>
-        <p className="m-0 mt-1 truncate text-[12.5px] text-[color:var(--board-slate-mid)]">
-          {meta}
+        {/* Nature puis complément. Le mot est visible : une icône seule
+            disparaît en niveaux de gris et pour qui n'y voit pas. */}
+        <p className="m-0 mt-1 flex items-center gap-1.5 truncate text-[12.5px] text-[color:var(--board-slate-mid)]">
+          <MarqueurEcheance type={type} />
+          <span aria-hidden>·</span>
+          <span className="min-w-0 truncate">{meta}</span>
         </p>
       </div>
       {pastille}
@@ -216,20 +243,21 @@ export default async function CalendrierPage({
     regenere = true;
   }
 
-  const [verifsBruts, etat, autresEcheances, equipements] = await Promise.all([
-    listerVerifications(id, {
-      domaine: filtreDomaine,
-      urgentsSeulement: filtreUrgent,
-    }),
-    // Les compteurs viennent d'être calculés trois lignes plus haut : on
-    // ne les refait que si une régénération a changé la donnée entre-temps.
-    regenere ? compterEtatCalendrier(id) : Promise.resolve(etat0),
-    listerAutresEcheances(id),
-    // Le parc entier, pas seulement les appareils qui portent une
-    // échéance : la lecture par équipement doit pouvoir dire combien
-    // n'en ont aucune.
-    listerEquipementsDeLEtablissement(id),
-  ]);
+  const [verifsBruts, etat, autresEcheances, equipements] =
+    await Promise.all([
+      listerVerifications(id, {
+        domaine: filtreDomaine,
+        urgentsSeulement: filtreUrgent,
+      }),
+      // Les compteurs viennent d'être calculés trois lignes plus haut : on
+      // ne les refait que si une régénération a changé la donnée entre-temps.
+      regenere ? compterEtatCalendrier(id) : Promise.resolve(etat0),
+      listerAutresEcheances(id),
+      // Le parc entier, pas seulement les appareils qui portent une
+      // échéance : la lecture par équipement doit pouvoir dire combien
+      // n'en ont aucune.
+      listerEquipementsDeLEtablissement(id),
+    ]);
   const aujourdhui = new Date();
 
   // Cohabitation des familles : le filtre famille partitionne, le
@@ -246,14 +274,6 @@ export default async function CalendrierPage({
           (!filtreFamille || filtreFamille === e.famille) &&
           (!filtreUrgent || e.tone === "alerte"),
       );
-
-  // Toutes familles confondues — l'aide d'écran s'en sert pour expliquer
-  // l'écart avec le badge de la barre latérale, qui ne compte que les
-  // vérifications périodiques.
-  const nbAutresEnRetard = autresEcheances.filter(
-    (e) => e.tone === "alerte",
-  ).length;
-  const totalEnRetard = etat.enRetard + nbAutresEnRetard;
 
   // La liste mensuelle mêle les deux, triés par date dans chaque mois.
   //
@@ -725,12 +745,21 @@ export default async function CalendrierPage({
             <ChevronRight className="size-4 rotate-180" />
           </Link>
           <div className="min-w-0">
-            <p className="board-eyebrow m-0 text-[color:var(--board-blue-soft)]">
-              Échéances · {anneeCourante}
-            </p>
-            <h1 className="board-titre m-0 mt-1.5 text-[clamp(22px,2.2vw,27px)] text-white">
-              Vérifications périodiques
+            {/* Un titre stable, et une phrase. « Calendrier » ne disait
+                pas ce qu'on y trouve : quatre flux y sont réunis depuis
+                l'ADR-010 et rien ne l'annonçait. La phrase dit ce qu'on
+                voit et ce qu'on peut en faire — ce qui vaut mieux qu'une
+                rangée de filtres, qui montrait des commandes sans jamais
+                expliquer l'écran. */}
+            <h1 className="board-titre m-0 text-[clamp(22px,2.2vw,27px)] text-white">
+              {LABEL_ITEM.calendrier}
             </h1>
+            <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.5] text-white/60">
+              {filtreFamille
+                ? DESCRIPTION_FAMILLE[filtreFamille]
+                : "Suivez les échéances datées : vérifications de vos équipements, corrections à mener, renouvellement de vos documents."}{" "}
+              Cliquez une ligne pour la traiter.
+            </p>
           </div>
         </div>
 
@@ -771,17 +800,14 @@ export default async function CalendrierPage({
         les mois déjà passés restent repliés — leur pli affiche toujours son
         nombre de retards.
       </p>
-      {/* Deux écrans voisins affichent « en retard » sans compter la même
-          chose : ici toutes les familles d'échéances, dans la barre
-          latérale les seules vérifications périodiques. Tant que les deux
-          nombres cohabitent, on dit lequel est lequel plutôt que de laisser
-          l'utilisateur arbitrer. */}
+      {/* L'écart entre ce bandeau et le badge de la barre latérale était
+          expliqué ici faute d'être corrigé. Les deux nombres sortent
+          désormais du même calcul (`repartirRetards`, ADR-015) : il n'y a
+          plus rien à arbitrer. */}
       <p className="m-0">
-        Les compteurs du bandeau réunissent toutes les familles — contrôles,
-        travaux et papiers.
-        {nbAutresEnRetard > 0
-          ? ` Le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques : ${etat.enRetard} sur ${totalEnRetard}.`
-          : " Le badge « en retard » de la barre latérale ne compte, lui, que les vérifications périodiques."}
+        Les compteurs du bandeau réunissent toutes les familles —
+        vérifications, corrections et papiers —, comme le badge « Calendrier »
+        de la barre latérale.
       </p>
       <div className="flex flex-wrap gap-2 pt-1">
         <LegalBadge
@@ -895,6 +921,9 @@ export default async function CalendrierPage({
                   ? etat.aPlanifier
                   : 0
               }
+              /* Seulement sur la lecture d'ensemble : sous un filtre, la
+                 remarque porterait sur un périmètre qu'elle ne décrit
+                 pas. */
               moisInitial={moisInitial}
               cleMoisCourant={cleMoisCourant}
               outils={barreOutils}
@@ -950,11 +979,15 @@ export default async function CalendrierPage({
                           <li key={`${v.id}:${ligne.lecture}`} className={sep}>
                             <LigneEcheance
                               href={`/etablissements/${id}/verifications/${v.id}`}
-                              date={ligne.date}
-                              famille="controle"
+                              /* Une occurrence jamais planifiée ne porte
+                                 pas de date : la sienne est celle de la
+                                 génération du calendrier. */
+                              date={
+                                v.statut === "a_planifier" ? null : ligne.date
+                              }
+                              type="verification"
                               titre={v.libelleObligation}
                               meta={
-                                `${LABEL_FAMILLE_SINGULIER.controle} · ` +
                                 `${v.equipement.libelle} · ` +
                                 LABEL_PERIODICITE[v.periodicite] +
                                 (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : "")
@@ -982,9 +1015,9 @@ export default async function CalendrierPage({
                           <LigneEcheance
                             href={e.href}
                             date={e.date}
-                            famille={e.famille}
+                            type={e.type}
                             titre={e.libelle}
-                            meta={`${LABEL_FAMILLE_SINGULIER[e.famille]} · ${e.origine}`}
+                            meta={e.origine}
                             // La tuile-date suffit pour le futur : seule
                             // l'alerte mérite une pastille.
                             registre={etatDeLaLigne(ligne)}

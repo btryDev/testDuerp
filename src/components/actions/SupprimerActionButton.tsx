@@ -17,8 +17,8 @@ export function SupprimerActionButton({
 
   return (
     <Button
-      variant="outline"
-      size="sm"
+      variant="boardClair"
+      size="boardSm"
       disabled={pending}
       onClick={() => {
         if (!confirm("Supprimer définitivement cette action ?")) return;

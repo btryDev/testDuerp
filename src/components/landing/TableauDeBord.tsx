@@ -55,10 +55,15 @@ const ALERTES = [
   },
 ];
 
-/** Le panneau de navigation, tel qu'il est dans l'application. */
+/**
+ * Le panneau de navigation, tel qu'il est dans l'application.
+ *
+ * Aucun item n'est actif, et c'est fidèle : on est sur le tableau de bord,
+ * qui a sa propre entrée de rail depuis l'ADR-015. Le panneau montre alors
+ * « À faire », sa porte d'entrée par défaut, sans rien y surligner.
+ */
 const NAV = [
-  { label: "Tableau de bord", Icone: LayoutGrid, actif: true },
-  { label: "Calendrier", Icone: CalendarDays, badge: "9", alerte: true },
+  { label: "Calendrier", Icone: CalendarDays, badge: "11", alerte: true },
   { label: "Plan d'actions", Icone: ListChecks, badge: "6" },
   { label: "Interventions", Icone: MessageSquare },
   { label: "Préparer un contrôle", Icone: ShieldCheck },
@@ -66,7 +71,8 @@ const NAV = [
 
 /** Le rail, à l'extrême gauche. */
 const RAIL = [
-  { label: "À faire", Icone: ClipboardList, actif: true, point: true },
+  { label: "Tableau de bord", Icone: LayoutGrid, actif: true },
+  { label: "À faire", Icone: ClipboardList, point: true },
   { label: "Établissement", Icone: Building2, point: true },
   { label: "Registres", Icone: Archive },
   { label: "Comprendre", Icone: BookOpen },
@@ -335,12 +341,10 @@ export function TableauDeBord() {
                   {NAV.map((n) => (
                     <li
                       key={n.label}
-                      className={
-                        "flex items-center gap-2 rounded-[9px] px-2 py-[6px] text-[0.66rem] tracking-[-0.01em] " +
-                        (n.actif
-                          ? "bg-white font-semibold text-[color:var(--board-ink)]"
-                          : "text-white/60")
-                      }
+                      /* Aucune pilule pleine : la page montrée est le
+                         tableau de bord, qui vit au rail. Surligner un
+                         item ici montrerait un produit qu'on n'a pas. */
+                      className="flex items-center gap-2 rounded-[9px] px-2 py-[6px] text-[0.66rem] tracking-[-0.01em] text-white/60"
                     >
                       <n.Icone className="size-[13px] flex-none opacity-70" />
                       <span className="truncate">{n.label}</span>

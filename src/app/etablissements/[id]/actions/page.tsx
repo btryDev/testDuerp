@@ -6,6 +6,7 @@ import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeOrigine } from "@/components/actions/BadgeOrigine";
 import { BadgeStatutAction } from "@/components/actions/BadgeStatutAction";
 import { getEtablissement } from "@/lib/etablissements/queries";
+import { exigenceEcheanceActions } from "@/lib/actions/echeance-exigee";
 import {
   compterActions,
   listerActions,
@@ -56,6 +57,9 @@ export default async function PlanActionsPage({
   const maintenant = Date.now();
 
   const baseHref = `/etablissements/${id}/actions`;
+  // Le calendrier de mise en œuvre n'est imposé qu'à partir de cinquante
+  // salariés (L. 4121-3-1). En dessous, la tuile compte sans rien exiger.
+  const exigence = exigenceEcheanceActions(etab.entreprise.effectif);
   // Ce que les fiches ouvertes d'ici devront savoir pour y revenir : le
   // plan d'actions *avec ses filtres*, pas la liste par défaut.
   const depuisCetteListe = origineDepuis(baseHref, { origine, enCours });
@@ -121,7 +125,7 @@ export default async function PlanActionsPage({
       </header>
 
       {/* Indicateurs */}
-      <section className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <section className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="cartouche px-5 py-4">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
             À couvrir
@@ -139,6 +143,21 @@ export default async function PlanActionsPage({
             En retard
           </p>
           <p className="mt-1 text-[1.6rem] font-semibold">{compteurs.enRetard}</p>
+        </div>
+        {/* Sans échéance, une action n'apparaît sur aucun calendrier : elle
+            n'a pas de jour où se poser (ADR-010). Ce compteur existait
+            depuis l'origine sans être affiché nulle part — la seule trace
+            de ces actions était un commentaire dans le code. */}
+        <div className="cartouche px-5 py-4">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+            {exigence.exigee ? "À dater" : "Sans échéance"}
+          </p>
+          <p className="mt-1 text-[1.6rem] font-semibold">{compteurs.sansEcheance}</p>
+          {exigence.reference ? (
+            <p className="mt-1 font-mono text-[0.58rem] uppercase tracking-[0.12em] text-muted-foreground">
+              {exigence.reference}
+            </p>
+          ) : null}
         </div>
         <div className="cartouche px-5 py-4">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">

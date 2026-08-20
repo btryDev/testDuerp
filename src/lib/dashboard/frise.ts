@@ -14,6 +14,7 @@
 // visuelle, quel que soit l'horizon affiché.
 
 import { FUSEAU_REFERENCE } from "@/lib/dates";
+import type { TypeEcheance } from "@/lib/calendrier/echeances";
 import { raccourcirLibelle } from "./libelles";
 
 export type EvenementFrise = {
@@ -22,6 +23,10 @@ export type EvenementFrise = {
   date: Date;
   tone: "alerte" | "warn" | "ok";
   equipement: string;
+  /** Ce que c'est (ADR-016). La frise recevait déjà la donnée et la
+   *  jetait faute de la déclarer : ses cartes ne pouvaient pas dire si
+   *  elles montraient une vérification ou un signalement. */
+  type?: TypeEcheance;
   /** Porte de sortie de l'échéance. Absente = vérification périodique,
    *  l'appelant sait la construire depuis l'`id`. Toutes les autres
    *  familles (action, permis, attestation…) la portent : leur `id` est
@@ -35,6 +40,7 @@ export type EvenementMarqueur = {
   libelle: string;
   equipement: string;
   tone: EvenementFrise["tone"];
+  type?: TypeEcheance;
   /** « 24 SEPT. » */
   libelleDate: string;
   passe: boolean;
@@ -48,6 +54,10 @@ export type MarqueurFrise = {
   evenements: EvenementMarqueur[];
   /** Le libellé de l'échéance si elle est seule, « 3 échéances » sinon. */
   titre: string;
+  /** Nature commune aux échéances du marqueur. Absente quand le groupe en
+   *  mêle plusieurs : une carte qui annoncerait « Vérification » au-dessus
+   *  d'un signalement mentirait pour gagner un pictogramme. */
+  type?: TypeEcheance;
   /** « 24 SEPT. », ou la plage « 6 → 24 JUIL. » pour une grappe. */
   sousTitre: string;
   /** Le ton le plus alarmant du groupe : une alerte ne se dilue pas. */
@@ -235,6 +245,7 @@ export function construireFrise({
       libelle: raccourcirLibelle(e.libelle),
       equipement: e.equipement,
       tone: e.tone,
+      type: e.type,
       libelleDate: libelleDate(e.date),
       passe: joursEntre(aujourdhui, e.date) < 0,
       href: e.href,
@@ -249,6 +260,9 @@ export function construireFrise({
         groupe.length === 1
           ? evenements[0].libelle
           : `${groupe.length} échéances`,
+      type: groupe.every((e) => e.type === premier.type)
+        ? premier.type
+        : undefined,
       sousTitre:
         groupe.length === 1
           ? libelleDateLong(premier.date)

@@ -98,9 +98,11 @@ besoin » est le point d'entrée naturel de cette activation, mais le geste
 lui-même n'est pas construit. À articuler avec la restitution d'onboarding
 ci-dessous, qui fait la première passe.
 
-### Question ouverte — « Préparer un contrôle »
+### Question tranchée — « Préparer un contrôle » (ADR-015)
 
-Volontairement non tranchée, et l'écran n'a pas été déplacé.
+**Résolue** : l'écran reste dans « À faire », dans le sens de la
+contre-proposition ci-dessous. Se tenir prêt est un entretien continu, pas un
+événement subi. Conservé ici pour la trace du raisonnement.
 
 Proposition initiale : le sortir de « À faire » (rythme hebdomadaire) pour le
 mettre en bas de « Mes registres », dont il est l'export groupé.

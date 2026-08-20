@@ -19,16 +19,27 @@ const MODULES_ERP_NEUF: SidebarModules = {
   carnetSanitaireExiste: false,
 };
 
-/** Registres de la section « Mes registres », dans l'ordre de rendu. */
-function registres(modules?: SidebarModules) {
+/** Items d'une section, dans l'ordre de rendu. */
+function itemsDe(titre: string, modules?: SidebarModules) {
   const section = construireSections({ etablissementId: ID, modules }).find(
-    (s) => s.title === "Mes registres",
+    (s) => s.title === titre,
   );
   return section?.items ?? [];
 }
 
+/** Registres de la section « Mes registres », dans l'ordre de rendu. */
+function registres(modules?: SidebarModules) {
+  return itemsDe("Mes registres", modules);
+}
+
+function operations(modules?: SidebarModules) {
+  return itemsDe("Opérations", modules);
+}
+
 function etatDe(id: SidebarItemId, modules?: SidebarModules) {
-  return registres(modules).find((i) => i.id === id)?.etat;
+  return [...registres(modules), ...operations(modules)].find(
+    (i) => i.id === id,
+  )?.etat;
 }
 
 function sections() {
@@ -67,26 +78,53 @@ describe("deduireActif", () => {
 });
 
 describe("construireSections — structure", () => {
-  it("expose les trois sections dans l'ordre des questions du dirigeant", () => {
+  it("expose les sections dans l'ordre des questions du dirigeant", () => {
     expect(sections().map((s) => s.title)).toEqual([
       "À faire",
+      "Opérations",
       "Mon établissement",
       "Mes registres",
     ]);
   });
 
-  it("place le tableau de bord en tête de « À faire »", () => {
-    expect(sections()[0].items[0].id).toBe("tableau");
+  it("sort les opérations ponctuelles de « Mes registres »", () => {
+    // Un registre se tient en continu ; un permis de feu naît d'un chantier
+    // daté et meurt clos (ADR-017).
+    expect(operations().map((i) => i.id)).toEqual([
+      "permis-feu",
+      "plan-prevention",
+    ]);
+    expect(registres().map((i) => i.id)).not.toContain("permis-feu");
+    expect(registres().map((i) => i.id)).not.toContain("plan-prevention");
   });
 
-  it("expose les six registres à plat, DUERP et registre de sécurité en tête", () => {
-    const registres = sections().find((s) => s.title === "Mes registres");
-    expect(registres?.items.map((i) => i.id)).toEqual([
+  it("ne porte dans « À faire » que des activités, jamais un filtre", () => {
+    const aFaire = sections()[0];
+    expect(aFaire.items.map((i) => i.id)).toEqual([
+      "calendrier",
+      "actions",
+      "interventions",
+      "controle",
+    ]);
+    // Aucune destination du panneau ne porte de query : un filtre est un
+    // réglage d'écran, pas une place dans l'arborescence (ADR-015 révisé).
+    for (const it of aFaire.items) {
+      expect(it.href).not.toContain("?");
+    }
+  });
+
+  it("garde hors des sections ce qui vit au rail", () => {
+    // Un résumé n'est pas une tâche, et le guide a son entrée de premier
+    // niveau : les laisser ici les afficherait deux fois (ADR-015).
+    expect(idsVisibles()).not.toContain("tableau");
+    expect(idsVisibles()).not.toContain("guide");
+  });
+
+  it("expose les registres à plat, DUERP et registre de sécurité en tête", () => {
+    expect(registres().map((i) => i.id)).toEqual([
       "duerp",
       "registre",
       "accessibilite",
-      "permis-feu",
-      "plan-prevention",
       "carnet-sanitaire",
     ]);
   });
@@ -105,14 +143,6 @@ describe("construireSections — structure", () => {
     }
   });
 
-  it("place le guide (« Comprendre ») en dernière position de « À faire »", () => {
-    const aFaire = sections()[0];
-    const dernier = aFaire.items[aFaire.items.length - 1];
-    expect(dernier.id).toBe("guide");
-    expect(dernier.label).toBe("Comprendre");
-    expect(dernier.href).toBe(`/etablissements/${ID}/guide`);
-  });
-
   it("marque « Équipe » comme à venir plutôt qu'en lien mort", () => {
     const equipe = sections()
       .flatMap((s) => s.items)
@@ -127,13 +157,39 @@ describe("construireRail — rail à deux niveaux", () => {
   }
 
   it("expose les catégories dans l'ordre du rail", () => {
+    // Les deux catégories d'activité d'abord, les descriptives ensuite.
     expect(rail().map((c) => c.id)).toEqual([
+      "tableau",
       "a-faire",
+      "operations",
       "etablissement",
       "registres",
       "comprendre",
       "connecter",
     ]);
+  });
+
+  it("donne une page d'entrée à chaque catégorie, panneau ou non", () => {
+    // ADR-015 : cliquer une entrée de rail navigue. Une icône de premier
+    // niveau qui ne mène nulle part n'est qu'un tiroir.
+    for (const cat of rail()) {
+      expect(cat.href.startsWith(`/etablissements/${ID}`)).toBe(true);
+    }
+  });
+
+  it("fait entrer chaque panneau par son premier item", () => {
+    // Sans quoi le rail déposerait sur un écran que le panneau ne montre
+    // pas, et aucun item ne serait surligné à l'arrivée.
+    for (const cat of rail()) {
+      if (!cat.items) continue;
+      expect(cat.href).toBe(cat.items[0].href);
+    }
+  });
+
+  it("fait du tableau de bord une entrée de rail sans panneau", () => {
+    const tableau = rail().find((c) => c.id === "tableau");
+    expect(tableau?.items).toBeUndefined();
+    expect(tableau?.href).toBe(`/etablissements/${ID}`);
   });
 
   it("fait de « Connecter » un lien direct, hors des trois panneaux", () => {
@@ -145,27 +201,30 @@ describe("construireRail — rail à deux niveaux", () => {
     expect(idsVisibles()).not.toContain("connecter");
   });
 
-  it("sort « Comprendre » du panneau « À faire » pour en faire un lien direct", () => {
+  it("garde « Comprendre » en lien direct hors du panneau « À faire »", () => {
     const cats = rail();
-    const aFaire = cats.find((c) => c.id === "a-faire");
-    expect(aFaire?.items?.map((i) => i.id)).not.toContain("guide");
+    expect(cats.find((c) => c.id === "a-faire")?.items?.map((i) => i.id))
+      .not.toContain("guide");
     const comprendre = cats.find((c) => c.id === "comprendre");
     expect(comprendre?.items).toBeUndefined();
     expect(comprendre?.href).toBe(`/etablissements/${ID}/guide`);
+    // La césure entre le dossier et les modes d'accès est portée par la
+    // donnée, pas devinée au rendu.
+    expect(comprendre?.separateurAvant).toBe(true);
   });
 
-  it("reprend les mêmes items que les sections, guide excepté", () => {
+  it("reprend exactement les items des sections", () => {
     const idsSections = construireSections({ etablissementId: ID }).flatMap(
       (s) => s.items.map((i) => i.id),
     );
     const idsRail = rail().flatMap((c) => (c.items ?? []).map((i) => i.id));
-    expect([...idsRail, "guide"].sort()).toEqual(idsSections.sort());
+    expect(idsRail.sort()).toEqual(idsSections.sort());
   });
 
   it("agrège les alertes des items au niveau de la catégorie", () => {
     const cats = construireRail({
       etablissementId: ID,
-      counts: { verificationsEnRetard: 2, prestatairesAlertes: 0 },
+      counts: { enRetardTotal: 2, prestatairesAlertes: 0 },
     });
     expect(cats.find((c) => c.id === "a-faire")?.alert).toBe(true);
     expect(cats.find((c) => c.id === "etablissement")?.alert).toBe(false);
@@ -177,6 +236,7 @@ describe("construireRail — rail à deux niveaux", () => {
         expect(categorieDeItem(it.id)).toBe(cat.id);
       }
     }
+    expect(categorieDeItem("tableau")).toBe("tableau");
     expect(categorieDeItem("guide")).toBe("comprendre");
     expect(categorieDeItem("connecter")).toBe("connecter");
   });
@@ -188,7 +248,7 @@ describe("construireSections — badges", () => {
       etablissementId: ID,
       counts: {
         equipements: 13,
-        verificationsEnRetard: 3,
+        enRetardTotal: 5,
         prestatairesAlertes: 1,
         risquesAReevaluer: 2,
         actions: 5,
@@ -201,15 +261,26 @@ describe("construireSections — badges", () => {
     expect(parId("equipements")?.alert).toBeFalsy();
     expect(parId("actions")?.count).toBe(5);
     expect(parId("actions")?.alert).toBeFalsy();
-    expect(parId("calendrier")).toMatchObject({ count: 3, alert: true });
     expect(parId("prestataires")).toMatchObject({ count: 1, alert: true });
     expect(parId("duerp")).toMatchObject({ count: 2, alert: true });
+  });
+
+  it("donne au calendrier le retard de toutes les familles", () => {
+    const items = construireSections({
+      etablissementId: ID,
+      counts: { enRetardTotal: 5 },
+    }).flatMap((s) => s.items);
+
+    expect(items.find((i) => i.id === "calendrier")).toMatchObject({
+      count: 5,
+      alert: true,
+    });
   });
 
   it("n'affiche pas d'alerte quand les compteurs sont à zéro", () => {
     const items = construireSections({
       etablissementId: ID,
-      counts: { verificationsEnRetard: 0, prestatairesAlertes: 0 },
+      counts: { enRetardTotal: 0, prestatairesAlertes: 0 },
     }).flatMap((s) => s.items);
 
     expect(items.find((i) => i.id === "calendrier")?.alert).toBe(false);
@@ -242,7 +313,7 @@ describe("construireSections — qualification des registres", () => {
     ).toBe("non-applicable");
   });
 
-  it("laisse les registres événementiels « non ouverts » tant qu'ils sont vides", () => {
+  it("laisse l'événementiel « non ouvert » tant qu'il est vide", () => {
     expect(etatDe("permis-feu", MODULES_ERP_NEUF)).toBe("non-ouvert");
     expect(etatDe("plan-prevention", MODULES_ERP_NEUF)).toBe("non-ouvert");
     expect(etatDe("carnet-sanitaire", MODULES_ERP_NEUF)).toBe("non-ouvert");
@@ -267,8 +338,6 @@ describe("construireSections — qualification des registres", () => {
     expect(ordre).toEqual([
       "duerp",
       "registre",
-      "permis-feu",
-      "plan-prevention",
       "carnet-sanitaire",
       "accessibilite",
     ]);
@@ -277,14 +346,7 @@ describe("construireSections — qualification des registres", () => {
   it("ne retire jamais un registre de la liste", () => {
     // Masquer rendrait le registre introuvable le jour où il devient
     // nécessaire — c'est ce qui avait fait retirer la divulgation progressive.
-    const attendus = [
-      "accessibilite",
-      "carnet-sanitaire",
-      "duerp",
-      "permis-feu",
-      "plan-prevention",
-      "registre",
-    ];
+    const attendus = ["accessibilite", "carnet-sanitaire", "duerp", "registre"];
     const cas: Array<SidebarModules | undefined> = [
       MODULES_ERP_NEUF,
       { ...MODULES_ERP_NEUF, estERP: false },

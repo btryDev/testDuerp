@@ -19,7 +19,7 @@ import {
   composantesCiviles,
   instantCivil,
 } from "@/lib/dates";
-import type { FamilleEcheance } from "./echeances";
+import type { FamilleEcheance, TypeEcheance } from "./echeances";
 
 export type EvenementGrille = {
   id: string;
@@ -27,6 +27,8 @@ export type EvenementGrille = {
   date: Date;
   tone: "alerte" | "warn" | "ok";
   equipement: string;
+  /** Ce que c'est (ADR-016) — absent = vérification (compat board). */
+  type?: TypeEcheance;
   /** Famille de l'échéance — absente = contrôle (compat board). */
   famille?: FamilleEcheance;
   /** Porte de la pastille — absente = `hrefEvenement` de l'appelant. */
