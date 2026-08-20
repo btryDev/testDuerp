@@ -128,15 +128,26 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
 7. **007** — Prestataires & accès externe par token
 8. **008** — Signature multi-objets (JSON canonique)
 9. **009** — Boucle tickets ↔ DUERP
+10. **010** — Registre de sources d'échéances du calendrier
+11. **011** — Dates civiles, fuseau de référence et prédicats de retard
+12. **012** — Conservation des preuves : régénération idempotente, suppression logique
+13. **013** — Serveur MCP distant authentifié en OAuth 2.1
+14. **014** — Le retour dit d'où l'on vient, le fil d'Ariane dit où la fiche vit
+15. **015** — « À faire » est un écran (le calendrier), tableau de bord au rail
 
 Toute nouvelle décision structurante → nouvel ADR avant de coder.
 
 ## Expérience utilisateur
 
 ### Navigation (double sidebar : rail + panneau)
-- **À faire** : Tableau de bord · Calendrier · Plan d'actions · Interventions · Préparer un contrôle
-- **Mon établissement** : Équipements · Prestataires · Fiche établissement · (Équipe, à venir)
-- **Mes registres** (à plat) : DUERP · Registre de sécurité · Accessibilité · Permis de feu · Plans de prévention · Carnet sanitaire
+
+Une entrée de rail = une **page d'entrée** + un **panneau** : cliquer navigue
+et ouvre le panneau (ADR-015).
+
+- **Tableau de bord** : lien direct, sans panneau — le board de widgets
+- **À faire** (→ le calendrier, toutes familles) : Tout · Contrôles matériel (`?famille=controle`) · Plan d'actions · Interventions · Préparer un contrôle
+- **Mon établissement** (→ Équipements) : Équipements · Prestataires · Fiche établissement · (Équipe, à venir)
+- **Mes registres** (→ DUERP, à plat) : DUERP · Registre de sécurité · Accessibilité · Permis de feu · Plans de prévention · Carnet sanitaire
 - **Comprendre** : guide pédagogique
 - **Connecter** : brancher un assistant en lecture seule sur le dossier (serveur MCP local — spike, cf. `scripts/mcp-server.ts`)
 - **Compte**
