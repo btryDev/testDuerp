@@ -70,11 +70,17 @@
   --seal: oklch(0.32 0.005 260); /* pour sceaux / numérotation */
   --minium: oklch(0.58 0.19 28); /* rouge — alertes uniquement */
   /* Orange d'avertissement (ton « warn » des widgets papier) — était
-     répété en littéral oklch dans une douzaine de fichiers. */
-  --warn: var(--warn); /* marque : points, barres, bordures */
-  --warn-ink: var(--warn-ink); /* encre posée sur champ warn */
-  --warn-soft: var(--warn-soft); /* champ pâle */
-  --warn-pale: var(--warn-pale); /* champ à peine teinté */
+     répété en littéral oklch dans une douzaine de fichiers.
+     La factorisation (2545f0d) avait laissé quatre auto-références
+     `--warn: var(--warn)` : des déclarations invalides, donc l'état
+     « attention » n'avait aucune couleur dans les onze fichiers qui les
+     consomment. Les trois premières valeurs sont celles des littéraux
+     d'origine, relues dans ce commit ; `--warn-pale` n'en a jamais eu et
+     suit la convention des paires soft/pale du fichier. */
+  --warn: oklch(0.72 0.15 70); /* marque : points, barres, bordures */
+  --warn-ink: oklch(0.48 0.14 60); /* encre posée sur champ warn */
+  --warn-soft: oklch(0.95 0.04 75); /* champ pâle */
+  --warn-pale: oklch(0.97 0.02 75); /* champ à peine teinté */
   --warm: oklch(0.32 0.12 260); /* navy — accent d'impulsion */
   --warm-soft: oklch(0.94 0.025 260); /* fond navy très pâle */
   --accent-vif: oklch(0.62 0.18 150); /* vert « conformité » — accent d'app (ADR Direction B) */
