@@ -1,21 +1,29 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { lireProvenance } from "@/lib/navigation/provenance";
 import {
-  lireProvenance,
-  retourDistinct,
-} from "@/lib/navigation/provenance";
-import { AppTopbar } from "@/components/layout/AppTopbar";
+  CarteFiche,
+  CorpsFiche,
+  EcranFiche,
+  HeroFiche,
+  PastilleRetard,
+  TitreSection,
+  type FaitFiche,
+} from "@/components/ui-kit";
+import {
+  PastillePriorite,
+  PastilleStatutTicket,
+} from "@/components/interventions/BadgesBoard";
 import { ChangerStatutButtons } from "@/components/interventions/ChangerStatutButtons";
 import { CloturerTicketForm } from "@/components/interventions/CloturerTicketForm";
 import { CommentaireForm } from "@/components/interventions/CommentaireForm";
-import {
-  BadgePriorite,
-} from "@/components/interventions/NouveauTicketForm";
-import { requireEtablissement } from "@/lib/auth/scope";
 import { getIntervention } from "@/lib/interventions/queries";
-import { COULEUR_PRIORITE, LABEL_STATUT } from "@/lib/interventions/schema";
 import { getOptionalUser } from "@/lib/auth/require-user";
-import { FUSEAU_REFERENCE } from "@/lib/dates";
+import {
+  FUSEAU_REFERENCE,
+  formaterDateCourteFr,
+  formaterDateLongueFr,
+} from "@/lib/dates";
+import { classerDate, type RegistreLigne } from "@/lib/calendrier/etats";
 import { estEnRetard } from "@/lib/dates/retard";
 
 // Format long avec heure, propre à cette page (« 10 août 2026 14:30 ») :
@@ -29,9 +37,19 @@ const FMT = new Intl.DateTimeFormat("fr-FR", {
   minute: "2-digit",
 });
 
-function fmtDate(d: Date | null): string | null {
-  if (!d) return null;
+const FMT_HEURE = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: FUSEAU_REFERENCE,
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+function fmtDateHeure(d: Date): string {
   return FMT.format(d);
+}
+
+/** « #001 » — la numérotation que porte aussi le tableau des tickets. */
+function numeroTicket(n: number): string {
+  return `n°${String(n).padStart(3, "0")}`;
 }
 
 export default async function InterventionDetailPage({
@@ -43,184 +61,190 @@ export default async function InterventionDetailPage({
 }) {
   const { id, interventionId } = await params;
   const { de } = await searchParams;
-  // Le fil d'Ariane dit où cette fiche vit ; le retour dit d'où l'on
-  // arrive — le calendrier, par exemple. Les deux cohabitent.
-  const retour = retourDistinct(
-    lireProvenance(de, id),
-    `/etablissements/${id}/interventions`,
-  );
-  const { etablissement } = await requireEtablissement(id);
+  const provenance = lireProvenance(de, id);
+  const interventions = {
+    href: `/etablissements/${id}/interventions`,
+    label: "Interventions",
+  };
+
   const [it, user] = await Promise.all([
     getIntervention(id, interventionId),
     getOptionalUser(),
   ]);
   if (!it) notFound();
 
-  const color = COULEUR_PRIORITE[it.priorite];
   // Page serveur : horloge lue une fois par requête.
   const aujourdhui = new Date();
+  const clos = it.statut === "fait" || it.statut === "annule";
   // Retard = prédicat partagé (ADR-011). La comparaison brute
-  // `echeance < new Date()` colorait en minium une échéance datée du jour
+  // `echeance < new Date()` colorait en rouge une échéance datée du jour
   // même dès 02:00 heure d'été, en contradiction avec la carte du même
   // ticket sur la page liste.
-  const echeanceEnRetard =
-    it.echeance !== null &&
-    estEnRetard(it.echeance, aujourdhui) &&
-    it.statut !== "fait" &&
-    it.statut !== "annule";
+  const enRetard =
+    it.echeance !== null && !clos && estEnRetard(it.echeance, aujourdhui);
+
+  const etat: RegistreLigne = clos
+    ? "faite"
+    : !it.echeance
+      ? "aPlanifier"
+      : enRetard
+        ? "enRetard"
+        : classerDate(it.echeance, aujourdhui);
+
+  const faits: FaitFiche[] = [
+    {
+      cle: "Échéance",
+      valeur: it.echeance ? formaterDateLongueFr(it.echeance) : "Non datée",
+      alerte: enRetard,
+    },
+    {
+      cle: "Lieu",
+      valeur: it.localisation ?? (
+        <span className="font-normal text-[color:var(--board-slate-soft)]">
+          Non précisé
+        </span>
+      ),
+    },
+    {
+      cle: "Assigné à",
+      valeur: it.assigneA ?? (
+        <span className="font-normal text-[color:var(--board-slate-soft)]">
+          Personne
+        </span>
+      ),
+    },
+    {
+      cle: "Signalé le",
+      valeur: formaterDateCourteFr(it.createdAt),
+      note: FMT_HEURE.format(it.createdAt),
+    },
+  ];
 
   return (
-    <>
-      <AppTopbar
-        title={`Ticket #${String(it.numero).padStart(3, "0")}`}
-        retour={retour ?? undefined}
-        crumbs={[
-          { href: `/etablissements/${id}`, label: etablissement.raisonDisplay },
-          {
-            href: `/etablissements/${id}/interventions`,
-            label: "Interventions",
-          },
-          { label: `#${String(it.numero).padStart(3, "0")}` },
-        ]}
+    <EcranFiche provenance={provenance} canonique={interventions}>
+      <HeroFiche
+        date={it.echeance}
+        etat={etat}
+        famille="travaux"
+        surtitre={`Correction · Signalement ${numeroTicket(it.numero)}`}
+        titre={it.titre}
+        faits={faits}
+        pastilles={
+          <>
+            <PastilleStatutTicket statut={it.statut} />
+            <PastillePriorite priorite={it.priorite} />
+            {enRetard && it.echeance ? (
+              <PastilleRetard echeance={it.echeance} maintenant={aujourdhui} />
+            ) : null}
+          </>
+        }
       />
 
-      <main className="mx-auto max-w-4xl px-8 py-8 pb-16">
-        {/* Hero */}
-        <article className="cartouche relative overflow-hidden">
-          <span
-            aria-hidden
-            className="absolute inset-x-0 top-0 h-[3px]"
-            style={{ background: color }}
-          />
-          <div className="px-7 pb-5 pt-7 sm:px-10">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-mono text-[0.72rem] uppercase tracking-[0.14em] text-[color:var(--seal)]">
-                #{String(it.numero).padStart(3, "0")}
-              </span>
-              <BadgePriorite priorite={it.priorite} />
-              <span className="font-mono text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
-                · {LABEL_STATUT[it.statut]}
-              </span>
-            </div>
-            <h1 className="mt-3 text-[1.75rem] font-semibold tracking-[-0.02em] leading-tight">
-              {it.titre}
-            </h1>
-            {it.description && (
-              <p className="mt-3 whitespace-pre-wrap text-[0.92rem] leading-relaxed text-[color:var(--ink)]">
-                {it.description}
-              </p>
-            )}
-            <dl className="mt-5 grid grid-cols-2 gap-y-2 text-[0.82rem] sm:grid-cols-4 sm:gap-x-6">
-              {it.localisation && (
-                <div>
-                  <dt className="label-admin">Lieu</dt>
-                  <dd className="mt-1">{it.localisation}</dd>
-                </div>
+      <CorpsFiche
+        principal={
+          <>
+            <CarteFiche titre="Ce qui a été signalé">
+              {it.description ? (
+                <p className="m-0 whitespace-pre-wrap text-[14.5px] leading-[1.6]">
+                  {it.description}
+                </p>
+              ) : (
+                <p className="m-0 text-[14px] text-[color:var(--board-slate-soft)]">
+                  Le signalement n&apos;a pas de description.
+                </p>
               )}
-              {it.assigneA && (
-                <div>
-                  <dt className="label-admin">Assigné à</dt>
-                  <dd className="mt-1">{it.assigneA}</dd>
-                </div>
-              )}
-              {it.echeance && (
-                <div>
-                  <dt className="label-admin">Échéance</dt>
-                  <dd
-                    className="mt-1 font-semibold tabular-nums"
-                    style={{
-                      color: echeanceEnRetard ? "var(--minium)" : undefined,
-                    }}
-                  >
-                    {fmtDate(it.echeance)?.split(" à ")[0] ?? ""}
-                  </dd>
-                </div>
-              )}
-              <div>
-                <dt className="label-admin">Créé</dt>
-                <dd className="mt-1 font-mono text-[0.78rem]">
-                  {fmtDate(it.createdAt)}
-                </dd>
-              </div>
-            </dl>
-          </div>
 
-          {/* Photos */}
-          {it.photos.length > 0 && (
-            <div className="border-t border-dashed border-rule/60 px-7 py-5 sm:px-10">
-              <p className="label-admin mb-3">Photos ({it.photos.length})</p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {it.photos.map((cle, i) => (
-                  <a
-                    key={cle}
-                    href={`/api/interventions/photos?cle=${encodeURIComponent(cle)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative block aspect-square overflow-hidden rounded-lg border border-[color:var(--rule-soft)] bg-[color:var(--paper-sunk)]"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`/api/interventions/photos?cle=${encodeURIComponent(cle)}`}
-                      alt={`Photo ${i + 1}`}
-                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                    />
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Risque lié */}
-          {it.risqueLibelle && (
-            <div className="border-t border-dashed border-rule/60 bg-[color:var(--warm-soft)] px-7 py-4 sm:px-10">
-              <p className="label-admin text-[color:var(--warm)]">
-                Risque DUERP lié
-              </p>
-              <p className="mt-1 text-[0.9rem] font-medium text-[color:var(--ink)]">
-                {it.risqueLibelle}
-              </p>
-            </div>
-          )}
-        </article>
-
-        {/* Statut + actions */}
-        <section className="mt-10 cartouche p-6">
-          <p className="label-admin">Cycle de vie</p>
-          <div className="mt-4 space-y-4">
-            {it.statut !== "fait" && it.statut !== "annule" && (
-              <div className="space-y-3">
-                <div>
-                  <p className="mb-2 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground">
-                    Changer le statut
+              {it.photos.length > 0 && (
+                <div className="mt-6 border-t border-[color:var(--board-slate-line)] pt-5">
+                  <p className="board-eyebrow m-0 mb-3 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+                    {it.photos.length} photo{it.photos.length > 1 ? "s" : ""}
                   </p>
-                  <ChangerStatutButtons
-                    etablissementId={id}
-                    interventionId={it.id}
-                    statut={it.statut}
-                  />
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {it.photos.map((cle, i) => (
+                      <a
+                        key={cle}
+                        href={`/api/interventions/photos?cle=${encodeURIComponent(cle)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative block aspect-square overflow-hidden rounded-[18px] bg-[color:var(--board-slate-pale)] ring-1 ring-[color:var(--board-slate-line)]"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`/api/interventions/photos?cle=${encodeURIComponent(cle)}`}
+                          alt={`Photo ${i + 1}`}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      </a>
+                    ))}
+                  </div>
                 </div>
-                <div className="border-t border-dashed border-rule/50 pt-4">
-                  <CloturerTicketForm
-                    etablissementId={id}
-                    interventionId={it.id}
-                    risqueLieLibelle={it.risqueLibelle}
-                  />
+              )}
+
+              {/* La boucle vers le DUERP (ADR-009) : ce ticket a été
+                  ouvert depuis un risque, et sa clôture peut demander de
+                  le réévaluer. */}
+              {it.risqueLibelle && (
+                <div className="mt-6 border-t border-[color:var(--board-slate-line)] pt-5">
+                  <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+                    Risque DUERP lié
+                  </p>
+                  <p className="m-0 mt-1.5 text-[14px] font-semibold leading-[1.35]">
+                    {it.risqueLibelle}
+                  </p>
                 </div>
-              </div>
+              )}
+            </CarteFiche>
+
+            <TitreSection
+              surtitre="Historique"
+              titre="Commentaires"
+              compte={it.commentaires.length}
+            />
+
+            {it.commentaires.length > 0 && (
+              <ul className="m-0 flex list-none flex-col gap-3 p-0">
+                {it.commentaires.map((c) => (
+                  <li key={c.id} className="carte-board px-6 py-5">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <p className="m-0 text-[13.5px] font-semibold">
+                        {c.auteurNom}
+                      </p>
+                      <p className="m-0 font-mono text-[11px] text-[color:var(--board-slate-soft)]">
+                        {fmtDateHeure(c.createdAt)}
+                      </p>
+                    </div>
+                    <p className="m-0 mt-2 whitespace-pre-wrap text-[13.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
+                      {c.contenu}
+                    </p>
+                  </li>
+                ))}
+              </ul>
             )}
-            {(it.statut === "fait" || it.statut === "annule") && (
-              <div className="space-y-3">
-                <div className="rounded-lg bg-[color:var(--accent-vif-soft)] p-4">
-                  <p className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-[color:var(--accent-vif)]">
-                    {it.statut === "fait" ? "✓ Terminé" : "Annulé"}
+
+            <CarteFiche titre="Ajouter un commentaire">
+              <CommentaireForm
+                etablissementId={id}
+                interventionId={it.id}
+                auteurDefaut={user?.email ?? null}
+              />
+            </CarteFiche>
+          </>
+        }
+        cote={
+          <CarteFiche titre="Cycle de vie">
+            {clos ? (
+              <div className="flex flex-col gap-4">
+                <div className="rounded-[18px] bg-[color:var(--board-green)] px-5 py-4">
+                  <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-green-ink)]">
+                    {it.statut === "fait" ? "Terminé" : "Annulé"}
                   </p>
                   {it.dateCloture && (
-                    <p className="mt-1 text-[0.82rem] text-muted-foreground">
-                      Le {fmtDate(it.dateCloture)}
+                    <p className="m-0 mt-1.5 text-[13px] text-[color:var(--board-green-ink)]">
+                      Le {fmtDateHeure(it.dateCloture)}
                     </p>
                   )}
                   {it.motifCloture && (
-                    <p className="mt-2 whitespace-pre-wrap text-[0.88rem] text-[color:var(--ink)]">
+                    <p className="m-0 mt-2.5 whitespace-pre-wrap text-[13.5px] leading-[1.55] text-[color:var(--board-ink)]">
                       {it.motifCloture}
                     </p>
                   )}
@@ -231,58 +255,30 @@ export default async function InterventionDetailPage({
                   statut={it.statut}
                 />
               </div>
-            )}
-          </div>
-        </section>
-
-        {/* Commentaires */}
-        <section className="mt-10">
-          <header className="mb-4">
-            <p className="label-admin">
-              Commentaires ({it.commentaires.length})
-            </p>
-            <h2 className="mt-1 text-[1.15rem] font-semibold tracking-[-0.015em]">
-              Historique et mises à jour
-            </h2>
-          </header>
-
-          {it.commentaires.length > 0 && (
-            <ul className="mb-5 space-y-3">
-              {it.commentaires.map((c) => (
-                <li key={c.id} className="cartouche p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-[0.88rem] font-semibold">{c.auteurNom}</p>
-                    <p className="font-mono text-[0.68rem] text-muted-foreground">
-                      {fmtDate(c.createdAt)}
-                    </p>
-                  </div>
-                  <p className="mt-1 whitespace-pre-wrap text-[0.88rem] leading-relaxed text-[color:var(--ink)]">
-                    {c.contenu}
+            ) : (
+              <div className="flex flex-col gap-5">
+                <div>
+                  <p className="m-0 mb-2.5 text-[12.5px] text-[color:var(--board-slate-mid)]">
+                    Faire avancer le ticket
                   </p>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <div className="cartouche p-5">
-            <CommentaireForm
-              etablissementId={id}
-              interventionId={it.id}
-              auteurDefaut={user?.email ?? null}
-            />
-          </div>
-        </section>
-
-        {/* Retour */}
-        <footer className="mt-10">
-          <Link
-            href={retour?.href ?? `/etablissements/${id}/interventions`}
-            className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground hover:text-ink"
-          >
-            ← {retour ? retour.label : "Retour au tableau"}
-          </Link>
-        </footer>
-      </main>
-    </>
+                  <ChangerStatutButtons
+                    etablissementId={id}
+                    interventionId={it.id}
+                    statut={it.statut}
+                  />
+                </div>
+                <div className="border-t border-[color:var(--board-slate-line)] pt-5">
+                  <CloturerTicketForm
+                    etablissementId={id}
+                    interventionId={it.id}
+                    risqueLieLibelle={it.risqueLibelle}
+                  />
+                </div>
+              </div>
+            )}
+          </CarteFiche>
+        }
+      />
+    </EcranFiche>
   );
 }

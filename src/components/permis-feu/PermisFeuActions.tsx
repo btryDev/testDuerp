@@ -13,7 +13,8 @@ export function BoutonDemarrer({ permisFeuId }: { permisFeuId: string }) {
   return (
     <Button
       type="button"
-      size="sm"
+      variant="board"
+      size="board"
       disabled={pending}
       onClick={() =>
         startTransition(async () => {
@@ -21,7 +22,7 @@ export function BoutonDemarrer({ permisFeuId }: { permisFeuId: string }) {
         })
       }
     >
-      {pending ? "…" : "Démarrer les travaux →"}
+      {pending ? "…" : "Démarrer les travaux"}
     </Button>
   );
 }
@@ -31,7 +32,8 @@ export function BoutonTerminer({ permisFeuId }: { permisFeuId: string }) {
   return (
     <Button
       type="button"
-      size="sm"
+      variant="board"
+      size="board"
       disabled={pending}
       onClick={() => {
         if (
@@ -45,7 +47,7 @@ export function BoutonTerminer({ permisFeuId }: { permisFeuId: string }) {
         });
       }}
     >
-      {pending ? "…" : "✓ Marquer terminé"}
+      {pending ? "…" : "Marquer terminé"}
     </Button>
   );
 }
@@ -55,8 +57,8 @@ export function BoutonSupprimer({ permisFeuId }: { permisFeuId: string }) {
   return (
     <Button
       type="button"
-      variant="outline"
-      size="sm"
+      variant="boardClair"
+      size="boardSm"
       disabled={pending}
       onClick={() => {
         if (!confirm("Supprimer ce permis de feu ? Cette action est définitive."))

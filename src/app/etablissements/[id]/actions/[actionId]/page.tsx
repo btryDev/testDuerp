@@ -1,6 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FilRetour } from "@/components/ui-kit";
+import { ArrowUpRight } from "lucide-react";
+import {
+  CarteFiche,
+  ChampFiche,
+  ChampsFiche,
+  CorpsFiche,
+  Cotation,
+  EcranFiche,
+  HeroFiche,
+  PastilleRetard,
+  type FaitFiche,
+} from "@/components/ui-kit";
 import { BadgeOrigine } from "@/components/actions/BadgeOrigine";
 import { BadgeStatutAction } from "@/components/actions/BadgeStatutAction";
 import { CloturerActionForm } from "@/components/actions/CloturerActionForm";
@@ -8,13 +19,10 @@ import { SupprimerActionButton } from "@/components/actions/SupprimerActionButto
 import { cloturerAction } from "@/lib/actions/plan";
 import { getAction, origineDeLAction } from "@/lib/actions/queries";
 import { LABEL_TYPE_ACTION } from "@/lib/actions/labels";
+import { classerDate, type RegistreLigne } from "@/lib/calendrier/etats";
 import { formaterDateFr, formaterDateLongueFr } from "@/lib/dates";
+import { estActionEnRetard } from "@/lib/dates/retard";
 import { avecProvenance, lireProvenance } from "@/lib/navigation/provenance";
-
-function formatDate(d: Date | null): string {
-  if (!d) return "—";
-  return formaterDateLongueFr(d);
-}
 
 export default async function ActionDetailPage({
   params,
@@ -42,167 +50,176 @@ export default async function ActionDetailPage({
   const origine = origineDeLAction(a);
   const boundCloture = cloturerAction.bind(null, actionId);
   const estOuverte = a.statut === "ouverte" || a.statut === "en_cours";
-  // eslint-disable-next-line react-hooks/purity -- server component, Date.now() lu à chaque rendu
-  const maintenant = Date.now();
-  const echeanceDepassee =
-    a.echeance && a.echeance.getTime() < maintenant && estOuverte;
+  // Page serveur : l'horloge est lue une fois par requête. Deux `new Date()`
+  // séparés par un `await` peuvent tomber de part et d'autre de minuit.
+  const maintenant = new Date();
+  const enRetard = estActionEnRetard(a, maintenant);
+
+  // L'état porté par la tuile-date, dans le vocabulaire de la liste : une
+  // action levée est « faite » quelle que soit son échéance, une action
+  // sans date n'a pas de rendez-vous.
+  const etat: RegistreLigne =
+    a.statut === "levee"
+      ? "faite"
+      : !a.echeance
+        ? "aPlanifier"
+        : enRetard
+          ? "enRetard"
+          : classerDate(a.echeance, maintenant);
+
+  const faits: FaitFiche[] = [
+    {
+      cle: "Échéance",
+      valeur: a.echeance ? formaterDateLongueFr(a.echeance) : "Non datée",
+      alerte: enRetard,
+    },
+    { cle: "Type de mesure", valeur: LABEL_TYPE_ACTION[a.type] },
+  ];
+  if (a.criticite !== null) {
+    faits.push({ cle: "Criticité", valeur: <Cotation valeur={a.criticite} /> });
+  }
+  faits.push({
+    cle: "Responsable",
+    valeur: a.responsable ?? (
+      <span className="font-normal text-[color:var(--board-slate-soft)]">
+        Non désigné
+      </span>
+    ),
+  });
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-14 sm:px-10">
-      <FilRetour provenance={provenance} canonique={planActions} />
-
-      <header className="mt-8 flex flex-wrap items-start justify-between gap-6">
-        <div className="min-w-0 flex-1 space-y-3">
-          <p className="label-admin">Action corrective</p>
-          <h1 className="text-[1.6rem] font-semibold tracking-[-0.02em] leading-tight">
-            {a.libelle}
-          </h1>
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <BadgeOrigine origine={origine} />
+    <EcranFiche provenance={provenance} canonique={planActions}>
+      <HeroFiche
+        date={a.echeance}
+        etat={etat}
+        famille="travaux"
+        surtitre="Correction · Plan d'actions"
+        titre={a.libelle}
+        faits={faits}
+        pastilles={
+          <>
             <BadgeStatutAction statut={a.statut} />
-            {echeanceDepassee && (
-              <span className="inline-flex items-center rounded-full border border-rose-300 bg-rose-100 px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-rose-900">
-                échéance dépassée
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="flex gap-2">
+            {enRetard && a.echeance ? (
+              <PastilleRetard echeance={a.echeance} maintenant={maintenant} />
+            ) : null}
+            <BadgeOrigine origine={origine} />
+          </>
+        }
+        actions={
           <SupprimerActionButton
             id={a.id}
             redirectTo={(provenance ?? planActions).href}
           />
-        </div>
-      </header>
+        }
+      />
 
-      <div className="filet-pointille my-10" />
+      <CorpsFiche
+        principal={
+          <>
+            <CarteFiche titre="Ce qu'il y a à faire">
+              {a.description ? (
+                <p className="m-0 whitespace-pre-wrap text-[14.5px] leading-[1.6] text-[color:var(--board-ink)]">
+                  {a.description}
+                </p>
+              ) : (
+                <p className="m-0 text-[14px] text-[color:var(--board-slate-soft)]">
+                  Aucune description n&apos;a été saisie pour cette action.
+                </p>
+              )}
 
-      {/* Détails */}
-      <section className="cartouche overflow-hidden">
-        <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-          <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
-            Fiche
-          </p>
-        </div>
-        <dl className="divide-y divide-dashed divide-rule/50 text-[0.9rem]">
-          <div className="flex justify-between px-6 py-3 sm:px-8">
-            <dt className="text-muted-foreground">Type</dt>
-            <dd>{LABEL_TYPE_ACTION[a.type]}</dd>
-          </div>
-          {a.criticite !== null && (
-            <div className="flex justify-between px-6 py-3 sm:px-8">
-              <dt className="text-muted-foreground">Criticité</dt>
-              <dd>{a.criticite} / 5</dd>
-            </div>
-          )}
-          <div className="flex justify-between px-6 py-3 sm:px-8">
-            <dt className="text-muted-foreground">Échéance</dt>
-            <dd>{formatDate(a.echeance)}</dd>
-          </div>
-          {a.responsable && (
-            <div className="flex justify-between px-6 py-3 sm:px-8">
-              <dt className="text-muted-foreground">Responsable</dt>
-              <dd>{a.responsable}</dd>
-            </div>
-          )}
-          {a.description && (
-            <div className="px-6 py-3 sm:px-8">
-              <dt className="text-muted-foreground">Description</dt>
-              <dd className="mt-1">{a.description}</dd>
-            </div>
-          )}
-        </dl>
-      </section>
+              {/* Le rattachement vit dans la même carte que la consigne :
+                  « d'où ça sort » et « ce qu'il faut faire » se lisent
+                  ensemble, pas dans deux blocs séparés par une gouttière. */}
+              {a.risque ? (
+                <div className="mt-6 flex items-start gap-3.5 border-t border-[color:var(--board-slate-line)] pt-5">
+                  <span
+                    aria-hidden
+                    className="grid size-[38px] flex-none place-items-center rounded-[14px] bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
+                  >
+                    <ArrowUpRight className="size-[18px]" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+                      Risque rattaché
+                    </p>
+                    <p className="m-0 mt-1.5 text-[14px] font-semibold leading-[1.35]">
+                      {a.risque.libelle}
+                    </p>
+                    <p className="m-0 mt-1 text-[12.5px] text-[color:var(--board-slate-mid)]">
+                      {a.risque.unite.nom}
+                    </p>
+                    <Link
+                      href={`/duerp/${a.risque.unite.duerp.id}/risques/${a.risque.unite.id}/${a.risque.id}/mesures`}
+                      className="mt-2.5 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
+                    >
+                      Ouvrir le risque dans le DUERP
+                      <ArrowUpRight className="size-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
 
-      {/* Origine DUERP */}
-      {a.risque && (
-        <section className="mt-6 cartouche overflow-hidden">
-          <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-            <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
-              Rattachement — DUERP
-            </p>
-          </div>
-          <div className="space-y-1 px-6 py-5 sm:px-8 text-[0.9rem]">
-            <p>
-              <span className="text-muted-foreground">Risque : </span>
-              {a.risque.libelle}
-            </p>
-            <p>
-              <span className="text-muted-foreground">Unité : </span>
-              {a.risque.unite.nom}
-            </p>
-            <p className="pt-2">
-              <Link
-                href={`/duerp/${a.risque.unite.duerp.id}/risques/${a.risque.unite.id}/${a.risque.id}/mesures`}
-                className="text-[0.82rem] underline underline-offset-2"
-              >
-                Ouvrir le risque dans le DUERP →
-              </Link>
-            </p>
-          </div>
-        </section>
-      )}
+              {a.verification ? (
+                <div className="mt-6 flex items-start gap-3.5 border-t border-[color:var(--board-slate-line)] pt-5">
+                  <span
+                    aria-hidden
+                    className="grid size-[38px] flex-none place-items-center rounded-[14px] bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
+                  >
+                    <ArrowUpRight className="size-[18px]" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+                      Écart à lever
+                    </p>
+                    <p className="m-0 mt-1.5 text-[14px] font-semibold leading-[1.35]">
+                      {a.verification.libelleObligation}
+                    </p>
+                    <p className="m-0 mt-1 text-[12.5px] text-[color:var(--board-slate-mid)]">
+                      {a.verification.equipement.libelle}
+                    </p>
+                    <Link
+                      href={avecProvenance(
+                        `/etablissements/${id}/verifications/${a.verification.id}`,
+                        depuisCetteFiche,
+                      )}
+                      className="mt-2.5 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
+                    >
+                      Ouvrir la vérification
+                      <ArrowUpRight className="size-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
+            </CarteFiche>
 
-      {/* Origine Vérification */}
-      {a.verification && (
-        <section className="mt-6 cartouche overflow-hidden">
-          <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-            <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
-              Rattachement — Vérification
-            </p>
-          </div>
-          <div className="space-y-1 px-6 py-5 sm:px-8 text-[0.9rem]">
-            <p className="font-semibold">
-              {a.verification.libelleObligation}
-            </p>
-            <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
-              {a.verification.equipement.libelle}
-            </p>
-            <p className="pt-2">
-              <Link
-                href={avecProvenance(
-                  `/etablissements/${id}/verifications/${a.verification.id}`,
-                  depuisCetteFiche,
-                )}
-                className="text-[0.82rem] underline underline-offset-2"
-              >
-                Ouvrir la vérification →
-              </Link>
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Clôture / historique */}
-      {a.statut === "levee" ? (
-        <section className="mt-6 cartouche overflow-hidden">
-          <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-            <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
-              Clôture
-            </p>
-          </div>
-          <dl className="divide-y divide-dashed divide-rule/50 px-6 py-3 text-[0.9rem] sm:px-8">
-            <div className="flex justify-between py-2">
-              <dt className="text-muted-foreground">Levée le</dt>
-              <dd>{formatDate(a.leveeLe)}</dd>
-            </div>
-            {a.leveeCommentaire && (
-              <div className="py-3">
-                <dt className="text-muted-foreground">Justificatif</dt>
-                <dd className="mt-1">{a.leveeCommentaire}</dd>
-              </div>
-            )}
-          </dl>
-        </section>
-      ) : (
-        estOuverte && (
-          <section className="mt-6 cartouche overflow-hidden">
-            <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-              <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
-                Clôturer cette action
+            {/* La clôture d'une action levée n'est plus un formulaire mais
+                une preuve : elle reste sur la fiche, à demeure. */}
+            {a.statut === "levee" ? (
+              <CarteFiche titre="Clôture">
+                <ChampsFiche>
+                  <ChampFiche cle="Levée le">
+                    {a.leveeLe ? formaterDateLongueFr(a.leveeLe) : "—"}
+                  </ChampFiche>
+                  {a.leveeCommentaire ? (
+                    <ChampFiche cle="Justificatif">
+                      <span className="whitespace-pre-wrap">
+                        {a.leveeCommentaire}
+                      </span>
+                    </ChampFiche>
+                  ) : null}
+                </ChampsFiche>
+              </CarteFiche>
+            ) : null}
+          </>
+        }
+        cote={
+          estOuverte ? (
+            <CarteFiche titre="Clôturer cette action">
+              <p className="m-0 mb-4 text-[13px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                Décrivez ce qui a été fait et son résultat. Le justificatif
+                reste attaché à la fiche&nbsp;: c&apos;est lui qu&apos;on
+                présente en cas de contrôle.
               </p>
-            </div>
-            <div className="px-6 py-6 sm:px-8">
               <CloturerActionForm
                 action={boundCloture}
                 rapportsDisponibles={a.verification?.rapports.map((r) => ({
@@ -212,10 +229,17 @@ export default async function ActionDetailPage({
                   }`,
                 }))}
               />
-            </div>
-          </section>
-        )
-      )}
-    </main>
+            </CarteFiche>
+          ) : a.statut === "abandonnee" ? (
+            <CarteFiche titre="État">
+              <p className="m-0 text-[13.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                Cette action a été abandonnée. Elle reste au dossier&nbsp;: une
+                mesure écartée fait partie de la traçabilité.
+              </p>
+            </CarteFiche>
+          ) : null
+        }
+      />
+    </EcranFiche>
   );
 }

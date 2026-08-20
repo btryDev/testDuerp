@@ -22,20 +22,23 @@ export function CloturerTicketForm({
     return (
       <Button
         type="button"
-        size="sm"
+        variant="board"
+        size="board"
         onClick={() => setOuvert(true)}
       >
-        ✓ Clôturer le ticket
+        Clôturer le ticket
       </Button>
     );
   }
 
   return (
-    <div className="space-y-4 rounded-xl border border-dashed border-[color:var(--accent-vif)]/40 bg-[color:var(--accent-vif-soft)] p-5">
+    <div className="space-y-4 rounded-[22px] bg-[color:var(--board-slate-pale)] p-5">
       <div>
-        <p className="label-admin">Clôturer</p>
-        <h3 className="mt-2 text-[1.05rem] font-semibold tracking-[-0.01em]">
-          Comment ce ticket a-t-il été résolu ?
+        <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+          Clôturer
+        </p>
+        <h3 className="board-titre m-0 mt-2 text-[17px]">
+          Comment ce ticket a-t-il été résolu&nbsp;?
         </h3>
       </div>
 
@@ -44,23 +47,23 @@ export function CloturerTicketForm({
         value={motif}
         onChange={(e) => setMotif(e.target.value)}
         maxLength={2000}
-        className="w-full rounded-md border border-rule bg-background px-3 py-2 text-sm shadow-sm"
+        className="champ-board bg-[color:var(--board-card)]"
         placeholder="Ex : Porte débloquée après remplacement du mécanisme de verrou. Intervention réalisée par Serrurerie Martin, facture conservée."
       />
 
       {risqueLieLibelle && (
-        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-[color:var(--warm)] bg-[color:var(--paper-elevated)] p-3">
+        <label className="flex cursor-pointer items-start gap-3 rounded-[18px] bg-[color:var(--board-card)] p-4 ring-1 ring-[color:var(--board-slate-line)]">
           <input
             type="checkbox"
             checked={reevaluer}
             onChange={(e) => setReevaluer(e.target.checked)}
             className="mt-1"
           />
-          <div className="text-[0.85rem]">
-            <p className="font-medium">
+          <div className="text-[13px]">
+            <p className="m-0 font-semibold">
               Déclencher la réévaluation du risque DUERP lié
             </p>
-            <p className="mt-1 text-[0.78rem] text-muted-foreground">
+            <p className="m-0 mt-1.5 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
               <em>« {risqueLieLibelle} »</em> sera marqué comme à recoter dans
               votre DUERP. C&apos;est la boucle vertueuse : le terrain nourrit
               le document légal.
@@ -72,7 +75,8 @@ export function CloturerTicketForm({
       <div className="flex items-center gap-2">
         <Button
           type="button"
-          size="sm"
+          variant="board"
+          size="board"
           disabled={pending || !motif.trim()}
           onClick={() =>
             startTransition(async () => {
@@ -86,12 +90,12 @@ export function CloturerTicketForm({
             })
           }
         >
-          {pending ? "…" : "✓ Confirmer la clôture"}
+          {pending ? "…" : "Confirmer la clôture"}
         </Button>
         <button
           type="button"
           onClick={() => setOuvert(false)}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.1em] text-muted-foreground hover:text-ink"
+          className="text-[12.5px] font-semibold text-[color:var(--board-slate-mid)] hover:text-[color:var(--board-ink)]"
         >
           Annuler
         </button>

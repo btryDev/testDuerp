@@ -1,18 +1,23 @@
 import type { ResultatVerification } from "@prisma/client";
 import { LABEL_RESULTAT } from "@/lib/rapports/schema";
 
+// Champs du board, alignés sur `BadgeStatut` : le résultat d'un rapport
+// et le statut de la vérification qui le porte s'affichent à quelques
+// centimètres l'un de l'autre — en Tailwind `emerald`/`rose` d'un côté et
+// en jetons du board de l'autre, les deux verts ne tombaient pas juste.
 const CLASSE: Record<ResultatVerification, string> = {
-  conforme: "bg-emerald-100 text-emerald-900 border-emerald-300",
-  observations_mineures: "bg-yellow-100 text-yellow-900 border-yellow-300",
-  ecart_majeur: "bg-rose-100 text-rose-900 border-rose-300",
-  non_verifiable: "bg-slate-100 text-slate-700 border-slate-300",
+  conforme: "bg-[color:var(--board-green)] text-[color:var(--board-green-ink)]",
+  observations_mineures:
+    "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]",
+  ecart_majeur:
+    "bg-[color:var(--board-signal)] text-[color:var(--board-signal-ink)]",
+  non_verifiable:
+    "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]",
 };
 
 export function BadgeResultat({ resultat }: { resultat: ResultatVerification }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-[0.14em] ${CLASSE[resultat]}`}
-    >
+    <span className={`pastille-board ${CLASSE[resultat]}`}>
       {LABEL_RESULTAT[resultat]}
     </span>
   );

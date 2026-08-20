@@ -9,7 +9,8 @@ export function BoutonCloturer({ planId }: { planId: string }) {
   return (
     <Button
       type="button"
-      size="sm"
+      variant="board"
+      size="board"
       disabled={pending}
       onClick={() => {
         if (!confirm("Clôturer ce plan ? L'intervention est terminée.")) return;
@@ -18,7 +19,7 @@ export function BoutonCloturer({ planId }: { planId: string }) {
         });
       }}
     >
-      {pending ? "…" : "✓ Clôturer le plan"}
+      {pending ? "…" : "Clôturer le plan"}
     </Button>
   );
 }
@@ -28,8 +29,8 @@ export function BoutonSupprimerPlan({ planId }: { planId: string }) {
   return (
     <Button
       type="button"
-      variant="outline"
-      size="sm"
+      variant="boardClair"
+      size="boardSm"
       disabled={pending}
       onClick={() => {
         if (!confirm("Supprimer / annuler ce plan ?")) return;
