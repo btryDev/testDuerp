@@ -1,6 +1,9 @@
 # ADR-015 — « À faire » est un écran, pas un dossier : le calendrier en devient la porte
 
-- Statut : acceptée, **révisée le jour même** (voir « Révision » en fin de page)
+- Statut : acceptée, **révisée le jour même** (voir « Révision » en fin de
+  page), puis **amendée par l'ADR-017** (une cinquième entrée de rail,
+  « Opérations », recueille le permis de feu et le plan de prévention, qui
+  n'étaient pas des registres)
 - Date : 2026-08-20
 - Portée : `src/components/layout/sidebar-nav.ts`, `AppSidebar.tsx`,
   `src/lib/navigation/`, `src/lib/calendrier/retards.ts`, la page calendrier

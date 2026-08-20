@@ -75,6 +75,7 @@ const DOMAINES_P1: DomaineObligation[] = [
 const FAMILLES_FILTRABLES: FamilleEcheance[] = [
   "controle",
   "travaux",
+  "operations",
   "papiers",
 ];
 

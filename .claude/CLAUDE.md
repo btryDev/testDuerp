@@ -134,6 +134,8 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
 13. **013** — Serveur MCP distant authentifié en OAuth 2.1
 14. **014** — Le retour dit d'où l'on vient, le fil d'Ariane dit où la fiche vit
 15. **015** — « À faire » est un écran (le calendrier), tableau de bord au rail
+16. **016** — La nature d'une échéance est un type fermé, la famille s'en déduit
+17. **017** — Les opérations ponctuelles ne sont ni des corrections ni des registres
 
 Toute nouvelle décision structurante → nouvel ADR avant de coder.
 
@@ -146,8 +148,11 @@ et ouvre le panneau (ADR-015).
 
 - **Tableau de bord** : lien direct, sans panneau — le board de widgets
 - **À faire** (→ le calendrier, toutes familles) : Calendrier · Plan d'actions · Interventions · Préparer un contrôle — que des **activités**, jamais l'état filtré d'une autre entrée ; un filtre vit dans l'écran
+- **Opérations** (→ Permis de feu) : Permis de feu · Plans de prévention — le
+  **ponctuel encadré**, qui naît d'un chantier daté et meurt clos ; ce n'est
+  ni une correction ni un registre tenu en continu (ADR-017)
 - **Mon établissement** (→ Équipements) : Équipements · Prestataires · Fiche établissement · (Équipe, à venir)
-- **Mes registres** (→ DUERP, à plat) : DUERP · Registre de sécurité · Accessibilité · Permis de feu · Plans de prévention · Carnet sanitaire
+- **Mes registres** (→ DUERP, à plat) : DUERP · Registre de sécurité · Accessibilité · Carnet sanitaire — ce qui se tient en continu
 - **Comprendre** : guide pédagogique
 - **Connecter** : brancher un assistant en lecture seule sur le dossier (serveur MCP local — spike, cf. `scripts/mcp-server.ts`)
 - **Compte**

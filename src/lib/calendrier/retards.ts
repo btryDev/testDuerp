@@ -2,8 +2,8 @@
 //
 // Deux écrans annonçaient un nombre de retards, et les deux nombres se
 // contredisaient : le badge de la sidebar comptait les vérifications
-// périodiques, le bandeau du calendrier comptait les quatre familles du
-// registre d'échéances (ADR-010). L'écart avait fini par être *documenté*
+// périodiques, le bandeau du calendrier comptait les familles du registre
+// d'échéances (ADR-010). L'écart avait fini par être *documenté*
 // dans l'aide de l'écran plutôt que corrigé.
 //
 // Il n'y a désormais qu'un seul calcul, ici, appelé par la sidebar comme
@@ -34,6 +34,7 @@ export type RetardsParFamille = {
 const FAMILLES: FamilleEcheance[] = [
   "controle",
   "travaux",
+  "operations",
   "papiers",
   "personnel",
 ];

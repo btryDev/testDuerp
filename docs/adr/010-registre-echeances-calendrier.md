@@ -1,7 +1,9 @@
 # ADR-010 — Registre de sources d'échéances du calendrier
 
 Date : 2026-08-10
-Statut : accepté
+Statut : accepté — **amendé par l'ADR-017** (le permis de feu et le plan de
+prévention ont quitté la famille `travaux` pour une famille `operations` ;
+le tableau ci-dessous est à jour de cet amendement).
 
 ## Contexte
 
@@ -13,8 +15,10 @@ dirigeant non-expert :
 
 - `controle` — faire vérifier (vérifications périodiques, analyses
   légionelles) ;
-- `travaux` (libellé « Corrections & réparations ») — réparer, corriger,
-  opérations de travaux ;
+- `travaux` (libellé « Corrections & réparations ») — réparer, corriger un
+  écart constaté ;
+- `operations` (libellé « Opérations encadrées ») — mener un chantier daté
+  dont le préalable est obligatoire (ajoutée par l'ADR-017) ;
 - `papiers` (libellé « Documents à renouveler ») — tenir ses documents à
   jour ;
 - `personnel` — réservée aux modules à venir (visites médicales,
@@ -53,8 +57,8 @@ injectée), conformément au principe zéro-IA / déterminisme.
 | Analyse légionelles | controle | dernière analyse + 1 an | arrêté du 1er février 2010 (déjà cité au module) |
 | Actions correctives | travaux | `echeance` | statuts ouverte / en cours |
 | Interventions | travaux | `echeance` | statuts non clos |
-| Permis de feu | travaux | `dateDebut` | non terminés/annulés ; alerte si la date de début est passée sans être en cours |
-| Plans de prévention | travaux | `dateDebut` | opérations non finies ; alerte si commencé sans inspection commune (R. 4512-7) |
+| Permis de feu | operations | `dateDebut` | non terminés/annulés ; alerte si la date de début est passée sans être en cours |
+| Plans de prévention | operations | `dateDebut` | opérations non finies ; alerte si commencé sans inspection commune (R. 4512-7) |
 | Mise à jour DUERP | papiers | dernière version + 1 an | R. 4121-2 |
 | Attestations prestataires | papiers | `valableJusquA` URSSAF / RC Pro | vigilance L. 8222-1 |
 

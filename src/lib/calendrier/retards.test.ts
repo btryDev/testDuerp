@@ -71,12 +71,13 @@ describe("repartirRetards", () => {
     expect(r.parFamille.controle).toBe(4);
   });
 
-  it("présente les quatre familles, même celles sans ligne", () => {
+  it("présente toutes les familles, même celles sans ligne", () => {
     const r = repartirRetards([], 0);
 
     expect(r.parFamille).toEqual({
       controle: 0,
       travaux: 0,
+      operations: 0,
       papiers: 0,
       personnel: 0,
     });

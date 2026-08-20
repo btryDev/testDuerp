@@ -5,9 +5,10 @@
 // Deux niveaux accolés, tous deux sur l'encre (#0A0A0A) du design Rojer :
 //
 //   1. Le rail (88px) porte les entrées de premier niveau — « Tableau de
-//      bord », « À faire », « Mon établissement », « Mes registres », puis
-//      « Comprendre » et « Connecter », et « Compte » en pied. Icône +
-//      libellé, pastille signal quand la catégorie contient une alerte.
+//      bord », « À faire », « Opérations », « Mon établissement », « Mes
+//      registres », puis « Comprendre » et « Connecter », et « Compte » en
+//      pied. Icône + libellé, pastille signal quand la catégorie contient
+//      une alerte.
 //
 //   2. Le panneau (224px) affiche les items de la catégorie choisie, avec
 //      les mêmes pilules qu'avant (actif = pilule blanche pleine).

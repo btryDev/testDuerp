@@ -22,32 +22,38 @@ import { estEnRetard } from "@/lib/dates/retard";
  * puisqu'ils sont pilotés par la donnée.
  *
  * Les grandes familles, pensées pour un dirigeant non-expert :
- *   - `controle`  — faire vérifier (vérifs périodiques, légionelles) ;
- *   - `travaux`   — « Corrections & réparations » (actions, tickets,
- *     permis de feu, plans de prévention) ;
- *   - `papiers`   — « Documents à renouveler » (DUERP, attestations) ;
- *   - `personnel` — réservée aux modules à venir.
+ *   - `controle`   — faire vérifier (vérifs périodiques, légionelles) ;
+ *   - `travaux`    — « Corrections & réparations » : un écart constaté à
+ *     reprendre (actions du DUERP, actions de vérification, tickets) ;
+ *   - `operations` — « Opérations encadrées » : un chantier daté dont le
+ *     préalable est obligatoire (permis de feu, plan de prévention) ;
+ *   - `papiers`    — « Documents à renouveler » (DUERP, attestations) ;
+ *   - `personnel`  — réservée aux modules à venir.
  *
  * Chaque ligne dit d'où elle sort en toutes lettres (`origine`) —
  * jamais de jargon interne en interface. Les classements par date sont
  * des fonctions pures, testées, à horloge injectée.
  */
 
-export type FamilleEcheance = "controle" | "travaux" | "papiers" | "personnel";
+export type FamilleEcheance =
+  | "controle"
+  | "travaux"
+  | "operations"
+  | "papiers"
+  | "personnel";
 
 /**
  * Ce qu'une échéance **est** (ADR-016).
  *
- * La famille regroupe pour filtrer ; le type nomme. `travaux` fusionne cinq
- * objets de natures très différentes — une action née du DUERP et un
- * signalement de terrain y voisinent — et un dirigeant qui lit
- * « Corrections » ne sait pas lequel il a sous les yeux.
+ * La famille regroupe pour filtrer ; le type nomme. `travaux` fusionne quatre
+ * objets — une action née du DUERP et un signalement de terrain y voisinent —
+ * et un dirigeant qui lit « Corrections » ne sait pas lequel il a sous les
+ * yeux. (L'ADR-017 en a sorti les deux qui n'y étaient pas des corrections.)
  */
 export type TypeEcheance =
   | "verification"
   | "action-duerp"
   | "action-verification"
-  | "action-libre"
   | "intervention"
   | "permis-feu"
   | "plan-prevention"
@@ -65,10 +71,14 @@ export const FAMILLE_DE_TYPE: Record<TypeEcheance, FamilleEcheance> = {
   legionelles: "controle",
   "action-duerp": "travaux",
   "action-verification": "travaux",
-  "action-libre": "travaux",
   intervention: "travaux",
-  "permis-feu": "travaux",
-  "plan-prevention": "travaux",
+  // Ni des corrections ni des registres : des opérations ponctuelles.
+  // Un permis de feu ne répare rien, il autorise un travail par point
+  // chaud et impose une surveillance après ; un plan de prévention
+  // encadre la venue d'un tiers et impose une inspection commune avant
+  // (ADR-017).
+  "permis-feu": "operations",
+  "plan-prevention": "operations",
   "duerp-maj": "papiers",
   attestation: "papiers",
 };
@@ -149,15 +159,25 @@ export function tonPourDate(
 /**
  * Ce qu'une action est, et le complément qui la situe (ADR-002, ADR-016).
  *
- * Le XOR du modèle tranche le type sans colonne nouvelle. `origine` ne
- * répète plus le mot porté par le type : elle ne dit que ce qu'il ignore —
- * de quelle vérification l'écart provient. Écrire « Suite au contrôle
- * "X" » dupliquait le marqueur de nature posé juste à côté, et employait
- * « contrôle » au sens réservé à la visite d'un tiers (ADR-015).
+ * Le XOR du modèle tranche le type sans colonne nouvelle, et il ne laisse
+ * que **deux** cas : une action se rattache à exactement un risque du DUERP
+ * ou une vérification, jamais aux deux, jamais à aucun. Une troisième
+ * branche « action sans origine » a existé ici ; elle décrivait un état que
+ * la contrainte `Action_origine_xor` et `assertOrigineActionValide`
+ * interdisent tous deux, et n'a donc jamais pu s'afficher.
+ *
+ * `libelleObligation` étant non nul en base, son absence signifie
+ * exactement « pas de vérification » — donc « rattachée à un risque ». Un
+ * second paramètre `duerp` doublait cette information et pouvait la
+ * contredire.
+ *
+ * `origine` ne répète pas le mot porté par le type : elle ne dit que ce
+ * qu'il ignore — de quelle vérification l'écart provient. Écrire « Suite au
+ * contrôle "X" » dupliquait le marqueur de nature posé juste à côté, et
+ * employait « contrôle » au sens réservé à la visite d'un tiers (ADR-015).
  */
 export function origineAction(a: {
   verificationLibelle: string | null;
-  duerp: boolean;
 }): { type: TypeEcheance; origine: string } {
   if (a.verificationLibelle) {
     return {
@@ -168,8 +188,7 @@ export function origineAction(a: {
       origine: `suite à « ${a.verificationLibelle} »`,
     };
   }
-  if (a.duerp) return { type: "action-duerp", origine: "prévue au DUERP" };
-  return { type: "action-libre", origine: "à faire sur place" };
+  return { type: "action-duerp", origine: "prévue au DUERP" };
 }
 
 /** Échéance de mise à jour annuelle du DUERP : dernière version + 1 an.
@@ -373,7 +392,6 @@ const sourceActions: SourceEcheances = async ({
       id: true,
       libelle: true,
       echeance: true,
-      risqueId: true,
       verification: { select: { libelleObligation: true } },
     },
   });
@@ -384,7 +402,6 @@ const sourceActions: SourceEcheances = async ({
             id: `action-${a.id}`,
             ...origineAction({
               verificationLibelle: a.verification?.libelleObligation ?? null,
-              duerp: a.risqueId !== null,
             }),
             famille: "travaux" as const,
             libelle: a.libelle,

@@ -18,8 +18,14 @@
 // quoi la porte d'entrée du produit restait rangée dans un tiroir.
 //
 // Tous les registres vivent à plat sous « Mes registres » — la divulgation
-// progressive (« Autres registres » replié) a été retirée : six entrées se
+// progressive (« Autres registres » replié) a été retirée : les entrées se
 // lisent d'un coup d'œil et un registre caché se cherchait.
+//
+// Ce qui fait un registre : il se tient **en continu** et s'ouvre une fois.
+// Le permis de feu et le plan de prévention n'en sont pas — ils naissent
+// d'un chantier daté et meurent clos. Ils ont leur propre catégorie,
+// « Opérations » (ADR-017), qui porte le même mot que la famille d'échéance
+// correspondante au calendrier : l'utilisateur l'apprend une fois.
 //
 // Les registres sont **qualifiés, jamais masqués**. La navigation était le
 // seul endroit du produit à ne rien savoir de l'établissement : elle offrait
@@ -58,6 +64,7 @@ import {
   ShieldCheck,
   BookOpen,
   Building2,
+  HardHat,
   Archive,
   Plug,
 } from "lucide-react";
@@ -168,7 +175,7 @@ export type NavItem = {
   /** Destination pas encore implémentée : rendue inerte et signalée comme
    *  telle plutôt qu'en lien mort indiscernable d'un lien réel. */
   bientot?: boolean;
-  /** Registres uniquement. Absent = rien à qualifier (item toujours actif). */
+  /** Registres et opérations. Absent = rien à qualifier (toujours actif). */
   etat?: EtatModule;
 };
 
@@ -294,15 +301,34 @@ export function construireSections({
   //   · Accessibilité : obligation propre aux ERP. Elle reste « actif » dès que
   //     l'établissement est ERP, même si le registre n'est pas encore créé —
   //     c'est précisément ce qu'il reste à faire.
-  //   · Permis de feu et plans de prévention : événementiels. Ils s'ouvrent le
-  //     jour d'un travail par point chaud ou de la venue d'une entreprise
-  //     extérieure, pas avant.
   //   · Carnet sanitaire : la présence d'un réseau d'eau chaude collectif ne se
   //     déduit d'aucune donnée déclarée ; l'ouverture du carnet fait foi.
   const etat = (valeur: EtatModule): EtatModule | undefined =>
     modules ? valeur : undefined;
   const evenementiel = (enCours: boolean) =>
     etat(enCours ? "actif" : "non-ouvert");
+
+  // Les deux opérations ponctuelles sont **événementielles** au même titre
+  // qu'un registre non ouvert : l'entrée reste un lien, c'est par là qu'on
+  // ouvre le permis le jour du chantier. Elles ne sont pas triées — à deux,
+  // le rang n'ordonne rien, et la page d'entrée de la catégorie doit rester
+  // stable.
+  const operations: NavItem[] = [
+    {
+      id: "permis-feu",
+      label: LABEL_ITEM["permis-feu"],
+      href: href("/permis-feu"),
+      Icon: Flame,
+      etat: evenementiel((modules?.nbPermisFeu ?? 0) > 0),
+    },
+    {
+      id: "plan-prevention",
+      label: LABEL_ITEM["plan-prevention"],
+      href: href("/plan-prevention"),
+      Icon: HandshakeIcon,
+      etat: evenementiel((modules?.nbPlansPrevention ?? 0) > 0),
+    },
+  ];
 
   const registres: NavItem[] = [
     {
@@ -327,20 +353,6 @@ export function construireSections({
       etat: etat(modules?.estERP ? "actif" : "non-applicable"),
     },
     {
-      id: "permis-feu",
-      label: LABEL_ITEM["permis-feu"],
-      href: href("/permis-feu"),
-      Icon: Flame,
-      etat: evenementiel((modules?.nbPermisFeu ?? 0) > 0),
-    },
-    {
-      id: "plan-prevention",
-      label: LABEL_ITEM["plan-prevention"],
-      href: href("/plan-prevention"),
-      Icon: HandshakeIcon,
-      etat: evenementiel((modules?.nbPlansPrevention ?? 0) > 0),
-    },
-    {
       id: "carnet-sanitaire",
       label: LABEL_ITEM["carnet-sanitaire"],
       href: href("/carnet-sanitaire"),
@@ -358,6 +370,7 @@ export function construireSections({
 
   return [
     { title: "À faire", items: aFaire },
+    { title: "Opérations", items: operations },
     { title: "Mon établissement", items: monEtablissement },
     { title: "Mes registres", items: registres },
   ];
@@ -367,8 +380,12 @@ export function construireSections({
 // Rail à deux niveaux.
 //
 // Le rail principal ne porte plus les items mais les *questions* du
-// dirigeant (À faire / Mon établissement / Mes registres) ; les items d'une
-// catégorie s'affichent dans un second panneau accolé.
+// dirigeant (À faire / Opérations / Mon établissement / Mes registres) ; les
+// items d'une catégorie s'affichent dans un second panneau accolé.
+//
+// Ordre : les deux catégories d'activité d'abord — ce qui revient tout seul
+// (« À faire ») puis ce qu'un chantier déclenche (« Opérations ») —, les deux
+// catégories descriptives ensuite (ADR-017).
 //
 // Règle (ADR-015) : **une entrée de rail = une page d'entrée + un panneau**.
 // Toute catégorie porte donc un `href` : cliquer navigue *et* ouvre le
@@ -383,6 +400,7 @@ export function construireSections({
 export type RailCategorieId =
   | "tableau"
   | "a-faire"
+  | "operations"
   | "etablissement"
   | "registres"
   | "comprendre"
@@ -423,11 +441,12 @@ export function categorieDeItem(id: SidebarItemId): RailCategorieId {
     case "fiche":
     case "equipe":
       return "etablissement";
+    case "permis-feu":
+    case "plan-prevention":
+      return "operations";
     case "duerp":
     case "registre":
     case "accessibilite":
-    case "permis-feu":
-    case "plan-prevention":
     case "carnet-sanitaire":
       return "registres";
     default:
@@ -442,7 +461,8 @@ export function construireRail(params: {
 }): RailCategorie[] {
   // On dérive du même arbre que le rail simple : mêmes items, mêmes badges —
   // seule la présentation change.
-  const [aFaire, etablissement, registres] = construireSections(params);
+  const [aFaire, operations, etablissement, registres] =
+    construireSections(params);
   const base = `/etablissements/${params.etablissementId}`;
   const alerte = (items: NavItem[]) => items.some((it) => it.alert);
 
@@ -464,6 +484,18 @@ export function construireRail(params: {
       href: `${base}/calendrier`,
       items: aFaire.items,
       alert: alerte(aFaire.items),
+    },
+    {
+      // Le ponctuel encadré : un permis de feu naît le jour d'un chantier,
+      // un plan de prévention le jour où un tiers intervient. Ni des
+      // corrections, ni des registres tenus en continu (ADR-017).
+      id: "operations",
+      label: "Opérations",
+      labelCourt: "Opérations",
+      Icon: HardHat,
+      href: `${base}/permis-feu`,
+      items: operations.items,
+      alert: alerte(operations.items),
     },
     {
       id: "etablissement",

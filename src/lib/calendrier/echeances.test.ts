@@ -52,7 +52,6 @@ describe("origineAction", () => {
     expect(
       origineAction({
         verificationLibelle: "Vérification annuelle des extincteurs",
-        duerp: false,
       }),
     ).toEqual({
       type: "action-verification",
@@ -62,17 +61,14 @@ describe("origineAction", () => {
     });
   });
 
-  it("type l'action par le DUERP quand elle vient d'un risque", () => {
-    expect(origineAction({ verificationLibelle: null, duerp: true })).toEqual({
+  // Le XOR de l'ADR-002 ne laisse que deux cas : `libelleObligation` étant
+  // non nul en base, son absence dit « pas de vérification », donc
+  // « rattachée à un risque ». Il n'y a pas de troisième branche à couvrir —
+  // une action sans origine ne peut pas être écrite (cf. `origine.test.ts`).
+  it("type l'action par le DUERP en l'absence de vérification", () => {
+    expect(origineAction({ verificationLibelle: null })).toEqual({
       type: "action-duerp",
       origine: "prévue au DUERP",
-    });
-  });
-
-  it("distingue l'action libre des deux origines réglementaires", () => {
-    expect(origineAction({ verificationLibelle: null, duerp: false })).toEqual({
-      type: "action-libre",
-      origine: "à faire sur place",
     });
   });
 });
@@ -86,10 +82,11 @@ describe("FAMILLE_DE_TYPE", () => {
     expect(FAMILLE_DE_TYPE.legionelles).toBe("controle");
     expect(FAMILLE_DE_TYPE["action-duerp"]).toBe("travaux");
     expect(FAMILLE_DE_TYPE["action-verification"]).toBe("travaux");
-    expect(FAMILLE_DE_TYPE["action-libre"]).toBe("travaux");
     expect(FAMILLE_DE_TYPE.intervention).toBe("travaux");
-    expect(FAMILLE_DE_TYPE["permis-feu"]).toBe("travaux");
-    expect(FAMILLE_DE_TYPE["plan-prevention"]).toBe("travaux");
+    // ADR-017 : ni l'un ni l'autre n'est une correction — ils encadrent
+    // une opération datée, ils ne reprennent aucun écart.
+    expect(FAMILLE_DE_TYPE["permis-feu"]).toBe("operations");
+    expect(FAMILLE_DE_TYPE["plan-prevention"]).toBe("operations");
     expect(FAMILLE_DE_TYPE["duerp-maj"]).toBe("papiers");
     expect(FAMILLE_DE_TYPE.attestation).toBe("papiers");
   });
@@ -232,7 +229,7 @@ describe("echeancePermisFeu", () => {
       "etab1",
     );
     expect(e.tone).toBe("ok");
-    expect(e.famille).toBe("travaux");
+    expect(e.famille).toBe("operations");
     expect(e.href).toBe("/etablissements/etab1/permis-feu/pf1");
   });
 
@@ -321,7 +318,7 @@ describe("echeancePlanPrevention", () => {
       "etab1",
     );
     expect(e.tone).toBe("ok");
-    expect(e.famille).toBe("travaux");
+    expect(e.famille).toBe("operations");
   });
 
   it("alerte sur une opération échue non close, inspection faite ou non", () => {

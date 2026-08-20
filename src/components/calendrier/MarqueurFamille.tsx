@@ -3,7 +3,8 @@
 // formes géométriques (rond / carré / losange) ne se distinguaient pas
 // à 8 px ; les icônes, si — et elles s'expliquent d'elles-mêmes :
 //   presse-papiers  contrôles (vérifications périodiques d'équipements)
-//   clé à molette   corrections (actions correctives, signalements)
+//   marteau         corrections (actions correctives, signalements)
+//   casque          opérations encadrées (permis de feu, plan de prévention)
 //   document        documents (DUERP, attestations prestataires)
 //   personnes       personnel (réservé aux modules à venir)
 // La couleur vient de `currentColor` : l'appelant pose la taille et la
@@ -17,6 +18,7 @@ import {
   Flame,
   Hammer,
   HandshakeIcon,
+  HardHat,
   ListChecks,
   Ticket,
   Users,
@@ -26,6 +28,7 @@ import type { FamilleEcheance, TypeEcheance } from "@/lib/calendrier/echeances";
 export const LABEL_FAMILLE: Record<FamilleEcheance, string> = {
   controle: "Vérifications",
   travaux: "Corrections",
+  operations: "Opérations",
   papiers: "Documents",
   personnel: "Personnel",
 };
@@ -33,19 +36,19 @@ export const LABEL_FAMILLE: Record<FamilleEcheance, string> = {
 /**
  * Ce que chaque famille contient, en une phrase.
  *
- * Reprend la définition de l'ADR-010 mot pour mot, et notamment le
- * troisième terme de `travaux` — « opérations de travaux » — que le
- * libellé « Corrections & réparations » taisait. C'est lui qui explique
- * qu'un permis de feu s'y trouve.
+ * Chacune décrit un **geste**, et un seul : le rangement du calendrier
+ * tient à ce que deux familles ne demandent jamais la même chose
+ * (ADR-017). `travaux` disait jusqu'ici « corrections **et** opérations » —
+ * l'aveu qu'elle en portait deux.
  */
 export const DESCRIPTION_FAMILLE: Record<FamilleEcheance, string> = {
   controle: "Suivez les vérifications à faire réaliser sur vos équipements.",
-  // Le permis de feu et le plan de prévention sont ici parce que leur
-  // échéance porte sur l'**opération**, pas sur la pièce : elle alerte
-  // quand l'opération n'a pas démarré, n'est pas close, ou a commencé
-  // sans inspection commune. Le document, lui, existe déjà.
-  travaux:
-    "Suivez les corrections à mener et les opérations à démarrer ou à clore.",
+  travaux: "Suivez les corrections à mener sur ce qui a été signalé.",
+  // L'échéance porte sur l'**opération**, pas sur la pièce : elle alerte
+  // quand l'opération n'a pas démarré, n'est pas close, ou a commencé sans
+  // son préalable obligatoire. Le document, lui, existe déjà.
+  operations:
+    "Suivez les chantiers encadrés : travaux par point chaud et venue d'une entreprise extérieure.",
   papiers:
     "Suivez le renouvellement de vos documents : mise à jour du DUERP et attestations de prestataires.",
   personnel: "Suivez le dossier de vos salariés.",
@@ -55,6 +58,7 @@ export const DESCRIPTION_FAMILLE: Record<FamilleEcheance, string> = {
 export const LABEL_FAMILLE_LONG: Record<FamilleEcheance, string> = {
   controle: "Vérifications périodiques",
   travaux: "Corrections & réparations",
+  operations: "Opérations encadrées",
   papiers: "Documents à renouveler",
   personnel: "Personnel",
 };
@@ -64,6 +68,9 @@ const ICONE: Record<FamilleEcheance, typeof ClipboardCheck> = {
   // Marteau et non clé à molette : `Wrench` désigne « Équipements » dans le
   // rail, et la même icône ne peut pas nommer un objet ici et une action là.
   travaux: Hammer,
+  // Casque de chantier : le mot du rail (« Opérations ») et l'icône de sa
+  // catégorie, pour que la pastille du calendrier renvoie à l'écran.
+  operations: HardHat,
   papiers: FileText,
   personnel: Users,
 };
@@ -75,13 +82,20 @@ const ICONE: Record<FamilleEcheance, typeof ClipboardCheck> = {
 // pas si le dirigeant a devant lui une mesure qu'il a inscrite à son DUERP
 // ou un signalement de son cuisinier ; le type le dit.
 
-/** Le mot posé devant une ligne. Lexique de l'ADR-015 : « Vérification »
- *  et non « Contrôle », « Intervention » et non « Ticket ». */
+/**
+ * Le mot posé devant une ligne. Lexique de l'ADR-015 : « Vérification » et
+ * non « Contrôle », « Intervention » et non « Ticket ».
+ *
+ * Les deux actions sont **toutes deux** qualifiées. « Action DUERP » face à
+ * « Action » laissait croire à une action générique et à un cas particulier,
+ * alors que le XOR de l'ADR-002 en fait deux origines de même rang. Qualifier
+ * les deux rend aussi le mot « Action » nu disponible pour la famille, sans
+ * qu'il nomme deux niveaux de finesse à la fois.
+ */
 export const LABEL_TYPE: Record<TypeEcheance, string> = {
   verification: "Vérification",
   "action-duerp": "Action DUERP",
-  "action-verification": "Action",
-  "action-libre": "Action",
+  "action-verification": "Action vérification",
   intervention: "Intervention",
   "permis-feu": "Permis de feu",
   "plan-prevention": "Plan de prévention",
@@ -99,7 +113,6 @@ const ICONE_TYPE: Record<TypeEcheance, typeof ClipboardCheck> = {
   verification: ClipboardCheck,
   "action-duerp": FileCheck2,
   "action-verification": ListChecks,
-  "action-libre": ListChecks,
   intervention: Ticket,
   "permis-feu": Flame,
   "plan-prevention": HandshakeIcon,

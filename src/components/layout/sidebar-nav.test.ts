@@ -19,16 +19,27 @@ const MODULES_ERP_NEUF: SidebarModules = {
   carnetSanitaireExiste: false,
 };
 
-/** Registres de la section « Mes registres », dans l'ordre de rendu. */
-function registres(modules?: SidebarModules) {
+/** Items d'une section, dans l'ordre de rendu. */
+function itemsDe(titre: string, modules?: SidebarModules) {
   const section = construireSections({ etablissementId: ID, modules }).find(
-    (s) => s.title === "Mes registres",
+    (s) => s.title === titre,
   );
   return section?.items ?? [];
 }
 
+/** Registres de la section « Mes registres », dans l'ordre de rendu. */
+function registres(modules?: SidebarModules) {
+  return itemsDe("Mes registres", modules);
+}
+
+function operations(modules?: SidebarModules) {
+  return itemsDe("Opérations", modules);
+}
+
 function etatDe(id: SidebarItemId, modules?: SidebarModules) {
-  return registres(modules).find((i) => i.id === id)?.etat;
+  return [...registres(modules), ...operations(modules)].find(
+    (i) => i.id === id,
+  )?.etat;
 }
 
 function sections() {
@@ -67,12 +78,24 @@ describe("deduireActif", () => {
 });
 
 describe("construireSections — structure", () => {
-  it("expose les trois sections dans l'ordre des questions du dirigeant", () => {
+  it("expose les sections dans l'ordre des questions du dirigeant", () => {
     expect(sections().map((s) => s.title)).toEqual([
       "À faire",
+      "Opérations",
       "Mon établissement",
       "Mes registres",
     ]);
+  });
+
+  it("sort les opérations ponctuelles de « Mes registres »", () => {
+    // Un registre se tient en continu ; un permis de feu naît d'un chantier
+    // daté et meurt clos (ADR-017).
+    expect(operations().map((i) => i.id)).toEqual([
+      "permis-feu",
+      "plan-prevention",
+    ]);
+    expect(registres().map((i) => i.id)).not.toContain("permis-feu");
+    expect(registres().map((i) => i.id)).not.toContain("plan-prevention");
   });
 
   it("ne porte dans « À faire » que des activités, jamais un filtre", () => {
@@ -97,14 +120,11 @@ describe("construireSections — structure", () => {
     expect(idsVisibles()).not.toContain("guide");
   });
 
-  it("expose les six registres à plat, DUERP et registre de sécurité en tête", () => {
-    const registres = sections().find((s) => s.title === "Mes registres");
-    expect(registres?.items.map((i) => i.id)).toEqual([
+  it("expose les registres à plat, DUERP et registre de sécurité en tête", () => {
+    expect(registres().map((i) => i.id)).toEqual([
       "duerp",
       "registre",
       "accessibilite",
-      "permis-feu",
-      "plan-prevention",
       "carnet-sanitaire",
     ]);
   });
@@ -137,9 +157,11 @@ describe("construireRail — rail à deux niveaux", () => {
   }
 
   it("expose les catégories dans l'ordre du rail", () => {
+    // Les deux catégories d'activité d'abord, les descriptives ensuite.
     expect(rail().map((c) => c.id)).toEqual([
       "tableau",
       "a-faire",
+      "operations",
       "etablissement",
       "registres",
       "comprendre",
@@ -291,7 +313,7 @@ describe("construireSections — qualification des registres", () => {
     ).toBe("non-applicable");
   });
 
-  it("laisse les registres événementiels « non ouverts » tant qu'ils sont vides", () => {
+  it("laisse l'événementiel « non ouvert » tant qu'il est vide", () => {
     expect(etatDe("permis-feu", MODULES_ERP_NEUF)).toBe("non-ouvert");
     expect(etatDe("plan-prevention", MODULES_ERP_NEUF)).toBe("non-ouvert");
     expect(etatDe("carnet-sanitaire", MODULES_ERP_NEUF)).toBe("non-ouvert");
@@ -316,8 +338,6 @@ describe("construireSections — qualification des registres", () => {
     expect(ordre).toEqual([
       "duerp",
       "registre",
-      "permis-feu",
-      "plan-prevention",
       "carnet-sanitaire",
       "accessibilite",
     ]);
@@ -326,14 +346,7 @@ describe("construireSections — qualification des registres", () => {
   it("ne retire jamais un registre de la liste", () => {
     // Masquer rendrait le registre introuvable le jour où il devient
     // nécessaire — c'est ce qui avait fait retirer la divulgation progressive.
-    const attendus = [
-      "accessibilite",
-      "carnet-sanitaire",
-      "duerp",
-      "permis-feu",
-      "plan-prevention",
-      "registre",
-    ];
+    const attendus = ["accessibilite", "carnet-sanitaire", "duerp", "registre"];
     const cas: Array<SidebarModules | undefined> = [
       MODULES_ERP_NEUF,
       { ...MODULES_ERP_NEUF, estERP: false },
