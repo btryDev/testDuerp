@@ -63,7 +63,11 @@ export function AnneeCalendrier({
   sections: SectionMoisData[];
   sansDate: number;
   /** Ce que le calendrier ne peut pas poser, mais annonce. Cf. RegleAnnuelle. */
-  actionsSansEcheance?: { nb: number; href: string } | null;
+  actionsSansEcheance?: {
+    nb: number;
+    href: string;
+    mention: string;
+  } | null;
   /** Mois déplié au chargement — le premier qui porte quelque chose. */
   moisInitial: string | null;
   /** Clé `AAAA-MM` du mois d'aujourd'hui — la charnière de la liste. */

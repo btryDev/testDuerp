@@ -49,6 +49,7 @@ import {
 } from "@/components/calendrier/MarqueurFamille";
 import { LABEL_ITEM } from "@/components/layout/sidebar-nav";
 import { compterActions } from "@/lib/actions/queries";
+import { exigenceEcheanceActions } from "@/lib/actions/echeance-exigee";
 import { FiltresCalendrier } from "@/components/calendrier/FiltresCalendrier";
 import { SelecteurLecture } from "@/components/calendrier/SelecteurLecture";
 import {
@@ -906,12 +907,19 @@ export default async function CalendrierPage({
               /* Seulement sur la lecture d'ensemble : sous un filtre, la
                  remarque porterait sur un périmètre qu'elle ne décrit
                  pas. */
+              /* Ce que dit la pilule dépend de l'effectif **déclaré** :
+                 le calendrier de mise en œuvre n'est imposé qu'à partir
+                 de cinquante salariés (L. 4121-3-1). En dessous, on
+                 énonce un fait d'outil, jamais une obligation. */
               actionsSansEcheance={
                 filtreFamille
                   ? null
                   : {
                       nb: compteursActions.sansEcheance,
                       href: `/etablissements/${id}/actions`,
+                      mention: exigenceEcheanceActions(
+                        etab.entreprise.effectif,
+                      ).mention,
                     }
               }
               moisInitial={moisInitial}

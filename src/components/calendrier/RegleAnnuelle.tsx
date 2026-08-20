@@ -124,7 +124,14 @@ export function RegleAnnuelle({
    * commentaire dans le code. `null` quand la vue est filtrée : la
    * remarque ne vaut que pour la lecture d'ensemble.
    */
-  actionsSansEcheance?: { nb: number; href: string } | null;
+  actionsSansEcheance?: {
+    nb: number;
+    href: string;
+    /** Ce qu'on dit à côté du nombre — dépend de l'effectif déclaré,
+     *  parce que le calendrier des actions n'est imposé qu'à partir de
+     *  cinquante salariés (cf. `exigenceEcheanceActions`). */
+    mention: string;
+  } | null;
   /** `undefined` : plus rien dans cette direction, la flèche se grise. */
   onAnneePrecedente?: () => void;
   onAnneeSuivante?: () => void;
@@ -355,7 +362,8 @@ export function RegleAnnuelle({
             className={`rounded-full bg-[color:var(--board-card)] px-3 py-1.5 text-[12px] font-semibold text-[color:var(--board-slate-mid)] underline-offset-4 transition-colors hover:text-[color:var(--board-ink)] hover:underline ${sansDate > 0 ? "" : "ml-auto"}`}
           >
             {actionsSansEcheance.nb} action
-            {actionsSansEcheance.nb > 1 ? "s" : ""} sans échéance — les dater
+            {actionsSansEcheance.nb > 1 ? "s" : ""}{" "}
+            {actionsSansEcheance.mention}
           </Link>
         ) : null}
       </div>
