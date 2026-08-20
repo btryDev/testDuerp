@@ -14,6 +14,7 @@
 // que le serveur recalcule les listes.
 
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle, SlidersHorizontal, X } from "lucide-react";
 import {
@@ -359,15 +360,10 @@ export function FiltresCalendrier({
         ) : null}
       </div>
 
-      {/* Les filtres actifs restent lisibles sans ouvrir le panneau. */}
-      {f.famille ? (
-        <Chip
-          onRetirer={() => choisirFamille(undefined)}
-          icone={<MarqueurFamille famille={f.famille} className="size-3" />}
-        >
-          {LABEL_FAMILLE[f.famille]}
-        </Chip>
-      ) : null}
+      {/* Les filtres actifs restent lisibles sans ouvrir le panneau — la
+          famille exceptée : les puces posées sous le titre la portent
+          déjà, et deux commandes du même réglage à quelques pixels
+          l'une de l'autre se contredisent plus qu'elles n'aident. */}
       {f.domaine ? (
         <Chip onRetirer={() => choisirDomaine(undefined)}>
           {labelDomaine(f.domaine)}
@@ -382,5 +378,93 @@ export function FiltresCalendrier({
         </Chip>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Ce que le calendrier contient, sous son titre — et par où le réduire.
+ *
+ * Le titre « Calendrier » ne disait pas ce qu'on y trouve : depuis
+ * l'ADR-010 il réunit quatre flux, et rien à l'écran ne l'annonçait. Ces
+ * puces le disent en nommant chaque nature, avec le pictogramme que
+ * portent les lignes de la liste — le dirigeant apprend la signalétique
+ * en même temps que le contenu.
+ *
+ * Elles sont cliquables : le filtre par famille dormait dans un popover,
+ * alors que c'est le réglage le plus courant. Il reste **un réglage
+ * d'écran**, dans l'écran, et non une entrée de navigation (ADR-015).
+ *
+ * Client, comme le panneau de filtres, et pour la même raison : la
+ * lecture (`?vue=`) est écrite sans repasser serveur, un lien construit
+ * au serveur la perdrait.
+ */
+export function ChipsFamille({
+  baseHref,
+  famillesDisponibles,
+  famille,
+  domaine,
+  urgent,
+}: {
+  baseHref: string;
+  famillesDisponibles: FamilleEcheance[];
+  famille?: FamilleEcheance;
+  domaine?: string;
+  urgent: boolean;
+}) {
+  const searchParams = useSearchParams();
+  const vue = searchParams.get("vue");
+
+  const href = (f?: FamilleEcheance) =>
+    construireHref(baseHref, {
+      famille: f,
+      // Quitter les contrôles lâche leur domaine — même règle que le
+      // panneau, sans quoi un domaine survivrait à sa famille.
+      domaine: f && f !== "controle" ? undefined : domaine,
+      urgent,
+      vue,
+    });
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+      <ChipFamille href={href(undefined)} actif={!famille} libelle="Tout" />
+      {famillesDisponibles.map((f) => (
+        <ChipFamille
+          key={f}
+          href={href(f)}
+          actif={famille === f}
+          libelle={LABEL_FAMILLE[f]}
+          marqueur={<MarqueurFamille famille={f} className="size-3.5" />}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ChipFamille({
+  href,
+  actif,
+  libelle,
+  marqueur,
+}: {
+  href: string;
+  actif: boolean;
+  libelle: string;
+  marqueur?: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      scroll={false}
+      aria-current={actif ? "true" : undefined}
+      className={
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12.5px] font-semibold transition-colors " +
+        (actif
+          ? "bg-white text-[color:var(--board-ink)]"
+          : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white")
+      }
+    >
+      {marqueur}
+      {libelle}
+    </Link>
   );
 }

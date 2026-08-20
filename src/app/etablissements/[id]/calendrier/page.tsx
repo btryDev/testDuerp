@@ -49,7 +49,10 @@ import {
 } from "@/components/calendrier/MarqueurFamille";
 import { LABEL_ITEM } from "@/components/layout/sidebar-nav";
 import { compterActions } from "@/lib/actions/queries";
-import { FiltresCalendrier } from "@/components/calendrier/FiltresCalendrier";
+import {
+  ChipsFamille,
+  FiltresCalendrier,
+} from "@/components/calendrier/FiltresCalendrier";
 import { SelecteurLecture } from "@/components/calendrier/SelecteurLecture";
 import {
   LABEL_DOMAINE,
@@ -739,6 +742,17 @@ export default async function CalendrierPage({
                 ? LABEL_FAMILLE_LONG[filtreFamille]
                 : LABEL_ITEM.calendrier}
             </h1>
+            {/* « Calendrier » ne disait pas ce qu'on y trouve : quatre
+                flux y sont réunis depuis l'ADR-010 et rien ne l'annonçait.
+                Les puces les nomment, avec le pictogramme que portent les
+                lignes — et réduisent l'écran d'un clic. */}
+            <ChipsFamille
+              baseHref={baseHref}
+              famillesDisponibles={famillesPresentes}
+              famille={filtreFamille}
+              domaine={filtreDomaine}
+              urgent={filtreUrgent}
+            />
           </div>
         </div>
 
