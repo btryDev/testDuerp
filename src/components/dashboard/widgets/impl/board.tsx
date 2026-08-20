@@ -43,6 +43,7 @@ import {
   libelleAnteriorite,
   libelleDateCourte,
 } from "../temps";
+import { MarqueurEcheance } from "@/components/calendrier/MarqueurFamille";
 import { VueMois } from "@/components/calendrier/VueMois";
 import { VueAnnee } from "@/components/calendrier/VueAnnee";
 import {
@@ -912,12 +913,22 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                         >
                           {m.titre}
                         </p>
+                        {/* La nature d'abord, la date ensuite : la carte
+                            disait quand, jamais quoi. La couleur porte
+                            déjà l'urgence — le pictogramme et le mot
+                            portent le reste (ADR-016). */}
                         <p
                           className={
-                            "mt-[5px] text-[11.5px] font-semibold tracking-[0.06em] " +
+                            "mt-[5px] flex items-center gap-1.5 text-[11.5px] font-semibold tracking-[0.06em] " +
                             carte.sousTitre
                           }
                         >
+                          {m.type ? (
+                            <>
+                              <MarqueurEcheance type={m.type} />
+                              <span aria-hidden>·</span>
+                            </>
+                          ) : null}
                           {m.sousTitre}
                         </p>
                       </LienProvenance>

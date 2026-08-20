@@ -17,6 +17,7 @@ import {
   listerAutresEcheances,
   type EcheanceCalendrier,
   type FamilleEcheance,
+  type TypeEcheance,
 } from "@/lib/calendrier/echeances";
 import {
   AnneeCalendrier,
@@ -44,8 +45,7 @@ import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import {
   LABEL_FAMILLE,
   LABEL_FAMILLE_LONG,
-  LABEL_FAMILLE_SINGULIER,
-  MarqueurFamille,
+  MarqueurEcheance,
 } from "@/components/calendrier/MarqueurFamille";
 import { LABEL_ITEM } from "@/components/layout/sidebar-nav";
 import { compterActions } from "@/lib/actions/queries";
@@ -100,7 +100,7 @@ const FMT_MOIS_COURT = new Intl.DateTimeFormat("fr-FR", {
 function LigneEcheance({
   href,
   date,
-  famille,
+  type,
   titre,
   meta,
   pastille,
@@ -108,8 +108,11 @@ function LigneEcheance({
 }: {
   href: string;
   date: Date;
-  famille: FamilleEcheance;
+  /** Ce que c'est. La famille regroupait trop gros : « Correction » ne
+   *  disait pas si l'on voyait une mesure du DUERP ou un signalement. */
+  type: TypeEcheance;
   titre: string;
+  /** Le complément — le mot de nature est posé par le marqueur. */
   meta: string;
   pastille: React.ReactNode;
   registre: RegistreLigne;
@@ -138,15 +141,15 @@ function LigneEcheance({
         </span>
       </span>
       <div className="min-w-0 flex-1">
-        <p className="m-0 flex items-center gap-2 truncate text-[14.5px] font-semibold leading-[1.3] tracking-[-0.015em] text-[color:var(--board-ink)]">
-          <MarqueurFamille
-            famille={famille}
-            className="size-3.5 text-[color:var(--board-slate-soft)]"
-          />
-          <span className="min-w-0 truncate">{titre}</span>
+        <p className="m-0 truncate text-[14.5px] font-semibold leading-[1.3] tracking-[-0.015em] text-[color:var(--board-ink)]">
+          {titre}
         </p>
-        <p className="m-0 mt-1 truncate text-[12.5px] text-[color:var(--board-slate-mid)]">
-          {meta}
+        {/* Nature puis complément. Le mot est visible : une icône seule
+            disparaît en niveaux de gris et pour qui n'y voit pas. */}
+        <p className="m-0 mt-1 flex items-center gap-1.5 truncate text-[12.5px] text-[color:var(--board-slate-mid)]">
+          <MarqueurEcheance type={type} />
+          <span aria-hidden>·</span>
+          <span className="min-w-0 truncate">{meta}</span>
         </p>
       </div>
       {pastille}
@@ -964,10 +967,9 @@ export default async function CalendrierPage({
                             <LigneEcheance
                               href={`/etablissements/${id}/verifications/${v.id}`}
                               date={ligne.date}
-                              famille="controle"
+                              type="verification"
                               titre={v.libelleObligation}
                               meta={
-                                `${LABEL_FAMILLE_SINGULIER.controle} · ` +
                                 `${v.equipement.libelle} · ` +
                                 LABEL_PERIODICITE[v.periodicite] +
                                 (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : "")
@@ -995,9 +997,9 @@ export default async function CalendrierPage({
                           <LigneEcheance
                             href={e.href}
                             date={e.date}
-                            famille={e.famille}
+                            type={e.type}
                             titre={e.libelle}
-                            meta={`${LABEL_FAMILLE_SINGULIER[e.famille]} · ${e.origine}`}
+                            meta={e.origine}
                             // La tuile-date suffit pour le futur : seule
                             // l'alerte mérite une pastille.
                             registre={etatDeLaLigne(ligne)}

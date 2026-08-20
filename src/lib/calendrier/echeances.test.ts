@@ -8,6 +8,7 @@ import {
   echeancePermisFeu,
   echeancePlanPrevention,
   echeancesPrestataire,
+  FAMILLE_DE_TYPE,
   origineAction,
   tonPourDate,
 } from "./echeances";
@@ -47,25 +48,60 @@ describe("tonPourDate", () => {
 });
 
 describe("origineAction", () => {
-  it("annonce le contrôle d'origine quand l'action vient d'un rapport", () => {
+  it("type l'action par la vérification dont l'écart provient", () => {
     expect(
       origineAction({
         verificationLibelle: "Vérification annuelle des extincteurs",
         duerp: false,
       }),
-    ).toBe("Suite au contrôle « Vérification annuelle des extincteurs »");
+    ).toEqual({
+      type: "action-verification",
+      // Le complément ne répète pas le mot porté par le type, et n'emploie
+      // pas « contrôle », réservé à la visite d'un tiers (ADR-015).
+      origine: "suite à la vérification « Vérification annuelle des extincteurs »",
+    });
   });
 
-  it("annonce le DUERP quand l'action vient d'un risque", () => {
-    expect(origineAction({ verificationLibelle: null, duerp: true })).toBe(
-      "Mesure prévue au DUERP",
-    );
+  it("type l'action par le DUERP quand elle vient d'un risque", () => {
+    expect(origineAction({ verificationLibelle: null, duerp: true })).toEqual({
+      type: "action-duerp",
+      origine: "prévue au DUERP",
+    });
   });
 
-  it("reste générique quand l'action est libre", () => {
-    expect(origineAction({ verificationLibelle: null, duerp: false })).toBe(
-      "À faire sur place",
-    );
+  it("distingue l'action libre des deux origines réglementaires", () => {
+    expect(origineAction({ verificationLibelle: null, duerp: false })).toEqual({
+      type: "action-libre",
+      origine: "à faire sur place",
+    });
+  });
+});
+
+describe("FAMILLE_DE_TYPE", () => {
+  it("rattache chaque type à une famille, sans exception", () => {
+    // Le Record est exhaustif par le type ; ce test garde le contenu :
+    // un type ajouté sans famille ne compile pas, mais un type rattaché à
+    // la mauvaise famille compilerait très bien.
+    expect(FAMILLE_DE_TYPE.verification).toBe("controle");
+    expect(FAMILLE_DE_TYPE.legionelles).toBe("controle");
+    expect(FAMILLE_DE_TYPE["action-duerp"]).toBe("travaux");
+    expect(FAMILLE_DE_TYPE["action-verification"]).toBe("travaux");
+    expect(FAMILLE_DE_TYPE["action-libre"]).toBe("travaux");
+    expect(FAMILLE_DE_TYPE.intervention).toBe("travaux");
+    expect(FAMILLE_DE_TYPE["permis-feu"]).toBe("travaux");
+    expect(FAMILLE_DE_TYPE["plan-prevention"]).toBe("travaux");
+    expect(FAMILLE_DE_TYPE["duerp-maj"]).toBe("papiers");
+    expect(FAMILLE_DE_TYPE.attestation).toBe("papiers");
+  });
+
+  it("déduit la bonne famille pour les échéances qu'il produit", () => {
+    const e = echeanceDuerp({
+      etablissementId: "etab1",
+      dateDerniereVersion: jour("2026-02-10"),
+      aujourdhui: AUJOURDHUI,
+    });
+    expect(e?.type).toBe("duerp-maj");
+    expect(e?.famille).toBe(FAMILLE_DE_TYPE["duerp-maj"]);
   });
 });
 
