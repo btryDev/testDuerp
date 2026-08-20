@@ -4,18 +4,25 @@
 //
 // Deux niveaux accolés, tous deux sur l'encre (#0A0A0A) du design Rojer :
 //
-//   1. Le rail (88px) porte les cinq entrées de premier niveau — « À faire »,
-//      « Mon établissement », « Mes registres », puis « Comprendre » (lien
-//      direct) et « Compte » en pied. Icône + libellé, pastille signal quand
-//      la catégorie contient une alerte.
+//   1. Le rail (88px) porte les entrées de premier niveau — « Tableau de
+//      bord », « À faire », « Mon établissement », « Mes registres », puis
+//      « Comprendre » et « Connecter », et « Compte » en pied. Icône +
+//      libellé, pastille signal quand la catégorie contient une alerte.
 //
 //   2. Le panneau (224px) affiche les items de la catégorie choisie, avec
 //      les mêmes pilules qu'avant (actif = pilule blanche pleine).
 //
+// Toute entrée de rail est un lien (ADR-015) : cliquer navigue vers la page
+// d'entrée de la catégorie **et** ouvre son panneau. Auparavant une icône de
+// premier niveau n'ouvrait qu'un tiroir, et il fallait deux clics pour
+// arriver quelque part.
+//
 // Le panneau suit la page courante : à chaque navigation il se rabat sur la
-// catégorie de l'item actif ; cliquer une entrée du rail le fait basculer
-// sans naviguer. « Comprendre » n'a pas de panneau — quand on est sur le
-// guide, le panneau montre « À faire » (la porte d'entrée par défaut).
+// catégorie de l'item actif. Entre deux navigations, un clic sur le rail le
+// fait basculer sans quitter la page — d'où la distinction entre « la page
+// est ici » (tuile allumée) et « le panneau montre ceci ». Les catégories
+// sans panneau (Tableau de bord, Comprendre, Connecter) laissent affiché
+// celui de « À faire », la porte d'entrée par défaut.
 //
 // Le panneau est rétractable, et replié par défaut : un bouton en pied de
 // rail — ou un clic sur une entrée du rail — le déplie, un bouton dans son
@@ -25,9 +32,9 @@
 // items, mêmes badges que le rail simple qu'elle remplace. Ce fichier ne
 // fait que le rendu.
 
-import { useState, useSyncExternalStore } from "react";
+import { Fragment, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   HelpCircle,
   LogOut,
@@ -76,8 +83,11 @@ export function AppSidebar({
   user?: User | null;
 }) {
   const pathname = usePathname();
+  // Le calendrier sert deux entrées du panneau selon `?famille=` : sans la
+  // query, cliquer « Contrôles matériel » surlignerait « Tout ».
+  const searchParams = useSearchParams();
   const actif: SidebarItemId =
-    active ?? deduireActif(pathname ?? "", etablissement.id);
+    active ?? deduireActif(pathname ?? "", etablissement.id, searchParams);
 
   const rail = construireRail({
     etablissementId: etablissement.id,
@@ -90,10 +100,14 @@ export function AppSidebar({
   // suive toujours l'endroit où l'on se trouve — ajustement pendant le
   // rendu (et non dans un effet) pour ne pas provoquer de rendu en cascade.
   const catActive = categorieDeItem(actif);
+  // L'URL entière, query comprise : passer de « Tout » à « Contrôles
+  // matériel » ne change pas le pathname, mais c'est bien une navigation —
+  // sans quoi un panneau choisi à la main y survivrait.
+  const urlCourante = `${pathname}?${searchParams}`;
   const [choix, setChoix] = useState<RailCategorieId | null>(null);
-  const [dernierPathname, setDernierPathname] = useState(pathname);
-  if (pathname !== dernierPathname) {
-    setDernierPathname(pathname);
+  const [derniereUrl, setDerniereUrl] = useState(urlCourante);
+  if (urlCourante !== derniereUrl) {
+    setDerniereUrl(urlCourante);
     setChoix(null);
   }
   const affichee = choix ?? catActive;
@@ -105,8 +119,12 @@ export function AppSidebar({
 
   const panneau =
     rail.find((c) => c.id === affichee && c.items) ??
-    // « Comprendre » n'a pas de panneau → porte d'entrée par défaut.
-    (affichee === "compte" ? null : rail[0]);
+    // Catégorie sans panneau (Tableau de bord, Comprendre, Connecter) →
+    // porte d'entrée par défaut. Désigner « À faire » par son id plutôt
+    // que par sa position : la première entrée du rail n'en a plus.
+    (affichee === "compte"
+      ? null
+      : rail.find((c) => c.id === "a-faire"));
 
   const initialUser = (user?.email ?? "??").slice(0, 2).toUpperCase();
 
@@ -127,28 +145,27 @@ export function AppSidebar({
         </div>
 
         <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2 py-3">
-          {rail
-            .filter((c) => c.items)
-            .map((c) => (
-              <RailBouton
-                key={c.id}
+          {/* Une seule boucle : une catégorie porte toujours un href, et
+              certaines portent en plus un panneau. Deux passes filtrées
+              rendraient les secondes en double. */}
+          {rail.map((c) => (
+            <Fragment key={c.id}>
+              {c.separateurAvant ? (
+                <div className="mx-3 my-2 border-t border-white/10" />
+              ) : null}
+              <RailEntree
                 cat={c}
-                courante={affichee === c.id}
                 surPage={catActive === c.id}
+                // Le panneau ouvert à la main s'allume aussi : sans cela,
+                // basculer de panneau sans naviguer n'aurait aucun écho.
+                choisie={choix === c.id}
                 onClick={() => {
                   setChoix(c.id);
                   basculerRepli(false);
                 }}
               />
-            ))}
-
-          <div className="mx-3 my-2 border-t border-white/10" />
-
-          {rail
-            .filter((c) => c.href)
-            .map((c) => (
-              <RailLien key={c.id} cat={c} surPage={catActive === c.id} />
-            ))}
+            </Fragment>
+          ))}
         </nav>
 
         {replie ? (
@@ -247,43 +264,40 @@ export function AppSidebar({
 }
 
 /** Entrée de rail ouvrant un panneau (pas de navigation). */
-function RailBouton({
+/**
+ * Entrée de rail : toujours un lien, panneau ou pas (ADR-015).
+ *
+ * `Link` plutôt qu'un `router.push` dans un `button` : on garde le
+ * prefetch, le clic du milieu, « ouvrir dans un nouvel onglet » et
+ * l'annonce native du lien. Le `onClick` ne fait qu'ouvrir le panneau au
+ * passage — la navigation, elle, se charge d'y rabattre le choix.
+ */
+function RailEntree({
   cat,
-  courante,
   surPage,
+  choisie,
   onClick,
 }: {
   cat: RailCategorie;
-  /** Le panneau affiché est celui de cette catégorie. */
-  courante: boolean;
   /** La page courante appartient à cette catégorie. */
   surPage: boolean;
+  /** Son panneau est ouvert par un clic, sans navigation. */
+  choisie: boolean;
   onClick: () => void;
 }) {
+  const allume = surPage || choisie;
   return (
-    <button
-      type="button"
+    <Link
+      href={cat.href}
       onClick={onClick}
-      aria-pressed={courante}
+      // `aria-current` dit où l'on est ; l'ouverture d'un panneau n'est pas
+      // un état de page et n'a pas à s'y ajouter.
+      aria-current={surPage ? "page" : undefined}
       aria-label={cat.label}
       className="group flex w-full flex-col items-center gap-1.5 rounded-xl py-2 transition-colors hover:bg-white/10"
     >
-      <TuileIcone cat={cat} pleine={courante || surPage} />
-      <RailLibelle cat={cat} allume={courante || surPage} />
-    </button>
-  );
-}
-
-/** Entrée de rail en lien direct (catégorie sans panneau). */
-function RailLien({ cat, surPage }: { cat: RailCategorie; surPage: boolean }) {
-  return (
-    <Link
-      href={cat.href ?? "#"}
-      aria-current={surPage ? "page" : undefined}
-      className="group flex w-full flex-col items-center gap-1.5 rounded-xl py-2 transition-colors hover:bg-white/10"
-    >
-      <TuileIcone cat={cat} pleine={surPage} />
-      <RailLibelle cat={cat} allume={surPage} />
+      <TuileIcone cat={cat} pleine={allume} />
+      <RailLibelle cat={cat} allume={allume} />
     </Link>
   );
 }
