@@ -255,9 +255,15 @@ export function construireSections({
       // Une lecture du même écran, promue en entrée de navigation : le
       // filtre existait déjà mais dormait dans un popover, et le dirigeant
       // qui demande « où sont mes contrôles ? » n'avait rien à cliquer.
+      //
+      // Deux paramètres, deux rôles : `famille` réduit le contenu aux
+      // contrôles, `vue` les regroupe par appareil plutôt que par mois. Le
+      // mot « matériel » annonce un inventaire — « où en est chaque
+      // appareil ? » — et non un agenda ; le sélecteur de la bande de
+      // titre rebascule par mois d'un clic.
       id: "controles",
       label: LABEL_ITEM.controles,
-      href: href("/calendrier?famille=controle"),
+      href: href("/calendrier?famille=controle&vue=equipement"),
       Icon: ClipboardCheck,
       count: counts?.verificationsEnRetard,
       alert: (counts?.verificationsEnRetard ?? 0) > 0,

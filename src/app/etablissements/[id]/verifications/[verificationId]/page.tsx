@@ -80,7 +80,7 @@ export default async function VerificationDetailPage({
   // matériel », pas l'ensemble du calendrier —, et il est nommé par la
   // table de la sidebar plutôt qu'en dur : les deux disent le même mot.
   const calendrier = {
-    href: `/etablissements/${id}/calendrier?famille=controle`,
+    href: `/etablissements/${id}/calendrier?famille=controle&vue=equipement`,
     label: LABEL_ITEM.controles,
   };
   const depuisCetteFiche = `/etablissements/${id}/verifications/${verificationId}`;

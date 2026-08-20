@@ -20,9 +20,11 @@
 // Le panneau suit la page courante : à chaque navigation il se rabat sur la
 // catégorie de l'item actif. Entre deux navigations, un clic sur le rail le
 // fait basculer sans quitter la page — d'où la distinction entre « la page
-// est ici » (tuile allumée) et « le panneau montre ceci ». Les catégories
-// sans panneau (Tableau de bord, Comprendre, Connecter) laissent affiché
-// celui de « À faire », la porte d'entrée par défaut.
+// est ici » (tuile allumée) et « le panneau montre ceci ». Sur une catégorie
+// sans panneau (Tableau de bord, Comprendre, Connecter), le panneau
+// s'efface : montrer celui de « À faire », sans rien y surligner, décrivait
+// un endroit où l'on n'est pas — et le board de widgets récupère la
+// largeur.
 //
 // Le panneau est rétractable, et replié par défaut : un bouton en pied de
 // rail — ou un clic sur une entrée du rail — le déplie, un bouton dans son
@@ -117,14 +119,11 @@ export function AppSidebar({
   const replie = useSyncExternalStore(sAbonnerRepli, lireRepli, () => true);
   const basculerRepli = ecrireRepli;
 
-  const panneau =
-    rail.find((c) => c.id === affichee && c.items) ??
-    // Catégorie sans panneau (Tableau de bord, Comprendre, Connecter) →
-    // porte d'entrée par défaut. Désigner « À faire » par son id plutôt
-    // que par sa position : la première entrée du rail n'en a plus.
-    (affichee === "compte"
-      ? null
-      : rail.find((c) => c.id === "a-faire"));
+  const panneau = rail.find((c) => c.id === affichee && c.items) ?? null;
+  // Rien à afficher à droite : la catégorie n'a pas de panneau et ce n'est
+  // pas le compte, qui a le sien. Le rail reste seul.
+  const sansPanneau = !panneau && affichee !== "compte";
+  const ferme = replie || sansPanneau;
 
   const initialUser = (user?.email ?? "??").slice(0, 2).toUpperCase();
 
@@ -168,7 +167,9 @@ export function AppSidebar({
           ))}
         </nav>
 
-        {replie ? (
+        {/* Le bouton de dépliage ne s'offre que s'il y a quelque chose à
+            déplier : sur le tableau de bord, il ouvrirait le vide. */}
+        {replie && !sansPanneau ? (
           <div className="shrink-0 px-2 pb-1">
             <button
               type="button"
@@ -218,10 +219,10 @@ export function AppSidebar({
 
       {/* ---- Panneau : items de la catégorie choisie ---- */}
       <div
-        inert={replie}
+        inert={ferme}
         className={
           "shrink-0 overflow-hidden bg-white/[0.04] transition-[width] duration-200 " +
-          (replie ? "w-0" : "w-[224px]")
+          (ferme ? "w-0" : "w-[224px]")
         }
       >
         {/* Largeur fixe interne : le contenu glisse sous le bord au lieu de

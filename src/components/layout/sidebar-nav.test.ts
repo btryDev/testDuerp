@@ -106,8 +106,10 @@ describe("construireSections — structure", () => {
     // Le panneau s'intitule déjà « À faire » : l'item dit « Tout », pas
     // « Calendrier ». Le nom d'écran, lui, sert aux fils de retour.
     expect(aFaire.items[0].label).toBe("Tout");
+    // Deux paramètres : `famille` réduit aux contrôles, `vue` les range par
+    // appareil. « Matériel » annonce un inventaire, pas un agenda.
     expect(aFaire.items[1].href).toBe(
-      `/etablissements/${ID}/calendrier?famille=controle`,
+      `/etablissements/${ID}/calendrier?famille=controle&vue=equipement`,
     );
   });
 

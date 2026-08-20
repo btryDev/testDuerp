@@ -62,9 +62,23 @@ une catégorie navigue **et** ouvre son panneau — À faire → `/calendrier`,
 panneau reste possible et survit jusqu'à la navigation suivante, comme
 avant. Corollaire : `RailCategorie.href` devient obligatoire.
 
+Sur une catégorie **sans** panneau (Tableau de bord, Comprendre,
+Connecter), le panneau s'efface au lieu de se rabattre sur celui de « À
+faire » : un panneau qui n'a aucun item surligné décrit un endroit où
+l'on n'est pas. Le board de widgets y récupère ses 224 px.
+
 **4. Le panneau « À faire » compte cinq items** : Tout · Contrôles matériel
 · Plan d'actions · Interventions · Préparer un contrôle. « Comprendre » sort
 de la section — le rail y mène déjà.
+
+L'écran porte **deux axes indépendants**, que l'URL distinguait déjà sans
+que la navigation s'en serve : `famille` réduit le contenu, `vue` change le
+regroupement. « Tout » ouvre sur `/calendrier` — la lecture par mois, qui
+répond à « qu'est-ce qui tombe quand ? ». « Contrôles matériel » ouvre sur
+`?famille=controle&vue=equipement` — une ligne par appareil, qui répond à
+« où en est chacun ? ». Le mot « matériel » annonce un inventaire, pas un
+agenda ; le sélecteur de la bande de titre rebascule d'un clic, et les
+filtres reconduisent déjà la lecture dans leurs liens.
 
 **5. Les deux compteurs sont réconciliés, et disent chacun leur périmètre.**
 « Tout » porte les retards **toutes familles** (`enRetardTotal`), « Contrôles
