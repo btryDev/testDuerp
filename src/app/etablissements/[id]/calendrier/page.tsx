@@ -44,7 +44,6 @@ import {
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import {
   LABEL_FAMILLE,
-  LABEL_FAMILLE_LONG,
   MarqueurEcheance,
 } from "@/components/calendrier/MarqueurFamille";
 import { LABEL_ITEM } from "@/components/layout/sidebar-nav";
@@ -730,17 +729,14 @@ export default async function CalendrierPage({
             <ChevronRight className="size-4 rotate-180" />
           </Link>
           <div className="min-w-0">
-            <p className="board-eyebrow m-0 text-[color:var(--board-blue-soft)]">
-              Échéances · {anneeCourante}
-            </p>
-            {/* Le titre dit ce qu'on regarde. « Vérifications
-                périodiques » nommait un seul des quatre flux que cet
-                écran réunit ; sous filtre, il prend le nom de la
-                famille regardée. */}
-            <h1 className="board-titre m-0 mt-1.5 text-[clamp(22px,2.2vw,27px)] text-white">
-              {filtreFamille
-                ? LABEL_FAMILLE_LONG[filtreFamille]
-                : LABEL_ITEM.calendrier}
+            {/* Un titre stable. Il a suivi le filtre un temps — il
+                répétait alors la puce active posée trois lignes plus bas,
+                et l'écran annonçait deux fois la même chose. L'eyebrow
+                « Échéances · 2026 » a sauté pour la même raison : le
+                sélecteur d'année, plus bas, porte déjà l'année et le
+                nombre d'échéances. */}
+            <h1 className="board-titre m-0 text-[clamp(22px,2.2vw,27px)] text-white">
+              {LABEL_ITEM.calendrier}
             </h1>
             {/* « Calendrier » ne disait pas ce qu'on y trouve : quatre
                 flux y sont réunis depuis l'ADR-010 et rien ne l'annonçait.
