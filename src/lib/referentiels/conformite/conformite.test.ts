@@ -488,7 +488,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
   // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
   // version PUIS recopiez l'empreinte que le message d'échec affiche.
-  const EMPREINTE_ATTENDUE = "65-a0f7b5a5268e0f27";
+  const EMPREINTE_ATTENDUE = "65-3423a011e71e1065";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -502,5 +502,59 @@ describe("référentiel conformité — version et empreinte", () => {
 
   it("la version est datée et incrémentable", () => {
     expect(REFERENTIEL_VERSION).toMatch(/^\d{4}-\d{2}-\d{2}\.\d+$/);
+  });
+
+  it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
+    // Le trou que ce test ferme : l'empreinte ne couvrait que l'identité et la
+    // périodicité. Poser une condition sur une obligation retirait l'échéance
+    // à tout un parc d'équipements sans faire bouger le hash — le garde-fou de
+    // version laissait passer exactement ce qu'il existe pour attraper.
+    const reference = empreinteReferentiel();
+    const cible = obligationParId("levage-vgp-annuelle-charges");
+    expect(cible).toBeDefined();
+    if (!cible) return;
+
+    const original = {
+      conditions: cible.conditions,
+      typologies: cible.typologies,
+      categoriesEquipement: cible.categoriesEquipement,
+    };
+    try {
+      cible.conditions = undefined;
+      expect(empreinteReferentiel()).not.toBe(reference);
+
+      cible.conditions = original.conditions;
+      cible.typologies = { ...original.typologies, erp: true };
+      expect(empreinteReferentiel()).not.toBe(reference);
+
+      cible.typologies = original.typologies;
+      cible.categoriesEquipement = [...original.categoriesEquipement, "AUTRE"];
+      expect(empreinteReferentiel()).not.toBe(reference);
+    } finally {
+      cible.conditions = original.conditions;
+      cible.typologies = original.typologies;
+      cible.categoriesEquipement = original.categoriesEquipement;
+    }
+    expect(empreinteReferentiel()).toBe(reference);
+  });
+
+  it("l'empreinte ne dépend pas de l'ordre d'écriture des clés", () => {
+    // Corollaire : réordonner les clés d'une typologie dans le fichier source
+    // ne doit pas forcer un bump de version pour rien.
+    const reference = empreinteReferentiel();
+    const cible = obligationParId("incendie-erp-ssi-triennale");
+    expect(cible).toBeDefined();
+    if (!cible) return;
+
+    const original = cible.typologies;
+    try {
+      const inverse = Object.fromEntries(
+        Object.entries(original).reverse(),
+      ) as typeof original;
+      cible.typologies = inverse;
+      expect(empreinteReferentiel()).toBe(reference);
+    } finally {
+      cible.typologies = original;
+    }
   });
 });

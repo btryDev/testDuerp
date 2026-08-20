@@ -67,13 +67,40 @@ export const obligationsConformite: Obligation[] = [
  * `conformite.test.ts` compare une empreinte du contenu à celle enregistrée :
  * l'oubli fait échouer la suite.
  */
-export const REFERENTIEL_VERSION = "2026-08-20.1";
+export const REFERENTIEL_VERSION = "2026-08-20.2";
 
 /**
- * Empreinte déterministe du contenu qui influe sur les échéances : identifiant,
- * périodicité, réalisateurs et libellé de chaque obligation. Deux exécutions
- * sur le même référentiel donnent la même valeur ; toute modification de fond
- * la change.
+ * Sérialisation canonique d'une valeur du référentiel : clés d'objet triées,
+ * ordre des tableaux préservé. Deux exécutions donnent le même texte, et une
+ * simple réécriture de l'ordre des clés dans le fichier source ne fait pas
+ * bouger l'empreinte — seul un changement de fond la change.
+ */
+function canonique(v: unknown): string {
+  if (Array.isArray(v)) return `[${v.map(canonique).join(",")}]`;
+  if (v !== null && typeof v === "object") {
+    const entrees = Object.entries(v as Record<string, unknown>)
+      .filter(([, val]) => val !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(([k, val]) => `${k}:${canonique(val)}`);
+    return `{${entrees.join(",")}}`;
+  }
+  return String(v);
+}
+
+/**
+ * Empreinte déterministe de tout ce qui influe sur les échéances : pour chaque
+ * obligation, son identifiant, sa périodicité, son libellé, ses réalisateurs,
+ * les catégories d'équipement qui la déclenchent, sa typologie d'application
+ * et ses conditions. Deux exécutions sur le même référentiel donnent la même
+ * valeur ; toute modification de fond la change.
+ *
+ * Les trois derniers champs ont été ajoutés en 2026-08 : l'empreinte ne
+ * couvrait que l'identité et la périodicité, si bien qu'une condition, une
+ * typologie ou une catégorie modifiée changeait les échéances de tout un parc
+ * sans faire bouger le hash. Le garde-fou de version laissait alors passer
+ * exactement le genre de correction qu'il existe pour détecter — poser une
+ * condition décide de l'existence même d'une échéance, là où un libellé n'est
+ * que cosmétique.
  *
  * Volontairement simple (somme de contrôle textuelle, pas de hachage
  * cryptographique) : elle sert à détecter un oubli de version, pas à résister
@@ -82,9 +109,17 @@ export const REFERENTIEL_VERSION = "2026-08-20.1";
 export function empreinteReferentiel(): string {
   const corps = obligationsConformite
     .map((o) =>
-      [o.id, o.periodicite, o.libelle, [...o.realisateurs].sort().join("+")].join(
-        "|",
-      ),
+      [
+        o.id,
+        o.periodicite,
+        o.libelle,
+        [...o.realisateurs].sort().join("+"),
+        [...o.categoriesEquipement].sort().join("+"),
+        canonique(o.typologies),
+        // L'ordre des conditions est sans portée (elles se combinent en ET) :
+        // on trie leur forme sérialisée pour que seule leur substance compte.
+        canonique([...(o.conditions ?? [])].map(canonique).sort()),
+      ].join("|"),
     )
     .sort()
     .join("\n");
