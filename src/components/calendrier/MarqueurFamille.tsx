@@ -13,7 +13,7 @@ import { ClipboardCheck, FileText, Users, Wrench } from "lucide-react";
 import type { FamilleEcheance } from "@/lib/calendrier/echeances";
 
 export const LABEL_FAMILLE: Record<FamilleEcheance, string> = {
-  controle: "Contrôles",
+  controle: "Vérifications",
   travaux: "Corrections",
   papiers: "Documents",
   personnel: "Personnel",
@@ -23,7 +23,7 @@ export const LABEL_FAMILLE: Record<FamilleEcheance, string> = {
 export const LABEL_FAMILLE_LONG: Record<FamilleEcheance, string> = {
   // Le même mot que l'entrée du panneau « À faire » : filtrer par cette
   // famille et cliquer cette entrée mènent au même écran (ADR-015).
-  controle: "Contrôles matériel",
+  controle: "Vérifications périodiques",
   travaux: "Corrections & réparations",
   papiers: "Documents à renouveler",
   personnel: "Personnel",
@@ -31,7 +31,7 @@ export const LABEL_FAMILLE_LONG: Record<FamilleEcheance, string> = {
 
 /** Le mot posé en tête de méta d'une ligne (« Contrôle · … »). */
 export const LABEL_FAMILLE_SINGULIER: Record<FamilleEcheance, string> = {
-  controle: "Contrôle",
+  controle: "Vérification",
   travaux: "Correction",
   papiers: "Document",
   personnel: "Personnel",

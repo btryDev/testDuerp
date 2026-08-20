@@ -85,11 +85,11 @@ export function AppSidebar({
   user?: User | null;
 }) {
   const pathname = usePathname();
-  // Le calendrier sert deux entrées du panneau selon `?famille=` : sans la
-  // query, cliquer « Contrôles matériel » surlignerait « Tout ».
+  // Le panneau ne dépend pas des filtres d'écran ; la query ne sert qu'à
+  // détecter une navigation (un changement de filtre en est une).
   const searchParams = useSearchParams();
   const actif: SidebarItemId =
-    active ?? deduireActif(pathname ?? "", etablissement.id, searchParams);
+    active ?? deduireActif(pathname ?? "", etablissement.id);
 
   const rail = construireRail({
     etablissementId: etablissement.id,

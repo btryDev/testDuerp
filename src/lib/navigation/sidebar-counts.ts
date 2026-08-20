@@ -30,11 +30,7 @@ export async function chargerSidebarCounts(
 
   return {
     equipements,
-    // « Tout » annonce le dépassé de toutes les familles, « Contrôles
-    // matériel » les seules vérifications périodiques : deux périmètres
-    // distincts, nommés par leur item, issus du même calcul.
     enRetardTotal: retards.total,
-    verificationsEnRetard: retards.verifications,
     actions: actions.totalACouvrir,
     prestatairesAlertes,
     risquesAReevaluer: risques,

@@ -1,6 +1,6 @@
 # ADR-015 — « À faire » est un écran, pas un dossier : le calendrier en devient la porte
 
-- Statut : acceptée
+- Statut : acceptée, **révisée le jour même** (voir « Révision » en fin de page)
 - Date : 2026-08-20
 - Portée : `src/components/layout/sidebar-nav.ts`, `AppSidebar.tsx`,
   `src/lib/navigation/`, `src/lib/calendrier/retards.ts`, la page calendrier
@@ -51,10 +51,10 @@ autonome, lien direct, sans panneau. C'est l'écran d'atterrissage à la
 connexion ; il mérite le premier niveau et ne se range plus sous une
 catégorie qui le contredit.
 
-**2. « À faire » est un écran, et c'est le calendrier.** Le rail « À faire »
-mène à `/calendrier`, toutes familles confondues. Le `<h1>` de la page suit
-le filtre actif : « À faire » sans filtre, « Contrôles matériel » sur
-`?famille=controle`, le libellé long de la famille sinon.
+**2. « À faire » est une catégorie de rail dont la page d'entrée est le
+calendrier.** Le rail « À faire » mène à `/calendrier`, toutes familles
+confondues. Le `<h1>` suit le filtre actif : « Calendrier » sans filtre, le
+libellé long de la famille sinon.
 
 **3. Règle de rail : une entrée = une page d'entrée + un panneau.** Cliquer
 une catégorie navigue **et** ouvre son panneau — À faire → `/calendrier`,
@@ -67,33 +67,27 @@ Connecter), le panneau s'efface au lieu de se rabattre sur celui de « À
 faire » : un panneau qui n'a aucun item surligné décrit un endroit où
 l'on n'est pas. Le board de widgets y récupère ses 224 px.
 
-**4. Le panneau « À faire » compte cinq items** : Tout · Contrôles matériel
-· Plan d'actions · Interventions · Préparer un contrôle. « Comprendre » sort
-de la section — le rail y mène déjà.
+**4. Le panneau « À faire » ne porte que des activités** : Calendrier ·
+Plan d'actions · Interventions · Préparer un contrôle. Aucune entrée n'est
+l'état filtré d'une autre. « Comprendre » sort de la section — le rail y
+mène déjà.
 
-L'écran porte **deux axes indépendants**, que l'URL distinguait déjà sans
-que la navigation s'en serve : `famille` réduit le contenu, `vue` change le
-regroupement. « Tout » ouvre sur `/calendrier` — la lecture par mois, qui
-répond à « qu'est-ce qui tombe quand ? ». « Contrôles matériel » ouvre sur
-`?famille=controle&vue=equipement` — une ligne par appareil, qui répond à
-« où en est chacun ? ». Le mot « matériel » annonce un inventaire, pas un
-agenda ; le sélecteur de la bande de titre rebascule d'un clic, et les
-filtres reconduisent déjà la lecture dans leurs liens.
+Un filtre est un **réglage d'écran** : il vit dans l'écran. Le promouvoir en
+entrée de navigation crée deux lignes voisines qui décrivent partiellement le
+même objet avec deux compteurs de périmètres différents — exactement le
+défaut que la décision 5 corrige par ailleurs. Corollaire : l'arborescence
+tient **entièrement dans le chemin**, `deduireActif` ne lit pas la query.
 
-**5. Les deux compteurs sont réconciliés, et disent chacun leur périmètre.**
-« Tout » porte les retards **toutes familles** (`enRetardTotal`), « Contrôles
-matériel » les **vérifications périodiques seules**
-(`verificationsEnRetard`). Une fonction unique,
-`repartirRetards` (`src/lib/calendrier/retards.ts`), sert la sidebar **et**
-le bandeau du calendrier : les deux lectures ne peuvent plus diverger. Le
+**5. Un seul compteur de retard, un seul périmètre.** Le badge « Calendrier »
+porte les retards **toutes familles** (`enRetardTotal`). Une fonction unique,
+`repartirRetards` (`src/lib/calendrier/retards.ts`), sert la sidebar **et** le
+bandeau du calendrier : les deux lectures ne peuvent plus diverger. Le
 paragraphe d'aide qui documentait l'écart est supprimé.
 
-Nuance assumée : le registre range les analyses légionelles dans la famille
-`controle`. La vue `?famille=controle` les affiche donc, alors que le badge
-« Contrôles matériel » ne les compte pas. Le badge nomme ce qui a un
-calendrier réglementaire d'équipement ; l'écart est de l'ordre de l'unité et
-la vue elle-même est explicite. `parFamille.controle` reste disponible si on
-veut un jour aligner strictement les deux.
+`RetardsParFamille` expose aussi `verifications` et `parFamille`, que la
+navigation ne lit plus : deux compteurs voisins de périmètres différents sont
+précisément le défaut qu'on corrige. Ils restent disponibles pour une surface
+qui a besoin du détail — la page Équipements, par exemple.
 
 **6. Les mêmes compteurs partout.** `chargerSidebarCounts` est partagée par
 le shell établissement et le shell DUERP, qui montait la sidebar sans
@@ -122,17 +116,65 @@ est un entretien continu, pas un événement subi.
 
 ## Conséquences
 
-- `SidebarItemId` gagne `"controles"` ; `"calendrier"` reste l'id de l'item
-  « Tout » (l'id nomme la route, le libellé nomme l'écran).
-- `LABEL_ITEM.calendrier` devient « À faire » : par l'ADR-014, le fil de
-  retour et le `<h1>` changent **de concert**, sans table parallèle. Une
-  vérification ouverte depuis la vue Tout affiche « ← À faire », depuis la
-  vue filtrée « ← Contrôles matériel ». Le mot du retour est celui que le
-  dirigeant vient de cliquer.
-- `deduireActif` reçoit désormais la query : le surlignage du panneau
-  distingue `?famille=controle` du reste. C'est la première fois qu'un
-  paramètre d'URL gouverne l'arborescence — borné à ce seul paramètre, et à
-  une valeur d'une liste fermée.
+- `LABEL_ITEM` reste la table unique des noms d'écran, partagée avec
+  `src/lib/navigation/provenance.ts` : par l'ADR-014, le rail et le fil de
+  retour nomment un écran de la même façon, sans table parallèle.
+- `deduireActif` garde sa signature d'origine : la query ne gouverne pas
+  l'arborescence.
 - La maquette de la landing (`components/landing/TableauDeBord.tsx`) suit la
   même arborescence : elle montre le produit, elle ne peut pas montrer un
   autre produit.
+
+## Révision — le panneau ne décline pas le calendrier en filtres
+
+La première rédaction faisait du panneau « À faire » cinq entrées, dont
+« Contrôles matériel » — un état filtré du calendrier. Un inventaire des cinq
+écrans a montré trois défauts que cette entrée créait :
+
+1. **Double compte.** « Tout » portait les retards toutes familles (actions
+   datées comprises), « Plan d'actions » les actions ouvertes et en cours. Une
+   action datée et dépassée était comptée **deux fois, en deux sémantiques**,
+   sur deux lignes voisines. C'est l'incident que la décision 5 venait de
+   corriger, réintroduit un cran plus loin.
+2. **Faux miroir.** Le calendrier agrège **sept** sources ; le panneau n'en
+   expose que deux en écran propre (actions, interventions). DUERP,
+   prestataires, permis de feu, plans de prévention et légionelles ont leurs
+   écrans dans « Mes registres » et « Mon établissement ». « À faire » n'est
+   pas le sommaire du calendrier, et ne peut pas le devenir.
+3. **Homonyme.** « Préparer un **contrôle** » (la visite d'un tiers) était posé
+   sous « **Contrôles** matériel » (vérifier un extincteur) — deux sens du même
+   mot à deux lignes d'écart.
+
+L'inventaire a aussi corrigé la prémisse invoquée pour justifier le mélange.
+Le clivage n'est pas « lectures filtrées » contre « écrans autonomes portant du
+travail » : sur les cinq écrans, **quatre sont des lectures pures** (zéro server
+action mutante) et seul Interventions permet de créer depuis sa liste. Tous les
+verbes vivent aux fiches de détail. Le clivage réel est **daté** (le calendrier)
+/ **à dater ou non datable** (action sans échéance, ticket sans échéance,
+attestation jamais fournie, risque DUERP qui n'a aucun champ de date) /
+**sortie** (préparer un contrôle) — et c'est ce qui justifie que Plan d'actions
+et Interventions restent des portes : ils montrent ce que le calendrier ne peut
+structurellement pas montrer.
+
+Le besoin d'origine — « où en est chaque appareil ? » — n'est pas satisfait par
+une entrée de navigation de plus, mais par la page **Équipements**, aujourd'hui
+un inventaire nu (catégorie, libellé, localisation) qui ne dit rien de l'état de
+vérification de chaque appareil. C'est là que la question se pose.
+
+## Lexique — un mot par objet
+
+Le produit nommait le même objet de quatre façons selon l'écran. Un canal
+graphique posé sur un lexique divergent ne vaut rien : les mots sont fixés.
+
+| Objet | Mot retenu | Écartés |
+|---|---|---|
+| `Verification` | **Vérification** | Contrôle, Contrôles matériel |
+| Visite d'un tiers | **Contrôle** | — le mot lui est réservé |
+| `Intervention` | **Intervention** | Ticket, Signalement |
+| `Action` | **Action** | Action corrective, Correction |
+
+« Contrôle » est rendu au sens qu'un dirigeant comprend d'emblée : **quelqu'un
+qui vient**. L'objet périodique reprend le mot du droit — art. R. 4323-23,
+« vérifications générales périodiques ». Un extincteur se *vérifie*, une
+inspection se *subit*. Les libellés de la famille `controle` suivent :
+« Vérifications », « Vérifications périodiques », « Vérification ».

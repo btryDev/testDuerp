@@ -12,25 +12,14 @@ const BASE = `/etablissements/${ETAB}`;
 
 describe("nommerEcran", () => {
   it("nomme une liste comme la sidebar la nomme", () => {
-    expect(nommerEcran(`${BASE}/calendrier`, ETAB)).toBe("À faire");
+    expect(nommerEcran(`${BASE}/calendrier`, ETAB)).toBe("Calendrier");
     expect(nommerEcran(`${BASE}/actions`, ETAB)).toBe("Plan d'actions");
     expect(nommerEcran(BASE, ETAB)).toBe("Tableau de bord");
   });
 
-  it("nomme le calendrier par la lecture que l'on quitte", () => {
-    // Le mot du retour est celui que le dirigeant vient de cliquer dans le
-    // panneau, pas le module dont l'écran dépend (ADR-015).
-    expect(nommerEcran(`${BASE}/calendrier`, ETAB, "famille=controle")).toBe(
-      "Contrôles matériel",
-    );
-    expect(nommerEcran(`${BASE}/calendrier`, ETAB, "famille=travaux")).toBe(
-      "À faire",
-    );
-  });
-
   it("nomme une fiche par son objet, pas par l'entrée de rail", () => {
-    // `/verifications/{id}` surligne « Contrôles matériel » dans le rail :
-    // c'est juste pour le rail, ça ne l'est pas pour un lien de retour.
+    // `/verifications/{id}` surligne « Calendrier » dans le rail : c'est
+    // juste pour le rail, ça ne l'est pas pour un lien de retour.
     expect(nommerEcran(`${BASE}/verifications/v1`, ETAB)).toBe("Vérification");
     expect(nommerEcran(`${BASE}/actions/a1`, ETAB)).toBe("Action");
     expect(nommerEcran(`${BASE}/equipements/e1/modifier`, ETAB)).toBe(
@@ -60,19 +49,8 @@ describe("lireProvenance", () => {
     const p = lireProvenance(`${BASE}/calendrier?vue=equipement&urgent=1`, ETAB);
     expect(p).toEqual({
       href: `${BASE}/calendrier?vue=equipement&urgent=1`,
-      label: "À faire",
+      label: "Calendrier",
     });
-  });
-
-  it("nomme le retour d'après le filtre porté par la provenance", () => {
-    // La query voyage déjà dans le `de` ; elle sert maintenant aussi à le
-    // nommer, sans quoi un retour vers la vue filtrée dirait « À faire ».
-    expect(lireProvenance(`${BASE}/calendrier?famille=controle`, ETAB)).toEqual(
-      {
-        href: `${BASE}/calendrier?famille=controle`,
-        label: "Contrôles matériel",
-      },
-    );
   });
 
   it("ignore l'absence de provenance", () => {
@@ -178,7 +156,7 @@ describe("avecProvenance", () => {
     const param = new URL(href, "https://x.invalid").searchParams.get("de");
     expect(lireProvenance(param ?? undefined, ETAB)).toEqual({
       href: `${BASE}/calendrier?vue=equipement`,
-      label: "À faire",
+      label: "Calendrier",
     });
   });
 });

@@ -76,12 +76,11 @@ export default async function VerificationDetailPage({
   // Une vérification s'ouvre depuis le calendrier, mais aussi depuis le
   // registre de sécurité, une action corrective ou le tableau de bord.
   const provenance = lireProvenance(de, id);
-  // Le parent canonique est la lecture qui la range — « Contrôles
-  // matériel », pas l'ensemble du calendrier —, et il est nommé par la
-  // table de la sidebar plutôt qu'en dur : les deux disent le même mot.
+  // Nommé par la table de la sidebar plutôt qu'en dur : le rail et le fil
+  // de retour disent le même mot, par construction.
   const calendrier = {
-    href: `/etablissements/${id}/calendrier?famille=controle&vue=equipement`,
-    label: LABEL_ITEM.controles,
+    href: `/etablissements/${id}/calendrier`,
+    label: LABEL_ITEM.calendrier,
   };
   const depuisCetteFiche = `/etablissements/${id}/verifications/${verificationId}`;
 

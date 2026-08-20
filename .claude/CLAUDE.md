@@ -145,7 +145,7 @@ Une entrée de rail = une **page d'entrée** + un **panneau** : cliquer navigue
 et ouvre le panneau (ADR-015).
 
 - **Tableau de bord** : lien direct, sans panneau — le board de widgets
-- **À faire** (→ le calendrier, toutes familles) : Tout · Contrôles matériel (`?famille=controle`) · Plan d'actions · Interventions · Préparer un contrôle
+- **À faire** (→ le calendrier, toutes familles) : Calendrier · Plan d'actions · Interventions · Préparer un contrôle — que des **activités**, jamais l'état filtré d'une autre entrée ; un filtre vit dans l'écran
 - **Mon établissement** (→ Équipements) : Équipements · Prestataires · Fiche établissement · (Équipe, à venir)
 - **Mes registres** (→ DUERP, à plat) : DUERP · Registre de sécurité · Accessibilité · Permis de feu · Plans de prévention · Carnet sanitaire
 - **Comprendre** : guide pédagogique

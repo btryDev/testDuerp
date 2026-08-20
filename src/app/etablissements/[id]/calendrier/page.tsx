@@ -729,14 +729,12 @@ export default async function CalendrierPage({
             </p>
             {/* Le titre dit ce qu'on regarde. « Vérifications
                 périodiques » nommait un seul des quatre flux que cet
-                écran réunit, et l'entrée de rail qui y mène s'appelle
-                « À faire » (ADR-015). */}
+                écran réunit ; sous filtre, il prend le nom de la
+                famille regardée. */}
             <h1 className="board-titre m-0 mt-1.5 text-[clamp(22px,2.2vw,27px)] text-white">
-              {!filtreFamille
-                ? LABEL_ITEM.calendrier
-                : filtreFamille === "controle"
-                  ? LABEL_ITEM.controles
-                  : LABEL_FAMILLE_LONG[filtreFamille]}
+              {filtreFamille
+                ? LABEL_FAMILLE_LONG[filtreFamille]
+                : LABEL_ITEM.calendrier}
             </h1>
           </div>
         </div>
@@ -783,10 +781,9 @@ export default async function CalendrierPage({
           désormais du même calcul (`repartirRetards`, ADR-015) : il n'y a
           plus rien à arbitrer. */}
       <p className="m-0">
-        Les compteurs du bandeau réunissent toutes les familles — contrôles,
-        travaux et papiers —, comme l&apos;entrée « Tout » de la barre
-        latérale. « Contrôles matériel » n&apos;y compte, elle, que les
-        vérifications périodiques.
+        Les compteurs du bandeau réunissent toutes les familles —
+        vérifications, corrections et papiers —, comme le badge « Calendrier »
+        de la barre latérale.
       </p>
       <div className="flex flex-wrap gap-2 pt-1">
         <LegalBadge

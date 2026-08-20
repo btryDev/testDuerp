@@ -7,11 +7,11 @@
 // qu'il se pose : « qu'est-ce que je dois faire ? », « qu'est-ce que j'ai
 // déclaré ? », « qu'est-ce que je peux présenter ? ».
 //
-// Principe : une seule porte par question. « À faire » n'est pas un dossier
-// mais un **écran** — le calendrier, qui fusionne déjà les quatre familles
-// d'échéances (ADR-010) : contrôles, corrections, papiers, personnel. Son
-// panneau en offre les lectures (Tout, Contrôles matériel) et les écrans
-// voisins qui portent aussi du non-daté (Plan d'actions, Interventions).
+// Principe : une seule porte par question. Le panneau « À faire » ne porte que
+// des **activités** — jamais l'état filtré d'une autre entrée. Un filtre est
+// un réglage d'écran, il vit dans l'écran ; le promouvoir en entrée de
+// navigation crée deux lignes voisines qui décrivent partiellement le même
+// objet avec deux compteurs différents (cf. ADR-015, révision).
 //
 // Le tableau de bord, lui, n'est pas une chose à faire : c'est un résumé. Il
 // a quitté ce panneau pour une entrée de rail à part entière (ADR-015), sans
@@ -44,7 +44,6 @@ import {
   LayoutDashboard,
   Wrench,
   Calendar,
-  ClipboardCheck,
   FileText,
   ListChecks,
   ListTodo,
@@ -68,7 +67,6 @@ export type SidebarActive =
   | "tableau"
   | "equipements"
   | "calendrier"
-  | "controles"
   | "registre"
   | "actions"
   | "prestataires"
@@ -95,11 +93,7 @@ export type SidebarItemId = SidebarActive | "fiche" | "equipe";
  */
 export const LABEL_ITEM: Record<SidebarItemId, string> = {
   tableau: "Tableau de bord",
-  // Le nom de l'**écran**, pas celui de l'item : le panneau intitule son
-  // entrée « Tout » (on y est déjà, sous le titre « À faire »), mais un fil
-  // de retour venu d'ailleurs doit dire « ← À faire ».
-  calendrier: "À faire",
-  controles: "Contrôles matériel",
+  calendrier: "Calendrier",
   actions: "Plan d'actions",
   interventions: "Interventions",
   controle: "Préparer un contrôle",
@@ -120,11 +114,10 @@ export const LABEL_ITEM: Record<SidebarItemId, string> = {
 export type SidebarCounts = {
   equipements?: number;
   /** Échéances dépassées, **toutes familles** (vérifications + registre
-   *  d'échéances, ADR-010). Porté par l'item « Tout ». */
+   *  d'échéances, ADR-010). Un seul nombre, un seul périmètre : deux
+   *  compteurs voisins de périmètres différents se sont déjà contredits
+   *  une fois (ADR-015). Cf. `repartirRetards`. */
   enRetardTotal?: number;
-  /** Vérifications périodiques dépassées **seules**. Porté par l'item
-   *  « Contrôles matériel ». Cf. `repartirRetards` et ADR-015. */
-  verificationsEnRetard?: number;
   actions?: number;
   prestatairesAlertes?: number;
   risquesAReevaluer?: number;
@@ -187,30 +180,19 @@ export type NavSection = {
 /**
  * Déduit l'item actif depuis le pathname, à défaut de prop explicite.
  *
- * La query n'entre en jeu que pour **un** paramètre, `famille`, et une
- * seule de ses valeurs : le calendrier sert deux entrées du panneau, la
- * lecture d'ensemble (« Tout ») et celle des contrôles matériel. Sans
- * elle, cliquer « Contrôles matériel » surlignerait « Tout ». C'est la
- * seule exception à la règle « l'arborescence tient dans le chemin » ;
- * toute autre famille reste une lecture de « Tout », pas une entrée.
+ * L'arborescence tient **entièrement dans le chemin**. Un filtre d'écran
+ * (`?famille=`, `?vue=`) est un réglage, pas une place dans l'arbre : le
+ * panneau ne porte aucune entrée qui soit l'état filtré d'une autre.
  */
 export function deduireActif(
   pathname: string,
   etablissementId: string,
-  search?: string | URLSearchParams | null,
 ): SidebarItemId {
   const base = `/etablissements/${etablissementId}`;
-  const params =
-    typeof search === "string" ? new URLSearchParams(search) : search;
-
   if (pathname === `${base}/modifier`) return "fiche";
   if (pathname === base) return "tableau";
-  if (pathname.startsWith(`${base}/calendrier`)) {
-    return params?.get("famille") === "controle" ? "controles" : "calendrier";
-  }
-  // Une vérification est un contrôle : elle surligne l'entrée qui la range,
-  // pas la lecture d'ensemble.
-  if (pathname.startsWith(`${base}/verifications`)) return "controles";
+  if (pathname.startsWith(`${base}/calendrier`)) return "calendrier";
+  if (pathname.startsWith(`${base}/verifications`)) return "calendrier";
   if (pathname.startsWith(`${base}/actions`)) return "actions";
   if (pathname.startsWith(`${base}/registre`)) return "registre";
   if (pathname.startsWith(`${base}/equipements`)) return "equipements";
@@ -241,32 +223,12 @@ export function construireSections({
 
   const aFaire: NavItem[] = [
     {
-      // « Tout » et non « Calendrier » : la section s'intitule déjà « À
-      // faire » et c'est le même écran. `LABEL_ITEM.calendrier` garde le
-      // nom d'écran pour les fils de retour venus d'ailleurs.
       id: "calendrier",
-      label: "Tout",
+      label: LABEL_ITEM.calendrier,
       href: href("/calendrier"),
-      Icon: ListTodo,
+      Icon: Calendar,
       count: counts?.enRetardTotal,
       alert: (counts?.enRetardTotal ?? 0) > 0,
-    },
-    {
-      // Une lecture du même écran, promue en entrée de navigation : le
-      // filtre existait déjà mais dormait dans un popover, et le dirigeant
-      // qui demande « où sont mes contrôles ? » n'avait rien à cliquer.
-      //
-      // Deux paramètres, deux rôles : `famille` réduit le contenu aux
-      // contrôles, `vue` les regroupe par appareil plutôt que par mois. Le
-      // mot « matériel » annonce un inventaire — « où en est chaque
-      // appareil ? » — et non un agenda ; le sélecteur de la bande de
-      // titre rebascule par mois d'un clic.
-      id: "controles",
-      label: LABEL_ITEM.controles,
-      href: href("/calendrier?famille=controle&vue=equipement"),
-      Icon: ClipboardCheck,
-      count: counts?.verificationsEnRetard,
-      alert: (counts?.verificationsEnRetard ?? 0) > 0,
     },
     {
       id: "actions",

@@ -45,28 +45,9 @@ describe("deduireActif", () => {
     expect(deduireActif(`/etablissements/${ID}/modifier`, ID)).toBe("fiche");
   });
 
-  it("rattache les vérifications aux contrôles matériel", () => {
+  it("rattache les vérifications au calendrier", () => {
     expect(deduireActif(`/etablissements/${ID}/verifications/v1`, ID)).toBe(
-      "controles",
-    );
-  });
-
-  it("sépare la lecture d'ensemble du calendrier de celle des contrôles", () => {
-    const calendrier = `/etablissements/${ID}/calendrier`;
-    expect(deduireActif(calendrier, ID)).toBe("calendrier");
-    expect(deduireActif(calendrier, ID, "famille=controle")).toBe("controles");
-    // Les autres familles restent des lectures de « Tout » : ce ne sont pas
-    // des entrées du panneau, et surligner ailleurs mentirait.
-    expect(deduireActif(calendrier, ID, "famille=travaux")).toBe("calendrier");
-    expect(deduireActif(calendrier, ID, "vue=equipement")).toBe("calendrier");
-  });
-
-  it("accepte la query sous forme d'URLSearchParams", () => {
-    // C'est ce que rend `useSearchParams()` côté client : la sidebar le
-    // passe tel quel, sans le sérialiser.
-    const params = new URLSearchParams({ famille: "controle" });
-    expect(deduireActif(`/etablissements/${ID}/calendrier`, ID, params)).toBe(
-      "controles",
+      "calendrier",
     );
   });
 
@@ -94,23 +75,19 @@ describe("construireSections — structure", () => {
     ]);
   });
 
-  it("ouvre « À faire » sur l'ensemble puis les contrôles matériel", () => {
+  it("ne porte dans « À faire » que des activités, jamais un filtre", () => {
     const aFaire = sections()[0];
     expect(aFaire.items.map((i) => i.id)).toEqual([
       "calendrier",
-      "controles",
       "actions",
       "interventions",
       "controle",
     ]);
-    // Le panneau s'intitule déjà « À faire » : l'item dit « Tout », pas
-    // « Calendrier ». Le nom d'écran, lui, sert aux fils de retour.
-    expect(aFaire.items[0].label).toBe("Tout");
-    // Deux paramètres : `famille` réduit aux contrôles, `vue` les range par
-    // appareil. « Matériel » annonce un inventaire, pas un agenda.
-    expect(aFaire.items[1].href).toBe(
-      `/etablissements/${ID}/calendrier?famille=controle&vue=equipement`,
-    );
+    // Aucune destination du panneau ne porte de query : un filtre est un
+    // réglage d'écran, pas une place dans l'arborescence (ADR-015 révisé).
+    for (const it of aFaire.items) {
+      expect(it.href).not.toContain("?");
+    }
   });
 
   it("garde hors des sections ce qui vit au rail", () => {
@@ -225,20 +202,10 @@ describe("construireRail — rail à deux niveaux", () => {
   it("agrège les alertes des items au niveau de la catégorie", () => {
     const cats = construireRail({
       etablissementId: ID,
-      counts: { verificationsEnRetard: 2, prestatairesAlertes: 0 },
+      counts: { enRetardTotal: 2, prestatairesAlertes: 0 },
     });
     expect(cats.find((c) => c.id === "a-faire")?.alert).toBe(true);
     expect(cats.find((c) => c.id === "etablissement")?.alert).toBe(false);
-  });
-
-  it("alerte « À faire » sur le retard d'une famille sans vérification", () => {
-    // Un permis de feu ou une attestation expirée doit allumer le rail :
-    // c'est tout l'objet de la réconciliation des compteurs.
-    const cats = construireRail({
-      etablissementId: ID,
-      counts: { enRetardTotal: 2, verificationsEnRetard: 0 },
-    });
-    expect(cats.find((c) => c.id === "a-faire")?.alert).toBe(true);
   });
 
   it("rattache chaque item à la catégorie qui le contient", () => {
@@ -248,7 +215,6 @@ describe("construireRail — rail à deux niveaux", () => {
       }
     }
     expect(categorieDeItem("tableau")).toBe("tableau");
-    expect(categorieDeItem("controles")).toBe("a-faire");
     expect(categorieDeItem("guide")).toBe("comprendre");
     expect(categorieDeItem("connecter")).toBe("connecter");
   });
@@ -261,7 +227,6 @@ describe("construireSections — badges", () => {
       counts: {
         equipements: 13,
         enRetardTotal: 5,
-        verificationsEnRetard: 3,
         prestatairesAlertes: 1,
         risquesAReevaluer: 2,
         actions: 5,
@@ -278,21 +243,14 @@ describe("construireSections — badges", () => {
     expect(parId("duerp")).toMatchObject({ count: 2, alert: true });
   });
 
-  it("donne à chaque lecture du calendrier le compteur de son périmètre", () => {
-    // « Tout » annonce toutes les familles, « Contrôles matériel » les
-    // seules vérifications : deux nombres différents, et c'est correct —
-    // chacun est nommé par son item (ADR-015).
+  it("donne au calendrier le retard de toutes les familles", () => {
     const items = construireSections({
       etablissementId: ID,
-      counts: { enRetardTotal: 5, verificationsEnRetard: 3 },
+      counts: { enRetardTotal: 5 },
     }).flatMap((s) => s.items);
 
     expect(items.find((i) => i.id === "calendrier")).toMatchObject({
       count: 5,
-      alert: true,
-    });
-    expect(items.find((i) => i.id === "controles")).toMatchObject({
-      count: 3,
       alert: true,
     });
   });
@@ -300,15 +258,10 @@ describe("construireSections — badges", () => {
   it("n'affiche pas d'alerte quand les compteurs sont à zéro", () => {
     const items = construireSections({
       etablissementId: ID,
-      counts: {
-        enRetardTotal: 0,
-        verificationsEnRetard: 0,
-        prestatairesAlertes: 0,
-      },
+      counts: { enRetardTotal: 0, prestatairesAlertes: 0 },
     }).flatMap((s) => s.items);
 
     expect(items.find((i) => i.id === "calendrier")?.alert).toBe(false);
-    expect(items.find((i) => i.id === "controles")?.alert).toBe(false);
     expect(items.find((i) => i.id === "prestataires")?.alert).toBe(false);
   });
 });

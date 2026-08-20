@@ -4,7 +4,6 @@ import {
   CalendarDays,
   Check,
   ChevronRight,
-  ClipboardCheck,
   ClipboardList,
   GripVertical,
   LayoutGrid,
@@ -64,13 +63,7 @@ const ALERTES = [
  * « À faire », sa porte d'entrée par défaut, sans rien y surligner.
  */
 const NAV = [
-  { label: "Tout", Icone: ClipboardList, badge: "11", alerte: true },
-  {
-    label: "Contrôles matériel",
-    Icone: ClipboardCheck,
-    badge: "9",
-    alerte: true,
-  },
+  { label: "Calendrier", Icone: CalendarDays, badge: "11", alerte: true },
   { label: "Plan d'actions", Icone: ListChecks, badge: "6" },
   { label: "Interventions", Icone: MessageSquare },
   { label: "Préparer un contrôle", Icone: ShieldCheck },
@@ -79,7 +72,7 @@ const NAV = [
 /** Le rail, à l'extrême gauche. */
 const RAIL = [
   { label: "Tableau de bord", Icone: LayoutGrid, actif: true },
-  { label: "À faire", Icone: CalendarDays, point: true },
+  { label: "À faire", Icone: ClipboardList, point: true },
   { label: "Établissement", Icone: Building2, point: true },
   { label: "Registres", Icone: Archive },
   { label: "Comprendre", Icone: BookOpen },
