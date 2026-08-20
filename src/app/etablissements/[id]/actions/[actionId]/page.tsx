@@ -19,6 +19,7 @@ import { SupprimerActionButton } from "@/components/actions/SupprimerActionButto
 import { cloturerAction } from "@/lib/actions/plan";
 import { getAction, origineDeLAction } from "@/lib/actions/queries";
 import { LABEL_TYPE_ACTION } from "@/lib/actions/labels";
+import { LABEL_RESULTAT } from "@/lib/rapports/schema";
 import { classerDate, type RegistreLigne } from "@/lib/calendrier/etats";
 import { formaterDateFr, formaterDateLongueFr } from "@/lib/dates";
 import { estActionEnRetard } from "@/lib/dates/retard";
@@ -48,6 +49,15 @@ export default async function ActionDetailPage({
   const depuisCetteFiche = `/etablissements/${id}/actions/${actionId}`;
 
   const origine = origineDeLAction(a);
+  // La vérification d'origine : le rapport le plus récent (trié desc par la
+  // requête) porte le constat ; à défaut, la date de réalisation, puis la
+  // date prévue.
+  const dernierRapport = a.verification?.rapports[0] ?? null;
+  const dateConstat =
+    dernierRapport?.dateRapport ??
+    a.verification?.dateRealisee ??
+    a.verification?.datePrevue ??
+    null;
   const boundCloture = cloturerAction.bind(null, actionId);
   const estOuverte = a.statut === "ouverte" || a.statut === "en_cours";
   // Page serveur : l'horloge est lue une fois par requête. Deux `new Date()`
@@ -168,14 +178,23 @@ export default async function ActionDetailPage({
                     <ArrowUpRight className="size-[18px]" />
                   </span>
                   <div className="min-w-0 flex-1">
+                    {/* Ce renvoi regarde vers le passé : la vérification qui a
+                        révélé l'écart, pas une échéance à venir. La date et le
+                        résultat s'annoncent avant le clic, pour que le saut
+                        vers une fiche datée de plusieurs mois ne surprenne pas. */}
                     <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
-                      Écart à lever
+                      {dateConstat
+                        ? `Origine · écart constaté le ${formaterDateFr(dateConstat)}`
+                        : "Origine · écart constaté lors d'une vérification"}
                     </p>
                     <p className="m-0 mt-1.5 text-[14px] font-semibold leading-[1.35]">
                       {a.verification.libelleObligation}
                     </p>
                     <p className="m-0 mt-1 text-[12.5px] text-[color:var(--board-slate-mid)]">
                       {a.verification.equipement.libelle}
+                      {dernierRapport
+                        ? ` · ${LABEL_RESULTAT[dernierRapport.resultat]}`
+                        : null}
                     </p>
                     <Link
                       href={avecProvenance(
@@ -184,7 +203,9 @@ export default async function ActionDetailPage({
                       )}
                       className="mt-2.5 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
                     >
-                      Ouvrir la vérification
+                      {dateConstat
+                        ? `Voir la vérification du ${formaterDateFr(dateConstat)}`
+                        : "Voir la vérification d'origine"}
                       <ArrowUpRight className="size-3.5" />
                     </Link>
                   </div>
