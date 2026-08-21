@@ -6,9 +6,7 @@ import {
   ChevronRight,
   ClipboardList,
   GripVertical,
-  LayoutGrid,
   ListChecks,
-  MessageSquare,
   ShieldCheck,
   Archive,
 } from "lucide-react";
@@ -59,19 +57,18 @@ const ALERTES = [
  * Le panneau de navigation, tel qu'il est dans l'application.
  *
  * Aucun item n'est actif, et c'est fidèle : on est sur le tableau de bord,
- * qui a sa propre entrée de rail depuis l'ADR-015. Le panneau montre alors
- * « À faire », sa porte d'entrée par défaut, sans rien y surligner.
+ * qui n'a pas d'entrée de navigation — on y revient par la marque, en tête
+ * de rail. Le panneau montre alors « À faire », sa porte d'entrée par
+ * défaut, sans rien y surligner.
  */
 const NAV = [
   { label: "Calendrier", Icone: CalendarDays, badge: "11", alerte: true },
   { label: "Plan d'actions", Icone: ListChecks, badge: "6" },
-  { label: "Interventions", Icone: MessageSquare },
   { label: "Préparer un contrôle", Icone: ShieldCheck },
 ];
 
-/** Le rail, à l'extrême gauche. */
+/** Le rail, à l'extrême gauche — la marque en tête, puis les catégories. */
 const RAIL = [
-  { label: "Tableau de bord", Icone: LayoutGrid, actif: true },
   { label: "À faire", Icone: ClipboardList, point: true },
   { label: "Établissement", Icone: Building2, point: true },
   { label: "Registres", Icone: Archive },
@@ -299,22 +296,16 @@ export function TableauDeBord() {
               {/* Le rail. Il saute en dessous de `lg` : sur un petit écran
                   il mangerait la fenêtre sans rien apprendre. */}
               <div className="hidden w-[62px] flex-none flex-col items-center gap-4 bg-[color:var(--board-ink)] py-4 lg:flex">
+                <p
+                  className="text-[0.72rem] font-semibold tracking-[-0.02em] text-white"
+                  style={{ fontFamily: "var(--font-titre), sans-serif" }}
+                >
+                  Rojer
+                </p>
                 {RAIL.map((r) => (
                   <div key={r.label} className="flex flex-col items-center">
-                    <span
-                      className={
-                        "relative flex size-8 items-center justify-center rounded-full " +
-                        (r.actif ? "bg-white" : "")
-                      }
-                    >
-                      <r.Icone
-                        className={
-                          "size-[15px] " +
-                          (r.actif
-                            ? "text-[color:var(--board-ink)]"
-                            : "text-white/55")
-                        }
-                      />
+                    <span className="relative flex size-8 items-center justify-center rounded-full">
+                      <r.Icone className="size-[15px] text-white/55" />
                       {r.point ? (
                         <span className="absolute -right-0.5 -top-0.5 size-[5px] rounded-full bg-[color:var(--board-signal)]" />
                       ) : null}
@@ -328,13 +319,7 @@ export function TableauDeBord() {
 
               {/* Le panneau de navigation. */}
               <div className="hidden w-[168px] flex-none bg-[color:var(--board-ink)] px-2.5 py-4 md:block">
-                <p
-                  className="px-2 text-[0.82rem] font-semibold tracking-[-0.02em] text-white"
-                  style={{ fontFamily: "var(--font-titre), sans-serif" }}
-                >
-                  Rojer
-                </p>
-                <p className="mt-5 px-2 font-mono text-[0.48rem] uppercase tracking-[0.18em] text-white/35">
+                <p className="px-2 font-mono text-[0.48rem] uppercase tracking-[0.18em] text-white/35">
                   À faire
                 </p>
                 <ul className="m-0 mt-2 flex list-none flex-col gap-1 p-0">

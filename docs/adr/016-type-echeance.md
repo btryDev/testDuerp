@@ -1,6 +1,7 @@
 # ADR-016 — La nature d'une échéance est un type fermé, la famille s'en déduit
 
-- Statut : acceptée
+- Statut : acceptée, **amendée par l'ADR-018** (le type `intervention` a
+  quitté l'union avec son module ; le raisonnement, lui, tient)
 - Date : 2026-08-20
 - Portée : `src/lib/calendrier/echeances.ts`, `src/lib/calendrier/evenements.ts`,
   `src/lib/dashboard/frise.ts`, `src/components/calendrier/MarqueurFamille.tsx`,
@@ -44,7 +45,6 @@ export type TypeEcheance =
   | "verification"          // vérification périodique d'un équipement
   | "action-duerp"          // action née d'un risque du DUERP
   | "action-verification"   // action née d'un écart constaté en vérification
-  | "intervention"          // signalement de terrain
   | "permis-feu"
   | "plan-prevention"
   | "duerp-maj"             // mise à jour annuelle du document

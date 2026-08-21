@@ -5,7 +5,7 @@
 //   - les **vérifications périodiques**, par leur flux historique dédié
 //     (`listerEvenementsFenetre`) ;
 //   - le **registre des autres modules** (ADR-010, `listerAutresEcheances`) :
-//     actions, interventions, permis de feu, plans de prévention, mise à
+//     actions, permis de feu, plans de prévention, mise à
 //     jour du DUERP, attestations de vigilance.
 //
 // Ils en ressortent en `EvenementGrille`, avec leur famille et leur porte

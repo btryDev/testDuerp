@@ -156,31 +156,6 @@ export async function requireVerification(verificationId: string) {
 }
 
 /**
- * Récupère une intervention (ticket) dont l'établissement appartient au user,
- * ou 404.
- *
- * Ce garde existe parce que vérifier l'`etablissementId` **reçu du client** ne
- * prouve rien sur le ticket visé : l'utilisateur est libre d'envoyer son propre
- * établissement avec l'identifiant du ticket d'un autre. C'est la propriété de
- * l'objet manipulé qu'il faut établir, jamais celle du contexte annoncé.
- */
-export async function requireIntervention(interventionId: string) {
-  const user = await requireUser();
-  const intervention = await prisma.intervention.findFirst({
-    where: {
-      id: interventionId,
-      etablissement: { entreprise: { userId: user.id } },
-    },
-  });
-  if (!intervention) notFound();
-  return {
-    user,
-    intervention,
-    etablissementId: intervention.etablissementId,
-  };
-}
-
-/**
  * Vérifie (sans retourner l'entité) qu'un etablissementId appartient au user.
  * Utile dans les server actions où on veut juste un garde-fou.
  */

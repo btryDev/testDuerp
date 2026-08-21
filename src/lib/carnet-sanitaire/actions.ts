@@ -173,7 +173,7 @@ export async function ajouterAnalyseLegionelle(
   // Le fichier est déjà sur le disque : si l'insert échoue, il faut le
   // reprendre, sinon le stockage accumule des rapports que plus aucune ligne
   // ne référence. Même nettoyage best-effort que les trois autres modules
-  // d'upload (rapports, interventions, prestataires).
+  // d'upload (rapports, prestataires).
   try {
     await prisma.analyseLegionelle.create({
       data: {

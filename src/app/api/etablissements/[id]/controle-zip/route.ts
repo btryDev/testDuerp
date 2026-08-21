@@ -303,38 +303,6 @@ export async function GET(
     zip.file("08_Carnet_sanitaire.txt", txt);
   }
 
-  // ── 09 Interventions ouvertes ───────────────────────────────────────
-  const ticketsOuverts = await prisma.intervention.findMany({
-    where: {
-      etablissementId: id,
-      statut: { notIn: ["fait", "annule"] },
-    },
-    orderBy: [{ priorite: "desc" }, { echeance: "asc" }],
-  });
-  if (ticketsOuverts.length > 0) {
-    const txt = [
-      `INTERVENTIONS EN COURS (${ticketsOuverts.length})`,
-      `Art. R4224-17 CT — maintien en état de conformité.`,
-      "",
-      "────────────────────────────────────────────────────────────",
-      ...ticketsOuverts.flatMap((it) => [
-        `#${String(it.numero).padStart(3, "0")} [${it.priorite.toUpperCase()}] ${it.titre}`,
-        `  Statut : ${it.statut}`,
-        it.localisation ? `  Lieu : ${it.localisation}` : "",
-        it.assigneA ? `  Assigné à : ${it.assigneA}` : "",
-        it.echeance
-          ? `  Échéance : ${formaterDateFr(it.echeance)}`
-          : "",
-        it.description ? `  Description : ${it.description}` : "",
-        `  Créé le ${formaterDateFr(it.createdAt)}`,
-        "",
-      ]),
-    ]
-      .filter((l) => l !== "")
-      .join("\n");
-    zip.file("09_Interventions_en_cours.txt", txt);
-  }
-
   // ── 00 README ───────────────────────────────────────────────────────
   const readme = genererReadme({
     raisonSociale: etablissement.entreprise.raisonSociale,
@@ -350,7 +318,6 @@ export async function GET(
     aCarnetSanitaire: Boolean(
       carnetSan && (carnetSan.pointsReleve.length > 0 || carnetSan.analyses.length > 0),
     ),
-    nbInterventionsOuvertes: ticketsOuverts.length,
   });
   zip.file("00_README.txt", readme);
 
@@ -379,7 +346,6 @@ function genererReadme(args: {
   nbPermisFeu: number;
   nbPlansPrevention: number;
   aCarnetSanitaire: boolean;
-  nbInterventionsOuvertes: number;
 }): string {
   const lignes: string[] = [];
   lignes.push(
@@ -410,9 +376,6 @@ function genererReadme(args: {
     args.aCarnetSanitaire
       ? " 08_Carnet_sanitaire.txt       Relevés ECS + analyses légionelles (arrêté 01-02-2010)"
       : " 08_Carnet_sanitaire.txt       Non configuré",
-    args.nbInterventionsOuvertes > 0
-      ? ` 09_Interventions_en_cours.txt ${args.nbInterventionsOuvertes} intervention(s) ouverte(s)`
-      : " 09_Interventions_en_cours.txt Aucune intervention ouverte",
     args.nbPrestataires > 0
       ? ` Prestataires/                 Attestations URSSAF, RC Pro, Kbis (${args.nbPrestataires})`
       : " Prestataires/                 Aucun prestataire déclaré",
@@ -431,7 +394,6 @@ function genererReadme(args: {
     " [ ] Permis de feu signés avant tout travail par point chaud",
     " [ ] Plans de prévention signés avant toute intervention EE > 400h",
     " [ ] Carnet sanitaire renseigné (si ECS) — relevés hebdo",
-    " [ ] Interventions ouvertes ont un responsable et une échéance",
     "",
     "────────────────────────────────────────────────────────────",
     " CADRE LÉGAL DES OBLIGATIONS",

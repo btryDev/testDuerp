@@ -52,7 +52,7 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
       sub={
         total === 0
           ? "Rien de prévu"
-          : `${total} ${total > 1 ? "interventions" : "intervention"}`
+          : `${total} ${total > 1 ? "échéances" : "échéance"}`
       }
     >
       <ol className="grid grid-cols-7 gap-1.5">

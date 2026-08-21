@@ -25,7 +25,7 @@ export type EvenementFrise = {
   equipement: string;
   /** Ce que c'est (ADR-016). La frise recevait déjà la donnée et la
    *  jetait faute de la déclarer : ses cartes ne pouvaient pas dire si
-   *  elles montraient une vérification ou un signalement. */
+   *  elles montraient une vérification ou une action. */
   type?: TypeEcheance;
   /** Porte de sortie de l'échéance. Absente = vérification périodique,
    *  l'appelant sait la construire depuis l'`id`. Toutes les autres
@@ -56,7 +56,7 @@ export type MarqueurFrise = {
   titre: string;
   /** Nature commune aux échéances du marqueur. Absente quand le groupe en
    *  mêle plusieurs : une carte qui annoncerait « Vérification » au-dessus
-   *  d'un signalement mentirait pour gagner un pictogramme. */
+   *  d'une action mentirait pour gagner un pictogramme. */
   type?: TypeEcheance;
   /** « 24 SEPT. », ou la plage « 6 → 24 JUIL. » pour une grappe. */
   sousTitre: string;

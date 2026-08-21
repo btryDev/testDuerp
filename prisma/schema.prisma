@@ -986,6 +986,11 @@ enum TypeReseauEau {
 }
 
 // ----------------------------------------------------------------------------
+// ⚠️ Modèles orphelins — le module Interventions a été retiré du produit
+// (ADR-018). Plus aucun code applicatif ne les lit ni ne les écrit ; ils
+// restent ici le temps de trancher la suppression, qui fera l'objet d'une
+// migration dédiée. Ne rien y brancher de neuf.
+//
 // Interventions / tickets — gestion du quotidien (art. R4224-17 CT :
 // obligation de maintien en état de conformité). Pas de forme imposée,
 // mais la traçabilité est ce que l'inspecteur demande en premier.

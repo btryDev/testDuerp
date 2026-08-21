@@ -53,7 +53,6 @@ export type Provenance = {
 const LABEL_DETAIL: Partial<Record<SidebarItemId, string>> = {
   calendrier: "Vérification",
   actions: "Action",
-  interventions: "Intervention",
   prestataires: "Prestataire",
   equipements: "Équipement",
   "permis-feu": "Permis de feu",

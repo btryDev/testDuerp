@@ -82,7 +82,6 @@ describe("FAMILLE_DE_TYPE", () => {
     expect(FAMILLE_DE_TYPE.legionelles).toBe("controle");
     expect(FAMILLE_DE_TYPE["action-duerp"]).toBe("travaux");
     expect(FAMILLE_DE_TYPE["action-verification"]).toBe("travaux");
-    expect(FAMILLE_DE_TYPE.intervention).toBe("travaux");
     // ADR-017 : ni l'un ni l'autre n'est une correction — ils encadrent
     // une opération datée, ils ne reprennent aucun écart.
     expect(FAMILLE_DE_TYPE["permis-feu"]).toBe("operations");

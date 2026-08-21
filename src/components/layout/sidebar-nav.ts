@@ -14,8 +14,9 @@
 // objet avec deux compteurs différents (cf. ADR-015, révision).
 //
 // Le tableau de bord, lui, n'est pas une chose à faire : c'est un résumé. Il
-// a quitté ce panneau pour une entrée de rail à part entière (ADR-015), sans
-// quoi la porte d'entrée du produit restait rangée dans un tiroir.
+// n'a donc ni entrée de panneau ni entrée de rail — il est la page
+// d'accueil du dossier, et c'est la marque en tête de rail qui y ramène,
+// comme un logo ramène à l'accueil partout ailleurs (ADR-015, révision).
 //
 // Tous les registres vivent à plat sous « Mes registres » — la divulgation
 // progressive (« Autres registres » replié) a été retirée : les entrées se
@@ -60,7 +61,6 @@ import {
   Flame,
   HandshakeIcon,
   Droplets,
-  Ticket,
   ShieldCheck,
   BookOpen,
   Building2,
@@ -81,7 +81,6 @@ export type SidebarActive =
   | "permis-feu"
   | "plan-prevention"
   | "carnet-sanitaire"
-  | "interventions"
   | "controle"
   | "duerp"
   | "guide"
@@ -102,7 +101,6 @@ export const LABEL_ITEM: Record<SidebarItemId, string> = {
   tableau: "Tableau de bord",
   calendrier: "Calendrier",
   actions: "Plan d'actions",
-  interventions: "Interventions",
   controle: "Préparer un contrôle",
   guide: "Comprendre",
   connecter: "Connecter",
@@ -127,7 +125,6 @@ export type SidebarCounts = {
   enRetardTotal?: number;
   actions?: number;
   prestatairesAlertes?: number;
-  risquesAReevaluer?: number;
 };
 
 /**
@@ -208,7 +205,6 @@ export function deduireActif(
   if (pathname.startsWith(`${base}/permis-feu`)) return "permis-feu";
   if (pathname.startsWith(`${base}/plan-prevention`)) return "plan-prevention";
   if (pathname.startsWith(`${base}/carnet-sanitaire`)) return "carnet-sanitaire";
-  if (pathname.startsWith(`${base}/interventions`)) return "interventions";
   if (pathname.startsWith(`${base}/controle`)) return "controle";
   if (pathname.startsWith(`${base}/duerp`)) return "duerp";
   if (pathname.startsWith(`${base}/guide`)) return "guide";
@@ -243,12 +239,6 @@ export function construireSections({
       href: href("/actions"),
       Icon: ListChecks,
       count: counts?.actions,
-    },
-    {
-      id: "interventions",
-      label: LABEL_ITEM.interventions,
-      href: href("/interventions"),
-      Icon: Ticket,
     },
     {
       id: "controle",
@@ -336,8 +326,6 @@ export function construireSections({
       label: LABEL_ITEM.duerp,
       href: href("/duerp"),
       Icon: FileCheck2,
-      count: counts?.risquesAReevaluer,
-      alert: (counts?.risquesAReevaluer ?? 0) > 0,
     },
     {
       id: "registre",
@@ -392,10 +380,12 @@ export function construireSections({
 // panneau. Auparavant, une icône de premier niveau n'était qu'un tiroir —
 // deux clics obligatoires pour arriver quelque part.
 //
-// « Tableau de bord » ouvre le rail : c'est l'écran d'atterrissage, et un
-// résumé n'a pas sa place dans une liste de tâches. « Comprendre » et
-// « Connecter » ferment la marche, sans panneau. « Compte » est rendue par
-// le composant (elle dépend de l'user, pas de l'établissement).
+// Le tableau de bord n'y figure pas : c'est l'écran d'atterrissage, et on
+// y revient par la marque en tête de rail — une entrée de plus l'aurait mis
+// au même rang que les quatre questions, alors qu'il les résume toutes.
+// « Comprendre » et « Connecter » ferment la marche, sans panneau.
+// « Compte » est rendue par le composant (elle dépend de l'user, pas de
+// l'établissement).
 
 export type RailCategorieId =
   | "tableau"
@@ -467,15 +457,6 @@ export function construireRail(params: {
   const alerte = (items: NavItem[]) => items.some((it) => it.alert);
 
   return [
-    {
-      // Sans panneau, et c'est le propos : le tableau de bord n'a rien à
-      // ranger, il montre.
-      id: "tableau",
-      label: LABEL_ITEM.tableau,
-      labelCourt: "Tableau",
-      Icon: LayoutDashboard,
-      href: base,
-    },
     {
       id: "a-faire",
       label: "À faire",

@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
 /**
  * Zone de dépôt pour un justificatif (PDF, image, docx).
  * Générique : utilisée pour les rapports de vérification, les
- * attestations URSSAF, les photos de tickets, les rapports d'analyse
- * légionelle, etc. Le parent gère l'upload côté serveur via Server
- * Action ; ce composant gère l'UI + validation locale (MIME, taille).
+ * attestations URSSAF, les rapports d'analyse légionelle, etc. Le parent
+ * gère l'upload côté serveur via Server Action ; ce composant gère l'UI +
+ * validation locale (MIME, taille).
  */
 export function EvidenceDropzone({
   name,

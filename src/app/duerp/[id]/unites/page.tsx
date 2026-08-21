@@ -5,11 +5,9 @@ import { AjouterUniteForm } from "@/components/duerps/AjouterUniteForm";
 import { UniteRow } from "@/components/duerps/UniteRow";
 import { WizardSteps } from "@/components/duerps/WizardSteps";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { BannerRisquesAReevaluer } from "@/components/duerps/BannerRisquesAReevaluer";
 import { activitesDuSecteur } from "@/lib/activites/reponses";
 import { construireEtapes } from "@/lib/duerps/etapes";
 import { getDuerp } from "@/lib/duerps/queries";
-import { listerRisquesAReevaluer } from "@/lib/interventions/boucle-duerp";
 
 export default async function UnitesPage({
   params,
@@ -29,14 +27,10 @@ export default async function UnitesPage({
     transversesOk: duerp.transversesRepondues,
     activitesPosees: activitesDuSecteur(duerp.referentielSecteurId).length > 0,
   });
-  const risquesAReevaluer = await listerRisquesAReevaluer(
-    duerp.etablissementId,
-  );
 
   return (
     <div className="space-y-12">
       <WizardSteps etapes={etapes} />
-      <BannerRisquesAReevaluer risques={risquesAReevaluer} />
 
       <header className="max-w-2xl">
         <p className="label-admin inline-flex items-center">

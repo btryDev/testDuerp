@@ -35,9 +35,7 @@
 import {
   PrismaClient,
   type DomainePrestataire,
-  type PrioriteIntervention,
   type StatutAction,
-  type StatutIntervention,
   type TypeAction,
 } from "@prisma/client";
 
@@ -125,40 +123,6 @@ const ACTIONS: Gabarit[] = [
     echeanceJours: -30,
     criticite: 1,
     leveeIlYaJours: 19,
-  },
-];
-
-// Des signalements plausibles, pour nourrir la famille « Corrections »
-// du calendrier : un retard, un assigné, un en cours.
-const INTERVENTIONS: {
-  titre: string;
-  priorite: PrioriteIntervention;
-  statut: StatutIntervention;
-  echeanceJours: number;
-  localisation: string;
-  assigneA?: string;
-}[] = [
-  {
-    titre: "Fuite au plafond de la réserve",
-    priorite: "urgente",
-    statut: "ouvert",
-    echeanceJours: -5,
-    localisation: "Réserve sèche",
-  },
-  {
-    titre: "Poignée de la chambre froide à refixer",
-    priorite: "moyenne",
-    statut: "assigne",
-    echeanceJours: 9,
-    localisation: "Chambre froide",
-    assigneA: "Karim (maintenance)",
-  },
-  {
-    titre: "Néon qui clignote en salle",
-    priorite: "basse",
-    statut: "en_cours",
-    echeanceJours: 25,
-    localisation: "Salle",
   },
 ];
 
@@ -259,14 +223,8 @@ async function main() {
   const cible = args.find((a) => !a.startsWith("--"));
 
   const etab = cible
-    ? await prisma.etablissement.findUnique({
-        where: { id: cible },
-        include: { entreprise: { select: { userId: true } } },
-      })
-    : await prisma.etablissement.findFirst({
-        orderBy: { createdAt: "asc" },
-        include: { entreprise: { select: { userId: true } } },
-      });
+    ? await prisma.etablissement.findUnique({ where: { id: cible } })
+    : await prisma.etablissement.findFirst({ orderBy: { createdAt: "asc" } });
 
   if (!etab) {
     console.error(
@@ -350,45 +308,7 @@ async function main() {
   // genre de donnée de façade qu'on veut éviter. Le bloc « Ce qui a
   // changé » se nourrit des rapports réellement déposés via l'app.
 
-  // 4. Interventions — même idempotence que les actions (marqueur en
-  //    description), numéros à la suite des existants (contrainte
-  //    d'unicité etablissementId × numero).
-  const purgeInterventions = await prisma.intervention.deleteMany({
-    where: { etablissementId: etab.id, description: { startsWith: MARQUEUR } },
-  });
-  console.log(`  ${purgeInterventions.count} intervention(s) de seed retirée(s)`);
-
-  const auteurId = etab.entreprise.userId;
-  if (auteurId === null) {
-    console.log(
-      "  (pas d'interventions semées — l'entreprise n'a pas d'utilisateur rattaché)",
-    );
-  } else {
-    const dernierNumero = await prisma.intervention.aggregate({
-      where: { etablissementId: etab.id },
-      _max: { numero: true },
-    });
-    let numero = (dernierNumero._max.numero ?? 0) + 1;
-    for (const g of INTERVENTIONS) {
-      await prisma.intervention.create({
-        data: {
-          etablissementId: etab.id,
-          numero: numero++,
-          titre: g.titre,
-          description: `${MARQUEUR} donnée de démonstration`,
-          priorite: g.priorite,
-          statut: g.statut,
-          localisation: g.localisation,
-          assigneA: g.assigneA ?? null,
-          echeance: dans(g.echeanceJours),
-          creeParUserId: auteurId,
-        },
-      });
-    }
-    console.log(`  ${INTERVENTIONS.length} intervention(s) créée(s)`);
-  }
-
-  // 5. Prestataires — marqueur en notes internes. Les dates de validité
+  // 4. Prestataires — marqueur en notes internes. Les dates de validité
   //    existent sans fichier déposé : c'est un état plausible (date
   //    saisie, pièce pas encore uploadée) et suffisant pour la vigilance
   //    comme pour le calendrier.
@@ -417,7 +337,7 @@ async function main() {
   }
   console.log(`  ${PRESTATAIRES.length} prestataire(s) créé(s)`);
 
-  // 6. Un permis de feu à venir et un plan de prévention en cours sans
+  // 5. Un permis de feu à venir et un plan de prévention en cours sans
   //    inspection commune — pour vérifier que le registre d'échéances
   //    (ADR-010) les fait bien remonter dans le calendrier, avec
   //    l'alerte R. 4512-7 sur le plan.

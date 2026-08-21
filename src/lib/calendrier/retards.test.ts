@@ -14,7 +14,7 @@ const echeance = (
 ): EcheanceCalendrier => ({
   id: `${famille}-${tone}-${Math.abs(famille.length * 7)}`,
   // La famille est ce que le test pilote ; le type n'a qu'à être cohérent.
-  type: famille === "controle" ? "verification" : "intervention",
+  type: famille === "controle" ? "verification" : "action-duerp",
   famille,
   libelle: "Peu importe",
   origine: "Peu importe",

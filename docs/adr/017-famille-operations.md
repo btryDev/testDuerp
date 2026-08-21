@@ -49,13 +49,15 @@ l'apprend une fois :
 1. **Une cinquième famille d'échéance `operations`** (« Opérations
    encadrées »), qui reçoit les types `permis-feu` et `plan-prevention`.
    `travaux` redevient ce que son libellé annonce : des écarts à corriger
-   (actions DUERP, actions de vérification, interventions).
+   (actions DUERP, actions de vérification).
 2. **Une entrée de rail « Opérations »**, qui reçoit les deux modules.
    « Mes registres » retombe à quatre entrées, toutes réellement continues.
 
-Le rail suit l'ordre : Tableau de bord · À faire · **Opérations** · Mon
-établissement · Mes registres. Les deux catégories d'activité voisinent,
-les deux catégories descriptives suivent.
+Le rail suit l'ordre : À faire · **Opérations** · Mon établissement · Mes
+registres (le tableau de bord y a eu une entrée jusqu'à la seconde révision
+de l'ADR-015 ; on y revient désormais par la marque, en tête de rail). Les
+deux catégories d'activité voisinent, les deux catégories descriptives
+suivent.
 
 ## Options écartées
 
@@ -69,6 +71,10 @@ les deux catégories descriptives suivent.
   promettre un registre là où il n'y en a pas.
 
 ## Ce que cette décision ne tranche pas
+
+> **Tranché depuis, par l'ADR-018** : le module a été retiré, et avec lui la
+> boucle de l'ADR-009. L'action libre reste, comme ci-dessous, à traiter pour
+> elle-même.
 
 Le sort du module **Interventions** reste ouvert. Le doute est légitime — un
 dirigeant de TPE saisit-il vraiment ses signalements au fil de l'eau ? — mais

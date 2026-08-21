@@ -1,7 +1,8 @@
 # ADR-009 — Boucle tickets ↔ DUERP : le DUERP comme document vivant
 
 - **Date** : 2026-04-23
-- **Statut** : Acceptée
+- **Statut** : **Annulée par l'ADR-018** (le module Interventions, seul
+  déclencheur de cette boucle, a été retiré du produit)
 - **Auteur** : Claude Code (sur brief Paloma)
 - **Relatif à** : ADR-002 (Action unifiée), modules Interventions et DUERP
 

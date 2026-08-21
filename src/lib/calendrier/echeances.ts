@@ -24,7 +24,7 @@ import { estEnRetard } from "@/lib/dates/retard";
  * Les grandes familles, pensées pour un dirigeant non-expert :
  *   - `controle`   — faire vérifier (vérifs périodiques, légionelles) ;
  *   - `travaux`    — « Corrections & réparations » : un écart constaté à
- *     reprendre (actions du DUERP, actions de vérification, tickets) ;
+ *     reprendre (actions du DUERP, actions de vérification) ;
  *   - `operations` — « Opérations encadrées » : un chantier daté dont le
  *     préalable est obligatoire (permis de feu, plan de prévention) ;
  *   - `papiers`    — « Documents à renouveler » (DUERP, attestations) ;
@@ -45,16 +45,15 @@ export type FamilleEcheance =
 /**
  * Ce qu'une échéance **est** (ADR-016).
  *
- * La famille regroupe pour filtrer ; le type nomme. `travaux` fusionne quatre
- * objets — une action née du DUERP et un signalement de terrain y voisinent —
- * et un dirigeant qui lit « Corrections » ne sait pas lequel il a sous les
- * yeux. (L'ADR-017 en a sorti les deux qui n'y étaient pas des corrections.)
+ * La famille regroupe pour filtrer ; le type nomme. `travaux` réunit deux
+ * origines d'action — le DUERP et un rapport de vérification — et un
+ * dirigeant qui lit « Corrections » ne sait pas laquelle il a sous les yeux.
+ * (L'ADR-017 en a sorti les deux qui n'y étaient pas des corrections.)
  */
 export type TypeEcheance =
   | "verification"
   | "action-duerp"
   | "action-verification"
-  | "intervention"
   | "permis-feu"
   | "plan-prevention"
   | "duerp-maj"
@@ -71,7 +70,6 @@ export const FAMILLE_DE_TYPE: Record<TypeEcheance, FamilleEcheance> = {
   legionelles: "controle",
   "action-duerp": "travaux",
   "action-verification": "travaux",
-  intervention: "travaux",
   // Ni des corrections ni des registres : des opérations ponctuelles.
   // Un permis de feu ne répare rien, il autorise un travail par point
   // chaud et impose une surveillance après ; un plan de prévention
@@ -91,8 +89,8 @@ export type EcheanceCalendrier = {
   famille: FamilleEcheance;
   libelle: string;
   /** Le **complément** que le type ne dit pas : le libellé de la
-   *  vérification dont sort une action, le numéro d'un signalement. Le mot
-   *  standard, lui, vient du type (ADR-016). */
+   *  vérification dont sort une action, la date d'ouverture d'un permis. Le
+   *  mot standard, lui, vient du type (ADR-016). */
   origine: string;
   date: Date;
   /** Mêmes tons que la grille : dépassé = alerte, sinon ok. */
@@ -414,37 +412,6 @@ const sourceActions: SourceEcheances = async ({
   );
 };
 
-const sourceInterventions: SourceEcheances = async ({
-  scope,
-  aujourdhui,
-  etablissementId,
-}) => {
-  const interventions = await prisma.intervention.findMany({
-    where: {
-      ...scope,
-      statut: { in: ["ouvert", "assigne", "en_cours"] },
-      echeance: { not: null },
-    },
-    select: { id: true, titre: true, numero: true, echeance: true },
-  });
-  return interventions.flatMap((i) =>
-    i.echeance
-      ? [
-          {
-            id: `intervention-${i.id}`,
-            type: "intervention" as const,
-            famille: FAMILLE_DE_TYPE.intervention,
-            libelle: i.titre,
-            origine: `n°${i.numero}`,
-            date: i.echeance,
-            tone: tonPourDate(i.echeance, aujourdhui),
-            href: `/etablissements/${etablissementId}/interventions/${i.id}`,
-          },
-        ]
-      : [],
-  );
-};
-
 const sourceDuerp: SourceEcheances = async ({
   scope,
   aujourdhui,
@@ -588,7 +555,6 @@ const sourceLegionelles: SourceEcheances = async ({
  */
 const SOURCES_ECHEANCES: SourceEcheances[] = [
   sourceActions,
-  sourceInterventions,
   sourceDuerp,
   sourcePrestataires,
   sourcePermisFeu,
