@@ -37,6 +37,32 @@ export function activitesSansReponseSnapshot(
 }
 
 /**
+ * Faut-il énoncer les questions sans réponse **seules**, hors de la liste des
+ * activités déclarées ?
+ *
+ * Le cas est celui d'un dossier où rien n'a été déclaré. Sans cette mention,
+ * un « non » à toutes les questions et un silence à toutes les questions
+ * produisent exactement le même document : aucune mention. Or dans le premier
+ * cas cette absence est une réponse — le dirigeant a tranché, le référentiel
+ * couvre ce qu'il exerce — et dans le second elle n'en est pas une. Les
+ * confondre, c'est laisser un silence prendre l'apparence d'une réponse sur la
+ * pièce même que le document est censé rendre honnête.
+ *
+ * Le rendu, lui, reste dans le paragraphe de méthodologie et non en bloc : la
+ * phrase qualifie l'origine des données, elle ne reproche rien au dossier.
+ * Quand des activités ont été déclarées, la liste porte déjà la nuance et cette
+ * mention isolée n'a plus lieu d'être.
+ */
+export function mentionSansReponseIsolee(
+  couverture: CouvertureSnapshot | undefined,
+): boolean {
+  return (
+    activitesDeclareesSnapshot(couverture).length === 0 &&
+    activitesSansReponseSnapshot(couverture).length > 0
+  );
+}
+
+/**
  * Convertit les questions de l'écran en lignes de snapshot. Le référentiel est
  * lu ici, une fois, au moment de figer — après quoi le document ne dépend plus
  * de lui. `undefined` (pas de réponse) devient `null` : JSON ne conserve pas

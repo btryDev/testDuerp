@@ -5,6 +5,7 @@ import {
   activitesDeclareesSnapshot,
   activitesSansReponseSnapshot,
   figerCouverture,
+  mentionSansReponseIsolee,
 } from "./snapshot";
 
 function activite(id: string): ActiviteNonCouverte {
@@ -66,5 +67,51 @@ describe("lecture d'un snapshot", () => {
     expect(activitesSansReponseSnapshot(couverture).map((a) => a.id)).toEqual([
       "pressing",
     ]);
+  });
+});
+
+describe("mentionSansReponseIsolee", () => {
+  // La décision que ce prédicat porte : sur un dossier où rien n'a été déclaré,
+  // un « non » à toutes les questions et un silence à toutes les questions
+  // produisaient le même document — aucune mention. Or la première absence est
+  // une réponse et la seconde n'en est pas une. Les confondre laissait un
+  // silence prendre l'apparence d'une réponse, dans le document même dont c'est
+  // le rôle de ne pas le faire.
+
+  it("dit oui quand toutes les questions sont restées sans réponse", () => {
+    const fige = figerCouverture("commerce", [
+      { activite: activite("decoupe"), exercee: undefined },
+      { activite: activite("poisson"), exercee: undefined },
+    ]);
+    expect(mentionSansReponseIsolee(fige)).toBe(true);
+  });
+
+  it("dit non quand tout a été tranché, même par des « non »", () => {
+    // Le cas symétrique, et c'est lui qui justifie le prédicat : ici le
+    // document n'a rien à ajouter, parce que le dirigeant a répondu.
+    const fige = figerCouverture("commerce", [
+      { activite: activite("decoupe"), exercee: false },
+      { activite: activite("poisson"), exercee: false },
+    ]);
+    expect(mentionSansReponseIsolee(fige)).toBe(false);
+  });
+
+  it("dit non dès qu'une activité est déclarée : la liste porte déjà la nuance", () => {
+    const fige = figerCouverture("commerce", [
+      { activite: activite("decoupe"), exercee: true },
+      { activite: activite("poisson"), exercee: undefined },
+    ]);
+    expect(mentionSansReponseIsolee(fige)).toBe(false);
+  });
+
+  it("dit non sur un snapshot antérieur au champ", () => {
+    // Quarante ans de conservation : une version validée avant l'introduction
+    // de la couverture ne dit rien du périmètre, et le document régénéré ne
+    // doit rien en dire non plus — ni manque, ni complétude.
+    expect(mentionSansReponseIsolee(undefined)).toBe(false);
+  });
+
+  it("dit non quand le secteur ne déclarait aucune activité", () => {
+    expect(mentionSansReponseIsolee(figerCouverture("bureau", []))).toBe(false);
   });
 });

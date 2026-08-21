@@ -12,6 +12,7 @@ import { estHorsReferentiel } from "@/lib/risques/helpers";
 import {
   activitesDeclareesSnapshot,
   activitesSansReponseSnapshot,
+  mentionSansReponseIsolee,
 } from "@/lib/activites/snapshot";
 import type { DuerpSnapshot } from "@/lib/versions/snapshot";
 import type { TypeMesure } from "@/lib/referentiels/types";
@@ -151,6 +152,7 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
   // champ : rien n'est dit, ni dans un sens ni dans l'autre.
   const activitesDeclarees = activitesDeclareesSnapshot(snapshot.couverture);
   const activitesSansReponse = activitesSansReponseSnapshot(snapshot.couverture);
+  const sansReponseIsolee = mentionSansReponseIsolee(snapshot.couverture);
 
   const lignes = unites.flatMap((u) =>
     u.risques.map((r) => ({
@@ -270,6 +272,12 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
             : ""}
           {activitesDeclarees.length > 0
             ? "\nLe référentiel sectoriel retenu ne couvre pas toutes les activités déclarées par l'employeur : celles qu'il ne couvre pas sont nommées ci-dessous, avec ce que le présent document ne traite pas à leur sujet."
+            : ""}
+          {/* Cf. `mentionSansReponseIsolee` : sans cette phrase, un « non » à
+              toutes les questions et un silence à toutes les questions
+              donnaient le même document. */}
+          {sansReponseIsolee
+            ? `\n${activitesSansReponse.length} question${activitesSansReponse.length > 1 ? "s" : ""} sur le périmètre du référentiel ${activitesSansReponse.length > 1 ? "sont restées" : "est restée"} sans réponse à la date de validation : le présent document n'affirme ni que ces activités sont exercées, ni qu'elles ne le sont pas.`
             : ""}
         </Text>
 
