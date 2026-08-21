@@ -2,6 +2,7 @@ import type { Etape } from "@/components/duerps/WizardSteps";
 
 export type EtapeId =
   | "secteur"
+  | "activites"
   | "unites"
   | "risques"
   | "transverses"
@@ -15,10 +16,22 @@ export function construireEtapes(
     unitesOk: boolean;
     risquesOk: boolean;
     transversesOk: boolean;
+    /**
+     * Le secteur retenu déclare-t-il des activités hors couverture (ADR-020) ?
+     * Une liste vide n'est pas « ce secteur couvre tout » — c'est « la liste
+     * n'a pas encore été instruite ». Dans les deux cas il n'y a rien à
+     * demander, donc l'étape ne s'affiche pas : un écran de questions vide
+     * vaudrait affirmation de couverture complète.
+     */
+    activitesPosees: boolean;
   },
 ): Etape[] {
   const atteinte = (id: EtapeId) => {
     if (id === "secteur") return true;
+    // Le périmètre se déclare dès que le secteur est retenu, et avant les
+    // unités : savoir que la boucherie n'est pas couverte est précisément ce
+    // qui décide le dirigeant à en créer l'unité à la main.
+    if (id === "activites") return progression.secteurOk;
     if (id === "unites") return progression.secteurOk;
     if (id === "risques") return progression.unitesOk;
     // Les étapes suivantes ne requièrent plus que « risques » soit complet :
@@ -31,6 +44,7 @@ export function construireEtapes(
   };
   const liste: { id: EtapeId; libelle: string }[] = [
     { id: "secteur", libelle: "Secteur d'activité" },
+    { id: "activites", libelle: "Périmètre du référentiel" },
     { id: "unites", libelle: "Unités de travail" },
     { id: "risques", libelle: "Risques par unité" },
     { id: "transverses", libelle: "Questions transverses" },
@@ -38,9 +52,15 @@ export function construireEtapes(
   ];
   // On masque l'étape « Secteur » quand elle a été résolue (auto depuis le NAF
   // ou déjà traversée). Elle reste visible uniquement si elle est l'actuelle.
-  const visibles = liste.filter(
-    (e) => e.id !== "secteur" || etapeActuelle === "secteur",
-  );
+  // Même traitement pour « Périmètre », à l'inverse : elle n'apparaît que si
+  // le secteur retenu a des questions à poser — ou si on y est déjà, pour ne
+  // pas afficher un fil d'étapes où l'étape courante n'existe pas.
+  const visibles = liste.filter((e) => {
+    if (e.id === "secteur") return etapeActuelle === "secteur";
+    if (e.id === "activites")
+      return progression.activitesPosees || etapeActuelle === "activites";
+    return true;
+  });
   return visibles.map((e) => ({
     id: e.id,
     libelle: e.libelle,

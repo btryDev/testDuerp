@@ -5,6 +5,8 @@ import type {
   MesureSnapshot,
   UniteSnapshot,
 } from "./snapshot";
+import { questionsActivites } from "@/lib/activites/reponses";
+import { figerCouverture } from "@/lib/activites/snapshot";
 import type { TypeMesure } from "@/lib/referentiels/types";
 
 /**
@@ -88,6 +90,19 @@ export async function construireSnapshot(
   const etab = duerp.etablissement;
   const ent = etab.entreprise;
 
+  // Couverture du référentiel (ADR-020) : le référentiel sectoriel est
+  // interrogé **ici et maintenant**, au moment de figer, et le résultat est
+  // recopié dans le snapshot. Après quoi le document n'en dépend plus — il
+  // sera régénéré à l'identique quand la liste des activités aura changé,
+  // voire quand le secteur aura disparu du référentiel.
+  const couverture = figerCouverture(
+    duerp.referentielSecteurId,
+    questionsActivites(
+      duerp.referentielSecteurId,
+      duerp.reponsesActivitesNonCouvertes,
+    ),
+  );
+
   return {
     version: options.numero,
     genereLe: new Date().toISOString(),
@@ -101,5 +116,6 @@ export async function construireSnapshot(
       adresse: etab.adresse,
     },
     unites: unitesSnap,
+    couverture,
   };
 }

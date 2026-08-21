@@ -136,6 +136,7 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
 15. **015** — « À faire » est un écran (le calendrier), tableau de bord au rail
 16. **016** — La nature d'une échéance est un type fermé, la famille s'en déduit
 17. **017** — Les opérations ponctuelles ne sont ni des corrections ni des registres
+18. **020** — Ce qu'un DUERP ne couvre pas se déclare, et se grave avec lui
 
 Toute nouvelle décision structurante → nouvel ADR avant de coder.
 

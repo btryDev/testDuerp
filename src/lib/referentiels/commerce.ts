@@ -287,4 +287,112 @@ export const commerce: Referentiel = {
     },
   ],
   questionsDetection: [],
+  /*
+   * Les activités hors couverture du secteur.
+   *
+   * Le référentiel ci-dessus tient dans quatre unités — réception et stockage,
+   * mise en rayon, vente et caisse, locaux. La structure OiRA citée en tête du
+   * fichier en compte six : il lui manque « Atelier (laboratoire) » et
+   * « Interventions chez les clients ». Ce n'est pas un détail de découpage.
+   * Le dépliant INRS ED 6401 « Commerces alimentaires de proximité » (1re éd.,
+   * novembre 2020) ne nomme que quatre risques principaux — douleurs au dos,
+   * chutes, coupures au cutter de déballage, agression et stress — soit très
+   * exactement le périmètre de ces quatre unités. Tout ce qui se fabrique ou se
+   * transforme dans l'arrière-boutique en sort, et l'INRS le dit à sa façon :
+   * il consacre aux ateliers des outils OiRA distincts (« Boucherie -
+   * Charcuterie », « Poissonnerie », « Boulangerie - Pâtisserie - Chocolaterie
+   * - Glacerie »), parce que les familles de risques n'y sont pas les mêmes.
+   *
+   * Le NAF 47.11 couvre pourtant aussi bien la supérette que l'hypermarché avec
+   * rayon boucherie : les deux tombent sur ce référentiel, et rien jusqu'ici ne
+   * les distinguait.
+   *
+   * Écartées faute d'ajouter une famille de risques que le référentiel n'ait
+   * déjà : la livraison et les tournées (le risque routier est porté par le
+   * référentiel transverse, `trv-routier`), l'ouverture tardive et le travail
+   * seul (`trv-rps-isolement`, et `com-rps-public` couvre déjà l'agression et
+   * le braquage), le stockage d'archives (`com-chute-hauteur`). Écartées faute
+   * de source INRS exploitable : fleuriste et jardinerie, pour lesquels l'INRS
+   * ne publie ni outil OiRA, ni page métier, ni dépliant TPE. Écartées comme
+   * hors NAF : la station-service (47.30, que `codesNaf` ne vise pas) et la
+   * réparation automobile (NAF 45).
+   */
+  activitesNonCouvertes: [
+    {
+      // Sources : INRS, outil OiRA « Boucherie - Charcuterie » (outil71) —
+      // outil sectoriel distinct de celui du commerce, ce qui dit déjà que le
+      // commerce ne le couvre pas. Dépliant INRS ED 6382 « Boucherie -
+      // Charcuterie. Santé au travail : passez à l'action ! » (1re éd., octobre
+      // 2020) : douleurs au dos, chutes, brûlures, coupures, risques liés aux
+      // machines. Page INRS « Filière viandes » : « machines à trancher,
+      // scies… » → amputations, coupures, écrasements ; travail au froid comme
+      // facteur de TMS ; risque biologique. INRS ED 6227 « Sécurisation des
+      // scies à ruban dans l'agroalimentaire » pour la machine la plus
+      // accidentogène du laboratoire.
+      id: "com-decoupe-viande",
+      libelle: "Découpe de viande sur place",
+      question: "Découpez-vous de la viande sur place ?",
+      aide:
+        "Répondez oui s'il existe un rayon boucherie, charcuterie ou traiteur avec un laboratoire de découpe. Répondez non si vous vendez uniquement de la viande reçue déjà conditionnée.",
+      cequiManque:
+        "L'évaluation ne décrit pas le laboratoire de découpe : machines à trancher et scies à ruban, qui exposent à des coupures, des écrasements et des amputations ; travail au couteau tout au long de la journée ; exposition au froid en chambre froide et au contact des produits ; troubles musculo-squelettiques du désossage et de la découpe répétée ; manutention des carcasses et des quartiers ; risque biologique lié à la manipulation de viande crue.",
+    },
+    {
+      // Sources : INRS, outil OiRA « Poissonnerie » (outil72) et dépliant INRS
+      // ED 6380 « Poissonnerie » (2e éd. révisée, octobre 2022), qui traite la
+      // manutention de la glace comme un risque à part entière, au même rang
+      // que les chutes. Page métier INRS « Poissonnerie. Les risques du
+      // métier » : coupures par les arêtes dorsales et lors de la manipulation
+      // des déchets, infections cutanées consécutives aux coupures, risque
+      // électrique dû à des installations inadaptées au milieu humide. L'INRS
+      // y relève la durée d'arrêt moyenne par maladie professionnelle la plus
+      // élevée des commerces de bouche.
+      id: "com-rayon-maree",
+      libelle: "Préparation du poisson et des coquillages",
+      question: "Préparez-vous du poisson ou des coquillages sur place ?",
+      aide:
+        "Répondez oui s'il existe un banc de marée, un rayon poissonnerie ou un poste d'écaillage. Répondez non si le poisson arrive déjà préparé et emballé.",
+      cequiManque:
+        "L'évaluation ne décrit pas le banc de marée : manutention répétée de la glace, du chargement du banc à l'évacuation de l'eau de fonte ; coupures par les arêtes et par les couteaux, et infections cutanées qui s'ensuivent ; installations électriques exposées à l'humidité permanente du poste ; travail debout dans le froid et sur sol mouillé.",
+    },
+    {
+      // Sources : INRS, outil OiRA « Boulangerie - Pâtisserie - Chocolaterie -
+      // Glacerie » (outil70) et dépliant INRS ED 6400 du même nom (1re éd.,
+      // octobre 2020) : allergies et asthme dus aux poussières de farine **et
+      // de sucre glace**, brûlures aux appareils de cuisson, manutention de
+      // grandes quantités. Page métier INRS « Boulangerie - Pâtisserie -
+      // Chocolaterie - Glacerie. Les risques du métier » : les farines sont la
+      // première cause d'asthme professionnel, et les boulangers représentent
+      // un quart des salariés atteints d'affections respiratoires en France.
+      //
+      // Le travail de nuit n'est volontairement pas cité : l'INRS ne le nomme
+      // ni dans ED 6400 ni sur la page métier, et une source générique sur les
+      // horaires atypiques ne fonde pas une mention sectorielle (règle 6).
+      id: "com-fabrication-boulangere",
+      libelle: "Fabrication de pain, de viennoiseries ou de pâtisseries",
+      question:
+        "Fabriquez-vous du pain, des viennoiseries, des pâtisseries ou des glaces sur place ?",
+      aide:
+        "Répondez oui dès qu'il y a un four ou un laboratoire dans le magasin, y compris pour cuire des produits livrés crus ou surgelés.",
+      cequiManque:
+        "L'évaluation ne décrit pas le fournil ni le laboratoire de pâtisserie : poussières de farine et de sucre glace, première cause d'asthme professionnel, et rhinites associées ; brûlures au four et aux appareils de cuisson ; pétrins, diviseuses et laminoirs ; manutention des sacs de farine, des seaux et des chariots de plaques.",
+    },
+    {
+      // Source : la structure OiRA du commerce non alimentaire citée en tête de
+      // ce fichier comporte une unité « Interventions chez les clients » qui n'a
+      // pas d'équivalent dans `unitesTravailSuggerees`. Pour les familles de
+      // risques du travail sur le site d'un tiers : dossier INRS « Entreprises
+      // extérieures » (risques d'interférence et de coactivité, inspection
+      // commune préalable, plan de prévention — art. R. 4511-1 et s. du code du
+      // travail).
+      id: "com-intervention-chez-client",
+      libelle: "Interventions chez les clients",
+      question:
+        "Vos salariés se rendent-ils chez les clients pour livrer, installer ou dépanner ?",
+      aide:
+        "La question porte sur le travail effectué une fois sur place, pas sur le trajet pour s'y rendre.",
+      cequiManque:
+        "L'évaluation ne décrit que le magasin et ses réserves. Elle ne porte pas sur le travail réalisé chez le client : accès, sols, escaliers et installations électriques d'un lieu que vous ne connaissez pas à l'avance ; portage et manutention dans des espaces contraints ; risques d'interférence avec les autres intervenants présents sur place ; intervention seul, loin de tout renfort.",
+    },
+  ],
 };

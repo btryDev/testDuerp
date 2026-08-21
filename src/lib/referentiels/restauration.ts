@@ -395,4 +395,97 @@ export const restauration: Referentiel = {
     },
   ],
   questionsDetection: [],
+  /*
+   * Les activités hors couverture du secteur.
+   *
+   * Les cinq unités ci-dessus décrivent bien un restaurant traditionnel : c'est
+   * le périmètre que l'INRS donne lui-même à l'outil OiRA « Hôtels, cafés,
+   * restaurants » (outil81), qui vise « les entreprises du secteur de la
+   * restauration traditionnelle ». L'écart naît de `codesNaf`, qui va plus
+   * loin que ce périmètre — 56.10C restauration rapide, 56.29A/B restauration
+   * collective, 56.30Z débits de boissons — là où l'INRS publie des outils
+   * distincts (outil80, outil155) parce que le métier n'est pas le même.
+   *
+   * Écartées après vérification, et le détail compte parce qu'il évite de
+   * rouvrir le débat :
+   *  - Traiteur et réceptions hors les murs. Le dépliant INRS ED 6440
+   *    « Traiteur organisateur de réceptions » (1re éd., mars 2021) ne nomme
+   *    que chutes, douleurs au dos, coupures et stress, et toutes ses mesures
+   *    portent sur la cuisine et le stockage. Tel que l'INRS le documente, le
+   *    traiteur n'ajoute aucune famille de risques à ce référentiel.
+   *  - Livraison à domicile et vente à emporter. INRS ED 933 « La restauration
+   *    rapide » y consacre sa section 3.5, mais ce qu'elle décrit est le risque
+   *    routier, déjà porté par le référentiel transverse (`trv-routier`, dont
+   *    la question détecteur vise explicitement les deux-roues).
+   *  - Service en terrasse : aucune source INRS ne lui attribue de risque
+   *    propre, et l'ambiance thermique est déjà cotée (`resto-thermique`).
+   *  - Travail de nuit : non nommé par les sources sectorielles INRS de la
+   *    restauration ; `trv-rps-isolement` porte les horaires atypiques.
+   */
+  activitesNonCouvertes: [
+    {
+      // Sources : INRS, outil OiRA « Boulangerie - Pâtisserie - Chocolaterie -
+      // Glacerie » (outil70) et dépliant INRS ED 6400 du même nom (1re éd.,
+      // octobre 2020) : allergies et asthme dus aux poussières de farine et de
+      // sucre glace, brûlures, manutention de grandes quantités. Page métier
+      // INRS « Boulangerie - Pâtisserie - Chocolaterie - Glacerie. Les risques
+      // du métier » : les farines sont la première cause d'asthme
+      // professionnel en France.
+      //
+      // C'est le seul candidat qui ouvre une famille de risques que la liste
+      // ci-dessus n'a pas du tout : `resto-chimique` ne vise que les produits
+      // d'entretien, et aucun risque n'y traite l'exposition respiratoire aux
+      // poussières.
+      id: "resto-fabrication-boulangere",
+      libelle: "Fabrication de pain, de viennoiseries ou de pâtisseries",
+      question:
+        "Fabriquez-vous vous-même le pain, les viennoiseries ou les pâtisseries que vous servez ?",
+      aide:
+        "Répondez oui si la pâte est travaillée dans votre cuisine (pétrissage, façonnage, dressage). Répondez non si vous servez des produits achetés déjà finis.",
+      cequiManque:
+        "L'évaluation ne décrit pas le travail de la pâte : poussières de farine et de sucre glace, première cause d'asthme professionnel, et rhinites associées ; pétrins, batteurs-mélangeurs et laminoirs ; manutention des sacs de farine et des chariots de plaques.",
+    },
+    {
+      // Sources : INRS ED 933 « La restauration rapide — Aide au repérage des
+      // risques », section 3.14 « Les agressions » : agression verbale ou
+      // physique aux postes d'encaissement, braquage (consigne de non-
+      // résistance, caméras, suivi psychologique après l'événement), transport
+      // de fonds vers la banque. Dépliant INRS ED 6401 « Commerces
+      // alimentaires de proximité » pour les phases d'ouverture et de
+      // fermeture et les prélèvements de fonds en caisse.
+      //
+      // Le référentiel transverse s'arrête plus tôt : `trv-rps-public` couvre
+      // « incivilités, agressions verbales », pas la violence dirigée contre la
+      // caisse. Le référentiel commerce, lui, a `com-rps-public` — la
+      // restauration n'a rien d'équivalent.
+      id: "resto-caisse-espece-fermeture",
+      libelle: "Détention d'espèces, ouverture et fermeture par un seul salarié",
+      question:
+        "Un salarié ouvre-t-il ou ferme-t-il seul l'établissement, ou transporte-t-il la recette ?",
+      aide:
+        "Répondez oui si une personne se retrouve seule dans l'établissement avant l'ouverture, après le service, ou sur le trajet du dépôt en banque.",
+      cequiManque:
+        "L'évaluation ne décrit pas les phases d'ouverture, de fermeture et de transport des fonds : agression physique ou vol à main armée au moment de l'encaissement ou de la fermeture, trajet vers la banque avec la recette, présence d'un salarié seul dans l'établissement hors des heures de service, prise en charge d'un salarié après un événement violent.",
+    },
+    {
+      // Source : INRS, outil OiRA « Restauration collective » (outil155),
+      // outil sectoriel distinct de « Hôtels, cafés, restaurants » (outil81)
+      // dont le texte de présentation vise « la restauration traditionnelle ».
+      // L'existence de deux outils est ici l'argument : l'INRS ne considère pas
+      // que l'un couvre l'autre, et `codesNaf` réunit pourtant les deux
+      // (56.29A et 56.29B tombent sur ce référentiel).
+      //
+      // Le `cequiManque` s'en tient à ce que cette source établit — un
+      // périmètre de travail non décrit — sans nommer de risques que l'outil
+      // n'expose pas publiquement (règle 6).
+      id: "resto-repas-hors-site",
+      libelle: "Repas produits pour être consommés sur un autre site",
+      question:
+        "Produisez-vous des repas qui sont consommés ailleurs que dans votre salle ?",
+      aide:
+        "Répondez oui pour une cuisine centrale, une cantine desservie depuis vos locaux ou du portage de repas à domicile. Répondez non si vous ne servez que vos propres clients sur place ou à emporter.",
+      cequiManque:
+        "L'évaluation décrit une cuisine qui produit et sert dans les mêmes murs. Elle ne porte pas sur la production destinée à d'autres sites : conditionnement et refroidissement en série, contenants et chariots de grande capacité, chargement et transport des repas, remise en température et service dans des locaux que vous n'exploitez pas.",
+    },
+  ],
 };

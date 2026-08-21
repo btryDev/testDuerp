@@ -54,6 +54,39 @@ export type UniteSnapshot = {
   risques: RisqueSnapshot[];
 };
 
+/**
+ * Une activité hors couverture du référentiel sectoriel, et la réponse qui lui
+ * a été donnée au moment où la version a été figée (ADR-020).
+ *
+ * Le libellé et le « ce qui manque » sont **recopiés** dans le snapshot, pas
+ * référencés par identifiant : le référentiel est du TypeScript versionné
+ * (ADR-003), il sera réécrit, réordonné, complété. Une version relue dans
+ * trente ans doit pouvoir citer l'activité déclarée sans dépendre de ce que le
+ * code contient ce jour-là. Le snapshot est le document, pas une clé étrangère.
+ */
+export type ActiviteCouvertureSnapshot = {
+  id: string;
+  libelle: string;
+  cequiManque: string;
+  /**
+   * `true` = activité déclarée exercée ; `false` = déclarée non exercée ;
+   * `null` = question posée, restée sans réponse. Les trois se distinguent
+   * jusque dans le document : un silence ne devient jamais un « non ».
+   */
+  exercee: boolean | null;
+};
+
+export type CouvertureSnapshot = {
+  /** Le référentiel dont les questions ci-dessous sont issues. */
+  referentielSecteurId: string | null;
+  /**
+   * Les questions telles qu'elles se posaient à la validation. Une liste vide
+   * est une information : le secteur retenu ne déclarait alors aucune activité
+   * hors couverture, donc rien n'a été demandé.
+   */
+  activites: ActiviteCouvertureSnapshot[];
+};
+
 export type EntrepriseSnapshot = {
   raisonSociale: string;
   siret: string | null;
@@ -70,4 +103,18 @@ export type DuerpSnapshot = {
   referentielSecteurId: string | null;
   entreprise: EntrepriseSnapshot;
   unites: UniteSnapshot[];
+  /**
+   * État de couverture du dossier au moment où la version a été figée : ce que
+   * le dirigeant a déclaré exercer et que le référentiel sectoriel ne couvre
+   * pas (ADR-020). Figé une fois pour toutes, jamais recalculé à la relecture
+   * — le référentiel aura changé, la déclaration non.
+   *
+   * Optionnel, et pour la même raison que `UniteSnapshot.referentielUniteId` :
+   * les versions validées avant l'introduction du champ sont conservées 40 ans
+   * et régénérées telles quelles. Chez elles la valeur est **absente**, ce qui
+   * veut dire « la question n'a pas été posée », surtout pas « le référentiel
+   * couvrait tout ». Un snapshot muet ne produit donc aucune mention : c'est
+   * le contrat, il est vérifié par `snapshot-compat.test.ts`.
+   */
+  couverture?: CouvertureSnapshot;
 };

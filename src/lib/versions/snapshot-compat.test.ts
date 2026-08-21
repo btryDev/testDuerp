@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { estHorsReferentiel } from "@/lib/risques/helpers";
-import type { MesureSnapshot, UniteSnapshot } from "./snapshot";
+import {
+  activitesDeclareesSnapshot,
+  activitesSansReponseSnapshot,
+} from "@/lib/activites/snapshot";
+import type { DuerpSnapshot, MesureSnapshot, UniteSnapshot } from "./snapshot";
 
 /**
  * Les snapshots `DuerpVersion` sont conservés 40 ans (art. L. 4121-3-1).
@@ -97,5 +101,88 @@ describe("snapshot DUERP — mention hors référentiel", () => {
         }),
       ),
     ).toBe(false);
+  });
+});
+
+/**
+ * `couverture` est arrivé dans le snapshot après coup (ADR-020). Les versions
+ * validées avant n'en portent pas trace, et le PDF les régénère à l'identique
+ * pendant 40 ans : elles ne doivent pas se mettre à porter une mention de
+ * périmètre que personne n'a produite au moment de la validation — ni la
+ * mention inverse, rassurante, d'une couverture complète.
+ *
+ * Le contrat tient en une ligne : champ absent ⇒ aucune mention, dans aucun
+ * sens. Il n'est pas négociable.
+ */
+describe("snapshot DUERP — mention de périmètre du référentiel", () => {
+  function snapshotAncien(): DuerpSnapshot {
+    return {
+      version: 3,
+      genereLe: "2026-02-01T09:00:00.000Z",
+      motif: "Mise à jour annuelle",
+      referentielSecteurId: "commerce",
+      entreprise: {
+        raisonSociale: "Supermarché du Centre",
+        siret: null,
+        codeNaf: "47.11D",
+        effectif: 12,
+        adresse: "1 rue des Halles",
+      },
+      unites: [],
+    };
+  }
+
+  it("un snapshot validé avant l'introduction du champ ne mentionne rien", () => {
+    const ancien = snapshotAncien();
+    expect(ancien.couverture).toBeUndefined();
+    expect(activitesDeclareesSnapshot(ancien.couverture)).toEqual([]);
+    expect(activitesSansReponseSnapshot(ancien.couverture)).toEqual([]);
+  });
+
+  it("un `couverture` explicitement vide ne mentionne rien non plus", () => {
+    // Cas distinct du précédent, et volontairement rendu pareil à l'écran :
+    // ici on SAIT qu'aucune question ne se posait, là on ne sait rien. Le
+    // document reste muet dans les deux cas — il n'a rien à dire, et surtout
+    // rien à certifier.
+    const recent: DuerpSnapshot = {
+      ...snapshotAncien(),
+      couverture: { referentielSecteurId: "commerce", activites: [] },
+    };
+    expect(activitesDeclareesSnapshot(recent.couverture)).toEqual([]);
+  });
+
+  it("un snapshot récent cite l'activité déclarée, pas celle refusée ni la muette", () => {
+    const recent: DuerpSnapshot = {
+      ...snapshotAncien(),
+      couverture: {
+        referentielSecteurId: "commerce",
+        activites: [
+          {
+            id: "com-decoupe-viande",
+            libelle: "Découpe de viande",
+            cequiManque: "machines de découpe, travail au froid, TMS.",
+            exercee: true,
+          },
+          {
+            id: "com-station-service",
+            libelle: "Distribution de carburant",
+            cequiManque: "risque incendie et atmosphères explosives.",
+            exercee: false,
+          },
+          {
+            id: "com-pressing",
+            libelle: "Pressing",
+            cequiManque: "agents chimiques, perchloroéthylène.",
+            exercee: null,
+          },
+        ],
+      },
+    };
+    expect(
+      activitesDeclareesSnapshot(recent.couverture).map((a) => a.libelle),
+    ).toEqual(["Découpe de viande"]);
+    expect(
+      activitesSansReponseSnapshot(recent.couverture).map((a) => a.libelle),
+    ).toEqual(["Pressing"]);
   });
 });

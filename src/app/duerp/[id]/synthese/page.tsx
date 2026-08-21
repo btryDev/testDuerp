@@ -3,6 +3,11 @@ import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { CreerVersionForm } from "@/components/duerps/CreerVersionForm";
 import { WizardSteps } from "@/components/duerps/WizardSteps";
+import {
+  activitesDuSecteur,
+  lireReponsesActivites,
+} from "@/lib/activites/reponses";
+import { evaluerCouverture } from "@/lib/duerps/couverture";
 import { construireEtapes } from "@/lib/duerps/etapes";
 import { getDuerp } from "@/lib/duerps/queries";
 import { construireSynthese } from "@/lib/duerps/synthese";
@@ -50,10 +55,31 @@ export default async function SynthesePage({
     unitesOk,
     risquesOk,
     transversesOk: duerp.transversesRepondues,
+    activitesPosees: activitesDuSecteur(duerp.referentielSecteurId).length > 0,
   });
 
   const synthese = construireSynthese(duerp.unites);
   const versions = await listerVersions(id);
+
+  // Périmètre du référentiel (ADR-020) : ce qui va être gravé se relit ici,
+  // juste avant de figer une version — c'est le dernier écran où une réponse
+  // peut encore être corrigée avant de partir dans un document conservé
+  // quarante ans. Descriptif, sans verdict : ce n'est pas une alerte, et ça
+  // ne rejoint donc pas « Points à vérifier ».
+  // Le tri « déclarée / écartée / sans réponse » vient de `evaluerCouverture`,
+  // seule autorité sur la question — l'écran ne le refait pas dans son coin.
+  // Les unités hors référentiel qu'il rend aussi ne sont pas reprises ici :
+  // elles se disent déjà à l'étape « Risques », et les additionner aux
+  // activités mesurerait ce qui ne se mesure pas.
+  const couverture = evaluerCouverture({
+    secteurId: duerp.referentielSecteurId ?? "",
+    reponses: lireReponsesActivites(duerp.reponsesActivitesNonCouvertes),
+    unites: duerp.unites,
+  });
+  const perimetreDeclare = couverture.activitesDeclarees;
+  const perimetreSansReponse = couverture.activitesSansReponse;
+  const perimetreQuestionne =
+    activitesDuSecteur(duerp.referentielSecteurId).length > 0;
 
   // Rappel de mise à jour annuelle — art. R. 4121-2 : obligatoire pour les
   // entreprises de 11 salariés et plus. On signale aussi le cas où aucune
@@ -350,6 +376,61 @@ export default async function SynthesePage({
           </div>
         )}
       </section>
+
+      {perimetreQuestionne && (
+        <section>
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <div>
+              <p className="label-admin">§ Périmètre du référentiel</p>
+              <h3 className="display-lg mt-1 text-2xl">
+                Ce que le document ne traite pas
+              </h3>
+            </div>
+            <Link
+              href={`/duerp/${id}/activites`}
+              className="text-sm italic text-primary hover:underline"
+            >
+              revoir les réponses →
+            </Link>
+          </div>
+          <div className="cartouche mt-4 p-6">
+            {perimetreDeclare.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Aucune activité hors référentiel n&apos;a été déclarée.
+              </p>
+            ) : (
+              <>
+                <p className="max-w-2xl text-[0.9rem] leading-relaxed text-ink">
+                  Vous avez déclaré exercer {perimetreDeclare.length} activité
+                  {perimetreDeclare.length > 1 ? "s" : ""} que le référentiel
+                  sectoriel ne couvre pas. Le DUERP généré les nomme et précise
+                  ce qu&apos;il ne traite pas à leur sujet.
+                </p>
+                <ul className="filet mt-4 space-y-0">
+                  {perimetreDeclare.map((a) => (
+                    <li key={a.id} className="border-t border-rule py-3">
+                      <p className="font-medium">{a.libelle}</p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        {a.cequiManque}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {perimetreSansReponse.length > 0 && (
+              <p className="mt-4 text-[0.82rem] leading-relaxed text-muted-foreground">
+                {perimetreSansReponse.length} question
+                {perimetreSansReponse.length > 1 ? "s" : ""} sur le périmètre
+                {perimetreSansReponse.length > 1 ? " restent" : " reste"} sans
+                réponse. Une version validée maintenant l&apos;indiquera comme
+                telle&nbsp;: elle n&apos;affirmera ni que ces activités sont
+                exercées, ni qu&apos;elles ne le sont pas.
+              </p>
+            )}
+          </div>
+        </section>
+      )}
 
       <section>
         <div className="flex flex-wrap items-baseline justify-between gap-3">

@@ -192,6 +192,23 @@ model Duerp {
   unites               UniteTravail[]
   referentielSecteurId String?
   transversesRepondues Boolean        @default(false)
+  // Réponses aux questions d'activités que le référentiel sectoriel retenu ne
+  // couvre pas (ADR-020). Forme : `Record<string, boolean>`, la clé étant l'id
+  // d'une `ActiviteNonCouverte` du référentiel TypeScript.
+  //
+  // Un JSON et non une colonne par activité, ni une table de réponses : la
+  // liste des activités vit dans le référentiel versionné (ADR-003), elle
+  // change à chaque instruction d'un secteur et ne doit rien coûter en
+  // migration. Aucune contrainte d'intégrité n'est perdue au passage — une
+  // clé inconnue du référentiel courant est simplement ignorée à la lecture.
+  //
+  // **Trois états, pas deux.** `NULL` = aucune question n'a jamais reçu de
+  // réponse ; clé absente = cette question-là n'a pas reçu de réponse ; clé à
+  // `false` = réponse « non » délibérée. Le silence ne doit jamais prendre
+  // l'apparence d'un « non » : c'est la même règle que `referentielUniteId`
+  // côté unités, et elle vaut ici pour la même raison — ce qui est écrit dans
+  // une version validée est relu tel quel pendant quarante ans.
+  reponsesActivitesNonCouvertes Json?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 }

@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { WizardSteps } from "@/components/duerps/WizardSteps";
 import { LigneHorsReferentiel } from "@/components/duerps/MentionHorsReferentiel";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { activitesDuSecteur } from "@/lib/activites/reponses";
 import { construireEtapes } from "@/lib/duerps/etapes";
 import { getDuerp } from "@/lib/duerps/queries";
 import { estHorsReferentiel, unitesHorsReferentiel } from "@/lib/risques/helpers";
@@ -24,6 +25,7 @@ export default async function RisquesOverviewPage({
     unitesOk,
     risquesOk: true,
     transversesOk: duerp.transversesRepondues,
+    activitesPosees: activitesDuSecteur(duerp.referentielSecteurId).length > 0,
   });
 
   const totalRisques = unitesVisibles.reduce(

@@ -9,6 +9,10 @@ import { prioriser } from "@/lib/cotation";
 import { formaterDateCourteFr, formaterDateLongueFr } from "@/lib/dates";
 import { LABEL_STATUT, LABEL_TYPE_MESURE } from "@/lib/mesures/labels";
 import { estHorsReferentiel } from "@/lib/risques/helpers";
+import {
+  activitesDeclareesSnapshot,
+  activitesSansReponseSnapshot,
+} from "@/lib/activites/snapshot";
 import type { DuerpSnapshot } from "@/lib/versions/snapshot";
 import type { TypeMesure } from "@/lib/referentiels/types";
 
@@ -137,6 +141,17 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
   // laisse croire à une base commune que ces unités n'ont pas eue.
   const horsReferentiel = unites.filter(estHorsReferentiel);
 
+  // Activités que le dirigeant a déclaré exercer et que le référentiel
+  // sectoriel ne couvre pas (ADR-020). Même problème que ci-dessus, vu d'un
+  // cran plus haut : là il manquait des risques types dans une unité, ici il
+  // manque l'unité entière — un supermarché sous référentiel commerce n'a
+  // aucune ligne pour sa boucherie, et le document en a pourtant l'air complet.
+  //
+  // `snapshot.couverture` absent = version validée avant l'introduction du
+  // champ : rien n'est dit, ni dans un sens ni dans l'autre.
+  const activitesDeclarees = activitesDeclareesSnapshot(snapshot.couverture);
+  const activitesSansReponse = activitesSansReponseSnapshot(snapshot.couverture);
+
   const lignes = unites.flatMap((u) =>
     u.risques.map((r) => ({
       id: r.id,
@@ -253,6 +268,9 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
           {horsReferentiel.length > 0
             ? "\nCertaines unités de travail ne correspondent à aucune unité type du référentiel sectoriel : elles ont été évaluées sans base pré-chargée et sont identifiées comme telles ci-dessous."
             : ""}
+          {activitesDeclarees.length > 0
+            ? "\nLe référentiel sectoriel retenu ne couvre pas toutes les activités déclarées par l'employeur : celles qu'il ne couvre pas sont nommées ci-dessous, avec ce que le présent document ne traite pas à leur sujet."
+            : ""}
         </Text>
 
         <Text style={s.h3}>Appréciation</Text>
@@ -343,6 +361,57 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
                 • {u.nom}
               </Text>
             ))}
+          </View>
+        )}
+
+        {/* Périmètre du référentiel (ADR-020). Ce bloc voisine délibérément
+            celui des unités hors référentiel : les deux nuancent la même
+            phrase de méthodologie — « l'inventaire s'appuie sur les
+            référentiels INRS pré-chargés » — et les disperser obligerait le
+            lecteur à recoudre lui-même l'origine des données. */}
+        {activitesDeclarees.length > 0 && (
+          <View style={{ marginTop: 10 }}>
+            <Text style={s.h3}>
+              Activités déclarées hors référentiel sectoriel
+            </Text>
+            <Text style={s.small}>
+              L&apos;employeur a déclaré exercer les activités suivantes, que le
+              référentiel sectoriel retenu ci-dessus ne couvre pas. Aucune unité
+              type ni aucun risque type ne leur correspond dans ce référentiel :
+              ce que le présent document en dit provient donc entièrement de
+              l&apos;employeur. Cette mention décrit l&apos;origine des données,
+              elle ne préjuge ni de la qualité ni de l&apos;exhaustivité de
+              l&apos;évaluation.
+            </Text>
+            {activitesDeclarees.map((a) => (
+              <View key={a.id} style={{ marginTop: 4, marginLeft: 12 }}>
+                <Text style={s.small}>
+                  <Text style={{ fontFamily: "Helvetica-Bold" }}>
+                    {a.libelle}
+                  </Text>
+                  {" — "}
+                  {a.cequiManque}
+                </Text>
+              </View>
+            ))}
+            {/* Les questions sans réponse ne se disent qu'ici, à l'intérieur
+                du bloc : elles nuancent une liste — « voilà ce qui a été
+                déclaré, et voilà ce qui n'a pas été tranché ». Seules, dans un
+                document où rien n'a été déclaré, elles n'auraient rien nuancé
+                du tout et se seraient lues comme un reproche fait au dossier.
+                Le nombre est un décompte de questions, jamais un taux de
+                complétude : un pourcentage laisserait croire à une mesure. */}
+            {activitesSansReponse.length > 0 && (
+              <Text style={[s.small, { marginTop: 6 }]}>
+                {activitesSansReponse.length} autre
+                {activitesSansReponse.length > 1 ? "s" : ""} question
+                {activitesSansReponse.length > 1 ? "s" : ""} sur le périmètre du
+                référentiel {activitesSansReponse.length > 1 ? "sont" : "est"}{" "}
+                restée{activitesSansReponse.length > 1 ? "s" : ""} sans réponse
+                à la date de validation : le document n&apos;affirme donc ni que
+                ces activités sont exercées, ni qu&apos;elles ne le sont pas.
+              </Text>
+            )}
           </View>
         )}
         <Text style={s.footer} fixed>

@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { QuestionTransverseRow } from "@/components/duerps/QuestionTransverseRow";
 import { ValiderTransversesButton } from "@/components/duerps/ValiderTransversesButton";
 import { WizardSteps } from "@/components/duerps/WizardSteps";
+import { activitesDuSecteur } from "@/lib/activites/reponses";
 import { construireEtapes } from "@/lib/duerps/etapes";
 import { getDuerp } from "@/lib/duerps/queries";
 import {
@@ -36,6 +37,7 @@ export default async function TransversesPage({
     unitesOk,
     risquesOk,
     transversesOk: duerp.transversesRepondues,
+    activitesPosees: activitesDuSecteur(duerp.referentielSecteurId).length > 0,
   });
 
   const risquesParId = new Map(risquesTransverses.map((r) => [r.id, r]));

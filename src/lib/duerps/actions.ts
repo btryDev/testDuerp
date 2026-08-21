@@ -100,7 +100,14 @@ export async function choisirSecteur(
 
   revalidatePath(`/duerp/${duerpId}/secteur`);
   revalidatePath(`/duerp/${duerpId}/unites`);
-  redirect(`/duerp/${duerpId}/unites`);
+  // Détour par « Périmètre du référentiel » quand le secteur retenu déclare
+  // des activités qu'il ne couvre pas (ADR-020). Le détour est le mécanisme
+  // même : ces questions posées ailleurs qu'ici ne seraient jamais vues, et
+  // une question jamais posée ne produit aucune mention dans le document.
+  // Elles se posent avant les unités parce qu'un « oui » se traduit souvent
+  // par une unité de travail à créer à la main dans la foulée.
+  const aDesQuestions = ref.activitesNonCouvertes.length > 0;
+  redirect(`/duerp/${duerpId}/${aDesQuestions ? "activites" : "unites"}`);
 }
 
 const uniteSchema = z.object({

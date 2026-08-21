@@ -45,3 +45,70 @@ describe("referentiels", () => {
     }
   });
 });
+
+/**
+ * Les activités non couvertes portent une contrainte de plus que le reste du
+ * référentiel : leur identifiant est **persisté** dans les réponses du
+ * dirigeant (`ReponsesActivites`) et figé dans les snapshots de version,
+ * conservés quarante ans. Une collision d'identifiants entre deux secteurs
+ * ferait basculer une réponse d'une activité à une autre à la relecture — un
+ * « oui » à la découpe de viande devenu un « oui » à autre chose.
+ */
+describe("activités non couvertes", () => {
+  const activites = referentielsSectoriels.flatMap((ref) =>
+    ref.activitesNonCouvertes.map((a) => ({ ref, a })),
+  );
+
+  it("aucun identifiant d'activité n'est dupliqué", () => {
+    const ids = activites.map(({ a }) => a.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("les activités d'un secteur partagent un préfixe propre à ce secteur", () => {
+    // Le préfixe n'est pas décoratif : c'est ce qui rend une collision
+    // improbable et ce qui permet, en lisant un snapshot, de savoir de quel
+    // secteur venait une réponse même si l'activité a depuis disparu.
+    const prefixes = new Map<string, string>();
+    for (const { ref, a } of activites) {
+      const prefixe = a.id.split("-")[0];
+      expect(prefixe.length).toBeGreaterThan(1);
+      // Un identifiant, ce n'est pas qu'un préfixe : il nomme l'activité.
+      expect(a.id.length).toBeGreaterThan(prefixe.length + 1);
+      const connu = prefixes.get(ref.id);
+      if (connu) expect(prefixe).toBe(connu);
+      else prefixes.set(ref.id, prefixe);
+    }
+    // Et deux secteurs n'utilisent jamais le même préfixe.
+    const valeurs = [...prefixes.values()];
+    expect(new Set(valeurs).size).toBe(valeurs.length);
+  });
+
+  it("chaque activité porte une question fermée et ce qui manque", () => {
+    for (const { a } of activites) {
+      expect(a.libelle.trim().length).toBeGreaterThan(0);
+      // Une question tranchable finit par un point d'interrogation.
+      expect(a.question.trim().endsWith("?")).toBe(true);
+      // `cequiManque` est imprimé et lu par un tiers : il doit être descriptif,
+      // donc bien plus qu'un mot-clé.
+      expect(a.cequiManque.trim().length).toBeGreaterThan(40);
+    }
+  });
+
+  it("aucune formulation de jugement dans ce qui sera imprimé", () => {
+    // L'outil assiste, il ne certifie pas et ne reproche rien (CLAUDE.md).
+    const interdits = [
+      "conforme",
+      "incomplet",
+      "insuffisant",
+      "vous devez",
+      "obligatoire",
+      "illégal",
+    ];
+    for (const { a } of activites) {
+      const texte = `${a.libelle} ${a.question} ${a.aide ?? ""} ${a.cequiManque}`.toLowerCase();
+      for (const mot of interdits) {
+        expect(texte.includes(mot)).toBe(false);
+      }
+    }
+  });
+});

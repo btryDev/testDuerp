@@ -6,6 +6,7 @@ import { UniteRow } from "@/components/duerps/UniteRow";
 import { WizardSteps } from "@/components/duerps/WizardSteps";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { BannerRisquesAReevaluer } from "@/components/duerps/BannerRisquesAReevaluer";
+import { activitesDuSecteur } from "@/lib/activites/reponses";
 import { construireEtapes } from "@/lib/duerps/etapes";
 import { getDuerp } from "@/lib/duerps/queries";
 import { listerRisquesAReevaluer } from "@/lib/interventions/boucle-duerp";
@@ -26,6 +27,7 @@ export default async function UnitesPage({
     unitesOk,
     risquesOk: false,
     transversesOk: duerp.transversesRepondues,
+    activitesPosees: activitesDuSecteur(duerp.referentielSecteurId).length > 0,
   });
   const risquesAReevaluer = await listerRisquesAReevaluer(
     duerp.etablissementId,

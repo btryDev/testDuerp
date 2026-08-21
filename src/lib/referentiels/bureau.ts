@@ -340,4 +340,92 @@ export const bureau: Referentiel = {
     },
   ],
   questionsDetection: [],
+  /*
+   * Les activités hors couverture du secteur.
+   *
+   * Le dépliant INRS ED 6383 « Travail de bureau » ne nomme que quatre risques
+   * principaux — douleurs au dos, TMS et fatigue visuelle, chutes, stress et
+   * burnout — et l'outil OiRA « Travail de bureau » (outil69) annonce « une
+   * trentaine de questions » sur « l'ensemble des risques liés au travail de
+   * bureau ». Sur ce périmètre, la liste de risques ci-dessus est complète.
+   *
+   * Le manque est ailleurs : les cinq unités décrivent toutes des postes
+   * **situés dans vos locaux**. Or `codesNaf` couvre des activités tertiaires
+   * dont une partie du travail se fait hors les murs, ou dans une configuration
+   * que le bureau ne décrit pas.
+   *
+   * Écartées après vérification : les déplacements professionnels (le risque
+   * routier est porté par le référentiel transverse, `trv-routier`) ;
+   * l'accueil du public et les incivilités (déjà `bur-rps-public`) ; le
+   * stockage d'archives, qu'ED 6383 traite explicitement au titre des chutes
+   * et de la manutention, et que `bur-chute-hauteur` couvre déjà.
+   */
+  activitesNonCouvertes: [
+    {
+      // Sources : dossier INRS « Entreprises extérieures » — risques
+      // d'interférence et de coactivité, inspection commune préalable, plan de
+      // prévention écrit (seuil de 400 heures sur douze mois ou travaux
+      // dangereux), protocole de sécurité pour les opérations de chargement et
+      // de déchargement ; art. R. 4511-1 et suivants du code du travail.
+      //
+      // Rojer sait déjà tenir un plan de prévention. Le manque est du côté du
+      // DUERP : aucun risque de ce référentiel n'expose l'interférence comme
+      // une famille à évaluer, alors qu'une PME d'ingénierie ou d'infogérance
+      // passe une partie de son temps sur le site d'un client.
+      id: "bur-intervention-site-tiers",
+      libelle: "Travail sur le site d'un client",
+      question:
+        "Vos salariés travaillent-ils dans les locaux d'un client ou sur un chantier ?",
+      aide:
+        "La question porte sur le travail effectué une fois sur place, pas sur le trajet pour s'y rendre ni sur un simple rendez-vous en salle de réunion.",
+      cequiManque:
+        "L'évaluation ne décrit que vos propres locaux. Elle ne porte pas sur le travail réalisé chez un tiers : état des lieux, des accès et des installations du site d'accueil, risques d'interférence avec les autres intervenants présents, circulation d'engins et zones de chantier, travail en hauteur ou en local technique, consignes et moyens de secours propres au site.",
+    },
+    {
+      // Sources : dossier INRS « Télétravail », page « Risques et effets sur la
+      // santé » : postures sédentaires nommées comme risque en propre (effets
+      // cardiovasculaires, métaboliques, obésité, santé mentale), troubles du
+      // sommeil et conduites addictives favorisés par l'isolement, RPS dont les
+      // déterminants diffèrent de ceux du bureau (isolement du collectif,
+      // porosité entre vie professionnelle et vie personnelle, manque de
+      // soutien). Brochure INRS ED 6384 « Le télétravail. Quels risques ?
+      // Quelles pistes de prévention ? ».
+      //
+      // `bur-charge-physique-ecran` cote un poste que l'employeur aménage ;
+      // `trv-rps-isolement` vise le travail isolé et les horaires atypiques.
+      // Ni l'un ni l'autre ne décrit un poste installé chez le salarié, hors du
+      // regard de l'employeur, ni la question du secours à domicile.
+      id: "bur-teletravail",
+      libelle: "Travail à domicile",
+      question:
+        "Des salariés travaillent-ils depuis leur domicile, ne serait-ce qu'un jour par semaine ?",
+      aide:
+        "Répondez oui pour du télétravail régulier comme occasionnel, quel que soit le nombre de jours.",
+      cequiManque:
+        "L'évaluation décrit des postes installés dans vos locaux. Elle ne porte pas sur le travail à domicile : poste non aménagé et hors de votre regard (siège, écran, éclairage), postures sédentaires prolongées et leurs effets sur la santé, isolement du collectif de travail, porosité entre vie professionnelle et vie personnelle, troubles du sommeil, difficulté à donner l'alerte et à porter secours en cas de malaise.",
+    },
+    {
+      // Sources : page métier INRS « Centres d'appels téléphoniques ». INRS
+      // QR 71 « Travail au casque d'écoute en centre d'appels téléphoniques :
+      // quels sont les risques pour l'audition ? » : les chocs acoustiques sont
+      // des événements électro-acoustiques brefs et imprévisibles reçus dans le
+      // casque, de niveau inférieur à 120 dB(A) mais dont les fréquences
+      // correspondent au maximum de sensibilité de l'oreille ; conduite à tenir
+      // (retirer le casque, déclarer l'incident, raccrocher) et limiteurs
+      // d'exposition avec filtrage.
+      //
+      // `bur-bruit-openspace` traite le brouhaha ambiant, ce qui est une autre
+      // exposition : le casque délivre le son directement à l'oreille, toute la
+      // journée. Le NAF 82 est visé par `codesNaf`, plateformes téléphoniques
+      // comprises.
+      id: "bur-travail-casque",
+      libelle: "Travail au casque d'écoute",
+      question:
+        "Des salariés passent-ils la journée au casque ou au micro-casque téléphonique ?",
+      aide:
+        "Répondez oui pour un poste de plateforme téléphonique, d'assistance ou de prise d'appels. Quelques visioconférences par semaine ne sont pas visées.",
+      cequiManque:
+        "L'évaluation traite le bruit ambiant des bureaux, pas le son délivré directement à l'oreille : exposition sonore cumulée sur la journée au casque, chocs acoustiques (sons brefs et aigus imprévisibles dans l'écouteur) et leurs suites auditives, fatigue auditive et vocale, cadence imposée par la file d'appels et absence de récupération entre deux communications.",
+    },
+  ],
 };

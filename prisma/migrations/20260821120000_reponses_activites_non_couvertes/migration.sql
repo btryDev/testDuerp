@@ -1,0 +1,23 @@
+-- ============================================================================
+-- Réponses aux questions d'activités hors couverture du référentiel sectoriel
+--
+-- Un supermarché relève du NAF 47.11, donc du référentiel commerce, qui n'a
+-- que quatre unités types et aucun atelier : son DUERP ne dit rien de la
+-- boucherie, et rien dans le document ne le signalait. Le dirigeant est le
+-- seul à savoir ce qu'il exerce ; on le lui demande, et on grave sa réponse.
+--
+-- Un JSONB et non une colonne par activité : la liste des activités vit dans
+-- le référentiel TypeScript versionné (ADR-003), elle change sans migration.
+-- Forme attendue : `{"com-decoupe-viande": true, ...}`.
+--
+-- Colonne nullable et SANS valeur par défaut, volontairement. `NULL` veut dire
+-- « aucune réponse donnée », pas « aucune activité hors couverture » : les
+-- DUERP existants ne se voient donc attribuer aucune réponse rétroactive. Un
+-- `DEFAULT '{}'` aurait dit la même chose, mais l'aurait dit moins clairement
+-- à la lecture ; et un défaut par activité aurait carrément inventé des
+-- réponses sur un document conservé quarante ans.
+--
+-- Ajout pur : aucune ligne existante n'est réécrite.
+-- ============================================================================
+
+ALTER TABLE "Duerp" ADD COLUMN "reponsesActivitesNonCouvertes" JSONB;
