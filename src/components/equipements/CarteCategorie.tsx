@@ -7,7 +7,7 @@
 
 import Link from "next/link";
 import { LigneFiche, LignesFiche, TuileDate, TuileMuette } from "@/components/ui-kit";
-import { PictoEquipement } from "@/components/equipements/PictoEquipement";
+import { MarqueCategorie } from "@/components/equipements/MarqueCategorie";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
@@ -96,9 +96,7 @@ export function CarteCategorie({
   return (
     <section className="carte-board overflow-hidden">
       <div className="flex items-center gap-4 px-7 pt-6 sm:px-8">
-        <span className="grid size-11 flex-none place-items-center rounded-[15px] bg-[color:var(--board-slate-pale)]">
-          <PictoEquipement categorie={categorie} taille={30} />
-        </span>
+        <MarqueCategorie categorie={categorie} taille={44} />
         <div className="min-w-0 flex-1">
           <h2 className="board-titre m-0 text-[22px]">
             {LABEL_CATEGORIE_EQUIPEMENT[categorie]}

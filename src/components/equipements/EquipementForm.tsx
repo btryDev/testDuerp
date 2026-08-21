@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
-import { PictoEquipement } from "@/components/equipements/PictoEquipement";
+import { MarqueCategorie } from "@/components/equipements/MarqueCategorie";
 import {
   CATEGORIES_EQUIPEMENT,
   CATEGORIES_TRI_ETAT,
@@ -137,7 +137,7 @@ export function EquipementForm({
         <div className="space-y-2">
           <Label htmlFor="categorie">Catégorie *</Label>
           <div className="flex items-center gap-3">
-            <PictoEquipement categorie={categorie} taille={44} />
+            <MarqueCategorie categorie={categorie} taille={44} />
             <select
               id="categorie"
               name="categorie"

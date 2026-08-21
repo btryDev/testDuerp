@@ -11,7 +11,7 @@
 
 import type { ReactNode } from "react";
 import { TuileDate } from "@/components/ui-kit";
-import { PictoEquipement } from "@/components/equipements/PictoEquipement";
+import { MarqueCategorie } from "@/components/equipements/MarqueCategorie";
 import type { RegistreLigne } from "@/lib/calendrier/etats";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 import type { Frise } from "@/lib/equipements/frise";
@@ -46,9 +46,7 @@ export function HeroEquipement({
         {date ? (
           <TuileDate date={date} etat={etat} taille="fiche" />
         ) : (
-          <span className="grid size-[84px] flex-none place-items-center rounded-[28px] bg-white/10">
-            <PictoEquipement categorie={categorie} taille={44} />
-          </span>
+          <MarqueCategorie categorie={categorie} taille={84} ton="clair" />
         )}
 
         <div className="min-w-[280px] flex-1">
