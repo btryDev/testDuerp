@@ -1,44 +1,91 @@
-// La marque d'une catégorie d'équipement — deux lettres, pas un dessin.
+// La marque d'une catégorie d'équipement — un pictogramme dans son carré.
 //
-// Les pictos isométriques ont été retirés du projet : quinze PNG de
-// ~130 Ko chargés sur chaque liste, dont deux catégories n'avaient jamais
-// eu de dessin (installation électrique, « autre ») et retombaient sur une
-// icône d'une autre famille graphique. À côté d'une tuile-date et d'une
-// pilule d'état, un troisième objet coloré ne disait rien de plus.
+// Elle a été trois choses successives. D'abord quinze PNG isométriques de
+// ~130 Ko chargés sur chaque liste, dont deux catégories n'avaient jamais eu
+// de dessin et retombaient sur une icône d'une autre famille graphique.
+// Ensuite un monogramme de deux capitales, qui réglait le poids et la
+// couverture mais demandait de retenir que « PA » est le portail et « PO »
+// la porte — un second alphabet à apprendre, là où la liste en a déjà un.
 //
-// Ce qui reste est typographique : un monogramme mono-caps, dans le même
-// alphabet que les sur-titres. Il tient l'alignement des listes, se
-// recolore, ne pèse rien, et n'a pas besoin qu'on dessine une planche pour
-// la seizième catégorie.
+// Ce qui reste garde du monogramme ce qui marchait — un seul carré, la
+// même taille partout, `currentColor`, rien à télécharger — et lui rend ce
+// qui lui manquait : le dessin de la chose. Le trait vient de lucide,
+// l'alphabet du reste de l'application (rail, calendrier) ; les trois
+// catégories que lucide ne dessine pas sont tracées à sa grille dans
+// `pictos-categorie.tsx` plutôt que rapprochées d'une icône voisine.
 
+import {
+  AirVent,
+  Barrel,
+  BellElectric,
+  CloudFog,
+  CookingPot,
+  DoorOpen,
+  Fan,
+  FireExtinguisher,
+  Forklift,
+  Gauge,
+  Lightbulb,
+  Package,
+  Refrigerator,
+  Zap,
+} from "lucide-react";
+import type { ComponentType } from "react";
+import {
+  PictoAscenseur,
+  PictoHottePro,
+  PictoPortailAuto,
+} from "@/components/equipements/pictos-categorie";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 import { cn } from "@/lib/utils";
 
+/** Ce que la marque sait faire d'une icône : une taille, une épaisseur. */
+type Picto = ComponentType<{
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}>;
+
 /**
- * Deux lettres par catégorie, écrites à la main plutôt que dérivées du
- * libellé : « porte automatique » et « portail automatique » donneraient
- * la même abréviation, et deux catégories qui se ressemblent déjà
- * deviendraient indistinguables. L'unicité est vérifiée par le test.
+ * Un dessin par catégorie, choisi à la main. Deux règles ont tranché les
+ * cas douteux :
+ *
+ * — **l'objet plutôt que le thème** : la catégorie nomme un équipement
+ *   présent dans les murs, pas un domaine de risque. D'où le réfrigérateur
+ *   et non le flocon, le manomètre et non le triangle de danger.
+ * — **rien qui nomme déjà autre chose** : `Flame` est le permis de feu dans
+ *   le rail et le calendrier, `Wrench` y est le module Équipements ;
+ *   aucune des deux ne peut désigner ici un objet particulier. La cuisson
+ *   ERP prend donc la casserole, et « autre » le colis.
+ *
+ * L'unicité est vérifiée par le test : deux catégories qui partagent un
+ * dessin ne se distinguent plus dans une liste triée par catégorie.
  */
-export const MARQUE_CATEGORIE: Record<CategorieEquipement, string> = {
-  INSTALLATION_ELECTRIQUE: "EL",
-  INSTALLATION_FRIGORIFIQUE: "FR",
-  EXTINCTEUR: "EX",
-  BAES: "BA",
-  ALARME_INCENDIE: "AL",
-  DESENFUMAGE: "DF",
-  VMC: "VM",
-  CTA: "CT",
-  HOTTE_PRO: "HO",
-  APPAREIL_CUISSON_ERP: "CU",
-  ASCENSEUR: "AS",
-  PORTE_AUTO: "PO",
-  PORTAIL_AUTO: "PA",
-  EQUIPEMENT_SOUS_PRESSION: "SP",
-  STOCKAGE_MATIERE_DANGEREUSE: "SD",
-  EQUIPEMENT_LEVAGE: "LV",
-  AUTRE: "AU",
+export const ICONE_CATEGORIE: Record<CategorieEquipement, Picto> = {
+  INSTALLATION_ELECTRIQUE: Zap,
+  INSTALLATION_FRIGORIFIQUE: Refrigerator,
+  EXTINCTEUR: FireExtinguisher,
+  BAES: Lightbulb,
+  // Sonnerie d'alarme, et non la sirène : c'est le déclencheur manuel et le
+  // bloc qui sonnent dans un ERP de 5e catégorie.
+  ALARME_INCENDIE: BellElectric,
+  // Le désenfumage évacue la fumée : c'est elle qu'on dessine. Le détecteur
+  // (`AlarmSmoke`) dirait la détection, qui appartient à l'alarme.
+  DESENFUMAGE: CloudFog,
+  // Ventilation : l'hélice pour la VMC, la bouche pour la CTA. Les deux
+  // brassent de l'air, seule la forme du terminal les sépare à l'œil.
+  VMC: Fan,
+  CTA: AirVent,
+  HOTTE_PRO: PictoHottePro,
+  APPAREIL_CUISSON_ERP: CookingPot,
+  ASCENSEUR: PictoAscenseur,
+  PORTE_AUTO: DoorOpen,
+  PORTAIL_AUTO: PictoPortailAuto,
+  EQUIPEMENT_SOUS_PRESSION: Gauge,
+  STOCKAGE_MATIERE_DANGEREUSE: Barrel,
+  EQUIPEMENT_LEVAGE: Forklift,
+  AUTRE: Package,
 };
 
 const TON = {
@@ -46,9 +93,24 @@ const TON = {
   encre: "bg-[color:var(--board-ink)] text-white",
   /** Sur l'encre : le voile translucide, l'encre y serait invisible. */
   clair: "bg-white/10 text-white",
-  /** Déjà posé dans un champ bleu : les lettres seules, sans second champ. */
+  /** Déjà posé dans un champ bleu : le dessin seul, sans second champ. */
   glacier: "text-[color:var(--board-blue-ink)]",
 } as const;
+
+/**
+ * L'épaisseur du trait, en unités de la grille de 24 — donc **relative** à
+ * la taille du dessin, comme chez lucide.
+ *
+ * Un trait fixe ne peut pas tenir de la pastille de liste (22 px) à la
+ * vitrine du tableau de bord (57 px) : le 2 de lucide, à peine soutenu en
+ * petit, s'épaissit en gros au point de boucher la casserole et le chariot.
+ * La règle rend donc l'épaisseur apparente à peu près constante — autour de
+ * 1,5 px à l'écran — avec deux butées : jamais plus fin que 1,15, sinon le
+ * blanc sur l'encre se met à filer, jamais plus gras que 1,5.
+ */
+function trait(icone: number) {
+  return Math.min(1.5, Math.max(1.15, 34 / icone));
+}
 
 export function MarqueCategorie({
   categorie,
@@ -57,40 +119,37 @@ export function MarqueCategorie({
   className,
 }: {
   /** `string` toléré : le bundle du tableau de bord ne porte pas le type
-   *  étroit. Une valeur inconnue tombe sur « ?? » plutôt que sur du vide. */
+   *  étroit. Une valeur inconnue tombe sur le colis plutôt que sur du vide. */
   categorie: CategorieEquipement | string;
   taille?: number;
   ton?: keyof typeof TON;
   className?: string;
 }) {
-  const marque =
-    (MARQUE_CATEGORIE as Partial<Record<string, string>>)[categorie] ?? "??";
+  const Icone =
+    (ICONE_CATEGORIE as Partial<Record<string, Picto>>)[categorie] ?? Package;
   const label =
     (LABEL_CATEGORIE_EQUIPEMENT as Partial<Record<string, string>>)[
       categorie
     ] ?? "Catégorie inconnue";
+  const icone = Math.round(taille * (ton === "glacier" ? 0.62 : 0.5));
 
   return (
     <span
       role="img"
       aria-label={label}
       title={label}
-      className={cn(
-        "inline-grid flex-none place-items-center font-mono font-semibold uppercase",
-        TON[ton],
-        className,
-      )}
+      className={cn("inline-grid flex-none place-items-center", TON[ton], className)}
       style={{
         width: taille,
         height: taille,
         // Le rayon suit la taille : 15/44 est le rapport relevé sur la
         // maquette, et il tient de la pastille de liste au grand format.
         borderRadius: ton === "glacier" ? 0 : Math.round(taille * 0.34),
-        fontSize: Math.round(taille * 0.28),
-        letterSpacing: "0.08em",
       }}
     >
-      {marque}
+      {/* Sans carré autour, le dessin peut occuper davantage : c'est lui
+          qui tient la place, plus la pastille. */}
+      <Icone size={icone} strokeWidth={trait(icone)} />
     </span>
   );
 }
