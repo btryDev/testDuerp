@@ -167,15 +167,43 @@ describe("le bâtiment est un lieu, jamais un régime (ADR-019)", () => {
     expect(nonNul, "le NOT NULL manque").toBeGreaterThan(rattachement);
   });
 
-  it("Equipement.batiment est requis et en Restrict", () => {
+  it("Equipement.batiment est requis et ne se supprime jamais en cascade", () => {
     const corps = corpsDuModele("Equipement");
     expect(corps).toMatch(/\bbatimentId\s+String\b(?!\?)/);
     const relation = corps.match(/batiment\s+Batiment\s+@relation\([^)]*\)/);
     expect(relation).not.toBeNull();
-    expect(relation![0]).toContain("onDelete: Restrict");
+    // NoAction, pas Restrict : même garantie, contrôlée en fin d'instruction.
+    // Restrict, vérifié ligne à ligne, faisait échouer la suppression d'un
+    // établissement selon l'ordre des cascades — cf. _batiment_fk_no_action.
+    expect(relation![0]).toContain("onDelete: NoAction");
 
-    expect(normaliser(migration!.sql)).toContain(
-      '"Equipement_batimentId_fkey" FOREIGN KEY ("batimentId") REFERENCES "Batiment"("id") ON DELETE RESTRICT',
+    const fk = migrations.flatMap(
+      (m) =>
+        normaliser(m.sql).match(
+          /"Equipement_batimentId_fkey"[^;]*REFERENCES "Batiment"[^;]*/gi,
+        ) ?? [],
+    );
+    expect(fk.length, "aucune migration ne pose la FK").toBeGreaterThan(0);
+    // La dernière migration qui touche la FK fait foi.
+    expect(fk.at(-1)).toContain("ON DELETE NO ACTION");
+  });
+
+  it("supprimer un bâtiment reste impossible tant qu'il contient un équipement", () => {
+    // L'invariant ADR-019 ne tient plus par la base seule une fois la FK en
+    // NoAction sur une suppression d'établissement : c'est `supprimerBatiment`
+    // qui déplace le contenu avant, et la FK qui refuse en fin d'instruction
+    // si quelque chose a été oublié. Les deux doivent rester en place.
+    const actions = readFileSync(
+      join(RACINE, "src", "lib", "batiments", "actions.ts"),
+      "utf8",
+    );
+    for (const table of ["equipement", "pointReleve", "permisFeu", "planPrevention"]) {
+      expect(actions, `${table} n'est pas déplacé avant la suppression`).toContain(
+        `tx.${table}.updateMany(deplacement)`,
+      );
+    }
+    expect(actions.indexOf("tx.batiment.delete")).toBeGreaterThan(
+      actions.indexOf("tx.planPrevention.updateMany"),
     );
   });
 

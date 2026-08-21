@@ -87,10 +87,18 @@ export async function supprimerPointReleve(
 ): Promise<void> {
   await assertEtablissementOwnership(etablissementId);
   // Soft delete : on garde les relevés historiques, on désactive le point.
-  await prisma.pointReleve.update({
-    where: { id: pointId },
+  //
+  // Le point est désactivé *via* son carnet : `assertEtablissementOwnership`
+  // ne dit que « cet établissement est à moi », il ne dit rien du point de
+  // relevé, dont l'identifiant vient du client. Sans le filtre de relation,
+  // un utilisateur authentifié pouvait passer son propre établissement et
+  // l'identifiant du point d'un tiers. `ajouterReleve`, juste dessous, fait
+  // déjà ce rapprochement.
+  const { count } = await prisma.pointReleve.updateMany({
+    where: { id: pointId, carnet: { etablissementId } },
     data: { actif: false },
   });
+  if (count === 0) throw new Error("Point de relevé introuvable");
   revalidatePath(`/etablissements/${etablissementId}/carnet-sanitaire`);
 }
 

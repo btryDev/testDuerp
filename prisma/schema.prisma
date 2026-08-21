@@ -88,13 +88,11 @@ model Etablissement {
   /**
    * Version du référentiel de conformité avec laquelle le calendrier de cet
    * établissement a été généré (cf. `REFERENTIEL_VERSION`, ADR-003).
-   *
    * Le référentiel vit en TypeScript versionné, mais ses effets sont écrits en
    * base : chaque `Verification` fige une périodicité et un libellé. Sans ce
    * repère, une correction du référentiel — périodicité rectifiée, obligation
    * retirée — ne se propageait qu'au hasard d'une mutation d'équipement, et une
    * obligation supprimée laissait des lignes orphelines invisibles des filtres.
-   *
    * `null` = calendrier jamais réconcilié depuis l'introduction du mécanisme :
    * il sera réaligné au prochain affichage.
    */
@@ -178,21 +176,21 @@ enum ClasseIgh {
 // ----------------------------------------------------------------------------
 
 model Duerp {
-  id                   String         @id @default(cuid())
+  id                            String         @id @default(cuid())
   // Invariant produit « 1 établissement = 1 DUERP » : sans lui, chaque module
   // choisissait un DUERP différent (createdAt desc / updatedAt desc / aucun tri)
   // et le tableau de bord pouvait lire un document pendant que le wizard éditait
   // l'autre. Comme pour Etablissement, la relation inverse reste une liste :
   // `etablissement.duerps[0]` continue de fonctionner, la base garantit
   // désormais qu'il n'y a rien après l'index 0.
-  etablissementId      String         @unique
+  etablissementId               String         @unique
   // Cascade — cf. bloc de conservation ci-dessus : un DUERP sans version figée
   // ne se conserve pas, c'est `DuerpVersion.duerp` (Restrict) qui bloque.
-  etablissement        Etablissement  @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
-  versions             DuerpVersion[]
-  unites               UniteTravail[]
-  referentielSecteurId String?
-  transversesRepondues Boolean        @default(false)
+  etablissement                 Etablissement  @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  versions                      DuerpVersion[]
+  unites                        UniteTravail[]
+  referentielSecteurId          String?
+  transversesRepondues          Boolean        @default(false)
   // Réponses aux questions d'activités que le référentiel sectoriel retenu ne
   // couvre pas (ADR-020). Forme : `Record<string, boolean>`, la clé étant l'id
   // d'une `ActiviteNonCouverte` du référentiel TypeScript.
@@ -210,8 +208,8 @@ model Duerp {
   // côté unités, et elle vaut ici pour la même raison — ce qui est écrit dans
   // une version validée est relu tel quel pendant quarante ans.
   reponsesActivitesNonCouvertes Json?
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
+  createdAt                     DateTime       @default(now())
+  updatedAt                     DateTime       @updatedAt
 }
 
 model DuerpVersion {
@@ -305,7 +303,11 @@ model Equipement {
   // déplace les équipements d'abord. `localisation` reste la précision
   // (salle, étage) à l'intérieur du bâtiment.
   batimentId      String
-  batiment        Batiment      @relation(fields: [batimentId], references: [id], onDelete: Restrict)
+  // NoAction et non Restrict : même garantie (on ne supprime pas un bâtiment
+  // qui contient un équipement), mais vérifiée en fin d'instruction. En
+  // Restrict, la cascade de suppression d'un établissement pouvait s'auto-
+  // bloquer selon l'ordre des triggers RI. Cf. migration _batiment_fk_no_action.
+  batiment        Batiment      @relation(fields: [batimentId], references: [id], onDelete: NoAction)
 
   categorie         CategorieEquipement
   libelle           String
@@ -838,6 +840,7 @@ model PermisFeu {
   @@unique([etablissementId, numero])
   @@index([etablissementId, dateDebut])
   @@index([statut])
+  @@index([batimentId])
 }
 
 enum NatureTravauxPointChaud {
@@ -918,6 +921,7 @@ model PlanPrevention {
 
   @@unique([etablissementId, numero])
   @@index([etablissementId, dateDebut])
+  @@index([batimentId])
 }
 
 model LignePlanPrevention {
@@ -984,6 +988,7 @@ model PointReleve {
   updatedAt DateTime @updatedAt
 
   @@index([carnetId])
+  @@index([batimentId])
 }
 
 model ReleveTemperature {
