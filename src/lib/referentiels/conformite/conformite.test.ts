@@ -19,6 +19,7 @@ import {
   obligationsCuissonHotte,
   obligationsElectricite,
   obligationsEquipementSousPression,
+  obligationsFroid,
   obligationsIncendie,
   obligationsLevage,
   obligationsParDomaine,
@@ -85,12 +86,18 @@ describe("référentiel conformité — invariants structurels", () => {
     }
   });
 
-  it("chaque obligation ayant un URL Légifrance pointe vers legifrance.gouv.fr ou inrs.fr", () => {
+  it("chaque URL de référence pointe vers une source officielle", () => {
+    // Légifrance et l'INRS pour le droit national, EUR-Lex pour les règlements
+    // européens d'application directe — le contrôle d'étanchéité des fluides
+    // frigorigènes ne tient ses seuils et ses périodicités que du règlement
+    // (UE) 2024/573, le code de l'environnement renvoyant encore au texte que
+    // celui-ci abroge. Aucune autre origine n'est admise : pas de norme privée,
+    // pas de site commercial, pas de blog technique.
     for (const o of obligationsConformite) {
       for (const ref of o.referencesLegales) {
         if (ref.urlLegifrance) {
           expect(ref.urlLegifrance).toMatch(
-            /^https:\/\/(www\.)?(legifrance\.gouv\.fr|inrs\.fr)\//,
+            /^https:\/\/(www\.)?(legifrance\.gouv\.fr|inrs\.fr|eur-lex\.europa\.eu)\//,
           );
         }
       }
@@ -144,6 +151,14 @@ describe("référentiel conformité — couverture P1", () => {
     expect(obligationsEquipementSousPression.length).toBeGreaterThanOrEqual(5);
     expect(obligationsStockageDangereux.length).toBeGreaterThanOrEqual(5);
     expect(obligationsLevage.length).toBeGreaterThanOrEqual(7);
+  });
+
+  it("couvre le domaine froid sur ses six paliers de périodicité", () => {
+    // Trois paliers de charge multipliés par la présence ou non d'un système
+    // de détection des fuites, plus la mise en service et la modification du
+    // circuit frigorifique.
+    expect(obligationsFroid.length).toBe(8);
+    expect(obligationsFroid.every((o) => o.domaine === "froid")).toBe(true);
   });
 
   it("obligationsParDomaine renvoie cohérent avec le filtrage", () => {
@@ -360,6 +375,17 @@ describe("référentiel conformité — non-régression des obligations critique
     "aeration-travail-locaux-pollution-specifique",
     "aeration-erp-ps-surveillance-qualite-air-sup-250",
     "levage-vgp-semestrielle-chariot-gerbeur",
+    // Les cinq paliers non nominaux du contrôle d'étanchéité des fluides
+    // frigorigènes. Même raisonnement : obligations neuves, donc impossibles à
+    // perdre, et la couverture par défaut reste assurée par
+    // `froid-controle-etancheite-annuel`, dont les quatre conditions sont
+    // toutes satisfaites au silence. Répondre « oui » à une question ne fait
+    // que déplacer l'échéance vers le palier exact.
+    "froid-controle-etancheite-biennal-detection",
+    "froid-controle-etancheite-semestriel-50t",
+    "froid-controle-etancheite-annuel-50t-detection",
+    "froid-controle-etancheite-trimestriel-500t",
+    "froid-controle-etancheite-semestriel-500t-detection",
   ]);
 
   /**
@@ -413,6 +439,97 @@ describe("référentiel conformité — non-régression des obligations critique
         valeur: true,
       },
     ]);
+  });
+
+  it("les six contrôles d'étanchéité du froid s'excluent sur les mêmes propriétés", () => {
+    // Le levage n'avait que deux états sur une seule propriété ; le froid en a
+    // six, sur trois. Le découpage doit rester une partition : pour n'importe
+    // quel triplet de réponses, exactement une obligation s'applique. Une
+    // condition oubliée et deux échéances tombent pour un seul acte de
+    // contrôle ; une condition de trop et un parc entier n'a plus rien.
+    const CAT = "INSTALLATION_FRIGORIFIQUE";
+    const dispense = {
+      type: "equipement_propriete_infirmee",
+      categorie: CAT,
+      propriete: "estHermetiquementScelleSousSeuil",
+    };
+    const pas = (propriete: string) => ({
+      type: "equipement_propriete_infirmee",
+      categorie: CAT,
+      propriete,
+    });
+    const oui = (propriete: string) => ({
+      type: "equipement_propriete_booleenne",
+      categorie: CAT,
+      propriete,
+      valeur: true,
+    });
+
+    const attendu: Record<string, unknown[]> = {
+      "froid-controle-etancheite-annuel": [
+        dispense,
+        pas("estChargeSuperieure500TCo2"),
+        pas("estChargeSuperieure50TCo2"),
+        pas("aDetectionDeFuites"),
+      ],
+      "froid-controle-etancheite-biennal-detection": [
+        dispense,
+        pas("estChargeSuperieure500TCo2"),
+        pas("estChargeSuperieure50TCo2"),
+        oui("aDetectionDeFuites"),
+      ],
+      "froid-controle-etancheite-semestriel-50t": [
+        dispense,
+        pas("estChargeSuperieure500TCo2"),
+        oui("estChargeSuperieure50TCo2"),
+        pas("aDetectionDeFuites"),
+      ],
+      "froid-controle-etancheite-annuel-50t-detection": [
+        dispense,
+        pas("estChargeSuperieure500TCo2"),
+        oui("estChargeSuperieure50TCo2"),
+        oui("aDetectionDeFuites"),
+      ],
+      "froid-controle-etancheite-trimestriel-500t": [
+        dispense,
+        oui("estChargeSuperieure500TCo2"),
+        pas("aDetectionDeFuites"),
+      ],
+      "froid-controle-etancheite-semestriel-500t-detection": [
+        dispense,
+        oui("estChargeSuperieure500TCo2"),
+        oui("aDetectionDeFuites"),
+      ],
+    };
+
+    for (const [id, conditions] of Object.entries(attendu)) {
+      expect(obligationParId(id)?.conditions, id).toEqual(conditions);
+    }
+  });
+
+  it("le contrôle d'étanchéité annuel ne s'éteint sur aucun silence", () => {
+    // L'obligation par défaut du domaine froid : c'est elle qui tient quand le
+    // dirigeant ne connaît ni sa charge en tonnes équivalent CO2 — ce chiffre
+    // ne se lit pas sur la porte d'une chambre froide — ni la présence d'un
+    // système de détection. Toutes ses conditions doivent donc être de la
+    // forme qui survit à l'absence de réponse.
+    const o = obligationParId("froid-controle-etancheite-annuel");
+    expect(o?.conditions?.length).toBe(4);
+    expect(
+      o?.conditions?.every((c) => c.type === "equipement_propriete_infirmee"),
+    ).toBe(true);
+  });
+
+  it("aucune référence ne fonde une obligation sur un texte abrogé", () => {
+    // Le règlement (UE) 517/2014 a été abrogé le 11 mars 2024 par le
+    // 2024/573. R. 543-79 et l'arrêté du 29 février 2016 le visent encore ;
+    // le référentiel, jamais — une note peut dire qu'il est abrogé, une
+    // `reference` ne peut pas s'y adosser.
+    for (const o of obligationsConformite) {
+      for (const ref of o.referencesLegales) {
+        expect(ref.reference, o.id).not.toContain("517/2014");
+      }
+    }
   });
 
   it("l'allowlist ne contient que des obligations réellement existantes", () => {
@@ -544,7 +661,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
   // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
   // version PUIS recopiez l'empreinte que le message d'échec affiche.
-  const EMPREINTE_ATTENDUE = "67-ff638aae29f36e44";
+  const EMPREINTE_ATTENDUE = "75-196940973135b5ab";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(

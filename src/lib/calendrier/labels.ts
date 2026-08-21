@@ -38,6 +38,7 @@ export const LABEL_DOMAINE: Record<DomaineObligation, string> = {
   equipement_sous_pression: "Équipement sous pression",
   stockage_dangereux: "Stockage dangereux",
   levage: "Levage",
+  froid: "Froid / fluides frigorigènes",
 };
 
 export const MOIS_FR = [

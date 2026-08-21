@@ -994,10 +994,164 @@ describe("moteur matching — aucun établissement existant ne perd une obligati
       "aeration-erp-ps-surveillance-qualite-air-sup-250",
       "aeration-travail-locaux-pollution-specifique",
       "elec-erp-groupe-electrogene-annuel",
+      // Cinq paliers non nominaux du contrôle d'étanchéité : obligations
+      // neuves, et `froid-controle-etancheite-annuel` couvre l'installation
+      // tant qu'aucune question n'a reçu « oui ».
+      "froid-controle-etancheite-annuel-50t-detection",
+      "froid-controle-etancheite-biennal-detection",
+      "froid-controle-etancheite-semestriel-500t-detection",
+      "froid-controle-etancheite-semestriel-50t",
+      "froid-controle-etancheite-trimestriel-500t",
       // Obligation neuve : personne ne peut la perdre, et la VGP annuelle
       // couvre l'appareil tant que la question n'a pas reçu « oui ».
       "levage-vgp-semestrielle-chariot-gerbeur",
     ]);
+  });
+});
+
+describe("moteur matching — contrôle d'étanchéité des installations frigorifiques", () => {
+  // Règlement (UE) 2024/573, art. 5 : trois paliers de charge, chacun dédoublé
+  // par la présence d'un système fixe de détection des fuites. Six cas, six
+  // obligations qui s'excluent — et une contrainte de plus que le levage : le
+  // dirigeant ne connaît pas sa charge en tonnes équivalent CO2, ce chiffre ne
+  // se lisant pas sur la porte d'une chambre froide. Le modèle doit donc
+  // produire une échéance même quand il ne répond à rien.
+  const PERIODIQUES = [
+    "froid-controle-etancheite-annuel",
+    "froid-controle-etancheite-biennal-detection",
+    "froid-controle-etancheite-semestriel-50t",
+    "froid-controle-etancheite-annuel-50t-detection",
+    "froid-controle-etancheite-trimestriel-500t",
+    "froid-controle-etancheite-semestriel-500t-detection",
+  ] as const;
+
+  function froid(caracteristiques: Record<string, unknown> | null = null) {
+    return {
+      id: "eq-chambre-froide",
+      libelle: "Chambre froide positive",
+      categorie: "INSTALLATION_FRIGORIFIQUE" as const,
+      caracteristiques,
+    };
+  }
+
+  /** Les obligations périodiques retenues pour un jeu de réponses donné. */
+  function periodiquesPour(caracteristiques: Record<string, unknown> | null) {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabRestoErpCat5(), [
+        froid(caracteristiques),
+      ]),
+    );
+    return PERIODIQUES.filter((id) => ids.includes(id));
+  }
+
+  it("le dirigeant qui ne sait rien a quand même une échéance : le contrôle annuel", () => {
+    // Le cas central. Une chambre froide déclarée sans aucune réponse ne doit
+    // pas rester muette : c'est le palier le plus courant en TPE/PME qui
+    // s'applique, quitte à être resserré ensuite par une réponse.
+    expect(periodiquesPour(null)).toEqual(["froid-controle-etancheite-annuel"]);
+  });
+
+  it("les six paliers de l'article 5 se lisent chacun sur ses réponses", () => {
+    const cas: [Record<string, unknown>, string][] = [
+      [
+        { estChargeSuperieure50TCo2: false, aDetectionDeFuites: false },
+        "froid-controle-etancheite-annuel",
+      ],
+      [
+        { estChargeSuperieure50TCo2: false, aDetectionDeFuites: true },
+        "froid-controle-etancheite-biennal-detection",
+      ],
+      [
+        { estChargeSuperieure50TCo2: true, aDetectionDeFuites: false },
+        "froid-controle-etancheite-semestriel-50t",
+      ],
+      [
+        { estChargeSuperieure50TCo2: true, aDetectionDeFuites: true },
+        "froid-controle-etancheite-annuel-50t-detection",
+      ],
+      [
+        {
+          estChargeSuperieure50TCo2: true,
+          estChargeSuperieure500TCo2: true,
+          aDetectionDeFuites: false,
+        },
+        "froid-controle-etancheite-trimestriel-500t",
+      ],
+      [
+        {
+          estChargeSuperieure50TCo2: true,
+          estChargeSuperieure500TCo2: true,
+          aDetectionDeFuites: true,
+        },
+        "froid-controle-etancheite-semestriel-500t-detection",
+      ],
+    ];
+    for (const [caracteristiques, attendu] of cas) {
+      expect(periodiquesPour(caracteristiques), JSON.stringify(caracteristiques)).toEqual([
+        attendu,
+      ]);
+    }
+  });
+
+  it("quel que soit l'état des trois réponses, il tombe exactement une échéance périodique", () => {
+    // Vingt-sept combinaisons : trois questions à trois états. Le découpage
+    // doit être une partition — jamais zéro (un parc sans échéance sur une
+    // obligation de criticité 4), jamais deux (deux occurrences à planifier
+    // pour un seul acte de contrôle).
+    const etats = [undefined, true, false];
+    for (const c50 of etats) {
+      for (const c500 of etats) {
+        for (const detection of etats) {
+          const caracteristiques: Record<string, unknown> = {};
+          if (c50 !== undefined) caracteristiques.estChargeSuperieure50TCo2 = c50;
+          if (c500 !== undefined)
+            caracteristiques.estChargeSuperieure500TCo2 = c500;
+          if (detection !== undefined)
+            caracteristiques.aDetectionDeFuites = detection;
+          expect(
+            periodiquesPour(caracteristiques),
+            JSON.stringify({ c50, c500, detection }),
+          ).toHaveLength(1);
+        }
+      }
+    }
+  });
+
+  it("un appareil hermétiquement scellé sous le seuil de dispense sort du contrôle d'étanchéité", () => {
+    // La seule réponse qui retire des échéances, et elle demande un « oui »
+    // explicite : le règlement dispense les équipements hermétiquement scellés
+    // étiquetés comme tels, sous 10 t CO2e ou 2 kg selon l'annexe du fluide.
+    const ids = idsObligations(
+      determineObligationsApplicables(etabRestoErpCat5(), [
+        froid({ estHermetiquementScelleSousSeuil: true }),
+      ]),
+    );
+    expect(ids.filter((id) => id.startsWith("froid-"))).toEqual([]);
+  });
+
+  it("la dispense non tranchée laisse toutes les échéances du froid en place", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabRestoErpCat5(), [
+        froid({ estHermetiquementScelleSousSeuil: false }),
+      ]),
+    );
+    expect(ids).toContain("froid-controle-etancheite-annuel");
+    expect(ids).toContain("froid-controle-etancheite-mise-en-service");
+    expect(ids).toContain("froid-controle-etancheite-apres-modification");
+  });
+
+  it("un commerce non employeur reste couvert par le régime ERP", () => {
+    // R. 543-79 vise le détenteur de l'équipement, sans considération de
+    // régime : la typologie déclare travail ET ERP, en disjonction.
+    const commerceSansSalarie = etabRestoErpCat5({
+      effectifSurSite: 0,
+      estEtablissementTravail: false,
+    });
+    expect(
+      idsObligations(
+        determineObligationsApplicables(commerceSansSalarie, [froid(null)]),
+      ),
+    ).toContain("froid-controle-etancheite-annuel");
   });
 });
 

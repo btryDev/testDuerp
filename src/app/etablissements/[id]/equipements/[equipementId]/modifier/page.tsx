@@ -10,6 +10,8 @@ import {
   LIBELLE_SANS_ECHEANCE,
   equipementsSansEcheance,
 } from "@/lib/equipements/hors-referentiel";
+import { CHAMPS_TRI_ETAT } from "@/lib/equipements/schema";
+import type { ChampTriEtat } from "@/lib/equipements/schema";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 import { lireProvenance } from "@/lib/navigation/provenance";
 
@@ -19,7 +21,26 @@ type Caracteristiques = {
   estLocalPollutionSpecifique?: boolean;
   nbVehiculesParkingCouvert?: number;
   notes?: string;
-};
+} & Partial<Record<ChampTriEtat, boolean>>;
+
+/**
+ * Réponses aux questions à trois états déjà enregistrées. Elles doivent être
+ * repassées au formulaire : sans elles, le `<select>` repart sur « Je ne sais
+ * pas encore » et la réponse est effacée au premier enregistrement, alors même
+ * que l'utilisateur ne touchait qu'au libellé. Une réponse « non » perdue,
+ * c'est une échéance qui réapparaît ; une réponse « oui » perdue sur un palier
+ * de charge, c'est une périodicité qui se rallonge en silence.
+ */
+function reponsesTriEtat(
+  caracs: Caracteristiques,
+): Partial<Record<ChampTriEtat, boolean>> {
+  const out: Partial<Record<ChampTriEtat, boolean>> = {};
+  for (const champ of CHAMPS_TRI_ETAT) {
+    const v = caracs[champ];
+    if (typeof v === "boolean") out[champ] = v;
+  }
+  return out;
+}
 
 export default async function ModifierEquipementPage({
   params,
@@ -95,6 +116,7 @@ export default async function ModifierEquipementPage({
             estLocalPollutionSpecifique: caracs.estLocalPollutionSpecifique,
             nbVehiculesParkingCouvert: caracs.nbVehiculesParkingCouvert ?? null,
             notes: caracs.notes ?? null,
+            ...reponsesTriEtat(caracs),
           }}
           libelleSubmit="Enregistrer"
           labelAnnuler={{
