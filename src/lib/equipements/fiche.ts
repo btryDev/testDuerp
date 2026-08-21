@@ -18,6 +18,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import {
   classerVerification,
   classerDate,
+  lecturesCalendrier,
   type RegistreLigne,
 } from "@/lib/calendrier/etats";
 import { estActionEnRetard, estActionOuverte } from "@/lib/dates/retard";
@@ -100,19 +101,30 @@ export function lignesAFaire(
   const lignes: LigneAFaire[] = [];
 
   for (const v of eq.verifications) {
-    const etat = classerVerification(v, maintenant);
-    if (etat !== "faite") {
+    // Une `Verification` n'est pas une occurrence : quand un cycle est
+    // soldé, la réconciliation avance `datePrevue` au rendez-vous suivant
+    // en gardant le statut réalisé — la même ligne dit alors « fait le
+    // 22/01/2026 » ET « prochaine échéance le 22/01/2027 ». Écarter les
+    // lignes « faites » faisait disparaître de la fiche toutes les
+    // échéances d'un appareil à jour, pendant que le calendrier, lui,
+    // les affichait. C'est `lecturesCalendrier` qui déplie les deux, et
+    // c'est lui que le calendrier utilise (ADR-010).
+    for (const lecture of lecturesCalendrier(v, maintenant)) {
+      if (lecture.lecture === "realisation") continue;
+      const etat = lecture.registre;
       lignes.push({
-        cle: `v-${v.id}`,
+        cle: `v-${v.id}-${lecture.lecture}`,
         genre: "verification",
-        date: etat === "aPlanifier" ? null : v.datePrevue,
+        date: etat === "aPlanifier" ? null : lecture.date,
         etat,
         surtitre: "Vérification",
         libelle: v.libelleObligation,
         detail:
           etat === "aPlanifier"
             ? "Aucune date convenue — à caler avec votre prestataire"
-            : "Échéance portée au calendrier",
+            : lecture.lecture === "prochaine"
+              ? "Prochain rendez-vous du cycle"
+              : "Échéance portée au calendrier",
         href: `${base}/verifications/${v.id}`,
       });
     }

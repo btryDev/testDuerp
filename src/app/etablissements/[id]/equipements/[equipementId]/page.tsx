@@ -175,6 +175,17 @@ export default async function EquipementDetailPage({
 
   const realisateurs = realisateursRequis(obligations);
 
+  // Les propriétés qui bornent réellement une obligation de CET appareil.
+  // Une question à trois états est posée dès que la catégorie correspond,
+  // mais sa condition se combine à la typologie : « VMC raccordée au gaz »
+  // ne fonde une obligation qu'en habitation. Annoncer « l'obligation
+  // reste au calendrier » sur la VMC d'un restaurant serait une
+  // affirmation de droit que le calendrier contredit — l'outil rend des
+  // faits, il n'invente pas une obligation (cf. garde-fous produit).
+  const proprietesPortees = new Set(
+    obligations.flatMap((o) => o.conditions?.map((c) => c.propriete) ?? []),
+  );
+
   return (
     <EcranFiche
       provenance={provenance}
@@ -331,7 +342,9 @@ export default async function EquipementDetailPage({
                     {c.enAttente ? (
                       <span className="text-[color:var(--board-slate-soft)]">
                         {c.valeur}
-                        {" — l'obligation reste au calendrier"}
+                        {proprietesPortees.has(c.cle)
+                          ? " — l'obligation reste au calendrier"
+                          : ""}
                       </span>
                     ) : (
                       c.valeur

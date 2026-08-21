@@ -163,6 +163,34 @@ describe("resumerEquipement", () => {
     ]);
   });
 
+  it("compte le rendez-vous suivant d'un cycle soldé", () => {
+    // Une ligne soldée dit deux choses : « fait le 10 févr. 2026 » et
+    // « prochaine le 10 févr. 2027 » (ADR-010). Sans elle, un appareil
+    // parfaitement suivi n'affichait aucun signal et la carte du parc
+    // annonçait « aucune vérification rattachée » — pendant que le
+    // calendrier, lui, montrait bien l'échéance.
+    const e = etatDe([
+      verif("eq1", "2027-02-10", {
+        statut: "realisee_conforme",
+        dateRealisee: "2026-02-10",
+      }),
+    ])!;
+    expect(e.faites).toBe(1);
+    expect(e.aVenir).toBe(1);
+    expect(e.prochaine?.date).toEqual(jour("2027-02-10"));
+
+    const r = resumerEquipement(e);
+    expect(r.etat).toBe("lointain");
+    expect(r.signaux.map((s) => s.libelle)).toEqual(["1 à venir", "1 faite"]);
+  });
+
+  it("annonce les échéances simplement planifiées", () => {
+    // L'état normal juste après génération : rien de dépassé, rien à
+    // planifier, rien de fait. La carte doit quand même parler.
+    const r = resumerEquipement(etatDe([verif("eq1", "2027-03-01")]));
+    expect(r.signaux.map((s) => s.cle)).toEqual(["aVenir"]);
+  });
+
   it("retombe sur la dernière preuve quand plus rien n'est attendu", () => {
     const r = resumerEquipement(
       etatDe([

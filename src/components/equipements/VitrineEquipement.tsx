@@ -25,6 +25,7 @@ import type { SignalEquipement } from "@/lib/equipements/etat-verifications";
 const ETAT_DU_SIGNAL: Record<SignalEquipement["cle"], RegistreLigne> = {
   enRetard: "enRetard",
   aPlanifier: "aPlanifier",
+  aVenir: "lointain",
   faite: "faite",
 };
 

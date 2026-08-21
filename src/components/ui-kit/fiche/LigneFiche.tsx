@@ -85,25 +85,34 @@ export function LigneFiche({
     </>
   );
 
-  const classes =
-    "flex items-center border-t border-[color:var(--board-slate-line)] first:border-t-0 " +
-    (compact ? "gap-3 px-7 py-2.5 sm:px-8 " : "gap-5 px-7 py-4 sm:px-8 ") +
-    VOILE[voile];
+  // Le filet et le voile vivent sur le `<li>`, jamais sur le lien : un
+  // lien est toujours l'unique enfant de sa ligne, donc `first:` y
+  // correspondait à chaque fois et effaçait tous les séparateurs. Les
+  // deux listes de la fiche passent un href — elles s'affichaient sans
+  // aucune ligne de partage.
+  const interieur =
+    "flex items-center " +
+    (compact ? "gap-3 px-7 py-2.5 sm:px-8" : "gap-5 px-7 py-4 sm:px-8");
 
   return (
-    <li className={href ? "" : classes}>
+    <li
+      className={
+        "border-t border-[color:var(--board-slate-line)] first:border-t-0 " +
+        VOILE[voile]
+      }
+    >
       {href ? (
         <Link
           href={href}
           className={
-            classes +
+            interieur +
             " transition-colors hover:bg-[color:var(--board-slate-pale)]"
           }
         >
           {contenu}
         </Link>
       ) : (
-        contenu
+        <span className={interieur}>{contenu}</span>
       )}
     </li>
   );

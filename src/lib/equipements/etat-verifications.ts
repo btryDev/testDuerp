@@ -11,7 +11,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
-import { classerVerification, type RegistreLigne } from "@/lib/calendrier/etats";
+import { lecturesCalendrier, type RegistreLigne } from "@/lib/calendrier/etats";
 import type { Periodicite } from "@/lib/referentiels/types-communs";
 
 export type EtatEquipement = {
@@ -27,6 +27,12 @@ export type EtatEquipement = {
    *  génération, pas une date choisie (ADR-010). Elles ne peuvent pas se
    *  poser sur un jour, mais l'appareil doit les annoncer. */
   aPlanifier: number;
+  /** Rendez-vous datés encore devant nous. Ils comprennent la prochaine
+   *  échéance d'un cycle déjà soldé : une même ligne de suivi dit « fait
+   *  le 22/01/2026 » et « prochaine le 22/01/2027 » (ADR-010). Sans ce
+   *  compte, un appareil parfaitement suivi n'affichait aucun signal, et
+   *  la carte du parc annonçait « aucune vérification rattachée ». */
+  aVenir: number;
   /** Vérifications déjà réalisées. Un compte, pas un verdict. */
   faites: number;
   /** Les rythmes portés par cet appareil, dans l'ordre où ils
@@ -83,12 +89,12 @@ export function repartirParEquipement(
   const parEquipement = new Map<string, EtatEquipement>();
 
   for (const v of verifs) {
-    const etat = classerVerification(v, now);
     const courant = parEquipement.get(v.equipementId) ?? {
       enRetard: 0,
       prochaine: null,
       derniere: null,
       aPlanifier: 0,
+      aVenir: 0,
       faites: 0,
       periodicites: [],
     };
@@ -97,25 +103,37 @@ export function repartirParEquipement(
       courant.periodicites.push(v.periodicite);
     }
 
-    if (etat === "faite") {
-      courant.faites += 1;
-      // `dateRealisee` peut manquer sur un statut « realisee_… » ancien :
-      // la date prévue fait alors foi, faute de mieux.
-      const faiteLe = v.dateRealisee ?? v.datePrevue;
-      if (!courant.derniere || faiteLe > courant.derniere) {
-        courant.derniere = faiteLe;
+    // Une ligne de suivi n'est pas une occurrence : soldée, elle porte à
+    // la fois la réalisation passée et le rendez-vous suivant du cycle.
+    // On la déplie donc comme le fait le calendrier (ADR-010) — sinon un
+    // appareil à jour n'a plus aucune échéance à annoncer, alors que le
+    // calendrier en affiche une.
+    for (const lecture of lecturesCalendrier(v, now)) {
+      if (lecture.lecture === "realisation") {
+        courant.faites += 1;
+        if (!courant.derniere || lecture.date > courant.derniere) {
+          courant.derniere = lecture.date;
+        }
+        continue;
       }
-    } else {
-      if (etat === "enRetard") courant.enRetard += 1;
-      if (etat === "aPlanifier") courant.aPlanifier += 1;
-      // Les occurrences arrivent triées par date : la première non faite
-      // qui porte un vrai rendez-vous est la prochaine. Une occurrence « à
-      // planifier » n'en est pas un — sa date est une date de génération.
-      if (!courant.prochaine && etat !== "aPlanifier") {
+
+      if (lecture.registre === "enRetard") courant.enRetard += 1;
+      else if (lecture.registre === "aPlanifier") courant.aPlanifier += 1;
+      else courant.aVenir += 1;
+
+      // Le prochain rendez-vous, c'est le plus proche — pas le premier
+      // rencontré : les réalisations déplient des dates qui ne suivent
+      // pas l'ordre des `datePrevue` d'entrée. Une occurrence « à
+      // planifier » n'est pas un rendez-vous : sa date est une date de
+      // génération.
+      if (
+        lecture.registre !== "aPlanifier" &&
+        (!courant.prochaine || lecture.date < courant.prochaine.date)
+      ) {
         courant.prochaine = {
-          date: v.datePrevue,
+          date: lecture.date,
           libelle: v.libelleObligation,
-          etat,
+          etat: lecture.registre,
         };
       }
     }
@@ -142,7 +160,7 @@ export function repartirParEquipement(
  * vérifications réalisées, pas un appareil en règle.
  */
 export type SignalEquipement = {
-  cle: "enRetard" | "aPlanifier" | "faite";
+  cle: "enRetard" | "aPlanifier" | "aVenir" | "faite";
   nb: number;
   libelle: string;
 };
@@ -175,6 +193,13 @@ export function resumerEquipement(
       libelle: `${etat.aPlanifier} à planifier`,
     });
   }
+  if (etat.aVenir > 0) {
+    signaux.push({
+      cle: "aVenir",
+      nb: etat.aVenir,
+      libelle: `${etat.aVenir} à venir`,
+    });
+  }
   if (etat.faites > 0) {
     signaux.push({
       cle: "faite",
@@ -193,6 +218,10 @@ export function resumerEquipement(
           : etat.faites > 0
             ? "faite"
             : "aPlanifier";
+
+  // Un appareil qui porte des vérifications finit toujours par annoncer
+  // quelque chose : le tableau vide est réservé à celui qui n'en a
+  // aucune, et c'est l'écran qui le dit en clair.
 
   return { etat: dominant, signaux };
 }
