@@ -1,18 +1,24 @@
 // Une catégorie du parc, et les appareils qu'elle contient.
 //
-// Le regroupement par catégorie existait déjà : ce qui manquait, c'est
-// l'état. Une carte de cinq extincteurs dont un est en retard doit se voir
-// avant d'être lue — d'où la jauge en tête, un segment par appareil,
-// coloré par les jetons d'état du board. Elle ne mesure rien : elle compte.
+// Le classement principal reste la catégorie — c'est elle qui porte le
+// rythme réglementaire, et c'est par famille qu'un dirigeant pense son
+// parc. Ce qui a changé : la section n'est plus une liste de dates mais
+// une grille de vitrines, et chaque vitrine dit d'abord OÙ.
+//
+// La jauge en tête compte, elle ne mesure pas : un segment par appareil,
+// coloré par les jetons d'état du board.
 
 import Link from "next/link";
-import { LigneFiche, LignesFiche, TuileDate, TuileMuette } from "@/components/ui-kit";
+import { Plus } from "lucide-react";
 import { MarqueCategorie } from "@/components/equipements/MarqueCategorie";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { VitrineEquipement } from "@/components/equipements/VitrineEquipement";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import { LABEL_PERIODICITE } from "@/lib/calendrier/labels";
-import { CHAMP_ETAT, PRIORITE_ETAT, type RegistreLigne } from "@/lib/calendrier/etats";
+import {
+  CHAMP_ETAT,
+  PRIORITE_ETAT,
+  type RegistreLigne,
+} from "@/lib/calendrier/etats";
 import type { ResumeEquipement } from "@/lib/equipements/etat-verifications";
 import type {
   CategorieEquipement,
@@ -22,7 +28,9 @@ import type {
 export type AppareilListe = {
   id: string;
   libelle: string;
-  localisation: string | null;
+  /** Ce que la vitrine annonce en grand — le bâtiment quand ils
+   *  existeront (ADR-019), la localisation en attendant. */
+  lieu: string | null;
   resume: ResumeEquipement;
   href: string;
 };
@@ -43,10 +51,7 @@ function Jauge({ etats }: { etats: RegistreLigne[] }) {
   if (segments.length === 0) return null;
 
   return (
-    <span
-      aria-hidden
-      className="flex h-2 w-[180px] flex-none gap-[3px]"
-    >
+    <span aria-hidden className="flex h-2 w-[180px] flex-none gap-[3px]">
       {segments.map((e) => (
         <span
           key={e}
@@ -58,34 +63,22 @@ function Jauge({ etats }: { etats: RegistreLigne[] }) {
   );
 }
 
-/**
- * Le voile d'une ligne : le retard et l'imminence se voient sur la ligne
- * entière, le reste reste au calme. `aPlanifier` n'en porte pas — une
- * occurrence sans date convenue n'est pas une urgence, c'est un rendez-vous
- * à prendre.
- */
-function voileDe(etat: RegistreLigne): "retard" | "proche" | "aucun" {
-  if (etat === "enRetard") return "retard";
-  if (etat === "proche") return "proche";
-  return "aucun";
-}
-
 export function CarteCategorie({
   categorie,
   appareils,
   periodicites,
+  hrefAjouter,
 }: {
   categorie: CategorieEquipement;
   appareils: AppareilListe[];
   /** Les rythmes réellement portés par les lignes de suivi générées. */
   periodicites: Periodicite[];
+  hrefAjouter: string;
 }) {
   // Une installation électrique porte à elle seule quatre rythmes : les
   // énumérer transformait le sur-titre en liste de courses. Au-delà de
   // deux, on annonce le nombre — le détail est sur la fiche.
-  const rythmes = [
-    ...new Set(periodicites.map((p) => LABEL_PERIODICITE[p])),
-  ];
+  const rythmes = [...new Set(periodicites.map((p) => LABEL_PERIODICITE[p]))];
   const rythme =
     rythmes.length === 0
       ? null
@@ -94,8 +87,8 @@ export function CarteCategorie({
         : `${rythmes.length} rythmes de vérification`;
 
   return (
-    <section className="carte-board overflow-hidden">
-      <div className="flex items-center gap-4 px-7 pt-6 sm:px-8">
+    <section>
+      <div className="flex items-center gap-3.5 border-b border-[color:var(--board-slate-line)] pb-3.5">
         <MarqueCategorie categorie={categorie} taille={44} />
         <div className="min-w-0 flex-1">
           <h2 className="board-titre m-0 text-[22px]">
@@ -109,57 +102,36 @@ export function CarteCategorie({
         <Jauge etats={appareils.map((a) => a.resume.etat)} />
       </div>
 
-      <div className="mt-4">
-        <LignesFiche>
-          {appareils.map((a) => (
-            <LigneFiche
-              key={a.id}
-              voile={voileDe(a.resume.etat)}
-              tuile={
-                a.resume.date ? (
-                  <TuileDate date={a.resume.date} etat={a.resume.etat} />
-                ) : (
-                  <TuileMuette>à dater</TuileMuette>
-                )
-              }
-              titre={a.libelle}
-              detail={
-                <>
-                  {a.localisation ?? "Localisation non précisée"}
-                  <span className="mx-1.5 text-[color:var(--board-slate)]">
-                    ·
-                  </span>
-                  {a.resume.phrase}
-                </>
-              }
-              droite={
-                <Link
-                  href={a.href}
-                  className={cn(
-                    buttonVariants({
-                      variant: "boardClair",
-                      size: "boardSm",
-                      className:
-                        a.resume.etat === "enRetard" ||
-                        a.resume.etat === "proche"
-                          ? "bg-white"
-                          : "",
-                    }),
-                  )}
-                >
-                  Voir la fiche
-                </Link>
-              }
-            />
-          ))}
-        </LignesFiche>
+      <div className="mt-[18px] grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {appareils.map((a) => (
+          <VitrineEquipement
+            key={a.id}
+            libelle={a.libelle}
+            lieu={a.lieu}
+            signaux={a.resume.signaux}
+            href={a.href}
+          />
+        ))}
       </div>
+
+      {/* Le geste est aussi à la famille concernée : depuis le haut de
+          page, il faut rechoisir la catégorie qu'on avait sous les yeux.
+          En bande plutôt qu'en tuile — une tuile d'ajout tombe seule sur
+          une deuxième rangée dès que la famille compte quatre appareils. */}
+      <Link
+        href={hrefAjouter}
+        className="mt-3 flex items-center justify-center gap-2 rounded-[18px] border border-dashed border-[color:var(--board-slate)] py-3 text-[12.5px] font-semibold text-[color:var(--board-slate-soft)] transition-colors hover:border-[color:var(--board-blue-strong)] hover:text-[color:var(--board-blue-ink)]"
+      >
+        <Plus className="size-4" aria-hidden />
+        Ajouter — {LABEL_CATEGORIE_EQUIPEMENT[categorie].toLowerCase()}
+      </Link>
     </section>
   );
 }
 
-/** Rangs d'urgence, pour trier les cartes : la catégorie la plus en peine
- *  se lit en premier. Exporté pour que la page trie sans redéfinir l'échelle. */
+/** Rangs d'urgence, pour trier les sections : la catégorie la plus en
+ *  peine se lit en premier. Exporté pour que la page trie sans redéfinir
+ *  l'échelle. */
 export function urgenceCategorie(appareils: AppareilListe[]): number {
   return appareils.reduce((max, a) => {
     const e = a.resume.etat;

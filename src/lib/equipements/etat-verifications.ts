@@ -13,7 +13,6 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { classerVerification, type RegistreLigne } from "@/lib/calendrier/etats";
 import type { Periodicite } from "@/lib/referentiels/types-communs";
-import { formaterDateCourteFr } from "@/lib/dates";
 
 export type EtatEquipement = {
   /** Vérifications dépassées sur cet appareil. */
@@ -28,6 +27,8 @@ export type EtatEquipement = {
    *  génération, pas une date choisie (ADR-010). Elles ne peuvent pas se
    *  poser sur un jour, mais l'appareil doit les annoncer. */
   aPlanifier: number;
+  /** Vérifications déjà réalisées. Un compte, pas un verdict. */
+  faites: number;
   /** Les rythmes portés par cet appareil, dans l'ordre où ils
    *  apparaissent. Ils viennent des lignes de suivi elles-mêmes, jamais
    *  d'une re-déduction depuis le référentiel : c'est ce qui a été généré
@@ -88,6 +89,7 @@ export function repartirParEquipement(
       prochaine: null,
       derniere: null,
       aPlanifier: 0,
+      faites: 0,
       periodicites: [],
     };
 
@@ -96,6 +98,7 @@ export function repartirParEquipement(
     }
 
     if (etat === "faite") {
+      courant.faites += 1;
       // `dateRealisee` peut manquer sur un statut « realisee_… » ancien :
       // la date prévue fait alors foi, faute de mieux.
       const faiteLe = v.dateRealisee ?? v.datePrevue;
@@ -124,82 +127,72 @@ export function repartirParEquipement(
 }
 
 /**
- * L'état d'un appareil ramené à ce qu'une ligne de liste peut porter :
- * une couleur, une date, une phrase.
+ * L'état d'un appareil ramené à ce qu'une carte d'inventaire porte : un
+ * état dominant, et des signaux comptés.
  *
- * La page Équipements composait ces trois choses à la main, dans le corps
- * du rendu — impossible à tester, et déjà divergent de ce que la fiche
- * annonce. La règle de préséance est la même que partout ailleurs : le
- * retard prime, puis le rendez-vous pris, puis l'absence de rendez-vous,
- * puis la dernière preuve. Et jamais un mot de conformité : l'outil rend
- * des dates, il ne certifie pas (cf. garde-fous produit).
+ * Plus de date ici. Le parc répond à « qu'est-ce que j'ai, et où » ; le
+ * calendrier répond à « qu'est-ce qui tombe quand ». Poser une échéance
+ * sur chaque carte faisait lire l'inventaire comme un agenda — alors que
+ * l'agenda existe déjà, à côté, et le dit mieux.
+ *
+ * La règle de préséance est celle du reste de l'application : le retard
+ * prime, puis le rendez-vous pris, puis l'absence de rendez-vous, puis la
+ * dernière preuve. Et jamais un mot de conformité — l'outil compte, il ne
+ * certifie pas (cf. garde-fous produit) : « 2 faites » dit deux
+ * vérifications réalisées, pas un appareil en règle.
  */
+export type SignalEquipement = {
+  cle: "enRetard" | "aPlanifier" | "faite";
+  nb: number;
+  libelle: string;
+};
+
 export type ResumeEquipement = {
+  /** L'état dominant : champ de la jauge de catégorie, et rang de tri. */
   etat: RegistreLigne;
-  /** La date que porte la tuile — le prochain rendez-vous, ou à défaut la
-   *  dernière preuve. Absente : l'appareil n'a ni l'un ni l'autre. */
-  date: Date | null;
-  /** Une phrase de faits, prête à afficher. */
-  phrase: string;
+  /** Les signaux à afficher, du plus urgent au plus calme. Vide quand
+   *  aucune vérification n'est rattachée — l'écran le dit alors en clair. */
+  signaux: SignalEquipement[];
 };
 
 export function resumerEquipement(
   etat: EtatEquipement | undefined,
 ): ResumeEquipement {
-  if (!etat) {
-    return {
-      etat: "aPlanifier",
-      date: null,
-      phrase: "Aucune vérification périodique rattachée",
-    };
-  }
+  if (!etat) return { etat: "aPlanifier", signaux: [] };
 
-  const parts: string[] = [];
+  const signaux: SignalEquipement[] = [];
   if (etat.enRetard > 0) {
-    parts.push(
-      `${etat.enRetard} vérification${etat.enRetard > 1 ? "s" : ""} en retard`,
-    );
+    signaux.push({
+      cle: "enRetard",
+      nb: etat.enRetard,
+      libelle: `${etat.enRetard} dépassée${etat.enRetard > 1 ? "s" : ""}`,
+    });
   }
   if (etat.aPlanifier > 0) {
-    parts.push(
-      `${etat.aPlanifier} à planifier`,
-    );
+    signaux.push({
+      cle: "aPlanifier",
+      nb: etat.aPlanifier,
+      libelle: `${etat.aPlanifier} à planifier`,
+    });
   }
-  if (etat.prochaine) {
-    // Une occurrence dépassée est la « prochaine » au sens du calcul,
-    // jamais au sens de la langue : annoncer « Prochaine : 4 août » un
-    // 20 août serait faux.
-    parts.push(
-      etat.prochaine.etat === "enRetard"
-        ? `attendue le ${formaterDateCourteFr(etat.prochaine.date)}`
-        : `prochaine le ${formaterDateCourteFr(etat.prochaine.date)}`,
-    );
+  if (etat.faites > 0) {
+    signaux.push({
+      cle: "faite",
+      nb: etat.faites,
+      libelle: `${etat.faites} faite${etat.faites > 1 ? "s" : ""}`,
+    });
   }
-  parts.push(
-    etat.derniere
-      ? `dernière vérification le ${formaterDateCourteFr(etat.derniere)}`
-      : "aucune vérification connue à ce jour",
-  );
 
-  const phrase = parts.join(" · ");
-  const majuscule = phrase.charAt(0).toUpperCase() + phrase.slice(1);
+  const dominant: RegistreLigne =
+    etat.enRetard > 0
+      ? "enRetard"
+      : etat.prochaine
+        ? etat.prochaine.etat
+        : etat.aPlanifier > 0
+          ? "aPlanifier"
+          : etat.faites > 0
+            ? "faite"
+            : "aPlanifier";
 
-  if (etat.enRetard > 0) {
-    return { etat: "enRetard", date: etat.prochaine?.date ?? null, phrase: majuscule };
-  }
-  if (etat.prochaine) {
-    return {
-      etat: etat.prochaine.etat,
-      date: etat.prochaine.date,
-      phrase: majuscule,
-    };
-  }
-  if (etat.aPlanifier > 0) {
-    return { etat: "aPlanifier", date: null, phrase: majuscule };
-  }
-  return {
-    etat: etat.derniere ? "faite" : "aPlanifier",
-    date: etat.derniere,
-    phrase: majuscule,
-  };
+  return { etat: dominant, signaux };
 }

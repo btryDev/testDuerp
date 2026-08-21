@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowUpRight } from "lucide-react";
 import {
+  AideEcran,
   CarteFiche,
   ChampFiche,
   ChampsFiche,
@@ -12,7 +14,6 @@ import {
   TuileDate,
   TuileMuette,
 } from "@/components/ui-kit";
-import { BadgeResultat } from "@/components/rapports/BadgeResultat";
 import { HeroEquipement } from "@/components/equipements/HeroEquipement";
 import { SupprimerEquipementButton } from "@/components/equipements/SupprimerEquipementButton";
 import { buttonVariants } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import {
   lignesHistoire,
   obligationsDeLEquipement,
 } from "@/lib/equipements/fiche";
+import { caracteristiquesLisibles } from "@/lib/equipements/caracteristiques";
 import { construireFrise, type JalonFrise } from "@/lib/equipements/frise";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import { LABEL_PERIODICITE, LABEL_REALISATEUR } from "@/lib/calendrier/labels";
@@ -86,12 +88,17 @@ export default async function EquipementDetailPage({
   const aFaire = lignesAFaire(eq, base, maintenant);
   const histoire = lignesHistoire(eq, base, maintenant);
   const obligations = obligationsDeLEquipement(eq);
+  const caracteristiques = caracteristiquesLisibles(
+    eq.categorie,
+    eq.caracteristiques,
+  );
 
   // Le rendez-vous de tête : la première ligne datée de « à faire ». Une
   // occurrence à planifier n'en est pas un — sa date est une date de
   // génération (ADR-010).
   const tete = aFaire.find((l) => l.date !== null) ?? null;
-  const etatTete: RegistreLigne = tete?.etat ?? (aFaire.length > 0 ? "aPlanifier" : "faite");
+  const etatTete: RegistreLigne =
+    tete?.etat ?? (aFaire.length > 0 ? "aPlanifier" : "faite");
   const ecarts = aFaire.filter((l) => l.genre === "action").length;
   const enRetard = aFaire.filter((l) => l.etat === "enRetard").length;
 
@@ -108,7 +115,9 @@ export default async function EquipementDetailPage({
       etat: "aPlanifier",
     });
   }
-  for (const h of histoire.filter((l) => l.cle !== "mise-en-service").slice(0, 2)) {
+  for (const h of histoire
+    .filter((l) => l.cle !== "mise-en-service")
+    .slice(0, 2)) {
     jalons.push({
       cle: h.cle,
       date: h.date,
@@ -131,7 +140,9 @@ export default async function EquipementDetailPage({
   }
   // Les autres échéances datées passent en second plan : elles situent le
   // rythme sans revendiquer d'étiquette pleine.
-  for (const l of aFaire.filter((l) => l !== tete && l.date !== null).slice(0, 2)) {
+  for (const l of aFaire
+    .filter((l) => l !== tete && l.date !== null)
+    .slice(0, 2)) {
     jalons.push({
       cle: l.cle,
       date: l.date!,
@@ -158,266 +169,269 @@ export default async function EquipementDetailPage({
       ? `Des vérifications sont rattachées à cet appareil, mais aucune date n'a encore été convenue. ${trace}`
       : `Aucune échéance n'est ouverte sur cet appareil à ce jour. ${trace}`;
 
+  const realisateurs = realisateursRequis(obligations);
+
   return (
-    <EcranFiche provenance={provenance} canonique={parc}>
-      <HeroEquipement
-        categorie={eq.categorie}
-        date={tete?.date ?? null}
-        etat={etatTete}
-        surtitre={
-          <>
-            Équipement · {LABEL_CATEGORIE_EQUIPEMENT[eq.categorie]}
-            {eq.localisation ? ` · ${eq.localisation}` : null}
-          </>
-        }
-        titre={eq.libelle}
-        chapeau={chapeau}
-        frise={frise}
-        pastilles={
-          <>
-            {!eq.actif && (
-              <PastilleFiche ton="retard">Retiré du parc</PastilleFiche>
-            )}
-            {enRetard > 0 && (
-              <PastilleFiche ton="retard">
-                {enRetard} échéance{enRetard > 1 ? "s" : ""} en retard
-              </PastilleFiche>
-            )}
-            {ecarts > 0 && (
-              <PastilleFiche ton="proche">
-                {ecarts} écart{ecarts > 1 ? "s" : ""} à lever
-              </PastilleFiche>
-            )}
-            {eq.dateMiseEnService && (
-              <PastilleFiche ton="encre">
-                En service depuis {formaterMoisAnneeFr(eq.dateMiseEnService)}
-              </PastilleFiche>
-            )}
-            <PastilleFiche ton="encre">
-              {obligations.length} obligation{obligations.length > 1 ? "s" : ""}
-            </PastilleFiche>
-          </>
-        }
-        actions={
-          <>
-            <Link
-              href={`${base}/equipements/${equipementId}/modifier`}
-              className={cn(
-                buttonVariants({ variant: "boardFantome", size: "board" }),
+    <EcranFiche
+      provenance={provenance}
+      canonique={parc}
+      bandeau={
+        <HeroEquipement
+          categorie={eq.categorie}
+          date={tete?.date ?? null}
+          etat={etatTete}
+          surtitre={
+            <>
+              Équipement · {LABEL_CATEGORIE_EQUIPEMENT[eq.categorie]}
+              {eq.localisation ? ` · ${eq.localisation}` : null}
+            </>
+          }
+          titre={eq.libelle}
+          chapeau={chapeau}
+          frise={frise}
+          pastilles={
+            <>
+              {!eq.actif && (
+                <PastilleFiche ton="retard">Retiré du parc</PastilleFiche>
               )}
-            >
-              Modifier
-            </Link>
-            {tete && tete.genre === "verification" ? (
+              {enRetard > 0 && (
+                <PastilleFiche ton="retard">
+                  {enRetard} échéance{enRetard > 1 ? "s" : ""} en retard
+                </PastilleFiche>
+              )}
+              {ecarts > 0 && (
+                <PastilleFiche ton="proche">
+                  {ecarts} écart{ecarts > 1 ? "s" : ""} à lever
+                </PastilleFiche>
+              )}
+              {eq.dateMiseEnService && (
+                <PastilleFiche ton="neutre">
+                  En service depuis {formaterMoisAnneeFr(eq.dateMiseEnService)}
+                </PastilleFiche>
+              )}
+              <PastilleFiche ton="neutre">
+                {`${obligations.length} obligation${obligations.length > 1 ? "s" : ""}`}
+              </PastilleFiche>
+            </>
+          }
+          actions={
+            <>
+              {/* Les articles qui fondent les vérifications se lisent une
+                  fois, pas à chaque ouverture de la fiche : ils passent
+                  derrière le « ? », le même objet que celui du calendrier. */}
+              <AideEcran titre="Pourquoi on vérifie cet équipement">
+                {obligations.length === 0 ? (
+                  <p className="m-0">
+                    Aucune obligation du référentiel n&apos;est rattachée à cet
+                    appareil pour l&apos;instant. Sa catégorie n&apos;en
+                    déclenche peut-être aucune sous vos régimes, ou son
+                    calendrier n&apos;a pas encore été généré.
+                  </p>
+                ) : (
+                  <>
+                    <p className="m-0">
+                      {obligations.length > 1
+                        ? `${obligations.length} obligations du référentiel s'appliquent à cet appareil.`
+                        : "Une obligation du référentiel s'applique à cet appareil."}{" "}
+                      Chacune cite l&apos;article qui la fonde&nbsp;: c&apos;est
+                      celui qu&apos;on présente en cas de contrôle.
+                    </p>
+                    {obligations.map((o) => (
+                      <div
+                        key={o.id}
+                        className="rounded-[18px] bg-[color:var(--board-slate-pale)] px-4 py-3.5"
+                      >
+                        <p className="m-0 text-[14px] font-semibold leading-[1.35] text-[color:var(--board-ink)]">
+                          {o.libelle}
+                        </p>
+                        {/* La référence qui **fonde** l'obligation vient en
+                            premier dans le référentiel (ADR-003) : c'est
+                            celle qu'on citerait seule devant un inspecteur. */}
+                        <p className="m-0 mt-1.5 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+                          {o.referencesLegales[0].reference}
+                        </p>
+                        <span className="pastille-board mt-3 bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]">
+                          {LABEL_PERIODICITE[o.periodicite]}
+                        </span>
+                      </div>
+                    ))}
+                    <Link
+                      href={`${base}/guide`}
+                      className="text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
+                    >
+                      Lire l&apos;explication dans Comprendre →
+                    </Link>
+                  </>
+                )}
+              </AideEcran>
               <Link
-                href={avecProvenance(tete.href, depuisCetteFiche)}
+                href={`${base}/equipements/${equipementId}/modifier`}
                 className={cn(
-                  buttonVariants({ variant: "boardBlanc", size: "board" }),
+                  buttonVariants({ variant: "boardClair", size: "board" }),
                 )}
               >
-                Déposer un rapport
+                Modifier
               </Link>
-            ) : null}
-          </>
-        }
-      />
-
+            </>
+          }
+        />
+      }
+    >
       <CorpsFiche
         principal={
+          <CarteFiche
+            titreFort="L'appareil"
+            droite={
+              <Link
+                href={`${base}/equipements/${equipementId}/modifier`}
+                className="text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
+              >
+                Modifier →
+              </Link>
+            }
+            corpsClassName="px-7 pb-7 pt-5 sm:px-8"
+          >
+            <ChampsFiche>
+              <ChampFiche cle="Catégorie">
+                {LABEL_CATEGORIE_EQUIPEMENT[eq.categorie]}
+              </ChampFiche>
+              <ChampFiche cle="Localisation">
+                {eq.localisation ?? (
+                  <span className="text-[color:var(--board-slate-soft)]">
+                    Non précisée
+                  </span>
+                )}
+              </ChampFiche>
+              <ChampFiche cle="Mise en service">
+                {eq.dateMiseEnService ? (
+                  formaterDateLongueFr(eq.dateMiseEnService)
+                ) : (
+                  <span className="text-[color:var(--board-slate-soft)]">
+                    Non renseignée
+                  </span>
+                )}
+              </ChampFiche>
+              <ChampFiche cle="Réalisateur requis">
+                {realisateurs ?? (
+                  <span className="text-[color:var(--board-slate-soft)]">
+                    Aucune obligation rattachée
+                  </span>
+                )}
+              </ChampFiche>
+              {/* Les caractéristiques déclarées ne sont pas décoratives :
+                  six d'entre elles bornent des obligations. Une question
+                  sans réponse se lit ici, avec ce qu'elle implique. */}
+              {caracteristiques.map((c) => (
+                <ChampFiche key={c.cle} cle={c.libelle}>
+                  {c.enAttente ? (
+                    <span className="text-[color:var(--board-slate-soft)]">
+                      {c.valeur}
+                      {" — l'obligation reste au calendrier"}
+                    </span>
+                  ) : (
+                    c.valeur
+                  )}
+                </ChampFiche>
+              ))}
+            </ChampsFiche>
+          </CarteFiche>
+        }
+        cote={
           <>
             <CarteFiche
-              titreFort={
-                <>
-                  À faire{" "}
-                  <span className="accent-serif text-[21px] text-[color:var(--board-slate-soft)]">
-                    sur cet équipement
-                  </span>
-                </>
-              }
+              titre="À faire"
               droite={
                 aFaire.length > 0 ? (
                   <PastilleFiche ton="neutre">{aFaire.length}</PastilleFiche>
                 ) : undefined
               }
-              corpsClassName="mt-4"
+              corpsClassName="pb-6 pt-3"
             >
               {aFaire.length === 0 ? (
-                <p className="m-0 px-7 pb-6 text-[14px] leading-[1.55] text-[color:var(--board-slate-mid)] sm:px-8">
+                <p className="m-0 px-7 text-[13px] leading-[1.55] text-[color:var(--board-slate-mid)] sm:px-8">
                   Rien n&apos;est ouvert sur cet appareil. Cela ne veut pas dire
                   qu&apos;il est conforme&nbsp;: cela veut dire qu&apos;aucune
                   échéance ni aucun écart n&apos;est enregistré à ce jour.
                 </p>
               ) : (
-                <LignesFiche>
-                  {aFaire.map((l) => (
-                    <LigneFiche
-                      key={l.cle}
-                      href={avecProvenance(l.href, depuisCetteFiche)}
-                      voile={
-                        l.etat === "enRetard"
-                          ? "retard"
-                          : l.etat === "proche"
-                            ? "proche"
-                            : "aucun"
-                      }
-                      tuile={
-                        l.date ? (
-                          <TuileDate date={l.date} etat={l.etat} />
-                        ) : (
-                          <TuileMuette>à dater</TuileMuette>
-                        )
-                      }
-                      surtitre={
-                        <span
-                          style={{
-                            color:
-                              l.etat === "enRetard"
-                                ? "var(--board-signal-ink)"
-                                : l.etat === "proche"
-                                  ? "var(--board-amber-ink)"
+                <>
+                  <LignesFiche>
+                    {aFaire.slice(0, 4).map((l) => (
+                      <LigneFiche
+                        key={l.cle}
+                        href={avecProvenance(l.href, depuisCetteFiche)}
+                        compact
+                        tuile={
+                          l.date ? (
+                            <TuileDate date={l.date} etat={l.etat} />
+                          ) : (
+                            <TuileMuette>à dater</TuileMuette>
+                          )
+                        }
+                        titre={l.libelle}
+                        detail={
+                          <span
+                            style={{
+                              color:
+                                l.etat === "enRetard"
+                                  ? "var(--board-signal-ink)"
                                   : undefined,
-                          }}
-                        >
-                          {l.surtitre} · {delai(l.date, maintenant)}
-                        </span>
-                      }
-                      titre={l.libelle}
-                      detail={l.detail}
-                    />
-                  ))}
-                </LignesFiche>
-              )}
-            </CarteFiche>
-
-            <CarteFiche
-              titreFort={
-                <>
-                  Ce qui a été{" "}
-                  <span className="accent-serif text-[21px] text-[color:var(--board-slate-soft)]">
-                    fait
-                  </span>
-                </>
-              }
-              droite={
-                <Link
-                  href={`${base}/registre`}
-                  className="text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
-                >
-                  Tout voir dans le registre →
-                </Link>
-              }
-              corpsClassName="mt-4"
-            >
-              {histoire.length === 0 ? (
-                <p className="m-0 px-7 pb-6 text-[14px] leading-[1.55] text-[color:var(--board-slate-mid)] sm:px-8">
-                  Aucune trace au dossier pour cet appareil — ni rapport, ni
-                  date de mise en service.
-                </p>
-              ) : (
-                <LignesFiche>
-                  {histoire.map((h) => (
-                    <LigneFiche
-                      key={h.cle}
-                      href={
-                        h.href
-                          ? avecProvenance(h.href, depuisCetteFiche)
-                          : undefined
-                      }
-                      tuile={<TuileDate date={h.date} etat={h.etat} />}
-                      surtitre={`${h.surtitre} · ${formaterMoisAnneeFr(h.date)}`}
-                      titre={h.libelle}
-                      detail={h.detail}
-                      droite={
-                        h.resultat ? (
-                          <BadgeResultat resultat={h.resultat} />
-                        ) : undefined
-                      }
-                    />
-                  ))}
-                </LignesFiche>
-              )}
-            </CarteFiche>
-          </>
-        }
-        cote={
-          <>
-            <CarteFiche
-              className="bg-[color:var(--board-blue-pale)]"
-              titreFort={
-                <>
-                  Pourquoi{" "}
-                  <span className="accent-serif text-[21px] text-[color:var(--board-blue-ink)]">
-                    on le vérifie
-                  </span>
-                </>
-              }
-              corpsClassName="px-7 pb-7 pt-4 sm:px-8"
-            >
-              {obligations.length === 0 ? (
-                <p className="m-0 text-[13px] leading-[1.55] text-[color:var(--board-slate-mid)]">
-                  Aucune obligation du référentiel n&apos;est rattachée à cet
-                  appareil pour l&apos;instant.
-                </p>
-              ) : (
-                <div className="flex flex-col gap-3.5">
-                  {obligations.map((o) => (
-                    <div
-                      key={o.id}
-                      className="rounded-[20px] bg-[color:var(--board-card)] px-4 py-4"
+                            }}
+                          >
+                            {delai(l.date, maintenant)}
+                          </span>
+                        }
+                      />
+                    ))}
+                  </LignesFiche>
+                  <div className="px-7 pt-4 sm:px-8">
+                    <Link
+                      href={`${base}/calendrier?vue=equipement#eq-${eq.id}`}
+                      className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
                     >
-                      <p className="m-0 text-[14px] font-semibold leading-[1.35] text-[color:var(--board-ink)]">
-                        {o.libelle}
-                      </p>
-                      {/* La référence qui **fonde** l'obligation vient en
-                          premier dans le référentiel (ADR-003) : c'est celle
-                          qu'on citerait seule devant un inspecteur. */}
-                      <p className="m-0 mt-1.5 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-                        {o.referencesLegales[0].reference}
-                      </p>
-                      <span className="pastille-board mt-3 bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]">
-                        {LABEL_PERIODICITE[o.periodicite]}
-                      </span>
-                    </div>
-                  ))}
-                  <Link
-                    href={`${base}/guide`}
-                    className="text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
-                  >
-                    Lire l&apos;explication dans Comprendre →
-                  </Link>
-                </div>
+                      Voir cet équipement au calendrier
+                      <ArrowUpRight className="size-3.5" />
+                    </Link>
+                  </div>
+                </>
               )}
             </CarteFiche>
 
-            <CarteFiche titre="Fiche">
-              <ChampsFiche>
-                <ChampFiche cle="Catégorie">
-                  {LABEL_CATEGORIE_EQUIPEMENT[eq.categorie]}
-                </ChampFiche>
-                <ChampFiche cle="Localisation">
-                  {eq.localisation ?? (
-                    <span className="text-[color:var(--board-slate-soft)]">
-                      Non précisée
-                    </span>
-                  )}
-                </ChampFiche>
-                <ChampFiche cle="Mise en service">
-                  {eq.dateMiseEnService ? (
-                    formaterDateLongueFr(eq.dateMiseEnService)
-                  ) : (
-                    <span className="text-[color:var(--board-slate-soft)]">
-                      Non renseignée
-                    </span>
-                  )}
-                </ChampFiche>
-                <ChampFiche cle="Réalisateur requis">
-                  {realisateursRequis(obligations) ?? (
-                    <span className="text-[color:var(--board-slate-soft)]">
-                      Aucune obligation rattachée
-                    </span>
-                  )}
-                </ChampFiche>
-              </ChampsFiche>
+            <CarteFiche titre="Ce qui a été fait" corpsClassName="pb-6 pt-3">
+              {histoire.length === 0 ? (
+                <p className="m-0 px-7 text-[13px] leading-[1.55] text-[color:var(--board-slate-mid)] sm:px-8">
+                  Aucune trace au dossier — ni rapport, ni date de mise en
+                  service.
+                </p>
+              ) : (
+                <>
+                  <LignesFiche>
+                    {histoire.slice(0, 3).map((h) => (
+                      <LigneFiche
+                        key={h.cle}
+                        href={
+                          h.href
+                            ? avecProvenance(h.href, depuisCetteFiche)
+                            : undefined
+                        }
+                        compact
+                        tuile={<TuileDate date={h.date} etat={h.etat} />}
+                        titre={h.libelle}
+                        detail={h.detail}
+                      />
+                    ))}
+                  </LignesFiche>
+                  <div className="px-7 pt-4 sm:px-8">
+                    <Link
+                      href={`${base}/registre`}
+                      className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
+                    >
+                      Tout voir dans le registre
+                      <ArrowUpRight className="size-3.5" />
+                    </Link>
+                  </div>
+                </>
+              )}
             </CarteFiche>
 
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-[22px] border border-dashed border-[color:var(--board-slate)] px-6 py-5">

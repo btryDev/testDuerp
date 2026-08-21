@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EmptyState } from "@/components/layout/EmptyState";
 import { BandeauParc } from "@/components/equipements/BandeauParc";
@@ -66,36 +65,49 @@ export default async function EquipementsPage({
     (s) => !dejaDeclarees.has(s.categorie),
   );
 
-  // Une carte par catégorie, la plus en peine en tête : sur un parc de
+  // Une section par catégorie, la plus en peine en tête : sur un parc de
   // quinze appareils, l'ordre alphabétique enterrait le seul retard.
-  const cartes = [...parCategorie.entries()]
+  const sections = [...parCategorie.entries()]
     .map(([categorie, liste]) => {
       const appareils: AppareilListe[] = liste.map((eq) => ({
         id: eq.id,
         libelle: eq.libelle,
-        localisation: eq.localisation,
+        // Le « où » de la vitrine. Il portera le bâtiment quand les
+        // bâtiments existeront (ADR-019) ; la localisation est le seul
+        // lieu dont on dispose aujourd'hui.
+        lieu: eq.localisation,
         resume: resumerEquipement(etatsVerifs.get(eq.id)),
         href: avecProvenance(`${base}/equipements/${eq.id}`, origine),
       }));
       const periodicites = liste.flatMap(
         (eq) => etatsVerifs.get(eq.id)?.periodicites ?? [],
       );
-      return { categorie: categorie as CategorieEquipement, appareils, periodicites };
+      return {
+        categorie: categorie as CategorieEquipement,
+        appareils,
+        periodicites,
+      };
     })
-    .sort((a, b) => urgenceCategorie(b.appareils) - urgenceCategorie(a.appareils));
+    .sort(
+      (a, b) => urgenceCategorie(b.appareils) - urgenceCategorie(a.appareils),
+    );
 
   return (
-    <main className="flex flex-1 flex-col bg-[color:var(--board-card)] px-[var(--board-gutter)] pb-16 pt-7">
-      <nav aria-label="Retour">
-        <Link
-          href={base}
-          className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
-        >
-          ← Mon établissement
-        </Link>
-      </nav>
+    <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
+      <BandeauParc
+        hrefRetour={base}
+        enRetard={compteurs.enRetard}
+        proches={compteurs.aVenir}
+        total={equipements.length}
+        hrefAjouter={`${base}/equipements/nouveau`}
+        suggestions={
+          suggestionsRestantes.length > 0
+            ? { nombre: suggestionsRestantes.length, href: "#suggestions" }
+            : null
+        }
+      />
 
-      <div className="mt-4 flex flex-col gap-[22px]">
+      <div className="flex flex-col gap-7 px-[var(--board-gutter)] pt-6">
         {/* Bandeau de continuité wizard → équipements (éphémère : le
             paramètre disparaît à la navigation suivante). */}
         {bienvenue === "1" && (
@@ -108,18 +120,6 @@ export default async function EquipementsPage({
             </p>
           </div>
         )}
-
-        <BandeauParc
-          enRetard={compteurs.enRetard}
-          proches={compteurs.aVenir}
-          total={equipements.length}
-          hrefAjouter={`${base}/equipements/nouveau`}
-          suggestions={
-            suggestionsRestantes.length > 0
-              ? { nombre: suggestionsRestantes.length, href: "#suggestions" }
-              : null
-          }
-        />
 
         {suggestionsRestantes.length > 0 && (
           <div id="suggestions" className="scroll-mt-6">
@@ -143,12 +143,13 @@ export default async function EquipementsPage({
             ctaHref={`${base}/equipements/nouveau`}
           />
         ) : (
-          cartes.map((c) => (
+          sections.map((s) => (
             <CarteCategorie
-              key={c.categorie}
-              categorie={c.categorie}
-              appareils={c.appareils}
-              periodicites={c.periodicites}
+              key={s.categorie}
+              categorie={s.categorie}
+              appareils={s.appareils}
+              periodicites={s.periodicites}
+              hrefAjouter={`${base}/equipements/nouveau?categorie=${s.categorie}`}
             />
           ))
         )}

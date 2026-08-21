@@ -30,6 +30,7 @@ export function LigneFiche({
   droite,
   href,
   voile = "aucun",
+  compact = false,
 }: {
   /** La tuile-date, ou tout autre repère de gauche. */
   tuile?: ReactNode;
@@ -44,6 +45,12 @@ export function LigneFiche({
    */
   href?: string;
   voile?: keyof typeof VOILE;
+  /**
+   * Gabarit du rail : gouttières et titre resserrés. La même ligne dans
+   * une colonne de 320 px et dans une carte pleine largeur ne peut pas
+   * respirer pareil — sans ça, trois lignes mangent l'écran.
+   */
+  compact?: boolean;
 }) {
   const contenu = (
     <>
@@ -56,14 +63,20 @@ export function LigneFiche({
         ) : null}
         <span
           className={
-            "block text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]" +
+            "block font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)] " +
+            (compact ? "text-[13.5px]" : "text-[16px]") +
             (surtitre ? " mt-1.5" : "")
           }
         >
           {titre}
         </span>
         {detail ? (
-          <span className="mt-1 block text-[12.5px] leading-[1.45] text-[color:var(--board-slate-mid)]">
+          <span
+            className={
+              "mt-1 block leading-[1.45] text-[color:var(--board-slate-mid)] " +
+              (compact ? "text-[12px]" : "text-[12.5px]")
+            }
+          >
             {detail}
           </span>
         ) : null}
@@ -73,7 +86,8 @@ export function LigneFiche({
   );
 
   const classes =
-    "flex items-center gap-5 border-t border-[color:var(--board-slate-line)] px-7 py-4 first:border-t-0 sm:px-8 " +
+    "flex items-center border-t border-[color:var(--board-slate-line)] first:border-t-0 " +
+    (compact ? "gap-3 px-7 py-2.5 sm:px-8 " : "gap-5 px-7 py-4 sm:px-8 ") +
     VOILE[voile];
 
   return (

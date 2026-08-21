@@ -2,21 +2,21 @@
 //
 // Le calendrier montre les mois qui viennent ; le registre montre les
 // preuves déposées. Ni l'un ni l'autre ne montre le **cycle** : mis en
-// service en 2021, vérifié deux fois, un écart à lever dans huit jours,
+// service en 2022, vérifié deux fois, un écart à lever dans huit jours,
 // prochaine visite en février. C'est cette phrase-là que la frise écrit
 // d'un coup d'œil.
 //
-// Elle vit sur l'encre : les points portent un halo de la couleur du fond
+// Elle vit sur papier : les points portent un halo de la couleur du fond
 // pour se détacher de la barre, comme les points de la règle annuelle se
 // détachent du blanc de leur carte. Quelles étiquettes s'écrivent est
 // décidé en amont (`construireFrise`) — la vue ne fait que poser.
 
-import { CHAMP_ETAT } from "@/lib/calendrier/etats";
+import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
 import type { Frise, JalonPose } from "@/lib/equipements/frise";
 import { formaterMoisAnneeFr } from "@/lib/dates";
 
-/** Encre du fond : c'est elle que les halos rejouent. */
-const FOND = "var(--board-ink)";
+/** Champ de la carte : c'est lui que les halos rejouent. */
+const FOND = "var(--board-card)";
 
 /**
  * Aligne l'étiquette d'un jalon selon sa place sur l'axe. Centrée au
@@ -48,12 +48,14 @@ function Etiquette({ jalon, mois }: { jalon: JalonPose; mois: boolean }) {
     >
       <span
         className="whitespace-nowrap font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em]"
-        style={{ color: CHAMP_ETAT[jalon.etat] }}
+        // L'encre de l'état, pas son champ : le vert et le jaune de champ
+        // sont illisibles sur blanc.
+        style={{ color: ENCRE_ETAT[jalon.etat] }}
       >
         {mois ? formaterMoisAnneeFr(jalon.date) : jalon.libelle}
       </span>
       {mois ? (
-        <span className="whitespace-nowrap text-[12px] text-white/85">
+        <span className="whitespace-nowrap text-[12px] text-[color:var(--board-slate-mid)]">
           {jalon.libelle}
         </span>
       ) : null}
@@ -70,17 +72,17 @@ export function FriseEquipement({ frise }: { frise: Frise }) {
   const remplissage = `linear-gradient(90deg, var(--board-green) 0%, var(--board-green) 72%, ${arrivee} 100%)`;
 
   return (
-    <div className="mx-7 border-t border-white/12 pb-7 pt-5 sm:mx-9">
+    <div className="mt-6 border-t border-[color:var(--board-slate-line)] pt-5">
       <div className="flex items-center justify-between gap-4">
-        <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-blue-soft)]">
+        <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
           La vie de cet équipement
         </p>
-        <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-white/45">
+        <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate)]">
           {formaterMoisAnneeFr(frise.debut)} → {formaterMoisAnneeFr(frise.fin)}
         </p>
       </div>
 
-      <div className="relative mt-6 h-1.5 rounded-full bg-white/12">
+      <div className="relative mt-6 h-1.5 rounded-full bg-[color:var(--board-slate-pale)]">
         <div
           className="absolute inset-y-0 left-0 rounded-full"
           style={{
@@ -115,7 +117,7 @@ export function FriseEquipement({ frise }: { frise: Frise }) {
 
         <span
           aria-hidden
-          className="absolute -top-3.5 -bottom-3.5 w-0.5 rounded-sm bg-white"
+          className="absolute -bottom-3.5 -top-3.5 w-0.5 rounded-sm bg-[color:var(--board-ink)]"
           style={{ left: `${frise.aujourdhui * 100}%` }}
         />
       </div>
@@ -141,7 +143,7 @@ export function FriseEquipement({ frise }: { frise: Frise }) {
               className={`absolute flex flex-col ${a.classe}`}
               style={a.style}
             >
-              <span className="whitespace-nowrap font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em] text-white">
+              <span className="whitespace-nowrap font-mono text-[9.5px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-ink)]">
                 aujourd&apos;hui
               </span>
             </span>

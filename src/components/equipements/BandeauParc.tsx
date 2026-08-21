@@ -1,62 +1,58 @@
-// Le bandeau d'encre en tête du parc.
+// Le bandeau du parc — clair, pleine largeur, bord à bord.
 //
-// La page Équipements s'ouvrait sur un titre nu et un inventaire : elle
-// disait ce qu'on possède, jamais où l'on en est. Les trois chiffres
-// portés ici — retards, échéances sous trente jours, taille du parc —
-// sont ceux que le dirigeant vient chercher avant de descendre dans la
-// liste, et ils reprennent les champs d'état du board pour se lire sans
-// être comptés (rose = retard, jaune = proche).
+// Il portait un aplat d'encre : le noir posait une troisième bande sombre
+// dans un parcours qui en compte déjà deux (la barre latérale, la bande du
+// calendrier), et le titre éditorial qu'il portait n'apprenait rien.
+// Celui-ci a la même charge que la bande du calendrier — d'où l'on vient,
+// où l'on est, une phrase, ce que l'écran propose — mais sur papier.
 //
-// Ils ne certifient rien : ce sont des faits datés, pas un score de
-// conformité.
+// Les trois chiffres viennent de la même partition que l'en-tête du
+// calendrier et le tableau de bord (`compterEtatCalendrier`) : trois
+// écrans, un seul compte. Ils ne certifient rien, ce sont des faits datés.
 
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-function Tuile({
+function Compteur({
   nombre,
   legende,
   champ,
   encre,
-  // Le chiffre est noir sur les champs saturés (le blanc n'y tient pas :
-  // 2,0 de contraste sur le rose) et blanc sur le voile translucide.
-  encreNombre = "var(--board-ink)",
 }: {
   nombre: number;
   legende: string;
   champ: string;
   encre: string;
-  encreNombre?: string;
 }) {
   return (
-    <div
-      className="min-w-[150px] flex-1 rounded-[22px] px-5 pb-4 pt-[18px]"
+    <span
+      className="inline-flex items-baseline gap-2 rounded-full px-4 py-[9px]"
       style={{ background: champ }}
     >
-      <p
-        className="board-titre m-0 text-[44px] leading-none tabular-nums"
-        style={{ color: encreNombre }}
-      >
+      <span className="board-titre text-[20px] leading-none tabular-nums">
         {nombre}
-      </p>
-      <p
-        className="board-eyebrow m-0 mt-2.5 text-[10px] tracking-[0.14em]"
+      </span>
+      <span
+        className="board-eyebrow text-[9.5px] tracking-[0.12em]"
         style={{ color: encre }}
       >
         {legende}
-      </p>
-    </div>
+      </span>
+    </span>
   );
 }
 
 export function BandeauParc({
+  hrefRetour,
   enRetard,
   proches,
   total,
   hrefAjouter,
   suggestions,
 }: {
+  hrefRetour: string;
   enRetard: number;
   proches: number;
   total: number;
@@ -65,85 +61,83 @@ export function BandeauParc({
   suggestions?: { nombre: number; href: string } | null;
 }) {
   return (
-    <section className="carte-board overflow-hidden bg-[color:var(--board-ink)] text-white">
-      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-6 px-7 pb-8 pt-9 sm:px-10">
-        <div className="max-w-[560px]">
-          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-blue-soft)]">
-            Mon établissement · Équipements
-          </p>
-          <h1 className="board-titre m-0 mt-2.5 text-[clamp(28px,3vw,40px)] text-white">
-            Le parc,{" "}
-            <span
-              className="accent-serif"
-              style={{ color: "var(--board-sky)" }}
+    <>
+      <header className="border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] px-[var(--board-gutter)] py-[22px]">
+        <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-5">
+          <div className="flex min-w-0 items-start gap-4">
+            <Link
+              href={hrefRetour}
+              aria-label="Retour à Mon établissement"
+              className="grid size-8 flex-none place-items-center rounded-full bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)] transition-colors hover:bg-[color:var(--board-blue-pale)] hover:text-[color:var(--board-blue-ink)]"
             >
-              pièce par pièce
-            </span>
-          </h1>
-          <p className="m-0 mt-3.5 text-[15px] leading-[1.5] text-white/70">
-            Chaque équipement porte ses vérifications, ses rapports et ses
-            actions. Sa fiche raconte ce qui a été fait et ce qui reste à
-            faire.
+              <ChevronLeft className="size-4" />
+            </Link>
+            <div className="min-w-0">
+              <h1 className="board-titre m-0 text-[clamp(22px,2.2vw,27px)]">
+                Équipements
+              </h1>
+              <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+                Ce que vous avez, et où. Chaque appareil porte ses
+                vérifications, ses rapports et ses papiers&nbsp;: ouvrez sa
+                fiche pour les voir.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-none flex-wrap items-center gap-2.5">
+            <Compteur
+              nombre={enRetard}
+              legende="en retard"
+              champ="var(--board-signal)"
+              encre="var(--board-signal-ink)"
+            />
+            <Compteur
+              nombre={proches}
+              legende="sous 30 j"
+              champ="var(--board-amber)"
+              encre="var(--board-amber-ink)"
+            />
+            <Compteur
+              nombre={total}
+              legende="au parc"
+              champ="var(--board-slate-pale)"
+              encre="var(--board-slate-mid)"
+            />
+            <Link
+              href={hrefAjouter}
+              className={cn(
+                buttonVariants({
+                  variant: "board",
+                  size: "board",
+                  className: "ml-1.5 flex-none",
+                }),
+              )}
+            >
+              + Ajouter un équipement
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {suggestions && suggestions.nombre > 0 ? (
+        <div className="flex items-center gap-2.5 border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-slate-pale)] px-[var(--board-gutter)] py-[11px]">
+          <span
+            aria-hidden
+            className="size-1.5 flex-none rounded-full bg-[color:var(--board-blue-mid)]"
+          />
+          <p className="m-0 text-[12.5px] text-[color:var(--board-slate-mid)]">
+            D&rsquo;après votre secteur et vos régimes, {suggestions.nombre}{" "}
+            catégorie{suggestions.nombre > 1 ? "s" : ""} d&rsquo;équipement
+            reste{suggestions.nombre > 1 ? "nt" : ""} à examiner.{" "}
+            <Link
+              href={suggestions.href}
+              className="font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
+            >
+              Voir les suggestions →
+            </Link>
           </p>
         </div>
-
-        <div className="flex flex-none flex-wrap gap-3.5">
-          <Tuile
-            nombre={enRetard}
-            legende="En retard"
-            champ="var(--board-signal)"
-            encre="var(--board-signal-ink)"
-          />
-          <Tuile
-            nombre={proches}
-            legende="Sous 30 jours"
-            champ="var(--board-amber)"
-            encre="var(--board-amber-ink)"
-          />
-          <Tuile
-            nombre={total}
-            legende={total > 1 ? "Équipements" : "Équipement"}
-            champ="rgba(255,255,255,.1)"
-            encre="var(--board-blue-soft)"
-            encreNombre="#ffffff"
-          />
-        </div>
-      </div>
-
-      <div className="mx-7 flex flex-wrap items-center justify-between gap-4 border-t border-white/12 pb-6 pt-[18px] sm:mx-10">
-        <p className="m-0 max-w-[62ch] text-[13px] leading-[1.5] text-white/60">
-          {suggestions && suggestions.nombre > 0 ? (
-            <>
-              D&apos;après votre secteur et vos régimes, {suggestions.nombre}{" "}
-              catégorie{suggestions.nombre > 1 ? "s" : ""} d&apos;équipement
-              reste{suggestions.nombre > 1 ? "nt" : ""} à examiner.{" "}
-              <Link
-                href={suggestions.href}
-                className="font-semibold text-[color:var(--board-sky)] hover:text-white"
-              >
-                Voir les suggestions →
-              </Link>
-            </>
-          ) : (
-            <>
-              Un équipement déclaré ici génère ses obligations et son
-              calendrier. Un équipement oublié n&apos;en génère aucune.
-            </>
-          )}
-        </p>
-        <Link
-          href={hrefAjouter}
-          className={cn(
-            buttonVariants({
-              variant: "boardBlanc",
-              size: "board",
-              className: "flex-none",
-            }),
-          )}
-        >
-          + Ajouter un équipement
-        </Link>
-      </div>
-    </section>
+      ) : null}
+    </>
   );
 }

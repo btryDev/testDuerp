@@ -118,10 +118,12 @@ describe("resumerEquipement", () => {
     repartirParEquipement(verifs, AUJOURDHUI).get("eq1");
 
   it("dit l'absence de suivi plutôt que de la taire", () => {
+    // Aucun signal : c'est l'écran qui dit « aucune vérification
+    // rattachée ». Un compteur à zéro laisserait croire à un suivi vide,
+    // alors qu'il n'y a pas de suivi du tout.
     const r = resumerEquipement(undefined);
     expect(r.etat).toBe("aPlanifier");
-    expect(r.date).toBeNull();
-    expect(r.phrase).toMatch(/Aucune vérification périodique/);
+    expect(r.signaux).toEqual([]);
   });
 
   it("le retard prime sur tout le reste", () => {
@@ -129,20 +131,36 @@ describe("resumerEquipement", () => {
       etatDe([verif("eq1", "2026-06-01"), verif("eq1", "2026-12-01")]),
     );
     expect(r.etat).toBe("enRetard");
-    expect(r.phrase).toMatch(/1 vérification en retard/);
+    expect(r.signaux[0]).toMatchObject({ cle: "enRetard", nb: 1 });
   });
 
-  it("n'annonce jamais « prochaine » pour une échéance dépassée", () => {
-    const r = resumerEquipement(etatDe([verif("eq1", "2026-06-01")]));
-    expect(r.phrase).toMatch(/attendue le/);
-    expect(r.phrase).not.toMatch(/prochaine le/);
-  });
-
-  it("porte le rendez-vous à venir et son état", () => {
+  it("ne porte plus aucune date : le parc n'est pas un agenda", () => {
     const r = resumerEquipement(etatDe([verif("eq1", "2026-08-25")]));
     expect(r.etat).toBe("proche");
-    expect(r.date).toEqual(jour("2026-08-25"));
-    expect(r.phrase).toMatch(/prochaine le/i);
+    expect(JSON.stringify(r)).not.toMatch(/2026/);
+  });
+
+  it("compte les signaux du plus urgent au plus calme", () => {
+    const r = resumerEquipement(
+      etatDe([
+        verif("eq1", "2026-02-10", {
+          statut: "realisee_conforme",
+          dateRealisee: "2026-02-10",
+        }),
+        verif("eq1", "2026-06-01"),
+        verif("eq1", "2027-01-01", { statut: "a_planifier" }),
+      ]),
+    );
+    expect(r.signaux.map((s) => s.cle)).toEqual([
+      "enRetard",
+      "aPlanifier",
+      "faite",
+    ]);
+    expect(r.signaux.map((s) => s.libelle)).toEqual([
+      "1 dépassée",
+      "1 à planifier",
+      "1 faite",
+    ]);
   });
 
   it("retombe sur la dernière preuve quand plus rien n'est attendu", () => {
@@ -155,7 +173,6 @@ describe("resumerEquipement", () => {
       ]),
     );
     expect(r.etat).toBe("faite");
-    expect(r.date).toEqual(jour("2026-02-10"));
-    expect(r.phrase).toMatch(/dernière vérification le/i);
+    expect(r.signaux).toEqual([{ cle: "faite", nb: 1, libelle: "1 faite" }]);
   });
 });

@@ -3,15 +3,29 @@ import { notFound } from "next/navigation";
 import { EquipementForm } from "@/components/equipements/EquipementForm";
 import { creerEquipement } from "@/lib/equipements/actions";
 import { getEtablissement } from "@/lib/etablissements/queries";
+import { CATEGORIES_EQUIPEMENT } from "@/lib/equipements/schema";
+import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 
 export default async function NouvelEquipementPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ categorie?: string }>;
 }) {
   const { id } = await params;
+  const { categorie } = await searchParams;
   const etab = await getEtablissement(id);
   if (!etab) notFound();
+
+  // La grille du parc propose « Ajouter » famille par famille : le
+  // formulaire s'ouvre alors sur la bonne catégorie. Une valeur forgée est
+  // ignorée plutôt que passée au formulaire — la liste fermée fait foi.
+  const categorieInitiale = CATEGORIES_EQUIPEMENT.includes(
+    categorie as CategorieEquipement,
+  )
+    ? (categorie as CategorieEquipement)
+    : undefined;
 
   const action = creerEquipement.bind(null, id);
 
@@ -36,6 +50,9 @@ export default async function NouvelEquipementPage({
       <div className="mt-10">
         <EquipementForm
           action={action}
+          valeursInitiales={
+            categorieInitiale ? { categorie: categorieInitiale } : undefined
+          }
           libelleSubmit="Créer l'équipement"
           labelAnnuler={{
             libelle: "Annuler",
