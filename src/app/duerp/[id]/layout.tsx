@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { AppTopbar } from "@/components/layout/AppTopbar";
+import { BarreCompte } from "@/components/layout/BarreCompte";
 import { getDuerp } from "@/lib/duerps/queries";
 import { getOptionalUser } from "@/lib/auth/require-user";
 import { getEtatModules } from "@/lib/etablissements/modules";
@@ -71,10 +72,15 @@ export default async function DuerpLayout({
         active="duerp"
         counts={counts}
         modules={modules}
-        user={user}
       />
 
       <div className="flex min-w-0 flex-col lg:overflow-y-auto">
+        {/* Le compte se tient en haut à droite ici aussi : le shell DUERP
+            partage la même sidebar, donc la même règle. */}
+        <BarreCompte
+          etablissementId={etab.id}
+          email={user?.email ?? null}
+        />
         <AppTopbar
           title="DUERP"
           kicker={`Établissements / ${etab.raisonDisplay.split(" ")[0]}…`}

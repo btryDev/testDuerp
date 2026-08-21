@@ -396,8 +396,13 @@ export function construireSections({
 // y revient par la marque en tête de rail — une entrée de plus l'aurait mis
 // au même rang que les quatre questions, alors qu'il les résume toutes.
 // « Comprendre » et « Connecter » ferment la marche, sans panneau.
-// « Compte » est rendue par le composant (elle dépend de l'user, pas de
-// l'établissement).
+//
+// « Compte » n'est plus une entrée de rail : elle a rejoint la barre haute
+// (`BarreCompte`). Le partage tient en une phrase — la sidebar porte la
+// hiérarchie du **produit**, la barre haute porte les utilitaires de
+// **session**. Ce déménagement est aussi ce qui justifie la barre : sans le
+// compte, elle n'aurait rien à porter, le produit n'ayant ni recherche, ni
+// notifications, ni établissement à commuter.
 
 export type RailCategorieId =
   | "tableau"

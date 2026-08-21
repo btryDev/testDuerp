@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { BarreCompte } from "@/components/layout/BarreCompte";
 import { chargerSidebarCounts } from "@/lib/navigation/sidebar-counts";
 import { getEtatModules } from "@/lib/etablissements/modules";
 
@@ -54,9 +55,16 @@ export default async function EtablissementLayout({
         etablissement={etab}
         counts={counts}
         modules={modules}
-        user={user}
       />
       <div className="flex min-w-0 flex-col lg:overflow-y-auto">
+        {/* Barre de compte : la sidebar porte la hiérarchie du produit, la
+            barre haute porte les utilitaires de session. Ce partage est ce
+            qui justifie la barre — sans le compte, elle n'aurait rien à
+            porter et serait une bande vide. Cf. `BarreCompte`. */}
+        <BarreCompte
+          etablissementId={etab.id}
+          email={user.email ?? null}
+        />
         {children}
       </div>
     </div>

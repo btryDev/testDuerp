@@ -44,12 +44,9 @@ import { Fragment, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
-  HelpCircle,
-  LogOut,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
-import { signOutAction } from "@/lib/auth/actions";
 import {
   categorieDeItem,
   construireRail,
@@ -72,16 +69,11 @@ type Etablissement = {
   entrepriseId: string;
 };
 
-type User = {
-  email: string | null;
-};
-
 export function AppSidebar({
   etablissement,
   active,
   counts,
   modules,
-  user,
 }: {
   etablissement: Etablissement;
   /** Item actif. Si omis, déduit automatiquement depuis `usePathname()`. */
@@ -89,7 +81,6 @@ export function AppSidebar({
   counts?: SidebarCounts;
   /** État des registres pour cet établissement. Omis, aucun n'est qualifié. */
   modules?: SidebarModules;
-  user?: User | null;
 }) {
   const pathname = usePathname();
   // Le panneau ne dépend pas des filtres d'écran ; la query ne sert qu'à
@@ -132,7 +123,6 @@ export function AppSidebar({
   const sansPanneau = !panneau && affichee !== "compte";
   const ferme = replie || sansPanneau;
 
-  const initialUser = (user?.email ?? "??").slice(0, 2).toUpperCase();
 
   return (
     <aside
@@ -199,38 +189,6 @@ export function AppSidebar({
           </div>
         ) : null}
 
-        {/* Compte : cinquième entrée, en pied de rail */}
-        <div className="shrink-0 border-t border-white/10 px-2 py-3">
-          <button
-            type="button"
-            onClick={() => {
-              setChoix("compte");
-              basculerRepli(false);
-            }}
-            aria-pressed={affichee === "compte"}
-            className="group flex w-full flex-col items-center gap-1.5 rounded-xl py-2 transition-colors hover:bg-white/10"
-          >
-            <span
-              aria-hidden
-              className={
-                "grid size-8 place-items-center rounded-full font-mono text-[11px] font-semibold transition-colors " +
-                (affichee === "compte"
-                  ? "bg-white text-[color:var(--board-ink)]"
-                  : "bg-[color:var(--board-sky)] text-[color:var(--board-blue-ink)]")
-              }
-            >
-              {initialUser}
-            </span>
-            <span
-              className={
-                "text-[9px] leading-none tracking-[0.02em] " +
-                (affichee === "compte" ? "text-white" : "text-white/50 group-hover:text-white")
-              }
-            >
-              Compte
-            </span>
-          </button>
-        </div>
       </div>
 
       {/* ---- Panneau : items de la catégorie choisie ---- */}
@@ -256,9 +214,7 @@ export function AppSidebar({
             </button>
           </div>
 
-          {affichee === "compte" ? (
-            <PanneauCompte user={user} />
-          ) : panneau ? (
+          {panneau ? (
             <nav
               aria-label={panneau.label}
               className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-4"
@@ -347,41 +303,6 @@ function RailLibelle({ cat, allume }: { cat: RailCategorie; allume: boolean }) {
     >
       {cat.labelCourt}
     </span>
-  );
-}
-
-/** Panneau « Compte » : identité, aide, déconnexion. */
-function PanneauCompte({ user }: { user?: User | null }) {
-  return (
-    <div className="flex min-h-0 flex-1 flex-col px-2.5 pb-4">
-      <p className="px-4 pb-2 pt-[18px] font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">
-        Compte
-      </p>
-      <p className="truncate px-4 pb-3 text-[12.5px] font-medium text-white">
-        {user?.email ?? "Utilisateur"}
-      </p>
-      <span className={CLASSES_ITEM + " text-white/30"} aria-disabled>
-        <HelpCircle aria-hidden className="size-4 opacity-70" />
-        <span className="flex-1 truncate">Aide</span>
-        <span className="font-mono text-[9px] uppercase tracking-[0.1em]">
-          bientôt
-        </span>
-      </span>
-      {user ? (
-        <form action={signOutAction}>
-          <button
-            type="submit"
-            className={
-              CLASSES_ITEM +
-              " text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-            }
-          >
-            <LogOut aria-hidden className="size-4 opacity-90" />
-            <span className="flex-1 truncate text-left">Déconnexion</span>
-          </button>
-        </form>
-      ) : null}
-    </div>
   );
 }
 

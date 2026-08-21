@@ -48,7 +48,7 @@ export function AppTopbar({
         : "pill-v2 pill-v2-alert";
 
   return (
-    <header className="sticky top-0 z-10 flex flex-wrap items-end justify-between gap-6 border-b border-rule-soft bg-paper px-8 pt-[22px] pb-[18px]">
+    <header className="sticky top-0 z-10 flex flex-wrap items-end justify-between gap-6 border-b border-rule-soft bg-paper px-8 pt-[38px] pb-[22px]">
       <div className="min-w-0">
         {kicker || statut ? (
           <div className="mb-1.5 flex flex-wrap items-center gap-2.5">
