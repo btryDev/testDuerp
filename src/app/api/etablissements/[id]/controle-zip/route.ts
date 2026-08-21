@@ -23,6 +23,7 @@ import { DuerpDocument } from "@/lib/pdf/DuerpDocument";
 import { PlanActionsDocument } from "@/lib/pdf/PlanActionsDocument";
 import { RegistreDocument } from "@/lib/pdf/RegistreDocument";
 import { slugifyFilename } from "@/lib/pdf/styles";
+import { nomDossierArchive, nomEntreeArchive } from "@/lib/storage/noms";
 import type { DuerpSnapshot } from "@/lib/versions/snapshot";
 
 /**
@@ -158,12 +159,16 @@ export async function GET(
     const dossierPrestataires = zip.folder("Prestataires") ?? zip;
     const storage = getStorage();
     for (const p of prestataires) {
-      const safeDir = p.raisonSociale.replace(/[^\w\s-]/g, "").replace(/\s+/g, "_");
+      const safeDir = nomDossierArchive(p.raisonSociale, "Prestataire");
       const sousDossier = dossierPrestataires.folder(safeDir) ?? dossierPrestataires;
+      // Le nom d'origine de la pièce vient du poste du prestataire : il est
+      // conservé en base pour l'affichage, il ne devient un nom d'entrée
+      // d'archive qu'assaini. L'export est fait pour être décompressé chez
+      // un tiers.
       for (const [cle, nom] of [
-        [p.attestationUrssafCle, p.attestationUrssafNom ?? "URSSAF.pdf"],
-        [p.assuranceRcProCle, p.assuranceRcProNom ?? "RC_Pro.pdf"],
-        [p.kbisCle, p.kbisNom ?? "Kbis.pdf"],
+        [p.attestationUrssafCle, nomEntreeArchive(p.attestationUrssafNom, "URSSAF.pdf")],
+        [p.assuranceRcProCle, nomEntreeArchive(p.assuranceRcProNom, "RC_Pro.pdf")],
+        [p.kbisCle, nomEntreeArchive(p.kbisNom, "Kbis.pdf")],
       ] as const) {
         if (!cle) continue;
         try {
