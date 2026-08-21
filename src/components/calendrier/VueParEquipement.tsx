@@ -131,6 +131,7 @@ export function VueParEquipement({
   moisCourant,
   groupes,
   sansEcheance,
+  horsReferentiel,
 }: {
   annee: number;
   /** Mois civil courant, de 1 à 12 — celui qu'une carte ouvre en premier. */
@@ -138,6 +139,11 @@ export function VueParEquipement({
   groupes: GroupeEquipement[];
   /** Équipements déclarés qui n'ont aucune échéance cette année. */
   sansEcheance: number;
+  /**
+   * Parmi eux, ceux pour lesquels le référentiel n'en produira aucune —
+   * jamais, pas seulement cette année. Sous-ensemble de `sansEcheance`.
+   */
+  horsReferentiel: number;
 }) {
   if (groupes.length === 0) {
     return (
@@ -146,8 +152,14 @@ export function VueParEquipement({
           Aucun équipement ne porte d&apos;échéance
         </p>
         <p className="m-0 mt-2 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-          Les vérifications périodiques se rattachent aux appareils que vous
-          déclarez. Cette lecture se remplira en même temps que votre parc.
+          {horsReferentiel > 0
+            ? // Un parc déclaré et une lecture vide : renvoyer à « déclarez
+              // vos appareils » ferait chercher une saisie manquante là où
+              // c'est le référentiel qui est muet.
+              `${horsReferentiel} de vos appareils ${
+                horsReferentiel > 1 ? "sont" : "est"
+              } hors référentiel : aucune échéance n'y est calculée. Cela ne veut pas dire qu'aucune vérification ne leur est due.`
+            : "Les vérifications périodiques se rattachent aux appareils que vous déclarez. Cette lecture se remplira en même temps que votre parc."}
         </p>
       </section>
     );
@@ -172,10 +184,29 @@ export function VueParEquipement({
       {/* Ce que la lecture par appareil laisse forcément dehors. Le taire
           ferait croire que le parc porte toute la conformité. */}
       {sansEcheance > 0 ? (
-        <p className="m-0 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-          {sansEcheance} équipement{sansEcheance > 1 ? "s" : ""} déclaré
-          {sansEcheance > 1 ? "s" : ""} sans aucune échéance en {annee}.
-        </p>
+        <div className="flex flex-col gap-1.5">
+          <p className="m-0 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+            {sansEcheance} équipement{sansEcheance > 1 ? "s" : ""} déclaré
+            {sansEcheance > 1 ? "s" : ""} sans aucune échéance en {annee}.
+          </p>
+
+          {/* « Rien en 2026 » se répare tout seul l'année suivante ; « rien
+              jamais » non. Compter les deux ensemble sans le dire laissait
+              le silence du référentiel se faire passer pour un creux de
+              calendrier. La phrase décrit l'outil, elle ne qualifie pas la
+              situation : l'absence d'échéance calculée n'est pas l'absence
+              d'obligation. */}
+          {horsReferentiel > 0 ? (
+            <p className="m-0 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+              Dont {horsReferentiel} hors référentiel : aucune échéance
+              n&apos;est calculée pour{" "}
+              {horsReferentiel > 1 ? "ces équipements" : "cet équipement"},
+              quelle que soit l&apos;année. Cela ne veut pas dire
+              qu&apos;aucune vérification ne{" "}
+              {horsReferentiel > 1 ? "leur" : "lui"} est due.
+            </p>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

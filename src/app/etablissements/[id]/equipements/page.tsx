@@ -14,6 +14,14 @@ import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import { suggererEquipements } from "@/lib/equipements/pre-remplissage";
 import { etatVerificationsParEquipement } from "@/lib/equipements/etat-verifications";
 import type { EtatEquipement } from "@/lib/equipements/etat-verifications";
+import {
+  CHAMP_SANS_ECHEANCE,
+  ENCRE_SANS_ECHEANCE,
+  EXPLICATION_SANS_ECHEANCE,
+  LIBELLE_SANS_ECHEANCE,
+  equipementsSansEcheance,
+  type MotifSansEcheance,
+} from "@/lib/equipements/hors-referentiel";
 import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
 import { formaterDateLongueFr, formaterDateCourteFr } from "@/lib/dates";
 
@@ -34,11 +42,16 @@ export default async function EquipementsPage({
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
-  const [equipements, etatsVerifs] = await Promise.all([
+  const [equipements, etatsVerifs, sansEcheance] = await Promise.all([
     listerEquipementsDeLEtablissement(id),
     // Le parc ne disait rien de son état de vérification : on lisait un
     // inventaire, pas une situation.
     etatVerificationsParEquipement(id),
+    // Et il ne disait rien du silence : un appareil pour lequel le
+    // référentiel ne produit aucune échéance était rendu comme un appareil
+    // à jour — c'est-à-dire comme une réponse alors que personne n'en avait
+    // donné (cf. `hors-referentiel.ts`).
+    equipementsSansEcheance(id),
   ]);
   const parCategorie = grouperParCategorie(equipements);
 
@@ -164,6 +177,7 @@ export default async function EquipementsPage({
                         </p>
                         <EtatVerifications
                           etat={etat}
+                          motif={sansEcheance.get(eq.id)}
                           href={`/etablissements/${id}/calendrier`}
                         />
                       </div>
@@ -198,14 +212,38 @@ export default async function EquipementsPage({
  * rendez-vous, la dernière vérification connue. L'absence de vérification
  * connue est dite en clair — elle n'est pas la même chose qu'« à jour », et
  * l'outil ne certifie rien (cf. garde-fous produit).
+ *
+ * `motif` porte le cas limite : le référentiel ne produit AUCUNE échéance
+ * pour cet appareil. Il passe devant tout le reste, parce que c'est le seul
+ * état que la ligne ne pouvait pas montrer — un appareil muet et un appareil
+ * à jour affichaient la même chose, rien.
  */
 function EtatVerifications({
   etat,
+  motif,
   href,
 }: {
   etat: EtatEquipement | undefined;
+  motif: MotifSansEcheance | undefined;
   href: string;
 }) {
+  if (motif) {
+    return (
+      <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.8rem] text-muted-foreground">
+        <span
+          className="rounded-full px-2 py-0.5 text-[0.72rem] font-semibold"
+          style={{
+            background: CHAMP_SANS_ECHEANCE,
+            color: ENCRE_SANS_ECHEANCE,
+          }}
+        >
+          {LIBELLE_SANS_ECHEANCE[motif]}
+        </span>
+        <span>{EXPLICATION_SANS_ECHEANCE[motif]}</span>
+      </p>
+    );
+  }
+
   if (!etat) {
     return (
       <p className="mt-2 text-[0.8rem] text-muted-foreground">

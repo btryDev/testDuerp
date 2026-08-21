@@ -3,6 +3,13 @@ import { FilRetour } from "@/components/ui-kit";
 import { EquipementForm } from "@/components/equipements/EquipementForm";
 import { modifierEquipement } from "@/lib/equipements/actions";
 import { getEquipement } from "@/lib/equipements/queries";
+import {
+  CHAMP_SANS_ECHEANCE,
+  ENCRE_SANS_ECHEANCE,
+  EXPLICATION_SANS_ECHEANCE,
+  LIBELLE_SANS_ECHEANCE,
+  equipementsSansEcheance,
+} from "@/lib/equipements/hors-referentiel";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 import { lireProvenance } from "@/lib/navigation/provenance";
 
@@ -30,6 +37,14 @@ export default async function ModifierEquipementPage({
   // lecture par équipement du calendrier.
   const provenance = lireProvenance(de, id);
 
+  // Le silence du référentiel se dit ici aussi, et pas seulement dans la
+  // liste : la fiche est l'écran où l'on vient chercher pourquoi un appareil
+  // ne bouge pas. Informatif, jamais bloquant — la catégorie « Autre » reste
+  // une soupape de saisie légitime.
+  const motifSansEcheance = (await equipementsSansEcheance(id)).get(
+    equipementId,
+  );
+
   const caracs = (eq.caracteristiques ?? {}) as Caracteristiques;
   const action = modifierEquipement.bind(null, equipementId);
 
@@ -49,6 +64,23 @@ export default async function ModifierEquipementPage({
           {eq.libelle}
         </h1>
       </header>
+
+      {motifSansEcheance && (
+        <div className="cartouche mt-8 px-6 py-5 sm:px-8">
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.85rem] leading-relaxed text-muted-foreground">
+            <span
+              className="rounded-full px-2 py-0.5 text-[0.72rem] font-semibold"
+              style={{
+                background: CHAMP_SANS_ECHEANCE,
+                color: ENCRE_SANS_ECHEANCE,
+              }}
+            >
+              {LIBELLE_SANS_ECHEANCE[motifSansEcheance]}
+            </span>
+            <span>{EXPLICATION_SANS_ECHEANCE[motifSansEcheance]}</span>
+          </p>
+        </div>
+      )}
 
       <div className="mt-10">
         <EquipementForm

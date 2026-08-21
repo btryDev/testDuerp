@@ -7,6 +7,7 @@ import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
+import { equipementsSansEcheance } from "@/lib/equipements/hors-referentiel";
 import { genererCalendrier } from "@/lib/calendrier/actions";
 import {
   calendrierDesynchronise,
@@ -243,7 +244,7 @@ export default async function CalendrierPage({
     regenere = true;
   }
 
-  const [verifsBruts, etat, autresEcheances, equipements] =
+  const [verifsBruts, etat, autresEcheances, equipements, motifsSansEcheance] =
     await Promise.all([
       listerVerifications(id, {
         domaine: filtreDomaine,
@@ -257,6 +258,11 @@ export default async function CalendrierPage({
       // échéance : la lecture par équipement doit pouvoir dire combien
       // n'en ont aucune.
       listerEquipementsDeLEtablissement(id),
+      // …et POURQUOI ils n'en ont aucune. « Rien à cette date » et « le
+      // référentiel ne calcule rien pour cet appareil » se ressemblaient
+      // trait pour trait sur cet écran : un calendrier qui n'affiche rien
+      // pour un équipement déclaré doit pouvoir l'expliquer.
+      equipementsSansEcheance(id),
     ]);
   const aujourdhui = new Date();
 
@@ -697,6 +703,13 @@ export default async function CalendrierPage({
     0,
     equipements.length - lignesEquipement.length,
   );
+  // Parmi eux, ceux dont l'absence n'est pas conjoncturelle : le moteur ne
+  // rend aucune échéance pour ces appareils, aujourd'hui comme demain.
+  // Sans cette distinction, « rien cette année » et « rien jamais » se
+  // lisaient pareil — et le second ressemblait à « rien à faire ».
+  const horsReferentiel = equipements.filter((e) =>
+    motifsSansEcheance.has(e.id),
+  ).length;
 
   // Le mois déplié à l'arrivée : celui où l'on est, s'il porte quelque
   // chose ; sinon le premier mois qui a du retard — c'est là que se joue
@@ -877,13 +890,36 @@ export default async function CalendrierPage({
                     certains équipements à fréquence fixe — extincteurs tous les
                     ans, installation électrique tous les ans, etc. L&apos;outil
                     calcule ces échéances à partir des équipements que vous avez
-                    déclarés : il n&apos;y en a pas encore.
+                    déclarés :{" "}
+                    {equipements.length > 0 &&
+                    horsReferentiel === equipements.length
+                      ? `aucun des ${equipements.length} déclarés n'en produit.`
+                      : "il n'y en a pas encore."}
                   </p>
+                  {/* Un parc déclaré et un calendrier vide, ce n'est pas la
+                      même situation qu'un parc vide : envoyer « déclarez vos
+                      équipements » à quelqu'un qui vient de le faire lui
+                      ferait chercher une erreur de saisie qui n'existe pas.
+                      On dit alors ce que le référentiel sait — et ce qu'il
+                      ne sait pas. */}
+                  {horsReferentiel > 0 && (
+                    <p className="m-0 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+                      {horsReferentiel} équipement
+                      {horsReferentiel > 1 ? "s déclarés sont" : " déclaré est"}{" "}
+                      hors référentiel : leur catégorie, ou la typologie de cet
+                      établissement, ne déclenche aucune obligation du
+                      référentiel. Cela ne veut pas dire qu&apos;aucune
+                      vérification ne leur est due — le parc le signale sur
+                      chaque appareil concerné.
+                    </p>
+                  )}
                   <Link
                     href={`/etablissements/${id}/equipements`}
                     className="mt-1 inline-flex items-center gap-2 rounded-full bg-[color:var(--board-ink)] px-4 py-2.5 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-85"
                   >
-                    Déclarer mes équipements
+                    {equipements.length === 0
+                      ? "Déclarer mes équipements"
+                      : "Voir mes équipements"}
                     <ArrowUpRight className="size-3.5" />
                   </Link>
                 </div>
@@ -933,6 +969,7 @@ export default async function CalendrierPage({
                   moisCourant={composantesCiviles(aujourdhui).mois}
                   groupes={groupesEquipement}
                   sansEcheance={sansEcheance}
+                  horsReferentiel={horsReferentiel}
                 />
               }
               sections={moisTries.map(([cleMois, liste]) => ({
