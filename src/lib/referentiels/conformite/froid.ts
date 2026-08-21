@@ -38,6 +38,12 @@
  * de ce qui est écrit ici n'a été inventé, mais la règle 6 du CLAUDE.md exige
  * une source vérifiable, et une lecture instable n'en est pas tout à fait une.
  *
+ * Pour que cette vérification coûte une ligne et non une relecture, les deux
+ * lectures concurrentes sont écrites côte à côte dans `LECTURES_ARTICLE_5`, et
+ * les huit obligations tirent toutes leur périodicité de la table active. Voir
+ * le commentaire de `PERIODICITES_ARTICLE_5` pour ce qui les sépare et pourquoi
+ * l'une a été retenue.
+ *
  * ── Note de conception : six périodicités, quatre questions fermées ────────
  *
  * L'article 5 croise deux variables : un palier de charge (moins de 50 t CO2e,
@@ -88,9 +94,91 @@
  * entrer dans le champ par étapes jusqu'au 12 mars 2027, sortent du périmètre.
  */
 
+import type { Periodicite } from "../types-communs";
 import type { Obligation } from "./types";
 
 const CATEGORIE = "INSTALLATION_FRIGORIFIQUE" as const;
+
+/**
+ * Les six paliers de l'article 5, nommés — trois charges, chacune dédoublée
+ * par la présence d'un système fixe de détection des fuites.
+ */
+type PalierArticle5 =
+  | "sous50"
+  | "sous50Detection"
+  | "sup50"
+  | "sup50Detection"
+  | "sup500"
+  | "sup500Detection";
+
+/**
+ * ── Le choix à trancher, isolé ici ────────────────────────────────────────
+ *
+ * La réserve de vérification énoncée en tête de fichier porte sur ces douze
+ * valeurs et sur rien d'autre. Plutôt que de laisser les périodicités dispersées
+ * dans les huit obligations, où les corriger demanderait de relire le fichier
+ * entier, les deux lectures possibles sont écrites ici, l'une active. Basculer
+ * est un identifiant à changer sur la ligne `PERIODICITES_ARTICLE_5`, et le test
+ * d'empreinte forcera de lui-même le bump de `REFERENTIEL_VERSION`.
+ *
+ * **Lecture retenue** — celle du texte consolidé d'EUR-Lex, lu deux fois avec
+ * des résultats concordants, et corroborée par le résumé officiel d'EUR-Lex qui
+ * annonce des contrôles « tous les 3 à 24 mois » pour des seuils de 5, 50 et
+ * 500 tonnes équivalent CO2. Les deux bornes de cette amplitude ne s'expliquent
+ * que par un palier trimestriel et un palier biennal.
+ *
+ * **Lecture concurrente** — une table de synthèse publiée par le portail
+ * environnement luxembourgeois donne six mois au palier haut et douze au palier
+ * intermédiaire, sans aucune valeur trimestrielle. Deux raisons de ne pas la
+ * retenir : sa colonne « avec détection » recopie la colonne « sans » sur les
+ * deux paliers hauts, ce qui ressemble à un rendu abîmé ; et l'absence de
+ * palier trimestriel contredit frontalement le « 3 à 24 mois » du résumé
+ * officiel.
+ *
+ * **Et si le doute persistait**, la lecture retenue reste la bonne par défaut,
+ * pour la raison que `levage.ts` a déjà écrite : une périodicité trop courte
+ * est un écart visible et corrigeable, une périodicité trop longue ne l'est
+ * pas. Les deux lectures ne divergent d'ailleurs qu'au-delà de 50 t CO2e —
+ * au-dessous, où se trouve l'écrasante majorité des parcs de TPE, elles disent
+ * la même chose.
+ */
+const LECTURE_CONSOLIDEE: Record<PalierArticle5, Periodicite> = {
+  sous50: "annuelle",
+  sous50Detection: "biennale",
+  sup50: "semestrielle",
+  sup50Detection: "annuelle",
+  sup500: "trimestrielle",
+  sup500Detection: "semestrielle",
+};
+
+/** Non active. Conservée pour que le choix reste lisible et réversible. */
+const LECTURE_TABLE_LUXEMBOURG: Record<PalierArticle5, Periodicite> = {
+  sous50: "annuelle",
+  sous50Detection: "biennale",
+  sup50: "annuelle",
+  sup50Detection: "annuelle",
+  sup500: "semestrielle",
+  sup500Detection: "semestrielle",
+};
+
+/** La lecture en vigueur. Change cette ligne, rien d'autre. */
+export const PERIODICITES_ARTICLE_5 = LECTURE_CONSOLIDEE;
+
+/** Les deux lectures, pour que le test puisse vérifier qu'on en applique une. */
+export const LECTURES_ARTICLE_5 = {
+  consolidee: LECTURE_CONSOLIDEE,
+  tableLuxembourg: LECTURE_TABLE_LUXEMBOURG,
+} as const;
+
+/** Le palier dont chaque obligation périodique tire sa périodicité. */
+export const PALIER_PAR_OBLIGATION: Record<string, PalierArticle5> = {
+  "froid-controle-etancheite-annuel": "sous50",
+  "froid-controle-etancheite-biennal-detection": "sous50Detection",
+  "froid-controle-etancheite-semestriel-50t": "sup50",
+  "froid-controle-etancheite-annuel-50t-detection": "sup50Detection",
+  "froid-controle-etancheite-trimestriel-500t": "sup500",
+  "froid-controle-etancheite-semestriel-500t-detection": "sup500Detection",
+};
 
 /** Article national fondateur — vérifié sur Légifrance, version du 1ᵉʳ janvier 2025. */
 const REF_ENVIRONNEMENT_MISE_EN_SERVICE = {
@@ -187,7 +275,7 @@ export const obligationsFroid: Obligation[] = [
     description:
       "L'installation frigorifique fait l'objet d'un contrôle d'étanchéité au moins tous les douze mois. Le contrôle porte sur l'ensemble du circuit de fluide frigorigène et sur les organes susceptibles de fuir (raccords, vannes, joints, échangeurs).",
     referencesLegales: [REF_REGLEMENT_ART_5, REF_ENVIRONNEMENT_RENOUVELLEMENT],
-    periodicite: "annuelle",
+    periodicite: PERIODICITES_ARTICLE_5.sous50,
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
     typologies: { travail: true, erp: true },
@@ -204,7 +292,7 @@ export const obligationsFroid: Obligation[] = [
     description:
       "Lorsque l'installation est équipée d'un système fixe de détection des fuites, l'intervalle entre deux contrôles d'étanchéité est porté à vingt-quatre mois.",
     referencesLegales: [REF_REGLEMENT_ART_5, REF_ENVIRONNEMENT_RENOUVELLEMENT],
-    periodicite: "biennale",
+    periodicite: PERIODICITES_ARTICLE_5.sous50Detection,
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
     typologies: { travail: true, erp: true },
@@ -221,7 +309,7 @@ export const obligationsFroid: Obligation[] = [
     description:
       "Au-delà de cinquante tonnes équivalent CO2 de fluide frigorigène — ou de dix kilogrammes pour un fluide insaturé de l'annexe II section 1 — le contrôle d'étanchéité a lieu au moins tous les six mois.",
     referencesLegales: [REF_REGLEMENT_ART_5, REF_ENVIRONNEMENT_RENOUVELLEMENT],
-    periodicite: "semestrielle",
+    periodicite: PERIODICITES_ARTICLE_5.sup50,
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
     typologies: { travail: true, erp: true },
@@ -238,7 +326,7 @@ export const obligationsFroid: Obligation[] = [
     description:
       "Au-delà de cinquante tonnes équivalent CO2, la présence d'un système fixe de détection des fuites porte l'intervalle entre deux contrôles d'étanchéité de six à douze mois.",
     referencesLegales: [REF_REGLEMENT_ART_5, REF_ENVIRONNEMENT_RENOUVELLEMENT],
-    periodicite: "annuelle",
+    periodicite: PERIODICITES_ARTICLE_5.sup50Detection,
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
     typologies: { travail: true, erp: true },
@@ -255,7 +343,7 @@ export const obligationsFroid: Obligation[] = [
     description:
       "Au-delà de cinq cents tonnes équivalent CO2 de fluide frigorigène — ou de cent kilogrammes pour un fluide insaturé de l'annexe II section 1 — le contrôle d'étanchéité a lieu au moins tous les trois mois.",
     referencesLegales: [REF_REGLEMENT_ART_5, REF_ENVIRONNEMENT_RENOUVELLEMENT],
-    periodicite: "trimestrielle",
+    periodicite: PERIODICITES_ARTICLE_5.sup500,
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
     typologies: { travail: true, erp: true },
@@ -272,7 +360,7 @@ export const obligationsFroid: Obligation[] = [
     description:
       "Au-delà de cinq cents tonnes équivalent CO2, la présence d'un système fixe de détection des fuites porte l'intervalle entre deux contrôles d'étanchéité de trois à six mois.",
     referencesLegales: [REF_REGLEMENT_ART_5, REF_ENVIRONNEMENT_RENOUVELLEMENT],
-    periodicite: "semestrielle",
+    periodicite: PERIODICITES_ARTICLE_5.sup500Detection,
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
     typologies: { travail: true, erp: true },
