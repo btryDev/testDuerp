@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { MarqueCategorie } from "@/components/equipements/MarqueCategorie";
 import {
+  CATEGORIES_AERATION,
   CATEGORIES_EQUIPEMENT,
   CATEGORIES_TRI_ETAT,
   VALEURS_TRI_ETAT,
@@ -119,12 +120,6 @@ function toIsoDate(d: Date | null | undefined): string {
   // yyyy-mm-dd (locale UTC neutralisée)
   return d.toISOString().slice(0, 10);
 }
-
-const CATEGORIES_AERATION: readonly CategorieEquipement[] = [
-  "VMC",
-  "CTA",
-  "HOTTE_PRO",
-];
 
 export function EquipementForm({
   action,

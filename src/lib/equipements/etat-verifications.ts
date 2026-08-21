@@ -33,6 +33,10 @@ export type EtatEquipement = {
    *  compte, un appareil parfaitement suivi n'affichait aucun signal, et
    *  la carte du parc annonçait « aucune vérification rattachée ». */
   aVenir: number;
+  /** Parmi les rendez-vous à venir, ceux qui tombent dans l'horizon
+   *  proche (30 jours). Le bandeau du parc les compte pour ne parler que
+   *  des appareils qu'il affiche. */
+  proches: number;
   /** Vérifications déjà réalisées. Un compte, pas un verdict. */
   faites: number;
   /** Les rythmes portés par cet appareil, dans l'ordre où ils
@@ -95,6 +99,7 @@ export function repartirParEquipement(
       derniere: null,
       aPlanifier: 0,
       aVenir: 0,
+      proches: 0,
       faites: 0,
       periodicites: [],
     };
@@ -119,7 +124,10 @@ export function repartirParEquipement(
 
       if (lecture.registre === "enRetard") courant.enRetard += 1;
       else if (lecture.registre === "aPlanifier") courant.aPlanifier += 1;
-      else courant.aVenir += 1;
+      else {
+        courant.aVenir += 1;
+        if (lecture.registre === "proche") courant.proches += 1;
+      }
 
       // Le prochain rendez-vous, c'est le plus proche — pas le premier
       // rencontré : les réalisations déplient des dates qui ne suivent

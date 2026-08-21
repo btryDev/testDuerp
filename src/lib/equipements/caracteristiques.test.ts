@@ -73,6 +73,24 @@ describe("caracteristiquesLisibles", () => {
     expect(hotte.map((x) => x.cle)).not.toContain("aGroupeElectrogene");
   });
 
+  it("réserve le local à pollution spécifique aux catégories d'aération", () => {
+    // Le formulaire écrit `false` pour toutes les autres catégories : une
+    // case décochée et une case jamais posée sont indistinguables dans un
+    // `FormData`. Un extincteur affichait donc « Non » à une question
+    // qu'on ne lui a jamais posée.
+    const vmc = caracteristiquesLisibles("VMC", {
+      estLocalPollutionSpecifique: false,
+    });
+    expect(vmc.map((x) => x.cle)).toContain("estLocalPollutionSpecifique");
+
+    const extincteur = caracteristiquesLisibles("EXTINCTEUR", {
+      estLocalPollutionSpecifique: false,
+    });
+    expect(extincteur.map((x) => x.cle)).not.toContain(
+      "estLocalPollutionSpecifique",
+    );
+  });
+
   it("écarte une note vide", () => {
     const c = caracteristiquesLisibles("HOTTE_PRO", { notes: "   " });
     expect(c.map((x) => x.cle)).not.toContain("notes");

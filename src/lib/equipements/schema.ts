@@ -73,6 +73,17 @@ const triEtat = z.preprocess(
   z.boolean().optional(),
 );
 
+/**
+ * Catégories qui portent la question du local à pollution spécifique. Elle
+ * vivait dans le formulaire, seul à l'avoir posée jusqu'ici ; la fiche doit
+ * relire la réponse, et une seconde liste dériverait.
+ */
+export const CATEGORIES_AERATION: readonly CategorieEquipement[] = [
+  "VMC",
+  "CTA",
+  "HOTTE_PRO",
+];
+
 /** Les onze questions à trois états, dans l'ordre d'affichage. */
 export const CHAMPS_TRI_ETAT = [
   "estVmcGaz",

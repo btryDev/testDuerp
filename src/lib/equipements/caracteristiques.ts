@@ -13,7 +13,11 @@
 // Module **pur** : ni Prisma, ni React. Il ne lit que la table des
 // questions du schéma, pour ne pas maintenir une seconde liste.
 
-import { CATEGORIES_TRI_ETAT, type ChampTriEtat } from "./schema";
+import {
+  CATEGORIES_AERATION,
+  CATEGORIES_TRI_ETAT,
+  type ChampTriEtat,
+} from "./schema";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 
 /**
@@ -84,8 +88,14 @@ export function caracteristiquesLisibles(
     });
   }
 
+  // La case n'est posée que sur les catégories d'aération, mais le
+  // formulaire écrit `false` pour toutes les autres — une case décochée ne
+  // se distingue pas d'une case absente dans un `FormData`. Sans ce garde,
+  // un extincteur affichait « Local à pollution spécifique : Non », une
+  // réponse que personne n'a donnée à une question qu'on ne lui a jamais
+  // posée. C'est exactement ce que ce module existe pour éviter.
   const pollution = bool(c.estLocalPollutionSpecifique);
-  if (pollution !== undefined) {
+  if (CATEGORIES_AERATION.includes(categorie) && pollution !== undefined) {
     out.push({
       cle: "estLocalPollutionSpecifique",
       libelle: "Local à pollution spécifique",
