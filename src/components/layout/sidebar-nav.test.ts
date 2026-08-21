@@ -168,8 +168,7 @@ describe("construireRail — rail à deux niveaux", () => {
       "operations",
       "etablissement",
       "registres",
-      "comprendre",
-      "connecter",
+      "parametres",
     ]);
   });
 
@@ -198,25 +197,29 @@ describe("construireRail — rail à deux niveaux", () => {
     expect(idsVisibles()).not.toContain("tableau");
   });
 
-  it("fait de « Connecter » un lien direct, hors des trois panneaux", () => {
-    const connecter = rail().find((c) => c.id === "connecter");
-    expect(connecter?.items).toBeUndefined();
-    expect(connecter?.href).toBe(`/etablissements/${ID}/connecter`);
+  it("fait de « Paramètres » un lien direct, hors des trois panneaux", () => {
+    const parametres = rail().find((c) => c.id === "parametres");
+    expect(parametres?.items).toBeUndefined();
+    expect(parametres?.href).toBe(`/etablissements/${ID}/connecter`);
     // Ce n'est ni une tâche ni un registre : il n'a pas à apparaître dans
     // les sections, sous peine de se retrouver dans deux endroits du rail.
     expect(idsVisibles()).not.toContain("connecter");
+    // La césure entre le dossier et son réglage est portée par la donnée,
+    // pas devinée au rendu.
+    expect(parametres?.separateurAvant).toBe(true);
   });
 
-  it("garde « Comprendre » en lien direct hors du panneau « À faire »", () => {
+  it("ne met plus « Comprendre » dans le rail", () => {
+    // Le guide reste en ligne, mais ce n'est pas une des questions du
+    // dirigeant : c'est une lecture, pas un endroit où l'on travaille. Une
+    // entrée de rail permanente lui donnait le rang d'un registre tenu.
     const cats = rail();
-    expect(cats.find((c) => c.id === "a-faire")?.items?.map((i) => i.id))
-      .not.toContain("guide");
-    const comprendre = cats.find((c) => c.id === "comprendre");
-    expect(comprendre?.items).toBeUndefined();
-    expect(comprendre?.href).toBe(`/etablissements/${ID}/guide`);
-    // La césure entre le dossier et les modes d'accès est portée par la
-    // donnée, pas devinée au rendu.
-    expect(comprendre?.separateurAvant).toBe(true);
+    expect(cats.some((c) => c.id === "parametres")).toBe(true);
+    expect(cats.map((c) => c.href)).not.toContain(
+      `/etablissements/${ID}/guide`,
+    );
+    // Et il ne se réfugie pas non plus dans un panneau.
+    expect(idsVisibles()).not.toContain("guide");
   });
 
   it("reprend exactement les items des sections", () => {
@@ -243,8 +246,11 @@ describe("construireRail — rail à deux niveaux", () => {
       }
     }
     expect(categorieDeItem("tableau")).toBe("tableau");
-    expect(categorieDeItem("guide")).toBe("comprendre");
-    expect(categorieDeItem("connecter")).toBe("connecter");
+    expect(categorieDeItem("connecter")).toBe("parametres");
+    // Le guide n'a plus d'entrée de rail : sa page reste atteignable, mais
+    // aucune tuile ne s'allume dessus. Il se rattache donc à « Paramètres »,
+    // faute de mieux — pas à une catégorie qui n'existe plus.
+    expect(categorieDeItem("guide")).toBe("parametres");
   });
 });
 

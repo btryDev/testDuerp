@@ -62,12 +62,10 @@ import {
   HandshakeIcon,
   Droplets,
   ShieldCheck,
-  BookOpen,
   Building2,
   Warehouse,
   HardHat,
   Archive,
-  Plug,
 } from "lucide-react";
 
 /** Ids historiques — conservés tels quels pour la prop `active`. */
@@ -104,7 +102,11 @@ export const LABEL_ITEM: Record<SidebarItemId, string> = {
   actions: "Plan d'actions",
   controle: "Préparer un contrôle",
   guide: "Comprendre",
-  connecter: "Connecter",
+  // L'identifiant et la route restent `connecter` : renommer une URL casse
+  // les liens déjà partagés et les provenances enregistrées, pour un gain
+  // nul. Seul le nom affiché change — c'est précisément le rôle de cette
+  // table que de les découpler.
+  connecter: "Paramètres",
   equipements: "Équipements",
   batiments: "Bâtiments",
   prestataires: "Prestataires",
@@ -395,7 +397,10 @@ export function construireSections({
 // Le tableau de bord n'y figure pas : c'est l'écran d'atterrissage, et on
 // y revient par la marque en tête de rail — une entrée de plus l'aurait mis
 // au même rang que les quatre questions, alors qu'il les résume toutes.
-// « Comprendre » et « Connecter » ferment la marche, sans panneau.
+// « Paramètres » ferme la marche, sans panneau. « Comprendre » a quitté le
+// rail : le guide reste en ligne (`/guide`) mais n'est plus une des questions
+// du dirigeant — c'est une lecture, pas un endroit où l'on travaille, et une
+// entrée de rail permanente lui donnait le même rang qu'un registre tenu.
 //
 // « Compte » n'est plus une entrée de rail : elle a rejoint la barre haute
 // (`BarreCompte`). Le partage tient en une phrase — la sidebar porte la
@@ -410,9 +415,7 @@ export type RailCategorieId =
   | "operations"
   | "etablissement"
   | "registres"
-  | "comprendre"
-  | "connecter"
-  | "compte";
+  | "parametres";
 
 export type RailCategorie = {
   id: RailCategorieId;
@@ -439,10 +442,12 @@ export function categorieDeItem(id: SidebarItemId): RailCategorieId {
   switch (id) {
     case "tableau":
       return "tableau";
+    // Le guide n'a plus d'entrée de rail : sa page reste atteignable, aucune
+    // tuile ne s'allume dessus. Il se rattache donc au voisin le plus proche
+    // plutôt qu'à une catégorie disparue.
     case "guide":
-      return "comprendre";
     case "connecter":
-      return "connecter";
+      return "parametres";
     case "equipements":
     case "batiments":
     case "prestataires":
@@ -515,22 +520,15 @@ export function construireRail(params: {
       alert: alerte(registres.items),
     },
     {
-      id: "comprendre",
-      label: "Comprendre",
-      labelCourt: "Comprendre",
-      Icon: BookOpen,
-      href: `${base}/guide`,
-      separateurAvant: true,
-    },
-    {
-      // Comme « Comprendre » : une entrée de premier niveau sans panneau.
-      // Elle n'apparaît pas dans `construireSections` — ce n'est pas un
-      // registre ni une tâche, mais un mode d'accès au dossier.
-      id: "connecter",
-      label: "Connecter",
-      labelCourt: "Connecter",
-      Icon: Plug,
+      // Une entrée de premier niveau sans panneau. Elle n'apparaît pas dans
+      // `construireSections` — ce n'est ni un registre ni une tâche, mais la
+      // façon de régler le dossier et d'y brancher un tiers.
+      id: "parametres",
+      label: "Paramètres",
+      labelCourt: "Paramètres",
+      Icon: Settings,
       href: `${base}/connecter`,
+      separateurAvant: true,
     },
   ];
 }

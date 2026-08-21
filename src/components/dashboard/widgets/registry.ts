@@ -405,37 +405,46 @@ export function layoutParDefaut(): LayoutItem[] {
   );
 }
 
-export function tailleEnCol(taille: WidgetDefinition["taille"]): number {
-  if (taille === "small") return 2;
-  if (taille === "medium") return 3;
-  return 6;
-}
-
 /**
  * La portée d'un widget, **par palier de grille**.
  *
- * `tailleEnCol` ne décrit que la grille à six colonnes des grands écrans.
- * Elle était pourtant appliquée telle quelle à tous les paliers, en style
- * inline — or la grille passe à **deux** colonnes entre 640 et 1024 px. Une
- * portée de 3 ou de 6 y dépasse le nombre de pistes, et CSS la ramène à la
- * largeur entière : sur toute cette plage, chaque widget occupait sa propre
- * ligne. Un portable un peu étroit, ou une fenêtre à demi-écran, n'avait
- * qu'une colonne de widgets empilés.
+ * Une seule table pour les deux lectures : la classe qui rend, et le nombre
+ * de colonnes que la barre d'édition affiche. Elles vivaient séparément, et
+ * un widget passé de `large` à `medium` aurait pu être rendu à demi-largeur
+ * pendant que le tiroir continuait d'annoncer « 6 col. ».
  *
- * D'où trois paliers explicites :
+ * Les classes sont écrites en toutes lettres et non composées : le scanner
+ * de Tailwind lit le source, un `col-span-${n}` calculé ne génère rien.
+ *
+ * Trois paliers, parce que la grille en a trois :
  *   - une colonne   → tout prend la largeur, il n'y a rien à partager ;
  *   - deux colonnes → `small` et `medium` prennent une piste — deux widgets
  *     côte à côte — et `large` prend les deux ;
- *   - six colonnes  → les portées d'origine, inchangées.
+ *   - six colonnes  → les portées de référence.
  *
- * Écrit en classes plutôt qu'en style inline : une portée qui change au
- * point de rupture est une règle CSS, pas une valeur calculée en JS — et un
- * style inline gagnerait de toute façon sur la règle.
+ * La portée est une classe et non un style inline : elle change au point de
+ * rupture, c'est donc une règle CSS — et un style inline gagnerait de toute
+ * façon sur la règle. Elle l'était, et la grille à deux colonnes ramenait
+ * alors toute portée supérieure à deux à la largeur entière : entre 640 et
+ * 1024 px, chaque widget occupait sa propre ligne.
  */
+const PORTEES: Record<
+  WidgetDefinition["taille"],
+  { colonnes: number; classe: string }
+> = {
+  small: { colonnes: 2, classe: "col-span-1 sm:col-span-1 lg:col-span-2" },
+  medium: { colonnes: 3, classe: "col-span-1 sm:col-span-1 lg:col-span-3" },
+  large: { colonnes: 6, classe: "col-span-1 sm:col-span-2 lg:col-span-6" },
+};
+
+/** Le nombre de colonnes occupées sur la grille de référence (six colonnes).
+ *  Sert à l'affichage du tiroir, pas au rendu — cf. `classePortee`. */
+export function tailleEnCol(taille: WidgetDefinition["taille"]): number {
+  return PORTEES[taille].colonnes;
+}
+
 export function classePortee(taille: WidgetDefinition["taille"]): string {
-  if (taille === "large") return "col-span-1 sm:col-span-2 lg:col-span-6";
-  if (taille === "medium") return "col-span-1 sm:col-span-1 lg:col-span-3";
-  return "col-span-1 sm:col-span-1 lg:col-span-2";
+  return PORTEES[taille].classe;
 }
 
 /** IDs des widgets dans l'ordre du registre — utile pour le tiroir. */

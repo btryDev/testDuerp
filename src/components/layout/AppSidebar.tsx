@@ -6,9 +6,12 @@
 //
 //   1. Le rail (88px) porte la marque en tête, puis les entrées de premier
 //      niveau — « À faire », « Opérations », « Mon établissement », « Mes
-//      registres », puis « Comprendre » et « Connecter », et « Compte » en
-//      pied. Icône + libellé, pastille signal quand la catégorie contient
-//      une alerte.
+//      registres », et « Paramètres » pour fermer la marche. Icône + libellé,
+//      pastille signal quand la catégorie contient une alerte.
+//
+//      Le compte n'y est plus : il vit dans la barre haute (`BarreCompte`).
+//      La sidebar porte la hiérarchie du **produit**, la barre haute les
+//      utilitaires de **session**.
 //
 //      La marque est le retour au tableau de bord — un logo ramène à
 //      l'accueil, c'est le seul geste de navigation que tout le monde
@@ -27,10 +30,9 @@
 // catégorie de l'item actif. Entre deux navigations, un clic sur le rail le
 // fait basculer sans quitter la page — d'où la distinction entre « la page
 // est ici » (tuile allumée) et « le panneau montre ceci ». Sur une catégorie
-// sans panneau (tableau de bord, Comprendre, Connecter), le panneau
-// s'efface : montrer celui de « À faire », sans rien y surligner, décrivait
-// un endroit où l'on n'est pas — et le board de widgets récupère la
-// largeur.
+// sans panneau (tableau de bord, Paramètres), le panneau s'efface : montrer
+// celui de « À faire », sans rien y surligner, décrivait un endroit où l'on
+// n'est pas — et le board de widgets récupère la largeur.
 //
 // Le panneau est rétractable, et replié par défaut : un bouton en pied de
 // rail — ou un clic sur une entrée du rail — le déplie, un bouton dans son
@@ -118,10 +120,10 @@ export function AppSidebar({
   const basculerRepli = ecrireRepli;
 
   const panneau = rail.find((c) => c.id === affichee && c.items) ?? null;
-  // Rien à afficher à droite : la catégorie n'a pas de panneau et ce n'est
-  // pas le compte, qui a le sien. Le rail reste seul.
-  const sansPanneau = !panneau && affichee !== "compte";
-  const ferme = replie || sansPanneau;
+  // Rien à afficher à droite : la catégorie n'a pas de panneau, le rail
+  // reste seul. Le compte n'entre plus dans ce calcul — il a quitté le rail
+  // pour la barre haute (cf. `BarreCompte`).
+  const ferme = replie || !panneau;
 
 
   return (
@@ -175,7 +177,7 @@ export function AppSidebar({
 
         {/* Le bouton de dépliage ne s'offre que s'il y a quelque chose à
             déplier : sur le tableau de bord, il ouvrirait le vide. */}
-        {replie && !sansPanneau ? (
+        {replie && panneau ? (
           <div className="shrink-0 px-2 pb-1">
             <button
               type="button"
