@@ -7,7 +7,10 @@ import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
-import { equipementsSansEcheance } from "@/lib/equipements/hors-referentiel";
+import {
+  compterSansObligation,
+  equipementsSansEcheance,
+} from "@/lib/equipements/hors-referentiel";
 import { genererCalendrier } from "@/lib/calendrier/actions";
 import {
   calendrierDesynchronise,
@@ -707,9 +710,11 @@ export default async function CalendrierPage({
   // rend aucune échéance pour ces appareils, aujourd'hui comme demain.
   // Sans cette distinction, « rien cette année » et « rien jamais » se
   // lisaient pareil — et le second ressemblait à « rien à faire ».
-  const horsReferentiel = equipements.filter((e) =>
-    motifsSansEcheance.has(e.id),
-  ).length;
+  //
+  // On compte via `compterSansObligation` et non la taille de la table : un
+  // appareil dont les obligations sont permanentes n'est pas « hors
+  // référentiel », et la phrase affichée plus bas serait fausse pour lui.
+  const horsReferentiel = compterSansObligation(motifsSansEcheance);
 
   // Le mois déplié à l'arrivée : celui où l'on est, s'il porte quelque
   // chose ; sinon le premier mois qui a du retard — c'est là que se joue

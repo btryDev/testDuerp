@@ -376,13 +376,13 @@ export const obligationsFroid: Obligation[] = [
     description:
       "Toute modification affectant le circuit frigorifique impose un nouveau contrôle d'étanchéité, indépendamment du calendrier périodique. Après réparation d'une fuite, le contrôle est refait sur l'installation remise en fonctionnement.",
     referencesLegales: [REF_ENVIRONNEMENT_RENOUVELLEMENT, REF_REGLEMENT_ART_5],
-    periodicite: "mise_en_service_uniquement",
+    periodicite: "autre",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
     typologies: { travail: true, erp: true },
     categoriesEquipement: [CATEGORIE],
     conditions: [HORS_DISPENSE],
     notesInternes:
-      "Événementiel — une occurrence par modification ou réparation. Traité comme `mise_en_service_uniquement` par le générateur de calendrier, comme `levage-remise-en-service-apres-reparation`. Les délais précis du contrôle après réparation (au plus tôt vingt-quatre heures de fonctionnement, au plus tard un mois) relèvent du règlement 2024/573 et ne sont pas modélisés en périodicité : le modèle n'a pas de forme pour un délai borné des deux côtés.",
+      "Obligation permanente, sans échéance à poser : elle se déclenche sur un événement — une modification du circuit, une réparation de fuite — que l'outil n'observe pas. `mise_en_service_uniquement` avait d'abord été retenu par analogie avec `levage-remise-en-service-apres-reparation`, et c'était une erreur : le générateur en tire une occurrence `a_planifier` marquée urgente dès qu'aucune vérification n'est connue. Toute chambre froide neuve — l'équipement que le pré-remplissage suggère désormais à tout commerce alimentaire et à toute restauration — héritait donc d'une ligne « contrôle après modification » urgente alors que rien n'avait été modifié. Annoncer un retard sur un événement qui n'a pas eu lieu, c'est le défaut que le reste de ce référentiel s'emploie à éliminer. En `autre`, l'obligation reste visible dans le dossier et citée dans le registre, sans encombrer le calendrier. Les délais du contrôle après réparation (au plus tôt vingt-quatre heures de fonctionnement, au plus tard un mois) ne sont de toute façon pas modélisables : le modèle n'a pas de forme pour un délai borné des deux côtés.",
   },
 ];

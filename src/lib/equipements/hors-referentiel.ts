@@ -87,6 +87,29 @@ export const EXPLICATION_SANS_ECHEANCE: Record<MotifSansEcheance, string> = {
     "Les obligations qui visent cet équipement sont permanentes : le référentiel n'en tire aucune date, il n'y a donc rien à poser sur le calendrier.",
 };
 
+/**
+ * Compte les appareils pour lesquels **aucune obligation** ne s'applique — le
+ * cas de la catégorie inconnue du référentiel et celui de la catégorie connue
+ * qu'aucune règle ne vise ici.
+ *
+ * `aucune_echeance_datable` en est délibérément exclu, et c'est tout l'intérêt
+ * de la fonction : là, des obligations s'appliquent bel et bien, elles sont
+ * simplement permanentes. Un stockage de matières dangereuses sans volume
+ * renseigné relève de la rétention et des fiches de données de sécurité ; lui
+ * dire que « rien ne s'applique » serait faux, et faux dans le sens qui rassure.
+ * Les trois motifs ont été séparés pour cette raison — les recompter ensemble
+ * dans les écrans annulait le travail.
+ */
+export function compterSansObligation(
+  motifs: ReadonlyMap<string, MotifSansEcheance>,
+): number {
+  let n = 0;
+  for (const motif of motifs.values()) {
+    if (motif !== "aucune_echeance_datable") n += 1;
+  }
+  return n;
+}
+
 /** Le champ neutre du registre d'états (`CHAMP_ETAT.aPlanifier`), délibérément :
  *  ce n'est ni un retard ni une échéance. Un rouge dirait « faute », un vert
  *  dirait « à jour » — deux jugements que l'outil ne porte pas. */

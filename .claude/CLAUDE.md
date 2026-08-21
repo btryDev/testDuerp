@@ -136,7 +136,12 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
 15. **015** — « À faire » est un écran (le calendrier), tableau de bord au rail
 16. **016** — La nature d'une échéance est un type fermé, la famille s'en déduit
 17. **017** — Les opérations ponctuelles ne sont ni des corrections ni des registres
-18. **020** — Ce qu'un DUERP ne couvre pas se déclare, et se grave avec lui
+20. **020** — Ce qu'un DUERP ne couvre pas se déclare, et se grave avec lui
+
+Les numéros 018 et 019 sont portés par des chantiers en cours sur d'autres
+branches — le retrait du module Interventions et le bâtiment comme lieu. La
+puce reprend le numéro de l'ADR plutôt que son rang dans la liste, pour que les
+trois branches puissent atterrir dans n'importe quel ordre sans se contredire.
 
 Toute nouvelle décision structurante → nouvel ADR avant de coder.
 

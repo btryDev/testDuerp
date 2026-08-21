@@ -227,22 +227,31 @@ function EtatVerifications({
   motif: MotifSansEcheance | undefined;
   href: string;
 }) {
-  if (motif) {
-    return (
-      <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.8rem] text-muted-foreground">
-        <span
-          className="rounded-full px-2 py-0.5 text-[0.72rem] font-semibold"
-          style={{
-            background: CHAMP_SANS_ECHEANCE,
-            color: ENCRE_SANS_ECHEANCE,
-          }}
-        >
-          {LIBELLE_SANS_ECHEANCE[motif]}
-        </span>
-        <span>{EXPLICATION_SANS_ECHEANCE[motif]}</span>
-      </p>
-    );
-  }
+  // Le motif se pose **au-dessus** de l'état, il ne le remplace pas. Les deux
+  // ne viennent pas de la même source : le motif se lit sur le référentiel,
+  // l'état sur les `Verification` en base. Un équipement sous pression déclaré
+  // « non soumis au suivi en service » cumule les deux — il n'a plus d'échéance
+  // à venir, mais il garde ses vérifications réalisées. Rendre le motif seul
+  // effaçait de l'écran la dernière vérification connue, c'est-à-dire la seule
+  // information que son propriétaire ait à montrer en cas de contrôle.
+  const pastille = motif ? (
+    <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.8rem] text-muted-foreground">
+      <span
+        className="rounded-full px-2 py-0.5 text-[0.72rem] font-semibold"
+        style={{
+          background: CHAMP_SANS_ECHEANCE,
+          color: ENCRE_SANS_ECHEANCE,
+        }}
+      >
+        {LIBELLE_SANS_ECHEANCE[motif]}
+      </span>
+      <span>{EXPLICATION_SANS_ECHEANCE[motif]}</span>
+    </p>
+  ) : null;
+
+  // Sans état à afficher, la pastille se suffit : répéter « aucune vérification
+  // rattachée » sous une explication qui vient de le dire serait du bruit.
+  if (motif && !etat) return pastille;
 
   if (!etat) {
     return (
@@ -253,7 +262,9 @@ function EtatVerifications({
   }
 
   return (
-    <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.8rem] text-muted-foreground">
+    <>
+      {pastille}
+      <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.8rem] text-muted-foreground">
       {etat.enRetard > 0 ? (
         <Link
           href={href}
@@ -294,6 +305,7 @@ function EtatVerifications({
           ? `Dernière vérification le ${formaterDateCourteFr(etat.derniere)}`
           : "Aucune vérification connue à ce jour"}
       </span>
-    </p>
+      </p>
+    </>
   );
 }

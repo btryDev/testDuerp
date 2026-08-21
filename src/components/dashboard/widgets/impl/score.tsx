@@ -38,8 +38,16 @@ function ScoreInfoTooltip({ align = "right" }: { align?: "left" | "right" | "cen
   );
 }
 
-/** Regroupement des catégories d'équipement en « familles » affichées
- *  dans la vue V2 du score. Une catégorie manquante tombe dans "Autres". */
+/** Regroupement des catégories d'équipement en « familles » affichées dans la
+ *  vue V2 du score.
+ *
+ *  « Autres » **était** une liste explicite, et le commentaire prétendait le
+ *  contraire : une catégorie oubliée ici ne tombait nulle part, elle
+ *  disparaissait du score sans que rien ne le signale. C'est ce qui venait
+ *  d'arriver à `INSTALLATION_FRIGORIFIQUE` — un contrôle d'étanchéité en retard
+ *  n'était compté dans aucune famille. `calculerFamilles` traite donc désormais
+ *  « Autres » comme un vrai reliquat : ce qu'aucune famille nommée ne réclame y
+ *  atterrit, et une catégorie neuve ne peut plus s'évaporer en silence. */
 const FAMILLES: { nom: string; categories: string[] }[] = [
   {
     nom: "Incendie",
@@ -331,12 +339,23 @@ function calculerFamilles(
   equipements: DashboardBundle["equipements"],
 ): FamilleStat[] {
   const out: FamilleStat[] = [];
+  // Les catégories que les familles nommées revendiquent. « Autres » prend tout
+  // le reste, y compris ce que sa propre liste ne cite pas : c'est ce qui
+  // empêche une catégorie neuve de sortir du score sans bruit.
+  const revendiquees = new Set(
+    FAMILLES.filter((f) => f.nom !== "Autres").flatMap((f) => f.categories),
+  );
+  const appartient = (fam: (typeof FAMILLES)[number], categorie: string) =>
+    fam.nom === "Autres"
+      ? !revendiquees.has(categorie)
+      : fam.categories.includes(categorie);
+
   for (const fam of FAMILLES) {
     let totalVerifs = 0;
     let enRetard = 0;
     let aAuMoinsUneVerif = false;
     for (const eq of equipements) {
-      if (!fam.categories.includes(eq.categorie)) continue;
+      if (!appartient(fam, eq.categorie)) continue;
       const s = eq.stats;
       if (!s) continue;
       const nbPourEq =
