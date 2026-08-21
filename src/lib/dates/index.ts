@@ -352,6 +352,12 @@ const FMT_JOUR_MOIS = new Intl.DateTimeFormat("fr-FR", {
   month: "short",
 });
 
+const FMT_MOIS_ANNEE = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: FUSEAU_REFERENCE,
+  month: "short",
+  year: "numeric",
+});
+
 const FMT_DATE_HEURE = new Intl.DateTimeFormat("fr-FR", {
   timeZone: FUSEAU_REFERENCE,
   day: "2-digit",
@@ -382,6 +388,12 @@ export function formaterDateCourteFr(d: Date): string {
  *  l'année est évidente dans le contexte (cf. `FMT_JOUR_MOIS`). */
 export function formaterJourMoisFr(d: Date): string {
   return FMT_JOUR_MOIS.format(d);
+}
+
+/** « févr. 2026 » — le mois seul, quand le jour exact n'apporte rien :
+ *  une périodicité annuelle se dit par son mois, pas par sa date. */
+export function formaterMoisAnneeFr(d: Date): string {
+  return FMT_MOIS_ANNEE.format(d);
 }
 
 /** « 10/08/2026 14:30 » — pour les horodatages (dépôts de rapport,

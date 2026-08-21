@@ -31,6 +31,14 @@ const buttonVariants = cva(
           "normal-case tracking-[-0.01em] [font-family:var(--font-body)] font-semibold bg-[color:var(--board-ink)] text-white hover:opacity-85",
         boardClair:
           "normal-case tracking-[-0.01em] [font-family:var(--font-body)] font-semibold bg-transparent text-[color:var(--board-ink)] shadow-[inset_0_0_0_1px_rgba(10,10,10,.18)] hover:bg-[color:var(--board-slate-pale)]",
+        // Les deux voix posées SUR l'encre : la pilule blanche pour
+        // l'action principale, la translucide pour la seconde. `board` et
+        // `boardClair` y sont illisibles — encre sur encre pour l'une,
+        // filet noir invisible pour l'autre.
+        boardBlanc:
+          "normal-case tracking-[-0.01em] [font-family:var(--font-body)] font-semibold bg-white text-[color:var(--board-ink)] hover:bg-[color:var(--board-slate-pale)]",
+        boardFantome:
+          "normal-case tracking-[-0.01em] [font-family:var(--font-body)] font-semibold bg-white/10 text-white hover:bg-white/20",
       },
       size: {
         default: "h-9 gap-2 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",

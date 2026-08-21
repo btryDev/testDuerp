@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { repartirParEquipement } from "./etat-verifications";
+import { repartirParEquipement, resumerEquipement } from "./etat-verifications";
+import type { Periodicite } from "@/lib/referentiels/types-communs";
 
 /**
  * Dates civiles à minuit UTC, horloge à un instant réel (ADR-011).
@@ -11,13 +12,19 @@ const AUJOURDHUI = new Date("2026-08-10T07:00:00Z");
 const verif = (
   equipementId: string,
   datePrevue: string,
-  o: { statut?: string; dateRealisee?: string; libelle?: string } = {},
+  o: {
+    statut?: string;
+    dateRealisee?: string;
+    libelle?: string;
+    periodicite?: Periodicite;
+  } = {},
 ) => ({
   equipementId,
   libelleObligation: o.libelle ?? "Vérification annuelle",
   statut: o.statut ?? "planifiee",
   datePrevue: jour(datePrevue),
   dateRealisee: o.dateRealisee ? jour(o.dateRealisee) : null,
+  periodicite: o.periodicite ?? ("annuelle" as const),
 });
 
 describe("repartirParEquipement", () => {
@@ -103,5 +110,52 @@ describe("repartirParEquipement", () => {
 
     expect(m.has("eq2")).toBe(false);
     expect(m.get("eq1")?.derniere).toBeNull();
+  });
+});
+
+describe("resumerEquipement", () => {
+  const etatDe = (verifs: Parameters<typeof repartirParEquipement>[0]) =>
+    repartirParEquipement(verifs, AUJOURDHUI).get("eq1");
+
+  it("dit l'absence de suivi plutôt que de la taire", () => {
+    const r = resumerEquipement(undefined);
+    expect(r.etat).toBe("aPlanifier");
+    expect(r.date).toBeNull();
+    expect(r.phrase).toMatch(/Aucune vérification périodique/);
+  });
+
+  it("le retard prime sur tout le reste", () => {
+    const r = resumerEquipement(
+      etatDe([verif("eq1", "2026-06-01"), verif("eq1", "2026-12-01")]),
+    );
+    expect(r.etat).toBe("enRetard");
+    expect(r.phrase).toMatch(/1 vérification en retard/);
+  });
+
+  it("n'annonce jamais « prochaine » pour une échéance dépassée", () => {
+    const r = resumerEquipement(etatDe([verif("eq1", "2026-06-01")]));
+    expect(r.phrase).toMatch(/attendue le/);
+    expect(r.phrase).not.toMatch(/prochaine le/);
+  });
+
+  it("porte le rendez-vous à venir et son état", () => {
+    const r = resumerEquipement(etatDe([verif("eq1", "2026-08-25")]));
+    expect(r.etat).toBe("proche");
+    expect(r.date).toEqual(jour("2026-08-25"));
+    expect(r.phrase).toMatch(/prochaine le/i);
+  });
+
+  it("retombe sur la dernière preuve quand plus rien n'est attendu", () => {
+    const r = resumerEquipement(
+      etatDe([
+        verif("eq1", "2026-02-10", {
+          statut: "realisee_conforme",
+          dateRealisee: "2026-02-10",
+        }),
+      ]),
+    );
+    expect(r.etat).toBe("faite");
+    expect(r.date).toEqual(jour("2026-02-10"));
+    expect(r.phrase).toMatch(/dernière vérification le/i);
   });
 });

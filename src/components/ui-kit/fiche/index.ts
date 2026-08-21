@@ -14,3 +14,4 @@ export {
   BlocCreux,
 } from "./CarteFiche";
 export { PastilleRetard, PastilleFiche } from "./PastilleFiche";
+export { LigneFiche, LignesFiche, TuileMuette } from "./LigneFiche";

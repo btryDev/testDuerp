@@ -12,6 +12,8 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { classerVerification, type RegistreLigne } from "@/lib/calendrier/etats";
+import type { Periodicite } from "@/lib/referentiels/types-communs";
+import { formaterDateCourteFr } from "@/lib/dates";
 
 export type EtatEquipement = {
   /** Vérifications dépassées sur cet appareil. */
@@ -26,6 +28,11 @@ export type EtatEquipement = {
    *  génération, pas une date choisie (ADR-010). Elles ne peuvent pas se
    *  poser sur un jour, mais l'appareil doit les annoncer. */
   aPlanifier: number;
+  /** Les rythmes portés par cet appareil, dans l'ordre où ils
+   *  apparaissent. Ils viennent des lignes de suivi elles-mêmes, jamais
+   *  d'une re-déduction depuis le référentiel : c'est ce qui a été généré
+   *  qui fait foi, pas ce qui devrait l'être. */
+  periodicites: Periodicite[];
 };
 
 /**
@@ -51,6 +58,7 @@ export async function etatVerificationsParEquipement(
       statut: true,
       datePrevue: true,
       dateRealisee: true,
+      periodicite: true,
     },
     orderBy: { datePrevue: "asc" },
   });
@@ -67,6 +75,7 @@ export function repartirParEquipement(
     statut: string;
     datePrevue: Date;
     dateRealisee: Date | null;
+    periodicite: Periodicite;
   }>,
   now: Date,
 ): Map<string, EtatEquipement> {
@@ -79,7 +88,12 @@ export function repartirParEquipement(
       prochaine: null,
       derniere: null,
       aPlanifier: 0,
+      periodicites: [],
     };
+
+    if (!courant.periodicites.includes(v.periodicite)) {
+      courant.periodicites.push(v.periodicite);
+    }
 
     if (etat === "faite") {
       // `dateRealisee` peut manquer sur un statut « realisee_… » ancien :
@@ -107,4 +121,85 @@ export function repartirParEquipement(
   }
 
   return parEquipement;
+}
+
+/**
+ * L'état d'un appareil ramené à ce qu'une ligne de liste peut porter :
+ * une couleur, une date, une phrase.
+ *
+ * La page Équipements composait ces trois choses à la main, dans le corps
+ * du rendu — impossible à tester, et déjà divergent de ce que la fiche
+ * annonce. La règle de préséance est la même que partout ailleurs : le
+ * retard prime, puis le rendez-vous pris, puis l'absence de rendez-vous,
+ * puis la dernière preuve. Et jamais un mot de conformité : l'outil rend
+ * des dates, il ne certifie pas (cf. garde-fous produit).
+ */
+export type ResumeEquipement = {
+  etat: RegistreLigne;
+  /** La date que porte la tuile — le prochain rendez-vous, ou à défaut la
+   *  dernière preuve. Absente : l'appareil n'a ni l'un ni l'autre. */
+  date: Date | null;
+  /** Une phrase de faits, prête à afficher. */
+  phrase: string;
+};
+
+export function resumerEquipement(
+  etat: EtatEquipement | undefined,
+): ResumeEquipement {
+  if (!etat) {
+    return {
+      etat: "aPlanifier",
+      date: null,
+      phrase: "Aucune vérification périodique rattachée",
+    };
+  }
+
+  const parts: string[] = [];
+  if (etat.enRetard > 0) {
+    parts.push(
+      `${etat.enRetard} vérification${etat.enRetard > 1 ? "s" : ""} en retard`,
+    );
+  }
+  if (etat.aPlanifier > 0) {
+    parts.push(
+      `${etat.aPlanifier} à planifier`,
+    );
+  }
+  if (etat.prochaine) {
+    // Une occurrence dépassée est la « prochaine » au sens du calcul,
+    // jamais au sens de la langue : annoncer « Prochaine : 4 août » un
+    // 20 août serait faux.
+    parts.push(
+      etat.prochaine.etat === "enRetard"
+        ? `attendue le ${formaterDateCourteFr(etat.prochaine.date)}`
+        : `prochaine le ${formaterDateCourteFr(etat.prochaine.date)}`,
+    );
+  }
+  parts.push(
+    etat.derniere
+      ? `dernière vérification le ${formaterDateCourteFr(etat.derniere)}`
+      : "aucune vérification connue à ce jour",
+  );
+
+  const phrase = parts.join(" · ");
+  const majuscule = phrase.charAt(0).toUpperCase() + phrase.slice(1);
+
+  if (etat.enRetard > 0) {
+    return { etat: "enRetard", date: etat.prochaine?.date ?? null, phrase: majuscule };
+  }
+  if (etat.prochaine) {
+    return {
+      etat: etat.prochaine.etat,
+      date: etat.prochaine.date,
+      phrase: majuscule,
+    };
+  }
+  if (etat.aPlanifier > 0) {
+    return { etat: "aPlanifier", date: null, phrase: majuscule };
+  }
+  return {
+    etat: etat.derniere ? "faite" : "aPlanifier",
+    date: etat.derniere,
+    phrase: majuscule,
+  };
 }

@@ -17,6 +17,9 @@ const TON = {
   bleu: "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]",
   neutre:
     "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]",
+  // Le neutre posé SUR l'encre : le creux ardoise y ferait une pastille
+  // blanche criarde, alors que le rôle de « neutre » est de s'effacer.
+  encre: "bg-white/12 text-white",
 } as const;
 
 export function PastilleFiche({
