@@ -20,7 +20,11 @@ export async function listerRapportsDeLEtablissement(
     },
     include: {
       verification: {
-        include: { equipement: true },
+        include: {
+          equipement: {
+            include: { batiment: { select: { id: true, nom: true } } },
+          },
+        },
       },
     },
     orderBy: { dateRapport: "desc" },

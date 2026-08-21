@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ChampBatiment } from "@/components/batiments/ChampBatiment";
 import {
   creerPermisFeu,
   type PermisFeuActionState,
@@ -27,9 +28,12 @@ type PrestataireLite = {
 export function FormulairePermisFeu({
   etablissementId,
   prestataires,
+  batiments = [],
 }: {
   etablissementId: string;
   prestataires: PrestataireLite[];
+  /** Rendu seulement à partir de deux (ADR-019). */
+  batiments?: { id: string; nom: string }[];
 }) {
   const router = useRouter();
   const boundAction = creerPermisFeu.bind(null, etablissementId);
@@ -240,6 +244,8 @@ export function FormulairePermisFeu({
               )}
             </div>
           </div>
+
+          <ChampBatiment batiments={batiments} erreur={err("batimentId")} />
 
           <div className="space-y-1.5">
             <Label htmlFor="lieu">Lieu précis *</Label>

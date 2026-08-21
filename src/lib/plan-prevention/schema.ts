@@ -77,6 +77,11 @@ export const planPreventionSchema = z
       z.coerce.number().int().min(1).max(99999).optional(),
     ),
     lieux: z.string().trim().min(1).max(1000),
+    // ADR-019 : rattachement principal ; `lieux` garde le détail multi-lieux.
+    batimentId: z.preprocess(
+      (v) => (v === "" || v === null ? undefined : v),
+      z.string().optional(),
+    ),
     naturesTravaux: z.string().trim().min(10).max(4000),
     travauxDangereux: z.coerce.boolean().optional().default(false),
 

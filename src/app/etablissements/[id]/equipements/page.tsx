@@ -12,6 +12,12 @@ import {
   grouperParCategorie,
   listerEquipementsDeLEtablissement,
 } from "@/lib/equipements/queries";
+import { listerBatimentsDeLEtablissement } from "@/lib/batiments/queries";
+import {
+  estMultiBatiments,
+  resoudreFiltreBatiment,
+  restreindreAuBatiment,
+} from "@/lib/batiments/filtre";
 import { suggererEquipements } from "@/lib/equipements/pre-remplissage";
 import {
   etatVerificationsParEquipement,
@@ -30,21 +36,38 @@ export default async function EquipementsPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ bienvenue?: string }>;
+  searchParams: Promise<{ bienvenue?: string; batiment?: string }>;
 }) {
   const { id } = await params;
-  const { bienvenue } = await searchParams;
+  const { bienvenue, batiment } = await searchParams;
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
   const base = `/etablissements/${id}`;
+
+  // Le filtre par bâtiment est un réglage d'écran : il vit dans l'URL, il
+  // n'apparaît qu'à partir de deux bâtiments, et un identifiant inconnu
+  // vaut « tous » (ADR-019 ; la règle est dans `lib/batiments/filtre`, une
+  // fois pour les trois écrans qui filtrent). Il se résout **avant** tout
+  // le reste : c'est lui qui borne le parc affiché, donc les compteurs du
+  // bandeau, les sections et leur tri par urgence. Appliqué après, il
+  // laisserait un en-tête et un ordre calculés sur un autre périmètre.
+  const batiments = await listerBatimentsDeLEtablissement(id);
+  const multiBatiments = estMultiBatiments(batiments);
+  const batimentFiltre = resoudreFiltreBatiment(batiments, batiment);
+
   // Les liens vers une fiche emportent cet écran : le retour ramènera ici,
-  // pas au parent canonique par défaut (ADR-014).
+  // pas au parent canonique par défaut (ADR-014) — et dans le bâtiment
+  // qu'on regardait, sinon le retour rouvrirait tout le parc en silence.
   // `bienvenue` est délibérément écarté de la provenance : embarqué dans
   // les liens de fiche, il ramenait la bannière d'accueil à chaque retour
   // sur la liste — alors qu'elle est censée disparaître à la première
-  // navigation.
-  const origine = origineDepuis(`${base}/equipements`, {});
+  // navigation. Le bâtiment, lui, est un réglage et non un événement : il
+  // se reconduit.
+  const origine = origineDepuis(
+    `${base}/equipements`,
+    batimentFiltre ? { batiment: batimentFiltre } : {},
+  );
 
   const [equipements, etatsVerifs, sansEcheance] = await Promise.all([
     listerEquipementsDeLEtablissement(id),
@@ -57,7 +80,9 @@ export default async function EquipementsPage({
     // donné (cf. `hors-referentiel.ts`).
     equipementsSansEcheance(id),
   ]);
-  const parCategorie = grouperParCategorie(equipements);
+
+  const equipementsAffiches = restreindreAuBatiment(equipements, batimentFiltre);
+  const parCategorie = grouperParCategorie(equipementsAffiches);
 
   const suggestions = suggererEquipements({
     codeNaf: etab.codeNaf,
@@ -74,7 +99,12 @@ export default async function EquipementsPage({
   // d'un appareil en retard, le bandeau annonçait « 1 en retard » alors
   // qu'aucune carte de l'écran n'en montrait : un en-tête ne doit jamais
   // contredire ce qu'il coiffe.
-  const compteurs = equipements.reduce(
+  //
+  // Un bâtiment filtré, c'est la même exigence d'un cran plus fin : la
+  // somme se fait sur les appareils affichés, donc le bandeau suit le
+  // filtre — les trois chiffres comme le total. La légende sous le
+  // sélecteur l'annonce en toutes lettres, dans les deux sens.
+  const compteurs = equipementsAffiches.reduce(
     (acc, eq) => {
       const e = etatsVerifs.get(eq.id);
       return {
@@ -85,10 +115,29 @@ export default async function EquipementsPage({
     { enRetard: 0, proches: 0 },
   );
 
+  // Les suggestions se lisent sur le parc **entier** : une catégorie déjà
+  // déclarée dans un autre bâtiment n'est pas à examiner, et le filtre ne
+  // doit pas la faire réapparaître.
   const dejaDeclarees = new Set(equipements.map((e) => e.categorie));
   const suggestionsRestantes = suggestions.filter(
     (s) => !dejaDeclarees.has(s.categorie),
   );
+
+  // Le bâtiment est le « où » qui discrimine dès qu'il y en a deux — sauf
+  // quand le filtre en a déjà nommé un en tête d'écran : il se redirait
+  // alors à l'identique sur chaque carte, et la localisation, seule
+  // précision qui distingue encore deux appareils, passerait en second.
+  const montrerBatiment = multiBatiments && !batimentFiltre;
+
+  // Ajouter depuis un parc filtré ouvre le formulaire sur ce bâtiment :
+  // sinon le nouvel appareil part au bâtiment principal et disparaît de
+  // l'écran d'où on vient de le déclarer.
+  const suffixeBatiment = batimentFiltre
+    ? `batiment=${encodeURIComponent(batimentFiltre)}`
+    : "";
+  const hrefAjouter = suffixeBatiment
+    ? `${base}/equipements/nouveau?${suffixeBatiment}`
+    : `${base}/equipements/nouveau`;
 
   // Une section par catégorie, la plus en peine en tête : sur un parc de
   // quinze appareils, l'ordre alphabétique enterrait le seul retard.
@@ -97,10 +146,10 @@ export default async function EquipementsPage({
       const appareils: AppareilListe[] = liste.map((eq) => ({
         id: eq.id,
         libelle: eq.libelle,
-        // Le « où » de la vitrine. Il portera le bâtiment quand les
-        // bâtiments existeront (ADR-019) ; la localisation est le seul
-        // lieu dont on dispose aujourd'hui.
-        lieu: eq.localisation,
+        // Le « où » de la vitrine, à deux étages depuis l'ADR-019 : un
+        // bâtiment, et une précision dans ce bâtiment.
+        lieu: montrerBatiment ? eq.batiment.nom : eq.localisation,
+        precision: montrerBatiment ? eq.localisation : null,
         resume: resumerEquipement(etatsVerifs.get(eq.id)),
         // Le motif se pose AU-DESSUS des signaux, il ne les remplace pas :
         // un appareil sans échéance à venir garde ses vérifications
@@ -136,11 +185,20 @@ export default async function EquipementsPage({
         hrefRetour={base}
         enRetard={compteurs.enRetard}
         proches={compteurs.proches}
-        total={equipements.length}
-        hrefAjouter={`${base}/equipements/nouveau`}
+        total={equipementsAffiches.length}
+        hrefAjouter={hrefAjouter}
         suggestions={
           suggestionsRestantes.length > 0
             ? { nombre: suggestionsRestantes.length, href: "#suggestions" }
+            : null
+        }
+        filtreBatiment={
+          multiBatiments
+            ? {
+                baseHref: `${base}/equipements`,
+                batiments,
+                actif: batimentFiltre,
+              }
             : null
         }
       />
@@ -178,8 +236,17 @@ export default async function EquipementsPage({
                 : "ajoutez un premier équipement via le bouton « + Ajouter un équipement » en haut de la page."
             }
             cta="Ajouter un équipement"
-            ctaHref={`${base}/equipements/nouveau`}
+            ctaHref={hrefAjouter}
           />
+        ) : equipementsAffiches.length === 0 ? (
+          /* Le parc n'est pas vide, ce bâtiment l'est : deux situations
+             qui ne se disent pas de la même façon. La seconde ne mérite
+             pas la page d'accueil du parc, seulement une phrase — et le
+             sélecteur, juste au-dessus, reste la sortie. */
+          <p className="carte-board px-7 py-5 text-[14px] leading-[1.6] text-[color:var(--board-slate-mid)] sm:px-8">
+            Aucun équipement déclaré dans ce bâtiment. Un appareil se déplace
+            depuis sa fiche, en changeant son bâtiment.
+          </p>
         ) : (
           sections.map((s) => (
             <CarteCategorie
@@ -187,7 +254,9 @@ export default async function EquipementsPage({
               categorie={s.categorie}
               appareils={s.appareils}
               periodicites={s.periodicites}
-              hrefAjouter={`${base}/equipements/nouveau?categorie=${s.categorie}`}
+              hrefAjouter={`${base}/equipements/nouveau?categorie=${s.categorie}${
+                suffixeBatiment ? `&${suffixeBatiment}` : ""
+              }`}
             />
           ))
         )}

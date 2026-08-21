@@ -8,6 +8,9 @@ import { BlocBrief } from "@/components/dashboard/widgets/impl/board";
 import type { DashboardBundle } from "@/components/dashboard/widgets/types";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
+import { listerBatimentsDeLEtablissement } from "@/lib/batiments/queries";
+import { estMultiBatiments } from "@/lib/batiments/filtre";
+import { SelecteurBatiment } from "@/components/batiments/SelecteurBatiment";
 import {
   compterObligationsParMois,
   compterVerifsParEquipement,
@@ -22,12 +25,27 @@ import { composantesCiviles, joursCivilsEntre } from "@/lib/dates";
 
 export default async function EtablissementPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ batiment?: string }>;
 }) {
   const { id } = await params;
+  const { batiment } = await searchParams;
   const etab = await getEtablissement(id);
   if (!etab) notFound();
+
+  // Filtre bâtiment (ADR-019). Il porte sur ce qui a un lieu — échéances
+  // d'équipements, parc, opérations — et laisse passer ce qui concerne tout
+  // l'établissement. L'état global (score, DUERP, prestataires, matrice des
+  // documents) n'est jamais filtré : un score « du bâtiment B » n'aurait pas
+  // de sens réglementaire, les obligations sont celles de l'établissement.
+  const batiments = await listerBatimentsDeLEtablissement(id);
+  const multiBatiments = estMultiBatiments(batiments);
+  const batimentFiltre =
+    multiBatiments && batiments.some((b) => b.id === batiment)
+      ? batiment
+      : undefined;
 
   const [
     equipements,
@@ -44,7 +62,11 @@ export default async function EtablissementPage({
     prochainesVerifs,
     rapportsRecents,
   ] = await Promise.all([
-    listerEquipementsDeLEtablissement(id),
+    listerEquipementsDeLEtablissement(id).then((liste) =>
+      batimentFiltre
+        ? liste.filter((e) => e.batimentId === batimentFiltre)
+        : liste,
+    ),
     compterVerifsParEquipement(id),
     getDashboardData(id),
     compterObligationsParMois(id),
@@ -52,9 +74,9 @@ export default async function EtablissementPage({
     // la même donnée — une seule collecte pour les deux vues, qui coupent
     // côté client. Toutes familles confondues, comme la page Calendrier :
     // un permis de feu ou une attestation en retard doit se voir ici.
-    listerEvenementsCalendrier(id),
-    listerEvenementsFenetre(id, 7),
-    listerEvenementsFenetre(id, 30),
+    listerEvenementsCalendrier(id, { batimentId: batimentFiltre }),
+    listerEvenementsFenetre(id, 7, { batimentId: batimentFiltre }),
+    listerEvenementsFenetre(id, 30, { batimentId: batimentFiltre }),
     statsActionsEnRetard(id),
     getModulesMatrice(id, etab.estERP),
     prisma.verification.count({ where: { etablissementId: id } }),
@@ -63,6 +85,9 @@ export default async function EtablissementPage({
       where: {
         etablissementId: id,
         statut: { in: ["a_planifier", "planifiee", "depassee"] },
+        ...(batimentFiltre
+          ? { equipement: { batimentId: batimentFiltre } }
+          : {}),
       },
       include: { equipement: true },
       orderBy: { datePrevue: "asc" },
@@ -138,6 +163,8 @@ export default async function EtablissementPage({
   // objects traversent la frontière server/client via l'App Router.
   const bundle: DashboardBundle = {
     etablissementId: id,
+    batiments: batiments.map((b) => ({ id: b.id, nom: b.nom })),
+    batimentFiltre: batiments.find((b) => b.id === batimentFiltre) ?? null,
     etablissement: {
       id: etab.id,
       raisonDisplay: etab.raisonDisplay,
@@ -210,6 +237,21 @@ export default async function EtablissementPage({
           grand rayon posé dans la gouttière — la seule grande surface
           colorée de la page — qui annonce la file de travail du jour. */}
       <BlocBrief bundle={bundle} />
+
+      {multiBatiments ? (
+        <div className="bg-[color:var(--board-canvas)] px-[var(--board-gutter)] pt-6">
+          <SelecteurBatiment
+            baseHref={`/etablissements/${id}`}
+            batiments={batiments}
+            actif={batimentFiltre}
+            legende={
+              batimentFiltre
+                ? "Les échéances, équipements et opérations affichés sont ceux de ce bâtiment, plus ce qui concerne tout l'établissement. Le brief, le score et l'état des documents portent toujours sur l'établissement entier."
+                : undefined
+            }
+          />
+        </div>
+      ) : null}
 
       {/* Canvas quasi blanc du board — `flex-1` pour qu'il descende
           jusqu'au bas du conteneur de défilement, même quand les widgets

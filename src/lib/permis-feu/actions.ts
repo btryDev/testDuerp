@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { resoudreBatimentOptionnel } from "@/lib/batiments/queries";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import { NatureTravauxPointChaud } from "@prisma/client";
 import { NATURES_TRAVAUX, permisFeuSchema } from "./schema";
@@ -48,6 +49,7 @@ export async function creerPermisFeu(
     dateDebut: formData.get("dateDebut"),
     dateFin: formData.get("dateFin"),
     lieu: formData.get("lieu"),
+    batimentId: formData.get("batimentId"),
     naturesTravaux: extraireNatures(formData),
     descriptionTravaux: formData.get("descriptionTravaux"),
     mesuresValidees: extraireMesures(formData),
@@ -59,6 +61,18 @@ export async function creerPermisFeu(
       status: "error",
       message: "Formulaire invalide",
       fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const batiment = await resoudreBatimentOptionnel(
+    etablissementId,
+    parsed.data.batimentId,
+  );
+  if (!batiment.ok) {
+    return {
+      status: "error",
+      message: "Bâtiment introuvable",
+      fieldErrors: { batimentId: ["Bâtiment introuvable"] },
     };
   }
 
@@ -79,6 +93,7 @@ export async function creerPermisFeu(
       dateDebut: parsed.data.dateDebut,
       dateFin: parsed.data.dateFin,
       lieu: parsed.data.lieu,
+      batimentId: batiment.id,
       naturesTravaux: parsed.data.naturesTravaux,
       descriptionTravaux: parsed.data.descriptionTravaux,
       mesuresValidees: parsed.data.mesuresValidees,

@@ -38,6 +38,10 @@ export type FiltresCalendrier = {
    * sortait. C'était l'inverse de ce que le mot annonce.
    */
   urgentsSeulement?: boolean;
+  /** Ne garder que les vérifications d'équipements situés dans ce
+   *  bâtiment (ADR-019). Le bâtiment d'une vérification se **déduit** de
+   *  son équipement : aucune colonne ici. */
+  batimentId?: string;
 };
 
 export async function listerVerifications(
@@ -54,6 +58,9 @@ export async function listerVerifications(
     where: {
       etablissementId,
       etablissement: { entreprise: { userId: user.id } },
+      ...(filtres.batimentId
+        ? { equipement: { batimentId: filtres.batimentId } }
+        : {}),
       ...(filtres.urgentsSeulement
         ? {
             dateRealisee: null,
@@ -67,7 +74,11 @@ export async function listerVerifications(
           }
         : {}),
     },
-    include: { equipement: true },
+    include: {
+      equipement: {
+        include: { batiment: { select: { id: true, nom: true } } },
+      },
+    },
     orderBy: [{ datePrevue: "asc" }],
   });
 

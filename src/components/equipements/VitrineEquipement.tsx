@@ -7,9 +7,11 @@
 // c'est le LIEU, et ce qu'elle chiffre en petit, ce sont des signaux.
 //
 // Le champ ne porte pas la marque de catégorie : dans une section
-// « Extincteurs », la répéter quatre fois n'apprend rien. Il portera le
-// bâtiment quand les bâtiments existeront (ADR-019) ; en attendant, il
-// porte la localisation — le seul « où » dont on dispose.
+// « Extincteurs », la répéter quatre fois n'apprend rien. Il porte le
+// « où », qui a deux étages depuis l'ADR-019 : le bâtiment, et la
+// précision dans le bâtiment. La carte ne décide pas lequel des deux
+// s'affiche en grand — c'est l'écran qui sait s'il y a plusieurs
+// bâtiments, et s'il en a déjà nommé un en tête.
 
 import Link from "next/link";
 import { MapPin } from "lucide-react";
@@ -49,6 +51,7 @@ function Signal({ signal }: { signal: SignalEquipement }) {
 export function VitrineEquipement({
   libelle,
   lieu,
+  precision,
   signaux,
   horsReferentiel,
   href,
@@ -57,6 +60,10 @@ export function VitrineEquipement({
   /** Ce que le champ annonce en grand. `null` = non renseigné, et l'écran
    *  le dit plutôt que de laisser un blanc. */
   lieu: string | null;
+  /** Le second étage du lieu, en petit sous le premier : la localisation
+   *  dans le bâtiment quand c'est le bâtiment qui est annoncé en grand.
+   *  `null` — le cas courant — n'affiche rien. */
+  precision?: string | null;
   signaux: SignalEquipement[];
   /** Le référentiel ne calcule aucune échéance pour cet appareil. Le
    *  silence ne doit jamais ressembler à une réponse : sans cette
@@ -79,8 +86,23 @@ export function VitrineEquipement({
         }
       >
         <MapPin className="size-[22px]" aria-hidden />
-        <span className="line-clamp-2 font-mono text-[11px] font-semibold uppercase leading-[1.25] tracking-[0.1em]">
-          {lieu ?? "Emplacement non précisé"}
+        <span className="min-w-0">
+          <span
+            className={
+              "block font-mono text-[11px] font-semibold uppercase leading-[1.25] tracking-[0.1em] " +
+              (precision ? "line-clamp-1" : "line-clamp-2")
+            }
+          >
+            {lieu ?? "Emplacement non précisé"}
+          </span>
+          {/* La précision ne devient jamais le grand titre : elle ne
+              distingue rien tant qu'on ne sait pas de quel bâtiment on
+              parle. */}
+          {precision ? (
+            <span className="mt-1 line-clamp-1 block text-[11.5px] leading-[1.3] opacity-75">
+              {precision}
+            </span>
+          ) : null}
         </span>
       </span>
 

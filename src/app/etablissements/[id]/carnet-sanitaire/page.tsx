@@ -6,6 +6,7 @@ import { AjoutAnalyseForm } from "@/components/carnet-sanitaire/AjoutAnalyseForm
 import { GraphTemperatures } from "@/components/carnet-sanitaire/GraphTemperatures";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { getCarnetSanitaire } from "@/lib/carnet-sanitaire/queries";
+import { listerBatimentsDeLEtablissement } from "@/lib/batiments/queries";
 import {
   LABEL_RESEAU,
   SEUIL_LEGIONELLE_UFC_PAR_L,
@@ -28,6 +29,7 @@ export default async function CarnetSanitairePage({
   const { id } = await params;
   const { etablissement } = await requireEtablissement(id);
   const carnet = await getCarnetSanitaire(id);
+  const batiments = await listerBatimentsDeLEtablissement(id);
 
   const nbPoints = carnet?.pointsReleve.length ?? 0;
   const nbReleves =
@@ -106,7 +108,7 @@ export default async function CarnetSanitairePage({
                 puisage les plus éloignés du ballon, points sensibles).
               </p>
             </div>
-            <AjoutPointReleveForm etablissementId={id} />
+            <AjoutPointReleveForm etablissementId={id} batiments={batiments} />
           </header>
 
           {!carnet || nbPoints === 0 ? (

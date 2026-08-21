@@ -18,7 +18,11 @@ import { listerEvenementsFenetre } from "@/lib/dashboard/queries";
 import type { EvenementFenetre } from "@/lib/dashboard/queries";
 import { JOURS_APRES } from "@/lib/dashboard/frise";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
-import { listerAutresEcheances, type EcheanceCalendrier } from "./echeances";
+import {
+  filtrerParBatiment,
+  listerAutresEcheances,
+  type EcheanceCalendrier,
+} from "./echeances";
 import type { FamilleEcheance } from "./echeances";
 import type { EvenementGrille } from "./grille";
 
@@ -29,6 +33,9 @@ export type FiltresEvenements = {
   domaine?: DomaineObligation;
   /** Ne garder que le dépassé, toutes familles confondues. */
   urgentsSeulement?: boolean;
+  /** Un bâtiment (ADR-019). Les échéances de l'établissement entier —
+   *  sans bâtiment — restent visibles : elles le concernent aussi. */
+  batimentId?: string;
 };
 
 /**
@@ -62,22 +69,31 @@ export function fusionnerEvenements({
   etablissementId: string;
   filtres?: FiltresEvenements;
 }): EvenementGrille[] {
-  const { famille, domaine, urgentsSeulement } = filtres;
+  const { famille, domaine, urgentsSeulement, batimentId } = filtres;
 
+  // Les vérifications arrivent déjà réduites au bâtiment par la requête ;
+  // le filtre est réappliqué ici pour qu'un appelant qui les aurait
+  // chargées sans filtre obtienne le même résultat (fonction pure).
   const verifsVisibles =
     famille && famille !== "controle"
       ? []
-      : verifications.filter((e) => e.tone !== "warn");
+      : filtrerParBatiment(
+          verifications.filter((e) => e.tone !== "warn"),
+          batimentId,
+        );
 
   // Le domaine écarte les autres familles en bloc : il ne les qualifie
   // pas, et prétendre le contraire ferait disparaître des échéances sans
   // que l'utilisateur comprenne pourquoi.
   const autresVisibles = domaine
     ? []
-    : autres.filter(
-        (e) =>
-          (!famille || famille === e.famille) &&
-          (!urgentsSeulement || e.tone === "alerte"),
+    : filtrerParBatiment(
+        autres.filter(
+          (e) =>
+            (!famille || famille === e.famille) &&
+            (!urgentsSeulement || e.tone === "alerte"),
+        ),
+        batimentId,
       );
 
   return [
@@ -101,6 +117,7 @@ export function fusionnerEvenements({
         equipement: e.origine,
         famille: e.famille,
         href: e.href,
+        batiment: e.batiment,
       }),
     ),
   ].sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -129,6 +146,7 @@ export async function listerEvenementsCalendrier(
     listerEvenementsFenetre(etablissementId, JOURS_APRES, {
       domaine: filtres.domaine,
       urgentsSeulement: filtres.urgentsSeulement,
+      batimentId: filtres.batimentId,
     }),
     listerAutresEcheances(etablissementId, now),
   ]);

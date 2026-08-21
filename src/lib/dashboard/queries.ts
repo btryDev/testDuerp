@@ -31,6 +31,7 @@ import {
 } from "@/lib/dates";
 import { estActionEnRetard } from "@/lib/dates/retard";
 import { TON_REGISTRE, lecturesCalendrier } from "@/lib/calendrier/etats";
+import type { BatimentEcheance } from "@/lib/calendrier/echeances";
 import { repartirVerifications } from "@/lib/pdf/etat-verifications";
 import type { ModulesMatrice } from "./obligations";
 import { evaluerEtatDuerp, type EtatDuerp } from "./duerp";
@@ -93,6 +94,8 @@ export type EvenementFenetre = {
   date: Date;
   tone: "alerte" | "warn" | "ok";
   equipement: string;
+  /** Le bâtiment de l'équipement (ADR-019). */
+  batiment: BatimentEcheance;
 };
 
 /**
@@ -121,6 +124,8 @@ export async function listerEvenementsFenetre(
     domaine?: DomaineObligation;
     /** Même sémantique que `listerVerifications` : a_planifier + depassee. */
     urgentsSeulement?: boolean;
+    /** Ne garder que les équipements de ce bâtiment (ADR-019). */
+    batimentId?: string;
   },
 ): Promise<EvenementFenetre[]> {
   const user = await requireUser();
@@ -134,11 +139,21 @@ export async function listerEvenementsFenetre(
       etablissementId,
       etablissement: { entreprise: { userId: user.id } },
       datePrevue: { lte: fin },
+      ...(filtres?.batimentId
+        ? { equipement: { batimentId: filtres.batimentId } }
+        : {}),
       ...(filtres?.urgentsSeulement
         ? { statut: { in: ["a_planifier", "depassee"] } }
         : {}),
     },
-    include: { equipement: { select: { libelle: true } } },
+    include: {
+      equipement: {
+        select: {
+          libelle: true,
+          batiment: { select: { id: true, nom: true } },
+        },
+      },
+    },
     orderBy: { datePrevue: "asc" },
   });
 
@@ -162,6 +177,7 @@ export async function listerEvenementsFenetre(
         date: lec.date,
         tone: TON_REGISTRE[lec.registre],
         equipement: v.equipement.libelle,
+        batiment: v.equipement.batiment,
       })),
   );
 }

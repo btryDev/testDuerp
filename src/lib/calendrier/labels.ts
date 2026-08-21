@@ -83,3 +83,8 @@ export function libelleMois(cle: string): string {
   const idx = Number(mois) - 1;
   return `${MOIS_FR[idx] ?? mois} ${annee}`;
 }
+
+/** Libellé de la case « sans bâtiment » dans les filtres et les listes
+ *  (ADR-019). Ici et non dans `echeances.ts`, qui importe Prisma : les
+ *  composants client doivent pouvoir le lire. */
+export const LABEL_TOUT_ETABLISSEMENT = "Tout l'établissement";

@@ -18,11 +18,18 @@ import {
   listerVerifications,
 } from "@/lib/calendrier/queries";
 import {
+  filtrerParBatiment,
   listerAutresEcheances,
   type EcheanceCalendrier,
   type FamilleEcheance,
   type TypeEcheance,
 } from "@/lib/calendrier/echeances";
+import { listerBatimentsDeLEtablissement } from "@/lib/batiments/queries";
+import {
+  estMultiBatiments,
+  resoudreFiltreBatiment,
+  restreindreAuBatiment,
+} from "@/lib/batiments/filtre";
 import {
   AnneeCalendrier,
   type AnneeRegle,
@@ -57,6 +64,7 @@ import { SelecteurLecture } from "@/components/calendrier/SelecteurLecture";
 import {
   LABEL_DOMAINE,
   LABEL_PERIODICITE,
+  LABEL_TOUT_ETABLISSEMENT,
   MOIS_FR,
   MOIS_FR_COURT,
   libelleMois,
@@ -193,12 +201,19 @@ export default async function CalendrierPage({
     urgent?: string;
     famille?: string;
     vue?: string;
+    batiment?: string;
   }>;
 }) {
   const { id } = await params;
-  const { domaine, urgent, famille } = await searchParams;
+  const { domaine, urgent, famille, batiment } = await searchParams;
   const etab = await getEtablissement(id);
   if (!etab) notFound();
+
+  // Le filtre bâtiment n'existe qu'à partir de deux bâtiments (ADR-019) ;
+  // un id inconnu vaut « tout l'établissement ».
+  const batiments = await listerBatimentsDeLEtablissement(id);
+  const multiBatiments = estMultiBatiments(batiments);
+  const filtreBatiment = resoudreFiltreBatiment(batiments, batiment);
 
   const filtreFamille = FAMILLES_FILTRABLES.includes(famille as FamilleEcheance)
     ? (famille as FamilleEcheance)
@@ -247,11 +262,12 @@ export default async function CalendrierPage({
     regenere = true;
   }
 
-  const [verifsBruts, etat, autresEcheances, equipements, motifsSansEcheance] =
+  const [verifsBruts, etat, autresEcheances, equipementsTous, motifsSansEcheance] =
     await Promise.all([
       listerVerifications(id, {
         domaine: filtreDomaine,
         urgentsSeulement: filtreUrgent,
+        batimentId: filtreBatiment,
       }),
       // Les compteurs viennent d'être calculés trois lignes plus haut : on
       // ne les refait que si une régénération a changé la donnée entre-temps.
@@ -268,6 +284,8 @@ export default async function CalendrierPage({
       equipementsSansEcheance(id),
     ]);
   const aujourdhui = new Date();
+  // La lecture par équipement suit le même bâtiment que le reste.
+  const equipements = restreindreAuBatiment(equipementsTous, filtreBatiment);
 
   // Cohabitation des familles : le filtre famille partitionne, le
   // domaine implique « contrôles », l'urgence garde le dépassé partout.
@@ -276,13 +294,27 @@ export default async function CalendrierPage({
   // Les échéances du registre suivent le filtre famille — y compris la
   // famille « controle » (analyses légionelles). Seul le filtre domaine
   // les écarte : il qualifie le référentiel d'équipements, rien d'autre.
+  // Le bâtiment, lui, laisse passer ce qui concerne tout l'établissement
+  // (ADR-019) : masquer la mise à jour du DUERP sous « Réserve » ferait
+  // mentir le calendrier par omission.
   const autresVisibles = filtreDomaine
     ? []
-    : autresEcheances.filter(
-        (e) =>
-          (!filtreFamille || filtreFamille === e.famille) &&
-          (!filtreUrgent || e.tone === "alerte"),
+    : filtrerParBatiment(
+        autresEcheances.filter(
+          (e) =>
+            (!filtreFamille || filtreFamille === e.famille) &&
+            (!filtreUrgent || e.tone === "alerte"),
+        ),
+        filtreBatiment,
       );
+
+  // En multi-bâtiments, la méta d'une ligne dit d'abord où ça se passe.
+  const lieuDe = (b: { nom: string } | null): string | null =>
+    multiBatiments ? (b?.nom ?? LABEL_TOUT_ETABLISSEMENT) : null;
+  const metaAutre = (e: EcheanceCalendrier): string => {
+    const lieu = lieuDe(e.batiment);
+    return lieu ? `${lieu} · ${e.origine}` : e.origine;
+  };
 
   // La liste mensuelle mêle les deux, triés par date dans chaque mois.
   //
@@ -635,7 +667,7 @@ export default async function CalendrierPage({
         jour: FMT_JOUR.format(e.date),
         moisCourt: FMT_MOIS_COURT.format(e.date),
         titre: e.libelle,
-        meta: e.origine,
+        meta: metaAutre(e),
         etat,
       });
     }
@@ -861,10 +893,12 @@ export default async function CalendrierPage({
         baseHref={baseHref}
         famillesDisponibles={famillesPresentes}
         domaines={DOMAINES_P1.map((d) => ({ id: d, label: LABEL_DOMAINE[d] }))}
+        batiments={batiments}
         filtres={{
           famille: filtreFamille,
           domaine: filtreDomaine,
           urgent: filtreUrgent,
+          batiment: filtreBatiment,
         }}
       />
       <span className="ml-auto">{aide}</span>
@@ -1033,6 +1067,9 @@ export default async function CalendrierPage({
                               type="verification"
                               titre={v.libelleObligation}
                               meta={
+                                (lieuDe(v.equipement.batiment)
+                                  ? `${v.equipement.batiment.nom} · `
+                                  : "") +
                                 `${v.equipement.libelle} · ` +
                                 LABEL_PERIODICITE[v.periodicite] +
                                 (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : "")
@@ -1062,7 +1099,7 @@ export default async function CalendrierPage({
                             date={e.date}
                             type={e.type}
                             titre={e.libelle}
-                            meta={e.origine}
+                            meta={metaAutre(e)}
                             // La tuile-date suffit pour le futur : seule
                             // l'alerte mérite une pastille.
                             registre={etatDeLaLigne(ligne)}

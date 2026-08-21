@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { NOM_BATIMENT_PRINCIPAL } from "@/lib/batiments/schema";
 import { requireUser } from "@/lib/auth/require-user";
 import { getOptionalUserEtablissement } from "@/lib/auth/scope";
 import { onboardingSchema } from "./schema";
@@ -100,6 +101,8 @@ export async function finaliserOnboarding(
         typeErp: d.typeErp,
         categorieErp: d.categorieErp,
         classeIgh: d.classeIgh,
+        // ADR-019 : tout établissement naît avec son bâtiment principal.
+        batiments: { create: { nom: NOM_BATIMENT_PRINCIPAL, ordre: 0 } },
       },
     });
 

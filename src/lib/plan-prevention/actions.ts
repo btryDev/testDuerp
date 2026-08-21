@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { resoudreBatimentOptionnel } from "@/lib/batiments/queries";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import {
   ligneSchema,
@@ -79,6 +80,7 @@ export async function creerPlanPrevention(
     dateFin: formData.get("dateFin"),
     dureeHeuresEstimee: formData.get("dureeHeuresEstimee"),
     lieux: formData.get("lieux"),
+    batimentId: formData.get("batimentId"),
     naturesTravaux: formData.get("naturesTravaux"),
     travauxDangereux: formData.get("travauxDangereux") === "on",
     inspectionDate: formData.get("inspectionDate"),
@@ -91,6 +93,18 @@ export async function creerPlanPrevention(
       status: "error",
       message: "Formulaire invalide",
       fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const batiment = await resoudreBatimentOptionnel(
+    etablissementId,
+    parsed.data.batimentId,
+  );
+  if (!batiment.ok) {
+    return {
+      status: "error",
+      message: "Bâtiment introuvable",
+      fieldErrors: { batimentId: ["Bâtiment introuvable"] },
     };
   }
 
@@ -114,6 +128,7 @@ export async function creerPlanPrevention(
       dateFin: parsed.data.dateFin,
       dureeHeuresEstimee: parsed.data.dureeHeuresEstimee,
       lieux: parsed.data.lieux,
+      batimentId: batiment.id,
       naturesTravaux: parsed.data.naturesTravaux,
       travauxDangereux: parsed.data.travauxDangereux,
       inspectionDate: parsed.data.inspectionDate,

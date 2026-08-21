@@ -56,6 +56,11 @@ describe("deduireActif", () => {
     expect(deduireActif(`/etablissements/${ID}/modifier`, ID)).toBe("fiche");
   });
 
+  it("range les bâtiments sous « Mon établissement » (ADR-019)", () => {
+    expect(deduireActif(`/etablissements/${ID}/batiments`, ID)).toBe("batiments");
+    expect(categorieDeItem("batiments")).toBe("etablissement");
+  });
+
   it("rattache les vérifications au calendrier", () => {
     expect(deduireActif(`/etablissements/${ID}/verifications/v1`, ID)).toBe(
       "calendrier",

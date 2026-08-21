@@ -70,6 +70,7 @@ model Etablissement {
   categorieErp            CategorieErp?
   classeIgh               ClasseIgh?
 
+  batiments             Batiment[]
   duerps                Duerp[]
   equipements           Equipement[]
   verifications         Verification[]
@@ -268,10 +269,43 @@ model Risque {
 // Module Conformité — nouveau V2
 // ----------------------------------------------------------------------------
 
+// ADR-019 : le bâtiment est un **lieu**, jamais un régime. Les flags ERP/IGH
+// et la catégorie restent sur `Etablissement` — le classement ERP s'attache à
+// un ensemble de bâtiments non isolés, pas à chaque corps ; le poser ici
+// sous-catégoriserait un ERP contigu. Tout établissement en a au moins un
+// (« Bâtiment principal », ordre 0), créé par la migration puis à la création
+// d'établissement ; l'interface reste muette tant qu'il est seul.
+model Batiment {
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  nom               String
+  complementAdresse String?
+  ordre             Int     @default(0)
+
+  equipements     Equipement[]
+  pointsReleve    PointReleve[]
+  permisFeu       PermisFeu[]
+  plansPrevention PlanPrevention[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([etablissementId, nom])
+  @@index([etablissementId, ordre])
+}
+
 model Equipement {
   id              String        @id @default(cuid())
   etablissementId String
   etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  // Requis, et `Restrict` : supprimer un bâtiment ne doit jamais emporter un
+  // équipement et, par cascade, ses vérifications et rapports (ADR-012). On
+  // déplace les équipements d'abord. `localisation` reste la précision
+  // (salle, étage) à l'intérieur du bâtiment.
+  batimentId      String
+  batiment        Batiment      @relation(fields: [batimentId], references: [id], onDelete: Restrict)
 
   categorie         CategorieEquipement
   libelle           String
@@ -286,6 +320,7 @@ model Equipement {
   updatedAt DateTime @updatedAt
 
   @@index([etablissementId, categorie])
+  @@index([batimentId])
 }
 
 enum CategorieEquipement {
@@ -782,6 +817,8 @@ model PermisFeu {
   dateDebut          DateTime
   dateFin            DateTime
   lieu               String // description précise : salle, étage, zone
+  batimentId         String? // ADR-019 : le bâtiment ; `lieu` reste la précision
+  batiment           Batiment?                 @relation(fields: [batimentId], references: [id], onDelete: SetNull)
   naturesTravaux     NatureTravauxPointChaud[]
   descriptionTravaux String
 
@@ -861,8 +898,10 @@ model PlanPrevention {
   dateFin            DateTime
   dureeHeuresEstimee Int?
   lieux              String // multi-lieux possibles, texte libre
-  naturesTravaux     String   @db.Text
-  travauxDangereux   Boolean  @default(false)
+  batimentId         String? // ADR-019 : rattachement principal ; `lieux` garde le détail
+  batiment           Batiment? @relation(fields: [batimentId], references: [id], onDelete: SetNull)
+  naturesTravaux     String    @db.Text
+  travauxDangereux   Boolean   @default(false)
 
   // Inspection commune préalable (art. R4512-7)
   inspectionDate         DateTime?
@@ -933,6 +972,8 @@ model PointReleve {
 
   nom             String
   localisation    String?
+  batimentId      String?
+  batiment        Batiment?     @relation(fields: [batimentId], references: [id], onDelete: SetNull)
   typeReseau      TypeReseauEau
   seuilMinCelsius Float         @default(50)
   actif           Boolean       @default(true)
