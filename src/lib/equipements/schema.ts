@@ -144,6 +144,10 @@ export const equipementSchema = z
       .min(1, "Libellé requis")
       .max(200, "Libellé trop long"),
     categorie: z.enum(CATEGORIES_EQUIPEMENT),
+    // ADR-019 : le bâtiment où se trouve l'équipement. Optionnel au niveau
+    // du formulaire — absent, l'action prend le bâtiment principal — mais
+    // toujours écrit en base, où la colonne est requise.
+    batimentId: z.string().trim().min(1).optional(),
     localisation: z.preprocess(
       (v) => (typeof v === "string" ? v.trim() || undefined : v),
       z.string().max(200).optional(),
@@ -254,6 +258,7 @@ export function normaliserFormDataEquipement(
   const out: Record<string, unknown> = {
     libelle: raw.libelle,
     categorie: raw.categorie || undefined,
+    batimentId: raw.batimentId || undefined,
     localisation: raw.localisation,
     dateMiseEnService: raw.dateMiseEnService,
     nombre: raw.nombre,

@@ -11,10 +11,14 @@ const ETAB = "etab-1";
 const jour = (j: number) =>
   new Date(`2026-07-${String(j).padStart(2, "0")}T00:00:00.000Z`);
 
+const BAT_A = { id: "bat-a", nom: "Bâtiment principal" };
+const BAT_B = { id: "bat-b", nom: "Réserve" };
+
 function verif(
   id: string,
   j: number,
   tone: EvenementFenetre["tone"] = "ok",
+  batiment: EvenementFenetre["batiment"] = BAT_A,
 ): EvenementFenetre {
   return {
     id,
@@ -22,6 +26,7 @@ function verif(
     date: jour(j),
     tone,
     equipement: "Tableau électrique",
+    batiment,
   };
 }
 
@@ -41,6 +46,7 @@ function autre(
     date: jour(j),
     tone,
     href: `/etablissements/${ETAB}/actions/${id}`,
+    batiment: null,
   };
 }
 
@@ -133,5 +139,31 @@ describe("fusionnerEvenements — filtres", () => {
       { urgentsSeulement: true },
     );
     expect(out.map((e) => e.id)).toEqual(["a2", "v1"]);
+  });
+});
+
+describe("fusionnerEvenements — bâtiment (ADR-019)", () => {
+  it("garde le bâtiment choisi ET ce qui concerne tout l'établissement", () => {
+    const duerp = { ...autre("duerp", 3, "papiers", "ok"), batiment: null };
+    const permisB = {
+      ...autre("permis-b", 4, "operations", "ok"),
+      batiment: BAT_B,
+    };
+    const out = fusion(
+      [verif("v-a", 10, "ok", BAT_A), verif("v-b", 11, "ok", BAT_B)],
+      [duerp, permisB],
+      { batimentId: BAT_B.id },
+    );
+    // v-a sort ; la mise à jour du DUERP (sans bâtiment) reste : la masquer
+    // ferait croire qu'il n'y a rien à faire dans la Réserve ce mois-là.
+    expect(out.map((e) => e.id)).toEqual(["duerp", "permis-b", "v-b"]);
+  });
+
+  it("sans filtre, tout passe et le bâtiment descend jusqu'à la grille", () => {
+    const out = fusion([verif("v-a", 10, "ok", BAT_A)], [
+      { ...autre("a1", 5, "travaux"), batiment: null },
+    ]);
+    expect(out.find((e) => e.id === "v-a")?.batiment).toEqual(BAT_A);
+    expect(out.find((e) => e.id === "a1")?.batiment).toBeNull();
   });
 });

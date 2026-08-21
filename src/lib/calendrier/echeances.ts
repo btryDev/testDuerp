@@ -98,7 +98,29 @@ export type EcheanceCalendrier = {
   /** Mêmes tons que la grille : dépassé = alerte, sinon ok. */
   tone: "alerte" | "ok";
   href: string;
+  /** Où ça se passe (ADR-019). `null` = l'établissement entier : mise à
+   *  jour du DUERP, attestation d'un prestataire, action née d'un risque.
+   *  Sous un filtre par bâtiment, ces lignes **restent visibles** — les
+   *  masquer ferait mentir le calendrier par omission (ADR-010). */
+  batiment: BatimentEcheance | null;
 };
+
+export type BatimentEcheance = { id: string; nom: string };
+
+/**
+ * Applique un filtre par bâtiment à une liste d'échéances. Une échéance
+ * sans bâtiment concerne tout l'établissement, donc aussi celui-ci : elle
+ * passe. Fonction pure, partagée par le calendrier et le tableau de bord.
+ */
+export function filtrerParBatiment<T extends { batiment: BatimentEcheance | null }>(
+  echeances: T[],
+  batimentId: string | undefined,
+): T[] {
+  if (!batimentId) return echeances;
+  return echeances.filter(
+    (e) => e.batiment === null || e.batiment.id === batimentId,
+  );
+}
 
 /** Ce qu'une source reçoit : le périmètre déjà vérifié (ownership) et
  *  l'horloge du jour — elle n'a rien d'autre à savoir. */
@@ -214,6 +236,7 @@ export function echeanceDuerp({
     date,
     tone: tonPourDate(date, aujourdhui),
     href: `/etablissements/${etablissementId}/duerp`,
+    batiment: null,
   };
 }
 
@@ -242,6 +265,7 @@ export function echeancesPrestataire(
       date: p.attestationUrssafValableJusquA,
       tone: tonPourDate(p.attestationUrssafValableJusquA, aujourdhui),
       href,
+      batiment: null,
     });
   }
   if (p.assuranceRcProValableJusquA) {
@@ -254,6 +278,7 @@ export function echeancesPrestataire(
       date: p.assuranceRcProValableJusquA,
       tone: tonPourDate(p.assuranceRcProValableJusquA, aujourdhui),
       href,
+      batiment: null,
     });
   }
   return out;
@@ -280,6 +305,7 @@ export function echeancePermisFeu(
     statut: string;
     dateDebut: Date;
     dateFin: Date;
+    batiment?: BatimentEcheance | null;
   },
   aujourdhui: Date,
   etablissementId: string,
@@ -297,6 +323,7 @@ export function echeancePermisFeu(
     date: p.dateDebut,
     tone: !clos && (debutManque || finDepassee) ? "alerte" : "ok",
     href: `/etablissements/${etablissementId}/permis-feu/${p.id}`,
+    batiment: p.batiment ?? null,
   };
 }
 
@@ -318,6 +345,7 @@ export function echeancePlanPrevention(
     dateDebut: Date;
     dateFin: Date;
     inspectionDate: Date | null;
+    batiment?: BatimentEcheance | null;
   },
   aujourdhui: Date,
   etablissementId: string,
@@ -335,6 +363,7 @@ export function echeancePlanPrevention(
     date: p.dateDebut,
     tone: !clos && (commenceSansInspection || finDepassee) ? "alerte" : "ok",
     href: `/etablissements/${etablissementId}/plan-prevention/${p.id}`,
+    batiment: p.batiment ?? null,
   };
 }
 
@@ -361,6 +390,9 @@ export function echeanceLegionelles({
     date,
     tone: tonPourDate(date, aujourdhui),
     href: `/etablissements/${etablissementId}/carnet-sanitaire`,
+    // L'analyse porte sur le réseau, et le carnet est un par établissement
+    // (dette assumée, ADR-019).
+    batiment: null,
   };
 }
 
@@ -392,7 +424,14 @@ const sourceActions: SourceEcheances = async ({
       id: true,
       libelle: true,
       echeance: true,
-      verification: { select: { libelleObligation: true } },
+      verification: {
+        select: {
+          libelleObligation: true,
+          equipement: {
+            select: { batiment: { select: { id: true, nom: true } } },
+          },
+        },
+      },
     },
   });
   return actions.flatMap((a) =>
@@ -408,6 +447,10 @@ const sourceActions: SourceEcheances = async ({
             date: a.echeance,
             tone: tonPourDate(a.echeance, aujourdhui),
             href: `/etablissements/${etablissementId}/actions/${a.id}`,
+            // Une action de vérification est là où est l'équipement ; une
+            // action du DUERP relève d'une unité de travail, qui peut
+            // traverser les bâtiments.
+            batiment: a.verification?.equipement.batiment ?? null,
           },
         ]
       : [],
@@ -439,6 +482,7 @@ const sourceInterventions: SourceEcheances = async ({
             date: i.echeance,
             tone: tonPourDate(i.echeance, aujourdhui),
             href: `/etablissements/${etablissementId}/interventions/${i.id}`,
+            batiment: null,
           },
         ]
       : [],
@@ -517,6 +561,7 @@ const sourcePermisFeu: SourceEcheances = async ({
       statut: true,
       dateDebut: true,
       dateFin: true,
+      batiment: { select: { id: true, nom: true } },
     },
   });
   return permis.map((p) => echeancePermisFeu(p, aujourdhui, etablissementId));
@@ -547,6 +592,7 @@ const sourcePlansPrevention: SourceEcheances = async ({
       dateDebut: true,
       dateFin: true,
       inspectionDate: true,
+      batiment: { select: { id: true, nom: true } },
     },
   });
   return plans.map((p) =>

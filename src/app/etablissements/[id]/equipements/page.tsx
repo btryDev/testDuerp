@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/layout/EmptyState";
 import { PictoEquipement } from "@/components/equipements/PictoEquipement";
 import { PreRemplissagePanel } from "@/components/equipements/PreRemplissagePanel";
+import { SelecteurBatiment } from "@/components/batiments/SelecteurBatiment";
 import { SupprimerEquipementButton } from "@/components/equipements/SupprimerEquipementButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import {
@@ -11,6 +12,10 @@ import {
   listerEquipementsDeLEtablissement,
 } from "@/lib/equipements/queries";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
+import {
+  estMultiBatiments,
+  listerBatimentsDeLEtablissement,
+} from "@/lib/batiments/queries";
 import { suggererEquipements } from "@/lib/equipements/pre-remplissage";
 import { etatVerificationsParEquipement } from "@/lib/equipements/etat-verifications";
 import type { EtatEquipement } from "@/lib/equipements/etat-verifications";
@@ -27,20 +32,32 @@ export default async function EquipementsPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ bienvenue?: string }>;
+  searchParams: Promise<{ bienvenue?: string; batiment?: string }>;
 }) {
   const { id } = await params;
-  const { bienvenue } = await searchParams;
+  const { bienvenue, batiment: batimentParam } = await searchParams;
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
-  const [equipements, etatsVerifs] = await Promise.all([
+  const [equipements, etatsVerifs, batiments] = await Promise.all([
     listerEquipementsDeLEtablissement(id),
     // Le parc ne disait rien de son état de vérification : on lisait un
     // inventaire, pas une situation.
     etatVerificationsParEquipement(id),
+    listerBatimentsDeLEtablissement(id),
   ]);
-  const parCategorie = grouperParCategorie(equipements);
+
+  // Filtre par bâtiment (ADR-019) : un réglage d'écran, donc dans l'URL, et
+  // seulement quand il y a de quoi choisir. Un id inconnu vaut « tous ».
+  const multiBatiments = estMultiBatiments(batiments);
+  const batimentFiltre =
+    multiBatiments && batiments.some((b) => b.id === batimentParam)
+      ? batimentParam
+      : undefined;
+  const equipementsAffiches = batimentFiltre
+    ? equipements.filter((e) => e.batimentId === batimentFiltre)
+    : equipements;
+  const parCategorie = grouperParCategorie(equipementsAffiches);
 
   const suggestions = suggererEquipements({
     codeNaf: etab.codeNaf,
@@ -105,6 +122,17 @@ export default async function EquipementsPage({
 
       <div className="filet-pointille my-10" />
 
+      {multiBatiments && (
+        <div className="mb-8">
+          <SelecteurBatiment
+            baseHref={`/etablissements/${id}/equipements`}
+            batiments={batiments}
+            actif={batimentFiltre}
+            compteurs={new Map(batiments.map((b) => [b.id, b.nbEquipements]))}
+          />
+        </div>
+      )}
+
       {suggestionsRestantes.length > 0 && (
         <div className="mb-10">
           <PreRemplissagePanel
@@ -126,6 +154,11 @@ export default async function EquipementsPage({
           cta="Ajouter un équipement"
           ctaHref={`/etablissements/${id}/equipements/nouveau`}
         />
+      ) : equipementsAffiches.length === 0 ? (
+        <p className="cartouche px-6 py-5 text-[0.9rem] text-muted-foreground">
+          Aucun équipement dans ce bâtiment. Depuis la fiche d&apos;un
+          équipement, vous pouvez le déplacer ici.
+        </p>
       ) : (
         <section className="space-y-8">
           {[...parCategorie.entries()].map(([cat, liste]) => (
@@ -154,6 +187,12 @@ export default async function EquipementsPage({
                           {eq.libelle}
                         </p>
                         <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+                          {multiBatiments && !batimentFiltre && (
+                            <>
+                              {eq.batiment.nom}
+                              <span className="mx-2 text-rule">·</span>
+                            </>
+                          )}
                           {eq.localisation ?? "Localisation non précisée"}
                           {mes && (
                             <>

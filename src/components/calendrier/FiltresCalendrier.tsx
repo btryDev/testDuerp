@@ -22,11 +22,14 @@ import {
   MarqueurFamille,
 } from "./MarqueurFamille";
 import type { FamilleEcheance } from "@/lib/calendrier/echeances";
+import { LABEL_TOUT_ETABLISSEMENT } from "@/lib/calendrier/labels";
 
 export type FiltresActifs = {
   famille?: FamilleEcheance;
   domaine?: string;
   urgent: boolean;
+  /** Un bâtiment (ADR-019) — n'existe qu'à partir de deux. */
+  batiment?: string;
 };
 
 function construireHref(
@@ -35,6 +38,7 @@ function construireHref(
     famille?: string;
     domaine?: string;
     urgent?: boolean;
+    batiment?: string;
     /**
      * La lecture en cours (mois ou équipement). Elle n'est pas un filtre,
      * mais elle vit dans la même URL : sans la reconduire ici, régler un
@@ -47,6 +51,7 @@ function construireHref(
   if (filtres.famille) p.set("famille", filtres.famille);
   if (filtres.domaine) p.set("domaine", filtres.domaine);
   if (filtres.urgent) p.set("urgent", "1");
+  if (filtres.batiment) p.set("batiment", filtres.batiment);
   if (filtres.vue) p.set("vue", filtres.vue);
   const q = p.toString();
   return q ? `${baseHref}?${q}` : baseHref;
@@ -165,12 +170,15 @@ export function FiltresCalendrier({
   baseHref,
   famillesDisponibles,
   domaines,
+  batiments = [],
   filtres,
 }: {
   baseHref: string;
   /** Familles ayant au moins une échéance — les seules proposées. */
   famillesDisponibles: FamilleEcheance[];
   domaines: { id: string; label: string }[];
+  /** Le groupe « Bâtiment » n'apparaît qu'à partir de deux (ADR-019). */
+  batiments?: { id: string; nom: string }[];
   filtres: FiltresActifs;
 }) {
   const router = useRouter();
@@ -203,8 +211,12 @@ export function FiltresCalendrier({
   }, [ouvert]);
 
   const f = optimistes;
+  const multiBatiments = batiments.length > 1;
   const nbActifs =
-    (f.famille ? 1 : 0) + (f.domaine ? 1 : 0) + (f.urgent ? 1 : 0);
+    (f.famille ? 1 : 0) +
+    (f.domaine ? 1 : 0) +
+    (f.urgent ? 1 : 0) +
+    (f.batiment ? 1 : 0);
 
   const appliquer = (suivants: FiltresActifs) => {
     demarrerTransition(() => {
@@ -240,6 +252,10 @@ export function FiltresCalendrier({
 
   const labelDomaine = (id: string | undefined) =>
     domaines.find((d) => d.id === id)?.label ?? id;
+
+  const choisirBatiment = (batiment?: string) => appliquer({ ...f, batiment });
+  const nomBatiment = (id: string | undefined) =>
+    batiments.find((b) => b.id === id)?.nom ?? id;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -330,6 +346,34 @@ export function FiltresCalendrier({
               ))}
             </fieldset>
 
+            {multiBatiments ? (
+              <>
+                <div className="mx-2.5 mt-2 border-t border-[color:rgba(10,10,10,.08)]" />
+                <fieldset className="m-0 border-0 p-0">
+                  <TitreGroupe>Bâtiment</TitreGroupe>
+                  <Option
+                    forme="radio"
+                    name="filtre-batiment"
+                    actif={!f.batiment}
+                    onChoisir={() => choisirBatiment(undefined)}
+                  >
+                    {LABEL_TOUT_ETABLISSEMENT}
+                  </Option>
+                  {batiments.map((b) => (
+                    <Option
+                      key={b.id}
+                      forme="radio"
+                      name="filtre-batiment"
+                      actif={f.batiment === b.id}
+                      onChoisir={() => choisirBatiment(b.id)}
+                    >
+                      {b.nom}
+                    </Option>
+                  ))}
+                </fieldset>
+              </>
+            ) : null}
+
             <div className="mx-2.5 mt-2 border-t border-[color:rgba(10,10,10,.08)]" />
             <fieldset className="m-0 border-0 p-0">
               <TitreGroupe>Urgence</TitreGroupe>
@@ -379,6 +423,11 @@ export function FiltresCalendrier({
           ton="alerte"
         >
           En retard seulement
+        </Chip>
+      ) : null}
+      {f.batiment ? (
+        <Chip onRetirer={() => choisirBatiment(undefined)}>
+          {nomBatiment(f.batiment)}
         </Chip>
       ) : null}
     </div>

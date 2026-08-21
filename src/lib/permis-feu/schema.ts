@@ -80,6 +80,11 @@ export const permisFeuSchema = z
       // le fuseau du serveur (ADR-011).
       .transform((v) => depuisSaisieDateHeure(v)),
     lieu: z.string().trim().min(1, "Lieu requis").max(500),
+    // ADR-019 : le bâtiment ; `lieu` reste la précision. Vide = non précisé.
+    batimentId: z.preprocess(
+      (v) => (v === "" || v === null ? undefined : v),
+      z.string().optional(),
+    ),
     naturesTravaux: z
       .array(z.enum(NATURES_TRAVAUX))
       .min(1, "Sélectionnez au moins un type de travaux")

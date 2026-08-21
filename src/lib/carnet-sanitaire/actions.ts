@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
+import { resoudreBatimentOptionnel } from "@/lib/batiments/queries";
 import { getStorage, cleRapport } from "@/lib/storage";
 import { validerFichier } from "@/lib/rapports/validator";
 import {
@@ -45,6 +46,7 @@ export async function creerPointReleve(
   const parsed = pointReleveSchema.safeParse({
     nom: formData.get("nom"),
     localisation: formData.get("localisation"),
+    batimentId: formData.get("batimentId"),
     typeReseau: formData.get("typeReseau"),
     seuilMinCelsius: formData.get("seuilMinCelsius"),
   });
@@ -55,12 +57,24 @@ export async function creerPointReleve(
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
+  const batiment = await resoudreBatimentOptionnel(
+    etablissementId,
+    parsed.data.batimentId,
+  );
+  if (!batiment.ok) {
+    return {
+      status: "error",
+      message: "Bâtiment introuvable",
+      fieldErrors: { batimentId: ["Bâtiment introuvable"] },
+    };
+  }
   const carnet = await obtenirOuCreerCarnet(etablissementId);
   await prisma.pointReleve.create({
     data: {
       id: `pt_${randomUUID()}`,
       carnetId: carnet.id,
       ...parsed.data,
+      batimentId: batiment.id,
     },
   });
   revalidatePath(`/etablissements/${etablissementId}/carnet-sanitaire`);

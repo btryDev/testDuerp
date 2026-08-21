@@ -3,6 +3,7 @@ import { FilRetour } from "@/components/ui-kit";
 import { EquipementForm } from "@/components/equipements/EquipementForm";
 import { modifierEquipement } from "@/lib/equipements/actions";
 import { getEquipement } from "@/lib/equipements/queries";
+import { listerBatimentsDeLEtablissement } from "@/lib/batiments/queries";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 import { lireProvenance } from "@/lib/navigation/provenance";
 
@@ -25,6 +26,7 @@ export default async function ModifierEquipementPage({
   const { de } = await searchParams;
   const eq = await getEquipement(equipementId);
   if (!eq || eq.etablissementId !== id) notFound();
+  const batiments = await listerBatimentsDeLEtablissement(id);
 
   // La fiche d'un équipement s'ouvre depuis le parc, mais aussi depuis la
   // lecture par équipement du calendrier.
@@ -53,9 +55,11 @@ export default async function ModifierEquipementPage({
       <div className="mt-10">
         <EquipementForm
           action={action}
+          batiments={batiments}
           valeursInitiales={{
             libelle: eq.libelle,
             categorie: eq.categorie as CategorieEquipement,
+            batimentId: eq.batimentId,
             localisation: eq.localisation,
             dateMiseEnService: eq.dateMiseEnService,
             nombre: caracs.nombre ?? null,

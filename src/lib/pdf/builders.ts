@@ -42,7 +42,7 @@ async function chargerEtablissementDuUser(etablissementId: string) {
   const user = await requireUser();
   return prisma.etablissement.findFirst({
     where: { id: etablissementId, entreprise: { userId: user.id } },
-    include: { entreprise: true },
+    include: { entreprise: true, _count: { select: { batiments: true } } },
   });
 }
 
@@ -87,14 +87,27 @@ function contexteAction(a: {
   return "Libre";
 }
 
+/**
+ * Le nom d'un équipement tel qu'il s'imprime : précédé de son bâtiment dès
+ * que l'établissement en compte plusieurs (ADR-019). Un inspecteur qui lit
+ * « Tableau électrique » doit savoir lequel ; en mono-bâtiment, le préfixe
+ * ne dirait rien.
+ */
+function libelleEquipementSitue(
+  eq: { libelle: string; batiment: { nom: string } },
+  multiBatiments: boolean,
+): string {
+  return multiBatiments ? `${eq.batiment.nom} — ${eq.libelle}` : eq.libelle;
+}
+
 /** Projection d'une vérification vers la ligne imprimée. Partagée par le
  *  registre et le dossier de conformité pour que la même occurrence s'y
  *  affiche à l'identique. */
-function ligneVerif(v: VerificationListee): LigneVerif {
+function ligneVerif(v: VerificationListee, multiBatiments: boolean): LigneVerif {
   return {
     id: v.id,
     libelleObligation: v.libelleObligation,
-    equipementLibelle: v.equipement.libelle,
+    equipementLibelle: libelleEquipementSitue(v.equipement, multiBatiments),
     datePrevue: v.datePrevue,
     statut: v.statut,
     domaine: obligationParId(v.obligationId)?.domaine ?? null,
@@ -148,6 +161,7 @@ export async function construireRegistreData(
 ): Promise<RegistreData | null> {
   const etab = await chargerEtablissementDuUser(etablissementId);
   if (!etab) return null;
+  const multiBatiments = etab._count.batiments > 1;
 
   const [rapports, verifs] = await Promise.all([
     listerRapportsDeLEtablissement(etablissementId),
@@ -160,7 +174,10 @@ export async function construireRegistreData(
     resultat: r.resultat,
     organismeVerif: r.organismeVerif,
     libelleObligation: r.verification.libelleObligation,
-    equipementLibelle: r.verification.equipement.libelle,
+    equipementLibelle: libelleEquipementSitue(
+      r.verification.equipement,
+      multiBatiments,
+    ),
     domaine: obligationParId(r.verification.obligationId)?.domaine ?? null,
     fichierNomOriginal: r.fichierNomOriginal,
     commentaires: r.commentaires,
@@ -172,7 +189,7 @@ export async function construireRegistreData(
     .filter((v) =>
       ["a_planifier", "planifiee", "depassee"].includes(v.statut),
     )
-    .map(ligneVerif);
+    .map((v) => ligneVerif(v, multiBatiments));
 
   return {
     entreprise: etab.entreprise.raisonSociale,
@@ -192,6 +209,7 @@ export async function construireDossierConformiteData(
     where: { id: etablissementId, entreprise: { userId: user.id } },
     include: {
       entreprise: true,
+      _count: { select: { batiments: true } },
       duerps: {
         orderBy: { updatedAt: "desc" },
         take: 1,
@@ -203,6 +221,7 @@ export async function construireDossierConformiteData(
     },
   });
   if (!etab) return null;
+  const multiBatiments = etab._count.batiments > 1;
 
   // Les vérifications et les rapports sont lus **une seule fois** : les
   // compteurs de la synthèse et les listes détaillées en dessous doivent
@@ -266,7 +285,10 @@ export async function construireDossierConformiteData(
     resultat: r.resultat,
     organismeVerif: r.organismeVerif,
     libelleObligation: r.verification.libelleObligation,
-    equipementLibelle: r.verification.equipement.libelle,
+    equipementLibelle: libelleEquipementSitue(
+      r.verification.equipement,
+      multiBatiments,
+    ),
     domaine: obligationParId(r.verification.obligationId)?.domaine ?? null,
     fichierNomOriginal: r.fichierNomOriginal,
     commentaires: r.commentaires,
@@ -307,7 +329,7 @@ export async function construireDossierConformiteData(
     // Exactement les occurrences comptées juste au-dessus, projetées en
     // lignes de tableau : le nombre annoncé et le détail imprimé ne peuvent
     // plus diverger.
-    verifsEnRetard: etatVerifs.enRetard.map(ligneVerif),
+    verifsEnRetard: etatVerifs.enRetard.map((v) => ligneVerif(v, multiBatiments)),
     actionsEnCours:
       plan?.actions.filter(
         (a) => a.statut === "ouverte" || a.statut === "en_cours",

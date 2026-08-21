@@ -3,6 +3,7 @@ import { AppTopbar } from "@/components/layout/AppTopbar";
 import { FormulairePlanPrevention } from "@/components/plan-prevention/FormulairePlanPrevention";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { listPrestataires } from "@/lib/prestataires/queries";
+import { listerBatimentsDeLEtablissement } from "@/lib/batiments/queries";
 
 export const metadata = {
   title: "Nouveau plan de prévention",
@@ -16,6 +17,7 @@ export default async function NouveauPlanPreventionPage({
   const { id } = await params;
   const { etablissement } = await requireEtablissement(id);
   const prestatairesAnnuaire = await listPrestataires(id);
+  const batiments = await listerBatimentsDeLEtablissement(id);
 
   const prestataires = prestatairesAnnuaire.map((p) => ({
     id: p.id,
@@ -52,6 +54,7 @@ export default async function NouveauPlanPreventionPage({
         <FormulairePlanPrevention
           etablissementId={id}
           prestataires={prestataires}
+          batiments={batiments}
         />
       </main>
     </>

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { EquipementForm } from "@/components/equipements/EquipementForm";
 import { creerEquipement } from "@/lib/equipements/actions";
 import { getEtablissement } from "@/lib/etablissements/queries";
+import { listerBatimentsDeLEtablissement } from "@/lib/batiments/queries";
 
 export default async function NouvelEquipementPage({
   params,
@@ -12,6 +13,7 @@ export default async function NouvelEquipementPage({
   const { id } = await params;
   const etab = await getEtablissement(id);
   if (!etab) notFound();
+  const batiments = await listerBatimentsDeLEtablissement(id);
 
   const action = creerEquipement.bind(null, id);
 
@@ -36,6 +38,7 @@ export default async function NouvelEquipementPage({
       <div className="mt-10">
         <EquipementForm
           action={action}
+          batiments={batiments}
           libelleSubmit="Créer l'équipement"
           labelAnnuler={{
             libelle: "Annuler",

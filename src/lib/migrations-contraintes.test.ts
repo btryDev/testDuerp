@@ -127,3 +127,89 @@ describe("conservation 40 ans du DUERP (art. R. 4121-4 CT)", () => {
     expect(relation![0]).toContain("onDelete: Restrict");
   });
 });
+
+describe("le bâtiment est un lieu, jamais un régime (ADR-019)", () => {
+  /**
+   * Deux invariants, deux filets.
+   *
+   * En base : tout équipement est dans un bâtiment (`batimentId` NOT NULL), et
+   * supprimer un bâtiment ne peut pas emporter un équipement — donc ses
+   * vérifications et ses rapports (ADR-012). La migration doit backfiller
+   * AVANT de poser le NOT NULL, sans quoi elle échoue sur toute base qui a
+   * déjà des équipements.
+   *
+   * Dans le schéma : `Batiment` ne porte aucun champ de régime. Un `estERP`
+   * posé « par réflexe » sur le bâtiment classerait chaque corps séparément,
+   * ce qui sous-catégorise un ERP contigu — pire que l'approximation actuelle.
+   */
+  const schema = readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8");
+  const migrations = lireMigrations();
+  const migration = migrations.find((m) => m.nom.endsWith("_batiment_lieu"));
+
+  function corpsDuModele(nom: string): string {
+    const m = schema.match(new RegExp(`\\bmodel\\s+${nom}\\s*\\{([\\s\\S]*?)\\n\\}`));
+    expect(m, `modèle ${nom} introuvable dans schema.prisma`).not.toBeNull();
+    return m![1];
+  }
+
+  it("la migration existe", () => {
+    expect(migration).toBeDefined();
+  });
+
+  it("backfille un bâtiment principal et rattache les équipements AVANT le NOT NULL", () => {
+    const sql = normaliser(migration!.sql);
+    const insertion = sql.indexOf('INSERT INTO "Batiment"');
+    const rattachement = sql.indexOf('UPDATE "Equipement"');
+    const nonNul = sql.indexOf('ALTER COLUMN "batimentId" SET NOT NULL');
+
+    expect(insertion, "pas de création de bâtiment principal").toBeGreaterThan(-1);
+    expect(rattachement, "les équipements ne sont pas rattachés").toBeGreaterThan(insertion);
+    expect(nonNul, "le NOT NULL manque").toBeGreaterThan(rattachement);
+  });
+
+  it("Equipement.batiment est requis et en Restrict", () => {
+    const corps = corpsDuModele("Equipement");
+    expect(corps).toMatch(/\bbatimentId\s+String\b(?!\?)/);
+    const relation = corps.match(/batiment\s+Batiment\s+@relation\([^)]*\)/);
+    expect(relation).not.toBeNull();
+    expect(relation![0]).toContain("onDelete: Restrict");
+
+    expect(normaliser(migration!.sql)).toContain(
+      '"Equipement_batimentId_fkey" FOREIGN KEY ("batimentId") REFERENCES "Batiment"("id") ON DELETE RESTRICT',
+    );
+  });
+
+  it("aucune migration ultérieure ne repasse Equipement.batimentId en CASCADE", () => {
+    const fautives = migrations.filter(
+      (m) =>
+        m.nom > migration!.nom &&
+        /"Equipement_batimentId_fkey"[^;]*ON DELETE CASCADE/i.test(normaliser(m.sql)),
+    );
+    expect(fautives.map((m) => m.nom)).toEqual([]);
+  });
+
+  it("Batiment ne porte aucun régime ni catégorie", () => {
+    const corps = corpsDuModele("Batiment");
+    for (const champ of [
+      "estERP",
+      "estIGH",
+      "estHabitation",
+      "estEtablissementTravail",
+      "typeErp",
+      "categorieErp",
+      "classeIgh",
+      "effectif",
+    ]) {
+      expect(corps, `\`${champ}\` n'a rien à faire sur Batiment (ADR-019)`).not.toContain(champ);
+    }
+  });
+
+  it("les rattachements optionnels sont en SetNull, pas en Cascade", () => {
+    for (const modele of ["PointReleve", "PermisFeu", "PlanPrevention"]) {
+      const corps = corpsDuModele(modele);
+      const relation = corps.match(/batiment\s+Batiment\?\s+@relation\([^)]*\)/);
+      expect(relation, `${modele}.batiment manquant`).not.toBeNull();
+      expect(relation![0]).toContain("onDelete: SetNull");
+    }
+  });
+});

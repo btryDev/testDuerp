@@ -3,6 +3,7 @@ import { AppTopbar } from "@/components/layout/AppTopbar";
 import { FormulairePermisFeu } from "@/components/permis-feu/FormulairePermisFeu";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { listPrestataires } from "@/lib/prestataires/queries";
+import { listerBatimentsDeLEtablissement } from "@/lib/batiments/queries";
 
 export const metadata = {
   title: "Nouveau permis de feu",
@@ -16,6 +17,7 @@ export default async function NouveauPermisFeuPage({
   const { id } = await params;
   const { etablissement } = await requireEtablissement(id);
   const prestatairesAnnuaire = await listPrestataires(id);
+  const batiments = await listerBatimentsDeLEtablissement(id);
 
   // Filtre sur les domaines pertinents pour du point chaud : BTP + entretien
   const prestataires = prestatairesAnnuaire
@@ -55,6 +57,7 @@ export default async function NouveauPermisFeuPage({
         <FormulairePermisFeu
           etablissementId={id}
           prestataires={prestataires}
+          batiments={batiments}
         />
       </main>
     </>

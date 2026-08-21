@@ -21,6 +21,7 @@ const echeance = (
   date: new Date("2026-08-10T00:00:00.000Z"),
   tone,
   href: "#",
+  batiment: null,
 });
 
 describe("repartirRetards", () => {
