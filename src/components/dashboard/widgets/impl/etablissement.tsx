@@ -41,11 +41,11 @@ export function WidgetEtablissement({ bundle }: { bundle: DashboardBundle }) {
   return (
     <section
       aria-label="Identité de l'établissement"
-      className="flex h-full flex-col overflow-hidden rounded-[14px] border border-[color:var(--navy)]/20 bg-gradient-to-br from-[color:var(--navy)]/10 via-[color:var(--navy)]/4 to-[color:var(--warm)]/10 p-5 transition-colors hover:border-[color:var(--navy)]/35"
+      className="flex h-full flex-col overflow-hidden rounded-[14px] border border-[color:var(--board-blue-ink)]/20 bg-gradient-to-br from-[color:var(--board-blue-ink)]/10 via-[color:var(--board-blue-ink)]/4 to-[color:var(--warm)]/10 p-5 transition-colors hover:border-[color:var(--board-blue-ink)]/35"
     >
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.22em] text-[color:var(--navy)]/80">
+          <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.22em] text-[color:var(--board-blue-ink)]/80">
             § Établissement
           </p>
           <p className="mt-2 truncate text-[1.15rem] font-semibold leading-[1.15] tracking-[-0.016em] text-ink">
@@ -58,7 +58,7 @@ export function WidgetEtablissement({ bundle }: { bundle: DashboardBundle }) {
         <Link
           href={`/etablissements/${etab.id}/modifier`}
           aria-label="Modifier la fiche établissement"
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[color:var(--navy)]/20 bg-paper-elevated/80 text-muted-foreground transition-colors hover:border-[color:var(--navy)]/40 hover:text-ink"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[color:var(--board-blue-ink)]/20 bg-paper-elevated/80 text-muted-foreground transition-colors hover:border-[color:var(--board-blue-ink)]/40 hover:text-ink"
         >
           <Pencil aria-hidden className="h-3.5 w-3.5" />
         </Link>
@@ -105,7 +105,7 @@ export function WidgetEtablissement({ bundle }: { bundle: DashboardBundle }) {
       </div>
 
       {regs.length > 0 && (
-        <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-dashed border-[color:var(--navy)]/15 pt-3">
+        <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-dashed border-[color:var(--board-blue-ink)]/15 pt-3">
           {regs.map((r) => (
             <span key={r} className="pill-v2 pill-v2-navy-soft">
               {r}
@@ -123,7 +123,7 @@ export function WidgetEtablissement({ bundle }: { bundle: DashboardBundle }) {
           disabled
           aria-disabled
           title="Bientôt disponible"
-          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-[color:var(--navy)]/25 bg-paper-elevated/70 px-3 font-mono text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--navy)] transition-colors hover:border-[color:var(--navy)]/45 hover:bg-paper-elevated disabled:cursor-not-allowed"
+          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-[color:var(--board-blue-ink)]/25 bg-paper-elevated/70 px-3 font-mono text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--board-blue-ink)] transition-colors hover:border-[color:var(--board-blue-ink)]/45 hover:bg-paper-elevated disabled:cursor-not-allowed"
         >
           <Phone aria-hidden className="h-3 w-3" />
           Contacter un expert
@@ -162,7 +162,7 @@ function FacadeIllustration() {
   return (
     <svg
       viewBox="0 0 128 120"
-      className="h-[128px] w-[136px] shrink-0 text-[color:var(--navy)]"
+      className="h-[128px] w-[136px] shrink-0 text-[color:var(--board-blue-ink)]"
       aria-hidden
       fill="none"
     >

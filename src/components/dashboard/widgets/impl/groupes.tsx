@@ -14,13 +14,13 @@ type Tone = "alert" | "amber" | "navy" | "green" | "neutral";
 function toneHex(t: Tone): string {
   switch (t) {
     case "alert":
-      return "var(--alert)";
+      return "var(--board-signal-ink)";
     case "amber":
-      return "var(--amber)";
+      return "var(--board-amber-ink)";
     case "navy":
-      return "var(--navy)";
+      return "var(--board-blue-ink)";
     case "green":
-      return "var(--green-dash)";
+      return "var(--board-green-ink)";
     default:
       return "var(--muted-foreground)";
   }
@@ -167,11 +167,11 @@ type MiniTone = "alerte" | "warn" | "ok" | "default";
 function miniToneClass(t: MiniTone): string {
   switch (t) {
     case "alerte":
-      return "text-[color:var(--alert)]";
+      return "text-[color:var(--board-signal-ink)]";
     case "warn":
-      return "text-[color:var(--amber)]";
+      return "text-[color:var(--board-amber-ink)]";
     case "ok":
-      return "text-[color:var(--green-dash)]";
+      return "text-[color:var(--board-green-ink)]";
     default:
       return "text-ink";
   }

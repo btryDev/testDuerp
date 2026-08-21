@@ -119,7 +119,7 @@ export function WidgetProchainesEcheances({
               ? "À planifier"
               : libelleEcart(v.datePrevue, aujourdhui);
           const dansColor =
-            c.tone === "alerte" ? "text-[color:var(--alert)]" : "text-muted-foreground";
+            c.tone === "alerte" ? "text-[color:var(--board-signal-ink)]" : "text-muted-foreground";
           return (
             <li
               key={v.id}

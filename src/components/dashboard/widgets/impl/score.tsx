@@ -133,10 +133,10 @@ export function WidgetScore({
             <span className="text-[5.5rem] font-semibold leading-none tracking-[-0.055em] tabular-nums">
               {global}
             </span>
-            <span className="text-[1.8rem] font-medium text-[color:var(--navy)]">
+            <span className="text-[1.8rem] font-medium text-[color:var(--board-blue-ink)]">
               /100
             </span>
-            <span className="ml-auto [font-family:var(--font-serif)] text-[1rem] italic text-[color:var(--amber)]">
+            <span className="ml-auto [font-family:var(--font-serif)] text-[1rem] italic text-[color:var(--board-amber-ink)]">
               {LIBELLE_NIVEAU[dashboard.score.niveau]}
             </span>
           </div>
@@ -206,7 +206,7 @@ export function WidgetScore({
                       className="text-right font-mono text-[0.74rem] tabular-nums"
                       style={{
                         color:
-                          f.enRetard > 0 ? "var(--alert)" : "var(--ink)",
+                          f.enRetard > 0 ? "var(--board-signal-ink)" : "var(--ink)",
                         opacity: 0.85,
                       }}
                       title={
@@ -261,7 +261,7 @@ function ScoreRingV2({
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="var(--navy)"
+        stroke="var(--board-blue-ink)"
         strokeWidth={stroke}
         strokeDasharray={C}
         strokeDashoffset={offset}
@@ -300,13 +300,13 @@ type Tone = "green" | "navy" | "amber" | "alert";
 function toneColor(t: Tone): string {
   switch (t) {
     case "green":
-      return "var(--green-dash)";
+      return "var(--board-green-ink)";
     case "amber":
-      return "var(--amber)";
+      return "var(--board-amber-ink)";
     case "alert":
-      return "var(--alert)";
+      return "var(--board-signal-ink)";
     default:
-      return "var(--navy)";
+      return "var(--board-blue-ink)";
   }
 }
 
@@ -448,7 +448,7 @@ function GaugeScore({ valeur }: { valeur: number }) {
         <path
           d={`M ${arcStart.x} ${arcStart.y} A ${rayon} ${rayon} 0 0 1 ${arcProgEnd.x} ${arcProgEnd.y}`}
           fill="none"
-          stroke="var(--navy)"
+          stroke="var(--board-blue-ink)"
           strokeWidth="10"
           strokeLinecap="round"
         />
@@ -486,7 +486,7 @@ function GaugeScore({ valeur }: { valeur: number }) {
           style={{ letterSpacing: "-0.03em" }}
         >
           {valeur}
-          <tspan fontSize="14" fontWeight="500" fill="var(--navy)" dx="2">
+          <tspan fontSize="14" fontWeight="500" fill="var(--board-blue-ink)" dx="2">
             %
           </tspan>
         </text>

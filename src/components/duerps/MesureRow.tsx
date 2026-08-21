@@ -197,7 +197,7 @@ function ChampValidable({
             </Button>
           </>
         ) : etat === "saved" ? (
-          <span className="inline-flex items-center gap-1 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[color:var(--green-dash)]">
+          <span className="inline-flex items-center gap-1 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[color:var(--board-green-ink)]">
             <Check aria-hidden className="h-2.5 w-2.5" strokeWidth={3} />
             Enregistré
           </span>
@@ -222,7 +222,7 @@ function SegButton({
 }) {
   const activeClass =
     activeTone === "green"
-      ? "bg-[color:var(--green-dash)] text-paper-elevated shadow-sm"
+      ? "bg-[color:var(--board-green-ink)] text-paper-elevated shadow-sm"
       : "bg-[color:var(--warm)] text-paper-elevated shadow-sm";
   return (
     <button
