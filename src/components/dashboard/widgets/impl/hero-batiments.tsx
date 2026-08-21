@@ -1,0 +1,321 @@
+"use client";
+
+// Le bloc « lieu » du hero — l'identité de l'établissement et ses bâtiments.
+//
+// **Ce que ce bloc est, et n'est pas.** Une plaque unique : en tête l'enseigne
+// (logo, nom, nombre de bâtiments), dessous un volume par bâtiment déclaré
+// avec son nom, son parc et sa charge. C'est un **état**, pas une commande :
+// rien ne s'y clique pour filtrer. Le filtre par bâtiment (ADR-019) reste
+// piloté par le sélecteur posé sous le hero, qui porte son propre « Tout
+// l'établissement » — une carte qui filtre sans porte de sortie visible est
+// une impasse.
+//
+// **Une seule surface, pas une par bâtiment.** Les volumes partagent la
+// plaque : ce sont les lieux d'un même établissement, pas des objets
+// indépendants. Les encadrer un par un les mettrait en concurrence et
+// empilerait des blancs avec les cartes de widgets du canvas.
+//
+// **Ce que le dessin dit, et ne dit pas.** L'application connaît l'activité
+// déclarée (type ERP, code NAF) ; elle ne sait rien du bâti — ni hauteur, ni
+// étages, ni forme. `Batiment` ne porte qu'un nom, un complément d'adresse et
+// un rang. Les bâtiments d'un même établissement reçoivent donc le même
+// dessin : ce qui varie d'un volume à l'autre est ce qu'on sait vraiment,
+// c'est-à-dire le nom, le parc et la charge.
+
+import Image from "next/image";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { BatimentCharge } from "@/lib/batiments/queries";
+
+type Props = {
+  /** Le nom d'usage de l'établissement. L'adresse ne figure pas ici : elle
+   *  est celle de l'établissement, et au-dessus d'une rangée de plusieurs
+   *  bâtiments elle se lirait comme celle de l'un d'eux. */
+  nomEtablissement: string;
+  /** Le logo de l'entreprise, quand elle en a déposé un. `null` → monogramme.
+   *  Cf. la note d'implémentation sous `Enseigne`. */
+  logoUrl: string | null;
+  batiments: BatimentCharge[];
+  /** La planche à afficher — la même pour tous les bâtiments du lieu. */
+  srcIllustration: string;
+};
+
+/** Au-delà de ce nombre, la rangée défile plutôt que de se comprimer :
+ *  quatre volumes à la taille de trois ne se distinguent plus. */
+const VISIBLES_SANS_DEFILEMENT = 3;
+
+/**
+ * Le monogramme de repli, quand aucun logo n'est déposé.
+ *
+ * Les initiales des deux premiers mots, ou les deux premières lettres d'un
+ * mot unique. Dérivé du nom, donc jamais faux — là où une icône générique
+ * de bâtiment aurait fait croire à un logo par défaut.
+ */
+export function monogramme(nom: string): string {
+  const mots = nom.trim().split(/\s+/).filter(Boolean);
+  if (mots.length === 0) return "—";
+  if (mots.length === 1) return mots[0].slice(0, 2).toUpperCase();
+  return (mots[0][0] + mots[1][0]).toUpperCase();
+}
+
+/* — L'enseigne : logo, nom, nombre de bâtiments. ─────────────────────
+ *
+ * NOTE D'IMPLÉMENTATION — le logo n'est pas encore persisté. `Entreprise`
+ * n'a pas de colonne pour lui et aucun écran ne permet d'en déposer un ;
+ * `logoUrl` vaut donc `null` partout aujourd'hui, et le monogramme s'affiche.
+ * L'emplacement existe pour que le jour où le champ arrive, seule la valeur
+ * change — pas la composition.
+ */
+function Enseigne({
+  nom,
+  logoUrl,
+  nbBatiments,
+}: {
+  nom: string;
+  logoUrl: string | null;
+  nbBatiments: number;
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      {logoUrl != null ? (
+        <Image
+          src={logoUrl}
+          alt=""
+          aria-hidden
+          width={88}
+          height={88}
+          className="size-11 flex-none rounded-[13px] object-contain"
+        />
+      ) : (
+        <span
+          aria-hidden
+          className="flex size-11 flex-none items-center justify-center rounded-[13px] bg-[color:var(--board-ink)] indent-[0.06em] font-mono text-[13px] font-medium leading-none tracking-[0.06em] text-white"
+        >
+          {monogramme(nom)}
+        </span>
+      )}
+
+      <div className="min-w-0">
+        <p className="m-0 truncate text-[17px] font-semibold tracking-[-0.02em] text-[color:var(--board-ink)]">
+          {nom}
+        </p>
+        <p className="board-eyebrow m-0 mt-1 text-[color:var(--board-slate-soft)]">
+          {nbBatiments} bâtiment{nbBatiments > 1 ? "s" : ""}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function PastilleCharge({ nbEnRetard }: { nbEnRetard: number }) {
+  if (nbEnRetard === 0) {
+    return (
+      <span className="mt-2 inline-flex items-center rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-[color:var(--board-slate-ink)]">
+        À jour
+      </span>
+    );
+  }
+  return (
+    <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[color:var(--board-signal-pale)] py-1 pl-1 pr-2.5 text-[11px] font-semibold text-[color:var(--board-signal-ink)]">
+      <span className="flex size-4 items-center justify-center rounded-full bg-[color:var(--board-signal)] text-[9.5px] font-bold text-[color:var(--board-signal-ink)]">
+        {nbEnRetard}
+      </span>
+      à traiter
+    </span>
+  );
+}
+
+/**
+ * Le séparateur entre deux volumes — trait de cote, esprit dessin technique.
+ *
+ * Un filet d'un pixel borné en tête et en pied par une amorce
+ * perpendiculaire, comme la ligne d'attache d'une cote sur un plan. Le trait
+ * nu se lirait comme une séparation de tableau ; ce sont les deux amorces
+ * qui le rattachent au vocabulaire du dessin.
+ *
+ * `aria-hidden` : il sépare à l'œil, la liste sépare déjà pour qui l'écoute.
+ */
+function TraitDeCote() {
+  return (
+    <li
+      aria-hidden
+      className="flex flex-none flex-col items-center self-stretch py-2"
+    >
+      <span className="h-px w-2.5 bg-[color:var(--board-slate)]" />
+      <span className="w-px flex-1 bg-[color:var(--board-slate)]" />
+      <span className="h-px w-2.5 bg-[color:var(--board-slate)]" />
+    </li>
+  );
+}
+
+function Volume({
+  batiment,
+  src,
+  taille,
+}: {
+  batiment: BatimentCharge;
+  src: string;
+  taille: number;
+}) {
+  return (
+    <li
+      className="flex flex-none snap-start flex-col items-center"
+      style={{ width: taille }}
+    >
+      {/* Décoratif : tout ce que le dessin évoque est écrit sous lui. */}
+      <Image
+        src={src}
+        alt=""
+        aria-hidden
+        width={760}
+        height={668}
+        priority
+        className="h-auto w-full select-none"
+      />
+      <span className="mt-2 w-full truncate text-center text-[13px] font-semibold tracking-[-0.01em] text-[color:var(--board-ink)]">
+        {batiment.nom}
+      </span>
+      <span className="mt-0.5 text-[11.5px] text-[color:var(--board-slate-mid)]">
+        {batiment.nbEquipements} équipement
+        {batiment.nbEquipements > 1 ? "s" : ""}
+      </span>
+      <PastilleCharge nbEnRetard={batiment.nbEnRetard} />
+    </li>
+  );
+}
+
+/** Une flèche de défilement — même objet que celles de la frise. */
+function Fleche({
+  sens,
+  onClick,
+  disabled,
+}: {
+  sens: "gauche" | "droite";
+  onClick: () => void;
+  disabled: boolean;
+}) {
+  const Icone = sens === "gauche" ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={
+        sens === "gauche" ? "Bâtiments précédents" : "Bâtiments suivants"
+      }
+      className={
+        "flex size-8 flex-none items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] transition-opacity " +
+        (disabled
+          ? "pointer-events-none opacity-25"
+          : "hover:bg-white/60 opacity-100")
+      }
+    >
+      <Icone className="size-4" />
+    </button>
+  );
+}
+
+export function HeroBatiments({
+  nomEtablissement,
+  logoUrl,
+  batiments,
+  srcIllustration,
+}: Props) {
+  const piste = useRef<HTMLUListElement>(null);
+  const [bords, setBords] = useState({ gauche: false, droite: false });
+
+  // Le défilement se déduit du débordement réel, pas du seul nombre de
+  // bâtiments : à largeur réduite, trois volumes débordent déjà. Même
+  // mécanique que la frise du calendrier.
+  const mesurer = useCallback(() => {
+    const el = piste.current;
+    if (el == null) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setBords({ gauche: el.scrollLeft > 4, droite: el.scrollLeft < max - 4 });
+  }, []);
+
+  useEffect(() => {
+    const el = piste.current;
+    if (el == null) return;
+    mesurer();
+    const ro = new ResizeObserver(mesurer);
+    ro.observe(el);
+    el.addEventListener("scroll", mesurer, { passive: true });
+    return () => {
+      ro.disconnect();
+      el.removeEventListener("scroll", mesurer);
+    };
+  }, [mesurer, batiments.length]);
+
+  const defiler = (sens: -1 | 1) => {
+    const el = piste.current;
+    if (el == null) return;
+    el.scrollBy({ left: sens * el.clientWidth * 0.8, behavior: "smooth" });
+  };
+
+  const defilable = bords.gauche || bords.droite;
+
+  // Sous le seuil, les volumes prennent la place disponible ; au-delà, ils
+  // gardent une taille fixe et la piste défile — les comprimer davantage
+  // les rendrait indistincts.
+  const taille =
+    batiments.length > VISIBLES_SANS_DEFILEMENT
+      ? 156
+      : batiments.length > 1
+        ? 184
+        : 232;
+
+  return (
+    // Verre givré, en une seule plaque. Le dégradé du haut vers le bas donne
+    // le galbe — un givre n'a jamais une épaisseur constante ; le flou est
+    // désaturé parce qu'un givre disperse la lumière au lieu de l'aviver ; et
+    // les deux reflets intérieurs font lire une épaisseur, sans quoi un fond
+    // translucide n'est qu'un voile.
+    //
+    // Réserve connue : le ciel du hero est un aplat uni, et `backdrop-filter`
+    // n'a rien à y flouter. Ce qui porte l'effet est donc la translucidité,
+    // le dégradé et les arêtes — pas le flou.
+    <div className="mx-auto w-fit max-w-full rounded-[34px] border border-white/65 bg-gradient-to-b from-white/62 to-white/34 px-6 pb-8 pt-5 shadow-[inset_0_1px_0_rgba(255,255,255,.95),inset_0_-1px_0_rgba(255,255,255,.42),0_22px_48px_-26px_rgba(13,18,36,.30)] backdrop-blur-[26px] backdrop-saturate-[125%]">
+      <div className="flex items-center gap-4">
+        <Enseigne
+          nom={nomEtablissement}
+          logoUrl={logoUrl}
+          nbBatiments={batiments.length}
+        />
+
+        {/* Les flèches n'apparaissent que si la piste déborde vraiment. */}
+        {defilable ? (
+          <div className="ml-auto flex flex-none items-center gap-1.5">
+            <Fleche
+              sens="gauche"
+              onClick={() => defiler(-1)}
+              disabled={!bords.gauche}
+            />
+            <Fleche
+              sens="droite"
+              onClick={() => defiler(1)}
+              disabled={!bords.droite}
+            />
+          </div>
+        ) : null}
+      </div>
+
+      <ul
+        ref={piste}
+        className={
+          "m-0 mt-5 flex list-none snap-x snap-mandatory gap-6 overflow-x-auto overscroll-x-contain p-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden " +
+          // Centré tant que tout tient ; aligné à gauche dès qu'on défile,
+          // sinon la première vignette démarre hors champ.
+          (defilable ? "justify-start" : "justify-center")
+        }
+      >
+        {batiments.map((b, i) => (
+          <Fragment key={b.id}>
+            {i > 0 ? <TraitDeCote /> : null}
+            <Volume batiment={b} src={srcIllustration} taille={taille} />
+          </Fragment>
+        ))}
+      </ul>
+    </div>
+  );
+}

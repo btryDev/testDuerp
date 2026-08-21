@@ -8,7 +8,7 @@ import { BlocBrief } from "@/components/dashboard/widgets/impl/board";
 import type { DashboardBundle } from "@/components/dashboard/widgets/types";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
-import { listerBatimentsDeLEtablissement } from "@/lib/batiments/queries";
+import { listerBatimentsAvecCharge } from "@/lib/batiments/queries";
 import { estMultiBatiments } from "@/lib/batiments/filtre";
 import { SelecteurBatiment } from "@/components/batiments/SelecteurBatiment";
 import {
@@ -35,12 +35,20 @@ export default async function EtablissementPage({
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
+  // Date de référence unique, figée côté serveur : tous les blocs qui
+  // calculent un « dans N jours » partent de la même valeur, ce qui évite les
+  // écarts d'hydratation et rend les rendus reproductibles (ADR-011). Elle est
+  // prise ici, avant la première lecture qui en dépend — la charge par
+  // bâtiment affichée dans le hero se calcule à cette seconde-là.
+  const aujourdhui = new Date();
+
   // Filtre bâtiment (ADR-019). Il porte sur ce qui a un lieu — échéances
   // d'équipements, parc, opérations — et laisse passer ce qui concerne tout
   // l'établissement. L'état global (score, DUERP, prestataires, matrice des
   // documents) n'est jamais filtré : un score « du bâtiment B » n'aurait pas
   // de sens réglementaire, les obligations sont celles de l'établissement.
-  const batiments = await listerBatimentsDeLEtablissement(id);
+  // C'est ce que dit la légende du sélecteur, plus bas.
+  const batiments = await listerBatimentsAvecCharge(id, aujourdhui);
   const multiBatiments = estMultiBatiments(batiments);
   const batimentFiltre =
     multiBatiments && batiments.some((b) => b.id === batiment)
@@ -146,11 +154,6 @@ export default async function EtablissementPage({
   ];
   const onboardingFini = etapesOnboarding.every((e) => e.faite);
 
-  // Date de référence unique, figée côté serveur : tous les blocs qui
-  // calculent un « dans N jours » partent de la même valeur, ce qui évite
-  // les écarts d'hydratation et rend les rendus reproductibles.
-  const aujourdhui = new Date();
-
   // Ancienneté du dernier rapport, en **jours civils** (Europe/Paris) :
   // une division par 86 400 000 comptait des tranches de 24 h, et un
   // rapport déposé la veille au soir n'était « d'hier » qu'à partir de la
@@ -163,7 +166,7 @@ export default async function EtablissementPage({
   // objects traversent la frontière server/client via l'App Router.
   const bundle: DashboardBundle = {
     etablissementId: id,
-    batiments: batiments.map((b) => ({ id: b.id, nom: b.nom })),
+    batiments,
     batimentFiltre: batiments.find((b) => b.id === batimentFiltre) ?? null,
     etablissement: {
       id: etab.id,
@@ -238,8 +241,13 @@ export default async function EtablissementPage({
           colorée de la page — qui annonce la file de travail du jour. */}
       <BlocBrief bundle={bundle} />
 
+      {/* Le filtre par bâtiment (ADR-019) reste ici, sous le hero, et non sur
+          les cartes-bâtiments : un dessin qui filtre au clic n'annonce pas
+          comment en sortir, et le sélecteur, lui, porte son « Tout
+          l'établissement ». Le hero montre l'état du parc, il ne le commande
+          pas. */}
       {multiBatiments ? (
-        <div className="bg-[color:var(--board-canvas)] px-[var(--board-gutter)] pt-6">
+        <div className="bg-[color:var(--board-canvas)] px-[var(--board-gutter)] pt-2">
           <SelecteurBatiment
             baseHref={`/etablissements/${id}`}
             batiments={batiments}

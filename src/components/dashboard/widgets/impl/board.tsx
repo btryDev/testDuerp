@@ -32,6 +32,11 @@ import {
   GanttChart,
 } from "lucide-react";
 import { construireBrief } from "@/lib/dashboard/brief";
+import {
+  illustrationBatiment,
+  sourceIllustrationBatiment,
+} from "@/lib/etablissements/illustration";
+import { HeroBatiments } from "./hero-batiments";
 import type { Recommandation } from "@/lib/dashboard/recommandations";
 import { construireFrise, type EchelleFrise } from "@/lib/dashboard/frise";
 import { composantesCiviles } from "@/lib/dates";
@@ -290,8 +295,40 @@ function CarteTache({
   );
 }
 
+/* — Un relevé du hero : un chiffre, son libellé.
+ *
+ * Trois d'entre eux cadrent le titre — celui-ci dit ce qui presse, ceux-là
+ * disent de combien il s'agit en tout. Mêmes agrégats que `construireBrief`,
+ * pour que les deux ne puissent pas diverger.
+ */
+function Releve({
+  valeur,
+  libelle,
+  alerte = false,
+}: {
+  valeur: number;
+  libelle: string;
+  alerte?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span
+        className={
+          "board-titre text-[30px] leading-none tabular-nums " +
+          (alerte ? "text-[color:var(--board-signal-ink)]" : "")
+        }
+      >
+        {valeur}
+      </span>
+      <span className="board-eyebrow text-[color:var(--board-slate-mid)]">
+        {libelle}
+      </span>
+    </div>
+  );
+}
+
 export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
-  const { etablissementId, aujourdhui, dashboard, nbRapports } = bundle;
+  const { aujourdhui, dashboard, nbRapports } = bundle;
   const { compteurs, duerp, recommandations } = dashboard;
 
   const brief = construireBrief({
@@ -313,11 +350,6 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
     nbRapports,
   });
 
-  // La file de travail : les urgences réelles d'abord (priorités 1-5 du
-  // moteur) ; sur un dossier en mise en place, les amorces la prennent.
-  const reelles = recommandations.filter((r) => r.priorite <= 5);
-  const file = (reelles.length > 0 ? reelles : recommandations).slice(0, 2);
-
   // Le titre est celui de `construireBrief`, dérivé des **compteurs** de
   // l'établissement. Il était auparavant écrasé par `reelles.length`,
   // c'est-à-dire par le nombre de recommandations — que le moteur plafonne
@@ -326,97 +358,171 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
   // l'outil minorait la non-conformité, ce qu'il s'interdit.
   const titre = brief.titre;
 
-  // Le total réellement à traiter, pour dire que la file n'en est qu'un
-  // extrait. Même agrégat que `construireBrief` : ce qui est dépassé.
+  // Même agrégat que `construireBrief` : ce qui est dépassé.
+  const totalUrgent = compteurs.verifsEnRetard + compteurs.actionsEnRetard;
+
+  const { etablissement, batiments } = bundle;
+  const srcIllustration = sourceIllustrationBatiment(
+    illustrationBatiment(etablissement),
+  );
+
+  return (
+    <>
+      {/* Fonds inversés : le hero porte le ciel en bandeau pleine largeur,
+          sans rayon. Le bandeau s'arrête après les bâtiments — les widgets
+          vivent sur le canvas quasi blanc.
+
+          La gouttière est celle du board (`--board-gutter`) et non plus
+          46 px fixes : au-delà de 1560 px de viewport elle s'ouvre jusqu'à
+          140 px, et le hero, resté à 46, débordait des cartes de widgets
+          d'une centaine de pixels de chaque côté. Sur un grand écran, rien
+          ne s'alignait verticalement d'un bloc à l'autre. */}
+      <div className="bg-[color:var(--board-sky)] px-[var(--board-gutter)] pb-[52px] pt-[56px]">
+        <div className="grid items-center gap-x-12 gap-y-10 lg:grid-cols-2">
+          {/* Rentré de la gouttière : collé au bord, le titre partait du même
+              trait que les cartes de widgets du dessous et le hero perdait
+              son statut de bandeau — c'est une bannière, pas une carte. */}
+          <div className="lg:pl-8 xl:pl-12">
+            <p className="board-eyebrow m-0 mb-3 text-[color:var(--board-slate-ink)]">
+              {brief.datePill}
+            </p>
+
+            {/* `text-pretty` plutôt que l'équilibrage de `.board-titre` : sur
+                un titre de trois mots-clés, équilibrer les lignes en fabrique
+                une troisième et casse le bloc.
+
+                Le paragraphe du brief a été retiré d'ici : il énumérait en
+                toutes lettres les mêmes nombres que les relevés ci-dessous
+                (« 14 vérifications dépassées, 22 à programmer… »), et
+                l'état du DUERP, qui a son propre widget. Trois chiffres se
+                lisent d'un coup d'œil ; la même chose en prose, non. */}
+            <h1 className="board-titre max-w-[480px] text-pretty text-[clamp(28px,2.9vw,40px)] leading-[1.06] tracking-[-0.035em]">
+              {titre}
+            </h1>
+
+            {/* Les relevés. Séparateurs en filet plutôt qu'en gouttière :
+                trois chiffres alignés sans trait se lisent comme un seul
+                nombre. */}
+            <div className="mt-7 flex items-stretch">
+              <div className="pr-[26px]">
+                <Releve
+                  valeur={totalUrgent}
+                  libelle="Dépassées"
+                  alerte={totalUrgent > 0}
+                />
+              </div>
+              <div className="w-px bg-[color:rgba(10,10,10,.12)]" />
+              <div className="px-[26px]">
+                <Releve valeur={compteurs.verifsSous30j} libelle="Sous 30 j" />
+              </div>
+              <div className="w-px bg-[color:rgba(10,10,10,.12)]" />
+              <div className="pl-[26px]">
+                <Releve
+                  valeur={bundle.equipements.length}
+                  libelle="Équipements"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Les bâtiments déclarés (ADR-019) — un état, pas une commande :
+              le filtre reste au sélecteur posé sous le hero, qui porte sa
+              porte de sortie.
+
+              La plaque occupe toute sa colonne. Calée à droite sur sa seule
+              largeur de contenu, elle se serrait contre le bord de l'écran
+              pendant que la colonne de gauche gardait son air : les deux
+              moitiés du hero ne pesaient pas le même poids. */}
+          <div className="w-full">
+            <HeroBatiments
+              nomEtablissement={etablissement.raisonDisplay}
+              // Pas encore de logo en base — cf. la note dans `Enseigne`.
+              logoUrl={null}
+              batiments={batiments}
+              srcIllustration={srcIllustration}
+            />
+          </div>
+        </div>
+      </div>
+
+      </>
+  );
+}
+
+/* ─── 1 bis · Par où commencer ────────────────────────────────
+ *
+ * La file de travail a quitté le hero pour devenir un widget, retiré du
+ * layout par défaut. Deux raisons : le hero dit l'état du dossier et du
+ * parc, pas la marche à suivre ; et une file de deux lignes n'a pas à
+ * s'imposer à tout le monde en tête d'écran — celui qui la veut l'ajoute.
+ *
+ * Le sur-titre « N sur M » reste la seule ligne qui dit que la file est un
+ * extrait. Sans lui, deux cartes se lisent comme « il n'y a que ça ».
+ */
+export function BlocParOuCommencer({ bundle }: { bundle: DashboardBundle }) {
+  const { etablissementId, aujourdhui, dashboard } = bundle;
+  const { compteurs, recommandations } = dashboard;
+
+  const reelles = recommandations.filter((r) => r.priorite <= 5);
+  const file = (reelles.length > 0 ? reelles : recommandations).slice(0, 2);
+
   const totalUrgent = compteurs.verifsEnRetard + compteurs.actionsEnRetard;
   const extrait = reelles.length > 0 && totalUrgent > file.length;
 
-  // « Autre » au sens strict : les vérifications proches déjà en carte
-  // ne sont pas recomptées dans le solde.
+  // « Autre » au sens strict : les vérifications proches déjà en carte ne
+  // sont pas recomptées dans le solde.
   const prochesAffichees = file.filter((r) => r.kind === "verif_proche").length;
   const sous30j = Math.max(0, compteurs.verifsSous30j - prochesAffichees);
   const hrefCalendrier = `/etablissements/${etablissementId}/calendrier`;
 
   return (
-    // Fonds inversés : le hero porte le ciel en bandeau pleine largeur,
-    // sans rayon ni gouttière — le canvas quasi blanc ne commence qu'en
-    // dessous.
-    <div className="bg-[color:var(--board-sky)] px-[46px] pb-[72px] pt-[68px]">
-      <div className="grid items-center gap-x-12 gap-y-8 lg:grid-cols-[1fr_1.08fr]">
-        <div>
-          {/* Même badge que le hero de la page publique : pilule blanche,
-              mono capitales, point de la famille bleue en tête. */}
-          <span className="board-eyebrow inline-flex items-center gap-2.5 rounded-full bg-[color:var(--board-card)] px-[14px] py-[7px]">
-            <span
-              aria-hidden
-              className="size-1.5 rounded-full bg-[color:var(--board-blue-ink)]"
+    <CarteBoard className="p-6">
+      <p className="board-eyebrow m-0 mb-3">
+        {extrait
+          ? `Par où commencer — ${file.length} sur ${totalUrgent}`
+          : "Par où commencer"}
+      </p>
+
+      {file.length > 0 ? (
+        <ol className="m-0 flex list-none flex-col gap-3 p-0">
+          {file.map((r, i) => (
+            <CarteTache
+              key={r.href}
+              numero={i + 1}
+              reco={r}
+              aujourdhui={aujourdhui}
             />
-            {brief.datePill}
+          ))}
+        </ol>
+      ) : null}
+
+      {/* Le solde de la file. À zéro, on le dit — le silence se lirait
+          comme un oubli ; sinon, la ligne est la porte vers le
+          calendrier. */}
+      {sous30j > 0 ? (
+        <Link
+          href={hrefCalendrier}
+          className="mt-3 flex items-center gap-3 rounded-[18px] border border-dashed border-[color:rgba(10,10,10,.28)] px-4 py-3 transition-colors hover:border-solid hover:bg-[color:var(--board-blue-pale)]/40"
+        >
+          <span className="flex size-7 flex-none items-center justify-center rounded-full bg-[color:var(--board-slate-pale)]">
+            <CalendarDays className="size-3.5 text-[color:var(--board-ink)]" />
           </span>
-          {/* `text-pretty` plutôt que l'équilibrage de `.board-titre` : sur un
-              titre de trois mots-clés, équilibrer les lignes en fabrique une
-              troisième et casse le bloc. */}
-          <h1 className="board-titre mt-5 max-w-[480px] text-pretty text-[clamp(30px,3.2vw,44px)] leading-[1.04] tracking-[-0.04em]">
-            {titre}
-          </h1>
-          <p className="mt-3.5 max-w-[440px] text-[14.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
-            {brief.paragraphe}
-          </p>
+          <span className="text-[13px] text-[color:var(--board-slate-ink)]">
+            {sous30j} autre{sous30j > 1 ? "s" : ""} échéance
+            {sous30j > 1 ? "s" : ""} sous 30 jours — voir le calendrier
+          </span>
+        </Link>
+      ) : (
+        <div className="mt-3 flex items-center gap-3 rounded-[18px] border border-dashed border-[color:rgba(10,10,10,.28)] px-4 py-3">
+          <span className="flex size-7 flex-none items-center justify-center rounded-full bg-[color:var(--board-slate-pale)]">
+            <Check className="size-3.5 text-[color:var(--board-ink)]" />
+          </span>
+          <span className="text-[13px] text-[color:var(--board-slate-ink)]">
+            Aucune autre échéance sous 30 jours.
+          </span>
         </div>
-
-        <div>
-          {/* La file n'est pas la liste : elle montre par où commencer.
-              Le dire explicitement évite de lire deux cartes comme
-              « il n'y a que ça ». */}
-          {extrait ? (
-            <p className="board-eyebrow m-0 mb-2.5">
-              Par où commencer — {file.length} sur {totalUrgent}
-            </p>
-          ) : null}
-
-          {file.length > 0 ? (
-            <ol className="m-0 flex list-none flex-col gap-3 p-0">
-              {file.map((r, i) => (
-                <CarteTache
-                  key={r.href}
-                  numero={i + 1}
-                  reco={r}
-                  aujourdhui={aujourdhui}
-                />
-              ))}
-            </ol>
-          ) : null}
-
-          {/* Le solde de la file. À zéro, on le dit — le silence se
-              lirait comme un oubli ; sinon, la ligne est la porte vers
-              le calendrier. */}
-          {sous30j > 0 ? (
-            <Link
-              href={hrefCalendrier}
-              className="mt-3 flex items-center gap-3 rounded-[18px] border border-dashed border-[color:rgba(10,10,10,.28)] px-4 py-3 transition-colors hover:border-solid hover:bg-[color:var(--board-card)]/40"
-            >
-              <span className="flex size-7 flex-none items-center justify-center rounded-full bg-[color:var(--board-card)]">
-                <CalendarDays className="size-3.5 text-[color:var(--board-ink)]" />
-              </span>
-              <span className="text-[13px] text-[color:var(--board-slate-ink)]">
-                {sous30j} autre{sous30j > 1 ? "s" : ""} échéance
-                {sous30j > 1 ? "s" : ""} sous 30 jours —
-                voir le calendrier
-              </span>
-            </Link>
-          ) : (
-            <div className="mt-3 flex items-center gap-3 rounded-[18px] border border-dashed border-[color:rgba(10,10,10,.28)] px-4 py-3">
-              <span className="flex size-7 flex-none items-center justify-center rounded-full bg-[color:var(--board-card)]">
-                <Check className="size-3.5 text-[color:var(--board-ink)]" />
-              </span>
-              <span className="text-[13px] text-[color:var(--board-slate-ink)]">
-                Aucune autre échéance sous 30 jours.
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+      )}
+    </CarteBoard>
   );
 }
 
