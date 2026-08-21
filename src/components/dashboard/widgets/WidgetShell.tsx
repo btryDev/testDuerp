@@ -21,7 +21,7 @@ export function WidgetShell({
   enEdition,
   onRetirer,
   onChangerVariant,
-  colSpan,
+  classePortee,
   children,
 }: {
   widgetId: WidgetId;
@@ -29,7 +29,7 @@ export function WidgetShell({
   enEdition: boolean;
   onRetirer: () => void;
   onChangerVariant: (variant: string) => void;
-  colSpan: number;
+  classePortee: string;
   children: React.ReactNode;
 }) {
   const def = REGISTRY[widgetId];
@@ -54,7 +54,6 @@ export function WidgetShell({
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    gridColumn: `span ${colSpan} / span ${colSpan}`,
     opacity: isDragging ? 0.4 : 1,
     zIndex: isDragging ? 50 : undefined,
   };
@@ -64,7 +63,12 @@ export function WidgetShell({
       ref={setNodeRef}
       style={style}
       className={
+        // La portée vient d'une classe et non du style inline : elle change
+        // au point de rupture (cf. `classePortee`), et un style inline
+        // gagnerait sur la règle CSS.
         "relative " +
+        classePortee +
+        " " +
         (enEdition
           ? "rounded-[30px] ring-1 ring-dashed ring-[color:var(--board-blue-strong)]/60 ring-offset-4 ring-offset-[color:var(--board-canvas)]"
           : "")

@@ -52,13 +52,16 @@ describe("registre de widgets", () => {
   });
 
   it("le board s'aligne sur la grille 6 colonnes (unités de 3)", () => {
-    // calendrier (6) · équipements (6) · trois rangées de deux medium
-    // (3+3) — le board par défaut est un mur plein depuis la fusion des
-    // deux cartes-compteur dans « À faire ».
+    // Quatre rangées de deux demi-largeurs. Le calendrier et le parc
+    // d'équipements étaient `large` — une ligne entière chacun : sur un
+    // écran de portable, deux widgets mangeaient les deux premières
+    // rangées à eux seuls. La frise défile horizontalement et se recadre
+    // sur aujourd'hui, elle montre moins de mois d'un coup sans être
+    // tronquée ; le parc est une grille de cartes, elle se replie.
     const cols = layoutParDefaut().map(
       (i) => tailleEnCol(REGISTRY[i.widgetId].taille),
     );
-    expect(cols).toEqual([6, 6, 3, 3, 3, 3, 3, 3]);
+    expect(cols).toEqual([3, 3, 3, 3, 3, 3, 3, 3]);
     expect(cols.every((c) => c % 3 === 0)).toBe(true);
   });
 

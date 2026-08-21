@@ -31,6 +31,7 @@ import {
   BlocControle,
   BlocDocuments,
   BlocFrise,
+  BlocParOuCommencer,
   BlocPlanActions,
   BlocProchaineEcheance,
 } from "./impl/board";
@@ -168,6 +169,19 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     defaultVariant: "list",
     Component: WidgetProchainesEcheances,
   },
+  "par-ou-commencer": {
+    id: "par-ou-commencer",
+    titre: "Par où commencer",
+    description:
+      "Les deux premières choses à traiter, extraites de ce qui a dépassé son échéance, avec le solde à trente jours.",
+    taille: "medium",
+    variants: [{ id: "default", label: "Défaut" }],
+    defaultVariant: "default",
+    Component: BlocParOuCommencer,
+    // Hors layout par défaut : le hero dit l'état, pas la marche à suivre.
+    // Celui qui veut une file de départ l'ajoute depuis le tiroir.
+    exclueDuDefaut: true,
+  },
   "a-faire": {
     id: "a-faire",
     titre: "À faire",
@@ -222,7 +236,7 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     id: "equipements-grid",
     titre: "Équipements",
     description: "Grille des équipements déclarés + bouton d'ajout rapide.",
-    taille: "large",
+    taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
     Component: WidgetEquipements,
@@ -275,7 +289,11 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     titre: "Votre calendrier",
     description:
       "Vue calendrier de vos vérifications — grille mensuelle ou année entière — avec bascule en frise horizontale défilante (3 mois en arrière à 24 mois en avant, zoom 90 jours / 12 mois).",
-    taille: "large",
+    // Demi-largeur, comme le reste : sur un écran de portable, un widget
+    // pleine largeur mangeait une ligne entière à lui seul. La frise défile
+    // horizontalement et se recadre sur aujourd'hui — elle montre moins de
+    // mois d'un coup, elle n'est pas tronquée.
+    taille: "medium",
     variants: [{ id: "default", label: "Défaut" }],
     defaultVariant: "default",
     Component: BlocFrise,
@@ -391,6 +409,33 @@ export function tailleEnCol(taille: WidgetDefinition["taille"]): number {
   if (taille === "small") return 2;
   if (taille === "medium") return 3;
   return 6;
+}
+
+/**
+ * La portée d'un widget, **par palier de grille**.
+ *
+ * `tailleEnCol` ne décrit que la grille à six colonnes des grands écrans.
+ * Elle était pourtant appliquée telle quelle à tous les paliers, en style
+ * inline — or la grille passe à **deux** colonnes entre 640 et 1024 px. Une
+ * portée de 3 ou de 6 y dépasse le nombre de pistes, et CSS la ramène à la
+ * largeur entière : sur toute cette plage, chaque widget occupait sa propre
+ * ligne. Un portable un peu étroit, ou une fenêtre à demi-écran, n'avait
+ * qu'une colonne de widgets empilés.
+ *
+ * D'où trois paliers explicites :
+ *   - une colonne   → tout prend la largeur, il n'y a rien à partager ;
+ *   - deux colonnes → `small` et `medium` prennent une piste — deux widgets
+ *     côte à côte — et `large` prend les deux ;
+ *   - six colonnes  → les portées d'origine, inchangées.
+ *
+ * Écrit en classes plutôt qu'en style inline : une portée qui change au
+ * point de rupture est une règle CSS, pas une valeur calculée en JS — et un
+ * style inline gagnerait de toute façon sur la règle.
+ */
+export function classePortee(taille: WidgetDefinition["taille"]): string {
+  if (taille === "large") return "col-span-1 sm:col-span-2 lg:col-span-6";
+  if (taille === "medium") return "col-span-1 sm:col-span-1 lg:col-span-3";
+  return "col-span-1 sm:col-span-1 lg:col-span-2";
 }
 
 /** IDs des widgets dans l'ordre du registre — utile pour le tiroir. */

@@ -25,7 +25,7 @@ import {
 } from "@dnd-kit/sortable";
 import { EditToolbar } from "./EditToolbar";
 import { WidgetShell } from "./WidgetShell";
-import { REGISTRY, tailleEnCol } from "./registry";
+import { REGISTRY, classePortee } from "./registry";
 import { useLayoutPerso } from "./useLayoutPerso";
 import type { DashboardBundle, WidgetId } from "./types";
 
@@ -102,7 +102,7 @@ export function DashboardGrid({ bundle }: { bundle: DashboardBundle }) {
               if (def.visibleQuand && !def.visibleQuand(bundle)) return null;
 
               const Component = def.Component;
-              const colSpan = tailleEnCol(def.taille);
+              const portee = classePortee(def.taille);
 
               return (
                 <WidgetShell
@@ -112,7 +112,7 @@ export function DashboardGrid({ bundle }: { bundle: DashboardBundle }) {
                   enEdition={enEdition}
                   onRetirer={() => retirer(item.widgetId)}
                   onChangerVariant={(v) => changerVariant(item.widgetId, v)}
-                  colSpan={colSpan}
+                  classePortee={portee}
                 >
                   <Component bundle={bundle} variant={item.variant} />
                 </WidgetShell>
