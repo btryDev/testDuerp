@@ -8,7 +8,6 @@ import {
 } from "../types-communs";
 import type { Obligation } from "./types";
 import {
-  LECTURES_ARTICLE_5,
   PALIER_PAR_OBLIGATION,
   PERIODICITES_ARTICLE_5,
 } from "./froid";
@@ -166,36 +165,18 @@ describe("référentiel conformité — couverture P1", () => {
     expect(obligationsFroid.every((o) => o.domaine === "froid")).toBe(true);
   });
 
-  it("les six périodicités du froid sortent toutes de la table active", () => {
-    // Les périodicités de l'article 5 sont sous réserve de vérification (voir
-    // l'en-tête de `froid.ts`), et deux lectures concurrentes existent. Elles
-    // vivent donc dans une table unique, dont chaque obligation tire sa valeur.
-    // Ce test empêche qu'une périodicité se remette à vivre en dur dans une
-    // obligation : la réserve serait alors levée à moitié, sur cinq paliers et
-    // pas sur le sixième — exactement le genre d'écart qu'on ne voit pas.
+  it("les six périodicités du froid sortent toutes de la table de l'article 5", () => {
+    // Les douze valeurs de l'article 5, paragraphe 6, vivent dans une table
+    // unique (voir l'en-tête de `froid.ts`, qui cite le paragraphe), dont
+    // chaque obligation tire la sienne. Ce test empêche qu'une périodicité se
+    // remette à vivre en dur dans une obligation : le jour où le règlement sera
+    // modifié, la correction porterait alors sur cinq paliers et pas sur le
+    // sixième — exactement le genre d'écart qu'on ne voit pas.
     for (const [id, palier] of Object.entries(PALIER_PAR_OBLIGATION)) {
       const o = obligationsFroid.find((x) => x.id === id);
       expect(o, `obligation ${id} introuvable`).toBeDefined();
       expect(o!.periodicite, id).toBe(PERIODICITES_ARTICLE_5[palier]);
     }
-  });
-
-  it("la table active est bien l'une des deux lectures documentées", () => {
-    // Trancher entre les deux lectures est un acte délibéré : on bascule un
-    // identifiant, on ne réécrit pas six valeurs à la main. Une table qui ne
-    // correspondrait à aucune des deux serait un troisième texte, sorti de
-    // nulle part, sur un référentiel à valeur légale.
-    const lectures = Object.values(LECTURES_ARTICLE_5);
-    expect(lectures.some((l) => l === PERIODICITES_ARTICLE_5)).toBe(true);
-  });
-
-  it("les deux lectures ne divergent qu'au-delà de cinquante tonnes", () => {
-    // Ce qui borne le risque tant que la vérification n'est pas faite : sous
-    // 50 t CO2e — l'écrasante majorité des parcs de TPE, et la totalité de ce
-    // que le pré-remplissage suggère — les deux lectures disent la même chose.
-    const { consolidee, tableLuxembourg } = LECTURES_ARTICLE_5;
-    expect(consolidee.sous50).toBe(tableLuxembourg.sous50);
-    expect(consolidee.sous50Detection).toBe(tableLuxembourg.sous50Detection);
   });
 
   it("obligationsParDomaine renvoie cohérent avec le filtrage", () => {

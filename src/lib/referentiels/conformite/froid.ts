@@ -23,26 +23,46 @@
  * jour où le code de l'environnement sera réécrit, les références nationales
  * de ce fichier seront à revoir — pas les périodicités.
  *
- * ── Réserve de vérification, à lever avant mise en production ──────────────
+ * ── Périodicités : texte authentique vérifié, réserve levée ────────────────
  *
- * R. 543-79 a été lu verbatim sur Légifrance. Les paliers de l'article 5 du
- * règlement, eux, ont été relevés sur le texte consolidé d'EUR-Lex, dont
- * l'extraction s'est révélée instable — deux lectures concordantes, puis des
- * réponses vides. Le résumé officiel d'EUR-Lex corrobore l'amplitude (« tous
- * les 3 à 24 mois ») et les trois seuils (5, 50 et 500 tonnes équivalent CO2),
- * mais une table de synthèse publiée par le portail environnement
- * luxembourgeois donne des colonnes qui ne se recoupent pas exactement.
+ * Les six paliers ont été confrontés au texte du Journal officiel de l'Union
+ * européenne le 21 août 2026. EUR-Lex ne sert plus ses pages à un client
+ * automatisé — il répond par un défi WAF (HTTP 202, corps vide, en-tête
+ * `x-amzn-waf-action: challenge`), en HTML comme en PDF, quelle que soit
+ * l'URL. Le texte a donc été obtenu auprès du **Cellar de l'Office des
+ * publications**, qui sert le même document sans filtrage :
  *
- * Les six périodicités de ce fichier doivent donc être confrontées au PDF du
- * Journal officiel de l'Union européenne avant toute mise en production. Rien
- * de ce qui est écrit ici n'a été inventé, mais la règle 6 du CLAUDE.md exige
- * une source vérifiable, et une lecture instable n'en est pas tout à fait une.
+ *   http://publications.europa.eu/resource/celex/32024R0573
+ *   (Accept-Language: fra → `L_202400573FR`, texte publié le 20 février 2024)
  *
- * Pour que cette vérification coûte une ligne et non une relecture, les deux
- * lectures concurrentes sont écrites côte à côte dans `LECTURES_ARTICLE_5`, et
- * les huit obligations tirent toutes leur périodicité de la table active. Voir
- * le commentaire de `PERIODICITES_ARTICLE_5` pour ce qui les sépare et pourquoi
- * l'une a été retenue.
+ * Article 5, paragraphe 6, cité verbatim :
+ *
+ *   « Les contrôles d'étanchéité visés au paragraphe 1 sont effectués à la
+ *   fréquence suivante :
+ *   a) pour les équipements contenant moins de 50 tonnes équivalent CO2 de gaz
+ *      à effet de serre fluorés inscrits à l'annexe I ou moins de 10
+ *      kilogrammes [...] à la section 1 de l'annexe II : au moins tous les
+ *      douze mois ; ou, lorsqu'un système de détection des fuites est installé
+ *      dans ces équipements, au moins tous les vingt-quatre mois ;
+ *   b) pour les équipements contenant 50 tonnes équivalent CO2 ou plus, mais
+ *      moins de 500 tonnes équivalent CO2 [...] ou 10 kilogrammes ou plus, mais
+ *      moins de 100 kilogrammes [...] : au moins tous les six mois ou, lorsqu'un
+ *      système de détection des fuites est installé dans ces équipements, au
+ *      moins tous les douze mois ;
+ *   c) pour les équipements contenant 500 tonnes équivalent CO2 ou plus [...]
+ *      ou 100 kilogrammes ou plus [...] : au moins tous les trois mois ou,
+ *      lorsqu'un système de détection des fuites est installé dans ces
+ *      équipements, au moins tous les six mois. »
+ *
+ * La version anglaise authentique (`L_202400573EN`, même source) dit la même
+ * chose : 12 / 24, 6 / 12, 3 / 6 mois. Et le règlement n'a fait l'objet
+ * d'aucune consolidation à ce jour — le Cellar ne connaît pas de CELEX
+ * `02024R0573` — donc le texte publié est celui en vigueur.
+ *
+ * La réserve est levée : les six périodicités de ce fichier reproduisent ce
+ * paragraphe, et rien d'autre. Elles restent groupées dans
+ * `PERIODICITES_ARTICLE_5` pour qu'une relecture porte sur douze valeurs
+ * lisibles d'un coup plutôt que sur huit obligations dispersées.
  *
  * ── Note de conception : six périodicités, quatre questions fermées ────────
  *
@@ -112,63 +132,33 @@ type PalierArticle5 =
   | "sup500Detection";
 
 /**
- * ── Le choix à trancher, isolé ici ────────────────────────────────────────
+ * ── Les douze valeurs de l'article 5, groupées ────────────────────────────
  *
- * La réserve de vérification énoncée en tête de fichier porte sur ces douze
- * valeurs et sur rien d'autre. Plutôt que de laisser les périodicités dispersées
- * dans les huit obligations, où les corriger demanderait de relire le fichier
- * entier, les deux lectures possibles sont écrites ici, l'une active. Basculer
- * est un identifiant à changer sur la ligne `PERIODICITES_ARTICLE_5`, et le test
- * d'empreinte forcera de lui-même le bump de `REFERENTIEL_VERSION`.
+ * Les six paliers de l'article 5, paragraphe 6 — trois tranches de charge,
+ * chacune dédoublée par la présence d'un système fixe de détection des fuites
+ * qui double l'intervalle. Ces valeurs sont **fondées**, pas présumées : elles
+ * recopient le paragraphe cité en tête de fichier, lu sur le texte authentique
+ * du Journal officiel servi par le Cellar de l'Office des publications.
  *
- * **Lecture retenue** — celle du texte consolidé d'EUR-Lex, lu deux fois avec
- * des résultats concordants, et corroborée par le résumé officiel d'EUR-Lex qui
- * annonce des contrôles « tous les 3 à 24 mois » pour des seuils de 5, 50 et
- * 500 tonnes équivalent CO2. Les deux bornes de cette amplitude ne s'expliquent
- * que par un palier trimestriel et un palier biennal.
- *
- * **Lecture concurrente** — une table de synthèse publiée par le portail
- * environnement luxembourgeois donne six mois au palier haut et douze au palier
- * intermédiaire, sans aucune valeur trimestrielle. Deux raisons de ne pas la
- * retenir : sa colonne « avec détection » recopie la colonne « sans » sur les
- * deux paliers hauts, ce qui ressemble à un rendu abîmé ; et l'absence de
- * palier trimestriel contredit frontalement le « 3 à 24 mois » du résumé
- * officiel.
- *
- * **Et si le doute persistait**, la lecture retenue reste la bonne par défaut,
- * pour la raison que `levage.ts` a déjà écrite : une périodicité trop courte
- * est un écart visible et corrigeable, une périodicité trop longue ne l'est
- * pas. Les deux lectures ne divergent d'ailleurs qu'au-delà de 50 t CO2e —
- * au-dessous, où se trouve l'écrasante majorité des parcs de TPE, elles disent
- * la même chose.
+ * Elles vivent ici plutôt que dispersées dans les huit obligations pour qu'une
+ * relecture ultérieure — au premier règlement modificatif, par exemple — porte
+ * sur une table de douze lignes et non sur le fichier entier. Un test vérifie
+ * qu'aucune obligation ne se remet à porter sa périodicité en dur.
  */
-const LECTURE_CONSOLIDEE: Record<PalierArticle5, Periodicite> = {
+export const PERIODICITES_ARTICLE_5: Record<PalierArticle5, Periodicite> = {
+  /** Moins de 50 t CO2e (ou moins de 10 kg, annexe II section 1) : douze mois. */
   sous50: "annuelle",
+  /** Le même palier avec détection des fuites : vingt-quatre mois. */
   sous50Detection: "biennale",
+  /** De 50 à 500 t CO2e (ou de 10 à 100 kg) : six mois. */
   sup50: "semestrielle",
+  /** Le même palier avec détection des fuites : douze mois. */
   sup50Detection: "annuelle",
+  /** 500 t CO2e ou plus (ou 100 kg ou plus) : trois mois. */
   sup500: "trimestrielle",
+  /** Le même palier avec détection des fuites : six mois. */
   sup500Detection: "semestrielle",
 };
-
-/** Non active. Conservée pour que le choix reste lisible et réversible. */
-const LECTURE_TABLE_LUXEMBOURG: Record<PalierArticle5, Periodicite> = {
-  sous50: "annuelle",
-  sous50Detection: "biennale",
-  sup50: "annuelle",
-  sup50Detection: "annuelle",
-  sup500: "semestrielle",
-  sup500Detection: "semestrielle",
-};
-
-/** La lecture en vigueur. Change cette ligne, rien d'autre. */
-export const PERIODICITES_ARTICLE_5 = LECTURE_CONSOLIDEE;
-
-/** Les deux lectures, pour que le test puisse vérifier qu'on en applique une. */
-export const LECTURES_ARTICLE_5 = {
-  consolidee: LECTURE_CONSOLIDEE,
-  tableLuxembourg: LECTURE_TABLE_LUXEMBOURG,
-} as const;
 
 /** Le palier dont chaque obligation périodique tire sa périodicité. */
 export const PALIER_PAR_OBLIGATION: Record<string, PalierArticle5> = {
