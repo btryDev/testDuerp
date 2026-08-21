@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ChampBatiment } from "@/components/batiments/ChampBatiment";
 import {
   creerPointReleve,
   type CarnetActionState,
@@ -17,8 +18,11 @@ import type { TypeReseauEau } from "@prisma/client";
 
 export function AjoutPointReleveForm({
   etablissementId,
+  batiments = [],
 }: {
   etablissementId: string;
+  /** Rendu seulement à partir de deux (ADR-019). */
+  batiments?: { id: string; nom: string }[];
 }) {
   const boundAction = creerPointReleve.bind(null, etablissementId);
   const [state, formAction, pending] = useActionState<
@@ -52,6 +56,14 @@ export function AjoutPointReleveForm({
           placeholder="Ex : Évier cuisine, Douche vestiaire, Lavabo salle 1…"
         />
       </div>
+      <ChampBatiment
+        batiments={batiments}
+        erreur={
+          state.status === "error"
+            ? state.fieldErrors?.batimentId?.[0]
+            : undefined
+        }
+      />
       <div className="space-y-1.5">
         <Label htmlFor="localisation">Localisation (facultatif)</Label>
         <Input

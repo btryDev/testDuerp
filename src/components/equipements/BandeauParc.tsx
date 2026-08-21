@@ -6,12 +6,20 @@
 // Celui-ci a la même charge que la bande du calendrier — d'où l'on vient,
 // où l'on est, une phrase, ce que l'écran propose — mais sur papier.
 //
-// Les trois chiffres viennent de la même partition que l'en-tête du
-// calendrier et le tableau de bord (`compterEtatCalendrier`) : trois
-// écrans, un seul compte. Ils ne certifient rien, ce sont des faits datés.
+// Les trois chiffres ne comptent que le parc AFFICHÉ — c'est l'appelant
+// qui les additionne, appareil par appareil, sur les cartes qu'il rend.
+// Ils ne certifient rien, ce sont des faits datés.
+//
+// **Le filtre par bâtiment vit donc ici, dans la même bande qu'eux.** Il
+// règle ce que le bandeau compte autant que ce que l'écran montre : « 12
+// au parc » au-dessus de trois cartes serait un mensonge à la ligne près,
+// et un en-tête ne doit jamais contredire ce qu'il coiffe. La légende sous
+// le sélecteur dit à chaque fois sur quoi la rangée porte — un compteur
+// dont le périmètre se règle d'un clic doit annoncer son périmètre.
 
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { SelecteurBatiment } from "@/components/batiments/SelecteurBatiment";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -51,6 +59,7 @@ export function BandeauParc({
   total,
   hrefAjouter,
   suggestions,
+  filtreBatiment,
 }: {
   hrefRetour: string;
   enRetard: number;
@@ -59,6 +68,18 @@ export function BandeauParc({
   hrefAjouter: string;
   /** Ce que le référentiel propose encore de déclarer, et où le lire. */
   suggestions?: { nombre: number; href: string } | null;
+  /**
+   * Le filtre par bâtiment (ADR-019). Absent tant que l'établissement n'a
+   * qu'un bâtiment : le mono-bâtiment ne paie pas la complexité du multi.
+   * Il vit dans le bandeau, et pas au-dessus des cartes, parce qu'il règle
+   * aussi les trois chiffres ci-contre.
+   */
+  filtreBatiment?: {
+    baseHref: string;
+    batiments: { id: string; nom: string; nbEquipements: number }[];
+    /** `undefined` = tout l'établissement. */
+    actif: string | undefined;
+  } | null;
 }) {
   return (
     <>
@@ -117,6 +138,29 @@ export function BandeauParc({
             </Link>
           </div>
         </div>
+
+        {filtreBatiment ? (
+          <div className="mt-[18px] border-t border-[color:var(--board-slate-line)] pt-[15px]">
+            <SelecteurBatiment
+              ton="board"
+              baseHref={filtreBatiment.baseHref}
+              batiments={filtreBatiment.batiments}
+              actif={filtreBatiment.actif}
+              compteurs={
+                new Map(
+                  filtreBatiment.batiments.map((b) => [b.id, b.nbEquipements]),
+                )
+              }
+              legende={
+                // Un compteur doit dire sur quoi il compte, surtout quand
+                // le périmètre est réglable d'un clic juste à côté.
+                filtreBatiment.actif
+                  ? "Les chiffres ci-dessus et les familles ci-dessous ne portent que sur ce bâtiment."
+                  : "Les chiffres ci-dessus et les familles ci-dessous portent sur tout l'établissement."
+              }
+            />
+          </div>
+        ) : null}
       </header>
 
       {suggestions && suggestions.nombre > 0 ? (

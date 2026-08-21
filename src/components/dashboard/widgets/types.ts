@@ -123,6 +123,12 @@ type DuerpLite = {
 
 export type DashboardBundle = {
   etablissementId: string;
+  /** Les bâtiments de l'établissement (ADR-019) — un seul le plus souvent. */
+  batiments: { id: string; nom: string }[];
+  /** Le bâtiment filtré, ou `null` = tout l'établissement. Les widgets
+   *  d'échéances et le parc reçoivent une donnée déjà réduite ; ce champ
+   *  leur permet de le dire. */
+  batimentFiltre: { id: string; nom: string } | null;
   etablissement: EtablissementLite;
   dashboard: DashboardData;
   equipements: EquipementLite[];

@@ -28,9 +28,11 @@ import type {
 export type AppareilListe = {
   id: string;
   libelle: string;
-  /** Ce que la vitrine annonce en grand — le bâtiment quand ils
-   *  existeront (ADR-019), la localisation en attendant. */
+  /** Ce que la vitrine annonce en grand : le bâtiment dès qu'il y en a
+   *  plusieurs et qu'aucun n'est filtré, la localisation sinon (ADR-019). */
   lieu: string | null;
+  /** Le second étage du lieu, quand le premier est le bâtiment. */
+  precision?: string | null;
   resume: ResumeEquipement;
   /** Quand le référentiel ne produit aucune échéance pour cet appareil :
    *  un fait sur l'outil, jamais sur le droit (cf. `hors-referentiel.ts`). */
@@ -111,6 +113,7 @@ export function CarteCategorie({
             key={a.id}
             libelle={a.libelle}
             lieu={a.lieu}
+            precision={a.precision}
             signaux={a.resume.signaux}
             horsReferentiel={a.horsReferentiel}
             href={a.href}

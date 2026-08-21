@@ -38,6 +38,10 @@ export async function listerEquipementsDeLEtablissement(
       etablissement: { entreprise: { userId: user.id } },
     },
     orderBy: [{ categorie: "asc" }, { createdAt: "asc" }],
+    // Le bâtiment voyage avec l'équipement (ADR-019) : le parc, le calendrier
+    // et le tableau de bord en ont besoin pour regrouper ou filtrer, sans
+    // refaire une jointure chacun de leur côté.
+    include: { batiment: { select: { id: true, nom: true, ordre: true } } },
   });
 }
 

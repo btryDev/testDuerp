@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { NOM_BATIMENT_PRINCIPAL } from "@/lib/batiments/schema";
 import {
   assertEntrepriseOwnership,
   assertEtablissementOwnership,
@@ -113,6 +114,8 @@ export async function creerEtablissement(
     data: {
       entrepriseId,
       ...parsed.data,
+      // ADR-019 : tout établissement naît avec son bâtiment principal.
+      batiments: { create: { nom: NOM_BATIMENT_PRINCIPAL, ordre: 0 } },
     },
   });
 

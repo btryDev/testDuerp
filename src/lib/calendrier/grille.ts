@@ -19,7 +19,11 @@ import {
   composantesCiviles,
   instantCivil,
 } from "@/lib/dates";
-import type { FamilleEcheance, TypeEcheance } from "./echeances";
+import type {
+  BatimentEcheance,
+  FamilleEcheance,
+  TypeEcheance,
+} from "./echeances";
 
 export type EvenementGrille = {
   id: string;
@@ -33,6 +37,9 @@ export type EvenementGrille = {
   famille?: FamilleEcheance;
   /** Porte de la pastille — absente = `hrefEvenement` de l'appelant. */
   href?: string;
+  /** Où ça se passe (ADR-019) — `null` = tout l'établissement, absent =
+   *  non renseigné par l'appelant (compat board). */
+  batiment?: BatimentEcheance | null;
 };
 
 export type JourGrille = {

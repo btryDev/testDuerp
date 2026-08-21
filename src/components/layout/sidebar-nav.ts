@@ -64,6 +64,7 @@ import {
   ShieldCheck,
   BookOpen,
   Building2,
+  Warehouse,
   HardHat,
   Archive,
   Plug,
@@ -88,7 +89,7 @@ export type SidebarActive =
 
 /** Ids réellement présents dans le rail (les deux derniers n'étaient pas
  *  adressables auparavant : `/modifier` surlignait « Tableau de bord »). */
-export type SidebarItemId = SidebarActive | "fiche" | "equipe";
+export type SidebarItemId = SidebarActive | "batiments" | "fiche" | "equipe";
 
 /**
  * Le nom de chaque écran, en un seul endroit. La sidebar s'en sert pour
@@ -105,6 +106,7 @@ export const LABEL_ITEM: Record<SidebarItemId, string> = {
   guide: "Comprendre",
   connecter: "Connecter",
   equipements: "Équipements",
+  batiments: "Bâtiments",
   prestataires: "Prestataires",
   fiche: "Fiche établissement",
   equipe: "Équipe",
@@ -200,6 +202,7 @@ export function deduireActif(
   if (pathname.startsWith(`${base}/actions`)) return "actions";
   if (pathname.startsWith(`${base}/registre`)) return "registre";
   if (pathname.startsWith(`${base}/equipements`)) return "equipements";
+  if (pathname.startsWith(`${base}/batiments`)) return "batiments";
   if (pathname.startsWith(`${base}/prestataires`)) return "prestataires";
   if (pathname.startsWith(`${base}/accessibilite`)) return "accessibilite";
   if (pathname.startsWith(`${base}/permis-feu`)) return "permis-feu";
@@ -255,6 +258,15 @@ export function construireSections({
       href: href("/equipements"),
       Icon: Wrench,
       count: counts?.equipements,
+    },
+    {
+      // Toujours présent, même mono-bâtiment : c'est ici qu'on en déclare
+      // un second. Le reste de l'interface (sélecteurs, filtres, colonnes)
+      // n'apparaît qu'à partir de deux (ADR-019).
+      id: "batiments",
+      label: LABEL_ITEM.batiments,
+      href: href("/batiments"),
+      Icon: Warehouse,
     },
     {
       id: "prestataires",
@@ -427,6 +439,7 @@ export function categorieDeItem(id: SidebarItemId): RailCategorieId {
     case "connecter":
       return "connecter";
     case "equipements":
+    case "batiments":
     case "prestataires":
     case "fiche":
     case "equipe":

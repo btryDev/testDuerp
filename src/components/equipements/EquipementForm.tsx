@@ -25,6 +25,7 @@ import type { EquipementActionState } from "@/lib/equipements/actions";
 type Valeurs = {
   libelle?: string;
   categorie?: CategorieEquipement;
+  batimentId?: string;
   localisation?: string | null;
   dateMiseEnService?: Date | null;
   nombre?: number | null;
@@ -111,6 +112,9 @@ type Props = {
     formData: FormData,
   ) => Promise<EquipementActionState>;
   valeursInitiales?: Valeurs;
+  /** Les bâtiments de l'établissement. Le champ n'est rendu qu'à partir de
+   *  deux : en mono-bâtiment l'action rattache au seul existant (ADR-019). */
+  batiments?: { id: string; nom: string }[];
   libelleSubmit: string;
   labelAnnuler?: { libelle: string; href: string };
 };
@@ -124,9 +128,11 @@ function toIsoDate(d: Date | null | undefined): string {
 export function EquipementForm({
   action,
   valeursInitiales,
+  batiments = [],
   libelleSubmit,
   labelAnnuler,
 }: Props) {
+  const multiBatiments = batiments.length > 1;
   const [state, formAction, pending] = useActionState<
     EquipementActionState,
     FormData
@@ -201,10 +207,33 @@ export function EquipementForm({
           )}
         </div>
 
+        {multiBatiments && (
+          <div className="space-y-2">
+            <Label htmlFor="batimentId">Bâtiment *</Label>
+            <select
+              id="batimentId"
+              name="batimentId"
+              defaultValue={valeursInitiales?.batimentId ?? batiments[0]?.id}
+              required
+              className="h-9 w-full rounded-md border border-rule bg-background px-3 py-1 text-sm shadow-sm"
+              aria-invalid={Boolean(err("batimentId"))}
+            >
+              {batiments.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.nom}
+                </option>
+              ))}
+            </select>
+            {err("batimentId") && (
+              <p className="text-sm text-destructive">{err("batimentId")}</p>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="localisation" className="inline-flex items-center">
-              Localisation
+              {multiBatiments ? "Précision du lieu" : "Localisation"}
               <InfoTooltip>
                 Facultatif. Ex : « sous-sol », « cuisine », « local technique
                 RDC ». Utile au technicien lors de la vérification.

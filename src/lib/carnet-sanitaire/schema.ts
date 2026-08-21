@@ -28,6 +28,11 @@ export const pointReleveSchema = z.object({
     (v) => (typeof v === "string" ? v.trim() || undefined : v),
     z.string().max(200).optional(),
   ),
+  // ADR-019 : le bâtiment du point ; `localisation` reste la précision.
+  batimentId: z.preprocess(
+    (v) => (v === "" || v === null ? undefined : v),
+    z.string().optional(),
+  ),
   typeReseau: z.enum(TYPES_RESEAU),
   seuilMinCelsius: z.coerce.number().min(0).max(100).default(50),
 });

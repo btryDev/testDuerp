@@ -12,6 +12,7 @@ import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ChampBatiment } from "@/components/batiments/ChampBatiment";
 import { LegalBadge } from "@/components/ui-kit";
 import {
   creerPlanPrevention,
@@ -36,9 +37,12 @@ type LigneState = {
 export function FormulairePlanPrevention({
   etablissementId,
   prestataires,
+  batiments = [],
 }: {
   etablissementId: string;
   prestataires: PrestataireLite[];
+  /** Rendu seulement à partir de deux (ADR-019). */
+  batiments?: { id: string; nom: string }[];
 }) {
   const router = useRouter();
   const boundAction = creerPlanPrevention.bind(null, etablissementId);
@@ -347,6 +351,12 @@ export function FormulairePlanPrevention({
               </p>
             </div>
           </label>
+
+          <ChampBatiment
+            batiments={batiments}
+            erreur={err("batimentId")}
+            aide="Le bâtiment principal de l'opération ; détaillez les lieux ci-dessous si elle en traverse plusieurs."
+          />
 
           <div className="space-y-1.5">
             <Label htmlFor="lieux">Lieux d&apos;intervention *</Label>

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { batimentParDefaut } from "@/lib/batiments/queries";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import { genererCalendrier } from "@/lib/calendrier/actions";
 import { marquerCalendrierPerime } from "@/lib/calendrier/reconciliation";
@@ -79,6 +80,7 @@ function normaliserFormData(fd: FormData): Record<string, unknown> {
   return {
     libelle: raw.libelle,
     categorie: raw.categorie || undefined,
+    batimentId: raw.batimentId || undefined,
     localisation: raw.localisation,
     dateMiseEnService: raw.dateMiseEnService,
     nombre: raw.nombre,
@@ -106,9 +108,27 @@ export async function creerEquipement(
 
   const caracs = serialiserCaracteristiques(parsed.data);
 
+  // ADR-019 : le formulaire propose un bâtiment dès qu'il y en a plusieurs ;
+  // sinon, le seul existant. Un id fourni doit être un bâtiment de CET
+  // établissement — la base ne le vérifie pas (clé simple), l'action le fait.
+  const batiment = parsed.data.batimentId
+    ? await prisma.batiment.findFirst({
+        where: { id: parsed.data.batimentId, etablissementId },
+        select: { id: true },
+      })
+    : await batimentParDefaut(etablissementId);
+  if (!batiment) {
+    return {
+      status: "error",
+      message: "Bâtiment introuvable",
+      fieldErrors: { batimentId: ["Bâtiment introuvable"] },
+    };
+  }
+
   await prisma.equipement.create({
     data: {
       etablissementId,
+      batimentId: batiment.id,
       libelle: parsed.data.libelle,
       categorie: parsed.data.categorie,
       localisation: parsed.data.localisation,
@@ -148,9 +168,26 @@ export async function modifierEquipement(
 
   const caracs = serialiserCaracteristiques(parsed.data);
 
+  // Le bâtiment ne change que si le formulaire en propose un autre ; il doit
+  // appartenir au même établissement.
+  if (parsed.data.batimentId) {
+    const cible = await prisma.batiment.findFirst({
+      where: { id: parsed.data.batimentId, etablissementId },
+      select: { id: true },
+    });
+    if (!cible) {
+      return {
+        status: "error",
+        message: "Bâtiment introuvable",
+        fieldErrors: { batimentId: ["Bâtiment introuvable"] },
+      };
+    }
+  }
+
   const eq = await prisma.equipement.update({
     where: { id },
     data: {
+      batimentId: parsed.data.batimentId,
       libelle: parsed.data.libelle,
       categorie: parsed.data.categorie,
       localisation: parsed.data.localisation,
@@ -281,9 +318,11 @@ export async function creerEquipementsDepuisPreRemplissage(
   await assertEtablissementOwnership(etablissementId);
   if (entrees.length === 0) return { created: 0 };
 
+  const batiment = await batimentParDefaut(etablissementId);
   const result = await prisma.equipement.createMany({
     data: entrees.map((e) => ({
       etablissementId,
+      batimentId: batiment.id,
       categorie: e.categorie,
       libelle: e.libelle,
     })),
