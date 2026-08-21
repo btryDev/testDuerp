@@ -15,6 +15,10 @@ import {
   TuileMuette,
 } from "@/components/ui-kit";
 import { HeroEquipement } from "@/components/equipements/HeroEquipement";
+import {
+  CarteDocuments,
+  CartePhotos,
+} from "@/components/equipements/PiecesEquipement";
 import { SupprimerEquipementButton } from "@/components/equipements/SupprimerEquipementButton";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -279,62 +283,69 @@ export default async function EquipementDetailPage({
     >
       <CorpsFiche
         principal={
-          <CarteFiche
-            titreFort="L'appareil"
-            droite={
-              <Link
-                href={`${base}/equipements/${equipementId}/modifier`}
-                className="text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
-              >
-                Modifier →
-              </Link>
-            }
-            corpsClassName="px-7 pb-7 pt-5 sm:px-8"
-          >
-            <ChampsFiche>
-              <ChampFiche cle="Catégorie">
-                {LABEL_CATEGORIE_EQUIPEMENT[eq.categorie]}
-              </ChampFiche>
-              <ChampFiche cle="Localisation">
-                {eq.localisation ?? (
-                  <span className="text-[color:var(--board-slate-soft)]">
-                    Non précisée
-                  </span>
-                )}
-              </ChampFiche>
-              <ChampFiche cle="Mise en service">
-                {eq.dateMiseEnService ? (
-                  formaterDateLongueFr(eq.dateMiseEnService)
-                ) : (
-                  <span className="text-[color:var(--board-slate-soft)]">
-                    Non renseignée
-                  </span>
-                )}
-              </ChampFiche>
-              <ChampFiche cle="Réalisateur requis">
-                {realisateurs ?? (
-                  <span className="text-[color:var(--board-slate-soft)]">
-                    Aucune obligation rattachée
-                  </span>
-                )}
-              </ChampFiche>
-              {/* Les caractéristiques déclarées ne sont pas décoratives :
-                  six d'entre elles bornent des obligations. Une question
-                  sans réponse se lit ici, avec ce qu'elle implique. */}
-              {caracteristiques.map((c) => (
-                <ChampFiche key={c.cle} cle={c.libelle}>
-                  {c.enAttente ? (
+          <>
+            <CarteFiche
+              titreFort="L'appareil"
+              droite={
+                <Link
+                  href={`${base}/equipements/${equipementId}/modifier`}
+                  className="text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
+                >
+                  Modifier →
+                </Link>
+              }
+              corpsClassName="px-7 pb-7 pt-5 sm:px-8"
+            >
+              <ChampsFiche>
+                <ChampFiche cle="Catégorie">
+                  {LABEL_CATEGORIE_EQUIPEMENT[eq.categorie]}
+                </ChampFiche>
+                <ChampFiche cle="Localisation">
+                  {eq.localisation ?? (
                     <span className="text-[color:var(--board-slate-soft)]">
-                      {c.valeur}
-                      {" — l'obligation reste au calendrier"}
+                      Non précisée
                     </span>
-                  ) : (
-                    c.valeur
                   )}
                 </ChampFiche>
-              ))}
-            </ChampsFiche>
-          </CarteFiche>
+                <ChampFiche cle="Mise en service">
+                  {eq.dateMiseEnService ? (
+                    formaterDateLongueFr(eq.dateMiseEnService)
+                  ) : (
+                    <span className="text-[color:var(--board-slate-soft)]">
+                      Non renseignée
+                    </span>
+                  )}
+                </ChampFiche>
+                <ChampFiche cle="Réalisateur requis">
+                  {realisateurs ?? (
+                    <span className="text-[color:var(--board-slate-soft)]">
+                      Aucune obligation rattachée
+                    </span>
+                  )}
+                </ChampFiche>
+                {/* Les caractéristiques déclarées ne sont pas décoratives :
+                  six d'entre elles bornent des obligations. Une question
+                  sans réponse se lit ici, avec ce qu'elle implique. */}
+                {caracteristiques.map((c) => (
+                  <ChampFiche key={c.cle} cle={c.libelle}>
+                    {c.enAttente ? (
+                      <span className="text-[color:var(--board-slate-soft)]">
+                        {c.valeur}
+                        {" — l'obligation reste au calendrier"}
+                      </span>
+                    ) : (
+                      c.valeur
+                    )}
+                  </ChampFiche>
+                ))}
+              </ChampsFiche>
+            </CarteFiche>
+
+            {/* Posées même vides : un emplacement qui n'apparaît qu'une fois
+              rempli ne se remplit jamais. */}
+            <CartePhotos />
+            <CarteDocuments />
+          </>
         }
         cote={
           <>
