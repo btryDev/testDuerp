@@ -15,12 +15,20 @@ import type { ReactNode } from "react";
  */
 export function CarteFiche({
   titre,
+  titreFort,
   droite,
   children,
   className = "",
   corpsClassName = "",
 }: {
   titre?: string;
+  /**
+   * Titre plein, quand la carte est un chapitre et non une rubrique : le
+   * sur-titre mono suffit pour « Clôture » ou « État », il est trop discret
+   * pour ouvrir une liste d'une dizaine de lignes. Les deux s'excluent —
+   * deux niveaux de titrage dans une carte, c'est un de trop.
+   */
+  titreFort?: ReactNode;
   droite?: ReactNode;
   children: ReactNode;
   className?: string;
@@ -29,9 +37,18 @@ export function CarteFiche({
 }) {
   return (
     <section className={"carte-board overflow-hidden " + className}>
-      {titre || droite ? (
-        <div className="flex flex-wrap items-center justify-between gap-4 px-7 pt-6 sm:px-8">
-          {titre ? (
+      {titre || titreFort || droite ? (
+        <div
+          className={
+            "flex flex-wrap gap-4 px-7 pt-6 sm:px-8 " +
+            (titreFort
+              ? "items-baseline justify-between"
+              : "items-center justify-between")
+          }
+        >
+          {titreFort ? (
+            <h2 className="board-titre m-0 text-[22px]">{titreFort}</h2>
+          ) : titre ? (
             <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
               {titre}
             </p>

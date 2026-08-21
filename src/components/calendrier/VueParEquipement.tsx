@@ -339,7 +339,13 @@ function CarteEquipement({
     // champ ardoise, la mesure sur le blanc. Le nom y prend sa propre
     // ligne — partagée avec la règle il perdait à chaque fois, alors
     // qu'il est ce qu'on cherche quand on parcourt douze cartes.
-    <article className="@container overflow-hidden rounded-[30px] bg-[color:var(--board-card)] shadow-[0_1px_2px_rgba(13,18,36,.06),0_6px_16px_-6px_rgba(13,18,36,.14)] ring-1 ring-[color:rgba(13,18,36,.06)]">
+    <article
+      // Cible du renvoi « Voir cet équipement au calendrier », posé depuis
+      // sa fiche : sans ancre, le lien ouvrait la vue par équipement au
+      // sommet, et il fallait retrouver l'appareil dans la page.
+      id={`eq-${l.id}`}
+      className="@container scroll-mt-8 overflow-hidden rounded-[30px] bg-[color:var(--board-card)] shadow-[0_1px_2px_rgba(13,18,36,.06),0_6px_16px_-6px_rgba(13,18,36,.14)] ring-1 ring-[color:rgba(13,18,36,.06)]"
+    >
       {/* En se resserrant, l'en-tête s'empile : le nom, puis l'échéance
           et la porte sur une ligne. C'est la disposition en colonne, sans
           second composant à tenir. */}

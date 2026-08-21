@@ -146,6 +146,7 @@
   --board-amber: #fff3ba;
   --board-amber-ink: #754d0a;
   --board-amber-mark: #0a0a0a;
+  --board-amber-wash: #fffaf0;
   /* Signal « en retard » — rose saumon saturé, posé en champ partout :
      pilules, cartes de frise, tuiles-chiffre, points de frise. L'encre
      rouge sombre tient 4,7 sur le champ ; le noir 9,8. Le blanc ne
@@ -156,6 +157,12 @@
   --board-signal-mid: var(--board-signal);
   --board-signal-mark: var(--board-signal);
   --board-signal-pale: #ffeaea;
+  /* Voiles de ligne. Une ligne de liste qui appelle un geste porte déjà sa
+     tuile-date colorée ; sur une carte de dix lignes, la seule tuile se
+     perd. Ces deux fonds — le champ d'état dilué jusqu'à frôler le blanc —
+     font ressortir la ligne sans en faire une alerte : un aplat saturé sur
+     toute la largeur ferait lire chaque échéance comme un retard. */
+  --board-signal-wash: #fff5f5;
   --board-signal-line: #f27e80;
   --board-signal-ink: #8a2a23;
   --board-signal-on: #0a0a0a;

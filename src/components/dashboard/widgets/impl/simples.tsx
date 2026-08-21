@@ -13,7 +13,7 @@ import { ChevronDown, ChevronRight, Layers, LayoutGrid } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import { CarteBoard, TitreBloc } from "@/components/dashboard/widgets/impl/board";
-import { PictoEquipement } from "@/components/equipements/PictoEquipement";
+import { MarqueCategorie } from "@/components/equipements/MarqueCategorie";
 import { formaterDateFr, formaterJourMoisFr } from "@/lib/dates";
 import type { DashboardBundle } from "../types";
 
@@ -316,9 +316,7 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
                 href={`/etablissements/${etablissementId}/equipements`}
                 className={"flex items-center gap-3.5 rounded-[18px] bg-[color:var(--board-card)] px-3.5 py-3 " + OMBRE_TUILE}
               >
-                <span className="flex size-12 flex-none items-center justify-center rounded-[14px] bg-[color:var(--board-blue-pale)]">
-                  <PictoEquipement categorie={g.categorie} taille={34} />
-                </span>
+                <MarqueCategorie categorie={g.categorie} taille={48} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[14.5px] font-semibold capitalize leading-[1.25] text-[color:var(--board-ink)]">
                     {libelleCategorie(g.categorie)}
@@ -380,9 +378,10 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
                   <span className="absolute left-3 top-3 max-w-[calc(100%-24px)] truncate rounded-full bg-[color:var(--board-card)] px-3 py-[6px] font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-ink)]">
                     {libelleCategorie(eq.categorie)}
                   </span>
-                  <PictoEquipement
+                  <MarqueCategorie
                     categorie={eq.categorie}
                     taille={92}
+                    ton="glacier"
                     className="mt-3 transition-transform duration-200 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                   />
                 </div>

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { repartirParEquipement } from "./etat-verifications";
+import { repartirParEquipement, resumerEquipement } from "./etat-verifications";
+import type { Periodicite } from "@/lib/referentiels/types-communs";
 
 /**
  * Dates civiles à minuit UTC, horloge à un instant réel (ADR-011).
@@ -11,13 +12,19 @@ const AUJOURDHUI = new Date("2026-08-10T07:00:00Z");
 const verif = (
   equipementId: string,
   datePrevue: string,
-  o: { statut?: string; dateRealisee?: string; libelle?: string } = {},
+  o: {
+    statut?: string;
+    dateRealisee?: string;
+    libelle?: string;
+    periodicite?: Periodicite;
+  } = {},
 ) => ({
   equipementId,
   libelleObligation: o.libelle ?? "Vérification annuelle",
   statut: o.statut ?? "planifiee",
   datePrevue: jour(datePrevue),
   dateRealisee: o.dateRealisee ? jour(o.dateRealisee) : null,
+  periodicite: o.periodicite ?? ("annuelle" as const),
 });
 
 describe("repartirParEquipement", () => {
@@ -103,5 +110,97 @@ describe("repartirParEquipement", () => {
 
     expect(m.has("eq2")).toBe(false);
     expect(m.get("eq1")?.derniere).toBeNull();
+  });
+});
+
+describe("resumerEquipement", () => {
+  const etatDe = (verifs: Parameters<typeof repartirParEquipement>[0]) =>
+    repartirParEquipement(verifs, AUJOURDHUI).get("eq1");
+
+  it("dit l'absence de suivi plutôt que de la taire", () => {
+    // Aucun signal : c'est l'écran qui dit « aucune vérification
+    // rattachée ». Un compteur à zéro laisserait croire à un suivi vide,
+    // alors qu'il n'y a pas de suivi du tout.
+    const r = resumerEquipement(undefined);
+    expect(r.etat).toBe("aPlanifier");
+    expect(r.signaux).toEqual([]);
+  });
+
+  it("le retard prime sur tout le reste", () => {
+    const r = resumerEquipement(
+      etatDe([verif("eq1", "2026-06-01"), verif("eq1", "2026-12-01")]),
+    );
+    expect(r.etat).toBe("enRetard");
+    expect(r.signaux[0]).toMatchObject({ cle: "enRetard", nb: 1 });
+  });
+
+  it("ne porte plus aucune date : le parc n'est pas un agenda", () => {
+    const r = resumerEquipement(etatDe([verif("eq1", "2026-08-25")]));
+    expect(r.etat).toBe("proche");
+    expect(JSON.stringify(r)).not.toMatch(/2026/);
+  });
+
+  it("compte les signaux du plus urgent au plus calme", () => {
+    const r = resumerEquipement(
+      etatDe([
+        verif("eq1", "2026-02-10", {
+          statut: "realisee_conforme",
+          dateRealisee: "2026-02-10",
+        }),
+        verif("eq1", "2026-06-01"),
+        verif("eq1", "2027-01-01", { statut: "a_planifier" }),
+      ]),
+    );
+    expect(r.signaux.map((s) => s.cle)).toEqual([
+      "enRetard",
+      "aPlanifier",
+      "faite",
+    ]);
+    expect(r.signaux.map((s) => s.libelle)).toEqual([
+      "1 dépassée",
+      "1 à planifier",
+      "1 faite",
+    ]);
+  });
+
+  it("compte le rendez-vous suivant d'un cycle soldé", () => {
+    // Une ligne soldée dit deux choses : « fait le 10 févr. 2026 » et
+    // « prochaine le 10 févr. 2027 » (ADR-010). Sans elle, un appareil
+    // parfaitement suivi n'affichait aucun signal et la carte du parc
+    // annonçait « aucune vérification rattachée » — pendant que le
+    // calendrier, lui, montrait bien l'échéance.
+    const e = etatDe([
+      verif("eq1", "2027-02-10", {
+        statut: "realisee_conforme",
+        dateRealisee: "2026-02-10",
+      }),
+    ])!;
+    expect(e.faites).toBe(1);
+    expect(e.aVenir).toBe(1);
+    expect(e.prochaine?.date).toEqual(jour("2027-02-10"));
+
+    const r = resumerEquipement(e);
+    expect(r.etat).toBe("lointain");
+    expect(r.signaux.map((s) => s.libelle)).toEqual(["1 à venir", "1 faite"]);
+  });
+
+  it("annonce les échéances simplement planifiées", () => {
+    // L'état normal juste après génération : rien de dépassé, rien à
+    // planifier, rien de fait. La carte doit quand même parler.
+    const r = resumerEquipement(etatDe([verif("eq1", "2027-03-01")]));
+    expect(r.signaux.map((s) => s.cle)).toEqual(["aVenir"]);
+  });
+
+  it("retombe sur la dernière preuve quand plus rien n'est attendu", () => {
+    const r = resumerEquipement(
+      etatDe([
+        verif("eq1", "2026-02-10", {
+          statut: "realisee_conforme",
+          dateRealisee: "2026-02-10",
+        }),
+      ]),
+    );
+    expect(r.etat).toBe("faite");
+    expect(r.signaux).toEqual([{ cle: "faite", nb: 1, libelle: "1 faite" }]);
   });
 });

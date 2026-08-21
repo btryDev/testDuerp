@@ -16,14 +16,36 @@ import type { Provenance } from "@/lib/navigation/provenance";
 export function EcranFiche({
   provenance,
   canonique,
+  bandeau,
   children,
 }: {
   /** D'où l'on arrive — le calendrier, le tableau de bord, une autre fiche. */
   provenance: Provenance | null;
   /** Où cette fiche vit dans l'arborescence — son parent de toujours. */
   canonique: Provenance;
+  /**
+   * Tête pleine largeur, bord à bord — la forme de la bande du
+   * calendrier. Une fiche qui ouvre un chapitre (un équipement, et non
+   * une échéance) s'annonce ainsi plutôt que par une carte de plus ; le
+   * fil de retour s'y range, et le corps garde la gouttière du board.
+   */
+  bandeau?: ReactNode;
   children: ReactNode;
 }) {
+  if (bandeau) {
+    return (
+      <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
+        <div className="border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] px-[var(--board-gutter)] pb-6 pt-7">
+          <FilRetour provenance={provenance} canonique={canonique} />
+          <div className="mt-4">{bandeau}</div>
+        </div>
+        <div className="flex flex-col gap-[22px] px-[var(--board-gutter)] pt-6">
+          {children}
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex flex-1 flex-col bg-[color:var(--board-card)] px-[var(--board-gutter)] pb-16 pt-7">
       <FilRetour provenance={provenance} canonique={canonique} />
