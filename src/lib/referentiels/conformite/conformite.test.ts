@@ -448,6 +448,62 @@ describe("référentiel conformité — non-régression des obligations critique
   });
 });
 
+describe("référentiel conformité — éclairage de sécurité en lieu de travail", () => {
+  /**
+   * Avant l'amendement 2026-08-21, la seule obligation visant la catégorie
+   * `BAES` portait `erp: true`. Un employeur non-ERP — le bureau tertiaire à
+   * qui le pré-remplissage suggère précisément un BAES — déclarait
+   * l'équipement et n'obtenait aucune échéance.
+   */
+  const IDS_TRAVAIL = [
+    "incendie-travail-eclairage-securite-essai-mensuel",
+    "incendie-travail-eclairage-securite-autonomie-semestrielle",
+  ];
+
+  it("la catégorie BAES est couverte hors régime ERP", () => {
+    const horsErp = obligationsConformite.filter(
+      (o) =>
+        o.categoriesEquipement.includes("BAES") &&
+        o.typologies.travail === true,
+    );
+    expect(horsErp.map((o) => o.id).sort()).toEqual([...IDS_TRAVAIL].sort());
+  });
+
+  it("les deux fréquences de l'article 11 sont encodées distinctement", () => {
+    const mensuel = obligationParId(IDS_TRAVAIL[0]);
+    const semestriel = obligationParId(IDS_TRAVAIL[1]);
+    expect(mensuel?.periodicite).toBe("mensuelle");
+    expect(semestriel?.periodicite).toBe("semestrielle");
+    // L'employeur en est le réalisateur : l'article 11 le désigne nommément.
+    expect(mensuel?.realisateurs).toEqual(["exploitant"]);
+    expect(semestriel?.realisateurs).toEqual(["exploitant"]);
+  });
+
+  it("elles s'excluent du régime ERP, qui garde sa propre vérification annuelle", () => {
+    // Un même parc de blocs ne doit pas produire deux séries d'échéances sur
+    // un établissement cumulant travail et ERP (arrêté du 14 décembre 2011,
+    // art. 1er : le règlement ERP gouverne les locaux accessibles au public).
+    for (const id of IDS_TRAVAIL) {
+      expect(obligationParId(id)?.typologies.erp, id).toBe(false);
+    }
+    expect(obligationParId("incendie-erp-baes-annuelle")?.typologies.erp).toBe(
+      true,
+    );
+  });
+
+  it("elles se fondent sur l'arrêté du 14 décembre 2011, pas sur R. 4227-14 seul", () => {
+    // R. 4227-14 impose l'éclairage de sécurité mais ne fixe aucune
+    // périodicité : il renvoie à un arrêté. Citer le code seul en article
+    // fondateur reviendrait à lui faire dire ce qu'il ne dit pas.
+    for (const id of IDS_TRAVAIL) {
+      const fondateur = obligationParId(id)?.referencesLegales[0];
+      expect(fondateur?.source, id).toBe("ARRETE");
+      expect(fondateur?.reference, id).toContain("14 décembre 2011");
+      expect(fondateur?.note?.length ?? 0, id).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe("référentiel conformité — forme normalisée des typologies", () => {
   it("aucune obligation ne liste les 5 catégories ERP (écrire `erp: true`)", () => {
     // `erp: { categories: ["N1"…"N5"] }` et `erp: true` ne sont PAS
@@ -488,7 +544,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
   // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
   // version PUIS recopiez l'empreinte que le message d'échec affiche.
-  const EMPREINTE_ATTENDUE = "65-3423a011e71e1065";
+  const EMPREINTE_ATTENDUE = "67-ff638aae29f36e44";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(

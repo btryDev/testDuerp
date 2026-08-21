@@ -208,6 +208,46 @@ describe("moteur matching — typologie Travail seule", () => {
   });
 });
 
+describe("moteur matching — éclairage de sécurité (BAES)", () => {
+  const MENSUEL = "incendie-travail-eclairage-securite-essai-mensuel";
+  const SEMESTRIEL = "incendie-travail-eclairage-securite-autonomie-semestrielle";
+  const ERP_ANNUEL = "incendie-erp-baes-annuelle";
+
+  it("un employeur non-ERP qui déclare un BAES obtient bien des échéances", () => {
+    // Régression du silence : le pré-remplissage suggère un BAES à tout
+    // bureau tertiaire, et la seule obligation visant la catégorie portait
+    // `erp: true`. Le dirigeant lisait « Aucune échéance calculée » sur le
+    // premier équipement que l'outil lui avait conseillé de déclarer.
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [baes()]),
+    );
+    expect(ids).toContain(MENSUEL);
+    expect(ids).toContain(SEMESTRIEL);
+    expect(ids).not.toContain(ERP_ANNUEL);
+  });
+
+  it("un établissement à double régime ne reçoit qu'une série d'échéances sur ses BAES", () => {
+    // Le règlement ERP gouverne l'éclairage de sécurité des locaux
+    // accessibles au public (arrêté du 14 décembre 2011, art. 1er) : les
+    // obligations « travail » s'effacent plutôt que de doubler les
+    // occurrences sur un seul et même parc de blocs.
+    const ids = idsObligations(
+      determineObligationsApplicables(etabRestoErpCat5(), [baes()]),
+    );
+    expect(ids).toContain(ERP_ANNUEL);
+    expect(ids).not.toContain(MENSUEL);
+    expect(ids).not.toContain(SEMESTRIEL);
+  });
+
+  it("sans BAES déclaré, aucune obligation d'éclairage de sécurité", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [elec()]),
+    );
+    expect(ids).not.toContain(MENSUEL);
+    expect(ids).not.toContain(SEMESTRIEL);
+  });
+});
+
 describe("moteur matching — typologie ERP", () => {
   it("restaurant ERP cat 5 → déclenche la règle quinquennale PE 4, pas l'annuelle cat 1-4", () => {
     const res = determineObligationsApplicables(etabRestoErpCat5(), [elec()]);

@@ -4,6 +4,9 @@
  * Sources primaires :
  *   - Code du travail, articles R. 4227-28 à R. 4227-41 (lutte contre
  *     l'incendie, consignes, exercices) et L. 4711-5 (registre de sécurité).
+ *   - Arrêté du 14 décembre 2011 relatif aux installations d'éclairage de
+ *     sécurité, pris pour l'application de l'article R. 4227-14 du code du
+ *     travail (conception, exploitation et maintenance en lieu de travail).
  *   - Arrêté du 25 juin 1980 modifié (règlement de sécurité ERP) — livre II,
  *     articles MS (moyens de secours), DF (désenfumage) et EC (éclairage).
  *   - Arrêté du 22 juin 1990 modifié (règles PE — ERP 5ᵉ catégorie).
@@ -141,6 +144,93 @@ export const obligationsIncendie: Obligation[] = [
   },
 
   // ---------------------------------------------------------------------------
+  // Travail — Éclairage de sécurité (R. 4227-14 CT / arrêté du 14 déc. 2011)
+  //
+  // Les deux obligations qui suivent sont les deux fréquences distinctes que
+  // pose l'article 11 de l'arrêté : un essai de fonctionnement mensuel et une
+  // vérification semestrielle de l'autonomie. Elles ne sont PAS absorbées par
+  // la vérification périodique annuelle des installations électriques
+  // (R. 4226-16 CT / arrêté du 26 décembre 2011) : l'article 11 les rattache
+  // expressément à la *maintenance* de l'article R. 4226-7, acte distinct de
+  // la vérification périodique, et les fait porter par l'employeur lui-même.
+  // Seul le registre est commun (R. 4226-19).
+  // ---------------------------------------------------------------------------
+  {
+    id: "incendie-travail-eclairage-securite-essai-mensuel",
+    domaine: "incendie",
+    libelle: "Essai mensuel de l'éclairage de sécurité (lieu de travail)",
+    description:
+      "Une fois par mois, l'employeur vérifie le passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et l'allumage de toutes les lampes, ainsi que l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. Le résultat est porté au registre. Sur une installation constituée de blocs autonomes à système automatique de test intégré (SATI), ces opérations peuvent être effectuées automatiquement.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 14 décembre 2011, art. 11",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072657",
+        note: "« Dans le cadre de la maintenance prescrite à l'article R. 4226-7 du code du travail, l'employeur procède aux vérifications de fonctionnement périodiques suivantes : Une fois par mois : a) Du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et de l'allumage de toutes les lampes […] ; b) De l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. »",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4227-14",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022764985",
+        note: "Fonde l'obligation d'éclairage de sécurité en lieu de travail et renvoie à un arrêté le soin de fixer « les conditions d'exploitation et de maintenance de cet éclairage ». Ne fixe lui-même aucune périodicité : c'est l'arrêté du 14 décembre 2011 qui la pose.",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4226-19",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810023/",
+        note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
+      },
+    ],
+    periodicite: "mensuelle",
+    realisateurs: ["exploitant"],
+    criticite: 3,
+    typologies: { travail: true, erp: false },
+    categoriesEquipement: ["BAES"],
+    notesInternes:
+      "Ajoutée 2026-08 : le pré-remplissage suggérait un BAES à tout bureau tertiaire alors que la seule obligation visant la catégorie BAES était `incendie-erp-baes-annuelle` (erp: true). Un employeur non-ERP déclarait donc l'équipement que l'outil venait de lui conseiller et n'obtenait aucune échéance. `erp: false` est un choix de modélisation, pas une lecture du texte : l'article 1er de l'arrêté écarte le régime travail pour les locaux et dégagements accessibles au public d'un ERP, au profit du règlement de sécurité ERP — dans un ERP, `incendie-erp-baes-annuelle` prend donc le relais. La limite assumée : les locaux d'un ERP non accessibles au public (réserves, bureaux) relèvent bien de l'arrêté du 14 décembre 2011, ce que le modèle — qui raisonne par établissement et non par local — ne sait pas exprimer sans produire deux occurrences pour un seul parc de blocs. L'exception SATI de l'article 11 n'est pas encodée en condition : aucune propriété d'équipement ne porte encore la question.",
+  },
+  {
+    id: "incendie-travail-eclairage-securite-autonomie-semestrielle",
+    domaine: "incendie",
+    libelle: "Vérification semestrielle de l'autonomie de l'éclairage de sécurité (lieu de travail)",
+    description:
+      "Une fois tous les six mois, l'employeur vérifie l'autonomie d'au moins une heure de l'éclairage de sécurité. Dans les établissements comportant des périodes de fermeture, l'opération est conduite de telle manière qu'au début de chaque période d'ouverture l'installation ait retrouvé l'autonomie prescrite. Le résultat est porté au registre.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 14 décembre 2011, art. 11",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072657",
+        note: "« Une fois tous les six mois, de l'autonomie d'au moins une heure. Dans les établissements comportant des périodes de fermeture, ces opérations doivent être effectuées de telle manière qu'au début de chaque période d'ouverture l'installation d'éclairage ait retrouvé l'autonomie prescrite. »",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4227-14",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022764985",
+        note: "Fonde l'obligation d'éclairage de sécurité en lieu de travail et renvoie à un arrêté le soin de fixer « les conditions d'exploitation et de maintenance de cet éclairage ». Ne fixe lui-même aucune périodicité : c'est l'arrêté du 14 décembre 2011 qui la pose.",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4226-19",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810023/",
+        note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
+      },
+    ],
+    periodicite: "semestrielle",
+    realisateurs: ["exploitant"],
+    criticite: 4,
+    typologies: { travail: true, erp: false },
+    categoriesEquipement: ["BAES"],
+    notesInternes:
+      "Même fondement et même choix de typologie que `incendie-travail-eclairage-securite-essai-mensuel` : voir ses notes internes. Les deux périodicités de l'article 11 sont scindées en deux obligations parce que le modèle ne porte qu'une périodicité par obligation, et parce qu'il s'agit bien de deux actes distincts (contrôle visuel d'allumage / décharge complète sur batterie).",
+  },
+
+  // ---------------------------------------------------------------------------
   // ERP — Moyens de secours (MS)
   // ---------------------------------------------------------------------------
   {
@@ -236,6 +326,8 @@ export const obligationsIncendie: Obligation[] = [
     criticite: 4,
     typologies: { erp: true },
     categoriesEquipement: ["BAES"],
+    notesInternes:
+      "Régime ERP de l'éclairage de sécurité. Il se coordonne avec le régime travail (arrêté du 14 décembre 2011) par l'article 1er de celui-ci, qui laisse le règlement de sécurité ERP gouverner les locaux et dégagements accessibles au public. Dans le référentiel, les deux obligations « travail » portent donc `erp: false` : un établissement à double régime ne reçoit que cette ligne-ci sur ses BAES.",
   },
   {
     id: "incendie-erp-desenfumage-annuelle",

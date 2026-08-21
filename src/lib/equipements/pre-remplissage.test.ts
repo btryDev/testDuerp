@@ -123,6 +123,59 @@ describe("suggererEquipements — secteurs cibles V2", () => {
   });
 });
 
+describe("suggererEquipements — la raison ne promet que ce que le référentiel produit", () => {
+  /**
+   * La suggestion de BAES au bureau non-ERP annonçait une « vérification
+   * annuelle des blocs de sécurité ». Cette périodicité-là n'existe que dans
+   * le régime ERP (arrêté du 25 juin 1980, art. EC 14 et EC 15) : hors ERP,
+   * l'arrêté du 14 décembre 2011 pose un essai mensuel et un contrôle
+   * semestriel de l'autonomie. L'outil promettait une échéance qu'il
+   * n'allait pas calculer.
+   */
+  function raisonBaes(ctx: Parameters<typeof suggererEquipements>[0]): string {
+    const e = suggererEquipements(ctx).find((x) => x.categorie === "BAES");
+    expect(e).toBeDefined();
+    return e!.raison;
+  }
+
+  it("bureau non-ERP : la raison cite le régime travail, pas une périodicité annuelle", () => {
+    const raison = raisonBaes({
+      codeNaf: "70.22Z",
+      estEtablissementTravail: true,
+      estERP: false,
+      estIGH: false,
+      estHabitation: false,
+    });
+    expect(raison).toContain("R. 4227-14");
+    expect(raison).toContain("14 décembre 2011");
+    expect(raison).not.toMatch(/annuelle?/i);
+  });
+
+  it("commerce non-ERP : même correction, pas de renvoi implicite au régime ERP", () => {
+    const raison = raisonBaes({
+      codeNaf: "47.11B",
+      estEtablissementTravail: true,
+      estERP: false,
+      estIGH: false,
+      estHabitation: false,
+    });
+    expect(raison).toContain("R. 4227-14");
+    expect(raison).not.toMatch(/annuelle?/i);
+  });
+
+  it("ERP : la raison ERP prime et garde sa vérification annuelle", () => {
+    const raison = raisonBaes({
+      codeNaf: "47.11B",
+      estEtablissementTravail: true,
+      estERP: true,
+      estIGH: false,
+      estHabitation: false,
+    });
+    expect(raison).toContain("EC 14");
+    expect(raison).toMatch(/annuelle/i);
+  });
+});
+
 describe("suggererEquipements — chaque entrée a une raison non vide", () => {
   it("tous les contextes possibles renvoient des raisons renseignées", () => {
     const combos: Parameters<typeof suggererEquipements>[0][] = [

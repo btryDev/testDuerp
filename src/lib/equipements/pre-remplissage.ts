@@ -38,6 +38,20 @@ function normNaf(naf: string | null | undefined): string {
   return (naf ?? "").trim().toUpperCase();
 }
 
+/**
+ * La raison des suggestions de BAES hors régime ERP. Une seule constante pour
+ * les deux branches sectorielles qui la posent (commerce, bureau) : elles
+ * doivent annoncer la même chose, et une divergence entre les deux passerait
+ * inaperçue.
+ *
+ * Elle ne parle que du régime travail, et c'est correct : la branche ERP
+ * suggère le BAES plus haut, et la déduplication par catégorie garde la
+ * première entrée. Un commerce ERP n'atteint donc jamais cette raison — il
+ * garde celle qui cite la vérification annuelle de la section EC.
+ */
+const RAISON_BAES_TRAVAIL =
+  "Éclairage d'évacuation obligatoire dans les lieux de travail (R. 4227-14 CT) : essai mensuel et contrôle semestriel de l'autonomie (arrêté du 14 décembre 2011, art. 11).";
+
 function isRestauration(naf: string): boolean {
   return naf.startsWith("56.");
 }
@@ -176,8 +190,7 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
     ajoute({
       categorie: "BAES",
       libelle: "Éclairage de sécurité (BAES)",
-      raison:
-        "La plupart des commerces sont ERP — éclairage de sécurité vérifié annuellement.",
+      raison: RAISON_BAES_TRAVAIL,
     });
   }
 
@@ -185,8 +198,7 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
     ajoute({
       categorie: "BAES",
       libelle: "Éclairage de sécurité (BAES)",
-      raison:
-        "Bâtiment tertiaire — vérification annuelle des blocs de sécurité.",
+      raison: RAISON_BAES_TRAVAIL,
     });
     ajoute({
       categorie: "ALARME_INCENDIE",
