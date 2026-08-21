@@ -8,6 +8,7 @@ import {
 import { prioriser } from "@/lib/cotation";
 import { formaterDateCourteFr, formaterDateLongueFr } from "@/lib/dates";
 import { LABEL_STATUT, LABEL_TYPE_MESURE } from "@/lib/mesures/labels";
+import { estHorsReferentiel } from "@/lib/risques/helpers";
 import type { DuerpSnapshot } from "@/lib/versions/snapshot";
 import type { TypeMesure } from "@/lib/referentiels/types";
 
@@ -129,6 +130,13 @@ export type Props = {
 export function DuerpDocument({ snapshot, historique, brouillon = false }: Props) {
   const { entreprise, unites, version, genereLe, motif } = snapshot;
 
+  // Unités qu'aucune unité type du référentiel sectoriel ne couvre : leur
+  // inventaire ne doit rien au référentiel, il vient entièrement de
+  // l'employeur. La méthodologie annonce le contraire deux pages plus haut —
+  // c'est précisément cette phrase-là qu'il faut nuancer, sinon le document
+  // laisse croire à une base commune que ces unités n'ont pas eue.
+  const horsReferentiel = unites.filter(estHorsReferentiel);
+
   const lignes = unites.flatMap((u) =>
     u.risques.map((r) => ({
       id: r.id,
@@ -242,6 +250,9 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
           {"\n"}L&apos;inventaire des risques s&apos;appuie sur les référentiels
           sectoriels et transverses INRS pré-chargés (voir ci-dessous), que
           l&apos;employeur complète et ajuste à sa réalité.
+          {horsReferentiel.length > 0
+            ? "\nCertaines unités de travail ne correspondent à aucune unité type du référentiel sectoriel : elles ont été évaluées sans base pré-chargée et sont identifiées comme telles ci-dessous."
+            : ""}
         </Text>
 
         <Text style={s.h3}>Appréciation</Text>
@@ -309,10 +320,31 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
             <Text style={{ fontFamily: "Helvetica-Bold" }}>
               {u.nom}
               {u.estTransverse ? " (transverse)" : ""}
+              {estHorsReferentiel(u) ? " (hors référentiel sectoriel)" : ""}
             </Text>
             {u.description && <Text style={s.small}>{u.description}</Text>}
           </View>
         ))}
+
+        {horsReferentiel.length > 0 && (
+          <View style={{ marginTop: 10 }}>
+            <Text style={s.h3}>Unités évaluées hors référentiel sectoriel</Text>
+            <Text style={s.small}>
+              Les unités suivantes ne correspondent à aucune unité type du
+              référentiel sectoriel retenu ci-dessus. Aucun risque type ne leur
+              a donc été proposé : leur inventaire, leur cotation et leurs
+              mesures de prévention ont été établis intégralement par
+              l&apos;employeur. Cette mention décrit l&apos;origine des données,
+              elle ne préjuge ni de la qualité ni de l&apos;exhaustivité de
+              l&apos;évaluation.
+            </Text>
+            {horsReferentiel.map((u) => (
+              <Text key={u.id} style={s.small}>
+                • {u.nom}
+              </Text>
+            ))}
+          </View>
+        )}
         <Text style={s.footer} fixed>
           {entreprise.raisonSociale} — DUERP v{version}
         </Text>
@@ -329,6 +361,7 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
               <Text style={s.h3}>
                 {u.nom}
                 {u.estTransverse ? " (transverse)" : ""}
+                {estHorsReferentiel(u) ? " (hors référentiel sectoriel)" : ""}
               </Text>
               <View style={s.thead}>
                 <Text style={[s.th, { width: "45%" }]}>Risque</Text>

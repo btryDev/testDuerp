@@ -34,6 +34,17 @@ export type UniteSnapshot = {
   description: string | null;
   estTransverse: boolean;
   /**
+   * Unité type du référentiel sectoriel dont cette unité est issue, `null`
+   * quand aucune ne lui correspond (ajout manuel, import d'un DUERP existant).
+   * Le PDF s'en sert pour dire d'où vient l'inventaire d'une unité.
+   *
+   * Optionnel, et ça n'est pas une facilité : les versions validées avant
+   * l'introduction du champ sont conservées 40 ans et relues telles quelles.
+   * Chez elles la valeur est absente, pas nulle — et `absent` veut dire « on
+   * ne sait pas », surtout pas « hors référentiel ». Cf. `estHorsReferentiel`.
+   */
+  referentielUniteId?: string | null;
+  /**
    * Justification libre saisie par l'employeur lorsqu'une unité a été évaluée
    * et déclarée sans risque significatif (cf. INRS ED 840 — l'évaluation peut
    * légitimement conclure à l'absence de risque significatif si elle est

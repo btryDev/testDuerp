@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { WizardSteps } from "@/components/duerps/WizardSteps";
+import { LigneHorsReferentiel } from "@/components/duerps/MentionHorsReferentiel";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { construireEtapes } from "@/lib/duerps/etapes";
 import { getDuerp } from "@/lib/duerps/queries";
+import { estHorsReferentiel, unitesHorsReferentiel } from "@/lib/risques/helpers";
 
 export default async function RisquesOverviewPage({
   params,
@@ -31,6 +33,9 @@ export default async function RisquesOverviewPage({
   const unitesSansRisqueSansJustif = unitesVisibles.filter(
     (u) => u.risques.length === 0 && !u.aucunRisqueJustif,
   );
+  // Le fait se voit d'abord d'ici : entrer dans chaque unité pour découvrir
+  // que le référentiel ne la couvre pas, c'est l'apprendre trop tard.
+  const horsRef = unitesHorsReferentiel(unitesVisibles);
 
   return (
     <div className="space-y-12">
@@ -177,6 +182,7 @@ export default async function RisquesOverviewPage({
                         {u.description}
                       </p>
                     )}
+                    {estHorsReferentiel(u) && <LigneHorsReferentiel />}
                     {nbRisques === 0 && declaree && (
                       <p className="mt-2 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[color:var(--warm)]">
                         ✓ Aucun risque significatif — justifié
@@ -212,6 +218,24 @@ export default async function RisquesOverviewPage({
           })}
         </ul>
       </section>
+
+      {horsRef.length > 0 && (
+        <div className="rounded-2xl border border-dashed border-rule bg-paper-sunk/40 px-6 py-4">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+            Hors référentiel sectoriel
+          </p>
+          <p className="mt-1.5 max-w-prose text-[0.88rem] leading-relaxed text-ink">
+            {horsRef.length > 1
+              ? `${horsRef.length} unités ne correspondent`
+              : "1 unité ne correspond"}{" "}
+            à aucune unité type du référentiel sectoriel chargé pour votre
+            activité —{" "}
+            {horsRef.map((u) => u.nom).join(", ")}. Aucun risque type n&apos;y
+            est proposé : leur inventaire, leur cotation et leurs mesures sont
+            entièrement à votre main. Le DUERP généré en portera la mention.
+          </p>
+        </div>
+      )}
 
       {unitesSansRisqueSansJustif.length > 0 && (
         <div className="rounded-2xl border border-dashed border-[color:var(--warm)]/40 bg-[color:var(--warm-soft)] px-6 py-4">

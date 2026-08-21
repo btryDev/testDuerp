@@ -55,6 +55,7 @@ export async function construireSnapshot(
     nom: u.nom,
     description: u.description,
     estTransverse: u.estTransverse,
+    referentielUniteId: u.referentielUniteId,
     aucunRisqueJustif: u.aucunRisqueJustif,
     risques: u.risques.map((r) => ({
       id: r.id,

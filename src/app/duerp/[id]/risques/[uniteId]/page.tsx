@@ -6,9 +6,13 @@ import { DeclarerAucunRisqueForm } from "@/components/duerps/DeclarerAucunRisque
 import { ModifierRisqueCustomButton } from "@/components/duerps/ModifierRisqueCustomButton";
 import { RisqueToggleRow } from "@/components/duerps/RisqueToggleRow";
 import { SupprimerRisqueButton } from "@/components/duerps/SupprimerRisqueButton";
+import { MentionHorsReferentiel } from "@/components/duerps/MentionHorsReferentiel";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { getUnite } from "@/lib/duerps/queries";
-import { risquesProposesPourUnite } from "@/lib/risques/helpers";
+import {
+  estHorsReferentiel,
+  risquesProposesPourUnite,
+} from "@/lib/risques/helpers";
 import { tousRisquesConnus } from "@/lib/referentiels";
 
 export default async function RisquesUnitePage({
@@ -22,6 +26,10 @@ export default async function RisquesUnitePage({
 
   const refMap = tousRisquesConnus();
   const proposes = risquesProposesPourUnite(unite.referentielUniteId);
+  // Une liste de propositions vide a deux causes très différentes : tout a
+  // déjà été coché, ou le référentiel ne connaît pas cette unité. Seule la
+  // seconde se dit à l'écran, et elle se lit sur la donnée, pas sur le compte.
+  const horsReferentiel = estHorsReferentiel(unite);
   const idsSelectionnes = new Map(
     unite.risques
       .filter((r) => r.referentielId)
@@ -73,6 +81,8 @@ export default async function RisquesUnitePage({
           )}
         </p>
       </header>
+
+      {horsReferentiel && <MentionHorsReferentiel />}
 
       <section
         aria-label="Marche à suivre"
@@ -145,12 +155,26 @@ export default async function RisquesUnitePage({
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[1rem] font-semibold tracking-[-0.012em] leading-snug text-[color:var(--warm)]">
-                Cocher les risques concernés
+                {horsReferentiel
+                  ? "Inventorier les risques"
+                  : "Cocher les risques concernés"}
               </p>
+              {/* Renvoyer vers « la liste du référentiel plus bas » quand elle
+                  n'existe pas enverrait le dirigeant chercher un écran vide. */}
               <p className="mt-1.5 text-[0.86rem] leading-relaxed text-[color:var(--warm)]/70">
-                Parcourez la liste du référentiel plus bas et cochez ceux qui
-                s&apos;appliquent à cette unité. Les non-cochés sont considérés
-                comme écartés.
+                {horsReferentiel ? (
+                  <>
+                    Aucun risque type n&apos;est proposé pour cette unité :
+                    ajoutez-les un par un depuis «&nbsp;Ajouter un risque
+                    spécifique&nbsp;» plus bas.
+                  </>
+                ) : (
+                  <>
+                    Parcourez la liste du référentiel plus bas et cochez ceux
+                    qui s&apos;appliquent à cette unité. Les non-cochés sont
+                    considérés comme écartés.
+                  </>
+                )}
               </p>
               <span
                 className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.14em] ${
@@ -257,9 +281,19 @@ export default async function RisquesUnitePage({
 
         {risquesRetenus.length === 0 ? (
           <p className="px-6 py-8 text-[0.9rem] text-muted-foreground sm:px-8">
-            Aucun risque retenu pour cette unité. Cochez dans la liste du
-            référentiel ci-dessous, ajoutez un risque personnalisé, ou
-            déclarez « aucun risque significatif ».
+            {horsReferentiel ? (
+              <>
+                Aucun risque retenu pour cette unité. Ajoutez vos risques
+                ci-dessous, ou déclarez « aucun risque significatif » après
+                examen.
+              </>
+            ) : (
+              <>
+                Aucun risque retenu pour cette unité. Cochez dans la liste du
+                référentiel ci-dessous, ajoutez un risque personnalisé, ou
+                déclarez « aucun risque significatif ».
+              </>
+            )}
           </p>
         ) : (
           <ul className="divide-y divide-dashed divide-rule/50">
