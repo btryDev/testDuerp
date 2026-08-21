@@ -138,6 +138,12 @@ export function CarteCategorie({
  *  l'échelle. */
 export function urgenceCategorie(appareils: AppareilListe[]): number {
   return appareils.reduce((max, a) => {
+    // Un appareil sans le moindre signal n'a rien à faire remonter : son
+    // état est un repli, pas un « à planifier » constaté. Sans cette
+    // distinction, une famille d'appareils dont le référentiel ne dit rien
+    // passait devant une famille qui porte une échéance dans trois mois —
+    // alors que ses cartes annoncent « aucune vérification rattachée ».
+    if (a.resume.signaux.length === 0) return max;
     const e = a.resume.etat;
     const rang = e === "aPlanifier" ? 1.5 : PRIORITE_ETAT[e];
     return Math.max(max, rang);

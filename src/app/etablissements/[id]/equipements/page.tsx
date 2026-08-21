@@ -22,7 +22,6 @@ import {
   EXPLICATION_SANS_ECHEANCE,
   equipementsSansEcheance,
 } from "@/lib/equipements/hors-referentiel";
-import { compterEtatCalendrier } from "@/lib/calendrier/queries";
 import { avecProvenance, origineDepuis } from "@/lib/navigation/provenance";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 
@@ -41,19 +40,17 @@ export default async function EquipementsPage({
   const base = `/etablissements/${id}`;
   // Les liens vers une fiche emportent cet écran : le retour ramènera ici,
   // pas au parent canonique par défaut (ADR-014).
-  const origine = origineDepuis(
-    `${base}/equipements`,
-    bienvenue ? { bienvenue } : {},
-  );
+  // `bienvenue` est délibérément écarté de la provenance : embarqué dans
+  // les liens de fiche, il ramenait la bannière d'accueil à chaque retour
+  // sur la liste — alors qu'elle est censée disparaître à la première
+  // navigation.
+  const origine = origineDepuis(`${base}/equipements`, {});
 
-  const [equipements, etatsVerifs, compteurs, sansEcheance] = await Promise.all([
+  const [equipements, etatsVerifs, sansEcheance] = await Promise.all([
     listerEquipementsDeLEtablissement(id),
     // Le parc ne disait rien de son état de vérification : on lisait un
     // inventaire, pas une situation.
     etatVerificationsParEquipement(id),
-    // Les chiffres du bandeau viennent de la même partition que l'en-tête
-    // du calendrier et le tableau de bord — trois écrans, un seul compte.
-    compterEtatCalendrier(id),
     // Et le parc ne disait rien du silence : un appareil pour lequel le
     // référentiel ne produit aucune échéance est rendu comme un appareil à
     // jour — c'est-à-dire comme une réponse alors que personne n'en a
@@ -69,6 +66,24 @@ export default async function EquipementsPage({
     estIGH: etab.estIGH,
     estHabitation: etab.estHabitation,
   });
+
+  // Les chiffres du bandeau ne comptent que le parc AFFICHÉ. Le compteur
+  // de l'établissement (`compterEtatCalendrier`) embrasse aussi les
+  // vérifications des équipements retirés — elles survivent au retrait dès
+  // qu'elles portent un rapport ou une action (ADR-012). Après le retrait
+  // d'un appareil en retard, le bandeau annonçait « 1 en retard » alors
+  // qu'aucune carte de l'écran n'en montrait : un en-tête ne doit jamais
+  // contredire ce qu'il coiffe.
+  const compteurs = equipements.reduce(
+    (acc, eq) => {
+      const e = etatsVerifs.get(eq.id);
+      return {
+        enRetard: acc.enRetard + (e?.enRetard ?? 0),
+        proches: acc.proches + (e?.proches ?? 0),
+      };
+    },
+    { enRetard: 0, proches: 0 },
+  );
 
   const dejaDeclarees = new Set(equipements.map((e) => e.categorie));
   const suggestionsRestantes = suggestions.filter(
@@ -120,7 +135,7 @@ export default async function EquipementsPage({
       <BandeauParc
         hrefRetour={base}
         enRetard={compteurs.enRetard}
-        proches={compteurs.aVenir}
+        proches={compteurs.proches}
         total={equipements.length}
         hrefAjouter={`${base}/equipements/nouveau`}
         suggestions={

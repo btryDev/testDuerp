@@ -519,7 +519,10 @@ export default async function CalendrierPage({
         libelle: e.libelle,
         categorie: e.categorie,
         categorieCode: e.categorieCode,
-        hrefFiche: `/etablissements/${id}/equipements/${idEq}/modifier`,
+        // La fiche de l'appareil, pas son formulaire : ouvrir un champ de
+        // saisie quand on demande à voir un équipement était le seul
+        // chemin disponible avant qu'elle existe.
+        hrefFiche: `/etablissements/${id}/equipements/${idEq}`,
         mois: e.mois,
         enRetard: e.compte.enRetard,
         proche: e.compte.proche,
