@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { instantCivil } from "@/lib/dates";
 import { construireBrief, type EntreeBrief } from "./brief";
+import type { FamilleEcheance } from "@/lib/calendrier/echeances";
 import { evaluerEtatDuerp } from "./duerp";
 import { LONGUEUR_LIBELLE_MAX, raccourcirLibelle } from "./libelles";
 
@@ -21,34 +22,47 @@ function duerpDe(ageJours: number | null, effectif = 20) {
   );
 }
 
+/** Une ventilation par famille, à partir des seules familles nommées. */
+function ventil(parFamille: Partial<Record<FamilleEcheance, number>> = {}) {
+  const complet = {
+    controle: 0,
+    travaux: 0,
+    operations: 0,
+    papiers: 0,
+    personnel: 0,
+    ...parFamille,
+  };
+  return {
+    parFamille: complet,
+    total: Object.values(complet).reduce((a, b) => a + b, 0),
+  };
+}
+
 const CALME: EntreeBrief = {
   aujourdhui: LE_8_AOUT,
-  compteurs: {
-    verifsEnRetard: 0,
-    verifsAPlanifier: 0,
-    verifsSous30j: 0,
-    actionsEnRetard: 0,
-    actionsOuvertes: 0,
-    actionsEnCours: 0,
-  },
+  retards: ventil(),
+  sous30j: ventil(),
+  verifsAPlanifier: 0,
   duerp: { existe: true, estAJour: true },
   recommandations: [],
   nbRapports: 4,
 };
 
 describe("construireBrief — titre", () => {
-  it("compte ensemble les vérifications et les actions en retard", () => {
+  it("compte ensemble toutes les familles en retard", () => {
+    // Le titre disait « Une échéance » à un dossier qui portait aussi une
+    // attestation expirée : il n'additionnait que deux familles sur cinq.
     const b = construireBrief({
       ...CALME,
-      compteurs: { ...CALME.compteurs, verifsEnRetard: 1, actionsEnRetard: 1 },
+      retards: ventil({ controle: 1, travaux: 1, papiers: 1 }),
     });
-    expect(b.titre).toBe("Deux échéances à traiter cette semaine");
+    expect(b.titre).toBe("Trois échéances à traiter cette semaine");
   });
 
   it("accorde le singulier", () => {
     const b = construireBrief({
       ...CALME,
-      compteurs: { ...CALME.compteurs, verifsEnRetard: 1 },
+      retards: ventil({ controle: 1 }),
     });
     expect(b.titre).toBe("Une échéance à traiter cette semaine");
   });
@@ -56,7 +70,7 @@ describe("construireBrief — titre", () => {
   it("bascule sur les trente jours quand rien n'est en retard", () => {
     const b = construireBrief({
       ...CALME,
-      compteurs: { ...CALME.compteurs, verifsSous30j: 3 },
+      sous30j: ventil({ controle: 2, papiers: 1 }),
     });
     expect(b.titre).toBe("Trois échéances dans les trente jours");
   });
@@ -64,7 +78,7 @@ describe("construireBrief — titre", () => {
   it("mentionne les vérifications à planifier en dernier recours", () => {
     const b = construireBrief({
       ...CALME,
-      compteurs: { ...CALME.compteurs, verifsAPlanifier: 2 },
+      verifsAPlanifier: 2,
     });
     expect(b.titre).toBe("Deux vérifications restent à planifier");
   });
@@ -76,7 +90,7 @@ describe("construireBrief — titre", () => {
   it("passe aux chiffres au-delà de neuf", () => {
     const b = construireBrief({
       ...CALME,
-      compteurs: { ...CALME.compteurs, verifsEnRetard: 12 },
+      retards: ventil({ controle: 12 }),
     });
     expect(b.titre).toBe("12 échéances à traiter cette semaine");
   });
@@ -156,15 +170,11 @@ describe("construireBrief — paragraphe", () => {
   it("énumère les restes en français", () => {
     const b = construireBrief({
       ...CALME,
-      compteurs: {
-        ...CALME.compteurs,
-        verifsEnRetard: 2,
-        verifsAPlanifier: 1,
-        actionsEnRetard: 3,
-      },
+      retards: ventil({ controle: 2, travaux: 3, papiers: 1 }),
+      verifsAPlanifier: 1,
     });
     expect(b.paragraphe).toContain(
-      "Il reste 2 vérifications dépassées, 1 vérification à programmer et 3 actions dont la date est passée.",
+      "Il reste 2 vérifications dépassées, 3 corrections en retard, 1 document à renouveler et 1 vérification à programmer.",
     );
   });
 });
@@ -256,7 +266,7 @@ describe("construireBrief — amorçage", () => {
   it("une urgence réelle garde son titre chiffré, même avec une amorce en reco", () => {
     const b = construireBrief({
       ...CALME,
-      compteurs: { ...CALME.compteurs, verifsEnRetard: 1 },
+      retards: ventil({ controle: 1 }),
       recommandations: [
         { kind: "verif_depassee", titre: "Extincteurs", href: "/a" },
         { kind: "amorce_duerp", titre: "Ouvrez votre DUERP", href: "/d" },

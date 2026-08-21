@@ -12,6 +12,7 @@ import type {
   EvenementFenetre,
 } from "@/lib/dashboard/queries";
 import type { EvenementGrille } from "@/lib/calendrier/grille";
+import type { EtatEcheances } from "@/lib/calendrier/retards";
 import type { ModulesMatrice } from "@/lib/dashboard/obligations";
 import type { StatsRetardActions } from "@/lib/actions/queries";
 
@@ -134,6 +135,18 @@ export type DashboardBundle = {
   batimentFiltre: { id: string; nom: string } | null;
   etablissement: EtablissementLite;
   dashboard: DashboardData;
+  /**
+   * Le dépassé et l'horizon proche, ventilés par famille — **la** source
+   * des nombres de retard du board (`lib/calendrier/retards`), la même que
+   * celle des badges de la sidebar et du bandeau du calendrier.
+   *
+   * Aucun bloc ne recompte : le bandeau d'accueil additionnait deux
+   * familles sur cinq, le widget « Échéances » comptait les dates passées
+   * de la frise (donc aussi celles d'un permis clos), et l'écran affichait
+   * trois nombres sous le même mot. Suit le filtre bâtiment, comme les
+   * listes qu'il surplombe.
+   */
+  echeances: EtatEcheances;
   equipements: EquipementLite[];
   barsData: BarMois[];
   /** Date de référence, calculée côté serveur : garantit un rendu

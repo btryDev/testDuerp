@@ -40,7 +40,7 @@ import { HeroBatiments } from "./hero-batiments";
 import type { Recommandation } from "@/lib/dashboard/recommandations";
 import { construireFrise, type EchelleFrise } from "@/lib/dashboard/frise";
 import { composantesCiviles } from "@/lib/dates";
-import { estEnRetard, estVerificationEnRetard } from "@/lib/dates/retard";
+import { estVerificationEnRetard } from "@/lib/dates/retard";
 import {
   badgeEcart,
   compteARebours,
@@ -48,7 +48,12 @@ import {
   libelleAnteriorite,
   libelleDateCourte,
 } from "../temps";
-import { MarqueurEcheance } from "@/components/calendrier/MarqueurFamille";
+import {
+  MarqueurEcheance,
+  MarqueurFamille,
+} from "@/components/calendrier/MarqueurFamille";
+import type { FamilleEcheance } from "@/lib/calendrier/echeances";
+import type { VentilationEcheances } from "@/lib/calendrier/retards";
 import { VueMois } from "@/components/calendrier/VueMois";
 import { VueAnnee } from "@/components/calendrier/VueAnnee";
 import {
@@ -187,6 +192,81 @@ function Pastille({
       {children}
     </span>
   );
+}
+
+/** Ordre de lecture des familles — celui du calendrier. */
+const ORDRE_FAMILLES: FamilleEcheance[] = [
+  "controle",
+  "travaux",
+  "operations",
+  "papiers",
+  "personnel",
+];
+
+/**
+ * Le mot de chaque famille, accordé en nombre.
+ *
+ * Ce sont ceux de `LABEL_FAMILLE`, que le rail et le calendrier affichent
+ * — mais toujours au pluriel, parce qu'ils y nomment une catégorie et non
+ * une quantité. Ici le mot suit un chiffre : « 1 opérations » trahirait
+ * que personne n'a relu la ligne.
+ */
+const MOT_FAMILLE: Record<FamilleEcheance, [string, string]> = {
+  controle: ["vérification", "vérifications"],
+  travaux: ["correction", "corrections"],
+  operations: ["opération", "opérations"],
+  papiers: ["document", "documents"],
+  personnel: ["échéance personnel", "échéances personnel"],
+};
+
+/** Le mot de la famille pour `n` éléments. */
+function motFamille(famille: FamilleEcheance, n: number): string {
+  const [singulier, pluriel] = MOT_FAMILLE[famille];
+  return n > 1 ? pluriel : singulier;
+}
+
+/**
+ * Le détail d'un total, famille par famille : « 14 vérifications ·
+ * 9 corrections · 2 documents ».
+ *
+ * Le nombre seul ne dit pas par quel bout prendre la journée — une
+ * vérification se commande à un organisme, un document se redemande à un
+ * prestataire, une correction se mène en interne. Les familles à zéro ne
+ * sont pas affichées : une ligne « 0 opération » ferait du bruit là où
+ * l'absence se lit très bien.
+ */
+function VentilationFamilles({
+  ventilation,
+  className = "",
+}: {
+  ventilation: VentilationEcheances;
+  className?: string;
+}) {
+  const postes = ORDRE_FAMILLES.filter((f) => ventilation.parFamille[f] > 0);
+  if (postes.length === 0) return null;
+  return (
+    <ul
+      className={
+        "m-0 flex list-none flex-wrap items-center gap-x-3 gap-y-1.5 p-0 text-[12.5px] text-[color:var(--board-slate-mid)] " +
+        className
+      }
+    >
+      {postes.map((f) => (
+        <li key={f} className="inline-flex items-center gap-1.5">
+          <MarqueurFamille famille={f} className="size-[13px]" />
+          <span className="tabular-nums">{ventilation.parFamille[f]}</span>
+          <span>{motFamille(f, ventilation.parFamille[f])}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** La même ventilation, en une ligne de texte — pour un `title`. */
+function libelleVentilation(ventilation: VentilationEcheances): string {
+  return ORDRE_FAMILLES.filter((f) => ventilation.parFamille[f] > 0)
+    .map((f) => `${ventilation.parFamille[f]} ${motFamille(f, ventilation.parFamille[f])}`)
+    .join(" · ");
 }
 
 function Lien({
@@ -328,12 +408,17 @@ function Releve({
 }
 
 export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
-  const { aujourdhui, dashboard, nbRapports } = bundle;
-  const { compteurs, duerp, recommandations } = dashboard;
+  const { aujourdhui, dashboard, echeances, nbRapports } = bundle;
+  const { duerp, recommandations } = dashboard;
+  // Un seul agrégat pour le titre comme pour les relevés chiffrés.
+  // Cf. `DashboardBundle.echeances`.
+  const { retards, sous30j } = echeances;
 
   const brief = construireBrief({
     aujourdhui,
-    compteurs,
+    retards,
+    sous30j,
+    verifsAPlanifier: echeances.verifsAPlanifier,
     // `etat` transmis : sans lui le brief se rabattait sur sa formulation de
     // repli et n'annonçait jamais « aucune version validée » — il disait
     // « votre DUERP a plus de douze mois » à quelqu'un qui venait de l'ouvrir.
@@ -358,8 +443,9 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
   // l'outil minorait la non-conformité, ce qu'il s'interdit.
   const titre = brief.titre;
 
-  // Même agrégat que `construireBrief` : ce qui est dépassé.
-  const totalUrgent = compteurs.verifsEnRetard + compteurs.actionsEnRetard;
+  // Le même agrégat que le titre, la pastille du widget « Échéances » et
+  // le badge de la barre latérale : toutes familles confondues.
+  const totalUrgent = retards.total;
 
   const { etablissement, batiments } = bundle;
   const srcIllustration = sourceIllustrationBatiment(
@@ -413,7 +499,9 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
               </div>
               <div className="w-px bg-[color:rgba(10,10,10,.12)]" />
               <div className="px-[26px]">
-                <Releve valeur={compteurs.verifsSous30j} libelle="Sous 30 j" />
+                {/* Toutes familles, comme le relevé d'à côté : ce
+                    compteur-ci ne comptait que les vérifications. */}
+                <Releve valeur={sous30j.total} libelle="Sous 30 j" />
               </div>
               <div className="w-px bg-[color:rgba(10,10,10,.12)]" />
               <div className="pl-[26px]">
@@ -460,19 +548,19 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
  * extrait. Sans lui, deux cartes se lisent comme « il n'y a que ça ».
  */
 export function BlocParOuCommencer({ bundle }: { bundle: DashboardBundle }) {
-  const { etablissementId, aujourdhui, dashboard } = bundle;
-  const { compteurs, recommandations } = dashboard;
+  const { etablissementId, aujourdhui, dashboard, echeances } = bundle;
+  const { recommandations } = dashboard;
 
   const reelles = recommandations.filter((r) => r.priorite <= 5);
   const file = (reelles.length > 0 ? reelles : recommandations).slice(0, 2);
 
-  const totalUrgent = compteurs.verifsEnRetard + compteurs.actionsEnRetard;
+  const totalUrgent = echeances.retards.total;
   const extrait = reelles.length > 0 && totalUrgent > file.length;
 
   // « Autre » au sens strict : les vérifications proches déjà en carte ne
   // sont pas recomptées dans le solde.
   const prochesAffichees = file.filter((r) => r.kind === "verif_proche").length;
-  const sous30j = Math.max(0, compteurs.verifsSous30j - prochesAffichees);
+  const resteSous30j = Math.max(0, echeances.sous30j.total - prochesAffichees);
   const hrefCalendrier = `/etablissements/${etablissementId}/calendrier`;
 
   return (
@@ -499,7 +587,7 @@ export function BlocParOuCommencer({ bundle }: { bundle: DashboardBundle }) {
       {/* Le solde de la file. À zéro, on le dit — le silence se lirait
           comme un oubli ; sinon, la ligne est la porte vers le
           calendrier. */}
-      {sous30j > 0 ? (
+      {resteSous30j > 0 ? (
         <Link
           href={hrefCalendrier}
           className="mt-3 flex items-center gap-3 rounded-[18px] border border-dashed border-[color:rgba(10,10,10,.28)] px-4 py-3 transition-colors hover:border-solid hover:bg-[color:var(--board-blue-pale)]/40"
@@ -508,8 +596,8 @@ export function BlocParOuCommencer({ bundle }: { bundle: DashboardBundle }) {
             <CalendarDays className="size-3.5 text-[color:var(--board-ink)]" />
           </span>
           <span className="text-[13px] text-[color:var(--board-slate-ink)]">
-            {sous30j} autre{sous30j > 1 ? "s" : ""} échéance
-            {sous30j > 1 ? "s" : ""} sous 30 jours — voir le calendrier
+            {resteSous30j} autre{resteSous30j > 1 ? "s" : ""} échéance
+            {resteSous30j > 1 ? "s" : ""} sous 30 jours — voir le calendrier
           </span>
         </Link>
       ) : (
@@ -686,17 +774,25 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
     });
   };
 
-  // Le compte « en retard » de l'en-tête ne vient pas de la frise :
+  // Le compte « en retard » de l'en-tête ne vient ni de la frise ni des
+  // dates de `evenementsHorizon`, mais de l'agrégat du bundle — le même
+  // que le bandeau d'accueil, la sidebar et la page calendrier.
+  //
+  // Deux raisons, toutes deux vérifiées sur des dossiers réels :
   // `construireFrise` place ses marqueurs avec un `minuit()` calculé dans
   // le fuseau du **navigateur** (cf. `lib/dashboard/frise.ts`), ce qui
-  // décale le compte d'un jour à l'ouest de UTC. Ici on applique le
-  // prédicat de retard partagé (ADR-011), qui répond la même chose partout.
-  const nbEnRetard = bundle.evenementsHorizon.filter((e) =>
-    estEnRetard(e.date, bundle.aujourdhui),
-  ).length;
+  // décale le compte d'un jour à l'ouest de UTC ; et compter les dates
+  // passées comptait aussi celles d'un permis de feu **clos** la semaine
+  // dernière, que le registre marque `ok`. Le dépassement se lit sur le
+  // ton, jamais sur la date seule.
+  const retards = bundle.echeances.retards;
+  const nbEnRetard = retards.total;
 
   const hrefCalendrier = `/etablissements/${bundle.etablissementId}/calendrier`;
-  const nbSansDate = bundle.dashboard.compteurs.verifsAPlanifier;
+  // Du même agrégat que le reste : celui du `dashboard` ignore le filtre
+  // bâtiment, et annonçait des occurrences sans date qui n'étaient pas
+  // dans la liste posée juste en dessous.
+  const nbSansDate = bundle.echeances.verifsAPlanifier;
 
   return (
     <CarteBoard className="px-[30px] pb-5 pt-[26px]">
@@ -717,15 +813,23 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                 : "Mois par mois, ce qui tombe et quel jour."
               : "Ce qui tombe, quand, et ce qui est déjà pris en charge — faites défiler pour aller jusqu’à 24 mois."}
           </p>
+          {/* Ce que la pastille recouvre. Un nombre unique ne dit pas s'il
+              faut faire venir un organisme ou relancer un prestataire ;
+              le bandeau d'accueil le dit en toutes lettres, ce bloc-ci
+              n'a que cette ligne pour le dire. */}
+          {nbEnRetard > 0 ? (
+            <VentilationFamilles ventilation={retards} className="mt-2.5" />
+          ) : null}
         </div>
         <div className="ml-auto flex items-center gap-2">
           {nbEnRetard > 0 ? (
             <Link
               href={hrefCalendrier}
-              // Toutes familles confondues, comme le calendrier — et non
-              // les seules vérifications, comme le badge de la barre
-              // latérale. Les deux nombres peuvent donc différer.
-              title="Échéances en retard, toutes familles confondues (contrôles, travaux, papiers)"
+              // Toutes familles confondues, comme le calendrier et le
+              // bandeau d'accueil — et non les seules vérifications, comme
+              // le badge « Contrôles matériel » de la barre latérale, qui
+              // nomme explicitement son périmètre plus étroit.
+              title={`${nbEnRetard} échéance${nbEnRetard > 1 ? "s" : ""} en retard, toutes familles confondues — ${libelleVentilation(retards)}`}
               className="hidden sm:inline-block"
             >
               <Pastille ton="alerte">

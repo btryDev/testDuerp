@@ -19,6 +19,7 @@ import {
   listerEvenementsFenetre,
 } from "@/lib/dashboard/queries";
 import { listerEvenementsCalendrier } from "@/lib/calendrier/evenements";
+import { compterEtatEcheances } from "@/lib/calendrier/retards";
 import { statsActionsEnRetard } from "@/lib/actions/queries";
 import { prisma } from "@/lib/prisma";
 import { composantesCiviles, joursCivilsEntre } from "@/lib/dates";
@@ -59,6 +60,7 @@ export default async function EtablissementPage({
     equipements,
     statsEquipements,
     dashboard,
+    echeances,
     barsData,
     evenementsHorizon,
     evenementsSemaine,
@@ -77,12 +79,15 @@ export default async function EtablissementPage({
     ),
     compterVerifsParEquipement(id),
     getDashboardData(id),
+    // Le dépassé et l'horizon proche, ventilés par famille : la seule
+    // source des nombres de retard du board (cf. `DashboardBundle`).
+    compterEtatEcheances(id, aujourdhui, { batimentId: batimentFiltre }),
     compterObligationsParMois(id),
     // La frise défile jusqu'à 24 mois et propose une vue calendrier sur
     // la même donnée — une seule collecte pour les deux vues, qui coupent
     // côté client. Toutes familles confondues, comme la page Calendrier :
     // un permis de feu ou une attestation en retard doit se voir ici.
-    listerEvenementsCalendrier(id, { batimentId: batimentFiltre }),
+    listerEvenementsCalendrier(id, { batimentId: batimentFiltre }, aujourdhui),
     listerEvenementsFenetre(id, 7, { batimentId: batimentFiltre }),
     listerEvenementsFenetre(id, 30, { batimentId: batimentFiltre }),
     statsActionsEnRetard(id),
@@ -189,6 +194,7 @@ export default async function EtablissementPage({
       },
     },
     dashboard,
+    echeances,
     equipements: equipements.map((e) => ({
       id: e.id,
       libelle: e.libelle,

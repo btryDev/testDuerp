@@ -6,21 +6,28 @@
 // n'est décorative : si un chiffre est à zéro, la clause disparaît plutôt
 // que d'être remplacée par du remplissage.
 //
+// Les nombres viennent d'une **seule** source, `lib/calendrier/retards` :
+// le brief additionnait auparavant deux familles sur cinq (vérifications
+// et actions) et annonçait donc moins de retards que le calendrier, la
+// sidebar et le widget posés sur le même écran.
+//
 // Le module est volontairement structurel (pas d'import de `queries.ts`,
 // qui tirerait Prisma) pour rester testable en environnement `node`.
 
 import { FUSEAU_REFERENCE } from "@/lib/dates";
+import type { FamilleEcheance } from "@/lib/calendrier/echeances";
 import { raccourcirLibelle } from "./libelles";
 import type { EtatDuerp } from "./duerp";
 import type { Recommandation } from "./recommandations";
 
-export type CompteursBrief = {
-  verifsEnRetard: number;
-  verifsAPlanifier: number;
-  verifsSous30j: number;
-  actionsEnRetard: number;
-  actionsOuvertes: number;
-  actionsEnCours: number;
+/**
+ * Une ventilation par famille et son total — la forme rendue par
+ * `lib/calendrier/retards`, reprise telle quelle pour que les deux ne
+ * puissent pas diverger.
+ */
+export type VentilationBrief = {
+  parFamille: Record<FamilleEcheance, number>;
+  total: number;
 };
 
 export type DuerpBrief = {
@@ -46,7 +53,17 @@ export type RecoBrief = {
 
 export type EntreeBrief = {
   aujourdhui: Date;
-  compteurs: CompteursBrief;
+  /** Le dépassé, toutes familles confondues. */
+  retards: VentilationBrief;
+  /** Ce qui tombe dans les trente jours sans être dépassé. */
+  sous30j: VentilationBrief;
+  /**
+   * Vérifications sans date de rendez-vous et pas encore dépassées : ni un
+   * retard, ni un engagement daté. Annoncé à part, jamais fondu dans les
+   * deux ventilations — sans quoi la même occurrence serait comptée deux
+   * fois le jour où elle bascule.
+   */
+  verifsAPlanifier: number;
   duerp: DuerpBrief;
   recommandations: RecoBrief[];
   nbRapports: number;
@@ -131,23 +148,51 @@ const TONS_ALERTE: ReadonlySet<RecoBrief["kind"]> = new Set([
   "action_en_retard",
 ]);
 
-function construireTitre(c: CompteursBrief): string {
-  const urgent = c.verifsEnRetard + c.actionsEnRetard;
+function construireTitre(e: EntreeBrief): string {
+  const urgent = e.retards.total;
   if (urgent > 0) {
     return `${enLettres(urgent)} ${urgent > 1 ? "échéances" : "échéance"} à traiter cette semaine`;
   }
-  if (c.verifsSous30j > 0) {
-    return `${enLettres(c.verifsSous30j)} ${
-      c.verifsSous30j > 1 ? "échéances" : "échéance"
+  const proche = e.sous30j.total;
+  if (proche > 0) {
+    return `${enLettres(proche)} ${
+      proche > 1 ? "échéances" : "échéance"
     } dans les trente jours`;
   }
-  if (c.verifsAPlanifier > 0) {
-    return `${enLettres(c.verifsAPlanifier)} ${
-      c.verifsAPlanifier > 1 ? "vérifications" : "vérification"
+  if (e.verifsAPlanifier > 0) {
+    return `${enLettres(e.verifsAPlanifier)} ${
+      e.verifsAPlanifier > 1 ? "vérifications" : "vérification"
     } restent à planifier`;
   }
   return "Rien ne presse cette semaine";
 }
+
+/**
+ * Comment se nomme le retard de chaque famille, au singulier et au pluriel.
+ *
+ * Le paragraphe ne peut pas se contenter du total : « il reste 25 échéances »
+ * ne dit pas s'il s'agit de contrôles à faire venir ou de papiers à
+ * redemander, et ces deux-là ne se règlent pas du tout de la même façon.
+ * Les libellés d'interface (`LABEL_FAMILLE`) vivent dans un composant, que
+ * ce module ne peut pas importer sans tirer React : ce sont les mêmes mots,
+ * accordés pour une phrase.
+ */
+const NOM_RETARD: Record<FamilleEcheance, [string, string]> = {
+  controle: ["vérification dépassée", "vérifications dépassées"],
+  travaux: ["correction en retard", "corrections en retard"],
+  operations: ["opération en retard", "opérations en retard"],
+  papiers: ["document à renouveler", "documents à renouveler"],
+  personnel: ["échéance personnel", "échéances personnel"],
+};
+
+/** Ordre de lecture du paragraphe — celui du calendrier. */
+const ORDRE_FAMILLES: FamilleEcheance[] = [
+  "controle",
+  "travaux",
+  "operations",
+  "papiers",
+  "personnel",
+];
 
 /**
  * Ce que le brief a le droit de dire du DUERP.
@@ -176,7 +221,7 @@ function phraseDuerp(duerp: DuerpBrief): string | null {
 }
 
 function construireParagraphe(e: EntreeBrief): string {
-  const { compteurs: c, duerp } = e;
+  const { duerp } = e;
 
   const acquis: string[] = [];
   // « À jour » n'est affirmé que sur une version réellement récente : pour
@@ -194,19 +239,15 @@ function construireParagraphe(e: EntreeBrief): string {
   }
 
   const restes: string[] = [];
-  if (c.verifsEnRetard > 0) {
-    restes.push(
-      `${c.verifsEnRetard} vérification${c.verifsEnRetard > 1 ? "s" : ""} dépassée${c.verifsEnRetard > 1 ? "s" : ""}`,
-    );
+  for (const famille of ORDRE_FAMILLES) {
+    const n = e.retards.parFamille[famille];
+    if (n === 0) continue;
+    const [singulier, pluriel] = NOM_RETARD[famille];
+    restes.push(`${n} ${n > 1 ? pluriel : singulier}`);
   }
-  if (c.verifsAPlanifier > 0) {
+  if (e.verifsAPlanifier > 0) {
     restes.push(
-      `${c.verifsAPlanifier} vérification${c.verifsAPlanifier > 1 ? "s" : ""} à programmer`,
-    );
-  }
-  if (c.actionsEnRetard > 0) {
-    restes.push(
-      `${c.actionsEnRetard} action${c.actionsEnRetard > 1 ? "s" : ""} dont la date est passée`,
+      `${e.verifsAPlanifier} vérification${e.verifsAPlanifier > 1 ? "s" : ""} à programmer`,
     );
   }
 
@@ -247,7 +288,7 @@ export function construireBrief(e: EntreeBrief): Brief {
     ton: TONS_ALERTE.has(r.kind) ? "alerte" : "neutre",
   }));
 
-  let titre = construireTitre(e.compteurs);
+  let titre = construireTitre(e);
   const premiere = e.recommandations[0];
   if (titre === "Rien ne presse cette semaine" && premiere) {
     titre = TITRE_AMORCE[premiere.kind] ?? titre;

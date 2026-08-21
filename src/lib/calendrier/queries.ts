@@ -140,12 +140,20 @@ export async function getVerification(id: string) {
 export async function compterEtatCalendrier(
   etablissementId: string,
   now: Date = new Date(),
+  // Le bâtiment (ADR-019) : une vérification est portée par un équipement,
+  // donc par un lieu. Sans ce filtre, un tableau de bord restreint à un
+  // bâtiment annonçait les retards de tout l'établissement au-dessus d'une
+  // liste qui n'en montrait qu'une partie.
+  filtres: { batimentId?: string } = {},
 ) {
   const user = await requireUser();
   const verifs = await prisma.verification.findMany({
     where: {
       etablissementId,
       etablissement: { entreprise: { userId: user.id } },
+      ...(filtres.batimentId
+        ? { equipement: { batimentId: filtres.batimentId } }
+        : {}),
     },
     select: { statut: true, datePrevue: true, dateRealisee: true },
   });
