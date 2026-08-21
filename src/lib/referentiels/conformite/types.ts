@@ -27,6 +27,7 @@ export const DOMAINES_OBLIGATION = [
   "equipement_sous_pression",
   "stockage_dangereux",
   "levage",
+  "froid",
 ] as const;
 
 export type DomaineObligation = (typeof DOMAINES_OBLIGATION)[number];
@@ -38,6 +39,13 @@ export const SOURCES_LEGALES = [
   "ARRETE",
   "DECRET",
   "INRS",
+  // Un règlement européen est d'application directe : il est opposable sans
+  // transposition, et se cite donc comme source primaire au même titre qu'un
+  // article de code. Ajouté pour le contrôle d'étanchéité des fluides
+  // frigorigènes, dont les seuils et les périodicités ne vivent plus que dans
+  // le règlement (UE) 2024/573 — le droit national renvoyant encore au texte
+  // qu'il abroge.
+  "REGLEMENT_UE",
 ] as const;
 
 export type SourceLegale = (typeof SOURCES_LEGALES)[number];

@@ -1,0 +1,26 @@
+-- ============================================================================
+-- Nouvelle catégorie d'équipement : INSTALLATION_FRIGORIFIQUE
+--
+-- Le référentiel de conformité ne connaissait pas les installations
+-- frigorifiques, alors qu'une chambre froide, une vitrine réfrigérée ou un
+-- groupe froid existent dans la quasi-totalité des commerces alimentaires et
+-- des restaurants — les deux secteurs déjà livrés. Le contrôle d'étanchéité
+-- du circuit de fluide frigorigène (art. R. 543-79 du code de l'environnement,
+-- règlement (UE) 2024/573 art. 5) est une obligation périodique, datée, avec
+-- un réalisateur certifié : exactement la forme des obligations existantes.
+--
+-- La valeur est insérée AVANT 'AUTRE' pour que l'ordre de l'enum PostgreSQL
+-- reste le reflet exact de `CATEGORIES_EQUIPEMENT` (src/lib/referentiels/
+-- types-communs.ts) et de l'enum du schéma Prisma. L'ordre de l'enum gouverne
+-- l'ordre d'affichage du sélecteur de catégorie du formulaire d'équipement ;
+-- une divergence se verrait à l'écran.
+--
+-- Ajout pur : aucune ligne existante n'est touchée, aucune valeur n'est
+-- retirée. Les `Equipement` déjà en base gardent leur catégorie.
+--
+-- `ALTER TYPE … ADD VALUE` s'exécute dans la transaction de la migration à
+-- partir de PostgreSQL 12 ; la nouvelle valeur n'y est simplement pas
+-- utilisable, ce qu'aucune instruction ci-dessous ne demande.
+-- ============================================================================
+
+ALTER TYPE "CategorieEquipement" ADD VALUE 'INSTALLATION_FRIGORIFIQUE' BEFORE 'AUTRE';

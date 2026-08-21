@@ -22,6 +22,7 @@ describe("suggererEquipements — secteurs cibles V2", () => {
     expect(cats).toContain("BAES");
     expect(cats).toContain("ALARME_INCENDIE");
     expect(cats).toContain("VMC");
+    expect(cats).toContain("INSTALLATION_FRIGORIFIQUE");
   });
 
   it("commerce de détail (NAF 47.11B) — ERP + travail", () => {
@@ -37,6 +38,38 @@ describe("suggererEquipements — secteurs cibles V2", () => {
     expect(cats).toContain("BAES");
     expect(cats).toContain("EXTINCTEUR");
     expect(cats).toContain("ALARME_INCENDIE");
+    expect(cats).toContain("INSTALLATION_FRIGORIFIQUE");
+  });
+
+  it("l'installation frigorifique est suggérée avec sa raison, pas sans", () => {
+    // Une suggestion sans motif vérifiable est une suggestion qu'on ne peut
+    // pas défendre devant l'utilisateur : la raison cite l'article qui fonde
+    // le contrôle d'étanchéité.
+    for (const naf of ["56.10A", "47.11B"]) {
+      const entree = suggererEquipements({
+        codeNaf: naf,
+        estEtablissementTravail: true,
+        estERP: true,
+        estIGH: false,
+        estHabitation: false,
+      }).find((e) => e.categorie === "INSTALLATION_FRIGORIFIQUE");
+      expect(entree, naf).toBeDefined();
+      expect(entree?.raison).toContain("R. 543-79");
+      expect(entree?.raison).toContain("2024/573");
+    }
+  });
+
+  it("un bureau tertiaire ne se voit pas proposer d'installation frigorifique", () => {
+    const cats = categories(
+      suggererEquipements({
+        codeNaf: "70.22Z",
+        estEtablissementTravail: true,
+        estERP: false,
+        estIGH: false,
+        estHabitation: false,
+      }),
+    );
+    expect(cats).not.toContain("INSTALLATION_FRIGORIFIQUE");
   });
 
   it("bureau tertiaire (NAF 70.22Z) — travail seul", () => {

@@ -10,6 +10,8 @@
  *   - P2 : cuisson/hotte, ascenseurs, portes et portails automatiques
  *   - P3 : équipements sous pression, stockage de matières dangereuses,
  *     équipements de levage
+ *   - hors PLAN : froid — contrôle d'étanchéité des installations
+ *     frigorifiques (R. 543-79 code de l'environnement, règlement UE 2024/573)
  */
 
 import type { DomaineObligation, Obligation } from "./types";
@@ -22,6 +24,7 @@ import { obligationsPortesPortails } from "./portes-portails";
 import { obligationsEquipementSousPression } from "./equipement-sous-pression";
 import { obligationsStockageDangereux } from "./stockage-dangereux";
 import { obligationsLevage } from "./levage";
+import { obligationsFroid } from "./froid";
 
 export {
   obligationsElectricite,
@@ -33,6 +36,7 @@ export {
   obligationsEquipementSousPression,
   obligationsStockageDangereux,
   obligationsLevage,
+  obligationsFroid,
 };
 export * from "./types";
 
@@ -46,6 +50,7 @@ export const obligationsConformite: Obligation[] = [
   ...obligationsEquipementSousPression,
   ...obligationsStockageDangereux,
   ...obligationsLevage,
+  ...obligationsFroid,
 ];
 
 /**
@@ -67,7 +72,7 @@ export const obligationsConformite: Obligation[] = [
  * `conformite.test.ts` compare une empreinte du contenu à celle enregistrée :
  * l'oubli fait échouer la suite.
  */
-export const REFERENTIEL_VERSION = "2026-08-20.2";
+export const REFERENTIEL_VERSION = "2026-08-21.1";
 
 /**
  * Sérialisation canonique d'une valeur du référentiel : clés d'objet triées,

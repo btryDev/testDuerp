@@ -4,8 +4,10 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  * Pictos isométriques des catégories d'équipement, découpés depuis la
  * planche source par scripts/decouper-planche-pictos.py.
  *
- * INSTALLATION_ELECTRIQUE et AUTRE n'ont pas encore de picto dessiné :
- * le composant <PictoEquipement> affiche alors un fallback lucide.
+ * INSTALLATION_ELECTRIQUE, INSTALLATION_FRIGORIFIQUE et AUTRE n'ont pas encore
+ * de picto dessiné : le composant <PictoEquipement> affiche alors un fallback
+ * lucide (Zap, Snowflake, Wrench). Une catégorie sans entrée ici n'est donc pas
+ * une catégorie sans picto — elle attend seulement son dessin sur la planche.
  */
 export const PICTO_CATEGORIE_EQUIPEMENT: Partial<
   Record<CategorieEquipement, string>

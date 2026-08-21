@@ -11,9 +11,11 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  *
  * Sources de la logique métier :
  *   - Code NAF 56.xx (restauration) → cuisine professionnelle → hotte,
- *     appareils de cuisson, VMC, installation électrique, extincteurs.
+ *     appareils de cuisson, VMC, installation électrique, extincteurs,
+ *     installation frigorifique.
  *   - Code NAF 47.xx (commerce de détail) → ERP fréquent → extincteurs,
- *     BAES, alarme, installation électrique, ventilation éventuelle.
+ *     BAES, alarme, installation électrique, ventilation éventuelle,
+ *     installation frigorifique.
  *   - Tertiaire / bureau → installation électrique, BAES, alarme, VMC,
  *     éventuels portes automatiques et ascenseurs si bâtiment collectif.
  *   - Typologie ERP → extincteurs, BAES, alarme, SSI systématiques.
@@ -157,6 +159,12 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
   // ---------------------------------------------------------------------------
   if (isRestauration(naf)) {
     ajoute({
+      categorie: "INSTALLATION_FRIGORIFIQUE",
+      libelle: "Chambre froide / groupe froid",
+      raison:
+        "Contrôle d'étanchéité du fluide frigorigène par un opérateur certifié (R. 543-79 code de l'environnement, règlement UE 2024/573 art. 5).",
+    });
+    ajoute({
       categorie: "HOTTE_PRO",
       libelle: "Hotte d'extraction cuisine",
       raison:
@@ -170,9 +178,12 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
   }
 
   if (isCommerce(naf)) {
-    // Les commerces de détail ont en général une installation frigorifique
-    // et un système de sécurité incendie. On limite la suggestion aux
-    // catégories couvertes par le MVP V2.
+    ajoute({
+      categorie: "INSTALLATION_FRIGORIFIQUE",
+      libelle: "Vitrines réfrigérées / chambre froide",
+      raison:
+        "Contrôle d'étanchéité du fluide frigorigène par un opérateur certifié (R. 543-79 code de l'environnement, règlement UE 2024/573 art. 5).",
+    });
     ajoute({
       categorie: "BAES",
       libelle: "Éclairage de sécurité (BAES)",

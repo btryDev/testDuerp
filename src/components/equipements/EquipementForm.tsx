@@ -82,6 +82,26 @@ const QUESTIONS_TRI_ETAT: Record<
       "Cet équipement est-il suivi en service au titre de l'arrêté du 20 novembre 2017 ?",
     aide: "Les récipients sous pression ne sont concernés qu'au-delà de seuils de pression et de volume. Votre notice, votre plaque signalétique ou votre installateur l'indiquent. En cas de doute, laissez « Je ne sais pas encore » : les échéances restent affichées.",
   },
+  estHermetiquementScelleSousSeuil: {
+    question:
+      "Cet appareil est-il hermétiquement scellé et étiqueté comme tel ?",
+    aide: "Un appareil hermétiquement scellé a son circuit frigorifique fermé en usine, sans raccord démontable, et porte cette mention sur sa plaque. Le règlement le dispense de contrôle d'étanchéité s'il contient en outre moins de 10 tonnes équivalent CO2 de fluide (ou moins de 2 kg pour un fluide insaturé, type R-1234yf ou R-454C). Répondez « oui » seulement si les deux sont vrais : scellé et étiqueté, et sous ce seuil. Sinon, laissez « Je ne sais pas encore » : les contrôles restent affichés.",
+  },
+  estChargeSuperieure50TCo2: {
+    question:
+      "La charge en fluide frigorigène dépasse-t-elle 50 tonnes équivalent CO2 ?",
+    aide: "Le chiffre ne se lit pas sur la porte : il figure sur le dernier rapport de contrôle d'étanchéité ou sur la fiche d'intervention de votre frigoriste, qui le calcule à partir du fluide et de la charge en kilogrammes. Pour un fluide insaturé (R-1234ze, R-454C…), le règlement raisonne en kilogrammes et le palier est de 10 kg. Si oui, le contrôle passe de douze à six mois. En cas de doute, laissez « Je ne sais pas encore » : le contrôle annuel reste affiché.",
+  },
+  estChargeSuperieure500TCo2: {
+    question:
+      "La charge en fluide frigorigène dépasse-t-elle 500 tonnes équivalent CO2 ?",
+    aide: "Même source que la question précédente, palier supérieur — 100 kg pour un fluide insaturé. Il correspond à plusieurs centaines de kilogrammes de fluide, soit une centrale de production de froid, pas un groupe de chambre froide. Si oui, le contrôle passe à trois mois. En cas de doute, laissez « Je ne sais pas encore ».",
+  },
+  aDetectionDeFuites: {
+    question:
+      "Un système fixe de détection des fuites est-il installé sur cette installation ?",
+    aide: "Un détecteur permanent, relié à une alarme, qui signale une fuite de fluide frigorigène sans intervention humaine — à ne pas confondre avec le contrôle d'étanchéité lui-même, ni avec une sonde de température. S'il y en a un, le règlement double l'intervalle entre deux contrôles. En cas de doute, laissez « Je ne sais pas encore » : c'est l'intervalle le plus court qui reste affiché.",
+  },
 };
 
 type Props = {

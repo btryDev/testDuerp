@@ -21,6 +21,7 @@ export const LABEL_CATEGORIE_EQUIPEMENT: Record<CategorieEquipement, string> = {
   EQUIPEMENT_SOUS_PRESSION: "Équipement sous pression",
   STOCKAGE_MATIERE_DANGEREUSE: "Stockage de matières dangereuses",
   EQUIPEMENT_LEVAGE: "Équipement de levage",
+  INSTALLATION_FRIGORIFIQUE: "Installation frigorifique",
   AUTRE: "Autre équipement",
 };
 
@@ -51,5 +52,7 @@ export const DESCRIPTION_CATEGORIE: Partial<Record<CategorieEquipement, string>>
     "Liquides inflammables, gaz, produits chimiques en quantité significative.",
   EQUIPEMENT_LEVAGE:
     "Palan, transpalette électrique, monte-charge, hayon élévateur.",
+  INSTALLATION_FRIGORIFIQUE:
+    "Chambre froide, vitrine ou meuble réfrigéré, groupe froid. Contrôle d'étanchéité du fluide frigorigène.",
   AUTRE: "Autre équipement soumis à vérification périodique.",
 };

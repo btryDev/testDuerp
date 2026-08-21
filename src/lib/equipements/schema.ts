@@ -19,8 +19,15 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  *   - `aRobinetsIncendieArmes`      → ERP, vérification annuelle des RIA
  *   - `aExtinctionAutomatique`      → ERP, extinction automatique en cuisine
  *   - `sertAuLevageDePersonnes`     → travail, VGP semestrielle (arrêté 02-03-2004)
+ *   - `estChariotOuGerbeur`         → travail, VGP semestrielle (arrêté 01-03-2004, art. 20-II et 23)
  *   - `aAccessoiresDeLevage`        → travail, vérification des accessoires
  *   - `estSoumisSuiviEnService`     → arrêté du 20 novembre 2017 (ESP)
+ *   - `estHermetiquementScelleSousSeuil` → règlement (UE) 2024/573, art. 5
+ *     (dispense des équipements hermétiquement scellés)
+ *   - `aDetectionDeFuites`          → règlement (UE) 2024/573, art. 5
+ *     (l'intervalle entre deux contrôles d'étanchéité est doublé)
+ *   - `estChargeSuperieure50TCo2`   → règlement (UE) 2024/573, art. 5 (palier)
+ *   - `estChargeSuperieure500TCo2`  → règlement (UE) 2024/573, art. 5 (palier)
  *
  * ── Booléens à deux états contre booléens à trois états ────────────────────
  *
@@ -28,7 +35,7 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  * « non ». C'est acceptable parce qu'elles gouvernent des obligations en
  * « opt-in » (l'obligation n'apparaît qu'après une réponse positive).
  *
- * Les six suivantes bornent au contraire des obligations **déjà publiées**, de
+ * Les onze suivantes bornent au contraire des obligations **déjà publiées**, de
  * criticité élevée, en « opt-out » : elles restent applicables tant que le
  * dirigeant n'a pas répondu « non ». Une case à cocher ne convient donc pas —
  * elle ne distingue pas « j'ai répondu non » de « je n'ai pas encore répondu »,
@@ -66,7 +73,7 @@ const triEtat = z.preprocess(
   z.boolean().optional(),
 );
 
-/** Les sept questions à trois états, dans l'ordre d'affichage. */
+/** Les onze questions à trois états, dans l'ordre d'affichage. */
 export const CHAMPS_TRI_ETAT = [
   "estVmcGaz",
   "aRobinetsIncendieArmes",
@@ -75,6 +82,10 @@ export const CHAMPS_TRI_ETAT = [
   "estChariotOuGerbeur",
   "aAccessoiresDeLevage",
   "estSoumisSuiviEnService",
+  "estHermetiquementScelleSousSeuil",
+  "estChargeSuperieure50TCo2",
+  "estChargeSuperieure500TCo2",
+  "aDetectionDeFuites",
 ] as const;
 
 export type ChampTriEtat = (typeof CHAMPS_TRI_ETAT)[number];
@@ -122,6 +133,26 @@ export const CATEGORIES_TRI_ETAT: readonly {
     champ: "estSoumisSuiviEnService",
     categories: ["EQUIPEMENT_SOUS_PRESSION"],
     message: "Spécifique aux équipements sous pression",
+  },
+  {
+    champ: "estHermetiquementScelleSousSeuil",
+    categories: ["INSTALLATION_FRIGORIFIQUE"],
+    message: "Spécifique aux installations frigorifiques",
+  },
+  {
+    champ: "estChargeSuperieure50TCo2",
+    categories: ["INSTALLATION_FRIGORIFIQUE"],
+    message: "Spécifique aux installations frigorifiques",
+  },
+  {
+    champ: "estChargeSuperieure500TCo2",
+    categories: ["INSTALLATION_FRIGORIFIQUE"],
+    message: "Spécifique aux installations frigorifiques",
+  },
+  {
+    champ: "aDetectionDeFuites",
+    categories: ["INSTALLATION_FRIGORIFIQUE"],
+    message: "Spécifique aux installations frigorifiques",
   },
 ];
 
@@ -181,6 +212,10 @@ export const equipementSchema = z
     estChariotOuGerbeur: triEtat,
     aAccessoiresDeLevage: triEtat,
     estSoumisSuiviEnService: triEtat,
+    estHermetiquementScelleSousSeuil: triEtat,
+    estChargeSuperieure50TCo2: triEtat,
+    estChargeSuperieure500TCo2: triEtat,
+    aDetectionDeFuites: triEtat,
     notes: z.preprocess(
       (v) => (typeof v === "string" ? v.trim() || undefined : v),
       z.string().max(1000).optional(),
