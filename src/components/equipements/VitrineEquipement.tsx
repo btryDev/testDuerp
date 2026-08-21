@@ -94,10 +94,7 @@ export function VitrineEquipement({
               remplace pas — les vérifications déjà faites restent la
               seule chose à présenter en cas de contrôle. */}
           {horsReferentiel ? (
-            <span
-              title={horsReferentiel.explication}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--board-slate-pale)] px-2.5 py-[5px] text-[11.5px] font-semibold text-[color:var(--board-slate-mid)]"
-            >
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--board-slate-pale)] px-2.5 py-[5px] text-[11.5px] font-semibold text-[color:var(--board-slate-mid)]">
               <span
                 aria-hidden
                 className="size-[7px] flex-none rounded-full bg-[color:var(--board-slate)]"
@@ -113,6 +110,18 @@ export function VitrineEquipement({
             </span>
           )}
         </span>
+
+        {/* La phrase longue s'écrit en clair, jamais en infobulle : elle
+            porte l'avertissement qui empêche l'écran de laisser croire
+            qu'il n'y a rien à faire — « cela ne veut pas dire qu'aucune
+            vérification ne lui est due ». Une infobulle n'existe pas au
+            doigt, et c'est exactement la phrase qu'il ne faut pas
+            cacher. */}
+        {horsReferentiel ? (
+          <span className="mt-2.5 block text-[11.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+            {horsReferentiel.explication}
+          </span>
+        ) : null}
       </span>
     </Link>
   );
