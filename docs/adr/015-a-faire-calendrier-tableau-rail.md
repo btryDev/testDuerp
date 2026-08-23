@@ -5,8 +5,11 @@
   « Opérations », recueille le permis de feu et le plan de prévention, qui
   n'étaient pas des registres), puis **révisée une seconde fois** : le
   tableau de bord n'a plus d'entrée de rail du tout (voir « Révision — la
-  marque remplace l'entrée », en fin de page). L'ADR-018, lui, a retiré
-  « Interventions » du panneau « À faire » avec son module
+  marque remplace l'entrée », en fin de page), puis **révisée une troisième
+  fois** : le compte quitte le rail pour la barre haute et le guide perd son
+  entrée (voir « Révision — le rail ne garde que les questions du dossier »).
+  L'ADR-018, lui, a retiré « Interventions » du panneau « À faire » avec son
+  module
 - Date : 2026-08-20
 - Portée : `src/components/layout/sidebar-nav.ts`, `AppSidebar.tsx`,
   `src/lib/navigation/`, `src/lib/calendrier/retards.ts`, la page calendrier
@@ -195,6 +198,37 @@ Conséquences :
   à montrer sur cet écran, et le rail reste seul.
 - Aucune tuile n'est allumée sur le tableau de bord. C'est exact : on n'y est
   dans aucune des quatre catégories.
+
+## Révision — le rail ne garde que les questions du dossier
+
+Deux entrées de premier niveau sont tombées, pour la même raison que le
+tableau de bord à la révision précédente : elles n'étaient pas des questions
+du dirigeant sur son dossier.
+
+**Le compte part dans la barre haute** (`BarreCompte`). La règle qui régit la
+cohabitation d'une sidebar et d'une barre haute est un partage des rôles :
+la sidebar porte la hiérarchie de navigation du produit, la barre haute les
+utilitaires de session — identité, déconnexion, retour à l'accueil. Tant que
+le compte vivait en pied de rail, la barre n'avait rien à porter et restait
+une bande vide ; c'est ce déménagement qui la justifie.
+
+**« Comprendre » perd son entrée, sa page reste.** Le guide n'est pas un
+endroit où l'on va décider quelque chose : on l'ouvre depuis l'écran qui
+soulève la question. Il se rejoint donc depuis « Préparer un contrôle »,
+depuis « Connecter » et depuis la fiche d'un équipement — trois endroits où
+la question se pose vraiment, contre une tuile permanente qu'on ne cliquait
+qu'une fois.
+
+**« Connecter » devient « Paramètres »**, une entrée sans panneau : régler le
+dossier et y brancher un assistant en lecture seule sont le même geste, du
+point de vue du dirigeant.
+
+Conséquence sur la décision 3 : `categorieDeItem` rend désormais `null` pour
+une page sans entrée de rail. Le guide était rattaché à son voisin le plus
+proche, ce qui allumait « Paramètres » sur un écran qui n'en fait pas partie,
+et la tuile allumée menait ailleurs. Une entrée de rail désigne une page,
+pas une approximation : quand aucune ne convient, aucune ne s'allume — c'est
+déjà ce que fait le tableau de bord depuis la révision précédente.
 
 ## Lexique — un mot par objet
 

@@ -162,9 +162,16 @@ et ouvre le panneau (ADR-015).
   ni une correction ni un registre tenu en continu (ADR-017)
 - **Mon établissement** (→ Équipements) : Équipements · Prestataires · Fiche établissement · (Équipe, à venir)
 - **Mes registres** (→ DUERP, à plat) : DUERP · Registre de sécurité · Accessibilité · Carnet sanitaire — ce qui se tient en continu
-- **Comprendre** : guide pédagogique
-- **Connecter** : brancher un assistant en lecture seule sur le dossier (serveur MCP local — spike, cf. `scripts/mcp-server.ts`)
-- **Compte**
+- **Paramètres** (→ Connecter) : entrée sans panneau — régler le dossier et y
+  brancher un assistant en lecture seule (serveur MCP local — spike, cf.
+  `scripts/mcp-server.ts`)
+
+Le **compte** a quitté le pied de rail pour la barre haute (`BarreCompte`) :
+la sidebar porte la hiérarchie du produit, la barre haute les utilitaires de
+session. Le **guide « Comprendre »** n'a plus d'entrée de rail ; sa page vit
+toujours et se rejoint depuis « Préparer un contrôle », « Connecter » et la
+fiche d'un équipement. Aucune tuile ne s'allume dessus — une entrée de rail
+désigne une page, pas une approximation.
 
 ### Tableau de bord
 Le tableau de bord est un **board personnalisable de widgets** (`src/components/dashboard/widgets/`) : un registre central de widgets avec variants de visualisation, un layout par défaut éditorial, un tiroir « Ajouter un widget », drag-and-drop, persistance versionnée en localStorage (`useLayoutPerso`). Le widget Équipements est épinglé (obligatoire). Un bandeau « brief » en tête liste les éléments à traiter.
