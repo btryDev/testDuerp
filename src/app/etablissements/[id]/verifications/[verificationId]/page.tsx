@@ -226,9 +226,9 @@ export default async function VerificationDetailPage({
                   </span>
                   <span className="ml-3 text-[13.5px]">{ref.reference}</span>
                 </span>
-                {ref.urlLegifrance && (
+                {ref.url && (
                   <a
-                    href={ref.urlLegifrance}
+                    href={ref.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"

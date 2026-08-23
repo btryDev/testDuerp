@@ -41,13 +41,13 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-22",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531483",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 5",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000249655/",
       },
     ],
@@ -67,13 +67,13 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-25",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490949/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 6 et 7",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000249655/",
       },
     ],
@@ -93,13 +93,13 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23 et R. 4323-24",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490945/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 22",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000249655/",
       },
     ],
@@ -129,27 +129,27 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 23 a)",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680469",
         note: "« Toutefois, cette périodicité est de : a) Six mois pour les appareils de levage ci-après : - appareils de levage listés aux II et III de l'article 20 […] ».",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 20-II",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680466",
         note: "Liste où figurent les « chariots élévateurs » et les « hayons élévateurs ».",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, annexe",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000023453892",
         note: "Version du 9 janvier 2011. Range « chariots automoteurs élévateurs à conducteur porté ou non, gerbeurs » dans une même famille — c'est par elle que le gerbeur rejoint les « chariots élévateurs » de l'article 20-II, le mot n'y figurant pas. La même annexe exclut les transpalettes à simple décollement de charge.",
       },
@@ -180,13 +180,13 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490945/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 2 mars 2004",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000251000/",
       },
     ],
@@ -215,13 +215,13 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490945/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 23",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000249655/",
       },
     ],
@@ -250,7 +250,7 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-27",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490953/",
       },
     ],
@@ -270,13 +270,13 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-28",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490955/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 9 à 11",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000249655/",
       },
     ],
@@ -298,21 +298,21 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-25",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531475",
         note: "Fonde la consignation : « Le résultat des vérifications générales périodiques est consigné sur le ou les registres de sécurité mentionnés à l'article L. 4711-5. »",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-26",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531473",
         note: "Annexion au registre des rapports établis par un vérificateur extérieur à l'établissement.",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-27",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531471",
         note: "Autorise la tenue et la conservation du registre sur tout support, dans les conditions de l'article L. 8113-6 — c'est cet article qui fonde le registre numérique, et non L. 4711-5.",
       },

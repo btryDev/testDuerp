@@ -59,6 +59,43 @@ describe("suggererEquipements — secteurs cibles V2", () => {
     }
   });
 
+  it("le froid ne suit que le commerce alimentaire, pas tout le 47", () => {
+    // `isCommerce` couvre tout le 47. Proposer une chambre froide à une
+    // librairie, avec une raison de criticité 4, c'est suggérer une
+    // obligation sur une supposition — et une suggestion se coche vite.
+    const froid = (naf: string) =>
+      categories(
+        suggererEquipements({
+          codeNaf: naf,
+          estEtablissementTravail: true,
+          estERP: true,
+          estIGH: false,
+          estHabitation: false,
+        }),
+      ).includes("INSTALLATION_FRIGORIFIQUE");
+
+    // Alimentaire : supérette, boucherie, poissonnerie, marché.
+    for (const naf of ["47.11B", "47.22Z", "47.23Z", "47.81Z"]) {
+      expect(froid(naf), naf).toBe(true);
+    }
+    // Non alimentaire : librairie, prêt-à-porter, tabac, bricolage.
+    for (const naf of ["47.61Z", "47.71Z", "47.26Z", "47.52B"]) {
+      expect(froid(naf), naf).toBe(false);
+    }
+    // Le reste des suggestions du commerce ne bouge pas.
+    const cats = categories(
+      suggererEquipements({
+        codeNaf: "47.61Z",
+        estEtablissementTravail: true,
+        estERP: true,
+        estIGH: false,
+        estHabitation: false,
+      }),
+    );
+    expect(cats).toContain("BAES");
+    expect(cats).toContain("EXTINCTEUR");
+  });
+
   it("un bureau tertiaire ne se voit pas proposer d'installation frigorifique", () => {
     const cats = categories(
       suggererEquipements({

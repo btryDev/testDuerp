@@ -56,13 +56,13 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 20 novembre 2017, art. 13 à 15",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036061986/",
       },
       {
         source: "CODE_ENVIRONNEMENT",
         reference: "L. 557-28 et s.",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000029121143/",
       },
     ],
@@ -83,7 +83,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 20 novembre 2017, art. 19 et annexes",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036061986/",
       },
     ],
@@ -106,7 +106,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 20 novembre 2017, art. 23 à 27",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036061986/",
       },
     ],
@@ -127,7 +127,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 20 novembre 2017, art. 8",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036061986/",
       },
     ],
@@ -148,7 +148,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 20 novembre 2017, art. 30",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036061986/",
       },
     ],
@@ -171,7 +171,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-55 à R. 4323-57",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018491007/",
       },
     ],

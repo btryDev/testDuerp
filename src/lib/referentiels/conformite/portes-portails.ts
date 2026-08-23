@@ -25,7 +25,7 @@ export const obligationsPortesPortails: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 21 décembre 1993, art. 2",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000535617/",
       },
     ],
@@ -45,7 +45,7 @@ export const obligationsPortesPortails: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 21 décembre 1993, art. 3",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000535617/",
       },
     ],
@@ -65,13 +65,13 @@ export const obligationsPortesPortails: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 21 décembre 1993, art. 4",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000535617/",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4224-15",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018488911/",
       },
     ],
@@ -91,7 +91,7 @@ export const obligationsPortesPortails: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4224-15",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018488911/",
       },
     ],
@@ -113,7 +113,7 @@ export const obligationsPortesPortails: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 21 décembre 1993, art. 1 et 2",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000535617/",
       },
     ],

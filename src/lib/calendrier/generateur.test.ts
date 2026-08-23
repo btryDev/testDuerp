@@ -211,7 +211,7 @@ describe("générateur calendrier — dernière vérif connue", () => {
 });
 
 describe("générateur calendrier — mise en service uniquement", () => {
-  it("aucune vérif précédente → une occurrence urgente", () => {
+  it("aucune vérif ni mise en service connue → à planifier, jamais urgente", () => {
     const o = fakeObligation({
       id: "mes",
       periodicite: "mise_en_service_uniquement",
@@ -220,8 +220,46 @@ describe("générateur calendrier — mise en service uniquement", () => {
       applique(o, [fakeEquipement()]),
     ]);
     expect(res).toHaveLength(1);
-    expect(res[0].estUrgent).toBe(true);
     expect(res[0].statut).toBe("a_planifier");
+    // Il n'y a pas d'échéance à dépasser : l'événement a eu lieu ou non. Ce
+    // qui manque est une pièce au dossier, pas un rendez-vous.
+    expect(res[0].estUrgent).toBe(false);
+  });
+
+  it("mise en service passée → l'occurrence est datée de l'événement, pas d'aujourd'hui", () => {
+    // Le défaut corrigé : datée de `now`, l'occurrence se redatait à chaque
+    // régénération. Une chambre froide de 2015 était réputée due aujourd'hui,
+    // dix ans plus tard, et le resterait indéfiniment.
+    const o = fakeObligation({
+      id: "mes",
+      periodicite: "mise_en_service_uniquement",
+    });
+    const miseEnService = new Date("2015-03-01T00:00:00Z");
+    const res = genererProchainesVerifications(
+      [applique(o, [fakeEquipement()])],
+      new Map(),
+      { now: NOW, misesEnService: new Map([["eq-1", miseEnService]]) },
+    );
+    expect(res).toHaveLength(1);
+    expect(res[0].datePrevue.getTime()).toBe(miseEnService.getTime());
+    expect(res[0].statut).toBe("a_planifier");
+    expect(res[0].estUrgent).toBe(false);
+  });
+
+  it("mise en service à venir → planifiée à cette date", () => {
+    const o = fakeObligation({
+      id: "mes",
+      periodicite: "mise_en_service_uniquement",
+    });
+    const miseEnService = new Date(NOW.getTime() + 30 * 86_400_000);
+    const res = genererProchainesVerifications(
+      [applique(o, [fakeEquipement()])],
+      new Map(),
+      { now: NOW, misesEnService: new Map([["eq-1", miseEnService]]) },
+    );
+    expect(res[0].statut).toBe("planifiee");
+    expect(res[0].datePrevue.getTime()).toBe(miseEnService.getTime());
+    expect(res[0].estUrgent).toBe(false);
   });
 
   it("vérif précédente connue → plus d'occurrence (one-shot consommé)", () => {

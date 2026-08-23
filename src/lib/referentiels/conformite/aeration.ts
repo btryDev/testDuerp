@@ -32,19 +32,19 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4222-20",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490423/",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4222-21",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490425/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 8 octobre 1987, art. 2, 3 et 4",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000869716/",
       },
     ],
@@ -64,13 +64,13 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4222-20",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490423/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 8 octobre 1987, art. 3",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000869716/",
       },
     ],
@@ -90,7 +90,7 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 8 octobre 1987, art. 3 § II",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000869716/",
       },
     ],
@@ -134,7 +134,7 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. CH 58",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -154,7 +154,7 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. PS 32",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -185,7 +185,7 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. PS 32",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -226,7 +226,7 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 avril 1985, art. 1 et 2",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000686049/",
       },
     ],

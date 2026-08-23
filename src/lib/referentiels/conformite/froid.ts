@@ -174,7 +174,7 @@ export const PALIER_PAR_OBLIGATION: Record<string, PalierArticle5> = {
 const REF_ENVIRONNEMENT_MISE_EN_SERVICE = {
   source: "CODE_ENVIRONNEMENT",
   reference: "R. 543-79, al. 1",
-  urlLegifrance:
+  url:
     "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000031790640",
   note: "Contrôle d'étanchéité à la mise en service, par un opérateur disposant de l'attestation de capacité prévue à l'article R. 543-99.",
 } as const;
@@ -182,7 +182,7 @@ const REF_ENVIRONNEMENT_MISE_EN_SERVICE = {
 const REF_ENVIRONNEMENT_RENOUVELLEMENT = {
   source: "CODE_ENVIRONNEMENT",
   reference: "R. 543-79, al. 2",
-  urlLegifrance:
+  url:
     "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000031790640",
   note: "« Le contrôle est renouvelé périodiquement et chaque fois que des modifications affectant le circuit frigorifique sont apportées. »",
 } as const;
@@ -191,7 +191,7 @@ const REF_ENVIRONNEMENT_RENOUVELLEMENT = {
 const REF_REGLEMENT_ART_5 = {
   source: "REGLEMENT_UE",
   reference: "Règlement (UE) 2024/573, art. 5",
-  urlLegifrance: "https://eur-lex.europa.eu/eli/reg/2024/573/oj/fra",
+  url: "https://eur-lex.europa.eu/eli/reg/2024/573/oj/fra",
   note: "Contrôles d'étanchéité. Déclenchement à 5 t CO2e de gaz de l'annexe I ou 1 kg de gaz de l'annexe II section 1 ; dispense des équipements hermétiquement scellés étiquetés comme tels sous 10 t CO2e ou 2 kg. Abroge le règlement (UE) n° 517/2014 depuis le 11 mars 2024.",
 } as const;
 
@@ -373,6 +373,6 @@ export const obligationsFroid: Obligation[] = [
     categoriesEquipement: [CATEGORIE],
     conditions: [HORS_DISPENSE],
     notesInternes:
-      "Obligation permanente, sans échéance à poser : elle se déclenche sur un événement — une modification du circuit, une réparation de fuite — que l'outil n'observe pas. `mise_en_service_uniquement` avait d'abord été retenu par analogie avec `levage-remise-en-service-apres-reparation`, et c'était une erreur : le générateur en tire une occurrence `a_planifier` marquée urgente dès qu'aucune vérification n'est connue. Toute chambre froide neuve — l'équipement que le pré-remplissage suggère désormais à tout commerce alimentaire et à toute restauration — héritait donc d'une ligne « contrôle après modification » urgente alors que rien n'avait été modifié. Annoncer un retard sur un événement qui n'a pas eu lieu, c'est le défaut que le reste de ce référentiel s'emploie à éliminer. En `autre`, l'obligation reste visible dans le dossier et citée dans le registre, sans encombrer le calendrier. Les délais du contrôle après réparation (au plus tôt vingt-quatre heures de fonctionnement, au plus tard un mois) ne sont de toute façon pas modélisables : le modèle n'a pas de forme pour un délai borné des deux côtés.",
+      "Obligation permanente, sans échéance à poser : elle se déclenche sur un événement — une modification du circuit, une réparation de fuite — que l'outil n'observe pas. `mise_en_service_uniquement` avait d'abord été retenu par analogie avec `levage-remise-en-service-apres-reparation`, et c'était une erreur : le générateur en tire une occurrence `a_planifier` marquée urgente dès qu'aucune vérification n'est connue. Toute chambre froide neuve — l'équipement que le pré-remplissage suggère désormais à tout commerce alimentaire et à toute restauration — héritait donc d'une ligne « contrôle après modification » urgente alors que rien n'avait été modifié. Annoncer un retard sur un événement qui n'a pas eu lieu, c'est le défaut que le reste de ce référentiel s'emploie à éliminer. En `autre`, l'obligation reste posée par le référentiel : le guide « Comprendre » la cite parmi les obligations applicables chez vous, et l'équipement porte la pastille « Obligation permanente » (`aucune_echeance_datable`). Elle n'apparaît en revanche ni au registre de sécurité ni au dossier de conformité, qui ne lisent que des `Verification` — c'est le prix d'une obligation sans date, et il vaut mieux que d'annoncer un retard sur un événement qui n'a pas eu lieu. Les délais du contrôle après réparation (au plus tôt vingt-quatre heures de fonctionnement, au plus tard un mois) ne sont de toute façon pas modélisables : le modèle n'a pas de forme pour un délai borné des deux côtés.",
   },
 ];

@@ -9,8 +9,11 @@
  * Règles (cf. spec/PLAN.md étape 6) :
  *   1. Une occurrence par couple (obligationId, equipementId).
  *   2. Si la périodicité est `mise_en_service_uniquement` :
- *        - pas de dernière vérif connue → 1 occurrence à planifier maintenant
- *        - dernière vérif connue          → pas de nouvelle occurrence (one-shot)
+ *        - dernière vérif connue → pas de nouvelle occurrence (one-shot)
+ *        - mise en service à venir → `planifiee` à cette date
+ *        - sinon → `a_planifier`, datée de la mise en service si on la
+ *          connaît, de `now` à défaut. Jamais urgente : il n'y a pas
+ *          d'échéance à dépasser, il manque une pièce au dossier.
  *   3. Si la périodicité est `autre` → aucune occurrence (obligation permanente
  *      sans échéance périodique, ex. tenue du registre de sécurité).
  *   4. Si pas de dernière vérif connue mais une **mise en service** qui place
@@ -118,8 +121,26 @@ export function genererProchainesVerifications(
       const derniere = verificationsPrecedentes.get(cleUnique);
 
       // One-shot : mise en service uniquement.
+      //
+      // L'occurrence est datée de la mise en service quand on la connaît, et
+      // non de « maintenant ». Datée de maintenant, elle se redatait à chaque
+      // régénération : une chambre froide installée en 2015 héritait, dix ans
+      // plus tard, d'une échéance urgente réputée due aujourd'hui, et elle le
+      // resterait à perpétuité — la date suivait l'horloge au lieu de suivre
+      // l'événement.
+      //
+      // Et elle n'est jamais urgente. L'urgence, dans ce module, se déduit
+      // d'une date dépassée (`estDepassee`) ; ici il n'y a pas d'échéance à
+      // dépasser — l'événement qui la déclenche a eu lieu, ou n'a pas eu
+      // lieu. Ce qui manque au dossier est une pièce, pas un rendez-vous, et
+      // c'est ce que dit « à planifier ». La marquer urgente faisait remonter
+      // en tête du calendrier, sur un parc repris, autant de lignes que
+      // d'appareils anciens — sans qu'aucune ne soit due à cette date.
       if (o.periodicite === "mise_en_service_uniquement") {
         if (derniere) continue; // déjà réalisé, pas de nouvelle occurrence
+        const miseEnService = options.misesEnService?.get(eq.id) ?? null;
+        const aVenir =
+          miseEnService !== null && miseEnService.getTime() >= now.getTime();
         out.push({
           cleUnique,
           obligationId: o.id,
@@ -127,9 +148,9 @@ export function genererProchainesVerifications(
           equipementId: eq.id,
           periodicite: o.periodicite,
           realisateurRequis: o.realisateurs,
-          datePrevue: now,
-          statut: "a_planifier",
-          estUrgent: true,
+          datePrevue: miseEnService ?? now,
+          statut: aVenir ? "planifiee" : "a_planifier",
+          estUrgent: false,
           criticiteObligation: o.criticite,
           raisons: oa.raisons,
         });

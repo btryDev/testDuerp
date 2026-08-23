@@ -34,7 +34,7 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "CODE_ENVIRONNEMENT",
         reference: "L. 512-8 (déclaration) · L. 512-7 (enregistrement) · L. 512-1 (autorisation)",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000022495604/",
       },
     ],
@@ -56,7 +56,7 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 3 octobre 2010, art. 6",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000022973321/",
       },
     ],
@@ -76,7 +76,7 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 3 octobre 2010, art. 7",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000022973321/",
       },
     ],
@@ -96,13 +96,13 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4222-20",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490423/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 3 octobre 2010, art. 10",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000022973321/",
       },
     ],
@@ -122,7 +122,7 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4412-38",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490855/",
       },
     ],
@@ -142,7 +142,7 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4412-38 et R. 4412-87",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018491065/",
       },
     ],

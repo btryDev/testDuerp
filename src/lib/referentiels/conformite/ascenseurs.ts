@@ -32,13 +32,13 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 134-1 (ex R. 125-1-1)",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000044274856/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 18 novembre 2004, art. 2 et 3",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000449641/",
       },
     ],
@@ -60,7 +60,7 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 18 novembre 2004, art. 2 § 3",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000449641/",
       },
     ],
@@ -80,7 +80,7 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 18 novembre 2004, art. 2 § 4",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000449641/",
       },
     ],
@@ -100,13 +100,13 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 134-2 (ex R. 125-2-4)",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000044274856/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 13 août 2008",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000019312977/",
       },
     ],
@@ -126,7 +126,7 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 134-3 (ex R. 125-2-2)",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000044274856/",
       },
     ],
@@ -146,7 +146,7 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 134-4 (ex R. 125-2)",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000044274856/",
       },
     ],

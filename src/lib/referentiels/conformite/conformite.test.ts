@@ -99,8 +99,8 @@ describe("référentiel conformité — invariants structurels", () => {
     // pas de site commercial, pas de blog technique.
     for (const o of obligationsConformite) {
       for (const ref of o.referencesLegales) {
-        if (ref.urlLegifrance) {
-          expect(ref.urlLegifrance).toMatch(
+        if (ref.url) {
+          expect(ref.url).toMatch(
             /^https:\/\/(www\.)?(legifrance\.gouv\.fr|inrs\.fr|eur-lex\.europa\.eu)\//,
           );
         }

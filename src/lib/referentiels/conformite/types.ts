@@ -58,10 +58,14 @@ export type ReferenceLegale = {
    */
   reference: string;
   /**
-   * URL Légifrance cible. Doit renvoyer vers la dernière version consolidée
-   * en cas de doute — les URL LEGIARTI sont stables dans le temps.
+   * URL de la source, telle qu'un lecteur peut l'ouvrir. Légifrance pour le
+   * droit national — la dernière version consolidée en cas de doute, les URL
+   * LEGIARTI étant stables dans le temps — mais pas seulement : le droit de
+   * l'Union se cite sur EUR-Lex, et le champ s'appelait `urlLegifrance` alors
+   * qu'il portait déjà autre chose. Un champ dont le nom ne décrit plus le
+   * contenu finit par faire passer une source pour une autre.
    */
-  urlLegifrance?: string;
+  url?: string;
   /**
    * Commentaire libre pour expliciter la portée (ex. périmètre d'application
    * restreint, dérogation possible…). Optionnel.

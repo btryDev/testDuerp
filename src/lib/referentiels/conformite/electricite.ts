@@ -33,13 +33,13 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-14",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025809999/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 26 décembre 2011, art. 3 à 5",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025115666/",
       },
     ],
@@ -59,13 +59,13 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-16",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810013/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 26 décembre 2011, art. 1 et 2",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025115666/",
       },
     ],
@@ -85,14 +85,14 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-19",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810023/",
         note: "Fondement de la consignation pour le domaine électrique.",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "L. 4711-5",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389",
         note: "N'institue pas le registre : autorise seulement à réunir en un registre unique les informations que d'autres textes imposent de consigner (L. 4711-1 et L. 4711-2). À citer comme faculté de regroupement, jamais comme fondement de l'obligation.",
       },
@@ -113,13 +113,13 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4544-9 à R. 4544-11",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000025279121/",
       },
       {
         source: "INRS",
         reference: "INRS ED 6127 « Habilitation électrique »",
-        urlLegifrance: "https://www.inrs.fr/media.html?refINRS=ED%206127",
+        url: "https://www.inrs.fr/media.html?refINRS=ED%206127",
       },
     ],
     periodicite: "triennale",
@@ -144,7 +144,7 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EL 5 et EL 19",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -164,7 +164,7 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EL 19 § 1 et § 2",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -186,7 +186,7 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 22 juin 1990 (ERP 5ᵉ cat), art. PE 4 § 3",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000171201/",
       },
     ],
@@ -206,7 +206,7 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EL 20",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -238,7 +238,7 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 30 décembre 2011, art. GH 50",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025118025/",
       },
     ],

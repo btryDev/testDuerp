@@ -14,8 +14,8 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  *     appareils de cuisson, VMC, installation électrique, extincteurs,
  *     installation frigorifique.
  *   - Code NAF 47.xx (commerce de détail) → ERP fréquent → extincteurs,
- *     BAES, alarme, installation électrique, ventilation éventuelle,
- *     installation frigorifique.
+ *     BAES, alarme, installation électrique, ventilation éventuelle. Le froid
+ *     n'est suggéré qu'au commerce **alimentaire** (cf. `isCommerceAlimentaire`).
  *   - Tertiaire / bureau → installation électrique, BAES, alarme, VMC,
  *     éventuels portes automatiques et ascenseurs si bâtiment collectif.
  *   - Typologie ERP → extincteurs, BAES, alarme, SSI systématiques.
@@ -60,6 +60,26 @@ function isRestauration(naf: string): boolean {
 
 function isCommerce(naf: string): boolean {
   return naf.startsWith("47.");
+}
+
+/**
+ * Commerce de détail **alimentaire** : le froid ne se suggère qu'à lui.
+ *
+ * `isCommerce` couvre tout le 47, librairie et prêt-à-porter compris. Leur
+ * proposer une chambre froide avec une raison de criticité 4 revenait à
+ * suggérer une obligation sur une supposition — et une suggestion de cette
+ * forme se coche vite. La règle métier écrite partout ailleurs dans ce module
+ * dit « tout commerce alimentaire », pas « tout commerce ».
+ *
+ * Les codes retenus : 47.11 (magasins non spécialisés à prédominance
+ * alimentaire), 47.2x (détail alimentaire en magasin spécialisé) hors 47.26
+ * (tabac, qui n'exploite pas de froid), et 47.81 (alimentaire sur éventaires
+ * et marchés). Suggestion, jamais déduction : le dirigeant valide.
+ */
+function isCommerceAlimentaire(naf: string): boolean {
+  const n = naf.toUpperCase();
+  if (n.startsWith("47.11") || n.startsWith("47.81")) return true;
+  return n.startsWith("47.2") && !n.startsWith("47.26");
 }
 
 function isBureau(naf: string): boolean {
@@ -191,13 +211,16 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
     });
   }
 
-  if (isCommerce(naf)) {
+  if (isCommerceAlimentaire(naf)) {
     ajoute({
       categorie: "INSTALLATION_FRIGORIFIQUE",
       libelle: "Vitrines réfrigérées / chambre froide",
       raison:
         "Contrôle d'étanchéité du fluide frigorigène par un opérateur certifié (R. 543-79 code de l'environnement, règlement UE 2024/573 art. 5).",
     });
+  }
+
+  if (isCommerce(naf)) {
     ajoute({
       categorie: "BAES",
       libelle: "Éclairage de sécurité (BAES)",

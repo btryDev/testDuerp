@@ -908,6 +908,68 @@ describe("moteur matching — faux positifs structurels corrigés", () => {
   });
 });
 
+describe("moteur matching — cartographie des catégories sans obligation", () => {
+  /**
+   * Le trou que ce test ferme : le test « parc complet » ci-dessous fait
+   * tourner un établissement **tous régimes** (travail + ERP + IGH +
+   * habitation). Il ne peut donc pas voir qu'une catégorie déclarable ne rend
+   * rien chez un employeur ordinaire ou chez un petit ERP — tous les régimes
+   * matchent à la fois, et le trou se referme tout seul.
+   *
+   * Or c'est exactement ce que produit une typologie mal posée : la catégorie
+   * reste déclarable, l'écran l'accepte, et l'appareil se retrouve « aucune
+   * échéance calculée » sans que personne n'ait décidé qu'il devait l'être.
+   *
+   * Ce test ne dit pas ce qui *devrait* s'appliquer : il fige la carte de ce
+   * qui ne s'applique pas aujourd'hui, typologie par typologie. Élargir un
+   * trou fait échouer la suite ; le combler aussi — et on retire alors la
+   * ligne, en connaissance de cause.
+   */
+  const TYPOLOGIES: { nom: string; etab: EtablissementMatching; vides: string[] }[] = [
+    {
+      nom: "bureau (employeur non-ERP)",
+      etab: etabBureau(),
+      vides: [
+        // Soupape de saisie : aucune obligation ne la cite, par construction.
+        "AUTRE",
+        // Réglementations ERP pures : rien ne les vise chez un employeur seul.
+        "DESENFUMAGE",
+        "APPAREIL_CUISSON_ERP",
+        "HOTTE_PRO",
+        // BAES : question ouverte. Les deux obligations de l'arrêté du
+        // 14 décembre 2011 (essai mensuel, autonomie semestrielle) portent
+        // `erp: false` et ne visent donc pas non plus l'ERP. Chez un
+        // employeur non-ERP, elles s'appliquent — la ligne n'est donc pas
+        // ici. Cf. la note de `incendie.ts` sur EC 14.
+      ],
+    },
+    {
+      nom: "restaurant ERP type N catégorie 5",
+      etab: etabRestoErpCat5(),
+      vides: ["AUTRE"],
+    },
+  ];
+
+  for (const { nom, etab, vides } of TYPOLOGIES) {
+    it(`${nom} : seules les catégories déclarées vides ne rendent rien`, () => {
+      const sansObligation = CATEGORIES_EQUIPEMENT.filter((categorie) => {
+        const res = determineObligationsApplicables(etab, [
+          { id: `eq-${categorie}`, libelle: categorie, categorie, caracteristiques: null },
+        ]);
+        return idsObligations(res).length === 0;
+      });
+
+      expect(
+        [...sansObligation].sort(),
+        "Une catégorie déclarable qui ne rend aucune obligation donne un " +
+          "appareil « aucune échéance calculée ». Si c'est voulu, ajoutez-la " +
+          "à la liste `vides` avec la raison ; sinon, c'est une typologie à " +
+          "corriger dans le référentiel.",
+      ).toEqual([...vides].sort());
+    });
+  }
+});
+
 describe("moteur matching — aucun établissement existant ne perd une obligation criticité ≥ 4", () => {
   /**
    * Verrou central de l'amendement 2026-08. Un établissement « existant » est
@@ -1112,6 +1174,38 @@ describe("moteur matching — contrôle d'étanchéité des installations frigor
             periodiquesPour(caracteristiques),
             JSON.stringify({ c50, c500, detection }),
           ).toHaveLength(1);
+        }
+      }
+    }
+  });
+
+  it("la dispense l'emporte sur les vingt-sept combinaisons de charge", () => {
+    // Le test précédent laisse `estHermetiquementScelleSousSeuil` indéfini sur
+    // les 27 cas : la seule réponse qui *retire* des échéances n'était donc
+    // jamais éprouvée en présence des trois autres. Un « oui » à la dispense
+    // doit vider le froid quoi qu'aient répondu les paliers de charge — sans
+    // quoi un appareil dispensé hérite quand même d'un contrôle trimestriel.
+    const etats = [undefined, true, false];
+    for (const c50 of etats) {
+      for (const c500 of etats) {
+        for (const detection of etats) {
+          const caracteristiques: Record<string, unknown> = {
+            estHermetiquementScelleSousSeuil: true,
+          };
+          if (c50 !== undefined) caracteristiques.estChargeSuperieure50TCo2 = c50;
+          if (c500 !== undefined)
+            caracteristiques.estChargeSuperieure500TCo2 = c500;
+          if (detection !== undefined)
+            caracteristiques.aDetectionDeFuites = detection;
+          const ids = idsObligations(
+            determineObligationsApplicables(etabRestoErpCat5(), [
+              froid(caracteristiques),
+            ]),
+          );
+          expect(
+            ids.filter((id) => id.startsWith("froid-")),
+            JSON.stringify({ c50, c500, detection }),
+          ).toEqual([]);
         }
       }
     }

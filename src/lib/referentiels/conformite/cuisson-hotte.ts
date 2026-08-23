@@ -32,7 +32,7 @@ export const obligationsCuissonHotte: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GC 12 et GC 19",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -52,7 +52,7 @@ export const obligationsCuissonHotte: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GC 21 § 2",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -72,7 +72,7 @@ export const obligationsCuissonHotte: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GZ 29 § 1",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -94,7 +94,7 @@ export const obligationsCuissonHotte: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GC 20",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -116,7 +116,7 @@ export const obligationsCuissonHotte: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GC 21 (§ relatif aux dispositifs d'extinction)",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],

@@ -37,13 +37,13 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-28",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531783/",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-29",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531785/",
       },
     ],
@@ -63,7 +63,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-37 et R. 4227-38",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531801/",
       },
     ],
@@ -83,7 +83,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-39",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531805/",
       },
       {
@@ -110,27 +110,27 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-39",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769386",
         note: "Consignation sur registre des essais et exercices périodiques, avec leur date et les observations auxquelles ils ont donné lieu.",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "L. 4711-5",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389",
         note: "N'institue pas le registre : autorise seulement à réunir en un registre unique les informations que d'autres textes imposent de consigner (L. 4711-1 et L. 4711-2). À citer comme faculté de regroupement, jamais comme fondement de l'obligation.",
       },
       {
         source: "CCH",
         reference: "CCH, art. R. 143-44 (ex R. 123-51) — ERP",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044276935/",
       },
       {
         source: "CCH",
         reference: "CCH, art. R. 146-21 (ex R. 122-29) — IGH",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044276958/",
       },
     ],
@@ -165,21 +165,21 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 14 décembre 2011, art. 11",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072657",
         note: "« Dans le cadre de la maintenance prescrite à l'article R. 4226-7 du code du travail, l'employeur procède aux vérifications de fonctionnement périodiques suivantes : Une fois par mois : a) Du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et de l'allumage de toutes les lampes […] ; b) De l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. »",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-14",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022764985",
         note: "Fonde l'obligation d'éclairage de sécurité en lieu de travail et renvoie à un arrêté le soin de fixer « les conditions d'exploitation et de maintenance de cet éclairage ». Ne fixe lui-même aucune périodicité : c'est l'arrêté du 14 décembre 2011 qui la pose.",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-19",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810023/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
       },
@@ -202,21 +202,21 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 14 décembre 2011, art. 11",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072657",
         note: "« Une fois tous les six mois, de l'autonomie d'au moins une heure. Dans les établissements comportant des périodes de fermeture, ces opérations doivent être effectuées de telle manière qu'au début de chaque période d'ouverture l'installation d'éclairage ait retrouvé l'autonomie prescrite. »",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-14",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022764985",
         note: "Fonde l'obligation d'éclairage de sécurité en lieu de travail et renvoie à un arrêté le soin de fixer « les conditions d'exploitation et de maintenance de cet éclairage ». Ne fixe lui-même aucune périodicité : c'est l'arrêté du 14 décembre 2011 qui la pose.",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-19",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810023/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
       },
@@ -243,13 +243,13 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. MS 38 § 2",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. MS 73",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -269,13 +269,13 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. MS 73 § 1",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 2 mai 2005 (SSI)",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000809625/",
       },
     ],
@@ -295,7 +295,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. MS 73 § 2",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -317,7 +317,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EC 14 et EC 15",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -339,7 +339,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. DF 10",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -359,7 +359,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. MS 73",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -388,13 +388,13 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 143-34 (ex R. 123-48)",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044276929/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GE 4",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
     ],
@@ -420,7 +420,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 30 décembre 2011, art. GH 60 à GH 63",
-        urlLegifrance:
+        url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025118025/",
       },
     ],
