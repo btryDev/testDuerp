@@ -51,5 +51,11 @@ next-env.d.ts
 # Exports Claude Design déposés à la racine — références de travail.
 /Tableau de bord Rojer.html
 
+# Planches Claude Design (canvas `.dc.html` + build) — travail de conception,
+# pas du produit. Le rendu final pèse plusieurs mégaoctets et se régénère
+# depuis `build.py` : le garder ici alourdirait le dépôt sans rien y ajouter.
+# Ignoré explicitement pour qu'un `git add -A` ne l'emporte pas au passage.
+/.design-encart/
+
 # Worktrees Claude Code (dépôts imbriqués, hors dépôt principal)
 .claude/worktrees/
