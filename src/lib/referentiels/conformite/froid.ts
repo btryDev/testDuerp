@@ -3,25 +3,47 @@
  * d'étanchéité des fluides frigorigènes).
  *
  * Sources primaires :
- *   - Code de l'environnement, art. R. 543-79 : le détenteur d'un équipement
- *     dont la charge dépasse cinq tonnes équivalent CO2 de HFC ou de PFC fait
- *     procéder à un contrôle d'étanchéité à la mise en service, renouvelé
- *     « périodiquement et chaque fois que des modifications affectant le
- *     circuit frigorifique sont apportées », par un opérateur disposant de
- *     l'attestation de capacité de l'article R. 543-99.
+ *   - Code de l'environnement, art. R. 543-79 : le contrôle d'étanchéité à la
+ *     mise en service, et son renouvellement.
  *   - Règlement (UE) 2024/573 du 7 février 2024, art. 5 : seuils de
  *     déclenchement, exemption des équipements hermétiquement scellés et
  *     paliers de périodicité.
  *
- * ── Pourquoi le règlement européen et non le droit national ────────────────
+ * ── Qui dit quoi : la chaîne de délégation ─────────────────────────────────
  *
- * R. 543-79 et l'arrêté du 29 février 2016 renvoient encore au règlement
- * (UE) n° 517/2014, **abrogé le 11 mars 2024** par le règlement (UE) 2024/573.
- * Le droit national n'a pas encore été mis à jour. Un règlement européen étant
- * d'application directe, c'est le 2024/573 qui porte aujourd'hui les seuils et
- * les fréquences : le référentiel le cite lui, et jamais le texte abrogé. Le
- * jour où le code de l'environnement sera réécrit, les références nationales
- * de ce fichier seront à revoir — pas les périodicités.
+ * Elle a été relue sur le texte authentique le 23 août 2026 (Légifrance,
+ * version en vigueur au 1ᵉʳ janvier 2025) parce que ce fichier en donnait une
+ * lecture approximative dans les deux sens.
+ *
+ * **L'article national porte son propre seuil.** L'alinéa 1 vise « le
+ * détenteur d'un équipement dont la charge en HCFC est supérieure à deux
+ * kilogrammes, ou dont la charge en HFC ou PFC est supérieure à cinq tonnes
+ * équivalent CO2 au sens du règlement (UE) n° 517/2014 ». Le renvoi au
+ * règlement n'y sert qu'à définir ce qu'est une tonne équivalent CO2 : il ne
+ * délègue pas le déclenchement. Ce fichier a affirmé le contraire, et c'était
+ * faux.
+ *
+ * **Ce que l'article délègue, c'est la périodicité.** L'alinéa 2, en toutes
+ * lettres : « Ce contrôle est ensuite périodiquement renouvelé dans les
+ * conditions définies par arrêté du ministre chargé de l'environnement. Il est
+ * également renouvelé à chaque fois que des modifications ayant une incidence
+ * sur le circuit contenant les fluides frigorigènes sont apportées à
+ * l'équipement. » La chaîne est donc : alinéa 2 → arrêté du 29 février 2016 →
+ * règlement (UE) n° 517/2014.
+ *
+ * **Et le dernier maillon a changé.** Le 517/2014 a été **abrogé le 11 mars
+ * 2024** par le règlement (UE) 2024/573, sans que le droit national ait été
+ * réécrit. Un règlement européen étant d'application directe, ce sont les
+ * paliers du 2024/573 qui valent aujourd'hui : le référentiel les cite eux, et
+ * jamais le texte abrogé. Le jour où le code de l'environnement et l'arrêté
+ * seront mis à jour, les références nationales de ce fichier seront à revoir —
+ * pas les périodicités.
+ *
+ * Réserve assumée : le seuil national de l'alinéa 1 (plus de 5 t CO2e de
+ * HFC/PFC, plus de 2 kg de HCFC) et le déclencheur de l'article 5 européen
+ * (5 t CO2e de gaz de l'annexe I, 1 kg de gaz de l'annexe II section 1) ne se
+ * recouvrent pas exactement. Le référentiel ne modélise aujourd'hui ni l'un ni
+ * l'autre — cf. la note sur les seuils, plus bas.
  *
  * ── Périodicités : texte authentique vérifié, réserve levée ────────────────
  *
@@ -170,21 +192,28 @@ export const PALIER_PAR_OBLIGATION: Record<string, PalierArticle5> = {
   "froid-controle-etancheite-semestriel-500t-detection": "sup500Detection",
 };
 
-/** Article national fondateur — vérifié sur Légifrance, version du 1ᵉʳ janvier 2025. */
+/** Article national fondateur — relu sur Légifrance le 23 août 2026, version
+ *  en vigueur au 1ᵉʳ janvier 2025. */
 const REF_ENVIRONNEMENT_MISE_EN_SERVICE = {
   source: "CODE_ENVIRONNEMENT",
   reference: "R. 543-79, al. 1",
   url:
     "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000031790640",
-  note: "Contrôle d'étanchéité à la mise en service, par un opérateur disposant de l'attestation de capacité prévue à l'article R. 543-99.",
+  note: "Contrôle d'étanchéité lors de la mise en service, par un opérateur disposant de l'attestation de capacité prévue à l'article R. 543-99. L'alinéa porte aussi le seuil national : charge en HCFC supérieure à 2 kg, ou charge en HFC ou PFC supérieure à 5 tonnes équivalent CO2.",
 } as const;
 
+// La note reprend le texte **mot pour mot**. Elle a longtemps porté une
+// paraphrase entre guillemets — « Le contrôle est renouvelé périodiquement et
+// chaque fois que des modifications affectant le circuit frigorifique sont
+// apportées » — qui escamotait le membre de phrase décisif : les conditions du
+// renouvellement sont fixées par arrêté, pas par l'article. Une citation
+// approximative sur un document opposable vaut une référence inventée.
 const REF_ENVIRONNEMENT_RENOUVELLEMENT = {
   source: "CODE_ENVIRONNEMENT",
   reference: "R. 543-79, al. 2",
   url:
     "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000031790640",
-  note: "« Le contrôle est renouvelé périodiquement et chaque fois que des modifications affectant le circuit frigorifique sont apportées. »",
+  note: "« Ce contrôle est ensuite périodiquement renouvelé dans les conditions définies par arrêté du ministre chargé de l'environnement. Il est également renouvelé à chaque fois que des modifications ayant une incidence sur le circuit contenant les fluides frigorigènes sont apportées à l'équipement. »",
 } as const;
 
 /** Article européen qui fixe les seuils et les paliers de périodicité. */
