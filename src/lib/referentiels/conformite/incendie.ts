@@ -183,6 +183,13 @@ export const obligationsIncendie: Obligation[] = [
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810023/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
       },
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 14 décembre 2011, art. 1er",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072663",
+        note: "Fonde le `erp: false` : « Dans les établissements recevant du public, pour les locaux dont la fonction essentielle est de recevoir du public et pour les dégagements accessibles au public, les dispositions du règlement de sécurité relatif à de tels établissements sont seules applicables à l'éclairage de sécurité de ces locaux ou dégagements. » Texte relu le 23 août 2026.",
+      },
     ],
     periodicite: "mensuelle",
     realisateurs: ["exploitant"],
@@ -190,7 +197,7 @@ export const obligationsIncendie: Obligation[] = [
     typologies: { travail: true, erp: false },
     categoriesEquipement: ["BAES"],
     notesInternes:
-      "Ajoutée 2026-08 : le pré-remplissage suggérait un BAES à tout bureau tertiaire alors que la seule obligation visant la catégorie BAES était `incendie-erp-baes-annuelle` (erp: true). Un employeur non-ERP déclarait donc l'équipement que l'outil venait de lui conseiller et n'obtenait aucune échéance. `erp: false` est un choix de modélisation, pas une lecture du texte : l'article 1er de l'arrêté écarte le régime travail pour les locaux et dégagements accessibles au public d'un ERP, au profit du règlement de sécurité ERP — dans un ERP, `incendie-erp-baes-annuelle` prend donc le relais. La limite assumée : les locaux d'un ERP non accessibles au public (réserves, bureaux) relèvent bien de l'arrêté du 14 décembre 2011, ce que le modèle — qui raisonne par établissement et non par local — ne sait pas exprimer sans produire deux occurrences pour un seul parc de blocs. L'exception SATI de l'article 11 n'est pas encodée en condition : aucune propriété d'équipement ne porte encore la question.",
+      "Ajoutée 2026-08 : le pré-remplissage suggérait un BAES à tout bureau tertiaire alors que la seule obligation visant la catégorie BAES était `incendie-erp-baes-annuelle` (erp: true). Un employeur non-ERP déclarait donc l'équipement que l'outil venait de lui conseiller et n'obtenait aucune échéance. `erp: false` **est** une lecture du texte, et non un choix de modélisation comme cette note l'a d'abord affirmé : l'article 1er, alinéa 2, de l'arrêté dit que « dans les établissements recevant du public, pour les locaux dont la fonction essentielle est de recevoir du public et pour les dégagements accessibles au public, les dispositions du règlement de sécurité relatif à de tels établissements sont seules applicables ». Le pendant ERP existe désormais, adossé à EC 14 § 3 (`incendie-erp-eclairage-securite-essai-mensuel` et `-autonomie-semestrielle`) : il porte les mêmes deux fréquences, la note qui parlait d'un « relais » par la seule vérification annuelle était fausse. Deux limites assumées. D'abord, les locaux d'un ERP non accessibles au public (réserves, bureaux) relèvent bien de l'arrêté du 14 décembre 2011, ce que le modèle — qui raisonne par établissement et non par local — ne sait pas exprimer ; les fréquences étant désormais identiques des deux côtés, l'écart est sans effet sur le calendrier. Ensuite, l'alinéa 3 du même article soumet les cantines, restaurants et salles de réunion à la réglementation ERP « lorsque celle-ci s'avère plus contraignante » : une règle comparative, local par local, hors de portée du modèle. Enfin l'exception SATI de l'article 11 n'est pas encodée en condition : aucune propriété d'équipement ne porte encore la question.",
   },
   {
     id: "incendie-travail-eclairage-securite-autonomie-semestrielle",
@@ -220,6 +227,13 @@ export const obligationsIncendie: Obligation[] = [
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810023/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
       },
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 14 décembre 2011, art. 1er",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072663",
+        note: "Fonde le `erp: false` : « Dans les établissements recevant du public, pour les locaux dont la fonction essentielle est de recevoir du public et pour les dégagements accessibles au public, les dispositions du règlement de sécurité relatif à de tels établissements sont seules applicables à l'éclairage de sécurité de ces locaux ou dégagements. » Texte relu le 23 août 2026.",
+      },
     ],
     periodicite: "semestrielle",
     realisateurs: ["exploitant"],
@@ -228,6 +242,73 @@ export const obligationsIncendie: Obligation[] = [
     categoriesEquipement: ["BAES"],
     notesInternes:
       "Même fondement et même choix de typologie que `incendie-travail-eclairage-securite-essai-mensuel` : voir ses notes internes. Les deux périodicités de l'article 11 sont scindées en deux obligations parce que le modèle ne porte qu'une périodicité par obligation, et parce qu'il s'agit bien de deux actes distincts (contrôle visuel d'allumage / décharge complète sur batterie).",
+  },
+
+  // ---------------------------------------------------------------------------
+  // ERP — Éclairage de sécurité : ce que l'exploitant s'assure lui-même
+  //
+  // Symétriques exactes des deux obligations « travail » ci-dessus, et pour
+  // cause : l'arrêté du 25 juin 1980 impose à l'exploitant d'ERP les mêmes
+  // deux fréquences que l'arrêté du 14 décembre 2011 impose à l'employeur —
+  // un essai mensuel, un contrôle semestriel de l'autonomie.
+  //
+  // Elles manquaient. L'article 1er de l'arrêté de 2011 réserve les parties
+  // publiques d'un ERP au seul règlement de sécurité ERP, ce que le
+  // référentiel traduit par `erp: false` sur les deux obligations « travail ».
+  // Faute d'équivalent ERP, un restaurant ou un commerce — les deux secteurs
+  // que ce produit vise — ne recevait qu'une ligne annuelle : quatorze actes
+  // par an remplacés par un seul.
+  //
+  // Aucun risque de double compte : `erp: false` est une exclusion en ET
+  // (cf. `matchTypologie`), donc un établissement ERP ne peut pas prendre les
+  // deux jeux. La partition est exacte — ERP d'un côté, employeur non-ERP de
+  // l'autre.
+  // ---------------------------------------------------------------------------
+  {
+    id: "incendie-erp-eclairage-securite-essai-mensuel",
+    domaine: "incendie",
+    libelle: "Essai mensuel de l'éclairage de sécurité (ERP)",
+    description:
+      "Une fois par mois, l'exploitant s'assure du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et de l'allumage de toutes les lampes, ainsi que de l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. Le résultat est consigné au registre de sécurité. Sur une installation constituée de blocs autonomes à système automatique de test intégré (SATI), ces opérations peuvent être effectuées automatiquement.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 25 juin 1980, art. EC 14 § 3",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021838315",
+        note: "« L'exploitant s'assure périodiquement : — une fois par mois : — du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et à la vérification de l'allumage de toutes les lampes (le fonctionnement doit être strictement limité au temps nécessaire au contrôle visuel) ; — de l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. — une fois tous les six mois, de l'autonomie d'au moins 1 heure. » Version en vigueur depuis le 16 mai 2010, modifiée par l'arrêté du 11 décembre 2009. Texte relu le 23 août 2026.",
+      },
+    ],
+    periodicite: "mensuelle",
+    realisateurs: ["exploitant"],
+    criticite: 3,
+    typologies: { erp: true },
+    categoriesEquipement: ["BAES"],
+    notesInternes:
+      "Ajoutée 2026-08 après lecture du texte : EC 14 § 3 impose à l'exploitant d'ERP exactement les deux fréquences de l'article 11 de l'arrêté du 14 décembre 2011. La note de `incendie-travail-eclairage-securite-essai-mensuel` affirmait que `incendie-erp-baes-annuelle` « prenait le relais » — un relais qui remplaçait quatorze actes annuels par un seul. L'exception SATI (NF C 71-820, mai 1999) n'est pas encodée en condition : aucune propriété d'équipement ne porte encore la question, ici comme du côté travail.",
+  },
+  {
+    id: "incendie-erp-eclairage-securite-autonomie-semestrielle",
+    domaine: "incendie",
+    libelle: "Vérification semestrielle de l'autonomie de l'éclairage de sécurité (ERP)",
+    description:
+      "Une fois tous les six mois, l'exploitant s'assure de l'autonomie d'au moins une heure de l'éclairage de sécurité. Dans les établissements comportant des périodes de fermeture, l'opération est conduite de telle manière qu'au début de chaque période d'ouverture au public l'installation ait retrouvé l'autonomie prescrite. Le résultat est consigné au registre de sécurité.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 25 juin 1980, art. EC 14 § 3",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021838315",
+        note: "« L'exploitant s'assure périodiquement : — une fois par mois : — du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et à la vérification de l'allumage de toutes les lampes (le fonctionnement doit être strictement limité au temps nécessaire au contrôle visuel) ; — de l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. — une fois tous les six mois, de l'autonomie d'au moins 1 heure. » Version en vigueur depuis le 16 mai 2010, modifiée par l'arrêté du 11 décembre 2009. Texte relu le 23 août 2026.",
+      },
+    ],
+    periodicite: "semestrielle",
+    realisateurs: ["exploitant"],
+    criticite: 4,
+    typologies: { erp: true },
+    categoriesEquipement: ["BAES"],
+    notesInternes:
+      "Même fondement et même partition que `incendie-erp-eclairage-securite-essai-mensuel` : voir ses notes internes. Les deux périodicités d'EC 14 § 3 sont scindées en deux obligations pour la même raison que du côté travail — le modèle ne porte qu'une périodicité par obligation, et il s'agit de deux actes distincts (contrôle visuel d'allumage / décharge complète sur batterie).",
   },
 
   // ---------------------------------------------------------------------------
@@ -312,7 +393,7 @@ export const obligationsIncendie: Obligation[] = [
     domaine: "incendie",
     libelle: "Vérification annuelle de l'éclairage de sécurité / BAES (ERP)",
     description:
-      "L'éclairage de sécurité (blocs autonomes d'éclairage de sécurité et source centrale) est vérifié annuellement par un technicien compétent. Les essais de fonctionnement sont réalisés à chaque jour d'exploitation (bascule sur secours) et consignés.",
+      "L'éclairage de sécurité (blocs autonomes d'éclairage de sécurité et source centrale) est vérifié annuellement par un technicien compétent. Les essais que l'exploitant conduit lui-même — mensuel et semestriel — font l'objet de leurs propres échéances.",
     referencesLegales: [
       {
         source: "ARRETE",

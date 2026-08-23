@@ -7,6 +7,7 @@ import {
   REALISATEURS,
 } from "../types-communs";
 import type { Obligation } from "./types";
+import { determineObligationsApplicables } from "@/lib/matching";
 import {
   PALIER_PAR_OBLIGATION,
   PERIODICITES_ARTICLE_5,
@@ -614,7 +615,12 @@ describe("référentiel conformité — éclairage de sécurité en lieu de trav
     expect(semestriel?.realisateurs).toEqual(["exploitant"]);
   });
 
-  it("elles s'excluent du régime ERP, qui garde sa propre vérification annuelle", () => {
+  const IDS_ERP = [
+    "incendie-erp-eclairage-securite-essai-mensuel",
+    "incendie-erp-eclairage-securite-autonomie-semestrielle",
+  ];
+
+  it("elles s'excluent du régime ERP, qui porte les siennes", () => {
     // Un même parc de blocs ne doit pas produire deux séries d'échéances sur
     // un établissement cumulant travail et ERP (arrêté du 14 décembre 2011,
     // art. 1er : le règlement ERP gouverne les locaux accessibles au public).
@@ -624,6 +630,55 @@ describe("référentiel conformité — éclairage de sécurité en lieu de trav
     expect(obligationParId("incendie-erp-baes-annuelle")?.typologies.erp).toBe(
       true,
     );
+  });
+
+  it("l'ERP porte les mêmes deux fréquences, fondées sur EC 14 § 3", () => {
+    // Le trou que ce test ferme : les deux obligations « travail » sortent du
+    // régime ERP, et rien n'y prenait leur place. Un restaurant ou un commerce
+    // — les deux secteurs visés par le produit — ne recevait qu'une ligne
+    // annuelle là où l'exploitant doit quatorze actes par an.
+    const mensuel = obligationParId(IDS_ERP[0]);
+    const semestriel = obligationParId(IDS_ERP[1]);
+    expect(mensuel?.periodicite).toBe("mensuelle");
+    expect(semestriel?.periodicite).toBe("semestrielle");
+    for (const o of [mensuel, semestriel]) {
+      expect(o?.realisateurs).toEqual(["exploitant"]);
+      expect(o?.typologies.erp).toBe(true);
+      expect(o?.referencesLegales[0].reference).toContain("EC 14");
+    }
+  });
+
+  it("la partition est exacte : jamais les deux jeux sur un même établissement", () => {
+    // C'est l'exclusion en ET de `matchTypologie` qui le garantit. Le vérifier
+    // ici plutôt que de s'en remettre à la lecture : un `erp: false` retiré
+    // par mégarde ferait doubler chaque échéance de bloc autonome sur tout
+    // restaurant, sans qu'aucun autre test ne s'en aperçoive.
+    const erpEtTravail = {
+      id: "etab-mixte",
+      effectifSurSite: 8,
+      estEtablissementTravail: true,
+      estERP: true,
+      estIGH: false,
+      estHabitation: false,
+      typeErp: "N" as const,
+      categorieErp: "N5" as const,
+      classeIgh: null,
+    };
+    const parc = [
+      { id: "eq-baes", libelle: "BAES", categorie: "BAES" as const, caracteristiques: null },
+    ];
+    const ids = determineObligationsApplicables(erpEtTravail, parc).map(
+      (a) => a.obligation.id,
+    );
+    for (const id of IDS_TRAVAIL) expect(ids, id).not.toContain(id);
+    for (const id of IDS_ERP) expect(ids, id).toContain(id);
+
+    const employeurSeul = { ...erpEtTravail, estERP: false, typeErp: null, categorieErp: null };
+    const idsEmployeur = determineObligationsApplicables(employeurSeul, parc).map(
+      (a) => a.obligation.id,
+    );
+    for (const id of IDS_TRAVAIL) expect(idsEmployeur, id).toContain(id);
+    for (const id of IDS_ERP) expect(idsEmployeur, id).not.toContain(id);
   });
 
   it("elles se fondent sur l'arrêté du 14 décembre 2011, pas sur R. 4227-14 seul", () => {
@@ -679,7 +734,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
   // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
   // version PUIS recopiez l'empreinte que le message d'échec affiche.
-  const EMPREINTE_ATTENDUE = "75-861cb74ed5f8b4de";
+  const EMPREINTE_ATTENDUE = "77-440f8475a5d472a9";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
