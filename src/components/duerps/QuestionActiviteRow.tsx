@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { repondreActivite } from "@/lib/activites/actions";
 
@@ -13,7 +13,8 @@ import { repondreActivite } from "@/lib/activites/actions";
  * une réponse que personne n'a donnée, sur un document à valeur légale — la
  * différence avec les transverses, c'est qu'ici le « non » est bel et bien
  * persistable (`exercee === false`), donc l'écran distingue trois états là où
- * les transverses n'en distinguent que deux.
+ * les transverses n'en distinguent que deux. Et les trois sont atteignables
+ * dans les deux sens : « retirer ma réponse » ramène au silence.
  *
  * Répondre « oui » ne bloque rien et n'ajoute aucun risque : c'est une
  * déclaration de périmètre, pas une étape d'évaluation. C'est aussi pourquoi
@@ -40,11 +41,22 @@ export function QuestionActiviteRow({
   exercee,
 }: Props) {
   const [pending, startTransition] = useTransition();
+  const [echec, setEchec] = useState(false);
 
-  const repondre = (valeur: boolean) => {
+  // L'action peut refuser : le DUERP a disparu entre-temps, ou l'onglet est
+  // resté ouvert après un changement de secteur et l'activité n'est plus
+  // instruite. Sans ce `catch`, le rejet se perdait dans la transition, la
+  // ligne restait affichée dans son état précédent, et le dirigeant repartait
+  // en croyant avoir répondu.
+  const repondre = (valeur: boolean | null) => {
     if (valeur === exercee) return;
+    setEchec(false);
     startTransition(async () => {
-      await repondreActivite(duerpId, activiteId, valeur);
+      try {
+        await repondreActivite(duerpId, activiteId, valeur);
+      } catch {
+        setEchec(true);
+      }
     });
   };
 
@@ -72,12 +84,33 @@ export function QuestionActiviteRow({
         >
           Non
         </Button>
-        {exercee === undefined && (
+        {exercee === undefined ? (
           <span className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
             Sans réponse
           </span>
+        ) : (
+          // Une réponse doit pouvoir être retirée, et pas seulement changée :
+          // un « non » cliqué par erreur partait sinon dans une version figée
+          // pour quarante ans, où il affirme que le dirigeant a *déclaré ne
+          // pas exercer* l'activité. Revenir au silence est un état légitime
+          // du dossier (ADR-020), pas un aveu.
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => repondre(null)}
+            className="text-xs italic text-muted-foreground underline-offset-4 hover:text-ink hover:underline disabled:opacity-50"
+          >
+            retirer ma réponse
+          </button>
         )}
       </div>
+
+      {echec && (
+        <p role="alert" className="mt-2 text-[0.82rem] text-destructive">
+          Cette réponse n&apos;a pas pu être enregistrée. Rechargez la page,
+          puis réessayez.
+        </p>
+      )}
 
       {exercee === true && (
         <div className="mt-3 max-w-prose border-l-2 border-dashed border-rule pl-3">

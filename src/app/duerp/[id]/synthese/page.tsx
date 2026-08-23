@@ -78,8 +78,10 @@ export default async function SynthesePage({
   });
   const perimetreDeclare = couverture.activitesDeclarees;
   const perimetreSansReponse = couverture.activitesSansReponse;
-  const perimetreQuestionne =
-    activitesDuSecteur(duerp.referentielSecteurId).length > 0;
+  // `listeInstruite` dit exactement ce que l'écran a besoin de savoir pour
+  // décider d'ouvrir la section : le secteur porte-t-il des questions ? La
+  // recalculer ici ferait un second juge sur la même question.
+  const perimetreQuestionne = couverture.listeInstruite;
 
   // Rappel de mise à jour annuelle — art. R. 4121-2 : obligatoire pour les
   // entreprises de 11 salariés et plus. On signale aussi le cas où aucune
@@ -395,9 +397,32 @@ export default async function SynthesePage({
           </div>
           <div className="cartouche mt-4 p-6">
             {perimetreDeclare.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Aucune activité hors référentiel n&apos;a été déclarée.
-              </p>
+              // Deux dossiers sans activité déclarée ne disent pas la même
+              // chose : celui qui a répondu « non » partout a tranché, celui
+              // qui n'a rien répondu n'a rien tranché. Une seule phrase pour
+              // les deux se lisait comme un feu vert juste avant de valider —
+              // c'est le défaut déjà corrigé côté document
+              // (`mentionSansReponseIsolee`), qui n'avait pas été transposé à
+              // l'écran.
+              couverture.etat === "aucun_manque_identifie" ? (
+                <p className="text-sm text-muted-foreground">
+                  Vous avez répondu «&nbsp;non&nbsp;» à{" "}
+                  {couverture.activitesEcartees.length > 1
+                    ? `chacune des ${couverture.activitesEcartees.length} questions`
+                    : "la question"}{" "}
+                  de périmètre. Aucune activité hors référentiel n&apos;a été
+                  déclarée.
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Aucune activité hors référentiel n&apos;a été déclarée, et{" "}
+                  {perimetreSansReponse.length > 1
+                    ? `${perimetreSansReponse.length} questions de périmètre n'ont pas été tranchées`
+                    : "une question de périmètre n'a pas été tranchée"}
+                  . Une question sans réponse n&apos;est pas un
+                  «&nbsp;non&nbsp;».
+                </p>
+              )
             ) : (
               <>
                 <p className="max-w-2xl text-[0.9rem] leading-relaxed text-ink">
@@ -418,7 +443,7 @@ export default async function SynthesePage({
                 </ul>
               </>
             )}
-            {perimetreSansReponse.length > 0 && (
+            {perimetreSansReponse.length > 0 && perimetreDeclare.length > 0 && (
               <p className="mt-4 text-[0.82rem] leading-relaxed text-muted-foreground">
                 {perimetreSansReponse.length} question
                 {perimetreSansReponse.length > 1 ? "s" : ""} sur le périmètre

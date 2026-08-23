@@ -9,10 +9,10 @@ import { prioriser } from "@/lib/cotation";
 import { formaterDateCourteFr, formaterDateLongueFr } from "@/lib/dates";
 import { LABEL_STATUT, LABEL_TYPE_MESURE } from "@/lib/mesures/labels";
 import { estHorsReferentiel } from "@/lib/risques/helpers";
+import { phrasesMethodologie, quandSansReponse } from "./mentions-couverture";
 import {
   activitesDeclareesSnapshot,
   activitesSansReponseSnapshot,
-  mentionSansReponseIsolee,
 } from "@/lib/activites/snapshot";
 import type { DuerpSnapshot } from "@/lib/versions/snapshot";
 import type { TypeMesure } from "@/lib/referentiels/types";
@@ -152,7 +152,6 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
   // champ : rien n'est dit, ni dans un sens ni dans l'autre.
   const activitesDeclarees = activitesDeclareesSnapshot(snapshot.couverture);
   const activitesSansReponse = activitesSansReponseSnapshot(snapshot.couverture);
-  const sansReponseIsolee = mentionSansReponseIsolee(snapshot.couverture);
 
   const lignes = unites.flatMap((u) =>
     u.risques.map((r) => ({
@@ -190,6 +189,14 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
       if (ta !== tb) return ta - tb;
       return b.criticiteRisque - a.criticiteRisque;
     });
+
+  // Les phrases de méthodologie qui disent ce que le document ne traite pas
+  // sont décidées hors du JSX (`mentions-couverture.ts`), où elles se testent.
+  const mentions = phrasesMethodologie({
+    couverture: snapshot.couverture,
+    nbUnitesHorsReferentiel: horsReferentiel.length,
+    brouillon,
+  });
 
   // Élément (pas un composant défini au rendu — react-hooks/static-components) :
   // le bandeau est identique sur toutes les pages.
@@ -267,18 +274,7 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
           {"\n"}L&apos;inventaire des risques s&apos;appuie sur les référentiels
           sectoriels et transverses INRS pré-chargés (voir ci-dessous), que
           l&apos;employeur complète et ajuste à sa réalité.
-          {horsReferentiel.length > 0
-            ? "\nCertaines unités de travail ne correspondent à aucune unité type du référentiel sectoriel : elles ont été évaluées sans base pré-chargée et sont identifiées comme telles ci-dessous."
-            : ""}
-          {activitesDeclarees.length > 0
-            ? "\nLe référentiel sectoriel retenu ne couvre pas toutes les activités déclarées par l'employeur : celles qu'il ne couvre pas sont nommées ci-dessous, avec ce que le présent document ne traite pas à leur sujet."
-            : ""}
-          {/* Cf. `mentionSansReponseIsolee` : sans cette phrase, un « non » à
-              toutes les questions et un silence à toutes les questions
-              donnaient le même document. */}
-          {sansReponseIsolee
-            ? `\n${activitesSansReponse.length} question${activitesSansReponse.length > 1 ? "s" : ""} sur le périmètre du référentiel ${activitesSansReponse.length > 1 ? "sont restées" : "est restée"} sans réponse à la date de validation : le présent document n'affirme ni que ces activités sont exercées, ni qu'elles ne le sont pas.`
-            : ""}
+          {mentions.map((phrase) => `\n${phrase}`).join("")}
         </Text>
 
         <Text style={s.h3}>Appréciation</Text>
@@ -415,9 +411,10 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
                 {activitesSansReponse.length > 1 ? "s" : ""} question
                 {activitesSansReponse.length > 1 ? "s" : ""} sur le périmètre du
                 référentiel {activitesSansReponse.length > 1 ? "sont" : "est"}{" "}
-                restée{activitesSansReponse.length > 1 ? "s" : ""} sans réponse
-                à la date de validation : le document n&apos;affirme donc ni que
-                ces activités sont exercées, ni qu&apos;elles ne le sont pas.
+                restée{activitesSansReponse.length > 1 ? "s" : ""} sans réponse{" "}
+                {quandSansReponse(brouillon)} : le document n&apos;affirme donc
+                ni que ces activités sont exercées, ni qu&apos;elles ne le sont
+                pas.
               </Text>
             )}
           </View>

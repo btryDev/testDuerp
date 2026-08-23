@@ -20,6 +20,14 @@ import { activitesDuSecteur } from "./reponses";
  * source est ce que le dirigeant répond, jamais une déduction sur son nom,
  * son NAF ou ses équipements.
  *
+ * `exercee` vaut `true`, `false` ou **`null`** — les trois états que l'ADR-020
+ * distingue, dans les deux sens. Sans le troisième, un « non » cliqué par
+ * erreur ne pouvait plus être retiré : la clé restait écrite, et le document
+ * partait affirmer pour quarante ans que le dirigeant avait *déclaré ne pas
+ * exercer* l'activité. Une affirmation que personne n'a faite est exactement
+ * ce que ce module existe pour empêcher — elle ne devient pas acceptable
+ * parce qu'elle vient d'un clic.
+ *
  * L'activité est vérifiée contre le référentiel du secteur **retenu** : une
  * clé arbitraire postée depuis le client n'entre pas en base, sans quoi le
  * document pourrait citer une activité que personne n'a instruite.
@@ -54,6 +62,9 @@ import { activitesDuSecteur } from "./reponses";
  *   `lireReponsesActivites` la rejetterait et la réponse redeviendrait un
  *   silence.
  *
+ * Le retrait d'une réponse (`null`) suit la même règle avec l'opérateur `-` :
+ * une seule clé ôtée, en une seule instruction, sans relire l'objet.
+ *
  * Les valeurs sont toutes passées en paramètres liés (`$1`, `$2`, `$3`) par le
  * template balisé de Prisma : rien de ce qui vient du client n'est concaténé
  * dans le SQL. `updatedAt` est posé à la main, parce que le `@updatedAt` de
@@ -62,7 +73,7 @@ import { activitesDuSecteur } from "./reponses";
 export async function repondreActivite(
   duerpId: string,
   activiteId: string,
-  exercee: boolean,
+  exercee: boolean | null,
 ): Promise<void> {
   const { duerp } = await requireDuerp(duerpId);
 
@@ -71,20 +82,37 @@ export async function repondreActivite(
   );
   if (!connue) throw new Error(`Activité inconnue : ${activiteId}`);
 
-  const lignes = await prisma.$executeRaw`
-    UPDATE "Duerp"
-       SET "reponsesActivitesNonCouvertes" = jsonb_set(
-             CASE
-               WHEN jsonb_typeof("reponsesActivitesNonCouvertes") = 'object'
-               THEN "reponsesActivitesNonCouvertes"
-               ELSE '{}'::jsonb
-             END,
-             ARRAY[${activiteId}]::text[],
-             to_jsonb(${exercee}::boolean),
-             true
-           ),
-           "updatedAt" = NOW()
-     WHERE "id" = ${duerpId}`;
+  // Deux instructions plutôt qu'un fragment SQL composé : chacune reste un
+  // UPDATE d'une seule ligne touchant une seule clé, ce qui est précisément
+  // la propriété qui empêche deux réponses concurrentes de s'effacer.
+  const lignes =
+    exercee === null
+      ? // Retrait de la clé (opérateur `-` de jsonb) : le seul geste qui rende
+        // le silence de nouveau atteignable après une réponse.
+        await prisma.$executeRaw`
+          UPDATE "Duerp"
+             SET "reponsesActivitesNonCouvertes" =
+                   CASE
+                     WHEN jsonb_typeof("reponsesActivitesNonCouvertes") = 'object'
+                     THEN "reponsesActivitesNonCouvertes" - ${activiteId}::text
+                     ELSE '{}'::jsonb
+                   END,
+                 "updatedAt" = NOW()
+           WHERE "id" = ${duerpId}`
+      : await prisma.$executeRaw`
+          UPDATE "Duerp"
+             SET "reponsesActivitesNonCouvertes" = jsonb_set(
+                   CASE
+                     WHEN jsonb_typeof("reponsesActivitesNonCouvertes") = 'object'
+                     THEN "reponsesActivitesNonCouvertes"
+                     ELSE '{}'::jsonb
+                   END,
+                   ARRAY[${activiteId}]::text[],
+                   to_jsonb(${exercee}::boolean),
+                   true
+                 ),
+                 "updatedAt" = NOW()
+           WHERE "id" = ${duerpId}`;
 
   // `requireDuerp` vient de garantir la ligne : zéro ligne touchée veut dire
   // qu'elle a disparu entre-temps. Se taire renverrait l'utilisateur à un

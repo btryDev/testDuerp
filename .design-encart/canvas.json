@@ -1,0 +1,83 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 340,
+      "h": 227,
+      "title": "La retenue — bande noire"
+    },
+    {
+      "file": "OptionD.dc.html",
+      "x": 0,
+      "y": 620,
+      "w": 340,
+      "h": 227,
+      "title": "D — La preuve d’usage"
+    },
+    {
+      "file": "OptionDbis.dc.html",
+      "x": 460,
+      "y": 620,
+      "w": 340,
+      "h": 227,
+      "title": "D bis — Les trois files"
+    },
+    {
+      "file": "OptionDter.dc.html",
+      "x": 920,
+      "y": 620,
+      "w": 340,
+      "h": 227,
+      "title": "D ter — L’accroche par le problème"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "brief",
+      "x": 620,
+      "y": -234,
+      "w": 800,
+      "text": "Encart publicitaire Rojer — 9 × 6 cm paysage, quadrichromie, pour une page de calendrier.\nÉchelle réelle : 340 × 227 px = 9 × 6 cm à 96 px/pouce. Format fini, sans fond perdu.\n\nLa direction est arrêtée. Un seul système sur les quatre planches : mot-symbole et baseline en tête, filet, phrase et adresse au pied, photo de terrain à droite, flashcode posé dessus sur carte blanche.\n\nBaseline commune : « Rojer, votre copilote prévention ».\nTypographie relevée dans globals.css : Instrument Sans 600 à -0.032em pour les titres, JetBrains Mono 500 à 0.2em pour les pastilles, IBM Plex Sans 400 pour la baseline et l’adresse — seul le mot-symbole porte la police de titrage, comme dans le pied de page du site.\nLes trois faces sont embarquées en woff2 dans chaque planche : l’export PNG/PDF garde la vraie police.\nFlashcode : vrai QR scannable vers https://rojer.fr, 25 modules, ~0,7 mm par module au format fini.\n\nPlancher d’impression atteint : baseline 12 px et adresse 13 px, soit 9 et 10 points. Elles ne peuvent pas descendre plus bas sans risque au tirage.\n\nA, B et C ont été retirées."
+    },
+    {
+      "id": "note-retenue",
+      "x": -505,
+      "y": 165,
+      "w": 340,
+      "text": "La retenue — bande noire\n\n« L’app pro qui coordonne la prévention des risques de votre structure. »\n\nLa tournure vient de votre édition dans l’éditeur : « qui coordonne » plutôt que « pour coordonner ». L’app devient le sujet de la phrase au lieu d’en être l’instrument — c’est plus direct, et ça se lit en une fois.\n\nC’est la seule qui dise ce que Rojer fait. Elle tient devant quelqu’un qui n’a jamais entendu le nom.\n\nÀ surveiller au tirage : un aplat noir plein format boit beaucoup d’encre et bave sur un papier de calendrier bon marché. Demandez un essai.\n\nCorrection : la photo passe de 140 à 133 px. Le titre réclame 207 px de colonne, pas 200 — la photo était donc poussée hors cadre et perdait 7 px sur son bord droit, sans que ça se voie."
+    },
+    {
+      "id": "note-famille",
+      "x": 0,
+      "y": 480,
+      "w": 800,
+      "text": "LA DÉCLINAISON CLAIRE — trois angles sur la même composition. Fond clair : moins d’encre, et l’encart se détache d’une page de calendrier plutôt que d’y faire un trou noir.\n\nLes trois portent maintenant l’autre photo — l’atelier — pour ne pas rejouer la planche retenue, et chacune ajoute sous son titre la phrase qui manquait : D et D bis prennent « L’app pro qui coordonne… », D ter prend « Concentrez-vous sur votre activité. » Les deux formulations sont ainsi comparables en situation.\n\nLe point du mot-symbole passe du ciel #b2daf2 au bleu saturé #376881 (--board-blue-ink) : sur fond clair, un pastel posé sur un pastel ne se voyait pas.\n\nLes titres descendent de 19 à 18 px pour faire place à la sous-ligne — sans ça le bloc dépassait les 199 px utiles de la colonne et se faisait rogner."
+    },
+    {
+      "id": "note-d",
+      "x": 0,
+      "y": 875,
+      "w": 340,
+      "text": "D — La preuve d’usage\n\n« Vos échéances ne vous attendront pas. » Une seule pastille, rose, sur la photo : l’encart montre l’état plutôt que de le raconter. La sous-ligne dit ensuite ce qu’est Rojer.\n\nC’est la plus économe des trois — une idée, une couleur, puis la définition."
+    },
+    {
+      "id": "note-dbis",
+      "x": 460,
+      "y": 875,
+      "w": 340,
+      "text": "D bis — Les trois files\n\n« Ce qui traîne, ce qui approche, ce qui est fait. » Les trois états du produit, dans leurs couleurs réelles.\n\nC’est celle qui explique le mieux le quotidien de l’outil, sans une ligne de jargon.\n\nContrepartie : trois pastilles sur 128 px, c’est chargé. Le cadrage est descendu sur cette planche-là pour qu’elles se posent sur le plan de travail plutôt que sur le visage — on y perd la tête du sujet."
+    },
+    {
+      "id": "note-dter",
+      "x": 920,
+      "y": 875,
+      "w": 340,
+      "text": "D ter — L’accroche par le problème\n\n« Un contrôle demain. Vos registres sont où ? » Pas de pastille : la question suffit. C’est elle qui porte l’autre formulation en sous-ligne — « Concentrez-vous sur votre activité. »\n\nLa plus interpellative des trois, celle qui a le plus de chances d’être lue en entier.\n\nContrepartie : ton anxiogène."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

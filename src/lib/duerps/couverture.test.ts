@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aDesManquesNommes, evaluerCouverture } from "./couverture";
+import { evaluerCouverture } from "./couverture";
 import type { UniteCouverture } from "./couverture";
 import type { Referentiel } from "@/lib/referentiels/types";
 
@@ -106,7 +106,6 @@ describe("evaluerCouverture — les cinq états", () => {
     expect(c.etat).toBe("manques_identifies");
     expect(c.activitesDeclarees.map((a) => a.id)).toEqual(["tst-decoupe"]);
     expect(c.activitesDeclarees[0].cequiManque).toContain("travail au froid");
-    expect(aDesManquesNommes(c)).toBe(true);
   });
 
   it("manques_identifies sur une unité hors référentiel seule", () => {
@@ -124,7 +123,6 @@ describe("evaluerCouverture — les cinq états", () => {
     expect(c.etat).toBe("reponses_incompletes");
     expect(c.activitesEcartees.map((a) => a.id)).toEqual(["tst-decoupe"]);
     expect(c.activitesSansReponse.map((a) => a.id)).toEqual(["tst-fournil"]);
-    expect(aDesManquesNommes(c)).toBe(false);
   });
 
   it("aucun_manque_identifie quand tout est répondu « non » et aucune unité hors référentiel", () => {

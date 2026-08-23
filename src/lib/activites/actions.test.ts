@@ -51,13 +51,26 @@ const h = vi.hoisted(() => {
       db.requetes.push({ sql: strings.join("?"), valeurs });
       if (db.lignesTouchees === 0) return 0;
 
-      const [cle, valeur] = valeurs as [string, boolean];
       const base =
         db.colonne !== null &&
         typeof db.colonne === "object" &&
         !Array.isArray(db.colonne)
           ? (db.colonne as Record<string, unknown>)
           : {};
+
+      // Deux formes d'UPDATE, distinguées comme la base les distingue : le
+      // retrait ne lie que la clé et l'identifiant, l'écriture lie aussi le
+      // booléen.
+      const retrait = strings.join("").includes('"reponsesActivitesNonCouvertes" - ');
+      if (retrait) {
+        const [cle] = valeurs as [string];
+        const suite = { ...base };
+        delete suite[cle];
+        db.colonne = suite;
+        return 1;
+      }
+
+      const [cle, valeur] = valeurs as [string, boolean];
       db.colonne = { ...base, [cle]: valeur };
       return 1;
     },
@@ -188,6 +201,59 @@ describe("repondreActivite — la requête émise", () => {
     // `@updatedAt` est appliqué par le client Prisma, pas par la base : sans
     // ce `NOW()`, la fiche resterait datée de sa dernière écriture ORM.
     expect(h.db.requetes[0].sql).toContain('"updatedAt" = NOW()');
+  });
+});
+
+describe("repondreActivite — retirer une réponse", () => {
+  // Le troisième état de l'ADR-020 doit être atteignable dans les deux sens.
+  // Sans retrait, un « non » cliqué par erreur restait écrit, et la version
+  // figée affirmait pour quarante ans que le dirigeant avait *déclaré ne pas
+  // exercer* l'activité.
+  it("ramène la question au silence, clé retirée et non mise à false", async () => {
+    h.db.colonne = { [VIANDE]: false, [MAREE]: true };
+
+    await repondreActivite(DUERP, VIANDE, null);
+
+    expect(h.db.colonne).toEqual({ [MAREE]: true });
+    expect(Object.keys(h.db.colonne as object)).not.toContain(VIANDE);
+  });
+
+  it("ne touche qu'une clé : le retrait n'efface pas les réponses voisines", async () => {
+    h.db.colonne = { [VIANDE]: true, [MAREE]: false };
+    h.db.lecture = {};
+
+    await Promise.all([
+      repondreActivite(DUERP, VIANDE, null),
+      repondreActivite(DUERP, MAREE, true),
+    ]);
+
+    expect(h.db.colonne).toEqual({ [MAREE]: true });
+  });
+
+  it("émet un retrait jsonb, sans concaténer la clé dans le SQL", async () => {
+    await repondreActivite(DUERP, VIANDE, null);
+
+    expect(h.db.requetes).toHaveLength(1);
+    const { sql, valeurs } = h.db.requetes[0];
+    expect(sql).toContain('"reponsesActivitesNonCouvertes" - ');
+    expect(sql).not.toContain("jsonb_set(");
+    expect(sql).not.toContain(VIANDE);
+    expect(valeurs).toEqual([VIANDE, DUERP]);
+    expect(sql).toContain('"updatedAt" = NOW()');
+  });
+
+  it("refuse un retrait sur une clé que le référentiel ne connaît pas", async () => {
+    await expect(repondreActivite(DUERP, "com-inventee", null)).rejects.toThrow(
+      /Activité inconnue/,
+    );
+    expect(h.db.requetes).toHaveLength(0);
+  });
+
+  it("ne se tait pas si le retrait ne touche aucune ligne", async () => {
+    h.db.lignesTouchees = 0;
+    await expect(repondreActivite(DUERP, VIANDE, null)).rejects.toThrow(
+      /introuvable/,
+    );
   });
 });
 

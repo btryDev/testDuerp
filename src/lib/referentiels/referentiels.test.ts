@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ACTIVITES_PUBLIEES, ACTIVITES_RETIREES } from "./activites-publiees";
 import {
   referentielsSectoriels,
   risquesTransverses,
@@ -58,6 +59,45 @@ describe("activités non couvertes", () => {
   const activites = referentielsSectoriels.flatMap((ref) =>
     ref.activitesNonCouvertes.map((a) => ({ ref, a })),
   );
+
+  it("aucun identifiant publié n'a disparu du référentiel", () => {
+    // Le trou que ce test ferme : `questionsActivites` n'itère que sur le
+    // référentiel courant. Un identifiant retiré ou renommé rend muettes,
+    // sans erreur ni trace, toutes les réponses déjà données — et le prochain
+    // DUERP gravé ne dit plus rien de l'activité déclarée.
+    const presents = new Set(activites.map(({ a }) => a.id));
+    const disparus = ACTIVITES_PUBLIEES.filter((id) => !presents.has(id));
+    expect(
+      disparus,
+      "Un identifiant d'activité publié a disparu du référentiel. Les réponses " +
+        "déjà données le portant deviendraient invisibles, y compris dans les " +
+        "versions à figer. Cf. `activites-publiees.ts` : on ajoute, on ne " +
+        "retire qu'après avoir migré les réponses.",
+    ).toEqual([]);
+  });
+
+  it("toute activité du référentiel est déclarée au registre", () => {
+    // L'autre sens : une activité posée à un dirigeant sans être inscrite au
+    // registre pourrait être retirée plus tard sans que rien ne s'y oppose.
+    const declares = new Set([...ACTIVITES_PUBLIEES, ...ACTIVITES_RETIREES]);
+    const inconnues = activites
+      .map(({ a }) => a.id)
+      .filter((id) => !declares.has(id));
+    expect(
+      inconnues,
+      "Ajoutez ces identifiants à `ACTIVITES_PUBLIEES` : c'est ce registre qui " +
+        "les rend irréversibles.",
+    ).toEqual([]);
+  });
+
+  it("aucun identifiant retiré n'est réemployé", () => {
+    const presents = new Set(activites.map(({ a }) => a.id));
+    const ressuscites = ACTIVITES_RETIREES.filter((id) => presents.has(id));
+    expect(
+      ressuscites,
+      "Un identifiant retiré désigne autre chose dans les anciens snapshots.",
+    ).toEqual([]);
+  });
 
   it("aucun identifiant d'activité n'est dupliqué", () => {
     const ids = activites.map(({ a }) => a.id);

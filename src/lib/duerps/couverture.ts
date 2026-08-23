@@ -252,19 +252,6 @@ export function evaluerCouverture(params: {
   };
 }
 
-/**
- * Vrai quand le dossier porte au moins un manque nommé — activité déclarée ou
- * unité hors référentiel. Sucre pour les écrans et le générateur documentaire,
- * qui n'ont pas à réapprendre quels états comptent comme un manque.
- *
- * Volontairement faux pour `reponses_incompletes` et `secteur_non_instruit` :
- * ne pas savoir n'est pas un manque constaté, et prétendre le contraire ferait
- * dire au document une chose que personne n'a établie.
- */
-export function aDesManquesNommes(couverture: CouvertureDuerp): boolean {
-  return couverture.etat === "manques_identifies";
-}
-
 /** Le prédicat d'unité, réexporté pour les appelants qui n'ont besoin que de
  *  lui — histoire qu'aucun d'eux ne soit tenté de le réécrire. */
 export { estHorsReferentiel };

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   requireDuerp,
@@ -66,10 +67,23 @@ export async function choisirSecteur(
   duerpId: string,
   secteurId: string,
 ): Promise<void> {
-  await requireDuerp(duerpId);
+  const { duerp } = await requireDuerp(duerpId);
 
   const ref = trouverReferentielParId(secteurId);
   if (!ref) throw new Error(`Secteur inconnu : ${secteurId}`);
+
+  // Changer de secteur remet les questions de périmètre à zéro (ADR-020).
+  //
+  // Les identifiants d'activité sont préfixés par secteur, donc deux secteurs
+  // ne se marchent pas dessus — mais garder les réponses les faisait
+  // ressusciter à l'identique dès qu'on revenait au secteur d'origine :
+  // commerce, puis restauration, puis commerce, et d'anciennes déclarations
+  // redevenaient des déclarations courantes sans qu'aucune question ait été
+  // reposée. Sur un document conservé quarante ans, une réponse doit venir
+  // d'une question posée dans la session qui la grave.
+  const changeDeSecteur =
+    duerp.referentielSecteurId !== null &&
+    duerp.referentielSecteurId !== secteurId;
 
   const unitesExistantes = await prisma.uniteTravail.findMany({
     where: { duerpId },
@@ -82,7 +96,10 @@ export async function choisirSecteur(
   await prisma.$transaction([
     prisma.duerp.update({
       where: { id: duerpId },
-      data: { referentielSecteurId: secteurId },
+      data: {
+        referentielSecteurId: secteurId,
+        ...(changeDeSecteur ? { reponsesActivitesNonCouvertes: Prisma.DbNull } : {}),
+      },
     }),
     ...ref.unitesTravailSuggerees
       .filter((u) => !nomsExistants.has(u.nom.toLowerCase()))
