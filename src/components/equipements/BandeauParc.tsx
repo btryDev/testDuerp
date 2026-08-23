@@ -22,6 +22,7 @@ import { ChevronLeft } from "lucide-react";
 import { SelecteurBatiment } from "@/components/batiments/SelecteurBatiment";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
 
 function Compteur({
   nombre,
@@ -56,6 +57,7 @@ export function BandeauParc({
   hrefRetour,
   enRetard,
   proches,
+  aPlanifier,
   total,
   hrefAjouter,
   suggestions,
@@ -64,6 +66,15 @@ export function BandeauParc({
   hrefRetour: string;
   enRetard: number;
   proches: number;
+  /**
+   * Vérifications sans date de rendez-vous. Ni un retard ni un engagement
+   * daté — et c'est pour ça qu'il a son propre chiffre : fondu dans les
+   * deux autres il aurait menti, absent il faisait pire. Un parc fraîchement
+   * déclaré n'a par construction que des lignes à planifier : le bandeau
+   * annonçait « 0 en retard · 0 sous 30 j » — un écran calme — au-dessus de
+   * cartes qui disaient toutes « 3 à planifier ».
+   */
+  aPlanifier: number;
   total: number;
   hrefAjouter: string;
   /** Ce que le référentiel propose encore de déclarer, et où le lire. */
@@ -118,6 +129,14 @@ export function BandeauParc({
               champ="var(--board-amber)"
               encre="var(--board-amber-ink)"
             />
+            {aPlanifier > 0 ? (
+              <Compteur
+                nombre={aPlanifier}
+                legende="à planifier"
+                champ={CHAMP_ETAT.aPlanifier}
+                encre={ENCRE_ETAT.aPlanifier}
+              />
+            ) : null}
             <Compteur
               nombre={total}
               legende="au parc"

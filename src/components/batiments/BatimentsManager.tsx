@@ -26,9 +26,23 @@ const ETAT_INITIAL: BatimentActionState = { status: "idle" };
 const CLASSE_SELECT =
   "h-9 w-full rounded-md border border-rule bg-background px-3 py-1 text-sm shadow-sm";
 
+/**
+ * L'erreur d'un champ, ou celle du formulaire.
+ *
+ * Sans `champ`, elle rend le message général **et** tout ce que le serveur a
+ * rejeté sur un champ que le formulaire n'affiche pas. Le formulaire ne
+ * montrait que `nom` : un `complementAdresse` trop long produisait un envoi
+ * sans effet et sans message — le garde-fou serveur restait muet, et
+ * l'utilisateur n'avait plus qu'à deviner.
+ */
 function Erreur({ state, champ }: { state: BatimentActionState; champ?: string }) {
   if (state.status !== "error") return null;
-  const message = champ ? state.fieldErrors?.[champ]?.[0] : state.message;
+  const autres = Object.entries(state.fieldErrors ?? {})
+    .filter(([cle]) => cle !== "nom")
+    .flatMap(([, messages]) => messages);
+  // Le message précis passe devant le générique : le serveur répond toujours
+  // « Formulaire invalide » en plus du détail, et c'est le détail qui aide.
+  const message = champ ? state.fieldErrors?.[champ]?.[0] : (autres[0] ?? state.message);
   if (!message) return null;
   return (
     <p role="alert" className="text-sm text-destructive">
@@ -157,7 +171,9 @@ function FormulaireAjout({ etablissementId }: { etablissementId: string }) {
           />
         </div>
       </div>
-      {state.status === "error" && !state.fieldErrors && <Erreur state={state} />}
+      {state.status === "error" && !state.fieldErrors?.nom && (
+        <Erreur state={state} />
+      )}
       <Button type="submit" size="sm" disabled={pending}>
         {pending ? "Ajout…" : "Ajouter"}
       </Button>
@@ -209,7 +225,9 @@ function FormulaireRenommage({
           />
         </div>
       </div>
-      {state.status === "error" && !state.fieldErrors && <Erreur state={state} />}
+      {state.status === "error" && !state.fieldErrors?.nom && (
+        <Erreur state={state} />
+      )}
       <div className="flex gap-2">
         <Button type="submit" size="sm" disabled={pending}>
           {pending ? "Enregistrement…" : "Enregistrer"}

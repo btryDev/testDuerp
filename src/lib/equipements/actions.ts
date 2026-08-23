@@ -139,8 +139,13 @@ export async function creerEquipement(
 
   const regen = await regenererCalendrier(etablissementId);
 
+  // Les trois chemins qui régénèrent le calendrier l'invalident : la
+  // régénération vient de réécrire des dates, et `/calendrier` servait son
+  // rendu précédent. Le retrait et la réactivation le faisaient déjà, la
+  // création, la modification et le pré-remplissage non.
   revalidatePath(`/etablissements/${etablissementId}`);
   revalidatePath(`/etablissements/${etablissementId}/equipements`);
+  revalidatePath(`/etablissements/${etablissementId}/calendrier`);
   // L'équipement est bien créé : on ne redirige pas en silence si les
   // obligations correspondantes n'ont pas pu être calculées.
   if (!regen.ok) {
@@ -200,6 +205,10 @@ export async function modifierEquipement(
 
   revalidatePath(`/etablissements/${eq.etablissementId}`);
   revalidatePath(`/etablissements/${eq.etablissementId}/equipements`);
+  revalidatePath(`/etablissements/${eq.etablissementId}/equipements/${id}`);
+  // Répondre « oui » à « charge > 50 t éq. CO₂ » fait passer la périodicité
+  // de douze à six mois : la fiche et le calendrier doivent le voir.
+  revalidatePath(`/etablissements/${eq.etablissementId}/calendrier`);
   if (!regen.ok) {
     return { status: "error", message: regen.message };
   }
@@ -332,6 +341,7 @@ export async function creerEquipementsDepuisPreRemplissage(
 
   revalidatePath(`/etablissements/${etablissementId}`);
   revalidatePath(`/etablissements/${etablissementId}/equipements`);
+  revalidatePath(`/etablissements/${etablissementId}/calendrier`);
   return {
     created: result.count,
     ...(regen.ok ? {} : { avertissement: regen.message }),

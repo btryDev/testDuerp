@@ -20,6 +20,7 @@ import {
   estVerificationEnRetard,
 } from "@/lib/dates/retard";
 import { JOURS_HORIZON_PROCHE } from "@/lib/dates";
+import { estMarqueeNonApplicable } from "./marqueur";
 import { PERIODICITE_EN_JOURS } from "@/lib/referentiels/types-communs";
 
 /**
@@ -167,11 +168,27 @@ export function lecturesCalendrier(
     datePrevue: Date;
     dateRealisee: Date | null;
     periodicite: string;
+    /** Le libellé porte le marqueur d'archivage (ADR-012) quand
+     *  l'obligation ne s'applique plus. Facultatif : les appelants qui ne
+     *  l'ont pas sous la main lisent la ligne comme active. */
+    libelleObligation?: string;
   },
   now: Date,
 ): LectureCalendrier[] {
+  // Une ligne archivée n'annonce plus rien. Son statut est **gelé** dans son
+  // dernier état connu (ADR-012 : l'enum Prisma n'a pas de valeur
+  // `archivee`), donc un cycle soldé continuait d'en tirer un « prochain
+  // rendez-vous » : l'appareil dont le désenfumage ne s'applique plus —
+  // l'établissement a cessé d'être ERP — affichait « une vérification est
+  // attendue dans 120 jours », et la ligne « Ne s'applique plus — » se
+  // rangeait sous « À faire ». Le fait passé, lui, reste : c'est une preuve.
+  const archivee = v.libelleObligation
+    ? estMarqueeNonApplicable(v.libelleObligation)
+    : false;
+
   const classe = classerVerification(v, now);
   if (classe !== "faite") {
+    if (archivee) return [];
     return [{ date: v.datePrevue, registre: classe, lecture: "courante" }];
   }
 
@@ -187,6 +204,7 @@ export function lecturesCalendrier(
     (PERIODICITE_EN_JOURS as Record<string, number | null>)[v.periodicite] !=
     null;
   if (
+    !archivee &&
     cyclique &&
     v.dateRealisee !== null &&
     v.datePrevue.getTime() > v.dateRealisee.getTime()

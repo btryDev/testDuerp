@@ -19,6 +19,33 @@
 import { joursCivilsEntre } from "@/lib/dates";
 import type { RegistreLigne } from "@/lib/calendrier/etats";
 
+/**
+ * L'état d'un jalon d'historique, d'après le résultat consigné au rapport.
+ *
+ * Une visite qui a eu lieu n'est pas une visite qui s'est bien passée. Tous
+ * les jalons passés étaient peints en « faite », donc en vert, y compris
+ * celui étiqueté « Écart majeur » : la couleur disait « c'est bon » pendant
+ * que le mot disait l'inverse, et le vert est le seul des deux qui se lise
+ * au coup d'œil. Le champ suit maintenant le constat.
+ *
+ * `non_verifiable` reste neutre — rien n'a été établi, ni dans un sens ni
+ * dans l'autre. Un rapport sans résultat consigné aussi.
+ */
+export function etatDuResultat(
+  resultat: string | null | undefined,
+): RegistreLigne {
+  switch (resultat) {
+    case "conforme":
+      return "faite";
+    case "observations_mineures":
+      return "proche";
+    case "ecart_majeur":
+      return "enRetard";
+    default:
+      return "aPlanifier";
+  }
+}
+
 /** Un point de la frise : une date, ce qu'elle dit, l'état qu'elle porte. */
 export type JalonFrise = {
   cle: string;

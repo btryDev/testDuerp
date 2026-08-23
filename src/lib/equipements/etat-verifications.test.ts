@@ -113,6 +113,80 @@ describe("repartirParEquipement", () => {
   });
 });
 
+describe("repartirParEquipement — l'horizon proche", () => {
+  // `proches` alimente le compteur « sous 30 j » du bandeau du parc, et
+  // c'est la seule branche de la répartition qui dépende de l'horizon. Elle
+  // n'était pas testée : la frontière J+30 / J+31 non plus.
+  it("compte comme proche une échéance dans l'horizon, pas au-delà", () => {
+    const m = repartirParEquipement(
+      [
+        // J+20 : dans les trente jours.
+        verif("eq1", "2026-08-30"),
+        // J+60 : à venir, mais pas proche.
+        verif("eq1", "2026-10-09"),
+      ],
+      AUJOURDHUI,
+    );
+    expect(m.get("eq1")?.aVenir).toBe(2);
+    expect(m.get("eq1")?.proches).toBe(1);
+  });
+
+  it("la frontière se joue au trentième jour, pas au trente-et-unième", () => {
+    // AUJOURDHUI = 10 août 2026. J+30 = 9 septembre, J+31 = 10 septembre.
+    const dans30 = repartirParEquipement(
+      [verif("eq1", "2026-09-09")],
+      AUJOURDHUI,
+    );
+    const dans31 = repartirParEquipement(
+      [verif("eq1", "2026-09-10")],
+      AUJOURDHUI,
+    );
+    expect(dans30.get("eq1")?.proches).toBe(1);
+    expect(dans31.get("eq1")?.proches).toBe(0);
+    expect(dans31.get("eq1")?.aVenir).toBe(1);
+  });
+
+  it("ne compte jamais un retard ni une occurrence sans date comme proche", () => {
+    const m = repartirParEquipement(
+      [
+        verif("eq1", "2026-06-01"),
+        verif("eq1", "2026-08-20", { statut: "a_planifier" }),
+      ],
+      AUJOURDHUI,
+    );
+    expect(m.get("eq1")?.proches).toBe(0);
+  });
+
+  it("le rendez-vous suivant d'un cycle soldé compte dans l'horizon", () => {
+    const m = repartirParEquipement(
+      [
+        verif("eq1", "2026-08-25", {
+          statut: "realisee_conforme",
+          dateRealisee: "2025-08-25",
+        }),
+      ],
+      AUJOURDHUI,
+    );
+    expect(m.get("eq1")?.faites).toBe(1);
+    expect(m.get("eq1")?.proches).toBe(1);
+  });
+
+  it("une ligne archivée ne compte dans aucun horizon", () => {
+    // ADR-012 : son obligation ne s'applique plus, son statut reste gelé.
+    const m = repartirParEquipement(
+      [
+        verif("eq1", "2026-08-30", {
+          libelle: "Ne s'applique plus — Vérification annuelle",
+        }),
+      ],
+      AUJOURDHUI,
+    );
+    expect(m.get("eq1")?.proches).toBe(0);
+    expect(m.get("eq1")?.aVenir).toBe(0);
+    expect(m.get("eq1")?.enRetard).toBe(0);
+  });
+});
+
 describe("resumerEquipement", () => {
   const etatDe = (verifs: Parameters<typeof repartirParEquipement>[0]) =>
     repartirParEquipement(verifs, AUJOURDHUI).get("eq1");

@@ -115,6 +115,9 @@ export async function listerBatimentsAvecCharge(
       statut: true,
       datePrevue: true,
       dateRealisee: true,
+      // Marqueur d'archivage (ADR-012) : une ligne dont l'obligation ne
+      // s'applique plus ne pèse pas sur la charge d'un bâtiment.
+      libelleObligation: true,
       equipement: { select: { batimentId: true } },
     },
   });

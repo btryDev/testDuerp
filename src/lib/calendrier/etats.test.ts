@@ -204,3 +204,81 @@ describe("lecturesCalendrier", () => {
     ]);
   });
 });
+
+
+describe("lecturesCalendrier — lignes archivées (ADR-012)", () => {
+  // Une ligne dont l'obligation ne s'applique plus est marquée, pas
+  // supprimée : elle porte un rapport. Mais son statut reste **gelé** dans
+  // son dernier état connu — l'enum Prisma n'a pas de valeur `archivee` —,
+  // si bien qu'un cycle soldé continuait d'en tirer un rendez-vous suivant.
+  // L'établissement cesse d'être ERP, et la fiche annonçait quand même
+  // « une vérification est attendue dans 120 jours » sur le désenfumage.
+  const ARCHIVE = "Ne s'applique plus — Vérification annuelle du désenfumage";
+
+  it("garde le fait passé, et lui seul", () => {
+    expect(
+      lecturesCalendrier(
+        {
+          statut: "realisee_conforme",
+          datePrevue: jours(120),
+          dateRealisee: jours(-245),
+          periodicite: "annuelle",
+          libelleObligation: ARCHIVE,
+        },
+        NOW,
+      ),
+    ).toEqual([
+      { date: jours(-245), registre: "faite", lecture: "realisation" },
+    ]);
+  });
+
+  it("n'annonce rien du tout quand rien n'a été réalisé", () => {
+    // Le cas d'un rapport « non vérifiable » : la ligne porte une preuve
+    // mais aucune date de réalisation, et son statut gelé dit « dépassée ».
+    expect(
+      lecturesCalendrier(
+        {
+          statut: "depassee",
+          datePrevue: jours(-30),
+          dateRealisee: null,
+          periodicite: "annuelle",
+          libelleObligation: ARCHIVE,
+        },
+        NOW,
+      ),
+    ).toEqual([]);
+  });
+
+  it("une ligne active, elle, annonce toujours ses deux lectures", () => {
+    const lectures = lecturesCalendrier(
+      {
+        statut: "realisee_conforme",
+        datePrevue: jours(120),
+        dateRealisee: jours(-245),
+        periodicite: "annuelle",
+        libelleObligation: "Vérification annuelle du désenfumage",
+      },
+      NOW,
+    );
+    expect(lectures.map((l) => l.lecture)).toEqual([
+      "realisation",
+      "prochaine",
+    ]);
+  });
+
+  it("sans libellé, la ligne est lue comme active", () => {
+    // Les appelants qui n'ont pas le libellé sous la main ne doivent pas
+    // voir leurs lignes disparaître.
+    expect(
+      lecturesCalendrier(
+        {
+          statut: "planifiee",
+          datePrevue: jours(10),
+          dateRealisee: null,
+          periodicite: "annuelle",
+        },
+        NOW,
+      ),
+    ).toHaveLength(1);
+  });
+});

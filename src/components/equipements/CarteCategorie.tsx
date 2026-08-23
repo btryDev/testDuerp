@@ -104,7 +104,17 @@ export function CarteCategorie({
             {rythme ? ` · ${rythme}` : null}
           </p>
         </div>
-        <Jauge etats={appareils.map((a) => a.resume.etat)} />
+        <Jauge
+          etats={appareils
+            // Un appareil sans le moindre signal n'a pas d'état calculé :
+            // `resumerEquipement(undefined)` retombe sur « à planifier ».
+            // Peint tel quel, il donnait une jauge pleine de segments
+            // « à planifier » au-dessus de vitrines qui annoncent, chacune,
+            // « aucune vérification rattachée ». `urgenceCategorie` écarte
+            // déjà ce repli pour le tri ; la jauge l'avalait.
+            .filter((a) => a.resume.signaux.length > 0)
+            .map((a) => a.resume.etat)}
+        />
       </div>
 
       <div className="mt-[18px] grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

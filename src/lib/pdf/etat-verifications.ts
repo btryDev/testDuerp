@@ -19,6 +19,7 @@ import {
   estVerificationEnRetard,
   type VerificationDatee,
 } from "@/lib/dates/retard";
+import { estMarqueeNonApplicable } from "@/lib/calendrier/marqueur";
 
 /** Répartition en quatre catégories **disjointes**. */
 export type EtatVerifications<T> = {
@@ -28,7 +29,8 @@ export type EtatVerifications<T> = {
   aPlanifier: T[];
   /** Planifiées dans l'horizon proche (30 jours). */
   aVenir: T[];
-  /** Réalisées sur la fenêtre d'historique (12 mois). */
+  /** Réalisées sur la fenêtre d'historique (12 mois). Les lignes archivées
+   *  y restent : la réalisation est un fait passé, et une preuve. */
   realisees12m: T[];
   /** Somme des quatre — dénominateur du score de conformité. */
   total: number;
@@ -63,9 +65,20 @@ export function repartirVerifications<
     ajouterMois(now, -MOIS_FENETRE_HISTORIQUE),
   );
 
-  const enRetard = verifs.filter((v) => estVerificationEnRetard(v, now));
-  const aPlanifier = verifs.filter((v) => estVerificationAPlanifier(v, now));
-  const aVenir = verifs.filter((v) =>
+  // Une ligne archivée (ADR-012) ne réclame plus rien : son obligation ne
+  // s'applique plus, on ne la garde que pour la preuve qu'elle porte. Son
+  // statut, lui, reste gelé dans son dernier état connu — faute de valeur
+  // `archivee` dans l'enum Prisma —, si bien qu'une ligne gelée sur
+  // « dépassée » comptait un retard à perpétuité.
+  const actives = verifs.filter(
+    (v) => !("libelleObligation" in v && typeof v.libelleObligation === "string"
+      ? estMarqueeNonApplicable(v.libelleObligation)
+      : false),
+  );
+
+  const enRetard = actives.filter((v) => estVerificationEnRetard(v, now));
+  const aPlanifier = actives.filter((v) => estVerificationAPlanifier(v, now));
+  const aVenir = actives.filter((v) =>
     estVerificationAVenir(v, now, JOURS_HORIZON_PROCHE),
   );
   const realisees12m = verifs.filter(

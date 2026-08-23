@@ -42,6 +42,12 @@ import {
   type Realisateur,
 } from "@/lib/referentiels/types-communs";
 import { estEnRetard } from "@/lib/dates/retard";
+import {
+  MARQUEUR_NON_APPLICABLE,
+  estMarqueeNonApplicable,
+  marquerNonApplicable,
+  libelleSansMarqueur,
+} from "./marqueur";
 import type { ObligationApplicable } from "@/lib/matching";
 
 export type StatutVerificationGen =
@@ -286,40 +292,17 @@ export function estStatutRealise(s: string): boolean {
 }
 
 /**
- * Marqueur d'archivage. Une obligation peut cesser de s'appliquer (équipement
- * désactivé, régime de l'établissement modifié, obligation retirée du
- * référentiel). Si la ligne ne porte aucune preuve, on la supprime ; si elle
- * en porte une, la détruire reviendrait à effacer un rapport de vérification
- * ou une action corrective — on la **marque** au lieu de la supprimer.
- *
- * Le marqueur vit dans `libelleObligation`, qui est déjà un instantané texte
- * recopié du référentiel : il apparaît donc partout où la ligne apparaît
- * (calendrier, registre, exports PDF), sans colonne supplémentaire.
- *
- * Limite assumée et documentée en ADR-012 : l'enum Prisma `StatutVerification`
- * n'a pas de valeur `archivee`. Le statut d'une ligne archivée est donc **gelé**
- * dans son dernier état connu. L'ajout d'une valeur d'enum dédiée relève du
- * propriétaire de `prisma/schema.prisma`.
+ * Marqueur d'archivage : une obligation qui cesse de s'appliquer sur une
+ * ligne porteuse de preuve est marquée, jamais supprimée (ADR-012). Il vit
+ * dans `marqueur.ts` — il se lit dans des modules qui n'ont pas à dépendre du
+ * moteur de matching — et se réexporte ici, où il se pose.
  */
-export const MARQUEUR_NON_APPLICABLE = "Ne s'applique plus — ";
-
-export function estMarqueeNonApplicable(libelle: string): boolean {
-  return libelle.startsWith(MARQUEUR_NON_APPLICABLE);
-}
-
-export function marquerNonApplicable(libelle: string): string {
-  return estMarqueeNonApplicable(libelle)
-    ? libelle
-    : `${MARQUEUR_NON_APPLICABLE}${libelle}`;
-}
-
-/** Retire le marqueur — utilisé quand une obligation redevient applicable
- *  (l'équipement est réactivé, l'établissement redevient ERP…). */
-export function libelleSansMarqueur(libelle: string): string {
-  return estMarqueeNonApplicable(libelle)
-    ? libelle.slice(MARQUEUR_NON_APPLICABLE.length)
-    : libelle;
-}
+export {
+  MARQUEUR_NON_APPLICABLE,
+  estMarqueeNonApplicable,
+  marquerNonApplicable,
+  libelleSansMarqueur,
+};
 
 /** Ligne de suivi telle qu'elle existe en base, réduite à ce dont la
  *  réconciliation a besoin. */

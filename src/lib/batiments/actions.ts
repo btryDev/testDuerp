@@ -20,9 +20,22 @@ export type BatimentActionState =
   | { status: "success"; id: string };
 
 function revalider(etablissementId: string) {
-  revalidatePath(`/etablissements/${etablissementId}`);
-  revalidatePath(`/etablissements/${etablissementId}/batiments`);
-  revalidatePath(`/etablissements/${etablissementId}/equipements`);
+  // Tous les écrans qui nomment un bâtiment, pas seulement ceux qui les
+  // listent : le calendrier porte le lieu sur chaque ligne et son sélecteur,
+  // et les trois formulaires d'opérations et de relevés proposent le champ
+  // « bâtiment ». Renommer « Réserve » en « Annexe » y laissait l'ancien nom.
+  const base = `/etablissements/${etablissementId}`;
+  for (const chemin of [
+    "",
+    "/batiments",
+    "/equipements",
+    "/calendrier",
+    "/permis-feu",
+    "/plan-prevention",
+    "/carnet-sanitaire",
+  ]) {
+    revalidatePath(`${base}${chemin}`);
+  }
 }
 
 /** Scope d'un bâtiment : il appartient au user via son établissement. */
@@ -159,17 +172,35 @@ export async function supprimerBatiment(
     };
   }
 
-  await prisma.$transaction(async (tx) => {
-    const deplacement = {
-      where: { batimentId: id },
-      data: { batimentId: destination.id },
-    };
-    await tx.equipement.updateMany(deplacement);
-    await tx.pointReleve.updateMany(deplacement);
-    await tx.permisFeu.updateMany(deplacement);
-    await tx.planPrevention.updateMany(deplacement);
-    await tx.batiment.delete({ where: { id } });
-  });
+  // TOCTOU : entre le déplacement et le `delete`, une création concurrente
+  // peut viser le bâtiment en cours de suppression. La FK refuse alors — et
+  // c'est ce qu'on veut, rien ne doit rester orphelin —, mais l'erreur
+  // remontait brute depuis la server action. On la traduit.
+  try {
+    await prisma.$transaction(async (tx) => {
+      const deplacement = {
+        where: { batimentId: id },
+        data: { batimentId: destination.id },
+      };
+      await tx.equipement.updateMany(deplacement);
+      await tx.pointReleve.updateMany(deplacement);
+      await tx.permisFeu.updateMany(deplacement);
+      await tx.planPrevention.updateMany(deplacement);
+      await tx.batiment.delete({ where: { id } });
+    });
+  } catch (e) {
+    if (
+      e instanceof Prisma.PrismaClientKnownRequestError &&
+      e.code === "P2003"
+    ) {
+      return {
+        status: "error",
+        message:
+          "Ce bâtiment a reçu du contenu pendant la suppression. Réessayez.",
+      };
+    }
+    throw e;
+  }
 
   revalider(b.etablissementId);
   return { status: "success", id };

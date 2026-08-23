@@ -35,7 +35,18 @@ export async function getFicheEquipement(id: string) {
   return prisma.equipement.findFirst({
     where: { id, etablissement: { entreprise: { userId: user.id } } },
     include: {
-      etablissement: { select: { id: true, raisonDisplay: true } },
+      etablissement: {
+        select: {
+          id: true,
+          raisonDisplay: true,
+          // Combien de bâtiments porte l'établissement : sous un seul,
+          // l'afficher n'apprend rien (ADR-019).
+          _count: { select: { batiments: true } },
+        },
+      },
+      // Le lieu de l'appareil. Le parc renvoie ici en disant qu'un appareil
+      // se déplace « depuis sa fiche » : elle ne nommait pas le bâtiment.
+      batiment: { select: { id: true, nom: true } },
       verifications: {
         orderBy: { datePrevue: "asc" },
         include: {

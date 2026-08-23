@@ -110,9 +110,10 @@ export default async function EquipementsPage({
       return {
         enRetard: acc.enRetard + (e?.enRetard ?? 0),
         proches: acc.proches + (e?.proches ?? 0),
+        aPlanifier: acc.aPlanifier + (e?.aPlanifier ?? 0),
       };
     },
-    { enRetard: 0, proches: 0 },
+    { enRetard: 0, proches: 0, aPlanifier: 0 },
   );
 
   // Les suggestions se lisent sur le parc **entier** : une catégorie déjà
@@ -185,6 +186,7 @@ export default async function EquipementsPage({
         hrefRetour={base}
         enRetard={compteurs.enRetard}
         proches={compteurs.proches}
+        aPlanifier={compteurs.aPlanifier}
         total={equipementsAffiches.length}
         hrefAjouter={hrefAjouter}
         suggestions={

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { lignesAFaire, type FicheEquipement } from "./fiche";
+import {
+  lignesAFaire,
+  lignesHistoire,
+  obligationsDeLEquipement,
+  type FicheEquipement,
+} from "./fiche";
 
 /** Dates civiles à minuit UTC, horloge à un instant réel (ADR-011). */
 const jour = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
@@ -98,5 +103,185 @@ describe("lignesAFaire", () => {
     // Une occurrence à planifier ne porte pas de date : la sienne est une
     // date de génération, pas un rendez-vous.
     expect(lignes[2].date).toBeNull();
+  });
+});
+
+
+/**
+ * Une fiche plus complète : rapports, actions et mise en service. Les deux
+ * fonctions ci-dessous n'avaient aucune couverture — c'est pourtant là que
+ * se décide ce que la fiche affirme d'un appareil.
+ */
+function ficheRiche(o: {
+  dateMiseEnService?: string;
+  verifs: Array<{
+    id: string;
+    obligationId?: string;
+    datePrevue: string;
+    dateRealisee?: string;
+    statut?: string;
+    rapports?: Array<{ id: string; date: string; resultat?: string; organisme?: string }>;
+    actions?: number;
+  }>;
+}): FicheEquipement {
+  return {
+    dateMiseEnService: o.dateMiseEnService ? jour(o.dateMiseEnService) : null,
+    verifications: o.verifs.map((v) => ({
+      id: v.id,
+      obligationId: v.obligationId ?? "incendie-travail-moyens-lutte",
+      libelleObligation: "Vérification annuelle des extincteurs",
+      statut: v.statut ?? "planifiee",
+      datePrevue: jour(v.datePrevue),
+      dateRealisee: v.dateRealisee ? jour(v.dateRealisee) : null,
+      periodicite: "annuelle",
+      rapports: (v.rapports ?? []).map((r) => ({
+        id: r.id,
+        dateRapport: jour(r.date),
+        resultat: r.resultat ?? "conforme",
+        organismeVerif: r.organisme ?? "APAVE",
+      })),
+      actions: Array.from({ length: v.actions ?? 0 }, (_, i) => ({
+        id: `${v.id}-a${i}`,
+        libelle: "Remplacer la goupille",
+        statut: "ouverte",
+        echeance: null,
+        responsable: null,
+      })),
+    })),
+  } as unknown as FicheEquipement;
+}
+
+describe("lignesHistoire", () => {
+  it("range du plus récent au plus ancien, mise en service comprise", () => {
+    const h = lignesHistoire(
+      ficheRiche({
+        dateMiseEnService: "2019-04-01",
+        verifs: [
+          {
+            id: "v1",
+            datePrevue: "2026-03-01",
+            rapports: [{ id: "r1", date: "2025-03-02" }],
+          },
+          {
+            id: "v2",
+            datePrevue: "2027-01-01",
+            rapports: [{ id: "r2", date: "2026-01-05" }],
+          },
+        ],
+      }),
+      "/base",
+      AUJOURDHUI,
+    );
+    expect(h.map((l) => l.cle)).toEqual(["r-r2", "r-r1", "mise-en-service"]);
+  });
+
+  it("le rapport fait foi : une ligne marquée réalisée ne s'ajoute pas en double", () => {
+    const h = lignesHistoire(
+      ficheRiche({
+        verifs: [
+          {
+            id: "v1",
+            datePrevue: "2027-03-01",
+            dateRealisee: "2026-03-01",
+            statut: "realisee_conforme",
+            rapports: [{ id: "r1", date: "2026-03-02" }],
+          },
+        ],
+      }),
+      "/base",
+      AUJOURDHUI,
+    );
+    expect(h.map((l) => l.cle)).toEqual(["r-r1"]);
+    // C'est la date du rapport qui date la ligne, pas la date de réalisation.
+    expect(h[0].date).toEqual(jour("2026-03-02"));
+  });
+
+  it("annonce une vérification réalisée sans rapport, et le dit", () => {
+    const h = lignesHistoire(
+      ficheRiche({
+        verifs: [
+          {
+            id: "v1",
+            datePrevue: "2027-03-01",
+            dateRealisee: "2026-03-01",
+            statut: "realisee_conforme",
+          },
+        ],
+      }),
+      "/base",
+      AUJOURDHUI,
+    );
+    expect(h.map((l) => l.cle)).toEqual(["v-v1"]);
+    expect(h[0].detail).toContain("aucun rapport");
+  });
+
+  it("rattache les actions au seul rapport le plus récent", () => {
+    // Les actions sont portées par la ligne de suivi, pas par un dépôt : les
+    // répéter sur chaque rapport ferait lire plusieurs fois les mêmes écarts.
+    const h = lignesHistoire(
+      ficheRiche({
+        verifs: [
+          {
+            id: "v1",
+            datePrevue: "2027-03-01",
+            actions: 2,
+            rapports: [
+              { id: "recent", date: "2026-03-02" },
+              { id: "ancien", date: "2025-03-02" },
+            ],
+          },
+        ],
+      }),
+      "/base",
+      AUJOURDHUI,
+    );
+    expect(h.find((l) => l.cle === "r-recent")?.detail).toContain(
+      "2 actions correctives",
+    );
+    expect(h.find((l) => l.cle === "r-ancien")?.detail).not.toContain("action");
+  });
+
+  it("reporte le résultat consigné, qui décide de la couleur du jalon", () => {
+    const h = lignesHistoire(
+      ficheRiche({
+        verifs: [
+          {
+            id: "v1",
+            datePrevue: "2027-03-01",
+            rapports: [{ id: "r1", date: "2026-03-02", resultat: "ecart_majeur" }],
+          },
+        ],
+      }),
+      "/base",
+      AUJOURDHUI,
+    );
+    expect(h[0].resultat).toBe("ecart_majeur");
+  });
+});
+
+describe("obligationsDeLEquipement", () => {
+  it("dédoublonne les obligations portées par plusieurs lignes", () => {
+    const obligations = obligationsDeLEquipement(
+      ficheRiche({
+        verifs: [
+          { id: "v1", obligationId: "incendie-travail-moyens-lutte", datePrevue: "2026-09-01" },
+          { id: "v2", obligationId: "incendie-travail-moyens-lutte", datePrevue: "2027-09-01" },
+        ],
+      }),
+    );
+    expect(obligations).toHaveLength(1);
+  });
+
+  it("écarte une obligation que le référentiel ne connaît plus", () => {
+    // Une référence réglementaire ne s'invente pas : sans fiche au
+    // référentiel, on n'affiche rien plutôt qu'un libellé orphelin.
+    const obligations = obligationsDeLEquipement(
+      ficheRiche({
+        verifs: [
+          { id: "v1", obligationId: "obligation-retiree-du-referentiel", datePrevue: "2026-09-01" },
+        ],
+      }),
+    );
+    expect(obligations).toEqual([]);
   });
 });

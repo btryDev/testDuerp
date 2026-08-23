@@ -29,7 +29,11 @@ import {
   obligationsDeLEquipement,
 } from "@/lib/equipements/fiche";
 import { caracteristiquesLisibles } from "@/lib/equipements/caracteristiques";
-import { construireFrise, type JalonFrise } from "@/lib/equipements/frise";
+import {
+  construireFrise,
+  etatDuResultat,
+  type JalonFrise,
+} from "@/lib/equipements/frise";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import { LABEL_PERIODICITE, LABEL_REALISATEUR } from "@/lib/calendrier/labels";
 import { LABEL_RESULTAT } from "@/lib/rapports/schema";
@@ -78,6 +82,10 @@ export default async function EquipementDetailPage({
   const eq = await getFicheEquipement(equipementId);
   if (!eq || eq.etablissementId !== id) notFound();
 
+  // Un seul bâtiment : le nommer n'apprend rien, et l'ADR-019 veut que le
+  // mono-bâtiment ne paie pas la complexité du multi.
+  const multiBatiments = eq.etablissement._count.batiments > 1;
+
   const base = `/etablissements/${id}`;
   const provenance = lireProvenance(de, id);
   const parc = { href: `${base}/equipements`, label: "Équipements" };
@@ -103,8 +111,18 @@ export default async function EquipementDetailPage({
   const tete = aFaire.find((l) => l.date !== null) ?? null;
   const etatTete: RegistreLigne =
     tete?.etat ?? (aFaire.length > 0 ? "aPlanifier" : "faite");
-  const ecarts = aFaire.filter((l) => l.genre === "action").length;
-  const enRetard = aFaire.filter((l) => l.etat === "enRetard").length;
+  // Les deux pastilles portent sur des ensembles **disjoints**. Elles
+  // filtraient la même liste sur deux axes — le genre pour l'une, l'état
+  // pour l'autre — si bien qu'un écart en retard s'affichait « 1 échéance en
+  // retard » ET « 1 écart à lever », côte à côte : deux objets, à lire, pour
+  // un seul. Le mot suit : « échéance » désigne une vérification partout
+  // ailleurs dans le produit.
+  const ecartsOuverts = aFaire.filter((l) => l.genre === "action");
+  const ecarts = ecartsOuverts.length;
+  const ecartsEnRetard = ecartsOuverts.some((l) => l.etat === "enRetard");
+  const verifsEnRetard = aFaire.filter(
+    (l) => l.genre === "verification" && l.etat === "enRetard",
+  ).length;
 
   // ------------------------------------------------------------------
   // La frise. Quatre repères principaux au plus : au-delà, les étiquettes
@@ -126,7 +144,9 @@ export default async function EquipementDetailPage({
       cle: h.cle,
       date: h.date,
       libelle: h.resultat ? LABEL_RESULTAT[h.resultat] : "Vérifiée",
-      etat: "faite",
+      // Le champ suit le constat, pas le fait qu'une visite ait eu lieu :
+      // un « Écart majeur » vert se lisait comme un feu vert.
+      etat: etatDuResultat(h.resultat),
     });
   }
   if (tete) {
@@ -198,6 +218,11 @@ export default async function EquipementDetailPage({
           surtitre={
             <>
               Équipement · {LABEL_CATEGORIE_EQUIPEMENT[eq.categorie]}
+              {/* Le bâtiment d'abord, la précision ensuite : le parc renvoie
+                  ici en annonçant qu'un appareil se déplace depuis sa fiche,
+                  et la fiche ne nommait pas le lieu. Sous un seul bâtiment,
+                  le nommer n'apprend rien (ADR-019). */}
+              {multiBatiments ? ` · ${eq.batiment.nom}` : null}
               {eq.localisation ? ` · ${eq.localisation}` : null}
             </>
           }
@@ -209,13 +234,14 @@ export default async function EquipementDetailPage({
               {!eq.actif && (
                 <PastilleFiche ton="retard">Retiré du parc</PastilleFiche>
               )}
-              {enRetard > 0 && (
+              {verifsEnRetard > 0 && (
                 <PastilleFiche ton="retard">
-                  {enRetard} échéance{enRetard > 1 ? "s" : ""} en retard
+                  {verifsEnRetard} vérification{verifsEnRetard > 1 ? "s" : ""} en
+                  retard
                 </PastilleFiche>
               )}
               {ecarts > 0 && (
-                <PastilleFiche ton="proche">
+                <PastilleFiche ton={ecartsEnRetard ? "retard" : "proche"}>
                   {ecarts} écart{ecarts > 1 ? "s" : ""} à lever
                 </PastilleFiche>
               )}
@@ -311,6 +337,9 @@ export default async function EquipementDetailPage({
                 <ChampFiche cle="Catégorie">
                   {LABEL_CATEGORIE_EQUIPEMENT[eq.categorie]}
                 </ChampFiche>
+                {multiBatiments ? (
+                  <ChampFiche cle="Bâtiment">{eq.batiment.nom}</ChampFiche>
+                ) : null}
                 <ChampFiche cle="Localisation">
                   {eq.localisation ?? (
                     <span className="text-[color:var(--board-slate-soft)]">

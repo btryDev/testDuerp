@@ -64,12 +64,15 @@ function Etiquette({ jalon, mois }: { jalon: JalonPose; mois: boolean }) {
 }
 
 export function FriseEquipement({ frise }: { frise: Frise }) {
-  // La barre pleine s'arrête au jour courant : ce qui est derrière est
-  // acquis, ce qui suit est encore à venir. Elle vire au ton du repère qui
-  // appelle un geste, quand il y en a un.
+  // La barre pleine s'arrête au jour courant : elle mesure du **temps
+  // écoulé**, pas de la conformité. Elle partait en vert sur ses 72 premiers
+  // pour cent quoi qu'il arrive — une hotte de 2019 jamais vérifiée voyait
+  // donc tout son passé peint en « fait ». Le passé est neutre ; seule
+  // l'arrivée porte une couleur, celle du repère qui appelle un geste.
   const vedette = frise.jalons.find((j) => j.vedette);
-  const arrivee = vedette ? CHAMP_ETAT[vedette.etat] : "var(--board-green)";
-  const remplissage = `linear-gradient(90deg, var(--board-green) 0%, var(--board-green) 72%, ${arrivee} 100%)`;
+  const passe = "var(--board-slate)";
+  const arrivee = vedette ? CHAMP_ETAT[vedette.etat] : passe;
+  const remplissage = `linear-gradient(90deg, ${passe} 0%, ${passe} 72%, ${arrivee} 100%)`;
 
   return (
     <div className="mt-6 border-t border-[color:var(--board-slate-line)] pt-5">
@@ -77,7 +80,9 @@ export function FriseEquipement({ frise }: { frise: Frise }) {
         <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
           La vie de cet équipement
         </p>
-        <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate)]">
+        {/* `--board-slate` est un ton de graduation, pas d'encre : à ~1,6:1
+            sur le fond, les bornes de l'axe étaient illisibles. */}
+        <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-mid)]">
           {formaterMoisAnneeFr(frise.debut)} → {formaterMoisAnneeFr(frise.fin)}
         </p>
       </div>

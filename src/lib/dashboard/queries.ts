@@ -221,6 +221,10 @@ export async function compterVerifsParEquipement(
       datePrevue: true,
       dateRealisee: true,
       periodicite: true,
+      // Le libellé porte le marqueur d'archivage (ADR-012) : sans lui,
+      // `lecturesCalendrier` compte encore le rendez-vous suivant d'une
+      // obligation qui ne s'applique plus.
+      libelleObligation: true,
     },
   });
 
@@ -317,6 +321,8 @@ export async function compterObligationsParMois(
       dateRealisee: true,
       statut: true,
       periodicite: true,
+      // Cf. ci-dessus : le marqueur d'archivage se lit dans le libellé.
+      libelleObligation: true,
     },
   });
 

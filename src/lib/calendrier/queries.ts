@@ -155,7 +155,15 @@ export async function compterEtatCalendrier(
         ? { equipement: { batimentId: filtres.batimentId } }
         : {}),
     },
-    select: { statut: true, datePrevue: true, dateRealisee: true },
+    // `libelleObligation` porte le marqueur d'archivage (ADR-012) :
+    // `repartirVerifications` en a besoin pour ne pas compter en retard une
+    // ligne dont l'obligation ne s'applique plus.
+    select: {
+      statut: true,
+      datePrevue: true,
+      dateRealisee: true,
+      libelleObligation: true,
+    },
   });
 
   const etat = repartirVerifications(verifs, now);

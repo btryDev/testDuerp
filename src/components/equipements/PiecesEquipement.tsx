@@ -31,8 +31,11 @@ export type PieceEquipement = {
 };
 
 function Bientot() {
+  // `--board-slate` est un ton de graduation, pas d'encre (~1,6:1 sur le
+  // fond) : le seul mot qui dit que ces emplacements sont inertes était
+  // illisible.
   return (
-    <span className="board-eyebrow text-[9px] tracking-[0.1em] text-[color:var(--board-slate)]">
+    <span className="board-eyebrow text-[9px] tracking-[0.1em] text-[color:var(--board-slate-mid)]">
       bientôt
     </span>
   );
@@ -68,13 +71,21 @@ export function CartePhotos({ photos = [] }: { photos?: PieceEquipement[] }) {
             <ImageIcon className="size-[26px]" aria-hidden />
           </span>
         ))}
-        <span
-          aria-disabled
-          className="grid h-[92px] w-[118px] place-items-center gap-1.5 rounded-[18px] border border-dashed border-[color:var(--board-slate)] text-[color:var(--board-slate-soft)]"
+        {/* Un vrai `<button disabled>`, pas un `<span aria-disabled>` :
+            sans `role`, `aria-disabled` n'est pas exposé, et l'élément
+            n'était ni focusable ni annoncé. Il ressemblait pourtant à un
+            bouton — bordure, icône, libellé. Le `title` porte le « bientôt »
+            pour qui ne voit pas la mention en tête de carte. */}
+        <button
+          type="button"
+          disabled
+          title="Bientôt disponible"
+          className="grid h-[92px] w-[118px] place-items-center gap-1.5 rounded-[18px] border border-dashed border-[color:var(--board-slate)] text-[color:var(--board-slate-soft)] disabled:cursor-not-allowed"
         >
           <Plus className="size-5" aria-hidden />
           <span className="text-[11.5px] font-semibold">Ajouter une photo</span>
-        </span>
+          <span className="sr-only"> — bientôt disponible</span>
+        </button>
       </div>
     </CarteFiche>
   );
@@ -129,13 +140,16 @@ export function CarteDocuments({
         </div>
       ) : null}
 
-      <span
-        aria-disabled
-        className="mt-4 flex items-center justify-center gap-2 rounded-[18px] border border-dashed border-[color:var(--board-slate)] py-3 text-[12.5px] font-semibold text-[color:var(--board-slate-soft)]"
+      <button
+        type="button"
+        disabled
+        title="Bientôt disponible"
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-[18px] border border-dashed border-[color:var(--board-slate)] py-3 text-[12.5px] font-semibold text-[color:var(--board-slate-soft)] disabled:cursor-not-allowed"
       >
         <Plus className="size-4" aria-hidden />
         Ajouter un document
-      </span>
+        <span className="sr-only"> — bientôt disponible</span>
+      </button>
     </CarteFiche>
   );
 }
