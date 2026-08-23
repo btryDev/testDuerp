@@ -4,6 +4,7 @@ import {
   MOIS_ANALYSE_LEGIONELLES,
   MOIS_MAJ_DUERP,
   echeanceDuerp,
+  filtrerParBatiment,
   echeanceLegionelles,
   echeancePermisFeu,
   echeancePlanPrevention,
@@ -387,5 +388,38 @@ describe("echeanceLegionelles", () => {
         aujourdhui: AUJOURDHUI,
       }),
     ).toBeNull();
+  });
+});
+
+
+describe("filtrerParBatiment", () => {
+  // La règle de l'ADR-019 sur laquelle reposent le calendrier, le tableau de
+  // bord et les compteurs de retard : ce qui n'a pas de lieu concerne tout
+  // l'établissement, donc aussi le bâtiment filtré. La masquer ferait mentir
+  // le calendrier par omission — une mise à jour de DUERP en retard
+  // disparaîtrait dès qu'on regarde la Réserve.
+  const reserve = { id: "b-reserve", nom: "Réserve" };
+  const principal = { id: "b-principal", nom: "Bâtiment principal" };
+  const lignes = [
+    { cle: "duerp", batiment: null },
+    { cle: "extincteur", batiment: principal },
+    { cle: "hotte", batiment: reserve },
+  ];
+
+  it("sans filtre, rend la liste telle quelle", () => {
+    expect(filtrerParBatiment(lignes, undefined)).toBe(lignes);
+  });
+
+  it("garde le bâtiment demandé et ce qui n'a pas de lieu", () => {
+    expect(filtrerParBatiment(lignes, "b-reserve").map((l) => l.cle)).toEqual([
+      "duerp",
+      "hotte",
+    ]);
+  });
+
+  it("un bâtiment sans ligne propre garde quand même l'établissement", () => {
+    expect(filtrerParBatiment(lignes, "b-inconnu").map((l) => l.cle)).toEqual([
+      "duerp",
+    ]);
   });
 });

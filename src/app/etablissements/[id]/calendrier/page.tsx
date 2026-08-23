@@ -270,8 +270,15 @@ export default async function CalendrierPage({
         batimentId: filtreBatiment,
       }),
       // Les compteurs viennent d'être calculés trois lignes plus haut : on
-      // ne les refait que si une régénération a changé la donnée entre-temps.
-      regenere ? compterEtatCalendrier(id) : Promise.resolve(etat0),
+      // ne les refait que si une régénération a changé la donnée entre-temps —
+      // ou si un bâtiment est filtré. `etat0` sert à décider d'une
+      // régénération, donc il porte sur tout l'établissement ; le réemployer
+      // tel quel à l'affichage annonçait les occurrences sans date de tout
+      // l'établissement au-dessus d'une liste restreinte à un bâtiment. Le
+      // même écart avait été soigneusement neutralisé sous le filtre famille.
+      regenere || filtreBatiment
+        ? compterEtatCalendrier(id, new Date(), { batimentId: filtreBatiment })
+        : Promise.resolve(etat0),
       listerAutresEcheances(id),
       // Le parc entier, pas seulement les appareils qui portent une
       // échéance : la lecture par équipement doit pouvoir dire combien
@@ -286,6 +293,15 @@ export default async function CalendrierPage({
   const aujourdhui = new Date();
   // La lecture par équipement suit le même bâtiment que le reste.
   const equipements = restreindreAuBatiment(equipementsTous, filtreBatiment);
+  // …et les motifs d'absence d'échéance suivent les mêmes appareils. Sans
+  // cette restriction, l'écran écrivait « 3 équipements déclarés sans échéance
+  // en 2026. Dont 7 hors référentiel » : le premier nombre venait du bâtiment
+  // filtré, le second de tout l'établissement.
+  const motifsVisibles = new Map(
+    [...motifsSansEcheance].filter(([equipementId]) =>
+      equipements.some((e) => e.id === equipementId),
+    ),
+  );
 
   // Cohabitation des familles : le filtre famille partitionne, le
   // domaine implique « contrôles », l'urgence garde le dépassé partout.
@@ -749,7 +765,7 @@ export default async function CalendrierPage({
   // On compte via `compterSansObligation` et non la taille de la table : un
   // appareil dont les obligations sont permanentes n'est pas « hors
   // référentiel », et la phrase affichée plus bas serait fausse pour lui.
-  const horsReferentiel = compterSansObligation(motifsSansEcheance);
+  const horsReferentiel = compterSansObligation(motifsVisibles);
 
   // Le mois déplié à l'arrivée : celui où l'on est, s'il porte quelque
   // chose ; sinon le premier mois qui a du retard — c'est là que se joue
@@ -765,8 +781,13 @@ export default async function CalendrierPage({
 
   // Pilules de famille : seules celles qui ont au moins une échéance —
   // une famille vide n'a pas à encombrer la rangée.
+  //
+  // Elles se lisent sur les échéances **du bâtiment filtré**, sinon la pilule
+  // « Opérations » restait proposée sous un bâtiment où le seul permis de feu
+  // n'est pas : la choisir menait à « Rien ne correspond à ces filtres ».
+  const echeancesDuLieu = filtrerParBatiment(autresEcheances, filtreBatiment);
   const famillesPresentes = FAMILLES_FILTRABLES.filter(
-    (f) => f === "controle" || autresEcheances.some((e) => e.famille === f),
+    (f) => f === "controle" || echeancesDuLieu.some((e) => e.famille === f),
   );
 
   const baseHref = `/etablissements/${id}/calendrier`;
@@ -918,7 +939,7 @@ export default async function CalendrierPage({
         {lignes.length === 0 ? (
           <div>
             {barreOutils}
-            {calendrierVide && autresEcheances.length === 0 ? (
+            {calendrierVide && echeancesDuLieu.length === 0 ? (
               // Calendrier vraiment vide : on explique d'où viendraient les
               // échéances, et on donne la porte de sortie — même motif que
               // l'état vide de la frise du board.

@@ -81,7 +81,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
   // l'utilisateur ; seul le widget équipements (obligatoire) est
   // réinjecté s'il manque — à sa place du board par défaut.
 
-  it("migre un layout v1 valide en préservant l'ordre utilisateur", () => {
+  it("relit un layout à la version courante en préservant l'ordre utilisateur", () => {
     const entree = {
       version: SCHEMA_VERSION,
       items: [
@@ -135,6 +135,17 @@ describe("useLayoutPerso — migration et normalisation", () => {
     const entree = { version: 999, items: [] };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie).toBeNull();
+  });
+
+  it("rejette une v1, qui n'a pas de chemin de migration", () => {
+    // Seule la v2 se traduit en v3. Une v1 valide en forme retombe sur les
+    // défauts — ce cas n'était couvert qu'indirectement par la v999, et le
+    // test qui prétendait le couvrir passait en fait la version courante.
+    const entree = {
+      version: 1,
+      items: [{ widgetId: "score", variant: "anneau" }],
+    };
+    expect(__internal.migrerLayout(entree)).toBeNull();
   });
 
   it("v2 → v3 : remplace countdown + actions-retard par « à faire », en place", () => {

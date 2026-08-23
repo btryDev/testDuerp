@@ -9,7 +9,7 @@ import type { DashboardBundle } from "@/components/dashboard/widgets/types";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 import { listerBatimentsAvecCharge } from "@/lib/batiments/queries";
-import { estMultiBatiments } from "@/lib/batiments/filtre";
+import { estMultiBatiments, resoudreFiltreBatiment } from "@/lib/batiments/filtre";
 import { SelecteurBatiment } from "@/components/batiments/SelecteurBatiment";
 import {
   compterObligationsParMois,
@@ -51,10 +51,9 @@ export default async function EtablissementPage({
   // C'est ce que dit la légende du sélecteur, plus bas.
   const batiments = await listerBatimentsAvecCharge(id, aujourdhui);
   const multiBatiments = estMultiBatiments(batiments);
-  const batimentFiltre =
-    multiBatiments && batiments.some((b) => b.id === batiment)
-      ? batiment
-      : undefined;
+  // La résolution passe par `resoudreFiltreBatiment` — les mêmes deux règles
+  // que le parc et le calendrier, écrites une fois et testées là-bas.
+  const batimentFiltre = resoudreFiltreBatiment(batiments, batiment);
 
   const [
     equipements,
@@ -72,11 +71,7 @@ export default async function EtablissementPage({
     prochainesVerifs,
     rapportsRecents,
   ] = await Promise.all([
-    listerEquipementsDeLEtablissement(id).then((liste) =>
-      batimentFiltre
-        ? liste.filter((e) => e.batimentId === batimentFiltre)
-        : liste,
-    ),
+    listerEquipementsDeLEtablissement(id),
     compterVerifsParEquipement(id),
     getDashboardData(id),
     // Le dépassé et l'horizon proche, ventilés par famille : la seule
@@ -113,6 +108,18 @@ export default async function EtablissementPage({
       take: 4,
     }),
   ]);
+
+  // Le filtre bâtiment se pose ici, une fois, sur la liste chargée entière —
+  // les deux périmètres viennent donc de la même lecture.
+  const equipementsDuLieu = batimentFiltre
+    ? equipements.filter((e) => e.batimentId === batimentFiltre)
+    : equipements;
+  const enLite = (e: (typeof equipements)[number]) => ({
+    id: e.id,
+    libelle: e.libelle,
+    categorie: e.categorie,
+    stats: statsEquipements.get(e.id),
+  });
 
   const duerpDernier = etab.duerps[0] ?? null;
   // Fait observable fiable : le secteur a été choisi par l'utilisateur.
@@ -195,12 +202,9 @@ export default async function EtablissementPage({
     },
     dashboard,
     echeances,
-    equipements: equipements.map((e) => ({
-      id: e.id,
-      libelle: e.libelle,
-      categorie: e.categorie,
-      stats: statsEquipements.get(e.id),
-    })),
+    equipements: equipementsDuLieu.map(enLite),
+    // Le parc entier : le score porte sur l'établissement, sa légende le dit.
+    equipementsEtablissement: equipements.map(enLite),
     barsData,
     aujourdhui,
     evenementsHorizon,

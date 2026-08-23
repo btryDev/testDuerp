@@ -148,6 +148,18 @@ export type DashboardBundle = {
    */
   echeances: EtatEcheances;
   equipements: EquipementLite[];
+  /**
+   * Le parc **entier**, filtre bâtiment ignoré. Pour les blocs qui portent
+   * explicitement sur l'établissement — le score de conformité, que la
+   * légende du sélecteur annonce comme tel, et qui mêle de toute façon des
+   * faits sans lieu (état du DUERP, actions, documents).
+   *
+   * Sans cette seconde liste, la carte Score affichait la note de
+   * l'établissement au-dessus d'un découpage par famille restreint au
+   * bâtiment choisi : deux périmètres dans le même cadre, et une légende
+   * qui promettait l'inverse.
+   */
+  equipementsEtablissement: EquipementLite[];
   barsData: BarMois[];
   /** Date de référence, calculée côté serveur : garantit un rendu
    *  déterministe (pas d'écart d'hydratation) et des tests reproductibles. */

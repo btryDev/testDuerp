@@ -23,7 +23,11 @@ export async function chargerSidebarCounts(
       compterEnRetardParFamille(etablissementId),
       compterActions(etablissementId),
       countAlertesVigilance(etablissementId),
-      prisma.equipement.count({ where: { etablissementId } }),
+      // `actif: true`, comme `listerEquipementsDeLEtablissement` : c'est le
+      // parc en service que l'écran Équipements montre. Sans ce filtre, un
+      // appareil retiré du parc restait dans la pastille — badge à 13,
+      // page à 12.
+      prisma.equipement.count({ where: { etablissementId, actif: true } }),
     ]);
 
   return {

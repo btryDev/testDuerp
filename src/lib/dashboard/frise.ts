@@ -93,8 +93,6 @@ export type Frise = {
   largeur: number;
   /** Abscisse d'aujourd'hui — sert à cadrer le défilement à l'ouverture. */
   xAujourdhui: number;
-  /** Événements déjà dépassés, y compris hors fenêtre. */
-  nbEnRetard: number;
   marqueurs: MarqueurFrise[];
   /** Échéances placées sur l'axe — grappes comprises. */
   nbPlaces: number;
@@ -204,20 +202,12 @@ export function construireFrise({
   const x = (d: Date) => joursEntre(debut, d) * pxParJour;
   const largeur = (joursEntre(debut, fin) + 1) * pxParJour;
 
-  // « En retard » n'est pas une définition de plus : la frise n'a que des
-  // événements déjà qualifiés en amont (`listerEvenementsFenetre` et
-  // `listerAutresEcheances`, tous deux assis sur les prédicats partagés de
-  // `@/lib/dates/retard`). Le ton `alerte` **est** le retard.
-  //
-  // Compter toute date passée, comme avant, gonflait le compteur de deux
-  // familles qui ne sont pas des retards : une vérification « à planifier »
-  // (ton `warn`, date de génération et non de rendez-vous) et une opération
-  // déjà commencée dont l'inspection commune a bien eu lieu (ton `ok`).
-  // La contrainte de date reste, elle : rien à venir n'est un retard.
-  const nbEnRetard = evenements.filter(
-    (e) => e.tone === "alerte" && joursEntre(aujourdhui, e.date) < 0,
-  ).length;
-
+  // La frise ne compte rien : elle place. Les nombres de retard du board
+  // viennent tous de `bundle.echeances` (`lib/calendrier/retards`), qui suit
+  // le filtre bâtiment et sert aussi la sidebar et le calendrier. Cette
+  // fonction a longtemps rendu son propre `nbEnRetard`, que plus personne ne
+  // lisait — un second compteur en sommeil finit toujours par diverger du
+  // premier le jour où quelqu'un le rebranche.
   const dansFenetre = evenements
     .filter((e) => e.date >= debut && e.date <= fin)
     .sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -290,7 +280,6 @@ export function construireFrise({
     fin,
     largeur,
     xAujourdhui: x(aujourdhui),
-    nbEnRetard,
     marqueurs,
     nbPlaces: dansFenetre.length,
     mois: construireMois(debut, fin, aujourdhui, pxParJour),

@@ -233,21 +233,25 @@ export function FiltresCalendrier({
     });
   };
 
+  // Les deux gestes ci-dessous repartent de `...f` : un filtre qu'on ne
+  // touche pas se conserve. Énumérer les champs à la main faisait tomber le
+  // bâtiment — cocher « Contrôles » depuis la Réserve renvoyait sans le dire
+  // sur tout l'établissement, et la chip du lieu disparaissait de l'écran.
   const choisirFamille = (famille?: FamilleEcheance) =>
     appliquer({
+      ...f,
       famille,
       // Quitter les contrôles lâche leur domaine.
       domaine: famille && famille !== "controle" ? undefined : f.domaine,
-      urgent: f.urgent,
     });
 
   const choisirDomaine = (domaine?: string) =>
     appliquer({
+      ...f,
       // Choisir un domaine recentre sur les contrôles : c'est leur
       // attribut, le panneau le montre en cochant les deux.
       famille: domaine ? "controle" : f.famille,
       domaine,
-      urgent: f.urgent,
     });
 
   const labelDomaine = (id: string | undefined) =>

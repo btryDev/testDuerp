@@ -75,7 +75,14 @@ export function WidgetScore({
   bundle: DashboardBundle;
   variant: string;
 }) {
-  const { dashboard, equipements, nbVerifs, nbRapports } = bundle;
+  // Toute cette carte porte sur l'établissement entier : le score y mêle des
+  // faits sans lieu (état du DUERP, actions ouvertes, documents), et la
+  // légende du sélecteur de bâtiment l'annonce ainsi. Elle lit donc le parc
+  // entier — lire le parc filtré donnait deux périmètres dans un seul cadre,
+  // la note de l'établissement au-dessus de familles restreintes à un
+  // bâtiment.
+  const { dashboard, equipementsEtablissement: equipements, nbVerifs, nbRapports } =
+    bundle;
   const global = dashboard.score.valeur;
 
   // --- Variants "gauge" et "nombre" : conservés tels quels (layout plus compact) ---

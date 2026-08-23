@@ -1226,8 +1226,8 @@ const TYPE_RECO: Partial<Record<Recommandation["kind"], string>> = {
  * solde sous 30 jours en pied de carte.
  */
 export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
-  const { etablissementId, aujourdhui, dashboard } = bundle;
-  const { recommandations, compteurs } = dashboard;
+  const { etablissementId, aujourdhui, dashboard, echeances } = bundle;
+  const { recommandations } = dashboard;
 
   // Même partition que le brief : les urgences réelles d'abord
   // (priorités 1-5) ; sur un dossier en mise en place, les amorces.
@@ -1238,13 +1238,18 @@ export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
   const prochesAffichees = file.filter(
     (r) => r.kind === "verif_proche",
   ).length;
-  const solde = Math.max(0, compteurs.verifsSous30j - prochesAffichees);
+  // Les soldes viennent de `bundle.echeances`, source unique des nombres de
+  // retard du board — et la seule qui suive le filtre bâtiment. Les
+  // `dashboard.compteurs` portent sur tout l'établissement : sous un filtre,
+  // la carte annonçait les retards du site entier sous une liste restreinte
+  // à un bâtiment.
+  const solde = Math.max(0, echeances.sous30j.total - prochesAffichees);
 
   // Le moteur de recommandations plafonne à cinq items : la carte ne peut
   // donc pas être la liste exhaustive du retard. Le reste est compté
   // depuis les compteurs, sans quoi un dossier à quarante retards se
   // lirait « cinq choses à faire, rien d'autre sous 30 jours ».
-  const totalUrgent = compteurs.verifsEnRetard + compteurs.actionsEnRetard;
+  const totalUrgent = echeances.retards.total;
   const urgentsAffiches = file.filter((r) => KINDS_ALERTE.has(r.kind)).length;
   const resteUrgent = Math.max(0, totalUrgent - urgentsAffiches);
 
