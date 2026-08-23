@@ -114,6 +114,13 @@ export default async function EtablissementPage({
   const equipementsDuLieu = batimentFiltre
     ? equipements.filter((e) => e.batimentId === batimentFiltre)
     : equipements;
+  // Le hero parle de l'établissement — sa plaque liste tous les bâtiments —,
+  // le reste de l'écran suit le filtre. Sans filtre, les deux états sont le
+  // même objet : pas de seconde lecture.
+  const echeancesEtablissement = batimentFiltre
+    ? await compterEtatEcheances(id, aujourdhui)
+    : echeances;
+
   const enLite = (e: (typeof equipements)[number]) => ({
     id: e.id,
     libelle: e.libelle,
@@ -202,6 +209,7 @@ export default async function EtablissementPage({
     },
     dashboard,
     echeances,
+    echeancesEtablissement,
     equipements: equipementsDuLieu.map(enLite),
     // Le parc entier : le score porte sur l'établissement, sa légende le dit.
     equipementsEtablissement: equipements.map(enLite),
@@ -264,7 +272,7 @@ export default async function EtablissementPage({
             actif={batimentFiltre}
             legende={
               batimentFiltre
-                ? "Les échéances, équipements et opérations affichés sont ceux de ce bâtiment, plus ce qui concerne tout l'établissement. Le brief, le score et l'état des documents portent toujours sur l'établissement entier."
+                ? "Les échéances, équipements et opérations affichés sont ceux de ce bâtiment, plus ce qui concerne tout l'établissement. Le bandeau du haut, le score et l'état des documents portent toujours sur l'établissement entier."
                 : undefined
             }
           />

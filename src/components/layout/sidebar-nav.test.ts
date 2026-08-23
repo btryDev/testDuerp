@@ -247,10 +247,12 @@ describe("construireRail — rail à deux niveaux", () => {
     }
     expect(categorieDeItem("tableau")).toBe("tableau");
     expect(categorieDeItem("connecter")).toBe("parametres");
-    // Le guide n'a plus d'entrée de rail : sa page reste atteignable, mais
-    // aucune tuile ne s'allume dessus. Il se rattache donc à « Paramètres »,
-    // faute de mieux — pas à une catégorie qui n'existe plus.
-    expect(categorieDeItem("guide")).toBe("parametres");
+    // Le guide n'a plus d'entrée de rail : sa page reste atteignable, et
+    // aucune tuile ne s'allume dessus. Le rattacher au voisin le plus proche
+    // allumait « Paramètres » sur un écran qui n'en fait pas partie, avec
+    // une tuile qui mène ailleurs — l'ADR-015 veut qu'une entrée de rail
+    // désigne une page, pas une approximation.
+    expect(categorieDeItem("guide")).toBeNull();
   });
 });
 

@@ -29,6 +29,8 @@ export function BarreCompte({
 }) {
   const [ouvert, setOuvert] = useState(false);
   const zone = useRef<HTMLDivElement>(null);
+  const declencheur = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
 
   // Fermeture au clic extérieur et à Échap — un menu qu'on ne peut fermer
   // qu'en rouvrant son déclencheur est un piège, au clavier comme à la
@@ -39,7 +41,13 @@ export function BarreCompte({
       if (!zone.current?.contains(e.target as Node)) setOuvert(false);
     };
     const auClavier = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOuvert(false);
+      // Échap rend le focus au déclencheur : sans ça, le menu se fermait et
+      // le focus restait sur un élément disparu — la tabulation suivante
+      // repartait du haut du document.
+      if (e.key === "Escape") {
+        setOuvert(false);
+        declencheur.current?.focus();
+      }
     };
     document.addEventListener("mousedown", auClic);
     document.addEventListener("keydown", auClavier);
@@ -47,6 +55,16 @@ export function BarreCompte({
       document.removeEventListener("mousedown", auClic);
       document.removeEventListener("keydown", auClavier);
     };
+  }, [ouvert]);
+
+  // Le focus entre dans le menu à l'ouverture, sur sa première commande :
+  // un menu qu'on ouvre au clavier et qu'il faut ensuite chercher à la
+  // tabulation n'est pas ouvert, il est seulement affiché.
+  useEffect(() => {
+    if (!ouvert) return;
+    menu.current
+      ?.querySelector<HTMLElement>('[role="menuitem"]:not([disabled])')
+      ?.focus();
   }, [ouvert]);
 
   const initiales = (email ?? "??").slice(0, 2).toUpperCase();
@@ -89,6 +107,7 @@ export function BarreCompte({
               posée à côté : c'est lui qui ouvre le compte, la déconnexion
               vit dans son menu. */}
           <button
+            ref={declencheur}
             type="button"
             onClick={() => setOuvert((v) => !v)}
             aria-expanded={ouvert}
@@ -107,26 +126,39 @@ export function BarreCompte({
 
         {ouvert ? (
           <div
+            ref={menu}
             role="menu"
+            aria-label="Compte"
             className="absolute right-0 top-[52px] min-w-[228px] rounded-[18px] bg-[color:var(--board-card)] p-2 shadow-[0_0_0_1px_rgba(13,18,36,.08),0_18px_40px_-20px_rgba(13,18,36,.35)]"
           >
-            <p className="px-3 pb-1.5 pt-1 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[color:var(--board-slate-soft)]">
-              Compte
-            </p>
-            <p className="truncate px-3 pb-2 text-[13px] font-medium text-[color:var(--board-ink)]">
-              {email ?? "Utilisateur"}
-            </p>
+            {/* L'en-tête est un `group` étiqueté, pas deux paragraphes nus :
+                un `role="menu"` ne contient que des `menuitem` et des
+                groupes, et un lecteur d'écran annonçait sinon une structure
+                qu'il ne sait pas parcourir. */}
+            <div role="group" aria-label="Compte connecté">
+              <p className="px-3 pb-1.5 pt-1 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+                Compte
+              </p>
+              <p className="truncate px-3 pb-2 text-[13px] font-medium text-[color:var(--board-ink)]">
+                {email ?? "Utilisateur"}
+              </p>
+            </div>
 
-            <span
-              aria-disabled
-              className="flex items-center gap-2.5 rounded-full px-3 py-2 text-[13px] text-[color:var(--board-slate-soft)]"
+            {/* Une commande à venir se déclare désactivée, pas absente : un
+                `span aria-disabled` n'est ni annoncé ni atteignable, alors
+                qu'il a l'allure d'une commande. */}
+            <button
+              type="button"
+              role="menuitem"
+              disabled
+              className="flex w-full items-center gap-2.5 rounded-full px-3 py-2 text-left text-[13px] text-[color:var(--board-slate-soft)] disabled:cursor-not-allowed"
             >
               <HelpCircle aria-hidden className="size-4 opacity-70" />
               <span className="flex-1 truncate">Aide</span>
               <span className="font-mono text-[9px] uppercase tracking-[0.1em]">
                 bientôt
               </span>
-            </span>
+            </button>
 
             {email != null ? (
               <form action={signOutAction}>

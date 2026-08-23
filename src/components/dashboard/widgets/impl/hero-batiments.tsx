@@ -117,7 +117,11 @@ function PastilleCharge({ nbEnRetard }: { nbEnRetard: number }) {
   }
   return (
     <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[color:var(--board-signal-pale)] py-1 pl-1 pr-2.5 text-[11px] font-semibold text-[color:var(--board-signal-ink)]">
-      <span className="flex size-4 items-center justify-center rounded-full bg-[color:var(--board-signal)] text-[9.5px] font-bold text-[color:var(--board-signal-ink)]">
+      {/* `--board-signal-on` et non `--board-signal-ink` : l'encre est faite
+          pour le champ pâle, pas pour le rouge plein. À 9,5 px gras, elle
+          tombait sous le seuil AA — et c'est le seul endroit de la pastille
+          où le nombre se lit. */}
+      <span className="flex size-4 items-center justify-center rounded-full bg-[color:var(--board-signal)] text-[9.5px] font-bold text-[color:var(--board-signal-on)]">
         {nbEnRetard}
       </span>
       à traiter
@@ -163,12 +167,18 @@ function Volume({
       style={{ width: taille }}
     >
       {/* Décoratif : tout ce que le dessin évoque est écrit sous lui. */}
+      {/* `sizes` : sans lui, Next sert la variante correspondant à la
+          largeur déclarée (760 px) alors que la planche est rendue entre
+          156 et 232 px — et `priority` la met en préchargement bloquant,
+          une fois par volume. La borne haute couvre le plus grand volume
+          affiché, écrans à densité double compris. */}
       <Image
         src={src}
         alt=""
         aria-hidden
         width={760}
         height={668}
+        sizes="232px"
         priority
         className="h-auto w-full select-none"
       />

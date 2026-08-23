@@ -408,17 +408,21 @@ function Releve({
 }
 
 export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
-  const { aujourdhui, dashboard, echeances, nbRapports } = bundle;
+  const { aujourdhui, dashboard, echeancesEtablissement, nbRapports } = bundle;
   const { duerp, recommandations } = dashboard;
-  // Un seul agrégat pour le titre comme pour les relevés chiffrés.
-  // Cf. `DashboardBundle.echeances`.
-  const { retards, sous30j } = echeances;
+  // Un seul agrégat pour le titre comme pour les relevés chiffrés — et il
+  // porte sur l'**établissement**, filtre bâtiment ignoré. Le hero dit l'état
+  // du site : sa plaque de droite liste tous les volumes avec la charge de
+  // chacun, et des relevés filtrés annonçaient « Dépassées 3 » à côté de
+  // cartes qui en totalisent sept. Le filtre gouverne ce qui est sous le
+  // hero. Cf. `DashboardBundle.echeancesEtablissement`.
+  const { retards, sous30j } = echeancesEtablissement;
 
   const brief = construireBrief({
     aujourdhui,
     retards,
     sous30j,
-    verifsAPlanifier: echeances.verifsAPlanifier,
+    verifsAPlanifier: echeancesEtablissement.verifsAPlanifier,
     // `etat` transmis : sans lui le brief se rabattait sur sa formulation de
     // repli et n'annonçait jamais « aucune version validée » — il disait
     // « votre DUERP a plus de douze mois » à quelqu'un qui venait de l'ouvrir.
@@ -505,8 +509,11 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
               </div>
               <div className="w-px bg-[color:rgba(10,10,10,.12)]" />
               <div className="pl-[26px]">
+                {/* Le parc entier, comme les deux relevés d'à côté et
+                    comme les cartes de la plaque : trois chiffres alignés
+                    sous un même titre ne peuvent pas avoir trois portées. */}
                 <Releve
-                  valeur={bundle.equipements.length}
+                  valeur={bundle.equipementsEtablissement.length}
                   libelle="Équipements"
                 />
               </div>

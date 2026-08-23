@@ -99,18 +99,27 @@ export async function resoudreBatimentOptionnel(
 export type BatimentCharge = BatimentListe & {
   /** Occurrences dont l'échéance est passée sans réalisation. */
   nbEnRetard: number;
-  /** Occurrences planifiées dans les trente jours. */
-  nbSous30j: number;
 };
 
 export async function listerBatimentsAvecCharge(
   etablissementId: string,
   now: Date,
 ): Promise<BatimentCharge[]> {
-  const batiments = await listerBatimentsDeLEtablissement(etablissementId);
+  const [user, batiments] = await Promise.all([
+    requireUser(),
+    listerBatimentsDeLEtablissement(etablissementId),
+  ]);
 
   const verifs = await prisma.verification.findMany({
-    where: { etablissementId, equipement: { actif: true } },
+    where: {
+      etablissementId,
+      // Le prédicat d'appartenance est porté même si `listerBatimentsDeLEtablissement`
+      // vient de le vérifier : sans RLS (ADR-005, Prisma en rôle postgres),
+      // l'isolation est une convention applicative, et une lecture qui ne la
+      // porte pas devient une fuite le jour où quelqu'un rend `verifs`.
+      etablissement: { entreprise: { userId: user.id } },
+      equipement: { actif: true },
+    },
     select: {
       statut: true,
       datePrevue: true,
@@ -132,10 +141,10 @@ export async function listerBatimentsAvecCharge(
 
   return batiments.map((b) => {
     const etat = repartirVerifications(parBatiment.get(b.id) ?? [], now);
-    return {
-      ...b,
-      nbEnRetard: etat.enRetard.length,
-      nbSous30j: etat.aVenir.length,
-    };
+    // Seul le retard est rendu : la pastille d'un volume ne dit qu'une
+    // chose. `nbSous30j` était calculé, typé et sérialisé jusqu'au client
+    // sans qu'aucun écran ne le lise — un compteur en sommeil finit par
+    // diverger de celui qui compte vraiment.
+    return { ...b, nbEnRetard: etat.enRetard.length };
   });
 }

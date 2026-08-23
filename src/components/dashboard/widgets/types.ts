@@ -147,6 +147,17 @@ export type DashboardBundle = {
    * listes qu'il surplombe.
    */
   echeances: EtatEcheances;
+  /**
+   * Le même état, **filtre bâtiment ignoré**. Pour le hero, qui parle de
+   * l'établissement : la plaque des bâtiments y liste tous les volumes avec
+   * la charge de chacun, et les relevés d'à côté suivaient le filtre. Sur un
+   * site filtré, « Dépassées 3 » voisinait donc des cartes qui en totalisent
+   * sept, sans que rien n'explique l'écart.
+   *
+   * Le filtre gouverne ce qui est *sous* le hero — la file de travail, le
+   * calendrier, le parc. La légende du sélecteur le dit.
+   */
+  echeancesEtablissement: EtatEcheances;
   equipements: EquipementLite[];
   /**
    * Le parc **entier**, filtre bâtiment ignoré. Pour les blocs qui portent

@@ -436,16 +436,22 @@ export type RailCategorie = {
   separateurAvant?: boolean;
 };
 
-/** Catégorie du rail à laquelle appartient un item — sert à savoir quel
- *  panneau ouvrir et quelle entrée du rail surligner. */
-export function categorieDeItem(id: SidebarItemId): RailCategorieId {
+/**
+ * Catégorie du rail à laquelle appartient un item — sert à savoir quel
+ * panneau ouvrir et quelle entrée du rail surligner.
+ *
+ * `null` quand la page n'appartient à aucune entrée : rien ne s'allume, rien
+ * ne s'ouvre. C'est le cas du guide, qui a perdu son entrée de rail mais pas
+ * sa page. Le rattacher au voisin le plus proche allumait « Paramètres » sur
+ * un écran qui n'est pas dedans, et la tuile menait ailleurs — l'ADR-015
+ * veut qu'une entrée de rail désigne une page, pas une approximation.
+ */
+export function categorieDeItem(id: SidebarItemId): RailCategorieId | null {
   switch (id) {
     case "tableau":
       return "tableau";
-    // Le guide n'a plus d'entrée de rail : sa page reste atteignable, aucune
-    // tuile ne s'allume dessus. Il se rattache donc au voisin le plus proche
-    // plutôt qu'à une catégorie disparue.
     case "guide":
+      return null;
     case "connecter":
       return "parametres";
     case "equipements":
