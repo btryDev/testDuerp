@@ -467,6 +467,13 @@ describe("référentiel conformité — non-régression des obligations critique
     // condition oubliée et deux échéances tombent pour un seul acte de
     // contrôle ; une condition de trop et un parc entier n'a plus rien.
     const CAT = "INSTALLATION_FRIGORIFIQUE";
+    // Le seuil de déclenchement précède la dispense sur les six : sous le
+    // seuil, il n'y a pas d'obligation à dispenser.
+    const seuil = {
+      type: "equipement_propriete_infirmee",
+      categorie: CAT,
+      propriete: "estChargeSousSeuilControle",
+    };
     const dispense = {
       type: "equipement_propriete_infirmee",
       categorie: CAT,
@@ -486,35 +493,41 @@ describe("référentiel conformité — non-régression des obligations critique
 
     const attendu: Record<string, unknown[]> = {
       "froid-controle-etancheite-annuel": [
+        seuil,
         dispense,
         pas("estChargeSuperieure500TCo2"),
         pas("estChargeSuperieure50TCo2"),
         pas("aDetectionDeFuites"),
       ],
       "froid-controle-etancheite-biennal-detection": [
+        seuil,
         dispense,
         pas("estChargeSuperieure500TCo2"),
         pas("estChargeSuperieure50TCo2"),
         oui("aDetectionDeFuites"),
       ],
       "froid-controle-etancheite-semestriel-50t": [
+        seuil,
         dispense,
         pas("estChargeSuperieure500TCo2"),
         oui("estChargeSuperieure50TCo2"),
         pas("aDetectionDeFuites"),
       ],
       "froid-controle-etancheite-annuel-50t-detection": [
+        seuil,
         dispense,
         pas("estChargeSuperieure500TCo2"),
         oui("estChargeSuperieure50TCo2"),
         oui("aDetectionDeFuites"),
       ],
       "froid-controle-etancheite-trimestriel-500t": [
+        seuil,
         dispense,
         oui("estChargeSuperieure500TCo2"),
         pas("aDetectionDeFuites"),
       ],
       "froid-controle-etancheite-semestriel-500t-detection": [
+        seuil,
         dispense,
         oui("estChargeSuperieure500TCo2"),
         oui("aDetectionDeFuites"),
@@ -533,7 +546,7 @@ describe("référentiel conformité — non-régression des obligations critique
     // système de détection. Toutes ses conditions doivent donc être de la
     // forme qui survit à l'absence de réponse.
     const o = obligationParId("froid-controle-etancheite-annuel");
-    expect(o?.conditions?.length).toBe(4);
+    expect(o?.conditions?.length).toBe(5);
     expect(
       o?.conditions?.every((c) => c.type === "equipement_propriete_infirmee"),
     ).toBe(true);
@@ -734,7 +747,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
   // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
   // version PUIS recopiez l'empreinte que le message d'échec affiche.
-  const EMPREINTE_ATTENDUE = "77-440f8475a5d472a9";
+  const EMPREINTE_ATTENDUE = "77-a0093d8d4fe6cfb9";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(

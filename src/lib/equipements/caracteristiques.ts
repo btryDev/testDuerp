@@ -33,6 +33,7 @@ export const LIBELLE_CARACTERISTIQUE: Record<ChampTriEtat, string> = {
   estChariotOuGerbeur: "Chariot élévateur, gerbeur ou hayon",
   aAccessoiresDeLevage: "Accessoires de levage utilisés",
   estSoumisSuiviEnService: "Suivi en service (arrêté du 20 nov. 2017)",
+  estChargeSousSeuilControle: "Charge sous le seuil de contrôle",
   estHermetiquementScelleSousSeuil: "Hermétiquement scellé et sous seuil",
   estChargeSuperieure50TCo2: "Charge de fluide au-delà de 50 t éq. CO₂",
   estChargeSuperieure500TCo2: "Charge de fluide au-delà de 500 t éq. CO₂",

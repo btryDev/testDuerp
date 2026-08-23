@@ -22,6 +22,9 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  *   - `estChariotOuGerbeur`         → travail, VGP semestrielle (arrêté 01-03-2004, art. 20-II et 23)
  *   - `aAccessoiresDeLevage`        → travail, vérification des accessoires
  *   - `estSoumisSuiviEnService`     → arrêté du 20 novembre 2017 (ESP)
+ *   - `estChargeSousSeuilControle` → règlement (UE) 2024/573, art. 5 et
+ *     code de l'environnement, art. R. 543-79 al. 1 (seuil de déclenchement :
+ *     sous lui, aucun contrôle d'étanchéité n'est dû)
  *   - `estHermetiquementScelleSousSeuil` → règlement (UE) 2024/573, art. 5
  *     (dispense des équipements hermétiquement scellés)
  *   - `aDetectionDeFuites`          → règlement (UE) 2024/573, art. 5
@@ -35,7 +38,7 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  * « non ». C'est acceptable parce qu'elles gouvernent des obligations en
  * « opt-in » (l'obligation n'apparaît qu'après une réponse positive).
  *
- * Les onze suivantes bornent au contraire des obligations **déjà publiées**, de
+ * Les douze suivantes bornent au contraire des obligations **déjà publiées**, de
  * criticité élevée, en « opt-out » : elles restent applicables tant que le
  * dirigeant n'a pas répondu « non ». Une case à cocher ne convient donc pas —
  * elle ne distingue pas « j'ai répondu non » de « je n'ai pas encore répondu »,
@@ -84,7 +87,7 @@ export const CATEGORIES_AERATION: readonly CategorieEquipement[] = [
   "HOTTE_PRO",
 ];
 
-/** Les onze questions à trois états, dans l'ordre d'affichage. */
+/** Les douze questions à trois états, dans l'ordre d'affichage. */
 export const CHAMPS_TRI_ETAT = [
   "estVmcGaz",
   "aRobinetsIncendieArmes",
@@ -93,6 +96,7 @@ export const CHAMPS_TRI_ETAT = [
   "estChariotOuGerbeur",
   "aAccessoiresDeLevage",
   "estSoumisSuiviEnService",
+  "estChargeSousSeuilControle",
   "estHermetiquementScelleSousSeuil",
   "estChargeSuperieure50TCo2",
   "estChargeSuperieure500TCo2",
@@ -144,6 +148,11 @@ export const CATEGORIES_TRI_ETAT: readonly {
     champ: "estSoumisSuiviEnService",
     categories: ["EQUIPEMENT_SOUS_PRESSION"],
     message: "Spécifique aux équipements sous pression",
+  },
+  {
+    champ: "estChargeSousSeuilControle",
+    categories: ["INSTALLATION_FRIGORIFIQUE"],
+    message: "Spécifique aux installations frigorifiques",
   },
   {
     champ: "estHermetiquementScelleSousSeuil",
@@ -227,6 +236,7 @@ export const equipementSchema = z
     estChariotOuGerbeur: triEtat,
     aAccessoiresDeLevage: triEtat,
     estSoumisSuiviEnService: triEtat,
+    estChargeSousSeuilControle: triEtat,
     estHermetiquementScelleSousSeuil: triEtat,
     estChargeSuperieure50TCo2: triEtat,
     estChargeSuperieure500TCo2: triEtat,

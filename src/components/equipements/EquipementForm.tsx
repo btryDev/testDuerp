@@ -84,6 +84,11 @@ const QUESTIONS_TRI_ETAT: Record<
       "Cet équipement est-il suivi en service au titre de l'arrêté du 20 novembre 2017 ?",
     aide: "Les récipients sous pression ne sont concernés qu'au-delà de seuils de pression et de volume. Votre notice, votre plaque signalétique ou votre installateur l'indiquent. En cas de doute, laissez « Je ne sais pas encore » : les échéances restent affichées.",
   },
+  estChargeSousSeuilControle: {
+    question:
+      "La charge en fluide frigorigène est-elle inférieure au seuil de contrôle ?",
+    aide: "Le contrôle d'étanchéité ne s'impose qu'au-delà de 5 tonnes équivalent CO2 — quelques kilogrammes seulement selon le fluide —, ou de 1 kg pour les fluides insaturés (R-1234yf, R-454C…). Beaucoup de petits meubles froids récents fonctionnent au R-290 (propane), qui n'entre pas dans le champ. Le fluide et la charge figurent sur la plaque signalétique ; votre frigoriste fait la conversion. Répondez « oui » seulement si vous en êtes sûr : le contrôle disparaît alors du calendrier. En cas de doute, laissez « Je ne sais pas encore ».",
+  },
   estHermetiquementScelleSousSeuil: {
     question:
       "Cet appareil est-il hermétiquement scellé et étiqueté comme tel ?",

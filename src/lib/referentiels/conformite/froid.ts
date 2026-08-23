@@ -39,11 +39,12 @@
  * seront mis à jour, les références nationales de ce fichier seront à revoir —
  * pas les périodicités.
  *
- * Réserve assumée : le seuil national de l'alinéa 1 (plus de 5 t CO2e de
- * HFC/PFC, plus de 2 kg de HCFC) et le déclencheur de l'article 5 européen
- * (5 t CO2e de gaz de l'annexe I, 1 kg de gaz de l'annexe II section 1) ne se
- * recouvrent pas exactement. Le référentiel ne modélise aujourd'hui ni l'un ni
- * l'autre — cf. la note sur les seuils, plus bas.
+ * Les deux seuils ne se recouvrent pas exactement — le national de l'alinéa 1
+ * (plus de 5 t CO2e de HFC/PFC, plus de 2 kg de HCFC) et le déclencheur de
+ * l'article 5 européen (5 t CO2e de gaz de l'annexe I, 1 kg de gaz de
+ * l'annexe II section 1). La question `estChargeSousSeuilControle` porte le
+ * plus protecteur des deux : le contrôle ne disparaît que si l'appareil sort
+ * du champ des deux textes. Cf. `AU_DESSUS_DU_SEUIL`, plus bas.
  *
  * ── Périodicités : texte authentique vérifié, réserve levée ────────────────
  *
@@ -231,6 +232,37 @@ const HORS_DISPENSE = {
   propriete: "estHermetiquementScelleSousSeuil",
 } as const;
 
+/**
+ * Le seuil de déclenchement — la question qui décide de l'existence même du
+ * contrôle, et non de sa fréquence.
+ *
+ * Elle manquait, et c'était le seul des quatre paliers à n'être qu'une note.
+ * Conséquence : une vitrine réfrigérée de quelques centaines de grammes
+ * héritait d'un contrôle d'étanchéité annuel de criticité 4 **par opérateur
+ * certifié** — une intervention payante, récurrente, sur un appareil que ni
+ * le règlement ni le code de l'environnement ne visent. Sur des secteurs où
+ * le partage passe précisément entre la vitrine et la chambre froide, ce
+ * n'est pas un cas d'école.
+ *
+ * Elle appartient à la famille de la dispense, pas à celle des paliers : les
+ * trois questions de charge ne font que **resserrer** la fréquence (douze,
+ * six, trois mois), celle-ci **retire** l'obligation. D'où le même protocole
+ * strict — `equipement_propriete_booleenne` à `true` exigé, donc un « oui »
+ * explicite du dirigeant ; « non » comme « je ne sais pas encore » gardent
+ * tous les contrôles au calendrier.
+ *
+ * Un seul « oui » pour deux seuils qui ne coïncident pas — le national
+ * (R. 543-79 al. 1 : plus de 5 t CO2e de HFC/PFC, plus de 2 kg de HCFC) et
+ * l'européen (art. 5 : 5 t CO2e de gaz de l'annexe I, 1 kg de gaz de
+ * l'annexe II section 1). La question porte le plus protecteur des deux : le
+ * contrôle ne disparaît que si l'appareil sort du champ des deux textes.
+ */
+const AU_DESSUS_DU_SEUIL = {
+  type: "equipement_propriete_infirmee",
+  categorie: CATEGORIE,
+  propriete: "estChargeSousSeuilControle",
+} as const;
+
 const SANS_DETECTION = {
   type: "equipement_propriete_infirmee",
   categorie: CATEGORIE,
@@ -283,7 +315,7 @@ export const obligationsFroid: Obligation[] = [
     criticite: 4,
     typologies: { travail: true, erp: true },
     categoriesEquipement: [CATEGORIE],
-    conditions: [HORS_DISPENSE],
+    conditions: [AU_DESSUS_DU_SEUIL, HORS_DISPENSE],
     notesInternes:
       "Aucune des valeurs de `Realisateur` ne dit « opérateur titulaire de l'attestation de capacité prévue à R. 543-99 » : `personne_qualifiee` est la plus proche, la description porte l'exigence de certification. À revoir si l'enum s'enrichit.",
   },
@@ -299,7 +331,7 @@ export const obligationsFroid: Obligation[] = [
     criticite: 4,
     typologies: { travail: true, erp: true },
     categoriesEquipement: [CATEGORIE],
-    conditions: [HORS_DISPENSE, SOUS_500, SOUS_50, SANS_DETECTION],
+    conditions: [AU_DESSUS_DU_SEUIL, HORS_DISPENSE, SOUS_500, SOUS_50, SANS_DETECTION],
     notesInternes:
       "Obligation par défaut du domaine : c'est elle qui s'applique quand aucune des quatre questions n'a reçu de réponse, ce qui sera le cas le plus fréquent. Ses quatre conditions sont toutes de la forme `infirmee`, donc toutes satisfaites au silence. Palier « moins de 50 t CO2e (ou moins de 10 kg pour un fluide de l'annexe II section 1), sans système de détection des fuites » de l'article 5.",
   },
@@ -316,7 +348,7 @@ export const obligationsFroid: Obligation[] = [
     criticite: 4,
     typologies: { travail: true, erp: true },
     categoriesEquipement: [CATEGORIE],
-    conditions: [HORS_DISPENSE, SOUS_500, SOUS_50, AVEC_DETECTION],
+    conditions: [AU_DESSUS_DU_SEUIL, HORS_DISPENSE, SOUS_500, SOUS_50, AVEC_DETECTION],
     notesInternes:
       "Condition stricte (`booleenne`) assumée sur une criticité 4 : l'obligation est neuve, aucun équipement en base ne peut la perdre, et `froid-controle-etancheite-annuel` couvre l'installation tant que la question de la détection n'a pas reçu « oui ». Allonger l'intervalle sur une réponse explicite est le sens même de l'article 5.",
   },
@@ -333,7 +365,7 @@ export const obligationsFroid: Obligation[] = [
     criticite: 4,
     typologies: { travail: true, erp: true },
     categoriesEquipement: [CATEGORIE],
-    conditions: [HORS_DISPENSE, SOUS_500, AU_DESSUS_50, SANS_DETECTION],
+    conditions: [AU_DESSUS_DU_SEUIL, HORS_DISPENSE, SOUS_500, AU_DESSUS_50, SANS_DETECTION],
     notesInternes:
       "Condition stricte (`booleenne`) assumée : obligation neuve, et la couverture par défaut reste assurée par `froid-controle-etancheite-annuel` tant que le palier n'a pas été confirmé. Le palier ne se déduit d'aucun autre champ — il est déclaré par le dirigeant, qui le lit sur le rapport de son frigoriste.",
   },
@@ -350,7 +382,7 @@ export const obligationsFroid: Obligation[] = [
     criticite: 4,
     typologies: { travail: true, erp: true },
     categoriesEquipement: [CATEGORIE],
-    conditions: [HORS_DISPENSE, SOUS_500, AU_DESSUS_50, AVEC_DETECTION],
+    conditions: [AU_DESSUS_DU_SEUIL, HORS_DISPENSE, SOUS_500, AU_DESSUS_50, AVEC_DETECTION],
     notesInternes:
       "Même périodicité que `froid-controle-etancheite-annuel`, pour une raison différente : ici le palier de charge est franchi mais la détection de fuites double l'intervalle. Les deux obligations s'excluent par leurs conditions ; en garder deux plutôt qu'une seule permet au registre de dire pourquoi l'échéance tombe à douze mois. Condition stricte assumée, cf. les obligations voisines.",
   },
@@ -367,7 +399,7 @@ export const obligationsFroid: Obligation[] = [
     criticite: 4,
     typologies: { travail: true, erp: true },
     categoriesEquipement: [CATEGORIE],
-    conditions: [HORS_DISPENSE, AU_DESSUS_500, SANS_DETECTION],
+    conditions: [AU_DESSUS_DU_SEUIL, HORS_DISPENSE, AU_DESSUS_500, SANS_DETECTION],
     notesInternes:
       "Palier rare dans le périmètre TPE/PME — quelques centaines de kilogrammes de fluide — mais modélisé pour ne pas laisser une installation de ce type sur une périodicité fausse. Pas de condition sur `estChargeSuperieure50TCo2` : franchir 500 emporte 50, et les obligations des paliers inférieurs sont déjà écartées par leur condition `infirmee` sur `estChargeSuperieure500TCo2`.",
   },
@@ -384,7 +416,7 @@ export const obligationsFroid: Obligation[] = [
     criticite: 4,
     typologies: { travail: true, erp: true },
     categoriesEquipement: [CATEGORIE],
-    conditions: [HORS_DISPENSE, AU_DESSUS_500, AVEC_DETECTION],
+    conditions: [AU_DESSUS_DU_SEUIL, HORS_DISPENSE, AU_DESSUS_500, AVEC_DETECTION],
     notesInternes:
       "Même périodicité que `froid-controle-etancheite-semestriel-50t`, palier et motif différents. Condition stricte assumée, cf. les obligations voisines.",
   },
@@ -400,7 +432,7 @@ export const obligationsFroid: Obligation[] = [
     criticite: 4,
     typologies: { travail: true, erp: true },
     categoriesEquipement: [CATEGORIE],
-    conditions: [HORS_DISPENSE],
+    conditions: [AU_DESSUS_DU_SEUIL, HORS_DISPENSE],
     notesInternes:
       "Obligation permanente, sans échéance à poser : elle se déclenche sur un événement — une modification du circuit, une réparation de fuite — que l'outil n'observe pas. `mise_en_service_uniquement` avait d'abord été retenu par analogie avec `levage-remise-en-service-apres-reparation`, et c'était une erreur : le générateur en tire une occurrence `a_planifier` marquée urgente dès qu'aucune vérification n'est connue. Toute chambre froide neuve — l'équipement que le pré-remplissage suggère désormais à tout commerce alimentaire et à toute restauration — héritait donc d'une ligne « contrôle après modification » urgente alors que rien n'avait été modifié. Annoncer un retard sur un événement qui n'a pas eu lieu, c'est le défaut que le reste de ce référentiel s'emploie à éliminer. En `autre`, l'obligation reste posée par le référentiel : le guide « Comprendre » la cite parmi les obligations applicables chez vous, et l'équipement porte la pastille « Obligation permanente » (`aucune_echeance_datable`). Elle n'apparaît en revanche ni au registre de sécurité ni au dossier de conformité, qui ne lisent que des `Verification` — c'est le prix d'une obligation sans date, et il vaut mieux que d'annoncer un retard sur un événement qui n'a pas eu lieu. Les délais du contrôle après réparation (au plus tôt vingt-quatre heures de fonctionnement, au plus tard un mois) ne sont de toute façon pas modélisables : le modèle n'a pas de forme pour un délai borné des deux côtés.",
   },

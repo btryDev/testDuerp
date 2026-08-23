@@ -1179,6 +1179,56 @@ describe("moteur matching — contrôle d'étanchéité des installations frigor
     }
   });
 
+  it("sous le seuil de déclenchement, le froid disparaît entièrement", () => {
+    // La question qui décide de l'existence du contrôle, et non de sa
+    // fréquence. Sans elle, une vitrine réfrigérée de quelques centaines de
+    // grammes héritait d'un contrôle d'étanchéité annuel de criticité 4 par
+    // opérateur certifié — une intervention payante, récurrente, sur un
+    // appareil qu'aucun des deux textes ne vise.
+    const ids = idsObligations(
+      determineObligationsApplicables(etabRestoErpCat5(), [
+        froid({ estChargeSousSeuilControle: true }),
+      ]),
+    );
+    expect(ids.filter((id) => id.startsWith("froid-"))).toEqual([]);
+  });
+
+  it("le seuil ne retire rien sur un « non » ni sur un silence", () => {
+    // Même protocole que la dispense : seul un « oui » explicite éteint. Un
+    // formulaire traversé sans répondre ne doit pas faire disparaître une
+    // obligation de criticité 4.
+    for (const reponse of [{ estChargeSousSeuilControle: false }, {}]) {
+      const ids = idsObligations(
+        determineObligationsApplicables(etabRestoErpCat5(), [froid(reponse)]),
+      );
+      expect(ids, JSON.stringify(reponse)).toContain(
+        "froid-controle-etancheite-annuel",
+      );
+      expect(ids, JSON.stringify(reponse)).toContain(
+        "froid-controle-etancheite-mise-en-service",
+      );
+    }
+  });
+
+  it("le seuil l'emporte sur les paliers de charge, quels qu'ils soient", () => {
+    // Un « oui » au seuil et un « oui » à un palier haut se contredisent — le
+    // dirigeant s'est trompé quelque part. Le référentiel ne tranche pas la
+    // contradiction, il applique la règle la plus simple : hors champ, rien
+    // n'est dû. Le vérifier évite qu'un palier ressuscite une échéance que le
+    // seuil vient d'éteindre.
+    const ids = idsObligations(
+      determineObligationsApplicables(etabRestoErpCat5(), [
+        froid({
+          estChargeSousSeuilControle: true,
+          estChargeSuperieure50TCo2: true,
+          estChargeSuperieure500TCo2: true,
+          aDetectionDeFuites: true,
+        }),
+      ]),
+    );
+    expect(ids.filter((id) => id.startsWith("froid-"))).toEqual([]);
+  });
+
   it("la dispense l'emporte sur les vingt-sept combinaisons de charge", () => {
     // Le test précédent laisse `estHermetiquementScelleSousSeuil` indéfini sur
     // les 27 cas : la seule réponse qui *retire* des échéances n'était donc
