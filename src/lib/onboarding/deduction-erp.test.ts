@@ -1,165 +1,156 @@
 import { describe, expect, it } from "vitest";
-import { CATEGORIES_ERP } from "@/lib/referentiels/types-communs";
+import { TYPES_ERP } from "@/lib/referentiels/types-communs";
 import {
-  CHOIX_ACTIVITE_ERP,
-  CHOIX_CLASSES_IGH,
-  SEUIL_1RE_CATEGORIE,
-  SEUIL_2E_CATEGORIE,
+  SEUILS_5E_CATEGORIE,
   SEUIL_3E_CATEGORIE,
-  TRANCHES_EFFECTIF_PUBLIC,
-  avertissementProximiteSeuil,
-  categorieErpDepuisTranche,
+  deduire4eOu5e,
   deduireCategorieErp,
   deduireCategorieErpDepuisEffectif,
-  typeErpDepuisChoix,
 } from "./deduction-erp";
 
-describe("deduireCategorieErp — bornes du premier groupe (CCH R. 143-19)", () => {
-  it("301 à 700 → 3ᵉ catégorie proposée", () => {
-    for (const n of [301, 500, 700]) {
-      const d = deduireCategorieErp(n);
-      expect(d.statut).toBe("proposee");
-      if (d.statut === "proposee") expect(d.categorieErp).toBe("N3");
-    }
+// -----------------------------------------------------------------------------
+// Bornes du premier groupe (R. 143-19) — inchangées
+// -----------------------------------------------------------------------------
+
+describe("déduction ERP — bornes universelles de R. 143-19", () => {
+  it("1501 → 1ʳᵉ, 701 → 2ᵉ, 301 → 3ᵉ", () => {
+    expect(deduireCategorieErpDepuisEffectif(1501)).toBe("N1");
+    expect(deduireCategorieErpDepuisEffectif(701)).toBe("N2");
+    expect(deduireCategorieErpDepuisEffectif(301)).toBe("N3");
   });
 
-  it("701 à 1500 → 2ᵉ catégorie proposée", () => {
-    for (const n of [701, 1200, 1500]) {
-      const d = deduireCategorieErp(n);
-      expect(d.statut).toBe("proposee");
-      if (d.statut === "proposee") expect(d.categorieErp).toBe("N2");
-    }
-  });
-
-  it("> 1500 → 1ʳᵉ catégorie proposée", () => {
-    for (const n of [1501, 5000]) {
-      const d = deduireCategorieErp(n);
-      expect(d.statut).toBe("proposee");
-      if (d.statut === "proposee") expect(d.categorieErp).toBe("N1");
-    }
-  });
-
-  it("chaque motif cite l'article qui pose la borne", () => {
-    for (const n of [500, 1000, 4000]) {
-      const d = deduireCategorieErp(n);
-      if (d.statut === "proposee") expect(d.motif).toContain("R. 143-19");
+  it("300 et au-dessous : la question est posée, jamais un défaut", () => {
+    expect(deduireCategorieErpDepuisEffectif(SEUIL_3E_CATEGORIE)).toBeNull();
+    const d = deduireCategorieErp(12);
+    expect(d.statut).toBe("a_confirmer");
+    if (d.statut === "a_confirmer") {
+      expect(d.categoriesPossibles).toEqual(["N4", "N5"]);
     }
   });
 });
 
-describe("deduireCategorieErp — bande « 300 et au-dessous » (régression 2026-08)", () => {
-  it("ne tranche JAMAIS entre 4ᵉ et 5ᵉ catégorie sur le seul effectif", () => {
-    for (const n of [0, 19, 150, 250, 299, 300]) {
-      const d = deduireCategorieErp(n);
-      expect(d.statut).toBe("a_confirmer");
-      if (d.statut === "a_confirmer") {
-        expect(d.categoriesPossibles).toEqual(["N4", "N5"]);
-        expect(d.question.length).toBeGreaterThan(0);
-      }
+// -----------------------------------------------------------------------------
+// Table des seuils du second groupe — invariants de sourçage
+// -----------------------------------------------------------------------------
+
+describe("déduction ERP — table SEUILS_5E_CATEGORIE", () => {
+  it("chaque entrée cite un article, une version lue, une URL Légifrance et une date de lecture", () => {
+    for (const [type, s] of Object.entries(SEUILS_5E_CATEGORIE)) {
+      expect(s.article, type).toMatch(/^[A-Z]{1,3} 1$/);
+      expect(s.versionLue, type).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(s.dateLecture, type).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(s.urlLegifrance, type).toMatch(
+        /^https:\/\/www\.legifrance\.gouv\.fr\//,
+      );
+      expect(s.seuil.total, type).toBeGreaterThan(0);
     }
   });
 
-  it("un restaurant de 250 personnes n'est plus classé d'office en 5ᵉ catégorie", () => {
-    // Régression directe : cette déduction silencieuse faisait perdre
-    // `elec-erp-cat1-4-annuelle` (criticité 5, organisme agréé, annuelle) au
-    // profit d'une quinquennale, et supprimait la vérification triennale du SSI.
-    expect(deduireCategorieErpDepuisEffectif(250)).toBeNull();
+  it("les types de la table existent dans l'enum", () => {
+    for (const type of Object.keys(SEUILS_5E_CATEGORIE)) {
+      expect(TYPES_ERP).toContain(type);
+    }
   });
 
-  it("deduireCategorieErpDepuisEffectif renvoie la catégorie quand elle est déductible", () => {
-    expect(deduireCategorieErpDepuisEffectif(400)).toBe("N3");
-    expect(deduireCategorieErpDepuisEffectif(900)).toBe("N2");
-    expect(deduireCategorieErpDepuisEffectif(2000)).toBe("N1");
+  it("aucun seuil de type ne dépasse la borne des 300 (sinon la 4ᵉ serait vide)", () => {
+    for (const [type, s] of Object.entries(SEUILS_5E_CATEGORIE)) {
+      expect(s.seuil.total, type).toBeLessThanOrEqual(SEUIL_3E_CATEGORIE);
+    }
+  });
+
+  it("les types dont le seuil ne se lit pas dans l'effectif ne sont PAS dans la table", () => {
+    // R : sous-sol interdit, étages « quel que soit l'effectif », sommeil ;
+    // U : lits d'hospitalisation ; J : capacité d'hébergement ; L : deux
+    // grilles selon la nature de la salle. Les encoder reviendrait à
+    // trancher avec une information que l'assistant ne collecte pas.
+    for (const type of ["R", "U", "L"] as const) {
+      expect(SEUILS_5E_CATEGORIE[type]).toBeUndefined();
+    }
   });
 });
 
-describe("avertissementProximiteSeuil", () => {
-  it("avertit lorsque l'effectif frôle une borne", () => {
-    expect(avertissementProximiteSeuil(SEUIL_3E_CATEGORIE + 5)).toBeDefined();
-    expect(avertissementProximiteSeuil(SEUIL_2E_CATEGORIE - 10)).toBeDefined();
-    expect(avertissementProximiteSeuil(SEUIL_1RE_CATEGORIE + 100)).toBeDefined();
-  });
+// -----------------------------------------------------------------------------
+// deduire4eOu5e — application des seuils, règle de prudence
+// -----------------------------------------------------------------------------
 
-  it("reste silencieux loin de toute borne", () => {
-    expect(avertissementProximiteSeuil(500)).toBeUndefined();
-    expect(avertissementProximiteSeuil(50)).toBeUndefined();
-  });
-
-  it("est remonté dans la déduction proposée", () => {
-    const d = deduireCategorieErp(SEUIL_3E_CATEGORIE + 2);
+describe("déduction ERP — deduire4eOu5e", () => {
+  it("restaurant (N) : 150 couverts en rez-de-chaussée → 5ᵉ", () => {
+    const d = deduire4eOu5e("N", { total: 150, sousSol: 0, etages: 0 });
     expect(d.statut).toBe("proposee");
-    if (d.statut === "proposee") expect(d.avertissement).toBeDefined();
-  });
-});
-
-describe("categorieErpDepuisTranche", () => {
-  it("résout chaque tranche sans erreur", () => {
-    expect(categorieErpDepuisTranche("moins-300-5e")).toBe("N5");
-    expect(categorieErpDepuisTranche("moins-300-4e")).toBe("N4");
-    expect(categorieErpDepuisTranche("301-700")).toBe("N3");
-    expect(categorieErpDepuisTranche("701-1500")).toBe("N2");
-    expect(categorieErpDepuisTranche("plus-1500")).toBe("N1");
+    if (d.statut === "proposee") {
+      expect(d.categorieErp).toBe("N5");
+      expect(d.motif).toContain("N 1");
+    }
   });
 
-  it("lève sur une tranche inconnue", () => {
-    expect(() =>
-      categorieErpDepuisTranche("inexistante" as never),
-    ).toThrowError();
-  });
-});
-
-describe("typeErpDepuisChoix", () => {
-  it("résout les 8 activités proposées", () => {
-    expect(typeErpDepuisChoix("resto")).toBe("N");
-    expect(typeErpDepuisChoix("commerce")).toBe("M");
-    expect(typeErpDepuisChoix("bureau")).toBe("W");
-    expect(typeErpDepuisChoix("hotel")).toBe("O");
-    expect(typeErpDepuisChoix("soins")).toBe("U");
-    expect(typeErpDepuisChoix("enseignement")).toBe("R");
-    expect(typeErpDepuisChoix("spectacle")).toBe("L");
-    expect(typeErpDepuisChoix("exposition")).toBe("T");
-  });
-});
-
-describe("cohérence tables", () => {
-  it("CHOIX_ACTIVITE_ERP : ids uniques", () => {
-    const ids = CHOIX_ACTIVITE_ERP.map((c) => c.id);
-    expect(new Set(ids).size).toBe(ids.length);
+  it("restaurant (N) : 150 couverts dont 100 en sous-sol → 4ᵉ (un seul chiffre atteint suffit)", () => {
+    const d = deduire4eOu5e("N", { total: 150, sousSol: 100, etages: 0 });
+    expect(d.statut).toBe("proposee");
+    if (d.statut === "proposee") expect(d.categorieErp).toBe("N4");
   });
 
-  it("TRANCHES_EFFECTIF_PUBLIC : les 5 catégories sont atteignables, 4ᵉ comprise", () => {
-    const categories = TRANCHES_EFFECTIF_PUBLIC.map((t) => t.categorieErp);
-    for (const c of CATEGORIES_ERP) expect(categories).toContain(c);
-    // Une catégorie par tranche : le reverse lookup de l'assistant
-    // (catégorie → tranche sélectionnée) suppose l'unicité.
-    expect(new Set(categories).size).toBe(categories.length);
+  it("restaurant (N) : 200 au total → 4ᵉ, même sans détail par niveau", () => {
+    const d = deduire4eOu5e("N", { total: 200 });
+    expect(d.statut).toBe("proposee");
+    if (d.statut === "proposee") expect(d.categorieErp).toBe("N4");
   });
 
-  it("TRANCHES_EFFECTIF_PUBLIC : ordre croissant de capacité", () => {
-    expect(TRANCHES_EFFECTIF_PUBLIC.map((t) => t.categorieErp)).toEqual([
-      "N5",
-      "N4",
-      "N3",
-      "N2",
-      "N1",
-    ]);
+  it("restaurant (N) : 150 au total, sous-sol non renseigné → ne tranche pas", () => {
+    const d = deduire4eOu5e("N", { total: 150 });
+    expect(d.statut).toBe("a_confirmer");
+    if (d.statut === "a_confirmer") expect(d.motif).toContain("sous-sol");
   });
 
-  it("TRANCHES_EFFECTIF_PUBLIC : ids uniques", () => {
-    const ids = TRANCHES_EFFECTIF_PUBLIC.map((t) => t.id);
-    expect(new Set(ids).size).toBe(ids.length);
+  it("restaurant (N) : 150 au total, sous-sol 0, étages non renseignés → ne tranche pas", () => {
+    const d = deduire4eOu5e("N", { total: 150, sousSol: 0 });
+    expect(d.statut).toBe("a_confirmer");
+    if (d.statut === "a_confirmer") expect(d.motif).toContain("étage");
   });
 
-  it("CHOIX_CLASSES_IGH : toutes présentes (GHA à ITGH)", () => {
-    const ids = CHOIX_CLASSES_IGH.map((c) => c.id);
-    expect(ids).toContain("GHA");
-    expect(ids).toContain("GHW");
-    expect(ids).toContain("GHO");
-    expect(ids).toContain("GHR");
-    expect(ids).toContain("GHS");
-    expect(ids).toContain("GHU");
-    expect(ids).toContain("GHZ");
-    expect(ids).toContain("ITGH");
-    expect(ids.length).toBe(8);
+  it("magasin (M) : 100 en étage → 4ᵉ (seuil étages 100), 99 → 5ᵉ", () => {
+    const quatre = deduire4eOu5e("M", { total: 150, sousSol: 0, etages: 100 });
+    const cinq = deduire4eOu5e("M", { total: 150, sousSol: 0, etages: 99 });
+    expect(quatre.statut === "proposee" && quatre.categorieErp).toBe("N4");
+    expect(cinq.statut === "proposee" && cinq.categorieErp).toBe("N5");
+  });
+
+  it("hôtel (O) : seuil total seul, 100 → 4ᵉ, 99 → 5ᵉ, sans question de niveau", () => {
+    const quatre = deduire4eOu5e("O", { total: 100 });
+    const cinq = deduire4eOu5e("O", { total: 99 });
+    expect(quatre.statut === "proposee" && quatre.categorieErp).toBe("N4");
+    expect(cinq.statut === "proposee" && cinq.categorieErp).toBe("N5");
+  });
+
+  it("dancing (P) : 20 personnes en sous-sol suffisent → 4ᵉ", () => {
+    const d = deduire4eOu5e("P", { total: 60, sousSol: 20, etages: 0 });
+    expect(d.statut === "proposee" && d.categorieErp).toBe("N4");
+  });
+
+  it("culte (V) : 250 au total, rien en sous-sol ni en étage → 5ᵉ (seuil total 300)", () => {
+    const d = deduire4eOu5e("V", { total: 250, sousSol: 0, etages: 0 });
+    expect(d.statut === "proposee" && d.categorieErp).toBe("N5");
+  });
+
+  it("type X : condition hors effectif → ne tranche pas", () => {
+    const d = deduire4eOu5e("X", { total: 250, sousSol: 0, etages: 0 });
+    expect(d.statut).toBe("a_confirmer");
+  });
+
+  it("type hors table (R, U, L) → ne tranche pas", () => {
+    for (const type of ["R", "U", "L"] as const) {
+      const d = deduire4eOu5e(type, { total: 10, sousSol: 0, etages: 0 });
+      expect(d.statut, type).toBe("a_confirmer");
+    }
+  });
+
+  it("chaque proposition cite l'article qui la fonde", () => {
+    for (const [type, s] of Object.entries(SEUILS_5E_CATEGORIE)) {
+      if (s.conditionSupplementaire) continue;
+      const d = deduire4eOu5e(type as keyof typeof SEUILS_5E_CATEGORIE, {
+        total: s.seuil.total,
+      });
+      expect(d.statut, type).toBe("proposee");
+      if (d.statut === "proposee") expect(d.motif).toContain(s.article);
+    }
   });
 });

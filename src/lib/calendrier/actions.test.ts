@@ -107,9 +107,15 @@ vi.mock("@/lib/auth/scope", () => ({
 }));
 // Le matching est mocké : ce test porte sur la conservation des lignes, pas
 // sur le référentiel de conformité (qui a ses propres tests).
-vi.mock("@/lib/matching", () => ({
-  determineObligationsApplicables: () => h.db.obligations,
-}));
+vi.mock("@/lib/matching", async () => {
+  const reel =
+    await vi.importActual<typeof import("@/lib/matching")>("@/lib/matching");
+  return {
+    determineObligationsApplicables: () => h.db.obligations,
+    // Le module des prescriptions est pur et testé à part : on garde le vrai.
+    appliquerPrescriptions: reel.appliquerPrescriptions,
+  };
+});
 
 const { genererCalendrier } = await import("./actions");
 
@@ -160,6 +166,9 @@ function poserEtablissement(equipements: { id: string; actif: boolean }[]) {
     typeErp: null,
     categorieErp: null,
     classeIgh: null,
+    personnesPresentesHabituellement: null,
+    manipuleMatieresR422722: null,
+    prescriptionsParticulieres: [],
     // La server action lit `include: { equipements: { where: { actif: true } } }` :
     // le faux client rend directement la liste filtrée, comme le ferait Prisma.
     equipements: equipements

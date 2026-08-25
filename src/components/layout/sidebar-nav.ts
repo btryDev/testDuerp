@@ -56,7 +56,7 @@ export type SidebarActive =
 
 /** Ids réellement présents dans le rail (les deux derniers n'étaient pas
  *  adressables auparavant : `/modifier` surlignait « Tableau de bord »). */
-export type SidebarItemId = SidebarActive | "fiche" | "equipe";
+export type SidebarItemId = SidebarActive | "fiche" | "prescriptions" | "equipe";
 
 export type SidebarCounts = {
   equipements?: number;
@@ -187,6 +187,12 @@ export function construireSections({
       Icon: Settings,
     },
     {
+      id: "prescriptions",
+      label: "Prescriptions",
+      href: href("/prescriptions"),
+      Icon: FileText,
+    },
+    {
       id: "equipe",
       label: "Équipe",
       href: "#",
@@ -288,6 +294,7 @@ export function categorieDeItem(id: SidebarItemId): RailCategorieId {
     case "equipements":
     case "prestataires":
     case "fiche":
+    case "prescriptions":
     case "equipe":
       return "etablissement";
     case "duerp":

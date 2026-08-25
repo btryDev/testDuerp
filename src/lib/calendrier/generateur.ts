@@ -30,7 +30,11 @@ import {
   type Realisateur,
 } from "@/lib/referentiels/types-communs";
 import { estEnRetard } from "@/lib/dates/retard";
-import type { ObligationApplicable } from "@/lib/matching";
+import type {
+  ObligationApplicable,
+  ObligationSurMesureApplicable,
+} from "@/lib/matching";
+import { PREFIXE_PRESCRIPTION } from "@/lib/matching/prescriptions";
 
 export type StatutVerificationGen =
   | "a_planifier"
@@ -56,6 +60,11 @@ export type VerificationGenere = {
   criticiteObligation: 1 | 2 | 3 | 4 | 5;
   /** Raisons textuelles du matching — copiées du résultat du moteur. */
   raisons: string[];
+  /**
+   * Prescription particulière (ADR-014) à l'origine de la périodicité
+   * (surcharge) ou de la ligne (sur mesure). `null` = référentiel seul.
+   */
+  prescriptionId: string | null;
 };
 
 export type VerificationsPrecedentes = Map<string, Date>;
@@ -95,34 +104,42 @@ export function genererProchainesVerifications(
   for (const oa of obligations) {
     const o = oa.obligation;
 
-    // Périodicité `autre` → pas d'échéance (obligations permanentes).
-    if (o.periodicite === "autre") continue;
-
     for (const eq of oa.equipementsConcernes) {
+      // Périodicité effective : celle du référentiel, sauf surcharge d'une
+      // prescription particulière (ADR-014) sur cet équipement.
+      const surcharge = oa.surcharges?.[eq.id];
+      const periodicite = surcharge?.periodicite ?? o.periodicite;
+      const prescriptionId = surcharge?.prescriptionId ?? null;
+      const raisons = surcharge ? [...oa.raisons, surcharge.raison] : oa.raisons;
+
+      // Périodicité `autre` → pas d'échéance (obligations permanentes).
+      if (periodicite === "autre") continue;
+
       const cleUnique = `${o.id}::${eq.id}`;
       const derniere = verificationsPrecedentes.get(cleUnique);
 
       // One-shot : mise en service uniquement.
-      if (o.periodicite === "mise_en_service_uniquement") {
+      if (periodicite === "mise_en_service_uniquement") {
         if (derniere) continue; // déjà réalisé, pas de nouvelle occurrence
         out.push({
           cleUnique,
           obligationId: o.id,
           libelleObligation: o.libelle,
           equipementId: eq.id,
-          periodicite: o.periodicite,
+          periodicite,
           realisateurRequis: o.realisateurs,
           datePrevue: now,
           statut: "a_planifier",
           estUrgent: true,
           criticiteObligation: o.criticite,
-          raisons: oa.raisons,
+          raisons,
+          prescriptionId,
         });
         continue;
       }
 
       if (derniere) {
-        const prochaine = prochaineDate(derniere, o.periodicite);
+        const prochaine = prochaineDate(derniere, periodicite);
         if (!prochaine) continue;
         const estDepassee = prochaine.getTime() < now.getTime();
         out.push({
@@ -130,13 +147,14 @@ export function genererProchainesVerifications(
           obligationId: o.id,
           libelleObligation: o.libelle,
           equipementId: eq.id,
-          periodicite: o.periodicite,
+          periodicite,
           realisateurRequis: o.realisateurs,
           datePrevue: prochaine,
           statut: estDepassee ? "depassee" : "planifiee",
           estUrgent: estDepassee,
           criticiteObligation: o.criticite,
-          raisons: oa.raisons,
+          raisons,
+          prescriptionId,
         });
       } else {
         // Aucune vérif précédente connue → urgence.
@@ -145,18 +163,64 @@ export function genererProchainesVerifications(
           obligationId: o.id,
           libelleObligation: o.libelle,
           equipementId: eq.id,
-          periodicite: o.periodicite,
+          periodicite,
           realisateurRequis: o.realisateurs,
           datePrevue: now,
           statut: "a_planifier",
           estUrgent: true,
           criticiteObligation: o.criticite,
-          raisons: oa.raisons,
+          raisons,
+          prescriptionId,
         });
       }
     }
   }
 
+  return out;
+}
+
+/**
+ * Criticité portée par les obligations sur mesure (ADR-014). Convention de
+ * tri, pas une cotation : une prescription d'autorité prime sur la plupart
+ * des lignes du référentiel dans le calendrier, sans prétendre juger de sa
+ * gravité.
+ */
+export const CRITICITE_SUR_MESURE = 4 as const;
+
+/**
+ * Génère les occurrences des obligations sur mesure issues de prescriptions
+ * particulières (ADR-014). `obligationId` est préfixé `prescription:` pour
+ * que la clé d'idempotence `(obligationId, equipementId)` et la
+ * réconciliation restent inchangées. Comme pour le référentiel, l'historique
+ * est ignoré ici : c'est `reconcilierCalendrier` qui le lit.
+ */
+export function genererVerificationsSurMesure(
+  surMesure: ObligationSurMesureApplicable[],
+  options: OptionsGenerateur = {},
+): VerificationGenere[] {
+  const now = options.now ?? new Date();
+  const out: VerificationGenere[] = [];
+  for (const sm of surMesure) {
+    const p = sm.prescription;
+    if (p.periodicite === "autre") continue;
+    const obligationId = `${PREFIXE_PRESCRIPTION}${p.id}`;
+    for (const eq of sm.equipementsConcernes) {
+      out.push({
+        cleUnique: `${obligationId}::${eq.id}`,
+        obligationId,
+        libelleObligation: p.libelle ?? p.reference,
+        equipementId: eq.id,
+        periodicite: p.periodicite,
+        realisateurRequis: p.realisateurRequis,
+        datePrevue: now,
+        statut: "a_planifier",
+        estUrgent: true,
+        criticiteObligation: CRITICITE_SUR_MESURE,
+        raisons: sm.raisons,
+        prescriptionId: p.id,
+      });
+    }
+  }
   return out;
 }
 
@@ -291,6 +355,9 @@ export type OccurrenceExistante = {
    *  corrective ? C'est le seul critère qui autorise — ou interdit — la
    *  suppression physique. */
   porteUnePreuve: boolean;
+  /** Prescription particulière à l'origine de la ligne ou de sa périodicité
+   *  (ADR-014). Optionnel : les fixtures antérieures n'en ont pas. */
+  prescriptionId?: string | null;
 };
 
 /** Ce qu'il faut écrire sur une ligne existante. `id` n'y figure jamais en
@@ -303,6 +370,7 @@ export type MiseAJourOccurrence = {
   datePrevue: Date;
   dateRealisee: Date | null;
   statut: StatutVerificationPersiste;
+  prescriptionId: string | null;
 };
 
 export type PlanReconciliation = {
@@ -441,6 +509,7 @@ export function reconcilierCalendrier(
       datePrevue,
       dateRealisee,
       statut,
+      prescriptionId: g.prescriptionId,
     };
 
     const identique =
@@ -449,7 +518,8 @@ export function reconcilierCalendrier(
       memeListe(cible.realisateurRequis, ex.realisateurRequis) &&
       memeInstant(cible.datePrevue, ex.datePrevue) &&
       memeInstant(cible.dateRealisee, ex.dateRealisee) &&
-      cible.statut === ex.statut;
+      cible.statut === ex.statut &&
+      cible.prescriptionId === (ex.prescriptionId ?? null);
 
     if (identique) plan.inchangees += 1;
     else plan.aMettreAJour.push(cible);

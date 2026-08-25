@@ -8,6 +8,7 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 export const LABEL_CATEGORIE_EQUIPEMENT: Record<CategorieEquipement, string> = {
   INSTALLATION_ELECTRIQUE: "Installation électrique",
   EXTINCTEUR: "Extincteurs",
+  RIA: "Robinets d'incendie armés (RIA)",
   BAES: "Éclairage de sécurité (BAES)",
   ALARME_INCENDIE: "Alarme incendie / SSI",
   DESENFUMAGE: "Désenfumage",
@@ -29,6 +30,8 @@ export const DESCRIPTION_CATEGORIE: Partial<Record<CategorieEquipement, string>>
     "Tableau général, circuits terminaux, éventuel groupe électrogène de sécurité.",
   EXTINCTEUR:
     "Extincteurs portatifs (eau, CO₂, poudre) et mobiles. Vérification annuelle obligatoire.",
+  RIA:
+    "Robinets d'incendie armés : tuyau sur dévidoir, raccordé en permanence à l'eau, en coffret mural. Installation fixe (arrêté du 25 juin 1980, art. MS 14 à MS 17), vérifiée au moins une fois par an en ERP (MS 73 § 2).",
   BAES:
     "Blocs autonomes d'éclairage de sécurité qui s'allument en cas de coupure.",
   ALARME_INCENDIE:

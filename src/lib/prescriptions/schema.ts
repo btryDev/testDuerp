@@ -1,0 +1,128 @@
+import { z } from "zod";
+import {
+  CATEGORIES_EQUIPEMENT,
+  PERIODICITES,
+  REALISATEURS,
+} from "@/lib/referentiels/types-communs";
+import { obligationParId } from "@/lib/referentiels/conformite";
+import { estPeriodicitePlusStricte } from "@/lib/matching/prescriptions";
+
+/**
+ * Validation d'une prescription particulière (ADR-014).
+ *
+ * Deux règles que la base ne peut pas porter seule :
+ *  - XOR des effets (la CHECK SQL le garantit aussi, ceinture et bretelles) ;
+ *  - « strictement plus court que le référentiel » pour l'effet
+ *    `renforce_periodicite` : le référentiel n'est pas en base (ADR-003), la
+ *    règle vit ici et dans le moteur.
+ */
+
+export const SOURCES_PRESCRIPTION = [
+  "arrete_prefectoral",
+  "arrete_municipal",
+  "pv_commission_securite",
+  "arrete_icpe",
+  "inspection_travail",
+  "autre",
+] as const;
+export type SourcePrescription = (typeof SOURCES_PRESCRIPTION)[number];
+
+export const LABEL_SOURCE_PRESCRIPTION: Record<SourcePrescription, string> = {
+  arrete_prefectoral: "Arrêté préfectoral",
+  arrete_municipal: "Arrêté du maire",
+  pv_commission_securite: "Procès-verbal de la commission de sécurité",
+  arrete_icpe: "Arrêté préfectoral ICPE",
+  inspection_travail: "Demande ou mise en demeure de l'inspection du travail",
+  autre: "Autre acte",
+};
+
+export const EFFETS_PRESCRIPTION = [
+  "renforce_periodicite",
+  "obligation_sur_mesure",
+] as const;
+export type EffetPrescription = (typeof EFFETS_PRESCRIPTION)[number];
+
+const DATE_FMT = /^\d{4}-\d{2}-\d{2}$/;
+
+const vide = (v: unknown) =>
+  v === "" || v === null || v === undefined ? undefined : v;
+
+const dateCivile = z.preprocess(
+  vide,
+  z.string().regex(DATE_FMT, "Format attendu : AAAA-MM-JJ"),
+);
+
+
+const base = z.object({
+  source: z.enum(SOURCES_PRESCRIPTION),
+  reference: z.string().trim().min(1, "Référence obligatoire").max(200),
+  autorite: z.preprocess(vide, z.string().trim().max(200).optional()),
+  dateDocument: dateCivile,
+  dateFin: z.preprocess(vide, z.string().regex(DATE_FMT).optional()),
+  periodicite: z
+    .enum(PERIODICITES)
+    .refine((p) => p !== "autre", "Une prescription doit porter une échéance"),
+  equipementId: z.preprocess(vide, z.string().optional()),
+});
+
+export const prescriptionRenforceSchema = base
+  .extend({
+    effet: z.literal("renforce_periodicite"),
+    obligationId: z.string().min(1, "Choisissez l'obligation concernée"),
+  })
+  .superRefine((val, ctx) => {
+    const o = obligationParId(val.obligationId);
+    if (!o) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["obligationId"],
+        message: "Obligation inconnue du référentiel",
+      });
+      return;
+    }
+    if (
+      !estPeriodicitePlusStricte(val.periodicite, o.periodicite)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["periodicite"],
+        message: `Le référentiel impose déjà « ${o.periodicite} » : Rojer n'enregistre qu'une prescription qui renforce vos obligations. Un allègement se conserve en pièce, mais n'est pas pris en compte.`,
+      });
+    }
+  });
+
+export const prescriptionSurMesureSchema = base
+  .extend({
+    effet: z.literal("obligation_sur_mesure"),
+    libelle: z.string().trim().min(1, "Libellé obligatoire").max(200),
+    description: z.preprocess(vide, z.string().trim().max(1000).optional()),
+    realisateurRequis: z
+      .array(z.enum(REALISATEURS))
+      .min(1, "Au moins un réalisateur"),
+    categorieEquipement: z.preprocess(
+      vide,
+      z.enum(CATEGORIES_EQUIPEMENT).optional(),
+    ),
+  })
+  .superRefine((val, ctx) => {
+    if (!val.categorieEquipement && !val.equipementId) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["categorieEquipement"],
+        message:
+          "Indiquez la catégorie d'équipement concernée ou un équipement précis",
+      });
+    }
+  });
+
+export type PrescriptionInput =
+  | z.infer<typeof prescriptionRenforceSchema>
+  | z.infer<typeof prescriptionSurMesureSchema>;
+
+/** Valide selon l'effet déclaré ; les deux schémas portent un `superRefine`,
+ *  ce qui interdit `z.discriminatedUnion`. */
+export function validerPrescription(input: Record<string, unknown>) {
+  return input.effet === "obligation_sur_mesure"
+    ? prescriptionSurMesureSchema.safeParse(input)
+    : prescriptionRenforceSchema.safeParse(input);
+}

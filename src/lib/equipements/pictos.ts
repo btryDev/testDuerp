@@ -4,7 +4,7 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  * Pictos isométriques des catégories d'équipement, découpés depuis la
  * planche source par scripts/decouper-planche-pictos.py.
  *
- * INSTALLATION_ELECTRIQUE et AUTRE n'ont pas encore de picto dessiné :
+ * INSTALLATION_ELECTRIQUE, RIA et AUTRE n'ont pas encore de picto dessiné :
  * le composant <PictoEquipement> affiche alors un fallback lucide.
  */
 export const PICTO_CATEGORIE_EQUIPEMENT: Partial<

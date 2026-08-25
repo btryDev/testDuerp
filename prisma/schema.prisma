@@ -70,6 +70,17 @@ model Etablissement {
   categorieErp            CategorieErp?
   classeIgh               ClasseIgh?
 
+  // Champ d'application de R. 4227-34 CT (alarme sonore → consigne R. 4227-37
+  // → exercices semestriels R. 4227-39) : « plus de cinquante personnes
+  // occupées ou réunies habituellement » — public compris, pas seulement les
+  // salariés — « ainsi que ceux, quelle que soit leur importance, où sont
+  // manipulées et mises en œuvre des matières inflammables mentionnées à
+  // l'article R. 4227-22 ». `null` = non renseigné : le moteur retombe sur
+  // `effectifSurSite` (sous-estimation assumée) et sur « non » pour les
+  // matières. Cf. migration 20260825120000.
+  personnesPresentesHabituellement Int?
+  manipuleMatieresR422722          Boolean?
+
   duerps                Duerp[]
   equipements           Equipement[]
   verifications         Verification[]
@@ -83,6 +94,7 @@ model Etablissement {
   plansPrevention       PlanPrevention[]
   carnetSanitaire       CarnetSanitaire?
   interventions         Intervention[]
+  prescriptionsParticulieres PrescriptionParticuliere[]
 
   /**
    * Version du référentiel de conformité avec laquelle le calendrier de cet
@@ -264,6 +276,7 @@ model Equipement {
   actif             Boolean             @default(true)
 
   verifications Verification[]
+  prescriptionsParticulieres PrescriptionParticuliere[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -274,6 +287,7 @@ model Equipement {
 enum CategorieEquipement {
   INSTALLATION_ELECTRIQUE
   EXTINCTEUR
+  RIA
   BAES
   ALARME_INCENDIE
   DESENFUMAGE
@@ -319,6 +333,13 @@ model Verification {
   // pas portée ici : cette colonne est la donnée dont elle a besoin.
   referentielVersion String?
 
+  // Prescription particulière (ADR-014) à l'origine de la périodicité de
+  // cette ligne (effet `renforce_periodicite`) ou de la ligne elle-même
+  // (effet `obligation_sur_mesure`, `obligationId` = "prescription:<id>").
+  // `null` = ligne issue du seul référentiel.
+  prescriptionId String?
+  prescription   PrescriptionParticuliere? @relation(fields: [prescriptionId], references: [id], onDelete: SetNull)
+
   datePrevue   DateTime
   dateRealisee DateTime?
   statut       StatutVerification @default(a_planifier)
@@ -341,6 +362,65 @@ model Verification {
   @@index([etablissementId, datePrevue])
   @@index([equipementId])
   @@index([statut])
+  @@index([prescriptionId])
+}
+
+// ---------------------------------------------------------------------------
+// Prescriptions particulières propres à un établissement — ADR-014
+// ---------------------------------------------------------------------------
+
+/// Acte à l'origine de la prescription. Le PV de commission est une pièce
+/// (avis, CCH R. 143-27) ; l'arrêté du maire ou du préfet est l'acte qui
+/// prescrit (CCH R. 143-45, R. 143-41 1°).
+enum SourcePrescription {
+  arrete_prefectoral
+  arrete_municipal
+  pv_commission_securite
+  arrete_icpe
+  inspection_travail
+  autre
+}
+
+enum EffetPrescription {
+  renforce_periodicite
+  obligation_sur_mesure
+}
+
+model PrescriptionParticuliere {
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  source    SourcePrescription
+  effet     EffetPrescription
+  reference String
+  autorite  String?
+  /// Date de l'acte — date civile (ADR-011).
+  dateDocument DateTime
+  /// Date à laquelle la prescription cesse de produire effet (levée,
+  /// abrogation). Conservée pour l'historique, jamais supprimée.
+  dateFin      DateTime?
+  actif        Boolean   @default(true)
+
+  // Effet `renforce_periodicite` : obligation du référentiel ciblée.
+  // Effet `obligation_sur_mesure` : libellé, réalisateurs, catégorie.
+  // XOR garanti par la CHECK `PrescriptionParticuliere_effet_xor`.
+  obligationId        String?
+  libelle             String?
+  description         String?
+  periodicite         Periodicite
+  realisateurRequis   Realisateur[]
+  categorieEquipement CategorieEquipement?
+  equipementId        String?
+  equipement          Equipement? @relation(fields: [equipementId], references: [id], onDelete: SetNull)
+
+  verifications Verification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([etablissementId, actif])
+  @@index([equipementId])
 }
 
 enum StatutVerification {

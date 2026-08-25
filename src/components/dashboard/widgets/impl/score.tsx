@@ -43,7 +43,7 @@ function ScoreInfoTooltip({ align = "right" }: { align?: "left" | "right" | "cen
 const FAMILLES: { nom: string; categories: string[] }[] = [
   {
     nom: "Incendie",
-    categories: ["EXTINCTEUR", "BAES", "ALARME_INCENDIE", "DESENFUMAGE"],
+    categories: ["EXTINCTEUR", "RIA", "BAES", "ALARME_INCENDIE", "DESENFUMAGE"],
   },
   { nom: "Électricité", categories: ["INSTALLATION_ELECTRIQUE"] },
   { nom: "Aération", categories: ["VMC", "CTA", "HOTTE_PRO"] },

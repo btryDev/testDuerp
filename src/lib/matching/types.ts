@@ -2,6 +2,8 @@ import type {
   CategorieErp,
   CategorieEquipement,
   ClasseIgh,
+  Periodicite,
+  Realisateur,
   TypeErp,
 } from "@/lib/referentiels/types-communs";
 import type { Obligation } from "@/lib/referentiels/conformite/types";
@@ -23,6 +25,20 @@ export type EtablissementMatching = {
   typeErp: TypeErp | null;
   categorieErp: CategorieErp | null;
   classeIgh: ClasseIgh | null;
+  /**
+   * Personnes habituellement présentes, salariés + public + tiers réguliers
+   * (R. 4227-34 : « occupées ou réunies habituellement »). Optionnel pour ne
+   * pas casser les projections existantes : absent ou `null` ⇒ le moteur
+   * retombe sur `effectifSurSite`, sous-estimation assumée.
+   */
+  personnesPresentesHabituellement?: number | null;
+  /**
+   * Manipulation et mise en œuvre de matières visées par R. 4227-22
+   * (explosives, comburantes, extrêmement inflammables). Absent ou `null` ⇒
+   * lu comme « non » : cette branche ne fait qu'ajouter des cas, aucun
+   * établissement ne peut perdre une obligation par son silence.
+   */
+  manipuleMatieresR422722?: boolean | null;
 };
 
 export type EquipementMatching = {
@@ -45,4 +61,51 @@ export type ObligationApplicable = {
   obligation: Obligation;
   equipementsConcernes: EquipementMatching[];
   raisons: string[];
+  /**
+   * Surcharges de périodicité imposées par une prescription particulière
+   * (ADR-014), par identifiant d'équipement. Absent = périodicité du
+   * référentiel pour tous les équipements déclencheurs.
+   */
+  surcharges?: Record<string, SurchargePeriodicite>;
+};
+
+// -----------------------------------------------------------------------------
+// Prescriptions particulières (ADR-014)
+// -----------------------------------------------------------------------------
+
+export type SurchargePeriodicite = {
+  periodicite: Periodicite;
+  prescriptionId: string;
+  raison: string;
+};
+
+/** Projection minimale d'une `PrescriptionParticuliere` active. */
+export type PrescriptionMatching = {
+  id: string;
+  source: string;
+  effet: "renforce_periodicite" | "obligation_sur_mesure";
+  reference: string;
+  autorite: string | null;
+  dateDocument: Date;
+  dateFin: Date | null;
+  obligationId: string | null;
+  libelle: string | null;
+  description: string | null;
+  periodicite: Periodicite;
+  realisateurRequis: Realisateur[];
+  categorieEquipement: CategorieEquipement | null;
+  equipementId: string | null;
+};
+
+/** Obligation hors référentiel, créée par une prescription `obligation_sur_mesure`. */
+export type ObligationSurMesureApplicable = {
+  prescription: PrescriptionMatching;
+  equipementsConcernes: EquipementMatching[];
+  raisons: string[];
+};
+
+/** Prescription non appliquée, avec la raison en clair (mode explain). */
+export type PrescriptionIgnoree = {
+  prescription: PrescriptionMatching;
+  raison: string;
 };

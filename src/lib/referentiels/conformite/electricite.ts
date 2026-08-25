@@ -34,13 +34,13 @@ export const obligationsElectricite: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "R. 4226-14",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025809999/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765072/",
       },
       {
         source: "ARRETE",
-        reference: "Arrêté du 26 décembre 2011, art. 3 à 5",
+        reference: "Arrêté du 26 décembre 2011 (vérifications des installations électriques), art. 3 à 5",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025115666/",
+          "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000025046978",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -60,13 +60,13 @@ export const obligationsElectricite: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "R. 4226-16",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810013/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070/",
       },
       {
         source: "ARRETE",
-        reference: "Arrêté du 26 décembre 2011, art. 1 et 2",
+        reference: "Arrêté du 26 décembre 2011 (vérifications des installations électriques), art. 1 et 2",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025115666/",
+          "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000025046978",
       },
     ],
     periodicite: "annuelle",
@@ -86,13 +86,13 @@ export const obligationsElectricite: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "L. 4711-5",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389/",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-19",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810023/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
       },
     ],
     periodicite: "autre",
@@ -112,12 +112,13 @@ export const obligationsElectricite: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "R. 4544-9 à R. 4544-11",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000025279121/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022849102/",
       },
       {
         source: "INRS",
         reference: "INRS ED 6127 « Habilitation électrique »",
-        urlLegifrance: "https://www.inrs.fr/media.html?refINRS=ED%206127",
+        urlLegifrance:
+          "https://www.inrs.fr/media.html?refINRS=ED%206127",
       },
     ],
     periodicite: "triennale",
@@ -143,7 +144,7 @@ export const obligationsElectricite: Obligation[] = [
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EL 5 et EL 19",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -163,7 +164,7 @@ export const obligationsElectricite: Obligation[] = [
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EL 19 § 1 et § 2",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
       },
     ],
     periodicite: "annuelle",
@@ -177,35 +178,49 @@ export const obligationsElectricite: Obligation[] = [
   {
     id: "elec-erp-cat5-quinquennale",
     domaine: "electricite",
-    libelle: "Vérification électrique périodique (ERP 5ᵉ catégorie)",
+    libelle: "Vérification triennale des installations électriques (ERP 5ᵉ catégorie)",
     description:
-      "Dans les ERP de 5ᵉ catégorie (règles PE), la vérification des installations électriques est à réaliser, après mise en service, tous les cinq ans au maximum par un technicien compétent.",
+      "Dans les ERP de 5ᵉ catégorie, l'exploitant fait procéder tous les trois ans au plus, par des techniciens compétents, à l'entretien et à la vérification des installations électriques (art. PE 4 § 2, rédaction de l'arrêté du 1er décembre 2025 applicable au 1er juillet 2026). Avant cette date, PE 4 n'imposait aucune périodicité en exploitation.",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 22 juin 1990 (ERP 5ᵉ cat), art. PE 4 § 3",
+        reference: "Arrêté du 22 juin 1990 (ERP 5ᵉ catégorie), art. PE 4 § 2, rédaction de l'arrêté du 1er décembre 2025",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000171201/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374770/",
+      },
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 1er décembre 2025 modifiant le règlement de sécurité ERP (applicable au 1er juillet 2026)",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053020948",
       },
     ],
-    periodicite: "quinquennale",
+    periodicite: "triennale",
     realisateurs: ["personne_competente", "organisme_agree"],
     criticite: 4,
     typologies: { erp: { categories: ["N5"] } },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : l'ancienne version annonçait « tous les cinq ans » en citant PE 4 § 3, qui traite de la mise en demeure par la commission. PE 4 n'imposait aucune périodicité jusqu'à l'arrêté du 1er décembre 2025, qui fixe « tous les trois ans au plus » pour l'ensemble des installations techniques (électricité, gaz, cuisson, extraction, ascenseurs, moyens de secours). L'id `elec-erp-cat5-quinquennale` est conservé car référencé par les lignes Verification en base ; ne pas le renommer sans migration.",
   },
   {
     id: "elec-erp-groupe-electrogene-annuel",
     domaine: "electricite",
     libelle: "Vérification annuelle des groupes électrogènes de sécurité (ERP)",
     description:
-      "Lorsque l'ERP est équipé d'un groupe électrogène de sécurité, celui-ci fait l'objet d'essais périodiques et d'une vérification annuelle.",
+      "Lorsque l'ERP est équipé d'un groupe électrogène de sécurité, celui-ci fait l'objet d'essais périodiques par l'exploitant (niveaux tous les quinze jours, essai de démarrage en charge mensuel, consignés au registre d'entretien — EL 18 § 4) et de la vérification annuelle des installations électriques (EL 19).",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. EL 20",
+        reference: "Arrêté du 25 juin 1980, art. EL 18 § 4 (entretien et essais des groupes électrogènes de sécurité)",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038485456/",
+      },
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 25 juin 1980, art. EL 19 (vérification annuelle)",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
       },
     ],
     periodicite: "annuelle",
@@ -221,6 +236,8 @@ export const obligationsElectricite: Obligation[] = [
         valeur: true,
       },
     ],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait EL 20, qui traite des installations temporaires.",
   },
 
   // ---------------------------------------------------------------------------
@@ -235,9 +252,9 @@ export const obligationsElectricite: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 30 décembre 2011, art. GH 50",
+        reference: "Arrêté du 30 décembre 2011 (règlement IGH), art. GH 50",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025118025/",
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025167121",
       },
     ],
     periodicite: "annuelle",

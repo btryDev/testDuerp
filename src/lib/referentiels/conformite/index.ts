@@ -67,24 +67,72 @@ export const obligationsConformite: Obligation[] = [
  * `conformite.test.ts` compare une empreinte du contenu à celle enregistrée :
  * l'oubli fait échouer la suite.
  */
-export const REFERENTIEL_VERSION = "2026-08-11.1";
+export const REFERENTIEL_VERSION = "2026-08-25.3";
 
 /**
- * Empreinte déterministe du contenu qui influe sur les échéances : identifiant,
- * périodicité, réalisateurs et libellé de chaque obligation. Deux exécutions
- * sur le même référentiel donnent la même valeur ; toute modification de fond
- * la change.
+ * Sérialisation canonique d'une valeur : clés d'objet triées, donc
+ * indépendante de l'ordre d'écriture dans le référentiel. Sans cela,
+ * réordonner `{ erp, travail }` en `{ travail, erp }` — un changement
+ * purement cosmétique — ferait bouger l'empreinte et réclamerait à tort une
+ * réconciliation de tous les calendriers.
+ *
+ * **L'ordre des tableaux est en revanche conservé.** Réordonner
+ * `categories: ["N2", "N1"]` déplace donc l'empreinte, alors que c'est sans
+ * effet sur le matching. C'est assumé : trier aussi les tableaux rendrait la
+ * fonction aveugle à un réordonnancement le jour où un champ dont l'ordre
+ * compte entrerait dans l'empreinte (`referencesLegales`, dont le premier
+ * élément est l'article fondateur). Une réconciliation de trop est inoffensive
+ * — elle est idempotente ; une réconciliation manquée ne l'est pas.
+ */
+function canonique(v: unknown): string {
+  if (v === null || typeof v !== "object") return JSON.stringify(v) ?? "null";
+  if (Array.isArray(v)) return `[${v.map(canonique).join(",")}]`;
+  const entrees = Object.entries(v as Record<string, unknown>)
+    .filter(([, val]) => val !== undefined)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  return `{${entrees.map(([k, val]) => `${k}:${canonique(val)}`).join(",")}}`;
+}
+
+/**
+ * Empreinte déterministe de tout le contenu qui influe sur ce qui est écrit en
+ * base : identifiant, périodicité, réalisateurs, libellé, **typologies** et
+ * **conditions** de chaque obligation. Deux exécutions sur le même référentiel
+ * donnent la même valeur ; toute modification de fond la change.
+ *
+ * Amendement 2026-08 : typologies, conditions et catégories d'équipement ont
+ * été ajoutées. L'empreinte ne couvrait que les quatre premiers champs, si
+ * bien qu'une modification du **champ d'application** — restreindre une
+ * obligation à certains types d'ERP, la borner par une propriété
+ * d'équipement, élargir les catégories qui la déclenchent — ne la déplaçait
+ * pas. Or c'est exactement ce genre de changement qui doit déclencher une
+ * réconciliation : il fait apparaître ou disparaître des lignes de
+ * calendrier, là où une correction de périodicité ne fait que déplacer une
+ * date. Le garde-fou laissait donc passer les modifications les plus lourdes
+ * de conséquences.
+ *
+ * Ce qui reste volontairement hors de l'empreinte : `criticite`, `domaine`,
+ * `description`, `referencesLegales`, `notesInternes`. Aucun n'est recopié
+ * sur la `Verification` et aucun ne décide de son existence — les modifier
+ * n'a rien à réconcilier.
  *
  * Volontairement simple (somme de contrôle textuelle, pas de hachage
  * cryptographique) : elle sert à détecter un oubli de version, pas à résister
  * à une falsification.
  */
-export function empreinteReferentiel(): string {
-  const corps = obligationsConformite
+export function empreinteReferentiel(
+  obligations: Obligation[] = obligationsConformite,
+): string {
+  const corps = obligations
     .map((o) =>
-      [o.id, o.periodicite, o.libelle, [...o.realisateurs].sort().join("+")].join(
-        "|",
-      ),
+      [
+        o.id,
+        o.periodicite,
+        o.libelle,
+        [...o.realisateurs].sort().join("+"),
+        canonique(o.typologies),
+        canonique(o.conditions ?? []),
+        canonique(o.categoriesEquipement),
+      ].join("|"),
     )
     .sort()
     .join("\n");
@@ -96,7 +144,7 @@ export function empreinteReferentiel(): string {
     h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
     h2 = Math.imul(h2 + c, 0x85ebca6b) >>> 0;
   }
-  const taille = obligationsConformite.length;
+  const taille = obligations.length;
   return `${taille}-${h1.toString(16)}${h2.toString(16)}`;
 }
 

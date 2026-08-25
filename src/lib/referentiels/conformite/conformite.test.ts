@@ -5,6 +5,7 @@ import {
   CLASSES_IGH,
   PERIODICITES,
   REALISATEURS,
+  TYPES_ERP,
 } from "../types-communs";
 import type { Obligation } from "./types";
 import {
@@ -112,8 +113,18 @@ describe("référentiel conformité — invariants structurels", () => {
   it("les catégories ERP déclarées existent dans l'enum", () => {
     for (const o of obligationsConformite) {
       if (typeof o.typologies.erp === "object" && o.typologies.erp) {
-        for (const c of o.typologies.erp.categories) {
+        for (const c of o.typologies.erp.categories ?? []) {
           expect(CATEGORIES_ERP).toContain(c);
+        }
+      }
+    }
+  });
+
+  it("les types d'exploitation ERP déclarés existent dans l'enum", () => {
+    for (const o of obligationsConformite) {
+      if (typeof o.typologies.erp === "object" && o.typologies.erp) {
+        for (const t of o.typologies.erp.types ?? []) {
+          expect(TYPES_ERP, o.id).toContain(t);
         }
       }
     }
@@ -266,7 +277,7 @@ describe("référentiel conformité — anti-doublon", () => {
     // documentée sur le type `Obligation`) et non l'ensemble des références :
     // deux obligations distinctes citent légitimement un même article en
     // contexte — le dossier de maintenance et le maintien en état d'une porte
-    // automatique renvoient tous deux à R. 4224-15 sans être un doublon.
+    // automatique renvoient tous deux à R. 4224-17 sans être un doublon.
     const doublons: string[] = [];
     for (let i = 0; i < obligationsConformite.length; i++) {
       for (let j = i + 1; j < obligationsConformite.length; j++) {
@@ -314,7 +325,9 @@ describe("référentiel conformité — seuils d'effectif", () => {
       if (!MENTION_SEUIL_EFFECTIF.test(o.description)) continue;
       const t = o.typologies;
       expect(
-        t.effectifMin !== undefined || t.effectifMax !== undefined,
+        t.effectifMin !== undefined ||
+          t.effectifMax !== undefined ||
+          t.personnesPresentesMin !== undefined,
         `${o.id} : la description mentionne un seuil d'effectif jamais encodé`,
       ).toBe(true);
     }
@@ -332,9 +345,27 @@ describe("référentiel conformité — seuils d'effectif", () => {
     }
   });
 
-  it("le seuil de l'exercice semestriel d'évacuation est bien encodé", () => {
-    const o = obligationParId("incendie-travail-exercice-semestriel");
-    expect(o?.typologies.effectifMin).toBe(51);
+  it("l'exercice semestriel et la consigne portent le champ disjonctif de R. 4227-34", () => {
+    // R. 4227-39 → consigne (R. 4227-37) → établissements de R. 4227-34 :
+    // « plus de cinquante personnes » occupées ou réunies (public compris)
+    // OU matières R. 4227-22 quel que soit l'effectif.
+    for (const id of [
+      "incendie-travail-exercice-semestriel",
+      "incendie-travail-consigne-affichee",
+    ]) {
+      const o = obligationParId(id);
+      expect(o?.typologies.personnesPresentesMin, id).toBe(51);
+      expect(o?.typologies.champR422734, id).toBe(true);
+      expect(o?.typologies.effectifMin, id).toBeUndefined();
+    }
+  });
+
+  it("`champR422734` n'est jamais posé sans `personnesPresentesMin`", () => {
+    for (const o of obligationsConformite) {
+      if (o.typologies.champR422734) {
+        expect(o.typologies.personnesPresentesMin, o.id).toBeDefined();
+      }
+    }
   });
 });
 
@@ -411,7 +442,7 @@ describe("référentiel conformité — forme normalisée des typologies", () =>
     // pas renseignée. Une restriction qui n'exclut rien ne doit pas s'écrire
     // comme une restriction.
     for (const o of obligationsConformite) {
-      if (typeof o.typologies.erp === "object") {
+      if (typeof o.typologies.erp === "object" && o.typologies.erp.categories) {
         expect(
           o.typologies.erp.categories.length,
           `${o.id} : liste exhaustive de catégories, écrire \`erp: true\``,
@@ -420,10 +451,32 @@ describe("référentiel conformité — forme normalisée des typologies", () =>
     }
   });
 
+  it("aucune obligation ne liste les 21 types d'ERP (écrire `erp: true`)", () => {
+    // Même raisonnement que pour les catégories : une restriction de type qui
+    // n'exclut aucun type exige en plus que `typeErp` soit renseigné, et crée
+    // donc un faux négatif silencieux sur tout ERP dont le type est inconnu.
+    for (const o of obligationsConformite) {
+      if (typeof o.typologies.erp === "object" && o.typologies.erp.types) {
+        expect(
+          o.typologies.erp.types.length,
+          `${o.id} : liste exhaustive de types, écrire \`erp: true\``,
+        ).toBeLessThan(TYPES_ERP.length);
+      }
+    }
+  });
+
   it("une restriction de catégorie ou de classe n'est jamais vide", () => {
     for (const o of obligationsConformite) {
       if (typeof o.typologies.erp === "object") {
-        expect(o.typologies.erp.categories.length, o.id).toBeGreaterThan(0);
+        // `erp: {}` n'exprime rien : soit une restriction est posée, soit on
+        // écrit `erp: true`.
+        const { categories, types } = o.typologies.erp;
+        expect(
+          (categories?.length ?? 0) + (types?.length ?? 0),
+          `${o.id} : \`erp: {}\` sans restriction, écrire \`erp: true\``,
+        ).toBeGreaterThan(0);
+        if (categories) expect(categories.length, o.id).toBeGreaterThan(0);
+        if (types) expect(types.length, o.id).toBeGreaterThan(0);
       }
       if (typeof o.typologies.igh === "object") {
         expect(o.typologies.igh.classes.length, o.id).toBeGreaterThan(0);
@@ -443,7 +496,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
   // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
   // version PUIS recopiez l'empreinte que le message d'échec affiche.
-  const EMPREINTE_ATTENDUE = "64-16cf3df27173b376";
+  const EMPREINTE_ATTENDUE = "65-a240ab1f12ccd279";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -457,5 +510,80 @@ describe("référentiel conformité — version et empreinte", () => {
 
   it("la version est datée et incrémentable", () => {
     expect(REFERENTIEL_VERSION).toMatch(/^\d{4}-\d{2}-\d{2}\.\d+$/);
+  });
+
+  // ---------------------------------------------------------------------------
+  // L'empreinte doit réagir à TOUT ce qui change le champ d'application.
+  //
+  // Elle ne couvrait initialement que id / périodicité / libellé /
+  // réalisateurs : restreindre une obligation à certains types d'ERP ou la
+  // borner par une propriété d'équipement ne la déplaçait pas, alors que ces
+  // changements font apparaître ou disparaître des lignes de calendrier. Ces
+  // trois tests verrouillent la correction.
+  // ---------------------------------------------------------------------------
+
+  const OBLIGATION_TEMOIN: Obligation = {
+    id: "temoin-empreinte",
+    domaine: "incendie",
+    libelle: "Obligation témoin",
+    referencesLegales: [{ source: "CODE_TRAVAIL", reference: "R. 0000-0" }],
+    periodicite: "annuelle",
+    realisateurs: ["exploitant"],
+    criticite: 3,
+    typologies: { erp: true },
+    categoriesEquipement: ["ALARME_INCENDIE"],
+  };
+
+  it("l'empreinte change quand une typologie change", () => {
+    const avant = empreinteReferentiel([OBLIGATION_TEMOIN]);
+    const apres = empreinteReferentiel([
+      { ...OBLIGATION_TEMOIN, typologies: { erp: { types: ["O"] } } },
+    ]);
+    expect(apres).not.toBe(avant);
+  });
+
+  it("l'empreinte change quand une condition est ajoutée", () => {
+    const avant = empreinteReferentiel([OBLIGATION_TEMOIN]);
+    const apres = empreinteReferentiel([
+      {
+        ...OBLIGATION_TEMOIN,
+        conditions: [
+          {
+            type: "equipement_propriete_non_infirmee",
+            categorie: "ALARME_INCENDIE",
+            propriete: "dessertLocauxSommeil",
+          },
+        ],
+      },
+    ]);
+    expect(apres).not.toBe(avant);
+  });
+
+  it("l'empreinte change quand les catégories d'équipement changent", () => {
+    // Même classe que les deux tests ci-dessus : élargir
+    // `categoriesEquipement` fait apparaître des lignes de calendrier sur des
+    // équipements qui ne déclenchaient rien. C'était le dernier champ décidant
+    // de l'existence d'une `Verification` à manquer à l'empreinte.
+    const avant = empreinteReferentiel([OBLIGATION_TEMOIN]);
+    const apres = empreinteReferentiel([
+      {
+        ...OBLIGATION_TEMOIN,
+        categoriesEquipement: ["ALARME_INCENDIE", "EXTINCTEUR"],
+      },
+    ]);
+    expect(apres).not.toBe(avant);
+  });
+
+  it("l'empreinte ne bouge pas si l'ordre des clés de typologie change", () => {
+    // Réordonner `{ erp, travail }` en `{ travail, erp }` est cosmétique :
+    // réclamer une réconciliation de tous les calendriers pour ça userait le
+    // garde-fou jusqu'à ce que plus personne ne le lise.
+    const a = empreinteReferentiel([
+      { ...OBLIGATION_TEMOIN, typologies: { erp: true, travail: true } },
+    ]);
+    const b = empreinteReferentiel([
+      { ...OBLIGATION_TEMOIN, typologies: { travail: true, erp: true } },
+    ]);
+    expect(b).toBe(a);
   });
 });

@@ -51,9 +51,9 @@ export const obligationsCuissonHotte: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. GC 21 § 2",
+        reference: "Arrêté du 25 juin 1980, art. GC 22",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
       },
     ],
     periodicite: "annuelle",
@@ -61,28 +61,58 @@ export const obligationsCuissonHotte: Obligation[] = [
     criticite: 4,
     typologies: { erp: true },
     categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : la vérification annuelle est à l'article GC 22 (« Vérifications techniques »), GC 21 ne traitant que de l'entretien.",
   },
   {
     id: "cuisson-gaz-installations-triennale",
     domaine: "cuisson_hotte",
-    libelle: "Vérification triennale des installations de gaz combustible (ERP)",
+    libelle: "Vérification triennale des installations de gaz combustible (ERP 5ᵉ catégorie)",
     description:
-      "Les installations fixes aux gaz combustibles et aux hydrocarbures liquéfiés des ERP sont vérifiées périodiquement (tuyauteries fixes, robinets, organes de sécurité). La périodicité maximale est de trois ans conformément à l'arrêté du 25 juin 1980, section GZ.",
+      "Dans les ERP de 5ᵉ catégorie, l'exploitant fait procéder tous les trois ans au plus, par des techniciens compétents, à l'entretien et à la vérification des installations de gaz (règle applicable à partir du 1er juillet 2026). Les installations neuves ou modifiées sont vérifiées après travaux (art. PE 10 B).",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. GZ 29 § 1",
+        reference: "Arrêté du 22 juin 1990 (ERP 5ᵉ catégorie), art. PE 4 § 2, rédaction de l'arrêté du 1er décembre 2025",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374770/",
+      },
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 1er décembre 2025 modifiant le règlement de sécurité ERP (applicable au 1er juillet 2026)",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053020948",
       },
     ],
     periodicite: "triennale",
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 5,
-    typologies: { erp: true },
+    typologies: { erp: { categories: ["N5"] } },
     categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
     notesInternes:
-      "S'applique aux ERP dotés d'une installation gaz. Lorsque l'établissement est aussi grande cuisine, cumul avec cuisson-erp-appareils-annuelle.",
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait « GZ 29 § 1 » pour une périodicité triennale. GZ 29 = entretien ; la vérification périodique des installations gaz en ERP du 1er groupe est ANNUELLE (GZ 30) — voir cuisson-gaz-installations-annuelle. La périodicité triennale n'existe que pour la 5ᵉ catégorie (PE 4 § 2 modifié par l'arrêté du 1er décembre 2025). L'id est conservé (référencé en base).",
+  },
+  {
+    id: "cuisson-gaz-installations-annuelle",
+    domaine: "cuisson_hotte",
+    libelle: "Vérification annuelle des installations de gaz combustible (ERP 1ʳᵉ à 4ᵉ catégorie)",
+    description:
+      "Dans les ERP des quatre premières catégories, les installations fixes aux gaz combustibles et aux hydrocarbures liquéfiés (stockage, distribution, locaux d'utilisation, appareils) sont vérifiées tous les ans : état d'entretien, ventilation, évacuation des produits de combustion, organes de coupure, dispositifs de sécurité, réglage des détendeurs, étanchéité des canalisations.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 25 juin 1980, art. GZ 30 (vérifications techniques)",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304269/",
+      },
+    ],
+    periodicite: "annuelle",
+    realisateurs: ["organisme_agree", "personne_competente"],
+    criticite: 5,
+    typologies: { erp: { categories: ["N1", "N2", "N3", "N4"] } },
+    categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
+    notesInternes:
+      "Ajouté à l'audit 2026-08 : jusque-là seule une vérification « triennale » (fausse pour le 1er groupe) existait. GZ 29 = entretien, GZ 30 = vérification annuelle.",
   },
   {
     id: "cuisson-erp-circuits-extraction-nettoyage",
@@ -93,9 +123,9 @@ export const obligationsCuissonHotte: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. GC 20",
+        reference: "Arrêté du 25 juin 1980, art. GC 21 (ramonage annuel des conduits) et GC 20",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
       },
     ],
     periodicite: "annuelle",
@@ -115,9 +145,9 @@ export const obligationsCuissonHotte: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. GC 21 (§ relatif aux dispositifs d'extinction)",
+        reference: "Arrêté du 25 juin 1980, art. GC 22 (vérifications techniques annuelles)",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
       },
     ],
     periodicite: "annuelle",

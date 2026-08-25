@@ -2,6 +2,7 @@ import { depuisCleJourCivil } from "@/lib/dates";
 import { z } from "zod";
 import { CATEGORIES_EQUIPEMENT } from "@/lib/referentiels/types-communs";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
+import { FAMILLES_ESP } from "./esp";
 
 /**
  * Schéma de validation d'un équipement. Les propriétés spécifiques à une
@@ -21,6 +22,8 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  *   - `sertAuLevageDePersonnes`     → travail, VGP semestrielle (arrêté 02-03-2004)
  *   - `aAccessoiresDeLevage`        → travail, vérification des accessoires
  *   - `estSoumisSuiviEnService`     → arrêté du 20 novembre 2017 (ESP)
+ *   - `dessertLocauxSommeil`        → ERP 5ᵉ cat., visite périodique de la
+ *                                     commission de sécurité (CCH R. 143-34)
  *
  * ── Booléens à deux états contre booléens à trois états ────────────────────
  *
@@ -28,7 +31,7 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  * « non ». C'est acceptable parce qu'elles gouvernent des obligations en
  * « opt-in » (l'obligation n'apparaît qu'après une réponse positive).
  *
- * Les six suivantes bornent au contraire des obligations **déjà publiées**, de
+ * Les sept suivantes bornent au contraire des obligations **déjà publiées**, de
  * criticité élevée, en « opt-out » : elles restent applicables tant que le
  * dirigeant n'a pas répondu « non ». Une case à cocher ne convient donc pas —
  * elle ne distingue pas « j'ai répondu non » de « je n'ai pas encore répondu »,
@@ -66,7 +69,7 @@ const triEtat = z.preprocess(
   z.boolean().optional(),
 );
 
-/** Les six questions à trois états, dans l'ordre d'affichage. */
+/** Les sept questions à trois états, dans l'ordre d'affichage. */
 export const CHAMPS_TRI_ETAT = [
   "estVmcGaz",
   "aRobinetsIncendieArmes",
@@ -74,6 +77,7 @@ export const CHAMPS_TRI_ETAT = [
   "sertAuLevageDePersonnes",
   "aAccessoiresDeLevage",
   "estSoumisSuiviEnService",
+  "dessertLocauxSommeil",
 ] as const;
 
 export type ChampTriEtat = (typeof CHAMPS_TRI_ETAT)[number];
@@ -116,6 +120,11 @@ export const CATEGORIES_TRI_ETAT: readonly {
     champ: "estSoumisSuiviEnService",
     categories: ["EQUIPEMENT_SOUS_PRESSION"],
     message: "Spécifique aux équipements sous pression",
+  },
+  {
+    champ: "dessertLocauxSommeil",
+    categories: ["ALARME_INCENDIE"],
+    message: "Spécifique aux systèmes d'alarme / SSI",
   },
 ];
 
@@ -167,6 +176,21 @@ export const equipementSchema = z
       (v) => (v === "" || v === null || v === undefined ? undefined : v),
       z.coerce.number().int().min(0).max(99999).optional(),
     ),
+    // Équipements sous pression — plaque constructeur (C. env. R. 557-14-1).
+    // Servent au verdict indicatif `verdictSuiviEnService` (lib/equipements/esp.ts)
+    // qui pré-remplit `estSoumisSuiviEnService` ; jamais lus par le moteur.
+    familleEsp: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? undefined : v),
+      z.enum(FAMILLES_ESP).optional(),
+    ),
+    pressionMaxAdmissibleBar: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? undefined : v),
+      z.coerce.number().min(0).max(10000).optional(),
+    ),
+    volumeLitres: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? undefined : v),
+      z.coerce.number().min(0).max(1000000).optional(),
+    ),
     // Questions à trois états (oui / non / pas encore répondu).
     estVmcGaz: triEtat,
     aRobinetsIncendieArmes: triEtat,
@@ -174,6 +198,7 @@ export const equipementSchema = z
     sertAuLevageDePersonnes: triEtat,
     aAccessoiresDeLevage: triEtat,
     estSoumisSuiviEnService: triEtat,
+    dessertLocauxSommeil: triEtat,
     notes: z.preprocess(
       (v) => (typeof v === "string" ? v.trim() || undefined : v),
       z.string().max(1000).optional(),

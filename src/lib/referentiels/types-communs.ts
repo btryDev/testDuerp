@@ -98,7 +98,21 @@ export type ClasseIgh = (typeof CLASSES_IGH)[number];
  *  - `true`      = requis (doit être vrai côté établissement)
  *  - `false`     = exclu (doit être faux côté établissement)
  *  - `{ categories: [...] }` = requis ET restreint à ces catégories ERP
+ *  - `{ types:      [...] }` = requis ET restreint à ces types d'exploitation ERP
  *  - `{ classes:   [...] }` = requis ET restreint à ces classes IGH
+ *
+ * `categories` et `types` sont indépendants et cumulables : une obligation
+ * peut viser « les ERP de type O, toutes catégories », « les ERP de 1ʳᵉ à 4ᵉ
+ * catégorie, tous types », ou les deux à la fois. Chacun se lit **en ET** avec
+ * le reste (cf. moteur de matching), et l'absence de la précision côté
+ * établissement vaut rejet — comme pour les catégories : une restriction que
+ * l'on ne peut pas vérifier ne doit pas être silencieusement ignorée.
+ *
+ * Restriction par type : à n'employer que si le texte fondateur vise
+ * explicitement un ou plusieurs types d'exploitation (dispositions
+ * particulières du règlement de sécurité). Les articles des dispositions
+ * générales (EL, MS, EC, DF, CH, GC, GZ, GE) s'appliquent à tous les types :
+ * y ajouter une liste de types serait une restriction inventée.
  *
  * Cette structure est consommée par le moteur de matching (étape 5) de manière
  * purement déclarative, sans fonction TS arbitraire — condition nécessaire à
@@ -106,11 +120,30 @@ export type ClasseIgh = (typeof CLASSES_IGH)[number];
  */
 export type TypologieApplication = {
   travail?: boolean;
-  erp?: boolean | { categories: CategorieErp[] };
+  erp?: boolean | { categories?: CategorieErp[]; types?: TypeErp[] };
   igh?: boolean | { classes: ClasseIgh[] };
   habitation?: boolean;
   effectifMin?: number;
   effectifMax?: number;
+  /**
+   * Seuil sur les personnes habituellement présentes — salariés **et**
+   * public — évalué sur `personnesPresentesHabituellement`, à défaut sur
+   * `effectifSurSite`. Source : R. 4227-34 CT (« occupées ou réunies
+   * habituellement »), à distinguer de `effectifMin` qui ne compte que les
+   * salariés.
+   */
+  personnesPresentesMin?: number;
+  /**
+   * Champ d'application de R. 4227-34 CT, disjonctif par nature : satisfait
+   * si `personnesPresentesMin` est atteint **OU** si l'établissement déclare
+   * manipuler et mettre en œuvre des matières visées par R. 4227-22
+   * (`manipuleMatieresR422722 === true`). C'est le seul OU inter-critères du
+   * moteur, nommé d'après son article pour rester auditable : le référentiel
+   * écrit `{ personnesPresentesMin: 51, champR422734: true }`, le chiffre
+   * reste dans le référentiel, la logique dans le moteur.
+   *   https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532067
+   */
+  champR422734?: true;
 };
 
 // -----------------------------------------------------------------------------
@@ -120,6 +153,7 @@ export type TypologieApplication = {
 export const CATEGORIES_EQUIPEMENT = [
   "INSTALLATION_ELECTRIQUE",
   "EXTINCTEUR",
+  "RIA",
   "BAES",
   "ALARME_INCENDIE",
   "DESENFUMAGE",
