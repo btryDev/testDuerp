@@ -101,6 +101,19 @@ const FMT_MOIS_COURT = new Intl.DateTimeFormat("fr-FR", {
   timeZone: FUSEAU_REFERENCE,
   month: "short",
 });
+/**
+ * La date de référence, en toutes lettres. Tout ce que cette page colore
+ * — dépassé, sous 30 jours, à venir — se calcule depuis aujourd'hui
+ * (ADR-011) ; l'écran ne disait nulle part depuis quand. C'est le zéro de
+ * l'instrument, il s'affiche.
+ */
+const FMT_AUJOURDHUI = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: FUSEAU_REFERENCE,
+  weekday: "short",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
 
 /**
  * La tuile-date porte la couleur de l'état parce que c'est l'objet que
@@ -394,7 +407,11 @@ export default async function CalendrierPage({
   //      et la liste, elle, les garde, parce qu'elle affiche leur statut.
   //   2. La couleur d'un segment dit l'état, jamais le volume (cf.
   //      `RegleAnnuelle`).
-  const anneeCourante = composantesCiviles(aujourdhui).annee;
+  // Une seule lecture des composantes civiles d'aujourd'hui : l'année de
+  // travail et la date affichée en tête sortent du même appel, donc du
+  // même fuseau.
+  const civilesAujourdhui = composantesCiviles(aujourdhui);
+  const anneeCourante = civilesAujourdhui.annee;
 
   // Le classement vit dans `lib/calendrier/etats` (bâti sur les prédicats
   // de `lib/dates/retard`) : cette page l'a redérivé à la main une fois,
@@ -798,52 +815,78 @@ export default async function CalendrierPage({
     etat.aVenir === 0 &&
     etat.realisees12m === 0;
 
-  // La bande de titre : pleine largeur, en encre.
+  // La bande de titre — l'identité de l'écran, et rien d'autre.
   //
-  // Elle a été un bandeau ciel, puis une carte du bento. Les deux
-  // posaient un objet de plus avant la liste : sur un écran où chaque
-  // équipement est déjà une carte, trois blocs à ombre se disputaient le
-  // premier regard. La bande ne flotte pas, elle borne — et l'encre
-  // plutôt que le ciel, parce que le bleu revenait trois fois sur la même
-  // page (bandeau, en-têtes de carte, pilules) et finissait par ne plus
-  // rien désigner.
+  // Elle a été un bandeau ciel, puis une carte du bento, puis un aplat
+  // d'encre, puis un blanc plat. Le blanc plat était le pire : la barre de
+  // compte au-dessus est déjà une bande claire à filet, et la rangée de
+  // filtres en dessous une troisième — trois strates pâles se suivaient
+  // sans rien pour les hiérarchiser, et la bande ne portait que deux
+  // niveaux de texte (le titre, un paragraphe gris).
+  //
+  // Elle en porte quatre, du plus discret au plus haut : le rail de
+  // contexte en mono (d'où l'on vient, depuis quand on compte), le titre
+  // en grand, la phrase. Les commandes, elles, sont parties dans la barre
+  // de réglage de l'instrument — voir `commandes` plus bas.
+  //
+  // L'espacement suit le même contraste : serré entre le rail et le titre,
+  // serré entre le titre et sa phrase, ouvert avant le filet.
   const bandeTitre = (
-    <div className="bg-[color:var(--board-ink)] px-[var(--board-gutter)] py-[22px] text-white">
-      <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-5">
-        <div className="flex min-w-0 items-center gap-[18px]">
-          <Link
-            href={`/etablissements/${id}`}
-            aria-label="Retour au tableau de bord"
-            className="flex size-8 flex-none items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
-          >
-            <ChevronRight className="size-4 rotate-180" />
-          </Link>
-          <div className="min-w-0">
-            {/* Un titre stable, et une phrase. « Calendrier » ne disait
-                pas ce qu'on y trouve : quatre flux y sont réunis depuis
-                l'ADR-010 et rien ne l'annonçait. La phrase dit ce qu'on
-                voit et ce qu'on peut en faire — ce qui vaut mieux qu'une
-                rangée de filtres, qui montrait des commandes sans jamais
-                expliquer l'écran. */}
-            <h1 className="board-titre m-0 text-[clamp(22px,2.2vw,27px)] text-white">
-              {LABEL_ITEM.calendrier}
-            </h1>
-            <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.5] text-white/60">
-              {filtreFamille
-                ? DESCRIPTION_FAMILLE[filtreFamille]
-                : "Suivez les échéances datées : vérifications de vos équipements, corrections à mener, renouvellement de vos documents."}{" "}
-              Cliquez une ligne pour la traiter.
-            </p>
-          </div>
-        </div>
+    <div className="border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] px-[var(--board-gutter)] pb-8 pt-[26px]">
+      {/* Le rail de contexte : d'où l'on vient à gauche, depuis quand on
+          compte à droite. Deux registres distincts pour qu'ils ne se
+          lisent pas comme une même taxonomie — le retour est bleu et
+          cliquable, la date est une valeur, étiquette grise puis chiffre
+          en encre. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+        {/* Le chevron seul n'avait pas de destination lisible : nommer
+            l'établissement dit où il mène, et la page dit enfin de quel
+            dossier elle est le calendrier. */}
+        <Link
+          href={`/etablissements/${id}`}
+          className="board-eyebrow group -ml-0.5 inline-flex min-w-0 items-center gap-1.5 transition-colors hover:text-[color:var(--board-ink)]"
+        >
+          <ChevronRight
+            aria-hidden
+            className="size-3 flex-none rotate-180 transition-transform group-hover:-translate-x-0.5"
+          />
+          <span className="truncate">{etab.raisonDisplay}</span>
+        </Link>
 
-        {/* Les compteurs qui vivaient ici doublonnaient la règle et les
-            pilules des cartes ; la bande porte plutôt le choix qui
-            commande tout l'écran : la lecture. Il n'apparaît que si le
-            calendrier a des lignes — deux onglets sur du vide seraient un
-            décor. */}
-        {lignes.length > 0 ? <SelecteurLecture /> : null}
+        {/* Le zéro de l'instrument. « En retard », « sous 30 jours » et
+            « à venir » se mesurent tous depuis ce jour-là (ADR-011) : la
+            page les colorait sans jamais dire depuis quand. */}
+        <p className="m-0 flex flex-none items-baseline gap-2.5 font-mono text-[10.5px] leading-none">
+          <span className="uppercase tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+            Aujourd&apos;hui
+          </span>
+          <time
+            /* Le fuseau de référence, pas UTC (ADR-011) : `toISOString`
+               rendrait la veille pour toute la première heure de la
+               journée, et l'attribut contredirait la date affichée. */
+            dateTime={`${civilesAujourdhui.annee}-${String(civilesAujourdhui.mois).padStart(2, "0")}-${String(civilesAujourdhui.jour).padStart(2, "0")}`}
+            className="tabular-nums tracking-[0.02em] text-[color:var(--board-ink)]"
+          >
+            {FMT_AUJOURDHUI.format(aujourdhui)}
+          </time>
+        </p>
       </div>
+
+      {/* Le titre prend la taille de son rang : c'est la page, pas l'en-tête
+          d'une carte. À 27 px il pesait le même poids qu'un titre de mois
+          dans la liste juste dessous. */}
+      <h1 className="board-titre m-0 mt-3 text-[clamp(29px,3vw,39px)]">
+        {LABEL_ITEM.calendrier}
+      </h1>
+      {/* « Calendrier » ne dit pas ce qu'on y trouve : quatre familles y
+          sont réunies depuis l'ADR-010. La phrase les nomme — et rien de
+          plus : « cliquez une ligne pour la traiter » décrivait un clic
+          que la ligne annonce déjà toute seule. */}
+      <p className="m-0 mt-[11px] max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+        {filtreFamille
+          ? DESCRIPTION_FAMILLE[filtreFamille]
+          : "Vos échéances datées, réunies : vérifications d'équipements, corrections à mener, chantiers encadrés, documents à renouveler."}
+      </p>
     </div>
   );
 
@@ -903,13 +946,32 @@ export default async function CalendrierPage({
     </AideEcran>
   );
 
-  // Un seul point d'entrée pour filtrer : le panneau « Filtres » (types en
-  // toutes lettres, domaines, urgence) ; les filtres actifs restent
-  // lisibles en chips retirables. La barre vit SOUS la bascule
-  // mois/équipement : on choisit d'abord sa lecture, puis on affine — et
-  // les filtres règlent ce que les deux lectures montrent.
-  const barreOutils = (
-    <div className="flex flex-1 flex-wrap items-center gap-2">
+  // Les commandes de l'écran — bascule de lecture, filtres, aide. Elles ne
+  // forment plus une strate à elles : elles voyagent dans la barre de
+  // réglage de l'instrument (`AnneeCalendrier`), à droite du cadran
+  // d'année, et restent donc collées en tête du défilement.
+  //
+  // C'est ce que la page devait à l'usage : descendre jusqu'à une date
+  // puis vouloir filtrer obligeait à remonter chercher une rangée de
+  // boutons restée en haut. Une commande qu'on n'atteint qu'en défaisant
+  // son défilement n'est pas atteignable.
+  //
+  // L'ordre de gauche à droite porte la règle qui les lie : quelle année,
+  // puis quelle lecture, puis quel filtre. L'aide part à l'opposé — elle
+  // ne règle rien.
+  const commandes = (
+    <div className="flex flex-1 flex-wrap items-center gap-x-3 gap-y-2.5">
+      {/* Deux onglets sur du vide seraient un décor : la bascule
+          n'apparaît que si le calendrier a des lignes à lire. */}
+      {lignes.length > 0 ? (
+        <>
+          <SelecteurLecture />
+          <span
+            aria-hidden
+            className="mx-1 h-[18px] w-px flex-none bg-[color:rgba(13,18,36,.14)]"
+          />
+        </>
+      ) : null}
       <FiltresCalendrier
         baseHref={baseHref}
         famillesDisponibles={famillesPresentes}
@@ -922,23 +984,27 @@ export default async function CalendrierPage({
           batiment: filtreBatiment,
         }}
       />
-      <span className="ml-auto">{aide}</span>
+      <span className="ml-auto flex-none">{aide}</span>
     </div>
   );
 
   return (
     <>
-      {/* Plus de bandeau pleine largeur : le ciel devient une carte du
-          bento, à hauteur de l'instrument. C'est ce qui distingue cet
-          écran du tableau de bord — même bleu, même famille, mais une
-          lecture verticale (titre en pile, compteurs en cartouche) là où
-          le board déroule une frise horizontale. */}
+      {/* L'identité, puis l'instrument — et l'instrument porte ses propres
+          commandes dans une barre qui suit le défilement. Deux strates au
+          lieu de quatre : la page ne fait plus attendre trois bandes
+          claires avant sa première donnée. */}
       {bandeTitre}
 
       <div className="flex flex-1 flex-col bg-[color:var(--board-card)] px-[var(--board-gutter)] pb-14 pt-7">
         {lignes.length === 0 ? (
           <div>
-            {barreOutils}
+            {/* Sans instrument, les commandes n'ont pas de barre où
+                voyager : elles se posent en tête de l'état vide — d'où
+                l'on retire les filtres qui masquent tout. */}
+            <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2.5">
+              {commandes}
+            </div>
             {calendrierVide && echeancesDuLieu.length === 0 ? (
               // Calendrier vraiment vide : on explique d'où viendraient les
               // échéances, et on donne la porte de sortie — même motif que
@@ -1025,7 +1091,7 @@ export default async function CalendrierPage({
                  pas. */
               moisInitial={moisInitial}
               cleMoisCourant={cleMoisCourant}
-              outils={barreOutils}
+              commandes={commandes}
               parEquipement={
                 <VueParEquipement
                   annee={anneeCourante}

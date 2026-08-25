@@ -19,12 +19,15 @@
 // mois, on l'ouvre. Elle ne porte aucune donnée que la liste n'ait pas —
 // c'est la même, vue de loin.
 //
-// L'instrument se déplace d'année en année : les flèches font défiler la
-// même règle sur 2025, 2027… — une dette de l'an dernier ou un contrôle
-// quinquennal ne sont plus invisibles, ils sont à un cran de flèche.
+// Ce composant ne porte QUE la mesure : les douze graduations et leur
+// légende, sur leur sol de canvas. Le réglage — le cadran d'année, la
+// bascule de lecture, les filtres — vit dans la barre collante que
+// `AnneeCalendrier` pose au-dessus. La séparation n'est pas cosmétique :
+// la barre doit rester à l'écran pendant tout le défilement de la liste
+// (on filtre depuis n'importe quelle date, sans jamais remonter), donc
+// elle ne peut pas vivre dans le même bloc que des graduations qui,
+// elles, s'en vont avec la page.
 
-import { useId } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   CHAMP_ETAT,
   ENCRE_ETAT,
@@ -98,37 +101,19 @@ function segmentsDuMois(m: MoisRegle, maxTotal: number): Segment[] {
 }
 
 export function RegleAnnuelle({
-  annee,
   mois,
   moisOuvert,
   onChoisirMois,
   sansDate,
-  onAnneePrecedente,
-  onAnneeSuivante,
-  verre = false,
 }: {
-  /** Année que la règle affiche — pas forcément celle d'aujourd'hui. */
-  annee: number;
   mois: MoisRegle[];
   /** Clé `AAAA-MM` du mois actuellement déplié, s'il est dans l'année. */
   moisOuvert: string | null;
   onChoisirMois: (cle: string) => void;
   /** Occurrences sans date — hors règle par nature, jamais oubliées. */
   sansDate: number;
-  /** `undefined` : plus rien dans cette direction, la flèche se grise. */
-  onAnneePrecedente?: () => void;
-  onAnneeSuivante?: () => void;
-  /**
-   * Vrai quand l'instrument est collé en haut du défilement : la carte
-   * passe en verre — translucide, flou d'arrière-plan, coins hauts fondus
-   * dans le bord — pour que la liste se devine à travers au lieu de
-   * disparaître sèchement dessous.
-   */
-  verre?: boolean;
 }) {
-  const titreId = useId();
   const maxTotal = Math.max(1, ...mois.map(totalDuMois));
-  const total = mois.reduce((n, m) => n + totalDuMois(m), 0);
 
   // Les totaux de l'année affichée, par état : la légende ne se contente
   // pas de nommer les couleurs, elle donne le solde de chacune.
@@ -143,73 +128,11 @@ export function RegleAnnuelle({
   );
 
   return (
-    // L'instrument n'est pas une carte : deux strates pleine largeur —
-    // le cadran de l'année sur le blanc de la page, puis la bande grise
-    // canvas qui porte les graduations. Les marges négatives annulent la
-    // gouttière de la page pour toucher les bords ; chaque strate prend
-    // son verre quand l'ensemble est collé.
-    <section aria-labelledby={titreId} className="-mx-[var(--board-gutter)] flex flex-col">
-      {/* Le titre existe pour les lecteurs d'écran ; à l'œil, l'instrument
-          se présente seul — sa clé de lecture (hauteur = volume, couleur =
-          état) vit dans l'aide d'écran, avec le reste des explications. */}
-      <h2 id={titreId} className="sr-only">
-        L&apos;année d&apos;un bloc — {total} échéance{total > 1 ? "s" : ""} en{" "}
-        {annee}
-      </h2>
-
-      {/* Le cadran de l'année : les flèches déplacent la règle, comme sur
-          la frise du tableau de bord. Il vit AU-DESSUS de la bande grise,
-          sur le blanc de la page — c'est le réglage, pas la mesure. Le
-          compte voyage avec le millésime : sans lui, une année déserte
-          ressemblerait à un bug. */}
-      <div
-        className={
-          "flex items-center justify-center gap-4 px-[var(--board-gutter)] pb-5 pt-1 transition-[background-color,backdrop-filter] duration-300 ease-out " +
-          (verre
-            ? "bg-[color:rgba(255,255,255,.72)] backdrop-blur-xl backdrop-saturate-150"
-            : "bg-[color:var(--board-card)]")
-        }
-      >
-        <FlecheAnnee
-          direction="precedente"
-          cible={annee - 1}
-          onClick={onAnneePrecedente}
-        />
-        {/* Le millésime a son champ : c'est la valeur que le cadran règle,
-            elle se lit comme un cartouche, pas comme un mot posé là.
-            L'encre, pas une couleur d'état : sur cette page le noir dit
-            « la valeur active » — le label du mois visé, l'onglet de
-            lecture — et aucune barre ne le porte. */}
-        <span className="flex min-w-[152px] flex-col items-center gap-1 rounded-[18px] bg-[color:var(--board-ink)] px-7 py-2.5">
-          <span className="board-titre text-[27px] tabular-nums leading-none tracking-[-0.02em] text-white">
-            {annee}
-          </span>
-          {/* Le même bleu que l'eyebrow de la bande de titre : c'est la
-              couleur des légendes posées sur l'encre. */}
-          <span className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.12em] text-[color:var(--board-blue-soft)]">
-            {total === 0
-              ? "aucune échéance"
-              : `${total} échéance${total > 1 ? "s" : ""}`}
-          </span>
-        </span>
-        <FlecheAnnee
-          direction="suivante"
-          cible={annee + 1}
-          onClick={onAnneeSuivante}
-        />
-      </div>
-
-      {/* La bande grise : les graduations et leur légende, sur le canvas
-          un cran sous le blanc — la mesure a son sol, le réglage vit
-          au-dessus. */}
-      <div
-        className={
-          "flex flex-col px-[var(--board-gutter)] pb-5 pt-6 transition-[background-color,box-shadow,backdrop-filter] duration-300 ease-out " +
-          (verre
-            ? "bg-[color:rgba(242,243,244,.72)] shadow-[0_16px_36px_-20px_rgba(13,18,36,.30)] backdrop-blur-xl backdrop-saturate-150"
-            : "bg-[color:var(--board-canvas)]")
-        }
-      >
+    // La bande de mesure : pleine largeur, sur le canvas — un cran sous le
+    // blanc de la page. Les marges négatives annulent la gouttière pour
+    // toucher les bords ; c'est le bloc de la lecture par mois qui soude
+    // la mesure à la barre de réglage, en annulant l'écart de la colonne.
+    <div className="-mx-[var(--board-gutter)] flex flex-col bg-[color:var(--board-canvas)] px-[var(--board-gutter)] pb-5 pt-6">
       {/* L'instrument. Chaque graduation est un bouton : c'est bien une
           commande, pas une image — le clavier doit y arriver. */}
       <div className="grid grid-cols-12 gap-1.5">
@@ -340,33 +263,7 @@ export function RegleAnnuelle({
           </span>
         ) : null}
       </div>
-      </div>
-    </section>
-  );
-}
-
-/** Flèche du cadran d'année. Sans cible, elle se grise mais reste posée :
- *  le cadran garde sa symétrie et la limite de la course se voit. */
-function FlecheAnnee({
-  direction,
-  cible,
-  onClick,
-}: {
-  direction: "precedente" | "suivante";
-  cible: number;
-  onClick?: () => void;
-}) {
-  const Chevron = direction === "precedente" ? ChevronLeft : ChevronRight;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={!onClick}
-      aria-label={`Afficher l'année ${cible}`}
-      className="flex size-8 flex-none items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] transition-colors hover:bg-[color:var(--board-card)] disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
-    >
-      <Chevron className="size-4" />
-    </button>
+    </div>
   );
 }
 

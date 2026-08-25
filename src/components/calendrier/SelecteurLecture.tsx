@@ -1,7 +1,7 @@
 "use client";
 
-// Le sélecteur de lecture (par mois / par équipement), posé dans la bande
-// de titre en encre. Il ne possède pas son état : la lecture vit dans
+// Le sélecteur de lecture (par mois / par équipement), posé dans la barre
+// de réglage collante. Il ne possède pas son état : la lecture vit dans
 // l'URL (`?vue=equipement`), écrite d'un `history.replaceState` sans
 // repasser serveur — `AnneeCalendrier` la lit par `useSearchParams` et
 // bascule ses blocs, les filtres la reconduisent dans leurs liens, un
@@ -27,7 +27,7 @@ export function SelecteurLecture() {
   const lecture = lectureDesParams(useSearchParams());
 
   return (
-    <div className="flex items-center gap-1 rounded-full bg-white/10 p-1">
+    <div className="flex flex-none items-center gap-1 rounded-full bg-[color:var(--board-slate-pale)] p-1">
       <Onglet actif={lecture === "mois"} onClick={() => ecrireLecture("mois")}>
         Par mois
       </Onglet>
@@ -58,8 +58,8 @@ function Onglet({
       className={
         "rounded-full px-[18px] py-[9px] text-[13px] font-semibold leading-none transition-colors " +
         (actif
-          ? "bg-white text-[color:var(--board-ink)]"
-          : "text-white/75 hover:text-white")
+          ? "bg-[color:var(--board-ink)] text-white"
+          : "text-[color:var(--board-slate-mid)] hover:text-[color:var(--board-ink)]")
       }
     >
       {children}

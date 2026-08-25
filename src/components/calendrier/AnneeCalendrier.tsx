@@ -1,13 +1,13 @@
 "use client";
 
-// L'année du calendrier : la règle graduée posée sur le canvas, puis la
-// liste — par mois ou par équipement. Le titre de la page vit au-dessus,
-// dans sa bande pleine largeur : ici il n'y a plus que des repères et du
-// contenu, aucun objet flottant avant les cartes.
+// L'année du calendrier : une barre de réglage collante, la règle graduée
+// posée sur le canvas, puis la liste — par mois ou par équipement. Le
+// titre de la page vit au-dessus, dans sa bande pleine largeur ; ici ne
+// restent que l'instrument et son contenu.
 //
 // La lecture choisie (mois ou équipement) vit dans l'URL, écrite d'un
-// `history.replaceState` sans repasser serveur : le sélecteur de la bande
-// de titre (`SelecteurLecture`) l'écrit, ce composant la lit par
+// `history.replaceState` sans repasser serveur : le sélecteur de la barre
+// de réglage (`SelecteurLecture`) l'écrit, ce composant la lit par
 // `useSearchParams` et bascule ses blocs d'un `display: none` — les deux
 // listes viennent du même calcul, elles sont rendues ensemble. Un lien
 // partagé ouvre donc la bonne lecture, et les deux composants restent
@@ -20,10 +20,10 @@
 //
 // Le contenu, lui, est rendu côté serveur et descend ici en `ReactNode`.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ChevronDown } from "lucide-react";
-import { RegleAnnuelle, type MoisRegle } from "./RegleAnnuelle";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { RegleAnnuelle, totalDuMois, type MoisRegle } from "./RegleAnnuelle";
 import { SectionMois } from "./SectionMois";
 import { ecrireLecture, lectureDesParams } from "./SelecteurLecture";
 
@@ -52,7 +52,7 @@ export function AnneeCalendrier({
   sansDate,
   moisInitial,
   cleMoisCourant,
-  outils,
+  commandes,
   parEquipement,
 }: {
   /** Année d'aujourd'hui — celle que la règle affiche à l'arrivée. */
@@ -66,23 +66,26 @@ export function AnneeCalendrier({
   /** Clé `AAAA-MM` du mois d'aujourd'hui — la charnière de la liste. */
   cleMoisCourant: string;
   /**
-   * Barre de filtres, en tête du bloc : elle règle ce que les deux
-   * lectures montrent, elle n'appartient à aucune.
+   * Bascule de lecture, filtres, aide — le bout droit de la barre de
+   * réglage. Ils règlent ce que les deux lectures montrent, donc ils
+   * n'appartiennent à aucune ; ils voyagent avec la barre collante pour
+   * rester atteignables depuis n'importe quel point de la liste.
    */
-  outils?: React.ReactNode;
+  commandes?: React.ReactNode;
   /** La même année, groupée par appareil. */
   parEquipement?: React.ReactNode;
 }) {
   const [ouvert, setOuvert] = useState<string | null>(moisInitial);
-  // La lecture appartient à l'URL — le sélecteur de la bande de titre
-  // l'écrit, `useSearchParams` nous réveille quand elle change.
+  // La lecture appartient à l'URL — le sélecteur de la barre l'écrit,
+  // `useSearchParams` nous réveille quand elle change.
   const lecture = lectureDesParams(useSearchParams());
-  const regleRef = useRef<HTMLDivElement | null>(null);
+  const barreRef = useRef<HTMLDivElement | null>(null);
+  const titreId = useId();
 
-  // « Collée » : l'instrument a atteint le haut du défilement et la liste
-  // passe dessous — c'est là qu'il prend son verre. Le sentinelle est un
+  // « Collée » : la barre a atteint le haut du défilement et la liste
+  // passe dessous — c'est là qu'elle prend son verre. Le sentinelle est un
   // point de mesure posé juste au-dessus du sticky : tant qu'il est
-  // visible, la règle est encore à sa place dans le flux.
+  // visible, la barre est encore à sa place dans le flux.
   const sentinelle = useRef<HTMLDivElement | null>(null);
   const [collee, setCollee] = useState(false);
   useEffect(() => {
@@ -161,11 +164,11 @@ export function AnneeCalendrier({
     requestAnimationFrame(() => {
       const cible = document.getElementById(ancreDuMois(cle));
       if (!cible) return;
-      // La règle reste collée pendant le défilement : la carte visée doit
+      // La barre reste collée pendant le défilement : la carte visée doit
       // s'arrêter SOUS elle, pas dessous — la marge se mesure à chaque
-      // visée, la hauteur de l'instrument bouge avec sa légende.
-      const hRegle = regleRef.current?.offsetHeight ?? 0;
-      cible.style.scrollMarginTop = `${hRegle + 20}px`;
+      // visée, la hauteur de la barre bouge avec son contenu.
+      const hBarre = barreRef.current?.offsetHeight ?? 0;
+      cible.style.scrollMarginTop = `${hBarre + 20}px`;
       const doux = !window.matchMedia("(prefers-reduced-motion: reduce)")
         .matches;
       cible.scrollIntoView({
@@ -177,49 +180,66 @@ export function AnneeCalendrier({
 
   return (
     <div className="flex flex-col gap-5">
-      {/* La bascule vit dans la bande de titre (`SelecteurLecture`) ; ici
-          ne restent que les filtres, qui règlent ce que les deux lectures
-          montrent. */}
-      {outils ? (
-        <div className="mb-1 flex flex-wrap items-center gap-2">{outils}</div>
-      ) : null}
+      <div ref={sentinelle} aria-hidden className="-mb-5 h-0" />
+
+      {/* La barre de réglage — et elle seule reste collée. Les douze
+          graduations, elles, s'en vont avec la page : coller l'instrument
+          entier mangeait deux cents pixels de liste, et c'est le réglage
+          qu'on veut sous la main, pas la mesure.
+
+          Elle vit AU-DESSUS des deux lectures, pas dans l'une d'elles :
+          filtrer depuis n'importe quelle date sans remonter est le but,
+          et une barre rangée dans le bloc « par mois » disparaîtrait dès
+          qu'on bascule sur « par équipement ». Son parent est la colonne
+          qui porte toute la liste : elle survit jusqu'à la dernière
+          carte. */}
+      <div
+        ref={barreRef}
+        role="group"
+        aria-labelledby={titreId}
+        className="sticky top-0 z-20"
+      >
+        <BarreAnnee
+          titreId={titreId}
+          annee={regle.annee}
+          total={regle.mois.reduce((n, m) => n + totalDuMois(m), 0)}
+          collee={collee}
+          /* Le cadran n'a de prise que sur la liste mensuelle : la lecture
+             par équipement montre chaque appareil sur toutes ses années à
+             la fois. Un cadran qui ne commanderait rien serait pire qu'une
+             absence — on le retire de la barre plutôt que de le griser. */
+          montrerCadran={lecture === "mois"}
+          onAnneePrecedente={
+            idxRegle > 0
+              ? () => setAnneeRegle(anneesRegle[idxRegle - 1].annee)
+              : undefined
+          }
+          onAnneeSuivante={
+            idxRegle < anneesRegle.length - 1
+              ? () => setAnneeRegle(anneesRegle[idxRegle + 1].annee)
+              : undefined
+          }
+          commandes={commandes}
+        />
+      </div>
 
       {/* `hidden` plutôt qu'un démontage : la lecture inactive garde ses
-          cartes ouvertes, et la bascule ne coûte rien. La règle vit DANS
-          le bloc de la lecture par mois — elle en est l'index, et par
-          équipement chaque carte porte déjà son année en réduction : la
-          grande au-dessus ferait deux fois le même dessin. */}
+          cartes ouvertes, et la bascule ne coûte rien. Les graduations
+          vivent DANS le bloc de la lecture par mois — elles en sont
+          l'index, et par équipement chaque carte porte déjà son année en
+          réduction : la grande au-dessus ferait deux fois le même dessin.
+          La marge haute négative soude la mesure à la barre. */}
       <div
         className={
-          "flex flex-col gap-5 " + (lecture === "mois" ? "" : "hidden")
+          "-mt-5 flex flex-col gap-5 " + (lecture === "mois" ? "" : "hidden")
         }
       >
-        {/* L'instrument reste collé en tête du défilement : viser un mois
-            fait filer la liste, et sans repère fixe on ne sait plus où la
-            règle nous a lâché. Pas de voile sur le wrapper : le verre de
-            la carte a besoin de voir la liste derrière lui pour la
-            flouter. */}
-        <div ref={sentinelle} aria-hidden className="-mb-5 h-0" />
-        <div ref={regleRef} className="sticky top-0 z-20">
-          <RegleAnnuelle
-            verre={collee}
-            annee={regle.annee}
-            mois={regle.mois}
-            moisOuvert={ouvert}
-            onChoisirMois={viser}
-            sansDate={sansDate}
-            onAnneePrecedente={
-              idxRegle > 0
-                ? () => setAnneeRegle(anneesRegle[idxRegle - 1].annee)
-                : undefined
-            }
-            onAnneeSuivante={
-              idxRegle < anneesRegle.length - 1
-                ? () => setAnneeRegle(anneesRegle[idxRegle + 1].annee)
-                : undefined
-            }
-          />
-        </div>
+        <RegleAnnuelle
+          mois={regle.mois}
+          moisOuvert={ouvert}
+          onChoisirMois={viser}
+          sansDate={sansDate}
+        />
 
         {/* La couture des mois passés vit AU-DESSUS de son contenu : elle
             marque l'endroit où la liste a été pliée, et son compte de
@@ -259,6 +279,125 @@ export function AnneeCalendrier({
         </div>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * LA BARRE DE RÉGLAGE — le cadran d'année à gauche, les commandes à
+ * droite, un filet en bas. C'est elle qui reste collée en tête du
+ * défilement.
+ *
+ * Le cadran a d'abord été une pastille d'encre centrée entre deux
+ * flèches, seule au milieu d'une bande blanche : elle flottait, faute de
+ * quoi que ce soit à quoi se tenir. Ancrée au bord gauche d'une barre qui
+ * porte aussi la lecture et les filtres, elle cesse d'être un objet posé
+ * et devient le début d'un instrument — on lit la barre de gauche à
+ * droite : quelle année, puis quelle lecture, puis quel filtre.
+ *
+ * Le champ du millésime suit la pilule bleue de l'application — champ
+ * pâle, encre bleue — et non un aplat sombre : le bleu foncé est une
+ * encre dans ce dossier, il n'y remplit rien nulle part ailleurs.
+ */
+function BarreAnnee({
+  annee,
+  total,
+  collee,
+  montrerCadran,
+  onAnneePrecedente,
+  onAnneeSuivante,
+  commandes,
+  titreId,
+}: {
+  annee: number;
+  /** Échéances de l'année affichée — sans lui, une année déserte
+   *  ressemblerait à un bug. */
+  total: number;
+  /** Vrai quand la barre a atteint le haut : elle passe en verre pour que
+   *  la liste se devine dessous au lieu de disparaître sèchement. */
+  collee: boolean;
+  montrerCadran: boolean;
+  /** `undefined` : plus rien dans cette direction, la flèche se grise. */
+  onAnneePrecedente?: () => void;
+  onAnneeSuivante?: () => void;
+  commandes?: React.ReactNode;
+  /** `id` du titre lecteur d'écran, pour nommer la région de l'instrument. */
+  titreId: string;
+}) {
+  return (
+    <div
+      className={
+        "-mx-[var(--board-gutter)] flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-[color:var(--board-slate-line)] px-[var(--board-gutter)] py-[13px] transition-[background-color,box-shadow,backdrop-filter] duration-300 ease-out " +
+        (collee
+          ? "bg-[color:rgba(255,255,255,.82)] shadow-[0_14px_30px_-24px_rgba(13,18,36,.55)] backdrop-blur-xl backdrop-saturate-150"
+          : "bg-[color:var(--board-card)]")
+      }
+    >
+      {/* Le titre existe pour les lecteurs d'écran ; à l'œil, l'instrument
+          se présente seul — sa clé de lecture (hauteur = volume, couleur =
+          état) vit dans l'aide d'écran, avec le reste des explications. */}
+      <h2 id={titreId} className="sr-only">
+        L&apos;année d&apos;un bloc — {total} échéance{total > 1 ? "s" : ""} en{" "}
+        {annee}
+      </h2>
+      {montrerCadran ? (
+        <div className="flex flex-none items-center gap-2">
+          <FlecheAnnee
+            direction="precedente"
+            cible={annee - 1}
+            onClick={onAnneePrecedente}
+          />
+          {/* Millésime et compte dans un même champ, posés sur la même
+              ligne : empilés, le cartouche devenait un bloc de 56 px de
+              haut au milieu d'une barre — c'est ce qui le faisait flotter.
+              Le compte voyage avec le millésime, il ne s'en détache pas. */}
+          <p className="m-0 flex items-baseline gap-2.5 rounded-full bg-[color:var(--board-blue-pale)] px-[18px] py-[7px]">
+            <span className="board-titre text-[19px] leading-none tabular-nums tracking-[-0.02em] text-[color:var(--board-blue-ink)]">
+              {annee}
+            </span>
+            <span className="font-mono text-[10px] font-semibold uppercase leading-none tracking-[0.1em] text-[color:var(--board-blue-ink)]">
+              {total === 0
+                ? "aucune échéance"
+                : `${total} échéance${total > 1 ? "s" : ""}`}
+            </span>
+          </p>
+          <FlecheAnnee
+            direction="suivante"
+            cible={annee + 1}
+            onClick={onAnneeSuivante}
+          />
+          <span
+            aria-hidden
+            className="ml-2 h-[18px] w-px flex-none bg-[color:rgba(13,18,36,.14)]"
+          />
+        </div>
+      ) : null}
+      {commandes}
+    </div>
+  );
+}
+
+/** Flèche du cadran d'année. Sans cible, elle se grise mais reste posée :
+ *  le cadran garde sa symétrie et la limite de la course se voit. */
+function FlecheAnnee({
+  direction,
+  cible,
+  onClick,
+}: {
+  direction: "precedente" | "suivante";
+  cible: number;
+  onClick?: () => void;
+}) {
+  const Chevron = direction === "precedente" ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!onClick}
+      aria-label={`Afficher l'année ${cible}`}
+      className="flex size-8 flex-none items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] transition-colors hover:bg-[color:var(--board-blue-pale)] hover:text-[color:var(--board-blue-ink)] disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
+    >
+      <Chevron className="size-4" />
+    </button>
   );
 }
 
