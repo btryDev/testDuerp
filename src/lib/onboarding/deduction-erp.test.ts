@@ -4,6 +4,7 @@ import {
   SEUILS_5E_CATEGORIE,
   SEUIL_3E_CATEGORIE,
   deduire4eOu5e,
+  deduireCategorieErpComplete,
   deduireCategorieErp,
   deduireCategorieErpDepuisEffectif,
 } from "./deduction-erp";
@@ -152,5 +153,26 @@ describe("déduction ERP — deduire4eOu5e", () => {
       expect(d.statut, type).toBe("proposee");
       if (d.statut === "proposee") expect(d.motif).toContain(s.article);
     }
+  });
+});
+
+describe("déduction ERP — deduireCategorieErpComplete (public + personnel)", () => {
+  it("bornes hautes sur public + personnel : 295 clients + 10 salariés → 3ᵉ", () => {
+    const d = deduireCategorieErpComplete("N", { total: 295 }, 10);
+    expect(d.statut === "proposee" && d.categorieErp).toBe("N3");
+  });
+
+  it("frontière 4ᵉ/5ᵉ sur le public seul : 190 clients + 10 salariés (N, RDC) → 5ᵉ", () => {
+    const d = deduireCategorieErpComplete(
+      "N",
+      { total: 190, sousSol: 0, etages: 0 },
+      10,
+    );
+    expect(d.statut === "proposee" && d.categorieErp).toBe("N5");
+  });
+
+  it("type hors table → ne tranche pas sous 300", () => {
+    const d = deduireCategorieErpComplete("R", { total: 50 }, 5);
+    expect(d.statut).toBe("a_confirmer");
   });
 });

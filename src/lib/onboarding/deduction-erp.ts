@@ -575,3 +575,27 @@ export function deduire4eOu5e(
       .join(", ")}) : 5ᵉ catégorie.`,
   };
 }
+
+/**
+ * Déduction complète de la catégorie ERP à partir de ce que l'assistant
+ * collecte : l'effectif du public (par niveau) et l'effectif du personnel.
+ *
+ * Deux effectifs, deux règles (R. 143-19) :
+ *   - les bornes 1ʳᵉ / 2ᵉ / 3ᵉ se lisent sur public **+ personnel** (al. 3 :
+ *     « majorer l'effectif du public de celui du personnel n'occupant pas
+ *     des locaux indépendants ») ;
+ *   - la frontière 4ᵉ / 5ᵉ se lit sur le public **seul** (dernier tiret).
+ * Le personnel est pris égal à `effectifSurSite`, ce qui suppose qu'il
+ * n'occupe pas de locaux indépendants avec leurs propres dégagements — c'est
+ * le cas général en TPE, et l'hypothèse la plus prudente (elle ne peut que
+ * rehausser la catégorie).
+ */
+export function deduireCategorieErpComplete(
+  type: TypeErp,
+  effectifPublic: EffectifPublicParNiveau,
+  effectifPersonnel: number,
+): DeductionCategorieErp {
+  const total = effectifPublic.total + effectifPersonnel;
+  if (total > SEUIL_3E_CATEGORIE) return deduireCategorieErp(total);
+  return deduire4eOu5e(type, effectifPublic);
+}

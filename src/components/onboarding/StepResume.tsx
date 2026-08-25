@@ -85,6 +85,14 @@ export function StepResume({ state }: StepProps) {
                 : "—"
             }
           />
+          <SumLigne
+            label="Personnes présentes"
+            valeur={
+              state.personnesPresentesHabituellement
+                ? `${state.personnesPresentesHabituellement} (salariés + public)`
+                : "— (effectif salarié utilisé)"
+            }
+          />
           <SumLignePills
             label="Régimes"
             pills={regimes.length > 0 ? regimes : ["—"]}

@@ -388,6 +388,16 @@ function ChampsCaches({ state }: { state: OnboardingState }) {
         name="estHabitation"
         value={state.estHabitation ? "true" : "false"}
       />
+      <input
+        type="hidden"
+        name="personnesPresentesHabituellement"
+        value={state.personnesPresentesHabituellement}
+      />
+      <input
+        type="hidden"
+        name="manipuleMatieresR422722"
+        value={state.manipuleMatieresR422722}
+      />
       <input type="hidden" name="typeErp" value={state.typeErp} />
       <input type="hidden" name="categorieErp" value={state.categorieErp} />
       <input type="hidden" name="classeIgh" value={state.classeIgh} />
