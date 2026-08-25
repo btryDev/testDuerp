@@ -1,3 +1,4 @@
+import { obligationParId } from "@/lib/referentiels/conformite";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 
 /**
@@ -20,13 +21,113 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  *     éventuels portes automatiques et ascenseurs si bâtiment collectif.
  *   - Typologie ERP → extincteurs, BAES, alarme, SSI systématiques.
  *   - Typologie IGH → SSI, désenfumage, ascenseurs, alarme.
+ *
+ * ── Les références ne sont plus écrites ici (amendement 2026-08-25) ─────────
+ *
+ * Chaque suggestion citait son article **en dur**, dans une chaîne recopiée à
+ * la main. Le module n'importait pas le référentiel : deux sources vivaient
+ * côte à côte pour la même citation, et corriger l'une laissait l'autre en
+ * place. La dérive n'était pas théorique, elle était déjà là — quatre cas
+ * relevés, dont un texte abrogé :
+ *
+ *   - VMC d'habitation : « arrêté 25 avril 1985 », **abrogé le 5 mars 2018**
+ *     et remplacé par l'arrêté du 23 février 2018 dans le référentiel ;
+ *   - SSI ERP : « MS 73 § 1 » quand l'obligation est fondée sur MS 73 § 2 ;
+ *   - désenfumage IGH : « GH 60 s. » quand l'obligation cite GH 5 ;
+ *   - installation électrique : « annuelle/quinquennale selon régime ERP »
+ *     alors que la 5ᵉ catégorie est passée en **triennale** (arrêté du
+ *     1ᵉʳ décembre 2025).
+ *
+ * Une suggestion qui cite un texte abrogé est pire qu'une suggestion muette :
+ * elle a l'autorité de la source sans en avoir l'exactitude. Désormais la
+ * suggestion déclare **l'identifiant de l'obligation** qui la fonde, et la
+ * citation est lue dans `referentielsConformite` au moment du rendu. Une seule
+ * source, et un id inconnu échoue bruyamment (`FondementInconnuError`) plutôt
+ * que d'afficher une raison sans article — cf. le test qui résout tous les
+ * fondements déclarés.
  */
+
+/**
+ * Un fondement : l'obligation du référentiel de conformité qui justifie la
+ * périodicité annoncée par une suggestion, et les références à en citer.
+ */
+type Fondement = {
+  /** Id stable d'une obligation de `src/lib/referentiels/conformite/`. */
+  obligationId: string;
+  /**
+   * Indices dans `referencesLegales` à citer. Par défaut `[0]` — l'article qui
+   * **fonde** l'obligation (convention du référentiel). On en nomme un second
+   * quand c'est lui qui porte l'exigence en langage de terrain : le BAES hors
+   * ERP tient de R. 4227-14, que l'arrêté du 14 décembre 2011 ne fait
+   * qu'appliquer.
+   */
+  refs?: number[];
+};
+
+export class FondementInconnuError extends Error {
+  constructor(obligationId: string, indice?: number) {
+    super(
+      indice === undefined
+        ? `Fondement de suggestion inconnu : ${obligationId}`
+        : `Référence ${indice} absente de l'obligation ${obligationId}`,
+    );
+    this.name = "FondementInconnuError";
+  }
+}
+
+/**
+ * Assemble la citation d'une suggestion depuis le référentiel.
+ *
+ * Échoue plutôt que de rendre une raison sans article. Les identifiants sont
+ * des constantes de ce module, couvertes par un test : une exception ici
+ * signifie qu'une obligation a été retirée ou renommée sans que la suggestion
+ * qui s'appuyait dessus ait suivi. C'est exactement ce qu'on veut voir.
+ */
+function citer(fondements: Fondement[]): string {
+  const vues = new Set<string>();
+  const sorties: string[] = [];
+
+  for (const f of fondements) {
+    const obligation = obligationParId(f.obligationId);
+    if (!obligation) throw new FondementInconnuError(f.obligationId);
+
+    for (const i of f.refs ?? [0]) {
+      const ref = obligation.referencesLegales[i];
+      if (!ref) throw new FondementInconnuError(f.obligationId, i);
+      if (vues.has(ref.reference)) continue;
+      vues.add(ref.reference);
+      sorties.push(ref.reference);
+    }
+  }
+
+  return sorties.join(" ; ");
+}
 
 export type Entree = {
   categorie: CategorieEquipement;
   libelle: string;
   raison: string;
 };
+
+/**
+ * Ce qu'une règle de suggestion déclare : le motif en langage courant, et les
+ * obligations qui le fondent. Le motif ne cite **jamais** d'article — c'est le
+ * référentiel qui les porte, et lui seul.
+ */
+type Suggestion = {
+  categorie: CategorieEquipement;
+  libelle: string;
+  motif: string;
+  fondements: Fondement[];
+};
+
+function entree(s: Suggestion): Entree {
+  return {
+    categorie: s.categorie,
+    libelle: s.libelle,
+    raison: `${s.motif} (${citer(s.fondements)}).`,
+  };
+}
 
 export type ContexteEtablissement = {
   codeNaf?: string | null;
@@ -41,18 +142,30 @@ function normNaf(naf: string | null | undefined): string {
 }
 
 /**
- * La raison des suggestions de BAES hors régime ERP. Une seule constante pour
+ * Le motif des suggestions de BAES hors régime ERP. Une seule constante pour
  * les deux branches sectorielles qui la posent (commerce, bureau) : elles
  * doivent annoncer la même chose, et une divergence entre les deux passerait
  * inaperçue.
  *
- * Elle ne parle que du régime travail, et c'est correct : la branche ERP
- * suggère le BAES plus haut, et la déduplication par catégorie garde la
- * première entrée. Un commerce ERP n'atteint donc jamais cette raison — il
- * garde celle qui cite la vérification annuelle de la section EC.
+ * Il ne parle que du régime travail, et c'est correct : la branche ERP suggère
+ * le BAES plus haut, et la déduplication par catégorie garde la première
+ * entrée. Un commerce ERP n'atteint donc jamais ce motif — il garde celui qui
+ * annonce la vérification annuelle de la section EC.
  */
-const RAISON_BAES_TRAVAIL =
-  "Éclairage d'évacuation obligatoire dans les lieux de travail (R. 4227-14 CT) : essai mensuel et contrôle semestriel de l'autonomie (arrêté du 14 décembre 2011, art. 11).";
+const MOTIF_BAES_TRAVAIL =
+  "Éclairage d'évacuation obligatoire dans les lieux de travail : essai mensuel et contrôle semestriel de l'autonomie";
+
+/**
+ * R. 4227-14 avant l'arrêté qui l'applique : c'est l'article du Code du
+ * travail que le dirigeant reconnaîtra, l'arrêté n'en est que la mise en
+ * œuvre. D'où l'ordre `[1, 0]`.
+ */
+const FONDEMENTS_BAES_TRAVAIL: Fondement[] = [
+  {
+    obligationId: "incendie-travail-eclairage-securite-essai-mensuel",
+    refs: [1, 0],
+  },
+];
 
 function isRestauration(naf: string): boolean {
   return naf.startsWith("56.");
@@ -99,32 +212,70 @@ function isBureau(naf: string): boolean {
 }
 
 /**
+ * Le froid se suggère au restaurant comme au commerce alimentaire, avec le
+ * même fondement — seul le libellé change (chambre froide contre vitrine).
+ * Les deux branches citaient la même chose en double ; elles la lisent
+ * désormais au même endroit.
+ */
+const FONDEMENTS_FROID: Fondement[] = [
+  { obligationId: "froid-controle-etancheite-mise-en-service" },
+  { obligationId: "froid-controle-etancheite-annuel" },
+];
+
+const MOTIF_FROID =
+  "Contrôle d'étanchéité du fluide frigorigène par un opérateur certifié";
+
+/**
  * Renvoie la liste des équipements suggérés pour un établissement donné.
  *
- * Le moteur est **pur** (pas d'accès DB) pour rester testable. L'UI de
- * l'étape 4 l'appelle côté serveur au rendu du wizard de déclaration.
+ * Le moteur reste **pur** (pas d'accès DB, pas d'horloge) pour rester
+ * testable : le référentiel qu'il lit est une constante du module, pas une
+ * source externe. L'UI de l'étape 4 l'appelle côté serveur au rendu du wizard
+ * de déclaration.
  */
 export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
   const naf = normNaf(ctx.codeNaf);
   const set = new Map<string, Entree>();
 
-  const ajoute = (e: Entree) => {
+  const ajoute = (s: Suggestion) => {
     // Déduplication par catégorie : une suggestion par catégorie dans l'UI.
     // Plusieurs règles peuvent proposer la même catégorie — on garde la
     // première rencontrée (ordre de priorité : base → ERP → IGH → travail →
     // sectoriel → habitation).
-    if (!set.has(e.categorie)) set.set(e.categorie, e);
+    if (!set.has(s.categorie)) set.set(s.categorie, entree(s));
   };
 
   // ---------------------------------------------------------------------------
   // Règles de base — quasi universelles dès qu'il y a un bâtiment
   // ---------------------------------------------------------------------------
   if (ctx.estEtablissementTravail || ctx.estERP || ctx.estIGH) {
+    // Les fondements suivent le régime : citer l'article du Code du travail à
+    // un ERP qui n'emploie personne, ou l'arrêté ERP à un employeur qui
+    // n'accueille pas de public, revenait à justifier la suggestion par un
+    // texte qui ne s'applique pas à lui.
+    const fondements: Fondement[] = [];
+    if (ctx.estEtablissementTravail) {
+      fondements.push({ obligationId: "elec-travail-periodique-annuelle" });
+    }
+    if (ctx.estERP) {
+      // Les deux régimes ERP sont cités : la catégorie n'est pas connue de ce
+      // moteur, et le rythme en dépend (annuel en 1ʳᵉ-4ᵉ, triennal en 5ᵉ).
+      fondements.push({ obligationId: "elec-erp-cat1-4-annuelle" });
+      fondements.push({ obligationId: "elec-erp-cat5-quinquennale" });
+    }
+    if (ctx.estIGH) {
+      fondements.push({ obligationId: "elec-igh-annuelle" });
+    }
+
     ajoute({
       categorie: "INSTALLATION_ELECTRIQUE",
       libelle: "Installation électrique principale",
-      raison:
-        "Vérification périodique annuelle (R. 4226-16 CT) et/ou annuelle/quinquennale selon régime ERP.",
+      // Le motif reste neutre : les régimes cités varient d'un établissement à
+      // l'autre, et nommer l'ERP à un employeur qui n'en est pas un décrirait
+      // une situation qui n'est pas la sienne.
+      motif:
+        "Vérification périodique de l'installation, à un rythme fixé par le régime de l'établissement",
+      fondements,
     });
   }
 
@@ -135,20 +286,28 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
     ajoute({
       categorie: "EXTINCTEUR",
       libelle: "Extincteurs portatifs",
-      raison:
-        "Vérification annuelle (arrêté 25 juin 1980, art. MS 38 § 2 et MS 73).",
+      motif: "Vérification annuelle",
+      fondements: [
+        { obligationId: "incendie-erp-extincteurs-annuelle", refs: [0, 1] },
+      ],
     });
     ajoute({
       categorie: "BAES",
       libelle: "Éclairage de sécurité (BAES)",
-      raison:
-        "Vérification annuelle (arrêté 25 juin 1980, art. EC 14 et EC 15).",
+      motif:
+        "Essai mensuel, contrôle semestriel de l'autonomie et vérification annuelle",
+      fondements: [
+        { obligationId: "incendie-erp-baes-annuelle" },
+        { obligationId: "incendie-erp-eclairage-securite-essai-mensuel" },
+      ],
     });
     ajoute({
       categorie: "ALARME_INCENDIE",
       libelle: "Système de sécurité incendie (SSI / alarme)",
-      raison:
-        "Vérification annuelle (arrêté 25 juin 1980, art. MS 73 § 1).",
+      // La référence porte déjà « (vérification annuelle) » : redire la
+      // périodicité dans le motif imbriquerait deux parenthèses pour rien.
+      motif: "Vérification périodique du système de sécurité incendie",
+      fondements: [{ obligationId: "incendie-erp-ssi-annuelle" }],
     });
   }
 
@@ -159,32 +318,37 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
     ajoute({
       categorie: "DESENFUMAGE",
       libelle: "Désenfumage mécanique",
-      raison:
-        "Arrêté 30 décembre 2011 (IGH) — vérification annuelle (GH 60 s.).",
+      motif:
+        "Moyens de secours vérifiés annuellement par organisme agréé en immeuble de grande hauteur",
+      fondements: [{ obligationId: "incendie-igh-moyens-secours-annuelle" }],
     });
     ajoute({
       categorie: "ASCENSEUR",
       libelle: "Ascenseur(s)",
-      raison: "Équipement quasi systématique en IGH (CCH R. 134).",
+      motif:
+        "Équipement quasi systématique en IGH, soumis au contrôle technique quinquennal",
+      fondements: [{ obligationId: "ascenseur-controle-technique-quinquennal" }],
     });
   }
 
   // ---------------------------------------------------------------------------
   // Travail (hors spécialisation) → aération obligatoire dans la plupart des
-  // locaux de travail (R. 4222-20 et arrêté 8 octobre 1987).
+  // locaux de travail.
   // ---------------------------------------------------------------------------
   if (ctx.estEtablissementTravail) {
     ajoute({
       categorie: "VMC",
       libelle: "Ventilation des locaux de travail",
-      raison:
-        "Contrôle périodique annuel (R. 4222-20 CT, arrêté 8 octobre 1987).",
+      motif: "Entretien et contrôle périodiques des installations d'aération",
+      fondements: [
+        { obligationId: "aeration-travail-entretien-annuel", refs: [0, 1] },
+      ],
     });
     ajoute({
       categorie: "EXTINCTEUR",
       libelle: "Extincteurs de l'établissement",
-      raison:
-        "Moyens de lutte obligatoires (R. 4227-28 CT), vérification annuelle.",
+      motif: "Moyens de lutte contre l'incendie obligatoires",
+      fondements: [{ obligationId: "incendie-travail-moyens-lutte" }],
     });
   }
 
@@ -195,20 +359,23 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
     ajoute({
       categorie: "INSTALLATION_FRIGORIFIQUE",
       libelle: "Chambre froide / groupe froid",
-      raison:
-        "Contrôle d'étanchéité du fluide frigorigène par un opérateur certifié (R. 543-79 code de l'environnement, règlement UE 2024/573 art. 5).",
+      motif: MOTIF_FROID,
+      fondements: FONDEMENTS_FROID,
     });
     ajoute({
       categorie: "HOTTE_PRO",
       libelle: "Hotte d'extraction cuisine",
-      raison:
-        "Ramonage annuel des conduits (arrêté 25 juin 1980, art. GC 21).",
+      motif: "Ramonage et nettoyage annuels des circuits d'extraction de buées",
+      fondements: [
+        { obligationId: "cuisson-erp-circuits-extraction-nettoyage" },
+      ],
     });
     ajoute({
       categorie: "APPAREIL_CUISSON_ERP",
       libelle: "Appareils de cuisson professionnels",
-      raison:
-        "Vérification annuelle des appareils de cuisson et de leurs dispositifs de sécurité (arrêté 25 juin 1980, art. GC 22).",
+      motif:
+        "Vérification annuelle des appareils de cuisson et de leurs dispositifs de sécurité",
+      fondements: [{ obligationId: "cuisson-erp-appareils-annuelle" }],
     });
   }
 
@@ -216,8 +383,8 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
     ajoute({
       categorie: "INSTALLATION_FRIGORIFIQUE",
       libelle: "Vitrines réfrigérées / chambre froide",
-      raison:
-        "Contrôle d'étanchéité du fluide frigorigène par un opérateur certifié (R. 543-79 code de l'environnement, règlement UE 2024/573 art. 5).",
+      motif: MOTIF_FROID,
+      fondements: FONDEMENTS_FROID,
     });
   }
 
@@ -225,7 +392,8 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
     ajoute({
       categorie: "BAES",
       libelle: "Éclairage de sécurité (BAES)",
-      raison: RAISON_BAES_TRAVAIL,
+      motif: MOTIF_BAES_TRAVAIL,
+      fondements: FONDEMENTS_BAES_TRAVAIL,
     });
   }
 
@@ -233,13 +401,19 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
     ajoute({
       categorie: "BAES",
       libelle: "Éclairage de sécurité (BAES)",
-      raison: RAISON_BAES_TRAVAIL,
+      motif: MOTIF_BAES_TRAVAIL,
+      fondements: FONDEMENTS_BAES_TRAVAIL,
     });
     ajoute({
       categorie: "ALARME_INCENDIE",
       libelle: "Alarme incendie",
-      raison:
-        "Obligatoire dès que plus de 50 personnes peuvent être habituellement occupées ou réunies dans l'établissement, ou dès qu'il manipule des matières inflammables (R. 4227-34).",
+      motif:
+        "Obligatoire dès que plus de 50 personnes peuvent être habituellement occupées ou réunies dans l'établissement, ou dès qu'il manipule des matières inflammables",
+      // `refs: [1, 0]` : R. 4227-34 porte le champ d'application que le motif
+      // décrit ; R. 4227-39 n'en est que la conséquence semestrielle.
+      fondements: [
+        { obligationId: "incendie-travail-exercice-semestriel", refs: [1, 0] },
+      ],
     });
   }
 
@@ -250,8 +424,8 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
     ajoute({
       categorie: "VMC",
       libelle: "VMC de l'immeuble d'habitation",
-      raison:
-        "Si VMC-Gaz : entretien annuel obligatoire (arrêté 25 avril 1985).",
+      motif: "Si VMC-Gaz : entretien annuel obligatoire",
+      fondements: [{ obligationId: "aeration-habitation-vmc-gaz-annuelle" }],
     });
   }
 

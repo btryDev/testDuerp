@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { obligationsConformite } from "@/lib/referentiels/conformite";
 import { suggererEquipements } from "./pre-remplissage";
 
 function categories(out: ReturnType<typeof suggererEquipements>): string[] {
@@ -259,6 +260,83 @@ describe("suggererEquipements — chaque entrée a une raison non vide", () => {
         expect(e.raison.trim().length).toBeGreaterThan(10);
         expect(e.libelle.trim().length).toBeGreaterThan(3);
       }
+    }
+  });
+});
+
+describe("suggererEquipements — aucune référence n'est écrite en dur", () => {
+  /**
+   * Le garde-fou du doublon (amendement 2026-08-25). Ce module citait ses
+   * articles dans des chaînes recopiées à la main, sans importer le
+   * référentiel : corriger une référence dans `conformite/` laissait la
+   * suggestion sur l'ancien texte. Quatre dérives avaient déjà pris, dont un
+   * arrêté abrogé en 2018 encore affiché à l'utilisateur.
+   *
+   * Ce test relit chaque citation produite et exige qu'elle existe, mot pour
+   * mot, dans `referencesLegales` d'une obligation. Il échoue donc aussi bien
+   * si quelqu'un réintroduit une référence en dur que si une obligation citée
+   * est retirée ou renommée.
+   */
+  const CONTEXTES: Parameters<typeof suggererEquipements>[0][] = [];
+  for (const codeNaf of ["56.10A", "47.11B", "47.26Z", "70.22Z", null]) {
+    for (const estEtablissementTravail of [true, false]) {
+      for (const estERP of [true, false]) {
+        for (const estIGH of [true, false]) {
+          for (const estHabitation of [true, false]) {
+            CONTEXTES.push({
+              codeNaf,
+              estEtablissementTravail,
+              estERP,
+              estIGH,
+              estHabitation,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  const REFERENCES_CONNUES = new Set(
+    obligationsConformite.flatMap((o) =>
+      o.referencesLegales.map((r) => r.reference),
+    ),
+  );
+
+  it("chaque citation affichée provient du référentiel de conformité", () => {
+    let citationsVues = 0;
+
+    for (const ctx of CONTEXTES) {
+      for (const e of suggererEquipements(ctx)) {
+        // `motif (référence ; référence).` — le motif ne contient jamais de
+        // parenthèse, la première ouvre donc la citation. Les références, si.
+        const m = /^(.*?) \((.*)\)\.$/.exec(e.raison);
+        expect(m, `raison mal formée : ${e.raison}`).not.toBeNull();
+
+        const [, motif, citations] = m!;
+        // Un motif qui cite un article rouvre exactement la porte qu'on ferme.
+        expect(motif, `article dans le motif : ${motif}`).not.toMatch(
+          /\b(R\.|L\.|D\.|art\.|arrêté|règlement)\s/i,
+        );
+
+        for (const ref of citations.split(" ; ")) {
+          expect(
+            REFERENCES_CONNUES.has(ref),
+            `référence absente du référentiel : « ${ref} » (${e.categorie})`,
+          ).toBe(true);
+          citationsVues += 1;
+        }
+      }
+    }
+
+    // Garde-fou du garde-fou : si le format change et que plus rien n'est
+    // extrait, la boucle passerait à vide sans rien vérifier.
+    expect(citationsVues).toBeGreaterThan(50);
+  });
+
+  it("aucun fondement déclaré ne pointe vers une obligation disparue", () => {
+    // `citer()` lève `FondementInconnuError` ; aucun contexte ne doit y mener.
+    for (const ctx of CONTEXTES) {
+      expect(() => suggererEquipements(ctx)).not.toThrow();
     }
   });
 });
