@@ -388,8 +388,24 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
               elle ne préjuge ni de la qualité ni de l&apos;exhaustivité de
               l&apos;évaluation.
             </Text>
+            {/* Deux phrases par activité, et l'ordre n'est pas indifférent :
+                d'abord ce que le document ne traite pas — c'est ce que le
+                lecteur doit retenir — puis d'où vient la limite. Le
+                `pourquoi` est absent des versions validées avant son
+                introduction : elles se régénèrent alors telles qu'elles
+                étaient, sans qu'on aille chercher la phrase dans le
+                référentiel d'aujourd'hui. */}
             {activitesDeclarees.map((a) => (
-              <View key={a.id} style={{ marginTop: 4, marginLeft: 12 }}>
+              // `wrap={false}` : une activité tient d'un seul tenant. Sans
+              // lui, le saut de page tombait entre le manque et son pourquoi
+              // — le lecteur voyait la lacune sur une page et son explication
+              // sur la suivante, ce qui est exactement l'ordre dans lequel il
+              // ne faut pas les lire.
+              <View
+                key={a.id}
+                wrap={false}
+                style={{ marginTop: 4, marginLeft: 12 }}
+              >
                 <Text style={s.small}>
                   <Text style={{ fontFamily: "Helvetica-Bold" }}>
                     {a.libelle}
@@ -397,6 +413,14 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
                   {" — "}
                   {a.cequiManque}
                 </Text>
+                {a.pourquoi && (
+                  <Text style={[s.small, { marginTop: 2 }]}>
+                    <Text style={{ fontFamily: "Helvetica-Oblique" }}>
+                      Pourquoi ce référentiel ne la couvre pas :
+                    </Text>{" "}
+                    {a.pourquoi}
+                  </Text>
+                )}
               </View>
             ))}
             {/* Les questions sans réponse ne se disent qu'ici, à l'intérieur

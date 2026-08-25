@@ -123,7 +123,7 @@ describe("activités non couvertes", () => {
     expect(new Set(valeurs).size).toBe(valeurs.length);
   });
 
-  it("chaque activité porte une question fermée et ce qui manque", () => {
+  it("chaque activité porte une question fermée, ce qui manque et pourquoi", () => {
     for (const { a } of activites) {
       expect(a.libelle.trim().length).toBeGreaterThan(0);
       // Une question tranchable finit par un point d'interrogation.
@@ -131,6 +131,25 @@ describe("activités non couvertes", () => {
       // `cequiManque` est imprimé et lu par un tiers : il doit être descriptif,
       // donc bien plus qu'un mot-clé.
       expect(a.cequiManque.trim().length).toBeGreaterThan(40);
+      // `pourquoi` s'imprime juste en dessous et doit tenir seul : sans lui,
+      // la mention se lit comme une lacune du produit plutôt que comme le
+      // bord connu d'un référentiel sectoriel.
+      expect(a.pourquoi.trim().length).toBeGreaterThan(40);
+    }
+  });
+
+  it("le pourquoi de chaque activité cite la source qui la traite ailleurs", () => {
+    // La règle de rédaction du champ, rendue exécutable : on nomme ce qui
+    // documente l'activité hors de ce référentiel — un outil OiRA, une
+    // brochure ED, un dossier INRS. Une explication qui ne cite rien renvoie
+    // à l'état d'avancement du produit, qui ne veut rien dire pour le lecteur
+    // du document et vieillirait mal sur une pièce conservée quarante ans.
+    for (const { a } of activites) {
+      const citeUneSource = /OiRA|ED \d{3,4}|QR \d+|INRS/.test(a.pourquoi);
+      expect(
+        citeUneSource,
+        `L'explication de « ${a.id} » ne nomme aucune source.`,
+      ).toBe(true);
     }
   });
 
@@ -145,7 +164,8 @@ describe("activités non couvertes", () => {
       "illégal",
     ];
     for (const { a } of activites) {
-      const texte = `${a.libelle} ${a.question} ${a.aide ?? ""} ${a.cequiManque}`.toLowerCase();
+      const texte =
+        `${a.libelle} ${a.question} ${a.aide ?? ""} ${a.cequiManque} ${a.pourquoi}`.toLowerCase();
       for (const mot of interdits) {
         expect(texte.includes(mot)).toBe(false);
       }

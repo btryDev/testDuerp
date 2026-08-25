@@ -96,6 +96,25 @@ export type ActiviteNonCouverte = {
    * descriptif — les familles de risques absentes, pas une appréciation.
    */
   cequiManque: string;
+  /**
+   * Pourquoi le référentiel s'arrête là. `cequiManque` dit **ce que** le
+   * document ne traite pas ; celui-ci dit **d'où vient la limite**, et les
+   * deux s'impriment côte à côte.
+   *
+   * Sans lui, la mention se lit comme un aveu de lacune du produit. Avec lui,
+   * elle se lit pour ce qu'elle est : un référentiel sectoriel est bâti sur
+   * une activité type documentée par une source précise, et le code NAF qui
+   * l'a déclenché ratisse plus large que cette source. Le lecteur tiers —
+   * inspecteur, assureur, acquéreur — a besoin de cette phrase pour savoir
+   * s'il regarde un oubli ou un bord connu.
+   *
+   * Même régime que `cequiManque` : factuel, sourcé, imprimé tel quel dans le
+   * document et figé dans le snapshot. On nomme la source qui traite
+   * l'activité ailleurs — un outil OiRA distinct, une brochure sectorielle —
+   * jamais l'état d'avancement du produit, qui ne veut rien dire pour le
+   * lecteur et vieillirait mal dans une pièce conservée quarante ans.
+   */
+  pourquoi: string;
 };
 
 export type Referentiel = {

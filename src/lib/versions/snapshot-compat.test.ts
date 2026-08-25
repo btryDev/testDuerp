@@ -185,4 +185,30 @@ describe("snapshot DUERP — mention de périmètre du référentiel", () => {
       activitesSansReponseSnapshot(recent.couverture).map((a) => a.libelle),
     ).toEqual(["Pressing"]);
   });
+
+  it("une activité figée sans `pourquoi` le reste : rien n'est reconstruit", () => {
+    // Les versions validées entre l'introduction de la couverture (ADR-020) et
+    // celle de l'explication portent des activités déclarées sans phrase de
+    // « pourquoi ». Régénérées, elles doivent rendre le document d'alors — la
+    // mention seule. Aller chercher l'explication dans le référentiel courant
+    // ferait dire à une pièce archivée une phrase que personne n'avait lue, et
+    // qui aurait pu être réécrite dix fois depuis.
+    const recent: DuerpSnapshot = {
+      ...snapshotAncien(),
+      couverture: {
+        referentielSecteurId: "commerce",
+        activites: [
+          {
+            id: "com-decoupe-viande",
+            libelle: "Découpe de viande",
+            cequiManque: "machines de découpe, travail au froid, TMS.",
+            exercee: true,
+          },
+        ],
+      },
+    };
+    const [declaree] = activitesDeclareesSnapshot(recent.couverture);
+    expect(declaree.cequiManque).toContain("travail au froid");
+    expect(declaree.pourquoi).toBeUndefined();
+  });
 });

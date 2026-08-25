@@ -69,6 +69,18 @@ export type ActiviteCouvertureSnapshot = {
   libelle: string;
   cequiManque: string;
   /**
+   * D'où vient la limite du référentiel, recopié du référentiel au moment de
+   * figer, comme `libelle` et `cequiManque`.
+   *
+   * **Optionnel, et pour la même raison que `DuerpSnapshot.couverture`** : les
+   * versions validées entre l'introduction de la couverture et celle de cette
+   * phrase portent bien des activités déclarées, mais pas leur explication.
+   * Régénérées, elles doivent rendre exactement le document d'alors — la
+   * mention citée sans son pourquoi, jamais un pourquoi reconstruit depuis le
+   * référentiel courant, qui aurait changé.
+   */
+  pourquoi?: string;
+  /**
    * `true` = activité déclarée exercée ; `false` = déclarée non exercée ;
    * `null` = question posée, restée sans réponse. Les trois se distinguent
    * jusque dans le document : un silence ne devient jamais un « non ».

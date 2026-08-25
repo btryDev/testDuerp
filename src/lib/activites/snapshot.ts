@@ -79,6 +79,7 @@ export function figerCouverture(
       id: q.activite.id,
       libelle: q.activite.libelle,
       cequiManque: q.activite.cequiManque,
+      pourquoi: q.activite.pourquoi,
       exercee: q.exercee === undefined ? null : q.exercee,
     })),
   };

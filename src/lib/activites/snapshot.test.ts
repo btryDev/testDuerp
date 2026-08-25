@@ -14,6 +14,7 @@ function activite(id: string): ActiviteNonCouverte {
     libelle: `Activité ${id}`,
     question: `Exercez-vous ${id} ?`,
     cequiManque: `ce que le référentiel ne dit pas de ${id}.`,
+    pourquoi: `pourquoi le référentiel s'arrête avant ${id}.`,
   };
 }
 
@@ -24,12 +25,16 @@ describe("figerCouverture", () => {
     { activite: activite("pressing"), exercee: undefined },
   ];
 
-  it("recopie le libellé et le « ce qui manque », sans se contenter de l'id", () => {
+  it("recopie le libellé, le « ce qui manque » et le pourquoi, sans se contenter de l'id", () => {
+    // Les trois textes voyagent ensemble jusqu'au document : le référentiel
+    // sera réécrit, et une version relue dans trente ans doit citer la
+    // formulation qui avait été montrée au dirigeant, pas la courante.
     const fige = figerCouverture("commerce", questions);
     expect(fige.activites[0]).toEqual({
       id: "decoupe",
       libelle: "Activité decoupe",
       cequiManque: "ce que le référentiel ne dit pas de decoupe.",
+      pourquoi: "pourquoi le référentiel s'arrête avant decoupe.",
       exercee: true,
     });
   });

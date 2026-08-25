@@ -380,6 +380,8 @@ export const bureau: Referentiel = {
         "La question porte sur le travail effectué une fois sur place, pas sur le trajet pour s'y rendre ni sur un simple rendez-vous en salle de réunion.",
       cequiManque:
         "L'évaluation ne décrit que vos propres locaux. Elle ne porte pas sur le travail réalisé chez un tiers : état des lieux, des accès et des installations du site d'accueil, risques d'interférence avec les autres intervenants présents, circulation d'engins et zones de chantier, travail en hauteur ou en local technique, consignes et moyens de secours propres au site.",
+      pourquoi:
+        "Les cinq unités types de ce référentiel décrivent toutes des postes situés dans les locaux de l'employeur, seul périmètre que couvrent les sources qui le fondent (dépliant INRS ED 6383 « Travail de bureau » et outil OiRA du même nom). Le travail réalisé sur le site d'un tiers met en présence plusieurs entreprises sur un même lieu, situation que l'INRS traite à part dans son dossier « Entreprises extérieures » — et le code NAF des activités tertiaires ne distingue pas celles qui se pratiquent hors les murs.",
     },
     {
       // Sources : dossier INRS « Télétravail », page « Risques et effets sur la
@@ -403,6 +405,8 @@ export const bureau: Referentiel = {
         "Répondez oui pour du télétravail régulier comme occasionnel, quel que soit le nombre de jours.",
       cequiManque:
         "L'évaluation décrit des postes installés dans vos locaux. Elle ne porte pas sur le travail à domicile : poste non aménagé et hors de votre regard (siège, écran, éclairage), postures sédentaires prolongées et leurs effets sur la santé, isolement du collectif de travail, porosité entre vie professionnelle et vie personnelle, troubles du sommeil, difficulté à donner l'alerte et à porter secours en cas de malaise.",
+      pourquoi:
+        "Le poste sur écran décrit par ce référentiel est un poste que l'employeur installe et voit. L'INRS traite le travail à domicile à part — dossier « Télétravail », brochure ED 6384 — parce que ses déterminants sont autres : poste hors du regard de l'employeur, postures sédentaires prolongées comme risque en propre, isolement du collectif, porosité entre vie professionnelle et vie personnelle.",
     },
     {
       // Sources : page métier INRS « Centres d'appels téléphoniques ». INRS
@@ -426,6 +430,8 @@ export const bureau: Referentiel = {
         "Répondez oui pour un poste de plateforme téléphonique, d'assistance ou de prise d'appels. Quelques visioconférences par semaine ne sont pas visées.",
       cequiManque:
         "L'évaluation traite le bruit ambiant des bureaux, pas le son délivré directement à l'oreille : exposition sonore cumulée sur la journée au casque, chocs acoustiques (sons brefs et aigus imprévisibles dans l'écouteur) et leurs suites auditives, fatigue auditive et vocale, cadence imposée par la file d'appels et absence de récupération entre deux communications.",
+      pourquoi:
+        "Le risque sonore de ce référentiel décrit le brouhaha d'un open-space, exposition ambiante et collective. Le casque délivre le son directement à l'oreille pendant toute la journée : l'INRS en fait une question distincte, traitée dans sa page métier « Centres d'appels téléphoniques » et dans sa réponse QR 71 sur les chocs acoustiques. Le code NAF 82, qui relève de ce référentiel, comprend les plateformes téléphoniques.",
     },
   ],
 };

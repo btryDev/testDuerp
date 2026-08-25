@@ -336,6 +336,8 @@ export const commerce: Referentiel = {
         "Répondez oui s'il existe un rayon boucherie, charcuterie ou traiteur avec un laboratoire de découpe. Répondez non si vous vendez uniquement de la viande reçue déjà conditionnée.",
       cequiManque:
         "L'évaluation ne décrit pas le laboratoire de découpe : machines à trancher et scies à ruban, qui exposent à des coupures, des écrasements et des amputations ; travail au couteau tout au long de la journée ; exposition au froid en chambre froide et au contact des produits ; troubles musculo-squelettiques du désossage et de la découpe répétée ; manutention des carcasses et des quartiers ; risque biologique lié à la manipulation de viande crue.",
+      pourquoi:
+        "Le référentiel « Commerce de détail » est bâti sur la structure OiRA du commerce, dont il ne retient que le magasin : réception et stockage, mise en rayon, vente et caisse, locaux. L'INRS traite la boucherie et la charcuterie dans un outil d'évaluation distinct (OiRA « Boucherie - Charcuterie », dépliant ED 6382), parce que les familles de risques d'un laboratoire de découpe ne sont pas celles d'une surface de vente. Le code NAF du commerce de détail, lui, ne distingue pas la supérette de l'hypermarché qui découpe sur place.",
     },
     {
       // Sources : INRS, outil OiRA « Poissonnerie » (outil72) et dépliant INRS
@@ -354,6 +356,8 @@ export const commerce: Referentiel = {
         "Répondez oui s'il existe un banc de marée, un rayon poissonnerie ou un poste d'écaillage. Répondez non si le poisson arrive déjà préparé et emballé.",
       cequiManque:
         "L'évaluation ne décrit pas le banc de marée : manutention répétée de la glace, du chargement du banc à l'évacuation de l'eau de fonte ; coupures par les arêtes et par les couteaux, et infections cutanées qui s'ensuivent ; installations électriques exposées à l'humidité permanente du poste ; travail debout dans le froid et sur sol mouillé.",
+      pourquoi:
+        "Les unités types de ce référentiel décrivent la vente, pas la préparation des produits. L'INRS consacre à ce métier un outil d'évaluation distinct (OiRA « Poissonnerie », dépliant ED 6380) et relève dans les commerces de bouche la durée d'arrêt moyenne par maladie professionnelle la plus élevée pour la poissonnerie.",
     },
     {
       // Sources : INRS, outil OiRA « Boulangerie - Pâtisserie - Chocolaterie -
@@ -376,6 +380,8 @@ export const commerce: Referentiel = {
         "Répondez oui dès qu'il y a un four ou un laboratoire dans le magasin, y compris pour cuire des produits livrés crus ou surgelés.",
       cequiManque:
         "L'évaluation ne décrit pas le fournil ni le laboratoire de pâtisserie : poussières de farine et de sucre glace, première cause d'asthme professionnel, et rhinites associées ; brûlures au four et aux appareils de cuisson ; pétrins, diviseuses et laminoirs ; manutention des sacs de farine, des seaux et des chariots de plaques.",
+      pourquoi:
+        "Le référentiel décrit un magasin qui vend des produits reçus finis. La fabrication sur place relève d'un outil d'évaluation distinct de l'INRS (OiRA « Boulangerie - Pâtisserie - Chocolaterie - Glacerie », dépliant ED 6400), et l'exposition respiratoire aux poussières qu'elle entraîne n'a pas d'équivalent parmi les risques types de ce référentiel, dont le volet chimique ne vise que les produits d'entretien.",
     },
     {
       // Source : la structure OiRA du commerce non alimentaire citée en tête de
@@ -393,6 +399,8 @@ export const commerce: Referentiel = {
         "La question porte sur le travail effectué une fois sur place, pas sur le trajet pour s'y rendre.",
       cequiManque:
         "L'évaluation ne décrit que le magasin et ses réserves. Elle ne porte pas sur le travail réalisé chez le client : accès, sols, escaliers et installations électriques d'un lieu que vous ne connaissez pas à l'avance ; portage et manutention dans des espaces contraints ; risques d'interférence avec les autres intervenants présents sur place ; intervention seul, loin de tout renfort.",
+      pourquoi:
+        "La structure OiRA du commerce comporte une unité « Interventions chez les clients » que les unités types de ce référentiel ne reprennent pas : elles décrivent toutes le magasin et ses réserves, c'est-à-dire des lieux que l'employeur maîtrise. Le travail réalisé sur le site d'un tiers met en présence plusieurs entreprises sur un même lieu, situation que l'INRS traite à part dans son dossier « Entreprises extérieures ».",
     },
   ],
 };

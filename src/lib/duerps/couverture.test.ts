@@ -21,12 +21,14 @@ const secteurInstruit: Referentiel = {
       libelle: "Découpe de viande sur place",
       question: "Découpez-vous de la viande sur place ?",
       cequiManque: "Machines de découpe, travail au froid.",
+      pourquoi: "Le référentiel décrit la vente, pas le laboratoire.",
     },
     {
       id: "tst-fournil",
       libelle: "Fournil",
       question: "Cuisez-vous du pain sur place ?",
       cequiManque: "Farines, four, travail de nuit.",
+      pourquoi: "Le référentiel décrit la vente, pas la fabrication.",
     },
   ],
 };

@@ -444,6 +444,8 @@ export const restauration: Referentiel = {
         "Répondez oui si la pâte est travaillée dans votre cuisine (pétrissage, façonnage, dressage). Répondez non si vous servez des produits achetés déjà finis.",
       cequiManque:
         "L'évaluation ne décrit pas le travail de la pâte : poussières de farine et de sucre glace, première cause d'asthme professionnel, et rhinites associées ; pétrins, batteurs-mélangeurs et laminoirs ; manutention des sacs de farine et des chariots de plaques.",
+      pourquoi:
+        "Le référentiel « Restauration » est bâti sur l'outil OiRA « Hôtels, cafés, restaurants », que l'INRS destine à la restauration traditionnelle. Le travail de la pâte relève d'un outil d'évaluation distinct (OiRA « Boulangerie - Pâtisserie - Chocolaterie - Glacerie », dépliant ED 6400) : l'exposition respiratoire aux poussières qu'il entraîne n'a aucun équivalent parmi les risques types de ce référentiel, dont le volet chimique ne vise que les produits d'entretien.",
     },
     {
       // Sources : INRS ED 933 « La restauration rapide — Aide au repérage des
@@ -466,6 +468,8 @@ export const restauration: Referentiel = {
         "Répondez oui si une personne se retrouve seule dans l'établissement avant l'ouverture, après le service, ou sur le trajet du dépôt en banque.",
       cequiManque:
         "L'évaluation ne décrit pas les phases d'ouverture, de fermeture et de transport des fonds : agression physique ou vol à main armée au moment de l'encaissement ou de la fermeture, trajet vers la banque avec la recette, présence d'un salarié seul dans l'établissement hors des heures de service, prise en charge d'un salarié après un événement violent.",
+      pourquoi:
+        "Les risques types de ce référentiel décrivent le contact avec la clientèle pendant le service — incivilités et agressions verbales en salle. Ils ne décrivent ni la violence dirigée contre la caisse, ni les moments où l'établissement est occupé par une seule personne. L'INRS traite ces situations dans des documents que ce référentiel ne reprend pas : ED 933 « La restauration rapide » pour les agressions et le transport de fonds, ED 6401 « Commerces alimentaires de proximité » pour les phases d'ouverture et de fermeture.",
     },
     {
       // Source : INRS, outil OiRA « Restauration collective » (outil155),
@@ -486,6 +490,8 @@ export const restauration: Referentiel = {
         "Répondez oui pour une cuisine centrale, une cantine desservie depuis vos locaux ou du portage de repas à domicile. Répondez non si vous ne servez que vos propres clients sur place ou à emporter.",
       cequiManque:
         "L'évaluation décrit une cuisine qui produit et sert dans les mêmes murs. Elle ne porte pas sur la production destinée à d'autres sites : conditionnement et refroidissement en série, contenants et chariots de grande capacité, chargement et transport des repas, remise en température et service dans des locaux que vous n'exploitez pas.",
+      pourquoi:
+        "Les unités types de ce référentiel décrivent une cuisine qui produit et sert dans les mêmes murs, périmètre que l'INRS donne lui-même à l'outil OiRA « Hôtels, cafés, restaurants ». La production destinée à d'autres sites relève d'un outil d'évaluation distinct (OiRA « Restauration collective ») : l'INRS en publie deux parce qu'il ne considère pas que l'un couvre l'autre, alors que le code NAF de la restauration réunit les deux activités.",
     },
   ],
 };

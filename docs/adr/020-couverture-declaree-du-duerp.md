@@ -43,11 +43,12 @@ Quatre points, indissociables.
 
 1. **Le mécanisme est déclaratif et fermé.** Chaque référentiel sectoriel porte
    une liste d'`ActiviteNonCouverte` (`src/lib/referentiels/types.ts`) : un
-   identifiant, un libellé, une question fermée, et ce qui manquera si la
-   réponse est « oui ». On pose la question, on lit la réponse. Aucune
-   détection, aucune heuristique, aucune inférence depuis le NAF, les
-   équipements déclarés ou le nom de l'établissement. Sur un document à valeur
-   légale, une couverture devinée serait pire qu'une couverture ignorée.
+   identifiant, un libellé, une question fermée, ce qui manquera si la réponse
+   est « oui », et pourquoi le référentiel s'arrête là. On pose la question, on
+   lit la réponse. Aucune détection, aucune heuristique, aucune inférence depuis
+   le NAF, les équipements déclarés ou le nom de l'établissement. Sur un
+   document à valeur légale, une couverture devinée serait pire qu'une
+   couverture ignorée.
 
 2. **Trois états, jamais deux.** `Duerp.reponsesActivitesNonCouvertes` est un
    `Json?` de forme `Record<string, boolean>` : `true`, `false`, et **clé
@@ -57,9 +58,9 @@ Quatre points, indissociables.
    n'y a pas de réponse par défaut à une question que personne n'a lue.
 
 3. **La couverture est un fait figé à la validation, jamais recalculé.** Le
-   snapshot de version porte un champ `couverture` qui **recopie** le libellé
-   et le « ce qui manque » de chaque activité, avec la réponse donnée ce
-   jour-là. Le référentiel sera réécrit, complété, réordonné ; une version
+   snapshot de version porte un champ `couverture` qui **recopie** le libellé,
+   le « ce qui manque » et le « pourquoi » de chaque activité, avec la réponse
+   donnée ce jour-là. Le référentiel sera réécrit, complété, réordonné ; une version
    relue dans trente ans doit citer ce qui a été déclaré, pas ce que le code
    contient au moment de la relecture. Le snapshot est le document, pas une
    clé étrangère vers lui.
@@ -69,7 +70,23 @@ Quatre points, indissociables.
    introduction sont conservées 40 ans et régénérées à l'identique : elles ne
    portent aucune mention, ni de manque, ni de complétude. Muet veut dire
    muet. Ce contrat est vérifié par `snapshot-compat.test.ts` et n'est pas
-   négociable.
+   négociable — et il vaut, un cran plus bas, pour `pourquoi`, optionnel à
+   l'intérieur de `couverture` : une version figée entre l'introduction de la
+   couverture et celle de l'explication cite sa mention sans son pourquoi, et
+   se régénère ainsi. On ne va jamais chercher la phrase manquante dans le
+   référentiel d'aujourd'hui.
+
+Le « pourquoi » mérite sa propre justification, parce qu'il a été ajouté après
+coup. `cequiManque` dit ce que le document ne traite pas ; seul, il se lit comme
+l'aveu d'une lacune du produit. Un référentiel sectoriel est pourtant bâti sur
+une activité type documentée par une source précise, et c'est le code NAF qui
+ratisse plus large qu'elle — l'INRS lui-même publie des outils distincts pour la
+boucherie, la poissonnerie, la boulangerie ou la restauration collective, parce
+que les familles de risques n'y sont pas les mêmes. Le lecteur tiers a besoin de
+cette phrase pour savoir s'il regarde un oubli ou un bord connu. D'où sa règle de
+rédaction, tenue par un test : elle **nomme la source qui traite l'activité
+ailleurs**, jamais l'état d'avancement du produit — qui ne veut rien dire pour ce
+lecteur et vieillirait mal sur une pièce conservée quarante ans.
 
 Côté produit, la déclaration est **informative et jamais bloquante** : elle
 n'ajoute ni ne retire aucun risque, elle n'empêche pas de valider une version,
@@ -125,6 +142,10 @@ appariement par le nom, c'est-à-dire l'heuristique que le point 1 écarte.
 - Instruire une nouvelle activité pour un secteur ne coûte ni migration ni
   reprise de données : les versions déjà validées gardent la question telle
   qu'elle se posait chez elles, les prochaines poseront la nouvelle.
+- Instruire le « pourquoi » d'une activité est un travail de sourçage, pas de
+  rédaction : la phrase doit citer l'outil OiRA, la brochure ED ou le dossier
+  INRS qui traite l'activité hors de ce référentiel. Le test qui l'exige rend
+  la règle exécutable plutôt que déclarative.
 - Le PDF a désormais deux mentions voisines qui nuancent la même phrase de
   méthodologie — les unités évaluées hors référentiel, et les activités
   déclarées hors référentiel. Elles restent au même endroit : les disperser
