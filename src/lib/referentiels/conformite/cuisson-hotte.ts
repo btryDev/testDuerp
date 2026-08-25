@@ -31,9 +31,15 @@ export const obligationsCuissonHotte: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. GC 12 et GC 19",
+        reference: "Arrêté du 25 juin 1980, art. GC 22 § 1 (vérification dans les conditions de la section II du chapitre Ier)",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
+      },
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 25 juin 1980, art. GE 6 à GE 8 (vérifications par organismes agréés)",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303884/",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -41,6 +47,8 @@ export const obligationsCuissonHotte: Obligation[] = [
     criticite: 5,
     typologies: { erp: true },
     categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait GC 12 (offices de remise en température) et GC 19 (appareils installés dans les locaux accessibles ou non au public), qui ne traitent pas de vérification. GC 22 § 1 renvoie aux articles GE 6 à GE 8.",
   },
   {
     id: "cuisson-erp-appareils-annuelle",

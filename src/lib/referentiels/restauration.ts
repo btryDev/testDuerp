@@ -9,7 +9,7 @@ import type { Referentiel } from "./types";
  *    « Production froide et chaude », « Service en salle », « Plonge ».
  *  - OiRA Restauration (outil INRS / EU-OSHA, AC 64).
  *  - INRS ED 840 « Évaluation des risques professionnels — Aide au repérage
- *    des risques dans les PME-PMI » (octobre 2023) pour la taxonomie des
+ *    des risques dans les PME-PMI », 8e édition (juin 2025) pour la taxonomie des
  *    familles de risques.
  *
  * Les libellés des risques et les mesures recommandées sont alignés sur le

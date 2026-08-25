@@ -285,6 +285,10 @@ export function normaliserFormDataEquipement(
     aGroupeElectrogene: caseCochee("aGroupeElectrogene"),
     estLocalPollutionSpecifique: caseCochee("estLocalPollutionSpecifique"),
     nbVehiculesParkingCouvert: raw.nbVehiculesParkingCouvert,
+    // Plaque constructeur d'un équipement sous pression (cf. `esp.ts`).
+    familleEsp: raw.familleEsp,
+    pressionMaxAdmissibleBar: raw.pressionMaxAdmissibleBar,
+    volumeLitres: raw.volumeLitres,
     notes: raw.notes,
   };
   for (const champ of CHAMPS_TRI_ETAT) {
@@ -310,6 +314,10 @@ export function serialiserCaracteristiques(
     out.estLocalPollutionSpecifique = val.estLocalPollutionSpecifique;
   if (val.nbVehiculesParkingCouvert !== undefined)
     out.nbVehiculesParkingCouvert = val.nbVehiculesParkingCouvert;
+  if (val.familleEsp !== undefined) out.familleEsp = val.familleEsp;
+  if (val.pressionMaxAdmissibleBar !== undefined)
+    out.pressionMaxAdmissibleBar = val.pressionMaxAdmissibleBar;
+  if (val.volumeLitres !== undefined) out.volumeLitres = val.volumeLitres;
   for (const champ of CHAMPS_TRI_ETAT) {
     const v = val[champ];
     if (v !== undefined) out[champ] = v;

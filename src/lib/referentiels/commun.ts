@@ -2,7 +2,9 @@ import type { RisqueReferentiel, QuestionDetection } from "./types";
 
 /**
  * Risques transverses présents quel que soit le secteur. Référencés sur les
- * 20 familles de risques de l'INRS ED 840 (octobre 2023).
+ * 20 fiches de risques de l'INRS ED 840, 8e édition (juin 2025). Les numéros
+ * de fiche cités dans ce fichier ont été recoupés un à un sur le sommaire de
+ * cette édition à l'audit du 2026-08-25.
  *
  * Sources :
  *  - INRS ED 840 « Évaluation des risques professionnels — Aide au repérage
@@ -140,7 +142,7 @@ export const risquesTransverses: RisqueReferentiel[] = [
     libelle:
       "Charge physique : port de charges, manutention manuelle (TMS, lombalgies)",
     description:
-      "INRS ED 840 fiche 5 « charge physique de travail ». Le port de charges supérieures à 10 kg est un repère réglementaire.",
+      "INRS ED 840 fiche 5 « Risques liés à la charge physique de travail ». Le Code du travail impose d'éviter le recours à la manutention manuelle (R. 4541-2) ; il ne fixe pas de seuil général, seulement des limites hautes avec avis médical (R. 4541-9 : 55 kg, 105 kg au maximum). Le repère de 10 kg est une valeur de bonne pratique, pas une règle opposable.",
     unitesAssociees: [],
     graviteParDefaut: 3,
     probabiliteParDefaut: 3,
@@ -160,7 +162,7 @@ export const risquesTransverses: RisqueReferentiel[] = [
       {
         id: "trv-charges-prap",
         libelle:
-          "Formation Prap (prévention des risques liés à l'activité physique) — INRS ED 6161",
+          "Formation Prap (prévention des risques liés à l'activité physique) ; analyse de la charge physique selon la méthode INRS ED 6161",
         type: "formation",
       },
     ],

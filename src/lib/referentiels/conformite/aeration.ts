@@ -140,9 +140,15 @@ export const obligationsAeration: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. CH 58",
+        reference: "Arrêté du 25 juin 1980, art. CH 58 (vérification dans les conditions de la section II du chapitre Ier)",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
+      },
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 25 juin 1980, art. CH 57 (entretien, ramonage annuel des conduits de fumée)",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
       },
     ],
     periodicite: "annuelle",

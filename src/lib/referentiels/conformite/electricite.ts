@@ -142,7 +142,13 @@ export const obligationsElectricite: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. EL 5 et EL 19",
+        reference: "Arrêté du 25 juin 1980, art. GE 6 à GE 8 (vérifications par organismes agréés, rapport RVRAT)",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303884/",
+      },
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 25 juin 1980, art. EL 19 § 2 (installations neuves ou modifiées)",
         urlLegifrance:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
       },
@@ -152,6 +158,8 @@ export const obligationsElectricite: Obligation[] = [
     criticite: 5,
     typologies: { erp: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait EL 5, qui définit les locaux de service électrique. La vérification avant ouverture et après travaux relève des articles GE 6 à GE 8 (rapport RVRAT), auxquels EL 19 § 2 renvoie.",
   },
   {
     id: "elec-erp-cat1-4-annuelle",
@@ -248,13 +256,13 @@ export const obligationsElectricite: Obligation[] = [
     domaine: "electricite",
     libelle: "Vérification annuelle des installations électriques (IGH)",
     description:
-      "Les installations électriques des immeubles de grande hauteur sont vérifiées annuellement par un organisme agréé conformément à l'article GH 50 du règlement IGH.",
+      "Le propriétaire d'un immeuble de grande hauteur fait vérifier annuellement, par un organisme agréé, les installations électriques et l'éclairage des parties communes. Les installations de protection contre la foudre sont vérifiées tous les deux ans.",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 30 décembre 2011 (règlement IGH), art. GH 50",
+        reference: "Arrêté du 30 décembre 2011 (règlement IGH), art. GH 5 (vérifications techniques par organismes agréés)",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025167121",
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025169258",
       },
     ],
     periodicite: "annuelle",
@@ -262,5 +270,7 @@ export const obligationsElectricite: Obligation[] = [
     criticite: 5,
     typologies: { igh: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait GH 50, qui traite de l'alerte (dispositifs phoniques vers le PC sécurité). Les vérifications techniques périodiques sont à l'article GH 5.",
   },
 ];

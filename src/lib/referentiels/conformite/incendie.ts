@@ -7,9 +7,10 @@
  *   - Arrêté du 25 juin 1980 modifié (règlement de sécurité ERP) — livre II,
  *     articles MS (moyens de secours), DF (désenfumage) et EC (éclairage).
  *   - Arrêté du 22 juin 1990 modifié (règles PE — ERP 5ᵉ catégorie).
- *   - Arrêté du 30 décembre 2011 (règlement IGH) — articles GH 60 à GH 63.
+ *   - Arrêté du 30 décembre 2011 (règlement IGH) — article GH 5 (vérifications
+ *     techniques par organismes agréés).
  *   - CCH articles R. 143-1 s. (ERP) et R. 146-3 s. (IGH) — registre de
- *     sécurité : R. 143-44 (ERP) et R. 146-21 (IGH).
+ *     sécurité : R. 143-44 (ERP) et R. 146-35 (IGH).
  *
  * Note sur les extincteurs :
  *   La NF EN 3 et la règle APSAD R4 ne sont pas des textes opposables en tant
@@ -122,9 +123,9 @@ export const obligationsIncendie: Obligation[] = [
       },
       {
         source: "CCH",
-        reference: "CCH, art. R. 146-21 (ex R. 122-29) — IGH",
+        reference: "CCH, art. R. 146-35 (ex R. 122-29) — IGH",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043819123/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043819153",
       },
     ],
     periodicite: "autre",
@@ -133,7 +134,7 @@ export const obligationsIncendie: Obligation[] = [
     typologies: { travail: true },
     categoriesEquipement: ["EXTINCTEUR", "ALARME_INCENDIE"],
     notesInternes:
-      "Obligation permanente (pas d'échéance périodique). Modélisée sur travail=true en MVP : en pratique tout établissement du scope V2 emploie au moins un salarié (L. 4711-5 CT). Les références CCH R. 143-44 / R. 146-21 restent citées pour information.",
+      "Obligation permanente (pas d'échéance périodique). Modélisée sur travail=true en MVP : en pratique tout établissement du scope V2 emploie au moins un salarié (L. 4711-5 CT). Les références CCH R. 143-44 (ERP) et R. 146-35 (IGH) restent citées pour information. Corrigé à l'audit 2026-08 : R. 146-21 était cité à tort — cet article traite du silence de l'administration sur une demande d'agrément et a été abrogé par le décret 2025-1100 ; le registre de sécurité IGH est à R. 146-35.",
   },
 
   // ---------------------------------------------------------------------------
@@ -214,13 +215,19 @@ export const obligationsIncendie: Obligation[] = [
     domaine: "incendie",
     libelle: "Vérification annuelle de l'éclairage de sécurité / BAES (ERP)",
     description:
-      "L'éclairage de sécurité (blocs autonomes d'éclairage de sécurité et source centrale) est vérifié annuellement par un technicien compétent. Les essais de fonctionnement sont réalisés à chaque jour d'exploitation (bascule sur secours) et consignés.",
+      "L'éclairage de sécurité est vérifié dans les conditions de l'article EL 19, soit annuellement. À cela s'ajoutent les essais à la charge de l'exploitant : passage en position de fonctionnement et allumage des lampes une fois par mois, autonomie d'une heure une fois tous les six mois, consignés au registre de sécurité.",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. EC 14 et EC 15",
+        reference: "Arrêté du 25 juin 1980, art. EC 15 (vérification dans les conditions de l'art. EL 19)",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317456/",
+      },
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 25 juin 1980, art. EC 13 et EC 14 (entretien et essais périodiques par l'exploitant)",
+        urlLegifrance:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317456/",
       },
     ],
     periodicite: "annuelle",
@@ -228,6 +235,8 @@ export const obligationsIncendie: Obligation[] = [
     criticite: 4,
     typologies: { erp: true },
     categoriesEquipement: ["BAES"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : la périodicité annuelle vient d'EC 15 (renvoi à EL 19), non d'EC 14 qui fixe les essais mensuels et semestriels de l'exploitant. La description annonçait à tort des essais « à chaque jour d'exploitation ».",
   },
   {
     id: "incendie-erp-desenfumage-annuelle",
@@ -322,13 +331,13 @@ export const obligationsIncendie: Obligation[] = [
     domaine: "incendie",
     libelle: "Vérification annuelle des moyens de secours et SSI (IGH)",
     description:
-      "Dans les immeubles de grande hauteur, les moyens de secours et le SSI sont vérifiés annuellement par un organisme agréé, en application du règlement IGH.",
+      "Dans les immeubles de grande hauteur, le propriétaire fait vérifier annuellement par un organisme agréé les moyens de secours (art. GH 51 à GH 55), les scénarios et le fonctionnement du SSI, les dispositifs de sécurité, les interphones et télécommunications de sécurité. Le désenfumage mécanique est vérifié par cinquième chaque année (100 % en cinq ans).",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 30 décembre 2011 (règlement IGH), art. GH 60 à GH 63",
+        reference: "Arrêté du 30 décembre 2011 (règlement IGH), art. GH 5 (vérifications techniques par organismes agréés)",
         urlLegifrance:
-          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025170345",
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025169258",
       },
     ],
     periodicite: "annuelle",
@@ -336,5 +345,7 @@ export const obligationsIncendie: Obligation[] = [
     criticite: 5,
     typologies: { igh: true },
     categoriesEquipement: ["ALARME_INCENDIE", "EXTINCTEUR", "DESENFUMAGE"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait « GH 60 à GH 63 ». GH 60 traite de la surveillance, des exercices et de l'information des locataires. Les vérifications techniques périodiques sont à l'article GH 5.",
   },
 ];
