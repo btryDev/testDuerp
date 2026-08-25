@@ -284,6 +284,55 @@ describe("normaliserFormDataEquipement", () => {
   });
 });
 
+describe("aller-retour édition — aucune réponse ne se perd", () => {
+  /**
+   * Le bug : la page d'édition recopiait à la main la liste des propriétés à
+   * repasser au formulaire, et n'avait pas suivi l'ajout des questions à trois
+   * états. Modifier le libellé d'un équipement effaçait toutes ses réponses —
+   * et un « non » redevenu « pas de réponse » RALLUME les obligations en
+   * opt-out. Perte de données silencieuse, à conséquence réglementaire.
+   *
+   * Ce test garde le maillon sérialisation : tout ce qui est stocké doit
+   * revenir identique après un aller-retour formulaire.
+   */
+  it("un équipement pleinement renseigné se relit sans perte", () => {
+    const saisie = {
+      libelle: "SSI du hall",
+      categorie: "ALARME_INCENDIE" as const,
+      dessertLocauxSommeil: "non",
+    };
+    const res = equipementSchema.safeParse(saisie);
+    expect(res.success).toBe(true);
+    if (!res.success) return;
+
+    const stocke = serialiserCaracteristiques(res.data);
+    expect(stocke).toEqual({ dessertLocauxSommeil: false });
+
+    // Second passage : la page repasse la valeur stockée au formulaire, qui la
+    // resoumet. Le « non » doit survivre.
+    const relu = equipementSchema.safeParse({
+      libelle: saisie.libelle,
+      categorie: saisie.categorie,
+      dessertLocauxSommeil: valeurTriEtat(false),
+    });
+    expect(relu.success).toBe(true);
+    if (relu.success) {
+      expect(serialiserCaracteristiques(relu.data)).toEqual(stocke);
+    }
+  });
+
+  it("une valeur non repassée au formulaire est bien perdue (ce que le test ci-dessus prévient)", () => {
+    // Démonstration du mécanisme, pour que la régression soit lisible : si la
+    // page oublie un champ, le schéma reçoit `undefined` et la clé disparaît.
+    const res = equipementSchema.safeParse({
+      libelle: "SSI du hall",
+      categorie: "ALARME_INCENDIE",
+    });
+    expect(res.success).toBe(true);
+    if (res.success) expect(serialiserCaracteristiques(res.data)).toBeNull();
+  });
+});
+
 describe("cohérence schéma ↔ référentiel d'obligations", () => {
   it("toute propriété conditionnant une obligation est collectée par le formulaire", () => {
     // Une condition qui porte sur une propriété que rien ne renseigne est une

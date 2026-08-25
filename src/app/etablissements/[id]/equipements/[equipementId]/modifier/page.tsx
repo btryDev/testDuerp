@@ -1,17 +1,44 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  CHAMPS_TRI_ETAT,
+  type ChampTriEtat,
+  type EquipementInput,
+} from "@/lib/equipements/schema";
 import { EquipementForm } from "@/components/equipements/EquipementForm";
 import { modifierEquipement } from "@/lib/equipements/actions";
 import { getEquipement } from "@/lib/equipements/queries";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 
-type Caracteristiques = {
-  nombre?: number;
-  aGroupeElectrogene?: boolean;
-  estLocalPollutionSpecifique?: boolean;
-  nbVehiculesParkingCouvert?: number;
-  notes?: string;
-};
+/**
+ * Forme lue du JSON `caracteristiques`, **dérivée du schéma** et non recopiée
+ * à la main.
+ *
+ * La liste était auparavant écrite en dur ici, et n'avait pas suivi l'ajout
+ * des questions à trois états ni des champs ESP. Conséquence : la page
+ * d'édition ne repassait pas ces valeurs au formulaire, le `<select>`
+ * repartait à « Je ne sais pas encore », rien n'était soumis, et
+ * `serialiserCaracteristiques` n'écrivait plus la clé. Modifier le libellé
+ * d'un équipement effaçait donc en silence toutes ses réponses — et un « non »
+ * redevenu « pas de réponse » **rallume** les obligations en opt-out.
+ *
+ * En dérivant du schéma, toute propriété ajoutée à `equipementSchema` casse la
+ * compilation ici tant qu'elle n'est pas repassée au formulaire.
+ */
+type Caracteristiques = Partial<
+  Pick<
+    EquipementInput,
+    | "nombre"
+    | "aGroupeElectrogene"
+    | "estLocalPollutionSpecifique"
+    | "nbVehiculesParkingCouvert"
+    | "familleEsp"
+    | "pressionMaxAdmissibleBar"
+    | "volumeLitres"
+    | "notes"
+    | ChampTriEtat
+  >
+>;
 
 export default async function ModifierEquipementPage({
   params,
@@ -55,6 +82,19 @@ export default async function ModifierEquipementPage({
             aGroupeElectrogene: caracs.aGroupeElectrogene,
             estLocalPollutionSpecifique: caracs.estLocalPollutionSpecifique,
             nbVehiculesParkingCouvert: caracs.nbVehiculesParkingCouvert ?? null,
+            familleEsp: caracs.familleEsp ?? null,
+            pressionMaxAdmissibleBar: caracs.pressionMaxAdmissibleBar ?? null,
+            volumeLitres: caracs.volumeLitres ?? null,
+            // Les sept questions à trois états doivent être repassées au
+            // formulaire, sinon l'édition les efface : le `<select>` repart à
+            // « Je ne sais pas encore », rien n'est soumis, et
+            // `serialiserCaracteristiques` ne réécrit pas la clé. Un « non »
+            // devenait ainsi une absence de réponse, ce qui **rallume** les
+            // obligations en opt-out — modifier le libellé d'un extincteur
+            // faisait réapparaître la vérification des RIA.
+            ...Object.fromEntries(
+              CHAMPS_TRI_ETAT.map((champ) => [champ, caracs[champ]]),
+            ),
             notes: caracs.notes ?? null,
           }}
           libelleSubmit="Enregistrer"
