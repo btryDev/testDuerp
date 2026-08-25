@@ -28,6 +28,12 @@
 // la branche EXTINCTEUR de l'obligation (cf. notesInternes de
 // `incendie-erp-ria-annuelle`) et la question du formulaire.
 //
+// ORDRE CONTRAINT — le script ne peut pas servir de pré-contrôle avant
+// déploiement. Tant que la migration n'est pas appliquée, PostgreSQL rejette
+// toute requête citant `RIA`, y compris en lecture. Il faut donc déployer
+// d'abord, reprendre ensuite, et la fenêtre entre les deux est couverte par la
+// branche EXTINCTEUR transitoire de l'obligation.
+//
 //   pnpm tsx scripts/reprise-ria.ts            # dry-run
 //   pnpm tsx scripts/reprise-ria.ts --appliquer
 
@@ -36,9 +42,56 @@ import { PrismaClient, type Prisma } from "@prisma/client";
 const OBLIGATION_RIA = "incendie-erp-ria-annuelle";
 const CLE = "aRobinetsIncendieArmes";
 
+/**
+ * La valeur `RIA` de l'enum `CategorieEquipement` existe-t-elle en base ?
+ *
+ * Le script ne peut pas servir de pré-contrôle avant déploiement : tant que la
+ * migration `20260825130000_categorie_equipement_ria` n'est pas appliquée,
+ * toute requête mentionnant `RIA` est rejetée par PostgreSQL (22P02) — y
+ * compris en lecture, y compris en dry-run. L'ordre est donc contraint :
+ * migrer d'abord, reprendre ensuite.
+ *
+ * Sans cette vérification, l'utilisateur reçoit une trace Prisma de vingt
+ * lignes au lieu de la seule information utile.
+ */
+async function enumRiaDisponible(prisma: PrismaClient): Promise<boolean> {
+  const rows = await prisma.$queryRaw<{ ok: boolean }[]>`
+    SELECT EXISTS (
+      SELECT 1 FROM pg_enum e
+      JOIN pg_type t ON t.oid = e.enumtypid
+      WHERE t.typname = 'CategorieEquipement' AND e.enumlabel = 'RIA'
+    ) AS ok
+  `;
+  return rows[0]?.ok === true;
+}
+
 async function main() {
   const appliquer = process.argv.includes("--appliquer");
   const prisma = new PrismaClient();
+
+  if (!(await enumRiaDisponible(prisma))) {
+    console.error(
+      [
+        "",
+        "La base ne connaît pas encore la catégorie RIA.",
+        "",
+        "La migration `20260825130000_categorie_equipement_ria` n'y est pas",
+        "appliquée. Ce script ne peut pas s'exécuter avant — même en dry-run :",
+        "PostgreSQL rejette toute requête citant une valeur d'enum inexistante.",
+        "",
+        "Ordre à respecter :",
+        "  1. déployer (le build joue `prisma migrate deploy`) ;",
+        "  2. snapshot de la base ;",
+        "  3. `pnpm tsx scripts/reprise-ria.ts` (dry-run) ;",
+        "  4. `pnpm tsx scripts/reprise-ria.ts --appliquer` ;",
+        "  5. retirer la branche EXTINCTEUR de `incendie-erp-ria-annuelle`.",
+        "",
+      ].join("\n"),
+    );
+    await prisma.$disconnect();
+    process.exitCode = 1;
+    return;
+  }
 
   const extincteurs = await prisma.equipement.findMany({
     where: { categorie: "EXTINCTEUR" },
