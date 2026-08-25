@@ -282,8 +282,8 @@ export type SeuilParNiveau = {
   total: number;
 };
 
-export type Seuil5eCategorie = {
-  seuil: SeuilParNiveau;
+/** Traçabilité commune : quel article, dans quelle version, lu quand. */
+type SourceSeuil = {
   /** Article des dispositions particulières qui fixe le seuil (ex. « N 1 »). */
   article: string;
   /** Date de la version de l'article lue sur Légifrance. */
@@ -291,13 +291,36 @@ export type Seuil5eCategorie = {
   urlLegifrance: string;
   /** Date de relecture effective du texte. */
   dateLecture: string;
-  /**
-   * Condition hors effectif posée par l'article. Quand elle est présente, le
-   * seuil ne peut pas être appliqué sans une réponse supplémentaire que
-   * l'assistant ne collecte pas : la fonction de déduction ne tranche pas.
-   */
-  conditionSupplementaire?: string;
 };
+
+/**
+ * Union discriminée (amendement 2026-08-25). Auparavant `seuil` et
+ * `conditionSupplementaire` cohabitaient dans un seul type : dès qu'une
+ * condition était posée, `deduire4eOu5e` rendait `a_confirmer` sans jamais
+ * lire `seuil`, qui devenait de la donnée morte que rien ne signalait — c'est
+ * ce qu'a relevé la revue sur le type X. La séparation rend l'incohérence
+ * impossible à écrire : un type non déductible n'a pas de champ `seuil`, et
+ * le compilateur refuse d'en lire un.
+ */
+export type Seuil5eCategorie =
+  | ({
+      /** L'effectif suffit à trancher : le seuil est applicable tel quel. */
+      deductible: true;
+      seuil: SeuilParNiveau;
+    } & SourceSeuil)
+  | ({
+      /**
+       * L'article pose une condition qui ne se lit pas dans l'effectif. La
+       * déduction ne tranche jamais, quelle que soit la capacité déclarée.
+       */
+      deductible: false;
+      condition: string;
+      /**
+       * Seuils du texte, conservés pour la traçabilité de la relecture.
+       * Volontairement nommés à part : ils ne sont jamais appliqués.
+       */
+      seuilTexte?: SeuilParNiveau;
+    } & SourceSeuil);
 
 /**
  * Table des seuils, **uniquement** pour les types dont l'article « 1 » a été
@@ -323,10 +346,17 @@ export type Seuil5eCategorie = {
  * Point d'attention : l'article PE 2 (Livre III) reproduit cette table, mais
  * sa version courante n'a pas pu être relue. Les chiffres ci-dessous viennent
  * des articles « 1 » eux-mêmes, qui sont la source ; PE 2 n'en est que la
- * copie.
+ * copie. L'audit du 2026-08-25 a montré que la distinction n'est pas
+ * théorique : pour le type O, la table résume « 100 » là où O 1 pose aussi un
+ * seuil de plus de 15 personnes pour les hébergements autres qu'hôteliers.
+ *
+ * Les dix URL ci-dessous ont été ouvertes une à une le 2026-08-25 : chacune
+ * mène bien au chapitre de son type, et les chiffres encodés concordent avec
+ * l'article « 1 » correspondant.
  */
 export const SEUILS_5E_CATEGORIE: Partial<Record<TypeErp, Seuil5eCategorie>> = {
   N: {
+    deductible: true,
     seuil: { sousSol: 100, etages: 200, total: 200 },
     article: "N 1",
     versionLue: "1982-08-12",
@@ -335,6 +365,7 @@ export const SEUILS_5E_CATEGORIE: Partial<Record<TypeErp, Seuil5eCategorie>> = {
     dateLecture: "2026-08-25",
   },
   M: {
+    deductible: true,
     seuil: { sousSol: 100, etages: 100, total: 200 },
     article: "M 1",
     versionLue: "2017-07-01",
@@ -343,6 +374,7 @@ export const SEUILS_5E_CATEGORIE: Partial<Record<TypeErp, Seuil5eCategorie>> = {
     dateLecture: "2026-08-25",
   },
   W: {
+    deductible: true,
     seuil: { sousSol: 100, etages: 100, total: 200 },
     article: "W 1",
     versionLue: "1983-05-21",
@@ -351,6 +383,7 @@ export const SEUILS_5E_CATEGORIE: Partial<Record<TypeErp, Seuil5eCategorie>> = {
     dateLecture: "2026-08-25",
   },
   T: {
+    deductible: true,
     seuil: { sousSol: 100, etages: 100, total: 200 },
     article: "T 1",
     versionLue: "1988-01-15",
@@ -359,6 +392,7 @@ export const SEUILS_5E_CATEGORIE: Partial<Record<TypeErp, Seuil5eCategorie>> = {
     dateLecture: "2026-08-25",
   },
   S: {
+    deductible: true,
     seuil: { sousSol: 100, etages: 100, total: 200 },
     article: "S 1",
     versionLue: "1995-10-18",
@@ -367,6 +401,7 @@ export const SEUILS_5E_CATEGORIE: Partial<Record<TypeErp, Seuil5eCategorie>> = {
     dateLecture: "2026-08-25",
   },
   Y: {
+    deductible: true,
     seuil: { sousSol: 100, etages: 100, total: 200 },
     article: "Y 1",
     versionLue: "1995-10-18",
@@ -375,6 +410,7 @@ export const SEUILS_5E_CATEGORIE: Partial<Record<TypeErp, Seuil5eCategorie>> = {
     dateLecture: "2026-08-25",
   },
   V: {
+    deductible: true,
     seuil: { sousSol: 100, etages: 200, total: 300 },
     article: "V 1",
     versionLue: "1983-05-21",
@@ -383,7 +419,22 @@ export const SEUILS_5E_CATEGORIE: Partial<Record<TypeErp, Seuil5eCategorie>> = {
     dateLecture: "2026-08-25",
   },
   O: {
-    seuil: { total: 100 },
+    // Corrigé à l'audit 2026-08-25 : l'article O 1 pose DEUX seuils, et la
+    // table du second groupe (PE 2) n'en reproduit que le premier. Les hôtels
+    // sont assujettis à partir de 100 personnes ; les « autres établissements
+    // d'hébergement » — résidences de tourisme, ensembles de chambres ou
+    // d'appartements meublés sous gestion commune — le sont dès **plus de 15
+    // personnes**. L'assistant ne demande pas laquelle des deux natures
+    // s'applique, et l'écart entre les deux seuils est tel qu'un faux négatif
+    // classerait en 5ᵉ catégorie un établissement du premier groupe. Or le
+    // type O comporte des locaux à sommeil : c'est précisément là que se
+    // jouent la visite périodique de la commission de sécurité et la
+    // vérification électrique annuelle par organisme agréé. On ne tranche
+    // donc pas.
+    deductible: false,
+    condition:
+      "Le seuil dépend de la nature de l'hébergement : 100 personnes pour un hôtel ou une pension de famille, mais plus de 15 personnes pour les autres établissements d'hébergement (résidence de tourisme, ensemble de chambres ou d'appartements meublés sous gestion commune).",
+    seuilTexte: { total: 100 },
     article: "O 1",
     versionLue: "2012-01-01",
     urlLegifrance:
@@ -391,6 +442,7 @@ export const SEUILS_5E_CATEGORIE: Partial<Record<TypeErp, Seuil5eCategorie>> = {
     dateLecture: "2026-08-25",
   },
   P: {
+    deductible: true,
     seuil: { sousSol: 20, etages: 100, total: 120 },
     article: "P 1",
     versionLue: "1985-01-20",
@@ -399,14 +451,18 @@ export const SEUILS_5E_CATEGORIE: Partial<Record<TypeErp, Seuil5eCategorie>> = {
     dateLecture: "2026-08-25",
   },
   X: {
-    seuil: { sousSol: 100, etages: 100, total: 200 },
+    // Le `seuil` porté ici n'a jamais été lu : la condition ci-dessous fait
+    // rendre `a_confirmer` avant. Il est désormais nommé `seuilTexte`, ce qui
+    // dit ce qu'il est — une trace de relecture, pas une règle appliquée.
+    deductible: false,
+    condition:
+      "Salles polyvalentes à dominante sportive : assujetties seulement si surface < 1 200 m² et hauteur sous plafond ≥ 6,50 m.",
+    seuilTexte: { sousSol: 100, etages: 100, total: 200 },
     article: "X 1",
     versionLue: "1982-07-08",
     urlLegifrance:
       "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020336672/2019-07-01",
     dateLecture: "2026-08-25",
-    conditionSupplementaire:
-      "Salles polyvalentes à dominante sportive : assujetties seulement si surface < 1 200 m² et hauteur sous plafond ≥ 6,50 m.",
   },
 };
 
@@ -460,9 +516,9 @@ export function deduire4eOu5e(
       `Le seuil de 5ᵉ catégorie du type ${type} n'est pas encodé : la limite entre 4ᵉ et 5ᵉ dépend d'un seuil propre à votre type d'activité, fixé par le règlement de sécurité.`,
     );
   }
-  if (s.conditionSupplementaire) {
+  if (!s.deductible) {
     return aConfirmer(
-      `Pour le type ${type}, l'article ${s.article} pose une condition qui ne se lit pas dans l'effectif (${s.conditionSupplementaire}).`,
+      `Pour le type ${type}, l'article ${s.article} pose une condition qui ne se lit pas dans l'effectif (${s.condition}).`,
     );
   }
   const { seuil } = s;

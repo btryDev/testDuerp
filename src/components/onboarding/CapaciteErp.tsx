@@ -21,11 +21,14 @@ import type { StepProps } from "./types";
  */
 export function CapaciteErp({ state, update, errors }: StepProps) {
   const type = state.typeErp as TypeErp;
-  const seuil = SEUILS_5E_CATEGORIE[type];
+  const entree = SEUILS_5E_CATEGORIE[type];
+  // Seul un type déductible ouvre les champs par niveau : pour les autres,
+  // `deduire4eOu5e` rend `a_confirmer` quelle que soit la répartition, et
+  // demander le détail ferait croire qu'il change quelque chose.
+  const seuil = entree?.deductible ? entree.seuil : undefined;
   const demandeNiveaux =
     seuil !== undefined &&
-    !seuil.conditionSupplementaire &&
-    (seuil.seuil.sousSol !== undefined || seuil.seuil.etages !== undefined);
+    (seuil.sousSol !== undefined || seuil.etages !== undefined);
 
   const nombre = (v: string): number | undefined =>
     v.trim() === "" ? undefined : Number(v);
@@ -69,7 +72,7 @@ export function CapaciteErp({ state, update, errors }: StepProps) {
           value={state.effectifPublicTotal}
           onChange={(v) => update({ effectifPublicTotal: v })}
         />
-        {demandeNiveaux && seuil?.seuil.sousSol !== undefined && (
+        {demandeNiveaux && seuil?.sousSol !== undefined && (
           <ChampNombre
             id="effectifPublicSousSol"
             label="Dont en sous-sol"
@@ -78,7 +81,7 @@ export function CapaciteErp({ state, update, errors }: StepProps) {
             onChange={(v) => update({ effectifPublicSousSol: v })}
           />
         )}
-        {demandeNiveaux && seuil?.seuil.etages !== undefined && (
+        {demandeNiveaux && seuil?.etages !== undefined && (
           <ChampNombre
             id="effectifPublicEtages"
             label="Dont en étage, galerie, mezzanine"

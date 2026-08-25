@@ -43,8 +43,44 @@ describe("déduction ERP — table SEUILS_5E_CATEGORIE", () => {
       expect(s.urlLegifrance, type).toMatch(
         /^https:\/\/www\.legifrance\.gouv\.fr\//,
       );
-      expect(s.seuil.total, type).toBeGreaterThan(0);
+      const seuil = s.deductible ? s.seuil : s.seuilTexte;
+      if (seuil) expect(seuil.total, type).toBeGreaterThan(0);
     }
+  });
+
+  it("un type non déductible ne porte pas de seuil applicable", () => {
+    // Garde-fou de l'union : c'est le compilateur qui l'impose désormais,
+    // mais le test documente l'invariant. Un seuil qui coexiste avec une
+    // condition est de la donnée morte — le cas relevé sur le type X.
+    for (const [type, s] of Object.entries(SEUILS_5E_CATEGORIE)) {
+      if (s.deductible) continue;
+      expect(s.condition.length, type).toBeGreaterThan(0);
+      expect(s, type).not.toHaveProperty("seuil");
+    }
+  });
+
+  it("un type non déductible n'est jamais tranché, même très au-dessus des seuils", () => {
+    for (const [type, s] of Object.entries(SEUILS_5E_CATEGORIE)) {
+      if (s.deductible) continue;
+      const d = deduire4eOu5e(type as keyof typeof SEUILS_5E_CATEGORIE, {
+        total: 299,
+        sousSol: 299,
+        etages: 299,
+      });
+      expect(d.statut, type).toBe("a_confirmer");
+    }
+  });
+
+  it("le type O n'est pas tranché : O 1 pose deux seuils (hôtel 100, autre hébergement > 15)", () => {
+    // La table du second groupe ne reproduit que le seuil hôtelier. Un
+    // établissement d'hébergement non hôtelier de 30 personnes relève du
+    // premier groupe ; le classer en 5ᵉ lui retirerait la visite périodique
+    // de la commission et la vérification électrique annuelle.
+    const o = SEUILS_5E_CATEGORIE.O;
+    expect(o?.deductible).toBe(false);
+    expect(deduire4eOu5e("O", { total: 30, sousSol: 0, etages: 0 }).statut).toBe(
+      "a_confirmer",
+    );
   });
 
   it("les types de la table existent dans l'enum", () => {
@@ -55,7 +91,8 @@ describe("déduction ERP — table SEUILS_5E_CATEGORIE", () => {
 
   it("aucun seuil de type ne dépasse la borne des 300 (sinon la 4ᵉ serait vide)", () => {
     for (const [type, s] of Object.entries(SEUILS_5E_CATEGORIE)) {
-      expect(s.seuil.total, type).toBeLessThanOrEqual(SEUIL_3E_CATEGORIE);
+      const seuil = s.deductible ? s.seuil : s.seuilTexte;
+      if (seuil) expect(seuil.total, type).toBeLessThanOrEqual(SEUIL_3E_CATEGORIE);
     }
   });
 
@@ -115,11 +152,15 @@ describe("déduction ERP — deduire4eOu5e", () => {
     expect(cinq.statut === "proposee" && cinq.categorieErp).toBe("N5");
   });
 
-  it("hôtel (O) : seuil total seul, 100 → 4ᵉ, 99 → 5ᵉ, sans question de niveau", () => {
-    const quatre = deduire4eOu5e("O", { total: 100 });
-    const cinq = deduire4eOu5e("O", { total: 99 });
-    expect(quatre.statut === "proposee" && quatre.categorieErp).toBe("N4");
-    expect(cinq.statut === "proposee" && cinq.categorieErp).toBe("N5");
+  it("hébergement (O) : jamais tranché, des deux côtés du seuil hôtelier", () => {
+    // Ce test attendait auparavant 100 → 4ᵉ et 99 → 5ᵉ, en appliquant le seul
+    // seuil hôtelier. L'audit du 2026-08-25 a montré que l'article O 1 en
+    // pose un second, de plus de 15 personnes, pour les hébergements non
+    // hôteliers. Comme l'assistant ne demande pas la nature de
+    // l'hébergement, les deux réponses restaient fausses une fois sur deux —
+    // et du mauvais côté, puisque le type O comporte des locaux à sommeil.
+    expect(deduire4eOu5e("O", { total: 100 }).statut).toBe("a_confirmer");
+    expect(deduire4eOu5e("O", { total: 99 }).statut).toBe("a_confirmer");
   });
 
   it("dancing (P) : 20 personnes en sous-sol suffisent → 4ᵉ", () => {
@@ -146,7 +187,7 @@ describe("déduction ERP — deduire4eOu5e", () => {
 
   it("chaque proposition cite l'article qui la fonde", () => {
     for (const [type, s] of Object.entries(SEUILS_5E_CATEGORIE)) {
-      if (s.conditionSupplementaire) continue;
+      if (!s.deductible) continue;
       const d = deduire4eOu5e(type as keyof typeof SEUILS_5E_CATEGORIE, {
         total: s.seuil.total,
       });
