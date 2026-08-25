@@ -2,7 +2,7 @@ import type { RisqueReferentiel, QuestionDetection } from "./types";
 
 /**
  * Risques transverses présents quel que soit le secteur. Référencés sur les
- * 20 fiches de risques de l'INRS ED 840, 8e édition (juin 2025). Les numéros
+ * 20 fiches de risques de l'INRS ED 840, 8e édition (2023), révisée en mai 2025. Les numéros
  * de fiche cités dans ce fichier ont été recoupés un à un sur le sommaire de
  * cette édition à l'audit du 2026-08-25.
  *
@@ -116,9 +116,9 @@ export const risquesTransverses: RisqueReferentiel[] = [
   },
   {
     id: "trv-rps-isolement",
-    libelle:
-      "Risques psychosociaux — travail isolé ou horaires atypiques",
-    description: "ED 840 fiche 17.",
+    libelle: "Risques psychosociaux — travail isolé",
+    description:
+      "ED 840 fiche 17. Recentré sur le travail isolé au 2026-08-25 : les horaires atypiques sont désormais portés par `trv-travail-nuit`, adossé à une source qui leur est propre. L'identifiant est conservé — il est stocké en base sur les évaluations en cours.",
     unitesAssociees: [],
     graviteParDefaut: 3,
     probabiliteParDefaut: 2,
@@ -226,9 +226,132 @@ export const risquesTransverses: RisqueReferentiel[] = [
       },
     ],
   },
+  {
+    // Ajouté 2026-08-25. Les horaires de nuit n'étaient portés que par
+    // `trv-rps-isolement`, c'est-à-dire traités comme un facteur
+    // psychosocial parmi d'autres. Les effets documentés par l'INRS
+    // dépassent le champ des RPS : troubles du sommeil et de la vigilance,
+    // accidents, effets cardiovasculaires, digestifs et métaboliques, risque
+    // cancérogène.
+    //
+    // Sur le fondement : il n'existe pas de chapitre réglementaire
+    // d'évaluation propre au travail de nuit, comme il en existe pour le
+    // bruit (R. 4433-1) ou les agents biologiques (R. 4423-1). L'obligation
+    // d'évaluer relève du régime général, L. 4121-1 et L. 4121-3. Les
+    // articles L. 3122-1 et suivants relèvent du temps de travail, non de
+    // l'évaluation — L. 3122-1 est cité parce qu'il pose le caractère
+    // exceptionnel du recours, ce qui est bien une question de prévention.
+    id: "trv-travail-nuit",
+    libelle: "Travail de nuit et travail posté",
+    description:
+      "INRS ED 6305 « Le travail de nuit et le travail posté. Quels effets ? Quelle prévention ? » (2022). Troubles du sommeil et de la vigilance, accidents, effets cardiovasculaires, digestifs et métaboliques, risque cancérogène. Le recours au travail de nuit est exceptionnel et doit être justifié (art. L. 3122-1) ; est considéré comme travail de nuit tout travail effectué sur une période d'au moins neuf heures consécutives comprenant l'intervalle entre minuit et 5 heures (art. L. 3122-2).",
+    unitesAssociees: [],
+    graviteParDefaut: 3,
+    probabiliteParDefaut: 2,
+    mesuresRecommandees: [
+      {
+        id: "trv-nuit-recours",
+        libelle:
+          "Réinterroger la nécessité du recours au travail de nuit poste par poste, et le supprimer là où l'activité ne l'impose pas",
+        type: "suppression",
+      },
+      {
+        id: "trv-nuit-rotation",
+        libelle:
+          "Organiser les rotations dans le sens horaire (matin, après-midi, nuit) et limiter les nuits consécutives",
+        type: "organisationnelle",
+      },
+      {
+        id: "trv-nuit-conditions",
+        libelle:
+          "Aménager les conditions du poste de nuit : éclairage, local de pause, accès à un repas chaud, moyen d'alerte",
+        type: "protection_collective",
+      },
+      {
+        id: "trv-nuit-suivi",
+        libelle:
+          "Suivi individuel régulier de l'état de santé des travailleurs de nuit (art. L. 3122-11)",
+        type: "organisationnelle",
+      },
+      {
+        id: "trv-nuit-info",
+        libelle:
+          "Informer les salariés concernés des effets du travail de nuit sur le sommeil et l'alimentation",
+        type: "formation",
+      },
+    ],
+  },
+  {
+    // Ajouté 2026-08-25. Aucun des trois secteurs couverts n'avait de ligne
+    // biologique, alors que tous trois ont une ligne chimique.
+    //
+    // Sur le périmètre : l'article R. 4421-1 écarte expressément le
+    // confinement, les mesures techniques de laboratoire et les déclarations
+    // « lorsque l'activité, bien qu'elle puisse conduire à exposer des
+    // travailleurs, n'implique pas normalement l'utilisation délibérée d'un
+    // agent biologique ». La restauration et le commerce alimentaire relèvent
+    // de ce second étage : l'évaluation s'applique, le régime laboratoire non.
+    id: "trv-biologique",
+    libelle: "Agents biologiques (denrées, déchets, linge, sanitaires)",
+    description:
+      "INRS ED 840 fiche 8 « risques liés aux agents biologiques ». Contact avec des produits agroalimentaires, des déchets ou des surfaces contaminées. L'employeur détermine la nature, la durée et les conditions de l'exposition (art. R. 4423-1). Les mesures de confinement et les déclarations ne s'appliquent pas lorsque l'activité n'implique pas l'utilisation délibérée d'un agent biologique (art. R. 4421-1).",
+    unitesAssociees: [],
+    graviteParDefaut: 2,
+    probabiliteParDefaut: 3,
+    mesuresRecommandees: [
+      {
+        id: "trv-bio-separation",
+        libelle:
+          "Séparer les circuits propres et sales : denrées, déchets, linge, vaisselle",
+        type: "reduction_source",
+      },
+      {
+        id: "trv-bio-nettoyage",
+        libelle:
+          "Protocole de nettoyage et de désinfection des surfaces et du matériel, avec fréquences définies",
+        type: "protection_collective",
+      },
+      {
+        id: "trv-bio-lavage",
+        libelle:
+          "Points de lavage des mains accessibles et approvisionnés à chaque poste concerné",
+        type: "protection_collective",
+      },
+      {
+        id: "trv-bio-epi",
+        libelle:
+          "Gants adaptés à la tâche pour la manipulation des déchets et du linge sale ; tenue de travail changée et lavée par l'employeur",
+        type: "protection_individuelle",
+      },
+      {
+        id: "trv-bio-plaies",
+        libelle:
+          "Conduite à tenir en cas de coupure ou de piqûre : nettoyage immédiat, pansement étanche, signalement",
+        type: "organisationnelle",
+      },
+    ],
+  },
 ];
 
 export const questionsDetectionTransverses: QuestionDetection[] = [
+  {
+    // Vise le cœur de l'intervalle de l'art. L. 3122-2 sans demander au
+    // dirigeant de qualifier lui-même le « travailleur de nuit » de
+    // l'art. L. 3122-5, qui suppose de compter des heures sur une période de
+    // référence.
+    id: "q-travail-nuit",
+    intitule:
+      "Des salariés travaillent-ils habituellement entre minuit et 5 heures ?",
+    risqueIdAssocie: "trv-travail-nuit",
+  },
+  {
+    // Ne prononce jamais « agent biologique » : un dirigeant de TPE ne sait
+    // pas répondre à cette question-là. Décrit les gestes, pas la catégorie.
+    id: "q-biologique",
+    intitule:
+      "Vos salariés manipulent-ils des denrées crues, des déchets ou du linge sale ?",
+    risqueIdAssocie: "trv-biologique",
+  },
   {
     id: "q-routier",
     intitule:

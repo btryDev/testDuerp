@@ -9,7 +9,7 @@ import type { Referentiel } from "./types";
  *    « Production froide et chaude », « Service en salle », « Plonge ».
  *  - OiRA Restauration (outil INRS / EU-OSHA, AC 64).
  *  - INRS ED 840 « Évaluation des risques professionnels — Aide au repérage
- *    des risques dans les PME-PMI », 8e édition (juin 2025) pour la taxonomie des
+ *    des risques dans les PME-PMI », 8e édition (2023), révisée en mai 2025 pour la taxonomie des
  *    familles de risques.
  *
  * Les libellés des risques et les mesures recommandées sont alignés sur le
@@ -393,6 +393,43 @@ export const restauration: Referentiel = {
         },
       ],
     },
+    {
+      // Ajouté 2026-08-25. Le référentiel n'avait aucune ligne bruit, alors que
+      // le commerce et le bureau en ont une chacun — et qu'une cuisine cumule
+      // hotte, lave-vaisselle, mixeurs et batteurs, doublés en salle par la
+      // musique et l'affluence. Coté comme les deux lignes existantes : une
+      // nuisance à évaluer, pas un dépassement de seuil. Les valeurs
+      // déclenchant l'action de l'article R. 4431-2 (80 puis 85 dB(A)) relèvent
+      // d'un mesurage que ce référentiel ne demande pas ; l'obligation
+      // d'évaluer, elle, tient à l'article R. 4433-1.
+      id: "resto-bruit",
+      libelle: "Ambiance sonore (cuisine, plonge, salle)",
+      description:
+        "ED 840 fiche 11. Hotte, lave-vaisselle, mixeurs et batteurs en cuisine ; musique et affluence en salle. L'employeur évalue et, si nécessaire, mesure les niveaux de bruit (art. R. 4433-1).",
+      unitesAssociees: ["production", "plonge", "service-salle"],
+      graviteParDefaut: 1,
+      probabiliteParDefaut: 3,
+      mesuresRecommandees: [
+        {
+          id: "resto-bruit-equipements",
+          libelle:
+            "Choisir et entretenir les équipements les plus silencieux : hotte, lave-vaisselle, ventilation",
+          type: "reduction_source",
+        },
+        {
+          id: "resto-bruit-locaux",
+          libelle:
+            "Traiter l'acoustique de la salle et de la plonge : plafond absorbant, séparation des zones bruyantes",
+          type: "protection_collective",
+        },
+        {
+          id: "resto-bruit-musique",
+          libelle:
+            "Limiter le niveau sonore de la musique d'ambiance ; mesurer en cas de doute",
+          type: "organisationnelle",
+        },
+      ],
+    },
   ],
   questionsDetection: [],
   /*
@@ -420,7 +457,9 @@ export const restauration: Referentiel = {
    *  - Service en terrasse : aucune source INRS ne lui attribue de risque
    *    propre, et l'ambiance thermique est déjà cotée (`resto-thermique`).
    *  - Travail de nuit : non nommé par les sources sectorielles INRS de la
-   *    restauration ; `trv-rps-isolement` porte les horaires atypiques.
+   *    restauration, donc pas de ligne sectorielle. Porté depuis le
+   *    2026-08-25 par le transverse `trv-travail-nuit`, adossé à ED 6305 —
+   *    `trv-rps-isolement` a été recentré sur le seul travail isolé.
    */
   activitesNonCouvertes: [
     {

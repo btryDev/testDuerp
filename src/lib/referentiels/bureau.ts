@@ -15,7 +15,7 @@ import type { Referentiel } from "./types";
  *  - INRS ED 6497 « Améliorer la qualité de l'air dans les locaux de travail
  *    du tertiaire » (octobre 2022).
  *  - INRS ED 840 « Évaluation des risques professionnels — Aide au repérage
- *    des risques dans les PME-PMI », 8e édition (juin 2025) — taxonomie.
+ *    des risques dans les PME-PMI », 8e édition (2023), révisée en mai 2025 — taxonomie.
  */
 export const bureau: Referentiel = {
   id: "bureau",

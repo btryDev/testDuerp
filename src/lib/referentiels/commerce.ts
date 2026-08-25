@@ -11,7 +11,7 @@ import type { Referentiel } from "./types";
  *    chez les clients / Atelier (laboratoire).
  *  - INRS ED 925 « Les commerces alimentaires de proximité ».
  *  - INRS ED 840 « Évaluation des risques professionnels — Aide au repérage
- *    des risques dans les PME-PMI », 8e édition (juin 2025) — taxonomie des risques.
+ *    des risques dans les PME-PMI », 8e édition (2023), révisée en mai 2025 — taxonomie des risques.
  *  - ameli.fr / Assurance Maladie Risques professionnels — secteur commerce.
  */
 export const commerce: Referentiel = {
@@ -369,9 +369,13 @@ export const commerce: Referentiel = {
       // première cause d'asthme professionnel, et les boulangers représentent
       // un quart des salariés atteints d'affections respiratoires en France.
       //
-      // Le travail de nuit n'est volontairement pas cité : l'INRS ne le nomme
-      // ni dans ED 6400 ni sur la page métier, et une source générique sur les
-      // horaires atypiques ne fonde pas une mention sectorielle (règle 6).
+      // Le travail de nuit n'est volontairement pas cité **ici** : l'INRS ne le
+      // nomme ni dans ED 6400 ni sur la page métier, et une source générique
+      // sur les horaires atypiques ne fonde pas une mention sectorielle
+      // (règle 6). Il est en revanche porté depuis le 2026-08-25 par le risque
+      // transverse `trv-travail-nuit`, adossé à ED 6305 qui lui est
+      // spécifiquement consacré — la question de détection l'ajoute au dossier
+      // quel que soit le secteur.
       id: "com-fabrication-boulangere",
       libelle: "Fabrication de pain, de viennoiseries ou de pâtisseries",
       question:

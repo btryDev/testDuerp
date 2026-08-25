@@ -3,6 +3,7 @@ import { ACTIVITES_PUBLIEES, ACTIVITES_RETIREES } from "./activites-publiees";
 import {
   referentielsSectoriels,
   risquesTransverses,
+  questionsDetectionTransverses,
   tousRisquesConnus,
   trouverReferentielParNaf,
 } from "./index";
@@ -55,6 +56,85 @@ describe("referentiels", () => {
  * ferait basculer une réponse d'une activité à une autre à la relecture — un
  * « oui » à la découpe de viande devenu un « oui » à autre chose.
  */
+describe("sourçage des risques", () => {
+  /**
+   * Un risque proposé au dirigeant sans source vérifiable est une cotation
+   * inventée : il l'accepte telle quelle, et le document unique porte un
+   * chiffre que personne ne peut justifier. La description est le seul endroit
+   * qui porte cette source — le type `RisqueReferentiel` n'a pas de champ
+   * dédié, à la différence des obligations de conformité.
+   */
+  const SOURCE = /\bED\s?\d{3,4}\b|\bTJ\s?\d+\b|\bINRS\b|\bOiRA\b|\bart\.\s?[RLD]\.\s?\d/;
+
+  it("chaque risque transverse cite sa source", () => {
+    for (const r of risquesTransverses) {
+      expect(r.description, `${r.id} : description absente`).toBeDefined();
+      expect(SOURCE.test(r.description ?? ""), `${r.id} → « ${r.description} »`).toBe(
+        true,
+      );
+    }
+  });
+
+  /**
+   * Cinq risques de restauration sont entrés au référentiel sans description,
+   * donc sans source. Ils ne sont pas corrigés ici : leur rédaction demande
+   * d'ouvrir les fiches INRS correspondantes, pas de deviner un numéro.
+   * La liste est figée pour que la dette reste comptée et ne grossisse pas —
+   * tout nouveau risque sans source fait échouer la suite.
+   */
+  const SANS_SOURCE_TOLERES = [
+    "resto-brulure",
+    "resto-chute-hauteur",
+    "resto-incendie",
+    "resto-chimique",
+    "resto-ambiance-thermique",
+  ];
+
+  it("chaque risque sectoriel cite sa source", () => {
+    for (const ref of referentielsSectoriels) {
+      for (const r of ref.risques) {
+        if (SANS_SOURCE_TOLERES.includes(r.id)) continue;
+        expect(r.description, `${r.id} : description absente`).toBeDefined();
+        expect(SOURCE.test(r.description ?? ""), `${r.id} → « ${r.description} »`).toBe(
+          true,
+        );
+      }
+    }
+  });
+
+  it("la dette de sourçage ne grossit pas", () => {
+    const sans = [
+      ...referentielsSectoriels.flatMap((ref) => ref.risques),
+      ...risquesTransverses,
+    ]
+      .filter((r) => !r.description)
+      .map((r) => r.id)
+      .sort();
+    expect(sans, "un risque sans source est apparu — le sourcer ou le retirer").toEqual(
+      [...SANS_SOURCE_TOLERES].sort(),
+    );
+  });
+
+  it("chaque question de détection vise un risque transverse existant", () => {
+    const ids = new Set(risquesTransverses.map((r) => r.id));
+    for (const q of questionsDetectionTransverses) {
+      expect(ids, `${q.id} → ${q.risqueIdAssocie}`).toContain(q.risqueIdAssocie);
+    }
+  });
+
+  it("chaque risque transverse déclenché par question a bien sa question", () => {
+    // L'inverse du test précédent : un risque transverse sans question ne
+    // peut jamais entrer dans un dossier. Les sept d'origine et les deux
+    // ajoutés en 2026-08 sont tous déclenchés ainsi.
+    const vises = new Set(
+      questionsDetectionTransverses.map((q) => q.risqueIdAssocie),
+    );
+    for (const r of risquesTransverses) {
+      expect(vises, `${r.id} n'est déclenché par aucune question`).toContain(r.id);
+    }
+  });
+});
+
 describe("activités non couvertes", () => {
   const activites = referentielsSectoriels.flatMap((ref) =>
     ref.activitesNonCouvertes.map((a) => ({ ref, a })),
