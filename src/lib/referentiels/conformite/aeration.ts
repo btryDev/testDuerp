@@ -9,8 +9,13 @@
  *   - Arrêté du 25 juin 1980 modifié (règlement ERP) — article CH 58
  *     (installations de chauffage-ventilation), article PS 32 (parcs de
  *     stationnement couverts), article GC 20 (grandes cuisines).
- *   - Arrêté du 25 avril 1985 relatif à la vérification et à l'entretien des
- *     installations collectives de VMC-Gaz dans les bâtiments d'habitation.
+ *   - Arrêté du 23 février 2018 (installations de gaz des bâtiments
+ *     d'habitation), qui a abrogé le 5 mars 2018 l'arrêté du 25 avril 1985
+ *     sur l'entretien des VMC-Gaz collectives.
+ *
+ * Audit des sources 2026-08-25 : toutes les URLs ont été ouvertes sur
+ * Légifrance ; les contrôles semestriels de l'arrêté de 1987 ne visent que
+ * les installations avec recyclage (art. 4).
  *
  * Les seuils (capacité de parking, typologie) sont textuellement issus du
  * règlement ERP — pas d'interprétation interne.
@@ -33,19 +38,19 @@ export const obligationsAeration: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "R. 4222-20",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490423/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4222-21",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490425/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483604/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 8 octobre 1987, art. 2, 3 et 4",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000869716/",
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000863044/",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -65,13 +70,13 @@ export const obligationsAeration: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "R. 4222-20",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490423/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 8 octobre 1987, art. 3",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000869716/",
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678610",
       },
     ],
     periodicite: "annuelle",
@@ -83,18 +88,18 @@ export const obligationsAeration: Obligation[] = [
   {
     id: "aeration-travail-locaux-pollution-specifique",
     domaine: "aeration",
-    libelle: "Contrôle semestriel des installations en locaux à pollution spécifique",
+    libelle: "Contrôle annuel des installations en locaux à pollution spécifique",
     description:
-      "Dans les locaux à pollution spécifique (poussières, gaz, vapeurs, aérosols), l'efficacité des systèmes de captage et l'ambiance des locaux font l'objet de contrôles au moins semestriels, en complément du contrôle annuel général.",
+      "Dans les locaux à pollution spécifique (poussières, gaz, vapeurs, aérosols), l'employeur fait contrôler au moins une fois par an le débit global d'air extrait, les pressions ou vitesses aux points caractéristiques et l'état des éléments de l'installation (captage, gaines, ventilateurs, épuration). Lorsque l'installation recycle l'air, un contrôle semestriel supplémentaire porte sur la concentration en poussières dans les gaines de recyclage et sur les systèmes de surveillance.",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 8 octobre 1987, art. 3 § II",
+        reference: "Arrêté du 8 octobre 1987, art. 4",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000869716/",
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678611",
       },
     ],
-    periodicite: "semestrielle",
+    periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
     typologies: { travail: true },
@@ -119,6 +124,8 @@ export const obligationsAeration: Obligation[] = [
         valeur: true,
       },
     ],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : l'ancienne version imposait un contrôle SEMESTRIEL à tout local à pollution spécifique en citant « art. 3 § II ». L'art. 3 vise les locaux à pollution NON spécifique ; l'art. 4 (pollution spécifique) prévoit un contrôle annuel, le semestriel ne concernant que les installations avec recyclage de l'air. Le formulaire n'a pas de propriété « recyclage » : le contrôle semestriel est mentionné dans la description mais pas planifié.",
   },
 
   // ---------------------------------------------------------------------------
@@ -133,9 +140,15 @@ export const obligationsAeration: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. CH 58",
+        reference: "Arrêté du 25 juin 1980, art. CH 58 (vérification dans les conditions de la section II du chapitre Ier)",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
+      },
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 25 juin 1980, art. CH 57 (entretien, ramonage annuel des conduits de fumée)",
+        url:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
       },
     ],
     periodicite: "annuelle",
@@ -153,9 +166,9 @@ export const obligationsAeration: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. PS 32",
+        reference: "Arrêté du 25 juin 1980, art. PS 32 (rédaction arrêté du 9 mai 2006)",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000024812448/",
       },
     ],
     periodicite: "biennale",
@@ -184,9 +197,9 @@ export const obligationsAeration: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. PS 32",
+        reference: "Arrêté du 25 juin 1980, art. PS 32 (rédaction arrêté du 9 mai 2006)",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000024812448/",
       },
     ],
     periodicite: "annuelle",
@@ -214,20 +227,20 @@ export const obligationsAeration: Obligation[] = [
   // retiré et ne doit jamais être réutilisé.
 
   // ---------------------------------------------------------------------------
-  // Habitation — VMC-Gaz (arrêté du 25 avril 1985)
+  // Habitation — VMC-Gaz (arrêté du 23 février 2018, ex-arrêté du 25 avril 1985)
   // ---------------------------------------------------------------------------
   {
     id: "aeration-habitation-vmc-gaz-annuelle",
     domaine: "aeration",
     libelle: "Entretien et vérification annuelle des installations collectives de VMC-Gaz (habitation)",
     description:
-      "Le propriétaire ou syndic d'un immeuble d'habitation équipé d'une ventilation mécanique contrôlée desservant des appareils à gaz fait entretenir et vérifier périodiquement l'ensemble de ces installations par un professionnel qualifié, sous contrat écrit.",
+      "Le propriétaire ou syndic d'un immeuble d'habitation équipé d'une ventilation mécanique contrôlée desservant des appareils à gaz fait entretenir et vérifier périodiquement l'ensemble de ces installations par un professionnel qualifié, dans le cadre d'un contrat écrit.",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 avril 1985, art. 1 et 2",
+        reference: "Arrêté du 23 février 2018 (installations de gaz des bâtiments d'habitation) — remplace l'arrêté du 25 avril 1985, abrogé le 5 mars 2018",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000686049/",
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036667631",
       },
     ],
     periodicite: "annuelle",

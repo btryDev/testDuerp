@@ -12,10 +12,10 @@ import type { Referentiel } from "./types";
  *    également exposés aux risques psychosociaux. »
  *  - INRS ED 950 « Conception des lieux et des situations de travail »
  *    (août 2025).
- *  - INRS ED 6497 « Qualité de l'air intérieur — Locaux de travail
- *    tertiaires ».
+ *  - INRS ED 6497 « Améliorer la qualité de l'air dans les locaux de travail
+ *    du tertiaire » (octobre 2022).
  *  - INRS ED 840 « Évaluation des risques professionnels — Aide au repérage
- *    des risques dans les PME-PMI » (octobre 2023) — taxonomie.
+ *    des risques dans les PME-PMI », 8e édition (juin 2025) — taxonomie.
  */
 export const bureau: Referentiel = {
   id: "bureau",

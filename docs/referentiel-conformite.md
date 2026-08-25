@@ -250,39 +250,51 @@ Pour la traçabilité, la liste des textes cités au moins une fois à l'étape 
 - L. 4711-5 (registre de sécurité — tous établissements de travail)
 
 ### Code de la construction et de l'habitation (CCH)
-- R. 134-1 à R. 134-4 (ascenseurs — entretien, contrôle technique, carnet,
-  téléalarme)
+- R. 134-1 à R. 134-13 (ascenseurs — dispositifs de sécurité, entretien,
+  carnet, contrôle technique quinquennal)
 - R. 143-34 (visite périodique commission ERP)
 - R. 143-44 (registre sécurité ERP)
 - R. 146-21 (registre sécurité IGH)
 
 ### Code de l'environnement
 - L. 511-1 et s. (ICPE — déclaration, enregistrement, autorisation)
-- L. 557-1 et s. (surveillance des équipements sous pression)
+- R. 557-14-1 et s. (suivi en service des équipements sous pression)
 
 ### Code du travail (complément P2/P3)
-- R. 4224-15 (maintien en état des portes et portails automatiques)
-- R. 4323-22 à R. 4323-28 (vérifications des équipements de travail)
-- R. 4412-38, R. 4412-87 (prévention du risque chimique, FDS)
+- R. 4224-12, R. 4224-13 et R. 4224-17 (portes et portails automatiques, maintenance)
+- R. 4323-1 à R. 4323-5 (information et formation), R. 4323-22 à R. 4323-28 (vérifications des équipements de travail)
+- R. 4412-11, R. 4412-38, R. 4412-87 (prévention du risque chimique, FDS, formation)
 
 ### Arrêtés de référence
-- Arrêté du 25 avril 1985 (VMC-Gaz habitation)
+- Arrêté du 23 février 2018 (installations de gaz des bâtiments d'habitation,
+  VMC-Gaz — remplace l'arrêté du 25 avril 1985, abrogé)
 - Arrêté du 25 juin 1980 modifié (règlement ERP — articles CH 58, DF 10,
   EC 14, EC 15, EL 5, EL 19, EL 20, GC 12, GC 19, GC 20, GC 21, GE 4,
-  GZ 29, MS 25, MS 38, MS 73, PS 32)
+  GC 22, GZ 30, MS 25, MS 38, MS 73, PS 32)
 - Arrêté du 8 octobre 1987 (contrôle aération en milieu de travail)
 - Arrêté du 22 juin 1990 modifié (ERP 5ᵉ catégorie — article PE 4)
+- Arrêté du 1er décembre 2025 (PE 4 § 2 : vérification triennale de toutes les
+  installations techniques en ERP 5ᵉ, applicable au 1er juillet 2026)
 - Arrêté du 21 décembre 1993 (portes et portails automatiques)
 - Arrêté du 1er mars 2004 (vérifications appareils de levage de charges)
-- Arrêté du 2 mars 2004 (vérifications appareils de levage de personnes)
+- Arrêté du 2 mars 2004 (carnet de maintenance des appareils de levage)
 - Arrêté du 18 novembre 2004 (entretien des ascenseurs)
-- Arrêté du 2 mai 2005 (règles des SSI)
-- Arrêté du 13 août 2008 (contrôle technique quinquennal des ascenseurs)
-- Arrêté du 3 octobre 2010 (stockage en récipients mobiles — ICPE)
+- Arrêté du 7 août 2012 (contrôle technique quinquennal des ascenseurs)
+- Arrêté du 1er juin 2015 (rubriques 4331/4734 enregistrement — valeurs de
+  rétention, cité à titre de référence)
 - Arrêté du 26 décembre 2011 (modalités vérifications électriques travail)
 - Arrêté du 30 décembre 2011 (règlement IGH — articles GH 50, GH 60 à 63)
 - Arrêté du 20 novembre 2017 (suivi en service des équipements sous pression)
 - Décret 2015-799 (produits et équipements à risques)
+
+### Audit des sources (25 août 2026)
+
+Chaque URL du référentiel a été ouverte sur Légifrance et chaque article lu
+dans sa version consolidée. Les corrections sont tracées dans les
+`notesInternes` des obligations concernées (mention « Corrigé à l'audit
+2026-08 »). Règle ajoutée : un identifiant `LEGIARTI`/`LEGISCTA`/`JORFTEXT`
+n'entre dans le référentiel qu'après avoir été résolu manuellement — le test
+ne vérifie que le domaine, pas la cible.
 
 ### INRS (à titre documentaire, pas opposable stricto sensu)
 - ED 6127 — Habilitation électrique (pratique de la périodicité triennale)

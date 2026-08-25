@@ -34,7 +34,7 @@ import type { ConditionApplication, Obligation } from "./types";
  * affichées tant que la réponse « non » n'a pas été donnée.
  *
  * `esp-personnel-formation` n'est volontairement pas conditionnée : elle
- * découle du Code du travail (R. 4323-55 et s.), qui s'applique à tout
+ * découle du Code du travail (R. 4323-1 à R. 4323-5), qui s'applique à tout
  * équipement de travail indépendamment des seuils de l'arrêté.
  */
 const CONDITION_SUIVI_EN_SERVICE: ConditionApplication[] = [
@@ -55,15 +55,15 @@ export const obligationsEquipementSousPression: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 20 novembre 2017, art. 13 à 15",
+        reference: "Arrêté du 20 novembre 2017 (suivi en service des ESP), art. 7 à 11",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036061986/",
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
       },
       {
         source: "CODE_ENVIRONNEMENT",
-        reference: "L. 557-28 et s.",
+        reference: "R. 557-14-1 et s. (suivi en service)",
         url:
-          "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000029121143/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000030833481/",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -78,13 +78,13 @@ export const obligationsEquipementSousPression: Obligation[] = [
     domaine: "equipement_sous_pression",
     libelle: "Inspection périodique (équipement sous pression)",
     description:
-      "Inspection périodique réalisée par une personne compétente selon une périodicité fixée par l'arrêté, au maximum tous les 40 mois pour la majorité des équipements. Le rapport est conservé.",
+      "Inspection périodique réalisée par une personne compétente. Intervalle maximal fixé par l'arrêté : 4 ans pour la généralité des équipements (première inspection dans les 3 ans suivant la mise en service), 2 ans pour les générateurs de vapeur et les équipements à couvercle amovible à fermeture rapide, 1 an pour certains récipients mobiles. Le rapport est conservé au dossier d'exploitation.",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 20 novembre 2017, art. 19 et annexes",
+        reference: "Arrêté du 20 novembre 2017 (suivi en service des ESP), art. 15",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036061986/",
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
       },
     ],
     periodicite: "triennale",
@@ -94,20 +94,20 @@ export const obligationsEquipementSousPression: Obligation[] = [
     categoriesEquipement: ["EQUIPEMENT_SOUS_PRESSION"],
     conditions: CONDITION_SUIVI_EN_SERVICE,
     notesInternes:
-      "Périodicité modélisée triennale en MVP (proxy des 40 mois réglementaires). La valeur exacte dépend du type et du régime — à affiner avec une propriété d'équipement en étape ultérieure.",
+      "Périodicité modélisée triennale (l'enum n'a pas de « quadriennale ») : proxy conservateur des 4 ans réglementaires. Corrigé à l'audit 2026-08 : l'ancienne version citait « art. 19 » (= requalification) et « 40 mois » (ancien arrêté de 2000).",
   },
   {
     id: "esp-requalification-decennale",
     domaine: "equipement_sous_pression",
     libelle: "Requalification périodique (équipement sous pression)",
     description:
-      "Requalification tous les dix ans (ou périodicité fixée par l'arrêté pour certains équipements) par un organisme habilité. Comprend une inspection détaillée et une épreuve hydraulique lorsque c'est requis.",
+      "Requalification périodique tous les dix ans pour la généralité des récipients, tuyauteries et générateurs de vapeur (2, 3 ou 6 ans pour certains récipients mobiles ou fluides corrosifs/toxiques — art. 18), par un organisme habilité. Elle comprend la vérification des documents, une inspection, une épreuve hydraulique et la vérification des accessoires de sécurité (art. 19).",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 20 novembre 2017, art. 23 à 27",
+        reference: "Arrêté du 20 novembre 2017 (suivi en service des ESP), art. 18 et 19",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036061986/",
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
       },
     ],
     periodicite: "decennale",
@@ -126,9 +126,9 @@ export const obligationsEquipementSousPression: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 20 novembre 2017, art. 8",
+        reference: "Arrêté du 20 novembre 2017 (suivi en service des ESP), art. 6 (dossier d'exploitation)",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036061986/",
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
       },
     ],
     periodicite: "autre",
@@ -147,9 +147,9 @@ export const obligationsEquipementSousPression: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 20 novembre 2017, art. 30",
+        reference: "Arrêté du 20 novembre 2017 (suivi en service des ESP), art. 26 à 28",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036061986/",
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -170,9 +170,9 @@ export const obligationsEquipementSousPression: Obligation[] = [
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
-        reference: "R. 4323-55 à R. 4323-57",
+        reference: "R. 4323-1 à R. 4323-5 (information et formation à l'utilisation des équipements de travail)",
         url:
-          "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018491007/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489707/",
       },
     ],
     periodicite: "autre",
@@ -180,5 +180,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
     criticite: 3,
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_SOUS_PRESSION"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait R. 4323-55 à 57, qui régissent l'autorisation de conduite des équipements mobiles et de levage, sans rapport avec les ESP.",
   },
 ];

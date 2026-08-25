@@ -41,6 +41,9 @@ export default async function ModifierEtablissementPage({
             adresse: etab.adresse,
             codeNaf: etab.codeNaf,
             effectifSurSite: etab.effectifSurSite,
+            personnesPresentesHabituellement:
+              etab.personnesPresentesHabituellement,
+            manipuleMatieresR422722: etab.manipuleMatieresR422722,
             estEtablissementTravail: etab.estEtablissementTravail,
             estERP: etab.estERP,
             estIGH: etab.estIGH,

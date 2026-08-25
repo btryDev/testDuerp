@@ -19,6 +19,12 @@ import {
   DESCRIPTION_CATEGORIE,
   LABEL_CATEGORIE_EQUIPEMENT,
 } from "@/lib/equipements/labels";
+import {
+  FAMILLES_ESP,
+  LABEL_FAMILLE_ESP,
+  verdictSuiviEnService,
+  type FamilleEsp,
+} from "@/lib/equipements/esp";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 import type { EquipementActionState } from "@/lib/equipements/actions";
 
@@ -29,6 +35,9 @@ type Valeurs = {
   localisation?: string | null;
   dateMiseEnService?: Date | null;
   nombre?: number | null;
+  familleEsp?: string | null;
+  pressionMaxAdmissibleBar?: number | null;
+  volumeLitres?: number | null;
   aGroupeElectrogene?: boolean;
   estLocalPollutionSpecifique?: boolean;
   nbVehiculesParkingCouvert?: number | null;
@@ -36,7 +45,7 @@ type Valeurs = {
 } & Partial<Record<ChampTriEtat, boolean | null>>;
 
 /**
- * Libellés des six questions à trois états.
+ * Libellés des sept questions à trois états.
  *
  * Elles bornent des obligations réelles : y répondre « non » retire une
  * échéance du calendrier. Deux exigences de rédaction, donc — être
@@ -109,6 +118,11 @@ const QUESTIONS_TRI_ETAT: Record<
       "Un système fixe de détection des fuites est-il installé sur cette installation ?",
     aide: "Un détecteur permanent, relié à une alarme, qui signale une fuite de fluide frigorigène sans intervention humaine — à ne pas confondre avec le contrôle d'étanchéité lui-même, ni avec une sonde de température. S'il y en a un, le règlement double l'intervalle entre deux contrôles. En cas de doute, laissez « Je ne sais pas encore » : c'est l'intervalle le plus court qui reste affiché.",
   },
+  dessertLocauxSommeil: {
+    question:
+      "Votre établissement dispose-t-il de locaux où des personnes dorment ?",
+    aide: "Chambres d'hôtel, hébergement, internat, dortoir, logement de fonction ouvert au public. Un restaurant, un commerce ou un bureau sans hébergement : répondez « non ». En 5ᵉ catégorie, c'est ce qui déclenche la visite périodique de la commission de sécurité.",
+  },
 };
 
 type Props = {
@@ -153,13 +167,14 @@ export function EquipementForm({
   const estElec = categorie === "INSTALLATION_ELECTRIQUE";
   const estAeration = CATEGORIES_AERATION.includes(categorie);
   const estVmc = categorie === "VMC";
+  const estEsp = categorie === "EQUIPEMENT_SOUS_PRESSION";
 
   // Questions à trois états applicables à la catégorie sélectionnée.
   const questions = CATEGORIES_TRI_ETAT.filter((r) =>
     r.categories.includes(categorie),
   );
   const afficherCaracteristiques =
-    estElec || estAeration || questions.length > 0;
+    estElec || estAeration || estEsp || questions.length > 0;
 
   return (
     <form action={formAction} className="space-y-8">
@@ -396,6 +411,17 @@ export function EquipementForm({
               </div>
             )}
 
+            {estEsp && (
+              <ChampsEsp
+                initiales={{
+                  familleEsp: valeursInitiales?.familleEsp as FamilleEsp | undefined,
+                  pressionMaxAdmissibleBar: valeursInitiales?.pressionMaxAdmissibleBar as number | undefined,
+                  volumeLitres: valeursInitiales?.volumeLitres as number | undefined,
+                }}
+                err={err}
+              />
+            )}
+
             {questions.map(({ champ }) => (
               <QuestionTriEtat
                 key={champ}
@@ -482,6 +508,101 @@ function QuestionTriEtat({
         ))}
       </select>
       {erreur && <p className="text-sm text-destructive">{erreur}</p>}
+    </div>
+  );
+}
+
+
+/**
+ * Plaque constructeur d'un équipement sous pression, et verdict indicatif
+ * d'assujettissement (C. env. R. 557-14-1). Le verdict n'écrit rien : il
+ * éclaire la réponse à la question « suivi en service » ci-dessous, qui
+ * reste celle du dirigeant.
+ */
+function ChampsEsp({
+  initiales,
+  err,
+}: {
+  initiales: {
+    familleEsp?: FamilleEsp;
+    pressionMaxAdmissibleBar?: number;
+    volumeLitres?: number;
+  };
+  err: (champ: string) => string | undefined;
+}) {
+  const [famille, setFamille] = useState<FamilleEsp | undefined>(initiales.familleEsp);
+  const [ps, setPs] = useState<string>(initiales.pressionMaxAdmissibleBar?.toString() ?? "");
+  const [vol, setVol] = useState<string>(initiales.volumeLitres?.toString() ?? "");
+  const verdict = verdictSuiviEnService({
+    famille,
+    pressionMaxAdmissibleBar: ps === "" ? undefined : Number(ps),
+    volumeLitres: vol === "" ? undefined : Number(vol),
+  });
+  return (
+    <div className="space-y-4 rounded-md border border-dashed border-rule/60 p-4">
+      <p className="text-[0.82rem] leading-relaxed text-muted-foreground">
+        Plaque constructeur : la famille, la pression maximale admissible (PS)
+        et le volume (V) déterminent si l&apos;équipement relève du suivi en
+        service (C. env., art. R. 557-14-1). Le verdict ci-dessous est indicatif
+        : c&apos;est votre réponse à la question « suivi en service » qui compte.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="space-y-2 sm:col-span-3">
+          <Label htmlFor="familleEsp">Famille</Label>
+          <select
+            id="familleEsp"
+            name="familleEsp"
+            value={famille ?? ""}
+            onChange={(e) => setFamille((e.target.value || undefined) as FamilleEsp | undefined)}
+            className="h-9 w-full rounded-md border border-rule bg-background px-3 py-1 text-sm shadow-sm"
+          >
+            <option value="">Je ne sais pas encore</option>
+            {FAMILLES_ESP.map((f) => (
+              <option key={f} value={f}>
+                {LABEL_FAMILLE_ESP[f]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="pressionMaxAdmissibleBar">PS (bar)</Label>
+          <Input
+            id="pressionMaxAdmissibleBar"
+            name="pressionMaxAdmissibleBar"
+            type="number"
+            step="0.1"
+            min={0}
+            value={ps}
+            onChange={(e) => setPs(e.target.value)}
+            aria-invalid={Boolean(err("pressionMaxAdmissibleBar"))}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="volumeLitres">V (litres)</Label>
+          <Input
+            id="volumeLitres"
+            name="volumeLitres"
+            type="number"
+            step="0.1"
+            min={0}
+            value={vol}
+            onChange={(e) => setVol(e.target.value)}
+            aria-invalid={Boolean(err("volumeLitres"))}
+          />
+        </div>
+      </div>
+      <p className="text-[0.82rem]">
+        <span className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground">
+          Verdict indicatif ·{" "}
+        </span>
+        {verdict.verdict === "soumis"
+          ? "paraît soumis au suivi en service"
+          : verdict.verdict === "non_soumis"
+            ? "paraît hors du champ du suivi en service"
+            : "indéterminé"}
+        {" — "}
+        <span className="text-muted-foreground">{verdict.motif}</span>
+      </p>
     </div>
   );
 }

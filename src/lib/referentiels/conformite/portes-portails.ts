@@ -2,8 +2,9 @@
  * Obligations réglementaires — Portes et portails automatiques (P2).
  *
  * Sources primaires :
- *   - Code du travail, art. R. 4224-15 (maintien en état des portes et
- *     portails automatiques).
+ *   - Code du travail, art. R. 4224-12 et R. 4224-13 (portes et portails,
+ *     automatiques) et R. 4224-17 (maintenance et dossier). R. 4224-15,
+ *     cité auparavant, traite de la formation de secouriste.
  *   - Arrêté du 21 décembre 1993 modifié, portant application du décret
  *     90-568 du 27 juin 1990, relatif aux portes et portails
  *     automatiques et semi-automatiques sur les lieux de travail.
@@ -24,9 +25,15 @@ export const obligationsPortesPortails: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 21 décembre 1993, art. 2",
+        reference: "Arrêté du 21 décembre 1993 (portes et portails automatiques), art. 2 à 4 (installations neuves)",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000535617/",
+          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006082855",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4224-13",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532211/",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -44,9 +51,9 @@ export const obligationsPortesPortails: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 21 décembre 1993, art. 3",
+        reference: "Arrêté du 21 décembre 1993 (portes et portails automatiques), art. 9",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000535617/",
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006679563",
       },
     ],
     periodicite: "semestrielle",
@@ -54,6 +61,8 @@ export const obligationsPortesPortails: Obligation[] = [
     criticite: 4,
     typologies: { travail: true },
     categoriesEquipement: ["PORTE_AUTO", "PORTAIL_AUTO"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : la périodicité semestrielle est à l'article 9, pas à l'article 3.",
   },
   {
     id: "porte-auto-dossier-maintenance",
@@ -64,15 +73,15 @@ export const obligationsPortesPortails: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 21 décembre 1993, art. 4",
+        reference: "Arrêté du 21 décembre 1993 (portes et portails automatiques), art. 8 et 9 (livret d'entretien)",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000535617/",
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006679563",
       },
       {
         source: "CODE_TRAVAIL",
-        reference: "R. 4224-15",
+        reference: "R. 4224-17",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018488911/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532197/",
       },
     ],
     periodicite: "autre",
@@ -80,6 +89,8 @@ export const obligationsPortesPortails: Obligation[] = [
     criticite: 3,
     typologies: { travail: true },
     categoriesEquipement: ["PORTE_AUTO", "PORTAIL_AUTO"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait R. 4224-15, qui traite de la formation de secouriste. Le dossier d'entretien est celui de R. 4224-17.",
   },
   {
     id: "porte-auto-maintien-en-etat",
@@ -90,9 +101,15 @@ export const obligationsPortesPortails: Obligation[] = [
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
-        reference: "R. 4224-15",
+        reference: "R. 4224-12 et R. 4224-13",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018488911/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532211/",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4224-17",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532197/",
       },
     ],
     periodicite: "autre",
@@ -101,7 +118,7 @@ export const obligationsPortesPortails: Obligation[] = [
     typologies: { travail: true },
     categoriesEquipement: ["PORTE_AUTO", "PORTAIL_AUTO"],
     notesInternes:
-      "Obligation de moyens permanente, sans échéance fixe. Le non-respect entraîne la mise à l'arrêt de l'équipement.",
+      "Obligation de moyens permanente, sans échéance fixe. Corrigé à l'audit 2026-08 : R. 4224-15 (secouriste) remplacé par R. 4224-12/13 (portes et portails) et R. 4224-17 (maintenance).",
   },
   {
     id: "porte-auto-portail-piete-coulissant",
@@ -112,9 +129,9 @@ export const obligationsPortesPortails: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 21 décembre 1993, art. 1 et 2",
+        reference: "Arrêté du 21 décembre 1993 (portes et portails automatiques), art. 2 et 5 (passages de véhicules)",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000535617/",
+          "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006082855",
       },
     ],
     periodicite: "semestrielle",

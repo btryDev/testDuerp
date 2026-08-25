@@ -11,7 +11,7 @@ import type { Referentiel } from "./types";
  *    chez les clients / Atelier (laboratoire).
  *  - INRS ED 925 « Les commerces alimentaires de proximité ».
  *  - INRS ED 840 « Évaluation des risques professionnels — Aide au repérage
- *    des risques dans les PME-PMI » (octobre 2023) — taxonomie des risques.
+ *    des risques dans les PME-PMI », 8e édition (juin 2025) — taxonomie des risques.
  *  - ameli.fr / Assurance Maladie Risques professionnels — secteur commerce.
  */
 export const commerce: Referentiel = {

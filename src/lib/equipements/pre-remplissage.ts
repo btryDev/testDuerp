@@ -238,7 +238,7 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
       categorie: "ALARME_INCENDIE",
       libelle: "Alarme incendie",
       raison:
-        "Obligatoire dès que l'établissement emploie ≥ 50 salariés ou manipule des matières inflammables (R. 4227-29).",
+        "Obligatoire dès que plus de 50 personnes peuvent être habituellement occupées ou réunies dans l'établissement, ou dès qu'il manipule des matières inflammables (R. 4227-34).",
     });
   }
 

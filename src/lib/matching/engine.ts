@@ -14,8 +14,9 @@
  * Règles (doc : `docs/regles-matching.md`) :
  *   1. La typologie de l'obligation doit matcher l'établissement — les
  *      régimes positifs (travail/ERP/IGH/habitation) en OU entre eux, les
- *      exclusions (`false`), les restrictions de catégorie ERP / classe IGH
- *      et l'effectif en ET (amendements 2026-08).
+ *      exclusions (`false`), les restrictions de catégorie ERP, de **type
+ *      d'exploitation ERP**, de classe IGH et l'effectif en ET
+ *      (amendements 2026-08).
  *   2. Au moins un équipement de l'établissement doit avoir sa catégorie
  *      dans `obligation.categoriesEquipement`.
  *   3. Si l'obligation a des `conditions[]`, elles sont regroupées par
@@ -67,6 +68,8 @@ function evaluerErp(
   if (critere === undefined || critere === false) return { etat: "absent" };
   if (!etab.estERP) return { etat: "mismatch" };
   if (typeof critere === "object") {
+    const precisions: string[] = [];
+
     if (critere.categories && critere.categories.length > 0) {
       if (
         !etab.categorieErp ||
@@ -74,14 +77,29 @@ function evaluerErp(
       ) {
         return { etat: "mismatch" };
       }
-      return {
-        etat: "match",
-        raison: `ERP catégorie ${etab.categorieErp.slice(1)} (règle limitée à ${critere.categories
+      precisions.push(
+        `catégorie ${etab.categorieErp.slice(1)} (règle limitée à ${critere.categories
           .map((c) => c.slice(1))
           .join(", ")})`,
-      };
+      );
     }
-    return { etat: "match", raison: "ERP" };
+
+    // Restriction par type d'exploitation — même sémantique que la catégorie :
+    // un ERP dont le type n'est pas renseigné ne satisfait pas la restriction.
+    if (critere.types && critere.types.length > 0) {
+      if (!etab.typeErp || !critere.types.includes(etab.typeErp)) {
+        return { etat: "mismatch" };
+      }
+      precisions.push(
+        `type ${etab.typeErp} (règle limitée aux types ${critere.types.join(", ")})`,
+      );
+    }
+
+    return {
+      etat: "match",
+      raison:
+        precisions.length > 0 ? `ERP ${precisions.join(", ")}` : "ERP",
+    };
   }
   return { etat: "match", raison: "ERP" };
 }
@@ -114,7 +132,8 @@ function evaluerIgh(
  *     (cas des ascenseurs).
  *   - Les critères **négatifs** (`travail: false`, `erp: false`, …) restent
  *     des **exclusions en ET** : un seul violé suffit à rejeter.
- *   - Les **restrictions de catégorie ERP / classe IGH** sont en ET, et non
+ *   - Les **restrictions de catégorie ERP, de type d'exploitation ERP et de
+ *     classe IGH** sont en ET, et non
  *     dans la disjonction : si l'obligation écrit `erp: { categories: [...] }`
  *     et que l'établissement EST un ERP, sa catégorie doit appartenir à la
  *     liste — même si un autre régime positif (`travail: true`) matche par
@@ -141,9 +160,19 @@ function matchTypologie(
   // il est simplement hors de cette branche de la disjonction.
   if (
     typeof t.erp === "object" &&
+    t.erp.categories !== undefined &&
     t.erp.categories.length > 0 &&
     etab.estERP &&
     (!etab.categorieErp || !t.erp.categories.includes(etab.categorieErp))
+  ) {
+    return { ok: false };
+  }
+  if (
+    typeof t.erp === "object" &&
+    t.erp.types !== undefined &&
+    t.erp.types.length > 0 &&
+    etab.estERP &&
+    (!etab.typeErp || !t.erp.types.includes(etab.typeErp))
   ) {
     return { ok: false };
   }
@@ -193,6 +222,40 @@ function matchTypologie(
         t.effectifMin ?? "—"
       } ; ${t.effectifMax ?? "—"}]`,
     );
+  }
+
+  // 3 bis. Personnes présentes (salariés + public) et champ R. 4227-34.
+  //
+  // `personnesPresentesHabituellement` absent ⇒ repli sur l'effectif salarié :
+  // sous-estimation assumée (jamais un faux positif). `manipuleMatieresR422722`
+  // absent ⇒ « non » : cette branche ne fait qu'ajouter des cas, aucun
+  // établissement ne perd une obligation par son silence.
+  // Le critère est évalué dès que **l'une** des deux branches est déclarée :
+  // une obligation qui n'écrirait que `champR422734` (branche matières seule)
+  // ne doit pas passer sans filtre — un critère que l'on ne sait pas vérifier
+  // ne s'ignore jamais en silence.
+  if (t.personnesPresentesMin !== undefined || t.champR422734 === true) {
+    const personnes =
+      etab.personnesPresentesHabituellement ?? etab.effectifSurSite;
+    const brancheSeuil =
+      t.personnesPresentesMin !== undefined &&
+      personnes >= t.personnesPresentesMin;
+    const brancheMatieres =
+      t.champR422734 === true && etab.manipuleMatieresR422722 === true;
+    if (!brancheSeuil && !brancheMatieres) return { ok: false };
+    if (brancheSeuil) {
+      raisons.push(
+        etab.personnesPresentesHabituellement !== undefined &&
+          etab.personnesPresentesHabituellement !== null
+          ? `${personnes} personnes habituellement présentes (seuil ${t.personnesPresentesMin})`
+          : `${personnes} salariés sur site, faute de déclaration des personnes présentes (seuil ${t.personnesPresentesMin})`,
+      );
+    }
+    if (brancheMatieres) {
+      raisons.push(
+        "manipulation de matières visées par R. 4227-22 déclarée (champ R. 4227-34, quel que soit l'effectif)",
+      );
+    }
   }
 
   // Si aucune contrainte de typologie n'a été posée ET aucune raison n'a

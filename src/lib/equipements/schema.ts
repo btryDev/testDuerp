@@ -2,6 +2,7 @@ import { depuisCleJourCivil } from "@/lib/dates";
 import { z } from "zod";
 import { CATEGORIES_EQUIPEMENT } from "@/lib/referentiels/types-communs";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
+import { FAMILLES_ESP } from "./esp";
 
 /**
  * Schéma de validation d'un équipement. Les propriétés spécifiques à une
@@ -31,6 +32,8 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  *     (l'intervalle entre deux contrôles d'étanchéité est doublé)
  *   - `estChargeSuperieure50TCo2`   → règlement (UE) 2024/573, art. 5 (palier)
  *   - `estChargeSuperieure500TCo2`  → règlement (UE) 2024/573, art. 5 (palier)
+ *   - `dessertLocauxSommeil`        → ERP 5ᵉ cat., visite périodique de la
+ *                                     commission de sécurité (CCH R. 143-34)
  *
  * ── Booléens à deux états contre booléens à trois états ────────────────────
  *
@@ -38,7 +41,7 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  * « non ». C'est acceptable parce qu'elles gouvernent des obligations en
  * « opt-in » (l'obligation n'apparaît qu'après une réponse positive).
  *
- * Les douze suivantes bornent au contraire des obligations **déjà publiées**, de
+ * Les treize suivantes bornent au contraire des obligations **déjà publiées**, de
  * criticité élevée, en « opt-out » : elles restent applicables tant que le
  * dirigeant n'a pas répondu « non ». Une case à cocher ne convient donc pas —
  * elle ne distingue pas « j'ai répondu non » de « je n'ai pas encore répondu »,
@@ -88,6 +91,7 @@ export const CATEGORIES_AERATION: readonly CategorieEquipement[] = [
 ];
 
 /** Les douze questions à trois états, dans l'ordre d'affichage. */
+/** Les sept questions à trois états, dans l'ordre d'affichage. */
 export const CHAMPS_TRI_ETAT = [
   "estVmcGaz",
   "aRobinetsIncendieArmes",
@@ -101,6 +105,7 @@ export const CHAMPS_TRI_ETAT = [
   "estChargeSuperieure50TCo2",
   "estChargeSuperieure500TCo2",
   "aDetectionDeFuites",
+  "dessertLocauxSommeil",
 ] as const;
 
 export type ChampTriEtat = (typeof CHAMPS_TRI_ETAT)[number];
@@ -174,6 +179,11 @@ export const CATEGORIES_TRI_ETAT: readonly {
     categories: ["INSTALLATION_FRIGORIFIQUE"],
     message: "Spécifique aux installations frigorifiques",
   },
+  {
+    champ: "dessertLocauxSommeil",
+    categories: ["ALARME_INCENDIE"],
+    message: "Spécifique aux systèmes d'alarme / SSI",
+  },
 ];
 
 /** Valeurs du `<select>` de l'interface — partagées avec `EquipementForm`. */
@@ -228,6 +238,21 @@ export const equipementSchema = z
       (v) => (v === "" || v === null || v === undefined ? undefined : v),
       z.coerce.number().int().min(0).max(99999).optional(),
     ),
+    // Équipements sous pression — plaque constructeur (C. env. R. 557-14-1).
+    // Servent au verdict indicatif `verdictSuiviEnService` (lib/equipements/esp.ts)
+    // qui pré-remplit `estSoumisSuiviEnService` ; jamais lus par le moteur.
+    familleEsp: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? undefined : v),
+      z.enum(FAMILLES_ESP).optional(),
+    ),
+    pressionMaxAdmissibleBar: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? undefined : v),
+      z.coerce.number().min(0).max(10000).optional(),
+    ),
+    volumeLitres: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? undefined : v),
+      z.coerce.number().min(0).max(1000000).optional(),
+    ),
     // Questions à trois états (oui / non / pas encore répondu).
     estVmcGaz: triEtat,
     aRobinetsIncendieArmes: triEtat,
@@ -241,6 +266,7 @@ export const equipementSchema = z
     estChargeSuperieure50TCo2: triEtat,
     estChargeSuperieure500TCo2: triEtat,
     aDetectionDeFuites: triEtat,
+    dessertLocauxSommeil: triEtat,
     notes: z.preprocess(
       (v) => (typeof v === "string" ? v.trim() || undefined : v),
       z.string().max(1000).optional(),
@@ -328,6 +354,10 @@ export function normaliserFormDataEquipement(
     aGroupeElectrogene: caseCochee("aGroupeElectrogene"),
     estLocalPollutionSpecifique: caseCochee("estLocalPollutionSpecifique"),
     nbVehiculesParkingCouvert: raw.nbVehiculesParkingCouvert,
+    // Plaque constructeur d'un équipement sous pression (cf. `esp.ts`).
+    familleEsp: raw.familleEsp,
+    pressionMaxAdmissibleBar: raw.pressionMaxAdmissibleBar,
+    volumeLitres: raw.volumeLitres,
     notes: raw.notes,
   };
   for (const champ of CHAMPS_TRI_ETAT) {
@@ -353,6 +383,10 @@ export function serialiserCaracteristiques(
     out.estLocalPollutionSpecifique = val.estLocalPollutionSpecifique;
   if (val.nbVehiculesParkingCouvert !== undefined)
     out.nbVehiculesParkingCouvert = val.nbVehiculesParkingCouvert;
+  if (val.familleEsp !== undefined) out.familleEsp = val.familleEsp;
+  if (val.pressionMaxAdmissibleBar !== undefined)
+    out.pressionMaxAdmissibleBar = val.pressionMaxAdmissibleBar;
+  if (val.volumeLitres !== undefined) out.volumeLitres = val.volumeLitres;
   for (const champ of CHAMPS_TRI_ETAT) {
     const v = val[champ];
     if (v !== undefined) out[champ] = v;

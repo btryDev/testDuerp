@@ -4,10 +4,14 @@ import { revalidatePath } from "next/cache";
 import { Prisma, type Realisateur } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
-import { determineObligationsApplicables } from "@/lib/matching";
+import {
+  appliquerPrescriptions,
+  determineObligationsApplicables,
+} from "@/lib/matching";
 import { REFERENTIEL_VERSION } from "@/lib/referentiels/conformite";
 import {
   genererProchainesVerifications,
+  genererVerificationsSurMesure,
   reconcilierCalendrier,
   type OccurrenceExistante,
   type StatutVerificationPersiste,
@@ -64,12 +68,29 @@ export async function genererCalendrier(
   // 1. Lecture établissement + équipements encore en service.
   const etab = await prisma.etablissement.findUnique({
     where: { id: etablissementId },
-    include: { equipements: { where: { actif: true } } },
+    include: {
+      equipements: { where: { actif: true } },
+      // Prescriptions particulières (ADR-014) : lues ici, dans la phase de
+      // calcul, jamais dans la transaction. `dateFin` est arbitrée par
+      // `appliquerPrescriptions` pour que la raison d'ignorance soit rendue.
+      prescriptionsParticulieres: { where: { actif: true } },
+    },
   });
   if (!etab) throw new Error("Établissement introuvable");
 
-  // 2. Matching
-  const obligations = determineObligationsApplicables(
+  const equipementsMatching = etab.equipements.map((eq) => ({
+    id: eq.id,
+    libelle: eq.libelle,
+    categorie: eq.categorie,
+    caracteristiques: (eq.caracteristiques ?? null) as Record<
+      string,
+      unknown
+    > | null,
+  }));
+
+  // 2. Matching du référentiel, puis modulation par les prescriptions
+  //    particulières propres à l'établissement.
+  const obligationsReferentiel = determineObligationsApplicables(
     {
       id: etab.id,
       effectifSurSite: etab.effectifSurSite,
@@ -80,16 +101,16 @@ export async function genererCalendrier(
       typeErp: etab.typeErp,
       categorieErp: etab.categorieErp,
       classeIgh: etab.classeIgh,
+      personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
+      manipuleMatieresR422722: etab.manipuleMatieresR422722,
     },
-    etab.equipements.map((eq) => ({
-      id: eq.id,
-      libelle: eq.libelle,
-      categorie: eq.categorie,
-      caracteristiques: (eq.caracteristiques ?? null) as Record<
-        string,
-        unknown
-      > | null,
-    })),
+    equipementsMatching,
+  );
+  const { applicables: obligations, surMesure } = appliquerPrescriptions(
+    obligationsReferentiel,
+    etab.prescriptionsParticulieres,
+    equipementsMatching,
+    now,
   );
 
   // 3. Ensemble des couples applicables. Historique volontairement vide :
@@ -100,10 +121,14 @@ export async function genererCalendrier(
   for (const eq of etab.equipements) {
     if (eq.dateMiseEnService) misesEnService.set(eq.id, eq.dateMiseEnService);
   }
-  const aGenerer = genererProchainesVerifications(obligations, new Map(), {
-    now,
-    misesEnService,
-  });
+  //    cf. la doc de `reconcilierCalendrier`.
+  const aGenerer = [
+    ...genererProchainesVerifications(obligations, new Map(), {
+      now,
+      misesEnService,
+    }),
+    ...genererVerificationsSurMesure(surMesure, { now }),
+  ];
 
   // 4. État en base. `_count` sert au seul arbitrage qui autorise une
   //    suppression : une ligne sans rapport ni action ne porte aucune preuve.
@@ -119,6 +144,7 @@ export async function genererCalendrier(
       datePrevue: true,
       dateRealisee: true,
       statut: true,
+      prescriptionId: true,
       _count: { select: { rapports: true, actions: true } },
     },
   });
@@ -134,6 +160,7 @@ export async function genererCalendrier(
     dateRealisee: v.dateRealisee,
     statut: v.statut as StatutVerificationPersiste,
     porteUnePreuve: v._count.rapports > 0 || v._count.actions > 0,
+    prescriptionId: v.prescriptionId,
   }));
 
   const plan = reconcilierCalendrier(existantes, aGenerer, { now });
@@ -177,6 +204,7 @@ export async function genererCalendrier(
           realisateurRequis: v.realisateurRequis as Realisateur[],
           datePrevue: v.datePrevue,
           statut: v.statut,
+          prescriptionId: v.prescriptionId,
         })),
         skipDuplicates: true,
       }),
@@ -194,6 +222,7 @@ export async function genererCalendrier(
           datePrevue: m.datePrevue,
           dateRealisee: m.dateRealisee,
           statut: m.statut,
+          prescriptionId: m.prescriptionId,
         },
       }),
     );

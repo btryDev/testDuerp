@@ -44,6 +44,8 @@ const CHAMPS_STRUCTURANTS = [
   "categorieErp",
   "classeIgh",
   "effectifSurSite",
+  "personnesPresentesHabituellement",
+  "manipuleMatieresR422722",
 ] as const;
 
 type ChampStructurant = (typeof CHAMPS_STRUCTURANTS)[number];
@@ -76,6 +78,8 @@ function normaliserFormData(fd: FormData): Record<string, unknown> {
     adresse: raw.adresse,
     codeNaf: raw.codeNaf,
     effectifSurSite: raw.effectifSurSite,
+    personnesPresentesHabituellement: raw.personnesPresentesHabituellement,
+    manipuleMatieresR422722: raw.manipuleMatieresR422722,
     estEtablissementTravail: bool("estEtablissementTravail"),
     estERP: bool("estERP"),
     estIGH: bool("estIGH"),
@@ -151,6 +155,8 @@ export async function modifierEtablissement(
       categorieErp: true,
       classeIgh: true,
       effectifSurSite: true,
+      personnesPresentesHabituellement: true,
+      manipuleMatieresR422722: true,
     },
   });
   if (!avant) {

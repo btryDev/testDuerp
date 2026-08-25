@@ -327,12 +327,13 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
           <Text style={s.small}>
             • Bureau / tertiaire : dossier INRS « Travail de bureau », ED 950
             « Conception des lieux et des situations de travail » (août 2025)
-            et ED 6497 « Qualité de l&apos;air intérieur ».
+            et ED 6497 « Améliorer la qualité de l&apos;air dans les locaux de
+            travail du tertiaire » (octobre 2022).
           </Text>
           <Text style={s.small}>
             • Risques transverses : INRS ED 840 « Évaluation des risques
             professionnels — Aide au repérage des risques dans les PME-PMI »
-            (octobre 2023, taxonomie des 20 familles de risques).
+            (8e édition, juin 2025 — taxonomie des 20 fiches de risques).
           </Text>
         </View>
 

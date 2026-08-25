@@ -87,7 +87,7 @@ export type SidebarActive =
 
 /** Ids réellement présents dans le rail (les deux derniers n'étaient pas
  *  adressables auparavant : `/modifier` surlignait « Tableau de bord »). */
-export type SidebarItemId = SidebarActive | "batiments" | "fiche" | "equipe";
+export type SidebarItemId = SidebarActive | "batiments" | "fiche" | "prescriptions" | "equipe";
 
 /**
  * Le nom de chaque écran, en un seul endroit. La sidebar s'en sert pour
@@ -110,6 +110,7 @@ export const LABEL_ITEM: Record<SidebarItemId, string> = {
   equipements: "Équipements",
   batiments: "Bâtiments",
   prestataires: "Prestataires",
+  prescriptions: "Prescriptions particulières",
   fiche: "Fiche établissement",
   equipe: "Équipe",
   duerp: "DUERP",
@@ -206,6 +207,7 @@ export function deduireActif(
   if (pathname.startsWith(`${base}/equipements`)) return "equipements";
   if (pathname.startsWith(`${base}/batiments`)) return "batiments";
   if (pathname.startsWith(`${base}/prestataires`)) return "prestataires";
+  if (pathname.startsWith(`${base}/prescriptions`)) return "prescriptions";
   if (pathname.startsWith(`${base}/accessibilite`)) return "accessibilite";
   if (pathname.startsWith(`${base}/permis-feu`)) return "permis-feu";
   if (pathname.startsWith(`${base}/plan-prevention`)) return "plan-prevention";
@@ -283,6 +285,12 @@ export function construireSections({
       label: LABEL_ITEM.fiche,
       href: href("/modifier"),
       Icon: Settings,
+    },
+    {
+      id: "prescriptions",
+      label: "Prescriptions",
+      href: href("/prescriptions"),
+      Icon: FileText,
     },
     {
       id: "equipe",
@@ -458,6 +466,7 @@ export function categorieDeItem(id: SidebarItemId): RailCategorieId | null {
     case "batiments":
     case "prestataires":
     case "fiche":
+    case "prescriptions":
     case "equipe":
       return "etablissement";
     case "permis-feu":

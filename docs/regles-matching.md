@@ -59,6 +59,24 @@ Pour chaque `Obligation` du référentiel :
 > ne déclarent qu'un seul régime positif, et pour un critère unique
 > OU ≡ ET.
 
+> **Amendement 2026-08 — restriction par type d'exploitation ERP.** La
+> `TypologieApplication.erp` accepte désormais `{ types: [...] }`, en plus de
+> `{ categories: [...] }`, et les deux se cumulent. Jusqu'ici le `typeErp`
+> (M, N, O, W…) était demandé au dirigeant à l'inscription, stocké en base et
+> transmis au moteur — mais **jamais lu** : aucune obligation propre à un type
+> d'exploitation ne pouvait être exprimée. Ce n'était pas seulement un champ
+> mort, c'était un plafond : impossible d'ouvrir un secteur avec hébergement
+> ou public vulnérable sans ce filtre. La restriction se lit comme celle de
+> catégorie — **en ET**, avant la disjonction, et un ERP dont le type est
+> inconnu est rejeté.
+>
+> **À n'employer que si le texte fondateur vise explicitement un ou plusieurs
+> types.** Les articles des dispositions générales du règlement de sécurité
+> (EL, MS, EC, DF, CH, GC, GZ, GE) s'appliquent à tous les types : y ajouter
+> une liste serait une restriction inventée (règle n°6). Aucune obligation du
+> référentiel n'utilise `types` à ce jour — le mécanisme existe, son premier
+> usage devra être sourcé article par article.
+
 > **Amendement 2026-08 — restrictions de catégorie en ET.** La disjonction
 > ci-dessus portait un piège : une obligation déclarant
 > `{ travail: true, erp: { categories: ["N1"] } }` aurait été matchée par un
@@ -82,6 +100,7 @@ ou de classe, et l'effectif s'appliquent **en ET** :
 | `travail: true`  | matché si `estEtablissementTravail = true`                                                                                                                           |
 | `erp: true`      | matché si l'établissement est ERP (toutes catégories)                                                                                                                |
 | `erp: { categories: [...] }` | matché si l'établissement est ERP **et** sa `categorieErp` appartient à la liste                                                                         |
+| `erp: { types: [...] }`      | matché si l'établissement est ERP **et** son `typeErp` appartient à la liste (cumulable avec `categories`)                                               |
 | `igh: true`      | matché si l'établissement est IGH                                                                                                                                    |
 | `igh: { classes: [...] }`    | matché si l'établissement est IGH **et** sa `classeIgh` appartient à la liste                                                                            |
 | `habitation: true`| matché si `estHabitation = true`                                                                                                                                    |
@@ -106,7 +125,10 @@ Convention retenue, verrouillée par un test :
 - le texte restreint réellement → `erp: { categories: [...] }` avec la
   liste des seules catégories visées (jamais les cinq).
 
-Même logique pour `igh: true` et `igh: { classes: [...] }`.
+Même logique pour `igh: true` et `igh: { classes: [...] }`, et pour
+`erp: { types: [...] }` : un test interdit de lister les 21 types, qui
+reviendrait à écrire une restriction n'excluant rien tout en exigeant que
+`typeErp` soit renseigné.
 
 ### Cas du cumul ERP × IGH
 
@@ -261,46 +283,83 @@ cohérence du référentiel
 
 ## Limites connues
 
-- **Pas de filtrage par type ERP** (M, N, W…) : seules les catégories N1-N5
-  sont filtrées. Le ramonage annuel des circuits d'extraction s'applique à
-  tout ERP déclarant une hotte professionnelle, quel que soit son type ERP.
-  Pour un W (bureau) qui déclarerait une hotte, c'est une sur-application ;
-  en pratique aucun W ne déclare de hotte. À affiner si besoin par ajout
-  d'un champ `types` dans `TypologieApplication.erp`.
-- **Frontière 4ᵉ / 5ᵉ catégorie ERP non déductible** : elle dépend d'un
-  seuil propre au type d'ERP fixé par le règlement de sécurité, pas d'un
-  seuil universel de 300 personnes. La table de ces seuils n'est pas
-  encodée (elle n'a pas encore été sourcée article par article sur
-  Légifrance), donc `deduireCategorieErpDepuisEffectif` renvoie `null` sous
-  300 personnes et la catégorie est **demandée** au dirigeant, la 4ᵉ figurant
-  explicitement dans les choix. Enjeu : une 4ᵉ classée à tort en 5ᵉ perd la
-  vérification électrique annuelle par organisme agréé (criticité 5) et la
-  vérification triennale du SSI. Cf. `src/lib/onboarding/deduction-erp.ts`.
-- **Seuils PS × V des équipements sous pression non encodés** : l'arrêté du
-  20 novembre 2017 borne son champ par des seuils de pression et de volume
-  que le référentiel ne reproduit pas (même raison de sourçage). En
-  attendant, les cinq obligations concernées sont bornées par une réponse
-  du dirigeant (`estSoumisSuiviEnService`), en mode opt-out.
-- **Branche « matières inflammables » de l'exercice semestriel** :
-  `incendie-travail-exercice-semestriel` déclare `effectifMin: 51`, mais le
-  seuil réglementaire est disjonctif — plus de cinquante personnes **ou**
-  manipulation de matières inflammables quel que soit l'effectif. Le moteur
-  ne sait pas exprimer un OU entre un critère d'effectif et la présence
-  d'un équipement ; la seconde branche n'est donc pas automatisée. Par
-  ailleurs le texte vise les personnes *occupées ou réunies*, quand le
-  moteur ne dispose que de `effectifSurSite`.
+- **Filtrage par type ERP disponible, mais aucun usage à ce jour.** Le champ
+  `types` existe (cf. amendement ci-dessus) ; aucune obligation ne s'en sert,
+  faute de texte sourcé qui vise explicitement un type d'exploitation. Le
+  ramonage annuel des circuits d'extraction reste donc appliqué à tout ERP
+  déclarant une hotte professionnelle, quel que soit son type — et c'est
+  volontaire : une grande cuisine se trouve aussi bien en hôtel (O), en école
+  (R) ou en établissement de soins (U) qu'en restaurant (N). Restreindre au
+  type N y créerait des faux négatifs. C'est l'équipement déclaré qui trie,
+  et la sur-application théorique sur un bureau qui déclarerait une hotte est
+  assumée.
+- **Frontière 4ᵉ / 5ᵉ catégorie ERP : encodée pour dix types, demandée pour
+  les autres** (amendement 2026-08-25). La table `SEUILS_5E_CATEGORIE` de
+  `src/lib/onboarding/deduction-erp.ts` porte, pour N, M, W, T, S, Y, X, V,
+  O et P, le seuil de l'article « 1 » des dispositions particulières relu sur
+  Légifrance (sous-sol / étages / total, effectif du **public seul**), avec
+  l'article, la version et l'URL. `deduire4eOu5e` ne tranche que si toutes
+  les données nécessaires sont fournies ; un niveau non renseigné, une
+  condition hors effectif (X : surface et hauteur) ou un type hors table
+  (R, U, L, J) renvoie `a_confirmer`. Restent non automatisables : R
+  (sous-sol interdit, étages « quel que soit l'effectif »), U (seuil en
+  lits), L (deux grilles selon la nature de la salle), J (capacité
+  d'hébergement, type absent de l'enum).
+- **Seuils PS × V des équipements sous pression : verdict indicatif, pas
+  décision** (amendement 2026-08-25). Les seuils de champ vivent à l'article
+  R. 557-14-1 du Code de l'environnement — pas dans l'arrêté du 20 novembre
+  2017, qui ne pose des seuils que pour la déclaration de mise en service
+  (art. 7). `verdictSuiviEnService` (`src/lib/equipements/esp.ts`) les
+  applique à la famille, à PS et à V lus sur la plaque constructeur, et le
+  formulaire affiche le résultat pour éclairer la réponse
+  `estSoumisSuiviEnService`. Les cinq obligations restent bornées par cette
+  réponse (opt-out) : aucune échéance de criticité élevée ne s'éteint sur la
+  seule foi d'un chiffre saisi. Non encodés : tuyauteries (seuils en DN),
+  groupe de fluide (qualification CLP par le dirigeant), régime du plan
+  d'inspection.
+- **Champ de R. 4227-34 (consigne, exercices semestriels) : disjonctif et
+  compté sur les personnes présentes** (amendement 2026-08-25). Le moteur
+  connaît deux données d'établissement nouvelles,
+  `personnesPresentesHabituellement` (salariés + public, repli sur
+  `effectifSurSite` si absent) et `manipuleMatieresR422722` (absent = non).
+  `TypologieApplication` gagne `personnesPresentesMin` et `champR422734`,
+  ce dernier étant le seul OU inter-critères du moteur, nommé d'après son
+  article. Reste au dirigeant : la qualification R. 4227-22 des produits
+  (lecture des FDS), « manipulées et mises en œuvre » vs simple stockage,
+  l'appréciation de « habituellement ». Le déclencheur `ALARME_INCENDIE` reste
+  une heuristique : l'alarme est une conséquence de R. 4227-34, pas sa
+  condition.
 - **Pas de logique temporelle** : le moteur détermine *quelles* obligations
   s'appliquent, pas *quand* la prochaine vérification est due. Cela relève
   de l'étape 6 (générateur de calendrier).
-- **Ascenseurs en habitation pure** : les 6 obligations ascenseurs
-  déclarent `{ travail, erp, igh }` mais pas `habitation`. Un immeuble
-  d'habitation pur (sans salarié, non-ERP, non-IGH) avec ascenseur ne
-  reçoit donc aucune obligation ascenseur — limite assumée, le scope V2
-  vise les établissements employeurs. Couvert par un test dédié.
-- **RIA sans catégorie d'équipement dédiée** : l'enum Prisma
-  `CategorieEquipement` n'a pas d'entrée RIA. L'obligation reste rattachée
-  à `EXTINCTEUR` et bornée par la propriété `aRobinetsIncendieArmes`. À
-  rebasculer sur une catégorie propre le jour où l'enum évoluera.
+- **Ascenseurs en habitation pure : couverts** (amendement 2026-08-25). Les
+  six obligations déclarent `habitation: true` — L. 134-1, L. 134-3 et
+  R. 134-11 CCH visent « le propriétaire d'un ascenseur » sans distinction
+  de bâtiment. Limite restante : l'onboarding exige `effectifSurSite ≥ 1`,
+  un immeuble d'habitation sans salarié se déclare donc par la fiche
+  établissement.
+- **RIA : catégorie propre, branche EXTINCTEUR transitoire** (amendement
+  2026-08-25). `RIA` existe dans l'enum ; `incendie-erp-ria-annuelle` vise
+  `["RIA", "EXTINCTEUR"]`, la seconde bornée par `aRobinetsIncendieArmes`
+  (opt-out) tant que la reprise `scripts/reprise-ria.ts` n'a pas été jouée.
+  Critère de retrait : plus aucun extincteur ne porte la clé en base.
+
+## Prescriptions particulières (ADR-014)
+
+Après le matching du référentiel, `appliquerPrescriptions`
+(`src/lib/matching/prescriptions.ts`) module le résultat pour l'établissement :
+
+- `renforce_periodicite` surcharge, par équipement, la périodicité d'une
+  obligation applicable — uniquement vers **plus strict** au sens de
+  `PERIODICITE_EN_JOURS` (une obligation `autre` / `mise_en_service_uniquement`
+  accepte tout rythme daté). Sinon la prescription est **ignorée** avec
+  raison : obligation non applicable ici, rythme pas plus strict (« rattrapée
+  par le référentiel »), équipement non déclencheur, doublon moins strict.
+- `obligation_sur_mesure` produit des lignes `obligationId =
+  "prescription:<id>"`, criticité 4 par convention, jamais associées à une
+  référence légale du référentiel.
+- Le générateur écrit `Verification.prescriptionId` ; la réconciliation le
+  compare. Aucun impact sur `REFERENTIEL_VERSION`.
 
 ## Tests de non-régression
 
@@ -308,9 +367,9 @@ Toute modification du moteur doit laisser passer :
 
 - `src/lib/matching/engine.test.ts` — combinaisons typologie × équipement ×
   effectif × conditions, dont la disjonction des régimes, la conjonction
-  des restrictions de catégorie, la sémantique « non infirmée » et le
-  verrou « aucun établissement existant ne perd une obligation de criticité
-  ≥ 4 » (amendements 2026-08).
+  des restrictions de catégorie **et de type d'exploitation**, la sémantique
+  « non infirmée » et le verrou « aucun établissement existant ne perd une
+  obligation de criticité ≥ 4 » (amendements 2026-08).
 - `src/lib/referentiels/conformite/conformite.test.ts` — cohérence du
   référentiel : conditions vivantes, absence de doublon, seuils d'effectif
   encodés, forme normalisée des typologies.

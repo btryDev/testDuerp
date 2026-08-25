@@ -7,8 +7,13 @@
  *   - Arrêté du 1er mars 2004 relatif aux vérifications des appareils et
  *     accessoires de levage (modalités de réalisation des vérifications
  *     et contenu du rapport).
- *   - Arrêté du 2 mars 2004 relatif à la vérification des équipements de
- *     travail utilisés pour le levage de personnes.
+ *   - Arrêté du 2 mars 2004 relatif au carnet de maintenance des appareils
+ *     de levage (il ne fixe aucune périodicité : la VGP semestrielle du
+ *     levage de personnes est à l'art. 23 de l'arrêté du 1er mars 2004).
+ *
+ * Audit des sources 2026-08-25 : R. 4323-22 = vérification initiale,
+ * R. 4323-23/24 = VGP, R. 4323-25 à 27 = registre, R. 4323-28 = remise en
+ * service.
  *
  * Scope MVP : équipements courants en TPE/PME — monte-charges, hayons
  * élévateurs, gerbeurs, chariots élévateurs, petits palans. Les grues mobiles,
@@ -39,16 +44,16 @@ export const obligationsLevage: Obligation[] = [
       "Avant première mise en service, l'employeur procède à un examen d'adéquation : l'appareil est adapté aux travaux à réaliser et aux charges prévues, compte tenu de l'environnement et des conditions d'utilisation.",
     referencesLegales: [
       {
+        source: "ARRETE",
+        reference: "Arrêté du 1er mars 2004, art. 5 (examen d'adéquation et de montage) et art. 12 à 15",
+        url:
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
+      },
+      {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-22",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531483",
-      },
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 1er mars 2004, art. 5",
-        url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000249655/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531483/",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -65,16 +70,16 @@ export const obligationsLevage: Obligation[] = [
       "Avant mise en service d'un appareil de levage de charges non spécifiquement conçu pour le levage de personnes, une épreuve statique et une épreuve dynamique de fonctionnement sont réalisées pour vérifier la tenue des charges et des organes de sécurité.",
     referencesLegales: [
       {
-        source: "CODE_TRAVAIL",
-        reference: "R. 4323-25",
+        source: "ARRETE",
+        reference: "Arrêté du 1er mars 2004, art. 6, 10 et 11 (essai de fonctionnement, épreuves statique et dynamique)",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490949/",
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
       },
       {
-        source: "ARRETE",
-        reference: "Arrêté du 1er mars 2004, art. 6 et 7",
+        source: "CODE_TRAVAIL",
+        reference: "R. 4323-22",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000249655/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531483/",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -82,6 +87,8 @@ export const obligationsLevage: Obligation[] = [
     criticite: 5,
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait R. 4323-25, qui traite de la consignation au registre.",
   },
   {
     id: "levage-vgp-annuelle-charges",
@@ -94,13 +101,13 @@ export const obligationsLevage: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23 et R. 4323-24",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490945/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
       },
       {
         source: "ARRETE",
-        reference: "Arrêté du 1er mars 2004, art. 22",
+        reference: "Arrêté du 1er mars 2004, art. 22 et 23 (périodicité de 12 mois)",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000249655/",
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680469",
       },
     ],
     periodicite: "annuelle",
@@ -178,16 +185,16 @@ export const obligationsLevage: Obligation[] = [
       "Les équipements utilisés pour le levage de personnes font l'objet d'une VGP tous les six mois par une personne compétente. Cette périodicité vaut également pour les appareils servant occasionnellement au levage de personnes (nacelles).",
     referencesLegales: [
       {
+        source: "ARRETE",
+        reference: "Arrêté du 1er mars 2004, art. 23 (périodicité de 6 mois pour les appareils servant au transport de personnes ou à l'élévation d'un poste de travail)",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680469",
+      },
+      {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490945/",
-      },
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 2 mars 2004",
-        url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000251000/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
       },
     ],
     periodicite: "semestrielle",
@@ -203,7 +210,7 @@ export const obligationsLevage: Obligation[] = [
       },
     ],
     notesInternes:
-      "EQUIPEMENT_LEVAGE est une catégorie fourre-tout : sans condition, un simple transpalette héritait d'une VGP semestrielle « levage de personnes » juridiquement inapplicable. La périodicité de six mois ne vaut que pour les équipements servant — même occasionnellement — au levage de personnes (arrêté du 2 mars 2004). Forme `non_infirmee` (criticité 5) : un appareil déjà déclaré conserve la VGP semestrielle tant que le dirigeant n'a pas répondu « non » à la question du levage de personnes.",
+      "EQUIPEMENT_LEVAGE est une catégorie fourre-tout : sans condition, un simple transpalette héritait d'une VGP semestrielle « levage de personnes » juridiquement inapplicable. Forme `non_infirmee` (criticité 5). Corrigé à l'audit 2026-08 : l'ancienne version attribuait la périodicité de 6 mois à « l'arrêté du 2 mars 2004 », qui ne traite que du carnet de maintenance ; elle est à l'art. 23 de l'arrêté du 1er mars 2004.",
   },
   {
     id: "levage-vgp-accessoires-annuelle",
@@ -213,16 +220,16 @@ export const obligationsLevage: Obligation[] = [
       "Les accessoires de levage (élingues, chaînes, câbles, crochets, anneaux, manilles, palonniers) font l'objet d'une vérification périodique au moins annuelle portant sur leur état, leur marquage de charge et la conformité de leur utilisation.",
     referencesLegales: [
       {
+        source: "ARRETE",
+        reference: "Arrêté du 1er mars 2004, art. 24 (vérification périodique des accessoires)",
+        url:
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
+      },
+      {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490945/",
-      },
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 1er mars 2004, art. 23",
-        url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000249655/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
       },
     ],
     periodicite: "annuelle",
@@ -248,10 +255,16 @@ export const obligationsLevage: Obligation[] = [
       "Lors de chaque VGP, l'état de conservation des éléments essentiels à la sécurité (structure, mécanismes, organes de sécurité) est examiné. Toute anomalie notable impose une mise hors service jusqu'à remise en conformité.",
     referencesLegales: [
       {
-        source: "CODE_TRAVAIL",
-        reference: "R. 4323-27",
+        source: "ARRETE",
+        reference: "Arrêté du 1er mars 2004, art. 9 (examen de l'état de conservation) et art. 22",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490953/",
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4323-23",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
       },
     ],
     periodicite: "annuelle",
@@ -259,6 +272,8 @@ export const obligationsLevage: Obligation[] = [
     criticite: 5,
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
+    notesInternes:
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait R. 4323-27, qui traite du support du registre de sécurité.",
   },
   {
     id: "levage-remise-en-service-apres-reparation",
@@ -271,13 +286,13 @@ export const obligationsLevage: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "R. 4323-28",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490955/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531467/",
       },
       {
         source: "ARRETE",
-        reference: "Arrêté du 1er mars 2004, art. 9 à 11",
+        reference: "Arrêté du 1er mars 2004, art. 18 à 21 (remise en service)",
         url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000249655/",
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
       },
     ],
     periodicite: "mise_en_service_uniquement",

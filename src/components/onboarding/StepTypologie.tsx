@@ -11,13 +11,11 @@ import {
 import {
   CHOIX_ACTIVITE_ERP,
   CHOIX_CLASSES_IGH,
-  TRANCHES_EFFECTIF_PUBLIC,
-  categorieErpDepuisTranche,
   type ChoixActiviteId,
-  type TrancheEffectifPublicId,
   typeErpDepuisChoix,
 } from "@/lib/onboarding/deduction-erp";
 import { CarteChoix } from "./CarteChoix";
+import { CapaciteErp } from "./CapaciteErp";
 import type { StepProps } from "./types";
 
 /**
@@ -35,22 +33,21 @@ export function StepTypologie({ state, update, errors }: StepProps) {
   // Reverse lookup pour pré-sélectionner les cartes en mode basique
   const activiteSelectionnee: ChoixActiviteId | undefined =
     CHOIX_ACTIVITE_ERP.find((c) => c.typeErp === state.typeErp)?.id;
-  const trancheSelectionnee: TrancheEffectifPublicId | undefined =
-    TRANCHES_EFFECTIF_PUBLIC.find((t) => t.categorieErp === state.categorieErp)
-      ?.id;
 
   const selectActivite = (id: ChoixActiviteId) => {
+    const typeErp = typeErpDepuisChoix(id);
     update({
       estERP: true,
-      typeErp: typeErpDepuisChoix(id),
+      typeErp,
+      // Changer d'activité change le seuil de 5ᵉ catégorie (`SEUILS_5E_CATEGORIE`,
+      // art. « 1 » des dispositions particulières) : la catégorie retenue pour
+      // le type précédent ne vaut plus. La garder afficherait une proposition
+      // et une catégorie enregistrée qui se contredisent — et l'assistant
+      // laisserait passer la contradiction, `categorieErp` étant renseignée.
+      ...(typeErp !== state.typeErp ? { categorieErp: "" } : {}),
     });
   };
 
-  const selectTranche = (id: TrancheEffectifPublicId) => {
-    update({
-      categorieErp: categorieErpDepuisTranche(id),
-    });
-  };
 
   return (
     <div className="space-y-6">
@@ -144,36 +141,7 @@ export function StepTypologie({ state, update, errors }: StepProps) {
 
             {/* Sub-question capacité → catégorie */}
             {state.estERP && state.typeErp && (
-              <div className="space-y-4">
-                <div className="border-t border-dashed border-rule/60 pt-5">
-                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
-                    Combien de personnes pouvez-vous accueillir simultanément ?
-                  </p>
-                  <p className="mt-1 text-[0.8rem] text-muted-foreground">
-                    Public + personnel. Votre attestation d&apos;ouverture ou
-                    votre plan d&apos;évacuation l&apos;indique souvent. En cas
-                    de doute, choisissez la tranche la plus basse.
-                  </p>
-                </div>
-                <div role="radiogroup" aria-label="Capacité d'accueil" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {TRANCHES_EFFECTIF_PUBLIC.map((t) => (
-                    <CarteChoix
-                      key={t.id}
-                      id={t.id}
-                      label={t.label}
-                      description={t.hint}
-                      badge={`${t.categorieErp.slice(0)} · cat. ${t.categorieErp.slice(1)}`}
-                      actif={trancheSelectionnee === t.id}
-                      onClick={() => selectTranche(t.id)}
-                    />
-                  ))}
-                </div>
-                {errors?.categorieErp && (
-                  <p className="text-sm text-destructive">
-                    {errors.categorieErp}
-                  </p>
-                )}
-              </div>
+              <CapaciteErp state={state} update={update} errors={errors} />
             )}
           </section>
 

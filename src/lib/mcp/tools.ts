@@ -305,6 +305,7 @@ const outilActions: OutilMcp<typeof schemaActions> = {
 const LIBELLE_CATEGORIE: Record<string, string> = {
   INSTALLATION_ELECTRIQUE: "installation électrique",
   EXTINCTEUR: "extincteur",
+  RIA: "robinet d'incendie armé",
   BAES: "bloc autonome d'éclairage de sécurité",
   ALARME_INCENDIE: "alarme incendie",
   DESENFUMAGE: "désenfumage",

@@ -374,11 +374,22 @@ describe("moteur matching — disjonction des régimes (ascenseurs)", () => {
     expect(contrat?.raisons).not.toContain("IGH");
   });
 
-  it("habitation pure avec ascenseur → non applicable (habitation absente de la déclaration — limite assumée)", () => {
-    const ids = idsObligations(
-      determineObligationsApplicables(etabHabitationPure(), [ascenseur()]),
-    );
-    for (const id of ASCENSEURS) expect(ids).not.toContain(id);
+  it("habitation pure avec ascenseur → applicable (régime habitation déclaré)", () => {
+    // Les six obligations ascenseurs déclaraient `{ travail, erp, igh }` sans
+    // `habitation` : un immeuble d'habitation sans salarié, non-ERP, non-IGH
+    // ne recevait aucune obligation ascenseur. C'était une limite assumée
+    // faute d'avoir relu le texte ; la relecture (L. 134-1, L. 134-3,
+    // R. 134-11, cités en tête d'ascenseurs.ts) montre que l'obligation
+    // s'attache à l'ascenseur et à son propriétaire, sans distinction de
+    // destination du bâtiment. Le régime `habitation` a donc été ajouté.
+    const res = determineObligationsApplicables(etabHabitationPure(), [
+      ascenseur(),
+    ]);
+    const ids = idsObligations(res);
+    for (const id of ASCENSEURS) expect(ids, id).toContain(id);
+    // …et la raison affichée à l'utilisateur nomme bien le régime qui matche.
+    const raisons = res.flatMap((r) => r.raisons).join(" ");
+    expect(raisons).toContain("immeuble d'habitation");
   });
 
   it("le ET typologie × effectif est préservé (travail matché mais effectif hors plage → rejet)", () => {
@@ -936,6 +947,14 @@ describe("moteur matching — cartographie des catégories sans obligation", () 
         "DESENFUMAGE",
         "APPAREIL_CUISSON_ERP",
         "HOTTE_PRO",
+        // RIA : la seule obligation qui vise la catégorie est
+        // `incendie-erp-ria-annuelle`, fondée sur MS 73 — donc `erp: true`.
+        // Chez un employeur non-ERP, R. 4227-28 impose bien des moyens de
+        // lutte, mais aucun texte du référentiel ne pose de périodicité
+        // propre aux RIA hors ERP. Limite déclarée plutôt que périodicité
+        // inventée : un employeur non-ERP qui déclare un RIA n'obtient
+        // aucune échéance, et l'écran le dit.
+        "RIA",
         // BAES : question ouverte. Les deux obligations de l'arrêté du
         // 14 décembre 2011 (essai mensuel, autonomie semestrielle) portent
         // `erp: false` et ne visent donc pas non plus l'ERP. Chez un
@@ -1395,6 +1414,194 @@ describe("moteur matching — seuil d'effectif de l'exercice semestriel d'évacu
   });
 
   it("51 personnes : l'obligation s'applique", () => {
+    const res = determineObligationsApplicables(
+      etabBureau({ effectifSurSite: 51 }),
+      [alarme()],
+    );
+    expect(idsObligations(res)).toContain(EXERCICE);
+  });
+});
+
+describe("moteur matching — restriction de type d'exploitation ERP en ET", () => {
+  // Le type d'ERP (M, N, O, W…) était collecté à l'inscription, stocké en base,
+  // transmis au moteur — et jamais lu. Toute obligation propre à un type
+  // d'exploitation était donc impossible à exprimer : c'était un plafond, pas
+  // seulement un champ mort. La restriction se lit désormais comme celle de
+  // catégorie : en ET, avant la disjonction des régimes.
+
+  it("un ERP hors des types visés ne contourne PAS la restriction via travail: true", () => {
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-restriction-type-et",
+      typologies: { travail: true, erp: { types: ["O"] } },
+    };
+    // etabRestoErpCat5() est un type N employeur : la restriction O rejette.
+    expect(
+      determineObligationsApplicables(etabRestoErpCat5(), [elec()], {
+        obligations: [synthetique],
+      }),
+    ).toHaveLength(0);
+  });
+
+  it("un ERP du type visé matche, avec la raison en clair", () => {
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-restriction-type-match",
+      typologies: { erp: { types: ["N", "O"] } },
+    };
+    const res = determineObligationsApplicables(
+      etabRestoErpCat5(),
+      [elec()],
+      { obligations: [synthetique] },
+    );
+    expect(res).toHaveLength(1);
+    expect(res[0].raisons.join(" ")).toContain("type N");
+  });
+
+  it("un ERP dont le type est inconnu est rejeté par une restriction de type", () => {
+    // Même sémantique que la catégorie inconnue : une restriction qu'on ne
+    // peut pas vérifier ne doit pas être silencieusement ignorée.
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-restriction-type-inconnu",
+      typologies: { erp: { types: ["N"] } },
+    };
+    expect(
+      determineObligationsApplicables(
+        etabRestoErpCat5({ typeErp: null }),
+        [elec()],
+        { obligations: [synthetique] },
+      ),
+    ).toHaveLength(0);
+  });
+
+  it("un établissement NON-ERP n'est pas concerné par la restriction de type", () => {
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-restriction-type-non-erp",
+      typologies: { travail: true, erp: { types: ["O"] } },
+    };
+    expect(
+      determineObligationsApplicables(etabBureau(), [elec()], {
+        obligations: [synthetique],
+      }),
+    ).toHaveLength(1);
+  });
+
+  it("type et catégorie se cumulent en ET", () => {
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-restriction-type-et-categorie",
+      typologies: { erp: { categories: ["N5"], types: ["N"] } },
+    };
+    // Le bon type ET la bonne catégorie : match.
+    expect(
+      determineObligationsApplicables(etabRestoErpCat5(), [elec()], {
+        obligations: [synthetique],
+      }),
+    ).toHaveLength(1);
+    // Bonne catégorie, mauvais type : rejet.
+    expect(
+      determineObligationsApplicables(
+        etabRestoErpCat5({ typeErp: "M" }),
+        [elec()],
+        { obligations: [synthetique] },
+      ),
+    ).toHaveLength(0);
+  });
+});
+
+describe("moteur matching — visite de commission ERP 5ᵉ bornée aux locaux à sommeil", () => {
+  const VISITE = "incendie-erp-5-visite-commission";
+
+  // La restriction « locaux à sommeil » figurait au libellé et à la
+  // description de l'obligation, mais n'était encodée nulle part : tout ERP de
+  // 5ᵉ catégorie déclarant une alarme recevait l'échéance, restaurants et
+  // commerces compris.
+
+  it("ne s'applique plus quand le dirigeant répond « non »", () => {
+    const res = determineObligationsApplicables(etabRestoErpCat5(), [
+      { ...alarme(), caracteristiques: { dessertLocauxSommeil: false } },
+    ]);
+    expect(idsObligations(res)).not.toContain(VISITE);
+  });
+
+  it("s'applique quand le dirigeant répond « oui »", () => {
+    const res = determineObligationsApplicables(etabRestoErpCat5(), [
+      { ...alarme(), caracteristiques: { dessertLocauxSommeil: true } },
+    ]);
+    expect(idsObligations(res)).toContain(VISITE);
+  });
+
+  it("reste affichée tant que personne n'a répondu (opt-out)", () => {
+    // Criticité 4 sur une obligation déjà publiée : aucun établissement
+    // existant ne doit perdre la ligne en silence à la régénération.
+    const res = determineObligationsApplicables(etabRestoErpCat5(), [alarme()]);
+    expect(idsObligations(res)).toContain(VISITE);
+  });
+});
+
+describe("moteur matching — champ disjonctif de R. 4227-34 (personnes présentes OU matières R. 4227-22)", () => {
+  // R. 4227-39 renvoie à la consigne (R. 4227-37), qui renvoie aux
+  // établissements de R. 4227-34 : « plus de cinquante personnes occupées ou
+  // réunies habituellement », public compris, « ainsi que ceux, quelle que
+  // soit leur importance, où sont manipulées et mises en œuvre des matières
+  // inflammables mentionnées à l'article R. 4227-22 ».
+  const EXERCICE = "incendie-travail-exercice-semestriel";
+  const CONSIGNE = "incendie-travail-consigne-affichee";
+
+  it("10 salariés mais 60 personnes habituellement présentes (public) → applicable", () => {
+    const res = determineObligationsApplicables(
+      etabBureau({ effectifSurSite: 10, personnesPresentesHabituellement: 60 }),
+      [alarme()],
+    );
+    expect(idsObligations(res)).toContain(EXERCICE);
+    const raison = res.find((r) => r.obligation.id === EXERCICE)!.raisons.join(" ");
+    expect(raison).toContain("60 personnes habituellement présentes");
+  });
+
+  it("personnes présentes non déclarées → repli sur l'effectif salarié, raison explicite", () => {
+    const res = determineObligationsApplicables(
+      etabBureau({ effectifSurSite: 51, personnesPresentesHabituellement: null }),
+      [alarme()],
+    );
+    expect(idsObligations(res)).toContain(EXERCICE);
+    const raison = res.find((r) => r.obligation.id === EXERCICE)!.raisons.join(" ");
+    expect(raison).toContain("faute de déclaration");
+  });
+
+  it("2 salariés, aucun public, matières R. 4227-22 déclarées → applicable quel que soit l'effectif", () => {
+    const res = determineObligationsApplicables(
+      etabBureau({ effectifSurSite: 2, manipuleMatieresR422722: true }),
+      [alarme()],
+    );
+    expect(idsObligations(res)).toContain(EXERCICE);
+    const raison = res.find((r) => r.obligation.id === EXERCICE)!.raisons.join(" ");
+    expect(raison).toContain("R. 4227-22");
+  });
+
+  it("2 salariés, matières non renseignées (null) → non applicable (opt-in : la branche n'ajoute que des cas)", () => {
+    const res = determineObligationsApplicables(
+      etabBureau({ effectifSurSite: 2, manipuleMatieresR422722: null }),
+      [alarme()],
+    );
+    expect(idsObligations(res)).not.toContain(EXERCICE);
+  });
+
+  it("la consigne affichée suit le même champ : 2 salariés sans matières → simples instructions, pas de consigne", () => {
+    const res = determineObligationsApplicables(
+      etabBureau({ effectifSurSite: 2 }),
+      [alarme(), extincteur()],
+    );
+    expect(idsObligations(res)).not.toContain(CONSIGNE);
+    const res2 = determineObligationsApplicables(
+      etabBureau({ effectifSurSite: 2, manipuleMatieresR422722: true }),
+      [alarme(), extincteur()],
+    );
+    expect(idsObligations(res2)).toContain(CONSIGNE);
+  });
+
+  it("non-régression : tout établissement matché avant (≥ 51 salariés) reste matché", () => {
     const res = determineObligationsApplicables(
       etabBureau({ effectifSurSite: 51 }),
       [alarme()],

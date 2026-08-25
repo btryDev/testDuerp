@@ -1,5 +1,10 @@
 import { notFound } from "next/navigation";
 import { FilRetour } from "@/components/ui-kit";
+import {
+  CHAMPS_TRI_ETAT,
+  type ChampTriEtat,
+  type EquipementInput,
+} from "@/lib/equipements/schema";
 import { EquipementForm } from "@/components/equipements/EquipementForm";
 import { modifierEquipement } from "@/lib/equipements/actions";
 import { getEquipement } from "@/lib/equipements/queries";
@@ -10,19 +15,24 @@ import {
   LIBELLE_SANS_ECHEANCE,
   equipementsSansEcheance,
 } from "@/lib/equipements/hors-referentiel";
-import { CHAMPS_TRI_ETAT } from "@/lib/equipements/schema";
-import type { ChampTriEtat } from "@/lib/equipements/schema";
 import { listerBatimentsDeLEtablissement } from "@/lib/batiments/queries";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 import { lireProvenance } from "@/lib/navigation/provenance";
 
-type Caracteristiques = {
-  nombre?: number;
-  aGroupeElectrogene?: boolean;
-  estLocalPollutionSpecifique?: boolean;
-  nbVehiculesParkingCouvert?: number;
-  notes?: string;
-} & Partial<Record<ChampTriEtat, boolean>>;
+type Caracteristiques = Partial<
+  Pick<
+    EquipementInput,
+    | "nombre"
+    | "aGroupeElectrogene"
+    | "estLocalPollutionSpecifique"
+    | "nbVehiculesParkingCouvert"
+    | "familleEsp"
+    | "pressionMaxAdmissibleBar"
+    | "volumeLitres"
+    | "notes"
+    | ChampTriEtat
+  >
+>;
 
 /**
  * Réponses aux questions à trois états déjà enregistrées. Elles doivent être
@@ -119,6 +129,19 @@ export default async function ModifierEquipementPage({
             aGroupeElectrogene: caracs.aGroupeElectrogene,
             estLocalPollutionSpecifique: caracs.estLocalPollutionSpecifique,
             nbVehiculesParkingCouvert: caracs.nbVehiculesParkingCouvert ?? null,
+            familleEsp: caracs.familleEsp ?? null,
+            pressionMaxAdmissibleBar: caracs.pressionMaxAdmissibleBar ?? null,
+            volumeLitres: caracs.volumeLitres ?? null,
+            // Les sept questions à trois états doivent être repassées au
+            // formulaire, sinon l'édition les efface : le `<select>` repart à
+            // « Je ne sais pas encore », rien n'est soumis, et
+            // `serialiserCaracteristiques` ne réécrit pas la clé. Un « non »
+            // devenait ainsi une absence de réponse, ce qui **rallume** les
+            // obligations en opt-out — modifier le libellé d'un extincteur
+            // faisait réapparaître la vérification des RIA.
+            ...Object.fromEntries(
+              CHAMPS_TRI_ETAT.map((champ) => [champ, caracs[champ]]),
+            ),
             notes: caracs.notes ?? null,
             ...reponsesTriEtat(caracs),
           }}

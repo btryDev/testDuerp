@@ -35,11 +35,11 @@ const DETAILS: OutilDetail[] = [
     n: "02",
     titre: "Vérifications",
     source:
-      "Art. R. 4323-22 · Arrêté du 25 juin 1980 (ERP) · CCH R. 123-51",
+      "Art. R. 4323-22 · Arrêté du 25 juin 1980 (ERP) · CCH R. 143-44",
     couleur: "warm",
     loi: [
       "Contrôles réguliers des équipements à risque.",
-      "Périodicité imposée : annuelle, semestrielle, quinquennale.",
+      "Périodicité imposée : annuelle, semestrielle, triennale…",
       "Réalisés par organisme agréé, personne qualifiée ou exploitant.",
     ],
     app: [

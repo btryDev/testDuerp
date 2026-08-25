@@ -61,6 +61,8 @@ type Valeurs = {
   adresse?: string;
   codeNaf?: string | null;
   effectifSurSite?: number;
+  personnesPresentesHabituellement?: number | null;
+  manipuleMatieresR422722?: boolean | null;
   estEtablissementTravail?: boolean;
   estERP?: boolean;
   estIGH?: boolean;
@@ -176,6 +178,65 @@ export function EtablissementForm({
                 {err("effectifSurSite")}
               </p>
             )}
+          </div>
+
+          {/* Champ de R. 4227-34 CT : alarme sonore → consigne → exercices
+              semestriels. Deux questions distinctes de l'effectif salarié. */}
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="personnesPresentesHabituellement">
+              Personnes habituellement présentes (salariés + public)
+            </Label>
+            <Input
+              id="personnesPresentesHabituellement"
+              name="personnesPresentesHabituellement"
+              type="number"
+              min={0}
+              defaultValue={valeursInitiales?.personnesPresentesHabituellement ?? ""}
+              aria-invalid={Boolean(err("personnesPresentesHabituellement"))}
+            />
+            <p className="text-[0.8rem] text-muted-foreground">
+              Salariés, clients, élèves, patients, visiteurs réguliers — tous
+              ceux qui se trouvent habituellement dans vos locaux en même
+              temps. Au-delà de 50, le Code du travail impose une alarme
+              sonore, une consigne incendie affichée et des exercices tous les
+              six mois (art. R. 4227-34, R. 4227-37, R. 4227-39). Laissez vide
+              si vous ne savez pas : l&apos;effectif salarié sera utilisé.
+            </p>
+            {err("personnesPresentesHabituellement") && (
+              <p className="text-sm text-destructive">
+                {err("personnesPresentesHabituellement")}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="manipuleMatieresR422722">
+              Manipulez-vous des produits explosifs, comburants ou extrêmement
+              inflammables ?
+            </Label>
+            <select
+              id="manipuleMatieresR422722"
+              name="manipuleMatieresR422722"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
+              defaultValue={
+                valeursInitiales?.manipuleMatieresR422722 === true
+                  ? "oui"
+                  : valeursInitiales?.manipuleMatieresR422722 === false
+                    ? "non"
+                    : ""
+              }
+            >
+              <option value="">Je ne sais pas encore</option>
+              <option value="oui">Oui</option>
+              <option value="non">Non</option>
+            </select>
+            <p className="text-[0.8rem] text-muted-foreground">
+              Produits classés explosifs, comburants ou extrêmement
+              inflammables (art. R. 4227-22 du Code du travail), manipulés ou
+              mis en œuvre dans vos locaux — pas seulement stockés. Si oui,
+              l&apos;alarme sonore, la consigne et les exercices semestriels
+              s&apos;appliquent quel que soit l&apos;effectif.
+            </p>
           </div>
         </div>
       </section>

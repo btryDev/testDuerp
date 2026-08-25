@@ -189,6 +189,44 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                 ariaInvalid={Boolean(errors?.effectifSurSite)}
               />
             </OnbField>
+
+            <OnbField
+              label="Personnes habituellement présentes"
+              hint="Salariés + clients, élèves, patients, visiteurs réguliers, en même temps. Au-delà de 50 : alarme sonore, consigne affichée et exercices semestriels (R. 4227-34, -37, -39). Vide = l'effectif salarié est utilisé."
+              error={errors?.personnesPresentesHabituellement}
+            >
+              <OnbInput
+                id="personnesPresentesHabituellement"
+                type="number"
+                value={state.personnesPresentesHabituellement}
+                onChange={(v) => update({ personnesPresentesHabituellement: v })}
+                placeholder="60"
+                min={0}
+                max={99999}
+                ariaInvalid={Boolean(errors?.personnesPresentesHabituellement)}
+              />
+            </OnbField>
+
+            <OnbField
+              label="Produits explosifs, comburants ou extrêmement inflammables"
+              hint="Manipulés ou mis en œuvre dans vos locaux — pas seulement stockés (R. 4227-22). Si oui, l'alarme, la consigne et les exercices s'appliquent quel que soit l'effectif."
+              error={errors?.manipuleMatieresR422722}
+            >
+              <select
+                id="manipuleMatieresR422722"
+                value={state.manipuleMatieresR422722}
+                onChange={(e) =>
+                  update({
+                    manipuleMatieresR422722: e.target.value as "" | "oui" | "non",
+                  })
+                }
+                className="h-11 w-full rounded-lg border border-rule bg-background px-3 text-[0.95rem]"
+              >
+                <option value="">Je ne sais pas encore</option>
+                <option value="oui">Oui</option>
+                <option value="non">Non</option>
+              </select>
+            </OnbField>
           </div>
 
           {hintEffectif ? (

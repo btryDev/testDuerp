@@ -8,7 +8,11 @@ import { batimentParDefaut } from "@/lib/batiments/queries";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import { genererCalendrier } from "@/lib/calendrier/actions";
 import { marquerCalendrierPerime } from "@/lib/calendrier/reconciliation";
-import { equipementSchema, serialiserCaracteristiques } from "./schema";
+import {
+  equipementSchema,
+  normaliserFormDataEquipement,
+  serialiserCaracteristiques,
+} from "./schema";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 
 /**
@@ -90,14 +94,13 @@ function normaliserFormData(fd: FormData): Record<string, unknown> {
     notes: raw.notes,
   };
 }
-
 export async function creerEquipement(
   etablissementId: string,
   _prev: EquipementActionState,
   formData: FormData,
 ): Promise<EquipementActionState> {
   await assertEtablissementOwnership(etablissementId);
-  const parsed = equipementSchema.safeParse(normaliserFormData(formData));
+  const parsed = equipementSchema.safeParse(normaliserFormDataEquipement(formData));
   if (!parsed.success) {
     return {
       status: "error",
@@ -162,7 +165,7 @@ export async function modifierEquipement(
   const etablissementId = await resoudreEtablissementId(id);
   await assertEtablissementOwnership(etablissementId);
 
-  const parsed = equipementSchema.safeParse(normaliserFormData(formData));
+  const parsed = equipementSchema.safeParse(normaliserFormDataEquipement(formData));
   if (!parsed.success) {
     return {
       status: "error",

@@ -21,6 +21,7 @@ import {
   CloudFog,
   CookingPot,
   DoorOpen,
+  Droplets,
   Fan,
   FireExtinguisher,
   Forklift,
@@ -66,6 +67,10 @@ export const ICONE_CATEGORIE: Record<CategorieEquipement, Picto> = {
   INSTALLATION_ELECTRIQUE: Zap,
   INSTALLATION_FRIGORIFIQUE: Refrigerator,
   EXTINCTEUR: FireExtinguisher,
+  // Un RIA se distingue de l'extincteur par son alimentation permanente en
+  // eau — d'où la goutte, et non la bonbonne : deux dessins identiques
+  // rendraient les deux lignes indiscernables dans une liste d'équipements.
+  RIA: Droplets,
   BAES: Lightbulb,
   // Sonnerie d'alarme, et non la sirène : c'est le déclencheur manuel et le
   // bloc qui sonnent dans un ERP de 5e catégorie.

@@ -57,6 +57,15 @@ export const onboardingSchema = z
       .int("Effectif entier")
       .min(1, "Au moins 1 salarié")
       .max(9999),
+    // Champ de R. 4227-34 CT — optionnels, vide = non renseigné.
+    personnesPresentesHabituellement: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? null : v),
+      z.coerce.number().int("Nombre entier").min(0).max(99999).nullable(),
+    ),
+    manipuleMatieresR422722: z.preprocess(
+      (v) => (v === "oui" ? true : v === "non" ? false : null),
+      z.boolean().nullable(),
+    ),
 
     // ─── Étape 3 — Typologie (ADR-004, flags cumulables) ────
     estEtablissementTravail: z.coerce.boolean().default(true),
@@ -166,6 +175,8 @@ export const onboardingValeursInitiales = {
   adresse: "",
   codeNaf: "",
   effectifSurSite: "" as string | number,
+  personnesPresentesHabituellement: "" as string | number,
+  manipuleMatieresR422722: "" as string,
   estEtablissementTravail: true,
   estERP: false,
   estIGH: false,

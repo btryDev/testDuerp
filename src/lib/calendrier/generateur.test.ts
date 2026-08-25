@@ -558,6 +558,7 @@ describe("réconciliation — un placeholder cède devant une vraie date", () =>
     estUrgent: true,
     criticiteObligation: 3,
     raisons: ["test"],
+    prescriptionId: null,
     ...over,
   });
 

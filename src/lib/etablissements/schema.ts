@@ -45,6 +45,17 @@ export const etablissementSchema = z
       .int("Effectif entier")
       .min(0, "Effectif positif")
       .max(9999),
+    // Champ de R. 4227-34 CT (cf. schema.prisma) : personnes habituellement
+    // présentes, salariés + public, et manipulation de matières R. 4227-22.
+    // Optionnels : vide = « non renseigné », jamais 0 ni « non » par défaut.
+    personnesPresentesHabituellement: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? null : v),
+      z.coerce.number().int("Nombre entier").min(0).max(99999).nullable(),
+    ),
+    manipuleMatieresR422722: z.preprocess(
+      (v) => (v === "oui" ? true : v === "non" ? false : v === true || v === false ? v : null),
+      z.boolean().nullable(),
+    ),
     estEtablissementTravail: z.coerce.boolean().default(true),
     estERP: z.coerce.boolean().default(false),
     estIGH: z.coerce.boolean().default(false),
