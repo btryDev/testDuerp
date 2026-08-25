@@ -115,10 +115,16 @@ export const risquesTransverses: RisqueReferentiel[] = [
     ],
   },
   {
+    // Recentré sur le travail isolé au 2026-08-25 : les horaires atypiques
+    // sont portés par `trv-travail-nuit`, adossé à une source qui leur est
+    // propre. L'identifiant est conservé — il est stocké en base sur les
+    // évaluations en cours. Cette note reste ici : le champ `description` est
+    // affiché au dirigeant dans le wizard, il n'a pas à y lire notre
+    // historique de maintenance.
     id: "trv-rps-isolement",
     libelle: "Risques psychosociaux — travail isolé",
     description:
-      "ED 840 fiche 17. Recentré sur le travail isolé au 2026-08-25 : les horaires atypiques sont désormais portés par `trv-travail-nuit`, adossé à une source qui leur est propre. L'identifiant est conservé — il est stocké en base sur les évaluations en cours.",
+      "ED 840 fiche 17. Concerne le travail effectué hors de portée de vue ou de voix d'un tiers, y compris ponctuellement — ouverture, fermeture, livraison, intervention seul.",
     unitesAssociees: [],
     graviteParDefaut: 3,
     probabiliteParDefaut: 2,
