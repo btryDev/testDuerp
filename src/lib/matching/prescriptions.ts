@@ -1,3 +1,4 @@
+import { cleJourCivil } from "@/lib/dates";
 import {
   PERIODICITE_EN_JOURS,
   type Periodicite,
@@ -70,11 +71,22 @@ function libelleSource(p: PrescriptionMatching): string {
     inspection_travail: "demande de l'inspection du travail",
     autre: "prescription",
   };
-  const date = p.dateDocument.toISOString().slice(0, 10);
+  // `cleJourCivil` et non `toISOString()` : les dates d'acte sont stockées à
+  // minuit **Paris** (ADR-011), soit 22:00 ou 23:00 UTC la veille — un slice
+  // de l'ISO affichait donc systématiquement le jour précédent.
+  const date = cleJourCivil(p.dateDocument);
   return `${source[p.source] ?? "prescription"} ${p.reference} du ${date}`;
 }
 
-function estActive(p: PrescriptionMatching, now: Date): boolean {
+/**
+ * La prescription est-elle encore en vigueur à `now` ? Exporté pour que
+ * l'affichage distingue « levée » (fin d'effet datée, atteinte) de « ignorée »
+ * (recevable mais sans effet ici) sans avoir à reconnaître un message.
+ */
+export function prescriptionEnVigueur(
+  p: PrescriptionMatching,
+  now: Date,
+): boolean {
   return p.dateFin === null || p.dateFin.getTime() >= now.getTime();
 }
 
@@ -105,10 +117,10 @@ export function appliquerPrescriptions(
   );
 
   for (const p of triees) {
-    if (!estActive(p, now)) {
+    if (!prescriptionEnVigueur(p, now)) {
       ignorees.push({
         prescription: p,
-        raison: `Prescription levée le ${p.dateFin!.toISOString().slice(0, 10)}.`,
+        raison: `Prescription levée le ${cleJourCivil(p.dateFin!)}.`,
       });
       continue;
     }

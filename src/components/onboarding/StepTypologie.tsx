@@ -35,9 +35,16 @@ export function StepTypologie({ state, update, errors }: StepProps) {
     CHOIX_ACTIVITE_ERP.find((c) => c.typeErp === state.typeErp)?.id;
 
   const selectActivite = (id: ChoixActiviteId) => {
+    const typeErp = typeErpDepuisChoix(id);
     update({
       estERP: true,
-      typeErp: typeErpDepuisChoix(id),
+      typeErp,
+      // Changer d'activité change le seuil de 5ᵉ catégorie (`SEUILS_5E_CATEGORIE`,
+      // art. « 1 » des dispositions particulières) : la catégorie retenue pour
+      // le type précédent ne vaut plus. La garder afficherait une proposition
+      // et une catégorie enregistrée qui se contredisent — et l'assistant
+      // laisserait passer la contradiction, `categorieErp` étant renseignée.
+      ...(typeErp !== state.typeErp ? { categorieErp: "" } : {}),
     });
   };
 

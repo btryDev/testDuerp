@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { requireEtablissement } from "@/lib/auth/scope";
-import {
-  listerPrescriptions,
-  obligationsCiblables,
-} from "@/lib/prescriptions/queries";
+import { formaterDateFr } from "@/lib/dates";
+import { chargerPagePrescriptions } from "@/lib/prescriptions/queries";
 import { creerPrescription } from "@/lib/prescriptions/actions";
 import { LABEL_SOURCE_PRESCRIPTION } from "@/lib/prescriptions/schema";
 import { PrescriptionForm } from "@/components/prescriptions/PrescriptionForm";
@@ -21,10 +19,8 @@ export default async function PrescriptionsPage({
 }) {
   const { id } = await params;
   const { etablissement } = await requireEtablissement(id);
-  const [prescriptions, ciblables] = await Promise.all([
-    listerPrescriptions(id),
-    obligationsCiblables(id),
-  ]);
+  const { prescriptions, obligations, equipements } =
+    await chargerPagePrescriptions(id);
   const action = creerPrescription.bind(null, id);
 
   return (
@@ -91,7 +87,10 @@ export default async function PrescriptionsPage({
                     ? `Renforce « ${p.libelleObligationCiblee} »`
                     : `Obligation sur mesure : ${p.libelle}`}
                   {" · "}
-                  acte du {p.dateDocument.toISOString().slice(0, 10)}
+                  {/* `formaterDateFr` et non `toISOString()` : une date d'acte
+                      est stockée à minuit Paris (ADR-011), et le slice de
+                      l'ISO affichait la veille. */}
+                  acte du {formaterDateFr(p.dateDocument)}
                 </p>
                 <p className="text-sm">{p.etat.detail}</p>
               </li>
@@ -104,8 +103,8 @@ export default async function PrescriptionsPage({
         <h2 className="text-[1.05rem] font-semibold">Déclarer une prescription</h2>
         <PrescriptionForm
           action={action}
-          obligations={ciblables.obligations}
-          equipements={ciblables.equipements}
+          obligations={obligations}
+          equipements={equipements}
         />
       </section>
     </main>

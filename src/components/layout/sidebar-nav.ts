@@ -54,8 +54,9 @@ export type SidebarActive =
   | "guide"
   | "connecter";
 
-/** Ids réellement présents dans le rail (les deux derniers n'étaient pas
- *  adressables auparavant : `/modifier` surlignait « Tableau de bord »). */
+/** Ids réellement présents dans le rail mais absents de `SidebarActive`
+ *  (ils n'étaient pas adressables avant l'ajout des branches correspondantes
+ *  dans `deduireActif` : `/modifier` surlignait « Tableau de bord »). */
 export type SidebarItemId = SidebarActive | "fiche" | "prescriptions" | "equipe";
 
 export type SidebarCounts = {
@@ -97,6 +98,7 @@ export function deduireActif(
   if (pathname.startsWith(`${base}/registre`)) return "registre";
   if (pathname.startsWith(`${base}/equipements`)) return "equipements";
   if (pathname.startsWith(`${base}/prestataires`)) return "prestataires";
+  if (pathname.startsWith(`${base}/prescriptions`)) return "prescriptions";
   if (pathname.startsWith(`${base}/accessibilite`)) return "accessibilite";
   if (pathname.startsWith(`${base}/permis-feu`)) return "permis-feu";
   if (pathname.startsWith(`${base}/plan-prevention`)) return "plan-prevention";

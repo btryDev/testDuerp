@@ -230,10 +230,16 @@ function matchTypologie(
   // sous-estimation assumée (jamais un faux positif). `manipuleMatieresR422722`
   // absent ⇒ « non » : cette branche ne fait qu'ajouter des cas, aucun
   // établissement ne perd une obligation par son silence.
-  if (t.personnesPresentesMin !== undefined) {
+  // Le critère est évalué dès que **l'une** des deux branches est déclarée :
+  // une obligation qui n'écrirait que `champR422734` (branche matières seule)
+  // ne doit pas passer sans filtre — un critère que l'on ne sait pas vérifier
+  // ne s'ignore jamais en silence.
+  if (t.personnesPresentesMin !== undefined || t.champR422734 === true) {
     const personnes =
       etab.personnesPresentesHabituellement ?? etab.effectifSurSite;
-    const brancheSeuil = personnes >= t.personnesPresentesMin;
+    const brancheSeuil =
+      t.personnesPresentesMin !== undefined &&
+      personnes >= t.personnesPresentesMin;
     const brancheMatieres =
       t.champR422734 === true && etab.manipuleMatieresR422722 === true;
     if (!brancheSeuil && !brancheMatieres) return { ok: false };
