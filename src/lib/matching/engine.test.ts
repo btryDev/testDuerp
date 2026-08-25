@@ -788,40 +788,56 @@ describe("moteur matching — cohérence avec le référentiel", () => {
 // ============================================================================
 
 describe("moteur matching — condition « non infirmée » (opt-out)", () => {
-  const OBLIGATION_RIA = "incendie-erp-ria-annuelle";
+  const OBLIGATION_VMC_GAZ = "aeration-habitation-vmc-gaz-annuelle";
+
+  // L'exemple portait sur les RIA tant que la catégorie n'existait pas et que
+  // l'obligation était rattachée aux extincteurs. La reprise du 2026-08-25 a
+  // créé la catégorie, réaffecté les lignes et retiré la branche transitoire :
+  // c'est désormais la VMC-Gaz qui illustre l'opérateur, sur le même schéma.
 
   it("propriété non renseignée → obligation MAINTENUE", () => {
-    // C'est tout l'objet de l'opérateur : un établissement déjà en base, dont
-    // les extincteurs n'ont jamais porté la propriété `aRobinetsIncendieArmes`,
-    // ne doit pas perdre l'obligation en silence.
-    const res = determineObligationsApplicables(etabErpCat3(), [extincteur()]);
-    expect(idsObligations(res)).toContain(OBLIGATION_RIA);
+    // C'est tout l'objet de l'opérateur : un immeuble déjà en base, dont la
+    // VMC n'a jamais porté la propriété `estVmcGaz`, ne doit pas perdre
+    // l'obligation en silence.
+    const res = determineObligationsApplicables(etabHabitationPure(), [vmc()]);
+    expect(idsObligations(res)).toContain(OBLIGATION_VMC_GAZ);
   });
 
   it("réponse « oui » explicite → obligation maintenue", () => {
-    const res = determineObligationsApplicables(etabErpCat3(), [
-      { ...extincteur(), caracteristiques: { aRobinetsIncendieArmes: true } },
+    const res = determineObligationsApplicables(etabHabitationPure(), [
+      { ...vmc(), caracteristiques: { estVmcGaz: true } },
     ]);
-    expect(idsObligations(res)).toContain(OBLIGATION_RIA);
+    expect(idsObligations(res)).toContain(OBLIGATION_VMC_GAZ);
   });
 
   it("réponse « non » explicite → obligation retirée", () => {
-    const res = determineObligationsApplicables(etabErpCat3(), [
-      { ...extincteur(), caracteristiques: { aRobinetsIncendieArmes: false } },
+    const res = determineObligationsApplicables(etabHabitationPure(), [
+      { ...vmc(), caracteristiques: { estVmcGaz: false } },
     ]);
-    expect(idsObligations(res)).not.toContain(OBLIGATION_RIA);
-    // …sans emporter la vérification annuelle des extincteurs eux-mêmes.
-    expect(idsObligations(res)).toContain("incendie-erp-extincteurs-annuelle");
+    expect(idsObligations(res)).not.toContain(OBLIGATION_VMC_GAZ);
   });
 
   it("valeur d'un type inattendu → traitée comme « pas de réponse »", () => {
-    const res = determineObligationsApplicables(etabErpCat3(), [
-      {
-        ...extincteur(),
-        caracteristiques: { aRobinetsIncendieArmes: "non" },
-      },
+    const res = determineObligationsApplicables(etabHabitationPure(), [
+      { ...vmc(), caracteristiques: { estVmcGaz: "non" } },
     ]);
-    expect(idsObligations(res)).toContain(OBLIGATION_RIA);
+    expect(idsObligations(res)).toContain(OBLIGATION_VMC_GAZ);
+  });
+
+  it("un RIA déclaré rend l'obligation annuelle, sans condition à satisfaire", () => {
+    // Contre-épreuve de la reprise : la catégorie propre suffit désormais,
+    // il n'y a plus de propriété d'extincteur à interroger.
+    const res = determineObligationsApplicables(etabErpCat3(), [
+      { id: "eq-ria", libelle: "RIA du hall", categorie: "RIA" as const, caracteristiques: null },
+    ]);
+    expect(idsObligations(res)).toContain("incendie-erp-ria-annuelle");
+  });
+
+  it("un extincteur seul ne rend plus l'obligation RIA", () => {
+    const res = determineObligationsApplicables(etabErpCat3(), [extincteur()]);
+    expect(idsObligations(res)).not.toContain("incendie-erp-ria-annuelle");
+    // …sans emporter la vérification annuelle des extincteurs eux-mêmes.
+    expect(idsObligations(res)).toContain("incendie-erp-extincteurs-annuelle");
   });
 });
 

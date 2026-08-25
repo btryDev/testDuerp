@@ -605,7 +605,6 @@ describe("référentiel conformité — non-régression des obligations critique
 
   it("les obligations bornées à l'audit 2026-08 portent bien leur condition", () => {
     const attendus: [string, string][] = [
-      ["incendie-erp-ria-annuelle", "aRobinetsIncendieArmes"],
       ["aeration-habitation-vmc-gaz-annuelle", "estVmcGaz"],
       ["cuisson-erp-extinction-automatique-annuelle", "aExtinctionAutomatique"],
       ["levage-vgp-semestrielle-personnes", "sertAuLevageDePersonnes"],
@@ -800,7 +799,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
   // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
   // version PUIS recopiez l'empreinte que le message d'échec affiche.
-  const EMPREINTE_ATTENDUE = "78-57355af6ec69b54e";
+  const EMPREINTE_ATTENDUE = "78-7f630fd315cf84d";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
