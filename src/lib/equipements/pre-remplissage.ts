@@ -202,12 +202,13 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
       categorie: "HOTTE_PRO",
       libelle: "Hotte d'extraction cuisine",
       raison:
-        "Ramonage et vérification annuelle (arrêté 25 juin 1980, art. GC 20).",
+        "Ramonage annuel des conduits (arrêté 25 juin 1980, art. GC 21).",
     });
     ajoute({
       categorie: "APPAREIL_CUISSON_ERP",
       libelle: "Appareils de cuisson professionnels",
-      raison: "Section GC du règlement ERP — à vérifier annuellement.",
+      raison:
+        "Vérification annuelle des appareils de cuisson et de leurs dispositifs de sécurité (arrêté 25 juin 1980, art. GC 22).",
     });
   }
 
