@@ -13,6 +13,8 @@ import {
   CATEGORIES_EQUIPEMENT,
   PERIODICITES,
   REALISATEURS,
+  type Periodicite,
+  type Realisateur,
 } from "@/lib/referentiels/types-communs";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 
@@ -25,7 +27,14 @@ type Props = {
   equipements: { id: string; libelle: string; categorie: string }[];
 };
 
-const LABEL_PERIODICITE: Record<string, string> = {
+/**
+ * Libellés « en toutes lettres » des périodicités, propres à ce formulaire :
+ * `@/lib/calendrier/labels` porte des libellés minuscules destinés à être
+ * insérés dans une phrase, pas à être lus seuls dans un `<select>`.
+ * Typés `Record<Periodicite, …>` — et non `Record<string, …>` — pour qu'une
+ * valeur ajoutée à l'enum casse la compilation au lieu de s'afficher en brut.
+ */
+const LABEL_PERIODICITE: Record<Periodicite, string> = {
   hebdomadaire: "Hebdomadaire",
   mensuelle: "Mensuelle",
   trimestrielle: "Trimestrielle",
@@ -36,9 +45,13 @@ const LABEL_PERIODICITE: Record<string, string> = {
   quinquennale: "Tous les 5 ans",
   decennale: "Tous les 10 ans",
   mise_en_service_uniquement: "Une seule fois (vérification à délai)",
+  // Refusée à la saisie (schéma + CHECK SQL), présente pour l'exhaustivité du
+  // type : une prescription sans échéance n'a rien à faire au calendrier.
+  autre: "Sans échéance",
 };
 
-const LABEL_REALISATEUR: Record<string, string> = {
+/** Idem : formulation à la deuxième personne, adressée au dirigeant. */
+const LABEL_REALISATEUR: Record<Realisateur, string> = {
   organisme_agree: "Organisme agréé",
   organisme_accredite: "Organisme accrédité",
   personne_qualifiee: "Personne qualifiée",
@@ -136,7 +149,8 @@ export function PrescriptionForm({ action, obligations, equipements }: Props) {
             >
               {obligations.map((o) => (
                 <option key={o.id} value={o.id}>
-                  {o.libelle} — actuellement {LABEL_PERIODICITE[o.periodicite] ?? o.periodicite}
+                  {o.libelle} — actuellement{" "}
+                  {LABEL_PERIODICITE[o.periodicite as Periodicite] ?? o.periodicite}
                 </option>
               ))}
             </select>
@@ -178,7 +192,7 @@ export function PrescriptionForm({ action, obligations, equipements }: Props) {
                 {REALISATEURS.map((r) => (
                   <label key={r} className="flex items-center gap-2 text-sm">
                     <input type="checkbox" name="realisateurRequis" value={r} />
-                    {LABEL_REALISATEUR[r] ?? r}
+                    {LABEL_REALISATEUR[r]}
                   </label>
                 ))}
               </div>
@@ -199,7 +213,7 @@ export function PrescriptionForm({ action, obligations, equipements }: Props) {
             >
               {PERIODICITES.filter((p) => p !== "autre").map((p) => (
                 <option key={p} value={p}>
-                  {LABEL_PERIODICITE[p] ?? p}
+                  {LABEL_PERIODICITE[p]}
                 </option>
               ))}
             </select>

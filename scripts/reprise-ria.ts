@@ -138,13 +138,19 @@ async function main() {
     `\n${extincteurs.length} extincteur(s) lus — ${aCreer} RIA à créer, ${aReaffecter} ligne(s) de calendrier à réaffecter, ${aNettoyer} clé(s) « non » à retirer.`,
   );
 
-  if (!appliquer) {
-    console.log("Dry-run : aucune écriture. Relancer avec --appliquer.");
-  } else {
-    await prisma.$transaction(operations);
-    console.log("Appliqué. Régénérer les calendriers au prochain affichage.");
+  try {
+    if (!appliquer) {
+      console.log("Dry-run : aucune écriture. Relancer avec --appliquer.");
+    } else {
+      await prisma.$transaction(operations);
+      console.log("Appliqué. Régénérer les calendriers au prochain affichage.");
+    }
+  } finally {
+    // `finally` et non appel en fin de bloc : une transaction qui échoue
+    // laissait sinon la connexion ouverte, et le script pendait au lieu de
+    // rendre la main avec son code d'erreur.
+    await prisma.$disconnect();
   }
-  await prisma.$disconnect();
 }
 
 main().catch((e) => {

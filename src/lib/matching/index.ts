@@ -8,6 +8,7 @@ export {
   PREFIXE_PRESCRIPTION,
   estObligationSurMesure,
   estPeriodicitePlusStricte,
+  prescriptionEnVigueur,
   type ResultatPrescriptions,
 } from "./prescriptions";
 export type {

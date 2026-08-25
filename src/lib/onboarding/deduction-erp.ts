@@ -115,51 +115,6 @@ export const SEUIL_2E_CATEGORIE = 700;
 export const SEUIL_3E_CATEGORIE = 300;
 
 /**
- * Tranches de capacité d'accueil simultanée proposées au dirigeant.
- *
- * La bande « 300 personnes et au-dessous » donne lieu à **deux** choix, 4ᵉ et
- * 5ᵉ catégorie, parce qu'aucun effectif ne permet de trancher entre les deux
- * (cf. en-tête de fichier). La question est posée en termes vérifiables par un
- * non-expert — ce qui figure sur l'arrêté d'ouverture ou le procès-verbal de la
- * commission de sécurité — plutôt qu'en termes de seuils réglementaires.
- */
-export const TRANCHES_EFFECTIF_PUBLIC = [
-  {
-    id: "moins-300-5e",
-    label: "300 personnes ou moins — 5ᵉ catégorie",
-    hint: "Le cas le plus fréquent en TPE. Petit établissement, sous le seuil fixé pour votre type d'activité par le règlement de sécurité.",
-    categorieErp: "N5" as CategorieErp,
-  },
-  {
-    id: "moins-300-4e",
-    label: "300 personnes ou moins — 4ᵉ catégorie",
-    hint: "À choisir si votre arrêté d'ouverture ou le PV de la commission de sécurité indique « 4ᵉ catégorie ». Entraîne la vérification électrique annuelle par organisme agréé.",
-    categorieErp: "N4" as CategorieErp,
-  },
-  {
-    id: "301-700",
-    label: "301 à 700 personnes",
-    hint: "3ᵉ catégorie — commission de sécurité plus exigeante.",
-    categorieErp: "N3" as CategorieErp,
-  },
-  {
-    id: "701-1500",
-    label: "701 à 1500 personnes",
-    hint: "2ᵉ catégorie — règles renforcées.",
-    categorieErp: "N2" as CategorieErp,
-  },
-  {
-    id: "plus-1500",
-    label: "Plus de 1500 personnes",
-    hint: "1ʳᵉ catégorie — règles les plus strictes.",
-    categorieErp: "N1" as CategorieErp,
-  },
-] as const;
-
-export type TrancheEffectifPublicId =
-  (typeof TRANCHES_EFFECTIF_PUBLIC)[number]["id"];
-
-/**
  * Résultat d'une déduction de catégorie ERP à partir d'un effectif.
  *
  * Deux états, jamais confondus :
@@ -267,17 +222,6 @@ export function deduireCategorieErpDepuisEffectif(
 ): CategorieErp | null {
   const d = deduireCategorieErp(effectifPublic);
   return d.statut === "proposee" ? d.categorieErp : null;
-}
-
-/**
- * Résout un ID de tranche en catégorie ERP.
- */
-export function categorieErpDepuisTranche(
-  id: TrancheEffectifPublicId,
-): CategorieErp {
-  const t = TRANCHES_EFFECTIF_PUBLIC.find((x) => x.id === id);
-  if (!t) throw new Error(`Tranche inconnue : ${id}`);
-  return t.categorieErp;
 }
 
 /**
