@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { requireEtablissement } from "@/lib/auth/scope";
-import { formaterDateFr } from "@/lib/dates";
+import { cleJourCivil, formaterDateFr } from "@/lib/dates";
 import { chargerPagePrescriptions } from "@/lib/prescriptions/queries";
 import { creerPrescription } from "@/lib/prescriptions/actions";
 import { LABEL_SOURCE_PRESCRIPTION } from "@/lib/prescriptions/schema";
 import { PrescriptionForm } from "@/components/prescriptions/PrescriptionForm";
+import { PrescriptionActions } from "@/components/prescriptions/PrescriptionActions";
 
 /**
  * Prescriptions particulières propres à l'établissement (ADR-014) : arrêtés
@@ -93,6 +94,15 @@ export default async function PrescriptionsPage({
                   acte du {formaterDateFr(p.dateDocument)}
                 </p>
                 <p className="text-sm">{p.etat.detail}</p>
+                <div className="pt-2">
+                  <PrescriptionActions
+                    etablissementId={id}
+                    prescriptionId={p.id}
+                    estLevee={p.etat.etat === "levee"}
+                    lignesAvecPreuve={p.lignesAvecPreuve}
+                    dateDocument={cleJourCivil(p.dateDocument)}
+                  />
+                </div>
               </li>
             ))}
           </ul>

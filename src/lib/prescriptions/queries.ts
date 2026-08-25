@@ -18,6 +18,17 @@ export type PrescriptionListee = PrescriptionMatching & {
   etat: EtatPrescription;
   /** Libellé lisible de l'obligation ciblée (effet renforce_periodicite). */
   libelleObligationCiblee: string | null;
+  /**
+   * Nombre de lignes de calendrier que cette prescription a produites et qui
+   * portent une preuve — rapport de vérification ou action corrective.
+   *
+   * Au-delà de zéro, la suppression physique est refusée : `ON DELETE SET
+   * NULL` laisserait des lignes orphelines dont plus rien ne dirait de quel
+   * acte elles venaient, alors que la preuve, elle, resterait. C'est la levée
+   * qui sert dans ce cas — elle arrête l'effet et garde l'historique
+   * (ADR-012, ADR-014).
+   */
+  lignesAvecPreuve: number;
 };
 
 export type DonneesPagePrescriptions = {
@@ -49,7 +60,24 @@ export async function chargerPagePrescriptions(
     where: { id: etablissementId },
     include: {
       equipements: { where: { actif: true } },
-      prescriptionsParticulieres: { orderBy: { dateDocument: "desc" } },
+      prescriptionsParticulieres: {
+        orderBy: { dateDocument: "desc" },
+        include: {
+          _count: {
+            select: {
+              verifications: {
+                where: {
+                  OR: [
+                    { rapports: { some: {} } },
+                    { actions: { some: {} } },
+                    { dateRealisee: { not: null } },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
   if (!etab) return { prescriptions: [], obligations: [], equipements: [] };
@@ -112,6 +140,7 @@ export async function chargerPagePrescriptions(
     return {
       ...p,
       etat,
+      lignesAvecPreuve: p._count.verifications,
       libelleObligationCiblee: p.obligationId
         ? (obligationParId(p.obligationId)?.libelle ?? p.obligationId)
         : null,
