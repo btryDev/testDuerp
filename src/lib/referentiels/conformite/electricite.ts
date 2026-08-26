@@ -39,7 +39,7 @@ export const obligationsElectricite: Obligation[] = [
       },
       {
         source: "ARRETE",
-        reference: "Arrêté du 26 décembre 2011 (vérifications des installations électriques), art. 3 à 5",
+        reference: "Arrêté du 26 décembre 2011 (vérifications des installations électriques), art. 2 et 6",
         article: "Arrêté 2011-12-26 art. 2",
         url:
           "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000025046978",
@@ -67,8 +67,9 @@ export const obligationsElectricite: Obligation[] = [
       },
       {
         source: "ARRETE",
-        reference: "Arrêté du 26 décembre 2011 (vérifications des installations électriques), art. 1 et 2",
+        reference: "Arrêté du 26 décembre 2011 (vérifications des installations électriques), art. 3",
         article: "Arrêté 2011-12-26 art. 3",
+        note: "L'article 3 fixe la périodicité à un an, puis ouvre une faculté que le référentiel ne portait pas : « Toutefois, le délai entre deux vérifications peut être porté à deux ans par le chef d'établissement si le rapport précédent ne présente aucune observation ou si, avant l'échéance, le chef d'établissement a fait réaliser les travaux de mise en conformité de nature à répondre aux observations contenues dans le rapport de vérification. » Elle est subordonnée à une lettre recommandée avec accusé de réception à l'inspection du travail, accompagnée des éléments de preuve. Constaté le 2026-08-26.",
         url:
           "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000025046978",
       },
@@ -169,7 +170,7 @@ export const obligationsElectricite: Obligation[] = [
     typologies: { erp: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version citait EL 5, qui définit les locaux de service électrique. La vérification avant ouverture et après travaux relève des articles GE 6 à GE 8 (rapport RVRAT), auxquels EL 19 § 2 renvoie.",
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait EL 5, qui définit les locaux de service électrique. La vérification avant ouverture et après travaux relève des articles GE 6 à GE 8 (rapport RVRAT), auxquels EL 19 § 2 renvoie.\n\nSur-application assumée en 5ᵉ catégorie (constatée 2026-08-26). L'article cité relève du Livre II du règlement de sécurité, écarté en 5ᵉ catégorie par PE 1 § 1 ; le dépouillement intégral du Livre III a établi qu'il n'en rouvre que MS 39 et MS 70. GE 7 § 1 le confirme en propre : il ne vise que les établissements des 1ʳᵉ à 4ᵉ catégories. Ce qui traite le même objet en N5 est PE 4 § 1, plus étroit — vérification à la construction et avant ouverture par personnes ou organismes agréés, et seulement « dans les établissements avec locaux à sommeil ». La ligne est MAINTENUE : la retirer créerait un faux négatif muet chez 100 % des utilisateurs, alors qu'une sur-application visible reste corrigeable. À reprendre quand le référentiel saura porter l'attribut « locaux à sommeil ».",
   },
   {
     id: "elec-erp-cat1-4-annuelle",
@@ -227,7 +228,7 @@ export const obligationsElectricite: Obligation[] = [
   {
     id: "elec-erp-groupe-electrogene-annuel",
     domaine: "electricite",
-    libelle: "Vérification annuelle des groupes électrogènes de sécurité (ERP)",
+    libelle: "Entretien et essais des groupes électrogènes de sécurité (ERP)",
     description:
       "Lorsque l'ERP est équipé d'un groupe électrogène de sécurité, celui-ci fait l'objet d'essais périodiques par l'exploitant (niveaux tous les quinze jours, essai de démarrage en charge mensuel, consignés au registre d'entretien — EL 18 § 4) et de la vérification annuelle des installations électriques (EL 19).",
     referencesLegales: [
@@ -246,7 +247,7 @@ export const obligationsElectricite: Obligation[] = [
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
       },
     ],
-    periodicite: "annuelle",
+    periodicite: "mensuelle",
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 4,
     typologies: { erp: true },
@@ -260,7 +261,7 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version citait EL 20, qui traite des installations temporaires.",
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait EL 20, qui traite des installations temporaires.\n\nSur-application assumée en 5ᵉ catégorie (constatée 2026-08-26). L'article cité relève du Livre II du règlement de sécurité, écarté en 5ᵉ catégorie par PE 1 § 1 ; le dépouillement intégral du Livre III a établi qu'il n'en rouvre que MS 39 et MS 70. GE 7 § 1 le confirme en propre : il ne vise que les établissements des 1ʳᵉ à 4ᵉ catégories. Ce qui traite le même objet en N5 est PE 4 § 1, plus étroit — vérification à la construction et avant ouverture par personnes ou organismes agréés, et seulement « dans les établissements avec locaux à sommeil ». La ligne est MAINTENUE : la retirer créerait un faux négatif muet chez 100 % des utilisateurs, alors qu'une sur-application visible reste corrigeable. À reprendre quand le référentiel saura porter l'attribut « locaux à sommeil ».",
   },
 
   // ---------------------------------------------------------------------------

@@ -14,6 +14,20 @@ export const CODE_TRAVAIL_ELECTRICITE: Corpus = {
     "Vérifications des installations électriques (R. 4226-14 et s.) et habilitation des travailleurs (R. 4544-9 et s.). ATTENTION : R. 4544-10 et R. 4544-11 ont été réécrits au 1er octobre 2025 par le décret n° 2025-355, et deux articles ont été créés (R. 4544-11-1 et -11-2) — non encore cités par le référentiel.",
   articles: [
   {
+    ref: "R. 4544-11-1",
+    intitule: "Attestation d'absence de contre-indications médicales",
+    versionEnVigueur: "2025-10-01",
+    luLe: "2026-08-26",
+    lecture: "agent_verbatim",
+    statut: "obligation_manquante",
+    motif:
+      "Créé au 1er octobre 2025 par le décret n° 2025-355. L'habilitation autorisant les opérations au voisinage de pièces nues sous tension est subordonnée à une attestation d'absence de contre-indications médicales, « d'une validité de cinq ans », délivrée par le médecin du travail, dont l'employeur « conserve une copie pendant toute sa durée de validité ». C'est une obligation périodique quinquennale, en vigueur, que le référentiel ne porte pas.",
+    bloquePar:
+      "Porteur d'échéance : l'obligation est nominative — elle vise un travailleur, pas un équipement. `categoriesEquipement` est requis et `Verification.equipementId` n'est pas nullable. Relève de l'ADR sur le porteur d'échéance.",
+    citationCle:
+      "« L'attestation mentionnée aux articles R. 4544-10 et R. 4544-11, d'une validité de cinq ans, est délivrée par le médecin du travail à l'issue d'un examen médical qu'il réalise. Elle est présentée par le travailleur à l'employeur, qui en conserve une copie pendant toute sa durée de validité. »",
+  },
+  {
     ref: "R. 4226-14",
     versionEnVigueur: "2011-07-01",
     luLe: "2026-08-26",

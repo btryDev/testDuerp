@@ -150,11 +150,62 @@ correction.
 documenter** — `elec-erp-mise-en-service` et `elec-erp-groupe-electrogene-annuel`.
 Même traitement que les six du domaine incendie.
 
-## Corrigé sans arbitrage
+## Corrigé — le texte dit, on suit
 
-Rien. Toutes les trouvailles de cette passe changent une périodicité, une
-condition ou un champ d'application : ce sont des décisions produit, pas des
-corrections de forme.
+La formule « décision produit » employée plus haut était une échappatoire.
+Quand un texte fixe une périodicité, il n'y a rien à arbitrer.
+
+**Les deux références de l'arrêté du 26 décembre 2011 étaient interverties.**
+La mise en service citait « art. 3 à 5 » — soit périodique, temporaire et
+inspecteur — et la vérification périodique citait « art. 1 et 2 » — soit objet
+et initiale. Aucune ne pointait l'article qui la fonde. Corrigé en art. 2 et 6
+d'une part, art. 3 de l'autre.
+
+**La dérogation à deux ans est désormais écrite**, en note de la référence,
+avec son verbatim et ses deux conditions. Elle ne change pas la périodicité
+encodée — c'est une faculté du chef d'établissement, subordonnée à une LRAR à
+l'inspection, donc un acte de l'exploitant et non une règle de calendrier. Mais
+elle cesse d'être invisible.
+
+**EL 18 § 4 passe de « annuelle » à « mensuelle ».** Le texte impose des
+vérifications tous les quinze jours et un essai de démarrage mensuel sous
+charge ; « annuelle » ne produisait aucune de ces échéances. Le libellé devient
+« Entretien et essais des groupes électrogènes de sécurité ». L'échéance de
+quinze jours reste non représentable — l'énumération `Periodicite` ne descend
+pas sous la semaine.
+
+**Les deux obligations électricité fondées sur le Livre II** portent désormais
+la note qui dit ce qui les fonde réellement en 5ᵉ catégorie, comme les six du
+domaine incendie.
+
+**R. 4544-11-1 est inscrit au corpus en « obligation manquante ».** L'attestation
+médicale quinquennale est en vigueur et le référentiel ne la porte pas ; elle
+est nominative, donc bloquée par le porteur d'échéance. Elle n'est plus
+invisible : elle est comptée.
+
+## Correction d'une alerte que j'ai exagérée
+
+J'ai rapporté que les hayons élévateurs recevaient douze mois au lieu de six.
+C'est inexact. La question posée au dirigeant est « Cet appareil est-il un
+chariot élévateur, un gerbeur **ou un hayon élévateur** ? » : un hayon déclaré
+déclenche bien la semestrielle. L'agent avait lu la description de l'obligation
+et le nom de la propriété, pas le formulaire, et je l'ai relayé sans vérifier.
+
+Ce qui manque réellement à la liste de l'art. 20-II, pour nos secteurs : les
+monte-meubles et les monte-matériaux de chantier. Les autres entrées — grues
+auxiliaires, grues à tour, engins de terrassement, tracteurs poseurs de
+canalisations — relèvent du BTP, hors périmètre déclaré.
+
+## Reste à instruire
+
+La périodicité trimestrielle de l'art. 23 b) — trois mois pour les appareils
+mus par la force humaine servant à déplacer en élévation un poste de travail —
+demande une propriété d'équipement qui n'existe pas. Créer l'obligation
+supposerait d'inventer la question ; je ne l'ai pas fait.
+
+L'épreuve initiale (art. 14) : la condition encodée paraît inversée par rapport
+au texte, mais l'agent n'a pu lire l'article qu'en partie. À relire en première
+main avant de toucher à quoi que ce soit.
 
 ## Confirmations utiles
 

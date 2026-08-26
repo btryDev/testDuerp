@@ -189,7 +189,7 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     const refs = obligationsManquantes().map((o) => o.ref);
     // PE 4 a quitté la liste : le référentiel le cite désormais (domaine
     // électricité), il est donc « retenu ». PE 27 reste manquant.
-    expect(refs).toEqual(["PE 27"]);
+    expect(refs).toEqual(["PE 27", "R. 4544-11-1"]);
   });
 
   it("chaque obligation manquante dit ce qui empêche de l'encoder ou pourquoi elle manque", () => {
