@@ -61,10 +61,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2026-07-01",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "retenu",
-    obligations: ["elec-erp-cat5-quinquennale"],
-    prescrit:
+    statut: "obligation_manquante",
+    motif:
       "Impose DEUX obligations périodiques que le référentiel ne porte pas : au § 2, l'entretien et la vérification de l'ensemble des installations techniques « tous les trois ans au plus » par des techniciens compétents, pour tous les établissements ; au § 1, un contrat annuel d'entretien du système de détection incendie, restreint aux établissements avec locaux à sommeil. Version réécrite par l'arrêté du 1er décembre 2025.",
+    bloquePar:
+      "Porteur d'échéance. Trois obligations CITENT PE 4 § 2 — `elec-erp-cat5-quinquennale`, `cuisson-gaz-installations-triennale`, et les notes de `incendie-erp-ria-annuelle` — mais chacune accroche un fragment à une catégorie d'équipement : installations électriques, appareils de cuisson, moyens de secours. Citer l'article n'est pas porter l'obligation. Le texte vise « l'ensemble des installations et des équipements techniques de son établissement », pris comme un tout, avec une liste ouverte (« etc. »). Un ERP de 5e catégorie qui n'a déclaré aucun équipement de ces catégories ne reçoit AUCUNE ligne triennale, alors que PE 2 § 3 maintient PE 4 jusqu'aux établissements de moins de vingt personnes. La décomposition par domaine reproduit exactement le faux négatif que le porteur « établissement » doit corriger — elle le masque au lieu de le révéler. Repassé de « retenu » à « obligation manquante » le 2026-08-26, sur signalement.",
   },
   {
     ref: "PE 5",
