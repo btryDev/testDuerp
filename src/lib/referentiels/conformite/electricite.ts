@@ -344,4 +344,37 @@ export const obligationsElectricite: Obligation[] = [
     notesInternes:
       "Créée le 2026-08-26. `elec-erp-cat1-4-annuelle` s'arrête aux quatre premières catégories : un petit hôtel de 5ᵉ catégorie n'avait AUCUN contrôle électrique annuel, alors que PO 1 § 3 le lui impose nommément. Le manque était déclaré `non_couvert` sur le chapitre PO avec la mention « le manque est un choix, pas une impossibilité » — il ne l'est plus.\n\nLa détection incendie, que le même paragraphe soumet au même rythme annuel, n'est PAS ajoutée ici : `incendie-erp-ssi-annuelle` porte `erp: true` et couvre donc déjà tous les ERP, cinquième catégorie comprise. L'ajouter aurait créé un doublon.\n\n`personne_qualifiee` traduit « technicien compétent » : le texte n'exige ni organisme agréé ni accréditation, et l'exploitant ne peut pas s'en charger lui-même.\n\nDomaine `electricite` et non `incendie` : le domaine décrit l'objet contrôlé, pas le texte qui l'impose. L'obligation vit donc auprès des autres vérifications électriques, où le dirigeant la cherchera.",
   },
+  {
+    id: "elec-travail-rapport-quadriennal",
+    domaine: "electricite",
+    libelle: "Rapport quadriennal — mise à jour complète du descriptif électrique",
+    description:
+      "Tous les quatre ans, l'ensemble des renseignements descriptifs de l'installation électrique fait l'objet d'une mise à jour complète, qui donne lieu à un rapport dit « quadriennal », rédigé comme un rapport de vérification initiale : description des bâtiments et des postes, schéma de principe unifilaire, caractéristiques des canalisations et des dispositifs de protection, classement des locaux et conditions d'influences externes. Les vérifications périodiques des trois autres années s'appuient sur ce descriptif ; sans lui, elles comparent l'installation à un état qui n'existe plus.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 26 décembre 2011, annexe II, point 3.5 (mise à jour des renseignements descriptifs)",
+        article: "Arrêté 2011-12-26 annexe II",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025100353",
+        note: "« Une mise à jour complète de l'ensemble des renseignements descriptifs doit être effectuée tous les quatre ans ; elle donnera lieu à un rapport, dit \"quadriennal\", rédigé comme un rapport de visite initiale. » Verbatim relevé en première main le 2026-08-26.",
+        versionConstatee: "2011-12-30",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4226-16 (vérification périodique annuelle)",
+        article: "R. 4226-16",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490547/",
+      },
+    ],
+    periodicite: "quadriennale",
+    realisateurs: ["organisme_accredite", "personne_qualifiee"],
+    criticite: 4,
+    typologies: { travail: true },
+    categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes:
+      "Créée le 2026-08-26, annexe II lue en première main. Le référentiel portait la vérification périodique annuelle mais ignorait le rapport quadriennal, qui n'existait ni en échéance ni en prose. C'est pourtant lui qui empêche la vérification périodique de dériver : les rapports périodiques ne consignent que les non-conformités et les écarts, sur la foi d'un descriptif établi une fois. Tous les quatre ans, ce descriptif est refait comme au premier jour.\n\nL'énumération sautait de `triennale` à `quinquennale` ; la valeur `quadriennale` (1460 jours) a été ajoutée à l'énumération et à l'enum Postgres.\n\nMêmes réalisateurs que la vérification périodique dont il est la forme renforcée : le point 3.5 dit « rédigé comme un rapport de visite initiale », pas « par un organisme accrédité ». L'accréditation n'est requise que pour la vérification initiale elle-même (R. 4226-14) et sur demande de l'inspection.\n\nCriticité 4 et non 5 : l'absence de rapport quadriennal ne crée pas de danger immédiat, elle dégrade la fiabilité de tous les contrôles suivants.",
+  },
 ];

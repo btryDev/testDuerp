@@ -1,0 +1,22 @@
+-- ============================================================================
+-- Périodicité « quadriennale » — tous les quatre ans
+--
+-- L'annexe II de l'arrêté du 26 décembre 2011, point 3.5 : « Une mise à jour
+-- complète de l'ensemble des renseignements descriptifs doit être effectuée
+-- tous les quatre ans ; elle donnera lieu à un rapport, dit "quadriennal",
+-- rédigé comme un rapport de visite initiale. »
+--
+-- Le rapport quadriennal est ce qui empêche la vérification périodique de
+-- dériver : les rapports périodiques ne consignent que les non-conformités et
+-- les écarts, sur la foi d'un descriptif établi une fois. Tous les quatre ans,
+-- ce descriptif est refait comme au premier jour — schéma unifilaire, classement
+-- des locaux, caractéristiques des canalisations et des protections.
+--
+-- L'énumération sautait de `triennale` à `quinquennale`. L'obligation n'était
+-- portée nulle part, ni en échéance ni en prose.
+--
+-- Purement additif : une valeur ajoutée à un type énuméré. Aucune ligne
+-- existante n'est modifiée, aucune valeur n'est retirée.
+-- ============================================================================
+
+ALTER TYPE "Periodicite" ADD VALUE 'quadriennale' AFTER 'triennale';

@@ -73,10 +73,11 @@ const RANG_PERIODICITE: Record<Periodicite, number> = {
   annuelle: 6,
   biennale: 7,
   triennale: 8,
-  quinquennale: 9,
-  decennale: 10,
-  mise_en_service_uniquement: 11,
-  autre: 12,
+  quadriennale: 9,
+  quinquennale: 10,
+  decennale: 11,
+  mise_en_service_uniquement: 12,
+  autre: 13,
 };
 
 export function construireChezVous(

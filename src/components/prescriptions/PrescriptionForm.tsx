@@ -44,6 +44,7 @@ const LABEL_PERIODICITE: Record<Periodicite, string> = {
   annuelle: "Annuelle",
   biennale: "Tous les 2 ans",
   triennale: "Tous les 3 ans",
+  quadriennale: "Tous les 4 ans",
   quinquennale: "Tous les 5 ans",
   decennale: "Tous les 10 ans",
   mise_en_service_uniquement: "Une seule fois (vérification à délai)",

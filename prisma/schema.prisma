@@ -497,6 +497,7 @@ enum Periodicite {
   annuelle
   biennale
   triennale
+  quadriennale
   quinquennale
   decennale
   mise_en_service_uniquement

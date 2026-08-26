@@ -805,7 +805,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
   // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
   // version PUIS recopiez l'empreinte que le message d'échec affiche.
-  const EMPREINTE_ATTENDUE = "84-cdbb698d1aa89c31";
+  const EMPREINTE_ATTENDUE = "85-4d2aa4821982fa52";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
