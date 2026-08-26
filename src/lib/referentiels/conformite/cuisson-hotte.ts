@@ -32,12 +32,14 @@ export const obligationsCuissonHotte: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GC 22 § 1 (vérification dans les conditions de la section II du chapitre Ier)",
+        article: "GC 22",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GE 6 à GE 8 (vérifications par organismes agréés)",
+        article: "GE 6",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303884/",
       },
@@ -60,6 +62,7 @@ export const obligationsCuissonHotte: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GC 22",
+        article: "GC 22",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
       },
@@ -82,12 +85,14 @@ export const obligationsCuissonHotte: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 22 juin 1990 (ERP 5ᵉ catégorie), art. PE 4 § 2, rédaction de l'arrêté du 1er décembre 2025",
+        article: "PE 4",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374770/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er décembre 2025 modifiant le règlement de sécurité ERP (applicable au 1er juillet 2026)",
+        article: "Arrêté 2025-12-01",
         url:
           "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053020948",
       },
@@ -110,6 +115,7 @@ export const obligationsCuissonHotte: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GZ 30 (vérifications techniques)",
+        article: "GZ 30",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304269/",
       },
@@ -132,6 +138,7 @@ export const obligationsCuissonHotte: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GC 21 (ramonage annuel des conduits) et GC 20",
+        article: "GC 21",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
       },
@@ -154,6 +161,7 @@ export const obligationsCuissonHotte: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GC 22 (vérifications techniques annuelles)",
+        article: "GC 22",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
       },

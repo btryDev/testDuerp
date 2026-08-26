@@ -26,12 +26,14 @@ export const obligationsPortesPortails: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 21 décembre 1993 (portes et portails automatiques), art. 2 à 4 (installations neuves)",
+        article: "Arrêté 1993-12-21 art. 2",
         url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006082855",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4224-13",
+        article: "R. 4224-13",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532211/",
       },
@@ -52,6 +54,7 @@ export const obligationsPortesPortails: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 21 décembre 1993 (portes et portails automatiques), art. 9",
+        article: "Arrêté 1993-12-21 art. 9",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006679563",
       },
@@ -74,12 +77,14 @@ export const obligationsPortesPortails: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 21 décembre 1993 (portes et portails automatiques), art. 8 et 9 (livret d'entretien)",
+        article: "Arrêté 1993-12-21 art. 9",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006679563",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4224-17",
+        article: "R. 4224-17",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532197/",
       },
@@ -102,12 +107,14 @@ export const obligationsPortesPortails: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4224-12 et R. 4224-13",
+        article: "R. 4224-13",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532211/",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4224-17",
+        article: "R. 4224-17",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532197/",
       },
@@ -130,6 +137,7 @@ export const obligationsPortesPortails: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 21 décembre 1993 (portes et portails automatiques), art. 2 et 5 (passages de véhicules)",
+        article: "Arrêté 1993-12-21 art. 2",
         url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006082855",
       },

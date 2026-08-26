@@ -56,12 +56,14 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 20 novembre 2017 (suivi en service des ESP), art. 7 à 11",
+        article: "Arrêté 2017-11-20 art. 7-11",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
       },
       {
         source: "CODE_ENVIRONNEMENT",
         reference: "R. 557-14-1 et s. (suivi en service)",
+        article: "C. env. R. 557-14-1",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000030833481/",
       },
@@ -83,6 +85,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 20 novembre 2017 (suivi en service des ESP), art. 15",
+        article: "Arrêté 2017-11-20 art. 15",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
       },
@@ -106,6 +109,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 20 novembre 2017 (suivi en service des ESP), art. 18 et 19",
+        article: "Arrêté 2017-11-20 art. 18-19",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
       },
@@ -127,6 +131,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 20 novembre 2017 (suivi en service des ESP), art. 6 (dossier d'exploitation)",
+        article: "Arrêté 2017-11-20 art. 6",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
       },
@@ -148,6 +153,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 20 novembre 2017 (suivi en service des ESP), art. 26 à 28",
+        article: "Arrêté 2017-11-20 art. 26-28",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
       },
@@ -171,6 +177,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-1 à R. 4323-5 (information et formation à l'utilisation des équipements de travail)",
+        article: "R. 4323-1",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489707/",
       },

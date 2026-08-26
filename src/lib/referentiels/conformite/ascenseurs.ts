@@ -55,12 +55,14 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 134-6 et R. 134-7 (ex R. 125-2 et R. 125-2-1)",
+        article: "CCH R. 134-6",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818737/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 18 novembre 2004 relatif à l'entretien des installations d'ascenseurs, art. 2 et annexe",
+        article: "Arrêté 2004-11-18",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000254219",
       },
@@ -83,12 +85,14 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 134-6 (examen semestriel du bon état des câbles)",
+        article: "CCH R. 134-6",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818737/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 18 novembre 2004 (entretien), annexe — opérations semestrielles",
+        article: "Arrêté 2004-11-18",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000254219",
       },
@@ -111,12 +115,14 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 18 novembre 2004 (entretien), annexe — opérations annuelles",
+        article: "Arrêté 2004-11-18",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000254219",
       },
       {
         source: "CCH",
         reference: "CCH, art. R. 134-6 (vérification annuelle des parachutes)",
+        article: "CCH R. 134-6",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818737/",
       },
@@ -137,12 +143,14 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 134-11 à R. 134-13 (ex R. 125-2-4 et s.)",
+        article: "CCH R. 134-11",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818747/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 7 août 2012 relatif aux contrôles techniques à réaliser dans les installations d'ascenseurs",
+        article: "Arrêté 2012-08-07",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000026286347",
       },
@@ -165,6 +173,7 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 134-7 et R. 134-10 (carnet d'entretien)",
+        article: "CCH R. 134-10",
         url:
           "https://www.legifrance.gouv.fr/codes/id/LEGISCTA000043818735/",
       },
@@ -185,6 +194,7 @@ export const obligationsAscenseurs: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 134-1 à R. 134-5 (dispositifs de sécurité, dont demande de secours)",
+        article: "CCH R. 134-1",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000043818721/",
       },

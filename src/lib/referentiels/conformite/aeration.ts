@@ -37,18 +37,21 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4222-20",
+        article: "R. 4222-20",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4222-21",
+        article: "R. 4222-21",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483604/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 8 octobre 1987, art. 2, 3 et 4",
+        article: "Arrêté 1987-10-08 art. 3",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000863044/",
       },
@@ -69,12 +72,14 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4222-20",
+        article: "R. 4222-20",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 8 octobre 1987, art. 3",
+        article: "Arrêté 1987-10-08 art. 3",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678610",
       },
@@ -95,6 +100,7 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 8 octobre 1987, art. 4",
+        article: "Arrêté 1987-10-08 art. 4",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678611",
       },
@@ -141,12 +147,14 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. CH 58 (vérification dans les conditions de la section II du chapitre Ier)",
+        article: "CH 58",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. CH 57 (entretien, ramonage annuel des conduits de fumée)",
+        article: "CH 57",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
       },
@@ -167,6 +175,7 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. PS 32 (rédaction arrêté du 9 mai 2006)",
+        article: "PS 32",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000024812448/",
       },
@@ -198,6 +207,7 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. PS 32 (rédaction arrêté du 9 mai 2006)",
+        article: "PS 32",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000024812448/",
       },
@@ -239,6 +249,7 @@ export const obligationsAeration: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 23 février 2018 (installations de gaz des bâtiments d'habitation) — remplace l'arrêté du 25 avril 1985, abrogé le 5 mars 2018",
+        article: "Arrêté 2018-02-23",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036667631",
       },

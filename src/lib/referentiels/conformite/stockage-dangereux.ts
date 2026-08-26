@@ -38,6 +38,7 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "CODE_ENVIRONNEMENT",
         reference: "L. 512-8 (déclaration) · L. 512-7 (enregistrement) · L. 512-1 (autorisation)",
+        article: "C. env. L. 512-1",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000006159273/",
       },
@@ -60,12 +61,14 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4412-11 (procédures de stockage sûres des agents chimiques dangereux)",
+        article: "R. 4412-11",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530929/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er juin 2015 (rubriques 4331/4734, enregistrement), art. 22 — valeurs de rétention, opposables uniquement sous ce régime ICPE",
+        article: "Arrêté 2015-06-01 art. 22",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044166790",
       },
@@ -88,6 +91,7 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4412-11 (entretien régulier des équipements de stockage)",
+        article: "R. 4412-11",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530929/",
       },
@@ -110,12 +114,14 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4222-20",
+        article: "R. 4222-20",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 8 octobre 1987, art. 4 (locaux à pollution spécifique)",
+        article: "Arrêté 1987-10-08 art. 4",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678611",
       },
@@ -138,6 +144,7 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4412-38 (accès des travailleurs aux fiches de données de sécurité)",
+        article: "R. 4412-38",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483735/",
       },
@@ -158,12 +165,14 @@ export const obligationsStockageDangereux: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4412-38 (agents chimiques dangereux)",
+        article: "R. 4412-38",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483735/",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4412-87 (agents CMR uniquement)",
+        article: "R. 4412-87",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483731/",
       },

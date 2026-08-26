@@ -134,7 +134,10 @@ describe("corpus — la dette de lecture, mesurée et décroissante", () => {
   // Le nombre de références qui ne portent même pas de clé d'article, donc
   // rattachables à aucun corpus. Complément indispensable du plafond : sans
   // lui, « 0 article cité non dépouillé » se lirait comme « tout est lu ».
-  const PLAFOND_SANS_CLE = 53;
+  // Zéro, et le cliquet le verrouille : toute nouvelle référence devra porter
+  // sa clé d'article dès son écriture. C'est ce qui garantit qu'un texte cité
+  // pourra toujours être rattaché à un corpus — donc vérifié.
+  const PLAFOND_SANS_CLE = 0;
 
   it("ne dépasse pas le plafond, et le plafond ne remonte pas", () => {
     const restantes = obligationsSurTextesNonDepouilles();
