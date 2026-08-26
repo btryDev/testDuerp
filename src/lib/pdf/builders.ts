@@ -8,7 +8,26 @@ import { calculerScoreDepuisEtat } from "@/lib/dashboard/score";
 import { evaluerEtatDuerp } from "@/lib/dashboard/duerp";
 import { repartirVerifications } from "./etat-verifications";
 import type { LignePlanActions, PlanActionsData } from "./PlanActionsDocument";
-import type { LigneRapport, LigneVerif, RegistreData } from "./RegistreDocument";
+import type {
+  FichePdf,
+  LigneRapport,
+  LigneVerif,
+  PartiePdf,
+  RegistreData,
+} from "./RegistreDocument";
+import { composerRegistreDeLEtablissement } from "@/lib/registre/queries";
+import { saisiePourSection } from "@/lib/registre/champs";
+import { contenuTenuAilleursDepuis } from "@/lib/registre/contenu-ailleurs";
+import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
+import { alimentationDeLaPartie } from "@/lib/registre/alimentation";
+import {
+  bilanDuRegistre,
+  completudeDeLaFiche,
+  libelleCompletude,
+  tonCompletude,
+  type Completude,
+} from "@/lib/registre/completude";
+import { afficherValeur } from "@/lib/registre/valeur";
 import type { DossierData } from "./DossierConformiteDocument";
 
 /**
@@ -191,14 +210,105 @@ export async function construireRegistreData(
     )
     .map((v) => ligneVerif(v, multiBatiments));
 
+  // Le registre, fiche par fiche — ce que le document doit être. Il ne
+  // portait que les deux tableaux ci-dessus : un extrait du calendrier, pas
+  // un registre. Les quarante-neuf fiches dues y figurent maintenant, y
+  // compris celles que l'application ne recueille pas : les taire au PDF
+  // ferait exactement ce que l'écran a cessé de faire — laisser croire le
+  // document complet.
+  const registre = await composerRegistreDeLEtablissement(etablissementId);
+  const equipements = registre
+    ? await listerEquipementsDeLEtablissement(etablissementId)
+    : [];
+
+  const completudes: Completude[] = [];
+  const parties: PartiePdf[] = (registre?.parties ?? []).map((partie) => ({
+    id: partie.id,
+    titre: partie.titre,
+    fiches: partie.sections.map((due) => {
+      const saisie = saisiePourSection(due.section.id);
+      const contenu = registre?.contenus[due.section.id];
+      const completude = completudeDeLaFiche(
+        saisie,
+        contenu ?? {},
+        alimentationDeLaPartie(partie.id, `/etablissements/${etablissementId}`),
+      );
+      // Le parc et le calendrier sont lus une seule fois pour les
+      // quarante-neuf fiches : une lecture par fiche ferait soixante-deux
+      // requêtes pour un document.
+      const ailleurs = contenuTenuAilleursDepuis(
+        etablissementId,
+        partie.id,
+        due.section,
+        equipements,
+        verifs,
+      );
+      completudes.push(completude);
+      return ficheDuPdf(due, saisie, contenu, completude, ailleurs);
+    }),
+  }));
+
   return {
     entreprise: etab.entreprise.raisonSociale,
     etablissement: etab.raisonDisplay,
     adresse: etab.adresse,
     genereLe: new Date(),
+    parties,
+    bilan: bilanDuRegistre(completudes),
     rapports: lignesRapports,
     verifsEnAttente,
   };
+}
+
+/** Une fiche mise à plat pour le rendu — texte seulement, rien de calculé. */
+function ficheDuPdf(
+  due: { section: { id: string; titre: string; attendu: string }; raisons: string[] },
+  saisie: ReturnType<typeof saisiePourSection>,
+  contenu: { champs?: Record<string, string | null>; lignes?: { valeurs: Record<string, string | null> }[] } | undefined,
+  completude: Completude,
+  ailleurs: ReturnType<typeof contenuTenuAilleursDepuis>,
+): FichePdf {
+  const base: FichePdf = {
+    id: due.section.id,
+    titre: due.section.titre,
+    attendu: due.section.attendu,
+    raisons: due.raisons,
+    etat: libelleCompletude(completude),
+    ton: tonCompletude(completude),
+  };
+
+  if (saisie?.forme === "etablissement" || saisie?.forme === "formulaire") {
+    return {
+      ...base,
+      champs: saisie.champs.map((c) => ({
+        libelle: c.libelle,
+        valeur: afficherValeur(contenu?.champs?.[c.cle], c),
+      })),
+    };
+  }
+
+  if (saisie?.forme === "journal") {
+    return {
+      ...base,
+      colonnes: saisie.colonnes.map((c) => c.libelle),
+      lignes: (contenu?.lignes ?? []).map((l) =>
+        saisie.colonnes.map((c) => afficherValeur(l.valeurs[c.cle], c)),
+      ),
+    };
+  }
+
+  if (ailleurs) {
+    return {
+      ...base,
+      source: ailleurs.source.libelle,
+      tenues: ailleurs.lignes.map((l) => ({
+        titre: l.titre,
+        meta: l.meta ?? "",
+      })),
+    };
+  }
+
+  return base;
 }
 
 export async function construireDossierConformiteData(

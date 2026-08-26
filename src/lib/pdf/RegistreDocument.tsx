@@ -30,11 +30,55 @@ export type LigneVerif = {
   domaine: DomaineObligation | null;
 };
 
+/**
+ * Une fiche du registre, mise à plat pour l'impression.
+ *
+ * Une seule forme de contenu est remplie à la fois — c'est la forme de la
+ * fiche qui décide. Aucune n'est remplie quand rien ne la recueille : la
+ * fiche s'imprime quand même, avec son état, parce qu'une fiche due absente
+ * du document ferait croire le registre complet.
+ */
+export type FichePdf = {
+  id: string;
+  titre: string;
+  attendu: string;
+  raisons: string[];
+  /** L'état de remplissage, dans les mots de l'écran. */
+  etat: string;
+  ton: "faite" | "renvoi" | "attente" | "muet";
+  /** Forme « établissement » ou « formulaire » : des questions et réponses. */
+  champs?: { libelle: string; valeur: string }[];
+  /** Forme « journal » : des lignes empilées. */
+  colonnes?: string[];
+  lignes?: string[][];
+  /** Fiche tenue par un autre écran : ce qu'il porte, et lequel. */
+  source?: string;
+  tenues?: { titre: string; meta: string }[];
+};
+
+export type PartiePdf = {
+  id: string;
+  titre: string;
+  fiches: FichePdf[];
+};
+
+export type BilanPdf = {
+  dues: number;
+  outillees: number;
+  faites: number;
+  aRemplir: number;
+  tenuesAilleurs: number;
+  nonOutillees: number;
+};
+
 export type RegistreData = {
   entreprise: string;
   etablissement: string;
   adresse: string;
   genereLe: Date;
+  /** Les fiches dues, dans l'ordre du document. */
+  parties: PartiePdf[];
+  bilan: BilanPdf;
   rapports: LigneRapport[];
   verifsEnAttente: LigneVerif[];
 };
@@ -47,6 +91,114 @@ const LIBELLE_STATUT_VERIF: Record<StatutVerification, string> = {
   realisee_observations: "Observations",
   realisee_ecart_majeur: "Écart majeur",
 };
+
+
+/** Une fiche imprimée : son titre, son état, puis ce qu'elle porte. */
+function FichePdfVue({ fiche }: { fiche: FichePdf }) {
+  return (
+    <View style={{ marginTop: 12 }} wrap={false}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          borderBottomWidth: 0.5,
+          borderBottomColor: "#333",
+          paddingBottom: 3,
+        }}
+      >
+        <Text style={{ fontFamily: "Helvetica-Bold", fontSize: 10.5 }}>
+          {fiche.titre}
+        </Text>
+        <Text style={s.small}>{fiche.etat}</Text>
+      </View>
+
+      <Text style={[s.small, { marginTop: 3 }]}>{fiche.attendu}</Text>
+
+      {/* Forme « établissement » ou « formulaire ». */}
+      {fiche.champs && (
+        <View style={{ marginTop: 5 }}>
+          {fiche.champs.map((c) => (
+            <View
+              key={c.libelle}
+              style={{ flexDirection: "row", marginBottom: 2 }}
+            >
+              <Text style={[s.td, { width: "42%", color: "#555" }]}>
+                {c.libelle}
+              </Text>
+              <Text style={[s.td, { width: "58%" }]}>{c.valeur}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Forme « journal ». Les colonnes s'impriment même sans ligne : une
+          fiche vide doit montrer ce qu'on attendait d'elle. */}
+      {fiche.colonnes && (
+        <View style={{ marginTop: 5 }}>
+          <View style={s.thead}>
+            {fiche.colonnes.map((c) => (
+              <Text
+                key={c}
+                style={[s.th, { width: `${100 / fiche.colonnes!.length}%` }]}
+              >
+                {c}
+              </Text>
+            ))}
+          </View>
+          {(fiche.lignes ?? []).length === 0 ? (
+            <Text style={[s.small, { marginTop: 3 }]}>
+              Aucune ligne consignée à ce jour.
+            </Text>
+          ) : (
+            fiche.lignes!.map((ligne, i) => (
+              <View key={i} style={s.row}>
+                {ligne.map((v, j) => (
+                  <Text
+                    key={j}
+                    style={[s.td, { width: `${100 / ligne.length}%` }]}
+                  >
+                    {v}
+                  </Text>
+                ))}
+              </View>
+            ))
+          )}
+        </View>
+      )}
+
+      {/* Fiche tenue par un autre écran : son contenu s'imprime ici, parce
+          que c'est ici qu'il est présenté. */}
+      {fiche.tenues && (
+        <View style={{ marginTop: 5 }}>
+          {fiche.tenues.length === 0 ? (
+            <Text style={s.small}>
+              Rien de déclaré à ce jour dans {fiche.source}.
+            </Text>
+          ) : (
+            fiche.tenues.map((t, i) => (
+              <View key={i} style={[s.row, { paddingVertical: 2 }]}>
+                <Text style={[s.td, { width: "50%" }]}>{t.titre}</Text>
+                <Text style={[s.td, { width: "50%", color: "#555" }]}>
+                  {t.meta}
+                </Text>
+              </View>
+            ))
+          )}
+        </View>
+      )}
+
+      {/* Rien ne la recueille : le dire, plutôt que d'imprimer un blanc. */}
+      {!fiche.champs && !fiche.colonnes && !fiche.tenues && (
+        <Text style={[s.small, { marginTop: 4 }]}>
+          Cette fiche est due mais n&apos;est pas tenue dans l&apos;application.
+          Elle est conservée hors de l&apos;outil et se présente avec le
+          présent registre.
+        </Text>
+      )}
+    </View>
+  );
+}
 
 export function RegistreDocument({ data }: { data: RegistreData }) {
   return (
@@ -63,7 +215,40 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
           </Text>
         </View>
 
-        <Text style={s.h2}>Rapports de vérification archivés</Text>
+        {/* L'état du registre, avant son contenu. C'est la première question
+            de qui l'ouvre : qu'est-ce qui manquerait aujourd'hui. */}
+        <View style={s.mentionsLegalesBloc}>
+          <Text style={{ fontFamily: "Helvetica-Bold", marginBottom: 4 }}>
+            Composition de ce registre
+          </Text>
+          <Text>
+            {data.bilan.dues} fiches sont dues pour cet établissement, compte
+            tenu de son régime et des équipements déclarés :{" "}
+            {data.bilan.faites} renseignées, {data.bilan.tenuesAilleurs} tenues
+            depuis le parc d&apos;équipements ou le calendrier,{" "}
+            {data.bilan.aRemplir} restant à remplir, et{" "}
+            {data.bilan.nonOutillees} conservées hors de l&apos;application.
+          </Text>
+          <Text style={{ marginTop: 4 }}>
+            Ce décompte dit ce que l&apos;application recueille, et rien
+            d&apos;autre. Il ne vaut pas attestation de conformité.
+          </Text>
+        </View>
+
+        {data.parties.map((partie) => (
+          <View key={partie.id} style={{ marginTop: 16 }}>
+            <Text style={s.h2}>
+              {partie.id} — {partie.titre}
+            </Text>
+            {partie.fiches.map((fiche) => (
+              <FichePdfVue key={fiche.id} fiche={fiche} />
+            ))}
+          </View>
+        ))}
+
+        <Text style={[s.h2, { marginTop: 18 }]}>
+          Index des rapports de vérification archivés
+        </Text>
         {data.rapports.length === 0 ? (
           <Text style={s.small}>
             Aucun rapport archivé. Le registre reste ouvert à disposition de
@@ -148,9 +333,10 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
             Tenue du registre (L. 4711-5 CT · R. 143-44 CCH · R. 146-35 CCH)
           </Text>
           <Text>
-            Ce registre centralise les rapports de vérification réglementaire
-            à tenir à disposition de l&apos;inspection du travail et de la
-            commission de sécurité. Les fichiers originaux sont conservés et
+            Ce registre réunit les fiches dues à cet établissement, leur
+            contenu et les rapports de vérification archivés, à tenir à
+            disposition de l&apos;inspection du travail et de la commission de
+            sécurité. Les fichiers originaux des rapports sont conservés et
             téléchargeables depuis l&apos;application.
           </Text>
         </View>
