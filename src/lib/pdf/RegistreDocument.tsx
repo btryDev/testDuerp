@@ -4,7 +4,6 @@ import { LABEL_DOMAINE } from "@/lib/calendrier/labels";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 import type { ResultatVerification, StatutVerification } from "@prisma/client";
 import {
-  COULEURS,
   BOARD,
   formatDateCourte,
   formatDateLongue,
@@ -225,7 +224,7 @@ const sr = StyleSheet.create({
   fichePied: {
     marginTop: 5,
     fontSize: 7.5,
-    color: COULEURS.texteSecondaire,
+    color: BOARD.ardoiseMoyenne,
     textAlign: "right",
   },
   cle: { fontSize: 9, color: BOARD.ardoiseMoyenne, width: "42%" },

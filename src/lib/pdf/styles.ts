@@ -38,32 +38,24 @@ export const BOARD = {
   /** États — mêmes champs et mêmes encres que `CHAMP_ETAT` / `ENCRE_ETAT`. */
   vert: "#bdfdb5",
   vertEncre: "#216037",
+  ambreEncre: "#754d0a",
+  signalEncre: "#8a2a23",
 } as const;
 
-export const COULEURS = {
-  ink: "#111",
-  texteSecondaire: "#555",
-  filet: "#ccc",
-  filetFort: "#333",
-  fondBadge: "#eee",
-  rose: "#b91c1c",
-  ambre: "#b45309",
-  vert: "#047857",
-} as const;
 
 export const stylesCommuns = StyleSheet.create({
   page: {
     padding: 40,
     fontSize: 10,
     fontFamily: "Helvetica",
-    color: COULEURS.ink,
+    color: BOARD.encre,
     lineHeight: 1.4,
   },
   pageGarde: {
     padding: 60,
     fontSize: 11,
     fontFamily: "Helvetica",
-    color: COULEURS.ink,
+    color: BOARD.encre,
   },
   h1: {
     fontSize: 20,
@@ -82,23 +74,23 @@ export const stylesCommuns = StyleSheet.create({
     marginTop: 10,
     marginBottom: 4,
   },
-  small: { fontSize: 8, color: COULEURS.texteSecondaire },
+  small: { fontSize: 8, color: BOARD.ardoiseMoyenne },
   metaLigne: {
     fontSize: 9,
-    color: COULEURS.texteSecondaire,
+    color: BOARD.ardoiseMoyenne,
     marginBottom: 2,
   },
   thead: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: COULEURS.filetFort,
+    borderBottomColor: BOARD.ardoiseDouce,
     paddingVertical: 4,
     marginTop: 6,
   },
   row: {
     flexDirection: "row",
     borderBottomWidth: 0.5,
-    borderBottomColor: COULEURS.filet,
+    borderBottomColor: BOARD.ardoiseFilet,
     paddingVertical: 4,
   },
   th: { fontFamily: "Helvetica-Bold", fontSize: 9 },
@@ -109,8 +101,8 @@ export const stylesCommuns = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 2,
     borderRadius: 3,
-    color: COULEURS.ink,
-    backgroundColor: COULEURS.fondBadge,
+    color: BOARD.encre,
+    backgroundColor: BOARD.ardoisePale,
   },
   footer: {
     position: "absolute",
@@ -121,14 +113,14 @@ export const stylesCommuns = StyleSheet.create({
     color: "#777",
     textAlign: "center",
     borderTopWidth: 0.5,
-    borderTopColor: COULEURS.filet,
+    borderTopColor: BOARD.ardoiseFilet,
     paddingTop: 6,
   },
   mentionsLegalesBloc: {
     marginTop: 16,
     padding: 10,
     borderWidth: 0.5,
-    borderColor: COULEURS.filet,
+    borderColor: BOARD.ardoiseFilet,
     backgroundColor: "#fafafa",
     fontSize: 8.5,
     lineHeight: 1.5,

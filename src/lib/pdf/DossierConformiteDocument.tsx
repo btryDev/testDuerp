@@ -5,7 +5,7 @@ import { LABEL_STATUT_ACTION, LABEL_TYPE_ACTION } from "@/lib/actions/labels";
 import { LABEL_RESULTAT } from "@/lib/rapports/schema";
 import { LABEL_DOMAINE } from "@/lib/calendrier/labels";
 import {
-  COULEURS,
+  BOARD,
   formatDateCourte,
   formatDateLongue,
   stylesCommuns as s,
@@ -48,10 +48,10 @@ export type DossierData = {
 function ScoreLigne({ score }: { score: Score }) {
   const couleur =
     score.niveau === "satisfaisante"
-      ? COULEURS.vert
+      ? BOARD.vertEncre
       : score.niveau === "a_surveiller"
-        ? COULEURS.ambre
-        : COULEURS.rose;
+        ? BOARD.ambreEncre
+        : BOARD.signalEncre;
   return (
     <View
       style={{
@@ -81,7 +81,7 @@ export function DossierConformiteDocument({ data }: { data: DossierData }) {
       {/* Page de garde */}
       <Page size="A4" style={s.pageGarde}>
         <View>
-          <Text style={{ fontSize: 10, color: COULEURS.texteSecondaire }}>
+          <Text style={{ fontSize: 10, color: BOARD.ardoiseMoyenne }}>
             Dossier de conformité santé-sécurité
           </Text>
           <Text
@@ -96,7 +96,7 @@ export function DossierConformiteDocument({ data }: { data: DossierData }) {
           <Text
             style={{
               fontSize: 12,
-              color: COULEURS.texteSecondaire,
+              color: BOARD.ardoiseMoyenne,
               marginTop: 6,
             }}
           >
@@ -128,7 +128,7 @@ export function DossierConformiteDocument({ data }: { data: DossierData }) {
         </View>
 
         <View style={{ position: "absolute", bottom: 60, left: 60, right: 60 }}>
-          <Text style={{ fontSize: 9, color: COULEURS.texteSecondaire }}>
+          <Text style={{ fontSize: 9, color: BOARD.ardoiseMoyenne }}>
             Ce dossier synthétise l&apos;état des obligations santé-sécurité à
             la date d&apos;édition. Les rapports de vérification, le DUERP
             versionné et le plan d&apos;actions sont consultables
@@ -207,7 +207,7 @@ export function DossierConformiteDocument({ data }: { data: DossierData }) {
                   fontSize: 16,
                   fontFamily: "Helvetica-Bold",
                   color:
-                    data.compteurs.actionsEnRetard > 0 ? COULEURS.rose : undefined,
+                    data.compteurs.actionsEnRetard > 0 ? BOARD.signalEncre : undefined,
                 }}
               >
                 {data.compteurs.actionsEnRetard}

@@ -2,7 +2,7 @@ import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { LABEL_STATUT_ACTION, LABEL_TYPE_ACTION } from "@/lib/actions/labels";
 import type { OrigineAction } from "@/lib/actions/queries";
 import {
-  COULEURS,
+  BOARD,
   formatDateCourte,
   formatDateLongue,
   stylesCommuns as s,
@@ -37,9 +37,9 @@ export type PlanActionsData = {
 };
 
 const COULEUR_STATUT: Record<StatutAction, string> = {
-  ouverte: COULEURS.ambre,
+  ouverte: BOARD.ambreEncre,
   en_cours: "#1e3a8a",
-  levee: COULEURS.vert,
+  levee: BOARD.vertEncre,
   abandonnee: "#6b7280",
 };
 
