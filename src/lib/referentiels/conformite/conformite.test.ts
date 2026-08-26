@@ -479,11 +479,6 @@ describe("référentiel conformité — non-régression des obligations critique
     const annuelle = obligationParId("levage-vgp-annuelle-charges");
     const semestrielle = obligationParId(
       "levage-vgp-semestrielle-chariot-gerbeur",
-      // Obligation neuve créée le 2026-08-26 (art. 23 b) : personne ne peut la
-      // perdre, et `levage-vgp-semestrielle-personnes` couvre l'appareil tant
-      // que la question sur la force humaine n'a pas reçu « oui » — elle porte
-      // pour cela une condition `infirmee` sur la même propriété.
-      "levage-vgp-trimestrielle-force-humaine",
     );
     expect(annuelle?.conditions).toEqual([
       {
