@@ -227,6 +227,11 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     expect(refs).toEqual([
       "PE 4",
       "PE 27",
+      // PE 37 : SEUL article du Livre III fixant une périodicité de visite de
+      // commission — cinq ans. Ajouté le 2026-08-26 en rectification d'une
+      // affirmation contraire portée le matin même. Fondé, mais sans attribut
+      // « locaux à sommeil » pour le déclencher sans sur-appliquer.
+      "PE 37",
       "PO 1 § 3 — contrôle biennal des installations techniques",
       "PO 7",
       "R. 4544-11-1",

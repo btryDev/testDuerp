@@ -396,15 +396,15 @@ export const CORPUS_PE: Corpus = {
   },
   {
     ref: "PE 37",
-    intitule: "Contrôle des établissements de 5e catégorie comportant des locaux à sommeil",
+    intitule:
+      "Contrôle des établissements de 5ᵉ catégorie comportant des locaux à sommeil",
     versionEnVigueur: "2004-11-24",
     luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "non_couvert",
+    lecture: "premiere_main",
+    statut: "obligation_manquante",
     motif:
-      "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
-    declareA:
-      "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
+      "« Ces établissements doivent être visités tous les cinq ans par la commission de sécurité compétente ; la fréquence de ces visites peut être augmentée, s\'il est jugé nécessaire, par arrêté du maire ou du préfet, après avis de la commission. » C\'est le SEUL article du Livre III qui fixe une périodicité de visite de commission, et il infirme l\'affirmation contraire portée quelques heures plus tôt sur `incendie-erp-5-visite-commission`. Il ne vise cependant que les établissements comportant, pour le public, des locaux à sommeil — distinction qu\'aucun attribut d\'établissement ne porte aujourd\'hui : ni colonne en base, ni question d\'onboarding. Poser la quinquennale sur tous les ERP de 5ᵉ catégorie sur-appliquerait à la boutique et au bureau. L\'obligation existe donc, elle est fondée, et il manque l\'attribut qui la déclencherait.",
+    bloquePar: "attribut-locaux-a-sommeil",
   },
   {
     ref: "PO 1",
