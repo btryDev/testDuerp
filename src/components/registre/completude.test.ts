@@ -47,7 +47,7 @@ describe("completudeDeLaFiche", () => {
     const c = completudeDeLaFiche(undefined, null);
     expect(c.outillee).toBe(false);
     expect(tonCompletude(c)).toBe("muet");
-    expect(libelleCompletude(c)).toBe("Pas encore outillée");
+    expect(libelleCompletude(c)).toBe("À tenir hors de l'outil");
   });
 
   it("compte les réponses non vides, pas les champs remplis d'espaces", () => {

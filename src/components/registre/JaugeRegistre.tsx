@@ -106,7 +106,7 @@ export function JaugeRegistre({ bilan }: { bilan: BilanRegistre }) {
       <div
         className="mt-5 flex h-2 w-full overflow-hidden rounded-full bg-[color:var(--board-slate-pale)]"
         role="img"
-        aria-label={`${faites} fiches renseignées ici, ${tenuesAilleurs} tenues sur un autre écran, ${aRemplir} à remplir, ${nonOutillees} pas encore outillées, sur ${dues} fiches dues.`}
+        aria-label={`${faites} fiches renseignées ici, ${tenuesAilleurs} tenues sur un autre écran, ${aRemplir} à remplir, ${nonOutillees} à tenir hors de l'outil, sur ${dues} fiches dues.`}
       >
         <Part valeur={faites} total={dues} fond="var(--board-green)" />
         <Part
@@ -153,10 +153,10 @@ export function JaugeRegistre({ bilan }: { bilan: BilanRegistre }) {
           nombre={nonOutillees}
           libelle={
             nonOutillees > 1
-              ? "fiches pas encore outillées"
-              : "fiche pas encore outillée"
+              ? "fiches à tenir hors de l'outil"
+              : "fiche à tenir hors de l'outil"
           }
-          precision="Dues, mais l'outil ne sait pas encore les recueillir : tenez-les à part."
+          precision="Dues aussi, mais l'application ne sait pas encore les recueillir : conservez-les de votre côté et présentez-les avec le reste."
         />
       </div>
 

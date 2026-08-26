@@ -136,7 +136,11 @@ export function tonCompletude(c: Completude): TonCompletude {
 
 /** La phrase courte que porte la pastille d'une fiche. */
 export function libelleCompletude(c: Completude): string {
-  if (!c.outillee) return "Pas encore outillée";
+  // « Pas encore outillée » décrivait l'application, pas ce que le lecteur a
+  // à faire — et il fallait demander ce que ça voulait dire. Un état se
+  // nomme par le geste qu'il appelle : cette fiche-là, il faut la tenir
+  // soi-même, sur le support qu'on veut, et la présenter avec le reste.
+  if (!c.outillee) return "À tenir hors de l'outil";
   if (c.alimentee) {
     const { nombre, unite, libelle } = c.alimentee;
     if (nombre === undefined || !unite) return `Tenue dans ${libelle}`;
@@ -148,7 +152,7 @@ export function libelleCompletude(c: Completude): string {
     return c.lignes === 1 ? "1 ligne consignée" : `${c.lignes} lignes consignées`;
   }
   const repondables = c.questions - c.sansEmplacement;
-  if (repondables === 0) return "Pas encore outillée";
+  if (repondables === 0) return "À tenir hors de l'outil";
   if (c.repondues === 0) return `Aucune réponse sur ${repondables}`;
   if (c.repondues >= repondables) return "Toutes les réponses";
   const s = c.repondues > 1 ? "s" : "";
