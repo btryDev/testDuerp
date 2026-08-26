@@ -1,0 +1,432 @@
+# Carto — obligations hors équipement
+
+**Statut : document de travail. Aucune ligne n'entre dans le référentiel en l'état.**
+
+Ce tableau recense les obligations du périmètre produit qui **ne naissent pas d'un
+équipement déclaré**, et que le modèle actuel ne peut donc pas représenter
+(`Obligation.categoriesEquipement` est obligatoire et non vide —
+`src/lib/referentiels/conformite/types.ts:168`).
+
+Il sert de spec d'entrée pour deux travaux distincts :
+1. l'ADR sur le porteur d'échéance (cf. « Ce que la carto implique » en fin de document) ;
+2. la rédaction des entrées TS du référentiel, une fois le modèle capable de les porter.
+
+## ⚠️ Les références ci-dessous sont présumées
+
+Elles sont issues d'une revue documentaire, **pas d'une lecture de Légifrance**.
+Aucune ne doit être recopiée telle quelle dans une entrée `Obligation` : chacune
+doit être relevée sur le texte en vigueur, verbatim, avant encodage — et la
+version constatée tracée (cf. `ReferenceLegale.versionConstatee`, branche
+`chore/veille-reglementaire`). Plusieurs sont probablement périmées ou mal
+numérotées : le décret n° 2025-1100 a réécrit une partie du CCH au 1er juillet 2026.
+
+## ⚠️ Conflit avec le périmètre déclaré
+
+`.claude/CLAUDE.md` liste aujourd'hui en **hors périmètre** : « suivi nominatif
+formations/habilitations », visites médicales, registre unique du personnel, registre des
+AT bénins, dangers graves et imminents, EPI — ainsi qu'ATEX et rayonnements ionisants.
+
+La quasi-totalité de ce document porte donc sur des sujets **déclarés hors périmètre**.
+Ce n'est pas une extension technique, c'est un changement de périmètre produit. Il doit
+être décidé comme tel, et `CLAUDE.md` mis à jour **avant** toute implémentation — sinon
+le document et le code se contredisent.
+
+Les lignes marquées ⛔ restent hors périmètre même après ce changement (ATEX,
+rayonnements) : elles relèvent de secteurs industriels hors cible.
+
+## Périmètre retenu
+
+**Dedans** — Code du travail, CCH, et Code de l'environnement quand il porte sur la
+sécurité du bâtiment ou des personnes.
+
+**Dehors** — affichages commerciaux (prix, allergènes, origine des viandes, licence),
+HACCP / PMS / agrément sanitaire, débit de boissons, métrologie, SACEM,
+RH non-SST (DPAE, registre du personnel, BDESE, égapro, DOETH), décret tertiaire /
+OPERAT, vidéosurveillance, assurances.
+
+**À trancher** — ICPE (dedans à mon sens : sécurité d'installation, et
+`CODE_ENVIRONNEMENT` est déjà dans `SOURCES_LEGALES`) ; déchets (dehors selon le
+même critère).
+
+## Légende
+
+| Colonne | Valeurs |
+|---|---|
+| **Porteur** | `ÉTS` établissement · `BÂT` bâtiment · `SAL` salarié · `ÉQU` équipement |
+| **Nature** | `RÉC` échéance récurrente · `PERM` état permanent à constituer puis maintenir · `PONC` ponctuelle (embauche, affectation) · `ÉVÈN` événementielle |
+| **Statut** | ❌ absent · ⚠️ existe mais mal ancré (faux négatif possible) · 🚫 **inencodable** en l'état du modèle · ⛔ hors périmètre déclaré · ✅ couvert |
+
+---
+
+## A. Déclencheur : statut d'employeur
+
+S'applique dès qu'il y a au moins un salarié, quels que soient le NAF, l'effectif et les équipements.
+
+| # | Obligation | Porteur | Nature | Référence présumée | Statut |
+|---|---|---|---|---|---|
+| A1 | DUERP établi et mis à jour (≥ 1×/an, et à chaque modification importante) | ÉTS | RÉC | CT L.4121-3, R.4121-1/2 | ✅ c'est le produit |
+| A2 | Modalités d'accès au DUERP portées à connaissance | ÉTS | PERM | CT R.4121-4 | ❌ |
+| A3 | Conservation des versions successives du DUERP (40 ans) | ÉTS | PERM | CT L.4121-3-1 | ✅ `DuerpVersion` |
+| A4 | Liste d'actions de prévention (< 50) ou PAPRIPACT (≥ 50) | ÉTS | RÉC | CT L.4121-3-1 | ⚠️ actions existent, pas le livrable annuel |
+| A5 | **Formation à la sécurité à l'embauche** (générale) | SAL | PONC | CT L.4141-2, R.4141-1 et s. | ❌ |
+| A6 | Salarié désigné compétent en protection/prévention | SAL | PERM | CT L.4644-1 | ❌ |
+| A7 | Adhésion à un SPST | ÉTS | PERM | CT L.4622-1 | ❌ |
+| A8 | Fiche d'entreprise établie par le SPST | ÉTS | PERM | CT R.4624-46 | ❌ |
+| A9 | **VIP à l'embauche** + périodicité (≤ 5 ans) | SAL | RÉC | CT R.4624-10 et s. | ❌ |
+| A10 | **SIR** — suivi individuel renforcé, postes à risques (≤ 4 ans + visite intermédiaire) | SAL | RÉC | CT R.4624-22 et s. | ❌ |
+| A11 | Matériel de premiers secours + personnel formé au secourisme (**SST**) | ÉTS + SAL | PERM + RÉC | CT R.4224-14 à R.4224-16 | ❌ |
+| A12 | Consignes de premiers secours affichées | ÉTS | PERM | CT R.4224-16 | ❌ |
+| A13 | Consignes de sécurité incendie établies et affichées | ÉTS | PERM | CT R.4227-37 et s. | ⚠️ `incendie-consigne-securite`, ancrée équipement |
+| A14 | Affichages SST : inspection du travail, médecine du travail, secours | ÉTS | PERM | CT D.4711-1 | ❌ |
+| A15 | Registre unique de sécurité (regroupement des registres) | ÉTS | PERM | CT D.4711-1 à D.4711-3 | ⚠️ partiel |
+| A16 | Registre des accidents bénins | ÉTS | PERM | CSS L.441-4, D.441-1 | ❌ — listé hors périmètre dans CLAUDE.md |
+| A17 | Déclaration d'accident du travail (48 h) | ÉTS | ÉVÈN | CSS L.441-2 | ❌ — listé hors périmètre dans CLAUDE.md |
+| A18 | Vestiaires, sanitaires, lavabos conformes | ÉTS | PERM | CT R.4228-1 et s. | ❌ |
+| A19 | Eau potable à disposition | ÉTS | PERM | CT R.4225-2/3 | ❌ |
+| A20 | FDS accessibles + notice de poste (agents chimiques) | ÉTS | PERM | CT R.4412-38 et s. | ❌ |
+
+## B. Déclencheur : effectif
+
+| # | Obligation | Porteur | Nature | Référence présumée | Statut |
+|---|---|---|---|---|---|
+| B1 | Mise en place du CSE (≥ 11 sur 12 mois consécutifs) | ÉTS | ÉVÈN | CT L.2311-2 | ❌ |
+| B2 | **Formation santé-sécurité des membres du CSE** | SAL | RÉC | CT L.2315-18 | ❌ |
+| B3 | CSSCT obligatoire (≥ 300) | ÉTS | ÉVÈN | CT L.2315-36 | ❌ (hors cible V2 ?) |
+| B4 | Local de restauration (≥ 50) / emplacement de restauration (< 50) | ÉTS | PERM | CT R.4228-22/23 | ❌ |
+| B5 | Règlement intérieur — volet hygiène et sécurité (≥ 50) | ÉTS | PERM | CT L.1311-2 | ❌ |
+| B6 | PAPRIPACT (≥ 50) | ÉTS | RÉC | CT L.4121-3-1 | ❌ (cf. A4) |
+
+## C. Déclencheur : typologie du bâtiment (ERP / IGH)
+
+| # | Obligation | Porteur | Nature | Référence présumée | Statut |
+|---|---|---|---|---|---|
+| C1 | **Registre de sécurité ERP** | ÉTS | PERM | CCH R.143-44 (réécrit au 01/07/2026) | ⚠️ **faux négatif documenté** — ancré `EXTINCTEUR`/`ALARME_INCENDIE` |
+| C2 | Visites périodiques de la commission de sécurité | ÉTS | RÉC | CCH R.143-34 et s. | ❌ |
+| C3 | Registre public d'accessibilité | ÉTS | PERM | Décret 2017-431 | ✅ `RegistreAccessibilite` |
+| C4 | **Exercices d'évacuation** (semestriels) | ÉTS | RÉC | CT R.4227-39 (seuil de personnes) + arrêté 25/06/1980 | ⚠️ **faux négatif documenté** — ancré `ALARME_INCENDIE` |
+| C5 | Service de sécurité incendie / **SSIAP** selon type et catégorie | SAL | RÉC | Arrêté 25/06/1980, MS 46 et s. | ❌ |
+| C6 | **Guide-file / serre-file** | SAL | RÉC | (AOCR — base à vérifier) | ❌ |
+| C7 | Plan d'évacuation affiché | ÉTS | PERM | CT R.4227-37 | ❌ |
+| C7b | Instruction du personnel (ERP 5ᵉ catégorie), sans périodicité écrite | SAL | PERM | Arrêté 25/06/1980, **PE 27** — relevé par l'audit | ❌ |
+| C8 | **Entretien et vérification triennaux de l'ensemble des installations et équipements techniques de l'établissement** | ÉTS | RÉC (3 ans) | Arrêté 25/06/1980, **PE 4 § 2** — en vigueur au 01/07/2026, verbatim relevé par l'audit `chore/veille-reglementaire` | 🚫 |
+| C9 | Contrat annuel d'entretien du système de détection incendie — **locaux à sommeil uniquement** | ÉTS | RÉC (1 an) | Arrêté 25/06/1980, **PE 4 § 1** — même relevé | 🚫 |
+| C10 | Contrôle biennal de l'ensemble des installations techniques (hôtellerie), **hors installations électriques et SDI — annuels** et hors ascenseurs (AS 9) | ÉTS | RÉC (2 ans + retraits) | Arrêté 25/06/1980, **PO 1 § 3** — verbatim relevé par l'audit `chore/veille-reglementaire` | 🚫 |
+
+## D. Déclencheur : caractéristiques du bâtiment
+
+| # | Obligation | Porteur | Nature | Référence présumée | Statut |
+|---|---|---|---|---|---|
+| D1 | **DTA** — permis de construire antérieur au 01/07/1997 | **BÂT** | PERM | CSP R.1334-29-5 | ❌ **universel, gros trou** |
+| D2 | Fiche récapitulative du DTA communiquée aux occupants | **BÂT** | PERM | CSP R.1334-29-5 | ❌ |
+| D3 | Repérage amiante avant travaux | ÉTS | ÉVÈN | CT R.4412-97 | ❌ |
+| D4 | Mesurage radon (ERP en zone à potentiel 3) | ÉTS | RÉC (10 ans) | CSP R.1333-33 et s. | ❌ |
+| D5 | Surveillance de la qualité de l'air intérieur (certains ERP) | ÉTS | RÉC (7 ans) | CE R.221-30 et s. | ❌ |
+| D6 | **DMLT** — dossier de maintenance des lieux de travail | ÉTS | PERM | CT R.4211-3 | ❌ |
+| D7 | **DIUO** | ÉTS | PERM | CT R.4532-95 et s. | ❌ |
+| D8 | CREP plomb (immeubles antérieurs à 1949) | ÉTS | PERM | CSP L.1334-8 | ❌ (surtout habitation — à trancher) |
+
+## E. Déclencheur : activité réellement exercée
+
+C'est la couche qui manquait à l'analyse initiale : ni statut, ni équipement, ni effectif — **un fait de tâche**.
+
+| # | Obligation | Porteur | Nature | Référence présumée | Statut |
+|---|---|---|---|---|---|
+| E1 | **Habilitation électrique** — salarié opérant sur ou près d'installations élec | SAL | pas de périodicité légale | CT R.4544-9 à R.4544-11 | ⚠️ ancrée `INSTALLATION_ELECTRIQUE` ; le « 3 ans » encodé est une convention INRS, **sans fondement dans le Code du travail** (relecture f6) |
+| E1b | **Attestation médicale d'absence de contre-indication** conditionnant l'habilitation au voisinage de pièces nues sous tension — l'employeur en conserve copie pendant sa validité | SAL | RÉC (5 ans) | CT **R.4544-11-1**, créé le 01/10/2025 par le décret n° 2025-355 — relevé par l'audit `chore/veille-reglementaire` | 🚫 nominatif **et** médical — en vigueur depuis 11 mois, jamais porté |
+| E2 | **Autorisation de conduite** (équipements mobiles automoteurs, levage) | SAL | RÉC | CT R.4323-56 | ❌ |
+| E3 | Formation à la conduite / CACES | SAL | RÉC | CT R.4323-55 | ❌ |
+| E4 | Travail en hauteur, utilisation d'EPI antichute | SAL | RÉC | CT R.4323-104 et s. | ❌ |
+| E5 | Formation à la manutention manuelle (gestes et postures) | SAL | RÉC | CT R.4541-8 | ❌ |
+| E6 | Formation « travail sur écran » | SAL | PONC | CT R.4542-16 | ❌ (pertinent tertiaire) |
+| E7 | Agents chimiques dangereux / CMR — formation, notice de poste | SAL | RÉC | CT R.4412-38, R.4412-87 | ⚠️ 1 entrée, ancrée équipement |
+| E8 | Amiante sous-section 4 | SAL | RÉC (3 ans) | CT R.4412-117 et s. | ❌ |
+| E9 | Bruit — évaluation, EPI, examen audiométrique | SAL + ÉTS | RÉC | CT R.4431-1 et s. | ❌ (AOCR : 3 lignes) |
+| E10 | ATEX — formation + DRPCE | SAL + ÉTS | PERM + RÉC | CT R.4227-49 et s. | ⛔ hors périmètre (CLAUDE.md) |
+| E11 | Jeunes travailleurs — dérogation aux travaux réglementés | ÉTS | PERM | CT R.4153-38 et s. | ❌ |
+| E12 | Femmes enceintes — postes à risques | ÉTS | PERM | CT D.4152-x | ❌ |
+| E13 | Rayonnements ionisants — PCR, zonage, dosimétrie | SAL + ÉTS | RÉC | CT R.4451-x | ⛔ hors périmètre (CLAUDE.md) |
+| E14 | **Protocole de sécurité chargement/déchargement** | ÉTS | PERM | Arrêté du 26/04/1996 | ❌ **universel dès qu'un camion livre** |
+| E15 | Plan de prévention (entreprise extérieure) | ÉTS | ÉVÈN | CT R.4512-6 et s. | ✅ `PlanPrevention` |
+| E16 | Permis de feu | ÉTS | ÉVÈN | Arrêté 19/03/1993 | ✅ `PermisFeu` |
+| E17 | Coordination SPS | ÉTS | ÉVÈN | CT L.4532-2 | ❌ |
+| E18 | ICPE — déclaration / enregistrement / autorisation + contrôles | ÉTS | PERM + RÉC | CE L.512-x | ❌ (AOCR : 13 lignes) — **périmètre à trancher** |
+
+---
+
+## Ce que la carto donne comme chiffres
+
+| | Nombre |
+|---|---|
+| Lignes recensées hors équipement | **62** |
+| ✅ couvertes | 5 |
+| ⚠️ existantes mais mal ancrées (faux négatifs possibles) | 6 |
+| 🚫 inencodables en l'état du modèle | 3 |
+| ❌ absentes | 48 |
+| dont **formations réglementaires** | 13 |
+
+Pour mémoire, côté équipement : **78 obligations encodées** sur ~481 lignes AOCR.
+
+## Ce que la carto implique pour le modèle
+
+1. **Cinq déclencheurs**, pas un : statut d'employeur, effectif, typologie du bâtiment,
+   caractéristiques du bâtiment, activité exercée — plus l'équipement, déjà couvert.
+2. **Trois porteurs** : établissement, salarié (ou poste), équipement. Aujourd'hui
+   `Verification.equipementId` n'est pas nullable (`prisma/schema.prisma:382`) — c'est
+   le vrai blocage, pas le type.
+3. **Quatre natures temporelles**, dont deux que `Periodicite` ne sait pas dire :
+   `PERM` (un DTA ne se re-vérifie pas, il existe ou non) et `ÉVÈN`. Les forcer en
+   `periodicite: "autre"` serait une rustine.
+4. **13 formations réglementaires** ne peuvent aujourd'hui exister que comme
+   `TypeAction: formation`, donc dans le cycle de vie d'une mesure du DU — cotables,
+   dépriorisables, marquables `abandonnee`. Une habilitation électrique ne s'abandonne pas.
+5. **Une obligation en vigueur est aujourd'hui inencodable** (C8, PE 4 § 2). C'est
+   l'argument le plus solide pour l'ADR : il ne s'agit pas d'un besoin nouveau qu'on
+   voudrait ajouter, mais d'une obligation existante, universelle chez les utilisateurs
+   du périmètre (PE 2 § 3 maintient PE 4 pour les établissements de moins de 20 personnes),
+   que le modèle empêche d'écrire. Son porteur est l'établissement pris comme un tout, et
+   sa liste d'installations est hétérogène et ouverte (« etc. ») : l'encoder en
+   `categoriesEquipement` obligerait à énumérer ce que le texte n'énumère pas.
+
+## Attribut d'établissement manquant : « locaux à sommeil »
+
+Signalé par l'audit `chore/veille-reglementaire` : **PE 4 § 1, PE 28, PE 32 et PE 37**
+conditionnent leur application à la présence de locaux à sommeil. Ce n'est pas une
+propriété d'équipement, et elle n'existe pas en base — aucun champ dans
+`prisma/schema.prisma` (vérifié : la notion n'apparaît que dans des commentaires de
+`src/lib/onboarding/deduction-erp.test.ts`).
+
+Nuance à instruire avant d'ajouter un champ : l'attribut est **partiellement dérivable**
+de `typeErp`, qui existe déjà — les types O, R avec internat, U et J comportent des
+locaux à sommeil par nature. Mais la dérivation n'est pas totale (un type N ou M peut en
+comporter, un type R sans internat n'en a pas), et `typeErp` est nullable (ADR-004).
+**Tranché** : champ déclaré, pas dérivé — cf. « Décisions tranchées », point 3.
+
+## Ce que les catégories ne couvrent pas encore
+
+Trois angles morts du découpage lui-même, identifiés après coup.
+
+**L'événement est un déclencheur, pas seulement une nature.** Il était classé en `ÉVÈN`
+parmi les natures temporelles, ce qui est incomplet : un accident du travail *déclenche*
+l'obligation de déclarer sous 48 h, un chantier déclenche un plan de prévention, une
+embauche déclenche formation et visite d'information. Ce sont bien des déclencheurs, et
+ils ne se confondent avec aucun des cinq autres. **Six déclencheurs, donc.**
+
+**Le porteur « bâtiment » manque.** Le modèle `Batiment` existe (`prisma/schema.prisma:288`)
+et le chantier ADR-019 « le bâtiment est un lieu » est en cours sur une autre branche. Un
+DTA se rattache à un bâtiment — c'est l'année de son permis de construire qui déclenche —
+et un établissement peut en occuper plusieurs, d'époques différentes. Porter le DTA sur
+l'établissement serait faux dès le deuxième bâtiment. **Quatre porteurs, donc.**
+
+**Un septième chemin existe déjà, hors référentiel.** La prescription particulière (ADR-014,
+modèle `PrescriptionParticuliere`, enum `SourcePrescription`) : arrêté du maire ou du
+préfet, mise en demeure de l'inspection du travail, PV de commission de sécurité. Ce n'est
+pas une lacune — c'est traité à part, et bien. Mais l'ADR doit le nommer, sinon il laissera
+croire que le référentiel est la seule source d'échéances.
+
+## Passage ciblé : obligations partiellement encodées
+
+Fait le 2026-08-26 sur `main`, après le cas PE 4 § 2. **Question posée** : pour chaque
+obligation dont l'article source est plus large que ce qui est encodé, le reste est-il
+porté ailleurs ou perdu en silence ?
+
+**Méthode** — extraction des 78 obligations avec leurs références, périodicités et
+catégories d'équipement ; regroupement par **article fondateur** (`referencesLegales[0]`,
+convention ADR-003 : « celui qu'on citerait seul devant un inspecteur ») ; signalement des
+articles qui fondent plusieurs obligations, surtout à travers plusieurs domaines.
+
+**Limite majeure, à lire avant les constats** — ce passage teste **un seul mode de
+défaillance** : un article plus large que son encodage, détecté par le partage d'un article
+fondateur. Il ne peut structurellement pas voir une obligation dont l'article unique dit
+autre chose que ce qui est encodé — la classe EL 18 § 4, où des essais quinzomadaires et
+mensuels étaient encodés « annuelle ». Il ne voit pas non plus une obligation absente, un
+seuil faux ou un réalisateur faux. **Un résultat propre ici ne dit rien de l'exactitude du
+contenu.**
+
+### 1. Un article fondateur qui ne fonde rien — `L. 4711-5` ✅ **vérifié**
+
+`elec-travail-consignation-registre` porte `referencesLegales[0] = "L. 4711-5"`, avec
+`R. 4226-19` en second. Or `.claude/CLAUDE.md` écrit noir sur blanc : « **L. 4711-5
+n'institue rien** : il autorise seulement à réunir plusieurs registres en un seul. »
+L'ordre est donc inversé — c'est R. 4226-19 qui fonde la consignation.
+
+**Vérifié en source indépendante** : R. 4226-19 dispose que les résultats des
+vérifications prévues aux articles R. 4226-14 et R. 4226-16 « sont consignés sur un
+registre », auquel sont annexés les rapports des organismes accrédités. C'est bien lui qui
+institue l'obligation. L. 4711-5 ne fait que permettre de réunir plusieurs registres.
+
+Ce n'est pas cosmétique. Le test anti-doublon s'appuie sur cette convention : *deux
+obligations fondées sur le même article, pour la même catégorie et la même périodicité,
+sont un doublon*. Un article fondateur faux fausse le test — exactement le mécanisme qui
+avait masqué le doublon portails.
+
+### 2. Convention appliquée à deux vitesses — `R. 4323-23`
+
+`R. 4323-23` **fonde** `levage-vgp-semestrielle-chariot-gerbeur` mais n'est qu'**appui**
+pour `levage-examen-etat-conservation`, `levage-vgp-accessoires-annuelle` et
+`levage-vgp-semestrielle-personnes`, où l'arrêté du 1ᵉʳ mars 2004 occupe la première place.
+Même rôle juridique, deux traitements. Même effet sur le test anti-doublon.
+
+### 3. Motif PE 4 **possiblement** ailleurs — `GH 5` (IGH)
+
+L'arrêté du 30 décembre 2011, art. GH 5 (« vérifications techniques par organismes
+agréés ») fonde **deux** obligations dans **deux domaines** : `elec-igh-annuelle`
+(`INSTALLATION_ELECTRIQUE`) et `incendie-igh-moyens-secours-annuelle` (`ALARME_INCENDIE`,
+`EXTINCTEUR`, `DESENFUMAGE`). Un article qui impose la vérification d'un ensemble,
+découpé en fragments ancrés équipement : c'est le motif PE 4 à l'identique. L'IGH étant
+hors périmètre produit, la priorité est basse.
+
+**Correction de ma première rédaction** : j'avais écrit « motif confirmé ». C'est faux —
+je n'ai vérifié que la **forme** (un article fondateur, deux domaines, deux ancrages
+équipement), pas que GH 5 couvre davantage que ce qui est encodé. Conclure sans lire
+l'article serait exactement l'erreur reprochée au cas PE 4. C'est un candidat, au même
+titre que R. 4222-20 ci-dessous.
+
+### 4. Candidat à confirmer — `R. 4222-20`
+
+Fonde **trois** obligations dans **deux domaines** : `aeration-travail-mise-en-service` et
+`aeration-travail-entretien-annuel` (`VMC`, `CTA`), plus
+`stockage-dangereux-ventilation-locaux` (`STOCKAGE_MATIERE_DANGEREUSE`). Si l'article
+porte bien le maintien en état et le contrôle régulier de *l'ensemble* des installations
+d'aération, un établissement dont la ventilation n'est déclarée ni VMC, ni CTA, ni local de
+stockage ne reçoit rien. **À vérifier sur Légifrance avant de conclure.**
+
+### 5. Sous-référencement confirmé — froid
+
+Six obligations fondées sur le même « Règlement (UE) 2024/573, art. 5 », avec **six
+périodicités distinctes**, sans désignation de paragraphe ni de seuil. Le test anti-doublon
+ne les attrape pas — les périodicités diffèrent — mais rien ne permet de vérifier laquelle
+est fondée sur quoi. Constat identique à celui de l'audit, atteint indépendamment.
+
+### Ce qui est ressorti propre
+
+- **Aucune catégorie d'équipement orpheline** : les 18 valeurs de `CategorieEquipement` sont couvertes. `AUTRE` est la soupape volontaire documentée dans `src/lib/equipements/hors-referentiel.ts`, pas un trou.
+- **PS 32** (parkings) : deux obligations séparées par le seuil de 250 véhicules, mutuellement exclusives — découpage légitime, pas une décomposition.
+- **BAES** (arrêté du 14 décembre 2011 art. 11, et EC 14 § 3) : un article, deux opérations distinctes — essai mensuel et autonomie semestrielle — les deux encodées. Rien de perdu.
+
+## Dette connue signalée par l'audit
+
+- **Doublon portails** : `porte-auto-portail-piete-coulissant` et `porte-auto-verification-semestrielle` font double emploi sur `PORTAIL_AUTO` au même rythme. Détecté par le test anti-doublon quand une référence manquante a cessé de le masquer. Documenté, non corrigé.
+- **Froid sous-référencé** : 8 obligations, 7 périodicités distinctes, toutes adossées au même « art. 5 » du règlement (UE) 2024/573 sans désigner le paragraphe ni le seuil qui les fonde. La source est la bonne, la granularité ne permet pas de vérifier chaque périodicité isolément.
+- **31 articles `non_couvert`** relevés par l'audit : obligations réelles visant des ERP de 5ᵉ catégorie que le produit ne porte pas (hôtels, locaux à sommeil, petits établissements de soins et sportifs). Liste à intégrer ici.
+
+## Ce que le modèle actuel rend impossible, en une phrase
+
+Toute obligation dont le déclencheur n'est pas un équipement déclaré est soit absente,
+soit accrochée à un équipement arbitraire — et dans ce second cas elle disparaît en
+silence pour l'établissement qui n'a pas déclaré cet équipement. Trois faux négatifs
+sont déjà documentés dans le référentiel lui-même
+(`src/lib/referentiels/conformite/incendie.ts:162`, « LIMITE CONNUE, NON CORRIGÉE ICI »).
+
+## Décisions tranchées
+
+Prises le 2026-08-26 sur la base des textes et des recommandations vérifiés ce jour.
+Les références restent à relever sur Légifrance avant encodage, comme le reste du document.
+
+### 1. Porteur salarié : **nominatif**, avec une frontière stricte sur la santé
+
+L'obligation est nominative par nature, ce n'est pas un choix de modélisation.
+**R. 4544-10** : le titre d'habilitation électrique est délivré par l'employeur à un
+travailleur désigné, et précise la nature des opérations qu'il est autorisé à effectuer.
+Une attestation SST, un CACES, une autorisation de conduite obéissent à la même logique.
+Un porteur « poste » ne sait pas dire « Dupont est habilité, Martin ne l'est pas » — or
+c'est exactement ce qui est demandé en contrôle. Le suivi par poste produirait un
+compteur (« 2 caristes à habiliter ») sans jamais permettre de prouver quoi que ce soit.
+
+**Base légale : obligation légale de l'employeur** (RGPD art. 6.1.c), pas le consentement
+— un consentement recueilli dans une relation de subordination n'est pas libre, donc pas
+valable. Conservation : durée de la relation de travail puis archivage intermédiaire ; la
+CNIL a publié le **2 avril 2026** un référentiel de durées de conservation RH à consulter
+pour les durées exactes.
+
+**Frontière à ne jamais franchir** — et elle contraint directement les lignes A9 et A10 :
+le dossier médical en santé au travail appartient au SPST, pas à l'employeur. L'employeur
+ne reçoit que l'avis d'aptitude ou d'inaptitude, les propositions d'aménagement et les
+restrictions ; **aucun élément de diagnostic ne peut lui être transmis**. L'application ne
+doit donc stocker, pour le suivi médical, que la date de la visite, l'échéance suivante et
+le sens de l'avis. Jamais un motif, jamais une pièce jointe médicale.
+
+**Conséquence assumée** : `docs/rgpd.md` affirme aujourd'hui que l'outil ne stocke aucun
+identifiant personnel de salarié, et qualifie l'ensemble des données de « données
+d'entreprise ». Cette section devient fausse le jour où le porteur salarié existe. Elle
+doit être réécrite **avant** la migration, pas après — base légale, durées, information des
+personnes, droit d'accès.
+
+### 2. ICPE : **hors périmètre**, avec une question fermée de rattrapage
+
+Trois raisons convergentes.
+
+Les seuils ne sont pratiquement jamais atteints dans le périmètre V2 : la rubrique 2925
+(charge d'accumulateurs) déclenche à partir de 600 kW, la 1510 (entrepôts couverts) relève
+de l'enregistrement à partir de 5 000 m³. Un restaurant, un commerce de détail ou un
+bureau n'y arrivent pas, sauf grande surface avec entrepôt — soit une fraction marginale
+de la cible.
+
+Encoder l'ICPE correctement suppose la nomenclature entière, des centaines de rubriques
+avec des seuils calculés par installation. C'est un produit en soi, pas un domaine de plus.
+
+Et le risque est asymétrique : un faux positif alarme sans raison, un faux négatif laisse
+croire à une couverture qui n'existe pas.
+
+**Mais on ne se tait pas** : une question fermée à l'onboarding (« exercez-vous une
+activité relevant des installations classées ? ») bascule le dossier en couverture
+partielle, avec la mention à l'écran et au document. C'est le mécanisme déjà en place pour
+les activités non couvertes par le référentiel sectoriel — même principe, zéro IA, zéro
+devinette.
+
+Les déchets suivent la même règle et restent dehors. Les fluides frigorigènes restent
+dedans : ils y sont par la sécurité des équipements, pas par l'ICPE.
+
+### 3. Locaux à sommeil : **attribut déclaré**, pas dérivé
+
+Un booléen `locauxSommeil` sur `Etablissement`, renseigné par une question fermée à
+l'onboarding. Trois raisons.
+
+La condition est structurante, pas marginale : **PE 4 § 1, PE 28, PE 32 et PE 37** s'y
+adossent, et **PE 2 § 3** en fait un critère du régime allégé des ERP de 5e catégorie.
+
+La dérivation depuis `typeErp` est incomplète des deux côtés — un type N peut comporter
+des chambres à l'étage, un type R sans internat n'en comporte pas — et `typeErp` est
+nullable (ADR-004).
+
+Surtout, une dérivation muette rendrait « non » par défaut quand `typeErp` est absent :
+c'est le faux négatif exact que toute cette carto cherche à supprimer.
+
+**Règle de traitement du non-renseigné**, qui vaut au-delà de ce champ :
+
+> L'incertitude ne réduit jamais la couverture.
+
+`null` ne vaut pas « non ». Concrètement : une obligation conditionnée aux locaux à
+sommeil apparaît avec une mention « à confirmer » tant que le champ n'est pas renseigné,
+et un allègement de régime conditionné à leur absence ne s'applique pas tant que l'absence
+n'est pas déclarée. Les deux vont dans le même sens — ne pas masquer, ne pas alléger.
+
+C'est l'inverse exact de la sémantique de `equipement_propriete_booleenne`, où l'absence
+de propriété rend la condition non satisfaite. Le contraste est volontaire et mérite
+d'être écrit dans le type : une propriété d'équipement absente signifie « cet équipement
+n'a pas cette caractéristique », une propriété d'établissement absente signifie « on ne
+sait pas encore ».
+
+### Ce qui reste à l'appréciation du produit
+
+Rien de réglementaire. Deux points d'ergonomie : le libellé exact des questions
+d'onboarding ajoutées (ICPE, locaux à sommeil), et l'endroit où s'affiche la couverture
+partielle au niveau du dossier.
+
+## Sources consultées pour les décisions
+
+- **R. 4544-10** — le titre d'habilitation électrique est délivré nominativement par l'employeur ([Code du travail numérique](https://code.travail.gouv.fr/code-du-travail/r4544-10))
+- **CNIL, référentiel de durées de conservation RH**, publié le 2 avril 2026 ([cnil.fr](https://www.cnil.fr/fr/referentiel-durees-conservation-donnees-rh))
+- **CNIL, guide pratique SPST** — l'employeur n'a pas accès au DMST, seulement à l'avis d'aptitude ([PDF](https://www.cnil.fr/sites/cnil/files/2023-12/cnil_guide_spst_0.pdf))
+- **INRS** — dossier médical en santé au travail, conservation 40 ans par le SPST ([focus juridique](https://www.inrs.fr/publications/juridique/focus-juridiques/focus-juridique-dossier-medical-sante-travail.html))
+- **Nomenclature ICPE** — seuils des rubriques 1510 et 2925 ([Prévention BTP](https://www.preventionbtp.fr/ressources/focus/nomenclature-icpe-installations-classees-pour-la-protection-de-l-environnement-votre-chantier-depot-ou-atelier-fait-il-partie-de-la-liste_aYKgMaqFDAMe7pGduxAGf6))
+
+## Sources de contenu
+
+- `spec/Fiche Audit AOCR 09102018.xlsx` — 481 lignes, base de travail, **non citable** (mélange sources primaires et normes privées, cf. ADR-003)
+- INRS **ED 6298**, « La formation à la sécurité — obligations réglementaires et recommandations », 03/2018, 68 p., PDF gratuit — la source à dépouiller pour les 13 formations
+- Légifrance — la seule source citable, à relever article par article
+
+Aucune base commerciale (Bureau Veritas, Red-on-line, Preventeo) ne doit être recopiée
+— `.claude/CLAUDE.md:69`. Aucun jeu de données ouvert ne fournit le couple
+« déclencheur + périodicité » : LEGI donne le texte sans la structure, et la base
+data.gouv des obligations d'entreprise n'a pas été mise à jour depuis janvier 2014.

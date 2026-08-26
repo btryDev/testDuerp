@@ -15,6 +15,23 @@ Ces données sont **des données d'entreprise**, pas des données
 personnelles au sens RGPD — l'outil ne stocke pas d'identifiant
 personnel de dirigeant, de CSE ou de salarié.
 
+> **⚠️ Cette affirmation a une date de péremption.** Le périmètre produit
+> intègre désormais le suivi nominatif des formations et habilitations
+> (cf. `.claude/CLAUDE.md`, section « Registre des obligations ») : une
+> obligation comme le titre d'habilitation électrique est nominative par
+> nature. Le jour où l'entité `Salarie` existe, ce paragraphe devient faux.
+>
+> Ce document doit être réécrit **avant** la migration, pas après :
+> base légale (obligation légale de l'employeur, art. 6.1.c RGPD — jamais
+> le consentement, qui n'est pas libre en situation de subordination),
+> durées de conservation (référentiel CNIL « durées de conservation RH »
+> publié le 2 avril 2026), information des personnes, droit d'accès.
+>
+> Frontière à écrire noir sur blanc : le dossier médical en santé au
+> travail appartient au service de prévention, pas à l'employeur. Pour le
+> suivi médical, l'application ne stocke que la date de visite, l'échéance
+> et le sens de l'avis — **jamais un motif, jamais une pièce médicale**.
+
 ### Rapports de vérification
 - Métadonnées : date du rapport, organisme vérificateur, résultat,
   commentaires libres.

@@ -80,10 +80,64 @@ Sources primaires libres d'accès uniquement :
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **77 obligations sur 10 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes). Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **78 obligations sur 10 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes). Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+
+Ces 78 obligations sont toutes déclenchées par un **équipement déclaré** : le type
+`Obligation` exige `categoriesEquipement` non vide. C'est une limite du modèle, pas du
+domaine — cf. la section suivante.
+
+### Registre des obligations : déclencheurs et porteurs
+
+Rojer couvre les obligations de **santé-sécurité au travail et de sécurité du bâtiment**
+— Code du travail, CCH, et Code de l'environnement quand il porte sur la sécurité des
+installations ou des personnes. Une obligation y naît de cinq déclencheurs possibles :
+
+1. **Équipement déclaré** — les 78 obligations livrées
+2. **Statut d'employeur** — dès un salarié : formation à la sécurité, affichages SST, suivi médical
+3. **Effectif** — seuils 11, 25, 50
+4. **Typologie et caractéristiques du bâtiment** — ERP, locaux à sommeil, année du permis
+5. **Activité réellement exercée** — un fait de tâche, ni statut ni équipement : habilitation électrique, conduite d'engins, travail en hauteur
+
+Elle est portée par un **équipement**, un **salarié** ou l'**établissement**, et prend
+quatre natures : échéance récurrente, état permanent à constituer puis maintenir,
+obligation ponctuelle, obligation événementielle.
+
+Seul le premier déclencheur, le premier porteur et la première nature sont implémentés à
+ce jour. Les quatre autres déclencheurs représentent **62 obligations recensées** —
+détail et sources dans `docs/carto-obligations-hors-equipement.md`.
+
+**Règle du non-renseigné** — *l'incertitude ne réduit jamais la couverture*. `null` ne
+vaut pas « non » : une obligation conditionnée à un attribut d'établissement non renseigné
+s'affiche « à confirmer », et un allègement de régime conditionné à l'absence de cet
+attribut ne s'applique pas tant que l'absence n'est pas déclarée. C'est l'inverse de
+`equipement_propriete_booleenne`, où l'absence rend la condition non satisfaite : une
+propriété d'équipement absente dit « cet équipement n'a pas cette caractéristique », une
+propriété d'établissement absente dit « on ne sait pas encore ».
+
+**Suivi nominatif des salariés** — dans le périmètre. L'obligation est nominative par
+nature : R. 4544-10 fait délivrer le titre d'habilitation à un travailleur désigné, et il
+en va de même d'une attestation SST, d'un CACES ou d'une autorisation de conduite. Un
+suivi par poste produit un compteur, jamais une preuve. Base légale : obligation légale de
+l'employeur, jamais le consentement, qui n'est pas libre en situation de subordination.
+
+**Frontière sur la santé.** Le dossier médical en santé au travail appartient au service
+de prévention, pas à l'employeur : celui-ci ne reçoit que l'avis d'aptitude ou
+d'inaptitude, les propositions d'aménagement et les restrictions. **Aucun élément de
+diagnostic ne lui est transmis, jamais** — c'est la contrainte légale.
+
+Nuance : l'employeur détient légalement certaines pièces. R. 4544-11-1 lui fait conserver
+copie de l'attestation d'absence de contre-indication médicale pendant sa durée de
+validité. La règle de l'application est donc **plus stricte que le texte**, et c'est un
+choix produit assumé, pas une obligation : on ne stocke que l'existence de la pièce, sa
+date et son échéance. Un outil qui héberge des pièces médicales de salariés change de
+nature réglementaire et de surface de risque ; la valeur ajoutée d'en garder le contenu
+est nulle, la conservation reste à la charge de l'employeur hors de l'outil.
 
 ### Hors périmètre (à ce jour)
-- IGH, ICPE complexes, sites industriels ; ATEX, rayonnements ionisants ; équipements sportifs, piscines
+- IGH, sites industriels ; ATEX, rayonnements ionisants ; équipements sportifs, piscines
+- **ICPE** — les seuils ne sont pratiquement jamais atteints dans les 3 secteurs cibles (rubrique 2925 à 600 kW, 1510 à 5 000 m³), et encoder la nomenclature serait un produit en soi. Une question fermée à l'onboarding bascule le dossier en couverture partielle. Les déchets suivent la même règle ; les fluides frigorigènes restent dedans, ils y sont par la sécurité des équipements
+- **Obligations d'exploitation non-SST** : affichages commerciaux (prix, allergènes, origine des viandes, licence), HACCP / PMS / agrément sanitaire, débit de boissons, métrologie des instruments de pesage, SACEM, décret tertiaire / OPERAT, vidéosurveillance, assurances
+- **RH non-SST** : DPAE, registre unique du personnel, BDESE, index égapro, DOETH
 - Dépôt du DUERP sur le portail national dématérialisé
 - Signature électronique **qualifiée** (la signature simple existe)
 - Multi-utilisateurs internes par entreprise (rôles, permissions fines) — l'accès externe prestataire par token existe, lui
@@ -92,7 +146,7 @@ Livré : **77 obligations sur 10 domaines** — électricité, incendie, aérati
 - Intégration SIRENE pour auto-complétion SIRET
 - Analyses comparatives / benchmarks sectoriels
 - Signalements de terrain / ticketing : le module Interventions a été retiré (ADR-018) ; rien ne relie plus un constat à une action datée
-- Registres non couverts : accidents du travail / AT bénins, registre unique du personnel, dangers graves et imminents, suivi nominatif formations/habilitations, EPI, visites médicales
+- Registres non couverts : accidents du travail / AT bénins, dangers graves et imminents, EPI
 
 ## Stack technique
 
