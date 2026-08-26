@@ -226,11 +226,38 @@ export const obligationsElectricite: Obligation[] = [
       "Corrigé à l'audit 2026-08 : l'ancienne version annonçait « tous les cinq ans » en citant PE 4 § 3, qui traite de la mise en demeure par la commission. PE 4 n'imposait aucune périodicité jusqu'à l'arrêté du 1er décembre 2025, qui fixe « tous les trois ans au plus » pour l'ensemble des installations techniques (électricité, gaz, cuisson, extraction, ascenseurs, moyens de secours). L'id `elec-erp-cat5-quinquennale` est conservé car référencé par les lignes Verification en base ; ne pas le renommer sans migration.",
   },
   {
+    id: "elec-erp-groupe-electrogene-quinzaine",
+    domaine: "electricite",
+    libelle:
+      "Vérification des niveaux du groupe électrogène de sécurité (ERP)",
+    description:
+      "Tous les quinze jours, l'exploitant vérifie le niveau d'huile, d'eau et de combustible du groupe électrogène de sécurité, le dispositif de réchauffage du moteur et l'état de la source utilisée pour le démarrage (batterie ou air comprimé). Les interventions et leurs résultats sont consignés dans un registre d'entretien tenu à la disposition de la commission de sécurité.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 25 juin 1980, art. EL 18 § 4 (première périodicité)",
+        article: "EL 18",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038485456/",
+        note: "« Les groupes électrogènes de sécurité doivent faire l'objet d'un entretien régulier et d'essais selon la périodicité minimale suivante : ― tous les quinze jours, vérification du niveau d'huile, d'eau et de combustible, du dispositif de réchauffage du moteur et de l'état de la source utilisée pour le démarrage (batterie ou air comprimé) […]. » Verbatim confirmé par relecture indépendante le 2026-08-26.",
+        versionConstatee: "2019-07-01",
+      },
+    ],
+    periodicite: "bimensuelle",
+    realisateurs: ["exploitant"],
+    criticite: 4,
+    typologies: { erp: true },
+    categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes:
+      "Créée le 2026-08-26. EL 18 § 4 fixe DEUX périodicités minimales, et le référentiel n'en portait qu'une : l'obligation unique était encodée « mensuelle », si bien que la vérification des niveaux tous les quinze jours ne produisait aucune échéance. Elle ne vivait que dans la prose d'une description — sur un matériel dont le seul rôle est de démarrer quand tout le reste a lâché.\n\nLa valeur `bimensuelle` a été ajoutée à l'énumération et à la base pour cela : le choix se réduisait auparavant à `hebdomadaire`, qui double la charge réelle, ou `mensuelle`, qui tait l'obligation. Conversion à quatorze jours et non quinze — un multiple de sept fait retomber l'échéance le même jour de la semaine.\n\nSur-application assumée en 5ᵉ catégorie, comme les autres obligations de ce fichier fondées sur le Livre II : EL 18 relève du Livre II, écarté par PE 1 § 1, et ce qui traite du même objet en N5 est PE 4 § 2. La ligne est maintenue pour ne pas créer un faux négatif muet.",
+  },
+  {
     id: "elec-erp-groupe-electrogene-annuel",
     domaine: "electricite",
     libelle: "Entretien et essais des groupes électrogènes de sécurité (ERP)",
     description:
-      "Lorsque l'ERP est équipé d'un groupe électrogène de sécurité, celui-ci fait l'objet d'essais périodiques par l'exploitant (niveaux tous les quinze jours, essai de démarrage en charge mensuel, consignés au registre d'entretien — EL 18 § 4) et de la vérification annuelle des installations électriques (EL 19).",
+      "Tous les mois, le groupe électrogène de sécurité fait l'objet, en plus de la vérification des niveaux, d'un essai de démarrage automatique avec une charge minimale de 50 % de la puissance du groupe et d'un fonctionnement sous cette charge pendant une durée minimale de trente minutes. Les interventions et leurs résultats sont consignés dans un registre d'entretien tenu à la disposition de la commission de sécurité.",
     referencesLegales: [
       {
         source: "ARRETE",

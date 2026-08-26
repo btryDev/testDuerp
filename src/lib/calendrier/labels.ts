@@ -6,6 +6,7 @@ import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 
 export const LABEL_PERIODICITE: Record<Periodicite, string> = {
   hebdomadaire: "hebdomadaire",
+  bimensuelle: "tous les 15 jours",
   mensuelle: "mensuelle",
   trimestrielle: "trimestrielle",
   semestrielle: "semestrielle",

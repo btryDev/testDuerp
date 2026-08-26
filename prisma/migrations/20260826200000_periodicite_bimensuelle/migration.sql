@@ -1,0 +1,25 @@
+-- ============================================================================
+-- Périodicité « bimensuelle » — tous les quinze jours
+--
+-- L'arrêté du 25 juin 1980, art. EL 18 § 4, impose DEUX périodicités minimales
+-- aux groupes électrogènes de sécurité : « tous les quinze jours, vérification
+-- du niveau d'huile, d'eau et de combustible, du dispositif de réchauffage du
+-- moteur et de l'état de la source utilisée pour le démarrage » et « tous les
+-- mois, en plus des vérifications ci-dessus, essai de démarrage automatique
+-- avec une charge minimale de 50 % de la puissance du groupe et fonctionnement
+-- avec cette charge pendant une durée minimale de trente minutes ».
+--
+-- L'énumération ne descendait pas sous la semaine. Le choix se réduisait donc à
+-- `hebdomadaire`, qui double la charge réelle, ou `mensuelle`, qui tait
+-- l'obligation des quinze jours — sur du matériel dont le seul rôle est de
+-- démarrer quand tout le reste a lâché.
+--
+-- Conversion en jours côté TypeScript : 14 et non 15. La valeur sert à calculer
+-- une échéance, et un multiple de sept fait retomber le rendez-vous le même
+-- jour de la semaine.
+--
+-- Purement additif : une valeur ajoutée à un type énuméré. Aucune ligne
+-- existante n'est modifiée, aucune valeur n'est retirée.
+-- ============================================================================
+
+ALTER TYPE "Periodicite" ADD VALUE 'bimensuelle' AFTER 'hebdomadaire';

@@ -22,6 +22,7 @@
 
 export const PERIODICITES = [
   "hebdomadaire",
+  "bimensuelle",
   "mensuelle",
   "trimestrielle",
   "semestrielle",
@@ -44,6 +45,13 @@ export type Periodicite = (typeof PERIODICITES)[number];
  */
 export const PERIODICITE_EN_JOURS: Record<Periodicite, number | null> = {
   hebdomadaire: 7,
+  // Quinze jours. Introduite pour EL 18 § 4, qui impose « tous les quinze
+  // jours » la vérification des niveaux d'un groupe électrogène de sécurité.
+  // Sans elle, le choix se réduisait à `hebdomadaire` — qui double la charge
+  // réelle — ou `mensuelle`, qui tait l'obligation. Quatorze jours et non
+  // quinze : la conversion sert à calculer une échéance, et un multiple de
+  // sept fait retomber le rendez-vous le même jour de la semaine.
+  bimensuelle: 14,
   mensuelle: 30,
   trimestrielle: 91,
   semestrielle: 182,

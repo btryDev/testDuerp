@@ -36,6 +36,7 @@ type Props = {
  */
 const LABEL_PERIODICITE: Record<Periodicite, string> = {
   hebdomadaire: "Hebdomadaire",
+  bimensuelle: "Tous les 15 jours",
   mensuelle: "Mensuelle",
   trimestrielle: "Trimestrielle",
   semestrielle: "Semestrielle",

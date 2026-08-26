@@ -65,6 +65,7 @@ export type ChezVous = {
 /** Ordre « de la plus fréquente à la plus espacée » pour l'affichage. */
 const RANG_PERIODICITE: Record<Periodicite, number> = {
   hebdomadaire: 0,
+  bimensuelle: 1,
   mensuelle: 1,
   trimestrielle: 2,
   semestrielle: 3,

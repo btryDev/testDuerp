@@ -489,6 +489,7 @@ enum StatutVerification {
 
 enum Periodicite {
   hebdomadaire
+  bimensuelle
   mensuelle
   trimestrielle
   semestrielle
