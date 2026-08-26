@@ -8,6 +8,28 @@ import { formaterDateFr, formaterDateLongueFr } from "@/lib/dates";
  * constantes (tailles, couleurs) pour éviter la dérive.
  */
 
+/**
+ * La palette du registre de sécurité imprimé de btry, relevée sur le document
+ * de référence (`Registre_Securite_Incendie_btry.pdf`).
+ *
+ * Elle n'est pas une invention : c'est celle des documents que le dirigeant
+ * a déjà entre les mains. Un export qui en sort ressemble à un rapport
+ * d'outil, pas à la pièce qu'il range dans son classeur.
+ *
+ * Le registre s'y aligne aujourd'hui ; les autres documents (DUERP, plan
+ * d'actions, dossier de conformité) restent sur la palette neutre en
+ * attendant qu'on décide de les aligner aussi — c'est une question
+ * d'identité, pas de code.
+ */
+export const MARQUE = {
+  marine: "#002768",
+  marineClair: "#183b76",
+  vert: "#07df9e",
+  vertPale: "#dcfaf0",
+  ardoise: "#8c9dba",
+  filet: "#e0e4ec",
+} as const;
+
 export const COULEURS = {
   ink: "#111",
   texteSecondaire: "#555",

@@ -5,6 +5,7 @@ import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 import type { ResultatVerification, StatutVerification } from "@prisma/client";
 import {
   COULEURS,
+  MARQUE,
   formatDateCourte,
   formatDateLongue,
   stylesCommuns as s,
@@ -109,28 +110,32 @@ const LIBELLE_STATUT_VERIF: Record<StatutVerification, string> = {
 // personne qui l'ouvrira, souvent un contrôleur, et le seul qui lui permette
 // de retrouver une pièce sans lire le tout.
 const sr = StyleSheet.create({
-  gardeFilet: { borderTopWidth: 2, borderTopColor: COULEURS.ink, width: 90 },
+  // Le filet vert sous la marque : le seul geste de couleur de la couverture
+  // du registre imprimé, et sa signature. Il se retrouve sous le sur-titre de
+  // chaque feuille.
+  gardeFilet: { borderTopWidth: 2.5, borderTopColor: MARQUE.vert, width: 62 },
   gardeTitre: {
     fontSize: 30,
     fontFamily: "Helvetica-Bold",
     lineHeight: 1.15,
     marginTop: 18,
+    color: MARQUE.marine,
   },
   gardeLabel: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 1.6,
-    color: COULEURS.texteSecondaire,
+    color: MARQUE.ardoise,
     marginBottom: 3,
   },
-  gardeValeur: { fontSize: 12, marginBottom: 16 },
+  gardeValeur: { fontSize: 12, marginBottom: 16, color: MARQUE.marine },
 
   // En-tête de partie : le numéro porte le repère, le titre porte le sens.
   partieTete: {
     flexDirection: "row",
     alignItems: "baseline",
     borderBottomWidth: 1.5,
-    borderBottomColor: COULEURS.ink,
+    borderBottomColor: MARQUE.marine,
     paddingBottom: 5,
     marginTop: 22,
     marginBottom: 2,
@@ -139,18 +144,58 @@ const sr = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Helvetica-Bold",
     width: 42,
+    color: MARQUE.marine,
   },
-  partieTitre: { fontSize: 13, fontFamily: "Helvetica-Bold" },
+  // Le vert du modèle ne porte jamais de texte de structure : il ponctue.
+  // Un numéro de partie en vert se lisait délavé à côté du titre marine.
+  partieAccent: {
+    borderTopWidth: 2.5,
+    borderTopColor: MARQUE.vert,
+    width: 26,
+    marginTop: 22,
+  },
+  partieTitre: {
+    fontSize: 13,
+    fontFamily: "Helvetica-Bold",
+    color: MARQUE.marine,
+  },
 
   ficheTete: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
     borderBottomWidth: 0.5,
-    borderBottomColor: COULEURS.filet,
+    borderBottomColor: MARQUE.filet,
     paddingBottom: 3,
   },
-  ficheTitre: { fontSize: 10.5, fontFamily: "Helvetica-Bold" },
+  ficheTitre: {
+    fontSize: 10.5,
+    fontFamily: "Helvetica-Bold",
+    color: MARQUE.marine,
+  },
+  // La bande d'en-tête de tableau du registre imprimé : aplat marine, texte
+  // blanc. C'est ce qui fait lire une grille comme une grille — un simple
+  // filet sous les intitulés ne s'attrape pas d'un coup d'œil sur une page
+  // qui en compte plusieurs.
+  bandeTete: {
+    flexDirection: "row",
+    backgroundColor: MARQUE.marine,
+    paddingVertical: 4,
+    paddingHorizontal: 5,
+    marginTop: 6,
+  },
+  bandeTh: {
+    fontFamily: "Helvetica-Bold",
+    fontSize: 8,
+    color: "#fff",
+  },
+  ligneTableau: {
+    flexDirection: "row",
+    borderBottomWidth: 0.5,
+    borderBottomColor: MARQUE.filet,
+    paddingVertical: 3.5,
+    paddingHorizontal: 5,
+  },
   // Le pied de feuille du registre imprimé, qui date la tenue de la fiche.
   fichePied: {
     marginTop: 5,
@@ -158,8 +203,8 @@ const sr = StyleSheet.create({
     color: COULEURS.texteSecondaire,
     textAlign: "right",
   },
-  cle: { fontSize: 9, color: COULEURS.texteSecondaire, width: "42%" },
-  valeur: { fontSize: 9, width: "58%" },
+  cle: { fontSize: 9, color: MARQUE.ardoise, width: "42%" },
+  valeur: { fontSize: 9, width: "58%", color: MARQUE.marine },
 
   sommaireCol: { width: "48%" },
   sommairePartie: {
@@ -167,10 +212,11 @@ const sr = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     marginTop: 10,
     marginBottom: 3,
+    color: MARQUE.marine,
   },
   sommaireFiche: {
     fontSize: 8.5,
-    color: COULEURS.texteSecondaire,
+    color: MARQUE.ardoise,
     marginBottom: 1.5,
   },
 });
@@ -208,7 +254,7 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
               style={{
                 flexDirection: "row",
                 borderBottomWidth: 0.5,
-                borderBottomColor: "#eee",
+                borderBottomColor: MARQUE.filet,
                 paddingVertical: 2.5,
               }}
             >
@@ -223,9 +269,12 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
           fiche vide doit montrer ce qu'on attendait d'elle. */}
       {fiche.colonnes && (
         <View style={{ marginTop: 6 }}>
-          <View style={s.thead}>
+          <View style={sr.bandeTete}>
             {fiche.colonnes.map((c) => (
-              <Text key={c} style={[s.th, { width: largeur(fiche.colonnes!.length) }]}>
+              <Text
+                key={c}
+                style={[sr.bandeTh, { width: largeur(fiche.colonnes!.length) }]}
+              >
                 {c}
               </Text>
             ))}
@@ -236,9 +285,15 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
             </Text>
           ) : (
             fiche.lignes!.map((ligne, i) => (
-              <View key={i} style={s.row}>
+              <View key={i} style={sr.ligneTableau}>
                 {ligne.map((v, j) => (
-                  <Text key={j} style={[s.td, { width: largeur(ligne.length) }]}>
+                  <Text
+                    key={j}
+                    style={[
+                      s.td,
+                      { width: largeur(ligne.length), color: MARQUE.marine },
+                    ]}
+                  >
                     {v}
                   </Text>
                 ))}
@@ -257,14 +312,24 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
               Rien de déclaré à ce jour dans {fiche.source}.
             </Text>
           ) : (
-            fiche.tenues.map((t, i) => (
-              <View key={i} style={[s.row, { paddingVertical: 2.5 }]}>
-                <Text style={[s.td, { width: "50%" }]}>{t.titre}</Text>
-                <Text style={[s.td, { width: "50%", color: COULEURS.texteSecondaire }]}>
-                  {t.meta}
+            <>
+              <View style={sr.bandeTete}>
+                <Text style={[sr.bandeTh, { width: "50%" }]}>Désignation</Text>
+                <Text style={[sr.bandeTh, { width: "50%" }]}>
+                  Emplacement ou échéance
                 </Text>
               </View>
-            ))
+              {fiche.tenues.map((t, i) => (
+                <View key={i} style={sr.ligneTableau}>
+                  <Text style={[s.td, { width: "50%", color: MARQUE.marine }]}>
+                    {t.titre}
+                  </Text>
+                  <Text style={[s.td, { width: "50%", color: MARQUE.ardoise }]}>
+                    {t.meta}
+                  </Text>
+                </View>
+              ))}
+            </>
           )}
         </View>
       )}
@@ -305,7 +370,10 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
  */
 function PiedDePage({ etablissement }: { etablissement: string }) {
   return (
-    <Text style={s.footer} fixed>
+    <Text
+      style={[s.footer, { color: MARQUE.ardoise, borderTopColor: MARQUE.filet }]}
+      fixed
+    >
       {etablissement} — Registre de sécurité incendie
     </Text>
   );
@@ -358,7 +426,7 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
           la seconde ce qui y manque : les deux questions qu'on se pose en
           l'ouvrant, dans cet ordre. */}
       <Page size="A4" style={s.page}>
-        <Text style={s.h1}>Sommaire</Text>
+        <Text style={[s.h1, { color: MARQUE.marine }]}>Sommaire</Text>
 
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           {colonnes.map((col, i) => (
@@ -411,7 +479,8 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
                 tourne alors la page pour retrouver le titre qu'il vient de
                 lire. `minPresenceAhead` ne suffisait pas à l'empêcher. */}
             <View wrap={false}>
-              <View style={sr.partieTete}>
+              <View style={sr.partieAccent} />
+              <View style={[sr.partieTete, { marginTop: 6 }]}>
                 <Text style={sr.partieNum}>{partie.id}</Text>
                 <Text style={sr.partieTitre}>{partie.titre}</Text>
               </View>
@@ -429,7 +498,9 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
       {/* L'index des rapports archivés — la pièce qu'un contrôleur ouvre en
           premier, et la seule qui pointe vers des fichiers conservés à part. */}
       <Page size="A4" style={s.page}>
-        <Text style={s.h1}>Rapports de vérification archivés</Text>
+        <Text style={[s.h1, { color: MARQUE.marine }]}>
+          Rapports de vérification archivés
+        </Text>
         {data.rapports.length === 0 ? (
           <Text style={s.small}>
             Aucun rapport archivé à ce jour. Le registre reste tenu à
@@ -471,7 +542,9 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
           </View>
         )}
 
-        <Text style={s.h2}>Vérifications en attente ou programmées</Text>
+        <Text style={[s.h2, { color: MARQUE.marine }]}>
+          Vérifications en attente ou programmées
+        </Text>
         {data.verifsEnAttente.length === 0 ? (
           <Text style={s.small}>
             Aucune vérification en cours. Déclarez vos équipements pour peupler
