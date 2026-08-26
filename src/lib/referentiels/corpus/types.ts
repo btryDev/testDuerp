@@ -54,7 +54,30 @@ export type StatutArticle =
    * produit. Le compte de ces articles est ce que le référentiel doit rattraper.
    */
   | { statut: "obligation_manquante"; motif: string; bloquePar?: string }
-  /** Écarté par une exclusion déclarée du périmètre. */
+  /**
+   * L'article impose quelque chose à un exploitant, mais le produit ne le
+   * couvre pas — et le dit.
+   *
+   * À distinguer absolument de `hors_perimetre`. « Hors périmètre » veut dire
+   * qu'aucune obligation n'en découle pour un exploitant : une règle de
+   * construction, un article qui s'adresse à l'administration. `non_couvert`
+   * veut dire qu'une obligation existe, qu'elle vise des établissements que le
+   * produit pourrait servir, et qu'on a choisi de ne pas la porter.
+   *
+   * Les confondre revient à faire passer un manque pour une non-question. Le
+   * principe est de couvrir le maximum de ce qui est possible et, à défaut, de
+   * le dire clairement — ce qui suppose d'abord de le compter.
+   *
+   * `declareA` dit OÙ le manque est annoncé à l'utilisateur. Un manque qui
+   * n'est déclaré nulle part n'est pas « dit clairement », c'est un silence
+   * documenté en interne.
+   */
+  | { statut: "non_couvert"; motif: string; declareA?: string }
+  /**
+   * Écarté parce qu'aucune obligation d'exploitant n'en découle — jamais
+   * parce qu'on a choisi de ne pas s'en occuper. Ce dernier cas est
+   * `non_couvert`.
+   */
   | { statut: "hors_perimetre"; exclusion: MotifExclusion; motif?: string }
   /** Présent au corpus, pas encore lu. */
   | { statut: "non_depouille" };
@@ -132,6 +155,8 @@ export type CouvertureCorpus = {
   horsPerimetre: number;
   /** Articles qui imposent quelque chose que le référentiel ne porte pas. */
   obligationsManquantes: number;
+  /** Articles qui imposent quelque chose que le produit choisit de ne pas couvrir. */
+  nonCouverts: number;
   nonDepouilles: number;
   /**
    * Vrai seulement si le corpus est intégral ET qu'aucun article n'est resté
@@ -154,6 +179,7 @@ export function couverture(c: Corpus): CouvertureCorpus {
     sansObjet: par("sans_objet"),
     horsPerimetre: par("hors_perimetre"),
     obligationsManquantes: par("obligation_manquante"),
+    nonCouverts: par("non_couvert"),
     nonDepouilles,
     complet: c.etendue === "integral" && nonDepouilles === 0,
   };

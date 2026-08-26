@@ -10,6 +10,16 @@
 // cite l'exclusion qui l'écarte ; sans cela, « hors périmètre » n'est pas un
 // classement, c'est une opinion.
 //
+// ⚠ Ces exclusions ne disent JAMAIS « on a choisi de ne pas s'en occuper ».
+// Elles disent « aucune obligation d'exploitant n'en découle » : une règle de
+// construction, un article qui s'adresse à l'administration, une disposition
+// que le règlement lui-même écarte. Un manque de couverture assumé se marque
+// `non_couvert`, se compte, et s'annonce à l'utilisateur.
+//
+// La différence n'est pas de vocabulaire. Ranger un manque parmi les
+// exclusions le fait disparaître du décompte : il cesse d'être une dette pour
+// devenir une non-question.
+//
 // Module **pur** : ni Prisma, ni React.
 
 // Ce module ne déclare PAS quelles catégories d'ERP sont couvertes : cette
@@ -33,23 +43,9 @@
  */
 export const EXCLUSIONS = {
   categorie_erp: {
-    libelle: "Établissements des quatre premières catégories",
+    libelle: "Écarté par le règlement lui-même en 5ᵉ catégorie",
     motif:
-      "Le produit ne prend en charge que la 5ᵉ catégorie. Les dispositions du Livre II du règlement de sécurité ERP ne s'appliquent d'ailleurs pas au deuxième groupe, sauf renvoi exprès du Livre III (PE 1 § 1).",
-  },
-  igh: {
-    libelle: "Immeuble de grande hauteur",
-    motif:
-      "Régime IGH hors périmètre produit. Le flag `estIGH` existe en base et le référentiel porte quelques obligations IGH héritées, mais aucun parcours ne les sert.",
-  },
-  habitation: {
-    libelle: "Bâtiment d'habitation",
-    motif: "Régime habitation hors périmètre produit.",
-  },
-  secteur: {
-    libelle: "Secteur d'activité non couvert",
-    motif:
-      "Le produit couvre la restauration, le commerce de détail et le tertiaire de bureau. Les dispositions propres à d'autres exploitations (soins, enseignement, sport, culte, plein air…) sont écartées.",
+      "Les dispositions du Livre II du règlement de sécurité ERP ne s'appliquent pas au deuxième groupe, sauf renvoi exprès du Livre III (PE 1 § 1). Ce n'est pas un choix de couverture : le texte ne vise pas ces établissements.",
   },
   risque_specialise: {
     libelle: "Risque spécialisé hors périmètre",

@@ -189,3 +189,31 @@ export function referencesSansCle(): { obligation: string; reference: string }[]
       .map((r) => ({ obligation: o.id, reference: r.reference })),
   );
 }
+
+/**
+ * Les articles qui imposent quelque chose à un exploitant et que le produit
+ * choisit de ne pas couvrir.
+ *
+ * Le principe est de couvrir le maximum de ce qui est possible et, à défaut,
+ * de le dire clairement. Cette liste est la seconde moitié de la phrase : elle
+ * nomme ce qu'on ne couvre pas, et où on le dit. Une entrée sans `declareA`
+ * est un manque que personne n'a annoncé — donc un silence, pas une
+ * déclaration.
+ */
+export function articlesNonCouverts(): {
+  corpus: string;
+  ref: string;
+  motif: string;
+  declareA?: string;
+}[] {
+  return CORPUS.flatMap((c) =>
+    c.articles
+      .filter((a) => a.statut === "non_couvert")
+      .map((a) => ({
+        corpus: c.id,
+        ref: a.ref,
+        motif: a.statut === "non_couvert" ? a.motif : "",
+        declareA: a.statut === "non_couvert" ? a.declareA : undefined,
+      })),
+  );
+}

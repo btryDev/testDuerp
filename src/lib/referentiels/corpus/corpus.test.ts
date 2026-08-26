@@ -5,6 +5,7 @@ import {
   couverture,
   EXCLUSIONS,
   liensRetenusRompus,
+  articlesNonCouverts,
   obligationsManquantes,
   obligationsSurTextesNonDepouilles,
   referencesSansCle,
@@ -112,6 +113,7 @@ describe("corpus — forme des dépouillements", () => {
         cv.retenus +
           cv.sansObjet +
           cv.horsPerimetre +
+          cv.nonCouverts +
           cv.obligationsManquantes +
           cv.nonDepouilles,
         `${c.id} : la somme des statuts ne fait pas le total — un statut manque au compte`,
@@ -207,5 +209,48 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     for (const o of obligationsManquantes()) {
       expect(o.motif.length, o.ref).toBeGreaterThan(80);
     }
+  });
+});
+
+describe("corpus — ce qu'on ne couvre pas, et où on le dit", () => {
+  // Le principe : couvrir le maximum de ce qui est possible, et sinon le dire
+  // clairement. Ces tests portent la seconde moitié — celle qu'on oublie.
+
+  it("chaque manque de couverture dit ce qu'il laisse de côté", () => {
+    for (const a of articlesNonCouverts()) {
+      // Un motif court est une case cochée. Le lecteur doit pouvoir juger de
+      // ce qu'il perd sans rouvrir le texte.
+      expect(a.motif.length, `${a.corpus} / ${a.ref}`).toBeGreaterThan(120);
+    }
+  });
+
+  it("un manque de couverture n'est jamais rangé parmi les exclusions", () => {
+    // Une exclusion dit « aucune obligation n'en découle ». Y ranger un choix
+    // de couverture fait disparaître une dette du décompte : elle cesse d'être
+    // un manque pour devenir une non-question. C'est la faute que ce statut
+    // sépare.
+    for (const c of CORPUS) {
+      for (const a of c.articles) {
+        if (a.statut !== "hors_perimetre") continue;
+        expect(
+          ["construction", "sans_destinataire_exploitant", "categorie_erp", "risque_specialise"],
+          `${c.id} / ${a.ref}`,
+        ).toContain(a.exclusion);
+      }
+    }
+  });
+
+  it("le nombre de manques non déclarés à l'utilisateur ne remonte pas", () => {
+    // 31 aujourd'hui : rien dans l'application n'annonce à un exploitant
+    // hôtelier, ou à un établissement à locaux à sommeil, que des obligations
+    // qui le visent ne sont pas portées. Ce chiffre doit descendre — soit en
+    // couvrant, soit en déclarant.
+    const MUETS = 31;
+    const muets = articlesNonCouverts().filter((a) => !a.declareA || a.declareA.startsWith("Non déclaré"));
+    expect(
+      muets.length,
+      `${muets.length} manque(s) de couverture qu'aucun écran n'annonce (plafond ${MUETS}). ` +
+        `Couvrir, ou déclarer — puis abaisser MUETS.`,
+    ).toBeLessThanOrEqual(MUETS);
   });
 });

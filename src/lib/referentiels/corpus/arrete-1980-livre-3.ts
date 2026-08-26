@@ -291,10 +291,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre III — établissements comportant des locaux réservés au sommeil. La condition est un attribut d'établissement qui n'existe pas en base, et qui ne se rencontre pas dans les trois secteurs couverts (restauration, commerce de détail, bureau). À reclasser si le produit ouvre l'hébergement.",
+      "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
+    declareA:
+      "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
   },
   {
     ref: "PE 29",
@@ -302,10 +303,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre III — établissements comportant des locaux réservés au sommeil. La condition est un attribut d'établissement qui n'existe pas en base, et qui ne se rencontre pas dans les trois secteurs couverts (restauration, commerce de détail, bureau). À reclasser si le produit ouvre l'hébergement.",
+      "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
+    declareA:
+      "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
   },
   {
     ref: "PE 30",
@@ -313,10 +315,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2002-04-07",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre III — établissements comportant des locaux réservés au sommeil. La condition est un attribut d'établissement qui n'existe pas en base, et qui ne se rencontre pas dans les trois secteurs couverts (restauration, commerce de détail, bureau). À reclasser si le produit ouvre l'hébergement.",
+      "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
+    declareA:
+      "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
   },
   {
     ref: "PE 31",
@@ -324,10 +327,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre III — établissements comportant des locaux réservés au sommeil. La condition est un attribut d'établissement qui n'existe pas en base, et qui ne se rencontre pas dans les trois secteurs couverts (restauration, commerce de détail, bureau). À reclasser si le produit ouvre l'hébergement.",
+      "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
+    declareA:
+      "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
   },
   {
     ref: "PE 32",
@@ -335,10 +339,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre III — établissements comportant des locaux réservés au sommeil. La condition est un attribut d'établissement qui n'existe pas en base, et qui ne se rencontre pas dans les trois secteurs couverts (restauration, commerce de détail, bureau). À reclasser si le produit ouvre l'hébergement.",
+      "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
+    declareA:
+      "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
   },
   {
     ref: "PE 33",
@@ -346,10 +351,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-11-04",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre III — établissements comportant des locaux réservés au sommeil. La condition est un attribut d'établissement qui n'existe pas en base, et qui ne se rencontre pas dans les trois secteurs couverts (restauration, commerce de détail, bureau). À reclasser si le produit ouvre l'hébergement.",
+      "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
+    declareA:
+      "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
   },
   {
     ref: "PE 34",
@@ -357,10 +363,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2003-05-07",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre III — établissements comportant des locaux réservés au sommeil. La condition est un attribut d'établissement qui n'existe pas en base, et qui ne se rencontre pas dans les trois secteurs couverts (restauration, commerce de détail, bureau). À reclasser si le produit ouvre l'hébergement.",
+      "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
+    declareA:
+      "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
   },
   {
     ref: "PE 35",
@@ -368,10 +375,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre III — établissements comportant des locaux réservés au sommeil. La condition est un attribut d'établissement qui n'existe pas en base, et qui ne se rencontre pas dans les trois secteurs couverts (restauration, commerce de détail, bureau). À reclasser si le produit ouvre l'hébergement.",
+      "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
+    declareA:
+      "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
   },
   {
     ref: "PE 36",
@@ -379,10 +387,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2010-05-16",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre III — établissements comportant des locaux réservés au sommeil. La condition est un attribut d'établissement qui n'existe pas en base, et qui ne se rencontre pas dans les trois secteurs couverts (restauration, commerce de détail, bureau). À reclasser si le produit ouvre l'hébergement.",
+      "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
+    declareA:
+      "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
   },
   {
     ref: "PE 37",
@@ -390,10 +399,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2004-11-24",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre III — établissements comportant des locaux réservés au sommeil. La condition est un attribut d'établissement qui n'existe pas en base, et qui ne se rencontre pas dans les trois secteurs couverts (restauration, commerce de détail, bureau). À reclasser si le produit ouvre l'hébergement.",
+      "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
+    declareA:
+      "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
   },
   {
     ref: "PO 1",
@@ -401,10 +411,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 2",
@@ -412,10 +423,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 3",
@@ -423,10 +435,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 4",
@@ -434,10 +447,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 5",
@@ -445,10 +459,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 6",
@@ -456,10 +471,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 7",
@@ -467,10 +483,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 8",
@@ -478,10 +495,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 9",
@@ -489,10 +507,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 10",
@@ -500,10 +519,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 11",
@@ -511,10 +531,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 12",
@@ -522,10 +543,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 13",
@@ -533,10 +555,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "Annexe à l'article PO 11",
@@ -544,10 +567,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O). L'hôtellerie n'est pas un secteur couvert. À noter pour le jour où elle le deviendrait : PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+    declareA:
+      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PU 1",
@@ -555,10 +579,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre V — petits établissements de soins (type U). Secteur non couvert.",
+      "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
+    declareA:
+      "Non déclaré à ce jour.",
   },
   {
     ref: "PU 2",
@@ -566,10 +591,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre V — petits établissements de soins (type U). Secteur non couvert.",
+      "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
+    declareA:
+      "Non déclaré à ce jour.",
   },
   {
     ref: "PU 3",
@@ -577,10 +603,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre V — petits établissements de soins (type U). Secteur non couvert.",
+      "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
+    declareA:
+      "Non déclaré à ce jour.",
   },
   {
     ref: "PU 4",
@@ -588,10 +615,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre V — petits établissements de soins (type U). Secteur non couvert.",
+      "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
+    declareA:
+      "Non déclaré à ce jour.",
   },
   {
     ref: "PU 5",
@@ -599,10 +627,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre V — petits établissements de soins (type U). Secteur non couvert.",
+      "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
+    declareA:
+      "Non déclaré à ce jour.",
   },
   {
     ref: "PU 6",
@@ -610,10 +639,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre V — petits établissements de soins (type U). Secteur non couvert.",
+      "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
+    declareA:
+      "Non déclaré à ce jour.",
   },
   {
     ref: "PX 1",
@@ -621,10 +651,11 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2001-03-20",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "hors_perimetre",
-    exclusion: "secteur",
+    statut: "non_couvert",
     motif:
-      "Chapitre VI — établissements sportifs. Secteur non couvert. Article de pur renvoi au chapitre XII du Livre II.",
+      "Chapitre VI — établissements sportifs. Article de pur renvoi qui importe tout le chapitre XII du Livre II, non dépouillé. Les équipements sportifs figurent par ailleurs parmi les risques spécialisés que le produit déclare ne pas traiter.",
+    declareA:
+      "Non déclaré à ce jour.",
   },
   ],
 };
