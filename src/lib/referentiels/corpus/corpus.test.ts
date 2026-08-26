@@ -234,6 +234,13 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       "PE 37",
       "PO 1 § 3 — contrôle biennal des installations techniques",
       "PO 7",
+      // PO 12 réimporte PO 7 dans le régime des établissements EXISTANTS
+      // (« Les dispositions des articles PE 27 (§ 5) et PO 7 sont
+      // applicables »). Ajouté le 2026-08-26 : la relecture a montré que le
+      // champ « à construire ou à modifier » de la section 1 ne cantonne pas
+      // ces périodicités — PO 8 § 1 fait de même pour PO 1 § 3. Même blocage
+      // que PO 7 : aucun équipement porteur.
+      "PO 12",
       "R. 4544-11-1",
       "R. 4222-20",
       "Arrêté 23-02-2018 art. 26 § 3",

@@ -449,7 +449,7 @@ export const CORPUS_PE: Corpus = {
     lecture: "agent_verbatim",
     statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
     declareA:
       "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
@@ -461,7 +461,7 @@ export const CORPUS_PE: Corpus = {
     lecture: "agent_verbatim",
     statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
     declareA:
       "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
@@ -473,7 +473,7 @@ export const CORPUS_PE: Corpus = {
     lecture: "agent_verbatim",
     statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
     declareA:
       "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
@@ -485,7 +485,7 @@ export const CORPUS_PE: Corpus = {
     lecture: "agent_verbatim",
     statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
     declareA:
       "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
@@ -497,21 +497,22 @@ export const CORPUS_PE: Corpus = {
     lecture: "agent_verbatim",
     statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
     declareA:
       "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 8",
-    intitule: "Généralités (établissements existants)",
+    intitule: "Champ d'application des prescriptions aux hôtels EXISTANTS",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "non_couvert",
-    motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
-    declareA:
-      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+    lecture: "premiere_main",
+    statut: "retenu",
+    obligations: ["incendie-hotel-po-controle-annuel-electricite"],
+    citationCle:
+      "« § 1. Les prescriptions définies dans la présente section sont applicables en complément des articles PE 4, PE 24, PE 26, PE 27, PE 32, PE 36, PO 1 (§ 3) et PO 5. »",
+    prescrit:
+      "Ferme une question restée ouverte. PO 1 § 3 figure dans la section 1, intitulée « Prescriptions applicables aux établissements à construire ou à modifier » — on pouvait craindre que ses périodicités ne visent que les hôtels neufs. PO 8 § 1 ouvre la section 2, « Prescriptions applicables aux établissements existant », et y réimporte PO 1 (§ 3) NOMMÉMENT. Le contrôle annuel des installations électriques vaut donc pour TOUS les hôtels. Le § 3 impose en outre au chef d'établissement, lorsqu'une prescription ne peut être appliquée pour raisons architecturales, de proposer des solutions alternatives approuvées par la commission après analyse de risque — obligation nominative, sans périodicité.",
   },
   {
     ref: "PO 9",
@@ -521,7 +522,7 @@ export const CORPUS_PE: Corpus = {
     lecture: "agent_verbatim",
     statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
     declareA:
       "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
@@ -533,7 +534,7 @@ export const CORPUS_PE: Corpus = {
     lecture: "agent_verbatim",
     statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
     declareA:
       "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
@@ -545,33 +546,31 @@ export const CORPUS_PE: Corpus = {
     lecture: "agent_verbatim",
     statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
     declareA:
       "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },
   {
     ref: "PO 12",
-    intitule: "Formation du personnel en sécurité incendie",
+    intitule: "Extension de l'instruction du personnel aux hôtels existants",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "non_couvert",
+    lecture: "premiere_main",
+    statut: "obligation_manquante",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
-    declareA:
-      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+      "« Les dispositions des articles PE 27 (§ 5) et PO 7 sont applicables. » Symétrique de PO 8 § 1 pour la formation : PO 7 — deux séances d'instruction et d'entraînement du personnel par an — est réimporté nommément dans le régime des établissements EXISTANTS. La périodicité vaut donc pour tous les hôtels, pas seulement les neufs. Même blocage que PO 7 lui-même : l'obligation ne porte sur aucun équipement.",
+    bloquePar: "porteur-d-echeance-hors-equipement",
   },
   {
     ref: "PO 13",
-    intitule: "Cas particulier des très petits hôtels existants",
+    intitule: "Très petits hôtels existants — un seuil à double effet",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
-    lecture: "agent_verbatim",
+    lecture: "premiere_main",
     statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
-    declareA:
-      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+      "Définit le « très petit hôtel » : « un établissement qui accueille 20 personnes au plus au titre du public dans les chambres et dont le plancher bas de l'étage le plus élevé accessible au public est situé à moins de 8 mètres du niveau d'accès des secours ». Ce seuil n'est PAS un régime allégé : il ouvre des atténuations (dispense d'encloisonnement des escaliers, dispense de BAEH) mais aussi une AGGRAVATION — « En aggravation de l'article PE 32, la détection automatique d'incendie est installée dans les circulations horizontales lorsqu'elles existent et dans tous les locaux, à l'exception des sanitaires. » L'exploitant qui renonce à l'encloisonnement hérite d'une détection généralisée. Aucune périodicité, mais un attribut d'établissement de plus que le modèle ne porte, distinct de « locaux à sommeil ».",
+    declareA: "docs/veille-arbitrage-2026-08-26.md",
   },
   {
     ref: "Annexe à l'article PO 11",
@@ -581,7 +580,7 @@ export const CORPUS_PE: Corpus = {
     lecture: "agent_verbatim",
     statut: "non_couvert",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
+      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
     declareA:
       "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
   },

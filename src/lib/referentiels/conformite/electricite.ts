@@ -335,6 +335,16 @@ export const obligationsElectricite: Obligation[] = [
         note: "« L'ensemble des installations techniques doit être contrôlé par un technicien compétent tous les deux ans, à l'exception des installations électriques et des systèmes de détection incendie qui doivent être contrôlés annuellement. » Verbatim relevé en première main le 2026-08-26.",
         versionConstatee: "2018-01-01",
       },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 25 juin 1980, art. PO 8 § 1 (extension aux hôtels existants)",
+        article: "PO 8",
+        url:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374775/",
+        note: "« Les prescriptions définies dans la présente section sont applicables en complément des articles PE 4, PE 24, PE 26, PE 27, PE 32, PE 36, PO 1 (§ 3) et PO 5. » Verbatim relevé en première main le 2026-08-26. PO 1 § 3 figure dans la section 1, intitulée « Prescriptions applicables aux établissements à construire ou à modifier » ; PO 8 § 1 ouvre la section 2, « Prescriptions applicables aux établissements existant », et l'y réimporte nommément. La périodicité vaut donc pour TOUS les hôtels, pas seulement les neufs.",
+        versionConstatee: "2011-10-30",
+      },
     ],
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
