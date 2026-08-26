@@ -4,14 +4,17 @@ import { LABEL_ITEM } from "@/components/layout/sidebar-nav";
 import {
   alimentationDeLaPartie,
   completudeDeLaFiche,
+  ContenuTenuAilleurs,
   CorpsFicheRegistre,
   NavigationFiches,
+  TeteFicheRegistre,
   tonCompletude,
   type FicheVoisine,
 } from "@/components/registre";
 import { saisiePourSection } from "@/lib/registre/champs";
 import { aplatirRegistre } from "@/lib/registre/composition";
 import { composerRegistreDeLEtablissement } from "@/lib/registre/queries";
+import { lireContenuTenuAilleurs } from "@/lib/registre/contenu-ailleurs";
 import { ajouterLigneJournal, enregistrerFiche } from "@/lib/registre/actions";
 import { avecProvenance, lireProvenance } from "@/lib/navigation/provenance";
 
@@ -34,8 +37,8 @@ export default async function FicheDuRegistrePage({
   // L'ordre du document — celui où une commission feuillettera le registre.
   const fiches = aplatirRegistre(registre.parties);
 
-  // La complétude de chaque fiche, calculée une fois : elle sert à cette
-  // fiche-ci et à désigner la prochaine qui attend des réponses.
+  // La complétude de chaque fiche, calculée une fois : elle sert à celle-ci
+  // et à désigner la prochaine qui attend des réponses.
   const etats = fiches.map(({ partie, due }) => ({
     partie,
     due,
@@ -64,6 +67,15 @@ export default async function FicheDuRegistrePage({
       : courante.saisie?.forme === "formulaire"
         ? enregistrerFiche.bind(null, id, sectionId)
         : undefined;
+
+  // Ce que la fiche porte, quand un autre écran la tient.
+  //
+  // Elle se contentait d'un lien « allez voir ailleurs » : on ouvrait une
+  // fiche de son propre registre pour y lire qu'elle était vide. Trente et
+  // une des quarante-neuf fiches sont dans ce cas — c'était trente et un
+  // culs-de-sac. On lit donc ici ce qui s'y imprimera, sans pouvoir le
+  // modifier : la donnée se saisit là où elle vit.
+  const ailleurs = await contenuTenuAilleurs();
 
   // La suivante qui **attend des réponses**, pas la suivante tout court :
   // marcher dans l'ordre du document ferait traverser les trente et une
@@ -95,52 +107,64 @@ export default async function FicheDuRegistrePage({
       <CorpsFiche
         principal={
           <>
-            <CorpsFicheRegistre
+            <TeteFicheRegistre
+              partie={courante.partie}
               titre={courante.due.section.titre}
               attendu={courante.due.section.attendu}
               raisons={courante.due.raisons}
+              completude={courante.completude}
+            />
+            <CorpsFicheRegistre
               saisie={courante.saisie}
               contenu={registre.contenus[sectionId]}
               completude={courante.completude}
               action={action}
-              hrefEdition={avecProvenance(
-                `${base}/modifier`,
-                depuisCetteFiche,
-              )}
+              hrefEdition={avecProvenance(`${base}/modifier`, depuisCetteFiche)}
+              ailleurs={ailleurs}
             />
-            <CarteFiche titre="Et ensuite">
-              <NavigationFiches
-                suivante={suivante}
-                restantes={restantes}
-                hrefListe={hrefRegistre}
-              />
-            </CarteFiche>
           </>
         }
         cote={
-          <CarteFiche titre="Cette fiche">
-            <dl className="m-0 flex flex-col gap-3.5">
-              <div>
-                <dt className="m-0 text-[12.5px] text-[color:var(--board-slate-mid)]">
-                  Partie du registre
-                </dt>
-                <dd className="m-0 mt-0.5 text-[14px] leading-[1.4] text-[color:var(--board-ink)]">
-                  <span className="tabular-nums">{courante.partie.id}</span>{" "}
-                  {courante.partie.titre}
-                </dd>
-              </div>
-              <div>
-                <dt className="m-0 text-[12.5px] text-[color:var(--board-slate-mid)]">
-                  Rang dans le document
-                </dt>
-                <dd className="m-0 mt-0.5 text-[14px] leading-[1.4] tabular-nums text-[color:var(--board-ink)]">
-                  {rang + 1} sur {etats.length}
-                </dd>
-              </div>
-            </dl>
+          <CarteFiche titre="Et ensuite">
+            <NavigationFiches
+              suivante={suivante}
+              restantes={restantes}
+              hrefListe={hrefRegistre}
+            />
+            <p className="m-0 mt-4 border-t border-[color:var(--board-slate-line)] pt-3.5 text-[12px] text-[color:var(--board-slate-mid)]">
+              Fiche <span className="tabular-nums">{rang + 1}</span> sur{" "}
+              <span className="tabular-nums">{etats.length}</span>, dans
+              l&apos;ordre du document.
+            </p>
           </CarteFiche>
         }
       />
     </EcranFiche>
   );
+
+  async function contenuTenuAilleurs() {
+    // Quelle partie se lit dans quelle table est une connaissance du
+    // registre : elle vit dans la lib, pas ici. La route n'ajoute que ce
+    // qu'elle seule sait — d'où l'on vient, pour que le retour ramène à
+    // cette fiche et non au parc.
+    if (!courante.completude.alimentee) return undefined;
+    const contenu = await lireContenuTenuAilleurs(
+      id,
+      courante.partie.id,
+      courante.due.section,
+    );
+    if (!contenu) return undefined;
+    return (
+      <ContenuTenuAilleurs
+        source={contenu.source}
+        vide={contenu.vide}
+        lignes={contenu.lignes.map((ligne) => ({
+          ...ligne,
+          href: ligne.href
+            ? avecProvenance(ligne.href, depuisCetteFiche)
+            : undefined,
+        }))}
+      />
+    );
+  }
 }

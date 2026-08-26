@@ -6,6 +6,8 @@
 // recueille pas encore : c'est ce qui empêche une fiche due de disparaître.
 
 export { CorpsFicheRegistre } from "./CorpsFicheRegistre";
+export { TeteFicheRegistre } from "./TeteFicheRegistre";
+export { ContenuTenuAilleurs } from "./ContenuTenuAilleurs";
 export { LigneRegistre, PartieRegistre } from "./LigneRegistre";
 export { NavigationFiches, type FicheVoisine } from "./NavigationFiches";
 export { JaugeRegistre } from "./JaugeRegistre";
