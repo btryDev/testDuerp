@@ -49,12 +49,17 @@ export const CCH_REGISTRE_SECURITE: Corpus = {
     obligations: ["incendie-registre-securite"],
   },
   {
-    ref: "CCH R. 143-34",
-    versionEnVigueur: "2025-11-21",
+    ref: "CCH R. 143-41",
+    intitule: "Visites périodiques de contrôle par la commission de sécurité",
+    versionEnVigueur: "2021-07-01",
     luLe: "2026-08-26",
-    lecture: "agent_verbatim",
+    lecture: "premiere_main",
     statut: "retenu",
     obligations: ["incendie-erp-5-visite-commission"],
+    citationCle:
+      "« Ces établissements doivent faire l'objet, dans les conditions fixées au règlement de sécurité, de visites périodiques de contrôle et de visites inopinées effectuées par la commission de sécurité compétente. »",
+    prescrit:
+      "Fonde les visites périodiques et inopinées de la commission. Ne fixe AUCUNE périodicité : il renvoie au règlement de sécurité, dont la seule table (GE 4) ne vise que les quatre premières catégories.",
   },
   ],
 };
