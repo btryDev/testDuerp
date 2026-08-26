@@ -22,9 +22,9 @@ const data: RegistreData = {
       id: "1",
       titre: "Organisation",
       fiches: [
-        { id: "a", titre: "Renseignements généraux", attendu: "Raison sociale…", raisons: [], etat: "Toutes les réponses", ton: "faite",
+        { id: "a", titre: "Renseignements généraux", attendu: "Raison sociale…", raisons: [], etat: "Toutes les réponses", ton: "faite", misAJourLe: new Date("2026-08-01T09:00:00Z"),
           champs: [{ libelle: "Raison sociale", valeur: "Btry" }, { libelle: "Adresse", valeur: "Non renseigné" }] },
-        { id: "b", titre: "Contrôles administratifs", attendu: "Date, représentant…", raisons: [], etat: "Aucune ligne consignée", ton: "attente",
+        { id: "b", titre: "Contrôles administratifs", attendu: "Date, représentant…", raisons: [], etat: "Aucune ligne consignée", ton: "attente", misAJourLe: null,
           colonnes: ["Date", "Représentant", "Visa"], lignes: [] },
       ],
     },
@@ -32,9 +32,9 @@ const data: RegistreData = {
       id: "2.1",
       titre: "Matériel d'intervention",
       fiches: [
-        { id: "c", titre: "Extincteurs", attendu: "Inventaire", raisons: [], etat: "Tenue dans vos équipements", ton: "renvoi",
+        { id: "c", titre: "Extincteurs", attendu: "Inventaire", raisons: [], etat: "Tenue dans vos équipements", ton: "renvoi", misAJourLe: null,
           source: "vos équipements", tenues: [{ titre: "Extincteur hall", meta: "Bât. A · Entrée" }] },
-        { id: "d", titre: "Annexes", attendu: "Pièces libres", raisons: [], etat: "À tenir hors de l'outil", ton: "muet" },
+        { id: "d", titre: "Annexes", attendu: "Pièces libres", raisons: [], etat: "À tenir hors de l'outil", ton: "muet", misAJourLe: null },
       ],
     },
   ],

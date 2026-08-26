@@ -244,7 +244,14 @@ export async function construireRegistreData(
         verifs,
       );
       completudes.push(completude);
-      return ficheDuPdf(due, saisie, contenu, completude, ailleurs);
+      return ficheDuPdf(
+        due,
+        saisie,
+        contenu,
+        completude,
+        ailleurs,
+        registre?.misAJourLe[due.section.id] ?? null,
+      );
     }),
   }));
 
@@ -267,6 +274,7 @@ function ficheDuPdf(
   contenu: { champs?: Record<string, string | null>; lignes?: { valeurs: Record<string, string | null> }[] } | undefined,
   completude: Completude,
   ailleurs: ReturnType<typeof contenuTenuAilleursDepuis>,
+  misAJourLe: Date | null,
 ): FichePdf {
   const base: FichePdf = {
     id: due.section.id,
@@ -275,6 +283,7 @@ function ficheDuPdf(
     raisons: due.raisons,
     etat: libelleCompletude(completude),
     ton: tonCompletude(completude),
+    misAJourLe,
   };
 
   if (saisie?.forme === "etablissement" || saisie?.forme === "formulaire") {

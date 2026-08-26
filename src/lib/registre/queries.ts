@@ -37,6 +37,16 @@ export type RegistreDeLEtablissement = {
    * connaître cette différence pour les afficher.
    */
   contenus: Record<string, ContenuLu>;
+  /**
+   * Quand chaque fiche a été mise à jour pour la dernière fois.
+   *
+   * Le registre imprimé porte sur chaque feuille un « Date ou mise à jour :
+   * le … », et ce n'est pas de l'ornement : devant une commission, une fiche
+   * sans date de tenue ne prouve rien. Absente pour les fiches qu'un autre
+   * écran alimente — leur fraîcheur est celle du parc ou du calendrier, et
+   * inventer une date ici serait pire que n'en imprimer aucune.
+   */
+  misAJourLe: Record<string, Date>;
 };
 
 /**
@@ -84,7 +94,10 @@ export const composerRegistreDeLEtablissement = cache(
           select: { id: true, libelle: true, categorie: true },
           orderBy: [{ categorie: "asc" }, { createdAt: "asc" }],
         },
-        fichesRegistre: { select: { sectionId: true, contenu: true } },
+        updatedAt: true,
+        fichesRegistre: {
+          select: { sectionId: true, contenu: true, updatedAt: true },
+        },
       },
     });
     if (!etab) return null;
@@ -113,12 +126,14 @@ export const composerRegistreDeLEtablissement = cache(
 
     // Ce que les fiches à saisie libre ont déjà recueilli.
     const contenus: Record<string, ContenuLu> = {};
+    const misAJourLe: Record<string, Date> = {};
     for (const f of etab.fichesRegistre) {
       const c = lireContenu(f.contenu);
       contenus[f.sectionId] =
         "lignes" in c
           ? { lignes: lignesDuJournal(f.contenu) }
           : { champs: c.champs };
+      misAJourLe[f.sectionId] = f.updatedAt;
     }
 
     // Les fiches adossées à l'établissement lisent la colonne qui porte la
@@ -145,9 +160,12 @@ export const composerRegistreDeLEtablissement = cache(
           saisie.champs.map((c) => [c.cle, parSource[c.source] ?? null]),
         ),
       };
+      // Ces fiches n'ont pas de ligne à elles : leur fraîcheur est celle de
+      // l'établissement, qui porte les réponses.
+      misAJourLe[sectionId] = etab.updatedAt;
     }
 
-    return { parties, contenus };
+    return { parties, contenus, misAJourLe };
   },
 );
 
