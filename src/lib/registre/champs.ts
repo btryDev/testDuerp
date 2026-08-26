@@ -170,6 +170,9 @@ export const CHAMPS_PAR_SECTION: Readonly<Record<string, FormeSaisie>> = {
     ],
   },
 
+  // Feuille 1 du registre imprimé : ce qu'on compose dans l'urgence. Un
+  // numéro et rien d'autre — on ne cherche pas une adresse quand il faut
+  // appeler les pompiers.
   "telephones-utiles": {
     forme: "formulaire",
     champs: [
@@ -182,14 +185,95 @@ export const CHAMPS_PAR_SECTION: Readonly<Record<string, FormeSaisie>> = {
       { cle: "samu", libelle: "SAMU", type: "telephone", aide: "15 par défaut." },
       { cle: "police", libelle: "Police", type: "telephone", aide: "17 par défaut." },
       { cle: "gendarmerie", libelle: "Gendarmerie", type: "telephone" },
-      { cle: "electricite", libelle: "Électricité (dépannage)", type: "telephone" },
-      { cle: "gaz", libelle: "Gaz (urgence sécurité)", type: "telephone" },
+      { cle: "electricite", libelle: "Électricité (secours)", type: "telephone" },
+      { cle: "gaz", libelle: "Gaz (secours)", type: "telephone" },
       { cle: "serviceEaux", libelle: "Service des eaux", type: "telephone" },
       { cle: "hopital", libelle: "Hôpital", type: "telephone" },
-      { cle: "centreAntiPoison", libelle: "Centre anti-poison", type: "telephone" },
-      { cle: "mairie", libelle: "Mairie", type: "telephone" },
-      { cle: "prefecture", libelle: "Préfecture", type: "telephone" },
-      { cle: "inspectionTravail", libelle: "Inspection du travail", type: "telephone" },
+      { cle: "centreAntiPoison", libelle: "Centre anti-poisons", type: "telephone" },
+      {
+        cle: "centreBrules",
+        libelle: "Centre des brûlés",
+        type: "telephone",
+        aide: "Le centre de référence de votre région.",
+      },
+    ],
+  },
+
+  // Feuille 2 : ceux qu'on rappelle après, et chez qui on envoie quelqu'un —
+  // d'où l'adresse à côté du téléphone, que le registre imprimé demande et
+  // que la version précédente de cette fiche avait perdue.
+  //
+  // Les installateurs et les organismes agréés recoupent le modèle
+  // `Prestataire`, qui porte déjà une raison sociale, un téléphone et des
+  // domaines — mais pas d'adresse. Tant qu'il n'en porte pas, les redemander
+  // ici est le moindre mal ; le jour où il en portera une, cette fiche devra
+  // les lire plutôt que les redemander, comme les renseignements généraux
+  // lisent l'établissement.
+  "services-adresses-utiles": {
+    forme: "formulaire",
+    champs: [
+      { cle: "mairieAdresse", libelle: "Mairie — adresse", type: "texte_long" },
+      { cle: "mairie", libelle: "Mairie — téléphone", type: "telephone" },
+      { cle: "prefectureAdresse", libelle: "Préfecture — adresse", type: "texte_long" },
+      { cle: "prefecture", libelle: "Préfecture — téléphone", type: "telephone" },
+      { cle: "medecinAdresse", libelle: "Médecin — adresse", type: "texte_long" },
+      { cle: "medecin", libelle: "Médecin — téléphone", type: "telephone" },
+      { cle: "ambulancesAdresse", libelle: "Ambulances — adresse", type: "texte_long" },
+      { cle: "ambulances", libelle: "Ambulances — téléphone", type: "telephone" },
+      {
+        cle: "inspectionTravailAdresse",
+        libelle: "Inspection du travail — adresse",
+        type: "texte_long",
+      },
+      {
+        cle: "inspectionTravail",
+        libelle: "Inspection du travail — téléphone",
+        type: "telephone",
+      },
+      {
+        cle: "preventionCarsatAdresse",
+        libelle: "Service prévention CARSAT — adresse",
+        type: "texte_long",
+        aide: "Anciennement CRAM. La caisse régionale dont vous dépendez.",
+      },
+      {
+        cle: "preventionCarsat",
+        libelle: "Service prévention CARSAT — téléphone",
+        type: "telephone",
+      },
+      {
+        cle: "installateurEau",
+        libelle: "Installateur — eau",
+        type: "texte",
+        aide: "Nom et téléphone de celui qu'on appelle en cas de fuite.",
+      },
+      { cle: "installateurGaz", libelle: "Installateur — gaz", type: "texte" },
+      {
+        cle: "installateurElectricite",
+        libelle: "Installateur — électricité",
+        type: "texte",
+      },
+      {
+        cle: "installateurChauffage",
+        libelle: "Installateur — chauffage",
+        type: "texte",
+      },
+      {
+        cle: "installateurAscenseur",
+        libelle: "Installateur — appareils élévateurs",
+        type: "texte",
+      },
+      {
+        cle: "installateurTelephone",
+        libelle: "Installateur — téléphonie",
+        type: "texte",
+      },
+      {
+        cle: "organismesAgrees",
+        libelle: "Organismes agréés chargés des vérifications",
+        type: "texte_long",
+        aide: "Ceux qui interviennent chez vous, avec leur téléphone.",
+      },
     ],
   },
 

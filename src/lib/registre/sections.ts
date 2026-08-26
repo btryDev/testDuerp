@@ -106,9 +106,22 @@ export const SECTIONS_REGISTRE: readonly SectionRegistre[] = [
   {
     id: "telephones-utiles",
     partie: "1",
-    titre: "Téléphones et adresses utiles",
+    titre: "Téléphones utiles",
     attendu:
-      "Numéros de secours, services publics, installateurs et organismes agréés.",
+      "Numéros à composer en urgence : secours, sécurité civile, centres spécialisés.",
+  },
+  // Le registre imprimé fait deux feuilles de ce qu'on appelait une seule
+  // fiche : les numéros qu'on compose dans l'urgence d'un côté, les services
+  // et intervenants qu'on rappelle ensuite de l'autre — ces derniers avec
+  // leur adresse, parce qu'on y envoie quelqu'un. Les fondre en une seule
+  // liste de numéros perdait la moitié des lignes et toute la colonne
+  // « adresse » que le titre annonçait pourtant.
+  {
+    id: "services-adresses-utiles",
+    partie: "1",
+    titre: "Services, intervenants et adresses utiles",
+    attendu:
+      "Mairie, préfecture, médecin, inspection du travail, installateurs et organismes agréés — adresse et téléphone.",
   },
   // Le service de sécurité incendie au sens des articles MS 45 à MS 52 (poste
   // de sécurité, agents qualifiés SSIAP, chef d'équipe) relève du **Livre II**
