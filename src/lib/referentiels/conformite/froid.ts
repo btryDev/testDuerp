@@ -198,6 +198,7 @@ export const PALIER_PAR_OBLIGATION: Record<string, PalierArticle5> = {
 const REF_ENVIRONNEMENT_MISE_EN_SERVICE = {
   source: "CODE_ENVIRONNEMENT",
   reference: "R. 543-79, al. 1",
+  article: "C. env. R. 543-79",
   url:
     "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000031790640",
   note: "Contrôle d'étanchéité lors de la mise en service, par un opérateur disposant de l'attestation de capacité prévue à l'article R. 543-99. L'alinéa porte aussi le seuil national : charge en HCFC supérieure à 2 kg, ou charge en HFC ou PFC supérieure à 5 tonnes équivalent CO2.",
@@ -212,6 +213,7 @@ const REF_ENVIRONNEMENT_MISE_EN_SERVICE = {
 const REF_ENVIRONNEMENT_RENOUVELLEMENT = {
   source: "CODE_ENVIRONNEMENT",
   reference: "R. 543-79, al. 2",
+  article: "C. env. R. 543-79",
   url:
     "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000031790640",
   note: "« Ce contrôle est ensuite périodiquement renouvelé dans les conditions définies par arrêté du ministre chargé de l'environnement. Il est également renouvelé à chaque fois que des modifications ayant une incidence sur le circuit contenant les fluides frigorigènes sont apportées à l'équipement. »",
@@ -221,6 +223,7 @@ const REF_ENVIRONNEMENT_RENOUVELLEMENT = {
 const REF_REGLEMENT_ART_5 = {
   source: "REGLEMENT_UE",
   reference: "Règlement (UE) 2024/573, art. 5",
+  article: "Règlement UE 2024/573 art. 5",
   url: "https://eur-lex.europa.eu/eli/reg/2024/573/oj/fra",
   note: "Contrôles d'étanchéité. Déclenchement à 5 t CO2e de gaz de l'annexe I ou 1 kg de gaz de l'annexe II section 1 ; dispense des équipements hermétiquement scellés étiquetés comme tels sous 10 t CO2e ou 2 kg. Abroge le règlement (UE) n° 517/2014 depuis le 11 mars 2024.",
 } as const;

@@ -129,12 +129,12 @@ describe("corpus — la dette de lecture, mesurée et décroissante", () => {
   // Il descend à mesure que les corpus sont dépouillés. Quand il atteint 0,
   // le référentiel peut dire — et prouver — qu'il ne repose que sur des textes
   // lus de bout en bout.
-  const PLAFOND = 62;
+  const PLAFOND = 54;
 
   // Le nombre de références qui ne portent même pas de clé d'article, donc
   // rattachables à aucun corpus. Complément indispensable du plafond : sans
   // lui, « 0 article cité non dépouillé » se lirait comme « tout est lu ».
-  const PLAFOND_SANS_CLE = 106;
+  const PLAFOND_SANS_CLE = 90;
 
   it("ne dépasse pas le plafond, et le plafond ne remonte pas", () => {
     const restantes = obligationsSurTextesNonDepouilles();

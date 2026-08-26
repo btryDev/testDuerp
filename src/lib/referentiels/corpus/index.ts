@@ -7,6 +7,7 @@ import { ARRETE_2011_12_14_ECLAIRAGE } from "./arrete-2011-12-14-eclairage";
 import { ARRETE_2011_12_30_IGH } from "./arrete-2011-12-30-igh";
 import { CCH_REGISTRE_SECURITE } from "./cch-registre-securite";
 import { CODE_TRAVAIL_INCENDIE } from "./code-travail-incendie";
+import { FROID_FLUIDES } from "./froid-fluides";
 import { couverture, type Corpus, type CouvertureCorpus } from "./types";
 
 export * from "./types";
@@ -26,6 +27,7 @@ export const CORPUS: readonly Corpus[] = [
   CCH_REGISTRE_SECURITE,
   ARRETE_2011_12_14_ECLAIRAGE,
   ARRETE_2011_12_30_IGH,
+  FROID_FLUIDES,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {
