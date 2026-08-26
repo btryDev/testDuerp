@@ -254,7 +254,7 @@ Pour la traçabilité, la liste des textes cités au moins une fois à l'étape 
   carnet, contrôle technique quinquennal)
 - R. 143-34 (visite périodique commission ERP)
 - R. 143-44 (registre sécurité ERP)
-- R. 146-21 (registre sécurité IGH)
+- R. 146-35 (registre sécurité IGH) (corrigé 2026-08-26 : R. 146-21 est abrogé et ne traitait pas du registre ; l'article IGH est R. 146-35, réécrit au 01/07/2026 par le décret 2025-1100)
 
 ### Code de l'environnement
 - L. 511-1 et s. (ICPE — déclaration, enregistrement, autorisation)

@@ -380,7 +380,7 @@ export function DossierConformiteDocument({ data }: { data: DossierData }) {
           </Text>
           <Text style={{ marginTop: 3 }}>
             — Registre de sécurité : L. 4711-5 CT, R. 143-44 CCH (ERP),
-            R. 146-21 CCH (IGH).
+            R. 146-35 CCH (IGH).
           </Text>
           <Text style={{ marginTop: 6 }}>
             Ce dossier ne vaut pas certification de conformité. Il

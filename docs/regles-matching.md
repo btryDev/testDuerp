@@ -140,12 +140,27 @@ obligations qui matchent chaque ligne de typologie.
 
 ### Cas du registre de sécurité
 
-L'obligation `incendie-registre-securite` est modélisée sur `travail: true`
-en MVP V2 : en pratique tous les établissements du scope emploient au moins
-un salarié. Les références CCH (R. 143-44 ERP / R. 146-21 IGH) restent
-citées en `referencesLegales` pour couvrir les cas hors scope sans
-multiplier les entrées dans le référentiel. Si un jour le scope inclut des
-ERP/IGH sans salarié, cette obligation sera scindée.
+L'obligation `incendie-registre-securite` porte `{ travail: true, erp: true }`.
+
+Elle était modélisée sur le seul `travail: true`, au motif que tous les
+établissements du périmètre emploient au moins un salarié, les références CCH
+n'étant citées « que pour information ». Le raccourci a sauté le 2026-08-26 :
+R. 143-44 fonde le registre en ERP par lui-même, indépendamment de la qualité
+d'employeur, et il a été réécrit au 1ᵉʳ juillet 2026 par le décret n° 2025-1100
+— ajout du 5° sur les dates des exercices, renvoi aux articles R. 141-10 et
+R. 141-11. Une référence qu'on déclare décorative est une référence qu'aucun
+audit ne relit : celle-ci avait deux mois de retard.
+
+R. 146-35 (IGH) reste cité sans `igh: true`, mais parce que l'IGH est hors
+périmètre produit — pas parce que la référence serait accessoire. À activer le
+jour où l'IGH entre au périmètre.
+
+**Limite connue.** `categoriesEquipement` ancre l'obligation à un extincteur ou
+une alarme déclarés : un établissement qui n'a ni l'un ni l'autre ne reçoit
+aucune ligne, alors que le registre est dû sans condition d'équipement. Le
+moteur exige au moins une catégorie, parce que `Verification.equipementId` n'est
+pas nullable. Corriger ce faux négatif est une décision de schéma, pas de
+référentiel.
 
 ## Équipements : catégorie + conditions
 

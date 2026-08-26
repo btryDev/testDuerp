@@ -125,7 +125,7 @@ export const obligationsIncendie: Obligation[] = [
     domaine: "incendie",
     libelle: "Tenue du registre de sécurité",
     description:
-      "Le registre de sécurité consigne les vérifications techniques, les exercices, les observations effectuées par les commissions de sécurité, les travaux et toute modification importante. Il est tenu à disposition de l'inspection et de la commission de sécurité.",
+      "En établissement recevant du public, le registre de sécurité porte les renseignements indispensables à la bonne marche du service de sécurité et comprend, outre les pièces attendues aux articles R. 141-10 et R. 141-11 : les dates des travaux d'aménagement et de transformation, leur nature et les noms des entrepreneurs ; l'état nominatif et hiérarchique des personnes appartenant au service de sécurité ; les diverses consignes établies en cas d'incendie, y compris les consignes d'évacuation prenant en compte les différents types de handicap ; les dates des divers contrôles et vérifications ainsi que les observations auxquelles ceux-ci ont donné lieu ; les dates des exercices de sécurité incendie. Côté Code du travail, la date des essais et exercices périodiques et les observations auxquelles ils ont donné lieu sont consignées sur un registre tenu à la disposition de l'inspection du travail.",
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
@@ -181,7 +181,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
-    typologies: { travail: true },
+    typologies: { travail: true, erp: true },
     categoriesEquipement: ["EXTINCTEUR", "ALARME_INCENDIE"],
     notesInternes:
       "Obligation permanente (pas d'échéance périodique). Modélisée sur travail=true en MVP : en pratique tout établissement du scope V2 emploie au moins un salarié (L. 4711-5 CT). Les références CCH R. 143-44 (ERP) et R. 146-35 (IGH) restent citées pour information. Corrigé à l'audit 2026-08 : R. 146-21 était cité à tort — cet article traite du silence de l'administration sur une demande d'agrément et a été abrogé par le décret 2025-1100 ; le registre de sécurité IGH est à R. 146-35.",

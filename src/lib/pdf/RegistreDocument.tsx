@@ -145,7 +145,7 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
 
         <View style={s.mentionsLegalesBloc}>
           <Text style={{ fontFamily: "Helvetica-Bold", marginBottom: 4 }}>
-            Tenue du registre (L. 4711-5 CT · R. 143-44 CCH · R. 146-21 CCH)
+            Tenue du registre (L. 4711-5 CT · R. 143-44 CCH · R. 146-35 CCH)
           </Text>
           <Text>
             Ce registre centralise les rapports de vérification réglementaire
