@@ -83,6 +83,11 @@ export const obligationsIncendie: Obligation[] = [
   },
   {
     id: "incendie-travail-exercice-semestriel",
+    relectureDue: {
+      le: "2027-01-01",
+      motif:
+        "Cette obligation ne porte pas son champ : elle le tient de la consigne de R. 4227-37, qui le tient lui-même de R. 4227-34. Or R. 4227-37 affiche « Version en vigueur du 10/11/2011 au 01/01/2027 » — son terme emporte donc le champ des exercices. Relire R. 4227-37 dans sa version au 1er janvier 2027, puis vérifier si `personnesPresentesMin: 51` et `champR422734` restent la bonne traduction. Relire aussi R. 4227-2, second article du chapitre VII à porter un terme à cette date, et absent du référentiel.",
+    },
     domaine: "incendie",
     libelle: "Essais du matériel et exercices d'évacuation semestriels",
     description:
@@ -208,7 +213,7 @@ export const obligationsIncendie: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "R. 4226-19",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810023/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
       },
       {
@@ -252,7 +257,7 @@ export const obligationsIncendie: Obligation[] = [
         source: "CODE_TRAVAIL",
         reference: "R. 4226-19",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000025810023/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
       },
       {
