@@ -4,8 +4,10 @@ import {
   CORPUS,
   couverture,
   EXCLUSIONS,
+  liensRetenusRompus,
   obligationsManquantes,
   obligationsSurTextesNonDepouilles,
+  referencesSansCle,
 } from "./index";
 
 describe("corpus — forme des dépouillements", () => {
@@ -52,19 +54,57 @@ describe("corpus — forme des dépouillements", () => {
     }
   });
 
-  it("un article dépouillé porte la date de sa lecture", () => {
+  it("un article dépouillé porte la date ET la provenance de sa lecture", () => {
     for (const c of CORPUS) {
       for (const a of c.articles) {
         if (a.statut === "non_depouille") continue;
         expect(a.luLe, `${c.id} / ${a.ref}`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        // Sans provenance, une lecture indirecte et une lecture à la source se
+        // ressemblent une fois écrites — et seule la seconde peut fonder une
+        // entrée du référentiel.
+        expect(a.lecture, `${c.id} / ${a.ref} : provenance de lecture absente`)
+          .toBeDefined();
       }
     }
+  });
+
+  it("aucune entrée ne se fonde sur une lecture indirecte", () => {
+    for (const c of CORPUS) {
+      for (const a of c.articles) {
+        if (a.statut !== "retenu") continue;
+        // Deux reproductions consolidées concordantes peuvent dériver du même
+        // relevé, et aucune ne porte la date de version faisant foi.
+        expect(
+          a.lecture,
+          `${c.id} / ${a.ref} : un article « retenu » ne peut pas reposer sur une lecture indirecte`,
+        ).not.toBe("indirect");
+      }
+    }
+  });
+
+  it("un corpus partiel ne se déclare jamais complet", () => {
+    for (const c of CORPUS) {
+      const cv = couverture(c);
+      if (c.etendue === "articles_cites") {
+        expect(cv.complet, `${c.id} : partiel mais annoncé complet`).toBe(false);
+      }
+    }
+  });
+
+  it("le lien obligation ↔ article tient dans les deux sens", () => {
+    // Sans ce contrôle, un corpus pourrait s'attribuer une couverture qu'aucune
+    // obligation ne confirme, et la dette descendrait sans que rien
+    // ne s'améliore.
+    expect(liensRetenusRompus()).toEqual([]);
   });
 
   it("la couverture ne se déclare complète que si tout est lu", () => {
     for (const c of CORPUS) {
       const cv = couverture(c);
-      expect(cv.complet, c.id).toBe(cv.nonDepouilles === 0);
+      // « Complet » exige les deux : tout lu ET liste exhaustive du texte.
+      expect(cv.complet, c.id).toBe(
+        c.etendue === "integral" && cv.nonDepouilles === 0,
+      );
       // Somme exhaustive : tout article a exactement un statut. Un statut
       // ajouté au type et oublié ici ferait diverger la somme du total — ce
       // qui est arrivé lors de l'ajout d'`obligation_manquante`.
@@ -89,7 +129,12 @@ describe("corpus — la dette de lecture, mesurée et décroissante", () => {
   // Il descend à mesure que les corpus sont dépouillés. Quand il atteint 0,
   // le référentiel peut dire — et prouver — qu'il ne repose que sur des textes
   // lus de bout en bout.
-  const PLAFOND = 78;
+  const PLAFOND = 62;
+
+  // Le nombre de références qui ne portent même pas de clé d'article, donc
+  // rattachables à aucun corpus. Complément indispensable du plafond : sans
+  // lui, « 0 article cité non dépouillé » se lirait comme « tout est lu ».
+  const PLAFOND_SANS_CLE = 106;
 
   it("ne dépasse pas le plafond, et le plafond ne remonte pas", () => {
     const restantes = obligationsSurTextesNonDepouilles();
@@ -101,6 +146,16 @@ describe("corpus — la dette de lecture, mesurée et décroissante", () => {
         `été ajoutée sur un texte que personne n'a lu — dépouiller le corpus ` +
         `avant de l'encoder.`,
     ).toBeLessThanOrEqual(PLAFOND);
+  });
+
+  it("le nombre de références sans clé ne remonte pas non plus", () => {
+    const sans = referencesSansCle();
+    expect(
+      sans.length,
+      `${sans.length} référence(s) sans clé d'article (plafond ${PLAFOND_SANS_CLE}). ` +
+        `Une référence sans clé n'est rattachable à aucun corpus. Renseigner ` +
+        `\`article\` puis abaisser PLAFOND_SANS_CLE.`,
+    ).toBeLessThanOrEqual(PLAFOND_SANS_CLE);
   });
 
   it("le plafond colle à la réalité : il ne reste pas gonflé", () => {

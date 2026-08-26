@@ -21,6 +21,7 @@ export const CORPUS_PE: Corpus = {
   intitule:
     "Arrêté du 25 juin 1980, Livre III — Dispositions applicables aux établissements de 5e catégorie",
   url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374770/",
+  etendue: "integral",
   portee:
     "Règles PE, PO, PU et PX. Gouverne tous les ERP du deuxième groupe, donc l'intégralité de la base d'utilisateurs du produit.",
   articles: [
@@ -29,6 +30,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Objet. - Textes applicables",
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Article de champ d'application : il énonce que le Livre III complète le Livre Ier, vise le deuxième groupe (GN 1 § 2 a) et écarte le Livre II sauf renvoi exprès. Il n'impose rien à l'exploitant, mais c'est lui qui commande le classement de tout le reste du corpus.",
@@ -38,6 +40,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Etablissements assujettis",
     versionEnVigueur: "2026-01-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Définit les seuils d'assujettissement et réduit, au § 3, le régime des établissements sans locaux à sommeil recevant au plus 19 personnes aux seuls PE 4, PE 10 B, PE 24 § 1, PE 26 § 1 et PE 27. Aucune obligation propre, mais PE 4 y figure : aucune TPE n'échappe au triennal.",
@@ -47,6 +50,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Calcul de l'effectif",
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Méthode de calcul de l'effectif théorique du public. Aucune action récurrente.",
@@ -56,6 +60,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Vérifications techniques",
     versionEnVigueur: "2026-07-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "obligation_manquante",
     motif:
       "Impose DEUX obligations périodiques que le référentiel ne porte pas : au § 2, l'entretien et la vérification de l'ensemble des installations techniques « tous les trois ans au plus » par des techniciens compétents, pour tous les établissements ; au § 1, un contrat annuel d'entretien du système de détection incendie, restreint aux établissements avec locaux à sommeil. Version réécrite par l'arrêté du 1er décembre 2025.",
@@ -67,6 +72,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Structures, patios et puits de lumière",
     versionEnVigueur: "1997-04-10",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -75,6 +81,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Isolement. - Parc de stationnement",
     versionEnVigueur: "2006-07-08",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -83,6 +90,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Accès des secours",
     versionEnVigueur: "2026-01-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -91,6 +99,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Enfouissement",
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Article de pur renvoi aux articles CO 39 § 1 et CO 40. Ne prescrit rien en propre.",
@@ -100,6 +109,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Locaux présentant des risques particuliers",
     versionEnVigueur: "2026-01-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -108,6 +118,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Stockage d'hydrocarbures (A) et installations de gaz combustibles (B)",
     versionEnVigueur: "2026-07-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Fixe les conditions de stockage des hydrocarbures et la conformité des installations de gaz, avec vérification à la construction ou après travaux — pas de récurrence. Le triennal des installations de gaz vient de PE 4 § 2. Attention : « PE 10 B » désigne une subdivision, pas un article distinct.",
@@ -117,6 +128,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Dégagements",
     versionEnVigueur: "2004-07-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Règles d'évacuation et obligation permanente de non-encombrement des dégagements. Permanente et non datée : ne se traduit pas en échéance.",
@@ -126,6 +138,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Conduits et gaines",
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -134,6 +147,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Comportement au feu des matériaux",
     versionEnVigueur: "2010-06-16",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -142,6 +156,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Évacuation des fumées",
     versionEnVigueur: "2004-07-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Impose l'existence et la manœuvrabilité des dispositifs de désenfumage, sans essai ni vérification récurrente. Le désenfumage figure en revanche dans la liste triennale de PE 4 § 2.",
@@ -151,6 +166,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Règles d'installation et dispositions générales (cuisson)",
     versionEnVigueur: "2006-03-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -159,6 +175,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Grandes cuisines",
     versionEnVigueur: "2008-08-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Caractéristiques constructives des grandes cuisines et du circuit d'extraction. Exige que les éléments de rétention des graisses « puissent être facilement nettoyés », sans aucune fréquence : le nettoyage périodique des circuits d'extraction ne vient pas d'ici mais de PE 4 § 2.",
@@ -168,6 +185,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Office de remise en température",
     versionEnVigueur: "2006-03-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -176,6 +194,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Îlots de cuisson installés dans les salles",
     versionEnVigueur: "2008-08-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Conditions d'exploitation d'un îlot de cuisson, dont la présence de personnel pendant le fonctionnement — obligation continue, pas une échéance.",
@@ -185,6 +204,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Appareils installés dans les locaux accessibles ou non au public",
     versionEnVigueur: "2006-03-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -193,6 +213,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Généralités (chauffage, ventilation)",
     versionEnVigueur: "2004-05-22",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Article d'articulation renvoyant au Livre II pour les installations admises en 4e catégorie. Ne prescrit rien en propre.",
@@ -202,6 +223,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Installations d'appareils à combustion",
     versionEnVigueur: "2026-01-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -210,6 +232,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Circuits aérauliques",
     versionEnVigueur: "2025-08-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -218,6 +241,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Installation de ventilation mécanique contrôlée",
     versionEnVigueur: "2025-08-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -226,6 +250,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Installations électriques, éclairage",
     versionEnVigueur: "2024-05-24",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Impose des installations prévenant les risques d'incendie (NF C 15-100 réputée satisfaisante) et un éclairage de sécurité d'évacuation. Aucune périodicité : la vérification périodique de l'électricité vient de PE 4 § 2 côté ERP et du Code du travail côté employeur.",
@@ -235,6 +260,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Règles générales (ascenseurs)",
     versionEnVigueur: "2023-08-25",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "construction",
   },
@@ -243,6 +269,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Moyens de secours",
     versionEnVigueur: "2008-10-08",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "sans_objet",
     motif:
       "Impose au moins un extincteur portatif installé selon MS 39, un appareil pour 300 m² et un par niveau. C'est une règle de dotation et de dimensionnement, sans récurrence. Point décisif du dépouillement : PE 26 n'ouvre le Livre II que sur MS 39, qui n'est pas un article de vérification.",
@@ -252,6 +279,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Alarme, alerte, consignes",
     versionEnVigueur: "2026-05-01",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "obligation_manquante",
     motif:
       "Impose au § 5 que « le personnel doit être instruit sur les conduites à tenir en cas d'incendie et être entraîné à la manœuvre des moyens de secours », sans périodicité écrite, pour tous les ERP de 5e catégorie. Le référentiel ne porte aucune ligne de formation du personnel côté ERP. Le § 4 c précise que l'information « peut être complétée par des exercices périodiques d'évacuation » — facultatif, à ne pas confondre avec R. 4227-39. N'ouvre le Livre II que sur MS 70. Réécrit par l'arrêté du 4 février 2026.",
@@ -263,6 +291,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Structure et planchers coupe-feu",
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -273,6 +302,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Cloisons et portes des locaux réservés au sommeil",
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -283,6 +313,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Couloirs",
     versionEnVigueur: "2002-04-07",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -293,6 +324,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Cheminées à foyer ouvert",
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -303,6 +335,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Détection automatique d'incendie et système d'alarme",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -313,6 +346,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Registre de sécurité, consignes",
     versionEnVigueur: "2011-11-04",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -323,6 +357,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Signalisations",
     versionEnVigueur: "2003-05-07",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -333,6 +368,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Affichages",
     versionEnVigueur: "1990-08-27",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -343,6 +379,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Éclairage de sécurité",
     versionEnVigueur: "2010-05-16",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -353,6 +390,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Contrôle des établissements de 5e catégorie comportant des locaux à sommeil",
     versionEnVigueur: "2004-11-24",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -363,6 +401,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Généralités",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -373,6 +412,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Halls et escaliers",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -383,6 +423,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Système d'alarme",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -393,6 +434,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Portes",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -403,6 +445,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Utilisation du gaz dans les chambres",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -413,6 +456,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Détection automatique d'incendie",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -423,6 +467,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Formation du personnel en sécurité incendie",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -433,6 +478,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Généralités (établissements existants)",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -443,6 +489,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Escaliers",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -453,6 +500,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Isolement des locaux dangereux",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -463,6 +511,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Consignes - Signalisations - Affichages",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -473,6 +522,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Formation du personnel en sécurité incendie",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -483,6 +533,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Cas particulier des très petits hôtels existants",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -493,6 +544,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Conduite à tenir en cas d'incendie",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -503,6 +555,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Généralités",
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -513,6 +566,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Structures",
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -523,6 +577,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Escaliers",
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -533,6 +588,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Fonctionnement des portes",
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -543,6 +599,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Conditions d'installation des gaz médicaux",
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -553,6 +610,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Détection automatique d'incendie et système d'alarme",
     versionEnVigueur: "2005-04-22",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:
@@ -563,6 +621,7 @@ export const CORPUS_PE: Corpus = {
     intitule: "Établissements sportifs — dispositions applicables",
     versionEnVigueur: "2001-03-20",
     luLe: "2026-08-26",
+    lecture: "agent_verbatim",
     statut: "hors_perimetre",
     exclusion: "secteur",
     motif:

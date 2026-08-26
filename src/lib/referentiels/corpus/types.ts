@@ -59,6 +59,27 @@ export type StatutArticle =
   /** Présent au corpus, pas encore lu. */
   | { statut: "non_depouille" };
 
+/**
+ * Comment l'article a été lu. Le degré de confiance est une donnée, pas un
+ * souvenir : sans lui, une lecture indirecte et une lecture à la source se
+ * ressemblent une fois écrites.
+ */
+export type SourceLecture =
+  /** Lu sur Légifrance, verbatim relevé par la personne qui l'encode. */
+  | "premiere_main"
+  /**
+   * Lu sur Légifrance par un agent, qui en a rapporté le verbatim et la date
+   * de version. Vaut constat, pas garantie : le verbatim n'a pas été recoupé.
+   */
+  | "agent_verbatim"
+  /**
+   * Lu ailleurs qu'à la source — reproduction consolidée, base
+   * professionnelle, résumé. NE PEUT PAS fonder une entrée du référentiel :
+   * deux reproductions concordantes peuvent dériver du même relevé, et aucune
+   * ne porte la date de version faisant foi.
+   */
+  | "indirect";
+
 export type ArticleDepouille = {
   /** Tel qu'il se cite : « PE 4 », « R. 4227-39 », « MS 73 ». */
   ref: string;
@@ -72,8 +93,10 @@ export type ArticleDepouille = {
   prescrit?: string;
   /** Le verbatim de la phrase décisive, quand elle en porte une. */
   citationCle?: string;
-  /** Date à laquelle l'article a été lu à la source. */
+  /** Date à laquelle l'article a été lu. */
   luLe?: string;
+  /** Comment il a été lu. Obligatoire dès qu'il est dépouillé. */
+  lecture?: SourceLecture;
 } & StatutArticle;
 
 export type Corpus = {
@@ -82,6 +105,20 @@ export type Corpus = {
   url: string;
   /** Ce que ce corpus gouverne, en une phrase — pour situer sa portée. */
   portee: string;
+  /**
+   * `articles` couvre-t-il TOUT le texte, ou seulement une partie ?
+   *
+   * Sans ce drapeau, « complet » signifierait « j'ai lu tout ce que j'ai bien
+   * voulu inscrire » — une tautologie. Un corpus partiel ne peut jamais se
+   * déclarer complet, quel que soit l'état de ses articles.
+   *
+   * `integral` : la liste énumère tous les articles du texte, y compris ceux
+   * qui n'intéressent pas le produit.
+   * `articles_cites` : la liste ne contient que les articles que le référentiel
+   * cite. Utile — c'est là que la dette se rembourse — mais ne prouve rien sur
+   * ce que le texte contient d'autre.
+   */
+  etendue: "integral" | "articles_cites";
   articles: readonly ArticleDepouille[];
 };
 
@@ -96,8 +133,12 @@ export type CouvertureCorpus = {
   /** Articles qui imposent quelque chose que le référentiel ne porte pas. */
   obligationsManquantes: number;
   nonDepouilles: number;
-  /** Vrai seulement si aucun article n'est resté non dépouillé. */
+  /**
+   * Vrai seulement si le corpus est intégral ET qu'aucun article n'est resté
+   * non dépouillé. Un corpus partiel est toujours faux, par construction.
+   */
   complet: boolean;
+  etendue: Corpus["etendue"];
 };
 
 export function couverture(c: Corpus): CouvertureCorpus {
@@ -106,6 +147,7 @@ export function couverture(c: Corpus): CouvertureCorpus {
   const nonDepouilles = par("non_depouille");
   return {
     corpusId: c.id,
+    etendue: c.etendue,
     total: c.articles.length,
     depouilles: c.articles.length - nonDepouilles,
     retenus: par("retenu"),
@@ -113,6 +155,6 @@ export function couverture(c: Corpus): CouvertureCorpus {
     horsPerimetre: par("hors_perimetre"),
     obligationsManquantes: par("obligation_manquante"),
     nonDepouilles,
-    complet: nonDepouilles === 0,
+    complet: c.etendue === "integral" && nonDepouilles === 0,
   };
 }

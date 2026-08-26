@@ -38,12 +38,14 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-28",
+        article: "R. 4227-28",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532081/",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-29",
+        article: "R. 4227-29",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489127/",
       },
@@ -69,6 +71,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-37 et R. 4227-38",
+        article: "R. 4227-37",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769379/",
       },
@@ -96,12 +99,14 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-39",
+        article: "R. 4227-39",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769386/",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-34",
+        article: "R. 4227-34",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532067/",
         note: "Article qui pose le seuil : établissements où peuvent se trouver occupées ou réunies habituellement plus de cinquante personnes, ainsi que ceux, quelle que soit leur importance, où sont manipulées et mises en œuvre des matières inflammables.",
@@ -125,6 +130,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-39",
+        article: "R. 4227-39",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769386",
         note: "Consignation sur registre des essais et exercices périodiques, avec leur date et les observations auxquelles ils ont donné lieu.",
@@ -132,12 +138,14 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "L. 4711-5",
+        article: "L. 4711-5",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389/",
       },
       {
         source: "CCH",
         reference: "CCH, art. R. 143-44 (ex R. 123-51) — ERP",
+        article: "CCH R. 143-44",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043819037/",
         note: "Version en vigueur depuis le 1er juillet 2026 (décret n° 2025-1100 du 19 novembre 2025) : ajout du 5° sur les dates des exercices de sécurité incendie, et renvoi aux articles R. 141-10 et R. 141-11. Vise « les établissements soumis aux prescriptions du présent chapitre » — tous les ERP, 5e catégorie comprise.",
@@ -146,6 +154,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 141-10 — contenu du registre",
+        article: "CCH R. 141-10",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000043818891/",
         note: "Créé au 1er juillet 2026. Le registre « comprend en particulier les vérifications réalisées, les mesures de correction des écarts constatés ainsi que les diverses consignes établies en cas d'incendie, y compris concernant l'évacuation et la mise en sécurité des personnes ».",
@@ -154,6 +163,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 141-11 — solutions d'effet équivalent",
+        article: "CCH R. 141-11",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000043818891/",
         note: "Créé au 1er juillet 2026. Les éléments identifiant une solution d'effet équivalent sont annexés au registre. Sans objet pour un établissement qui n'en met aucune en œuvre.",
@@ -162,6 +172,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 146-35 (ex R. 122-29) — IGH",
+        article: "CCH R. 146-35",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043819153",
         versionConstatee: "2026-07-01",
@@ -198,6 +209,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 14 décembre 2011, art. 11",
+        article: "Arrêté 2011-12-14 art. 11",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072657",
         note: "« Dans le cadre de la maintenance prescrite à l'article R. 4226-7 du code du travail, l'employeur procède aux vérifications de fonctionnement périodiques suivantes : Une fois par mois : a) Du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et de l'allumage de toutes les lampes […] ; b) De l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. »",
@@ -205,6 +217,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-14",
+        article: "R. 4227-14",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022764985",
         note: "Fonde l'obligation d'éclairage de sécurité en lieu de travail et renvoie à un arrêté le soin de fixer « les conditions d'exploitation et de maintenance de cet éclairage ». Ne fixe lui-même aucune périodicité : c'est l'arrêté du 14 décembre 2011 qui la pose.",
@@ -212,6 +225,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-19",
+        article: "R. 4226-19",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
@@ -219,6 +233,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 14 décembre 2011, art. 1er",
+        article: "Arrêté 2011-12-14 art. 1",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072663",
         note: "Fonde le `erp: false` : « Dans les établissements recevant du public, pour les locaux dont la fonction essentielle est de recevoir du public et pour les dégagements accessibles au public, les dispositions du règlement de sécurité relatif à de tels établissements sont seules applicables à l'éclairage de sécurité de ces locaux ou dégagements. » Texte relu le 23 août 2026.",
@@ -242,6 +257,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 14 décembre 2011, art. 11",
+        article: "Arrêté 2011-12-14 art. 11",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072657",
         note: "« Une fois tous les six mois, de l'autonomie d'au moins une heure. Dans les établissements comportant des périodes de fermeture, ces opérations doivent être effectuées de telle manière qu'au début de chaque période d'ouverture l'installation d'éclairage ait retrouvé l'autonomie prescrite. »",
@@ -249,6 +265,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4227-14",
+        article: "R. 4227-14",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022764985",
         note: "Fonde l'obligation d'éclairage de sécurité en lieu de travail et renvoie à un arrêté le soin de fixer « les conditions d'exploitation et de maintenance de cet éclairage ». Ne fixe lui-même aucune périodicité : c'est l'arrêté du 14 décembre 2011 qui la pose.",
@@ -256,6 +273,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-19",
+        article: "R. 4226-19",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
@@ -263,6 +281,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 14 décembre 2011, art. 1er",
+        article: "Arrêté 2011-12-14 art. 1",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072663",
         note: "Fonde le `erp: false` : « Dans les établissements recevant du public, pour les locaux dont la fonction essentielle est de recevoir du public et pour les dégagements accessibles au public, les dispositions du règlement de sécurité relatif à de tels établissements sont seules applicables à l'éclairage de sécurité de ces locaux ou dégagements. » Texte relu le 23 août 2026.",
@@ -307,6 +326,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EC 14 § 3",
+        article: "EC 14",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021838315",
         note: "« L'exploitant s'assure périodiquement : — une fois par mois : — du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et à la vérification de l'allumage de toutes les lampes (le fonctionnement doit être strictement limité au temps nécessaire au contrôle visuel) ; — de l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. — une fois tous les six mois, de l'autonomie d'au moins 1 heure. » Version en vigueur depuis le 16 mai 2010, modifiée par l'arrêté du 11 décembre 2009. Texte relu le 23 août 2026.",
@@ -330,6 +350,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EC 14 § 3",
+        article: "EC 14",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021838315",
         note: "« L'exploitant s'assure périodiquement : — une fois par mois : — du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et à la vérification de l'allumage de toutes les lampes (le fonctionnement doit être strictement limité au temps nécessaire au contrôle visuel) ; — de l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. — une fois tous les six mois, de l'autonomie d'au moins 1 heure. » Version en vigueur depuis le 16 mai 2010, modifiée par l'arrêté du 11 décembre 2009. Texte relu le 23 août 2026.",
@@ -357,6 +378,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. MS 38 § 4",
+        article: "MS 38",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000020303557/LEGISCTA000020317639/",
         note: "« Un extincteur doit faire l'objet d'une vérification annuelle et d'une révision tous les dix ans par une personne ou un organisme compétent. Il doit être marqué d'une étiquette clairement identifiable apposée par la personne ou l'organisme ayant réalisé cette dernière. Les années et les mois des vérifications doivent apparaître sur l'étiquette. Un plan d'implantation des extincteurs et un relevé des vérifications doivent être portés au registre de sécurité. » Le § 2 traite du marquage de l'appareil, pas de sa vérification : il était cité à tort.",
@@ -365,6 +387,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. MS 73 § 2",
+        article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
       },
@@ -387,6 +410,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. MS 73 § 2 (vérification annuelle)",
+        article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
       },
@@ -409,6 +433,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. MS 73 § 2 (vérification triennale par organisme agréé des SSI de catégorie A ou B)",
+        article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
       },
@@ -431,6 +456,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EC 15",
+        article: "EC 15",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000020317463",
         note: "« Vérifications. — Les installations d'éclairage doivent être vérifiées dans les conditions de l'article EL 19. » Version en vigueur depuis le 15 août 1980. EC 15 ne fixe donc aucune périodicité : il renvoie, et c'est EL 19 qui porte les conditions. Texte relu le 23 août 2026.",
@@ -438,6 +464,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EL 19",
+        article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068",
         note: "Article de destination du renvoi d'EC 15 : c'est lui qui pose les vérifications techniques des installations d'éclairage, dont la périodicité annuelle. **Texte non encore relu au mot près** — Légifrance ne sert pas le corps des articles de cet arrêté à un client automatisé. À confronter avant toute évolution de cette obligation.",
@@ -461,6 +488,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. DF 10",
+        article: "DF 10",
         url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
@@ -483,6 +511,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. MS 73 (appareils et installations fixes)",
+        article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
       },
@@ -505,12 +534,14 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "CCH",
         reference: "CCH, art. R. 143-34 (ex R. 123-48)",
+        article: "CCH R. 143-34",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000052644979/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GE 4",
+        article: "GE 4",
         url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
       },
@@ -544,6 +575,7 @@ export const obligationsIncendie: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 30 décembre 2011 (règlement IGH), art. GH 5 (vérifications techniques par organismes agréés)",
+        article: "GH 5",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025169258",
       },

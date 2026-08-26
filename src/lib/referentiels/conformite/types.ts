@@ -72,6 +72,21 @@ export type ReferenceLegale = {
    */
   note?: string;
   /**
+   * Identifiant canonique de l'article visé, tel qu'un corpus le nomme :
+   * « MS 38 », « PE 4 », « R. 4227-39 », « CCH R. 143-44 ».
+   *
+   * `reference` est faite pour être lue par un humain — elle porte le texte
+   * porteur, le paragraphe, parfois l'ancienne numérotation. Elle ne peut pas
+   * servir de clé : rapprocher « Arrêté du 25 juin 1980, art. MS 38 § 4 » de
+   * l'article « MS 38 » d'un corpus supposait une comparaison de sous-chaînes,
+   * c'est-à-dire une devinette. Ce champ est la clé ; `reference` reste la
+   * citation.
+   *
+   * `undefined` = pas encore rattaché à un corpus. Le rattachement est ce qui
+   * permet d'affirmer qu'une obligation repose sur un texte lu.
+   */
+  article?: string;
+  /**
    * Date de la version du texte constatée à la dernière relecture, en clé de
    * jour civil « AAAA-MM-JJ ».
    *

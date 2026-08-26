@@ -1,7 +1,12 @@
 // Les corpus déclarés, et ce que leur dépouillement permet d'affirmer.
 
 import { obligationsConformite } from "../conformite";
+import { ARRETE_1980_LIVRE_2 } from "./arrete-1980-livre-2";
 import { CORPUS_PE } from "./arrete-1980-livre-3";
+import { ARRETE_2011_12_14_ECLAIRAGE } from "./arrete-2011-12-14-eclairage";
+import { ARRETE_2011_12_30_IGH } from "./arrete-2011-12-30-igh";
+import { CCH_REGISTRE_SECURITE } from "./cch-registre-securite";
+import { CODE_TRAVAIL_INCENDIE } from "./code-travail-incendie";
 import { couverture, type Corpus, type CouvertureCorpus } from "./types";
 
 export * from "./types";
@@ -14,7 +19,14 @@ export * from "./perimetre";
  * textes qu'on n'a jamais déclaré avoir lus. Ce qui n'y figure pas n'a pas été
  * parcouru de bout en bout — et le dire est le seul moyen de le savoir.
  */
-export const CORPUS: readonly Corpus[] = [CORPUS_PE];
+export const CORPUS: readonly Corpus[] = [
+  CORPUS_PE,
+  ARRETE_1980_LIVRE_2,
+  CODE_TRAVAIL_INCENDIE,
+  CCH_REGISTRE_SECURITE,
+  ARRETE_2011_12_14_ECLAIRAGE,
+  ARRETE_2011_12_30_IGH,
+];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {
   return CORPUS.map(couverture);
@@ -38,23 +50,68 @@ export function referencesDepouillees(): Set<string> {
  * C'est la mesure qui manquait. Le référentiel savait dire ce qu'il connaît ;
  * il ne savait pas dire ce qu'il a lu, donc aucun test ne pouvait échouer
  * parce qu'une obligation MANQUE — seulement parce qu'une obligation est
- * fausse. Ce compte est l'angle mort, rendu visible et décroissant.
+ * fausse.
  *
- * La comparaison porte sur la `reference` littérale, qui n'est pas normalisée
- * dans le référentiel (« R. 4227-39 », « CCH, art. R. 143-44 (ex R. 123-51) »).
- * On teste donc l'inclusion de la référence d'article dans la chaîne citée,
- * ce qui est approximatif mais ne peut que SOUS-estimer la couverture — jamais
- * la surestimer. Une mesure de dette doit se tromper dans ce sens-là.
+ * Le rapprochement se fait sur `ReferenceLegale.article`, la clé canonique, et
+ * non plus sur la citation lisible. La version précédente comparait des
+ * sous-chaînes — « MS 38 » apparaît-il dans « Arrêté du 25 juin 1980, art.
+ * MS 38 § 4 » ? — ce qui marchait par chance et se serait trompé dès qu'un
+ * article en aurait préfixé un autre : « MS 7 » est inclus dans « MS 73 ».
+ *
+ * Une référence sans clé compte comme non dépouillée. Le silence ne vaut pas
+ * couverture.
  */
 export function obligationsSurTextesNonDepouilles(): string[] {
-  const lues = [...referencesDepouillees()];
+  const lues = referencesDepouillees();
   return obligationsConformite
     .filter((o) =>
-      o.referencesLegales.some(
-        (r) => !lues.some((ref) => r.reference.includes(ref)),
-      ),
+      o.referencesLegales.some((r) => !r.article || !lues.has(r.article)),
     )
     .map((o) => o.id);
+}
+
+/**
+ * Les articles qu'une obligation cite sans qu'aucun corpus ne les connaisse.
+ *
+ * Le pendant du compte ci-dessus, à la maille de l'article : c'est la liste de
+ * travail du dépouillement, ordonnée par ce que le référentiel utilise
+ * réellement plutôt que par l'ordre d'un code.
+ */
+export function articlesCitesNonDepouilles(): { article: string; obligations: string[] }[] {
+  const lues = referencesDepouillees();
+  const par = new Map<string, string[]>();
+  for (const o of obligationsConformite) {
+    for (const r of o.referencesLegales) {
+      if (!r.article || lues.has(r.article)) continue;
+      par.set(r.article, [...(par.get(r.article) ?? []), o.id]);
+    }
+  }
+  return [...par].map(([article, obligations]) => ({ article, obligations }));
+}
+
+/**
+ * Les articles déclarés « retenus » par un corpus alors que l'obligation
+ * nommée ne les cite pas.
+ *
+ * C'est le sens inverse du lien, et il doit être vérifié aussi : sans cela un
+ * corpus pourrait s'attribuer une couverture qu'aucune obligation ne confirme,
+ * et le compte de dette descendrait sans que rien ne s'améliore.
+ */
+export function liensRetenusRompus(): { corpus: string; ref: string; obligation: string }[] {
+  const parId = new Map(obligationsConformite.map((o) => [o.id, o]));
+  const rompus: { corpus: string; ref: string; obligation: string }[] = [];
+  for (const c of CORPUS) {
+    for (const a of c.articles) {
+      if (a.statut !== "retenu") continue;
+      for (const id of a.obligations) {
+        const o = parId.get(id);
+        if (!o || !o.referencesLegales.some((r) => r.article === a.ref)) {
+          rompus.push({ corpus: c.id, ref: a.ref, obligation: id });
+        }
+      }
+    }
+  }
+  return rompus;
 }
 
 /**
@@ -79,5 +136,22 @@ export function obligationsManquantes(): {
         motif: a.statut === "obligation_manquante" ? a.motif : "",
         bloquePar: a.statut === "obligation_manquante" ? a.bloquePar : undefined,
       })),
+  );
+}
+
+/**
+ * Les références qui ne portent pas encore de clé d'article.
+ *
+ * Sans clé, une référence ne peut être rattachée à aucun corpus : elle compte
+ * comme non dépouillée, mais n'apparaît dans aucune liste de travail par
+ * article. Ce compte est le complément indispensable des deux autres — sinon
+ * « 0 article cité non dépouillé » se lirait comme « tout est lu » alors que
+ * la plupart des références ne sont même pas rattachables.
+ */
+export function referencesSansCle(): { obligation: string; reference: string }[] {
+  return obligationsConformite.flatMap((o) =>
+    o.referencesLegales
+      .filter((r) => !r.article)
+      .map((r) => ({ obligation: o.id, reference: r.reference })),
   );
 }
