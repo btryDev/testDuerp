@@ -15,18 +15,24 @@
  * R. 4323-23/24 = VGP, R. 4323-25 à 27 = registre, R. 4323-28 = remise en
  * service.
  *
- * Scope MVP : équipements courants en TPE/PME — monte-charges, hayons
- * élévateurs, gerbeurs, chariots élévateurs, petits palans. Les grues mobiles,
- * portiques et appareils soumis à régime ICPE sortent du périmètre V2.
+ * Scope MVP : équipements courants en TPE/PME — hayons élévateurs, gerbeurs,
+ * chariots élévateurs, petits palans. Les grues mobiles, portiques et appareils
+ * soumis à régime ICPE sortent du périmètre V2.
+ *
+ * Les MONTE-CHARGES en ont été retirés le 2026-08-26 : l'annexe de l'arrêté
+ * exclut expressément « les ascenseurs et les monte-charges ainsi que les
+ * élévateurs de personnes n'excédant pas une vitesse de 0,15 m/s, installés à
+ * demeure ». Ils relevaient donc d'un texte que cet arrêté ne régit pas — les
+ * ascenseurs ont leur propre domaine.
  *
  * Ce qui entre dans le champ ne se déduit ni de la motorisation ni du nom de
  * l'engin, mais du **changement de niveau significatif** de la charge
  * (arrêté du 1er mars 2004, art. 2 a) : « N'est pas considéré comme
  * significatif un changement de niveau correspondant à ce qui est juste
- * nécessaire pour déplacer la charge en la décollant du sol ». L'annexe du
+ * nécessaire pour déplacer la charge en la décollant du sol et n'est pas susceptible d'engendrer de risques en cas de défaillance du support de charge ». L'annexe du
  * même arrêté (version du 9 janvier 2011) exclut d'ailleurs nommément « les
  * transpalettes levant la charge juste de la hauteur nécessaire pour la
- * déplacer en la décollant du sol » — un transpalette, même électrique, reste
+ * déplacer en la décollant du sol et n'est pas susceptible d'engendrer de risques en cas de défaillance du support de charge » — un transpalette, même électrique, reste
  * donc hors champ, tandis qu'un gerbeur manuel y entre. Cette même annexe
  * range « chariots automoteurs élévateurs à conducteur porté ou non,
  * gerbeurs » dans une seule famille : c'est par elle que le gerbeur rejoint
@@ -99,7 +105,7 @@ export const obligationsLevage: Obligation[] = [
     domaine: "levage",
     libelle: "Vérification générale périodique annuelle (levage de charges)",
     description:
-      "Les appareils servant au levage de charges font l'objet d'une vérification générale périodique (VGP) au moins annuelle par une personne compétente. La VGP contrôle notamment les dispositifs d'arrêt d'urgence, les limiteurs de charge, les freins et l'état des organes de suspension.",
+      "Les appareils servant au levage de charges font l'objet d'une vérification générale périodique (VGP) au moins annuelle par une personne qualifiée. Elle comporte l'examen de l'état de conservation prévu à l'article 9 — dispositifs de calage, amarrage et freinage, freins, dispositifs contrôlant la descente des charges, poulies de mouflage, limiteurs de charge et de moment de renversement, dispositifs limitant les mouvements, crochets et appareils de préhension, câbles et chaînes de charge — et les essais des b et c de l'article 6.",
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
@@ -110,7 +116,7 @@ export const obligationsLevage: Obligation[] = [
       },
       {
         source: "ARRETE",
-        reference: "Arrêté du 1er mars 2004, art. 22 et 23 (périodicité de 12 mois)",
+        reference: "Arrêté du 1er mars 2004, art. 23 (périodicité de 12 mois)",
         article: "Arrêté 2004-03-01 art. 23",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680469",
@@ -192,7 +198,7 @@ export const obligationsLevage: Obligation[] = [
     domaine: "levage",
     libelle: "Vérification générale semestrielle (levage de personnes)",
     description:
-      "Les équipements utilisés pour le levage de personnes font l'objet d'une VGP tous les six mois par une personne compétente. Cette périodicité vaut également pour les appareils servant occasionnellement au levage de personnes (nacelles).",
+      "Les appareils de levage mus par une énergie autre que la force humaine employée directement, utilisés pour le transport des personnes ou pour déplacer en élévation un poste de travail, font l'objet d'une VGP tous les six mois par une personne qualifiée. Les plates-formes élévatrices mobiles de personnes y sont visées directement par la liste de l'article 20-II. Lorsque l'appareil est mû par la force humaine employée directement, l'article 23 b) ramène la périodicité à trois mois — cas non encodé, faute d'une propriété d'équipement qui le distingue.",
     referencesLegales: [
       {
         source: "ARRETE",
@@ -229,7 +235,7 @@ export const obligationsLevage: Obligation[] = [
     domaine: "levage",
     libelle: "Vérification périodique des accessoires de levage (élingues, crochets, anneaux)",
     description:
-      "Les accessoires de levage (élingues, chaînes, câbles, crochets, anneaux, manilles, palonniers) font l'objet d'une vérification périodique au moins annuelle portant sur leur état, leur marquage de charge et la conformité de leur utilisation.",
+      "Les accessoires de levage (élingues, chaînes, câbles, crochets, anneaux, manilles, palonniers) sont soumis tous les douze mois à une vérification portant sur leur bon état de conservation, et notamment sur toute détérioration — déformation, hernie, étranglement, toron cassé, nombre de fils cassés supérieur à celui admissible, linguet détérioré — ou toute autre limite d'emploi précisée par la notice du fabricant.",
     referencesLegales: [
       {
         source: "ARRETE",
@@ -266,7 +272,7 @@ export const obligationsLevage: Obligation[] = [
     domaine: "levage",
     libelle: "Examen de l'état de conservation (équipement de levage en service)",
     description:
-      "Lors de chaque VGP, l'état de conservation des éléments essentiels à la sécurité (structure, mécanismes, organes de sécurité) est examiné. Toute anomalie notable impose une mise hors service jusqu'à remise en conformité.",
+      "Lors de chaque VGP, l'examen de l'état de conservation a pour objet de déceler toute détérioration susceptible d'être à l'origine de situations dangereuses, sur les éléments essentiels que l'article 9 énumère. Il comprend un examen visuel détaillé, complété en tant que de besoin d'essais de fonctionnement.",
     referencesLegales: [
       {
         source: "ARRETE",
@@ -296,7 +302,7 @@ export const obligationsLevage: Obligation[] = [
     domaine: "levage",
     libelle: "Examen approfondi à la remise en service (après réparation notable)",
     description:
-      "Après démontage, modification ou réparation d'un élément essentiel à la sécurité, un examen approfondi est réalisé par une personne compétente avant remise en service. Pour les appareils servant au levage de personnes, une épreuve de fonctionnement est ajoutée.",
+      "La vérification lors de la remise en service comprend l'examen d'adéquation, le cas échéant l'examen de montage et d'installation, l'examen de l'état de conservation, l'épreuve statique et l'épreuve dynamique. Elle est due après démontage et remontage ou modification (R. 4323-28), et l'article 20-I y ajoute le changement de site d'utilisation, le changement de configuration ou des conditions d'utilisation sur un même site, et la suite de tout accident provoqué par la défaillance d'un organe essentiel.",
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
@@ -326,7 +332,7 @@ export const obligationsLevage: Obligation[] = [
     domaine: "levage",
     libelle: "Tenue du registre de sécurité (vérifications levage)",
     description:
-      "Les résultats des vérifications (VGP, examens d'adéquation, épreuves, remises en service) sont consignés sur le ou les registres de sécurité de l'établissement et tenus à la disposition de l'inspection du travail. Lorsque la vérification est faite par un tiers, son rapport est annexé au registre ; à défaut, la date de la vérification, celle de la remise du rapport et son lieu d'archivage y sont portées.",
+      "Le résultat des vérifications générales périodiques est consigné sur le ou les registres de sécurité mentionnés à l'article L. 4711-5. Lorsque la vérification est faite par un tiers, son rapport est annexé au registre ; à défaut, la date de la vérification, celle de la remise du rapport et son lieu d'archivage y sont portées.",
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
