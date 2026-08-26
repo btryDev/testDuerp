@@ -61,12 +61,39 @@ de 2021. Signale-le, ne le recopie pas comme s'il était en vigueur.
    l'évaluation « tient compte de l'impact différencié de l'exposition au
    risque en fonction du sexe » — le produit citait l'article et ignorait
    cette phrase.
-4. Vérifier le **champ d'application**, qui se lit rarement dans l'article
-   lui-même : il vient souvent d'un renvoi (R. 4227-39 → R. 4227-37 →
-   R. 4227-34) ou de la place du texte dans la hiérarchie (les articles MS
-   relèvent du Livre II, écarté en 5ᵉ catégorie par PE 1 § 1).
-5. Rendre : référence, URL, date de version, verbatim, et **l'écart** avec ce
-   qu'encode le référentiel — ou « aucun écart ».
+4. **Relever le chemin hiérarchique complet** — Livre, Titre, Chapitre,
+   Section — en même temps que le verbatim. Légifrance l'affiche en tête de
+   page. Ce n'est pas décoratif : c'est lui qui dit si l'article tombe sous
+   une exclusion.
+
+   Exemple vécu, et l'erreur qui va avec. Les articles MS 45 à MS 52 se
+   trouvent sous « Livre II : Dispositions applicables aux établissements des
+   quatre premières catégories > Titre Ier : Dispositions générales >
+   Chapitre XI > Section 4 ». Et PE 1 § 1 écarte le Livre II entier en 5ᵉ
+   catégorie. Donc pas de service de sécurité incendie au sens MS 46 en 5ᵉ.
+
+   Sans ce relevé, on déduit. Quelqu'un a conclu du champ de PE 1 que « le
+   Livre II, ce sont les dispositions particulières par type » — la
+   conclusion tombait juste par accident, la raison était fausse, et une
+   raison fausse se réutilise ailleurs où elle ne tombera pas juste.
+
+5. Vérifier le **champ d'application**, qui se lit rarement dans l'article
+   lui-même : il vient souvent d'un renvoi en chaîne (R. 4227-39 → R. 4227-37
+   → R. 4227-34), qu'il faut remonter jusqu'au bout.
+6. Rendre : référence, URL, date de version, chemin hiérarchique, verbatim, et
+   **l'écart** avec ce qu'encode le référentiel — ou « aucun écart ».
+
+## Une lecture indirecte n'est pas une lecture
+
+Les reproductions consolidées du droit — bases professionnelles, sites
+spécialisés, miroirs — sont commodes parce qu'elles se laissent lire là où
+Légifrance résiste. Elles ne valent pas source.
+
+Lire deux reproductions concordantes ne fait pas une vérification : elles
+peuvent dériver du même relevé, et aucune ne porte la date de version faisant
+foi. Une référence n'entre au référentiel qu'après lecture du texte sur
+Légifrance. Si tu n'as pu lire qu'indirectement, dis-le en toutes lettres et
+classe le résultat comme piste, pas comme constat.
 
 ## Chercher ce qui est nouveau
 

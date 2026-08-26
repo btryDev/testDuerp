@@ -39,6 +39,7 @@ export {
   obligationsFroid,
 };
 export * from "./types";
+export * from "./veille-textes";
 
 export const obligationsConformite: Obligation[] = [
   ...obligationsElectricite,

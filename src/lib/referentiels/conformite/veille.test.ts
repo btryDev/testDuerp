@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from "vitest";
 import { construireListe } from "../../../../scripts/veille-worklist";
-import { obligationsConformite } from "./index";
+import { obligationsConformite, TEXTES_A_VENIR } from "./index";
 
 const LE_JOUR = new Date("2026-08-26T12:00:00Z");
 
@@ -65,5 +65,39 @@ describe("veille — liste de travail", () => {
     const rdv = rendezVous.find((r) => r.le === "2027-01-01");
     expect(rdv, "le rendez-vous du 1er janvier 2027 a disparu").toBeDefined();
     expect(rdv?.joursRestants).toBe(128);
+  });
+});
+
+describe("veille — textes à venir", () => {
+  const CLE_JOUR = /^\d{4}-\d{2}-\d{2}$/;
+
+  it("chaque texte porte une date d'entrée en vigueur et une date de vérification", () => {
+    for (const t of TEXTES_A_VENIR) {
+      expect(t.entreeEnVigueur, t.intitule).toMatch(CLE_JOUR);
+      expect(t.verifieLe, t.intitule).toMatch(CLE_JOUR);
+      expect(t.url, t.intitule).toMatch(/^https:\/\/www\.legifrance\.gouv\.fr\//);
+    }
+  });
+
+  it("chaque texte dit ce qu'il change et ce qu'il faudra regarder", () => {
+    for (const t of TEXTES_A_VENIR) {
+      // Une entrée qui n'indique pas quoi relire oblige à rouvrir l'enquête
+      // entière le jour où l'alarme sonne — c'est le défaut qu'on corrige.
+      expect(t.portee.length, t.intitule).toBeGreaterThan(120);
+    }
+  });
+
+  it("aucun texte n'est entré en vigueur sans avoir été dépouillé", () => {
+    const aujourdHui = new Date().toISOString().slice(0, 10);
+    const echus = TEXTES_A_VENIR.filter((t) => t.entreeEnVigueur <= aujourdHui).map(
+      (t) => `${t.intitule} (en vigueur depuis le ${t.entreeEnVigueur}) — ${t.portee}`,
+    );
+    expect(
+      echus,
+      `Texte(s) entré(s) en vigueur au ${aujourdHui} et encore en attente de ` +
+        `dépouillement. Lire le texte, décider s'il crée, modifie ou ne change ` +
+        `aucune obligation, puis retirer l'entrée de TEXTES_A_VENIR.` +
+        `\n\n${echus.join("\n")}`,
+    ).toEqual([]);
   });
 });
