@@ -46,12 +46,14 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 5 (examen d'adéquation et de montage) et art. 12 à 15",
+        article: "Arrêté 2004-03-01 art. 5",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-22",
+        article: "R. 4323-22",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531483/",
       },
@@ -72,12 +74,14 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 6, 10 et 11 (essai de fonctionnement, épreuves statique et dynamique)",
+        article: "Arrêté 2004-03-01 art. 10-11",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-22",
+        article: "R. 4323-22",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531483/",
       },
@@ -100,12 +104,14 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23 et R. 4323-24",
+        article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 22 et 23 (périodicité de 12 mois)",
+        article: "Arrêté 2004-03-01 art. 23",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680469",
       },
@@ -136,12 +142,14 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23",
+        article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 23 a)",
+        article: "Arrêté 2004-03-01 art. 23",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680469",
         note: "« Toutefois, cette périodicité est de : a) Six mois pour les appareils de levage ci-après : - appareils de levage listés aux II et III de l'article 20 […] ».",
@@ -149,6 +157,7 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 20-II",
+        article: "Arrêté 2004-03-01 art. 20",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680466",
         note: "Liste où figurent les « chariots élévateurs » et les « hayons élévateurs ».",
@@ -156,6 +165,7 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, annexe",
+        article: "Arrêté 2004-03-01 annexe",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000023453892",
         note: "Version du 9 janvier 2011. Range « chariots automoteurs élévateurs à conducteur porté ou non, gerbeurs » dans une même famille — c'est par elle que le gerbeur rejoint les « chariots élévateurs » de l'article 20-II, le mot n'y figurant pas. La même annexe exclut les transpalettes à simple décollement de charge.",
@@ -187,12 +197,14 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 23 (périodicité de 6 mois pour les appareils servant au transport de personnes ou à l'élévation d'un poste de travail)",
+        article: "Arrêté 2004-03-01 art. 23",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680469",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23",
+        article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
       },
@@ -222,12 +234,14 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 24 (vérification périodique des accessoires)",
+        article: "Arrêté 2004-03-01 art. 24",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23",
+        article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
       },
@@ -257,12 +271,14 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 9 (examen de l'état de conservation) et art. 22",
+        article: "Arrêté 2004-03-01 art. 9",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-23",
+        article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
       },
@@ -285,12 +301,14 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-28",
+        article: "R. 4323-28",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531467/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 18 à 21 (remise en service)",
+        article: "Arrêté 2004-03-01 art. 19",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
       },
@@ -313,6 +331,7 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-25",
+        article: "R. 4323-25",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531475",
         note: "Fonde la consignation : « Le résultat des vérifications générales périodiques est consigné sur le ou les registres de sécurité mentionnés à l'article L. 4711-5. »",
@@ -320,6 +339,7 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-26",
+        article: "R. 4323-26",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531473",
         note: "Annexion au registre des rapports établis par un vérificateur extérieur à l'établissement.",
@@ -327,6 +347,7 @@ export const obligationsLevage: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4323-27",
+        article: "R. 4323-27",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531471",
         note: "Autorise la tenue et la conservation du registre sur tout support, dans les conditions de l'article L. 8113-6 — c'est cet article qui fonde le registre numérique, et non L. 4711-5.",

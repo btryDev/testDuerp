@@ -61,11 +61,10 @@ export const CORPUS_PE: Corpus = {
     versionEnVigueur: "2026-07-01",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
-    statut: "obligation_manquante",
-    motif:
+    statut: "retenu",
+    obligations: ["elec-erp-cat5-quinquennale"],
+    prescrit:
       "Impose DEUX obligations périodiques que le référentiel ne porte pas : au § 2, l'entretien et la vérification de l'ensemble des installations techniques « tous les trois ans au plus » par des techniciens compétents, pour tous les établissements ; au § 1, un contrat annuel d'entretien du système de détection incendie, restreint aux établissements avec locaux à sommeil. Version réécrite par l'arrêté du 1er décembre 2025.",
-    bloquePar:
-      "Porteur d'échéance : l'obligation naît de l'établissement, pas d'un équipement. `categoriesEquipement` est requis et `Verification.equipementId` n'est pas nullable.",
   },
   {
     ref: "PE 5",

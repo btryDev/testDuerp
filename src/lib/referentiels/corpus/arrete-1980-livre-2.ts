@@ -17,6 +17,23 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
     "Dispositions générales (MS, EC, EL, DF, GE) et particulières par type. PE 1 § 1 l'écarte en 5e catégorie sauf renvoi exprès : le Livre III n'en ouvre que MS 39 et MS 70. Les articles listés ici sont cités par le référentiel malgré cette exclusion — la sur-application est documentée obligation par obligation.",
   articles: [
   {
+    ref: "GE 6",
+    versionEnVigueur: "2007-11-19",
+    versionFuture: "2027-06-01",
+    luLe: "2026-08-26",
+    lecture: "agent_verbatim",
+    statut: "retenu",
+    obligations: ["elec-erp-mise-en-service"],
+  },
+  {
+    ref: "EL 18",
+    versionEnVigueur: "2019-07-01",
+    luLe: "2026-08-26",
+    lecture: "agent_verbatim",
+    statut: "retenu",
+    obligations: ["elec-erp-groupe-electrogene-annuel"],
+  },
+  {
     ref: "MS 38",
     versionEnVigueur: "2008-10-08",
     luLe: "2026-08-26",
@@ -54,7 +71,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
     statut: "retenu",
-    obligations: ["incendie-erp-baes-annuelle"],
+    obligations: ["elec-erp-cat1-4-annuelle", "elec-erp-groupe-electrogene-annuel", "elec-erp-mise-en-service", "incendie-erp-baes-annuelle"],
   },
   {
     ref: "DF 10",

@@ -7,6 +7,10 @@ import { ARRETE_2011_12_14_ECLAIRAGE } from "./arrete-2011-12-14-eclairage";
 import { ARRETE_2011_12_30_IGH } from "./arrete-2011-12-30-igh";
 import { CCH_REGISTRE_SECURITE } from "./cch-registre-securite";
 import { CODE_TRAVAIL_INCENDIE } from "./code-travail-incendie";
+import { ARRETE_2004_03_01_LEVAGE } from "./arrete-2004-03-01-levage";
+import { ARRETE_2011_12_26_ELECTRICITE } from "./arrete-2011-12-26-electricite";
+import { CODE_TRAVAIL_ELECTRICITE } from "./code-travail-electricite";
+import { CODE_TRAVAIL_LEVAGE } from "./code-travail-levage";
 import { FROID_FLUIDES } from "./froid-fluides";
 import { couverture, type Corpus, type CouvertureCorpus } from "./types";
 
@@ -28,6 +32,10 @@ export const CORPUS: readonly Corpus[] = [
   ARRETE_2011_12_14_ECLAIRAGE,
   ARRETE_2011_12_30_IGH,
   FROID_FLUIDES,
+  CODE_TRAVAIL_LEVAGE,
+  ARRETE_2004_03_01_LEVAGE,
+  CODE_TRAVAIL_ELECTRICITE,
+  ARRETE_2011_12_26_ELECTRICITE,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {

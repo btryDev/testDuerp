@@ -129,12 +129,12 @@ describe("corpus — la dette de lecture, mesurée et décroissante", () => {
   // Il descend à mesure que les corpus sont dépouillés. Quand il atteint 0,
   // le référentiel peut dire — et prouver — qu'il ne repose que sur des textes
   // lus de bout en bout.
-  const PLAFOND = 54;
+  const PLAFOND = 38;
 
   // Le nombre de références qui ne portent même pas de clé d'article, donc
   // rattachables à aucun corpus. Complément indispensable du plafond : sans
   // lui, « 0 article cité non dépouillé » se lirait comme « tout est lu ».
-  const PLAFOND_SANS_CLE = 90;
+  const PLAFOND_SANS_CLE = 53;
 
   it("ne dépasse pas le plafond, et le plafond ne remonte pas", () => {
     const restantes = obligationsSurTextesNonDepouilles();
@@ -187,7 +187,9 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     // périodicité écrite. Si ce test casse, c'est qu'un article a changé de
     // statut — donc que quelqu'un a relu, ou que quelqu'un s'est trompé.
     const refs = obligationsManquantes().map((o) => o.ref);
-    expect(refs).toEqual(["PE 4", "PE 27"]);
+    // PE 4 a quitté la liste : le référentiel le cite désormais (domaine
+    // électricité), il est donc « retenu ». PE 27 reste manquant.
+    expect(refs).toEqual(["PE 27"]);
   });
 
   it("chaque obligation manquante dit ce qui empêche de l'encoder ou pourquoi elle manque", () => {

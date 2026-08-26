@@ -33,12 +33,14 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-14",
+        article: "R. 4226-14",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765072/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 26 décembre 2011 (vérifications des installations électriques), art. 3 à 5",
+        article: "Arrêté 2011-12-26 art. 2",
         url:
           "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000025046978",
       },
@@ -59,12 +61,14 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-16",
+        article: "R. 4226-16",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 26 décembre 2011 (vérifications des installations électriques), art. 1 et 2",
+        article: "Arrêté 2011-12-26 art. 3",
         url:
           "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000025046978",
       },
@@ -85,12 +89,14 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "L. 4711-5",
+        article: "L. 4711-5",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389/",
       },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4226-19",
+        article: "R. 4226-19",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
       },
@@ -111,12 +117,14 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4544-9 à R. 4544-11",
+        article: "R. 4544-10",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022849102/",
       },
       {
         source: "INRS",
         reference: "INRS ED 6127 « Habilitation électrique »",
+        article: "INRS ED 6127",
         url:
           "https://www.inrs.fr/media.html?refINRS=ED%206127",
       },
@@ -143,12 +151,14 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. GE 6 à GE 8 (vérifications par organismes agréés, rapport RVRAT)",
+        article: "GE 6",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303884/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EL 19 § 2 (installations neuves ou modifiées)",
+        article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
       },
@@ -171,6 +181,7 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EL 19 § 1 et § 2",
+        article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
       },
@@ -193,12 +204,14 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 22 juin 1990 (ERP 5ᵉ catégorie), art. PE 4 § 2, rédaction de l'arrêté du 1er décembre 2025",
+        article: "PE 4",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374770/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 1er décembre 2025 modifiant le règlement de sécurité ERP (applicable au 1er juillet 2026)",
+        article: "Arrêté 2025-12-01",
         url:
           "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053020948",
       },
@@ -221,12 +234,14 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EL 18 § 4 (entretien et essais des groupes électrogènes de sécurité)",
+        article: "EL 18",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038485456/",
       },
       {
         source: "ARRETE",
         reference: "Arrêté du 25 juin 1980, art. EL 19 (vérification annuelle)",
+        article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
       },
@@ -261,6 +276,7 @@ export const obligationsElectricite: Obligation[] = [
       {
         source: "ARRETE",
         reference: "Arrêté du 30 décembre 2011 (règlement IGH), art. GH 5 (vérifications techniques par organismes agréés)",
+        article: "GH 5",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025169258",
       },
