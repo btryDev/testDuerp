@@ -20,7 +20,8 @@
     "mcp:test": "tsx scripts/mcp-http-test.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",
     "fix:libelles": "tsx scripts/corriger-libelles-demo.ts",
-    "etaler:echeances": "tsx scripts/etaler-echeances-demo.ts"
+    "etaler:echeances": "tsx scripts/etaler-echeances-demo.ts",
+    "veille": "tsx scripts/veille-worklist.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",

@@ -71,6 +71,44 @@ export type ReferenceLegale = {
    * restreint, dérogation possible…). Optionnel.
    */
   note?: string;
+  /**
+   * Date de la version du texte constatée à la dernière relecture, en clé de
+   * jour civil « AAAA-MM-JJ ».
+   *
+   * C'est le point de comparaison de la veille : Légifrance affiche pour
+   * chaque article la date depuis laquelle sa version est en vigueur. Si elle
+   * a bougé depuis celle-ci, le texte a été modifié et l'obligation est à
+   * relire.
+   *
+   * Sans ce repère, rien ne distingue une référence relue hier d'une
+   * référence encodée il y a deux ans : R. 143-44 a été réécrit le
+   * 1er juillet 2026 et le référentiel a continué de le citer deux mois,
+   * sans que rien ne puisse le signaler.
+   *
+   * `undefined` = jamais constatée. À traiter comme « à vérifier », pas
+   * comme « à jour ».
+   */
+  versionConstatee?: string;
+};
+
+/**
+ * Un rendez-vous de relecture, quand le texte lui-même en annonce un.
+ *
+ * Deux cas seulement, et ils sont réels : un article porte une version future
+ * programmée (R. 4227-37 change au 1er janvier 2027), ou un arrêté est publié
+ * avec une date d'application différée (arrêté du 1er décembre 2025 applicable
+ * au 1er juillet 2026).
+ *
+ * Cette information existait déjà — mais en prose, dans `notesInternes`, donc
+ * illisible par une machine et invisible le jour venu. Deux des trois
+ * rendez-vous que portait le référentiel étaient déjà échus sans que personne
+ * ne l'ait su.
+ */
+export type RelectureDue = {
+  /** Clé de jour civil « AAAA-MM-JJ ». */
+  le: string;
+  /** Ce qui change, et où le lire. Une phrase. */
+  motif: string;
 };
 
 /**
@@ -170,4 +208,10 @@ export type Obligation = {
   conditions?: ConditionApplication[];
   /** Note de contexte interne (ex. précisions de portée) — non affichée par défaut. */
   notesInternes?: string;
+  /**
+   * Rendez-vous de relecture annoncé par le texte lui-même. Un test échoue
+   * quand la date est passée : une note qui ne réveille personne n'est pas un
+   * garde-fou.
+   */
+  relectureDue?: RelectureDue;
 };

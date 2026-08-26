@@ -944,3 +944,71 @@ describe("référentiel conformité — version et empreinte", () => {
     expect(b).toBe(a);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Veille réglementaire
+//
+// Le référentiel savait déjà que certains textes changeraient — mais il le
+// disait en prose, dans `notesInternes`. Une note ne réveille personne : deux
+// des trois rendez-vous que portait le référentiel étaient échus depuis des
+// semaines sans que quiconque l'ait su, et R. 143-44 a été cité deux mois
+// après sa réécriture.
+//
+// Ces tests sont la contrepartie du champ structuré : ils échouent le jour où
+// une relecture devient due. Oui, cela veut dire qu'une suite verte peut
+// rougir un matin sans qu'une ligne de code ait bougé. C'est exactement
+// l'effet recherché — c'est le seul moment où l'information sert.
+// ---------------------------------------------------------------------------
+
+describe("veille — rendez-vous de relecture", () => {
+  const CLE_JOUR = /^\d{4}-\d{2}-\d{2}$/;
+
+  it("toute date de relecture est une clé de jour civil", () => {
+    for (const o of obligationsConformite) {
+      if (!o.relectureDue) continue;
+      expect(o.relectureDue.le, o.id).toMatch(CLE_JOUR);
+    }
+  });
+
+  it("tout rendez-vous porte un motif exploitable", () => {
+    for (const o of obligationsConformite) {
+      if (!o.relectureDue) continue;
+      // Un motif qui ne dit pas quoi relire oblige à rouvrir l'enquête
+      // entière le jour où l'alarme sonne.
+      expect(o.relectureDue.motif.length, o.id).toBeGreaterThan(60);
+    }
+  });
+
+  it("aucune relecture n'est échue", () => {
+    const aujourdHui = new Date().toISOString().slice(0, 10);
+    const echues = obligationsConformite
+      .filter((o) => o.relectureDue && o.relectureDue.le <= aujourdHui)
+      .map((o) => `${o.id} (due le ${o.relectureDue!.le}) : ${o.relectureDue!.motif}`);
+
+    expect(
+      echues,
+      `Relecture(s) échue(s) au ${aujourdHui}. Relire le ou les textes sur ` +
+        `Légifrance, corriger l'obligation, mettre à jour versionConstatee, ` +
+        `puis retirer ou repousser relectureDue. Ne pas repousser la date ` +
+        `sans avoir relu : ce test ne mesure pas le temps, il mesure une ` +
+        `dette.\n\n${echues.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("une version constatée est une clé de jour civil, jamais dans le futur", () => {
+    const aujourdHui = new Date().toISOString().slice(0, 10);
+    for (const o of obligationsConformite) {
+      for (const r of o.referencesLegales) {
+        if (!r.versionConstatee) continue;
+        expect(r.versionConstatee, `${o.id} / ${r.reference}`).toMatch(CLE_JOUR);
+        // Une version « en vigueur » à une date future n'a pas été constatée,
+        // elle a été anticipée : c'est un rendez-vous, pas un constat.
+        expect(
+          r.versionConstatee <= aujourdHui,
+          `${o.id} / ${r.reference} : version constatée dans le futur (${r.versionConstatee}) — ` +
+            `un texte à application différée se note en relectureDue, pas en versionConstatee`,
+        ).toBe(true);
+      }
+    }
+  });
+});

@@ -56,6 +56,11 @@ export const obligationsIncendie: Obligation[] = [
   },
   {
     id: "incendie-travail-consigne-affichee",
+    relectureDue: {
+      le: "2027-01-01",
+      motif:
+        "R. 4227-37 porte une version future au 1er janvier 2027 (décret n° 2025-1100, art. 3), dans le cadre du transfert des dispositions « bâtiments à usage professionnel » vers le CCH. Le champ d'application de la consigne — et donc celui des exercices de R. 4227-39, qui en dépend par renvoi — peut en être modifié. Relire R. 4227-37, R. 4227-34, et les articles R. 144-16 et R. 144-17 créés à la même date.",
+    },
     domaine: "incendie",
     libelle: "Consigne de sécurité incendie établie et affichée",
     description:
@@ -130,12 +135,31 @@ export const obligationsIncendie: Obligation[] = [
         reference: "CCH, art. R. 143-44 (ex R. 123-51) — ERP",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043819037/",
+        note: "Version en vigueur depuis le 1er juillet 2026 (décret n° 2025-1100 du 19 novembre 2025) : ajout du 5° sur les dates des exercices de sécurité incendie, et renvoi aux articles R. 141-10 et R. 141-11. Vise « les établissements soumis aux prescriptions du présent chapitre » — tous les ERP, 5e catégorie comprise.",
+        versionConstatee: "2026-07-01",
+      },
+      {
+        source: "CCH",
+        reference: "CCH, art. R. 141-10 — contenu du registre",
+        url:
+          "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000043818891/",
+        note: "Créé au 1er juillet 2026. Le registre « comprend en particulier les vérifications réalisées, les mesures de correction des écarts constatés ainsi que les diverses consignes établies en cas d'incendie, y compris concernant l'évacuation et la mise en sécurité des personnes ».",
+        versionConstatee: "2026-07-01",
+      },
+      {
+        source: "CCH",
+        reference: "CCH, art. R. 141-11 — solutions d'effet équivalent",
+        url:
+          "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000043818891/",
+        note: "Créé au 1er juillet 2026. Les éléments identifiant une solution d'effet équivalent sont annexés au registre. Sans objet pour un établissement qui n'en met aucune en œuvre.",
+        versionConstatee: "2026-07-01",
       },
       {
         source: "CCH",
         reference: "CCH, art. R. 146-35 (ex R. 122-29) — IGH",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043819153",
+        versionConstatee: "2026-07-01",
       },
     ],
     periodicite: "autre",
