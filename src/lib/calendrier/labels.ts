@@ -8,6 +8,7 @@ export const LABEL_PERIODICITE: Record<Periodicite, string> = {
   hebdomadaire: "hebdomadaire",
   bimensuelle: "tous les 15 jours",
   mensuelle: "mensuelle",
+  six_semaines: "toutes les 6 semaines",
   trimestrielle: "trimestrielle",
   semestrielle: "semestrielle",
   annuelle: "annuelle",

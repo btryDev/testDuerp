@@ -24,6 +24,7 @@ export const PERIODICITES = [
   "hebdomadaire",
   "bimensuelle",
   "mensuelle",
+  "six_semaines",
   "trimestrielle",
   "semestrielle",
   "annuelle",
@@ -53,6 +54,11 @@ export const PERIODICITE_EN_JOURS: Record<Periodicite, number | null> = {
   // sept fait retomber le rendez-vous le même jour de la semaine.
   bimensuelle: 14,
   mensuelle: 30,
+  // Quarante-deux jours. L'annexe de l'arrêté du 18 novembre 2004 écrit un
+  // « INTERVALLE maximum de six semaines » pour la visite de base des
+  // ascenseurs. Six semaines n'est pas un mois et demi : le texte compte en
+  // semaines, la conversion est exacte.
+  six_semaines: 42,
   trimestrielle: 91,
   semestrielle: 182,
   annuelle: 365,

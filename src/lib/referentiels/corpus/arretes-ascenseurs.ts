@@ -25,22 +25,12 @@ export const ARRETES_ASCENSEURS: Corpus = {
       "ascenseur-entretien-contrat",
       "ascenseur-examen-annuel-securite",
       "ascenseur-examen-semestriel-secours",
+      "ascenseur-visite-six-semaines",
     ],
     citationCle:
       "Annexe, trois colonnes : « INTERVALLE maximum de six semaines » / « FRÉQUENCE minimale semestrielle » / « FRÉQUENCE minimale annuelle ». « Nota. - Pour les lignes non cochées, la fréquence est laissée à l'appréciation des contractants. »",
     prescrit:
-      "Dix-huit lignes cochées sur les trente-six du tableau. SEMESTRIEL (3) : frein ; câbles ou chaînes de suspension et leurs extrémités ; dispositif antidérive. ANNUEL (6) : cuvette, toit de cabine et local des machines (propreté, éclairage) ; poulie de traction ; limiteurs de vitesse et poulie de tension ; parachute et dispositifs antichute ; dispositifs hors course de sécurité ; pompe à main ou soupape de descente à commande manuelle. SIX SEMAINES (9) : cabine ; verrouillages et contacts de fermeture des baies palières ; dispositif anti-vandalisme des baies palières ; verrouillages et contacts de fermeture de la porte de cabine ; efficacité du dispositif de réouverture ; précision d'arrêt et de nivelage au palier ; moyens d'alerte et de communication avec le service d'intervention ; commandes et indicateurs aux paliers ; cuve hydraulique (niveau, fuites). Le tableau a été relevé sur capture d'écran le 2026-08-26 : sa conversion en texte perd la position des croix et l'avait rendu illisible à quatre reprises.",
-  },
-  {
-    ref: "Arrêté 2004-11-18 annexe — colonne « six semaines »",
-    intitule: "Les neuf lignes à intervalle maximum de six semaines",
-    versionEnVigueur: "2026-04-01",
-    luLe: "2026-08-26",
-    lecture: "premiere_main",
-    statut: "non_couvert",
-    motif:
-      "Neuf lignes du tableau relèvent d'un « INTERVALLE maximum de six semaines » — c'est la visite de base de l'ascenseur, celle qui vérifie les verrouillages de portes, la précision de nivelage et les moyens d'alerte permettant de parler à quelqu'un depuis une cabine bloquée. Aucune obligation ne la porte : `ascenseur-entretien-contrat` la mentionne en prose et vaut `periodicite: \"autre\"`, si bien qu'elle ne produit AUCUNE échéance. L'énumération `Periodicite` ne descend pas à six semaines (42 jours) — la valeur manque, comme `bimensuelle` manquait avant le 2026-08-26. L'ajouter suppose une migration de l'enum Postgres, décision non prise à ce jour.",
-    declareA: "docs/veille-arbitrage-2026-08-26.md",
+      "Dix-huit lignes cochées sur les trente-six du tableau. SEMESTRIEL (3) : frein ; câbles ou chaînes de suspension et leurs extrémités ; dispositif antidérive. ANNUEL (6) : cuvette, toit de cabine et local des machines (propreté, éclairage) ; poulie de traction ; limiteurs de vitesse et poulie de tension ; parachute et dispositifs antichute ; dispositifs hors course de sécurité ; pompe à main ou soupape de descente à commande manuelle. SIX SEMAINES (9) : cabine ; verrouillages et contacts de fermeture des baies palières ; dispositif anti-vandalisme des baies palières ; verrouillages et contacts de fermeture de la porte de cabine ; efficacité du dispositif de réouverture ; précision d'arrêt et de nivelage au palier ; moyens d'alerte et de communication avec le service d'intervention ; commandes et indicateurs aux paliers ; cuve hydraulique (niveau, fuites). Les trois colonnes sont désormais portées, la dernière depuis l'ajout de la valeur `six_semaines` (42 jours) à l'énumération et à l'enum Postgres le 2026-08-26. Le tableau a été relevé sur capture d'écran le 2026-08-26 : sa conversion en texte perd la position des croix et l'avait rendu illisible à quatre reprises.",
   },
   {
     ref: "Arrêté 2012-08-07",

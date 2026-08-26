@@ -46,6 +46,40 @@ import type { Obligation } from "./types";
 
 export const obligationsAscenseurs: Obligation[] = [
   {
+    id: "ascenseur-visite-six-semaines",
+    domaine: "ascenseur",
+    libelle: "Visite de l'ascenseur toutes les six semaines",
+    description:
+      "À intervalle maximum de six semaines, l'entreprise d'entretien vérifie la cabine, les verrouillages et contacts de fermeture des baies palières et de la porte de cabine, le dispositif limitant les possibilités d'actes de vandalisme, l'efficacité du dispositif de réouverture des portes, la précision d'arrêt et de nivelage au palier, les dispositifs de moyens d'alerte et de communication avec le service d'intervention, les commandes et indicateurs aux paliers, ainsi que le niveau et l'absence de fuites de la cuve hydraulique. C'est la visite qui vérifie qu'une porte palière ne peut pas s'ouvrir sur une gaine vide, et qu'une personne bloquée en cabine peut joindre quelqu'un.",
+    referencesLegales: [
+      {
+        source: "CCH",
+        reference:
+          "CCH, art. R. 134-6 (prestations minimales du contrat d'entretien)",
+        article: "CCH R. 134-6",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818737/",
+      },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 18 novembre 2004 (entretien), annexe — colonne « intervalle maximum de six semaines »",
+        article: "Arrêté 2004-11-18",
+        url:
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000254219",
+        note: "Colonne « INTERVALLE maximum de six semaines » du tableau annexé, neuf lignes cochées. Relevé sur capture d'écran le 2026-08-26 : la conversion du tableau en texte perd la position des croix et l'avait rendu illisible à quatre reprises.",
+        versionConstatee: "2026-04-01",
+      },
+    ],
+    periodicite: "six_semaines",
+    realisateurs: ["personne_qualifiee"],
+    criticite: 5,
+    typologies: { travail: true, erp: true, igh: true, habitation: true },
+    categoriesEquipement: ["ASCENSEUR"],
+    notesInternes:
+      "Créée le 2026-08-26. La visite de base de l'ascenseur ne produisait AUCUNE échéance : `ascenseur-entretien-contrat` la mentionnait en prose et vaut `periodicite: \"autre\"`, avec une note qui la disait « à la charge de l'entreprise d'entretien, hors scope du générateur MVP ». C'était un raisonnement en cible, pas une lecture du texte : le propriétaire reste tenu de faire exécuter ces prestations, et le registre doit en porter la trace.\n\nL'énumération ne descendait pas à quarante-deux jours. La valeur `six_semaines` a été ajoutée à l'énumération et à l'enum Postgres pour cela — six semaines n'est pas un mois et demi, le texte compte en semaines et la conversion est exacte.\n\nRéalisateur `personne_qualifiee` : R. 134-6 impose que l'entretien soit exécuté par une entreprise spécialisée, l'exploitant ne peut pas s'en charger lui-même.",
+  },
+  {
     id: "ascenseur-entretien-contrat",
     domaine: "ascenseur",
     libelle: "Contrat d'entretien avec prestations minimales (ascenseur)",
@@ -74,7 +108,7 @@ export const obligationsAscenseurs: Obligation[] = [
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
     notesInternes:
-      "Obligation permanente contractuelle — pas d'échéance propre dans le calendrier. Les visites concrètes (toutes les 6 semaines) sont à la charge de l'entreprise d'entretien, hors scope du générateur MVP.",
+      "Obligation permanente contractuelle — pas d'échéance propre dans le calendrier. Les visites concrètes toutes les six semaines sont désormais portées par `ascenseur-visite-six-semaines` (créée le 2026-08-26) : elles étaient jusque-là déclarées « hors scope du générateur MVP », ce qui était une décision de périmètre et non une lecture du texte.",
   },
   {
     id: "ascenseur-examen-semestriel-secours",

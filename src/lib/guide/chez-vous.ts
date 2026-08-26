@@ -66,16 +66,17 @@ export type ChezVous = {
 const RANG_PERIODICITE: Record<Periodicite, number> = {
   hebdomadaire: 0,
   bimensuelle: 1,
-  mensuelle: 1,
-  trimestrielle: 2,
-  semestrielle: 3,
-  annuelle: 4,
-  biennale: 5,
-  triennale: 6,
-  quinquennale: 7,
-  decennale: 8,
-  mise_en_service_uniquement: 9,
-  autre: 10,
+  mensuelle: 2,
+  six_semaines: 3,
+  trimestrielle: 4,
+  semestrielle: 5,
+  annuelle: 6,
+  biennale: 7,
+  triennale: 8,
+  quinquennale: 9,
+  decennale: 10,
+  mise_en_service_uniquement: 11,
+  autre: 12,
 };
 
 export function construireChezVous(

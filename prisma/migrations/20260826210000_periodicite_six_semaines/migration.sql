@@ -1,0 +1,26 @@
+-- ============================================================================
+-- Périodicité « six_semaines » — intervalle maximum de six semaines
+--
+-- L'annexe de l'arrêté du 18 novembre 2004, dans sa rédaction issue de l'arrêté
+-- du 4 mars 2026 en vigueur au 1er avril 2026, range neuf lignes d'opérations
+-- d'entretien des ascenseurs sous la colonne « INTERVALLE maximum de six
+-- semaines » : cabine ; verrouillages et contacts de fermeture des baies
+-- palières ; dispositif limitant les actes de vandalisme ; verrouillages et
+-- contacts de fermeture de la porte de cabine ; efficacité du dispositif de
+-- réouverture ; précision d'arrêt et de nivelage au palier ; moyens d'alerte et
+-- de communication avec le service d'intervention ; commandes et indicateurs
+-- aux paliers ; cuve hydraulique (niveau, fuites).
+--
+-- C'est la visite de base de l'ascenseur — celle qui vérifie qu'une porte ne
+-- s'ouvre pas dans le vide et qu'on peut parler à quelqu'un depuis une cabine
+-- bloquée. Aucune valeur de l'énumération ne valait quarante-deux jours : la
+-- visite ne produisait donc aucune échéance et ne vivait qu'en prose.
+--
+-- Noter que six semaines n'est PAS un mois et demi : le texte écrit un
+-- intervalle MAXIMUM en semaines, la conversion est exacte à 42 jours.
+--
+-- Purement additif : une valeur ajoutée à un type énuméré. Aucune ligne
+-- existante n'est modifiée, aucune valeur n'est retirée.
+-- ============================================================================
+
+ALTER TYPE "Periodicite" ADD VALUE 'six_semaines' AFTER 'mensuelle';
