@@ -70,7 +70,7 @@ model Etablissement {
   categorieErp            CategorieErp?
   classeIgh               ClasseIgh?
 
-  batiments             Batiment[]
+  batiments                        Batiment[]
   // Champ d'application de R. 4227-34 CT (alarme sonore → consigne R. 4227-37
   // → exercices semestriels R. 4227-39) : « plus de cinquante personnes
   // occupées ou réunies habituellement » — public compris, pas seulement les
@@ -82,20 +82,36 @@ model Etablissement {
   personnesPresentesHabituellement Int?
   manipuleMatieresR422722          Boolean?
 
-  duerps                Duerp[]
-  equipements           Equipement[]
-  verifications         Verification[]
-  rapports              RapportVerification[]
-  actions               Action[]
-  prestataires          Prestataire[]
-  signatures            Signature[]
-  accessTokens          AccessToken[]
-  registreAccessibilite RegistreAccessibilite?
-  permisFeu             PermisFeu[]
-  plansPrevention       PlanPrevention[]
-  carnetSanitaire       CarnetSanitaire?
-  interventions         Intervention[]
+  // Renseignements portés par la fiche « Renseignements généraux » du registre
+  // de sécurité (CCH R. 143-44). Ils vivent ici et non dans `FicheRegistre` :
+  // ce sont des faits d'établissement, et la fiche établissement les montre
+  // aussi. Deux emplacements pour la même donnée finiraient par diverger, et
+  // c'est le registre — celui qu'on présente à la commission — qui
+  // afficherait la valeur périmée.
+  //
+  // `natureActivite` : l'activité en clair, distincte du code NAF.
+  // Les trois autres ne valent que pour un ERP ; nullables, comme
+  // `typeErp`/`categorieErp` (ADR-004).
+  natureActivite            String?
+  effectifPublicAdmis       Int?
+  dateAutorisationOuverture DateTime?
+  dateCertificatConformite  DateTime?
+
+  duerps                     Duerp[]
+  equipements                Equipement[]
+  verifications              Verification[]
+  rapports                   RapportVerification[]
+  actions                    Action[]
+  prestataires               Prestataire[]
+  signatures                 Signature[]
+  accessTokens               AccessToken[]
+  registreAccessibilite      RegistreAccessibilite?
+  permisFeu                  PermisFeu[]
+  plansPrevention            PlanPrevention[]
+  carnetSanitaire            CarnetSanitaire?
+  interventions              Intervention[]
   prescriptionsParticulieres PrescriptionParticuliere[]
+  fichesRegistre             FicheRegistre[]
 
   /**
    * Version du référentiel de conformité avec laquelle le calendrier de cet
@@ -328,7 +344,7 @@ model Equipement {
   caracteristiques  Json?
   actif             Boolean             @default(true)
 
-  verifications Verification[]
+  verifications              Verification[]
   prescriptionsParticulieres PrescriptionParticuliere[]
 
   createdAt DateTime @default(now())
@@ -446,16 +462,16 @@ model PrescriptionParticuliere {
   etablissementId String
   etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
 
-  source    SourcePrescription
-  effet     EffetPrescription
-  reference String
-  autorite  String?
+  source       SourcePrescription
+  effet        EffetPrescription
+  reference    String
+  autorite     String?
   /// Date de l'acte — date civile (ADR-011).
   dateDocument DateTime
   /// Date à laquelle la prescription cesse de produire effet (levée,
   /// abrogation). Conservée pour l'historique, jamais supprimée.
   dateFin      DateTime?
-  actif        Boolean   @default(true)
+  actif        Boolean            @default(true)
 
   // Effet `renforce_periodicite` : obligation du référentiel ciblée.
   // Effet `obligation_sur_mesure` : libellé, réalisateurs, catégorie.
@@ -467,7 +483,7 @@ model PrescriptionParticuliere {
   realisateurRequis   Realisateur[]
   categorieEquipement CategorieEquipement?
   equipementId        String?
-  equipement          Equipement? @relation(fields: [equipementId], references: [id], onDelete: SetNull)
+  equipement          Equipement?          @relation(fields: [equipementId], references: [id], onDelete: SetNull)
 
   verifications Verification[]
 
@@ -1199,4 +1215,50 @@ enum StatutIntervention {
   en_cours
   fait
   annule
+}
+
+// ----------------------------------------------------------------------------
+// Fiches du registre de sécurité à saisie libre
+//
+// Le registre compte une quarantaine de fiches. La plupart sont déjà remplies
+// par un modèle métier — les équipements pour l'inventaire, les rapports pour
+// les vérifications. Restent celles qui ne font que poser des questions et
+// ranger des réponses : téléphones utiles, état nominatif du personnel de
+// sécurité, contrôles administratifs, événements, dépoussiérage.
+//
+// Leur donner un modèle chacune serait huit tables pour une seule mécanique.
+// Elles partagent donc celle-ci, et ce sont les **questions** qui varient —
+// décrites en TypeScript versionné (`src/lib/registre/champs.ts`), au même
+// titre que le référentiel d'obligations (ADR-003). Une question posée à un
+// dirigeant se relit ainsi dans l'historique Git.
+//
+// `sectionId` désigne une fiche du catalogue (`src/lib/registre/sections.ts`).
+// Ce n'est volontairement pas une clé étrangère : le catalogue n'est pas en
+// base. La contrepartie est qu'un identifiant renommé orphelinerait des
+// réponses — d'où le test qui vérifie que tout `sectionId` écrit existe au
+// catalogue, sur le modèle du suivi de `referentielVersion`.
+//
+// `contenu` porte l'une des deux formes de saisie :
+//   - formulaire : { "champs": { "<cle>": "<valeur>", … } }
+//   - journal    : { "lignes": [ { "<cle>": "<valeur>", … }, … ] }
+// La forme n'est pas contrainte en base — c'est Zod qui la valide à l'écriture,
+// à partir du catalogue. Une CHECK ne saurait pas exprimer une forme qui
+// dépend d'un fichier TypeScript.
+// ----------------------------------------------------------------------------
+
+model FicheRegistre {
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  sectionId String
+  contenu   Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Une fiche par section et par établissement : la saisie est un upsert, pas
+  // un empilement de brouillons.
+  @@unique([etablissementId, sectionId])
+  @@index([etablissementId])
 }
