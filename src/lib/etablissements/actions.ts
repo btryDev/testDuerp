@@ -87,6 +87,10 @@ function normaliserFormData(fd: FormData): Record<string, unknown> {
     typeErp: raw.typeErp || undefined,
     categorieErp: raw.categorieErp || undefined,
     classeIgh: raw.classeIgh || undefined,
+    natureActivite: raw.natureActivite,
+    effectifPublicAdmis: raw.effectifPublicAdmis,
+    dateAutorisationOuverture: raw.dateAutorisationOuverture,
+    dateCertificatConformite: raw.dateCertificatConformite,
   };
 }
 

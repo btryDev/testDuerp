@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { EtablissementForm } from "@/components/etablissements/EtablissementForm";
 import { modifierEtablissement } from "@/lib/etablissements/actions";
 import { getEtablissement } from "@/lib/etablissements/queries";
+import { cleJourCivil } from "@/lib/dates";
 
 export default async function ModifierEtablissementPage({
   params,
@@ -51,6 +52,18 @@ export default async function ModifierEtablissementPage({
             typeErp: etab.typeErp,
             categorieErp: etab.categorieErp,
             classeIgh: etab.classeIgh,
+            natureActivite: etab.natureActivite,
+            effectifPublicAdmis: etab.effectifPublicAdmis,
+            // `<input type="date">` attend une clé de jour civil. La produire
+            // via `cleJourCivil` et non `toISOString().slice(0,10)` : ancrée
+            // dans le fuseau de référence (ADR-011), sinon une date de début
+            // de journée s'afficherait la veille.
+            dateAutorisationOuverture: etab.dateAutorisationOuverture
+              ? cleJourCivil(etab.dateAutorisationOuverture)
+              : null,
+            dateCertificatConformite: etab.dateCertificatConformite
+              ? cleJourCivil(etab.dateCertificatConformite)
+              : null,
           }}
           libelleSubmit="Enregistrer"
           labelAnnuler={{

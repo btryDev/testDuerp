@@ -69,6 +69,10 @@ type Valeurs = {
   estHabitation?: boolean;
   typeErp?: string | null;
   categorieErp?: string | null;
+  natureActivite?: string | null;
+  effectifPublicAdmis?: number | null;
+  dateAutorisationOuverture?: string | null;
+  dateCertificatConformite?: string | null;
   classeIgh?: string | null;
 };
 
@@ -176,6 +180,30 @@ export function EtablissementForm({
             {err("effectifSurSite") && (
               <p className="text-sm text-destructive">
                 {err("effectifSurSite")}
+              </p>
+            )}
+          </div>
+
+          {/* Fiche « Renseignements généraux » du registre de sécurité
+              (CCH R. 143-44). La donnée vit ici, le registre la lit — il ne
+              la recopie pas, sans quoi les deux écrans divergeraient. */}
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="natureActivite">Nature de l&apos;activité</Label>
+            <textarea
+              id="natureActivite"
+              name="natureActivite"
+              rows={2}
+              defaultValue={valeursInitiales?.natureActivite ?? ""}
+              className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              aria-invalid={Boolean(err("natureActivite"))}
+            />
+            <p className="text-[0.8rem] text-muted-foreground">
+              Ce que l&apos;on fait ici, en clair — pas le code NAF. Cette
+              phrase figure au registre de sécurité.
+            </p>
+            {err("natureActivite") && (
+              <p className="text-sm text-destructive">
+                {err("natureActivite")}
               </p>
             )}
           </div>
@@ -350,6 +378,72 @@ export function EtablissementForm({
                   {err("categorieErp") && (
                     <p className="text-xs text-destructive">
                       {err("categorieErp")}
+                    </p>
+                  )}
+                </div>
+
+                {/* Fiche « Établissement recevant du public » du registre de
+                    sécurité (CCH R. 143-44). Trois faits que seul
+                    l'exploitant détient — le registre les lit ici. */}
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="effectifPublicAdmis">
+                    Effectif du public susceptible d&apos;être admis
+                  </Label>
+                  <Input
+                    id="effectifPublicAdmis"
+                    name="effectifPublicAdmis"
+                    type="number"
+                    min={0}
+                    defaultValue={valeursInitiales?.effectifPublicAdmis ?? ""}
+                    aria-invalid={Boolean(err("effectifPublicAdmis"))}
+                  />
+                  <p className="text-[0.8rem] text-muted-foreground">
+                    Le chiffre retenu à votre classement ERP — distinct de
+                    votre effectif salarié et des personnes présentes.
+                  </p>
+                  {err("effectifPublicAdmis") && (
+                    <p className="text-xs text-destructive">
+                      {err("effectifPublicAdmis")}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dateAutorisationOuverture">
+                    Autorisation d&apos;ouverture donnée le
+                  </Label>
+                  <Input
+                    id="dateAutorisationOuverture"
+                    name="dateAutorisationOuverture"
+                    type="date"
+                    defaultValue={
+                      valeursInitiales?.dateAutorisationOuverture ?? ""
+                    }
+                    aria-invalid={Boolean(err("dateAutorisationOuverture"))}
+                  />
+                  {err("dateAutorisationOuverture") && (
+                    <p className="text-xs text-destructive">
+                      {err("dateAutorisationOuverture")}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dateCertificatConformite">
+                    Certificat de conformité délivré le
+                  </Label>
+                  <Input
+                    id="dateCertificatConformite"
+                    name="dateCertificatConformite"
+                    type="date"
+                    defaultValue={
+                      valeursInitiales?.dateCertificatConformite ?? ""
+                    }
+                    aria-invalid={Boolean(err("dateCertificatConformite"))}
+                  />
+                  {err("dateCertificatConformite") && (
+                    <p className="text-xs text-destructive">
+                      {err("dateCertificatConformite")}
                     </p>
                   )}
                 </div>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { depuisCleJourCivil } from "@/lib/dates";
 
 // Enums reflétant le schéma Prisma. Si on ajoute une valeur côté Prisma,
 // pensez à la refléter ici — pas d'import direct de @prisma/client pour
@@ -22,6 +23,25 @@ const nafRegex = /^\d{2}\.?\d{2}[A-Z]?$/;
  * ne sont requises que si le flag correspondant est vrai — on impose la
  * cohérence via un refine global.
  */
+/**
+ * Une date civile facultative saisie en AAAA-MM-JJ.
+ *
+ * `depuisCleJourCivil` ancre la date dans le fuseau de référence (ADR-011).
+ * Passer par `new Date("2026-08-26")` la placerait à minuit UTC, soit la
+ * veille au soir à Paris — le bug déjà rencontré sur les échéances.
+ */
+const dateCivileOptionnelle = z.preprocess(
+  (v) => {
+    if (v === "" || v === null || v === undefined) return null;
+    if (typeof v !== "string") return v;
+    return depuisCleJourCivil(v);
+  },
+  z
+    .date()
+    .refine((d) => !Number.isNaN(d.getTime()), "Date invalide")
+    .nullable(),
+);
+
 export const etablissementSchema = z
   .object({
     raisonDisplay: z
@@ -72,6 +92,29 @@ export const etablissementSchema = z
       (v) => (v === "" || v === null ? undefined : v),
       z.enum(CLASSES_IGH).optional(),
     ),
+
+    // Renseignements de la fiche « Renseignements généraux » du registre de
+    // sécurité (CCH R. 143-44). Ils vivent sur l'établissement, pas dans une
+    // fiche de registre : le registre les lit, il ne les recopie pas.
+    // Tous optionnels — vide = non renseigné, jamais une valeur par défaut.
+    natureActivite: z.preprocess(
+      (v) => (typeof v === "string" ? v.trim() || null : (v ?? null)),
+      z.string().max(500).nullable(),
+    ),
+    effectifPublicAdmis: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? null : v),
+      z.coerce
+        .number()
+        .int("Nombre entier")
+        .min(0, "Effectif positif")
+        .max(999999)
+        .nullable(),
+    ),
+    // Dates civiles (ADR-011) : saisies en AAAA-MM-JJ, converties dans le
+    // fuseau de référence — jamais `new Date(chaine)`, qui interpréterait en
+    // UTC et décalerait la veille.
+    dateAutorisationOuverture: dateCivileOptionnelle,
+    dateCertificatConformite: dateCivileOptionnelle,
   })
   .superRefine((val, ctx) => {
     // Règle ADR-004 : les précisions sont alignées sur les flags.
