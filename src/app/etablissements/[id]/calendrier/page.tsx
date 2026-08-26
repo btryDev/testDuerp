@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { AideEcran } from "@/components/ui-kit/AideEcran";
+import { BandeauCouverture } from "@/components/perimetre/BandeauCouverture";
+import { couvertureDeLEtablissement } from "@/lib/perimetre/couverture";
 import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
@@ -997,6 +999,20 @@ export default async function CalendrierPage({
       {bandeTitre}
 
       <div className="flex flex-1 flex-col bg-[color:var(--board-card)] px-[var(--board-gutter)] pb-14 pt-7">
+        {/* Ce que l'outil couvre, avant ce qu'il montre. Un établissement
+            au-dessus de la 5e catégorie lit ici un calendrier d'apparence
+            complète qui ignore tout le livre II du règlement de sécurité
+            (PE 1 § 1) : c'est le seul écran où le taire serait grave, parce
+            que c'est celui qu'on suit pour savoir quoi faire. */}
+        <BandeauCouverture
+          couverture={couvertureDeLEtablissement({
+            estERP: etab.estERP,
+            estIGH: etab.estIGH,
+            categorieErp: etab.categorieErp,
+          })}
+          hrefEtablissement={`/etablissements/${id}/modifier`}
+        />
+
         {lignes.length === 0 ? (
           <div>
             {/* Sans instrument, les commandes n'ont pas de barre où
