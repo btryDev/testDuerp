@@ -422,6 +422,12 @@ describe("référentiel conformité — non-régression des obligations critique
    */
   const CONDITIONS_STRICTES_JUSTIFIEES = new Set([
     "elec-erp-groupe-electrogene-annuel",
+    // Obligation neuve créée le 2026-08-26 (arrêté du 1er mars 2004, art. 23 b) :
+    // aucun équipement déjà en base ne peut la perdre, et
+    // `levage-vgp-semestrielle-personnes` couvre l'appareil tant que la question
+    // sur la force humaine n'a pas reçu « oui » — elle porte pour cela une
+    // condition `infirmee` sur la même propriété.
+    "levage-vgp-trimestrielle-force-humaine",
     "aeration-travail-locaux-pollution-specifique",
     "aeration-erp-ps-surveillance-qualite-air-sup-250",
     "levage-vgp-semestrielle-chariot-gerbeur",
@@ -473,6 +479,11 @@ describe("référentiel conformité — non-régression des obligations critique
     const annuelle = obligationParId("levage-vgp-annuelle-charges");
     const semestrielle = obligationParId(
       "levage-vgp-semestrielle-chariot-gerbeur",
+      // Obligation neuve créée le 2026-08-26 (art. 23 b) : personne ne peut la
+      // perdre, et `levage-vgp-semestrielle-personnes` couvre l'appareil tant
+      // que la question sur la force humaine n'a pas reçu « oui » — elle porte
+      // pour cela une condition `infirmee` sur la même propriété.
+      "levage-vgp-trimestrielle-force-humaine",
     );
     expect(annuelle?.conditions).toEqual([
       {

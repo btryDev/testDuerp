@@ -102,7 +102,7 @@ export const obligationsPortesPortails: Obligation[] = [
     domaine: "porte_portail",
     libelle: "Maintien en état et réparation sans délai (porte automatique)",
     description:
-      "Les portes et portails automatiques doivent être maintenus en bon état de fonctionnement. Toute anomalie affectant la sécurité doit être éliminée le plus rapidement possible — interdiction d'exploitation tant qu'un dispositif de sécurité est défaillant.",
+      "Les portes et portails automatiques doivent être maintenus en bon état de fonctionnement. Toute défectuosité susceptible d'affecter la santé et la sécurité des travailleurs est éliminée le plus rapidement possible. Lorsque la chute d'une porte peut présenter un danger, la périodicité des contrôles et les interventions sont consignées dans le dossier prévu à l'article R. 4224-17.",
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",

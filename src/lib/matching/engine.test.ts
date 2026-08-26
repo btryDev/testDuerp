@@ -1102,6 +1102,11 @@ describe("moteur matching — aucun établissement existant ne perd une obligati
       // Obligation neuve : personne ne peut la perdre, et la VGP annuelle
       // couvre l'appareil tant que la question n'a pas reçu « oui ».
       "levage-vgp-semestrielle-chariot-gerbeur",
+      // Obligation neuve créée le 2026-08-26 (art. 23 b) : personne ne peut la
+      // perdre, et `levage-vgp-semestrielle-personnes` couvre l'appareil tant
+      // que la question sur la force humaine n'a pas reçu « oui » — elle porte
+      // pour cela une condition `infirmee` sur la même propriété.
+      "levage-vgp-trimestrielle-force-humaine",
     ]);
   });
 });

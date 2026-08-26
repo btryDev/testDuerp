@@ -56,6 +56,7 @@ describe("caracteristiquesLisibles", () => {
     );
     expect(levage).toEqual([
       "sertAuLevageDePersonnes",
+      "estMuParForceHumaine",
       "estChariotOuGerbeur",
       "aAccessoiresDeLevage",
     ]);

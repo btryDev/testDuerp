@@ -371,9 +371,11 @@ export function EquipementForm({
                     Local à pollution spécifique
                   </p>
                   <p className="text-[0.82rem] text-muted-foreground">
-                    Poussières, gaz, vapeurs, aérosols. Contrôle semestriel de
-                    l&apos;efficacité du captage (arrêté 8 octobre 1987, art.
-                    3 § II).
+                    Poussières, gaz, vapeurs, aérosols. Contrôle annuel du
+                    débit d&apos;air extrait, des pressions et de l&apos;état de
+                    l&apos;installation (arrêté du 8 octobre 1987, art. 4 § 2 a).
+                    Un contrôle semestriel s&apos;y ajoute lorsqu&apos;il existe
+                    un système de recyclage (art. 4 § 2 b).
                   </p>
                 </div>
               </label>
