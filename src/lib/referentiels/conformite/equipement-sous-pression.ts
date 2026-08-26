@@ -69,7 +69,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
       },
     ],
     periodicite: "mise_en_service_uniquement",
-    realisateurs: ["organisme_agree"],
+    realisateurs: ["exploitant", "personne_competente", "organisme_agree"],
     criticite: 5,
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_SOUS_PRESSION"],
@@ -97,7 +97,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
     categoriesEquipement: ["EQUIPEMENT_SOUS_PRESSION"],
     conditions: CONDITION_SUIVI_EN_SERVICE,
     notesInternes:
-      "Périodicité modélisée triennale (l'enum n'a pas de « quadriennale ») : proxy conservateur des 4 ans réglementaires. Corrigé à l'audit 2026-08 : l'ancienne version citait « art. 19 » (= requalification) et « 40 mois » (ancien arrêté de 2000).",
+      "Périodicité modélisée triennale (l'enum n'a pas de « quadriennale ») : proxy conservateur des 4 ans réglementaires. Corrigé à l'audit 2026-08 : l'ancienne version citait « art. 19 » (= requalification) et « 40 mois » comme intervalle général — or 40 mois figure bien à l'article 15 de l'arrêté de 2017, mais comme mesure TRANSITOIRE réservée aux équipements déclarés avant son entrée en vigueur ; l'intervalle général est de quatre ans (constaté 2026-08-26).",
   },
   {
     id: "esp-requalification-decennale",

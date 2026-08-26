@@ -56,7 +56,7 @@ export const obligationsStockageDangereux: Obligation[] = [
     domaine: "stockage_dangereux",
     libelle: "Capacité de rétention (stockage liquides dangereux)",
     description:
-      "Tout stockage de liquides dangereux (inflammables, toxiques, corrosifs) est organisé de façon à prévenir les épandages : récipients placés sur une capacité de rétention étanche. La règle chiffrée des arrêtés ICPE (rétention ≥ 100 % du plus grand récipient ou ≥ 50 % du volume total) n'est opposable qu'aux établissements classés ; hors ICPE, elle sert de référence de bonne pratique.",
+      "Tout stockage de liquides dangereux (inflammables, toxiques, corrosifs) est organisé de façon à prévenir les épandages : récipients placés sur une capacité de rétention étanche. La règle chiffrée des arrêtés ICPE — capacité de rétention au moins égale à la PLUS GRANDE des deux valeurs : 100 % de la capacité du plus grand réservoir, ou 50 % de la capacité totale des réservoirs associés — n'est opposable qu'aux établissements classés ; hors ICPE, elle sert de référence de bonne pratique.",
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",

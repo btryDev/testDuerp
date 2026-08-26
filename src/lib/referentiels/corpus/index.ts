@@ -9,7 +9,11 @@ import { CCH_REGISTRE_SECURITE } from "./cch-registre-securite";
 import { CODE_TRAVAIL_INCENDIE } from "./code-travail-incendie";
 import { ARRETE_2004_03_01_LEVAGE } from "./arrete-2004-03-01-levage";
 import { ARRETE_2011_12_26_ELECTRICITE } from "./arrete-2011-12-26-electricite";
+import { ARRETE_1987_10_08_AERATION } from "./arrete-1987-10-08-aeration";
 import { CODE_TRAVAIL_ELECTRICITE } from "./code-travail-electricite";
+import { CODE_TRAVAIL_RISQUE_CHIMIQUE } from "./code-travail-risque-chimique";
+import { ESP_SUIVI_EN_SERVICE } from "./esp-suivi-en-service";
+import { ICPE_STOCKAGE } from "./icpe-stockage";
 import { CODE_TRAVAIL_LEVAGE } from "./code-travail-levage";
 import { FROID_FLUIDES } from "./froid-fluides";
 import { couverture, type Corpus, type CouvertureCorpus } from "./types";
@@ -36,6 +40,10 @@ export const CORPUS: readonly Corpus[] = [
   ARRETE_2004_03_01_LEVAGE,
   CODE_TRAVAIL_ELECTRICITE,
   ARRETE_2011_12_26_ELECTRICITE,
+  CODE_TRAVAIL_RISQUE_CHIMIQUE,
+  ESP_SUIVI_EN_SERVICE,
+  ICPE_STOCKAGE,
+  ARRETE_1987_10_08_AERATION,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {
