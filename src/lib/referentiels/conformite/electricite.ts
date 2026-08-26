@@ -89,17 +89,17 @@ export const obligationsElectricite: Obligation[] = [
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
-        reference: "L. 4711-5",
-        article: "L. 4711-5",
-        url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389/",
-      },
-      {
-        source: "CODE_TRAVAIL",
         reference: "R. 4226-19",
         article: "R. 4226-19",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "L. 4711-5",
+        article: "L. 4711-5",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389/",
       },
     ],
     periodicite: "autre",
@@ -136,7 +136,7 @@ export const obligationsElectricite: Obligation[] = [
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
-      "La périodicité triennale est une pratique INRS (ED 6127), pas une obligation du Code du travail au sens strict. Affichée comme recommandation, non comme écart bloquant.",
+      "La périodicité triennale est une pratique INRS (ED 6127), pas une obligation du Code du travail au sens strict. Affichée comme recommandation, non comme écart bloquant.\n\nAmendement 2026-08-26 : L. 4711-5 était en refs[0], c'est-à-dire présenté comme l'article FONDATEUR (convention ADR-003). Or il n'institue aucun registre — il autorise à en réunir plusieurs en un seul, ce que le CLAUDE.md du dépôt écrit noir sur blanc. La contradiction était interne. R. 4226-19 passe en premier : c'est lui qui impose la consignation des résultats de vérification. Ce n'est pas cosmétique : le test anti-doublon compare les obligations sur leur article fondateur, donc un refs[0] faux le rend aveugle — le mécanisme même qui masquait le doublon des portails.",
   },
 
   // ---------------------------------------------------------------------------

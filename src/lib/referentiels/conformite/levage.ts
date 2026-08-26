@@ -140,19 +140,19 @@ export const obligationsLevage: Obligation[] = [
       "Les chariots élévateurs et les gerbeurs font l'objet d'une vérification générale périodique tous les six mois, et non tous les douze. La vérification porte sur l'état de conservation de l'appareil et sur les essais de fonctionnement des dispositifs de sécurité (freins, limiteurs, organes de suspension).",
     referencesLegales: [
       {
-        source: "CODE_TRAVAIL",
-        reference: "R. 4323-23",
-        article: "R. 4323-23",
-        url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479",
-      },
-      {
         source: "ARRETE",
         reference: "Arrêté du 1er mars 2004, art. 23 a)",
         article: "Arrêté 2004-03-01 art. 23",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680469",
         note: "« Toutefois, cette périodicité est de : a) Six mois pour les appareils de levage ci-après : - appareils de levage listés aux II et III de l'article 20 […] ».",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4323-23",
+        article: "R. 4323-23",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479",
       },
       {
         source: "ARRETE",
@@ -185,7 +185,7 @@ export const obligationsLevage: Obligation[] = [
       },
     ],
     notesInternes:
-      "Obligation créée en 2026-08 : le référentiel ne connaissait que la VGP annuelle et une VGP semestrielle réservée au levage de personnes, si bien qu'un gerbeur ou un chariot élévateur — l'appareil de levage le plus courant en commerce et en réserve — héritait d'une périodicité annuelle contraire à l'article 23. Condition stricte (`booleenne`) assumée bien que la criticité soit de 5 : l'obligation est nouvelle, aucun équipement déjà en base ne peut la perdre, et la couverture par défaut reste assurée par `levage-vgp-annuelle-charges`, qui s'applique tant que la question n'a pas reçu « oui ». Le critère de champ n'est ni la motorisation ni le nom de l'engin mais le changement de niveau significatif de la charge (art. 2 a) — voir l'en-tête du fichier.",
+      "Obligation créée en 2026-08 : le référentiel ne connaissait que la VGP annuelle et une VGP semestrielle réservée au levage de personnes, si bien qu'un gerbeur ou un chariot élévateur — l'appareil de levage le plus courant en commerce et en réserve — héritait d'une périodicité annuelle contraire à l'article 23. Condition stricte (`booleenne`) assumée bien que la criticité soit de 5 : l'obligation est nouvelle, aucun équipement déjà en base ne peut la perdre, et la couverture par défaut reste assurée par `levage-vgp-annuelle-charges`, qui s'applique tant que la question n'a pas reçu « oui ». Le critère de champ n'est ni la motorisation ni le nom de l'engin mais le changement de niveau significatif de la charge (art. 2 a) — voir l'en-tête du fichier.\n\nAmendement 2026-08-26 : R. 4323-23 était en refs[0] ici, alors que les trois autres obligations de VGP du fichier mettent l'arrêté du 1er mars 2004 en premier. Même rôle juridique, deux traitements — et le test anti-doublon compare sur refs[0], donc l'incohérence le rendait aveugle entre ces obligations. L'arrêté passe fondateur partout : R. 4323-23 renvoie la périodicité à un arrêté, c'est l'arrêté qui la fixe.",
   },
   {
     id: "levage-vgp-semestrielle-personnes",
