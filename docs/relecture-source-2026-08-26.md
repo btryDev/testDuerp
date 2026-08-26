@@ -171,3 +171,98 @@ bâtiments d'habitation ou dans les immeubles de bureaux ».
 - `EC 14` : les deux rythmes (mensuel, semestriel) sont correctement portés.
 - `MS 73`, `EL 19`, `R. 4227-39`, `R. 4544-10`, `R. 4226-14` : conformes.
 - Aucun article n'est resté illisible. Les 123 ont été lus.
+
+---
+
+## 9. Sixième rapport — arrêtés divers
+
+### 9.1 Corroboration indépendante du travail sur les ascenseurs
+
+`CCH R. 134-6`, version du **1er avril 2026** (décret n° 2026-166 du 4 mars 2026),
+confirme article par article la lecture faite sur capture d'écran de l'annexe de
+l'arrêté du 18 novembre 2004 :
+
+> « a) Une visite toutes les six semaines en vue de surveiller le fonctionnement
+> de l'installation et effectuer les réglages nécessaires ; b) La vérification
+> toutes les six semaines de l'efficacité des serrures des portes palières […] ;
+> c) L'examen semestriel du bon état des câbles et la vérification annuelle des
+> parachutes ; d) Le nettoyage annuel de la cuvette de l'installation, du toit de
+> cabine et du local des machines ; f) La vérification toutes les six semaines du
+> bon fonctionnement des moyens d'alerte et de communication avec un service
+> d'intervention. »
+
+Deux sources indépendantes, même résultat : câbles semestriels, parachutes
+annuels, visite de base toutes les six semaines. La contradiction interne
+corrigée ce soir l'était dans le bon sens.
+
+**SUR-APPEL** : l'agent conclut que « nos slugs inversent les objets » en lisant
+les IDENTIFIANTS (`examen-annuel-securite`, `examen-semestriel-secours`). Ces
+identifiants sont stockés en base sous contrainte d'unicité et n'ont
+délibérément pas été renommés ; leur contenu, lui, est juste depuis `1089e4a`.
+
+**À CONTRE-VÉRIFIER, et neuf** : `R. 134-6` impose aussi un **nettoyage annuel**
+de la cuvette, du toit de cabine et du local des machines — le d). Et `R. 134-11`
+(version du 15 mai 2026) ajoute au contrôle quinquennal la vérification que les
+moyens d'alerte sont **compatibles avec autre chose que le RTC ou la 3G**.
+Exigence nouvelle, liée à l'extinction de ces réseaux.
+
+### 9.2 Rythmes trouvés que le référentiel ne porte pas
+
+| Article | Rythme manquant |
+|---|---|
+| `Arrêté 2011-12-26 art. 3` | La périodicité annuelle **peut être portée à deux ans** si le rapport précédent est sans observation, sous réserve d'informer l'inspecteur du travail par LRAR. Nous ne portons que l'annuelle. |
+| `GH 5` (IGH) | **Quatre** rythmes : six mois, un an, deux ans (paratonnerres), cinq ans (charge calorifique). Nous n'en portons qu'un. Plus la règle des 20 %/an bouclée à cinq ans. |
+| `Arrêté 1987-10-08 art. 4` | Annuel **et** semestriel lorsqu'il existe un système de recyclage. |
+| `Arrêté 2017-11-20 art. 15` | Six régimes d'inspection (1 an, 4 ans, 2 ans, 4 ans, 3 ans pour la première, 40 mois transitoire), plus « avant chaque remplissage » pour les récipients mobiles. |
+| `Arrêté 2017-11-20 art. 18` | Six échéances de requalification (2, 3, 6, 6, 6, 10 ans) plus un régime propre aux extincteurs. Nous ne portons que la décennale, cas résiduel. |
+| `Arrêté 2015-06-01 art. 22` | Tests de fonctionnement **au moins semestriels** des dispositifs actifs de drainage. |
+| `PS 32` | Vérification **quinquennale par organisme agréé** et vérification à la mise en service, en plus du couple annuel/biennal selon le seuil de 250 véhicules. |
+
+### 9.3 URL fausses dans le corpus
+
+Concret et mécanique à corriger :
+
+- `arrete-2011-12-14-eclairage` → le bon texte est `JORFTEXT000025055364`
+- `arrete-2011-12-30-igh` → `JORFTEXT000025167121`
+- `Arrêté 2012-08-07` → pointe sur l'arrêté du 18 novembre 2004 ; le bon est
+  `JORFTEXT000026286347`
+- `C. env. R. 557-14-1` → est dans le code de l'environnement, pas dans l'arrêté
+- `Arrêté 2015-06-01 art. 22` → `JORFTEXT000030673177`
+
+### 9.4 Autres fondements mis en cause
+
+- `PS 32` : nos deux obligations isolent la « surveillance de la qualité de
+  l'air », or l'article traite **toute une liste d'installations** et **exclut
+  expressément** la qualité de l'air du contrôle quinquennal. Notre découpage
+  porte sur le seul champ traité différemment.
+- `C. env. L. 512-1` ne traite que de l'**autorisation** ; le régime
+  **déclaratif** est à L. 512-8.
+- `CCH R. 134-1` est un article de définition ; les moyens d'alerte sont au 6° de
+  `R. 134-2`.
+- `Arrêté 2004-03-01 art. 20` : le « 6 mois » est une **condition de dispense**
+  de remise en service, pas une périodicité de VGP.
+- `Arrêté 1993-12-21 art. 2` ne vise que le passage de **véhicules** — cohérent
+  avec la correction faite ce soir sur `porte-auto-portail-piete-coulissant`.
+
+### 9.5 Versions postérieures à 2024, deuxième vague
+
+`GH 5` (arrêté du 1er septembre 2025, effet 1er janvier 2026) · ESP art. 26 et 28
+(arrêté du 5 septembre 2025) · `CCH R. 134-6`, `R. 134-11` et l'arrêté du
+7 août 2012 (décret n° 2026-166 et arrêté du 4 mars 2026, effets 1er avril et
+15 mai 2026).
+
+---
+
+## 10. Ce que je retiens de la nuit
+
+Le motif dominant n'est pas l'erreur isolée, c'est **le second rythme du même
+article**. Il apparaît maintenant sur au moins quinze articles. Le référentiel a
+été construit en retenant une périodicité par article, et le droit n'est pas
+écrit comme ça.
+
+Le second motif est **le fondement approximatif** : citer l'article qui parle du
+sujet plutôt que celui qui prescrit. Le Code du travail renvoie presque toujours
+la périodicité à un arrêté ; citer le code seul attribue un chiffre à un texte
+qui ne le contient pas.
+
+Aucun des 123 articles n'est resté illisible.
