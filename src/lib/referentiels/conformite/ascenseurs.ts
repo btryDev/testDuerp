@@ -65,6 +65,7 @@ export const obligationsAscenseurs: Obligation[] = [
         article: "Arrêté 2004-11-18",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000254219",
+        versionConstatee: "2026-04-01",
       },
     ],
     periodicite: "autre",
@@ -80,7 +81,7 @@ export const obligationsAscenseurs: Obligation[] = [
     domaine: "ascenseur",
     libelle: "Examen semestriel du bon état des câbles (ascenseur)",
     description:
-      "L'entreprise d'entretien procède, au moins une fois tous les six mois, à l'examen du bon état des câbles de l'ascenseur (R. 134-6). Les moyens d'alerte et de communication avec le service d'intervention sont, eux, vérifiés à chaque visite, soit toutes les six semaines.",
+      "Au moins une fois tous les six mois, l'entreprise d'entretien examine le bon état des câbles ou chaînes de suspension et de leurs extrémités, du frein, et du dispositif antidérive. Ce sont les trois seules lignes que l'annexe de l'arrêté du 18 novembre 2004 range en fréquence minimale semestrielle. Les moyens d'alerte et de communication avec le service d'intervention sont, eux, vérifiés à chaque visite, soit toutes les six semaines.",
     referencesLegales: [
       {
         source: "CCH",
@@ -95,6 +96,7 @@ export const obligationsAscenseurs: Obligation[] = [
         article: "Arrêté 2004-11-18",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000254219",
+        versionConstatee: "2026-04-01",
       },
     ],
     periodicite: "semestrielle",
@@ -103,14 +105,14 @@ export const obligationsAscenseurs: Obligation[] = [
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
     notesInternes:
-      "Amendement 2026-08-25 : l'obligation s'intitulait « examen semestriel du dispositif de secours », périodicité qu'aucun texte relu ne fonde — R. 134-6 vérifie les moyens d'alerte toutes les six semaines et réserve le semestriel au bon état des câbles. L'identifiant est conservé (jamais réutilisé, et les Verification existantes y sont rattachées) ; libellé, description et référence fondatrice ont été réalignés sur R. 134-6.",
+      "Amendement 2026-08-25 : l'obligation s'intitulait « examen semestriel du dispositif de secours », périodicité qu'aucun texte relu ne fonde — R. 134-6 vérifie les moyens d'alerte toutes les six semaines et réserve le semestriel au bon état des câbles. L'identifiant est conservé (jamais réutilisé, et les Verification existantes y sont rattachées) ; libellé, description et référence fondatrice ont été réalignés sur R. 134-6.\n\nAmendement 2026-08-26, tableau de l'annexe lu à la source. La colonne « fréquence minimale semestrielle » ne comporte que TROIS lignes : câbles ou chaînes de suspension et leurs extrémités, frein, dispositif antidérive. Le frein et l'antidérive manquaient — le frein est ce qui retient la cabine, l'antidérive ce qui l'empêche de descendre seule en hydraulique. Ajoutés.",
   },
   {
     id: "ascenseur-examen-annuel-securite",
     domaine: "ascenseur",
     libelle: "Examen annuel des dispositifs de sécurité (ascenseur)",
     description:
-      "Vérification annuelle par l'entreprise d'entretien des parachutes (R. 134-6) et, selon l'annexe de l'arrêté du 18 novembre 2004, des limiteurs de vitesse de cabine et de contrepoids, de leur poulie de tension et des câbles ou chaînes de suspension et de leurs extrémités. Les serrures de portes palières relèvent de la vérification toutes les six semaines.",
+      "Au moins une fois par an, l'entreprise d'entretien vérifie le parachute et tout autre dispositif antichute — y compris le moyen de protection contre les mouvements incontrôlés de la cabine en montée, la soupape de rupture ou le réducteur de débit des ascenseurs hydrauliques —, les limiteurs de vitesse de cabine et de contrepoids et leur poulie de tension, la poulie de traction, les dispositifs hors course de sécurité, la pompe à main ou soupape de descente à commande manuelle, ainsi que la propreté et l'éclairage de la cuvette, du toit de cabine et du local des machines. Les câbles de suspension et les serrures de portes palières ne relèvent pas de cette échéance : les premiers sont semestriels, les secondes sont vérifiées toutes les six semaines.",
     referencesLegales: [
       {
         source: "ARRETE",
@@ -118,6 +120,7 @@ export const obligationsAscenseurs: Obligation[] = [
         article: "Arrêté 2004-11-18",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000254219",
+        versionConstatee: "2026-04-01",
       },
       {
         source: "CCH",
@@ -132,6 +135,9 @@ export const obligationsAscenseurs: Obligation[] = [
     criticite: 5,
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
+    notesInternes:
+      "CORRIGÉ LE 2026-08-26, tableau de l'annexe lu à la source. La description rangeait « les câbles ou chaînes de suspension et leurs extrémités » dans l'ANNUEL. Le tableau les coche en SEMESTRIEL — et `ascenseur-examen-semestriel-secours` les portait déjà correctement. Le référentiel se contredisait donc lui-même sur la même ligne du même tableau, et la lecture la plus lâche des deux aurait pu l'emporter.\n\nQuatre lignes de la colonne annuelle manquaient par ailleurs : propreté et éclairage de la cuvette, du toit de cabine et du local des machines ; poulie de traction ; dispositifs hors course de sécurité ; pompe à main ou soupape de descente à commande manuelle. La colonne en compte six au total, toutes désormais nommées.\n\nVersion constatée : celle du 1er avril 2026, issue de l'arrêté du 4 mars 2026.",
+
   },
   {
     id: "ascenseur-controle-technique-quinquennal",
