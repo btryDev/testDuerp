@@ -9,25 +9,35 @@ import { formaterDateFr, formaterDateLongueFr } from "@/lib/dates";
  */
 
 /**
- * La palette du registre de sécurité imprimé de btry, relevée sur le document
- * de référence (`Registre_Securite_Incendie_btry.pdf`).
+ * La charte de l'application, portée dans les documents imprimés.
  *
- * Elle n'est pas une invention : c'est celle des documents que le dirigeant
- * a déjà entre les mains. Un export qui en sort ressemble à un rapport
- * d'outil, pas à la pièce qu'il range dans son classeur.
+ * Ce sont les jetons `--board-*` de `globals.css`, recopiés en littéral parce
+ * qu'un PDF ne lit pas de CSS. Toute valeur ajoutée ici doit exister là-bas :
+ * c'est la même identité des deux côtés, et un document qui s'en écarte se
+ * lit comme s'il venait d'un autre logiciel.
  *
- * Le registre s'y aligne aujourd'hui ; les autres documents (DUERP, plan
+ * Le registre s'y aligne aujourd'hui ; les trois autres PDF (DUERP, plan
  * d'actions, dossier de conformité) restent sur la palette neutre en
- * attendant qu'on décide de les aligner aussi — c'est une question
- * d'identité, pas de code.
+ * attendant qu'on décide de les aligner aussi.
  */
-export const MARQUE = {
-  marine: "#002768",
-  marineClair: "#183b76",
-  vert: "#07df9e",
-  vertPale: "#dcfaf0",
-  ardoise: "#8c9dba",
-  filet: "#e0e4ec",
+export const BOARD = {
+  encre: "#0a0a0a",
+  carte: "#ffffff",
+  canevas: "#f6f9fb",
+  /** Bleus — la famille d'accent du board. */
+  cielPale: "#d8eef9",
+  cielDoux: "#a9d3ec",
+  bleuEncre: "#376881",
+  /** Ardoises — structure, filets, texte secondaire. */
+  ardoisePale: "#edf2f5",
+  ardoiseFilet: "#dfe8ee",
+  ardoise: "#b5d1e3",
+  ardoiseDouce: "#5c7182",
+  ardoiseMoyenne: "#4d5d6b",
+  ardoiseEncre: "#304148",
+  /** États — mêmes champs et mêmes encres que `CHAMP_ETAT` / `ENCRE_ETAT`. */
+  vert: "#bdfdb5",
+  vertEncre: "#216037",
 } as const;
 
 export const COULEURS = {

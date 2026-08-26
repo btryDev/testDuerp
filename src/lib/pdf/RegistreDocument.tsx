@@ -5,7 +5,7 @@ import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 import type { ResultatVerification, StatutVerification } from "@prisma/client";
 import {
   COULEURS,
-  MARQUE,
+  BOARD,
   formatDateCourte,
   formatDateLongue,
   stylesCommuns as s,
@@ -113,29 +113,37 @@ const sr = StyleSheet.create({
   // Le filet vert sous la marque : le seul geste de couleur de la couverture
   // du registre imprimé, et sa signature. Il se retrouve sous le sur-titre de
   // chaque feuille.
-  gardeFilet: { borderTopWidth: 2.5, borderTopColor: MARQUE.vert, width: 62 },
+  gardeFilet: { borderTopWidth: 2.5, borderTopColor: BOARD.cielDoux, width: 62 },
+  gardeMarque: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+    color: BOARD.ardoiseDouce,
+    marginBottom: 10,
+  },
   gardeTitre: {
     fontSize: 30,
     fontFamily: "Helvetica-Bold",
     lineHeight: 1.15,
     marginTop: 18,
-    color: MARQUE.marine,
+    color: BOARD.encre,
   },
   gardeLabel: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 1.6,
-    color: MARQUE.ardoise,
+    color: BOARD.ardoiseMoyenne,
     marginBottom: 3,
   },
-  gardeValeur: { fontSize: 12, marginBottom: 16, color: MARQUE.marine },
+  gardeValeur: { fontSize: 12, marginBottom: 16, color: BOARD.encre },
 
   // En-tête de partie : le numéro porte le repère, le titre porte le sens.
   partieTete: {
     flexDirection: "row",
     alignItems: "baseline",
     borderBottomWidth: 1.5,
-    borderBottomColor: MARQUE.marine,
+    borderBottomColor: BOARD.encre,
     paddingBottom: 5,
     marginTop: 22,
     marginBottom: 2,
@@ -144,20 +152,20 @@ const sr = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Helvetica-Bold",
     width: 42,
-    color: MARQUE.marine,
+    color: BOARD.encre,
   },
   // Le vert du modèle ne porte jamais de texte de structure : il ponctue.
   // Un numéro de partie en vert se lisait délavé à côté du titre marine.
   partieAccent: {
     borderTopWidth: 2.5,
-    borderTopColor: MARQUE.vert,
+    borderTopColor: BOARD.cielDoux,
     width: 26,
     marginTop: 22,
   },
   partieTitre: {
     fontSize: 13,
     fontFamily: "Helvetica-Bold",
-    color: MARQUE.marine,
+    color: BOARD.encre,
   },
 
   ficheTete: {
@@ -165,34 +173,51 @@ const sr = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-end",
     borderBottomWidth: 0.5,
-    borderBottomColor: MARQUE.filet,
+    borderBottomColor: BOARD.ardoiseFilet,
     paddingBottom: 3,
   },
   ficheTitre: {
     fontSize: 10.5,
     fontFamily: "Helvetica-Bold",
-    color: MARQUE.marine,
+    color: BOARD.encre,
   },
-  // La bande d'en-tête de tableau du registre imprimé : aplat marine, texte
-  // blanc. C'est ce qui fait lire une grille comme une grille — un simple
-  // filet sous les intitulés ne s'attrape pas d'un coup d'œil sur une page
-  // qui en compte plusieurs.
+  // L'en-tête de tableau du board : petites capitales ardoise sur creux
+  // pâle, filet dessous. C'est exactement ce que rend `FicheJournal` à
+  // l'écran — le document et l'écran doivent se reconnaître.
+  //
+  // Le creux est ajouté pour l'impression : à l'écran, l'espace suffit à
+  // détacher l'en-tête ; sur une page qui empile plusieurs grilles, il
+  // fallait un fond pour l'attraper d'un coup d'œil.
   bandeTete: {
     flexDirection: "row",
-    backgroundColor: MARQUE.marine,
+    backgroundColor: BOARD.ardoisePale,
+    borderBottomWidth: 0.75,
+    borderBottomColor: BOARD.ardoise,
     paddingVertical: 4,
     paddingHorizontal: 5,
     marginTop: 6,
   },
   bandeTh: {
     fontFamily: "Helvetica-Bold",
-    fontSize: 8,
-    color: "#fff",
+    fontSize: 7,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: BOARD.ardoiseDouce,
+  },
+  // La pastille d'état, comme à l'écran : le champ et l'encre viennent des
+  // mêmes jetons que le calendrier. Une fiche qui reste à remplir n'est pas
+  // en retard — pas de rose ici, rien n'a d'échéance sur ce document.
+  pastille: {
+    fontSize: 7.5,
+    fontFamily: "Helvetica-Bold",
+    paddingHorizontal: 6,
+    paddingVertical: 2.5,
+    borderRadius: 8,
   },
   ligneTableau: {
     flexDirection: "row",
     borderBottomWidth: 0.5,
-    borderBottomColor: MARQUE.filet,
+    borderBottomColor: BOARD.ardoiseFilet,
     paddingVertical: 3.5,
     paddingHorizontal: 5,
   },
@@ -203,8 +228,8 @@ const sr = StyleSheet.create({
     color: COULEURS.texteSecondaire,
     textAlign: "right",
   },
-  cle: { fontSize: 9, color: MARQUE.ardoise, width: "42%" },
-  valeur: { fontSize: 9, width: "58%", color: MARQUE.marine },
+  cle: { fontSize: 9, color: BOARD.ardoiseMoyenne, width: "42%" },
+  valeur: { fontSize: 9, width: "58%", color: BOARD.encre },
 
   sommaireCol: { width: "48%" },
   sommairePartie: {
@@ -212,14 +237,32 @@ const sr = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     marginTop: 10,
     marginBottom: 3,
-    color: MARQUE.marine,
+    color: BOARD.encre,
   },
   sommaireFiche: {
     fontSize: 8.5,
-    color: MARQUE.ardoise,
+    color: BOARD.ardoiseMoyenne,
     marginBottom: 1.5,
   },
 });
+
+/** Champ et encre de la pastille d'état, par ton. Mêmes jetons qu'à l'écran. */
+const HABILLAGE_ETAT: Record<
+  FichePdf["ton"],
+  { fond: string; encre: string }
+> = {
+  faite: { fond: BOARD.vert, encre: BOARD.vertEncre },
+  renvoi: { fond: BOARD.cielPale, encre: BOARD.bleuEncre },
+  attente: { fond: BOARD.ardoisePale, encre: BOARD.ardoiseMoyenne },
+  muet: { fond: BOARD.carte, encre: BOARD.ardoiseDouce },
+};
+
+/** Une fiche que rien ne recueille n'a pas d'aplat : elle porte un contour. */
+const CONTOUR_MUET = {
+  borderWidth: 0.5,
+  borderColor: BOARD.ardoise,
+  borderStyle: "dashed",
+} as const;
 
 /** Ce que dit le pied d'une feuille — une date, ou pourquoi il n'y en a pas. */
 function piedDeFiche(fiche: FichePdf): string {
@@ -238,7 +281,18 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
     <View style={{ marginTop: 14 }} wrap={false}>
       <View style={sr.ficheTete}>
         <Text style={sr.ficheTitre}>{fiche.titre}</Text>
-        <Text style={s.small}>{fiche.etat}</Text>
+        <Text
+          style={[
+            sr.pastille,
+            {
+              backgroundColor: HABILLAGE_ETAT[fiche.ton].fond,
+              color: HABILLAGE_ETAT[fiche.ton].encre,
+            },
+            fiche.ton === "muet" ? CONTOUR_MUET : {},
+          ]}
+        >
+          {fiche.etat}
+        </Text>
       </View>
 
       <Text style={[s.small, { marginTop: 3 }]}>{fiche.attendu}</Text>
@@ -254,7 +308,7 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
               style={{
                 flexDirection: "row",
                 borderBottomWidth: 0.5,
-                borderBottomColor: MARQUE.filet,
+                borderBottomColor: BOARD.ardoiseFilet,
                 paddingVertical: 2.5,
               }}
             >
@@ -291,7 +345,7 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
                     key={j}
                     style={[
                       s.td,
-                      { width: largeur(ligne.length), color: MARQUE.marine },
+                      { width: largeur(ligne.length), color: BOARD.encre },
                     ]}
                   >
                     {v}
@@ -321,10 +375,10 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
               </View>
               {fiche.tenues.map((t, i) => (
                 <View key={i} style={sr.ligneTableau}>
-                  <Text style={[s.td, { width: "50%", color: MARQUE.marine }]}>
+                  <Text style={[s.td, { width: "50%", color: BOARD.encre }]}>
                     {t.titre}
                   </Text>
-                  <Text style={[s.td, { width: "50%", color: MARQUE.ardoise }]}>
+                  <Text style={[s.td, { width: "50%", color: BOARD.ardoiseMoyenne }]}>
                     {t.meta}
                   </Text>
                 </View>
@@ -371,7 +425,7 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
 function PiedDePage({ etablissement }: { etablissement: string }) {
   return (
     <Text
-      style={[s.footer, { color: MARQUE.ardoise, borderTopColor: MARQUE.filet }]}
+      style={[s.footer, { color: BOARD.ardoiseMoyenne, borderTopColor: BOARD.ardoiseFilet }]}
       fixed
     >
       {etablissement} — Registre de sécurité incendie
@@ -399,6 +453,7 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
         style={[s.pageGarde, { flexDirection: "column", justifyContent: "space-between" }]}
       >
         <View>
+          <Text style={sr.gardeMarque}>Rojer</Text>
           <View style={sr.gardeFilet} />
           <Text style={sr.gardeTitre}>
             Registre{"\n"}de sécurité{"\n"}incendie
@@ -426,7 +481,7 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
           la seconde ce qui y manque : les deux questions qu'on se pose en
           l'ouvrant, dans cet ordre. */}
       <Page size="A4" style={s.page}>
-        <Text style={[s.h1, { color: MARQUE.marine }]}>Sommaire</Text>
+        <Text style={[s.h1, { color: BOARD.encre }]}>Sommaire</Text>
 
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           {colonnes.map((col, i) => (
@@ -498,7 +553,7 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
       {/* L'index des rapports archivés — la pièce qu'un contrôleur ouvre en
           premier, et la seule qui pointe vers des fichiers conservés à part. */}
       <Page size="A4" style={s.page}>
-        <Text style={[s.h1, { color: MARQUE.marine }]}>
+        <Text style={[s.h1, { color: BOARD.encre }]}>
           Rapports de vérification archivés
         </Text>
         {data.rapports.length === 0 ? (
@@ -542,7 +597,7 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
           </View>
         )}
 
-        <Text style={[s.h2, { color: MARQUE.marine }]}>
+        <Text style={[s.h2, { color: BOARD.encre }]}>
           Vérifications en attente ou programmées
         </Text>
         {data.verifsEnAttente.length === 0 ? (
