@@ -240,18 +240,55 @@ export const obligationsAeration: Obligation[] = [
   // Habitation — VMC-Gaz (arrêté du 23 février 2018, ex-arrêté du 25 avril 1985)
   // ---------------------------------------------------------------------------
   {
+    id: "aeration-habitation-vmc-gaz-quinquennale",
+    domaine: "aeration",
+    libelle:
+      "Contrôle quinquennal du réglage et de la sécurité collective des VMC-Gaz (habitation)",
+    description:
+      "Au moins une fois tous les cinq ans, l'installation collective de VMC-gaz fait l'objet du contrôle et du réglage global de l'ensemble de l'installation — notamment le réglage général du réseau aéraulique, le réglage ou le remplacement des bouches d'air et d'extraction et le relevé des pressions — ainsi que de la vérification du bon fonctionnement de l'ensemble du dispositif de sécurité collective, appareil raccordé par appareil raccordé. Ces opérations donnent lieu à un certificat remis au propriétaire ou au syndic.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 23 février 2018, art. 26 § 5° (opérations quinquennales sur les VMC-gaz)",
+        article: "Arrêté 23-02-2018 art. 26",
+        url:
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036667631",
+        note: "« Les opérations à une fréquence au moins égale à une fois tous les cinq ans portent sur : - le contrôle et le réglage global de l'ensemble de l'installation et notamment le réglage général du réseau aéraulique, le réglage ou le remplacement des bouches d'air et d'extraction et le relevé des pressions, etc. ; - la vérification du bon fonctionnement de l'ensemble du dispositif de sécurité collective ; cette vérification porte également sur chaque appareil raccordé. » Verbatim relevé en première main le 2026-08-26.",
+        versionConstatee: "2023-01-01",
+      },
+    ],
+    periodicite: "quinquennale",
+    realisateurs: ["personne_qualifiee"],
+    criticite: 5,
+    typologies: { habitation: true },
+    categoriesEquipement: ["VMC"],
+    conditions: [
+      {
+        type: "equipement_propriete_non_infirmee",
+        categorie: "VMC",
+        propriete: "estVmcGaz",
+      },
+    ],
+    notesInternes:
+      "Créée le 2026-08-26. L'article 26 § 5° fixe DEUX périodicités minimales — annuelle et quinquennale — et le référentiel ne portait que la première. Le contrôle quinquennal ne produisait donc aucune échéance, alors qu'il est le seul à vérifier le dispositif de sécurité collective DANS SON ENSEMBLE et appareil par appareil : c'est lui qui garantit que la combustion est bien coupée sur chaque logement si l'extraction s'arrête. Le contrôle annuel ne teste que le système de DÉTECTION du défaut.\n\nQuatrième occurrence du même motif après PE 4 § 2, PE 27 § 5 et EL 18 § 4 : un article qui porte plusieurs rythmes n'entrait dans le modèle que par son premier. Même forme `non_infirmee` et même criticité que l'obligation annuelle, dont elle partage la condition de déclenchement.",
+  },
+  {
     id: "aeration-habitation-vmc-gaz-annuelle",
     domaine: "aeration",
     libelle: "Entretien et vérification annuelle des installations collectives de VMC-Gaz (habitation)",
     description:
-      "Le propriétaire ou syndic d'un immeuble d'habitation équipé d'une ventilation mécanique contrôlée desservant des appareils à gaz fait entretenir et vérifier périodiquement l'ensemble de ces installations par un professionnel qualifié, dans le cadre d'un contrat écrit.",
+      "Le propriétaire ou syndic d'un immeuble d'habitation équipé d'une ventilation mécanique contrôlée desservant des appareils à gaz fait procéder chaque année au nettoyage des pales des ventilateurs, à la vérification et au remplacement éventuel des pièces d'usure, à la vérification du maintien des caractéristiques de fonctionnement de l'installation, de son état de propreté, du fonctionnement des alarmes et de l'absence de dispositifs motorisés raccordés, ainsi qu'au contrôle du bon fonctionnement du système de détection de défaut du dispositif de sécurité collective. Ces opérations donnent lieu à un certificat remis au propriétaire ou au syndic, attestant de leur réalisation effective.",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 23 février 2018 (installations de gaz des bâtiments d'habitation) — remplace l'arrêté du 25 avril 1985, abrogé le 5 mars 2018",
-        article: "Arrêté 2018-02-23",
+        reference:
+          "Arrêté du 23 février 2018, art. 26 § 5° (opérations annuelles sur les VMC-gaz)",
+        article: "Arrêté 23-02-2018 art. 26",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036667631",
+        note: "« Les installations collectives de ventilation mécanique contrôlée - gaz, auxquelles sont raccordés des appareils à gaz font l'objet d'opérations périodiques d'entretien et de vérification […] avec l'établissement d'un certificat remis au propriétaire ou au syndic et attestant de leur réalisation effective : Les opérations à une fréquence au moins égale à une fois par an portent sur : - le nettoyage des pales des ventilateurs ; - la vérification et, le cas échéant, le remplacement des pièces d'usure ; - la vérification du maintien des caractéristiques de fonctionnement de la ventilation mécanique contrôlée-gaz, de son état de propreté, du fonctionnement des alarmes éventuelles et de l'absence de dispositifs motorisés raccordés à la ventilation mécanique contrôlée - gaz ; - le bon fonctionnement du système de détection de défaut du dispositif de sécurité collective. » Verbatim relevé en première main le 2026-08-26. L'abrogation de l'arrêté du 25 avril 1985 est confirmée par l'article 32 du même arrêté.",
+        versionConstatee: "2023-01-01",
       },
     ],
     periodicite: "annuelle",
@@ -267,6 +304,6 @@ export const obligationsAeration: Obligation[] = [
       },
     ],
     notesInternes:
-      "Hors périmètre principal TPE/PME mais retenu car une TPE peut gérer un immeuble d'habitation (cf. flag estHabitation, ADR-004). L'arrêté du 25 avril 1985 ne vise QUE les VMC desservant des appareils à gaz (VMC-Gaz) : la condition `estVmcGaz` évite d'appliquer la règle à toute VMC d'habitation. Forme `non_infirmee` obligatoire ici (criticité 5) — les VMC déjà déclarées gardent l'obligation tant que le dirigeant n'a pas répondu « non » à la question du raccordement gaz.",
+      "Hors périmètre principal TPE/PME mais retenu car une TPE peut gérer un immeuble d'habitation (cf. flag estHabitation, ADR-004). L'arrêté du 25 avril 1985 ne vise QUE les VMC desservant des appareils à gaz (VMC-Gaz) : la condition `estVmcGaz` évite d'appliquer la règle à toute VMC d'habitation. Forme `non_infirmee` obligatoire ici (criticité 5) — les VMC déjà déclarées gardent l'obligation tant que le dirigeant n'a pas répondu « non » à la question du raccordement gaz.\n\nCORRIGÉ LE 2026-08-26 après lecture du texte au verbatim. La description exigeait un « contrat écrit » que l'article 26 § 5° ne demande pas : il impose un CERTIFICAT remis au propriétaire ou au syndic, attestant de la réalisation effective. Le contrat d'entretien écrit figure bien dans l'arrêté, mais au § 3°, et il porte sur les installations de GAZ situées entre l'organe de coupure générale et les compteurs — pas sur la VMC-gaz. Deux obligations distinctes avaient été confondues. La référence ne citait par ailleurs aucun article, ce qui la rendait impossible à relier au dépouillement.",
   },
 ];

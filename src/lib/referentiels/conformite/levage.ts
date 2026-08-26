@@ -75,14 +75,17 @@ export const obligationsLevage: Obligation[] = [
     domaine: "levage",
     libelle: "Épreuve de fonctionnement à la première mise en service",
     description:
-      "Avant mise en service d'un appareil de levage de charges non spécifiquement conçu pour le levage de personnes, une épreuve statique et une épreuve dynamique de fonctionnement sont réalisées pour vérifier la tenue des charges et des organes de sécurité.",
+      "Un appareil de levage neuf ou d'occasion dont l'aptitude à l'emploi n'a pas été vérifiée dans sa configuration d'utilisation subit, avant mise en service, l'examen d'adéquation, l'examen de montage et d'installation s'il est installé à demeure, l'épreuve statique et l'épreuve dynamique. L'épreuve dynamique n'est pas exigée pour les appareils mus par la force humaine employée directement, SAUF s'ils sont conçus pour lever des personnes. L'appareil et ses supports doivent subir les deux épreuves sans défaillance.",
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 1er mars 2004, art. 6, 10 et 11 (essai de fonctionnement, épreuves statique et dynamique)",
-        article: "Arrêté 2004-03-01 art. 10-11",
+        reference:
+          "Arrêté du 1er mars 2004, art. 14 (vérification à la mise en service), renvoyant aux art. 5, 10 et 11",
+        article: "Arrêté 2004-03-01 art. 14",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
+        note: "« d) De l'épreuve dynamique prévue par l'article 11. Cette épreuve n'est pas exigée pour les appareils de levage mus par la force humaine employée directement sauf s'ils sont conçus pour lever des personnes. » Verbatim relevé en première main le 2026-08-26.",
+        versionConstatee: "2005-03-31",
       },
       {
         source: "CODE_TRAVAIL",
@@ -98,7 +101,7 @@ export const obligationsLevage: Obligation[] = [
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version citait R. 4323-25, qui traite de la consignation au registre.",
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait R. 4323-25, qui traite de la consignation au registre.\n\nCORRIGÉ LE 2026-08-26 : la description INVERSAIT l'exception de l'article 14 d). Elle réservait l'épreuve aux appareils « non spécifiquement conçus pour le levage de personnes », alors que le texte dit l'inverse : l'épreuve dynamique n'est pas exigée pour les appareils mus par la force humaine employée directement, SAUF s'ils sont conçus pour lever des personnes. L'obligation excluait donc précisément les appareils pour lesquels le texte l'impose le plus nettement — ceux sous lesquels quelqu'un se tient.\n\nLa référence a aussi été recalée : elle citait les articles 6, 10 et 11, qui DÉFINISSENT les épreuves, sans citer l'article 14, qui seul les EXIGE à la mise en service. Définir n'est pas prescrire.\n\nReste non porté : l'article 13 dispense des épreuves les appareils neufs dont l'aptitude à l'emploi A été vérifiée dans leurs configurations d'utilisation. Le modèle ne sait pas conditionner une obligation à cette vérification amont, qui figure sur la déclaration du fabricant : l'obligation reste en sur-application pour ces appareils.",
   },
   {
     id: "levage-vgp-annuelle-charges",

@@ -202,8 +202,22 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     // PE 27 : instruction du personnel côté ERP, sans périodicité écrite.
     // R. 4544-11-1 : attestation médicale quinquennale, en vigueur depuis
     // octobre 2025, nominative donc bloquée par le porteur d'échéance.
+    // R. 4222-20 : entretien de « l'ensemble des installations » d'aération,
+    // quatrième cas du motif PE 4 — un article qui prescrit plus large que ce
+    // que le référentiel sait porter.
+    // Arrêté 23-02-2018 art. 26 § 3 : entretien décennal des installations
+    // collectives de gaz entre l'organe de coupure générale et les compteurs.
+    // Ajouté le 2026-08-26 à la lecture en première main du texte, qui a
+    // simultanément confirmé le § 5° (VMC-gaz) et révélé ce § 3°. Bloqué par
+    // l'absence d'une catégorie d'équipement « installation collective de gaz ».
     // L'ordre suit la déclaration des corpus, pas l'alphabet.
-    expect(refs).toEqual(["PE 4", "PE 27", "R. 4544-11-1", "R. 4222-20"]);
+    expect(refs).toEqual([
+      "PE 4",
+      "PE 27",
+      "R. 4544-11-1",
+      "R. 4222-20",
+      "Arrêté 23-02-2018 art. 26 § 3",
+    ]);
   });
 
   it("chaque obligation manquante dit ce qui empêche de l'encoder ou pourquoi elle manque", () => {

@@ -22,12 +22,17 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
     obligations: ["levage-vgp-semestrielle-chariot-gerbeur"],
   },
   {
-    ref: "Arrêté 2004-03-01 art. 10-11",
+    ref: "Arrêté 2004-03-01 art. 14",
+    intitule: "Vérification à la mise en service — aptitude non vérifiée en amont",
     versionEnVigueur: "2005-03-31",
     luLe: "2026-08-26",
-    lecture: "agent_verbatim",
+    lecture: "premiere_main",
     statut: "retenu",
     obligations: ["levage-epreuve-initiale-fonctionnement"],
+    citationCle:
+      "« d) De l'épreuve dynamique prévue par l'article 11. Cette épreuve n'est pas exigée pour les appareils de levage mus par la force humaine employée directement sauf s'ils sont conçus pour lever des personnes. »",
+    prescrit:
+      "Exige, avant mise en service des appareils neufs ou d'occasion dont l'aptitude à l'emploi n'a PAS été vérifiée dans leurs configurations d'utilisation : examen d'adéquation, examen de montage si installé à demeure, épreuve statique et épreuve dynamique. Les articles 6, 10 et 11 DÉFINISSENT ces épreuves ; seul l'article 14 les EXIGE. L'exception du d) était encodée à l'envers dans le référentiel avant le 2026-08-26.",
   },
   {
     ref: "Arrêté 2004-03-01 art. 19",
