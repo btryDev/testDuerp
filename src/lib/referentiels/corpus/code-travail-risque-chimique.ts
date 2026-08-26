@@ -49,9 +49,12 @@ export const CODE_TRAVAIL_RISQUE_CHIMIQUE: Corpus = {
     ref: "R. 4222-20",
     versionEnVigueur: "2008-05-01",
     luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "retenu",
-    obligations: ["aeration-travail-entretien-annuel", "aeration-travail-mise-en-service", "stockage-dangereux-ventilation-locaux"],
+    lecture: "premiere_main",
+    statut: "obligation_manquante",
+    motif:
+      "Verbatim relevé en première main le 2026-08-26 : « L'employeur maintient L'ENSEMBLE DES INSTALLATIONS MENTIONNÉES AU PRÉSENT CHAPITRE en bon état de fonctionnement et en assure régulièrement le contrôle. » Le présent chapitre est le chapitre II « Aération, assainissement », articles R. 4222-1 à R. 4222-26 — donc toute installation d'aération d'un lieu de travail, sans distinction de catégorie. Le référentiel l'accroche à trois catégories d'équipement seulement (VMC, CTA, stockage de matières dangereuses) via 3 obligations. Un établissement dont la ventilation n'est déclarée sous aucune de ces trois ne reçoit AUCUNE ligne, alors que l'article la couvre. Même mécanisme que PE 4 § 2 — une obligation portée par l'établissement, décomposée en fragments accrochés à des équipements — mais celui-ci est dans le périmètre, il vise tout employeur.",
+    bloquePar:
+      "Porteur d'échéance : l'obligation naît du chapitre entier, pas d'un équipement. `categoriesEquipement` est requis et `Verification.equipementId` n'est pas nullable.",
   },
   {
     ref: "R. 4323-1",

@@ -202,7 +202,8 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     // PE 27 : instruction du personnel côté ERP, sans périodicité écrite.
     // R. 4544-11-1 : attestation médicale quinquennale, en vigueur depuis
     // octobre 2025, nominative donc bloquée par le porteur d'échéance.
-    expect(refs).toEqual(["PE 4", "PE 27", "R. 4544-11-1"]);
+    // L'ordre suit la déclaration des corpus, pas l'alphabet.
+    expect(refs).toEqual(["PE 4", "PE 27", "R. 4544-11-1", "R. 4222-20"]);
   });
 
   it("chaque obligation manquante dit ce qui empêche de l'encoder ou pourquoi elle manque", () => {
