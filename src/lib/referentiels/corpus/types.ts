@@ -40,6 +40,20 @@ export type StatutArticle =
    * inscrire au calendrier », l'autre dit « ça ne nous concerne pas ».
    */
   | { statut: "sans_objet"; motif: string }
+  /**
+   * Lu, dans le périmètre, et il CRÉE une obligation que le référentiel ne
+   * porte pas.
+   *
+   * C'est le statut qui justifie tout l'exercice. Sans lui, un texte lu qui
+   * impose quelque chose qu'on n'a pas encodé n'a que deux issues : être
+   * classé « retenu » en désignant une obligation qui n'existe pas, ou
+   * « sans objet » — ce qui serait un mensonge. Les deux effacent la
+   * trouvaille.
+   *
+   * Une obligation manquante n'est pas un défaut du dépouillement : c'est son
+   * produit. Le compte de ces articles est ce que le référentiel doit rattraper.
+   */
+  | { statut: "obligation_manquante"; motif: string; bloquePar?: string }
   /** Écarté par une exclusion déclarée du périmètre. */
   | { statut: "hors_perimetre"; exclusion: MotifExclusion; motif?: string }
   /** Présent au corpus, pas encore lu. */
@@ -79,6 +93,8 @@ export type CouvertureCorpus = {
   retenus: number;
   sansObjet: number;
   horsPerimetre: number;
+  /** Articles qui imposent quelque chose que le référentiel ne porte pas. */
+  obligationsManquantes: number;
   nonDepouilles: number;
   /** Vrai seulement si aucun article n'est resté non dépouillé. */
   complet: boolean;
@@ -95,6 +111,7 @@ export function couverture(c: Corpus): CouvertureCorpus {
     retenus: par("retenu"),
     sansObjet: par("sans_objet"),
     horsPerimetre: par("hors_perimetre"),
+    obligationsManquantes: par("obligation_manquante"),
     nonDepouilles,
     complet: nonDepouilles === 0,
   };

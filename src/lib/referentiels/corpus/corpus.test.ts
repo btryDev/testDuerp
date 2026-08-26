@@ -4,6 +4,7 @@ import {
   CORPUS,
   couverture,
   EXCLUSIONS,
+  obligationsManquantes,
   obligationsSurTextesNonDepouilles,
 } from "./index";
 
@@ -64,9 +65,17 @@ describe("corpus — forme des dépouillements", () => {
     for (const c of CORPUS) {
       const cv = couverture(c);
       expect(cv.complet, c.id).toBe(cv.nonDepouilles === 0);
-      expect(cv.retenus + cv.sansObjet + cv.horsPerimetre + cv.nonDepouilles).toBe(
-        cv.total,
-      );
+      // Somme exhaustive : tout article a exactement un statut. Un statut
+      // ajouté au type et oublié ici ferait diverger la somme du total — ce
+      // qui est arrivé lors de l'ajout d'`obligation_manquante`.
+      expect(
+        cv.retenus +
+          cv.sansObjet +
+          cv.horsPerimetre +
+          cv.obligationsManquantes +
+          cv.nonDepouilles,
+        `${c.id} : la somme des statuts ne fait pas le total — un statut manque au compte`,
+      ).toBe(cv.total);
     }
   });
 });
@@ -103,5 +112,32 @@ describe("corpus — la dette de lecture, mesurée et décroissante", () => {
       `PLAFOND (${PLAFOND}) est trop haut : il n'en reste que ${restantes.length}. ` +
         `Abaisser PLAFOND à ${restantes.length}.`,
     ).toBeLessThanOrEqual(2);
+  });
+});
+
+describe("corpus — Livre III du règlement de sécurité ERP", () => {
+  const pe = CORPUS.find((c) => c.id === "arrete-1980-livre-3");
+
+  it("est déclaré et dépouillé de bout en bout", () => {
+    expect(pe, "le corpus PE a disparu de CORPUS").toBeDefined();
+    const cv = couverture(pe!);
+    expect(cv.total).toBe(58);
+    expect(cv.complet, `${cv.nonDepouilles} article(s) non dépouillé(s)`).toBe(true);
+  });
+
+  it("ne retient qu'un seul article créant une obligation périodique pour les secteurs couverts", () => {
+    // Le résultat du dépouillement du 2026-08-26, verrouillé : sur 58 articles,
+    // PE 4 est le seul à imposer une échéance à un exploitant de restaurant, de
+    // commerce ou de bureau. PE 27 impose une instruction du personnel sans
+    // périodicité écrite. Si ce test casse, c'est qu'un article a changé de
+    // statut — donc que quelqu'un a relu, ou que quelqu'un s'est trompé.
+    const refs = obligationsManquantes().map((o) => o.ref);
+    expect(refs).toEqual(["PE 4", "PE 27"]);
+  });
+
+  it("chaque obligation manquante dit ce qui empêche de l'encoder ou pourquoi elle manque", () => {
+    for (const o of obligationsManquantes()) {
+      expect(o.motif.length, o.ref).toBeGreaterThan(80);
+    }
   });
 });
