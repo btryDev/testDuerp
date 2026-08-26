@@ -14,7 +14,7 @@ import { FAMILLES_ESP } from "./esp";
  * Les propriétés qui alimentent les conditions d'obligations du référentiel
  * (cf. `src/lib/referentiels/conformite/`) sont :
  *   - `aGroupeElectrogene`          → ERP, art. EL 20
- *   - `estLocalPollutionSpecifique` → travail, arrêté 08-10-1987 art. 3 § II
+ *   - `estLocalPollutionSpecifique` → travail, arrêté 08-10-1987 art. 4 § 2
  *   - `nbVehiculesParkingCouvert`   → ERP, art. PS 32 (biennale ou annuelle)
  *   - `estVmcGaz`                   → habitation, arrêté 25-04-1985
  *   - `aRobinetsIncendieArmes`      → ERP, vérification annuelle des RIA

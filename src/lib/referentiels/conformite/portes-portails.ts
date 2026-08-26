@@ -102,7 +102,7 @@ export const obligationsPortesPortails: Obligation[] = [
     domaine: "porte_portail",
     libelle: "Maintien en état et réparation sans délai (porte automatique)",
     description:
-      "Les portes et portails automatiques doivent être maintenus en bon état de fonctionnement. Toute anomalie affectant la sécurité doit être corrigée sans délai — interdiction d'exploitation tant qu'un dispositif de sécurité est défaillant.",
+      "Les portes et portails automatiques doivent être maintenus en bon état de fonctionnement. Toute anomalie affectant la sécurité doit être éliminée le plus rapidement possible — interdiction d'exploitation tant qu'un dispositif de sécurité est défaillant.",
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
@@ -147,5 +147,7 @@ export const obligationsPortesPortails: Obligation[] = [
     criticite: 4,
     typologies: { travail: true },
     categoriesEquipement: ["PORTAIL_AUTO"],
+    notesInternes:
+      "DÉFAUT CONSTATÉ LE 2026-08-26, non corrigé ici parce qu'il appelle une décision. Cette obligation porte une périodicité semestrielle alors que ses deux références — les articles 2 et 5 de l'arrêté du 21 décembre 1993 — n'en fixent AUCUNE : ce sont des prescriptions techniques d'installation. La périodicité vient de l'article 9, qui n'est pas cité. Or l'ajouter fait échouer le test anti-doublon : l'obligation partagerait catégorie, périodicité et article fondateur avec `porte-auto-verification-semestrielle`, qui couvre déjà PORTAIL_AUTO au même rythme. Les deux font double emploi, et la référence manquante est ce qui le masquait. Trancher suppose de choisir : fusionner, ou restreindre celle-ci à ce que les articles 2 et 5 prescrivent vraiment — des caractéristiques d'installation, sans échéance. Troisième défaut : l'identifiant dit « piete » alors que l'article 2 vise le passage de VÉHICULES."
   },
 ];

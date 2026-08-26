@@ -9,11 +9,19 @@ import { CCH_REGISTRE_SECURITE } from "./cch-registre-securite";
 import { CODE_TRAVAIL_INCENDIE } from "./code-travail-incendie";
 import { ARRETE_2004_03_01_LEVAGE } from "./arrete-2004-03-01-levage";
 import { ARRETE_2011_12_26_ELECTRICITE } from "./arrete-2011-12-26-electricite";
+import { ARRETE_1980_LIVRE_4_PARCS } from "./arrete-1980-livre-4-parcs";
 import { ARRETE_1987_10_08_AERATION } from "./arrete-1987-10-08-aeration";
+import { ARRETE_1993_12_21_PORTES } from "./arrete-1993-12-21-portes";
+import { ARRETE_2018_02_23_GAZ_HABITATION } from "./arrete-2018-02-23-gaz-habitation";
+import { ARRETES_ASCENSEURS } from "./arretes-ascenseurs";
+import { ARRETES_MODIFICATIFS_ERP } from "./arretes-modificatifs-erp";
+import { CCH_ASCENSEURS } from "./cch-ascenseurs";
+import { CODE_TRAVAIL_PORTES } from "./code-travail-portes";
 import { CODE_TRAVAIL_ELECTRICITE } from "./code-travail-electricite";
 import { CODE_TRAVAIL_RISQUE_CHIMIQUE } from "./code-travail-risque-chimique";
 import { ESP_SUIVI_EN_SERVICE } from "./esp-suivi-en-service";
 import { ICPE_STOCKAGE } from "./icpe-stockage";
+import { INRS_DOCUMENTAIRE } from "./inrs-documentaire";
 import { CODE_TRAVAIL_LEVAGE } from "./code-travail-levage";
 import { FROID_FLUIDES } from "./froid-fluides";
 import { couverture, type Corpus, type CouvertureCorpus } from "./types";
@@ -44,6 +52,14 @@ export const CORPUS: readonly Corpus[] = [
   ESP_SUIVI_EN_SERVICE,
   ICPE_STOCKAGE,
   ARRETE_1987_10_08_AERATION,
+  CCH_ASCENSEURS,
+  ARRETES_ASCENSEURS,
+  CODE_TRAVAIL_PORTES,
+  ARRETE_1993_12_21_PORTES,
+  ARRETE_1980_LIVRE_4_PARCS,
+  ARRETE_2018_02_23_GAZ_HABITATION,
+  INRS_DOCUMENTAIRE,
+  ARRETES_MODIFICATIFS_ERP,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {

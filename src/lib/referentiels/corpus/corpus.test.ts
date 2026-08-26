@@ -129,7 +129,12 @@ describe("corpus — la dette de lecture, mesurée et décroissante", () => {
   // Il descend à mesure que les corpus sont dépouillés. Quand il atteint 0,
   // le référentiel peut dire — et prouver — qu'il ne repose que sur des textes
   // lus de bout en bout.
-  const PLAFOND = 25;
+  // 1 : `aeration-habitation-vmc-gaz-annuelle`, dont l'unique référence est
+  // l'arrêté du 23 février 2018, délibérément laissé non dépouillé — sa
+  // lecture s'interrompt avant le titre qui traite du contrôle, et
+  // l'obligation est de criticité 5. Le déclarer lu serait le pire service à
+  // lui rendre.
+  const PLAFOND = 1;
 
   // Le nombre de références qui ne portent même pas de clé d'article, donc
   // rattachables à aucun corpus. Complément indispensable du plafond : sans
@@ -192,6 +197,9 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     const refs = obligationsManquantes().map((o) => o.ref);
     // PE 4 a quitté la liste : le référentiel le cite désormais (domaine
     // électricité), il est donc « retenu ». PE 27 reste manquant.
+    // PE 27 : instruction du personnel côté ERP, sans périodicité écrite.
+    // R. 4544-11-1 : attestation médicale quinquennale, en vigueur depuis
+    // octobre 2025, nominative donc bloquée par le porteur d'échéance.
     expect(refs).toEqual(["PE 27", "R. 4544-11-1"]);
   });
 

@@ -14,6 +14,14 @@ export const CODE_TRAVAIL_RISQUE_CHIMIQUE: Corpus = {
     "Prévention du risque chimique (R. 4412-11 et s.), information et formation (R. 4412-38, R. 4412-87), aération (R. 4222-20), et formation à l'utilisation des équipements de travail (R. 4323-1 et s.).",
   articles: [
   {
+    ref: "R. 4222-21",
+    versionEnVigueur: "2018-01-01",
+    luLe: "2026-08-26",
+    lecture: "agent_verbatim",
+    statut: "retenu",
+    obligations: ["aeration-travail-mise-en-service"],
+  },
+  {
     ref: "R. 4412-11",
     versionEnVigueur: "2008-05-01",
     luLe: "2026-08-26",

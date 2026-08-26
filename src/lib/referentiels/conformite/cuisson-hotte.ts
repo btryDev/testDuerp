@@ -80,7 +80,7 @@ export const obligationsCuissonHotte: Obligation[] = [
     domaine: "cuisson_hotte",
     libelle: "Vérification triennale des installations de gaz combustible (ERP 5ᵉ catégorie)",
     description:
-      "Dans les ERP de 5ᵉ catégorie, l'exploitant fait procéder tous les trois ans au plus, par des techniciens compétents, à l'entretien et à la vérification des installations de gaz (règle applicable à partir du 1er juillet 2026). Les installations neuves ou modifiées sont vérifiées après travaux (art. PE 10 B).",
+      "Dans les ERP de 5ᵉ catégorie, l'exploitant fait procéder tous les trois ans au plus, par des techniciens compétents, à l'entretien et à la vérification des installations de gaz (en vigueur depuis le 1er juillet 2026). Les installations neuves ou modifiées sont vérifiées après travaux (art. PE 10 B).",
     referencesLegales: [
       {
         source: "ARRETE",
@@ -103,7 +103,7 @@ export const obligationsCuissonHotte: Obligation[] = [
     typologies: { erp: { categories: ["N5"] } },
     categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
     notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version citait « GZ 29 § 1 » pour une périodicité triennale. GZ 29 = entretien ; la vérification périodique des installations gaz en ERP du 1er groupe est ANNUELLE (GZ 30) — voir cuisson-gaz-installations-annuelle. La périodicité triennale n'existe que pour la 5ᵉ catégorie (PE 4 § 2 modifié par l'arrêté du 1er décembre 2025). L'id est conservé (référencé en base).",
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait « GZ 29 § 1 » pour une périodicité triennale. GZ 29 = entretien ; la vérification périodique des installations gaz en ERP du 1er groupe est ANNUELLE (GZ 30) — voir cuisson-gaz-installations-annuelle. La périodicité triennale n'existe que pour la 5ᵉ catégorie (PE 4 § 2 modifié par l'arrêté du 1er décembre 2025). L'id est conservé (référencé en base).\n\nAmendement 2026-08-26 : le chapitre GZ a été entièrement réécrit. Les articles GZ 16 à GZ 30 sont ABROGÉS depuis le 1er janvier 2026 (arrêté du 23 février 2025, art. 1), et l'URL de section qui les portait renvoie un 404. Ce qui les remplace : GZ 14 « Entretien des installations » et GZ 15 « Vérifications techniques périodiques », en vigueur depuis la même date. GZ 15 dispose que les vérifications « sont réalisées annuellement conformément à la section II, chapitre premier du présent titre ». La substance encodée était juste ; la numérotation et le lien étaient morts.",
   },
   {
     id: "cuisson-gaz-installations-annuelle",
@@ -114,10 +114,10 @@ export const obligationsCuissonHotte: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. GZ 30 (vérifications techniques)",
-        article: "GZ 30",
+        reference: "Arrêté du 25 juin 1980, art. GZ 15 (vérifications techniques périodiques, ex GZ 30)",
+        article: "GZ 15",
         url:
-          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304269/",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304213",
       },
     ],
     periodicite: "annuelle",
@@ -126,7 +126,7 @@ export const obligationsCuissonHotte: Obligation[] = [
     typologies: { erp: { categories: ["N1", "N2", "N3", "N4"] } },
     categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
     notesInternes:
-      "Ajouté à l'audit 2026-08 : jusque-là seule une vérification « triennale » (fausse pour le 1er groupe) existait. GZ 29 = entretien, GZ 30 = vérification annuelle.",
+      "Ajouté à l'audit 2026-08 : jusque-là seule une vérification « triennale » (fausse pour le 1er groupe) existait. GZ 29 = entretien, GZ 30 = vérification annuelle.\n\nAmendement 2026-08-26 : le chapitre GZ a été entièrement réécrit. Les articles GZ 16 à GZ 30 sont ABROGÉS depuis le 1er janvier 2026 (arrêté du 23 février 2025, art. 1), et l'URL de section qui les portait renvoie un 404. Ce qui les remplace : GZ 14 « Entretien des installations » et GZ 15 « Vérifications techniques périodiques », en vigueur depuis la même date. GZ 15 dispose que les vérifications « sont réalisées annuellement conformément à la section II, chapitre premier du présent titre ». La substance encodée était juste ; la numérotation et le lien étaient morts.",
   },
   {
     id: "cuisson-erp-circuits-extraction-nettoyage",
@@ -137,7 +137,7 @@ export const obligationsCuissonHotte: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. GC 21 (ramonage annuel des conduits) et GC 20",
+        reference: "Arrêté du 25 juin 1980, art. GC 21 § 2 (ramonage annuel, nettoyage des circuits, filtres hebdomadaires)",
         article: "GC 21",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",

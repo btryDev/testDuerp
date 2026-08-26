@@ -138,7 +138,7 @@ export const obligationsAscenseurs: Obligation[] = [
     domaine: "ascenseur",
     libelle: "Contrôle technique quinquennal (ascenseur)",
     description:
-      "Tous les cinq ans, le propriétaire fait réaliser un contrôle technique de l'ascenseur (R. 134-11) par un contrôleur technique agréé, un organisme habilité ou une personne certifiée (R. 134-12). Le rapport, remis au propriétaire dans les trente jours, est transmis par lui à l'entreprise d'entretien (R. 134-13) ; toute personne disposant d'un titre d'occupation dans l'immeuble peut en obtenir communication (L. 134-4).",
+      "Tous les cinq ans, le propriétaire fait réaliser un contrôle technique de l'ascenseur (R. 134-11) par un contrôleur technique agréé, un organisme habilité ou une personne certifiée (R. 134-12). Le rapport, remis au propriétaire dans le mois suivant la fin de l'intervention, est transmis par lui à l'entreprise d'entretien (R. 134-13) ; toute personne disposant d'un titre d'occupation dans l'immeuble peut en obtenir communication (L. 134-4).",
     referencesLegales: [
       {
         source: "CCH",
@@ -168,7 +168,7 @@ export const obligationsAscenseurs: Obligation[] = [
     domaine: "ascenseur",
     libelle: "Tenue du carnet d'entretien de l'ascenseur",
     description:
-      "Le propriétaire tient à jour un carnet d'entretien où figurent les interventions d'entretien, les incidents, les visites et contrôles réalisés. Le carnet est conservé pendant toute la durée de vie de l'ascenseur.",
+      "Un carnet d'entretien est tenu à jour — par l'entreprise dans le régime du contrat d'entretien (R. 134-7 III), par le propriétaire lui-même s'il assure l'entretien par ses propres moyens (R. 134-10). L'entreprise remet en outre au propriétaire un rapport annuel d'activité où figurent les interventions d'entretien, les incidents, les visites et contrôles réalisés. Le carnet est conservé pendant toute la durée de vie de l'ascenseur.",
     referencesLegales: [
       {
         source: "CCH",
