@@ -1,7 +1,9 @@
 export {
   determineObligationsApplicables,
   evaluerObligation,
+  matchTypologie,
   type DetermineOptions,
+  type ResultatTypologie,
 } from "./engine";
 export {
   appliquerPrescriptions,

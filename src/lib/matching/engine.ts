@@ -49,7 +49,9 @@ import type {
 // Étape 1 — Typologie
 // -----------------------------------------------------------------------------
 
-type ResultatTypologie = { ok: true; raisons: string[] } | { ok: false };
+export type ResultatTypologie =
+  | { ok: true; raisons: string[] }
+  | { ok: false };
 
 /**
  * Évaluation d'un critère de régime : `absent` (non déclaré par
@@ -144,7 +146,12 @@ function evaluerIgh(
  *   - `effectifMin`/`effectifMax` restent en ET avec le reste.
  *   - Les `raisons` ne contiennent que les régimes effectivement matchés.
  */
-function matchTypologie(
+// Exporté depuis l'ADR-021 : la composition du registre de sécurité pose la
+// même question que le matching d'une obligation — « à qui cette ligne
+// s'applique-t-elle ? » — et doit y répondre avec la même logique, seuils,
+// exclusions et garde-fous compris. La réécrire ailleurs, c'est se garantir
+// deux réponses divergentes le jour où l'une des deux est corrigée.
+export function matchTypologie(
   t: TypologieApplication,
   etab: EtablissementMatching,
 ): ResultatTypologie {
