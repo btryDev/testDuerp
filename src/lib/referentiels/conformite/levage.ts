@@ -193,7 +193,54 @@ export const obligationsLevage: Obligation[] = [
     notesInternes:
       "Obligation créée en 2026-08 : le référentiel ne connaissait que la VGP annuelle et une VGP semestrielle réservée au levage de personnes, si bien qu'un gerbeur ou un chariot élévateur — l'appareil de levage le plus courant en commerce et en réserve — héritait d'une périodicité annuelle contraire à l'article 23. Condition stricte (`booleenne`) assumée bien que la criticité soit de 5 : l'obligation est nouvelle, aucun équipement déjà en base ne peut la perdre, et la couverture par défaut reste assurée par `levage-vgp-annuelle-charges`, qui s'applique tant que la question n'a pas reçu « oui ». Le critère de champ n'est ni la motorisation ni le nom de l'engin mais le changement de niveau significatif de la charge (art. 2 a) — voir l'en-tête du fichier.\n\nAmendement 2026-08-26 : R. 4323-23 était en refs[0] ici, alors que les trois autres obligations de VGP du fichier mettent l'arrêté du 1er mars 2004 en premier. Même rôle juridique, deux traitements — et le test anti-doublon compare sur refs[0], donc l'incohérence le rendait aveugle entre ces obligations. L'arrêté passe fondateur partout : R. 4323-23 renvoie la périodicité à un arrêté, c'est l'arrêté qui la fixe.",
   },
-  {
+    {
+    id: "levage-vgp-trimestrielle-force-humaine",
+    domaine: "levage",
+    libelle:
+      "Vérification générale trimestrielle (appareil manuel élevant un poste de travail)",
+    description:
+      "Les appareils de levage mus par la force humaine employée directement, utilisés pour déplacer en élévation un poste de travail, font l'objet d'une vérification générale périodique tous les trois mois par une personne qualifiée. Elle comporte l'examen de l'état de conservation prévu à l'article 9 et les essais des b et c de l'article 6.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 1er mars 2004, art. 23 b) (périodicité de 3 mois)",
+        article: "Arrêté 2004-03-01 art. 23",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680469",
+        note: "« Toutefois, cette périodicité est de : […] b) Trois mois pour les appareils de levage, mus par la force humaine employée directement, utilisés pour déplacer en élévation un poste de travail. » Verbatim relevé le 2026-08-26.",
+        versionConstatee: "2005-03-31",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4323-23",
+        article: "R. 4323-23",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
+      },
+    ],
+    periodicite: "trimestrielle",
+    realisateurs: ["personne_qualifiee", "organisme_agree"],
+    criticite: 5,
+    typologies: { travail: true },
+    categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
+    conditions: [
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "EQUIPEMENT_LEVAGE",
+        propriete: "estMuParForceHumaine",
+        valeur: true,
+      },
+      {
+        type: "equipement_propriete_non_infirmee",
+        categorie: "EQUIPEMENT_LEVAGE",
+        propriete: "sertAuLevageDePersonnes",
+      },
+    ],
+    notesInternes:
+      "Créée le 2026-08-26. Le référentiel ne connaissait aucune périodicité trimestrielle : l'article 23 distingue six mois pour les appareils mus par une énergie AUTRE que la force humaine (a) et trois mois pour ceux mus par la force humaine employée directement (b), et seule la première branche était encodée. Un treuil à manivelle ou un palan à chaîne servant à élever un poste de travail recevait donc six mois au lieu de trois.\n\nLa propriété `estMuParForceHumaine` a été créée pour cela — elle n'existait pas, ce qui m'avait fait présenter à tort le manque comme non corrigeable. Condition stricte (`booleenne`) bien que la criticité soit de 5 : l'obligation est nouvelle, aucun équipement déjà en base ne peut la perdre, et la couverture par défaut reste assurée par la semestrielle, qui s'applique tant que la question n'a pas reçu « oui ».",
+  },
+{
     id: "levage-vgp-semestrielle-personnes",
     domaine: "levage",
     libelle: "Vérification générale semestrielle (levage de personnes)",
@@ -225,6 +272,16 @@ export const obligationsLevage: Obligation[] = [
         type: "equipement_propriete_non_infirmee",
         categorie: "EQUIPEMENT_LEVAGE",
         propriete: "sertAuLevageDePersonnes",
+      },
+      {
+        // Forme `infirmee` : satisfaite tant que le dirigeant n'a pas répondu
+        // « oui ». Un appareil mû à la force humaine bascule alors sur la
+        // trimestrielle de l'article 23 b), et seulement à ce moment-là. Le
+        // silence ne fait perdre aucune échéance — il en laisse une plus
+        // longue, visible et corrigeable.
+        type: "equipement_propriete_infirmee",
+        categorie: "EQUIPEMENT_LEVAGE",
+        propriete: "estMuParForceHumaine",
       },
     ],
     notesInternes:

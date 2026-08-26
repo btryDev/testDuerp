@@ -79,6 +79,11 @@ const QUESTIONS_TRI_ETAT: Record<
     question: "Cet appareil sert-il à lever des personnes ?",
     aide: "Nacelle, plate-forme élévatrice, ou tout appareil utilisé même occasionnellement pour élever quelqu'un. Si oui, la vérification générale passe de annuelle à semestrielle. Un transpalette ou un monte-charge de marchandises : répondez « non ».",
   },
+  estMuParForceHumaine: {
+    question:
+      "Cet appareil est-il mû par la force humaine employée directement ?",
+    aide: "Un treuil à manivelle, un palan à chaîne actionné à la main, une nacelle poussée et montée à la force du bras — par opposition à un appareil motorisé, électrique, hydraulique ou thermique. Si oui ET qu'il sert à élever un poste de travail, la vérification a lieu tous les trois mois et non tous les six.",
+  },
   estChariotOuGerbeur: {
     question:
       "Cet appareil est-il un chariot élévateur, un gerbeur ou un hayon élévateur ?",

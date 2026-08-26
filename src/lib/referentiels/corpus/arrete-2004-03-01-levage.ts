@@ -49,7 +49,7 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
     ref: "Arrêté 2004-03-01 art. 23",
     versionEnVigueur: "2005-03-31",
     luLe: "2026-08-26",
-    lecture: "agent_verbatim",
+    lecture: "premiere_main",
     statut: "retenu",
     obligations: ["levage-vgp-annuelle-charges", "levage-vgp-semestrielle-chariot-gerbeur", "levage-vgp-semestrielle-personnes"],
   },

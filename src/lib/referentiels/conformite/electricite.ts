@@ -69,7 +69,7 @@ export const obligationsElectricite: Obligation[] = [
         source: "ARRETE",
         reference: "Arrêté du 26 décembre 2011 (vérifications des installations électriques), art. 3",
         article: "Arrêté 2011-12-26 art. 3",
-        note: "L'article 3 fixe la périodicité à un an, puis ouvre une faculté que le référentiel ne portait pas : « Toutefois, le délai entre deux vérifications peut être porté à deux ans par le chef d'établissement si le rapport précédent ne présente aucune observation ou si, avant l'échéance, le chef d'établissement a fait réaliser les travaux de mise en conformité de nature à répondre aux observations contenues dans le rapport de vérification. » Elle est subordonnée à une lettre recommandée avec accusé de réception à l'inspection du travail, accompagnée des éléments de preuve. Constaté le 2026-08-26.",
+        note: "L'article 3 fixe la périodicité à un an, puis ouvre une faculté que le référentiel ne portait pas : « Toutefois, le délai entre deux vérifications peut être porté à deux ans par le chef d'établissement si le rapport précédent ne présente aucune observation ou si, avant l'échéance, le chef d'établissement a fait réaliser les travaux de mise en conformité de nature à répondre aux observations contenues dans le rapport de vérification. » Le texte ne la subordonne pas à une autorisation : « Le chef d'établissement informe l'inspecteur du travail par lettre recommandée avec accusé de réception, accompagnée des éléments prouvant qu'il n'y a pas de non-conformité ou que les non-conformités ont été levées. Cet envoi doit comprendre, le cas échéant, l'avis des membres du CHSCT ou des délégués du personnel. » Constaté le 2026-08-26.",
         url:
           "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000025046978",
       },
@@ -248,7 +248,7 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "mensuelle",
-    realisateurs: ["personne_qualifiee", "organisme_agree"],
+    realisateurs: ["exploitant", "personne_qualifiee", "organisme_agree"],
     criticite: 4,
     typologies: { erp: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
@@ -261,7 +261,7 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version citait EL 20, qui traite des installations temporaires.\n\nSur-application assumée en 5ᵉ catégorie (constatée 2026-08-26). L'article cité relève du Livre II du règlement de sécurité, écarté en 5ᵉ catégorie par PE 1 § 1 ; le dépouillement intégral du Livre III a établi qu'il n'en rouvre que MS 39 et MS 70. GE 7 § 1 le confirme en propre : il ne vise que les établissements des 1ʳᵉ à 4ᵉ catégories. Ce qui traite le même objet en N5 est PE 4 § 1, plus étroit — vérification à la construction et avant ouverture par personnes ou organismes agréés, et seulement « dans les établissements avec locaux à sommeil ». La ligne est MAINTENUE : la retirer créerait un faux négatif muet chez 100 % des utilisateurs, alors qu'une sur-application visible reste corrigeable. À reprendre quand le référentiel saura porter l'attribut « locaux à sommeil ».",
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait EL 20, qui traite des installations temporaires.\n\nSur-application assumée en 5ᵉ catégorie (constatée 2026-08-26). L'article cité relève du Livre II du règlement de sécurité, écarté en 5ᵉ catégorie par PE 1 § 1 ; le dépouillement intégral du Livre III a établi qu'il n'en rouvre que MS 39 et MS 70. GE 7 § 1 le confirme en propre : il ne vise que les établissements des 1ʳᵉ à 4ᵉ catégories. Ce qui traite le même objet en N5 est PE 4 § 1, plus étroit — vérification à la construction et avant ouverture par personnes ou organismes agréés, et seulement « dans les établissements avec locaux à sommeil ». La ligne est MAINTENUE : la retirer créerait un faux négatif muet chez 100 % des utilisateurs, alors qu'une sur-application visible reste corrigeable. À reprendre quand le référentiel saura porter l'attribut « locaux à sommeil ».\n\nAmendement 2026-08-26 : EL 18 § 4 fixe DEUX périodicités minimales — tous les quinze jours (niveaux d'huile, d'eau, de combustible, réchauffage moteur, source de démarrage) et tous les mois (essai de démarrage automatique sous 50 % de charge pendant trente minutes). Le champ `periodicite` n'en porte qu'une : l'énumération `Periodicite` n'a pas de valeur quinzomadaire, et le seul voisin disponible, `hebdomadaire`, doublerait la charge réelle. La quinzaine ne vit donc que dans la `description` et ne produit aucune échéance — sous-application connue, à lever en ajoutant une valeur à l'énumération.\n\nL'identifiant conserve « annuel » alors que la périodicité est mensuelle : `Verification.obligationId` est stocké en base sous contrainte d'unicité, et le renommer orphelinerait les lignes de calendrier existantes. Le libellé, lui, a été corrigé.\n\n`realisateurs` gagne `exploitant` : EL 18 § 4 n'exige aucun tiers, l'entretien et les essais lui incombent, et le registre d'entretien est tenu à disposition de la commission. L'organisme agréé relève d'EL 19, pas d'EL 18.",
   },
 
   // ---------------------------------------------------------------------------

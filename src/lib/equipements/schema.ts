@@ -21,6 +21,7 @@ import { FAMILLES_ESP } from "./esp";
  *   - `aExtinctionAutomatique`      → ERP, extinction automatique en cuisine
  *   - `sertAuLevageDePersonnes`     → travail, VGP semestrielle (arrêté 02-03-2004)
  *   - `estChariotOuGerbeur`         → travail, VGP semestrielle (arrêté 01-03-2004, art. 20-II et 23)
+ *   - `estMuParForceHumaine`        → travail, VGP trimestrielle (arrêté 01-03-2004, art. 23 b)
  *   - `aAccessoiresDeLevage`        → travail, vérification des accessoires
  *   - `estSoumisSuiviEnService`     → arrêté du 20 novembre 2017 (ESP)
  *   - `estChargeSousSeuilControle` → règlement (UE) 2024/573, art. 5 et
@@ -106,6 +107,7 @@ export const CHAMPS_TRI_ETAT = [
   "estChargeSuperieure500TCo2",
   "aDetectionDeFuites",
   "dessertLocauxSommeil",
+  "estMuParForceHumaine",
 ] as const;
 
 export type ChampTriEtat = (typeof CHAMPS_TRI_ETAT)[number];
@@ -136,6 +138,11 @@ export const CATEGORIES_TRI_ETAT: readonly {
   },
   {
     champ: "sertAuLevageDePersonnes",
+    categories: ["EQUIPEMENT_LEVAGE"],
+    message: "Spécifique aux équipements de levage",
+  },
+  {
+    champ: "estMuParForceHumaine",
     categories: ["EQUIPEMENT_LEVAGE"],
     message: "Spécifique aux équipements de levage",
   },
@@ -259,6 +266,7 @@ export const equipementSchema = z
     aExtinctionAutomatique: triEtat,
     sertAuLevageDePersonnes: triEtat,
     estChariotOuGerbeur: triEtat,
+    estMuParForceHumaine: triEtat,
     aAccessoiresDeLevage: triEtat,
     estSoumisSuiviEnService: triEtat,
     estChargeSousSeuilControle: triEtat,

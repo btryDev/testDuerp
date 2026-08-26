@@ -32,6 +32,7 @@ export const LIBELLE_CARACTERISTIQUE: Record<ChampTriEtat, string> = {
   aExtinctionAutomatique: "Extinction automatique en cuisine",
   sertAuLevageDePersonnes: "Sert au levage de personnes",
   estChariotOuGerbeur: "Chariot élévateur, gerbeur ou hayon",
+  estMuParForceHumaine: "Mû par la force humaine directe",
   aAccessoiresDeLevage: "Accessoires de levage utilisés",
   estSoumisSuiviEnService: "Suivi en service (arrêté du 20 nov. 2017)",
   estChargeSousSeuilControle: "Charge sous le seuil de contrôle",
