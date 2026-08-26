@@ -13,13 +13,14 @@
 //
 // Module **pur** : ni Prisma, ni React — d'où les tests unitaires à côté.
 //
-// Il vit sous `components/` et non sous `lib/` à dessein : c'est une lecture
-// de présentation (« qu'est-ce que l'écran annonce de cette fiche »), pas une
-// règle métier. Le métier — quelles fiches sont dues — est dans
-// `lib/registre/composition.ts`.
+// Il a d'abord vécu sous `components/`, au motif que c'était une lecture de
+// présentation. Ce motif est tombé le jour où le PDF a eu besoin du même
+// calcul : un module que l'écran ET le document consomment n'appartient à
+// aucun des deux. Le métier voisin — quelles fiches sont dues — est dans
+// `composition.ts`.
 
-import type { FormeSaisie } from "@/lib/registre/champs";
-import type { ContenuLu } from "@/lib/registre/queries";
+import type { FormeSaisie } from "./champs";
+import type { ContenuLu } from "./queries";
 import type { Alimentation } from "./alimentation";
 
 // Ce que la page a lu en base pour une fiche : champs XOR lignes, jamais les

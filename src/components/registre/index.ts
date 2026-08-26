@@ -16,21 +16,10 @@ export { FicheFormulaire } from "./FicheFormulaire";
 export { FicheJournal } from "./FicheJournal";
 export { FicheLecture } from "./FicheLecture";
 export { ChampSaisie } from "./ChampSaisie";
-export {
-  alimentationDeLaPartie,
-  type Alimentation,
-} from "./alimentation";
-export {
-  bilanDuRegistre,
-  completudeDeLaFiche,
-  libelleCompletude,
-  tonCompletude,
-  type BilanRegistre,
-  type Completude,
-  type ContenuLu,
-  type TonCompletude,
-} from "./completude";
-export { afficherValeur, afficherSaisieLe, NON_RENSEIGNE } from "./valeur";
+// `completude`, `valeur` et `alimentation` ont quitté ce dossier pour
+// `lib/registre` : ce sont des modules purs que le PDF consomme autant que
+// l'écran, et un calcul partagé par les deux n'appartient à aucun. Ils
+// s'importent de la lib, pas d'ici — ce baril ne rend que des composants.
 export {
   ETAT_INITIAL,
   type ActionFiche,

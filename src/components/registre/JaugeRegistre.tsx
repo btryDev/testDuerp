@@ -24,7 +24,7 @@
 // conforme, et la note sous la jauge le dit en toutes lettres : l'outil
 // assiste, il ne certifie pas.
 
-import type { BilanRegistre } from "./completude";
+import type { BilanRegistre } from "@/lib/registre/completude";
 
 function Part({
   valeur,

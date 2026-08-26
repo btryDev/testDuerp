@@ -9,7 +9,7 @@
 // est la question qu'on se pose en arrivant, pas celle qu'on découvre après
 // avoir tout lu.
 
-import type { Completude } from "./completude";
+import type { Completude } from "@/lib/registre/completude";
 import { PastilleCompletude } from "./PastilleCompletude";
 
 export function TeteFicheRegistre({

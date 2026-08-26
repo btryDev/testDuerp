@@ -12,13 +12,15 @@ import { getEtablissement } from "@/lib/etablissements/queries";
 import { composerRegistreDeLEtablissement } from "@/lib/registre/queries";
 import { saisiePourSection } from "@/lib/registre/champs";
 import {
-  alimentationDeLaPartie,
-  bilanDuRegistre,
-  completudeDeLaFiche,
   JaugeRegistre,
   LigneRegistre,
   PartieRegistre,
 } from "@/components/registre";
+import { alimentationDeLaPartie } from "@/lib/registre/alimentation";
+import {
+  bilanDuRegistre,
+  completudeDeLaFiche,
+} from "@/lib/registre/completude";
 import { BandeauCouverture } from "@/components/perimetre/BandeauCouverture";
 import { couvertureDeLEtablissement } from "@/lib/perimetre/couverture";
 import { listerRapportsDeLEtablissement } from "@/lib/rapports/queries";

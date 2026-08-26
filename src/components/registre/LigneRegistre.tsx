@@ -13,7 +13,7 @@
 
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import type { Completude } from "./completude";
+import type { Completude } from "@/lib/registre/completude";
 import { PastilleCompletude } from "./PastilleCompletude";
 
 export function LigneRegistre({

@@ -2,15 +2,17 @@ import { notFound } from "next/navigation";
 import { CarteFiche, CorpsFiche, EcranFiche } from "@/components/ui-kit";
 import { LABEL_ITEM } from "@/components/layout/sidebar-nav";
 import {
-  alimentationDeLaPartie,
-  completudeDeLaFiche,
   ContenuTenuAilleurs,
   CorpsFicheRegistre,
   NavigationFiches,
   TeteFicheRegistre,
-  tonCompletude,
   type FicheVoisine,
 } from "@/components/registre";
+import { alimentationDeLaPartie } from "@/lib/registre/alimentation";
+import {
+  completudeDeLaFiche,
+  tonCompletude,
+} from "@/lib/registre/completude";
 import { saisiePourSection } from "@/lib/registre/champs";
 import { aplatirRegistre } from "@/lib/registre/composition";
 import { composerRegistreDeLEtablissement } from "@/lib/registre/queries";

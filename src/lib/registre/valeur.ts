@@ -9,7 +9,7 @@
 // Une seule fonction pour le tableau du journal et pour la fiche en lecture :
 // une même réponse ne doit pas se formater différemment selon l'écran.
 
-import type { ChampFiche } from "@/lib/registre/champs";
+import type { ChampFiche } from "./champs";
 import { depuisCleJourCivil, formaterDateCourteFr } from "@/lib/dates";
 
 /** Ce qu'on écrit à la place d'une réponse absente. */

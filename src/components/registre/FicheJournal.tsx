@@ -17,7 +17,7 @@ import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import type { ChampFiche } from "@/lib/registre/champs";
 import { ChampSaisie } from "./ChampSaisie";
-import { afficherSaisieLe, afficherValeur } from "./valeur";
+import { afficherSaisieLe, afficherValeur } from "@/lib/registre/valeur";
 import {
   ETAT_INITIAL,
   type ActionFiche,

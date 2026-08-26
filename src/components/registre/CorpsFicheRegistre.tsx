@@ -13,7 +13,7 @@
 
 import { CarteFiche } from "@/components/ui-kit/fiche";
 import type { FormeSaisie } from "@/lib/registre/champs";
-import type { Completude, ContenuLu } from "./completude";
+import type { Completude, ContenuLu } from "@/lib/registre/completude";
 import type { ActionFiche } from "./types";
 import { FicheFormulaire } from "./FicheFormulaire";
 import { FicheJournal } from "./FicheJournal";

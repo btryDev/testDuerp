@@ -26,6 +26,31 @@ import { listerVerifications } from "@/lib/calendrier/queries";
 import { formaterDateCourteFr } from "@/lib/dates";
 import type { SectionRegistre } from "./sections";
 
+/**
+ * Ce que la fonction pure attend, réduit au strict nécessaire.
+ *
+ * Les types sont posés en structure et non repris de Prisma : le PDF compose
+ * quarante-neuf fiches d'un coup et doit pouvoir lire le parc **une seule
+ * fois** pour les servir toutes. Sans ce découplage, il faudrait une requête
+ * par fiche — soit soixante-deux lectures pour un document.
+ */
+export type EquipementTenu = {
+  id: string;
+  libelle: string;
+  categorie: string;
+  localisation: string | null;
+  batiment?: { nom: string } | null;
+};
+
+export type VerificationTenue = {
+  id: string;
+  libelleObligation: string;
+  datePrevue: Date | null;
+  dateRealisee: Date | null;
+  statut: StatutVerification;
+  equipement: { libelle: string; categorie: string };
+};
+
 /** Une ligne de ce que la fiche porte, telle qu'elle se lira. */
 export type LigneTenue = {
   id: string;
@@ -63,15 +88,44 @@ export async function lireContenuTenuAilleurs(
   partieId: string,
   section: SectionRegistre,
 ): Promise<ContenuAilleurs | null> {
+  // Un écran de fiche n'en rend qu'une : lire les deux listes ici coûte deux
+  // requêtes, et la mémoïsation de la page fait le reste. Le PDF, lui, passe
+  // par `contenuTenuAilleursDepuis` avec un parc déjà chargé.
+  if (!section.categoriesEquipement?.length) return null;
+  const [equipements, verifications] = await Promise.all([
+    PARTIES_INVENTAIRE.has(partieId)
+      ? listerEquipementsDeLEtablissement(etablissementId)
+      : Promise.resolve([]),
+    PARTIES_VERIFICATIONS.has(partieId)
+      ? listerVerifications(etablissementId)
+      : Promise.resolve([]),
+  ]);
+  return contenuTenuAilleursDepuis(
+    etablissementId,
+    partieId,
+    section,
+    equipements,
+    verifications,
+  );
+}
+
+/**
+ * La même chose, sur un parc déjà chargé. **Pure** : c'est elle qui porte la
+ * carte des parties, et c'est elle que le PDF appelle quarante-neuf fois.
+ */
+export function contenuTenuAilleursDepuis(
+  etablissementId: string,
+  partieId: string,
+  section: SectionRegistre,
+  equipements: readonly EquipementTenu[],
+  verifications: readonly VerificationTenue[],
+): ContenuAilleurs | null {
   const categories = section.categoriesEquipement;
   if (!categories || categories.length === 0) return null;
   const cats = new Set<string>(categories);
   const base = `/etablissements/${etablissementId}`;
 
   if (PARTIES_INVENTAIRE.has(partieId)) {
-    const equipements = await listerEquipementsDeLEtablissement(
-      etablissementId,
-    );
     return {
       lignes: equipements
         .filter((e) => cats.has(e.categorie))
@@ -87,7 +141,6 @@ export async function lireContenuTenuAilleurs(
   }
 
   if (PARTIES_VERIFICATIONS.has(partieId)) {
-    const verifications = await listerVerifications(etablissementId);
     return {
       lignes: verifications
         .filter((v) => cats.has(v.equipement.categorie))

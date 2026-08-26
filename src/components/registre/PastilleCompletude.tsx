@@ -18,7 +18,7 @@ import {
   tonCompletude,
   type Completude,
   type TonCompletude,
-} from "./completude";
+} from "@/lib/registre/completude";
 
 const CHAMP: Record<TonCompletude, string> = {
   faite: "var(--board-green)",

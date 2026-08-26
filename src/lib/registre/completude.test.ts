@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { FormeSaisie } from "@/lib/registre/champs";
+import type { FormeSaisie } from "./champs";
 import { alimentationDeLaPartie } from "./alimentation";
 import {
   bilanDuRegistre,
