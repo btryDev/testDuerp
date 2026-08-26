@@ -23,11 +23,38 @@ import type { Obligation } from "./types";
 
 export const obligationsCuissonHotte: Obligation[] = [
   {
+    id: "cuisson-erp-filtres-hebdomadaire",
+    domaine: "cuisson_hotte",
+    libelle:
+      "Nettoyage ou remplacement des filtres de hotte (grandes cuisines ERP)",
+    description:
+      "Les filtres des hottes et dispositifs de captation des buées et des graisses sont nettoyés ou remplacés aussi souvent que nécessaire et, en tout cas, au minimum une fois par semaine. C'est la graisse accumulée dans les filtres qui transforme un départ de feu sur un appareil de cuisson en feu de conduit.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 25 juin 1980, art. GC 21 § 2 (entretien des installations de cuisson)",
+        article: "GC 21",
+        url:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317499/2022-02-10",
+        note: "« Pendant les périodes d'activité, les appareils de cuisson et de remise en température, le circuit d'extraction d'air vicié, de buées et de graisses, y compris les ventilateurs et récupérateurs de chaleur éventuels, doivent être nettoyés chaque fois qu'il est nécessaire. Les filtres doivent être nettoyés ou remplacés aussi souvent que nécessaire et, en tout cas, au minimum une fois par semaine. » Verbatim relevé en première main le 2026-08-26.",
+        versionConstatee: "1980-08-15",
+      },
+    ],
+    periodicite: "hebdomadaire",
+    realisateurs: ["exploitant"],
+    criticite: 4,
+    typologies: { erp: true },
+    categoriesEquipement: ["HOTTE_PRO"],
+    notesInternes:
+      "Créée le 2026-08-26. GC 21 § 2 porte DEUX rythmes : le ramonage annuel des conduits d'évacuation avec vérification de leur vacuité, et le nettoyage ou remplacement des filtres au minimum HEBDOMADAIRE. Le référentiel ne portait que le premier — la fréquence hebdomadaire figurait dans le libellé de la référence de `cuisson-erp-circuits-extraction-nettoyage`, donc dans de la prose, et ne produisait aucune échéance.\n\nSixième occurrence du motif PE 4 § 2 : un article qui porte plusieurs rythmes n'entrait dans le modèle que par le plus long. Celle-ci n'a demandé aucune migration — `hebdomadaire` existait déjà.\n\n`realisateurs: [\"exploitant\"]` : le texte n'exige aucun tiers, et c'est une opération de cuisine, pas de maintenance.\n\nUne échéance hebdomadaire produit environ 52 lignes de calendrier par an et par hotte. C'est le rythme que le texte écrit ; si le volume devient un problème d'affichage, c'est l'affichage qu'il faudra traiter, pas la périodicité.",
+  },
+  {
     id: "cuisson-erp-verification-initiale",
     domaine: "cuisson_hotte",
     libelle: "Vérification à la mise en service des installations de cuisson (grandes cuisines ERP)",
     description:
-      "À la mise en service d'une grande cuisine (installations > 20 kW ou production > 500 couverts simultanés, cf. art. GC 1), un examen de conformité est réalisé. Il porte sur les appareils de cuisson, les circuits d'amenée d'énergie, l'extraction et l'extinction automatique éventuelle.",
+      "À la mise en service d'une grande cuisine — un local ou un groupement de locaux non isolés entre eux dont la puissance utile totale des appareils de cuisson et de remise en température dépasse 20 kW (GC 1 § 3) —, un examen de l'installation est effectué dans les conditions prévues à la section II du chapitre Ier du titre Ier, c'est-à-dire par une personne ou un organisme agréé.",
     referencesLegales: [
       {
         source: "ARRETE",
@@ -43,6 +70,16 @@ export const obligationsCuissonHotte: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303884/",
       },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 25 juin 1980, art. GC 1 § 3 (définition de la « grande cuisine »)",
+        article: "GC 1",
+        url:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317499/2022-02-10",
+        note: "« Un local ou un groupement de locaux non isolés entre eux comportant des appareils de cuisson et des appareils de remise en température dont la puissance utile totale est supérieure à 20 kW est appelé \"grande cuisine\". » Verbatim relevé en première main le 2026-08-26. C'est le SEUL seuil du chapitre X : aucune mention d'un nombre de couverts.",
+        versionConstatee: "1980-08-15",
+      },
     ],
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["organisme_agree"],
@@ -50,7 +87,7 @@ export const obligationsCuissonHotte: Obligation[] = [
     typologies: { erp: true },
     categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
     notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version citait GC 12 (offices de remise en température) et GC 19 (appareils installés dans les locaux accessibles ou non au public), qui ne traitent pas de vérification. GC 22 § 1 renvoie aux articles GE 6 à GE 8.",
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait GC 12 (offices de remise en température) et GC 19 (appareils installés dans les locaux accessibles ou non au public), qui ne traitent pas de vérification. GC 22 § 1 renvoie aux articles GE 6 à GE 8.\n\nCORRIGÉ LE 2026-08-26, GC 1 lu en première main. La description annonçait un seuil de « > 20 kW OU production > 500 couverts simultanés, cf. art. GC 1 ». Les 500 couverts ne figurent NULLE PART dans GC 1, ni ailleurs dans le chapitre X. Le § 3 ne connaît qu'un seuil : « Un local ou un groupement de locaux non isolés entre eux comportant des appareils de cuisson et des appareils de remise en température dont la puissance utile totale est supérieure à 20 kW est appelé \u00ab grande cuisine \u00bb. » Le second critère était une référence inventée, attribuée à un article précis — le cas exact que la règle 6 du CLAUDE.md interdit. Il élargissait le déclenchement à des établissements que le texte ne vise pas.",
   },
   {
     id: "cuisson-erp-appareils-annuelle",

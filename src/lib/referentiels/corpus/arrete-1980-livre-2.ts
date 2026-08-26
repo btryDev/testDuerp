@@ -33,12 +33,33 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
     obligations: ["aeration-erp-chauffage-ventilation-annuelle"],
   },
   {
-    ref: "GC 21",
+    ref: "GC 1",
+    intitule: "Domaine d'application et définitions — seuil de la « grande cuisine »",
     versionEnVigueur: "1980-08-15",
     luLe: "2026-08-26",
-    lecture: "agent_verbatim",
+    lecture: "premiere_main",
     statut: "retenu",
-    obligations: ["cuisson-erp-circuits-extraction-nettoyage"],
+    obligations: ["cuisson-erp-verification-initiale"],
+    citationCle:
+      "« § 3. Un local ou un groupement de locaux non isolés entre eux comportant des appareils de cuisson et des appareils de remise en température dont la puissance utile totale est supérieure à 20 kW est appelé \"grande cuisine\". »",
+    prescrit:
+      "Définit le seuil qui déclenche tout le chapitre X : 20 kW de puissance utile totale, et RIEN D'AUTRE. Aucune mention d'un nombre de couverts, ici ni ailleurs dans le chapitre. Le référentiel annonçait « > 20 kW ou production > 500 couverts simultanés, cf. art. GC 1 » — second critère inventé, corrigé le 2026-08-26. GC 1 distingue par ailleurs la grande cuisine de l'office de remise en température, de l'îlot de cuisson et du module ou conteneur spécialisé, qui relèvent de sections distinctes.",
+  },
+  {
+    ref: "GC 21",
+    intitule: "Entretien des installations de cuisson",
+    versionEnVigueur: "1980-08-15",
+    luLe: "2026-08-26",
+    lecture: "premiere_main",
+    statut: "retenu",
+    obligations: [
+      "cuisson-erp-circuits-extraction-nettoyage",
+      "cuisson-erp-filtres-hebdomadaire",
+    ],
+    citationCle:
+      "« § 2. Au moins une fois par an, il doit être procédé au ramonage des conduits d\'évacuation et à la vérification de leur vacuité. […] Les filtres doivent être nettoyés ou remplacés aussi souvent que nécessaire et, en tout cas, au minimum une fois par semaine. »",
+    prescrit:
+      "DEUX rythmes : ramonage annuel des conduits avec vérification de leur vacuité, et nettoyage ou remplacement des filtres au minimum HEBDOMADAIRE. Le second ne produisait aucune échéance avant le 2026-08-26 — il vivait dans le libellé d\'une référence. Le § 3 impose en outre de noter les dates des vérifications et opérations d\'entretien, et d\'annexer ce relevé au registre de sécurité.",
   },
   {
     ref: "GC 22",
