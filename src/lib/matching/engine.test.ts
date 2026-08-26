@@ -659,12 +659,20 @@ describe("moteur matching — API et mode explain", () => {
   });
 
   it("injection d'un référentiel custom (tests)", () => {
-    const oneOff: Obligation[] = [obligationsElectricite[0]];
+    // Nommée, pas prise au rang 0 : le test supposait en aveugle que la
+    // première obligation du fichier s'applique à un bureau. L'ajout d'une
+    // obligation propre aux hôtels de 5ᵉ catégorie l'a fait tomber le
+    // 2026-08-26, alors que le moteur n'avait pas changé.
+    const cible = obligationsElectricite.find(
+      (o) => o.id === "elec-travail-periodique-annuelle",
+    )!;
+    expect(cible, "obligation témoin disparue du référentiel").toBeDefined();
+    const oneOff: Obligation[] = [cible];
     const res = determineObligationsApplicables(etabBureau(), [elec()], {
       obligations: oneOff,
     });
     expect(res.length).toBe(1);
-    expect(res[0].obligation.id).toBe(obligationsElectricite[0].id);
+    expect(res[0].obligation.id).toBe(cible.id);
   });
 });
 

@@ -317,4 +317,31 @@ export const obligationsElectricite: Obligation[] = [
     notesInternes:
       "Corrigé à l'audit 2026-08 : l'ancienne version citait GH 50, qui traite de l'alerte (dispositifs phoniques vers le PC sécurité). Les vérifications techniques périodiques sont à l'article GH 5.",
   },
+  {
+    id: "incendie-hotel-po-controle-annuel-electricite",
+    domaine: "electricite",
+    libelle:
+      "Contrôle annuel des installations électriques (hôtel de 5ᵉ catégorie)",
+    description:
+      "Dans un hôtel, les installations électriques sont contrôlées chaque année par un technicien compétent. Cette échéance vise les établissements de 5ᵉ catégorie de type O, que la vérification annuelle des ERP des quatre premières catégories ne couvre pas.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 25 juin 1980, art. PO 1 § 3 (règles spécifiques aux hôtels)",
+        article: "PO 1",
+        url:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374775/2018-01-01",
+        note: "« L'ensemble des installations techniques doit être contrôlé par un technicien compétent tous les deux ans, à l'exception des installations électriques et des systèmes de détection incendie qui doivent être contrôlés annuellement. » Verbatim relevé en première main le 2026-08-26.",
+        versionConstatee: "2018-01-01",
+      },
+    ],
+    periodicite: "annuelle",
+    realisateurs: ["personne_qualifiee"],
+    criticite: 5,
+    typologies: { erp: { categories: ["N5"], types: ["O"] } },
+    categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes:
+      "Créée le 2026-08-26. `elec-erp-cat1-4-annuelle` s'arrête aux quatre premières catégories : un petit hôtel de 5ᵉ catégorie n'avait AUCUN contrôle électrique annuel, alors que PO 1 § 3 le lui impose nommément. Le manque était déclaré `non_couvert` sur le chapitre PO avec la mention « le manque est un choix, pas une impossibilité » — il ne l'est plus.\n\nLa détection incendie, que le même paragraphe soumet au même rythme annuel, n'est PAS ajoutée ici : `incendie-erp-ssi-annuelle` porte `erp: true` et couvre donc déjà tous les ERP, cinquième catégorie comprise. L'ajouter aurait créé un doublon.\n\n`personne_qualifiee` traduit « technicien compétent » : le texte n'exige ni organisme agréé ni accréditation, et l'exploitant ne peut pas s'en charger lui-même.\n\nDomaine `electricite` et non `incendie` : le domaine décrit l'objet contrôlé, pas le texte qui l'impose. L'obligation vit donc auprès des autres vérifications électriques, où le dirigeant la cherchera.",
+  },
 ];

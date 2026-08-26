@@ -186,7 +186,9 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
   it("est déclaré et dépouillé de bout en bout", () => {
     expect(pe, "le corpus PE a disparu de CORPUS").toBeDefined();
     const cv = couverture(pe!);
-    expect(cv.total).toBe(58);
+    // 59 depuis le 2026-08-26 : PO 1 § 3 est dépouillé à part de PO 1, son
+    // volet biennal ne se traitant pas comme son volet annuel.
+    expect(cv.total).toBe(59);
     expect(cv.complet, `${cv.nonDepouilles} article(s) non dépouillé(s)`).toBe(true);
   });
 
@@ -210,10 +212,23 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     // Ajouté le 2026-08-26 à la lecture en première main du texte, qui a
     // simultanément confirmé le § 5° (VMC-gaz) et révélé ce § 3°. Bloqué par
     // l'absence d'une catégorie d'équipement « installation collective de gaz ».
+    // PO 1 § 3 : le contrôle biennal porte sur « l'ensemble des installations
+    // techniques ». Cinquième occurrence du motif PE 4 — énumérer les
+    // catégories reviendrait à décider à la place du texte, et deux d'entre
+    // elles portent déjà une obligation biennale valant pour tous les ERP.
+    // PO 7 : deux séances d'instruction du personnel par an. Périodicité
+    // chiffrée, donc encodable — mais aucune catégorie d'équipement à quoi
+    // l'accrocher, comme PE 27 § 5 et R. 4544-11-1.
+    // Les deux passent de `non_couvert` à `obligation_manquante` le
+    // 2026-08-26 : la lecture en première main a montré qu'il ne s'agissait
+    // pas d'articles sans objet, mais d'obligations réelles que le modèle ne
+    // sait pas porter. La liste s'allonge parce qu'on voit mieux.
     // L'ordre suit la déclaration des corpus, pas l'alphabet.
     expect(refs).toEqual([
       "PE 4",
       "PE 27",
+      "PO 1 § 3 — contrôle biennal des installations techniques",
+      "PO 7",
       "R. 4544-11-1",
       "R. 4222-20",
       "Arrêté 23-02-2018 art. 26 § 3",

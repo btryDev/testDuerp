@@ -409,14 +409,37 @@ export const CORPUS_PE: Corpus = {
   {
     ref: "PO 1",
     intitule: "Généralités",
-    versionEnVigueur: "2011-10-30",
+    versionEnVigueur: "2018-01-01",
     luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "non_couvert",
+    lecture: "premiere_main",
+    statut: "retenu",
+    obligations: ["incendie-hotel-po-controle-annuel-electricite"],
+    citationCle:
+      "« § 3. L'ensemble des installations techniques doit être contrôlé par un technicien compétent tous les deux ans, à l'exception des installations électriques et des systèmes de détection incendie qui doivent être contrôlés annuellement. Le contrôle des ascenseurs relève des dispositions particulières précisées dans le cadre de l'article AS 9 du règlement. »",
+    prescrit:
+      "Chapitre IV — hôtels (type O) de 5ᵉ catégorie. Trois rythmes : biennal sur l'ensemble des installations techniques, annuel sur les installations électriques et les systèmes de détection incendie, renvoi à AS 9 pour les ascenseurs. Le volet électrique est porté depuis le 2026-08-26 : il comblait un vrai trou, `elec-erp-cat1-4-annuelle` s'arrêtant aux quatre premières catégories. Le volet détection est déjà couvert par `incendie-erp-ssi-annuelle`, qui vaut pour tous les ERP. Le volet biennal est déclaré à part. Lu en première main le 2026-08-26.",
+  },
+  {
+    ref: "PO 1 § 3 — contrôle biennal des installations techniques",
+    intitule: "Le volet biennal, qui porte sur « l'ensemble »",
+    versionEnVigueur: "2018-01-01",
+    luLe: "2026-08-26",
+    lecture: "premiere_main",
+    statut: "obligation_manquante",
     motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
-    declareA:
-      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+      "« L'ensemble des installations techniques doit être contrôlé par un technicien compétent tous les deux ans. » Le référentiel ne sait pas porter « l'ensemble » : une obligation s'accroche à des catégories d'équipement énumérées, et énumérer reviendrait à décider à la place du texte ce qu'est une installation technique d'hôtel. Deux catégories plausibles — VMC et installation frigorifique — portent déjà une obligation BIENNALE valant pour tous les ERP : une ligne supplémentaire y ferait doublon. Cinquième occurrence du motif PE 4 § 2. Les ascenseurs sont explicitement exclus par le renvoi à AS 9.",
+      bloquePar: "porteur-d-echeance-hors-equipement",
+  },
+  {
+    ref: "PO 7",
+    intitule: "Instruction et entraînement du personnel, deux fois par an",
+    versionEnVigueur: "2018-01-01",
+    luLe: "2026-08-26",
+    lecture: "premiere_main",
+    statut: "obligation_manquante",
+    motif:
+      "« Le personnel doit participer deux fois par an à des séances d'instruction et d'entraînement de façon compatible avec les conditions d'exploitation, compte tenu, le cas échéant, de son rythme saisonnier. » Périodicité chiffrée, donc encodable — mais l'obligation ne porte sur AUCUN équipement, et toute obligation du référentiel s'accroche aujourd'hui à une catégorie d'équipement. C'est le même blocage que PE 27 § 5 et R. 4544-11-1. Verbatim relevé en première main le 2026-08-26.",
+      bloquePar: "porteur-d-echeance-hors-equipement",
   },
   {
     ref: "PO 2",
@@ -469,18 +492,6 @@ export const CORPUS_PE: Corpus = {
   {
     ref: "PO 6",
     intitule: "Détection automatique d'incendie",
-    versionEnVigueur: "2011-10-30",
-    luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "non_couvert",
-    motif:
-      "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les seules périodicités chiffrées du Livre III pour un exploitant : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
-    declareA:
-      "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
-  },
-  {
-    ref: "PO 7",
-    intitule: "Formation du personnel en sécurité incendie",
     versionEnVigueur: "2011-10-30",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
