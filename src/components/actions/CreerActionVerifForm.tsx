@@ -3,9 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { ChampBoard } from "@/components/ui-kit";
 import { TYPES_ACTION } from "@/lib/actions/schema";
 import { LABEL_TYPE_ACTION } from "@/lib/actions/labels";
 import type { ActionPlanState } from "@/lib/actions/plan";
@@ -29,46 +27,40 @@ export function CreerActionVerifForm({ action, labelAnnuler }: Props) {
 
   return (
     <form action={formAction} className="space-y-5">
-      <div className="space-y-2">
-        <Label htmlFor="libelle">Libellé de l&apos;action *</Label>
-        <Input
-          id="libelle"
-          name="libelle"
-          required
-          placeholder="Ex : Remettre en état le BAES de l'entrée principale"
-          aria-invalid={Boolean(err("libelle"))}
-        />
-        {err("libelle") && (
-          <p className="text-sm text-destructive">{err("libelle")}</p>
-        )}
-      </div>
+      <ChampBoard
+        id="libelle"
+        name="libelle"
+        label="Libellé de l'action"
+        requis
+        placeholder="Ex : Remettre en état le BAES de l'entrée principale"
+        erreur={err("libelle")}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+      <div>
+        <label className="label-board" htmlFor="description">
+          Description
+        </label>
         <textarea
           id="description"
           name="description"
           rows={3}
-          className="w-full rounded-md border border-rule bg-background px-3 py-2 text-sm shadow-sm"
+          className="champ-board"
           placeholder="Détails : référence, localisation, étapes prévues…"
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="type" className="inline-flex items-center">
+        <div>
+          <label className="label-board" htmlFor="type">
             Type de mesure *
-            <InfoTooltip>
-              Hiérarchie L. 4121-2 : préférer la suppression à la source
-              quand c&apos;est possible, avant les EPI et la formation.
-            </InfoTooltip>
-          </Label>
+          </label>
           <select
             id="type"
             name="type"
             required
             defaultValue="reduction_source"
-            className="h-9 w-full rounded-md border border-rule bg-background px-3 py-1 text-sm shadow-sm"
+            className="champ-board"
+            aria-describedby="type-aide"
           >
             {TYPES_ACTION.map((t) => (
               <option key={t} value={t}>
@@ -76,74 +68,71 @@ export function CreerActionVerifForm({ action, labelAnnuler }: Props) {
               </option>
             ))}
           </select>
+          {/* La hiérarchie des mesures se lit en clair sous le champ : une
+              infobulle n'existe pas au doigt. */}
+          <p
+            id="type-aide"
+            className="m-0 mt-1.5 text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]"
+          >
+            Hiérarchie L. 4121-2 : préférer la suppression à la source quand
+            c&apos;est possible, avant les EPI et la formation.
+          </p>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="criticite" className="inline-flex items-center">
-            Criticité (1-5)
-            <InfoTooltip>
-              1 = correctif mineur, 5 = priorité vitale. Sert au tri du
-              plan d&apos;actions. Facultatif.
-            </InfoTooltip>
-          </Label>
-          <Input
-            id="criticite"
-            name="criticite"
-            type="number"
-            min={1}
-            max={5}
-            placeholder="3"
-            aria-invalid={Boolean(err("criticite"))}
-          />
-          {err("criticite") && (
-            <p className="text-sm text-destructive">{err("criticite")}</p>
-          )}
-        </div>
+        <ChampBoard
+          id="criticite"
+          name="criticite"
+          label="Criticité (1-5)"
+          // Un champ `type="number"` change de valeur à la molette, sur une
+          // saisie déjà faite et sans que rien ne le signale.
+          type="text"
+          inputMode="numeric"
+          placeholder="3"
+          aide="1 = correctif mineur, 5 = priorité vitale. Sert au tri du plan d'actions. Facultatif."
+          erreur={err("criticite")}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="echeance">Échéance prévue</Label>
-          <Input
-            id="echeance"
-            name="echeance"
-            type="date"
-            aria-invalid={Boolean(err("echeance"))}
-          />
-          {err("echeance") && (
-            <p className="text-sm text-destructive">{err("echeance")}</p>
-          )}
-        </div>
+        <ChampBoard
+          id="echeance"
+          name="echeance"
+          label="Échéance prévue"
+          type="date"
+          erreur={err("echeance")}
+        />
 
-        <div className="space-y-2">
-          <Label htmlFor="responsable">Responsable</Label>
-          <Input
-            id="responsable"
-            name="responsable"
-            placeholder="Ex : DAF, prestataire"
-            aria-invalid={Boolean(err("responsable"))}
-          />
-          {err("responsable") && (
-            <p className="text-sm text-destructive">{err("responsable")}</p>
-          )}
-        </div>
+        <ChampBoard
+          id="responsable"
+          name="responsable"
+          label="Responsable"
+          placeholder="Ex : DAF, prestataire"
+          erreur={err("responsable")}
+        />
       </div>
 
       {state.status === "error" && !state.fieldErrors && (
-        <p className="text-sm text-destructive">{state.message}</p>
+        <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+          {state.message}
+        </p>
       )}
       {state.status === "success" && (
-        <p className="text-sm text-emerald-700">Action créée.</p>
+        <p className="m-0 text-[12.5px] text-[color:var(--board-green-ink)]">
+          Action créée.
+        </p>
       )}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" variant="board" size="board" disabled={pending}>
           {pending ? "Création…" : "Créer l'action"}
         </Button>
         {labelAnnuler && (
           <Link
             href={labelAnnuler.href}
-            className={buttonVariants({ variant: "outline" })}
+            className={buttonVariants({
+              variant: "boardClair",
+              size: "board",
+            })}
           >
             {labelAnnuler.libelle}
           </Link>

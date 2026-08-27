@@ -62,21 +62,21 @@ export function PreRemplissagePanel({ etablissementId, suggestions }: Props) {
   };
 
   return (
-    <section className="cartouche overflow-hidden">
-      <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-        <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
+    <section className="carte-board px-7 py-6 sm:px-8">
+      <header className="border-b border-[color:var(--board-slate-line)] pb-5">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
           Pré-remplissage suggéré
         </p>
-        <p className="mt-2 text-[0.85rem] leading-relaxed text-muted-foreground">
+        <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
           D&apos;après le code NAF et les régimes de cet établissement, les
           catégories d&apos;équipement ci-dessous sont typiquement présentes.
-          Décochez celles qui ne s&apos;appliquent pas, puis validez pour
-          créer les fiches correspondantes.
+          Décochez celles qui ne s&apos;appliquent pas, puis validez pour créer
+          les fiches correspondantes.
         </p>
-      </div>
+      </header>
 
-      <div className="space-y-4 px-6 py-6 sm:px-8">
-        <ul className="space-y-3">
+      <div className="flex flex-col gap-4 pt-5">
+        <ul className="m-0 flex list-none flex-col gap-3 p-0">
           {suggestions.map((s) => {
             const coche = selection.has(s.categorie);
             return (
@@ -86,14 +86,17 @@ export function PreRemplissagePanel({ etablissementId, suggestions }: Props) {
                   id={`pre-${s.categorie}`}
                   checked={coche}
                   onChange={() => toggle(s.categorie)}
-                  className="mt-1 size-4 rounded border-rule"
+                  className="mt-0.5 size-4 flex-none rounded border-[color:var(--board-slate)] accent-[color:var(--board-ink)]"
                 />
                 <MarqueCategorie categorie={s.categorie} taille={36} />
-                <label htmlFor={`pre-${s.categorie}`} className="min-w-0 flex-1">
-                  <p className="text-[0.95rem] font-semibold">
+                <label
+                  htmlFor={`pre-${s.categorie}`}
+                  className="min-w-0 flex-1 cursor-pointer"
+                >
+                  <p className="m-0 text-[14px] font-semibold leading-[1.35] text-[color:var(--board-ink)]">
                     {LABEL_CATEGORIE_EQUIPEMENT[s.categorie]}
                   </p>
-                  <p className="text-[0.82rem] text-muted-foreground">
+                  <p className="m-0 mt-1 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                     {s.libelle} — {s.raison}
                   </p>
                 </label>
@@ -102,12 +105,22 @@ export function PreRemplissagePanel({ etablissementId, suggestions }: Props) {
           })}
         </ul>
 
+        {/* Le vert du board dit « fait » : ici il l'est — les fiches
+            existent. */}
         {message && (
-          <p className="text-sm text-emerald-700">{message}</p>
+          <p className="m-0 text-[12.5px] text-[color:var(--board-green-ink)]">
+            {message}
+          </p>
         )}
 
         <div className="flex items-center gap-3">
-          <Button type="button" onClick={valider} disabled={pending}>
+          <Button
+            type="button"
+            variant="board"
+            size="board"
+            onClick={valider}
+            disabled={pending}
+          >
             {pending
               ? "Création…"
               : `Créer ${selection.size} fiche${selection.size > 1 ? "s" : ""}`}

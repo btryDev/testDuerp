@@ -24,10 +24,10 @@ export function SupprimerEtablissementButton({ id }: { id: string }) {
   const [refus, setRefus] = useState<SuppressionResult | null>(null);
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <Button
-        variant="outline"
-        size="sm"
+        variant="boardClair"
+        size="boardSm"
         disabled={pending}
         onClick={() => {
           if (
@@ -50,19 +50,21 @@ export function SupprimerEtablissementButton({ id }: { id: string }) {
       </Button>
 
       {refus && (
+        // Le refus est un état, pas une décoration : champ du signal et
+        // encre du signal, jamais l'un sans l'autre.
         <section
           role="alert"
-          className="rounded-[calc(var(--radius)*1.4)] border border-dashed border-[color:var(--minium)]/50 bg-[color:var(--minium)]/8 px-5 py-4"
+          className="rounded-[22px] bg-[color:var(--board-signal-wash)] px-5 py-4 ring-1 ring-[color:var(--board-signal)]"
         >
-          <p className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[color:var(--minium)]">
+          <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-signal-ink)]">
             Suppression refusée · conservation légale
           </p>
-          <p className="mt-2 text-sm leading-relaxed text-foreground/85">
+          <p className="m-0 mt-2 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-ink)]">
             {refus.message}
           </p>
           <Link
             href={refus.exportHref}
-            className="mt-3 inline-block text-sm font-medium underline underline-offset-4"
+            className="mt-3 inline-block text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
           >
             Exporter mes documents
           </Link>

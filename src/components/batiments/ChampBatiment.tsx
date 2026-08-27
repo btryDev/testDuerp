@@ -10,9 +10,9 @@ import type { Charte } from "@/components/ui-kit";
  * l'établissement » en première option, qui vaut « non précisé ».
  *
  * Comme `SelecteurBatiment`, ce champ est appelé des deux côtés de la
- * migration visuelle : le formulaire de permis de feu est passé au board,
- * ceux du plan de prévention et du carnet sanitaire sont encore en papier.
- * D'où une prop plutôt qu'une réécriture (`ui-kit/charte.ts`) : un champ à
+ * migration visuelle : les formulaires de permis de feu et de plan de
+ * prévention sont passés au board, celui du carnet sanitaire est encore en
+ * papier. D'où une prop plutôt qu'une réécriture (`ui-kit/charte.ts`) : un champ à
  * rayon 6 au milieu d'une carte à rayon 30 se voit, et l'inverse aussi. Le
  * défaut reste `papier`, ce que ce composant rendait avant.
  */

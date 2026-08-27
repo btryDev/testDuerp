@@ -2,8 +2,6 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   leverPrescription,
   reactiverPrescription,
@@ -60,8 +58,8 @@ export function PrescriptionActions({
     return (
       <div className="flex flex-wrap items-center gap-3">
         <Button
-          variant="outline"
-          size="sm"
+          variant="boardClair"
+          size="boardSm"
           disabled={pendingAutre}
           onClick={() =>
             startTransition(async () => {
@@ -71,7 +69,7 @@ export function PrescriptionActions({
         >
           {pendingAutre ? "Réactivation…" : "Annuler la levée"}
         </Button>
-        <p className="text-xs text-muted-foreground">
+        <p className="m-0 text-[12px] text-[color:var(--board-slate-mid)]">
           La prescription reprendra effet et le calendrier sera régénéré.
         </p>
       </div>
@@ -81,14 +79,18 @@ export function PrescriptionActions({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
-        <Button variant="outline" size="sm" onClick={() => setOuvert(!ouvert)}>
+        <Button
+          variant="boardClair"
+          size="boardSm"
+          onClick={() => setOuvert(!ouvert)}
+        >
           {ouvert ? "Annuler" : "Lever cette prescription"}
         </Button>
 
         {lignesAvecPreuve === 0 ? (
           <Button
-            variant="outline"
-            size="sm"
+            variant="boardClair"
+            size="boardSm"
             disabled={pendingAutre}
             onClick={() => {
               if (
@@ -107,7 +109,7 @@ export function PrescriptionActions({
             {pendingAutre ? "Suppression…" : "Supprimer"}
           </Button>
         ) : (
-          <p className="text-xs text-muted-foreground">
+          <p className="m-0 max-w-[62ch] text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]">
             Suppression indisponible : {lignesAvecPreuve} vérification
             {lignesAvecPreuve > 1 ? "s" : ""} issue
             {lignesAvecPreuve > 1 ? "s" : ""} de cette prescription porte
@@ -117,29 +119,41 @@ export function PrescriptionActions({
       </div>
 
       {etatSuppr?.status === "error" && (
-        <p className="text-sm text-destructive">{etatSuppr.message}</p>
+        <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+          {etatSuppr.message}
+        </p>
       )}
 
       {ouvert && (
         <form action={action} className="flex flex-wrap items-end gap-3">
-          <div className="space-y-1">
-            <Label htmlFor={`dateFin-${prescriptionId}`}>
+          <div>
+            <label
+              className="label-board"
+              htmlFor={`dateFin-${prescriptionId}`}
+            >
               Cesse de produire effet le
-            </Label>
-            <Input
+            </label>
+            <input
               id={`dateFin-${prescriptionId}`}
               name="dateFin"
               type="date"
               min={dateDocument}
               required
-              className="w-48"
+              className="champ-board w-48"
             />
           </div>
-          <Button type="submit" size="sm" disabled={pending}>
+          <Button
+            type="submit"
+            variant="board"
+            size="boardSm"
+            disabled={pending}
+          >
             {pending ? "Enregistrement…" : "Confirmer la levée"}
           </Button>
           {etat.status === "error" && (
-            <p className="w-full text-sm text-destructive">{etat.message}</p>
+            <p className="m-0 w-full text-[12.5px] text-[color:var(--board-signal-ink)]">
+              {etat.message}
+            </p>
           )}
         </form>
       )}
