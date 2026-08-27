@@ -129,6 +129,12 @@ encore rien sur `R. 4141-*`, `R. 4624-*`, le SST, le CACES ni l'autorisation de 
 Les quatre déclencheurs non implémentés représentent **62 obligations recensées** — détail et
 sources dans `docs/carto-obligations-hors-equipement.md`.
 
+**Ce que le chantier laisse ouvert est écrit** : `docs/dette-chantier-porteur-echeance.md`.
+Limites connues, promesses non tenues et décisions repoussées, chacune avec sa raison — dont
+une à lire avant de s'y fier : `docs/rgpd.md` § 5.1 promet au présent un export JSON complet
+du titulaire du compte **qui n'existe pas**. À consulter avant d'ouvrir un lot sur ce
+périmètre, pour ne pas redécouvrir une limite déjà tranchée.
+
 **Données de salariés** : `docs/rgpd.md` est le document qui fait foi. Base légale RGPD 6.1.c,
 jamais le consentement. L'outil ne stocke d'une pièce médicale que son existence, sa date et
 son échéance — plus strict que le texte, qui autorise l'employeur à en conserver copie.
