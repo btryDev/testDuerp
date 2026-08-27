@@ -637,6 +637,19 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
         )}
 
         <View style={s.mentionsLegalesBloc}>
+          {/* Trois références, et pas une de plus. R. 143-44 CCH fonde le
+              registre en ERP, L. 4711-1 et L. 4711-5 CT le fondent côté
+              employeur — ce sont les deux régimes que ce générateur sert.
+
+              R. 146-35 CCH, qui figurait ici, n'y est plus : c'est l'article
+              du registre **IGH**, et l'IGH est hors périmètre du produit
+              (`src/lib/perimetre/couverture.ts` l'écarte avant même de
+              regarder la catégorie ERP). Ce document n'est donc jamais
+              présenté par un IGH, et la citation ne rencontrait personne.
+              C'est le même défaut que celui corrigé sur L. 4711-5 en août
+              2026 — une référence qui ne vise pas son lecteur. Si l'IGH
+              entre un jour au périmètre, elle reviendra avec lui, et ce sera
+              un ajout conscient plutôt qu'un héritage. */}
           <Text style={{ fontFamily: "Helvetica-Bold", marginBottom: 4 }}>
             Tenue du registre (R. 143-44 CCH · L. 4711-1 et L. 4711-5 CT)
           </Text>
