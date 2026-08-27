@@ -1,8 +1,23 @@
 import Link from "next/link";
+import { Building2 } from "lucide-react";
 import { LABEL_DOMAINE } from "@/lib/prestataires/schema";
 import type { PrestataireAvecVigilance } from "@/lib/prestataires/queries";
 import { VigilancePiecePill } from "./VigilancePills";
 
+/**
+ * La carte d'un prestataire, en charte board (`docs/charte-board.md`).
+ *
+ * Elle était en charte papier — `cartouche`, `label-admin`,
+ * `filet-pointille`, `--minium`, `--seal`, `--paper-sunk`. Le module est
+ * pourtant l'annuaire de référence du produit, celui qu'on copie pour en
+ * écrire un autre : le laisser en papier, c'était propager la dette à chaque
+ * annuaire suivant.
+ *
+ * Le gabarit suit `VitrineEquipement` : une carte de grille à rayon 22, un
+ * champ coloré en tête qui annonce ce qui identifie l'objet, puis le corps.
+ * Ici la tête porte la raison sociale plutôt qu'un lieu — c'est le nom qu'on
+ * cherche des yeux dans une grille d'annuaire, pas le SIRET.
+ */
 export function PrestataireCard({
   etablissementId,
   prestataire,
@@ -14,94 +29,85 @@ export function PrestataireCard({
   const nbAlertes = vigilance.alertesOuvertes;
 
   return (
-    <article className="cartouche relative overflow-hidden p-6">
-      {nbAlertes > 0 && (
-        <span
-          aria-hidden
-          className="absolute right-5 top-5 inline-flex items-center gap-1.5 rounded-full bg-[color:color-mix(in_oklch,var(--minium)_14%,transparent)] px-2.5 py-1 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-[color:var(--minium)]"
-        >
-          ⚠ {nbAlertes} alerte{nbAlertes > 1 ? "s" : ""}
-        </span>
-      )}
-
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
+    <Link
+      href={`/etablissements/${etablissementId}/prestataires/${prestataire.id}`}
+      className="carte-board group flex flex-col overflow-hidden rounded-[22px]"
+    >
+      {/* La tête : le nom, et l'état de vigilance en un coup d'œil. Le champ
+          passe au rose quand une pièce manque ou expire — la couleur dit
+          l'état, jamais le volume (charte § 7). */}
+      <span
+        className={
+          "flex flex-none flex-col items-start justify-end gap-2 p-3.5 pt-4 " +
+          (nbAlertes > 0
+            ? "bg-[color:var(--board-signal)] text-[color:var(--board-signal-ink)]"
+            : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]")
+        }
+      >
+        <span className="flex w-full items-start justify-between gap-2">
+          <Building2 className="size-[22px] flex-none" aria-hidden />
           {prestataire.estOrganismeAgree && (
-            <span className="inline-flex items-center rounded-full border border-[color:var(--warm)] bg-[color:var(--warm-soft)] px-2 py-0.5 font-mono text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--warm)]">
+            <span className="rounded-full bg-[color:var(--board-card)]/70 px-2 py-[3px] font-mono text-[9.5px] font-semibold uppercase tracking-[0.12em]">
               Organisme agréé
             </span>
           )}
-          <p className="label-admin">
-            {prestataire.siret ? `SIRET · ${prestataire.siret}` : "SIRET non renseigné"}
-          </p>
-        </div>
-
-        <h3 className="text-[1.15rem] font-semibold tracking-[-0.015em] text-[color:var(--ink)]">
+        </span>
+        <span className="block min-w-0 text-[15px] font-semibold leading-[1.25] tracking-[-0.015em] line-clamp-2">
           {prestataire.raisonSociale}
-        </h3>
+        </span>
+        <span className="block font-mono text-[10px] uppercase leading-[1.3] tracking-[0.1em] opacity-80">
+          {prestataire.siret
+            ? `SIRET ${prestataire.siret}`
+            : "SIRET non renseigné"}
+        </span>
+      </span>
 
+      <span className="flex flex-1 flex-col gap-3.5 px-4 pb-4 pt-3.5">
         {prestataire.domaines.length > 0 && (
-          <ul className="flex flex-wrap gap-1.5">
+          <span className="flex flex-wrap gap-1.5">
             {prestataire.domaines.map((d) => (
-              <li
+              <span
                 key={d}
-                className="rounded-full bg-[color:var(--paper-sunk)] px-2.5 py-0.5 text-[0.72rem] text-[color:var(--seal)]"
+                className="rounded-full bg-[color:var(--board-slate-pale)] px-2.5 py-[3px] text-[11.5px] text-[color:var(--board-slate-mid)]"
               >
                 {LABEL_DOMAINE[d]}
-              </li>
+              </span>
             ))}
-          </ul>
+          </span>
         )}
-      </div>
 
-      <div className="filet-pointille mt-5 mb-5" />
-
-      <dl className="grid grid-cols-1 gap-y-1 text-[0.82rem] sm:grid-cols-[auto_1fr] sm:gap-x-4">
-        <dt className="text-[color:var(--muted-foreground)]">Contact :</dt>
-        <dd className="text-[color:var(--ink)]">{prestataire.contactNom}</dd>
-        <dt className="text-[color:var(--muted-foreground)]">Email :</dt>
-        <dd className="font-mono text-[color:var(--ink)]">
-          <a
-            href={`mailto:${prestataire.contactEmail}`}
-            className="hover:underline"
-          >
+        <span className="block text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+          {prestataire.contactNom}
+          <span className="mt-0.5 block font-mono text-[11.5px] text-[color:var(--board-slate-soft)]">
             {prestataire.contactEmail}
-          </a>
-        </dd>
-        {prestataire.contactTelephone && (
-          <>
-            <dt className="text-[color:var(--muted-foreground)]">Téléphone :</dt>
-            <dd className="font-mono text-[color:var(--ink)]">
-              {prestataire.contactTelephone}
-            </dd>
-          </>
-        )}
-      </dl>
+          </span>
+        </span>
 
-      <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <VigilancePiecePill
-          libelle="Attestation URSSAF (6 mois)"
-          statut={vigilance.urssaf}
-          jours={vigilance.urssafExpireDans}
-        />
-        <VigilancePiecePill
-          libelle="RC Pro"
-          statut={vigilance.rcPro}
-          jours={vigilance.rcProExpireDans}
-        />
-      </div>
+        {/* Les deux pièces qui portent une échéance. Le Kbis n'en est pas :
+            aucun texte ne lui assortit de périodicité citable, et le produit
+            informe sans décréter (cf. `vigilance.ts`). */}
+        <span className="mt-auto flex flex-col gap-1.5 pt-1">
+          <VigilancePiecePill
+            libelle="Attestation URSSAF"
+            statut={vigilance.urssaf}
+            jours={vigilance.urssafExpireDans}
+          />
+          <VigilancePiecePill
+            libelle="RC Pro"
+            statut={vigilance.rcPro}
+            jours={vigilance.rcProExpireDans}
+          />
+        </span>
 
-      <div className="mt-5 flex items-center justify-between">
-        <p className="font-mono text-[0.7rem] uppercase tracking-[0.1em] text-[color:var(--seal)]">
-          {vigilance.kbis === "present" ? "Kbis fourni" : "Kbis non fourni"}
-        </p>
-        <Link
-          href={`/etablissements/${etablissementId}/prestataires/${prestataire.id}`}
-          className="font-mono text-[0.72rem] font-medium uppercase tracking-[0.12em] text-[color:var(--warm)] hover:underline"
-        >
-          Détails →
-        </Link>
-      </div>
-    </article>
+        <span className="flex items-center justify-between border-t border-[color:var(--board-slate-line)] pt-3">
+          <span className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+            {vigilance.kbis === "present" ? "Kbis fourni" : "Kbis attendu"}
+          </span>
+          <span className="text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] group-hover:text-[color:var(--board-ink)]">
+            Ouvrir
+          </span>
+        </span>
+      </span>
+    </Link>
   );
 }

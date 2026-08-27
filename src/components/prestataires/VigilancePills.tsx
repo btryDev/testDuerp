@@ -1,20 +1,27 @@
 import { cn } from "@/lib/utils";
 import type { StatutPiece } from "@/lib/prestataires/vigilance";
 import { messageExpiration } from "@/lib/prestataires/vigilance";
+import { CHAMP_ETAT, ENCRE_ETAT, type RegistreLigne } from "@/lib/calendrier/etats";
 
-const STYLE: Record<StatutPiece, string> = {
-  a_jour: "bg-[color:var(--accent-vif-soft)] text-[color:var(--accent-vif)]",
-  expire_bientot: "bg-amber-100 text-amber-900",
-  expiree:
-    "bg-[color:color-mix(in_oklch,var(--minium)_14%,transparent)] text-[color:var(--minium)]",
-  manquante: "bg-[color:var(--paper-sunk)] text-[color:var(--seal)]",
-};
-
-const ICONE: Record<StatutPiece, string> = {
-  a_jour: "●",
-  expire_bientot: "◐",
-  expiree: "■",
-  manquante: "—",
+/**
+ * L'état d'une pièce de vigilance, en charte board (`docs/charte-board.md`).
+ *
+ * Les couleurs ne sont plus déclarées ici. Elles viennent de `CHAMP_ETAT` /
+ * `ENCRE_ETAT`, source unique du produit — ce composant portait une quatrième
+ * table locale, avec deux couleurs Tailwind brutes hors palette
+ * (`bg-amber-100 text-amber-900`) et deux tokens de la charte papier. Une
+ * table de couleurs locale finit toujours par diverger : un « expire bientôt »
+ * ambre ici et paille ailleurs, et l'utilisateur lit deux états là où il n'y
+ * en a qu'un.
+ */
+const ETAT_DE_LA_PIECE: Record<StatutPiece, RegistreLigne> = {
+  a_jour: "faite",
+  expire_bientot: "proche",
+  expiree: "enRetard",
+  // Une pièce qui n'a jamais été fournie n'est pas en retard : rien n'a
+  // d'échéance tant qu'il n'y a pas de document. C'est l'ardoise, comme
+  // « à planifier » au calendrier — l'absence de rendez-vous, pas l'urgence.
+  manquante: "aPlanifier",
 };
 
 const LABEL: Record<StatutPiece, string> = {
@@ -35,38 +42,45 @@ export function VigilancePiecePill({
   jours: number | null;
   className?: string;
 }) {
+  const etat = ETAT_DE_LA_PIECE[statut];
+
   return (
-    <div
+    <span
       className={cn(
-        "flex items-center gap-3 rounded-lg border border-[color:var(--rule-soft)] bg-[color:var(--paper-elevated)] px-3 py-2",
+        "flex items-center justify-between gap-3 rounded-[14px] bg-[color:var(--board-slate-pale)] px-3 py-2",
         className,
       )}
     >
-      <span
-        aria-hidden
-        className={cn(
-          "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-mono text-[0.85rem]",
-          STYLE[statut],
-        )}
-      >
-        {ICONE[statut]}
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="label-admin">{libelle}</div>
-        <div className="mt-0.5 text-[0.85rem] font-medium text-[color:var(--ink)]">
-          {LABEL[statut]}
-        </div>
+      <span className="min-w-0">
+        <span className="board-eyebrow block text-[9.5px] tracking-[0.14em] text-[color:var(--board-slate-soft)]">
+          {libelle}
+        </span>
         {/* L'échéance en toutes lettres vient de `messageExpiration` : la
             règle (« expire aujourd'hui » le jour dit, expirée seulement à
             partir du lendemain) est tenue par `lib/prestataires/vigilance`,
             source unique — le composant ne la recalcule pas.
             Sur une pièce absente, la ligne répéterait le statut : on la tait. */}
-        {statut === "manquante" ? null : (
-          <div className="text-[0.72rem] text-[color:var(--muted-foreground)]">
+        {statut !== "manquante" && (
+          <span className="mt-0.5 block text-[11.5px] leading-[1.4] text-[color:var(--board-slate-mid)]">
             {messageExpiration(jours)}
-          </div>
+          </span>
         )}
-      </div>
-    </div>
+      </span>
+
+      {/* Jamais la couleur seule : le point porte l'état, le mot le nomme.
+          Une signalétique qui tient à une couleur disparaît en niveaux de
+          gris et pour qui n'y voit pas (charte § 7). */}
+      <span
+        className="inline-flex flex-none items-center gap-1.5 whitespace-nowrap text-[11.5px] font-semibold"
+        style={{ color: ENCRE_ETAT[etat] }}
+      >
+        <span
+          aria-hidden
+          className="size-[7px] flex-none rounded-full"
+          style={{ background: CHAMP_ETAT[etat] }}
+        />
+        {LABEL[statut]}
+      </span>
+    </span>
   );
 }

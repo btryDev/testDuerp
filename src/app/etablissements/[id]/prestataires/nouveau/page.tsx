@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { FormulairePrestataire } from "@/components/prestataires/FormulairePrestataire";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { creerPrestataire } from "@/lib/prestataires/actions";
@@ -14,34 +15,30 @@ export default async function NouveauPrestatairePage({
   const action = creerPrestataire.bind(null, id);
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-14 sm:px-10">
-      <nav>
+    <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
+      <header className="border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] px-[var(--board-gutter)] py-[22px]">
         <Link
           href={`/etablissements/${id}/prestataires`}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
+          className="board-eyebrow inline-flex items-center gap-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
         >
-          ← Annuaire des prestataires
+          <ArrowLeft className="size-3" aria-hidden />
+          Prestataires
         </Link>
-      </nav>
-
-      <header className="mt-8 space-y-3">
-        <p className="label-admin">
-          {etablissement.raisonDisplay} · Nouveau prestataire
-        </p>
-        <h1 className="text-[1.8rem] font-semibold tracking-[-0.02em] leading-tight">
+        <h1 className="board-titre m-0 mt-2.5 text-[clamp(22px,2.2vw,27px)]">
           Ajouter un prestataire
         </h1>
-        <p className="max-w-2xl text-[0.9rem] leading-relaxed text-muted-foreground">
-          Remplissez au minimum <strong>l&apos;identité</strong> et le
-          <strong> contact principal</strong>. Les pièces justificatives
-          (URSSAF, RC Pro, Kbis) peuvent être ajoutées plus tard — mais les
-          joindre dès maintenant vous sécurise au regard de l&apos;obligation
-          de vigilance.
+        <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+          L&apos;identité et le contact suffisent pour commencer —{" "}
+          {etablissement.raisonDisplay} pourra recevoir les pièces plus tard.
+          Les joindre dès maintenant vous évite d&apos;avoir à les redemander le
+          jour d&apos;un contrôle.
         </p>
       </header>
 
-      <div className="mt-10">
-        <FormulairePrestataire etablissementId={id} action={action} />
+      <div className="px-[var(--board-gutter)] pt-6">
+        <div className="carte-board max-w-[880px] px-7 py-7 sm:px-8">
+          <FormulairePrestataire etablissementId={id} action={action} />
+        </div>
       </div>
     </main>
   );

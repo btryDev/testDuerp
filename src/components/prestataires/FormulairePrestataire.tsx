@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { EvidenceDropzone, LegalBadge } from "@/components/ui-kit";
 import type { PrestataireActionState } from "@/lib/prestataires/actions";
@@ -46,16 +44,16 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
       {/* -------- Identité -------- */}
       <section className="space-y-4">
         <header>
-          <p className="label-admin">1. Identité du prestataire</p>
-          <p className="mt-1 text-[0.85rem] text-[color:var(--muted-foreground)]">
+          <h2 className="board-titre m-0 text-[17px]">Identité du prestataire</h2>
+          <p className="m-0 mt-1.5 max-w-[64ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             L&apos;entreprise qui intervient chez vous. SIRET facultatif mais fortement
             recommandé (facilite la vérification d&apos;identité légale).
           </p>
         </header>
 
         <div className="space-y-2">
-          <Label htmlFor="raisonSociale">Raison sociale *</Label>
-          <Input
+          <label className="label-board" htmlFor="raisonSociale">Raison sociale *</label>
+          <input className="champ-board"
             id="raisonSociale"
             name="raisonSociale"
             required
@@ -64,19 +62,19 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
             aria-invalid={Boolean(err("raisonSociale"))}
           />
           {err("raisonSociale") && (
-            <p className="text-sm text-destructive">{err("raisonSociale")}</p>
+            <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">{err("raisonSociale")}</p>
           )}
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="siret">
+            <label className="label-board" htmlFor="siret">
               SIRET (14 chiffres)
               <InfoTooltip>
                 Recherche possible sur annuaire-entreprises.data.gouv.fr
               </InfoTooltip>
-            </Label>
-            <Input
+            </label>
+            <input className="champ-board"
               id="siret"
               name="siret"
               inputMode="numeric"
@@ -84,16 +82,16 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
               placeholder="123 456 789 00012"
               aria-invalid={Boolean(err("siret"))}
             />
-            {err("siret") && <p className="text-sm text-destructive">{err("siret")}</p>}
+            {err("siret") && <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">{err("siret")}</p>}
           </div>
 
-          <label className="flex cursor-pointer items-center gap-3 self-end rounded-lg border border-[color:var(--rule-soft)] bg-[color:var(--paper-sunk)] px-3 py-2.5">
+          <label className="flex cursor-pointer items-center gap-3 self-end rounded-[16px] border border-[color:var(--board-slate-line)] bg-[color:var(--board-slate-pale)] px-3.5 py-2.5">
             <input
               type="checkbox"
               name="estOrganismeAgree"
-              className="h-4 w-4 rounded border-[color:var(--rule)]"
+              className="size-4 rounded border-[color:var(--board-slate)] accent-[color:var(--board-ink)]"
             />
-            <span className="text-[0.85rem] font-medium text-[color:var(--ink)]">
+            <span className="text-[12.5px] font-semibold text-[color:var(--board-slate-ink)]">
               Organisme agréé
               <InfoTooltip>
                 Apave, Bureau Veritas, Socotec, Dekra… — habilité par le
@@ -104,7 +102,7 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
         </div>
 
         <fieldset className="space-y-2">
-          <legend className="text-[0.82rem] font-medium text-[color:var(--ink)]">
+          <legend className="label-board">
             Domaines d&apos;intervention
           </legend>
           <p className="text-[0.78rem] text-[color:var(--muted-foreground)]">
@@ -115,7 +113,7 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
             {DOMAINES_PRESTATAIRE.map((d) => (
               <label
                 key={d}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[color:var(--rule)] bg-[color:var(--paper-elevated)] px-3 py-1.5 text-[0.82rem] transition hover:border-[color:var(--warm)] has-[:checked]:border-[color:var(--warm)] has-[:checked]:bg-[color:var(--warm-soft)] has-[:checked]:text-[color:var(--warm)]"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[color:var(--board-slate-pale)] px-3 py-1.5 text-[12px] font-medium text-[color:var(--board-slate-mid)] transition-colors has-[:checked]:bg-[color:var(--board-blue-pale)] has-[:checked]:text-[color:var(--board-blue-ink)]"
               >
                 <input
                   type="checkbox"
@@ -130,21 +128,20 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
         </fieldset>
       </section>
 
-      <div className="filet-pointille" />
 
       {/* -------- Contact -------- */}
       <section className="space-y-4">
         <header>
-          <p className="label-admin">2. Contact principal</p>
-          <p className="mt-1 text-[0.85rem] text-[color:var(--muted-foreground)]">
+          <h2 className="board-titre m-0 text-[17px]">Contact principal</h2>
+          <p className="m-0 mt-1.5 max-w-[64ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             L&apos;interlocuteur que vous sollicitez habituellement. Servira aussi à envoyer
             les liens de dépôt de rapport et les demandes de signature.
           </p>
         </header>
 
         <div className="space-y-2">
-          <Label htmlFor="contactNom">Nom et prénom *</Label>
-          <Input
+          <label className="label-board" htmlFor="contactNom">Nom et prénom *</label>
+          <input className="champ-board"
             id="contactNom"
             name="contactNom"
             required
@@ -153,14 +150,14 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
             aria-invalid={Boolean(err("contactNom"))}
           />
           {err("contactNom") && (
-            <p className="text-sm text-destructive">{err("contactNom")}</p>
+            <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">{err("contactNom")}</p>
           )}
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="contactEmail">Email *</Label>
-            <Input
+            <label className="label-board" htmlFor="contactEmail">Email *</label>
+            <input className="champ-board"
               id="contactEmail"
               name="contactEmail"
               type="email"
@@ -170,12 +167,12 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
               aria-invalid={Boolean(err("contactEmail"))}
             />
             {err("contactEmail") && (
-              <p className="text-sm text-destructive">{err("contactEmail")}</p>
+              <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">{err("contactEmail")}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="contactTelephone">Téléphone</Label>
-            <Input
+            <label className="label-board" htmlFor="contactTelephone">Téléphone</label>
+            <input className="champ-board"
               id="contactTelephone"
               name="contactTelephone"
               type="tel"
@@ -183,7 +180,7 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
               aria-invalid={Boolean(err("contactTelephone"))}
             />
             {err("contactTelephone") && (
-              <p className="text-sm text-destructive">
+              <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
                 {err("contactTelephone")}
               </p>
             )}
@@ -191,12 +188,11 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
         </div>
       </section>
 
-      <div className="filet-pointille" />
 
       {/* -------- Vigilance L8222-1 -------- */}
       <section className="space-y-5">
         <header className="space-y-3">
-          <p className="label-admin">3. Obligation de vigilance</p>
+          <h2 className="board-titre m-0 text-[17px]">Obligation de vigilance</h2>
           <LegalBadge
             reference="Art. L8222-1 et D8222-5 CT"
             href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037389145"
@@ -215,20 +211,20 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-2">
-            <Label>Attestation URSSAF</Label>
+            <label className="label-board">Attestation URSSAF</label>
             <EvidenceDropzone
               name="attestationUrssaf"
               label="Attestation URSSAF"
               hint="Renouvellement tous les 6 mois"
             />
             <div className="space-y-1">
-              <Label
+              <label
+                className="label-board font-normal text-[color:var(--board-slate-soft)]"
                 htmlFor="attestationUrssafValableJusquA"
-                className="text-[0.78rem] font-normal text-[color:var(--muted-foreground)]"
               >
                 Valable jusqu&apos;au
-              </Label>
-              <Input
+              </label>
+              <input className="champ-board"
                 id="attestationUrssafValableJusquA"
                 name="attestationUrssafValableJusquA"
                 type="date"
@@ -237,20 +233,20 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
           </div>
 
           <div className="space-y-2">
-            <Label>Assurance RC Pro</Label>
+            <label className="label-board">Assurance RC Pro</label>
             <EvidenceDropzone
               name="assuranceRcPro"
               label="Attestation RC Pro"
               hint="Renouvellement annuel chez votre assureur"
             />
             <div className="space-y-1">
-              <Label
+              <label
+                className="label-board font-normal text-[color:var(--board-slate-soft)]"
                 htmlFor="assuranceRcProValableJusquA"
-                className="text-[0.78rem] font-normal text-[color:var(--muted-foreground)]"
               >
                 Valable jusqu&apos;au
-              </Label>
-              <Input
+              </label>
+              <input className="champ-board"
                 id="assuranceRcProValableJusquA"
                 name="assuranceRcProValableJusquA"
                 type="date"
@@ -259,35 +255,34 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
           </div>
 
           <div className="space-y-2">
-            <Label>Extrait Kbis</Label>
+            <label className="label-board">Extrait Kbis</label>
             <EvidenceDropzone
               name="kbis"
               label="Extrait Kbis"
               hint="Datant de moins de 3 mois à l'embauche"
             />
             <div className="space-y-1">
-              <Label
+              <label
+                className="label-board font-normal text-[color:var(--board-slate-soft)]"
                 htmlFor="kbisDateEmission"
-                className="text-[0.78rem] font-normal text-[color:var(--muted-foreground)]"
               >
                 Date d&apos;émission
-              </Label>
-              <Input id="kbisDateEmission" name="kbisDateEmission" type="date" />
+              </label>
+              <input className="champ-board" id="kbisDateEmission" name="kbisDateEmission" type="date" />
             </div>
           </div>
         </div>
       </section>
 
-      <div className="filet-pointille" />
 
       {/* -------- Notes -------- */}
       <section className="space-y-3">
-        <Label htmlFor="notesInternes">
+        <label className="label-board" htmlFor="notesInternes">
           Notes internes
           <InfoTooltip>
             Ces notes ne sont jamais partagées avec le prestataire.
           </InfoTooltip>
-        </Label>
+        </label>
         <textarea
           id="notesInternes"
           name="notesInternes"
@@ -299,16 +294,16 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
       </section>
 
       {state.status === "error" && !state.fieldErrors && (
-        <p className="text-sm text-destructive">{state.message}</p>
+        <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">{state.message}</p>
       )}
 
       <div className="flex flex-wrap items-center gap-3 pt-4">
-        <Button type="submit" disabled={pending}>
+        <Button variant="board" size="board" type="submit" disabled={pending}>
           {pending ? "Enregistrement…" : "Ajouter ce prestataire"}
         </Button>
         <Link
           href={`/etablissements/${etablissementId}/prestataires`}
-          className={buttonVariants({ variant: "outline" })}
+          className={buttonVariants({ variant: "boardClair", size: "board" })}
         >
           Annuler
         </Link>
