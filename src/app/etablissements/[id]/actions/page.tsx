@@ -17,7 +17,6 @@ import {
 import { LABEL_TYPE_ACTION } from "@/lib/actions/labels";
 import { formaterDateCourteFr } from "@/lib/dates";
 import { avecProvenance, origineDepuis } from "@/lib/navigation/provenance";
-import { libellePorteur } from "@/lib/calendrier/labels";
 
 function formatDate(d: Date | null): string {
   if (!d) return "—";
@@ -340,7 +339,7 @@ export default async function PlanActionsPage({
                           <span className="mx-2 text-[color:var(--board-slate)]">
                             ·
                           </span>
-                          {libellePorteur(a.verification)}
+                          {a.verification.equipement.libelle}
                         </>
                       )}
                     </p>
