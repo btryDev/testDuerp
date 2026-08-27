@@ -805,7 +805,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
   // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
   // version PUIS recopiez l'empreinte que le message d'échec affiche.
-  const EMPREINTE_ATTENDUE = "85-4d2aa4821982fa52";
+  const EMPREINTE_ATTENDUE = "85-bb6450d159a94d49";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1016,5 +1016,55 @@ describe("veille — rendez-vous de relecture", () => {
         ).toBe(true);
       }
     }
+  });
+});
+
+/**
+ * Une périodicité chiffrée doit venir de quelque part.
+ *
+ * Les codes — travail, CCH, environnement — délèguent presque toujours le
+ * chiffre à un arrêté : « selon une périodicité appropriée », « des arrêtés
+ * précisent la périodicité ». Une obligation qui affiche « annuelle » en ne
+ * citant qu'un article de code attribue donc un chiffre à un texte qui ne le
+ * contient pas, et le dirigeant voit une date que le droit ne lui donne pas.
+ *
+ * L'audit du 2026-08-27 a trouvé quatre cas sur cinquante-sept. Trois étaient
+ * de vrais défauts — la vérification annuelle des extincteurs en lieu de
+ * travail vient de la norme NF S 61-919, pas du Code du travail ; la consigne
+ * de sécurité n'a aucune échéance écrite ; la formation triennale au risque
+ * chimique était une pratique INRS reconnue comme telle en note et affichée
+ * quand même. Le quatrième était fondé, et figure ci-dessous.
+ */
+const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
+  "incendie-travail-exercice-semestriel":
+    "R. 4227-39 porte le chiffre lui-même, cas rare dans le Code du travail : " +
+    "« Ces exercices et essais périodiques ont lieu au moins tous les six " +
+    "mois. » Relu à la source le 2026-08-27 — c'est la seule périodicité de " +
+    "toute la section R. 4227-28 à R. 4227-41.",
+};
+
+describe("référentiel conformité — d'où vient le chiffre", () => {
+  it("toute périodicité chiffrée s'appuie sur un texte qui porte un chiffre", () => {
+    // Les sources capables de fixer une périodicité. Un code peut le faire,
+    // mais c'est l'exception : ces cas passent par l'allowlist ci-dessus.
+    const PORTEUSES = new Set(["ARRETE", "REGLEMENT_UE", "INRS"]);
+    const sansSource = obligationsConformite
+      .filter(
+        (o) =>
+          o.periodicite !== "autre" &&
+          o.periodicite !== "mise_en_service_uniquement",
+      )
+      .filter((o) => !o.referencesLegales.some((r) => PORTEUSES.has(r.source)))
+      .filter((o) => !(o.id in PERIODICITE_SUR_CODE_JUSTIFIEE))
+      .map((o) => `${o.id} (${o.periodicite})`);
+
+    expect(
+      sansSource,
+      "Ces obligations affichent une périodicité chiffrée sans citer de texte " +
+        "qui la porte. Soit le bon texte manque à `referencesLegales`, soit la " +
+        "périodicité n'a pas de fondement et doit passer à `autre`. Si un " +
+        "article de code porte vraiment le chiffre, ajoutez l'obligation à " +
+        "`PERIODICITE_SUR_CODE_JUSTIFIEE` avec le verbatim qui le prouve.",
+    ).toEqual([]);
   });
 });

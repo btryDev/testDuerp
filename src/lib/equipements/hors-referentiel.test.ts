@@ -58,11 +58,33 @@ describe("reperterSansEcheance — le référentiel réel", () => {
   it("ne signale pas un équipement d'une catégorie couverte qui déclenche des obligations", () => {
     const m = reperterSansEcheance(etablissement(), [
       equipement("eq1", "INSTALLATION_ELECTRIQUE"),
-      equipement("eq2", "EXTINCTEUR"),
     ]);
 
     expect(m.has("eq1")).toBe(false);
-    expect(m.has("eq2")).toBe(false);
+  });
+
+  it("signale un extincteur en lieu de travail non-ERP, faute d'échéance légale", () => {
+    // CHANGEMENT DE COMPORTEMENT, 2026-08-27. L'extincteur figurait ici comme
+    // exemple d'équipement produisant une échéance. Il n'en produit plus chez
+    // un employeur non-ERP : la section R. 4227-28 à R. 4227-41 du code du
+    // travail, relue à la source, ne fixe AUCUNE périodicité annuelle. La
+    // vérification annuelle des extincteurs vient de la norme NF S 61-919 et
+    // des contrats de maintenance, pas du droit opposable.
+    //
+    // Les ERP ne sont pas concernés : `incendie-erp-extincteurs-annuelle`
+    // porte l'annuelle pour eux, fondée sur MS 73.
+    //
+    // Le motif rendu est `aucune_echeance_datable`, et non
+    // `aucune_obligation_applicable` : le modèle distingue bien « rien ne
+    // s'applique » de « quelque chose s'applique, sans date ». C'est le bon
+    // motif ici — des obligations pèsent sur cet extincteur (en être doté, le
+    // maintenir en état, le rendre accessible), elles n'ont simplement pas
+    // d'échéance légale.
+    const m = reperterSansEcheance(etablissement({ estERP: false }), [
+      equipement("eq1", "EXTINCTEUR"),
+    ]);
+
+    expect(m.get("eq1")).toBe("aucune_echeance_datable");
   });
 
   it("distingue « l'outil ne connaît pas cet appareil » de « il le connaît, mais pas chez vous »", () => {

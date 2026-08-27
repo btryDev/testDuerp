@@ -177,12 +177,12 @@ export const obligationsStockageDangereux: Obligation[] = [
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483731/",
       },
     ],
-    periodicite: "triennale",
+    periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
     typologies: { travail: true },
     categoriesEquipement: ["STOCKAGE_MATIERE_DANGEREUSE"],
     notesInternes:
-      "Périodicité triennale est une pratique usuelle (INRS), pas une obligation stricte du Code du travail. Affichée comme rappel, non comme écart.",
+      "Périodicité triennale est une pratique usuelle (INRS), pas une obligation stricte du Code du travail. Affichée comme rappel, non comme écart.\n\nAMENDEMENT 2026-08-27, même audit. La note ci-dessus le reconnaissait déjà : « Périodicité triennale est une pratique usuelle (INRS), pas une obligation stricte du Code du travail. » Elle était pourtant encodée comme une échéance triennale, donc affichée au dirigeant comme une date à tenir.\n\nR. 4412-38 exige des informations « périodiquement actualisées » et R. 4412-87 une formation, sans chiffre ni l'un ni l'autre. Reconnaître un écart en note et l'afficher quand même en échéance, c'est le documenter sans le corriger. `periodicite` passe à `autre` : la formation reste due et reste visible, sans date inventée.",
   },
 ];

@@ -73,7 +73,7 @@ export const obligationsConformite: Obligation[] = [
  * `conformite.test.ts` compare une empreinte du contenu à celle enregistrée :
  * l'oubli fait échouer la suite.
  */
-export const REFERENTIEL_VERSION = "2026-08-26.14";
+export const REFERENTIEL_VERSION = "2026-08-27.1";
 
 /**
  * Sérialisation canonique d'une valeur : clés d'objet triées, donc
