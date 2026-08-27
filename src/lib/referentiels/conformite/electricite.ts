@@ -113,7 +113,7 @@ export const obligationsElectricite: Obligation[] = [
     domaine: "electricite",
     libelle: "Habilitation électrique du personnel opérant sur ou à proximité d'installations électriques",
     description:
-      "L'employeur s'assure que les travailleurs qui effectuent des opérations sur ou à proximité d'installations électriques sont titulaires d'une habilitation adaptée au type d'opération. La formation initiale est à renouveler périodiquement selon la NF C 18-510 visée par le Code du travail.",
+      "L'employeur s'assure que les travailleurs qui effectuent des opérations sur ou à proximité d'installations électriques sont titulaires d'une habilitation adaptée au type d'opération. C'est un état à maintenir en permanence, pas un rendez-vous : le Code ne fixe aucune périodicité de renouvellement, il renvoie aux modalités des normes homologuées, qu'il qualifie lui-même de recommandées.",
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
@@ -130,13 +130,67 @@ export const obligationsElectricite: Obligation[] = [
           "https://www.inrs.fr/media.html?refINRS=ED%206127",
       },
     ],
-    periodicite: "triennale",
+    // « autre » = état permanent, pas d'échéance datée (ADR-023 § 6).
+    //
+    // Cette ligne annonçait « triennale ». AUCUN texte ne porte ce chiffre —
+    // relu en première main le 2026-08-27 : R. 4544-9 (01/07/2011) n'énonce
+    // aucune périodicité ; R. 4544-10 (01/10/2025) dit que l'employeur
+    // « délivre, maintient ou renouvelle l'habilitation selon les modalités
+    // contenues dans les normes mentionnées à l'article R. 4544-3 » ; et
+    // R. 4544-3 (01/07/2011) précise que ces normes contiennent « les
+    // modalités RECOMMANDÉES pour leur exécution ». Le Code prescrit donc de
+    // suivre des modalités qu'il qualifie de recommandées, et n'écrit aucune
+    // durée. Le triennal vient de la NF C 18-510 — une norme, que le
+    // référentiel exclut comme source opposable.
+    //
+    // Une échéance inventée dans un outil de conformité est pire qu'une
+    // échéance absente : elle se présente à un contrôle. Ce que l'outil dit
+    // désormais est ce que dit le droit — l'habilitation est un état à
+    // maintenir —, et ce qu'il DATE est l'attestation médicale quinquennale
+    // de R. 4544-11-1, dont les cinq ans sont écrits noir sur blanc.
+    periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 4,
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
-      "La périodicité triennale est une pratique INRS (ED 6127), pas une obligation du Code du travail au sens strict. Affichée comme recommandation, non comme écart bloquant.\n\nAmendement 2026-08-26 : L. 4711-5 était en refs[0], c'est-à-dire présenté comme l'article FONDATEUR (convention ADR-003). Or il n'institue aucun registre — il autorise à en réunir plusieurs en un seul, ce que le CLAUDE.md du dépôt écrit noir sur blanc. La contradiction était interne. R. 4226-19 passe en premier : c'est lui qui impose la consignation des résultats de vérification. Ce n'est pas cosmétique : le test anti-doublon compare les obligations sur leur article fondateur, donc un refs[0] faux le rend aveugle — le mécanisme même qui masquait le doublon des portails.",
+      "Périodicité passée de `triennale` à `autre` le 2026-08-27 (ADR-023 § 6) : voir le commentaire au-dessus du champ. Le précédent est celui du Kbis d'un prestataire, suivi sans statut d'expiration au motif que « le texte n'assortit pas la pièce d'une périodicité citable […] le produit informe, il ne décrète pas ».\n\nCe que l'utilisateur perd : une ligne d'échéance à trois ans. Ce qu'il gagne : une échéance réelle à sa place — l'attestation médicale — et un état permanent qui dit ce que le droit dit.\n\nLimite connue, non corrigée ici : la clé d'article est `R. 4544-10` alors que la citation couvre R. 4544-9 à R. 4544-11. Les deux bornes ne sont donc ni déclarées lues, ni surveillées par la veille. R. 4544-9 et R. 4544-11 n'ont d'ailleurs aucune entrée de corpus.\n\nAmendement 2026-08-26 : L. 4711-5 était en refs[0], c'est-à-dire présenté comme l'article FONDATEUR (convention ADR-003). Or il n'institue aucun registre — il autorise à en réunir plusieurs en un seul, ce que le CLAUDE.md du dépôt écrit noir sur blanc. La contradiction était interne. R. 4226-19 passe en premier : c'est lui qui impose la consignation des résultats de vérification. Ce n'est pas cosmétique : le test anti-doublon compare les obligations sur leur article fondateur, donc un refs[0] faux le rend aveugle — le mécanisme même qui masquait le doublon des portails.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Porteur : le salarié (ADR-023)
+  // ---------------------------------------------------------------------------
+  {
+    id: "elec-salarie-attestation-medicale-voisinage",
+    domaine: "electricite",
+    libelle:
+      "Attestation médicale d'absence de contre-indication au travail sous tension",
+    description:
+      "L'habilitation à opérer sous tension ou au voisinage de pièces nues sous tension est subordonnée à une attestation d'absence de contre-indication médicale, délivrée par le médecin du travail pour une durée de cinq ans. Le travailleur la présente à son employeur, qui en conserve une copie pendant toute sa durée de validité.",
+    referencesLegales: [
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4544-11-1",
+        article: "R. 4544-11-1",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051496288",
+        versionConstatee: "2025-10-01",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4544-10 (habilitation délivrée à un travailleur désigné)",
+        article: "R. 4544-10",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051500368",
+        versionConstatee: "2025-10-01",
+      },
+    ],
+    periodicite: "quinquennale",
+    realisateurs: ["exploitant"],
+    criticite: 4,
+    typologies: { travail: true },
+    porteur: "salarie",
+    pieceMedicale: true,
+    notesInternes:
+      "Première obligation à porteur salarié du référentiel (ADR-023).\n\nVerbatim relevé en première main le 2026-08-27 : « L'attestation mentionnée aux articles R. 4544-10 et R. 4544-11, d'une validité de cinq ans, est délivrée par le médecin du travail à l'issue d'un examen médical qu'il réalise. Elle est présentée par le travailleur à l'employeur, qui en conserve une copie pendant toute sa durée de validité. » Les cinq ans sont donc ÉCRITS, contrairement au triennal de l'habilitation elle-même.\n\nCe que l'outil stocke : que l'attestation existe, sa date, son échéance. RIEN d'autre — ni motif, ni sens, ni pièce. C'est plus strict que le texte, qui autorise expressément l'employeur à en conserver copie ; le choix est motivé dans docs/rgpd.md § 2.3. Le drapeau `pieceMedicale` existe pour que l'interface ne propose jamais de téléverser le document : ce serait défaire la décision sans que personne ne la rouvre.\n\nSes lignes naissent d'un `TitreSalarie` déclaré, pas du moteur : rien ne dit qui, dans l'effectif, opère au voisinage de pièces nues sous tension — ce serait le cinquième déclencheur, non implémenté. Aucun titre déclaré, aucune ligne, et c'est juste.\n\nLe décret n° 2025-355 du 18 avril 2025, qui crée l'article et fixe son entrée en vigueur au 1er octobre 2025, n'est PAS cité en référence : il n'est pas dépouillé au corpus, et le cliquet de `corpus.test.ts` interdit d'encoder sur un texte que personne n'a lu. Son contenu est ici, en note, jusqu'à ce qu'il le soit.\n\nTRANSITION À NE PAS RATER : R. 4544-10 prévoit que les attestations d'aptitude délivrées sous le régime antérieur restent valides jusqu'au 2030-10-01. Une échéance calculée sur le régime nouveau chez un salarié couvert par l'ancien serait fausse de plusieurs années. Le modèle le permet : `TitreSalarie.echeanceLe` est déclaré par l'employeur et prime sur tout calcul.",
   },
 
   // ---------------------------------------------------------------------------

@@ -24,7 +24,7 @@ import { classerDate, type RegistreLigne } from "@/lib/calendrier/etats";
 import { formaterDateFr, formaterDateLongueFr } from "@/lib/dates";
 import { estActionEnRetard } from "@/lib/dates/retard";
 import { avecProvenance, lireProvenance } from "@/lib/navigation/provenance";
-import { LABEL_TOUT_ETABLISSEMENT } from "@/lib/calendrier/labels";
+import { libellePorteur } from "@/lib/calendrier/labels";
 
 export default async function ActionDetailPage({
   params,
@@ -193,9 +193,9 @@ export default async function ActionDetailPage({
                     </p>
                     <p className="m-0 mt-1 text-[12.5px] text-[color:var(--board-slate-mid)]">
                       {/* Sans équipement, l'action naît d'une échéance
-                          portée par l'établissement (ADR-022). */}
-                      {a.verification.equipement?.libelle ??
-                        LABEL_TOUT_ETABLISSEMENT}
+                          portée par l'établissement ou par un salarié
+                          (ADR-022, ADR-023). */}
+                      {libellePorteur(a.verification)}
                       {dernierRapport
                         ? ` · ${LABEL_RESULTAT[dernierRapport.resultat]}`
                         : null}

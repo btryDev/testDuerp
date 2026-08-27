@@ -102,15 +102,83 @@ describe("contraintes SQL non représentables dans schema.prisma", () => {
    * pas de filet ici : `db push` n'a pas sa place sur une base qui porte des
    * données.
    */
+  /**
+   * La dernière migration qui pose l'index d'unicité du calendrier.
+   *
+   * Chercher dans l'historique CUMULÉ ne prouve rien : une occurrence ancienne
+   * satisfait l'assertion pour toujours. Le test l'a fait pendant quelques
+   * heures le 2026-08-27 — le regex avait été desserré pour absorber le
+   * renommage de l'index, et il acceptait dès lors la clause posée par une
+   * migration antérieure. Un index neuf qui aurait perdu `NULLS NOT DISTINCT`
+   * serait passé au vert.
+   *
+   * Ce qui compte est la dernière définition en date : c'est elle qui vaut en
+   * base.
+   */
+  function dernierIndexUnique(): { nom: string; sql: string } {
+    const posees = migrations.filter((m) =>
+      /CREATE UNIQUE INDEX "Verification_etablissementId_obligationId_equipement[^"]*_key"/i.test(
+        normaliser(m.sql),
+      ),
+    );
+    expect(
+      posees.length,
+      "Aucune migration ne pose l'index d'unicité du calendrier.",
+    ).toBeGreaterThan(0);
+    const derniere = posees[posees.length - 1];
+    const m = normaliser(derniere.sql).match(
+      /CREATE UNIQUE INDEX "Verification_etablissementId_obligationId_equipement[^;]*;/i,
+    );
+    return { nom: derniere.nom, sql: m ? m[0] : "" };
+  }
+
   it("pose l'unicité du calendrier en NULLS NOT DISTINCT (ADR-022)", () => {
+    const dernier = dernierIndexUnique();
+
+    expect(
+      dernier.sql,
+      `La DERNIÈRE migration qui pose l'index d'unicité du calendrier (${dernier.nom}) le fait sans \`NULLS NOT DISTINCT\`. Sans cette clause, PostgreSQL considère deux NULL comme distincts : les échéances portées par l'établissement ou par un salarié cessent d'être contraintes et se dupliquent à chaque régénération.`,
+      // Sur la DERNIÈRE migration qui pose l'index, pas sur l'historique
+      // cumulé — voir `dernierIndexUnique` et le commentaire qui l'accompagne.
+    ).toMatch(/NULLS NOT DISTINCT/);
+  });
+
+  /**
+   * Un porteur, pas deux (ADR-023).
+   *
+   * `equipementId` et `salarieId` sont tous deux nullables ; les deux nuls
+   * ensemble signifient « porté par l'établissement ». Ce que la contrainte
+   * interdit est de les renseigner ENSEMBLE — une ligne qui désignerait à la
+   * fois un appareil et une personne n'aurait pas de clé de réconciliation
+   * univoque.
+   *
+   * Comme le XOR des actions, elle n'est pas exprimable en Prisma et n'existe
+   * que dans le SQL. Un `db push` la perdrait sans bruit.
+   */
+  it("pose et conserve le XOR de porteur sur les vérifications (ADR-023)", () => {
     const sqlComplet = migrations.map((m) => normaliser(m.sql)).join(" ");
 
     expect(
       sqlComplet,
-      "Aucune migration ne crée l'index unique du calendrier avec `NULLS NOT DISTINCT`. Sans cette clause, les échéances portées par l'établissement (equipementId NULL) ne sont plus contraintes et se dupliquent à chaque régénération.",
-    ).toMatch(
-      /CREATE UNIQUE INDEX "Verification_etablissementId_obligationId_equipementId_key" ON "Verification" \( ?"etablissementId", ?"obligationId", ?"equipementId" ?\) NULLS NOT DISTINCT/,
+      "Aucune migration ne déclare `Verification_porteur_xor`. Sans elle, une ligne peut désigner un équipement ET un salarié, et sa clé de réconciliation devient ambiguë (ADR-023).",
+    ).toContain('CONSTRAINT "Verification_porteur_xor"');
+
+    expect(
+      sqlComplet,
+      "La contrainte `Verification_porteur_xor` a été renommée ou vidée de son sens : l'expression attendue autorise les deux nuls (porteur établissement) et interdit les deux renseignés.",
+    ).toContain(
+      'CHECK ("equipementId" IS NULL OR "salarieId" IS NULL)',
     );
+
+    const suppressions = migrations.filter((m) =>
+      /DROP\s+CONSTRAINT\s+(IF\s+EXISTS\s+)?"Verification_porteur_xor"/i.test(
+        normaliser(m.sql),
+      ),
+    );
+    expect(
+      suppressions.map((m) => m.nom),
+      "Une migration retire `Verification_porteur_xor` sans la rétablir.",
+    ).toEqual([]);
   });
 
   it("ne rétablit jamais un @@unique ordinaire sur le triplet (ADR-022)", () => {
@@ -144,18 +212,26 @@ describe("contraintes SQL non représentables dans schema.prisma", () => {
    * lui-même, qui commence par un `DROP INDEX IF EXISTS`.
    */
   it("ne retire jamais l'index unique du calendrier sans le reposer (ADR-022)", () => {
-    const NOM = "Verification_etablissementId_obligationId_equipementId_key";
+    // Le nom évolue avec les colonnes (ADR-023 en a ajouté une). La règle,
+    // elle, ne bouge pas : une migration a le droit de déposer l'index unique
+    // du calendrier, à condition d'en reposer un — avec la clause — dans le
+    // MÊME fichier. C'est ce que font `porteur_etablissement` et
+    // `porteur_salarie`.
     const orphelines = migrations.filter((m) => {
       const sql = normaliser(m.sql);
-      const retire = new RegExp(
-        `DROP\\s+INDEX\\s+(IF\\s+EXISTS\\s+)?"${NOM}"`,
-        "i",
-      ).test(sql);
+      const retire =
+        // Le suffixe `_key` est déterminant : c'est celui des index
+        // d'UNICITÉ. La migration `index_redondant` dépose un `_idx`, index
+        // ordinaire et sans clause — la déposer est justement ce qu'elle vient
+        // faire, et elle n'a rien à reposer.
+        /DROP\s+INDEX\s+(IF\s+EXISTS\s+)?"Verification_etablissementId_obligationId_equipement[^"]*_key"/i.test(
+          sql,
+        );
       if (!retire) return false;
-      const repose = new RegExp(
-        `CREATE UNIQUE INDEX (IF NOT EXISTS )?"${NOM}"[^;]*NULLS NOT DISTINCT`,
-        "i",
-      ).test(sql);
+      const repose =
+        /CREATE UNIQUE INDEX (IF NOT EXISTS )?"Verification_[^"]*"[^;]*NULLS NOT DISTINCT/i.test(
+          sql,
+        );
       return !repose;
     });
 

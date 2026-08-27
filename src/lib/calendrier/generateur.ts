@@ -53,6 +53,10 @@ import type {
   ObligationSurMesureApplicable,
 } from "@/lib/matching";
 import { PREFIXE_PRESCRIPTION } from "@/lib/matching/prescriptions";
+import {
+  estPorteeParSalarie,
+  type Obligation,
+} from "@/lib/referentiels/conformite/types";
 
 /**
  * Sentinelle du porteur « établissement » dans la clé de ligne.
@@ -81,9 +85,20 @@ const PORTEUR_ETABLISSEMENT = "@etablissement";
  */
 export function cleDeLigne(
   obligationId: string,
-  equipementId: string | null,
+  porteur: { equipementId: string | null; salarieId: string | null },
 ): string {
-  return `${obligationId}::${equipementId ?? PORTEUR_ETABLISSEMENT}`;
+  // L'ordre des cas est celui de la spécificité : un équipement, puis une
+  // personne, puis l'établissement à défaut. Deux porteurs renseignés en même
+  // temps sont interdits en base (CHECK `Verification_porteur_xor`, ADR-023) ;
+  // si la contrainte tombait, cette fonction privilégierait l'équipement
+  // plutôt que de produire une clé ambiguë.
+  if (porteur.equipementId !== null) {
+    return `${obligationId}::${porteur.equipementId}`;
+  }
+  if (porteur.salarieId !== null) {
+    return `${obligationId}::${porteur.salarieId}`;
+  }
+  return `${obligationId}::${PORTEUR_ETABLISSEMENT}`;
 }
 
 export type StatutVerificationGen =
@@ -96,8 +111,11 @@ export type VerificationGenere = {
   cleUnique: string;
   obligationId: string;
   libelleObligation: string;
-  /** `null` = ligne portée par l'établissement, pas par un appareil (ADR-022). */
+  /** `null` = ligne non portée par un appareil (ADR-022). */
   equipementId: string | null;
+  /** `null` = ligne non portée par un salarié (ADR-023). Les deux nuls
+   *  ensemble = porteur établissement. */
+  salarieId: string | null;
   periodicite: Periodicite;
   realisateurRequis: Realisateur[];
   datePrevue: Date;
@@ -129,6 +147,44 @@ export type OptionsGenerateur = {
    * d'historique, mais sa première échéance est calculable.
    */
   misesEnService?: Map<string, Date>;
+  /**
+   * Les obligations que le moteur juge encore applicables, par identifiant.
+   *
+   * Sert à la réconciliation, et à une seule question : une ligne dont
+   * l'obligation n'est plus générée l'est-elle parce que l'obligation a été
+   * RETIRÉE, ou parce qu'elle n'a plus d'échéance datable
+   * (`periodicite: "autre"`, état permanent) ? Les deux se ressemblent — dans
+   * les deux cas la ligne manque à `aGenerer` — et les confondre fait étiqueter
+   * « Ne s'applique plus » une obligation qui s'applique toujours.
+   *
+   * Absent = comportement antérieur : tout ce qui manque est réputé retiré.
+   */
+  obligationsEncoreApplicables?: Set<string>;
+};
+
+/** Un titre déclaré, réduit à ce dont le générateur a besoin (ADR-023). */
+export type TitreDeclare = {
+  salarieId: string;
+  /** Nom affichable du salarié, pour le libellé de la ligne. */
+  libelle: string;
+  /** Date de délivrance — le point de départ du cycle. */
+  delivreLe: Date;
+  /**
+   * Échéance déclarée, quand l'employeur la connaît. `null` = à calculer
+   * depuis la périodicité de l'obligation, ou pas d'échéance du tout si
+   * l'obligation n'en porte pas.
+   */
+  echeanceLe: Date | null;
+};
+
+/** Sur quoi une ligne va porter, pendant la génération. */
+type PorteurDeLigne = {
+  /** Identifiant d'équipement, ou `null`. */
+  id: string | null;
+  /** Identifiant de salarié, ou `null`. */
+  salarieId: string | null;
+  /** Libellé du porteur, pour les messages. */
+  libelle: string | null;
 };
 
 function ajouterJours(d: Date, jours: number): Date {
@@ -166,10 +222,51 @@ export function genererProchainesVerifications(
     // du chantier : `oa.equipementsConcernes` est vide, or l'obligation est
     // due. Boucler dessus produirait zéro ligne, ce qui est exactement le faux
     // négatif qu'on supprime.
-    const porteurs: Array<{ id: string | null; libelle: string | null }> =
-      oa.porteur === "etablissement"
-        ? [{ id: null, libelle: null }]
-        : oa.equipementsConcernes.map((e) => ({ id: e.id, libelle: e.libelle }));
+    // Analyse de cas exhaustive, pas un ternaire (ADR-023). La forme
+    // précédente — `oa.porteur === "etablissement" ? … : …` — envoyait tout ce
+    // qui n'était pas « établissement » dans la branche équipement. Un porteur
+    // salarié y aurait bouclé sur `equipementsConcernes`, vide par
+    // construction, et produit ZÉRO ligne : le faux négatif muet que
+    // l'ADR-022 existe pour supprimer, réintroduit par la porte de service.
+    const porteurs: PorteurDeLigne[] = ((): PorteurDeLigne[] => {
+      switch (oa.porteur) {
+        case "etablissement":
+          return [{ id: null, salarieId: null, libelle: null }];
+        case "salarie":
+          // Inatteignable : `evaluerObligation` rend `null` pour ce porteur,
+          // faute de pouvoir juger de l'applicabilité d'un titre (ADR-023).
+          // Ces lignes sont produites par `genererVerificationsDepuisTitres`.
+          // Le cas est écrit pour que le `switch` reste exhaustif — s'il
+          // disparaissait, le `default` ci-dessous cesserait de compiler et
+          // c'est le garde-fou qu'on perdrait.
+          return [];
+        case "equipement":
+          return oa.equipementsConcernes.map((e) => ({
+            id: e.id,
+            salarieId: null,
+            libelle: e.libelle,
+          }));
+        default: {
+          // Inatteignable si les types tiennent : `porteur` est une union
+          // fermée et les trois cas sont couverts. On y arrive par un `as`
+          // dans une fixture, ou par une donnée écrite avant l'ajout du
+          // champ.
+          //
+          // Le refus est explicite plutôt que muet. Sans lui, l'IIFE rendait
+          // `undefined` et l'appelant échouait sur « porteurs is not
+          // iterable » — un message qui ne nomme ni l'obligation, ni la
+          // valeur fautive, ni le champ. Le silence n'était pas une option
+          // non plus : retomber sur la branche équipement est précisément ce
+          // que l'ADR-023 corrige.
+          const inattendu: never = oa.porteur;
+          throw new Error(
+            `Porteur inconnu « ${String(inattendu)} » sur l'obligation ` +
+              `« ${o.id} ». Les valeurs admises sont : equipement, ` +
+              `etablissement, salarie.`,
+          );
+        }
+      }
+    })();
 
     for (const eq of porteurs) {
       // Périodicité effective : celle du référentiel, sauf surcharge d'une
@@ -182,8 +279,12 @@ export function genererProchainesVerifications(
       // Périodicité `autre` → pas d'échéance (obligations permanentes).
       if (periodicite === "autre") continue;
 
-      const cleUnique = cleDeLigne(o.id, eq.id);
+      const cleUnique = cleDeLigne(o.id, {
+        equipementId: eq.id,
+        salarieId: eq.salarieId,
+      });
       const derniere = verificationsPrecedentes.get(cleUnique);
+
 
       // One-shot : mise en service uniquement.
       //
@@ -216,6 +317,7 @@ export function genererProchainesVerifications(
           obligationId: o.id,
           libelleObligation: o.libelle,
           equipementId: eq.id,
+          salarieId: eq.salarieId,
           periodicite,
           realisateurRequis: o.realisateurs,
           datePrevue: miseEnService ?? now,
@@ -237,6 +339,7 @@ export function genererProchainesVerifications(
           obligationId: o.id,
           libelleObligation: o.libelle,
           equipementId: eq.id,
+          salarieId: eq.salarieId,
           periodicite,
           realisateurRequis: o.realisateurs,
           datePrevue: prochaine,
@@ -264,6 +367,7 @@ export function genererProchainesVerifications(
           obligationId: o.id,
           libelleObligation: o.libelle,
           equipementId: eq.id,
+          salarieId: eq.salarieId,
           periodicite,
           realisateurRequis: o.realisateurs,
           datePrevue: premiereEncoreAVenir ? premiere : now,
@@ -295,6 +399,75 @@ export const CRITICITE_SUR_MESURE = 4 as const;
  * réconciliation restent inchangées. Comme pour le référentiel, l'historique
  * est ignoré ici : c'est `reconcilierCalendrier` qui le lit.
  */
+/**
+ * Les échéances nées d'un titre déclaré par l'employeur (ADR-023).
+ *
+ * Pourquoi une fonction à part plutôt qu'une branche du générateur principal :
+ * celui-ci part des obligations que le moteur juge applicables, et le moteur
+ * ne peut pas juger d'un titre — il ne sait pas qui, dans l'effectif, exerce
+ * l'activité qui le déclenche. Ici on part du fait inverse : l'employeur a
+ * déclaré que cette personne détient ce titre. Le référentiel ne sert plus qu'à
+ * fournir le libellé, le rythme et la criticité.
+ *
+ * Les dates du titre sont des FAITS — l'employeur les tient de la pièce qu'il a
+ * en main. Elles priment donc sur tout calcul.
+ */
+export function genererVerificationsDepuisTitres(
+  titres: Map<string, TitreDeclare[]>,
+  obligationParId: (id: string) => Obligation | undefined,
+  options: OptionsGenerateur = {},
+): VerificationGenere[] {
+  const now = options.now ?? new Date();
+  const out: VerificationGenere[] = [];
+
+  for (const [obligationId, liste] of titres) {
+    const o = obligationParId(obligationId);
+    // Titre déclaré sur une obligation qui n'existe plus au référentiel. On
+    // n'invente rien : la ligne n'est pas produite, et la réconciliation
+    // traitera l'ancienne comme une obligation retirée — archivée si elle
+    // porte une preuve, supprimée sinon (ADR-012).
+    if (!o) continue;
+
+    // Et sur une obligation qui n'est PAS portée par un salarié. Rien ne
+    // l'interdit en base — `TitreSalarie.obligationId` n'a pas de clé
+    // étrangère, le référentiel vivant en TypeScript — donc un titre déclaré
+    // sur une obligation d'équipement produirait une ligne à porteur salarié
+    // pour une obligation qui n'en veut pas, et la contrainte `porteur_xor`
+    // ne dirait rien (elle interdit deux porteurs, pas le mauvais).
+    if (!estPorteeParSalarie(o)) continue;
+
+    for (const t of liste) {
+      const echeance = t.echeanceLe ?? prochaineDate(t.delivreLe, o.periodicite);
+      // Pas d'échéance calculable : l'obligation n'en porte pas (état
+      // permanent). Le titre existe, il n'y a simplement pas de rendez-vous à
+      // inscrire — inventer une date serait pire que n'en afficher aucune.
+      if (echeance === null) continue;
+
+      const depassee = echeance.getTime() < now.getTime();
+      out.push({
+        cleUnique: cleDeLigne(obligationId, {
+          equipementId: null,
+          salarieId: t.salarieId,
+        }),
+        obligationId,
+        libelleObligation: o.libelle,
+        equipementId: null,
+        salarieId: t.salarieId,
+        periodicite: o.periodicite,
+        realisateurRequis: o.realisateurs,
+        datePrevue: echeance,
+        statut: depassee ? "depassee" : "planifiee",
+        estUrgent: depassee,
+        criticiteObligation: o.criticite,
+        raisons: [`titre détenu par ${t.libelle}`],
+        prescriptionId: null,
+      });
+    }
+  }
+
+  return out;
+}
+
 export function genererVerificationsSurMesure(
   surMesure: ObligationSurMesureApplicable[],
   options: OptionsGenerateur = {},
@@ -307,10 +480,14 @@ export function genererVerificationsSurMesure(
     const obligationId = `${PREFIXE_PRESCRIPTION}${p.id}`;
     for (const eq of sm.equipementsConcernes) {
       out.push({
-        cleUnique: cleDeLigne(obligationId, eq.id),
+        cleUnique: cleDeLigne(obligationId, {
+          equipementId: eq.id,
+          salarieId: null,
+        }),
         obligationId,
         libelleObligation: p.libelle ?? p.reference,
         equipementId: eq.id,
+        salarieId: null,
         periodicite: p.periodicite,
         realisateurRequis: p.realisateurRequis,
         datePrevue: now,
@@ -422,8 +599,11 @@ export {
 export type OccurrenceExistante = {
   id: string;
   obligationId: string;
-  /** `null` = ligne portée par l'établissement (ADR-022). */
+  /** `null` = ligne non portée par un appareil (ADR-022). */
   equipementId: string | null;
+  /** `null` = ligne non portée par un salarié (ADR-023). Optionnel : les
+   *  fixtures antérieures à ce champ n'en ont pas. */
+  salarieId?: string | null;
   libelleObligation: string;
   periodicite: Periodicite;
   realisateurRequis: Realisateur[];
@@ -519,7 +699,13 @@ export function reconcilierCalendrier(
 
   const parCle = new Map<string, OccurrenceExistante>();
   for (const ex of existantes) {
-    parCle.set(cleDeLigne(ex.obligationId, ex.equipementId), ex);
+    parCle.set(
+      cleDeLigne(ex.obligationId, {
+        equipementId: ex.equipementId,
+        salarieId: ex.salarieId ?? null,
+      }),
+      ex,
+    );
   }
 
   const plan: PlanReconciliation = {
@@ -612,13 +798,34 @@ export function reconcilierCalendrier(
     else plan.aMettreAJour.push(cible);
   }
 
-  // Ce qui reste : des lignes de suivi dont l'obligation ne s'applique plus.
+  // Ce qui reste : des lignes de suivi que le générateur n'a pas produites.
+  //
+  // Deux causes, et il a fallu apprendre à les distinguer : l'obligation a été
+  // RETIRÉE du référentiel, ou elle s'applique toujours mais n'a plus
+  // d'échéance datable (`periodicite: "autre"` — un état permanent, que la
+  // boucle de génération saute). Les confondre revient à étiqueter « Ne
+  // s'applique plus » une obligation qui s'applique parfaitement, ce qui est
+  // exactement le genre de mensonge qu'un dossier présenté en contrôle ne doit
+  // pas porter. Cas vécu : le passage de l'habilitation électrique de
+  // `triennale` à `autre` (ADR-023 § 6).
+  const encoreApplicables = options.obligationsEncoreApplicables;
   for (const [cle, ex] of parCle) {
     if (vues.has(cle)) continue;
     // `dateRealisee` compte comme une trace au même titre qu'un rapport : elle
     // atteste qu'un contrôle a eu lieu, même si la pièce jointe a depuis été
     // retirée du registre.
     const porteUneTrace = ex.porteUnePreuve || ex.dateRealisee !== null;
+
+    // L'obligation vit encore : la ligne n'a simplement plus de rendez-vous.
+    // Sans preuve, elle ne dit plus rien et disparaît — elle n'aurait jamais dû
+    // porter de date. Avec une preuve, elle reste telle quelle : c'est le
+    // constat d'un contrôle qui a eu lieu, et rien ne justifie de le barrer.
+    if (encoreApplicables?.has(ex.obligationId)) {
+      if (porteUneTrace) plan.inchangees += 1;
+      else plan.aSupprimer.push(ex.id);
+      continue;
+    }
+
     if (!porteUneTrace) {
       plan.aSupprimer.push(ex.id);
     } else if (!estMarqueeNonApplicable(ex.libelleObligation)) {

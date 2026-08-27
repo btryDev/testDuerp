@@ -62,7 +62,9 @@ export async function listerActions(
         include: { unite: { include: { duerp: true } } },
       },
       verification: {
-        include: { equipement: true },
+        // `salarie` : une action née d'une échéance nominative doit nommer la
+        // personne, pas « Tout l'établissement » (ADR-023).
+        include: { equipement: true, salarie: true },
       },
     },
     orderBy: [
@@ -95,6 +97,7 @@ export async function getAction(id: string) {
       verification: {
         include: {
           equipement: true,
+          salarie: true,
           rapports: {
             orderBy: { dateRapport: "desc" },
           },

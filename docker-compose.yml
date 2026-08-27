@@ -1,7 +1,26 @@
+# Bases locales de développement.
+#
+# Deux bases, et la seconde n'est pas un luxe. Prisma a besoin d'une « shadow
+# database » pour `migrate dev` et pour `migrate diff --from-migrations` : il la
+# VIDE, y rejoue toutes les migrations, compare, et s'en va. Il ne demande
+# aucune confirmation et ne signale rien — c'est son fonctionnement normal.
+#
+# Tant que `SHADOW_DATABASE_URL` n'existait pas, la commande prenait la valeur
+# de `DIRECT_URL`, qui pointait la production. Une commande de lecture d'écart,
+# lancée pour générer un fichier SQL, a ainsi vidé la base de production le
+# 27 août 2026. Les données étaient fictives ; le mécanisme ne l'était pas.
+#
+#   docker compose up -d        démarre les deux bases
+#   docker compose down         les arrête (les données survivent)
+#   docker compose down -v      les arrête ET efface les volumes
+#
+# Le port 5433 est choisi pour ne pas entrer en conflit avec un Postgres déjà
+# installé sur le port par défaut.
+
 services:
-  postgres:
-    image: postgres:17-alpine
-    container_name: duerp-postgres
+  db:
+    image: postgres:17
+    container_name: duerp-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: duerp
@@ -10,7 +29,30 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - duerp-postgres-data:/var/lib/postgresql/data
+      - duerp-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U duerp -d duerp"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Base jetable, et jamais autre chose. Tout ce qu'elle contient peut
+  # disparaître à n'importe quelle commande Prisma : c'est sa raison d'être.
+  db-shadow:
+    image: postgres:17
+    container_name: duerp-db-shadow
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: duerp
+      POSTGRES_PASSWORD: duerp
+      POSTGRES_DB: duerp_shadow
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U duerp -d duerp_shadow"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
 volumes:
-  duerp-postgres-data:
+  duerp-db:

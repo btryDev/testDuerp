@@ -91,3 +91,29 @@ export function libelleMois(cle: string): string {
  *  (ADR-019). Ici et non dans `echeances.ts`, qui importe Prisma : les
  *  composants client doivent pouvoir le lire. */
 export const LABEL_TOUT_ETABLISSEMENT = "Tout l'établissement";
+
+/**
+ * Le nom du porteur d'une échéance, quel qu'il soit (ADR-022, ADR-023).
+ *
+ * Trois cas, un seul endroit. Écrit partout à la main, le repli
+ * `?? LABEL_TOUT_ETABLISSEMENT` était juste tant qu'il n'y avait que deux
+ * porteurs ; à l'arrivée du troisième, il fait dire « Tout l'établissement » à
+ * la ligne d'une personne — c'est-à-dire qu'il attribue à tout le monde ce qui
+ * n'incombe qu'à quelqu'un.
+ *
+ * L'ordre suit celui de `cleDeLigne` : équipement, puis salarié, puis
+ * l'établissement à défaut.
+ */
+export function libellePorteur(v: {
+  // REQUIS, et nullables. Pas `?`, délibérément : un appelant qui oublie
+  // `salarie: true` dans son `select` doit avoir une erreur de compilation, pas
+  // un repli silencieux sur « Tout l'établissement » — c'est-à-dire exactement
+  // le défaut que cette fonction existe pour corriger. Le `?` initial l'avait
+  // laissé passer sur sept écrans.
+  equipement: { libelle: string } | null;
+  salarie: { nom: string; prenom: string } | null;
+}): string {
+  if (v.equipement) return v.equipement.libelle;
+  if (v.salarie) return `${v.salarie.prenom} ${v.salarie.nom}`.trim();
+  return LABEL_TOUT_ETABLISSEMENT;
+}

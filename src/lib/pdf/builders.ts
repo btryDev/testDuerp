@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { compterActions, listerActions, origineDeLAction } from "@/lib/actions/queries";
 import { listerVerifications, type VerificationListee } from "@/lib/calendrier/queries";
-import { LABEL_TOUT_ETABLISSEMENT } from "@/lib/calendrier/labels";
+import { libellePorteur } from "@/lib/calendrier/labels";
 import { listerRapportsDeLEtablissement } from "@/lib/rapports/queries";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import { calculerScoreDepuisEtat } from "@/lib/dashboard/score";
@@ -120,14 +120,18 @@ function contexteAction(a: {
  * ne dirait rien.
  */
 function libelleEquipementSitue(
-  eq: { libelle: string; batiment: { nom: string } } | null,
+  v: {
+    equipement: { libelle: string; batiment: { nom: string } } | null;
+    salarie: { nom: string; prenom: string } | null;
+  },
   multiBatiments: boolean,
 ): string {
-  // `null` = l'échéance porte sur l'établissement, pas sur un appareil
-  // (ADR-022). Elle s'imprime sous le même mot que dans le calendrier —
-  // la lire au même endroit que les autres est tout l'intérêt d'une ligne
-  // qui n'a pas de lieu.
-  if (!eq) return LABEL_TOUT_ETABLISSEMENT;
+  // Sans équipement, l'échéance porte sur une personne ou sur l'établissement
+  // (ADR-022, ADR-023). `libellePorteur` tranche : l'imprimer « Tout
+  // l'établissement » alors qu'elle nomme un salarié mettrait, sur un document
+  // remis à un inspecteur, le contraire de ce que la ligne prouve.
+  const eq = v.equipement;
+  if (!eq) return libellePorteur(v);
   return multiBatiments ? `${eq.batiment.nom} — ${eq.libelle}` : eq.libelle;
 }
 
@@ -138,7 +142,7 @@ function ligneVerif(v: VerificationListee, multiBatiments: boolean): LigneVerif 
   return {
     id: v.id,
     libelleObligation: v.libelleObligation,
-    equipementLibelle: libelleEquipementSitue(v.equipement, multiBatiments),
+    equipementLibelle: libelleEquipementSitue(v, multiBatiments),
     datePrevue: v.datePrevue,
     statut: v.statut,
     domaine: obligationParId(v.obligationId)?.domaine ?? null,
@@ -206,7 +210,7 @@ export async function construireRegistreData(
     organismeVerif: r.organismeVerif,
     libelleObligation: r.verification.libelleObligation,
     equipementLibelle: libelleEquipementSitue(
-      r.verification.equipement,
+      r.verification,
       multiBatiments,
     ),
     domaine: obligationParId(r.verification.obligationId)?.domaine ?? null,
@@ -417,7 +421,7 @@ export async function construireDossierConformiteData(
     organismeVerif: r.organismeVerif,
     libelleObligation: r.verification.libelleObligation,
     equipementLibelle: libelleEquipementSitue(
-      r.verification.equipement,
+      r.verification,
       multiBatiments,
     ),
     domaine: obligationParId(r.verification.obligationId)?.domaine ?? null,

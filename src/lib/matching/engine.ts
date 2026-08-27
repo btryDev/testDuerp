@@ -33,6 +33,7 @@
 import { obligationsConformite } from "@/lib/referentiels/conformite";
 import {
   estPorteeParEquipement,
+  porteurDe,
   type ConditionApplication,
   type Obligation,
   type ObligationPorteeParEquipement,
@@ -427,11 +428,38 @@ export function evaluerObligation(
   const typo = matchTypologie(o.typologies, etab);
   if (!typo.ok) return null;
 
+  // Analyse de cas EXHAUSTIVE sur le porteur, jamais une négation (ADR-023).
+  //
+  // Cette branche s'écrivait `if (!estPorteeParEquipement(o))` et concluait
+  // `porteur: "etablissement"` en dur. Tant qu'il n'y avait que deux porteurs,
+  // c'était exact. À l'arrivée du troisième, elle l'aurait capté et requalifié
+  // en obligation d'établissement — sans erreur de compilation, sans test
+  // rouge. Une négation attribue au cas précédent tout ce qu'on ajoutera
+  // ensuite ; c'est ce qu'il fallait supprimer, pas seulement contourner.
+  const porteur = porteurDe(o);
+
+  // Porteur salarié : cette fonction ne peut PAS répondre, et rendre `null`
+  // est la seule réponse honnête (ADR-023 § 1 bis).
+  //
+  // Elle reçoit un établissement et ses équipements. Or l'applicabilité d'un
+  // titre dépend de ce qu'une PERSONNE fait — opérer au voisinage de pièces
+  // nues sous tension, conduire un engin, travailler en hauteur — et ce fait
+  // ne lui est pas transmis. Le déduire de la typologie reviendrait à réclamer
+  // une attestation médicale à toute une entreprise de bureaux parce qu'elle a
+  // un tableau électrique.
+  //
+  // Ces obligations existent bien : elles sont au catalogue, et leurs lignes
+  // naissent des `TitreSalarie` déclarés par l'employeur, dans
+  // `genererVerificationsDepuisTitres`. Les rendre ici les ferait aussi
+  // apparaître dans le guide « Comprendre » chez des établissements qui n'en
+  // doivent aucune — un faux positif que l'ADR-023 refuse explicitement.
+  if (porteur === "salarie") return null;
+
   // Porteur établissement : aucun équipement ne déclenche, et l'absence
   // d'équipement déclaré ne fait pas disparaître l'obligation (ADR-022).
   // C'est tout l'objet de la branche — `PE 4 § 2` reste dû, via `PE 2 § 3`,
   // par les établissements qui n'ont rien déclaré.
-  if (!estPorteeParEquipement(o)) {
+  if (porteur === "etablissement") {
     const enContexte = (o.equipementsEnContexte ?? []).filter((c) =>
       equipements.some((e) => e.categorie === c),
     );
@@ -453,6 +481,12 @@ export function evaluerObligation(
       raisons,
     };
   }
+
+  // Reste le porteur équipement. Le rétrécissement est explicite : si une
+  // quatrième valeur apparaissait sans branche, `estPorteeParEquipement`
+  // rendrait `false` et l'obligation serait écartée — bruyamment absente
+  // plutôt que silencieusement requalifiée.
+  if (!estPorteeParEquipement(o)) return null;
 
   const eq = matchEquipements(o, equipements);
   if (!eq.ok) return null;

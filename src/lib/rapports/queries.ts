@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
+import { libellePorteur } from "@/lib/calendrier/labels";
 
 export type FiltresRegistre = {
   domaine?: DomaineObligation;
@@ -24,6 +25,7 @@ export async function listerRapportsDeLEtablissement(
           equipement: {
             include: { batiment: { select: { id: true, nom: true } } },
           },
+          salarie: { select: { nom: true, prenom: true } },
         },
       },
     },
@@ -47,7 +49,10 @@ export async function listerRapportsDeLEtablissement(
         const hay = [
           r.verification.libelleObligation,
           r.organismeVerif ?? "",
-          r.verification.equipement?.libelle ?? "",
+          // Le porteur, quel qu'il soit : chercher « Dupont » doit trouver
+          // le rapport rattaché à l'échéance de Dupont. Le repli sur la chaîne
+          // vide rendait ces rapports introuvables par le nom.
+          libellePorteur(r.verification),
           r.commentaires ?? "",
         ]
           .join(" ")

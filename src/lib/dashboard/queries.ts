@@ -37,7 +37,7 @@ import type { ModulesMatrice } from "./obligations";
 import { evaluerEtatDuerp, type EtatDuerp } from "./duerp";
 import { calculerScoreDepuisEtat, type Score } from "./score";
 import { porteeBatiment } from "@/lib/calendrier/portee";
-import { LABEL_TOUT_ETABLISSEMENT } from "@/lib/calendrier/labels";
+import { libellePorteur } from "@/lib/calendrier/labels";
 import {
   genererRecommandations,
   type Recommandation,
@@ -156,6 +156,9 @@ export async function listerEvenementsFenetre(
           batiment: { select: { id: true, nom: true } },
         },
       },
+      // Le porteur salarié (ADR-023) : sans cette sélection, la ligne
+      // d'une personne s'afficherait « Tout l'établissement ».
+      salarie: { select: { nom: true, prenom: true } },
     },
     orderBy: { datePrevue: "asc" },
   });
@@ -179,7 +182,7 @@ export async function listerEvenementsFenetre(
         libelle: libelleCourt(v.libelleObligation),
         date: lec.date,
         tone: TON_REGISTRE[lec.registre],
-        equipement: v.equipement?.libelle ?? LABEL_TOUT_ETABLISSEMENT,
+        equipement: libellePorteur(v),
         // Pas d'équipement, pas de bâtiment : la ligne reste visible sous
         // tous les filtres par bâtiment (ADR-010, ADR-019).
         batiment: v.equipement?.batiment ?? null,
@@ -601,6 +604,7 @@ export const getDashboardData = cache(async function getDashboardData(
         dateRealisee: true,
         libelleObligation: true,
         equipement: { select: { libelle: true } },
+        salarie: { select: { nom: true, prenom: true } },
       },
       orderBy: { datePrevue: "asc" },
     }),
@@ -687,7 +691,7 @@ export const getDashboardData = cache(async function getDashboardData(
           datePrevue: v.datePrevue,
           dateRealisee: v.dateRealisee,
           libelleObligation: v.libelleObligation,
-          equipementLibelle: v.equipement?.libelle ?? LABEL_TOUT_ETABLISSEMENT,
+          equipementLibelle: libellePorteur(v),
         })),
       actions: actionsOuvertes.map((a) => ({
         id: a.id,

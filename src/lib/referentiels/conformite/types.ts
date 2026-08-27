@@ -232,11 +232,23 @@ export type ConditionApplication =
  *   via `PE 2 § 3` par les établissements qui ont le moins déclaré, et une
  *   décomposition par installation y produirait zéro ligne.
  *
- * `salarie` n'est pas encore une valeur : il ouvre la réécriture de
- * `docs/rgpd.md`, le dépouillement d'ED 6298 et un onglet Personnel. L'union
- * est faite pour l'accueillir sans rien changer d'autre (ADR-022).
+ * - `salarie` : une ligne par personne **déclarée détentrice du titre**
+ *   (ADR-023). Et c'est le point qui distingue ce porteur des deux autres :
+ *   les instances ne sont PAS dérivées par le moteur. Rien dans le modèle ne
+ *   dit qu'une personne opère sur des installations électriques — ce serait le
+ *   cinquième déclencheur, « activité réellement exercée », non implémenté.
+ *   Appliquer l'habilitation à tout l'effectif parce qu'un tableau électrique
+ *   existe serait un faux positif de masse. L'employeur déclare qui détient
+ *   quoi ; le référentiel fournit le catalogue et les rythmes.
+ *
+ * L'ADR-022 annonçait que l'union était « faite pour accueillir `salarie` sans
+ * rien changer d'autre ». C'était faux : la branche du moteur était écrite en
+ * négation et concluait « établissement » en dur, la boucle du générateur était
+ * un ternaire, et la clé de réconciliation n'avait qu'une sentinelle. Les trois
+ * sont corrigées par l'ADR-023 — d'où l'insistance, plus bas, sur l'analyse de
+ * cas exhaustive.
  */
-export type PorteurObligation = "equipement" | "etablissement";
+export type PorteurObligation = "equipement" | "etablissement" | "salarie";
 
 /** Champs communs à toutes les obligations, quel que soit leur porteur. */
 type ObligationCommune = {
@@ -317,9 +329,43 @@ export type ObligationPorteeParEtablissement = ObligationCommune & {
   equipementsEnContexte?: CategorieEquipement[];
 };
 
+/**
+ * Obligation portée par un salarié nommé (ADR-023).
+ *
+ * Nominative par nature : `R. 4544-10` délivre le titre d'habilitation « à un
+ * travailleur désigné », et il en va de même d'une attestation SST, d'un CACES
+ * ou d'une autorisation de conduite. Un suivi par poste produirait un compteur
+ * — « deux caristes à habiliter » — et ne prouverait rien en contrôle.
+ *
+ * Ses lignes de calendrier naissent d'un `TitreSalarie` déclaré par
+ * l'employeur, pas du moteur de matching : voir le commentaire de
+ * `PorteurObligation`.
+ */
+export type ObligationPorteeParSalarie = ObligationCommune & {
+  porteur: "salarie";
+  /** Interdit : aucune catégorie d'équipement ne déclenche cette obligation. */
+  categoriesEquipement?: never;
+  /** Interdit : les conditions portent sur des propriétés d'équipement. */
+  conditions?: never;
+  /** Interdit : le contexte d'équipement n'a de sens que pour l'établissement. */
+  equipementsEnContexte?: never;
+  /**
+   * La pièce est-elle de nature médicale ?
+   *
+   * Décide ce que l'interface s'autorise à demander. Sur une pièce médicale,
+   * l'outil ne collecte que l'existence, la date et l'échéance — jamais le
+   * motif, jamais le sens détaillé, jamais le fichier. C'est **plus strict que
+   * le droit** : `R. 4544-11-1` autorise l'employeur à conserver copie de
+   * l'attestation. Le choix est assumé et motivé dans `docs/rgpd.md` § 2.3 ;
+   * ce drapeau existe pour qu'il ne se défasse pas par inadvertance.
+   */
+  pieceMedicale?: boolean;
+};
+
 export type Obligation =
   | ObligationPorteeParEquipement
-  | ObligationPorteeParEtablissement;
+  | ObligationPorteeParEtablissement
+  | ObligationPorteeParSalarie;
 
 /**
  * Le porteur d'une obligation, avec sa valeur par défaut appliquée.
@@ -339,4 +385,19 @@ export function estPorteeParEquipement(
   o: Obligation,
 ): o is ObligationPorteeParEquipement {
   return porteurDe(o) === "equipement";
+}
+
+/**
+ * Rétrécit une obligation à sa variante « salarié ».
+ *
+ * À utiliser plutôt qu'une négation. `!estPorteeParEquipement(o)` a signifié
+ * « établissement » tant qu'il n'y avait que deux porteurs ; le jour où le
+ * troisième est arrivé, cette négation l'a silencieusement attribué au cas
+ * précédent (ADR-023, § Contexte). Un quatrième porteur ferait la même chose à
+ * celui-ci.
+ */
+export function estPorteeParSalarie(
+  o: Obligation,
+): o is ObligationPorteeParSalarie {
+  return porteurDe(o) === "salarie";
 }

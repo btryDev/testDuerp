@@ -256,7 +256,10 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // ces périodicités — PO 8 § 1 fait de même pour PO 1 § 3. Même blocage
       // que PO 7 : aucun équipement porteur.
       "PO 12",
-      "R. 4544-11-1",
+      // `R. 4544-11-1` a quitté cette liste le 2026-08-27 : le porteur salarié
+      // de l'ADR-023 la rend encodable, et elle l'est —
+      // `elec-salarie-attestation-medicale-voisinage`. Troisième sortie par
+      // livraison plutôt que par requalification, après PE 4 et R. 4222-20.
       "Arrêté 23-02-2018 art. 26 § 3",
     ]);
   });

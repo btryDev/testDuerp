@@ -80,10 +80,10 @@ Sources primaires libres d'accès uniquement :
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **84 obligations sur 10 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes). Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **85 obligations sur 10 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes). Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
-**82 d'entre elles sont déclenchées par un équipement déclaré ; deux sont portées par
-l'établissement** — `PE 4 § 2` (entretien triennal de l'ensemble des installations
+**82 d'entre elles sont déclenchées par un équipement déclaré, deux sont portées par
+l'établissement, une par un salarié** — `PE 4 § 2` (entretien triennal de l'ensemble des installations
 techniques en ERP de 5ᵉ catégorie) et `R. 4222-20` (contrôle annuel de l'ensemble des
 installations d'aération, tout employeur). Ces deux-là s'appliquent **même si aucun
 équipement n'est déclaré**, et produisent **une seule ligne** chacune, jamais une par
@@ -117,11 +117,21 @@ réellement événementielles recensées sont hors périmètre (déclaration d'A
 accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
 l'ADR-022, sans mécanisme.
 
-Deux porteurs sur trois sont implémentés : l'équipement et l'établissement (ADR-022). Le
-porteur **salarié** est décidé mais pas livré — il suppose d'abord la réécriture de
-`docs/rgpd.md`, le dépouillement d'INRS ED 6298 et un onglet Personnel. Les quatre
-déclencheurs non implémentés représentent **62 obligations recensées** — détail et sources
-dans `docs/carto-obligations-hors-equipement.md`.
+**Les trois porteurs sont implémentés** : équipement et établissement (ADR-022), salarié
+(ADR-023). Le porteur salarié se distingue des deux autres sur un point : ses instances ne
+sont **pas dérivées** par le moteur. Rien ne dit qu'une personne opère sur des installations
+électriques — ce serait le cinquième déclencheur, non implémenté —, donc l'employeur déclare
+qui détient quel titre (`Salarie`, `TitreSalarie`), et le référentiel fournit le catalogue.
+Une seule obligation salarié est livrée : l'attestation médicale quinquennale de
+`R. 4544-11-1`. Le reste — 19 lignes recensées — attend son dépouillement, et le corpus n'a
+encore rien sur `R. 4141-*`, `R. 4624-*`, le SST, le CACES ni l'autorisation de conduite.
+
+Les quatre déclencheurs non implémentés représentent **62 obligations recensées** — détail et
+sources dans `docs/carto-obligations-hors-equipement.md`.
+
+**Données de salariés** : `docs/rgpd.md` est le document qui fait foi. Base légale RGPD 6.1.c,
+jamais le consentement. L'outil ne stocke d'une pièce médicale que son existence, sa date et
+son échéance — plus strict que le texte, qui autorise l'employeur à en conserver copie.
 
 **Règle du non-renseigné** — *l'incertitude ne réduit jamais la couverture*. Posée par
 l'ADR-022, **pas encore appliquée partout** : deux attributs d'établissement font
@@ -219,6 +229,9 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
     échéance se lit en remontant la chaîne
 20. **020** — Ce qu'un DUERP ne couvre pas se déclare, et se grave avec lui
 21. **021** — Le registre est composé, pas imprimé à l'identique
+22. **022** — Une obligation naît d'un déclencheur et se porte sur un sujet
+    (équipement, établissement, salarié)
+23. **023** — Le salarié porte ses titres, et l'outil n'en garde que l'échéance
 
 La puce reprend le numéro de l'ADR et non son rang dans la liste, pour que les
 branches puissent atterrir dans n'importe quel ordre sans se contredire.

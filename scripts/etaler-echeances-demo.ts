@@ -74,7 +74,12 @@ async function etaler(cible: Cible): Promise<void> {
 
   const occurrences = await prisma.verification.findMany({
     where: { etablissementId, dateRealisee: null },
-    select: { id: true, obligationId: true, equipementId: true },
+    select: {
+      id: true,
+      obligationId: true,
+      equipementId: true,
+      salarieId: true,
+    },
   });
 
   let deplacees = 0;
@@ -82,7 +87,10 @@ async function etaler(cible: Cible): Promise<void> {
     // Même clé que la réconciliation, produite par la même fonction : le
     // décalage d'une échéance doit rester stable d'un lancement à l'autre, et
     // une seconde construction de la clé divergerait tôt ou tard (ADR-022).
-    const nouvelle = auJour(decalage(cleDeLigne(o.obligationId, o.equipementId)));
+    const nouvelle = auJour(decalage(cleDeLigne(o.obligationId, {
+        equipementId: o.equipementId,
+        salarieId: o.salarieId,
+      })));
     await prisma.verification.update({
       where: { id: o.id },
       data: { datePrevue: nouvelle },

@@ -8,13 +8,18 @@ import {
   appliquerPrescriptions,
   determineObligationsApplicables,
 } from "@/lib/matching";
-import { REFERENTIEL_VERSION } from "@/lib/referentiels/conformite";
+import {
+  obligationParId,
+  REFERENTIEL_VERSION,
+} from "@/lib/referentiels/conformite";
 import {
   genererProchainesVerifications,
+  genererVerificationsDepuisTitres,
   genererVerificationsSurMesure,
   reconcilierCalendrier,
   type OccurrenceExistante,
   type StatutVerificationPersiste,
+  type TitreDeclare,
 } from "./generateur";
 
 export type GenerationResult = {
@@ -121,11 +126,41 @@ export async function genererCalendrier(
   for (const eq of etab.equipements) {
     if (eq.dateMiseEnService) misesEnService.set(eq.id, eq.dateMiseEnService);
   }
-  //    cf. la doc de `reconcilierCalendrier`.
+  // Les titres déclarés par l'employeur (ADR-023). Ce sont eux qui font
+  // exister les lignes à porteur salarié : le moteur ne peut pas les dériver,
+  // rien ne disant qu'une personne exerce l'activité qui déclenche le titre.
+  // Les salariés inactifs sont exclus — une personne partie ne doit plus
+  // apparaître au calendrier, alors que ses lignes déjà réalisées, elles,
+  // subsistent comme preuve (docs/rgpd.md § 4.3).
+  const titresBruts = await prisma.titreSalarie.findMany({
+    where: { salarie: { etablissementId, actif: true } },
+    select: {
+      obligationId: true,
+      salarieId: true,
+      delivreLe: true,
+      echeanceLe: true,
+      salarie: { select: { nom: true, prenom: true } },
+    },
+  });
+  const titresSalaries = new Map<string, TitreDeclare[]>();
+  for (const t of titresBruts) {
+    const liste = titresSalaries.get(t.obligationId) ?? [];
+    liste.push({
+      salarieId: t.salarieId,
+      libelle: `${t.salarie.prenom} ${t.salarie.nom}`.trim(),
+      delivreLe: t.delivreLe,
+      echeanceLe: t.echeanceLe,
+    });
+    titresSalaries.set(t.obligationId, liste);
+  }
+
   const aGenerer = [
     ...genererProchainesVerifications(obligations, new Map(), {
       now,
       misesEnService,
+    }),
+    ...genererVerificationsDepuisTitres(titresSalaries, obligationParId, {
+      now,
     }),
     ...genererVerificationsSurMesure(surMesure, { now }),
   ];
@@ -138,6 +173,7 @@ export async function genererCalendrier(
       id: true,
       obligationId: true,
       equipementId: true,
+      salarieId: true,
       libelleObligation: true,
       periodicite: true,
       realisateurRequis: true,
@@ -153,6 +189,7 @@ export async function genererCalendrier(
     id: v.id,
     obligationId: v.obligationId,
     equipementId: v.equipementId,
+    salarieId: v.salarieId,
     libelleObligation: v.libelleObligation,
     periodicite: v.periodicite,
     realisateurRequis: v.realisateurRequis,
@@ -163,7 +200,18 @@ export async function genererCalendrier(
     prescriptionId: v.prescriptionId,
   }));
 
-  const plan = reconcilierCalendrier(existantes, aGenerer, { now });
+  // Les obligations encore applicables, y compris celles qui n'engendrent
+  // aucune ligne parce qu'elles sont permanentes (`periodicite: "autre"`).
+  // Sans cette liste, la réconciliation prendrait leur absence d'`aGenerer`
+  // pour un retrait et barrerait des lignes qui prouvent un contrôle réel.
+  const obligationsEncoreApplicables = new Set(
+    obligations.map((oa) => oa.obligation.id),
+  );
+
+  const plan = reconcilierCalendrier(existantes, aGenerer, {
+    now,
+    obligationsEncoreApplicables,
+  });
 
   // 5. Application du plan — tout ou rien. Un calendrier à moitié régénéré
   //    (créations passées, mises à jour perdues) afficherait des échéances
@@ -198,6 +246,7 @@ export async function genererCalendrier(
         data: plan.aCreer.map((v) => ({
           etablissementId,
           equipementId: v.equipementId,
+          salarieId: v.salarieId,
           obligationId: v.obligationId,
           libelleObligation: v.libelleObligation,
           periodicite: v.periodicite,

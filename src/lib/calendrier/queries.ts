@@ -77,6 +77,11 @@ export async function listerVerifications(
       equipement: {
         include: { batiment: { select: { id: true, nom: true } } },
       },
+      // Le porteur salarié (ADR-023). Cette lecture alimente la page
+      // calendrier, la fiche de vérification et les PDF : sans elle, la ligne
+      // d'une personne s'affiche « Tout l'établissement » sur toutes ces
+      // surfaces, et aucune correction en aval n'y peut rien.
+      salarie: { select: { nom: true, prenom: true } },
     },
     orderBy: [{ datePrevue: "asc" }],
   });
@@ -101,6 +106,7 @@ export async function getVerification(id: string) {
     where: { id, etablissement: { entreprise: { userId: user.id } } },
     include: {
       equipement: true,
+      salarie: { select: { nom: true, prenom: true } },
       etablissement: {
         select: {
           id: true,

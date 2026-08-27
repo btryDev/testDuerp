@@ -12,6 +12,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { REFERENTIEL_VERSION } from "@/lib/referentiels/conformite";
 import type { ObligationApplicable } from "@/lib/matching";
 import type { Obligation } from "@/lib/referentiels/conformite/types";
+import { porteurDe } from "@/lib/referentiels/conformite/types";
 
 type LigneFausse = {
   id: string;
@@ -32,6 +33,8 @@ type LigneFausse = {
 // elles ne peuvent donc pas capturer une variable déclarée plus bas.
 const h = vi.hoisted(() => {
   const db = {
+    /** Titres de salariés déclarés (ADR-023). Vide par défaut. */
+    titres: [] as unknown[],
     etablissement: null as Record<string, unknown> | null,
     verifications: [] as LigneFausse[],
     obligations: [] as unknown[],
@@ -91,6 +94,13 @@ const h = vi.hoisted(() => {
       },
     },
     verification,
+    // Les titres déclarés (ADR-023). Aucun dans ces scénarios : ils portent
+    // tous sur des obligations d'équipement. La table doit exister quand même,
+    // `genererCalendrier` la lisant systématiquement — sans elle, l'erreur est
+    // un « Cannot read properties of undefined » qui ne nomme rien.
+    titreSalarie: {
+      findMany: async () => db.titres,
+    },
   };
   prisma.$transaction = async (arg: unknown) =>
     typeof arg === "function"
@@ -151,6 +161,7 @@ function applicable(
       categorie: "INSTALLATION_ELECTRIQUE",
       caracteristiques: null,
     })),
+    porteur: porteurDe(o),
     raisons: ["test"],
   } as unknown as ObligationApplicable;
 }

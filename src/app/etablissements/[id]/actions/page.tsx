@@ -16,7 +16,7 @@ import {
 import { LABEL_TYPE_ACTION } from "@/lib/actions/labels";
 import { formaterDateCourteFr } from "@/lib/dates";
 import { avecProvenance, origineDepuis } from "@/lib/navigation/provenance";
-import { LABEL_TOUT_ETABLISSEMENT } from "@/lib/calendrier/labels";
+import { libellePorteur } from "@/lib/calendrier/labels";
 
 function formatDate(d: Date | null): string {
   if (!d) return "—";
@@ -284,8 +284,7 @@ export default async function PlanActionsPage({
                     {a.verification && (
                       <>
                         <span className="mx-2 text-rule">·</span>
-                        {a.verification.equipement?.libelle ??
-                          LABEL_TOUT_ETABLISSEMENT}
+                        {libellePorteur(a.verification)}
                       </>
                     )}
                   </p>

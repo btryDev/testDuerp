@@ -5,6 +5,7 @@ import {
   type Obligation,
   type ObligationPorteeParEquipement,
   type ObligationPorteeParEtablissement,
+  type ObligationPorteeParSalarie,
 } from "@/lib/referentiels/conformite/types";
 import type { EquipementMatching } from "@/lib/matching/types";
 import {
@@ -12,11 +13,13 @@ import {
   comparerParUrgence,
   estMarqueeNonApplicable,
   genererProchainesVerifications,
+  genererVerificationsDepuisTitres,
   libelleSansMarqueur,
   MARQUEUR_NON_APPLICABLE,
   reconcilierCalendrier,
   type OccurrenceExistante,
   type VerificationGenere,
+  type TitreDeclare,
   type VerificationsPrecedentes,
 } from "./generateur";
 
@@ -42,6 +45,27 @@ function fakeObligation(
       "INSTALLATION_ELECTRIQUE",
     ] as ObligationEq["categoriesEquipement"],
     ...over,
+  };
+}
+
+/** Obligation portée par un salarié : nominative, aucun déclencheur. */
+function fakeObligationSalarie(
+  over: Partial<ObligationPorteeParSalarie> &
+    Pick<ObligationPorteeParSalarie, "id" | "periodicite">,
+): ObligationPorteeParSalarie {
+  return {
+    domaine: "electricite",
+    libelle: `Obligation ${over.id}`,
+    referencesLegales: [
+      { source: "CODE_TRAVAIL", reference: "R. test" },
+    ] as ObligationPorteeParSalarie["referencesLegales"],
+    realisateurs: [
+      "exploitant",
+    ] as ObligationPorteeParSalarie["realisateurs"],
+    criticite: 4,
+    typologies: { travail: true },
+    ...over,
+    porteur: "salarie",
   };
 }
 
@@ -489,9 +513,9 @@ describe("générateur calendrier — porteur établissement (ADR-022)", () => {
     // lignes en MÉMOIRE avant que Postgres n'entre en jeu. Avec une clé
     // construite par interpolation, `null` devenait la chaîne "null" et
     // pouvait entrer en collision avec un identifiant d'équipement.
-    expect(cleDeLigne("obl", null)).not.toBe(cleDeLigne("obl", "null"));
-    expect(cleDeLigne("obl", null)).not.toBe(cleDeLigne("obl", "eq-1"));
-    expect(cleDeLigne("obl", null)).toBe(cleDeLigne("obl", null));
+    expect(cleDeLigne("obl", { equipementId: null, salarieId: null })).not.toBe(cleDeLigne("obl", { equipementId: "null", salarieId: null }));
+    expect(cleDeLigne("obl", { equipementId: null, salarieId: null })).not.toBe(cleDeLigne("obl", { equipementId: "eq-1", salarieId: null }));
+    expect(cleDeLigne("obl", { equipementId: null, salarieId: null })).toBe(cleDeLigne("obl", { equipementId: null, salarieId: null }));
   });
 
   it("se réconcilie sans rien créer ni supprimer quand la ligne existe déjà", () => {
@@ -582,6 +606,187 @@ describe("générateur calendrier — porteur établissement (ADR-022)", () => {
 
     const plan = reconcilierCalendrier([existante], [], { now: NOW });
     expect(plan.aSupprimer).toEqual([]);
+    expect(plan.aArchiver).toHaveLength(1);
+    expect(estMarqueeNonApplicable(plan.aArchiver[0].libelleObligation)).toBe(
+      true,
+    );
+  });
+});
+
+describe("porteur salarié — du titre déclaré à la ligne (ADR-023)", () => {
+  const OBLIGATION_SALARIE = fakeObligationSalarie({
+    id: "attestation-medicale",
+    periodicite: "quinquennale",
+  });
+  const CATALOGUE = (id: string) =>
+    id === OBLIGATION_SALARIE.id ? (OBLIGATION_SALARIE as Obligation) : undefined;
+
+  const titres = (liste: TitreDeclare[]) =>
+    new Map<string, TitreDeclare[]>([[OBLIGATION_SALARIE.id, liste]]);
+
+  it("un titre déclaré produit une ligne portée par la personne", () => {
+    // Le chemin que rien n'exerçait : la relecture a relevé qu'aucun test ne
+    // pouvait l'attraper, faute d'écran de saisie et faute de test pur.
+    const res = genererVerificationsDepuisTitres(
+      titres([
+        {
+          salarieId: "sal-1",
+          libelle: "Jean Martin",
+          delivreLe: new Date("2026-01-15T00:00:00Z"),
+          echeanceLe: new Date("2031-01-15T00:00:00Z"),
+        },
+      ]),
+      CATALOGUE,
+      { now: NOW },
+    );
+
+    expect(res).toHaveLength(1);
+    expect(res[0].salarieId).toBe("sal-1");
+    expect(res[0].equipementId).toBeNull();
+    expect(res[0].datePrevue).toEqual(new Date("2031-01-15T00:00:00Z"));
+    expect(res[0].statut).toBe("planifiee");
+  });
+
+  it("deux salariés porteurs de la même obligation ne s'écrasent pas", () => {
+    // La collision que l'ADR-022 avait prédite mot pour mot sans la traiter :
+    // une clé à deux composantes rangeait les deux sous « obl::null », et la
+    // réconciliation prenait l'un des deux pour disparu.
+    const res = genererVerificationsDepuisTitres(
+      titres([
+        {
+          salarieId: "sal-1",
+          libelle: "Jean Martin",
+          delivreLe: new Date("2026-01-15T00:00:00Z"),
+          echeanceLe: new Date("2031-01-15T00:00:00Z"),
+        },
+        {
+          salarieId: "sal-2",
+          libelle: "Alice Dubois",
+          delivreLe: new Date("2026-03-01T00:00:00Z"),
+          echeanceLe: new Date("2031-03-01T00:00:00Z"),
+        },
+      ]),
+      CATALOGUE,
+      { now: NOW },
+    );
+
+    expect(res).toHaveLength(2);
+    expect(new Set(res.map((v) => v.cleUnique)).size).toBe(2);
+
+    const plan = reconcilierCalendrier([], res, { now: NOW });
+    expect(plan.aCreer).toHaveLength(2);
+  });
+
+  it("la date déclarée prime sur tout calcul", () => {
+    // Cas de la transition R. 4544-10 : une attestation du régime antérieur
+    // court jusqu'au 2030-10-01, pas cinq ans après sa délivrance. Calculer à
+    // partir de `delivreLe` donnerait une échéance fausse de plusieurs années.
+    const res = genererVerificationsDepuisTitres(
+      titres([
+        {
+          salarieId: "sal-1",
+          libelle: "Jean Martin",
+          delivreLe: new Date("2019-06-01T00:00:00Z"),
+          echeanceLe: new Date("2030-10-01T00:00:00Z"),
+        },
+      ]),
+      CATALOGUE,
+      { now: NOW },
+    );
+
+    expect(res[0].datePrevue).toEqual(new Date("2030-10-01T00:00:00Z"));
+  });
+
+  it("un titre déclaré sur une obligation d'équipement ne produit rien", () => {
+    // `TitreSalarie.obligationId` n'a pas de clé étrangère — le référentiel
+    // vit en TypeScript. Rien n'empêche donc de déclarer un titre sur une
+    // obligation qui n'est pas nominative, et le CHECK `porteur_xor` ne dirait
+    // rien : il interdit deux porteurs, pas le mauvais.
+    const equipementale = fakeObligation({
+      id: "obl-equipement",
+      periodicite: "annuelle",
+    });
+    const res = genererVerificationsDepuisTitres(
+      new Map([
+        [
+          "obl-equipement",
+          [
+            {
+              salarieId: "sal-1",
+              libelle: "Jean Martin",
+              delivreLe: new Date("2026-01-15T00:00:00Z"),
+              echeanceLe: null,
+            },
+          ],
+        ],
+      ]),
+      (id) => (id === "obl-equipement" ? (equipementale as Obligation) : undefined),
+      { now: NOW },
+    );
+
+    expect(res).toEqual([]);
+  });
+
+  it("un titre sur une obligation disparue du référentiel ne produit rien", () => {
+    const res = genererVerificationsDepuisTitres(
+      titres([
+        {
+          salarieId: "sal-1",
+          libelle: "Jean Martin",
+          delivreLe: new Date("2026-01-15T00:00:00Z"),
+          echeanceLe: null,
+        },
+      ]),
+      () => undefined,
+      { now: NOW },
+    );
+
+    expect(res).toEqual([]);
+  });
+});
+
+describe("réconciliation — permanent n'est pas retiré (ADR-023)", () => {
+  // Le défaut que ce test ferme : une obligation passée en `periodicite:
+  // "autre"` (état permanent) disparaît de `aGenerer` exactement comme une
+  // obligation RETIRÉE. La réconciliation les confondait, et barrait d'un
+  // « Ne s'applique plus » une obligation qui s'applique parfaitement.
+  const ligne = (over: Partial<OccurrenceExistante> = {}) =>
+    ligneExistante({
+      id: "v-1",
+      obligationId: "obl-permanente",
+      equipementId: "eq-1",
+      libelleObligation: "Habilitation électrique",
+      ...over,
+    });
+
+  it("ne barre pas une obligation qui s'applique toujours", () => {
+    const plan = reconcilierCalendrier([ligne({ porteUnePreuve: true })], [], {
+      now: NOW,
+      obligationsEncoreApplicables: new Set(["obl-permanente"]),
+    });
+
+    expect(plan.aArchiver).toEqual([]);
+    expect(plan.aSupprimer).toEqual([]);
+    expect(plan.inchangees).toBe(1);
+  });
+
+  it("supprime en revanche la ligne sans preuve : elle n'aurait jamais dû être datée", () => {
+    const plan = reconcilierCalendrier([ligne({ porteUnePreuve: false })], [], {
+      now: NOW,
+      obligationsEncoreApplicables: new Set(["obl-permanente"]),
+    });
+
+    expect(plan.aSupprimer).toEqual(["v-1"]);
+    expect(plan.aArchiver).toEqual([]);
+  });
+
+  it("barre bien une obligation RÉELLEMENT retirée", () => {
+    // Le comportement d'origine, qu'il ne s'agissait pas de perdre.
+    const plan = reconcilierCalendrier([ligne({ porteUnePreuve: true })], [], {
+      now: NOW,
+      obligationsEncoreApplicables: new Set(["une-autre"]),
+    });
+
     expect(plan.aArchiver).toHaveLength(1);
     expect(estMarqueeNonApplicable(plan.aArchiver[0].libelleObligation)).toBe(
       true,
@@ -737,6 +942,7 @@ describe("réconciliation — un placeholder cède devant une vraie date", () =>
   const genere = (over: Partial<VerificationGenere> = {}): VerificationGenere => ({
     cleUnique: "o-1::eq-1",
     obligationId: "o-1",
+    salarieId: null,
     libelleObligation: "Obligation o-1",
     equipementId: "eq-1",
     periodicite: "annuelle",

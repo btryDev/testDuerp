@@ -67,6 +67,7 @@ import {
   LABEL_DOMAINE,
   LABEL_PERIODICITE,
   LABEL_TOUT_ETABLISSEMENT,
+  libellePorteur,
   MOIS_FR,
   MOIS_FR_COURT,
   libelleMois,
@@ -1189,11 +1190,10 @@ export default async function CalendrierPage({
                                 // par ce qu'elle est, pas par un appareil
                                 // absent — et elle reste ici, sous tous les
                                 // filtres de bâtiment (ADR-010).
-                                (v.equipement
-                                  ? (lieuDe(v.equipement.batiment)
-                                      ? `${v.equipement.batiment.nom} · `
-                                      : "") + `${v.equipement.libelle} · `
-                                  : `${LABEL_TOUT_ETABLISSEMENT} · `) +
+                                (v.equipement && lieuDe(v.equipement.batiment)
+                                  ? `${v.equipement.batiment.nom} · `
+                                  : "") +
+                                `${libellePorteur(v)} · ` +
                                 LABEL_PERIODICITE[v.periodicite] +
                                 (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : "")
                               }

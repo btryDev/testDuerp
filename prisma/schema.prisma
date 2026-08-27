@@ -112,6 +112,7 @@ model Etablissement {
   interventions              Intervention[]
   prescriptionsParticulieres PrescriptionParticuliere[]
   fichesRegistre             FicheRegistre[]
+  salaries                   Salarie[]
 
   /**
    * Version du référentiel de conformité avec laquelle le calendrier de cet
@@ -388,6 +389,31 @@ model Verification {
   equipementId    String?
   equipement      Equipement?   @relation(fields: [equipementId], references: [id], onDelete: Cascade)
 
+  // Porteur salarié (ADR-023). `equipementId` et `salarieId` ne peuvent pas
+  // être renseignés ensemble : une ligne a UN porteur. La contrainte n'est pas
+  // exprimable en Prisma — c'est un CHECK, comme le XOR d'origine des actions
+  // (ADR-002) — et vit dans le SQL de la migration `porteur_salarie`, sous le
+  // nom `Verification_porteur_xor`. `migrations-contraintes.test.ts` la garde.
+  //
+  // Les deux nuls ensemble restent valides : c'est le porteur établissement.
+  // La sémantique n'est donc plus binaire mais ternaire, et c'est pour cela
+  // qu'une colonne était nécessaire — on ne pouvait pas surcharger le `null`
+  // d'`equipementId`, qui signifiait déjà « établissement ».
+  salarieId       String?
+  // `Restrict`, PAS `Cascade` (ADR-023, corrigé en relecture).
+  //
+  // En cascade, supprimer un salarié détruisait ses échéances — y compris
+  // celles portant un rapport ou une action, c'est-à-dire la PREUVE qu'il était
+  // habilité au moment où il a opéré. La suppression contournait entièrement
+  // `porteUnePreuve` et toute la logique de conservation de l'ADR-012 : la base
+  // n'a pas de raison de refuser ce qu'aucune contrainte ne lui interdit.
+  //
+  // C'est le même garde-fou que `DuerpVersion.duerp`, et la même forme : la
+  // base refuse, et le produit offre la sortie prévue — un salarié qui part est
+  // DÉSACTIVÉ (`actif: false`), pas supprimé. Ses titres restent le temps de
+  // leur conservation (docs/rgpd.md § 4.3), puis il devient supprimable.
+  salarie         Salarie?      @relation(fields: [salarieId], references: [id], onDelete: Restrict)
+
   obligationId      String
   libelleObligation String
   periodicite       Periodicite
@@ -453,8 +479,9 @@ model Verification {
   //
   // C'est pourquoi `src/lib/migrations-contraintes.test.ts` la vérifie dans le
   // SQL, ET vérifie qu'aucune migration ultérieure ne la retire.
-  @@unique([etablissementId, obligationId, equipementId])
+  @@unique([etablissementId, obligationId, equipementId, salarieId])
   @@index([etablissementId, datePrevue])
+  @@index([salarieId])
   @@index([equipementId])
   @@index([statut])
   @@index([prescriptionId])
@@ -1285,4 +1312,96 @@ model FicheRegistre {
   // un empilement de brouillons.
   @@unique([etablissementId, sectionId])
   @@index([etablissementId])
+}
+
+// -----------------------------------------------------------------------------
+// Personnel (ADR-023)
+// -----------------------------------------------------------------------------
+
+/// Un salarié suivi, pour ses seuls titres de santé-sécurité.
+///
+/// Ce n'est PAS un fichier du personnel. Les champs absents sont aussi décidés
+/// que les champs présents : ni date de naissance, ni NIR, ni adresse, ni
+/// coordonnées privées, ni rémunération. Aucune obligation de santé-sécurité
+/// n'en a besoin, et les collecter « au cas où » changerait la nature du
+/// produit et sa surface de risque (docs/rgpd.md § 2.2).
+///
+/// Base légale du traitement : obligation légale de l'employeur, RGPD 6.1.c —
+/// jamais le consentement, qui n'est pas libre en situation de subordination.
+model Salarie {
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  nom    String
+  prenom String
+  /// Poste ou fonction, en texte libre. Sert à comprendre quels titres sont
+  /// pertinents ; ne déclenche rien automatiquement — le moteur ne sait pas
+  /// déduire une activité d'un intitulé de poste (ADR-023 § 1 bis).
+  poste  String?
+
+  /// Date d'entrée dans l'effectif. Point de départ des obligations « à
+  /// l'embauche ». Sans elle, une telle obligation n'aurait d'autre départ que
+  /// le jour de la saisie, c'est-à-dire un retard inventé.
+  entreLe DateTime?
+
+  /// Désactivé plutôt que supprimé quand la personne quitte l'entreprise : la
+  /// preuve qu'elle était habilitée AU MOMENT où elle a opéré doit survivre à
+  /// son départ, c'est elle qui couvre l'employeur sur une période passée
+  /// (docs/rgpd.md § 4.3).
+  actif Boolean @default(true)
+
+  titres    TitreSalarie[]
+  echeances Verification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([etablissementId, actif])
+}
+
+/// Un titre détenu par un salarié : l'habilitation, l'attestation, le CACES.
+///
+/// C'est une DÉCLARATION de l'employeur, pas une dérivation du moteur
+/// (ADR-023 § 1 bis) : rien dans le modèle ne dit qu'une personne opère sur des
+/// installations électriques, et l'appliquer à tout l'effectif serait un faux
+/// positif de masse. L'employeur seul sait qui fait quoi.
+///
+/// Elle est durable, et distincte du calendrier : les lignes de `Verification`
+/// se régénèrent, cette déclaration non. C'est elle qui les fait naître.
+model TitreSalarie {
+  id        String  @id @default(cuid())
+  salarieId String
+  salarie   Salarie @relation(fields: [salarieId], references: [id], onDelete: Cascade)
+
+  /// L'identifiant de l'obligation du référentiel (ADR-003) dont ce titre est
+  /// l'instance. Pas de clé étrangère : le référentiel vit en TypeScript.
+  obligationId String
+
+  /// Date de délivrance du titre.
+  delivreLe DateTime
+
+  /// Échéance, quand elle est connue ou calculable. `null` = titre sans terme
+  /// écrit dans un texte — l'habilitation électrique en est le cas type, le
+  /// Code renvoyant à des modalités qu'il qualifie lui-même de recommandées
+  /// (ADR-023 § 6).
+  echeanceLe DateTime?
+
+  /// Note libre de l'employeur (organisme, niveau d'habilitation).
+  /// JAMAIS un élément médical : le motif, le diagnostic et la pièce restent
+  /// hors de l'outil (docs/rgpd.md § 2.3).
+  note String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Un salarié ne détient qu'une fois le même titre. Le renouvellement met à
+  /// jour les dates, il ne crée pas une seconde ligne — sans quoi l'historique
+  /// des titres se confondrait avec l'état courant.
+  // Pas d'`@@index([salarieId])` : `salarieId` est la colonne de TÊTE de
+  // l'index unique ci-dessus, qui sert donc déjà `WHERE salarieId = ?`. Un
+  // second index ne serait jamais choisi et chaque écriture en paierait la
+  // mise à jour — c'est le motif exact de la migration `index_redondant`,
+  // écrite la veille pour en retirer un.
+  @@unique([salarieId, obligationId])
 }

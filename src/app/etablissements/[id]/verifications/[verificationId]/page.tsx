@@ -30,6 +30,7 @@ import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import {
   estPorteeParEquipement,
+  estPorteeParSalarie,
   LIBELLE_SOURCE,
 } from "@/lib/referentiels/conformite/types";
 import { uploadRapport } from "@/lib/rapports/actions";
@@ -128,6 +129,22 @@ export default async function VerificationDetailPage({
     joursRestants >= 0 &&
     joursRestants <= JOURS_HORIZON_PROCHE;
   const aUnRapport = v.rapports.length > 0;
+
+  // La frontière médicale, appliquée (ADR-023 § 2, docs/rgpd.md § 2.3).
+  //
+  // `pieceMedicale` était un drapeau MORT : déclaré sur le type, posé sur
+  // l'obligation, lu nulle part. Trois documents promettaient que l'interface
+  // ne proposerait jamais de téléverser une attestation médicale, et rien ne
+  // l'empêchait — le formulaire de dépôt était rendu sans condition. La
+  // décision « on ne stocke que l'existence, la date et l'échéance » ne tenait
+  // que parce qu'aucun salarié ne pouvait encore être saisi.
+  //
+  // Le dépôt reste possible partout ailleurs : c'est le fondement du registre
+  // de sécurité. Il n'est retiré que là où la pièce est médicale.
+  const pieceMedicale =
+    obligation !== undefined &&
+    estPorteeParSalarie(obligation) &&
+    obligation.pieceMedicale === true;
   const etat = classerVerification(v, aujourdhui);
 
   const faits: FaitFiche[] = [
@@ -153,11 +170,17 @@ export default async function VerificationDetailPage({
               ? ` · ${v.equipement.localisation}`
               : ""),
         }
-      : {
-          cle: "Portée",
-          valeur: LABEL_TOUT_ETABLISSEMENT,
-          note: "L'obligation ne dépend d'aucun appareil déclaré.",
-        },
+      : v.salarie
+        ? {
+            cle: "Salarié",
+            valeur: `${v.salarie.prenom} ${v.salarie.nom}`.trim(),
+            note: "L'obligation est nominative : elle vise cette personne, pas un appareil (ADR-023).",
+          }
+        : {
+            cle: "Portée",
+            valeur: LABEL_TOUT_ETABLISSEMENT,
+            note: "L'obligation ne dépend d'aucun appareil déclaré.",
+          },
     {
       cle: "Réalisateur requis",
       valeur: v.realisateurRequis
@@ -336,7 +359,17 @@ export default async function VerificationDetailPage({
                     </p>
                   </div>
                   <div className="px-7 py-6">
-                    <UploadRapportForm action={boundUpload} />
+                    {pieceMedicale ? (
+                      <p className="m-0 text-[13px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                        Cette échéance porte sur une pièce médicale. L&apos;outil
+                        n&apos;en conserve que l&apos;existence, la date et
+                        l&apos;échéance — jamais le document. Vous restez tenu de
+                        conserver l&apos;attestation elle-même, hors de
+                        l&apos;application.
+                      </p>
+                    ) : (
+                      <UploadRapportForm action={boundUpload} />
+                    )}
                   </div>
                 </div>
               </details>
@@ -449,14 +482,29 @@ export default async function VerificationDetailPage({
            dans le même objet — pas un état vide puis un formulaire. */
         <CorpsFiche
           principal={
-            <CarteFiche titre="Déposer le rapport">
-              <UploadRapportForm
-                action={boundUpload}
-                labelAnnuler={{
-                  libelle: "Annuler",
-                  href: `/etablissements/${id}/calendrier`,
-                }}
-              />
+            <CarteFiche
+              titre={
+                pieceMedicale ? "Ce que l'outil suit" : "Déposer le rapport"
+              }
+            >
+              {pieceMedicale ? (
+                <p className="m-0 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+                  Cette échéance porte sur une pièce médicale. L&apos;outil
+                  n&apos;en conserve que l&apos;existence, la date et
+                  l&apos;échéance — jamais le document, jamais un motif, jamais
+                  un élément de diagnostic. C&apos;est plus strict que ce que le
+                  droit autorise, et c&apos;est délibéré. L&apos;attestation
+                  elle-même se conserve hors de l&apos;application.
+                </p>
+              ) : (
+                <UploadRapportForm
+                  action={boundUpload}
+                  labelAnnuler={{
+                    libelle: "Annuler",
+                    href: `/etablissements/${id}/calendrier`,
+                  }}
+                />
+              )}
             </CarteFiche>
           }
           cote={

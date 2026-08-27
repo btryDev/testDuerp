@@ -26,7 +26,7 @@ import { couvertureDeLEtablissement } from "@/lib/perimetre/couverture";
 import { listerRapportsDeLEtablissement } from "@/lib/rapports/queries";
 import {
   LABEL_DOMAINE,
-  LABEL_TOUT_ETABLISSEMENT,
+  libellePorteur,
 } from "@/lib/calendrier/labels";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
@@ -358,8 +358,7 @@ export default async function RegistrePage({
                           <span className="mx-2 text-[color:var(--board-slate)]">
                             ·
                           </span>
-                          {r.verification.equipement?.libelle ??
-                            LABEL_TOUT_ETABLISSEMENT}
+                          {libellePorteur(r.verification)}
                           {r.organismeVerif && (
                             <>
                               <span className="mx-2 text-[color:var(--board-slate)]">

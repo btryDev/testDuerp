@@ -16,15 +16,12 @@ export const CODE_TRAVAIL_ELECTRICITE: Corpus = {
       ref: "R. 4544-11-1",
       intitule: "Attestation d'absence de contre-indications médicales",
       versionEnVigueur: "2025-10-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
-      statut: "obligation_manquante",
-      motif:
-        "Créé au 1er octobre 2025 par le décret n° 2025-355. L'habilitation autorisant les opérations au voisinage de pièces nues sous tension est subordonnée à une attestation d'absence de contre-indications médicales, « d'une validité de cinq ans », délivrée par le médecin du travail, dont l'employeur « conserve une copie pendant toute sa durée de validité ». C'est une obligation périodique quinquennale, en vigueur, que le référentiel ne porte pas.",
-      bloquePar:
-        "Porteur d'échéance : l'obligation est nominative — elle vise un travailleur, pas un équipement. Partiellement levé le 2026-08-27 (ADR-022) : `categoriesEquipement` n'est plus requis et `Verification.equipementId` est nullable. Ce qui bloque encore est le porteur SALARIÉ, qui n'est pas livré — l'attestation est nominative (R. 4544-10 la délivre à un travailleur désigné), et le porteur établissement ne sait pas la porter. Le lot salarié suppose d'abord la réécriture de `docs/rgpd.md`. Relève de l'ADR sur le porteur d'échéance.",
+      luLe: "2026-08-27",
+      lecture: "premiere_main",
       citationCle:
-        "« L'attestation mentionnée aux articles R. 4544-10 et R. 4544-11, d'une validité de cinq ans, est délivrée par le médecin du travail à l'issue d'un examen médical qu'il réalise. Elle est présentée par le travailleur à l'employeur, qui en conserve une copie pendant toute sa durée de validité. »",
+        "L'attestation mentionnée aux articles R. 4544-10 et R. 4544-11, d'une validité de cinq ans, est délivrée par le médecin du travail à l'issue d'un examen médical qu'il réalise. Elle est présentée par le travailleur à l'employeur, qui en conserve une copie pendant toute sa durée de validité.",
+      statut: "retenu",
+      obligations: ["elec-salarie-attestation-medicale-voisinage"],
     },
     {
       ref: "R. 4226-14",

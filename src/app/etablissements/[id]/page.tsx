@@ -23,7 +23,7 @@ import { compterEtatEcheances } from "@/lib/calendrier/retards";
 import { statsActionsEnRetard } from "@/lib/actions/queries";
 import { prisma } from "@/lib/prisma";
 import { composantesCiviles, joursCivilsEntre } from "@/lib/dates";
-import { LABEL_TOUT_ETABLISSEMENT } from "@/lib/calendrier/labels";
+import { libellePorteur } from "@/lib/calendrier/labels";
 import { porteeBatiment } from "@/lib/calendrier/portee";
 
 export default async function EtablissementPage({
@@ -97,7 +97,7 @@ export default async function EtablissementPage({
         statut: { in: ["a_planifier", "planifiee", "depassee"] },
         ...porteeBatiment(batimentFiltre),
       },
-      include: { equipement: true },
+      include: { equipement: true, salarie: true },
       orderBy: { datePrevue: "asc" },
       take: 5,
     }),
@@ -226,7 +226,7 @@ export default async function EtablissementPage({
       datePrevue: v.datePrevue,
       statut: v.statut,
       equipement: {
-        libelle: v.equipement?.libelle ?? LABEL_TOUT_ETABLISSEMENT,
+        libelle: libellePorteur(v),
       },
     })),
     rapportsRecents: rapportsRecents.map((r) => ({

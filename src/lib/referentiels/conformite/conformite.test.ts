@@ -120,7 +120,9 @@ describe("référentiel conformité — invariants structurels", () => {
 
   it("le porteur est une valeur connue", () => {
     for (const o of obligationsConformite) {
-      expect(["equipement", "etablissement"]).toContain(porteurDe(o));
+      expect(["equipement", "etablissement", "salarie"]).toContain(
+        porteurDe(o),
+      );
     }
   });
 
@@ -958,7 +960,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // 84 depuis le 2026-08-27 : 85 au départ, +2 obligations portées par
   // l'établissement (PE 4 § 2, R. 4222-20), −3 fragments de ces mêmes
   // articles qu'elles absorbent (ADR-022).
-  const EMPREINTE_ATTENDUE = "84-4dbe47be60831f64";
+  const EMPREINTE_ATTENDUE = "85-23798b9c81f3ce74";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1076,7 +1078,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(84);
+    ).toBe(85);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1308,6 +1310,15 @@ const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
     "« Ces exercices et essais périodiques ont lieu au moins tous les six " +
     "mois. » Relu à la source le 2026-08-27 — c'est la seule périodicité de " +
     "toute la section R. 4227-28 à R. 4227-41.",
+  "elec-salarie-attestation-medicale-voisinage":
+    "R. 4544-11-1 porte le chiffre dans sa première phrase : « L'attestation " +
+    "mentionnée aux articles R. 4544-10 et R. 4544-11, **d'une validité de " +
+    "cinq ans**, est délivrée par le médecin du travail à l'issue d'un examen " +
+    "médical qu'il réalise. » Relu à la source le 2026-08-27, version en " +
+    "vigueur du 2025-10-01 (décret n° 2025-355 du 18 avril 2025). " +
+    "Contraste à garder en tête : l'habilitation elle-même n'a AUCUN chiffre " +
+    "— R. 4544-10 renvoie aux modalités des normes, que R. 4544-3 qualifie de " +
+    "recommandées — et c'est pourquoi elle est passée à `autre` (ADR-023 § 6).",
 };
 
 describe("référentiel conformité — d'où vient le chiffre", () => {
