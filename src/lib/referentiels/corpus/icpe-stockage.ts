@@ -23,6 +23,7 @@ export const ICPE_STOCKAGE: Corpus = {
   },
   {
     ref: "Arrêté 2015-06-01 art. 22",
+    url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000030673177",
     versionEnVigueur: "2022-01-01",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",

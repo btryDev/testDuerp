@@ -11,7 +11,7 @@ export const ARRETE_2011_12_14_ECLAIRAGE: Corpus = {
   id: "arrete-2011-12-14-eclairage",
   intitule:
     "Arrêté du 14 décembre 2011 — éclairage de sécurité des lieux de travail",
-  url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025040771/",
+  url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025055364/",
   etendue: "articles_cites",
   portee:
     "Pris pour l'application de R. 4227-14 du Code du travail. Fixe les essais mensuel et semestriel de l'éclairage de sécurité.",

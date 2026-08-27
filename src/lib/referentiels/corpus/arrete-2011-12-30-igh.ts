@@ -11,7 +11,7 @@ export const ARRETE_2011_12_30_IGH: Corpus = {
   id: "arrete-2011-12-30-igh",
   intitule:
     "Arrêté du 30 décembre 2011 — règlement de sécurité des IGH",
-  url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025314293/",
+  url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025167121/",
   etendue: "articles_cites",
   portee:
     "Régime IGH, hors périmètre produit. Le référentiel porte quelques obligations héritées qui le citent.",

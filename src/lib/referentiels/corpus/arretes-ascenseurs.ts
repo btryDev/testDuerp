@@ -8,6 +8,9 @@ export const ARRETES_ASCENSEURS: Corpus = {
   id: "arretes-ascenseurs",
   intitule:
     "Arrêtés du 18 novembre 2004 et du 7 août 2012 — entretien et contrôles techniques des ascenseurs",
+  // Adresse de l'arrêté du 18 novembre 2004. Ce corpus en couvre DEUX : celui
+  // du 7 août 2012 porte son URL sur sa propre entrée, le champ `url` du corpus
+  // ne pouvant en désigner qu'un.
   url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000254219",
   etendue: "articles_cites",
   portee:
@@ -34,6 +37,9 @@ export const ARRETES_ASCENSEURS: Corpus = {
   },
   {
     ref: "Arrêté 2012-08-07",
+    intitule:
+      "Contrôles techniques à réaliser dans les installations d'ascenseurs",
+    url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000026286347",
     versionEnVigueur: "2026-05-15",
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
