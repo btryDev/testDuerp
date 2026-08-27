@@ -101,7 +101,7 @@ S'applique dès qu'il y a au moins un salarié, quels que soient le NAF, l'effec
 | # | Obligation | Porteur | Nature | Référence présumée | Statut |
 |---|---|---|---|---|---|
 | C1 | **Registre de sécurité ERP** | ÉTS | PERM | CCH R.143-44 (réécrit au 01/07/2026) | ⚠️ **faux négatif documenté** — ancré `EXTINCTEUR`/`ALARME_INCENDIE` |
-| C2 | Visites périodiques de la commission de sécurité | ÉTS | RÉC | CCH R.143-34 et s. | ❌ |
+| C2 | Visites périodiques de la commission de sécurité | ÉTS | **pas de périodicité en 5ᵉ catégorie** | CCH **R. 143-41** (fonde les visites, ne fixe aucun rythme) — corrigé par l'audit (4bdb1f8), R. 143-34 était cité à tort | ⚠️ existe ; la quinquennale affichée n'était fondée sur aucun texte |
 | C3 | Registre public d'accessibilité | ÉTS | PERM | Décret 2017-431 | ✅ `RegistreAccessibilite` |
 | C4 | **Exercices d'évacuation** (semestriels) | ÉTS | RÉC | CT R.4227-39 (seuil de personnes) + arrêté 25/06/1980 | ⚠️ **faux négatif documenté** — ancré `ALARME_INCENDIE` |
 | C5 | Service de sécurité incendie / **SSIAP** selon type et catégorie | SAL | RÉC | Arrêté 25/06/1980, MS 46 et s. | ❌ |
@@ -234,6 +234,8 @@ catégories d'équipement ; regroupement par **article fondateur** (`referencesL
 convention ADR-003 : « celui qu'on citerait seul devant un inspecteur ») ; signalement des
 articles qui fondent plusieurs obligations, surtout à travers plusieurs domaines.
 
+**Le référentiel compte 81 obligations** depuis les corrections du 2026-08-26 (78 au moment de ce recensement).
+
 **Limite majeure, à lire avant les constats** — ce passage teste **un seul mode de
 défaillance** : un article plus large que son encodage, détecté par le partage d'un article
 fondateur. Il ne peut structurellement pas voir une obligation dont l'article unique dit
@@ -275,20 +277,26 @@ agréés ») fonde **deux** obligations dans **deux domaines** : `elec-igh-annue
 découpé en fragments ancrés équipement : c'est le motif PE 4 à l'identique. L'IGH étant
 hors périmètre produit, la priorité est basse.
 
-**Correction de ma première rédaction** : j'avais écrit « motif confirmé ». C'est faux —
+**Correction de ma première rédaction** : j'avais écrit « motif confirmé » avant d'avoir lu l'article. C'est faux —
 je n'ai vérifié que la **forme** (un article fondateur, deux domaines, deux ancrages
 équipement), pas que GH 5 couvre davantage que ce qui est encodé. Conclure sans lire
 l'article serait exactement l'erreur reprochée au cas PE 4. C'est un candidat, au même
 titre que R. 4222-20 ci-dessous.
 
-### 4. Candidat à confirmer — `R. 4222-20`
+### 4. Confirmé, et dans le périmètre — `R. 4222-20` 🚫
 
-Fonde **trois** obligations dans **deux domaines** : `aeration-travail-mise-en-service` et
-`aeration-travail-entretien-annuel` (`VMC`, `CTA`), plus
-`stockage-dangereux-ventilation-locaux` (`STOCKAGE_MATIERE_DANGEREUSE`). Si l'article
-porte bien le maintien en état et le contrôle régulier de *l'ensemble* des installations
-d'aération, un établissement dont la ventilation n'est déclarée ni VMC, ni CTA, ni local de
-stockage ne reçoit rien. **À vérifier sur Légifrance avant de conclure.**
+**Verbatim relevé en première main** par l'audit `chore/veille-reglementaire` (b91fcda) :
+« L'employeur maintient **l'ensemble des installations mentionnées au présent chapitre** en
+bon état de fonctionnement et en assure régulièrement le contrôle. » Version en vigueur au
+1ᵉʳ mai 2008, chapitre II « Aération, assainissement » (R. 4222-1 à R. 4222-26).
+
+L'article couvre donc toute installation d'aération d'un lieu de travail, sans distinction.
+Le référentiel l'accroche à trois catégories — `VMC`, `CTA`,
+`STOCKAGE_MATIERE_DANGEREUSE` — via trois obligations. Un établissement dont la
+ventilation n'est déclarée sous aucune des trois ne reçoit rien.
+
+Contrairement à PE 4 § 2 (5ᵉ catégorie) et à GH 5 (IGH, hors périmètre), **celui-ci vise
+tout employeur**. Il rejoint donc les obligations manquantes.
 
 ### 5. Sous-référencement confirmé — froid
 
@@ -305,9 +313,91 @@ est fondée sur quoi. Constat identique à celui de l'audit, atteint indépendam
 
 ## Dette connue signalée par l'audit
 
-- **Doublon portails** : `porte-auto-portail-piete-coulissant` et `porte-auto-verification-semestrielle` font double emploi sur `PORTAIL_AUTO` au même rythme. Détecté par le test anti-doublon quand une référence manquante a cessé de le masquer. Documenté, non corrigé.
+- ~~**Doublon portails**~~ **corrigé** (59fdc3f). La semestrielle de `porte-auto-portail-piete-coulissant` n'était fondée sur aucune de ses deux références — les articles 2 et 5 de l'arrêté du 21 décembre 1993 sont des prescriptions techniques d'installation, pas un rythme. `periodicite` passe à `mise_en_service_uniquement` ; l'article 9 porte le contrôle périodique, déjà couvert par `porte-auto-verification-semestrielle`. Le doublon disparaît sans fusionner deux obligations qui disent des choses différentes. Au passage, le libellé restreignait aux portails **coulissants** alors que l'article 2 vise toute installation de passage de véhicules — un dirigeant équipé d'un battant motorisé pouvait légitimement écarter la ligne.
+- ~~**EL 18 § 4**~~ **corrigé** (08e2e2e) : l'article impose deux rythmes — quinze jours pour les niveaux, un mois pour l'essai de démarrage en charge — le référentiel n'en portait qu'un. Valeur `bimensuelle` ajoutée à l'énumération (migration additive appliquée en production, vérifiée). Le référentiel passe à **80 obligations**.
 - **Froid sous-référencé** : 8 obligations, 7 périodicités distinctes, toutes adossées au même « art. 5 » du règlement (UE) 2024/573 sans désigner le paragraphe ni le seuil qui les fonde. La source est la bonne, la granularité ne permet pas de vérifier chaque périodicité isolément.
 - **31 articles `non_couvert`** relevés par l'audit : obligations réelles visant des ERP de 5ᵉ catégorie que le produit ne porte pas (hôtels, locaux à sommeil, petits établissements de soins et sportifs). Liste à intégrer ici.
+
+### La quinquennale de commission : deux erreurs successives
+
+À corriger dans les deux sens, et l'épisode vaut d'être gardé entier.
+
+`incendie-erp-5-visite-commission` affichait une échéance quinquennale. L'audit a d'abord
+montré que ses deux références ne la fondaient pas — R. 143-34 traite des vérifications à
+la charge de l'exploitant, GE 4 relève du Livre II écarté par PE 1 § 1 et son tableau
+n'a aucune ligne de 5ᵉ catégorie — et en a conclu que le rythme était inventé (4bdb1f8).
+
+**Cette conclusion était fausse.** `PE 37` fixe bien la périodicité, verbatim vérifié en
+source indépendante : « Ces établissements doivent être visités **tous les cinq ans** par
+la commission de sécurité compétente ; la fréquence de ces visites peut être augmentée,
+s'il est jugé nécessaire, par arrêté du maire ou du préfet, après avis de la commission. »
+Il ne vise que les établissements **avec locaux à sommeil**. Rectifié en 99d0f87.
+
+Deux enseignements.
+
+L'article dormait dans le lot PE 28-37, déclaré non couvert parce qu'il dépend de
+l'attribut « locaux à sommeil ». **Le coût de ne pas dépouiller un lot n'est pas seulement
+une lacune : c'est parfois une erreur ailleurs.** Un secteur peu représenté n'est pas un
+article sans intérêt.
+
+Et la description d'origine, remplacée par la correction, liait déjà la visite aux locaux à
+sommeil. Elle était plus juste que ce qui l'a remplacée — un rappel que corriger sans avoir
+lu tout le corpus peut dégrader.
+
+`periodicite` reste `autre`, mais pour une raison nommée : aucun attribut ne porte la
+distinction « locaux à sommeil ». PE 37 rejoint les obligations manquantes.
+
+### Le référentiel se contredisant lui-même
+
+Nouveau genre de défaut, distinct de tous les autres : ni un manque, ni un écart au texte,
+mais **deux obligations du référentiel disant l'inverse l'une de l'autre**.
+`ascenseur-examen-annuel-securite` rangeait « les câbles ou chaînes de suspension et leurs
+extrémités » dans l'annuel ; `ascenseur-examen-semestriel-secours` les portait en
+semestriel. Le tableau de l'annexe de l'arrêté du 18 novembre 2004 donne raison au second.
+Rien ne garantissait que la lecture la plus lâche ne l'emporte pas.
+
+Six lignes du tableau manquaient — dont, en semestriel, le **frein** (ce qui retient la
+cabine) et le **dispositif antidérive** (ce qui l'empêche de descendre seule en
+hydraulique). Corrigé en 1089e4a.
+
+**Point de méthode** : le tableau à trois colonnes perd la position de ses croix à la
+conversion en texte. Quatre lectures automatiques l'avaient rendu illisible ; il a fallu le
+relever sur capture d'écran. Une source tabulaire ne se vérifie pas comme un article.
+
+**Deuxième valeur de périodicité manquante** : les neuf lignes à « intervalle maximum de
+six semaines » ne produisent aucune échéance — c'est la visite de base de l'ascenseur,
+celle qui vérifie les verrouillages de portes, la précision de nivelage et les moyens
+d'alerte permettant de parler à quelqu'un depuis une cabine bloquée. L'énumération ne
+descend pas à quarante-deux jours, comme elle ne descendait pas à quatorze ce matin.
+Décision en attente : une migration de l'enum Postgres, du même type additif que
+`bimensuelle`.
+
+### Une condition encodée à l'envers
+
+Le défaut le plus grave relevé de la journée n'est ni un manque ni une périodicité fausse.
+`levage-epreuve-initiale-fonctionnement` réservait l'épreuve aux appareils « non
+spécifiquement conçus pour le levage de personnes ». L'article 14 d) de l'arrêté du
+1ᵉʳ mars 2004 dit l'inverse : « Cette épreuve n'est pas exigée pour les appareils de levage
+mus par la force humaine employée directement **sauf s'ils sont conçus pour lever des
+personnes**. »
+
+L'obligation **excluait précisément les appareils pour lesquels le texte l'impose le plus
+nettement** — ceux sous lesquels quelqu'un se tient. Et sa référence citait les articles 6,
+10 et 11, qui *définissent* les épreuves, sans citer l'article 14, qui seul les *exige* :
+définir n'est pas prescrire. Corrigé en 0be2a1f.
+
+Aucun test ne pouvait l'attraper : la condition était cohérente, bien formée, et fausse.
+
+### Cinq articles portent le même motif
+
+PE 4 § 2, PE 4 § 1, PO 1 § 3, **R. 4222-20**, et les opérations quinquennales du § 5° de
+l'arrêté du 23 février 2018 (réglage global du réseau aéraulique et vérification de
+*l'ensemble* du dispositif de sécurité collective, appareil par appareil — le seul contrôle
+qui vérifie que la combustion est coupée sur chaque logement si l'extraction s'arrête). Trois relèvent du règlement ERP, le
+quatrième du Code du travail et vise tout employeur. Ce n'est plus une série d'accidents
+d'encodage : c'est la signature d'un modèle à un seul axe. **Quand une obligation naît de
+l'établissement, le référentiel ne sait que la découper** — et le découpage produit zéro
+ligne pour qui n'a rien déclaré.
 
 ## Ce que le modèle actuel rend impossible, en une phrase
 
