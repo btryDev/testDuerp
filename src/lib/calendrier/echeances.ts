@@ -329,7 +329,7 @@ export function echeancePermisFeu(
  *  Mêmes deux motifs d'alerte que le permis de feu, son module jumeau :
  *
  *   - elle a commencé sans inspection commune préalable — exigence de
- *     l'art. R. 4512-7 ;
+ *     l'art. R. 4512-2 ;
  *   - sa date de fin est passée et l'opération n'est ni close ni annulée
  *     (« échue non close » du tableau de bord).
  *

@@ -161,7 +161,7 @@ export default async function PlanPreventionDetailPage({
                 <p className="m-0 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                   Aucune date d&apos;inspection commune enregistrée. Cette
                   inspection est obligatoire avant le démarrage des travaux
-                  (art. R4512-7 CT).
+                  (art. R. 4512-2 CT).
                 </p>
               )}
             </CarteFiche>
@@ -300,7 +300,7 @@ export default async function PlanPreventionDetailPage({
       <div className="pt-2">
         <LegalBadge
           reference="Art. R4512-6 à R4512-12 CT · décret 92-158"
-          href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018491957"
+          href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018529787/"
           defaultOpen
         >
           Le plan de prévention est établi conjointement par le chef de

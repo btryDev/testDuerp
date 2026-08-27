@@ -172,7 +172,8 @@ function lignesModules(
       cellules: [
         "ok",
         // « À jour » = inspection commune préalable renseignée sur
-        // chaque plan actif (art. R4512-7).
+        // chaque plan actif (art. R. 4512-2 — c'est lui qui impose
+        // l'inspection, R. 4512-7 ne portant que le seuil de l'écrit).
         oui(m.plansPrevention.sansInspection === 0),
         oui(m.plansPrevention.echusNonClos === 0),
       ],

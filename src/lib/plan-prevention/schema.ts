@@ -7,7 +7,7 @@ import { depuisCleJourCivil, depuisSaisieDateHeure } from "@/lib/dates";
  * Le diagnostic initial aide le dirigeant à savoir s'il doit établir un
  * plan ÉCRIT (obligatoire) ou juste oral. Les critères du décret :
  *
- *   - Durée totale > 400 h sur 12 mois : écrit obligatoire
+ *   - Durée totale ≥ 400 h sur 12 mois : écrit obligatoire
  *   - Travaux sur liste dangereuse (arrêté 19-03-1993) : écrit obligatoire
  *     indépendamment de la durée
  *
@@ -114,10 +114,18 @@ export function diagnostiquerPlan(params: {
   travauxDangereux: boolean;
 }): ResultatDiagnostic {
   const raisons: string[] = [];
-  const seuil400 = params.dureeHeuresEstimee !== null && params.dureeHeuresEstimee > 400;
+  // `>=` et non `>`. R. 4512-7 dit « un nombre total d'heures de travail
+  // prévisible **égal au moins à** 400 heures », et ajoute « dès lors qu'il
+  // apparaît, en cours d'exécution, que le nombre d'heures **doit atteindre**
+  // 400 heures ». À 400 h pile, l'écrit est donc obligatoire ; le code
+  // affichait « recommandé », c'est-à-dire l'inverse du texte.
+  // Verbatim relevé sur Légifrance le 2026-08-27, version en vigueur au
+  // 2008-05-01 (LEGIARTI000018529783).
+  const seuil400 =
+    params.dureeHeuresEstimee !== null && params.dureeHeuresEstimee >= 400;
   if (seuil400) {
     raisons.push(
-      `Les travaux dépassent 400 h sur 12 mois (seuil art. R4512-7)`,
+      `Les travaux atteignent 400 h sur 12 mois (seuil art. R4512-7)`,
     );
   }
   if (params.travauxDangereux) {

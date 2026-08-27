@@ -77,7 +77,7 @@ export default async function PlanPreventionListePage({
           <div className="mt-3 flex flex-wrap gap-2">
             <LegalBadge
               reference="Art. R4512-6 à R4512-12 CT"
-              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018491957"
+              href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018529787/"
             />
             <LegalBadge reference="Décret 92-158" />
             <LegalBadge reference="Arrêté 19-03-1993 — liste dangereuse" />

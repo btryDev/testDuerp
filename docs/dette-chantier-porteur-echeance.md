@@ -219,17 +219,14 @@ Relevé par les agents de migration, à verser dans `docs/charte-board.md` :
   tous les écrans migrés prennent `--board-card`. L'exception est réelle, elle
   n'est pas écrite.
 
-### 6.3 Une URL Légifrance pour deux références différentes
+### 6.3 Deux libellés de statut divergent entre liste et fiche
 
-`LEGIARTI000018491957` sert de cible à deux étiquettes dans le module plan de
-prévention : **« Art. R. 4512-6 à R. 4512-12 CT »** (liste et fiche) et
-**« Art. R. 4512-7 CT · décret 92-158 »** (formulaire). L'une des deux est
-fausse, ou l'URL l'est.
+*(L'écart de référence Légifrance qui figurait ici est **corrigé** — la
+vérification a conclu que c'était l'URL qui était morte, pas les étiquettes, et
+elle a mis au jour deux erreurs de fond plus graves. Voir le commit
+« Trois erreurs de droit dans le plan de prévention ».)*
 
-Non corrigée : une référence se vérifie sur Légifrance **en première main**
-avant d'être touchée, c'est la règle du dépôt. Vérification en cours.
-
-Deux libellés de statut divergent aussi entre liste et fiche — « Terminé » /
+Deux libellés de statut divergent — « Terminé » /
 « Travaux terminés », « Validé » / « Prêt à démarrer ». Les unifier est une
 décision de contenu, pas un effet de bord de migration.
 

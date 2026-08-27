@@ -122,7 +122,7 @@ export function FormulairePlanPrevention({
         <div className="mt-3">
           <LegalBadge
             reference="Art. R4512-7 CT · décret 92-158"
-            href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018491957"
+            href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018529783"
           />
         </div>
       </section>
@@ -400,8 +400,11 @@ export function FormulairePlanPrevention({
             Obligatoire avant démarrage
           </h2>
           <p className="mt-1 text-[0.82rem] text-muted-foreground">
-            Art. R4512-7 : visite des lieux par les deux chefs d&apos;entreprise
-            avant tout début de travaux.
+            Art. R. 4512-2 : « Il est procédé, préalablement à
+            l&apos;exécution de l&apos;opération réalisée par une entreprise
+            extérieure, à une inspection commune des lieux de travail, des
+            installations qui s&apos;y trouvent et des matériels éventuellement
+            mis à disposition. » Quelle que soit la durée des travaux.
           </p>
         </header>
         <div className="grid grid-cols-1 gap-5 px-7 pb-7 sm:grid-cols-[220px_1fr]">
