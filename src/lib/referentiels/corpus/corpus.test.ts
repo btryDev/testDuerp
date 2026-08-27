@@ -37,10 +37,9 @@ describe("corpus — forme des dépouillements", () => {
     for (const c of CORPUS) {
       for (const a of c.articles) {
         if (a.statut !== "hors_perimetre") continue;
-        expect(
-          Object.keys(EXCLUSIONS),
-          `${c.id} / ${a.ref}`,
-        ).toContain(a.exclusion);
+        expect(Object.keys(EXCLUSIONS), `${c.id} / ${a.ref}`).toContain(
+          a.exclusion,
+        );
       }
     }
   });
@@ -63,8 +62,10 @@ describe("corpus — forme des dépouillements", () => {
         // Sans provenance, une lecture indirecte et une lecture à la source se
         // ressemblent une fois écrites — et seule la seconde peut fonder une
         // entrée du référentiel.
-        expect(a.lecture, `${c.id} / ${a.ref} : provenance de lecture absente`)
-          .toBeDefined();
+        expect(
+          a.lecture,
+          `${c.id} / ${a.ref} : provenance de lecture absente`,
+        ).toBeDefined();
       }
     }
   });
@@ -87,7 +88,9 @@ describe("corpus — forme des dépouillements", () => {
     for (const c of CORPUS) {
       const cv = couverture(c);
       if (c.etendue === "articles_cites") {
-        expect(cv.complet, `${c.id} : partiel mais annoncé complet`).toBe(false);
+        expect(cv.complet, `${c.id} : partiel mais annoncé complet`).toBe(
+          false,
+        );
       }
     }
   });
@@ -193,7 +196,9 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     // 59 depuis le 2026-08-26 : PO 1 § 3 est dépouillé à part de PO 1, son
     // volet biennal ne se traitant pas comme son volet annuel.
     expect(cv.total).toBe(59);
-    expect(cv.complet, `${cv.nonDepouilles} article(s) non dépouillé(s)`).toBe(true);
+    expect(cv.complet, `${cv.nonDepouilles} article(s) non dépouillé(s)`).toBe(
+      true,
+    );
   });
 
   it("ne retient qu'un seul article créant une obligation périodique pour les secteurs couverts", () => {
@@ -279,7 +284,12 @@ describe("corpus — ce qu'on ne couvre pas, et où on le dit", () => {
       for (const a of c.articles) {
         if (a.statut !== "hors_perimetre") continue;
         expect(
-          ["construction", "sans_destinataire_exploitant", "categorie_erp", "risque_specialise"],
+          [
+            "construction",
+            "sans_destinataire_exploitant",
+            "categorie_erp",
+            "risque_specialise",
+          ],
           `${c.id} / ${a.ref}`,
         ).toContain(a.exclusion);
       }
@@ -292,7 +302,9 @@ describe("corpus — ce qu'on ne couvre pas, et où on le dit", () => {
     // qui le visent ne sont pas portées. Ce chiffre doit descendre — soit en
     // couvrant, soit en déclarant.
     const MUETS = 31;
-    const muets = articlesNonCouverts().filter((a) => !a.declareA || a.declareA.startsWith("Non déclaré"));
+    const muets = articlesNonCouverts().filter(
+      (a) => !a.declareA || a.declareA.startsWith("Non déclaré"),
+    );
     expect(
       muets.length,
       `${muets.length} manque(s) de couverture qu'aucun écran n'annonce (plafond ${MUETS}). ` +

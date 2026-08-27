@@ -23,7 +23,8 @@ export const FROID_FLUIDES: Corpus = {
   articles: [
     {
       ref: "C. env. R. 543-79",
-      intitule: "Contrôle d'étanchéité des équipements — obligation du détenteur",
+      intitule:
+        "Contrôle d'étanchéité des équipements — obligation du détenteur",
       versionEnVigueur: "2025-01-01",
       luLe: "2026-08-26",
       lecture: "premiere_main",

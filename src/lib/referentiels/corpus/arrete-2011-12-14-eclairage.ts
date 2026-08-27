@@ -16,21 +16,27 @@ export const ARRETE_2011_12_14_ECLAIRAGE: Corpus = {
   portee:
     "Pris pour l'application de R. 4227-14 du Code du travail. Fixe les essais mensuel et semestriel de l'éclairage de sécurité.",
   articles: [
-  {
-    ref: "Arrêté 2011-12-14 art. 1",
-    versionEnVigueur: "2011-12-31",
-    luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "retenu",
-    obligations: ["incendie-travail-eclairage-securite-autonomie-semestrielle", "incendie-travail-eclairage-securite-essai-mensuel"],
-  },
-  {
-    ref: "Arrêté 2011-12-14 art. 11",
-    versionEnVigueur: "2011-12-31",
-    luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "retenu",
-    obligations: ["incendie-travail-eclairage-securite-autonomie-semestrielle", "incendie-travail-eclairage-securite-essai-mensuel"],
-  },
+    {
+      ref: "Arrêté 2011-12-14 art. 1",
+      versionEnVigueur: "2011-12-31",
+      luLe: "2026-08-26",
+      lecture: "agent_verbatim",
+      statut: "retenu",
+      obligations: [
+        "incendie-travail-eclairage-securite-autonomie-semestrielle",
+        "incendie-travail-eclairage-securite-essai-mensuel",
+      ],
+    },
+    {
+      ref: "Arrêté 2011-12-14 art. 11",
+      versionEnVigueur: "2011-12-31",
+      luLe: "2026-08-26",
+      lecture: "agent_verbatim",
+      statut: "retenu",
+      obligations: [
+        "incendie-travail-eclairage-securite-autonomie-semestrielle",
+        "incendie-travail-eclairage-securite-essai-mensuel",
+      ],
+    },
   ],
 };

@@ -111,7 +111,10 @@ export function obligationsSurTextesNonDepouilles(): string[] {
  * travail du dépouillement, ordonnée par ce que le référentiel utilise
  * réellement plutôt que par l'ordre d'un code.
  */
-export function articlesCitesNonDepouilles(): { article: string; obligations: string[] }[] {
+export function articlesCitesNonDepouilles(): {
+  article: string;
+  obligations: string[];
+}[] {
   const lues = referencesDepouillees();
   const par = new Map<string, string[]>();
   for (const o of obligationsConformite) {
@@ -131,7 +134,11 @@ export function articlesCitesNonDepouilles(): { article: string; obligations: st
  * corpus pourrait s'attribuer une couverture qu'aucune obligation ne confirme,
  * et le compte de dette descendrait sans que rien ne s'améliore.
  */
-export function liensRetenusRompus(): { corpus: string; ref: string; obligation: string }[] {
+export function liensRetenusRompus(): {
+  corpus: string;
+  ref: string;
+  obligation: string;
+}[] {
   const parId = new Map(obligationsConformite.map((o) => [o.id, o]));
   const rompus: { corpus: string; ref: string; obligation: string }[] = [];
   for (const c of CORPUS) {
@@ -168,7 +175,8 @@ export function obligationsManquantes(): {
         corpus: c.id,
         ref: a.ref,
         motif: a.statut === "obligation_manquante" ? a.motif : "",
-        bloquePar: a.statut === "obligation_manquante" ? a.bloquePar : undefined,
+        bloquePar:
+          a.statut === "obligation_manquante" ? a.bloquePar : undefined,
       })),
   );
 }
@@ -182,7 +190,10 @@ export function obligationsManquantes(): {
  * « 0 article cité non dépouillé » se lirait comme « tout est lu » alors que
  * la plupart des références ne sont même pas rattachables.
  */
-export function referencesSansCle(): { obligation: string; reference: string }[] {
+export function referencesSansCle(): {
+  obligation: string;
+  reference: string;
+}[] {
   return obligationsConformite.flatMap((o) =>
     o.referencesLegales
       .filter((r) => !r.article)

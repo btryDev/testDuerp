@@ -13,22 +13,22 @@ export const ICPE_STOCKAGE: Corpus = {
   portee:
     "Régimes ICPE (autorisation, enregistrement, déclaration) et valeurs de rétention de l'arrêté du 1er juin 2015. Cités pour situer une frontière : les seuils ne sont pratiquement jamais atteints dans les secteurs couverts.",
   articles: [
-  {
-    ref: "C. env. L. 512-1",
-    versionEnVigueur: "2017-03-01",
-    luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "retenu",
-    obligations: ["stockage-dangereux-declaration-icpe"],
-  },
-  {
-    ref: "Arrêté 2015-06-01 art. 22",
-    url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000030673177",
-    versionEnVigueur: "2022-01-01",
-    luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "retenu",
-    obligations: ["stockage-dangereux-retention"],
-  },
+    {
+      ref: "C. env. L. 512-1",
+      versionEnVigueur: "2017-03-01",
+      luLe: "2026-08-26",
+      lecture: "agent_verbatim",
+      statut: "retenu",
+      obligations: ["stockage-dangereux-declaration-icpe"],
+    },
+    {
+      ref: "Arrêté 2015-06-01 art. 22",
+      url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000030673177",
+      versionEnVigueur: "2022-01-01",
+      luLe: "2026-08-26",
+      lecture: "agent_verbatim",
+      statut: "retenu",
+      obligations: ["stockage-dangereux-retention"],
+    },
   ],
 };

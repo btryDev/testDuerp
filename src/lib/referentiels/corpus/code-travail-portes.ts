@@ -13,21 +13,27 @@ export const CODE_TRAVAIL_PORTES: Corpus = {
   portee:
     "Section 2 « Portes et portails » (R. 4224-12, R. 4224-13) et section 4 « Maintenance, entretien et vérifications » (R. 4224-17). R. 4224-13 est un article de renvoi : il n'institue aucun examen.",
   articles: [
-  {
-    ref: "R. 4224-13",
-    versionEnVigueur: "2008-05-01",
-    luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "retenu",
-    obligations: ["porte-auto-maintien-en-etat", "porte-auto-verification-initiale"],
-  },
-  {
-    ref: "R. 4224-17",
-    versionEnVigueur: "2008-05-01",
-    luLe: "2026-08-26",
-    lecture: "agent_verbatim",
-    statut: "retenu",
-    obligations: ["porte-auto-dossier-maintenance", "porte-auto-maintien-en-etat"],
-  },
+    {
+      ref: "R. 4224-13",
+      versionEnVigueur: "2008-05-01",
+      luLe: "2026-08-26",
+      lecture: "agent_verbatim",
+      statut: "retenu",
+      obligations: [
+        "porte-auto-maintien-en-etat",
+        "porte-auto-verification-initiale",
+      ],
+    },
+    {
+      ref: "R. 4224-17",
+      versionEnVigueur: "2008-05-01",
+      luLe: "2026-08-26",
+      lecture: "agent_verbatim",
+      statut: "retenu",
+      obligations: [
+        "porte-auto-dossier-maintenance",
+        "porte-auto-maintien-en-etat",
+      ],
+    },
   ],
 };
