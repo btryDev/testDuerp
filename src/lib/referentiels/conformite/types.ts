@@ -350,16 +350,27 @@ export type ObligationPorteeParSalarie = ObligationCommune & {
   /** Interdit : le contexte d'équipement n'a de sens que pour l'établissement. */
   equipementsEnContexte?: never;
   /**
-   * La pièce est-elle de nature médicale ?
+   * La pièce est-elle de nature médicale ? **Requis, et c'est le point.**
    *
    * Décide ce que l'interface s'autorise à demander. Sur une pièce médicale,
    * l'outil ne collecte que l'existence, la date et l'échéance — jamais le
    * motif, jamais le sens détaillé, jamais le fichier. C'est **plus strict que
    * le droit** : `R. 4544-11-1` autorise l'employeur à conserver copie de
-   * l'attestation. Le choix est assumé et motivé dans `docs/rgpd.md` § 2.3 ;
-   * ce drapeau existe pour qu'il ne se défasse pas par inadvertance.
+   * l'attestation. Le choix est assumé et motivé dans `docs/rgpd.md` § 2.3.
+   *
+   * Pourquoi pas `?: boolean`. Une seule obligation salarié existe aujourd'hui
+   * et elle porte le drapeau. Quand les dix-huit autres arriveront — SST,
+   * CACES, autorisation de conduite, visite d'information et de prévention —
+   * l'oubli sera la faute naturelle : optionnel, le champ se serait tu, et
+   * l'interface aurait proposé de téléverser l'attestation. Requis, l'oubli ne
+   * compile pas.
+   *
+   * Le rendre obligatoire vaut mieux qu'un test qui devinerait, d'après le
+   * libellé, ce qui « parle de médecine » : c'est exactement l'inférence que ce
+   * référentiel refuse partout ailleurs. Ici, quelqu'un tranche, et sa décision
+   * est écrite.
    */
-  pieceMedicale?: boolean;
+  pieceMedicale: boolean;
 };
 
 export type Obligation =

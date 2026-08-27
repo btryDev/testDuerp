@@ -64,6 +64,7 @@ function fakeObligationSalarie(
     ] as ObligationPorteeParSalarie["realisateurs"],
     criticite: 4,
     typologies: { travail: true },
+    pieceMedicale: false,
     ...over,
     porteur: "salarie",
   };
