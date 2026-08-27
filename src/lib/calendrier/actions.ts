@@ -208,6 +208,22 @@ export async function genererCalendrier(
     obligations.map((oa) => oa.obligation.id),
   );
 
+  // Les obligations à porteur salarié n'y sont JAMAIS par la voie ci-dessus :
+  // `evaluerObligation` rend `null` pour ce porteur — rien ne dit au moteur qui
+  // opère sur quoi, le cinquième déclencheur n'étant pas implémenté (ADR-023).
+  // Elles arrivent donc par la déclaration de l'employeur, et il faut les
+  // ajouter ici sans quoi le garde-fou ci-dessus ne couvre que deux porteurs
+  // sur trois : une ligne de titre qui cesse d'être générée serait classée
+  // « obligation retirée du référentiel » et supprimée.
+  //
+  // Le cas n'est pas théorique, et c'est celui-là même que le garde-fou cite :
+  // l'habilitation électrique passée de `triennale` à `autre` (ADR-023 § 6)
+  // cesse de produire une échéance, sans cesser un instant de s'appliquer.
+  for (const obligationId of titresSalaries.keys()) {
+    const o = obligationParId(obligationId);
+    if (o !== undefined) obligationsEncoreApplicables.add(obligationId);
+  }
+
   const plan = reconcilierCalendrier(existantes, aGenerer, {
     now,
     obligationsEncoreApplicables,

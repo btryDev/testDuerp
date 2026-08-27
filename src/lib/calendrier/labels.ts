@@ -117,3 +117,32 @@ export function libellePorteur(v: {
   if (v.salarie) return `${v.salarie.prenom} ${v.salarie.nom}`.trim();
   return LABEL_TOUT_ETABLISSEMENT;
 }
+
+/**
+ * Le porteur d'une ligne, **sans nommer la personne**.
+ *
+ * Pour les surfaces qui sortent du produit : le serveur MCP, qui alimente
+ * l'assistant que l'utilisateur branche — un service d'inférence hors de notre
+ * contrôle —, et les documents remis à un tiers.
+ *
+ * `libellePorteur` a été écrit pour corriger un vrai défaut : sept écrans
+ * disaient « Tout l'établissement » sur la ligne d'une personne, attribuant à
+ * tout le monde ce qui n'incombe qu'à quelqu'un. La correction était juste
+ * **dans le produit**. Appliquée telle quelle aux surfaces sortantes, elle a
+ * fait fuir le nom : `docs/rgpd.md` § 6 promettait qu'« aucune donnée de
+ * salarié n'est envoyée à un service d'inférence, jamais », et c'était faux le
+ * jour même où la phrase a été écrite.
+ *
+ * L'utilité est préservée : savoir qu'une attestation expire ne demande pas de
+ * savoir de qui. Le dirigeant ouvre l'écran Équipe pour le nom.
+ */
+export const LABEL_PORTEUR_SALARIE_ANONYME = "Un salarié";
+
+export function libellePorteurSansNom(v: {
+  equipement: { libelle: string } | null;
+  salarieId: string | null;
+}): string {
+  if (v.equipement) return v.equipement.libelle;
+  if (v.salarieId !== null) return LABEL_PORTEUR_SALARIE_ANONYME;
+  return LABEL_TOUT_ETABLISSEMENT;
+}

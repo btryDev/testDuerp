@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { compterActions, listerActions, origineDeLAction } from "@/lib/actions/queries";
 import { listerVerifications, type VerificationListee } from "@/lib/calendrier/queries";
-import { libellePorteur } from "@/lib/calendrier/labels";
+import { libellePorteurSansNom } from "@/lib/calendrier/labels";
 import { listerRapportsDeLEtablissement } from "@/lib/rapports/queries";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import { calculerScoreDepuisEtat } from "@/lib/dashboard/score";
@@ -122,16 +122,25 @@ function contexteAction(a: {
 function libelleEquipementSitue(
   v: {
     equipement: { libelle: string; batiment: { nom: string } } | null;
-    salarie: { nom: string; prenom: string } | null;
+    salarieId: string | null;
   },
   multiBatiments: boolean,
 ): string {
   // Sans équipement, l'échéance porte sur une personne ou sur l'établissement
-  // (ADR-022, ADR-023). `libellePorteur` tranche : l'imprimer « Tout
-  // l'établissement » alors qu'elle nomme un salarié mettrait, sur un document
-  // remis à un inspecteur, le contraire de ce que la ligne prouve.
+  // (ADR-022, ADR-023). L'imprimer « Tout l'établissement » alors qu'elle
+  // relève d'une personne mettrait le contraire de ce que la ligne prouve.
+  //
+  // Mais SANS LE NOM. Ces trois sorties — registre, dossier de conformité,
+  // export contrôle — sont décrites par CLAUDE.md comme « présentables à un
+  // tiers : inspection, assurance, **bailleur, acquéreur** ». Imprimer
+  // « Attestation médicale d'absence de contre-indication au travail sous
+  // tension — Jean Dupont — dépassée depuis 45 jours » envoie un fait
+  // nominatif à connotation médicale, sur une personne qui n'a pas accès à
+  // l'outil, vers un destinataire qui n'en a aucun besoin.
+  //
+  // Le nom se lit dans l'application, par l'employeur. Il ne s'imprime pas.
   const eq = v.equipement;
-  if (!eq) return libellePorteur(v);
+  if (!eq) return libellePorteurSansNom(v);
   return multiBatiments ? `${eq.batiment.nom} — ${eq.libelle}` : eq.libelle;
 }
 

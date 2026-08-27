@@ -90,11 +90,22 @@ export default async function SalarieDetailPage({
                     </PastilleFiche>
                   </div>
                 </div>
-                <BasculerEffectif
-                  etablissementId={id}
-                  salarieId={s.id}
-                  actif={s.actif}
-                />
+                <div className="flex flex-none flex-wrap items-center gap-2">
+                  <Link
+                    href={`/etablissements/${id}/equipe/${s.id}/modifier`}
+                    className={buttonVariants({
+                      variant: "boardClair",
+                      size: "boardSm",
+                    })}
+                  >
+                    Corriger
+                  </Link>
+                  <BasculerEffectif
+                    etablissementId={id}
+                    salarieId={s.id}
+                    actif={s.actif}
+                  />
+                </div>
               </div>
 
               {!s.actif && (

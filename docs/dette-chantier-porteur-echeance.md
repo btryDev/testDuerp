@@ -257,6 +257,35 @@ qui n'existe pas encore.
 
 ## 7. Dettes de plomberie
 
+### 7.0 `DROP INDEX` sans `IF EXISTS` dans `_porteur_salarie` — risque de déploiement
+
+`prisma/migrations/20260827140000_porteur_salarie/migration.sql` fait :
+
+```sql
+DROP INDEX "Verification_etablissementId_obligationId_equipementId_key";
+```
+
+Sa migration sœur `_porteur_etablissement` écrit, elle, `DROP INDEX IF EXISTS`.
+Si l'index n'existe pas sous ce nom exact — et le dépôt sait que sa production
+a dérivé de `main` (§ 7 ci-dessous) —, la migration abandonne. Comme le script
+de build enchaîne `prisma migrate deploy`, **le déploiement échoue**, en
+laissant dans `_prisma_migrations` une entrée `failed` qui bloque toutes les
+suivantes.
+
+**Non corrigé, et c'est délibéré** : modifier une migration déjà appliquée
+change son empreinte, ce que Prisma refuse. Impossible de vérifier si celle-ci
+l'est sans interroger la production. À trancher par quelqu'un qui peut le
+constater — si elle n'est pas encore appliquée, le `IF EXISTS` s'ajoute ; si
+elle l'est, le risque est passé et il n'y a rien à faire.
+
+Même famille, signalé par la revue et non vérifié : le nom d'index
+`Verification_etablissementId_obligationId_equipementId_sala_key` est écrit à
+la main sur 63 caractères. Si la troncature de Prisma ne produit pas exactement
+cette chaîne, `prisma migrate diff` verra une dérive permanente — ce que la
+migration `_index_redondant` avait justement été écrite pour supprimer.
+
+### 7.1 Autres
+
 - **Ordre d'horodatage des migrations à surveiller.** Le lot bâtiment
   (`20260821130000_batiment_lieu`, `20260821160000_batiment_fk_no_action`)
   précède des migrations appliquées plus tôt en production ; à recouper avec

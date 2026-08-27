@@ -32,7 +32,7 @@ import {
 } from "@/lib/dates/retard";
 import { JOURS_HORIZON_PROCHE } from "@/lib/dates";
 import { prismaMcp } from "./prisma";
-import { libellePorteur } from "@/lib/calendrier/labels";
+import { libellePorteurSansNom } from "@/lib/calendrier/labels";
 
 // ---------------------------------------------------------------------
 // Fiche établissement
@@ -406,7 +406,9 @@ export async function listerVerifications(
       dateRealisee: true,
       statut: true,
       equipement: { select: { libelle: true, categorie: true } },
-      salarie: { select: { nom: true, prenom: true } },
+      // `salarieId` seul, jamais le nom : cette requête alimente un
+      // assistant hors du produit (cf. `libellePorteurSansNom`).
+      salarieId: true,
     },
   });
 
@@ -414,8 +416,9 @@ export async function listerVerifications(
     libelleObligation: v.libelleObligation,
     // Une échéance portée par l'établissement (ADR-022) n'a pas d'appareil :
     // l'assistant doit lire « tout l'établissement », pas une chaîne vide qui
-    // se lirait comme une donnée manquante.
-    equipement: libellePorteur(v),
+    // se lirait comme une donnée manquante. Et une échéance portée par une
+    // personne lit « Un salarié » : le nom ne sort pas du produit.
+    equipement: libellePorteurSansNom(v),
     categorie: v.equipement?.categorie ?? null,
     periodicite: v.periodicite,
     datePrevue: v.datePrevue,

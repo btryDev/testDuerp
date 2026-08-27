@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
+import { genererCalendrier } from "@/lib/calendrier/actions";
+import { marquerCalendrierPerime } from "@/lib/calendrier/reconciliation";
 import { salarieSchema, titreSchema } from "./schema";
 import { titreParId } from "./catalogue";
 
@@ -16,14 +18,44 @@ export type TitreActionState =
   | { status: "error"; message: string; fieldErrors?: Record<string, string[]> }
   | { status: "success" };
 
-function rafraichir(etablissementId: string, salarieId?: string) {
+/**
+ * Relance le générateur après une mutation de titre.
+ *
+ * **Elle manquait, et son absence rendait la fonctionnalité morte.** Le
+ * commentaire de `rafraichir` affirmait qu'« un titre déclaré crée une ligne » ;
+ * `revalidatePath` ne fait qu'invalider un cache de rendu, il ne génère rien.
+ * Et la page calendrier ne régénère d'elle-même que si le calendrier est vide
+ * ou si `REFERENTIEL_VERSION` a bougé — donc jamais, sur un établissement en
+ * service. Un titre déclaré n'apparaissait au calendrier qu'au prochain
+ * événement sans rapport : une mutation d'équipement, un rapport déposé.
+ *
+ * C'est la règle que `prescriptions/actions.ts` énonce depuis le début :
+ * « toute mutation relance `genererCalendrier` ». Ce module était le seul à ne
+ * pas la suivre.
+ *
+ * L'échec est rattrapé comme dans `equipements/actions.ts` : on repose le
+ * calendrier en « périmé », état que la prochaine ouverture répare d'elle-même.
+ * Sans cette marque, l'échec passerait inaperçu — le calendrier n'étant ni vide
+ * ni périmé en version, rien ne le reprendrait.
+ */
+async function regenererEtRafraichir(
+  etablissementId: string,
+  salarieId?: string,
+): Promise<void> {
+  try {
+    await genererCalendrier(etablissementId);
+  } catch (err) {
+    console.error(
+      `[salaries] regen calendrier a échoué pour ${etablissementId}`,
+      err,
+    );
+    await marquerCalendrierPerime(etablissementId);
+  }
+
   revalidatePath(`/etablissements/${etablissementId}/equipe`);
   if (salarieId) {
     revalidatePath(`/etablissements/${etablissementId}/equipe/${salarieId}`);
   }
-  // Le calendrier aussi : un titre déclaré y crée une ligne, un titre
-  // supprimé en retire une. Sans cette invalidation, l'utilisateur revient
-  // au calendrier et n'y voit pas ce qu'il vient de saisir.
   revalidatePath(`/etablissements/${etablissementId}/calendrier`);
   revalidatePath(`/etablissements/${etablissementId}`);
 }
@@ -54,7 +86,9 @@ export async function creerSalarie(
     select: { id: true },
   });
 
-  rafraichir(etablissementId, salarie.id);
+  // Pas de régénération ici : une personne sans titre ne porte aucune
+  // échéance. C'est `declarerTitre` qui en crée.
+  revalidatePath(`/etablissements/${etablissementId}/equipe`);
   return { status: "success", salarieId: salarie.id };
 }
 
@@ -91,7 +125,8 @@ export async function modifierSalarie(
     return { status: "error", message: "Cette personne est introuvable" };
   }
 
-  rafraichir(etablissementId, salarieId);
+  revalidatePath(`/etablissements/${etablissementId}/equipe`);
+  revalidatePath(`/etablissements/${etablissementId}/equipe/${salarieId}`);
   return { status: "success", salarieId };
 }
 
@@ -116,7 +151,9 @@ export async function basculerActif(
     where: { id: salarieId, etablissementId },
     data: { actif },
   });
-  rafraichir(etablissementId, salarieId);
+  // Une sortie de l'effectif change le périmètre des échéances : le générateur
+  // doit repasser.
+  await regenererEtRafraichir(etablissementId, salarieId);
 }
 
 export async function declarerTitre(
@@ -181,7 +218,7 @@ export async function declarerTitre(
     },
   });
 
-  rafraichir(etablissementId, salarieId);
+  await regenererEtRafraichir(etablissementId, salarieId);
   return { status: "success" };
 }
 
@@ -194,5 +231,5 @@ export async function retirerTitre(
   await prisma.titreSalarie.deleteMany({
     where: { id: titreId, salarie: { id: salarieId, etablissementId } },
   });
-  rafraichir(etablissementId, salarieId);
+  await regenererEtRafraichir(etablissementId, salarieId);
 }

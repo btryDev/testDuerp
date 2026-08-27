@@ -286,8 +286,28 @@ c'est un manque distinct de celui que l'écran Équipe vient de combler.
 - **Vercel** — hébergement applicatif, région UE.
 
 Aucun autre. Pas de LLM, pas d'analytics tiers, pas de CDN hors UE. Le principe
-« zéro IA » du produit a une conséquence directe ici : aucune donnée de salarié
-n'est envoyée à un service d'inférence, jamais.
+« zéro IA » du produit a une conséquence directe : **le produit** n'envoie
+aucune donnée à un service d'inférence, pour aucun traitement.
+
+**Nuance importante, et elle a d'abord été ratée.** Le produit expose un serveur
+MCP (ADR-013) auquel l'utilisateur branche l'assistant de son choix. Ce qui
+sort par là quitte notre périmètre. La première version de cette section
+affirmait qu'« aucune donnée de salarié n'est envoyée à un service d'inférence,
+jamais » — et c'était faux le jour même où la phrase a été écrite : le nom des
+salariés partait par le MCP, parce qu'un correctif d'affichage juste dans le
+produit avait été appliqué tel quel à une surface sortante.
+
+**Ce qui sort du produit ne nomme donc plus personne.** Une échéance portée par
+une personne y lit « Un salarié ». Cela vaut pour le serveur MCP et pour les
+trois documents imprimés remis à un tiers — registre de sécurité, dossier de
+conformité, export contrôle. Savoir qu'une attestation expire ne demande pas de
+savoir de qui : le nom se lit dans l'application, par l'employeur.
+
+Reste une question ouverte, qui n'est pas tranchée ici : le dossier de
+conformité est décrit comme présentable à un **bailleur ou un acquéreur**, et
+l'intitulé d'une obligation peut rester parlant même anonymisé. Faut-il en
+retirer les lignes à porteur salarié plutôt que les anonymiser ? Voir
+`docs/dette-chantier-porteur-echeance.md`.
 
 ---
 

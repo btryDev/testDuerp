@@ -140,11 +140,27 @@ export default async function VerificationDetailPage({
   // que parce qu'aucun salarié ne pouvait encore être saisi.
   //
   // Le dépôt reste possible partout ailleurs : c'est le fondement du registre
-  // de sécurité. Il n'est retiré que là où la pièce est médicale.
+  // de sécurité. Il est retiré sur TOUTE échéance portée par une personne, et
+  // non sur les seules pièces médicales — deux raisons, chacune suffisante :
+  //
+  //  1. D'un titre, l'outil ne garde que l'existence et les dates, médical ou
+  //     non (ADR-023 § 2). Indexer la garde sur `pieceMedicale` la lèverait le
+  //     jour où arrive une obligation salarié qui n'est pas médicale — SST,
+  //     CACES, autorisation de conduite : dix-neuf attendent au recensement.
+  //  2. La garde reposait sur `obligation !== undefined`. Si l'identifiant
+  //     cesse de résoudre — obligation retirée du référentiel, cas déjà vécu
+  //     et documenté dans `schema.prisma` —, `obligation` vaut `undefined`,
+  //     donc `pieceMedicale` valait `false`, donc **le dépôt réapparaissait
+  //     sur la ligne médicale**. Une garde qui se lève quand on ne sait plus
+  //     n'est pas une garde.
+  //
+  // On lit donc le porteur en base, qui ne dépend d'aucune résolution.
+  const porteeParUnePersonne = v.salarieId !== null;
   const pieceMedicale =
-    obligation !== undefined &&
-    estPorteeParSalarie(obligation) &&
-    obligation.pieceMedicale === true;
+    porteeParUnePersonne ||
+    (obligation !== undefined &&
+      estPorteeParSalarie(obligation) &&
+      obligation.pieceMedicale === true);
   const etat = classerVerification(v, aujourdhui);
 
   const faits: FaitFiche[] = [

@@ -120,3 +120,29 @@ export async function compterTitresEnRetard(
 
 export type SalarieDeLaListe = Awaited<ReturnType<typeof listerEquipe>>[number];
 export type SalarieDetail = NonNullable<Awaited<ReturnType<typeof getSalarie>>>;
+
+/**
+ * Les titres effectivement déclarés dans cet établissement.
+ *
+ * Distinct du **catalogue**, qui liste tout ce que le référentiel sait
+ * encoder. La différence n'est pas cosmétique : c'est elle qui décide si le
+ * texte d'information remis aux salariés (art. 13) décrit le traitement qui a
+ * lieu, ou un traitement imaginaire.
+ *
+ * Le texte listait le catalogue. Un employeur qui saisissait trois personnes
+ * sans déclarer aucun titre remettait donc à ses salariés un document
+ * affirmant qu'on suivait leur attestation médicale — sur la pièce la plus
+ * sensible qui soit, et alors que rien n'était suivi.
+ */
+export async function libellesTitresDeclares(
+  etablissementId: string,
+): Promise<string[]> {
+  const lignes = await prisma.titreSalarie.groupBy({
+    by: ["obligationId"],
+    where: { salarie: { etablissementId } },
+  });
+  return lignes
+    .map((l) => titreParId(l.obligationId)?.libelle)
+    .filter((v): v is string => v !== undefined)
+    .sort((a, b) => a.localeCompare(b, "fr"));
+}

@@ -260,7 +260,7 @@ et ouvre le panneau (ADR-015).
 - **Opérations** (→ Permis de feu) : Permis de feu · Plans de prévention — le
   **ponctuel encadré**, qui naît d'un chantier daté et meurt clos ; ce n'est
   ni une correction ni un registre tenu en continu (ADR-017)
-- **Mon établissement** (→ Équipements) : Équipements · Prestataires · Fiche établissement · (Équipe, à venir)
+- **Mon établissement** (→ Équipements) : Équipements · Prestataires · Fiche établissement · Équipe
 - **Mes registres** (→ DUERP, à plat) : DUERP · Registre de sécurité · Accessibilité · Carnet sanitaire — ce qui se tient en continu
 - **Paramètres** (→ Connecter) : entrée sans panneau — régler le dossier et y
   brancher un assistant en lecture seule (serveur MCP local — spike, cf.

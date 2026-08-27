@@ -4,7 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { LegalBadge } from "@/components/ui-kit";
 import { SalarieCard } from "@/components/salaries/SalarieCard";
 import { requireEtablissement } from "@/lib/auth/scope";
-import { listerEquipe } from "@/lib/salaries/queries";
+import { listerEquipe, libellesTitresDeclares } from "@/lib/salaries/queries";
 import { cataloguerTitres } from "@/lib/salaries/catalogue";
 import { texteInformation } from "@/lib/salaries/droits";
 import { TexteInformation } from "@/components/salaries/TexteInformation";
@@ -30,6 +30,7 @@ export default async function EquipePage({
   const { etablissement } = await requireEtablissement(id);
   const now = new Date();
   const equipe = await listerEquipe(id, now);
+  const titresDeclares = await libellesTitresDeclares(id);
   const catalogue = cataloguerTitres();
 
   const enRetard = equipe
@@ -179,7 +180,11 @@ export default async function EquipePage({
               <TexteInformation
                 texte={texteInformation({
                   raisonSociale: etablissement.raisonDisplay,
-                  titresSuivis: catalogue.map((o) => o.libelle),
+                  // Les titres RÉELLEMENT déclarés ici, jamais le
+                  // catalogue : un document d'information qui décrit un
+                  // traitement qui n'a pas lieu est faux, et il est remis à
+                  // des personnes.
+                  titresSuivis: titresDeclares,
                 })}
               />
             </div>

@@ -358,3 +358,52 @@ describe("frontière médicale — le drapeau est une décision, pas un défaut"
     ).toBe(false);
   });
 });
+
+describe("le nom d'un salarié ne sort pas du produit", () => {
+  /**
+   * Deux surfaces sortent du périmètre : le serveur MCP, qui alimente
+   * l'assistant que l'utilisateur branche, et les documents imprimés remis à
+   * un tiers (registre, dossier de conformité, export contrôle).
+   *
+   * Les deux ont fui, le même jour, pour la même raison : `libellePorteur` a
+   * été écrit pour corriger un vrai défaut d'affichage — sept écrans disaient
+   * « Tout l'établissement » sur la ligne d'une personne — et la correction,
+   * juste dans le produit, a été appliquée telle quelle en sortie.
+   *
+   * Ce test tient la frontière par le SOURCE, comme celui de la frontière
+   * médicale : le cas dangereux est celui qui n'existe pas encore.
+   */
+  const SURFACES_SORTANTES = [
+    "lib/mcp/queries.ts",
+    "lib/mcp/tools.ts",
+    "lib/pdf/builders.ts",
+  ];
+
+  it("les surfaces sortantes n'emploient pas le libellé nominatif", () => {
+    const fautives: string[] = [];
+    for (const rel of SURFACES_SORTANTES) {
+      const source = readFileSync(join(RACINE, "src", rel), "utf8");
+      // `libellePorteurSansNom` contient `libellePorteur` : on cherche donc
+      // l'appel nominatif seul, pas la sous-chaîne.
+      if (/\blibellePorteur\s*\(/.test(source)) fautives.push(rel);
+    }
+
+    expect(
+      fautives,
+      "Cette surface sort du produit — serveur MCP ou document remis à un tiers — et emploie `libellePorteur`, qui nomme la personne. Utilisez `libellePorteurSansNom` : savoir qu'une attestation expire ne demande pas de savoir de qui (docs/rgpd.md § 6).",
+    ).toEqual([]);
+  });
+
+  it("aucune surface sortante ne sélectionne le nom d'un salarié", () => {
+    const fautives: string[] = [];
+    for (const rel of SURFACES_SORTANTES) {
+      const source = readFileSync(join(RACINE, "src", rel), "utf8");
+      if (/salarie:\s*\{\s*select/.test(source)) fautives.push(rel);
+    }
+
+    expect(
+      fautives,
+      "Cette surface sortante sélectionne des champs de `Salarie`. Sélectionnez `salarieId` seul : il dit qu'un porteur existe sans nommer la personne.",
+    ).toEqual([]);
+  });
+});

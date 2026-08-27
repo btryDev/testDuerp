@@ -1240,3 +1240,88 @@ describe("marqueur de non-applicabilité", () => {
     expect(libelleSansMarqueur(brut)).toBe(brut);
   });
 });
+
+describe("réconciliation — la date d'un titre est un fait, pas un calcul", () => {
+  // Le défaut que ce test ferme : la ligne d'un titre de salarié était écrite
+  // à sa création et JAMAIS réécrite. Le générateur produisait bien la nouvelle
+  // date après un renouvellement, la réconciliation la jetait — la seule
+  // branche qui adoptait `g.datePrevue` exigeait `ex.statut === "a_planifier"`,
+  // or une ligne de titre naît `planifiee` ou `depassee`, jamais `a_planifier`.
+  // Le calendrier annonçait donc l'attestation dépassée à perpétuité, et la
+  // rectification promise par docs/rgpd.md § 5.2 (art. 16) restait invisible.
+  const ligneDeTitre = (over: Partial<OccurrenceExistante> = {}) =>
+    ligneExistante({
+      id: "v-titre",
+      obligationId: "elec-attestation",
+      equipementId: null,
+      salarieId: "sal-1",
+      libelleObligation: "Attestation médicale",
+      periodicite: "quinquennale",
+      datePrevue: new Date("2026-01-10T00:00:00Z"),
+      statut: "depassee",
+      ...over,
+    });
+
+  const generee = (echeance: string): VerificationGenere => ({
+    cleUnique: "elec-attestation::sal-1",
+    obligationId: "elec-attestation",
+    libelleObligation: "Attestation médicale",
+    equipementId: null,
+    salarieId: "sal-1",
+    periodicite: "quinquennale",
+    realisateurRequis: ["personne_qualifiee"],
+    datePrevue: new Date(echeance),
+    statut: "planifiee",
+    estUrgent: false,
+    criticiteObligation: 4,
+    raisons: ["titre détenu par Jean Dupont"],
+    prescriptionId: null,
+    datePrevueFaisantFoi: true,
+  });
+
+  it("adopte l'échéance d'un titre renouvelé", () => {
+    const plan = reconcilierCalendrier(
+      [ligneDeTitre()],
+      [generee("2031-01-10T00:00:00Z")],
+      { now: NOW, obligationsEncoreApplicables: new Set(["elec-attestation"]) },
+    );
+
+    expect(plan.aMettreAJour).toHaveLength(1);
+    expect(plan.aMettreAJour[0]?.datePrevue).toEqual(
+      new Date("2031-01-10T00:00:00Z"),
+    );
+    expect(plan.aMettreAJour[0]?.statut).toBe("planifiee");
+  });
+
+  it("fait apparaître le retard qu'une coquille masquait", () => {
+    // L'autre sens, et il compte autant : une échéance saisie 2036 par erreur,
+    // corrigée en 2024, doit faire ressortir le retard. Une correction qui ne
+    // corrige que dans un sens n'est pas une correction.
+    const plan = reconcilierCalendrier(
+      [ligneDeTitre({ datePrevue: new Date("2036-01-10T00:00:00Z"), statut: "planifiee" })],
+      [{ ...generee("2024-01-10T00:00:00Z"), statut: "depassee" }],
+      { now: NOW, obligationsEncoreApplicables: new Set(["elec-attestation"]) },
+    );
+
+    expect(plan.aMettreAJour[0]?.datePrevue).toEqual(
+      new Date("2024-01-10T00:00:00Z"),
+    );
+    expect(plan.aMettreAJour[0]?.statut).toBe("depassee");
+  });
+
+  it("ne bouge pas l'échéance calculée d'un équipement", () => {
+    // La garantie inverse, et c'est elle qui justifie le drapeau plutôt qu'un
+    // changement de règle générale : déclarer un extincteur de plus ne doit
+    // toujours pas effacer un retard accumulé sur une échéance réglementaire.
+    const plan = reconcilierCalendrier(
+      [ligneExistante({ id: "v-eq", obligationId: "elec", equipementId: "eq-1", datePrevue: new Date("2026-01-10T00:00:00Z"), statut: "depassee" })],
+      [{ ...generee("2031-01-10T00:00:00Z"), cleUnique: "elec::eq-1", obligationId: "elec", equipementId: "eq-1", salarieId: null, datePrevueFaisantFoi: undefined }],
+      { now: NOW, obligationsEncoreApplicables: new Set(["elec"]) },
+    );
+
+    const maj = plan.aMettreAJour[0];
+    expect(maj?.datePrevue ?? new Date("2026-01-10T00:00:00Z")).toEqual(
+      new Date("2026-01-10T00:00:00Z"),
+    );
+  });
+});

@@ -4,7 +4,7 @@
 // réversible**, comme `seed-demo.ts` dont il reprend les trois règles.
 //
 // POURQUOI CE SCRIPT EXISTE. Le lot du porteur salarié livre le modèle, le
-// moteur et une obligation, mais aucun écran de saisie : il n'existe aujourd'hui
+// moteur et une obligation, mais aucun écran de saisie (l'écran Équipe est arrivé depuis, ce script reste utile pour peupler vite) : il n'existe aujourd'hui
 // aucun moyen de créer un `Salarie` ni de déclarer un `TitreSalarie`. Tout le
 // chemin est donc inatteignable, et une relecture l'a relevé comme le défaut
 // structurant du lot. Ce script est la passerelle en attendant l'écran — il
