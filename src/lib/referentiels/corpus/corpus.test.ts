@@ -136,7 +136,11 @@ describe("corpus — la dette de lecture, mesurée et décroissante", () => {
   // lecture s'interrompt avant le titre qui traite du contrôle, et
   // l'obligation est de criticité 5. Le déclarer lu serait le pire service à
   // lui rendre.
-  const PLAFOND = 1;
+  // Abaissé de 1 à 0 le 2026-08-27 : R. 4412-17 et GC 8, derniers articles
+  // cités sans être dépouillés, sont entrés au corpus avec leur verbatim. Le
+  // cliquet ne remonte pas — toute obligation nouvelle devra désormais
+  // s'appuyer sur un texte lu.
+  const PLAFOND = 0;
 
   // Le nombre de références qui ne portent même pas de clé d'article, donc
   // rattachables à aucun corpus. Complément indispensable du plafond : sans

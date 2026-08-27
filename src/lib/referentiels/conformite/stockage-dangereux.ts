@@ -72,6 +72,16 @@ export const obligationsStockageDangereux: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044166790",
       },
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "R. 4412-17 (prévention des débordements et ruptures de parois des récipients)",
+        article: "R. 4412-17",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530917",
+        note: "« A cet effet, l'employeur prend les mesures appropriées pour empêcher : […] 2° Les risques de débordement ou d'éclaboussures, ainsi que de déversement par rupture des parois des cuves, bassins, réservoirs et récipients de toute nature contenant des produits susceptibles de provoquer des brûlures d'origine thermique ou chimique. » Verbatim relevé en première main le 2026-08-27. C'est le seul article du Code du travail qui vise la rupture de parois d'un récipient de stockage ; le mot « rétention » n'y figure pas, ni nulle part ailleurs dans le chapitre.",
+        versionConstatee: "2008-05-01",
+      },
     ],
     periodicite: "autre",
     realisateurs: ["exploitant"],
@@ -94,6 +104,16 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-11",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530929/",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "R. 4412-17 (prévention des débordements et ruptures de parois des récipients)",
+        article: "R. 4412-17",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530917",
+        note: "« A cet effet, l'employeur prend les mesures appropriées pour empêcher : […] 2° Les risques de débordement ou d'éclaboussures, ainsi que de déversement par rupture des parois des cuves, bassins, réservoirs et récipients de toute nature contenant des produits susceptibles de provoquer des brûlures d'origine thermique ou chimique. » Verbatim relevé en première main le 2026-08-27. C'est le seul article du Code du travail qui vise la rupture de parois d'un récipient de stockage ; le mot « rétention » n'y figure pas, ni nulle part ailleurs dans le chapitre.",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "autre",

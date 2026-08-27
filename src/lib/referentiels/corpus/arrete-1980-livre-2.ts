@@ -33,6 +33,19 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
     obligations: ["aeration-erp-chauffage-ventilation-annuelle"],
   },
   {
+    ref: "GC 8",
+    intitule: "Moyens d'extinction des installations de cuisson",
+    versionEnVigueur: "1980-08-15",
+    luLe: "2026-08-27",
+    lecture: "premiere_main",
+    statut: "retenu",
+    obligations: ["cuisson-erp-extinction-automatique-annuelle"],
+    citationCle:
+      "« Dans les grandes cuisines ouvertes et les îlots de cuisson, des dispositifs d'extinction automatique adaptés au feu d'huile doivent être installés à l'aplomb des friteuses ouvertes. »",
+    prescrit:
+      "Fonde l'EXISTENCE du dispositif d'extinction automatique, pas sa vérification — laquelle relève de MS 73 § 2. Les deux articles étaient absents de l'obligation, qui ne citait que GC 22, où l'expression « extinction automatique » n'apparaît pas.",
+  },
+  {
     ref: "GC 1",
     intitule: "Domaine d'application et définitions — seuil de la « grande cuisine »",
     versionEnVigueur: "1980-08-15",
@@ -108,7 +121,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
     luLe: "2026-08-26",
     lecture: "agent_verbatim",
     statut: "retenu",
-    obligations: ["incendie-erp-extincteurs-annuelle", "incendie-erp-ria-annuelle", "incendie-erp-ssi-annuelle", "incendie-erp-ssi-triennale"],
+    obligations: ["incendie-erp-extincteurs-annuelle", "incendie-erp-ria-annuelle", "incendie-erp-ssi-annuelle", "incendie-erp-ssi-triennale", "cuisson-erp-extinction-automatique-annuelle"],
   },
   {
     ref: "EC 14",

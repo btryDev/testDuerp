@@ -202,6 +202,26 @@ export const obligationsCuissonHotte: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
       },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 25 juin 1980, art. MS 73 § 2 (vérification annuelle des moyens de secours)",
+        article: "MS 73",
+        url:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317753/",
+        note: "« En cours d'exploitation, ces mêmes appareils ou installations ainsi que les appareils mobiles doivent être vérifiés, au moins une fois par an, dans les conditions prévues à la section II précitée. » Verbatim relevé en première main le 2026-08-27. La triennale par organisme agréé du même paragraphe ne vise QUE les SSI de catégories A et B et les sprinkleurs : un système sous hotte de friteuse relève de l'annuelle par technicien compétent.",
+        versionConstatee: "1980-08-15",
+      },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 25 juin 1980, art. GC 8 (obligation d'installation du dispositif)",
+        article: "GC 8",
+        url:
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317499/",
+        note: "« Dans les grandes cuisines ouvertes et les îlots de cuisson, des dispositifs d'extinction automatique adaptés au feu d'huile doivent être installés à l'aplomb des friteuses ouvertes. » Fonde l'EXISTENCE du dispositif, pas sa vérification.",
+        versionConstatee: "1980-08-15",
+      },
     ],
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],

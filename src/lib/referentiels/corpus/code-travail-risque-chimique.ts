@@ -64,5 +64,22 @@ export const CODE_TRAVAIL_RISQUE_CHIMIQUE: Corpus = {
     statut: "retenu",
     obligations: ["esp-personnel-formation"],
   },
+  {
+    ref: "R. 4412-17",
+    intitule:
+      "Protection contre les dangers des propriétés chimiques et physico-chimiques",
+    versionEnVigueur: "2008-05-01",
+    luLe: "2026-08-27",
+    lecture: "premiere_main",
+    statut: "retenu",
+    obligations: [
+      "stockage-dangereux-retention",
+      "stockage-dangereux-verification-etancheite",
+    ],
+    citationCle:
+      "« Ces mesures portent, notamment, sur le stockage, la manutention et l'isolement des agents chimiques incompatibles. A cet effet, l'employeur prend les mesures appropriées pour empêcher : […] 2° Les risques de débordement ou d'éclaboussures, ainsi que de déversement par rupture des parois des cuves, bassins, réservoirs et récipients de toute nature contenant des produits susceptibles de provoquer des brûlures d'origine thermique ou chimique. »",
+    prescrit:
+      "Seul article du Code du travail visant la rupture de parois d'un récipient de stockage. Le mot « rétention » n'apparaît NULLE PART dans le chapitre — il n'existe d'ailleurs pas de section « stockage » : la structure va du champ d'application à l'évaluation, puis aux mesures de prévention. R. 4412-17 est ce qui existe de plus proche, et il suffit. Ajouté le 2026-08-27 après qu'un arbitrage eut établi que R. 4412-11, seul cité jusque-là, ne porte ni « rétention » ni « étanchéité » — son 2° ne fonde que « des procédures d'entretien régulières ».",
+  },
   ],
 };
