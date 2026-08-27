@@ -24,12 +24,20 @@ type TitreDuCatalogue = {
  * propositions d'aménagement et les restrictions — aucun élément de
  * diagnostic, jamais (L. 4624-8, R. 4624-55).
  *
- * Sur un titre marqué `pieceMedicale`, ce formulaire **n'offre aucun dépôt de
- * fichier**, et il dit pourquoi. Ce n'est pas une précaution d'affichage : le
- * drapeau est requis sur le type de l'obligation, et
- * `src/lib/rgpd/frontiere-medicale.test.ts` lit tout `src/` pour vérifier
- * qu'aucune surface de dépôt n'est montée dans un contexte d'échéance sans
- * lui. Ajouter un `EvidenceDropzone` ici ferait échouer ce test.
+ * Ce formulaire **n'offre aucun dépôt de fichier**, sur aucun titre — pas
+ * seulement sur les médicaux. Dans ce module, il n'y a rien à déposer :
+ * l'outil enregistre qu'un titre existe et ses dates, un point. Et sur un
+ * titre marqué `pieceMedicale`, il dit en plus pourquoi.
+ *
+ * `src/lib/rgpd/frontiere-medicale.test.ts` le tient par
+ * `depotDansLeModuleSalarie`, qui interdit franchement toute surface de dépôt
+ * sous `lib/salaries/`, `components/salaries/` et `equipe/`. Ajouter un
+ * `EvidenceDropzone` ici fait échouer ce test — vérifié le 2026-08-27 en
+ * l'ajoutant pour de bon.
+ *
+ * La première version de cette garantie ne tenait pas. Elle demandait que
+ * `pieceMedicale` soit *mentionné* dans le fichier, ce que ce formulaire fait
+ * pour son encart — si bien qu'un dépôt posé juste à côté passait au vert.
  *
  * La règle du produit est plus stricte que le droit : `R. 4544-11-1` autorise
  * expressément l'employeur à conserver copie de l'attestation. Le choix est

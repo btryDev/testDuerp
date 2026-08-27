@@ -123,6 +123,52 @@ export function depotNonGarde(source: string): boolean {
   return !source.includes("pieceMedicale");
 }
 
+/**
+ * Le module du salarié, désigné par son EMPLACEMENT et non par son contenu.
+ *
+ * Le contenu ne peut pas servir ici, et c'est ce que la première tentative a
+ * appris : `verifications/[verificationId]/page.tsx` nomme le salarié — il
+ * peut être porteur de l'échéance — tout en montant légitimement le dépôt d'un
+ * rapport de vérification. Une règle fondée sur le mot l'aurait interdit à
+ * tort, et une règle qu'on doit excepter à tort finit exceptée partout.
+ *
+ * Le chemin, lui, dit sans ambiguïté de quel monde on parle.
+ */
+const CHEMINS_DU_SALARIE = [
+  /^lib\/salaries\//,
+  /^components\/salaries\//,
+  /^app\/etablissements\/\[id\]\/equipe\//,
+  /^app\/api\/etablissements\/\[id\]\/equipe\//,
+];
+
+/**
+ * La règle forte, et celle qui manquait.
+ *
+ * `depotNonGarde` demande que `pieceMedicale` soit **mentionné** dans le
+ * fichier. C'est ce qu'il annonce — « il force à regarder, il ne relit pas à
+ * votre place » — et c'est insuffisant là où ça compte : un écran de salarié
+ * qui nomme `pieceMedicale` pour afficher son encart d'avertissement satisfait
+ * la règle **tout en montant un dépôt juste à côté**.
+ *
+ * Éprouvé le 2026-08-27 en injectant un `EvidenceDropzone` dans
+ * `FormulaireTitre.tsx` : le test est resté vert, alors que trois documents et
+ * un message de commit affirmaient qu'il tomberait. La garantie était donc
+ * fausse, et c'est le fait de l'avoir cassée exprès qui l'a montré.
+ *
+ * Dans le module du salarié, la règle n'a pas besoin d'être conditionnelle :
+ * il n'y a **rien** à déposer. Ni pièce médicale, ni certificat, ni scan de
+ * carte. L'outil enregistre qu'un titre existe et ses dates, un point. Une
+ * interdiction franche se vérifie, là où une obligation de mention se
+ * contourne sans le vouloir.
+ */
+export function depotDansLeModuleSalarie(
+  cheminRelatif: string,
+  source: string,
+): boolean {
+  if (!CHEMINS_DU_SALARIE.some((r) => r.test(cheminRelatif))) return false;
+  return MOTIF_DEPOT.test(source);
+}
+
 describe("frontière médicale — aucun dépôt de pièce sur une échéance sans garde", () => {
   it("le détecteur repère un montage non gardé", () => {
     // Sans cette vérification, on ne saurait jamais si le test regarde au bon
@@ -183,6 +229,56 @@ describe("frontière médicale — aucun dépôt de pièce sur une échéance sa
     expect(
       fautifs,
       "Ce fichier monte un formulaire de dépôt de pièce sur une échéance sans que `pieceMedicale` y apparaisse. D'une pièce médicale, l'outil ne conserve que l'existence, la date et l'échéance — jamais le document (docs/rgpd.md § 2.3, ADR-023 § 2). Gardez le montage, ou ajoutez le fichier à `DEROGATIONS` en disant pourquoi aucune pièce médicale ne peut y passer.",
+    ).toEqual([]);
+  });
+
+  it("le détecteur fort mord là où le premier laissait passer", () => {
+    // Le cas réel, reproduit : un écran de salarié qui nomme `pieceMedicale`
+    // pour son encart d'avertissement ET monte un dépôt. `depotNonGarde` le
+    // laisse passer — c'est sa limite, annoncée. Le détecteur par chemin le
+    // refuse.
+    const source = `
+      export function FormulaireTitre({ titre }: { titre: { pieceMedicale: boolean } }) {
+        return (
+          <form>
+            {titre.pieceMedicale && <p>Ne déposez pas le document.</p>}
+            <EvidenceDropzone name="attestation" />
+          </form>
+        );
+      }
+    `;
+    expect(depotNonGarde(source)).toBe(false);
+    expect(
+      depotDansLeModuleSalarie("components/salaries/FormulaireTitre.tsx", source),
+    ).toBe(true);
+  });
+
+  it("le détecteur fort laisse déposer un rapport de vérification", () => {
+    // Une fiche de vérification nomme le salarié — il peut être porteur de
+    // l'échéance — et monte légitimement le dépôt du rapport. La règle ne doit
+    // pas l'atteindre, sans quoi il faudrait l'excepter, et une règle qu'on
+    // excepte à tort finit exceptée partout.
+    expect(
+      depotDansLeModuleSalarie(
+        "app/etablissements/[id]/verifications/[verificationId]/page.tsx",
+        `<UploadRapportForm action={deposer} /> {verification.salarie?.nom}`,
+      ),
+    ).toBe(false);
+  });
+
+  it("aucun fichier du module salarié ne monte de dépôt", () => {
+    const fautifs: string[] = [];
+
+    for (const chemin of fichiersSource(join(RACINE, "src"))) {
+      const rel = relative(RACINE, chemin).replace(/^src\//, "");
+      if (depotDansLeModuleSalarie(rel, readFileSync(chemin, "utf8"))) {
+        fautifs.push(rel);
+      }
+    }
+
+    expect(
+      fautifs,
+      "Ce fichier monte une surface de dépôt de fichier dans le module du salarié. L'outil n'enregistre d'un titre que son existence et ses dates — jamais le document, médical ou non (docs/rgpd.md § 2.3, ADR-023 § 2). Il n'y a pas de dérogation à demander ici : retirez le dépôt.",
     ).toEqual([]);
   });
 
