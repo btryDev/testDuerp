@@ -288,7 +288,7 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
           name="notesInternes"
           rows={3}
           maxLength={1000}
-          className="w-full rounded-md border border-rule bg-background px-3 py-2 text-sm shadow-sm"
+          className="champ-board min-h-[92px] resize-y"
           placeholder="Ex : interlocuteur historique, contrat cadre signé en 2023, remise de 15%…"
         />
       </section>
