@@ -3,9 +3,21 @@
 import type { ReactNode } from "react";
 
 /**
- * Carte cliquable générique pour les grilles de choix (type ERP, classe
- * IGH, tranche d'effectif). Cohérent papier/cartouche, état sélectionné
- * mis en avant par un bord sombre + fond légèrement teinté.
+ * Carte cliquable des grilles de choix (type ERP, classe IGH, catégorie à
+ * confirmer).
+ *
+ * Charte board : le choix retenu passe du creux ardoise au champ glacier —
+ * la même bascule que les puces de domaine du formulaire prestataire
+ * (`has-[:checked]:bg-[--board-blue-pale]`), ici pilotée par `aria-checked`
+ * puisqu'il s'agit d'un `role="radio"` et non d'une case.
+ *
+ * Le champ ne suffit pas : il porte aussi la coche d'encre. Une sélection
+ * qui ne tiendrait qu'à la teinte disparaît en niveaux de gris et pour qui
+ * n'y voit pas (charte, interdit 10).
+ *
+ * L'`<input type="hidden">` que la carte posait a été retiré : imbriqué dans
+ * un `<button>` il produisait du HTML invalide, et son nom `choix-…` n'était
+ * lu nulle part — les valeurs partent par les champs cachés du wizard.
  */
 export function CarteChoix({
   id,
@@ -29,19 +41,20 @@ export function CarteChoix({
       type="button"
       role="radio"
       aria-checked={actif}
+      data-choix={id}
       onClick={onClick}
       className={
-        "group relative flex h-full w-full flex-col items-start gap-2 rounded-md border px-4 py-4 text-left transition-colors " +
+        "relative flex h-full w-full flex-col items-start gap-2 rounded-[18px] px-4 py-4 text-left transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--board-blue-strong)] " +
         (actif
-          ? "border-ink bg-warm-soft/40 shadow-sm"
-          : "border-rule bg-paper hover:border-ink/60 hover:bg-paper-sunk/30")
+          ? "bg-[color:var(--board-blue-pale)]"
+          : "bg-[color:var(--board-slate-pale)] hover:bg-[color:var(--board-blue-pale)]")
       }
     >
-      {/* Coche discrète dans le coin supérieur droit quand actif */}
+      {/* Coche d'encre dans le coin, quand la carte est retenue. */}
       {actif && (
         <span
           aria-hidden
-          className="absolute right-2.5 top-2.5 flex size-5 items-center justify-center rounded-full bg-ink text-paper"
+          className="absolute right-3 top-3 flex size-5 items-center justify-center rounded-full bg-[color:var(--board-ink)] text-white"
         >
           <svg
             viewBox="0 0 16 16"
@@ -59,16 +72,16 @@ export function CarteChoix({
 
       <div className="flex items-center gap-3">
         {icone && (
-          <span className="flex size-8 items-center justify-center rounded-md bg-paper-sunk/70 ring-1 ring-rule-soft">
+          <span className="flex size-8 items-center justify-center rounded-[10px] bg-[color:var(--board-card)] text-[color:var(--board-slate-mid)] ring-1 ring-[color:var(--board-slate-line)]">
             {icone}
           </span>
         )}
         <div className="min-w-0">
-          <p className="text-[0.92rem] font-semibold tracking-[-0.01em]">
+          <p className="m-0 text-[13.5px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
             {label}
           </p>
           {badge && (
-            <p className="mt-0.5 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="board-eyebrow m-0 mt-1 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
               {badge}
             </p>
           )}
@@ -76,11 +89,10 @@ export function CarteChoix({
       </div>
 
       {description && (
-        <p className="text-[0.78rem] leading-relaxed text-muted-foreground">
+        <p className="m-0 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
           {description}
         </p>
       )}
-      <input type="hidden" name={`choix-${id}`} value={actif ? "1" : "0"} />
     </button>
   );
 }

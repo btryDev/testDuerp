@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { ChampBoard } from "@/components/ui-kit";
+import { BlocCreux } from "@/components/ui-kit/fiche";
 import {
   SEUILS_5E_CATEGORIE,
   deduireCategorieErpComplete,
@@ -51,12 +54,12 @@ export function CapaciteErp({ state, update, errors }: StepProps) {
   const appliquer = (cat: CategorieErp) => update({ categorieErp: cat });
 
   return (
-    <div className="space-y-4">
-      <div className="border-t border-dashed border-rule/60 pt-5">
-        <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+    <div className="flex flex-col gap-4">
+      <div className="border-t border-[color:var(--board-slate-line)] pt-5">
+        <p className="m-0 text-[14px] font-semibold leading-[1.35] tracking-[-0.01em] text-[color:var(--board-ink)]">
           Combien de personnes du public pouvez-vous accueillir au maximum ?
         </p>
-        <p className="mt-1 text-[0.8rem] text-muted-foreground">
+        <p className="m-0 mt-1.5 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           Public seul, sans le personnel. Votre arrêté d&apos;ouverture, le PV
           de la commission de sécurité ou votre plan d&apos;évacuation
           l&apos;indiquent. La catégorie est proposée d&apos;après le Code de
@@ -65,61 +68,72 @@ export function CapaciteErp({ state, update, errors }: StepProps) {
         </p>
       </div>
 
+      {/* Saisie en texte plutôt qu'en `type="number"` : la molette d'un champ
+          nombre modifie une valeur déjà saisie sans qu'on s'en aperçoive
+          (charte § 5), et ici une valeur changée par accident déplace la
+          catégorie proposée. */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <ChampNombre
+        <ChampBoard
           id="effectifPublicTotal"
           label="Au total"
+          inputMode="numeric"
           value={state.effectifPublicTotal}
-          onChange={(v) => update({ effectifPublicTotal: v })}
+          onChange={(e) => update({ effectifPublicTotal: e.target.value })}
         />
         {demandeNiveaux && seuil?.sousSol !== undefined && (
-          <ChampNombre
+          <ChampBoard
             id="effectifPublicSousSol"
             label="Dont en sous-sol"
-            hint="0 si aucun public en sous-sol"
+            aide="0 si aucun public en sous-sol"
+            inputMode="numeric"
             value={state.effectifPublicSousSol}
-            onChange={(v) => update({ effectifPublicSousSol: v })}
+            onChange={(e) => update({ effectifPublicSousSol: e.target.value })}
           />
         )}
         {demandeNiveaux && seuil?.etages !== undefined && (
-          <ChampNombre
+          <ChampBoard
             id="effectifPublicEtages"
             label="Dont en étage, galerie, mezzanine"
-            hint="0 si tout est au rez-de-chaussée"
+            aide="0 si tout est au rez-de-chaussée"
+            inputMode="numeric"
             value={state.effectifPublicEtages}
-            onChange={(v) => update({ effectifPublicEtages: v })}
+            onChange={(e) => update({ effectifPublicEtages: e.target.value })}
           />
         )}
       </div>
 
+      {/* La proposition se pose sur le creux ardoise, sans couleur d'état :
+          une catégorie déduite n'est ni un fait acquis (le vert du board dit
+          « fait ») ni une alerte. Elle le devient quand on la retient. */}
       {deduction?.statut === "proposee" && (
-        <div className="rounded-lg border border-[color:color-mix(in_oklch,var(--accent-vif)_20%,transparent)] bg-[color:var(--accent-vif-soft)] px-4 py-3">
-          <strong className="block text-[0.92rem] text-[color:var(--accent-vif)]">
+        <BlocCreux>
+          <strong className="block text-[13.5px] font-semibold text-[color:var(--board-ink)]">
             Catégorie proposée : {deduction.categorieErp.slice(1)}ᵉ
           </strong>
-          <span className="mt-1 block text-[0.8rem] leading-[1.5] text-ink/80">
+          <span className="mt-1 block max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             {deduction.motif}
             {deduction.avertissement ? ` ${deduction.avertissement}` : ""}
           </span>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button
               type="button"
-              onClick={() => appliquer(deduction.categorieErp)}
-              className={
+              variant={
                 state.categorieErp === deduction.categorieErp
-                  ? "rounded-md bg-ink px-3 py-1.5 text-sm text-paper"
-                  : "rounded-md border border-ink px-3 py-1.5 text-sm"
+                  ? "board"
+                  : "boardClair"
               }
+              size="boardSm"
+              onClick={() => appliquer(deduction.categorieErp)}
             >
               {state.categorieErp === deduction.categorieErp
                 ? "Retenue"
                 : "Retenir cette catégorie"}
-            </button>
+            </Button>
             <select
               aria-label="Choisir une autre catégorie"
               value={state.categorieErp}
               onChange={(e) => update({ categorieErp: e.target.value })}
-              className="h-9 rounded-md border border-rule bg-background px-3 text-sm"
+              className="champ-board h-8 w-auto bg-[color:var(--board-card)] py-0 text-[12px]"
             >
               <option value="">Autre catégorie…</option>
               {(["N1", "N2", "N3", "N4", "N5"] as const).map((c) => (
@@ -129,12 +143,12 @@ export function CapaciteErp({ state, update, errors }: StepProps) {
               ))}
             </select>
           </div>
-        </div>
+        </BlocCreux>
       )}
 
       {deduction?.statut === "a_confirmer" && (
-        <div className="space-y-3">
-          <p className="text-[0.85rem] leading-relaxed text-muted-foreground">
+        <div className="flex flex-col gap-3">
+          <p className="m-0 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             {deduction.motif} {deduction.question}
           </p>
           <div
@@ -162,41 +176,10 @@ export function CapaciteErp({ state, update, errors }: StepProps) {
       )}
 
       {errors?.categorieErp && (
-        <p className="text-sm text-destructive">{errors.categorieErp}</p>
+        <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+          {errors.categorieErp}
+        </p>
       )}
     </div>
-  );
-}
-
-function ChampNombre({
-  id,
-  label,
-  hint,
-  value,
-  onChange,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <label htmlFor={id} className="block space-y-1.5">
-      <span className="block text-[0.85rem] font-medium">{label}</span>
-      <input
-        id={id}
-        type="number"
-        min={0}
-        max={99999}
-        inputMode="numeric"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-11 w-full rounded-lg border border-rule bg-background px-3 text-[0.95rem]"
-      />
-      {hint ? (
-        <span className="block text-[0.75rem] text-muted-foreground">{hint}</span>
-      ) : null}
-    </label>
   );
 }

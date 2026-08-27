@@ -1,6 +1,9 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { ChampBoard, SectionChamps } from "@/components/ui-kit";
+import { BlocCreux } from "@/components/ui-kit/fiche";
 import { evaluerScopeSecteur } from "@/lib/onboarding/scope";
 import type { StepProps } from "./types";
 
@@ -12,8 +15,13 @@ const SUGGESTIONS_NAF = [
 ];
 
 /**
- * Étape 1 sur 3 — Identité juridique + lieu principal, fusionnées dans un
- * seul écran avec deux sections visuellement distinctes.
+ * Étape 1 sur 3 — Identité juridique + lieu principal, réunies dans un seul
+ * écran, une carte board par section.
+ *
+ * Les sections portaient une numérotation romaine (« § I », « § II ») : on
+ * l'a retirée. Contrairement aux étapes du wizard, ces deux blocs se
+ * remplissent dans l'ordre qu'on veut — la numérotation n'y portait aucune
+ * information (cf. `SectionChamps`).
  */
 export function StepIdentite({ state, update, errors }: StepProps) {
   const scope =
@@ -23,319 +31,273 @@ export function StepIdentite({ state, update, errors }: StepProps) {
   const hintEffectif = hintPourEffectif(state.effectifSurSite);
 
   return (
-    <div className="space-y-10">
+    <div className="flex flex-col gap-[22px]">
       <div>
-        <h2 className="text-[2rem] font-semibold leading-tight tracking-[-0.03em]">
+        <h2 className="board-titre m-0 text-[clamp(22px,2.2vw,27px)]">
           Décrivez votre établissement
         </h2>
-        <p className="mt-3 max-w-[56ch] text-[0.95rem] leading-[1.55] text-muted-foreground">
+        <p className="m-0 mt-2.5 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           Ces informations servent à identifier vos obligations
           réglementaires — elles ne sont jamais partagées.
         </p>
       </div>
 
-      {/* ─── Identité juridique ─────────────────────── */}
-      <section className="space-y-1">
-        <p className="bento-kicker mb-4">§&nbsp;I · Identité juridique</p>
-        <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
-          <OnbField
-            label="Raison sociale"
-            required
-            fullWidth
-            error={errors?.raisonSociale}
-          >
-            <OnbInput
+      {/* Chaque section prend la carte blanche du board : posé à même le
+          canvas, le creux ardoise du `.champ-board` ne s'en détache plus
+          (1,03:1) et les champs s'effacent. */}
+      <section className="carte-board px-7 py-6 sm:px-8">
+        <SectionChamps titre="Identité juridique">
+          <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
+            <ChampBoard
+              className="sm:col-span-2"
               id="raisonSociale"
+              name="raisonSociale"
+              label="Raison sociale"
+              requis
               value={state.raisonSociale}
-              onChange={(v) => update({ raisonSociale: v })}
+              onChange={(e) => update({ raisonSociale: e.target.value })}
               placeholder="Ex : Bistrot du marché SARL"
               autoFocus
-              ariaInvalid={Boolean(errors?.raisonSociale)}
+              erreur={errors?.raisonSociale}
             />
-          </OnbField>
 
-          <OnbField
-            label="SIRET"
-            hint="14 chiffres — facultatif"
-            labelExtra={
-              <InfoTooltip>
-                Le SIRET figurera en en-tête de vos documents officiels.
-              </InfoTooltip>
-            }
-            error={errors?.siret}
-          >
-            <OnbInput
-              id="siret"
-              value={state.siret}
-              onChange={(v) => update({ siret: v })}
-              placeholder="812 456 789 00021"
-              inputMode="numeric"
-              pattern="\d{14}"
-              ariaInvalid={Boolean(errors?.siret)}
-            />
-          </OnbField>
-        </div>
+            <div>
+              <label className="label-board" htmlFor="siret">
+                SIRET
+                <InfoTooltip>
+                  Le SIRET figurera en en-tête de vos documents officiels.
+                </InfoTooltip>
+              </label>
+              <input
+                className="champ-board"
+                id="siret"
+                name="siret"
+                value={state.siret}
+                onChange={(e) => update({ siret: e.target.value })}
+                placeholder="812 456 789 00021"
+                inputMode="numeric"
+                pattern="\d{14}"
+                aria-invalid={Boolean(errors?.siret)}
+                aria-describedby="siret-aide"
+              />
+              <p
+                id="siret-aide"
+                className="m-0 mt-1.5 text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]"
+              >
+                14 chiffres — facultatif
+              </p>
+              {errors?.siret && (
+                <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                  {errors.siret}
+                </p>
+              )}
+            </div>
+          </div>
+        </SectionChamps>
       </section>
 
-      {/* ─── Site principal ────────────────────────── */}
-      <section className="space-y-1">
-        <p className="bento-kicker mb-4">§&nbsp;II · Le site principal</p>
-
-        <div className="grid grid-cols-1 gap-x-5 gap-y-4">
-          <OnbField label="Numéro et rue" required error={errors?.adresse}>
-            <OnbInput
+      <section className="carte-board px-7 py-6 sm:px-8">
+        <SectionChamps titre="Le site principal">
+          <div className="grid grid-cols-1 gap-x-5 gap-y-4">
+            <ChampBoard
               id="adresseRue"
+              name="adresseRue"
+              label="Numéro et rue"
+              requis
               value={state.adresseRue}
-              onChange={(v) => update({ adresseRue: v })}
+              onChange={(e) => update({ adresseRue: e.target.value })}
               placeholder="12 rue des Halles"
               autoComplete="street-address"
-              ariaInvalid={Boolean(errors?.adresse)}
+              erreur={errors?.adresse}
             />
-          </OnbField>
 
-          <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-[160px_1fr]">
-            <OnbField label="Code postal" required>
-              <OnbInput
+            <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-[160px_1fr]">
+              <ChampBoard
                 id="adresseCodePostal"
+                name="adresseCodePostal"
+                label="Code postal"
+                requis
                 value={state.adresseCodePostal}
-                onChange={(v) =>
+                onChange={(e) =>
                   update({
-                    adresseCodePostal: v.replace(/\D/g, "").slice(0, 5),
+                    adresseCodePostal: e.target.value
+                      .replace(/\D/g, "")
+                      .slice(0, 5),
                   })
                 }
                 placeholder="75011"
                 inputMode="numeric"
                 pattern="\d{5}"
                 maxLength={5}
-                ariaInvalid={Boolean(errors?.adresse)}
+                aria-invalid={Boolean(errors?.adresse)}
               />
-            </OnbField>
-            <OnbField label="Ville" required>
-              <OnbInput
+              <ChampBoard
                 id="adresseVille"
+                name="adresseVille"
+                label="Ville"
+                requis
                 value={state.adresseVille}
-                onChange={(v) => update({ adresseVille: v })}
+                onChange={(e) => update({ adresseVille: e.target.value })}
                 placeholder="Paris"
                 autoComplete="address-level2"
-                ariaInvalid={Boolean(errors?.adresse)}
+                aria-invalid={Boolean(errors?.adresse)}
               />
-            </OnbField>
-          </div>
-
-          <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
-            <OnbField
-              label="Code NAF"
-              required
-              error={errors?.codeNaf}
-              labelExtra={
-                <InfoTooltip>
-                  Code INSEE qui figure sur votre avis de situation. Détermine
-                  votre secteur et pré-remplit les risques types pour le DUERP.
-                </InfoTooltip>
-              }
-            >
-              <OnbInput
-                id="codeNaf"
-                value={state.codeNaf}
-                onChange={(v) => update({ codeNaf: v.toUpperCase() })}
-                placeholder="56.10A"
-                ariaInvalid={
-                  Boolean(errors?.codeNaf) ||
-                  scope?.status === "hors_perimetre"
-                }
-                className="uppercase"
-              />
-              {scope?.status === "ok" && !errors?.codeNaf ? (
-                <p className="mt-1 flex items-center gap-1.5 text-[0.78rem] text-[color:var(--accent-vif)]">
-                  <span aria-hidden>✓</span>
-                  Secteur reconnu : {scope.secteurNom}
-                </p>
-              ) : null}
-              {scope?.status === "hors_perimetre" && !errors?.codeNaf ? (
-                <div className="mt-1.5 rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2.5 text-[0.82rem] leading-[1.5] text-destructive">
-                  <p className="font-medium">Secteur non couvert par la V2</p>
-                  <p className="mt-1">{scope.raison}</p>
-                  <p className="mt-2 text-destructive/80">{scope.exemple}</p>
-                </div>
-              ) : null}
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {SUGGESTIONS_NAF.map((s) => (
-                  <button
-                    key={s.code}
-                    type="button"
-                    onClick={() => update({ codeNaf: s.code })}
-                    className="rounded-full border border-rule bg-paper-sunk/40 px-2.5 py-0.5 font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:border-ink hover:text-ink"
-                  >
-                    {s.code} · {s.libelle}
-                  </button>
-                ))}
-              </div>
-            </OnbField>
-
-            <OnbField
-              label="Effectif sur site"
-              required
-              hint="Salariés + apprentis présents régulièrement"
-              error={errors?.effectifSurSite}
-            >
-              <OnbInput
-                id="effectifSurSite"
-                type="number"
-                value={state.effectifSurSite}
-                onChange={(v) => update({ effectifSurSite: v })}
-                placeholder="8"
-                min={1}
-                max={9999}
-                ariaInvalid={Boolean(errors?.effectifSurSite)}
-              />
-            </OnbField>
-
-            <OnbField
-              label="Personnes habituellement présentes"
-              hint="Salariés + clients, élèves, patients, visiteurs réguliers, en même temps. Au-delà de 50 : alarme sonore, consigne affichée et exercices semestriels (R. 4227-34, -37, -39). Vide = l'effectif salarié est utilisé."
-              error={errors?.personnesPresentesHabituellement}
-            >
-              <OnbInput
-                id="personnesPresentesHabituellement"
-                type="number"
-                value={state.personnesPresentesHabituellement}
-                onChange={(v) => update({ personnesPresentesHabituellement: v })}
-                placeholder="60"
-                min={0}
-                max={99999}
-                ariaInvalid={Boolean(errors?.personnesPresentesHabituellement)}
-              />
-            </OnbField>
-
-            <OnbField
-              label="Produits explosifs, comburants ou extrêmement inflammables"
-              hint="Manipulés ou mis en œuvre dans vos locaux — pas seulement stockés (R. 4227-22). Si oui, l'alarme, la consigne et les exercices s'appliquent quel que soit l'effectif."
-              error={errors?.manipuleMatieresR422722}
-            >
-              <select
-                id="manipuleMatieresR422722"
-                value={state.manipuleMatieresR422722}
-                onChange={(e) =>
-                  update({
-                    manipuleMatieresR422722: e.target.value as "" | "oui" | "non",
-                  })
-                }
-                className="h-11 w-full rounded-lg border border-rule bg-background px-3 text-[0.95rem]"
-              >
-                <option value="">Je ne sais pas encore</option>
-                <option value="oui">Oui</option>
-                <option value="non">Non</option>
-              </select>
-            </OnbField>
-          </div>
-
-          {hintEffectif ? (
-            <div className="rounded-lg border border-[color:color-mix(in_oklch,var(--accent-vif)_20%,transparent)] bg-[color:var(--accent-vif-soft)] px-4 py-3">
-              <strong className="block text-[0.92rem] text-[color:var(--accent-vif)]">
-                {hintEffectif.titre}
-              </strong>
-              <span className="mt-1 block text-[0.8rem] leading-[1.5] text-ink/80">
-                {hintEffectif.corps}
-              </span>
             </div>
-          ) : null}
-        </div>
+
+            <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
+              <div>
+                <label className="label-board" htmlFor="codeNaf">
+                  Code NAF *
+                  <InfoTooltip>
+                    Code INSEE qui figure sur votre avis de situation.
+                    Détermine votre secteur et pré-remplit les risques types
+                    pour le DUERP.
+                  </InfoTooltip>
+                </label>
+                <input
+                  className="champ-board uppercase"
+                  id="codeNaf"
+                  name="codeNaf"
+                  required
+                  value={state.codeNaf}
+                  onChange={(e) =>
+                    update({ codeNaf: e.target.value.toUpperCase() })
+                  }
+                  placeholder="56.10A"
+                  aria-invalid={
+                    Boolean(errors?.codeNaf) ||
+                    scope?.status === "hors_perimetre"
+                  }
+                />
+                {errors?.codeNaf && (
+                  <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                    {errors.codeNaf}
+                  </p>
+                )}
+                {/* « Secteur reconnu » est un fait de saisie — ce que le code
+                    tapé désigne —, pas un jugement de conformité : le vert du
+                    board (« fait ») convient, et la coche évite que
+                    l'information ne tienne qu'à la couleur. */}
+                {scope?.status === "ok" && !errors?.codeNaf ? (
+                  <p className="m-0 mt-1.5 flex items-center gap-1.5 text-[12.5px] text-[color:var(--board-green-ink)]">
+                    <Check aria-hidden className="size-3.5" />
+                    Secteur reconnu : {scope.secteurNom}
+                  </p>
+                ) : null}
+                {scope?.status === "hors_perimetre" && !errors?.codeNaf ? (
+                  <div className="mt-2 rounded-[18px] bg-[color:var(--board-signal-wash)] px-3.5 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)] shadow-[inset_0_0_0_1px_var(--board-signal-line)]">
+                    <p className="m-0 font-semibold">
+                      Secteur non couvert par la V2
+                    </p>
+                    <p className="m-0 mt-1">{scope.raison}</p>
+                    <p className="m-0 mt-2">{scope.exemple}</p>
+                  </div>
+                ) : null}
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {SUGGESTIONS_NAF.map((s) => (
+                    <button
+                      key={s.code}
+                      type="button"
+                      onClick={() => update({ codeNaf: s.code })}
+                      className="rounded-full bg-[color:var(--board-slate-pale)] px-3 py-1 text-[12px] font-medium text-[color:var(--board-slate-mid)] transition-colors hover:bg-[color:var(--board-blue-pale)] hover:text-[color:var(--board-blue-ink)]"
+                    >
+                      {s.code} · {s.libelle}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Saisie en texte plutôt qu'en `type="number"` : la molette
+                  d'un champ nombre modifie une valeur déjà saisie sans qu'on
+                  s'en aperçoive (charte § 5). Les bornes restent tenues par
+                  Zod côté serveur. */}
+              <ChampBoard
+                id="effectifSurSite"
+                name="effectifSurSite"
+                label="Effectif sur site"
+                requis
+                inputMode="numeric"
+                value={state.effectifSurSite}
+                onChange={(e) => update({ effectifSurSite: e.target.value })}
+                placeholder="8"
+                aide="Salariés + apprentis présents régulièrement"
+                erreur={errors?.effectifSurSite}
+              />
+
+              <ChampBoard
+                id="personnesPresentesHabituellement"
+                name="personnesPresentesHabituellement"
+                label="Personnes habituellement présentes"
+                inputMode="numeric"
+                value={state.personnesPresentesHabituellement}
+                onChange={(e) =>
+                  update({ personnesPresentesHabituellement: e.target.value })
+                }
+                placeholder="60"
+                aide="Salariés + clients, élèves, patients, visiteurs réguliers, en même temps. Au-delà de 50 : alarme sonore, consigne affichée et exercices semestriels (R. 4227-34, -37, -39). Vide = l'effectif salarié est utilisé."
+                erreur={errors?.personnesPresentesHabituellement}
+              />
+
+              <div>
+                <label
+                  className="label-board"
+                  htmlFor="manipuleMatieresR422722"
+                >
+                  Produits explosifs, comburants ou extrêmement inflammables
+                </label>
+                <select
+                  id="manipuleMatieresR422722"
+                  name="manipuleMatieresR422722"
+                  value={state.manipuleMatieresR422722}
+                  onChange={(e) =>
+                    update({
+                      manipuleMatieresR422722: e.target.value as
+                        | ""
+                        | "oui"
+                        | "non",
+                    })
+                  }
+                  aria-describedby="manipuleMatieresR422722-aide"
+                  className="champ-board"
+                >
+                  <option value="">Je ne sais pas encore</option>
+                  <option value="oui">Oui</option>
+                  <option value="non">Non</option>
+                </select>
+                <p
+                  id="manipuleMatieresR422722-aide"
+                  className="m-0 mt-1.5 text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]"
+                >
+                  Manipulés ou mis en œuvre dans vos locaux — pas seulement
+                  stockés (R. 4227-22). Si oui, l&apos;alarme, la consigne et
+                  les exercices s&apos;appliquent quel que soit
+                  l&apos;effectif.
+                </p>
+                {errors?.manipuleMatieresR422722 && (
+                  <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                    {errors.manipuleMatieresR422722}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Rappel de seuil : un repère de lecture, pas un état. Le creux
+                ardoise le pose sans lui prêter de couleur — un fond vert y
+                dirait « fait », un fond ambre « attention ». */}
+            {hintEffectif ? (
+              <BlocCreux>
+                <strong className="block text-[13.5px] font-semibold text-[color:var(--board-ink)]">
+                  {hintEffectif.titre}
+                </strong>
+                <span className="mt-1 block max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                  {hintEffectif.corps}
+                </span>
+              </BlocCreux>
+            ) : null}
+          </div>
+        </SectionChamps>
       </section>
     </div>
-  );
-}
-
-/* ─── Building blocks ──────────────────────────────────── */
-
-function OnbField({
-  label,
-  required,
-  hint,
-  error,
-  fullWidth,
-  labelExtra,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  hint?: string;
-  error?: string;
-  fullWidth?: boolean;
-  labelExtra?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className={"flex flex-col gap-1.5 " + (fullWidth ? "sm:col-span-2" : "")}
-    >
-      <span className="flex items-center gap-1 text-[0.84rem] font-medium">
-        {label}
-        {required ? <span className="text-destructive">*</span> : null}
-        {labelExtra}
-      </span>
-      {children}
-      {hint ? (
-        <span className="text-[0.74rem] text-muted-foreground">{hint}</span>
-      ) : null}
-      {error ? (
-        <span className="text-[0.8rem] text-destructive">{error}</span>
-      ) : null}
-    </div>
-  );
-}
-
-function OnbInput({
-  id,
-  value,
-  onChange,
-  placeholder,
-  type = "text",
-  inputMode,
-  pattern,
-  maxLength,
-  min,
-  max,
-  autoComplete,
-  autoFocus,
-  ariaInvalid,
-  className = "",
-}: {
-  id: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: "text" | "number" | "email";
-  inputMode?: "numeric" | "text";
-  pattern?: string;
-  maxLength?: number;
-  min?: number;
-  max?: number;
-  autoComplete?: string;
-  autoFocus?: boolean;
-  ariaInvalid?: boolean;
-  className?: string;
-}) {
-  return (
-    <input
-      id={id}
-      name={id}
-      type={type}
-      inputMode={inputMode}
-      pattern={pattern}
-      maxLength={maxLength}
-      min={min}
-      max={max}
-      autoComplete={autoComplete}
-      autoFocus={autoFocus}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      aria-invalid={ariaInvalid}
-      className={
-        "w-full rounded-lg border border-rule bg-paper-elevated px-3.5 py-3 text-[0.95rem] transition-[border-color,box-shadow] outline-none placeholder:text-muted-foreground/60 focus:border-[color:var(--accent-vif)] focus:shadow-[0_0_0_3px_var(--accent-vif-soft)] aria-invalid:border-destructive aria-invalid:shadow-[0_0_0_3px_color-mix(in_oklch,var(--destructive)_12%,transparent)] " +
-        className
-      }
-    />
   );
 }
 
