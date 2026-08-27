@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 
 export const metadata = {
   title: "Vérifiez votre e-mail — Rojer",
@@ -12,116 +13,126 @@ export default async function VerificationEnAttentePage({
   const { email } = await searchParams;
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-56px)] w-full max-w-[560px] flex-col justify-center px-6 py-20 sm:px-10">
-      <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-muted-foreground">
-        §&nbsp;Dernière étape
-      </p>
-      <h1 className="mt-6 text-[clamp(2rem,5vw,3rem)] font-medium leading-[1.02] tracking-[-0.03em]">
-        Vérifiez votre
-        <br />
-        <span className="accent-serif text-[color:var(--warm)]">
-          boîte mail
-        </span>
-        <span className="text-ink">.</span>
-      </h1>
+    // Colonne étroite centrée, comme les autres écrans d'authentification —
+    // un peu plus large, celui-ci porte une carte et un déroulé. Cf. le
+    // commentaire de `login/page.tsx` sur `mx-auto max-w-*`.
+    <main className="flex min-h-[calc(100vh-56px)] flex-col justify-center bg-[color:var(--board-canvas)] px-6 py-14 sm:px-10">
+      <div className="mx-auto w-full max-w-[560px]">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+          Dernière étape
+        </p>
+        <h1 className="board-titre m-0 mt-3 text-[clamp(29px,3vw,39px)]">
+          Vérifiez votre boîte mail.
+        </h1>
 
-      <div className="mt-10 rounded-lg border border-dashed border-rule bg-paper-elevated px-6 py-6">
-        <div className="flex items-start gap-4">
-          <PictoMail />
-          <div className="min-w-0 flex-1">
-            <p className="text-[0.95rem] leading-[1.55] text-ink">
-              Un lien de confirmation a été envoyé à
-              {email ? (
-                <>
-                  {" "}
-                  <span className="break-all font-medium">{email}</span>
-                </>
-              ) : (
-                " votre adresse"
-              )}
-              .
-            </p>
-            <p className="mt-3 text-[0.85rem] leading-[1.55] text-ink/70">
-              Cliquez dessus pour activer votre compte, puis revenez vous
-              connecter.
-            </p>
+        <div className="carte-board mt-7 px-7 py-6 sm:px-8">
+          <div className="flex items-start gap-4">
+            <PictoMail />
+            <div className="min-w-0 flex-1">
+              <p className="m-0 text-[14.5px] leading-[1.55] text-[color:var(--board-ink)]">
+                Un lien de confirmation a été envoyé à
+                {email ? (
+                  <>
+                    {" "}
+                    <span className="break-all font-semibold">{email}</span>
+                  </>
+                ) : (
+                  " votre adresse"
+                )}
+                .
+              </p>
+              <p className="m-0 mt-2.5 text-[13px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                Cliquez dessus pour activer votre compte, puis revenez vous
+                connecter.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <ol className="mt-10 space-y-5 border-t border-dashed border-rule/60 pt-8">
-        <Etape
-          romain="I"
-          titre="Ouvrez le mail"
-          corps='De la part de « Supabase Auth » — sujet « Confirm your signup ». Regardez dans vos spams au cas où.'
-        />
-        <Etape
-          romain="II"
-          titre="Cliquez sur le lien"
-          corps="Vous serez redirigé·e automatiquement ici, connecté·e."
-        />
-        <Etape
-          romain="III"
-          titre="Ouvrez votre dossier"
-          corps="Premier établissement, équipements, calendrier. 10 minutes."
-        />
-      </ol>
+        {/* La numérotation se garde : ces trois-là se font dans cet ordre.
+            Les crans reprennent ceux de la page publique (« Une prise en
+            main rapide ») — même pastille d'encre, même retrait du corps :
+            c'est le premier écran après elle, il ne doit pas changer de
+            voix. Le filet est posé sur le <li>, jamais sur son contenu. */}
+        <ol className="m-0 mt-9 flex list-none flex-col p-0">
+          <Etape
+            numero={1}
+            titre="Ouvrez le mail"
+            corps='De la part de « Supabase Auth » — sujet « Confirm your signup ». Regardez dans vos spams au cas où.'
+          />
+          <Etape
+            numero={2}
+            titre="Cliquez sur le lien"
+            corps="Vous serez redirigé·e automatiquement ici, connecté·e."
+          />
+          <Etape
+            numero={3}
+            titre="Ouvrez votre dossier"
+            corps="Premier établissement, équipements, calendrier. 10 minutes."
+          />
+        </ol>
 
-      <div className="mt-12 flex flex-wrap items-center gap-6">
-        <Link
-          href="/login"
-          className="font-mono text-[0.64rem] uppercase tracking-[0.2em] text-ink underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-ink"
-        >
-          J&apos;ai déjà cliqué · Me connecter →
-        </Link>
-        <span className="font-mono text-[0.58rem] uppercase tracking-[0.22em] text-muted-foreground">
-          Mail absent ?{" "}
+        <div className="mt-10 flex flex-wrap items-center gap-5">
           <Link
-            href="/signup"
-            className="text-ink underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-ink"
+            href="/login"
+            className={buttonVariants({ variant: "board", size: "board" })}
           >
-            Réessayer
+            J&apos;ai déjà cliqué · Me connecter →
           </Link>
-        </span>
+          <span className="text-[13px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+            Mail absent ?{" "}
+            <Link
+              href="/signup"
+              className="font-semibold text-[color:var(--board-blue-ink)] underline decoration-[color:var(--board-blue-soft)] underline-offset-4 transition-colors hover:decoration-[color:var(--board-blue-ink)]"
+            >
+              Réessayer
+            </Link>
+          </span>
+        </div>
       </div>
     </main>
   );
 }
 
 function Etape({
-  romain,
+  numero,
   titre,
   corps,
 }: {
-  romain: string;
+  numero: number;
   titre: string;
   corps: string;
 }) {
   return (
-    <li className="flex gap-5">
-      <span className="font-mono text-[1.2rem] font-medium leading-none text-[color:var(--warm)]">
-        {romain}.
-      </span>
-      <div>
-        <p className="text-[1rem] font-medium tracking-[-0.012em]">{titre}</p>
-        <p className="mt-1 text-[0.85rem] leading-[1.55] text-ink/65">
-          {corps}
+    <li className="border-t border-[color:var(--board-slate-line)] py-5 first:border-t-0 first:pt-0">
+      <div className="flex items-center gap-3">
+        <span className="flex size-8 flex-none items-center justify-center rounded-full bg-[color:var(--board-ink)] text-[12.5px] font-semibold tabular-nums text-[color:var(--board-card)]">
+          {numero}
+        </span>
+        <p className="m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
+          {titre}
         </p>
       </div>
+      <p className="m-0 mt-2 max-w-[62ch] text-[13px] leading-[1.55] text-[color:var(--board-slate-mid)] sm:pl-[44px]">
+        {corps}
+      </p>
     </li>
   );
 }
 
 function PictoMail() {
   return (
-    <svg viewBox="0 0 40 40" className="h-10 w-10 shrink-0 text-ink">
+    // Une enveloppe, pas une icône de thème : le creux ardoise fait le
+    // papier, l'encre le trait, et la pastille bleue dit qu'il y a quelque
+    // chose dedans. Rayon relevé à 3,5 — le board n'a pas d'angle vif.
+    <svg viewBox="0 0 40 40" className="h-10 w-10 shrink-0 text-[color:var(--board-ink)]">
       <rect
         x="6"
         y="10"
         width="28"
         height="20"
-        rx="1.5"
-        fill="var(--paper)"
+        rx="3.5"
+        fill="var(--board-slate-pale)"
         stroke="currentColor"
         strokeWidth="1.2"
       />
@@ -132,7 +143,7 @@ function PictoMail() {
         strokeWidth="1.2"
         strokeLinejoin="round"
       />
-      <circle cx="30" cy="11" r="4" fill="var(--warm)" />
+      <circle cx="30" cy="11" r="4" fill="var(--board-blue-ink)" />
     </svg>
   );
 }

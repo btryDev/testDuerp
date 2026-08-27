@@ -18,34 +18,35 @@ export default async function SignupPage({
   const origin = host ? `${proto}://${host}` : "";
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-56px)] w-full max-w-[480px] flex-col justify-center px-6 py-20 sm:px-10">
-      <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-muted-foreground">
-        §&nbsp;Nouveau compte
-      </p>
-      <h1 className="mt-6 text-[clamp(2rem,5vw,3rem)] font-medium leading-[1.02] tracking-[-0.03em]">
-        Ouvrez votre
-        <br />
-        <span className="accent-serif text-[color:var(--warm)]">dossier</span>
-        <span className="text-ink">.</span>
-      </h1>
+    // Même enveloppe que /login : colonne étroite centrée sur le canvas. Cf.
+    // le commentaire de `login/page.tsx` sur `mx-auto max-w-*`.
+    <main className="flex min-h-[calc(100vh-56px)] flex-col justify-center bg-[color:var(--board-canvas)] px-6 py-14 sm:px-10">
+      <div className="mx-auto w-full max-w-[460px]">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+          Nouveau compte
+        </p>
+        <h1 className="board-titre m-0 mt-3 text-[clamp(29px,3vw,39px)]">
+          Ouvrez votre dossier.
+        </h1>
 
-      <p className="mt-6 max-w-[38ch] text-[0.9rem] leading-[1.6] text-ink/70">
-        Vos données restent en Europe. Aucun paiement pendant la phase bêta.
-      </p>
+        <p className="m-0 mt-4 max-w-[38ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+          Vos données restent en Europe. Aucun paiement pendant la phase bêta.
+        </p>
 
-      <div className="mt-10">
-        <SignupForm next={next ?? "/entreprises"} origin={origin} />
+        <div className="carte-board mt-7 px-7 py-6 sm:px-8">
+          <SignupForm next={next ?? "/entreprises"} origin={origin} />
+        </div>
+
+        <p className="m-0 mt-6 text-[13px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+          Déjà un compte ?{" "}
+          <Link
+            href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`}
+            className="font-semibold text-[color:var(--board-blue-ink)] underline decoration-[color:var(--board-blue-soft)] underline-offset-4 transition-colors hover:decoration-[color:var(--board-blue-ink)]"
+          >
+            Se connecter →
+          </Link>
+        </p>
       </div>
-
-      <p className="mt-10 font-mono text-[0.62rem] uppercase tracking-[0.22em] text-muted-foreground">
-        Déjà un compte ?{" "}
-        <Link
-          href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`}
-          className="text-ink underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-ink"
-        >
-          Se connecter →
-        </Link>
-      </p>
     </main>
   );
 }

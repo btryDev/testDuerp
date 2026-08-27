@@ -10,9 +10,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { ChampBoard } from "@/components/ui-kit";
 import { createClient } from "@/lib/supabase/client";
 
 type Status = "checking" | "ready" | "invalid";
@@ -86,7 +85,7 @@ export function ResetPasswordForm() {
 
   if (status === "checking") {
     return (
-      <p className="text-[0.82rem] text-muted-foreground">
+      <p className="m-0 text-[13px] leading-[1.5] text-[color:var(--board-slate-mid)]">
         Vérification du lien…
       </p>
     );
@@ -94,13 +93,15 @@ export function ResetPasswordForm() {
 
   if (status === "invalid") {
     return (
-      <div className="space-y-5">
-        <p className="rounded-md border border-dashed border-rule bg-paper-elevated px-4 py-3 text-[0.82rem] leading-[1.5] text-ink/80">
+      <div className="flex flex-col items-start gap-5">
+        <p className="m-0 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)]">
           Ce lien de réinitialisation est invalide ou a expiré.
         </p>
+        {/* Une porte, pas un cul-de-sac : le lien mène là où l'on en
+            redemande un. */}
         <Link
           href="/login/mot-de-passe-oublie"
-          className="font-mono text-[0.62rem] uppercase tracking-[0.22em] text-ink underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-ink"
+          className={buttonVariants({ variant: "boardClair", size: "board" })}
         >
           Redemander un lien →
         </Link>
@@ -109,40 +110,43 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
-      <div className="space-y-2">
-        <Label htmlFor="password" className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
-          Nouveau mot de passe
-        </Label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-        />
-      </div>
+    <form onSubmit={onSubmit} className="flex flex-col gap-5">
+      <ChampBoard
+        id="password"
+        name="password"
+        type="password"
+        label="Nouveau mot de passe"
+        autoComplete="new-password"
+        required
+        minLength={8}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="confirm" className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
-          Confirmer le mot de passe
-        </Label>
-        <Input
-          id="confirm"
-          name="confirm"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-        />
-      </div>
+      <ChampBoard
+        id="confirm"
+        name="confirm"
+        type="password"
+        label="Confirmer le mot de passe"
+        autoComplete="new-password"
+        required
+        minLength={8}
+      />
 
+      {/* La comparaison des deux saisies est faite à la soumission, sur le
+          formulaire entier : l'erreur porte sur la paire, pas sur l'un des
+          deux champs. */}
       {error ? (
-        <p className="text-[0.82rem] text-[color:var(--minium)]">{error}</p>
+        <p className="m-0 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)]">
+          {error}
+        </p>
       ) : null}
 
-      <Button type="submit" size="lg" disabled={pending} className="w-full">
+      <Button
+        type="submit"
+        variant="board"
+        size="board"
+        disabled={pending}
+        className="w-full"
+      >
         {pending ? "Mise à jour…" : "Définir le mot de passe →"}
       </Button>
     </form>
