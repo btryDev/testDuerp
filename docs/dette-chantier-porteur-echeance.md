@@ -219,7 +219,21 @@ Relevé par les agents de migration, à verser dans `docs/charte-board.md` :
   tous les écrans migrés prennent `--board-card`. L'exception est réelle, elle
   n'est pas écrite.
 
-### 6.3 `ComplianceTimeline` est du code mort — confirmé, non supprimé
+### 6.3 Une URL Légifrance pour deux références différentes
+
+`LEGIARTI000018491957` sert de cible à deux étiquettes dans le module plan de
+prévention : **« Art. R. 4512-6 à R. 4512-12 CT »** (liste et fiche) et
+**« Art. R. 4512-7 CT · décret 92-158 »** (formulaire). L'une des deux est
+fausse, ou l'URL l'est.
+
+Non corrigée : une référence se vérifie sur Légifrance **en première main**
+avant d'être touchée, c'est la règle du dépôt. Vérification en cours.
+
+Deux libellés de statut divergent aussi entre liste et fiche — « Terminé » /
+« Travaux terminés », « Validé » / « Prêt à démarrer ». Les unifier est une
+décision de contenu, pas un effet de bord de migration.
+
+### 6.4 `ComplianceTimeline` est du code mort — confirmé, non supprimé
 
 Aucun appelant dans tout le dépôt : deux occurrences seulement, sa définition
 et sa ré-export du barrel. Il est le seul appelant de `.filet-vertical`. Il
@@ -229,7 +243,7 @@ le board, l'ambre dit « proche ».
 Laissé en place volontairement : une suppression est une décision, pas un
 effet de bord de revue.
 
-### 6.4 Deux blocs d'erreur sans annonce accessible
+### 6.5 Deux blocs d'erreur sans annonce accessible
 
 Les blocs d'erreur des écrans d'auth n'ont ni `role="alert"` ni `aria-live` :
 l'erreur apparaît après soumission sans être annoncée. Identifié et non
