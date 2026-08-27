@@ -189,4 +189,12 @@ function principal() {
   }
 }
 
-principal();
+// `veille.test.ts` importe `construireListe` depuis ce fichier. Sans ce garde,
+// l'import exécutait le CLI à chaque passage des tests : il lisait le
+// `process.argv` de vitest — pas le sien — et déversait la liste sur la sortie
+// standard. C'était sans conséquence tant que vitest la masquait, mais un
+// `--json` ou un `--limite` n'importe où dans la ligne de commande de vitest
+// aurait changé ce qui s'exécutait.
+if (process.argv[1]?.endsWith("veille-worklist.ts")) {
+  principal();
+}

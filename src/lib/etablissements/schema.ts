@@ -29,18 +29,29 @@ const nafRegex = /^\d{2}\.?\d{2}[A-Z]?$/;
  * `depuisCleJourCivil` ancre la date dans le fuseau de référence (ADR-011).
  * Passer par `new Date("2026-08-26")` la placerait à minuit UTC, soit la
  * veille au soir à Paris — le bug déjà rencontré sur les échéances.
+ *
+ * Le format est validé AVANT la conversion, et c'est ce qui compte :
+ * `depuisCleJourCivil` **jette** sur une chaîne mal formée. Dans un
+ * `z.preprocess`, ce throw traverse `safeParse` — qui cesse alors de rendre
+ * `{ success: false }` pour propager une exception. Les deux actions serveur
+ * appellent `safeParse` hors de tout try/catch : une date saisie « 26/08/2026 »
+ * par un navigateur sans `type=date` natif ou par une autocomplétion faisait
+ * planter l'action et perdre le formulaire entier, au lieu d'afficher « Format
+ * attendu ». Le reste du dépôt valide déjà dans cet ordre (`rapports/schema.ts`,
+ * `equipements/schema.ts`) ; ce champ était le seul à s'en écarter.
  */
-const dateCivileOptionnelle = z.preprocess(
-  (v) => {
-    if (v === "" || v === null || v === undefined) return null;
-    if (typeof v !== "string") return v;
-    return depuisCleJourCivil(v);
-  },
-  z
-    .date()
-    .refine((d) => !Number.isNaN(d.getTime()), "Date invalide")
-    .nullable(),
-);
+const DATE_FMT = /^\d{4}-\d{2}-\d{2}$/;
+
+const dateCivileOptionnelle = z
+  .union([
+    z.literal("").transform(() => null),
+    z.null(),
+    z
+      .string()
+      .regex(DATE_FMT, "Format attendu : AAAA-MM-JJ")
+      .transform((v) => depuisCleJourCivil(v)),
+  ])
+  .optional();
 
 export const etablissementSchema = z
   .object({
@@ -101,15 +112,22 @@ export const etablissementSchema = z
       (v) => (typeof v === "string" ? v.trim() || null : (v ?? null)),
       z.string().max(500).nullable(),
     ),
-    effectifPublicAdmis: z.preprocess(
-      (v) => (v === "" || v === null || v === undefined ? null : v),
-      z.coerce
-        .number()
-        .int("Nombre entier")
-        .min(0, "Effectif positif")
-        .max(999999)
-        .nullable(),
-    ),
+    // `undefined` traverse au lieu d'être coercé en `null` : c'est ce qui
+    // distingue « le champ n'a pas été posté » de « l'utilisateur l'a vidé ».
+    // Le premier cas arrive dès qu'on décoche ERP — le champ n'est alors plus
+    // rendu — et il ne doit rien écrire. Sans ça, `normaliserFormData` avait
+    // beau omettre la clé, le schéma la recréait à `null` et Prisma l'écrasait.
+    effectifPublicAdmis: z
+      .preprocess(
+        (v) => (v === "" || v === null ? null : v),
+        z.coerce
+          .number()
+          .int("Nombre entier")
+          .min(0, "Effectif positif")
+          .max(999999)
+          .nullable(),
+      )
+      .optional(),
     // Dates civiles (ADR-011) : saisies en AAAA-MM-JJ, converties dans le
     // fuseau de référence — jamais `new Date(chaine)`, qui interpréterait en
     // UTC et décalerait la veille.

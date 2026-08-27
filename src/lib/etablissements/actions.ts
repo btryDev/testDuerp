@@ -88,9 +88,23 @@ function normaliserFormData(fd: FormData): Record<string, unknown> {
     categorieErp: raw.categorieErp || undefined,
     classeIgh: raw.classeIgh || undefined,
     natureActivite: raw.natureActivite,
-    effectifPublicAdmis: raw.effectifPublicAdmis,
-    dateAutorisationOuverture: raw.dateAutorisationOuverture,
-    dateCertificatConformite: raw.dateCertificatConformite,
+    // Ces trois champs ne sont rendus que dans le bloc `{estERP && (…)}` du
+    // formulaire. Décocher la case les retire donc du FormData, et un
+    // `undefined` transmis tel quel serait coercé en `null` par le schéma puis
+    // écrit en base : les valeurs saisies disparaîtraient pour de bon. On les
+    // omet plutôt, ce que Prisma traduit par « ne touche pas à cette colonne ».
+    // C'est la protection que `typeErp` et `categorieErp` ont depuis toujours
+    // par leur `|| undefined` ; elle manquait aux colonnes ajoutées avec la
+    // fiche « Renseignements généraux » du registre.
+    ...(raw.effectifPublicAdmis === undefined
+      ? {}
+      : { effectifPublicAdmis: raw.effectifPublicAdmis }),
+    ...(raw.dateAutorisationOuverture === undefined
+      ? {}
+      : { dateAutorisationOuverture: raw.dateAutorisationOuverture }),
+    ...(raw.dateCertificatConformite === undefined
+      ? {}
+      : { dateCertificatConformite: raw.dateCertificatConformite }),
   };
 }
 

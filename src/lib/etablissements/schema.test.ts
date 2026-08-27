@@ -98,3 +98,55 @@ describe("etablissementSchema — typologie (ADR-004)", () => {
     expect(res.success).toBe(true);
   });
 });
+
+describe("etablissementSchema — dates civiles (registre, fiche renseignements)", () => {
+  // Ces quatre cas viennent d'une revue : `depuisCleJourCivil` jette sur une
+  // chaîne mal formée, et dans un `z.preprocess` ce throw traversait
+  // `safeParse`. Les deux actions serveur l'appellent hors de tout try/catch —
+  // une date « 26/08/2026 » faisait donc planter l'action et perdre le
+  // formulaire entier au lieu d'afficher le message de format.
+  it("rend une erreur de validation sur une date mal formée, sans jeter", () => {
+    const parse = () =>
+      etablissementSchema.safeParse({
+        ...base,
+        dateAutorisationOuverture: "26/08/2026",
+      });
+    expect(parse).not.toThrow();
+    expect(parse().success).toBe(false);
+  });
+
+  it("nomme le champ fautif plutôt que de faire échouer tout le formulaire", () => {
+    const res = etablissementSchema.safeParse({
+      ...base,
+      dateCertificatConformite: "pas une date",
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.map((i) => i.path[0])).toContain(
+        "dateCertificatConformite",
+      );
+    }
+  });
+
+  it("accepte une date bien formée et l'ancre dans le fuseau de référence", () => {
+    const res = etablissementSchema.safeParse({
+      ...base,
+      dateAutorisationOuverture: "2026-08-26",
+    });
+    expect(res.success).toBe(true);
+    if (res.success) {
+      const d = res.data.dateAutorisationOuverture;
+      expect(d).toBeInstanceOf(Date);
+      // ADR-011 : le jour civil, pas minuit UTC — qui serait la veille à Paris.
+      expect(d?.getDate()).toBe(26);
+    }
+  });
+
+  it("accepte l'absence de date et la chaîne vide", () => {
+    expect(etablissementSchema.safeParse(base).success).toBe(true);
+    expect(
+      etablissementSchema.safeParse({ ...base, dateAutorisationOuverture: "" })
+        .success,
+    ).toBe(true);
+  });
+});

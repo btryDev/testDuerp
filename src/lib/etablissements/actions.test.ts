@@ -25,6 +25,9 @@ const h = vi.hoisted(() => {
       typeErp: null as string | null,
       categorieErp: null as string | null,
       classeIgh: null as string | null,
+      effectifPublicAdmis: null as number | null,
+      dateAutorisationOuverture: null as Date | null,
+      dateCertificatConformite: null as Date | null,
     },
     nbVersionsDuerp: 0,
     supprimes: [] as string[],
@@ -97,6 +100,9 @@ beforeEach(() => {
   h.db.etablissement.estERP = false;
   h.db.etablissement.typeErp = null;
   h.db.etablissement.categorieErp = null;
+  h.db.etablissement.effectifPublicAdmis = null;
+  h.db.etablissement.dateAutorisationOuverture = null;
+  h.db.etablissement.dateCertificatConformite = null;
   h.db.etablissement.effectifSurSite = 5;
   h.db.nbVersionsDuerp = 0;
   h.db.supprimes = [];
@@ -205,5 +211,45 @@ describe("supprimerEtablissement — conservation 40 ans", () => {
       "NEXT_REDIRECT",
     );
     expect(h.db.supprimes).toEqual(["etab-1"]);
+  });
+});
+
+describe("modifierEtablissement — les champs ERP ne s'effacent pas tout seuls", () => {
+  // Relevé en revue. Les trois colonnes de la fiche « Renseignements
+  // généraux » ne sont rendues que dans le bloc `{estERP && (…)}` du
+  // formulaire. Décocher la case les retirait du FormData, le schéma les
+  // coerçait en null, et Prisma les écrasait en base. Un dirigeant qui
+  // décochait par erreur, enregistrait, puis recochait, retrouvait son type
+  // et sa catégorie — protégés de longue date par `|| undefined` — mais avait
+  // perdu ses dates pour de bon.
+  it("conserve les valeurs quand la case ERP est décochée", async () => {
+    h.db.etablissement.estERP = true;
+    h.db.etablissement.typeErp = "N";
+    h.db.etablissement.categorieErp = "CINQUIEME";
+    h.db.etablissement.effectifPublicAdmis = 120;
+    h.db.etablissement.dateAutorisationOuverture = new Date("2020-03-01");
+
+    // Le formulaire sans `estERP` : les trois champs ne sont pas postés.
+    await modifierEtablissement("etab-1", { status: "idle" }, formulaire());
+
+    expect(h.db.etablissement.effectifPublicAdmis).toBe(120);
+    expect(h.db.etablissement.dateAutorisationOuverture).toEqual(
+      new Date("2020-03-01"),
+    );
+  });
+
+  it("écrit bien la valeur quand le champ est posté", async () => {
+    await modifierEtablissement(
+      "etab-1",
+      { status: "idle" },
+      formulaire({
+        estERP: "on",
+        typeErp: "N",
+        categorieErp: "N5",
+        effectifPublicAdmis: "80",
+      }),
+    );
+
+    expect(h.db.etablissement.effectifPublicAdmis).toBe(80);
   });
 });
