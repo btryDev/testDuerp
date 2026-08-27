@@ -7,8 +7,21 @@ import { buttonVariants } from "@/components/ui/button";
  *   - suggérer **quoi faire maintenant** (une action claire)
  *   - éviter d'inquiéter (pas d'icône "warning" alarmiste)
  *
- * L'illustration est discrète (motif géométrique en SVG) pour rester
- * dans l'esthétique papier sans introduire d'iconographie lourde.
+ * En charte board (`docs/charte-board.md` § 6). Deux choses ont disparu
+ * avec le papier :
+ *
+ * - le motif de points en fond, qui n'existait que « pour rester dans
+ *   l'esthétique papier » — l'état vide du board ne porte pas d'ornement,
+ *   il porte ce que l'écran fera et d'où viendront les données ;
+ * - le `text-indigo-700` de la variante `info`, une couleur hors des deux
+ *   palettes. La variante garde son rôle — signaler un état vide qui
+ *   informe plutôt qu'il n'attend une saisie — mais dans la famille bleue
+ *   du board.
+ *
+ * Ce composant ne couvre que le premier des trois cas de la charte : le
+ * « vraiment vide ». Un écran filtré n'a rien à faire ici — envoyer
+ * « déclarez vos équipements » à quelqu'un qui vient de le faire lui fait
+ * chercher une erreur de saisie qui n'existe pas.
  */
 
 export function EmptyState({
@@ -29,45 +42,24 @@ export function EmptyState({
   variant?: "neutral" | "info";
 }) {
   return (
-    <div className="cartouche relative overflow-hidden px-6 py-10 sm:px-10 sm:py-12">
-      {/* Motif discret en arrière-plan — cohérent papier */}
-      <svg
-        aria-hidden
-        className="pointer-events-none absolute -right-12 -top-10 h-56 w-56 opacity-[0.06]"
-        viewBox="0 0 200 200"
-      >
-        <defs>
-          <pattern
-            id="empty-dots"
-            x="0"
-            y="0"
-            width="10"
-            height="10"
-            patternUnits="userSpaceOnUse"
-          >
-            <circle cx="1" cy="1" r="1" fill="currentColor" />
-          </pattern>
-        </defs>
-        <rect width="200" height="200" fill="url(#empty-dots)" />
-      </svg>
-
-      <div className="relative max-w-xl space-y-4">
+    <div className="carte-board px-7 py-8 sm:px-8">
+      <div className="max-w-[62ch] space-y-4">
         <p
           className={
-            "font-mono text-[0.62rem] uppercase tracking-[0.18em] " +
-            (variant === "info" ? "text-indigo-700" : "text-muted-foreground")
+            "board-eyebrow m-0 text-[10.5px] tracking-[0.18em] " +
+            (variant === "info"
+              ? "text-[color:var(--board-blue-ink)]"
+              : "text-[color:var(--board-slate-soft)]")
           }
         >
           À quoi sert cette page
         </p>
-        <h3 className="text-[1.1rem] font-semibold tracking-[-0.01em] leading-snug">
-          {titre}
-        </h3>
-        <p className="text-[0.88rem] leading-relaxed text-muted-foreground">
+        <h3 className="board-titre m-0 text-[22px]">{titre}</h3>
+        <p className="m-0 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
           {pourquoi}
         </p>
-        <p className="text-[0.9rem] leading-relaxed">
-          <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="m-0 text-[13.5px] leading-[1.6] text-[color:var(--board-ink)]">
+          <span className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             Pour commencer —
           </span>{" "}
           {quoiFaire}
@@ -78,7 +70,7 @@ export function EmptyState({
             {cta && ctaHref && (
               <Link
                 href={ctaHref}
-                className={buttonVariants({ size: "sm" })}
+                className={buttonVariants({ variant: "board", size: "board" })}
               >
                 {cta}
               </Link>
@@ -89,14 +81,20 @@ export function EmptyState({
                   href={ctaSecondary.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                  className={buttonVariants({
+                    variant: "boardClair",
+                    size: "board",
+                  })}
                 >
                   {ctaSecondary.libelle} ↗
                 </a>
               ) : (
                 <Link
                   href={ctaSecondary.href}
-                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                  className={buttonVariants({
+                    variant: "boardClair",
+                    size: "board",
+                  })}
                 >
                   {ctaSecondary.libelle}
                 </Link>

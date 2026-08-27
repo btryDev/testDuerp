@@ -1,7 +1,16 @@
-// Barre haute sticky du shell d'app (dashboard et pages établissement).
-// Mockup de référence : « Tableau de bord V2.html » — kicker mono +
-// pastille « Actif » verte, H1 32px, sous-titre liste (adresse +
-// régimes en pills navy-soft), actions à droite.
+// Barre haute collante des écrans qui ne portent pas encore leur propre
+// bandeau (préparer un contrôle, guide, carnet sanitaire, permis de feu,
+// plans de prévention, accessibilité, import DUERP).
+//
+// Elle était réglée sur le mockup « Tableau de bord V2 » : surface, filet
+// et gris de la charte papier, titre de 32 px. Une famille de gris et un
+// barème que le board ne connaît pas — or le chrome
+// coiffe TOUS les écrans, y compris ceux déjà passés au board. Tant qu'il
+// restait papier, un écran board se lisait encadré d'une autre charte.
+//
+// Le gabarit repris est celui des bandeaux déjà migrés (`BandeauParc`,
+// l'annuaire des prestataires) : gouttière du board, surface de carte,
+// filet plein, barème de titre de liste.
 
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -25,7 +34,7 @@ export function AppTopbar({
   /** Sous-titre en texte libre — fallback quand `subtitleSegments` n'est pas fourni. */
   subtitle?: string;
   /** Segments du sous-titre : chaque entrée est soit une chaîne affichée en
-   *  texte, soit un objet `{ pill: string }` rendu en pastille navy-soft.
+   *  texte, soit un objet `{ pill: string }` rendu en pastille bleue.
    *  Les segments sont séparés par un point médian discret. */
   subtitleSegments?: Array<string | { pill: string }>;
   /** Libellé mono-kicker affiché au-dessus du titre — ex. "Établissements / Boulangerie…". */
@@ -40,6 +49,8 @@ export function AppTopbar({
   retour?: Crumb & { href: string };
   actions?: ReactNode;
 }) {
+  // Les trois tons des `.pill-v2` reprennent déjà les couples champ/encre
+  // des jetons d'état : rien à requalifier ici.
   const toneToPill =
     statut?.tone === "ok"
       ? "pill-v2 pill-v2-green"
@@ -48,12 +59,12 @@ export function AppTopbar({
         : "pill-v2 pill-v2-alert";
 
   return (
-    <header className="sticky top-0 z-10 flex flex-wrap items-end justify-between gap-6 border-b border-rule-soft bg-paper px-8 pt-[38px] pb-[22px]">
+    <header className="sticky top-0 z-10 flex flex-wrap items-end justify-between gap-6 border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] px-[var(--board-gutter)] py-[22px]">
       <div className="min-w-0">
         {kicker || statut ? (
           <div className="mb-1.5 flex flex-wrap items-center gap-2.5">
             {kicker ? (
-              <span className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
                 {kicker}
               </span>
             ) : null}
@@ -70,7 +81,7 @@ export function AppTopbar({
           <nav aria-label="Retour" className="mb-1.5">
             <Link
               href={retour.href}
-              className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
+              className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
             >
               ← {retour.label}
             </Link>
@@ -80,7 +91,7 @@ export function AppTopbar({
         {crumbs && crumbs.length > 0 ? (
           <nav
             aria-label="Fil d'Ariane"
-            className="mb-1.5 flex items-center text-[0.8rem] text-muted-foreground"
+            className="mb-1.5 flex items-center text-[12.5px] text-[color:var(--board-slate-mid)]"
           >
             {crumbs.map((c, i) => {
               const last = i === crumbs.length - 1;
@@ -89,19 +100,29 @@ export function AppTopbar({
                   {c.href && !last ? (
                     <Link
                       href={c.href}
-                      className="transition-colors hover:text-ink"
+                      className="transition-colors hover:text-[color:var(--board-ink)]"
                     >
                       {c.label}
                     </Link>
                   ) : (
                     <strong
-                      className={last ? "font-medium text-ink" : "font-normal"}
+                      className={
+                        last
+                          ? "font-medium text-[color:var(--board-ink)]"
+                          : "font-normal"
+                      }
                     >
                       {c.label}
                     </strong>
                   )}
                   {!last ? (
-                    <span aria-hidden className="mx-1.5 opacity-50">
+                    /* Le chevron est une graduation, pas du texte : il porte
+                       l'ardoise claire plutôt qu'une opacité, qui fabriquait
+                       un gris hors famille. */
+                    <span
+                      aria-hidden
+                      className="mx-1.5 text-[color:var(--board-slate)]"
+                    >
                       ›
                     </span>
                   ) : null}
@@ -111,18 +132,18 @@ export function AppTopbar({
           </nav>
         ) : null}
 
-        <h1 className="text-[2rem] font-semibold leading-[1.05] tracking-[-0.022em]">
+        <h1 className="board-titre m-0 text-[clamp(22px,2.2vw,27px)]">
           {title}
         </h1>
 
         {subtitleSegments && subtitleSegments.length > 0 ? (
-          <div className="mt-1.5 flex flex-wrap items-center gap-2.5 text-[0.84rem] text-muted-foreground">
+          <div className="mt-2 flex flex-wrap items-center gap-2.5 text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
             {subtitleSegments.map((seg, i) => {
               const isPill = typeof seg !== "string";
               return (
                 <span key={i} className="flex items-center gap-2.5">
                   {i > 0 ? (
-                    <span aria-hidden className="text-rule">
+                    <span aria-hidden className="text-[color:var(--board-slate)]">
                       ·
                     </span>
                   ) : null}
@@ -136,7 +157,7 @@ export function AppTopbar({
             })}
           </div>
         ) : subtitle ? (
-          <p className="mt-1.5 max-w-[700px] text-[0.86rem] text-muted-foreground">
+          <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
             {subtitle}
           </p>
         ) : null}
