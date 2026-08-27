@@ -66,6 +66,36 @@ preuve. `Duerp.etablissement` reste en `Cascade` : supprimer l'établissement
 tente de cascader sur le `Duerp`, le `Restrict` de `DuerpVersion` s'y oppose et
 toute la transaction est annulée.
 
+### Ce contre quoi le `Restrict` ne protège PAS
+
+Ajouté le 2026-08-27, après une perte de données en production.
+
+Le `Restrict` protège d'un `DELETE`. Il ne protège de rien contre une commande
+qui **détruit et recrée le schéma** : les contraintes tombent avec les tables
+qui les portent, et la base repart vide sans qu'aucune règle n'ait été violée —
+il n'y a plus de règle. C'est ce qui s'est produit avec un
+`prisma migrate diff --from-migrations --shadow-database-url` pointé sur la
+production : Prisma vide la base visée, y rejoue les migrations, et rend un
+schéma parfaitement conforme, parfaitement vide. Les quarante ans de
+`DuerpVersion` n'ont opposé aucune résistance, parce qu'ils n'ont jamais été
+faits pour ça.
+
+Le distinguo mérite d'être posé, parce que la section ci-dessus se lit
+volontiers comme « les versions figées sont indestructibles », et ce n'est pas
+ce qu'elle dit :
+
+| Menace | Ce qui protège |
+|---|---|
+| Suppression applicative d'un établissement ou d'un DUERP | `Restrict` — il tient, c'est son objet |
+| Régénération du calendrier, réconciliation | Idempotence + `porteUnePreuve` — ils tiennent |
+| Commande qui recrée le schéma (`migrate reset`, `migrate diff` sur une shadow database, `db push --force-reset`) | **Rien dans ce dépôt.** Seule une sauvegarde externe |
+
+La conséquence pratique est que l'obligation des quarante ans repose, en
+dernier ressort, sur les sauvegardes de l'hébergeur — pas sur une contrainte
+Prisma. Un `Restrict` dit ce qu'on refuse de faire ; il ne dit rien de ce qu'un
+outil d'administration peut faire par-dessus. Les garde-fous côté commandes
+sont dans `.env.example`, en tête du bloc de production.
+
 Le `Restrict` avait d'abord été posé sur les **deux** maillons. C'était trop
 large : un DUERP ouvert mais jamais validé ne porte aucune pièce à conserver, et
 l'établissement devenait indélébile dès le premier clic sur « Commencer mon
