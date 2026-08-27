@@ -112,36 +112,25 @@ export const obligationsCuissonHotte: Obligation[] = [
     notesInternes:
       "Corrigé à l'audit 2026-08 : la vérification annuelle est à l'article GC 22 (« Vérifications techniques »), GC 21 ne traitant que de l'entretien.",
   },
-  {
-    id: "cuisson-gaz-installations-triennale",
-    domaine: "cuisson_hotte",
-    libelle: "Vérification triennale des installations de gaz combustible (ERP 5ᵉ catégorie)",
-    description:
-      "Dans les ERP de 5ᵉ catégorie, l'exploitant fait procéder tous les trois ans au plus, par des techniciens compétents, à l'entretien et à la vérification des installations de gaz (en vigueur depuis le 1er juillet 2026). Les installations neuves ou modifiées sont vérifiées après travaux (art. PE 10 B).",
-    referencesLegales: [
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 22 juin 1990 (ERP 5ᵉ catégorie), art. PE 4 § 2, rédaction de l'arrêté du 1er décembre 2025",
-        article: "PE 4",
-        url:
-          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374770/",
-      },
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 1er décembre 2025 modifiant le règlement de sécurité ERP (applicable au 1er juillet 2026)",
-        article: "Arrêté 2025-12-01",
-        url:
-          "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053020948",
-      },
-    ],
-    periodicite: "triennale",
-    realisateurs: ["personne_qualifiee", "organisme_agree"],
-    criticite: 5,
-    typologies: { erp: { categories: ["N5"] } },
-    categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
-    notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version citait « GZ 29 § 1 » pour une périodicité triennale. GZ 29 = entretien ; la vérification périodique des installations gaz en ERP du 1er groupe est ANNUELLE (GZ 30) — voir cuisson-gaz-installations-annuelle. La périodicité triennale n'existe que pour la 5ᵉ catégorie (PE 4 § 2 modifié par l'arrêté du 1er décembre 2025). L'id est conservé (référencé en base).\n\nAmendement 2026-08-26 : le chapitre GZ a été entièrement réécrit. Les articles GZ 16 à GZ 30 sont ABROGÉS depuis le 1er janvier 2026 (arrêté du 23 février 2025, art. 1), et l'URL de section qui les portait renvoie un 404. Ce qui les remplace : GZ 14 « Entretien des installations » et GZ 15 « Vérifications techniques périodiques », en vigueur depuis la même date. GZ 15 dispose que les vérifications « sont réalisées annuellement conformément à la section II, chapitre premier du présent titre ». La substance encodée était juste ; la numérotation et le lien étaient morts.",
-  },
+  // `cuisson-gaz-installations-triennale` a été RETIRÉ le 2026-08-27
+  // (ADR-022), pour la même raison que `elec-erp-cat5-quinquennale` : son
+  // article fondateur était PE 4 § 2, dont il ne projetait qu'un fragment —
+  // « les installations de gaz » — sur une catégorie d'équipement. Aucun
+  // fondement propre. Le référentiel porte désormais PE 4 § 2 entier
+  // (`incendie-erp-pe4-entretien-installations-techniques`), qui a repris sa
+  // criticité 5 et son couple de réalisateurs.
+  //
+  // Ce qui NE disparaît pas avec lui : `cuisson-gaz-installations-annuelle`
+  // reste — c'est le régime des ERP de 1ʳᵉ à 4ᵉ catégorie, fondé sur GZ 15 et
+  // non sur PE 4, donc une autre obligation et non un fragment.
+  //
+  // Le constat réglementaire que portaient ses notes est conservé ici parce
+  // qu'il vaut au-delà de cette ligne : les articles GZ 16 à GZ 30 sont
+  // ABROGÉS depuis le 1er janvier 2026 (arrêté du 23 février 2025, art. 1) et
+  // remplacés par GZ 14 (entretien) et GZ 15 (vérifications périodiques
+  // annuelles). Toute référence survivante à GZ 29 ou GZ 30 est morte.
+  //
+  // L'id ne doit jamais être réemployé : il est dans `OBLIGATIONS_RETIREES`.
   {
     id: "cuisson-gaz-installations-annuelle",
     domaine: "cuisson_hotte",

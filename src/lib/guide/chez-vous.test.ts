@@ -127,10 +127,23 @@ describe("construireChezVous — trous honnêtes", () => {
     );
   });
 
-  it("aucun équipement déclaré → aucunEquipement, zéro domaine", () => {
+  it("aucun équipement déclaré → aucunEquipement, mais pas zéro obligation", () => {
+    // Ce test figeait `domaines: []` jusqu'au 2026-08-27, et il figeait donc
+    // un faux négatif : un employeur sans appareil déclaré lisait, dans un
+    // guide qui s'intitule « chez vous », qu'il ne lui incombait rien. Or
+    // R. 4222-20 lui impose d'entretenir et de contrôler l'ensemble de ses
+    // installations d'aération, déclarées ou non (ADR-022).
     const r = construireChezVous(etabBureau(), []);
     expect(r.aucunEquipement).toBe(true);
-    expect(r.domaines).toEqual([]);
     expect(r.categoriesSansObligation).toEqual([]);
+
+    // Le domaine apparaît, et il apparaît SANS équipement rattaché : c'est
+    // ce couple qui distingue « vous n'avez rien déclaré » de « rien ne vous
+    // incombe ».
+    expect(r.domaines.map((d) => d.domaine)).toEqual(["aeration"]);
+    expect(r.domaines[0].equipements).toEqual([]);
+    expect(r.domaines[0].raisons.join(" ")).toContain(
+      "porte sur l'établissement",
+    );
   });
 });

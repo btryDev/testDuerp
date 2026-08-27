@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { CategorieEquipement } from "../types-communs";
 import {
   CATEGORIES_EQUIPEMENT,
   CATEGORIES_ERP,
@@ -7,14 +8,22 @@ import {
   REALISATEURS,
   TYPES_ERP,
 } from "../types-communs";
-import type { Obligation } from "./types";
+import {
+  estPorteeParEquipement,
+  porteurDe,
+  type Obligation,
+  type ObligationPorteeParEquipement,
+  type ReferenceLegale,
+} from "./types";
 import { determineObligationsApplicables } from "@/lib/matching";
+import { CORPUS } from "../corpus";
 import {
   PALIER_PAR_OBLIGATION,
   PERIODICITES_ARTICLE_5,
 } from "./froid";
 import {
   DOMAINES_OBLIGATION,
+  OBLIGATIONS_RETIREES,
   REFERENTIEL_VERSION,
   SOURCES_LEGALES,
   empreinteReferentiel,
@@ -32,6 +41,18 @@ import {
   obligationsPortesPortails,
   obligationsStockageDangereux,
 } from "./index";
+
+/**
+ * Toutes les catégories qu'une obligation nomme, quel que soit leur rôle :
+ * celles qui la déclenchent (porteur équipement) et celles qu'elle affiche à
+ * titre indicatif (porteur établissement, `equipementsEnContexte`). Les deux
+ * doivent être des valeurs de l'enum Prisma ; seule la première déclenche.
+ */
+function categoriesCitees(o: Obligation): readonly CategorieEquipement[] {
+  return estPorteeParEquipement(o)
+    ? o.categoriesEquipement
+    : (o.equipementsEnContexte ?? []);
+}
 
 describe("référentiel conformité — invariants structurels", () => {
   it("couvre au moins 25 obligations P1 (critère de done étape 3)", () => {
@@ -68,10 +89,38 @@ describe("référentiel conformité — invariants structurels", () => {
 
   it("chaque catégorie d'équipement est dans l'enum Prisma", () => {
     for (const o of obligationsConformite) {
-      expect(o.categoriesEquipement.length).toBeGreaterThan(0);
-      for (const c of o.categoriesEquipement) {
+      for (const c of categoriesCitees(o)) {
         expect(CATEGORIES_EQUIPEMENT).toContain(c);
       }
+    }
+  });
+
+  // Cet invariant était jusqu'ici incident, logé dans le test ci-dessus dont le
+  // titre parlait d'autre chose. Il est ici pour lui-même, et il dit désormais
+  // une règle par branche : une obligation d'équipement en cite au moins une,
+  // une obligation d'établissement n'en cite aucune (ADR-022).
+  it("le déclencheur correspond au porteur", () => {
+    for (const o of obligationsConformite) {
+      if (estPorteeParEquipement(o)) {
+        expect(
+          o.categoriesEquipement.length,
+          `${o.id} est portée par un équipement et ne déclenche sur rien`,
+        ).toBeGreaterThan(0);
+      } else {
+        expect(
+          o.categoriesEquipement,
+          `${o.id} est portée par l'établissement et ne doit déclencher sur ` +
+            "aucune catégorie — les équipements affichés vont dans " +
+            "`equipementsEnContexte`, qui n'est pas un déclencheur",
+        ).toBeUndefined();
+        expect(o.conditions, `${o.id} : conditions sans équipement`).toBeUndefined();
+      }
+    }
+  });
+
+  it("le porteur est une valeur connue", () => {
+    for (const o of obligationsConformite) {
+      expect(["equipement", "etablissement"]).toContain(porteurDe(o));
     }
   });
 
@@ -293,6 +342,24 @@ describe("référentiel conformité — anti-doublon", () => {
   }
 
   /**
+   * L'identité d'un article, pour la comparaison.
+   *
+   * La clé canonique `article` d'abord — c'est exactement ce pour quoi elle
+   * a été introduite (`types.ts` : « `reference` est faite pour être lue par
+   * un humain […] Elle ne peut pas servir de clé »). Deux obligations
+   * pouvaient citer le MÊME article sous deux libellés — « Arrêté du 25 juin
+   * 1980, art. PE 4 § 2 » et « Arrêté du 22 juin 1990 (ERP 5ᵉ catégorie),
+   * art. PE 4 § 2, rédaction de l'arrêté du 1er décembre 2025 » — et échapper
+   * au test faute de se ressembler. La normalisation du texte ne reste qu'en
+   * repli, pour les références qui n'ont pas encore de clé.
+   */
+  function identiteArticle(r: ReferenceLegale): string {
+    return r.article
+      ? `article:${r.article.toLowerCase().replace(/§\s*\d+/g, " ").replace(/\s+/g, " ").trim()}`
+      : `texte:${normaliserReference(r.reference)}`;
+  }
+
+  /**
    * Deux obligations distinguées par des conditions différentes ne sont pas
    * des doublons : elles couvrent des périmètres disjoints ou emboîtés
    * (ex. RIA vs extincteurs, tous deux sur MS 73).
@@ -305,6 +372,80 @@ describe("référentiel conformité — anti-doublon", () => {
         .join("|"),
     );
   }
+
+  /**
+   * Les paires que la comparaison signale et qui n'en sont pas — ou qui en
+   * sont, et attendent une décision qu'un test ne peut pas prendre.
+   *
+   * Chacune porte sa raison et, quand c'en est une vraie, la question exacte
+   * qui la résoudrait. Une exception sans condition de levée est une
+   * exception qui reste ; c'est ce qu'on veut éviter.
+   */
+  const PAIRES_DECLAREES: { paire: [string, string]; raison: string }[] = [
+    // ── Vraies distinctions que le test ne sait pas voir ────────────────
+    {
+      paire: [
+        "aeration-controle-installations-r4222-20",
+        "stockage-dangereux-ventilation-locaux",
+      ],
+      raison:
+        "Même article fondateur (R. 4222-20), mais deux régimes distincts de l'arrêté du 8 octobre 1987 : l'article 3 pour les locaux à pollution NON spécifique, l'article 4 pour les locaux à pollution spécifique — dont relève un local de stockage de matières dangereuses. Le discriminant est la référence de CONTEXTE, que ce test ne compare pas (il ne regarde que le fondateur, par convention). Ce n'est pas un doublon.",
+    },
+    {
+      paire: [
+        "porte-auto-verification-initiale",
+        "porte-auto-portail-piete-coulissant",
+      ],
+      raison:
+        "Instruit le 2026-08-27, ce n'est PAS un doublon. La clé canonique est la même (`Arrêté 1993-12-21 art. 2`) parce que l'article 2 pose le champ d'application commun, mais les deux obligations renvoient à des dispositions distinctes du même arrêté : « art. 2 à 4 — installations neuves » d'un côté, « art. 2 et 5 — passages de véhicules » de l'autre. Un article peut fonder plusieurs actes ; ce test ne compare que le fondateur, il ne sait pas les distinguer.",
+    },
+    {
+      paire: [
+        "stockage-dangereux-retention",
+        "stockage-dangereux-verification-etancheite",
+      ],
+      raison:
+        "Instruit le 2026-08-27, ce n'est PAS un doublon. `R. 4412-11` fonde deux actes que les citations elles-mêmes distinguent : « procédures de stockage sûres des agents chimiques dangereux » (la rétention) et « entretien régulier des équipements de stockage » (l'étanchéité). Objets différents, gestes différents ; seul l'article est commun.",
+    },
+    {
+      paire: [
+        "stockage-dangereux-fiches-donnees",
+        "stockage-dangereux-formation-personnel",
+      ],
+      raison:
+        "Instruit le 2026-08-27, ce n'est PAS un doublon. `R. 4412-38` fonde d'un côté « l'accès des travailleurs aux fiches de données de sécurité » — une pièce à tenir disponible — et de l'autre leur formation. Un document et un enseignement ne sont pas le même acte, même sous le même article.",
+    },
+    // ── Résolus le 2026-08-27 ──────────────────────────────────────────
+    // Trois paires figuraient ici : les fragments de PE 4 § 2 (électricité,
+    // gaz) et de R. 4222-20 (VMC/CTA) face aux obligations qui portent ces
+    // articles entiers. Elles ont été résolues plutôt que déclarées : aucun
+    // des trois fragments n'avait de fondement propre — leur article
+    // fondateur était celui-là même que le référentiel porte désormais en
+    // entier — et les garder aurait maintenu la décomposition que l'ADR-022
+    // existe pour écarter.
+    //
+    // Ils sont RETIRÉS (`OBLIGATIONS_RETIREES` dans `index.ts`), pas
+    // supprimés au sens des données : la réconciliation n'efface
+    // physiquement qu'une ligne sans rapport, sans action et sans date de
+    // réalisation ; toute ligne porteuse d'une preuve est archivée, libellé
+    // marqué (ADR-012). Constat en base avant le retrait : six lignes au
+    // total, aucune preuve, aucune réalisation.
+  ];
+
+  const CLES_DECLAREES = new Set(
+    PAIRES_DECLAREES.map(({ paire }) => [...paire].sort().join(" ↔ ")),
+  );
+
+  it("chaque paire déclarée existe encore, et dit pourquoi", () => {
+    // Une exception qui survit à la disparition de son objet est un
+    // commentaire périmé qui a l'air d'une règle.
+    for (const { paire, raison } of PAIRES_DECLAREES) {
+      for (const id of paire) {
+        expect(obligationParId(id), `${id} n'existe plus`).toBeDefined();
+      }
+      expect(raison.length, paire.join(" ↔ ")).toBeGreaterThan(80);
+    }
+  });
 
   it("pas deux obligations partageant catégorie d'équipement, périodicité et article fondateur", () => {
     // On compare l'article FONDATEUR (`referencesLegales[0]`, cf. convention
@@ -319,14 +460,22 @@ describe("référentiel conformité — anti-doublon", () => {
         const b = obligationsConformite[j];
         if (a.periodicite !== b.periodicite) continue;
         if (signatureConditions(a) !== signatureConditions(b)) continue;
-        const memeCategorie = a.categoriesEquipement.some((c) =>
-          b.categoriesEquipement.includes(c),
-        );
-        if (!memeCategorie) continue;
+        // Le porteur ne dispense PAS de la comparaison. Une obligation
+        // portée par l'établissement et un fragment de la même obligation
+        // accroché à un équipement sont deux lignes pour un seul acte —
+        // c'est le doublon que ce test doit voir, pas celui qu'il doit
+        // laisser passer.
+        if (estPorteeParEquipement(a) && estPorteeParEquipement(b)) {
+          const memeCategorie = a.categoriesEquipement.some((c) =>
+            b.categoriesEquipement.includes(c),
+          );
+          if (!memeCategorie) continue;
+        }
         if (
-          normaliserReference(a.referencesLegales[0].reference) ===
-          normaliserReference(b.referencesLegales[0].reference)
+          identiteArticle(a.referencesLegales[0]) ===
+          identiteArticle(b.referencesLegales[0])
         ) {
+          if (CLES_DECLAREES.has([a.id, b.id].sort().join(" ↔ "))) continue;
           doublons.push(`${a.id} ↔ ${b.id}`);
         }
       }
@@ -648,8 +797,7 @@ describe("référentiel conformité — éclairage de sécurité en lieu de trav
   it("la catégorie BAES est couverte hors régime ERP", () => {
     const horsErp = obligationsConformite.filter(
       (o) =>
-        o.categoriesEquipement.includes("BAES") &&
-        o.typologies.travail === true,
+        categoriesCitees(o).includes("BAES") && o.typologies.travail === true,
     );
     expect(horsErp.map((o) => o.id).sort()).toEqual([...IDS_TRAVAIL].sort());
   });
@@ -805,7 +953,12 @@ describe("référentiel conformité — version et empreinte", () => {
   // Ce test est le garde-fou : il échoue dès qu'on touche au contenu sans
   // incrémenter `REFERENTIEL_VERSION`. Pour le corriger, incrémentez la
   // version PUIS recopiez l'empreinte que le message d'échec affiche.
-  const EMPREINTE_ATTENDUE = "85-bb6450d159a94d49";
+  // 87 depuis le 2026-08-27 : deux obligations portées par l'établissement
+  // (ADR-022) — PE 4 § 2 et R. 4222-20.
+  // 84 depuis le 2026-08-27 : 85 au départ, +2 obligations portées par
+  // l'établissement (PE 4 § 2, R. 4222-20), −3 fragments de ces mêmes
+  // articles qu'elles absorbent (ADR-022).
+  const EMPREINTE_ATTENDUE = "84-4dbe47be60831f64";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -821,6 +974,111 @@ describe("référentiel conformité — version et empreinte", () => {
     expect(REFERENTIEL_VERSION).toMatch(/^\d{4}-\d{2}-\d{2}\.\d+$/);
   });
 
+  /**
+   * Le compte exact, à part de l'empreinte.
+   *
+   * L'empreinte le porte déjà en préfixe, mais elle échoue pour n'importe
+   * quelle modification : son message dit « le contenu a changé », jamais
+   * « il y a deux obligations de moins qu'hier ». Les deux autres tests de
+   * volume (`conformite.test.ts`) ne posent que des planchers — 25 et 60 —
+   * qu'une suppression accidentelle de vingt lignes passerait sans bruit.
+   *
+   * Ce test-ci nomme le nombre. Quand il casse, on sait immédiatement s'il
+   * s'agit d'un ajout voulu ou d'une disparition.
+   */
+  /**
+   * `Obligation.id` dit « Jamais réutilisé ». Voici ce qui le fait respecter.
+   *
+   * Un id survit à son obligation : `Verification.obligationId` le porte en
+   * base, et la réconciliation s'en sert pour retrouver ses lignes. Réemployer
+   * un id retiré rattacherait les lignes de l'ancienne obligation à la
+   * nouvelle — leurs dates, leurs statuts, et les rapports qui y pendent.
+   * Silencieusement : aucune contrainte de base ne s'y oppose, et le
+   * référentiel vivant en TypeScript, aucune clé étrangère non plus.
+   */
+  it("aucun identifiant retiré n'est réemployé", () => {
+    const vivants = new Set(obligationsConformite.map((o) => o.id));
+    const reemployes = Object.keys(OBLIGATIONS_RETIREES).filter((id) =>
+      vivants.has(id),
+    );
+
+    expect(
+      reemployes,
+      "Un identifiant listé dans `OBLIGATIONS_RETIREES` est réemployé par une obligation vivante. Les lignes `Verification` de l'ancienne obligation seraient rattachées à la nouvelle, avec leurs rapports.",
+    ).toEqual([]);
+  });
+
+  it("chaque identifiant retiré dit où son contenu est passé", () => {
+    // Un id retiré sans explication laisse un lecteur qui le trouve en base
+    // devant une impasse.
+    for (const [id, r] of Object.entries(OBLIGATIONS_RETIREES)) {
+      expect(r.motif.length, id).toBeGreaterThan(80);
+    }
+  });
+
+  it("l'obligation absorbante d'un id retiré existe encore", () => {
+    // Une chaîne de retraits (A absorbé par B, B retiré plus tard) laisserait
+    // sinon un `absorbePar` qui pointe dans le vide — et le report d'historique
+    // que ce champ prépare échouerait silencieusement.
+    const vivants = new Set(obligationsConformite.map((o) => o.id));
+    for (const [id, r] of Object.entries(OBLIGATIONS_RETIREES)) {
+      if (r.absorbePar === null) continue;
+      expect(
+        vivants.has(r.absorbePar),
+        `${id} est absorbé par ${r.absorbePar}, qui n'existe pas (ou plus) dans le référentiel.`,
+      ).toBe(true);
+    }
+  });
+
+  /**
+   * Le trou que ce test ferme, et il était réel.
+   *
+   * Rien n'obligeait à INSCRIRE un retrait. Retirer une obligation sans
+   * l'inscrire ne faisait échouer que l'empreinte et le compte — deux tests
+   * dont les messages disent « mettez ce compte à jour », c'est-à-dire qui
+   * invitent à les faire taire sans jamais nommer l'inscription.
+   *
+   * Ce n'est pas théorique : `aeration-hotte-pro-annuelle` a été retiré,
+   * `prisma/schema.prisma` le documente comme le cas vécu qui a motivé la
+   * colonne `referentielVersion`, et il ne figurait pas dans le registre. Il y
+   * est depuis le 2026-08-27, à titre rétroactif.
+   *
+   * La liste ci-dessous est le seul point d'entrée légitime pour un id sorti
+   * du référentiel : elle DOIT grandir à chaque retrait.
+   */
+  it("tout identifiant cité dans le corpus ou le produit est vivant ou déclaré retiré", () => {
+    const vivants = new Set(obligationsConformite.map((o) => o.id));
+    const declares = new Set(Object.keys(OBLIGATIONS_RETIREES));
+
+    // Les renvois du corpus sont la source la plus fiable d'ids « attendus » :
+    // ils sont contraints par le type et vérifiés par `corpus.test.ts`.
+    const cites = new Set(
+      CORPUS.flatMap((c) =>
+        c.articles.flatMap((a) =>
+          a.statut === "retenu" ? [...a.obligations] : [],
+        ),
+      ),
+    );
+
+    const fantomes = [...cites].filter(
+      (id) => !vivants.has(id) && !declares.has(id),
+    );
+
+    expect(
+      fantomes,
+      "Un identifiant est cité sans exister ni figurer dans `OBLIGATIONS_RETIREES`. Soit l'obligation a été retirée sans être inscrite au registre — auquel cas l'id peut être réemployé et rattacher silencieusement d'anciennes lignes `Verification` —, soit l'id est une invention.",
+    ).toEqual([]);
+  });
+
+  it("le référentiel compte exactement le nombre d'obligations annoncé", () => {
+    expect(
+      obligationsConformite.length,
+      "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
+        "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
+        "l'annoncent tous les deux.",
+    ).toBe(84);
+  });
+
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
     // Le trou que ce test ferme : l'empreinte ne couvrait que l'identité et la
     // périodicité. Poser une condition sur une obligation retirait l'échéance
@@ -831,26 +1089,35 @@ describe("référentiel conformité — version et empreinte", () => {
     expect(cible).toBeDefined();
     if (!cible) return;
 
+    // `levage-vgp-annuelle-charges` est portée par un équipement ; le test
+    // manipule `categoriesEquipement`, qui n'existe que sur cette branche.
+    expect(estPorteeParEquipement(cible)).toBe(true);
+    if (!estPorteeParEquipement(cible)) return;
+    const cibleEq: ObligationPorteeParEquipement = cible;
+
     const original = {
-      conditions: cible.conditions,
-      typologies: cible.typologies,
-      categoriesEquipement: cible.categoriesEquipement,
+      conditions: cibleEq.conditions,
+      typologies: cibleEq.typologies,
+      categoriesEquipement: cibleEq.categoriesEquipement,
     };
     try {
-      cible.conditions = undefined;
+      cibleEq.conditions = undefined;
       expect(empreinteReferentiel()).not.toBe(reference);
 
-      cible.conditions = original.conditions;
-      cible.typologies = { ...original.typologies, erp: true };
+      cibleEq.conditions = original.conditions;
+      cibleEq.typologies = { ...original.typologies, erp: true };
       expect(empreinteReferentiel()).not.toBe(reference);
 
-      cible.typologies = original.typologies;
-      cible.categoriesEquipement = [...original.categoriesEquipement, "AUTRE"];
+      cibleEq.typologies = original.typologies;
+      cibleEq.categoriesEquipement = [
+        ...original.categoriesEquipement,
+        "AUTRE",
+      ];
       expect(empreinteReferentiel()).not.toBe(reference);
     } finally {
-      cible.conditions = original.conditions;
-      cible.typologies = original.typologies;
-      cible.categoriesEquipement = original.categoriesEquipement;
+      cibleEq.conditions = original.conditions;
+      cibleEq.typologies = original.typologies;
+      cibleEq.categoriesEquipement = original.categoriesEquipement;
     }
     expect(empreinteReferentiel()).toBe(reference);
   });

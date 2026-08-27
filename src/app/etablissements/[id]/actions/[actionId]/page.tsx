@@ -24,6 +24,7 @@ import { classerDate, type RegistreLigne } from "@/lib/calendrier/etats";
 import { formaterDateFr, formaterDateLongueFr } from "@/lib/dates";
 import { estActionEnRetard } from "@/lib/dates/retard";
 import { avecProvenance, lireProvenance } from "@/lib/navigation/provenance";
+import { LABEL_TOUT_ETABLISSEMENT } from "@/lib/calendrier/labels";
 
 export default async function ActionDetailPage({
   params,
@@ -191,7 +192,10 @@ export default async function ActionDetailPage({
                       {a.verification.libelleObligation}
                     </p>
                     <p className="m-0 mt-1 text-[12.5px] text-[color:var(--board-slate-mid)]">
-                      {a.verification.equipement.libelle}
+                      {/* Sans équipement, l'action naît d'une échéance
+                          portée par l'établissement (ADR-022). */}
+                      {a.verification.equipement?.libelle ??
+                        LABEL_TOUT_ETABLISSEMENT}
                       {dernierRapport
                         ? ` · ${LABEL_RESULTAT[dernierRapport.resultat]}`
                         : null}

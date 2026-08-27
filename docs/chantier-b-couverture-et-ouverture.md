@@ -6,6 +6,16 @@ trois secteurs DUERP puisse enfin en créer un.
 Rédigé le 2026-08-27 par la session qui a instruit le sujet. **Ce document n'est pas un ordre
 de mission : la section « Ce que vous devriez contester » compte autant que les autres.**
 
+> **Note d'une autre branche, 2026-08-27 (chantier A / ADR-022).** Ce document dit « 85
+> obligations » à trois endroits. Le compte est désormais **84** : deux obligations portées par
+> l'établissement ont été ajoutées, trois fragments de ces mêmes articles retirés parce qu'elles
+> les absorbent. Les chiffres ci-dessous ne sont pas corrigés dans le corps du texte — c'est le
+> brief d'un autre chantier, et son argument ne dépend pas de l'unité près. Le compte faisant foi
+> est le préfixe d'`EMPREINTE_ATTENDUE` dans `conformite.test.ts`.
+>
+> Un fait de ce document change en revanche pour de bon : toutes les obligations ne sont plus
+> déclenchées par un équipement déclaré. Deux le sont par l'établissement lui-même.
+
 ---
 
 ## Pourquoi ce chantier existe

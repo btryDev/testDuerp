@@ -32,6 +32,7 @@ import {
 } from "@/lib/dates/retard";
 import { JOURS_HORIZON_PROCHE } from "@/lib/dates";
 import { prismaMcp } from "./prisma";
+import { LABEL_TOUT_ETABLISSEMENT } from "@/lib/calendrier/labels";
 
 // ---------------------------------------------------------------------
 // Fiche établissement
@@ -360,8 +361,11 @@ export async function listerEquipements(
 
 export type VerificationLue = {
   libelleObligation: string;
+  /** L'appareil, ou « Tout l'établissement » quand l'échéance est portée par
+   *  l'établissement lui-même (ADR-022). */
   equipement: string;
-  categorie: CategorieEquipement;
+  /** `null` quand l'échéance n'est portée par aucun appareil (ADR-022). */
+  categorie: CategorieEquipement | null;
   periodicite: string;
   datePrevue: Date;
   dateRealisee: Date | null;
@@ -407,8 +411,11 @@ export async function listerVerifications(
 
   let lues: VerificationLue[] = brutes.map((v) => ({
     libelleObligation: v.libelleObligation,
-    equipement: v.equipement.libelle,
-    categorie: v.equipement.categorie,
+    // Une échéance portée par l'établissement (ADR-022) n'a pas d'appareil :
+    // l'assistant doit lire « tout l'établissement », pas une chaîne vide qui
+    // se lirait comme une donnée manquante.
+    equipement: v.equipement?.libelle ?? LABEL_TOUT_ETABLISSEMENT,
+    categorie: v.equipement?.categorie ?? null,
     periodicite: v.periodicite,
     datePrevue: v.datePrevue,
     dateRealisee: v.dateRealisee,
@@ -423,7 +430,7 @@ export async function listerVerifications(
       (v) =>
         v.libelleObligation.toLowerCase().includes(q) ||
         v.equipement.toLowerCase().includes(q) ||
-        v.categorie.toLowerCase().includes(q.replace(/\s+/g, "_")),
+        (v.categorie?.toLowerCase().includes(q.replace(/\s+/g, "_")) ?? false),
     );
   }
 

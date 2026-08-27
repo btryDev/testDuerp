@@ -118,6 +118,13 @@ export async function listerBatimentsAvecCharge(
       // l'isolation est une convention applicative, et une lecture qui ne la
       // porte pas devient une fuite le jour où quelqu'un rend `verifs`.
       etablissement: { entreprise: { userId: user.id } },
+      // Ici, et à la différence du calendrier, la jointure interne est le
+      // comportement voulu : cette fonction rend la charge **par bâtiment**,
+      // et une échéance portée par l'établissement (ADR-022) n'est dans aucun
+      // bâtiment. La compter dans chacun gonflerait autant de pastilles qu'il
+      // y a de corps ; la compter dans un seul serait arbitraire. Elle reste
+      // lisible là où elle a un sens — au calendrier, étiquetée « Tout
+      // l'établissement » — et `porteeBatiment` l'y laisse passer.
       equipement: { actif: true },
     },
     select: {
@@ -133,6 +140,10 @@ export async function listerBatimentsAvecCharge(
 
   const parBatiment = new Map<string, typeof verifs>();
   for (const v of verifs) {
+    // `equipement` ne peut pas être nul ici : le `where` ci-dessus l'exige
+    // déclaré et actif. La garde est là pour que le typage le sache, pas
+    // pour couvrir un cas.
+    if (!v.equipement) continue;
     const cle = v.equipement.batimentId;
     const liste = parBatiment.get(cle);
     if (liste) liste.push(v);

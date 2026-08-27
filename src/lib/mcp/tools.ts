@@ -383,7 +383,11 @@ function formaterVerifications(verifs: VerificationLue[]): string {
 
   const lignes = verifs.map((v) => {
     const details = [
-      `${categorieLisible(v.categorie)} « ${v.equipement} »`,
+      // Sans catégorie, l'échéance porte sur l'établissement : on nomme
+      // l'obligation plutôt qu'un appareil qui n'existe pas (ADR-022).
+      v.categorie
+        ? `${categorieLisible(v.categorie)} « ${v.equipement} »`
+        : v.equipement,
       `périodicité ${v.periodicite}`,
       v.dateRealisee
         ? `réalisée le ${formaterDateFr(v.dateRealisee)}`

@@ -47,7 +47,7 @@ export async function listerRapportsDeLEtablissement(
         const hay = [
           r.verification.libelleObligation,
           r.organismeVerif ?? "",
-          r.verification.equipement.libelle,
+          r.verification.equipement?.libelle ?? "",
           r.commentaires ?? "",
         ]
           .join(" ")

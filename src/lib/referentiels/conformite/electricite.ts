@@ -195,36 +195,25 @@ export const obligationsElectricite: Obligation[] = [
     },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
   },
-  {
-    id: "elec-erp-cat5-quinquennale",
-    domaine: "electricite",
-    libelle: "Vérification triennale des installations électriques (ERP 5ᵉ catégorie)",
-    description:
-      "Dans les ERP de 5ᵉ catégorie, l'exploitant fait procéder tous les trois ans au plus, par des techniciens compétents, à l'entretien et à la vérification des installations électriques (art. PE 4 § 2, rédaction de l'arrêté du 1er décembre 2025 applicable au 1er juillet 2026). Avant cette date, PE 4 n'imposait aucune périodicité en exploitation.",
-    referencesLegales: [
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 22 juin 1990 (ERP 5ᵉ catégorie), art. PE 4 § 2, rédaction de l'arrêté du 1er décembre 2025",
-        article: "PE 4",
-        url:
-          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374770/",
-      },
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 1er décembre 2025 modifiant le règlement de sécurité ERP (applicable au 1er juillet 2026)",
-        article: "Arrêté 2025-12-01",
-        url:
-          "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000053020948",
-      },
-    ],
-    periodicite: "triennale",
-    realisateurs: ["personne_competente", "organisme_agree"],
-    criticite: 4,
-    typologies: { erp: { categories: ["N5"] } },
-    categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
-    notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version annonçait « tous les cinq ans » en citant PE 4 § 3, qui traite de la mise en demeure par la commission. PE 4 n'imposait aucune périodicité jusqu'à l'arrêté du 1er décembre 2025, qui fixe « tous les trois ans au plus » pour l'ensemble des installations techniques (électricité, gaz, cuisson, extraction, ascenseurs, moyens de secours). L'id `elec-erp-cat5-quinquennale` est conservé car référencé par les lignes Verification en base ; ne pas le renommer sans migration.",
-  },
+  // `elec-erp-cat5-quinquennale` a été RETIRÉ le 2026-08-27 (ADR-022).
+  //
+  // Il n'avait pas de fondement propre : son article fondateur était PE 4 § 2,
+  // et il n'en projetait qu'un fragment — « les installations électriques » —
+  // sur une catégorie d'équipement. Ce découpage n'existait que parce que le
+  // modèle exigeait un déclencheur d'équipement. Depuis que le référentiel
+  // porte PE 4 § 2 entier
+  // (`incendie-erp-pe4-entretien-installations-techniques`), le garder ferait
+  // deux lignes triennales pour un seul acte, et maintiendrait la
+  // décomposition que ce chantier existe pour écarter.
+  //
+  // Ce que le retrait ne détruit pas : la réconciliation ne supprime
+  // physiquement qu'une ligne SANS rapport, sans action et sans date de
+  // réalisation ; toute ligne porteuse d'une preuve est archivée, libellé
+  // marqué (ADR-012). Constaté en base au 2026-08-27 avant le retrait : trois
+  // lignes, aucune preuve, aucune réalisation.
+  //
+  // L'id ne doit JAMAIS être réemployé (cf. `Obligation.id`) — il est
+  // enregistré dans `OBLIGATIONS_RETIREES`, et un test le vérifie.
   {
     id: "elec-erp-groupe-electrogene-quinzaine",
     domaine: "electricite",

@@ -82,6 +82,61 @@ Aucune ligne ne porte `NON_RATTACHE`, `HORS_CORPUS`, `NON_DEPOUILLE`,
 `LECTURE_INDIRECTE`, `VERSION_DIVERGENTE` ni `SANS_URL` : les 155 références ont
 leur clé, leur corpus et leur lien.
 
+### Où en est ce tableau après l'ADR-022 (mesuré le 2026-08-27, même jour, plus tard)
+
+> **Ce document ENTIER — ses tableaux comme le CSV qui l'accompagne — est
+> l'instantané d'AVANT.** Les tableaux ligne par ligne des sections suivantes
+> décrivent encore les trois obligations retirées depuis. C'est voulu : ils
+> sont le relevé que ce document analyse.
+>
+> **`docs/relecture-references-2026-08-27.csv`** de même. Il a
+> été produit le matin, et il porte encore les trois obligations retirées
+> depuis (`elec-erp-cat5-quinquennale`, `cuisson-gaz-installations-triennale`,
+> `aeration-travail-entretien-annuel`) ainsi que les cinq lignes
+> `FONDEMENT_NON_RETENU`. Ce n'est pas une erreur : c'est le relevé que ce
+> document analyse, et le régénérer effacerait le point de comparaison.
+> Régénérable à tout moment par `pnpm relecture --csv`.
+
+| constat | avant | après | ce qui a bougé |
+|---|---|---|---|
+| `PERIODICITE_SANS_TEXTE_PORTEUR` | 2 | 2 | inchangé |
+| `CORPUS_NE_RENVOIE_PAS` | 9 | 9 | inchangé — il est monté à 15 en cours de route, le temps que les renvois de `PE 4` et `R. 4222-20` soient complétés |
+| **`FONDEMENT_NON_RETENU`** | **5** | **0** | **éteint** |
+| `SANS_VERBATIM` | 115 | 113 | deux de moins **net** : quatre articles ont gagné leur `citationCle` (`PE 4`, `R. 4222-20`, `R. 4222-22`, arrêté du 8 octobre 1987 art. 3), et les deux obligations nouvelles ont ajouté des lignes de référence qui en reprennent une part |
+| `VERSION_FUTURE` | 3 | 3 | inchangé |
+| `VERSION_JAMAIS_CONSTATEE` | 129 | 129 | inchangé |
+
+Le référentiel passe de 85 à **84** obligations : `2026-08-27.5`. Le solde se lit +2 −3 : deux obligations portées par l'établissement (PE 4 § 2, R. 4222-20) et trois fragments de ces mêmes articles qu'elles absorbent (`elec-erp-cat5-quinquennale`, `cuisson-gaz-installations-triennale`, `aeration-travail-entretien-annuel`).
+
+**`FONDEMENT_NON_RETENU` s'est éteint tout seul**, et c'est ce qui rend le
+constat intéressant. Les cinq lignes portaient sur `PE 4` et `R. 4222-20`, deux
+articles que le corpus classait `obligation_manquante` parce que le modèle ne
+savait pas les porter : ils fondaient des obligations sans pouvoir être dits
+« retenus ». L'ADR-022 leur a donné un porteur — l'établissement — ils sont
+encodés, donc retenus, donc le constat n'a plus d'objet.
+
+Ce n'était pas une alerte à traiter ligne par ligne : c'était le même manque
+structurel, compté cinq fois. Un constat mécanique qui s'éteint par un
+changement de modèle vaut confirmation que le constat visait juste.
+
+**Deux réserves subsistent, et elles sont désormais comptées.** `PE 4` et
+`R. 4222-20` ne sont pas retenus *en entier* : le § 1 de PE 4 (contrat annuel
+du système de détection) attend l'attribut `Etablissement.locauxSommeil`, et le
+volet « pollution spécifique » de l'arrêté de 1987 attend un secteur qui le
+concerne. Marquer ces articles « retenu » tout court les aurait effacés. Le
+statut `retenu` porte donc maintenant un champ `reserve`, et
+`reservesDeLecture()` les agrège — un article partiellement couvert se lit
+comme tel, au lieu de disparaître du tableau de bord du dépouillement.
+
+**Ce qui n'a PAS bougé et devait être dit** : les neuf sur-applications du
+Livre II — six dans `incendie.ts`, trois dans `electricite.ts` — sont toujours là. Leurs notes annonçaient « à
+reprendre lorsque le référentiel saura porter PE 4 § 2 » ; il le sait, mais
+c'était la moitié de la condition. L'autre moitié est un point de droit — ces
+lignes se disent aussi fondées, chez un employeur, sur le Code du travail — et
+il n'a pas été relu. Les retirer sur cette base supprimerait chez l'utilisateur
+des échéances dont on n'a pas établi qu'elles ne sont pas dues, et en silence.
+C'est un chantier de veille, distinct.
+
 ---
 
 ## 3. Les deux périodicités sans texte porteur

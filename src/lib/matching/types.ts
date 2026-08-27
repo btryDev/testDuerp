@@ -6,7 +6,10 @@ import type {
   Realisateur,
   TypeErp,
 } from "@/lib/referentiels/types-communs";
-import type { Obligation } from "@/lib/referentiels/conformite/types";
+import type {
+  Obligation,
+  PorteurObligation,
+} from "@/lib/referentiels/conformite/types";
 
 /**
  * Types utilisés par le moteur de matching (étape 5, ADR-005).
@@ -59,7 +62,19 @@ export type EquipementMatching = {
  */
 export type ObligationApplicable = {
   obligation: Obligation;
+  /**
+   * Les équipements qui **déclenchent** l'obligation. Vide lorsque le porteur
+   * est l'établissement (ADR-022) : la ligne existe alors quand même, et une
+   * liste vide n'y signifie pas « aucune ligne ». Lire `porteur` pour trancher,
+   * jamais `equipementsConcernes.length`.
+   */
   equipementsConcernes: EquipementMatching[];
+  /**
+   * Sur quoi porte l'échéance à engendrer (ADR-022) — `"equipement"` produit
+   * une ligne par entrée d'`equipementsConcernes`, `"etablissement"` en produit
+   * exactement une.
+   */
+  porteur: PorteurObligation;
   raisons: string[];
   /**
    * Surcharges de périodicité imposées par une prescription particulière

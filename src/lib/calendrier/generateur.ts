@@ -54,17 +54,50 @@ import type {
 } from "@/lib/matching";
 import { PREFIXE_PRESCRIPTION } from "@/lib/matching/prescriptions";
 
+/**
+ * Sentinelle du porteur « établissement » dans la clé de ligne.
+ *
+ * Le `@` la rend impossible à confondre avec un identifiant d'équipement :
+ * `cuid()` n'en produit jamais. Sans elle, `null` s'interpolerait en la chaîne
+ * `"null"`, qu'un identifiant pourrait théoriquement porter.
+ */
+const PORTEUR_ETABLISSEMENT = "@etablissement";
+
+/**
+ * La clé d'identité d'une ligne de suivi (ADR-022).
+ *
+ * Elle est produite ici, et **nulle part ailleurs**. La réconciliation range
+ * les lignes existantes dans une `Map` sous cette clé et retrouve chaque ligne
+ * générée par la même : deux constructions divergentes feraient prendre une
+ * ligne existante pour une ligne disparue, donc archiver ou supprimer ce
+ * qu'elle portait.
+ *
+ * Le porteur en fait partie. Sans lui, deux lignes portées par l'établissement
+ * pour deux obligations différentes seraient distinctes — c'est le cas facile —
+ * mais surtout la même obligation portée par l'établissement et par un
+ * équipement se confondrait, et deux porteurs non-équipement à venir (deux
+ * salariés) s'écraseraient l'un l'autre. La contrainte `NULLS NOT DISTINCT` en
+ * base ne protège pas de ça : la collision se produit en mémoire, avant.
+ */
+export function cleDeLigne(
+  obligationId: string,
+  equipementId: string | null,
+): string {
+  return `${obligationId}::${equipementId ?? PORTEUR_ETABLISSEMENT}`;
+}
+
 export type StatutVerificationGen =
   | "a_planifier"
   | "planifiee"
   | "depassee";
 
 export type VerificationGenere = {
-  /** Clé stable (obligationId::equipementId) pour l'upsert en base. */
+  /** Clé stable rendue par `cleDeLigne` — jamais reconstruite à la main. */
   cleUnique: string;
   obligationId: string;
   libelleObligation: string;
-  equipementId: string;
+  /** `null` = ligne portée par l'établissement, pas par un appareil (ADR-022). */
+  equipementId: string | null;
   periodicite: Periodicite;
   realisateurRequis: Realisateur[];
   datePrevue: Date;
@@ -128,10 +161,20 @@ export function genererProchainesVerifications(
   for (const oa of obligations) {
     const o = oa.obligation;
 
-    for (const eq of oa.equipementsConcernes) {
+    // Le porteur décide de ce sur quoi on boucle (ADR-022). Pour
+    // l'établissement, un seul tour, sans équipement — et c'est tout l'objet
+    // du chantier : `oa.equipementsConcernes` est vide, or l'obligation est
+    // due. Boucler dessus produirait zéro ligne, ce qui est exactement le faux
+    // négatif qu'on supprime.
+    const porteurs: Array<{ id: string | null; libelle: string | null }> =
+      oa.porteur === "etablissement"
+        ? [{ id: null, libelle: null }]
+        : oa.equipementsConcernes.map((e) => ({ id: e.id, libelle: e.libelle }));
+
+    for (const eq of porteurs) {
       // Périodicité effective : celle du référentiel, sauf surcharge d'une
       // prescription particulière (ADR-014) sur cet équipement.
-      const surcharge = oa.surcharges?.[eq.id];
+      const surcharge = eq.id === null ? undefined : oa.surcharges?.[eq.id];
       const periodicite = surcharge?.periodicite ?? o.periodicite;
       const prescriptionId = surcharge?.prescriptionId ?? null;
       const raisons = surcharge ? [...oa.raisons, surcharge.raison] : oa.raisons;
@@ -139,7 +182,7 @@ export function genererProchainesVerifications(
       // Périodicité `autre` → pas d'échéance (obligations permanentes).
       if (periodicite === "autre") continue;
 
-      const cleUnique = `${o.id}::${eq.id}`;
+      const cleUnique = cleDeLigne(o.id, eq.id);
       const derniere = verificationsPrecedentes.get(cleUnique);
 
       // One-shot : mise en service uniquement.
@@ -160,7 +203,12 @@ export function genererProchainesVerifications(
       // d'appareils anciens — sans qu'aucune ne soit due à cette date.
       if (periodicite === "mise_en_service_uniquement") {
         if (derniere) continue; // déjà réalisé, pas de nouvelle occurrence
-        const miseEnService = options.misesEnService?.get(eq.id) ?? null;
+        // Une ligne d'établissement n'a pas de mise en service : il n'y a pas
+        // d'appareil dont on daterait l'installation. Le point de départ d'un
+        // premier cycle viendra, pour elle, d'un autre fait (ADR-022) ; en
+        // attendant, `null` la place à « à planifier », ce qui est juste.
+        const miseEnService =
+          eq.id === null ? null : (options.misesEnService?.get(eq.id) ?? null);
         const aVenir =
           miseEnService !== null && miseEnService.getTime() >= now.getTime();
         out.push({
@@ -203,7 +251,8 @@ export function genererProchainesVerifications(
         // mais seulement tant qu'elle place la première échéance devant
         // nous : au-delà, l'équipement a vécu sans que le dossier le sache,
         // et un retard calculé sur ce silence serait une invention.
-        const miseEnService = options.misesEnService?.get(eq.id);
+        const miseEnService =
+          eq.id === null ? undefined : options.misesEnService?.get(eq.id);
         const premiere = miseEnService
           ? prochaineDate(miseEnService, o.periodicite)
           : null;
@@ -258,7 +307,7 @@ export function genererVerificationsSurMesure(
     const obligationId = `${PREFIXE_PRESCRIPTION}${p.id}`;
     for (const eq of sm.equipementsConcernes) {
       out.push({
-        cleUnique: `${obligationId}::${eq.id}`,
+        cleUnique: cleDeLigne(obligationId, eq.id),
         obligationId,
         libelleObligation: p.libelle ?? p.reference,
         equipementId: eq.id,
@@ -373,7 +422,8 @@ export {
 export type OccurrenceExistante = {
   id: string;
   obligationId: string;
-  equipementId: string;
+  /** `null` = ligne portée par l'établissement (ADR-022). */
+  equipementId: string | null;
   libelleObligation: string;
   periodicite: Periodicite;
   realisateurRequis: Realisateur[];
@@ -469,7 +519,7 @@ export function reconcilierCalendrier(
 
   const parCle = new Map<string, OccurrenceExistante>();
   for (const ex of existantes) {
-    parCle.set(`${ex.obligationId}::${ex.equipementId}`, ex);
+    parCle.set(cleDeLigne(ex.obligationId, ex.equipementId), ex);
   }
 
   const plan: PlanReconciliation = {

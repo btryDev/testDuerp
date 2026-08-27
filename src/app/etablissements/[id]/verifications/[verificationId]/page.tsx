@@ -24,9 +24,14 @@ import {
   LABEL_DOMAINE,
   LABEL_PERIODICITE,
   LABEL_REALISATEUR,
+  LABEL_TOUT_ETABLISSEMENT,
 } from "@/lib/calendrier/labels";
 import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import { obligationParId } from "@/lib/referentiels/conformite";
+import {
+  estPorteeParEquipement,
+  LIBELLE_SOURCE,
+} from "@/lib/referentiels/conformite/types";
 import { uploadRapport } from "@/lib/rapports/actions";
 import { creerActionDepuisVerification } from "@/lib/actions/plan";
 import { prisma } from "@/lib/prisma";
@@ -85,6 +90,14 @@ export default async function VerificationDetailPage({
   const depuisCetteFiche = `/etablissements/${id}/verifications/${verificationId}`;
 
   const obligation = obligationParId(v.obligationId);
+  // Les catégories que le TEXTE nomme, pas celles que l'établissement a
+  // déclarées. Restreindre à ce qui est déclaré ferait disparaître la section
+  // chez celui qui n'a rien déclaré — précisément le cas que cette obligation
+  // existe pour couvrir (ADR-022).
+  const equipementsEnContexte =
+    obligation && !estPorteeParEquipement(obligation)
+      ? (obligation.equipementsEnContexte ?? [])
+      : [];
   const actionsLiees = await prisma.action.findMany({
     where: { verificationId: v.id },
     orderBy: [{ statut: "asc" }, { echeance: "asc" }],
@@ -126,13 +139,25 @@ export default async function VerificationDetailPage({
         : undefined,
       alerte: enRetard,
     },
-    {
-      cle: "Équipement",
-      valeur: v.equipement.libelle,
-      note:
-        LABEL_CATEGORIE_EQUIPEMENT[v.equipement.categorie] +
-        (v.equipement.localisation ? ` · ${v.equipement.localisation}` : ""),
-    },
+    // Sans équipement, l'échéance porte sur l'établissement lui-même
+    // (ADR-022) : la ligne change de nom, parce qu'elle ne répond plus à la
+    // même question. « Équipement : — » laisserait croire à une donnée
+    // manquante ; « Portée : tout l'établissement » dit ce qui est vrai.
+    v.equipement
+      ? {
+          cle: "Équipement",
+          valeur: v.equipement.libelle,
+          note:
+            LABEL_CATEGORIE_EQUIPEMENT[v.equipement.categorie] +
+            (v.equipement.localisation
+              ? ` · ${v.equipement.localisation}`
+              : ""),
+        }
+      : {
+          cle: "Portée",
+          valeur: LABEL_TOUT_ETABLISSEMENT,
+          note: "L'obligation ne dépend d'aucun appareil déclaré.",
+        },
     {
       cle: "Réalisateur requis",
       valeur: v.realisateurRequis
@@ -183,13 +208,18 @@ export default async function VerificationDetailPage({
           </>
         }
         actions={
-          <Link
-            href={`/etablissements/${id}/equipements/${v.equipement.id}/modifier`}
-            className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
-          >
-            Modifier l&apos;équipement
-            <ArrowUpRight className="size-3.5" />
-          </Link>
+          // Pas d'appareil à modifier quand l'échéance porte sur
+          // l'établissement (ADR-022) : un lien vers une fiche qui n'existe
+          // pas vaut moins que pas de lien.
+          v.equipement ? (
+            <Link
+              href={`/etablissements/${id}/equipements/${v.equipement.id}/modifier`}
+              className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
+            >
+              Modifier l&apos;équipement
+              <ArrowUpRight className="size-3.5" />
+            </Link>
+          ) : null
         }
       />
 
@@ -222,7 +252,7 @@ export default async function VerificationDetailPage({
               >
                 <span className="min-w-0">
                   <span className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
-                    {ref.source}
+                    {LIBELLE_SOURCE[ref.source]}
                   </span>
                   <span className="ml-3 text-[13.5px]">{ref.reference}</span>
                 </span>
@@ -241,6 +271,45 @@ export default async function VerificationDetailPage({
             ))}
           </ul>
         </details>
+      ) : null}
+
+      {/* ── Ce que l'obligation vise chez vous ──────────────────────
+          Seulement pour une obligation portée par l'établissement : elle
+          n'a pas d'appareil déclencheur, et le dirigeant a besoin de voir à
+          quoi elle s'applique. La mention « non limitative » n'est pas une
+          précaution de style — PE 4 § 2 énumère puis finit par « etc. », et
+          afficher une liste fermée ferait dire au produit l'inverse du
+          texte (ADR-022). */}
+      {obligation &&
+      !estPorteeParEquipement(obligation) &&
+      equipementsEnContexte.length > 0 ? (
+        <section className="carte-board overflow-hidden">
+          <div className="border-b border-[color:var(--board-slate-line)] px-7 py-5 sm:px-8">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+              Ce que cette obligation vise chez vous
+            </p>
+          </div>
+          <div className="px-7 py-5 sm:px-8">
+            <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+              {equipementsEnContexte.map((c) => (
+                <li
+                  key={c}
+                  className="pastille-board bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]"
+                >
+                  {LABEL_CATEGORIE_EQUIPEMENT[c]}
+                </li>
+              ))}
+            </ul>
+            <p className="m-0 mt-4 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+              Les installations que le texte nomme. La liste n&apos;est{" "}
+              <strong className="font-semibold">pas limitative</strong> : elle
+              se termine par « etc. » et vise l&apos;ensemble de vos
+              installations techniques, y compris celles que vous n&apos;avez
+              pas déclarées ici. L&apos;échéance vous est due même si vous
+              n&apos;avez déclaré aucun appareil.
+            </p>
+          </div>
+        </section>
       ) : null}
 
       {/* ── Le dossier : les rapports déposés ─────────────────────── */}

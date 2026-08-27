@@ -27,8 +27,11 @@ export const ARRETES_MODIFICATIFS_ERP: Corpus = {
       lecture: "premiere_main",
       statut: "retenu",
       obligations: [
-        "cuisson-gaz-installations-triennale",
-        "elec-erp-cat5-quinquennale",
+        // Les deux fragments qui le citaient ont été retirés le 2026-08-27
+        // (ADR-022) ; l'obligation qui porte PE 4 § 2 entier le cite à leur
+        // place. C'est bien lui qui donne son rythme à l'article : sans cet
+        // arrêté, PE 4 § 2 n'imposait aucune périodicité en exploitation.
+        "incendie-erp-pe4-entretien-installations-techniques",
       ],
       prescrit:
         "Texte modificateur. Il réécrit PE 4 § 2 — « En cours d'exploitation » devient « Tous les trois ans au plus », et « installations de gaz » est ajouté à la liste — et PE 10. Entrée en vigueur différée au 1er juillet 2026, donc en vigueur à ce jour.",

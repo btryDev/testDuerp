@@ -35,7 +35,10 @@ import type {
   EtablissementMatching,
 } from "@/lib/matching";
 import { obligationsConformite } from "@/lib/referentiels/conformite";
-import type { Obligation } from "@/lib/referentiels/conformite/types";
+import {
+  estPorteeParEquipement,
+  type Obligation,
+} from "@/lib/referentiels/conformite/types";
 import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 
 /**
@@ -118,12 +121,19 @@ export const ENCRE_SANS_ECHEANCE = "var(--board-slate-mid)";
 
 /** Les catégories citées par au moins une obligation, typologie mise à part.
  *  C'est la couverture brute du référentiel — ce qui distingue « l'outil ne
- *  connaît pas cet appareil » de « il le connaît, mais pas chez vous ». */
+ *  connaît pas cet appareil » de « il le connaît, mais pas chez vous ».
+ *
+ *  Les obligations portées par l'établissement (ADR-022) n'y entrent pas, et
+ *  c'est voulu : elles ne se déclenchent sur aucune catégorie, donc elles ne
+ *  rendent aucun équipement « couvert ». Leurs `equipementsEnContexte` sont un
+ *  affichage, pas un déclencheur — les compter ici ferait passer pour couvert
+ *  un appareil dont aucune obligation ne parle vraiment. */
 function categoriesCouvertes(
   obligations: readonly Obligation[],
 ): Set<CategorieEquipement> {
   const out = new Set<CategorieEquipement>();
   for (const o of obligations) {
+    if (!estPorteeParEquipement(o)) continue;
     for (const c of o.categoriesEquipement) out.add(c);
   }
   return out;

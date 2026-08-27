@@ -1,0 +1,99 @@
+import { describe, expect, it } from "vitest";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, dirname, relative } from "node:path";
+import { fileURLToPath } from "node:url";
+import { porteeBatiment } from "./portee";
+
+/**
+ * Le défaut que ce fichier verrouille ne casse rien, et c'est ce qui le rend
+ * dangereux.
+ *
+ * Depuis que `Verification.equipementId` peut être `null` (ADR-022), un `where`
+ * de la forme `{ equipement: { … } }` est une **jointure interne** : Prisma la
+ * traduit par un `INNER JOIN`, et toute ligne portée par l'établissement en
+ * disparaît. Sans erreur de compilation, sans exception, sans ligne rouge —
+ * l'échéance cesse simplement d'être affichée sous un filtre par bâtiment.
+ *
+ * C'est exactement ce que l'ADR-010 et l'ADR-019 interdisent : « les masquer
+ * ferait mentir le calendrier par omission ». Et c'est le motif que tout ce
+ * chantier existe pour supprimer — le reproduire ailleurs en le corrigeant ici
+ * serait le pire des résultats.
+ *
+ * `tsc` ne peut rien pour nous : le code est parfaitement typé. Il faut donc
+ * lire le source.
+ */
+
+// Trois niveaux : ce fichier vit dans `src/lib/calendrier/`.
+const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+
+/** Les sites qui ont le droit de joindre en interne, avec la raison. */
+const DEROGATIONS: { fichier: string; raison: string }[] = [
+  {
+    fichier: "lib/batiments/queries.ts",
+    raison:
+      "Répartit la charge PAR bâtiment, au lieu de lister sous un filtre. Une échéance d'établissement n'est dans aucun bâtiment : la compter dans chacun gonflerait autant de pastilles qu'il y a de corps, dans un seul serait arbitraire. Elle reste lisible au calendrier, étiquetée « Tout l'établissement ».",
+  },
+  {
+    fichier: "lib/calendrier/portee.ts",
+    raison:
+      "C'est la fonction qui porte la règle : elle cite la forme fautive dans sa documentation et la produit corrigée.",
+  },
+];
+
+function fichiersSource(dir: string, acc: string[] = []): string[] {
+  for (const nom of readdirSync(dir)) {
+    if (nom === "node_modules" || nom === ".next") continue;
+    const chemin = join(dir, nom);
+    if (statSync(chemin).isDirectory()) fichiersSource(chemin, acc);
+    else if (/\.tsx?$/.test(nom) && !/\.test\.tsx?$/.test(nom)) acc.push(chemin);
+  }
+  return acc;
+}
+
+describe("portée d'une échéance sans équipement (ADR-022)", () => {
+  it("une échéance sans équipement passe le filtre par bâtiment", () => {
+    const where = porteeBatiment("bat-1");
+    // La forme exacte compte : un `OR` dont la première branche accepte
+    // `equipementId: null`. C'est elle qui empêche l'INNER JOIN.
+    expect(where).toEqual({
+      OR: [{ equipementId: null }, { equipement: { batimentId: "bat-1" } }],
+    });
+  });
+
+  it("sans bâtiment demandé, le filtre ne contraint rien", () => {
+    // Rendre `{}` permet de s'étaler dans un `where` sans condition à
+    // l'appel — c'est ce qui rend l'usage systématique praticable.
+    expect(porteeBatiment(undefined)).toEqual({});
+  });
+
+  it("aucun `where` ne filtre les vérifications par une jointure interne", () => {
+    const fautifs: string[] = [];
+
+    for (const chemin of fichiersSource(join(RACINE, "src"))) {
+      const rel = relative(RACINE, chemin).replace(/^src\//, "");
+      if (DEROGATIONS.some((d) => d.fichier === rel)) continue;
+
+      const source = readFileSync(chemin, "utf8");
+      // On ne cherche que les filtres — `batimentId` ou `actif` sous une clé
+      // `equipement:`. Un `select`/`include` de la relation est légitime : il
+      // ne restreint pas la sélection, et `tsc` force alors la garde `?.`.
+      const filtres = source.match(
+        /equipement:\s*\{\s*(batimentId|actif)\b[^}]*\}/g,
+      );
+      if (filtres) fautifs.push(`${rel} → ${filtres.join(" , ")}`);
+    }
+
+    expect(
+      fautifs,
+      "Un filtre `equipement: { … }` sur des vérifications est une jointure interne : il exclut en silence les échéances portées par l'établissement (ADR-022), ce qu'interdisent l'ADR-010 et l'ADR-019. Utilisez `porteeBatiment()` — ou, si l'exclusion est voulue, ajoutez le fichier à `DEROGATIONS` avec sa raison.",
+    ).toEqual([]);
+  });
+
+  it("chaque dérogation dit pourquoi, et son fichier existe", () => {
+    // Une dérogation dont le fichier a disparu est une permission qui traîne.
+    for (const { fichier, raison } of DEROGATIONS) {
+      expect(() => statSync(join(RACINE, "src", fichier)), fichier).not.toThrow();
+      expect(raison.length, fichier).toBeGreaterThan(80);
+    }
+  });
+});

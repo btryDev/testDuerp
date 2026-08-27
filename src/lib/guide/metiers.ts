@@ -85,8 +85,12 @@ export const METIERS: Metier[] = [
       ["Hotte et conduits d'extraction", "cuisson-erp-circuits-extraction-nettoyage"],
       ["Appareils de cuisson", "cuisson-erp-appareils-annuelle"],
       ["Éclairage de sécurité (BAES)", "incendie-erp-baes-annuelle"],
-      ["Installation électrique", "elec-erp-cat5-quinquennale"],
-      ["Ventilation", "aeration-travail-entretien-annuel"],
+      // PE 4 § 2 est désormais encodé entier et porté par l'établissement
+      // (ADR-022) : le fragment « installations électriques » a été absorbé.
+      ["Installation électrique", "incendie-erp-pe4-entretien-installations-techniques"],
+      // R. 4222-20 encodé entier, porté par l'établissement (ADR-022) : le
+      // fragment « VMC/CTA » a été absorbé.
+      ["Ventilation", "aeration-controle-installations-r4222-20"],
     ],
   ),
   metier(
@@ -97,7 +101,9 @@ export const METIERS: Metier[] = [
       ["Extincteurs", "incendie-erp-extincteurs-annuelle"],
       ["Éclairage de sécurité (BAES)", "incendie-erp-baes-annuelle"],
       ["Porte automatique", "porte-auto-verification-semestrielle"],
-      ["Installation électrique", "elec-erp-cat5-quinquennale"],
+      // PE 4 § 2 est désormais encodé entier et porté par l'établissement
+      // (ADR-022) : le fragment « installations électriques » a été absorbé.
+      ["Installation électrique", "incendie-erp-pe4-entretien-installations-techniques"],
       ["Consigne incendie", "incendie-travail-consigne-affichee"],
       ["Registre de sécurité", "incendie-registre-securite"],
     ],
@@ -110,7 +116,9 @@ export const METIERS: Metier[] = [
       ["Installation électrique", "elec-travail-periodique-annuelle"],
       ["Moyens de lutte contre l'incendie", "incendie-travail-moyens-lutte"],
       ["Exercice d'évacuation", "incendie-travail-exercice-semestriel"],
-      ["Ventilation", "aeration-travail-entretien-annuel"],
+      // R. 4222-20 encodé entier, porté par l'établissement (ADR-022) : le
+      // fragment « VMC/CTA » a été absorbé.
+      ["Ventilation", "aeration-controle-installations-r4222-20"],
       ["Ascenseur", "ascenseur-examen-annuel-securite"],
       ["Registre de sécurité", "incendie-registre-securite"],
     ],

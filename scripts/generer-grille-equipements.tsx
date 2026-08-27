@@ -15,9 +15,10 @@ import {
   obligationsConformite,
   REFERENTIEL_VERSION,
 } from "@/lib/referentiels/conformite";
-import type {
-  ConditionApplication,
-  Obligation,
+import {
+  estPorteeParEquipement,
+  type ConditionApplication,
+  type Obligation,
 } from "@/lib/referentiels/conformite/types";
 import {
   CATEGORIES_EQUIPEMENT,
@@ -154,8 +155,11 @@ function questionsCategorie(c: CategorieEquipement): string[] {
 }
 
 function obligationsDe(c: CategorieEquipement): Obligation[] {
+  // Les obligations portées par l'établissement ne figurent pas dans la
+  // grille par catégorie : elles ne se déclenchent sur aucun équipement
+  // (ADR-022). La grille dit ce qu'un appareil déclenche, pas ce qui est dû.
   return obligationsConformite
-    .filter((o) => o.categoriesEquipement.includes(c))
+    .filter((o) => estPorteeParEquipement(o) && o.categoriesEquipement.includes(c))
     .sort(
       (a, b) =>
         b.criticite - a.criticite ||

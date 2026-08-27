@@ -261,7 +261,13 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
       // Les deux régimes ERP sont cités : la catégorie n'est pas connue de ce
       // moteur, et le rythme en dépend (annuel en 1ʳᵉ-4ᵉ, triennal en 5ᵉ).
       fondements.push({ obligationId: "elec-erp-cat1-4-annuelle" });
-      fondements.push({ obligationId: "elec-erp-cat5-quinquennale" });
+      // En 5ᵉ catégorie, le fondement est PE 4 § 2, désormais encodé entier et
+      // porté par l'établissement (ADR-022) — le fragment « installations
+      // électriques » a été absorbé. La suggestion reste juste : c'est bien ce
+      // texte qui impose le contrôle triennal de cette installation.
+      fondements.push({
+        obligationId: "incendie-erp-pe4-entretien-installations-techniques",
+      });
     }
     if (ctx.estIGH) {
       fondements.push({ obligationId: "elec-igh-annuelle" });
@@ -341,7 +347,14 @@ export function suggererEquipements(ctx: ContexteEtablissement): Entree[] {
       libelle: "Ventilation des locaux de travail",
       motif: "Entretien et contrôle périodiques des installations d'aération",
       fondements: [
-        { obligationId: "aeration-travail-entretien-annuel", refs: [0, 1] },
+        // R. 4222-20 est désormais encodé entier et porté par l'établissement
+        // (ADR-022) : le fragment « VMC/CTA » a été absorbé. La suggestion
+        // reste juste — c'est bien ce texte qui impose d'entretenir et de
+        // contrôler cette installation.
+        {
+          obligationId: "aeration-controle-installations-r4222-20",
+          refs: [0, 1],
+        },
       ],
     });
     ajoute({

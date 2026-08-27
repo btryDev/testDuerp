@@ -46,9 +46,41 @@ export const SOURCES_LEGALES = [
   // le règlement (UE) 2024/573 — le droit national renvoyant encore au texte
   // qu'il abroge.
   "REGLEMENT_UE",
+  // Code de la santé publique. Il porte des obligations de sécurité du
+  // bâtiment que le Code du travail ne couvre pas — dossier technique amiante,
+  // radon, constat de risque d'exposition au plomb — et il est consultable sur
+  // Légifrance au même titre qu'un article du Code du travail. Aucune
+  // obligation ne le cite encore (ADR-022).
+  "CSP",
+  // Code de la sécurité sociale. Il fonde le registre des accidents bénins et
+  // la déclaration d'accident du travail, aujourd'hui hors périmètre produit.
+  // Déclaré ici pour que la source existe le jour où le périmètre bouge, sans
+  // qu'on soit tenté de ranger ces obligations sous CODE_TRAVAIL, qui ne les
+  // porte pas (ADR-022).
+  "CSS",
 ] as const;
 
 export type SourceLegale = (typeof SOURCES_LEGALES)[number];
+
+/**
+ * Ce que chaque source s'appelle quand on la montre à quelqu'un.
+ *
+ * L'interface affichait jusqu'ici la valeur brute de l'enum — `CODE_TRAVAIL`,
+ * `ARRETE`. Passable tant que les sigles se lisaient ; illisible dès `CSP` et
+ * `CSS`, qu'aucun dirigeant n'a à décoder. Un `Record` exhaustif plutôt qu'un
+ * objet libre : ajouter une source sans lui donner de nom ne compile pas.
+ */
+export const LIBELLE_SOURCE: Record<SourceLegale, string> = {
+  CODE_TRAVAIL: "Code du travail",
+  CCH: "Code de la construction et de l'habitation",
+  CODE_ENVIRONNEMENT: "Code de l'environnement",
+  ARRETE: "Arrêté",
+  DECRET: "Décret",
+  INRS: "INRS",
+  REGLEMENT_UE: "Règlement européen",
+  CSP: "Code de la santé publique",
+  CSS: "Code de la sécurité sociale",
+};
 
 export type ReferenceLegale = {
   source: SourceLegale;
@@ -191,7 +223,23 @@ export type ConditionApplication =
       propriete: string;
     };
 
-export type Obligation = {
+/**
+ * Sur quoi porte l'échéance que l'obligation engendre (ADR-022).
+ *
+ * - `equipement` : une ligne par équipement déclaré qui la déclenche.
+ * - `etablissement` : **une seule** ligne, quels que soient les équipements
+ *   déclarés — y compris aucun. C'est le point décisif : `PE 4 § 2` reste dû
+ *   via `PE 2 § 3` par les établissements qui ont le moins déclaré, et une
+ *   décomposition par installation y produirait zéro ligne.
+ *
+ * `salarie` n'est pas encore une valeur : il ouvre la réécriture de
+ * `docs/rgpd.md`, le dépouillement d'ED 6298 et un onglet Personnel. L'union
+ * est faite pour l'accueillir sans rien changer d'autre (ADR-022).
+ */
+export type PorteurObligation = "equipement" | "etablissement";
+
+/** Champs communs à toutes les obligations, quel que soit leur porteur. */
+type ObligationCommune = {
   /** Identifiant stable, versionné avec le code. Jamais réutilisé. */
   id: string;
   domaine: DomaineObligation;
@@ -217,10 +265,6 @@ export type Obligation = {
   criticite: 1 | 2 | 3 | 4 | 5;
   /** Régimes auxquels l'obligation s'applique. */
   typologies: TypologieApplication;
-  /** Catégories d'équipement qui déclenchent l'obligation (au moins une). */
-  categoriesEquipement: [CategorieEquipement, ...CategorieEquipement[]];
-  /** Conditions supplémentaires (propriétés d'équipement). Optionnel. */
-  conditions?: ConditionApplication[];
   /** Note de contexte interne (ex. précisions de portée) — non affichée par défaut. */
   notesInternes?: string;
   /**
@@ -230,3 +274,69 @@ export type Obligation = {
    */
   relectureDue?: RelectureDue;
 };
+
+/**
+ * Obligation déclenchée par un équipement déclaré : une ligne de calendrier
+ * par équipement qui la déclenche, aucune si aucun n'est déclaré.
+ */
+export type ObligationPorteeParEquipement = ObligationCommune & {
+  /**
+   * Absent vaut `"equipement"` : les 85 obligations livrées avant l'ADR-022
+   * n'ont pas à être annotées une par une pour rester ce qu'elles sont.
+   */
+  porteur?: "equipement";
+  /** Catégories d'équipement qui déclenchent l'obligation (au moins une). */
+  categoriesEquipement: [CategorieEquipement, ...CategorieEquipement[]];
+  /** Conditions supplémentaires (propriétés d'équipement). Optionnel. */
+  conditions?: ConditionApplication[];
+  /** Interdit ici : le contexte n'a de sens que pour un porteur établissement. */
+  equipementsEnContexte?: never;
+};
+
+/**
+ * Obligation portée par l'établissement : **une seule** ligne de calendrier,
+ * indépendante des équipements déclarés (ADR-022, § 4).
+ */
+export type ObligationPorteeParEtablissement = ObligationCommune & {
+  porteur: "etablissement";
+  /**
+   * Interdit : aucune catégorie ne déclenche cette obligation. Le champ est
+   * déclaré en `never` plutôt qu'omis pour que l'erreur soit lisible — sans
+   * lui, TypeScript ne signalerait qu'une propriété « inconnue ».
+   */
+  categoriesEquipement?: never;
+  /** Interdit : les conditions portent sur des propriétés d'équipement. */
+  conditions?: never;
+  /**
+   * Catégories affichées **à titre indicatif** sous l'obligation, pour que le
+   * dirigeant voie lesquels de ses équipements sont concernés. Ce n'est pas un
+   * déclencheur : la ligne existe même si aucun n'est déclaré, et l'interface
+   * accompagne la liste de la mention « non limitative » — `PE 4 § 2` finit
+   * par « etc. », le produit ne doit pas prétendre le contraire.
+   */
+  equipementsEnContexte?: CategorieEquipement[];
+};
+
+export type Obligation =
+  | ObligationPorteeParEquipement
+  | ObligationPorteeParEtablissement;
+
+/**
+ * Le porteur d'une obligation, avec sa valeur par défaut appliquée.
+ * À préférer à `o.porteur` partout : ce dernier est `undefined` sur les
+ * obligations d'équipement qui ne l'annoncent pas.
+ */
+export function porteurDe(o: Obligation): PorteurObligation {
+  return o.porteur ?? "equipement";
+}
+
+/**
+ * Rétrécit une obligation à sa variante « équipement ». Les lecteurs qui ne
+ * savent traiter que ce cas s'en servent comme garde, plutôt que de supposer
+ * que `categoriesEquipement` existe.
+ */
+export function estPorteeParEquipement(
+  o: Obligation,
+): o is ObligationPorteeParEquipement {
+  return porteurDe(o) === "equipement";
+}

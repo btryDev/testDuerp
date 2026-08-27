@@ -1,0 +1,16 @@
+-- Retrait d'un index redondant introduit par `porteur_etablissement`.
+--
+-- Cette migration-là avait créé, à côté de l'index UNIQUE
+-- `Verification_etablissementId_obligationId_equipementId_key`, un index NON
+-- unique sur exactement les mêmes colonnes dans le même ordre. Le motif était
+-- d'éviter une dérive entre `schema.prisma` — qui déclarait alors un `@@index`
+-- — et la base.
+--
+-- Le motif ne tient pas, et l'index coûte : mêmes colonnes, même ordre qu'un
+-- index unique qui sert déjà toutes les lectures, donc aucune requête ne le
+-- choisit, et chaque écriture sur `Verification` en paie la mise à jour.
+--
+-- Le schéma est revenu à `@@unique` sur le triplet. Comme la migration
+-- précédente a recréé l'index unique sous le nom que Prisma attend,
+-- `prisma migrate diff` ne voit aucun écart — sans avoir besoin de ce doublon.
+DROP INDEX IF EXISTS "Verification_etablissementId_obligationId_equipementId_idx";

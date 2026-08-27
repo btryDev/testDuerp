@@ -448,7 +448,11 @@ const sourceActions: SourceEcheances = async ({
             // Une action de vérification est là où est l'équipement ; une
             // action du DUERP relève d'une unité de travail, qui peut
             // traverser les bâtiments.
-            batiment: a.verification?.equipement.batiment ?? null,
+            // `?? null` couvre aussi le cas d'une action née d'une
+            // vérification portée par l'établissement (ADR-022) : pas
+            // d'équipement, donc pas de bâtiment — et une échéance sans
+            // bâtiment reste visible sous tous les filtres.
+            batiment: a.verification?.equipement?.batiment ?? null,
           },
         ]
       : [],

@@ -31,9 +31,11 @@
  */
 
 import { obligationsConformite } from "@/lib/referentiels/conformite";
-import type {
-  ConditionApplication,
-  Obligation,
+import {
+  estPorteeParEquipement,
+  type ConditionApplication,
+  type Obligation,
+  type ObligationPorteeParEquipement,
 } from "@/lib/referentiels/conformite/types";
 import type {
   CategorieEquipement,
@@ -367,7 +369,7 @@ type ResultatEquipements = {
 };
 
 function matchEquipements(
-  o: Obligation,
+  o: ObligationPorteeParEquipement,
   equipements: EquipementMatching[],
 ): ResultatEquipements {
   const categoriesAcceptees = new Set<CategorieEquipement>(
@@ -384,6 +386,20 @@ function matchEquipements(
   }
 
   if (declencheurs.length === 0) {
+    // LIMITE CONNUE, non corrigée ici (ADR-022). Cette branche ne dit pas
+    // POURQUOI l'obligation n'apparaît pas, et `evaluerObligation` rend `null`
+    // juste après : l'obligation est écartée sans trace. Le mode *explain*
+    // est donc explicatif pour ce qui s'applique, muet pour ce qui ne
+    // s'applique pas — alors que « aucun appareil déclaré ne la déclenche »
+    // et « vous n'y êtes pas soumis » sont deux informations différentes.
+    //
+    // Une première rédaction de ce chantier construisait ici un message. Il a
+    // été retiré : aucun appelant ne le lisait, et du code qui calcule une
+    // explication que personne n'affiche donne l'illusion que le trou est
+    // bouché. Le combler suppose un canal de sortie — `determineObligations-
+    // Applicables` ne rend que les retenues — et un écran qui s'en serve.
+    // `matchTypologie` souffre du même défaut, en pire : son type de retour
+    // ne prévoit aucune raison d'échec.
     return {
       ok: false,
       declencheurs: [],
@@ -411,6 +427,33 @@ export function evaluerObligation(
   const typo = matchTypologie(o.typologies, etab);
   if (!typo.ok) return null;
 
+  // Porteur établissement : aucun équipement ne déclenche, et l'absence
+  // d'équipement déclaré ne fait pas disparaître l'obligation (ADR-022).
+  // C'est tout l'objet de la branche — `PE 4 § 2` reste dû, via `PE 2 § 3`,
+  // par les établissements qui n'ont rien déclaré.
+  if (!estPorteeParEquipement(o)) {
+    const enContexte = (o.equipementsEnContexte ?? []).filter((c) =>
+      equipements.some((e) => e.categorie === c),
+    );
+    const raisons = [...typo.raisons];
+    raisons.push(
+      "l'obligation porte sur l'établissement lui-même : elle ne dépend " +
+        "d'aucun appareil déclaré",
+    );
+    if (enContexte.length > 0) {
+      raisons.push(
+        `installations déclarées concernées, à titre indicatif et non ` +
+          `limitatif : ${enContexte.join(", ")}`,
+      );
+    }
+    return {
+      obligation: o,
+      equipementsConcernes: [],
+      porteur: "etablissement",
+      raisons,
+    };
+  }
+
   const eq = matchEquipements(o, equipements);
   if (!eq.ok) return null;
 
@@ -420,6 +463,7 @@ export function evaluerObligation(
   return {
     obligation: o,
     equipementsConcernes: eq.declencheurs,
+    porteur: "equipement",
     raisons,
   };
 }

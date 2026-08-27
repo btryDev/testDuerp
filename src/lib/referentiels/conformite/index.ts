@@ -14,7 +14,7 @@
  *     frigorifiques (R. 543-79 code de l'environnement, règlement UE 2024/573)
  */
 
-import type { DomaineObligation, Obligation } from "./types";
+import { porteurDe, type DomaineObligation, type Obligation } from "./types";
 import { obligationsElectricite } from "./electricite";
 import { obligationsIncendie } from "./incendie";
 import { obligationsAeration } from "./aeration";
@@ -73,7 +73,65 @@ export const obligationsConformite: Obligation[] = [
  * `conformite.test.ts` compare une empreinte du contenu à celle enregistrée :
  * l'oubli fait échouer la suite.
  */
-export const REFERENTIEL_VERSION = "2026-08-27.1";
+export const REFERENTIEL_VERSION = "2026-08-27.5";
+
+/**
+ * Les identifiants d'obligations retirées du référentiel.
+ *
+ * `Obligation.id` porte la règle : « Identifiant stable, versionné avec le
+ * code. **Jamais réutilisé.** » Elle n'était jusqu'ici qu'un commentaire.
+ *
+ * Elle compte, parce qu'un id survit à l'obligation : `Verification.
+ * obligationId` le porte en base, et la réconciliation s'en sert pour
+ * retrouver ses lignes. Réemployer un id retiré rattacherait les lignes de
+ * l'ancienne obligation à la nouvelle — leurs dates, leurs statuts, et les
+ * rapports qui y pendent. Silencieusement, et sans qu'aucune contrainte de
+ * base ne s'y oppose.
+ *
+ * `absorbePar` est une DONNÉE, pas de la prose : c'est ce qui rendra possible,
+ * le jour où on l'écrira, le report de l'état de conformité d'une ligne
+ * retirée vers celle qui la remplace. Aujourd'hui la réconciliation ne le fait
+ * pas — un dirigeant à jour d'un contrôle voit sa ligne archivée et une ligne
+ * neuve « à planifier » apparaître. Sans effet à ce jour (aucune ligne réalisée
+ * ne portait un id retiré au moment du retrait), mais c'est un manque, pas une
+ * décision : voir l'ADR-022.
+ *
+ * `null` = retiré sans remplaçant.
+ */
+export type ObligationRetiree = {
+  /** L'obligation qui reprend le contenu, ou `null` si personne ne le reprend. */
+  absorbePar: string | null;
+  /** Ce qui s'est passé, pour qui trouve l'id en base sans autre contexte. */
+  motif: string;
+};
+
+export const OBLIGATIONS_RETIREES: Record<string, ObligationRetiree> = {
+  // Antérieur à l'ADR-022, inscrit rétroactivement le 2026-08-27 : le retrait
+  // était documenté dans `prisma/schema.prisma` comme le cas vécu qui a motivé
+  // la colonne `referentielVersion`, mais nulle part sous une forme qui
+  // empêche le réemploi de l'id. Le registre naissait donc avec un trou connu.
+  "aeration-hotte-pro-annuelle": {
+    absorbePar: null,
+    motif:
+      "Retiré avant le 2026-08-27, date inconnue. Doublon du ramonage annuel des circuits d'extraction (GC 20), fusionné avec l'obligation qui le portait déjà. Les `Verification` qui le portaient ont SURVÉCU à son retrait, orphelines — c'est ce cas vécu qui a motivé la colonne `Verification.referentielVersion` (voir `prisma/schema.prisma`). Absorbant non identifié avec certitude à la relecture : laissé à `null` plutôt que deviné.",
+  },
+  // ADR-022 — fragments absorbés par l'obligation portée par l'établissement.
+  "elec-erp-cat5-quinquennale": {
+    absorbePar: "incendie-erp-pe4-entretien-installations-techniques",
+    motif:
+      "Retiré le 2026-08-27. Fragment « installations électriques » de PE 4 § 2, sans fondement propre. L'obligation absorbante porte l'article entier et vit en domaine `incendie` : un utilisateur qui filtre sur « électricité » ne l'y trouvera plus.",
+  },
+  "cuisson-gaz-installations-triennale": {
+    absorbePar: "incendie-erp-pe4-entretien-installations-techniques",
+    motif:
+      "Retiré le 2026-08-27. Fragment « installations de gaz » de PE 4 § 2, sans fondement propre. À ne pas confondre avec `cuisson-gaz-installations-annuelle`, qui vit toujours et régit les ERP de 1ʳᵉ à 4ᵉ catégorie sur GZ 15.",
+  },
+  "aeration-travail-entretien-annuel": {
+    absorbePar: "aeration-controle-installations-r4222-20",
+    motif:
+      "Retiré le 2026-08-27. Fragment « VMC/CTA » de R. 4222-20, sans fondement propre. L'absorbante garde le même domaine, le même rythme annuel et la même criticité : pour l'utilisateur, une ligne par appareil devient une ligne pour l'ensemble.",
+  },
+};
 
 /**
  * Sérialisation canonique d'une valeur : clés d'objet triées, donc
@@ -121,6 +179,11 @@ function canonique(v: unknown): string {
  * sur la `Verification` et aucun ne décide de son existence — les modifier
  * n'a rien à réconcilier.
  *
+ * `equipementsEnContexte` y entre bien qu'il ne déclenche rien : il change ce
+ * que la fiche affiche, et une empreinte qui ignore un champ finit par servir
+ * d'excuse pour ne pas incrémenter la version. Le coût d'une réconciliation
+ * de trop est nul — elle est idempotente (ADR-012).
+ *
  * Volontairement simple (somme de contrôle textuelle, pas de hachage
  * cryptographique) : elle sert à détecter un oubli de version, pas à résister
  * à une falsification.
@@ -137,7 +200,13 @@ export function empreinteReferentiel(
         [...o.realisateurs].sort().join("+"),
         canonique(o.typologies),
         canonique(o.conditions ?? []),
-        canonique(o.categoriesEquipement),
+        canonique(o.categoriesEquipement ?? []),
+        // Le porteur décide du **nombre** de lignes qu'une obligation engendre
+        // — une par équipement, ou une seule pour l'établissement (ADR-022).
+        // Le faire changer sans faire bouger l'empreinte laisserait un parc
+        // entier avec des lignes que le référentiel n'engendre plus.
+        porteurDe(o),
+        canonique(o.equipementsEnContexte ?? []),
       ].join("|"),
     )
     .sort()

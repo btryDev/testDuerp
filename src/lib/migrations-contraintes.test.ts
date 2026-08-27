@@ -83,6 +83,87 @@ describe("contraintes SQL non représentables dans schema.prisma", () => {
       "Une migration retire `Action_origine_xor` sans la rétablir. Si la table Action est recréée, le CHECK doit être réappliqué dans la même migration.",
     ).toEqual([]);
   });
+
+  /**
+   * L'unicité du calendrier, depuis que `Verification.equipementId` peut être
+   * `null` (ADR-022).
+   *
+   * Prisma ne sait pas exprimer `NULLS NOT DISTINCT` : le `@@unique` du schéma
+   * a cédé la place à un `@@index`, et l'unicité n'existe plus que dans le SQL
+   * de la migration `porteur_etablissement`. Sans la clause, PostgreSQL
+   * considère deux `NULL` comme distincts, et le même couple (établissement,
+   * obligation) porté par l'établissement s'insérerait à chaque régénération
+   * du calendrier — une ligne de plus par ouverture de page.
+   *
+   * Ce test lit des FICHIERS de migration : il attrape une migration qui
+   * oublierait la clause, ou qui la retirerait. Il n'attrape pas un
+   * `prisma db push`, qui contourne les migrations et recréerait l'index
+   * d'après le seul schéma — donc sans la clause. Contre celui-là, il n'y a
+   * pas de filet ici : `db push` n'a pas sa place sur une base qui porte des
+   * données.
+   */
+  it("pose l'unicité du calendrier en NULLS NOT DISTINCT (ADR-022)", () => {
+    const sqlComplet = migrations.map((m) => normaliser(m.sql)).join(" ");
+
+    expect(
+      sqlComplet,
+      "Aucune migration ne crée l'index unique du calendrier avec `NULLS NOT DISTINCT`. Sans cette clause, les échéances portées par l'établissement (equipementId NULL) ne sont plus contraintes et se dupliquent à chaque régénération.",
+    ).toMatch(
+      /CREATE UNIQUE INDEX "Verification_etablissementId_obligationId_equipementId_key" ON "Verification" \( ?"etablissementId", ?"obligationId", ?"equipementId" ?\) NULLS NOT DISTINCT/,
+    );
+  });
+
+  it("ne rétablit jamais un @@unique ordinaire sur le triplet (ADR-022)", () => {
+    // Une migration générée par Prisma après un retour de `@@unique` dans le
+    // schéma poserait `ADD CONSTRAINT ... UNIQUE`, sans la clause. Elle
+    // compilerait, passerait la CI, et laisserait la duplication revenir.
+    const fautives = migrations.filter((m) =>
+      /ADD CONSTRAINT "Verification_etablissementId_obligationId_equipementId_key" UNIQUE/i.test(
+        normaliser(m.sql),
+      ),
+    );
+
+    expect(
+      fautives.map((m) => m.nom),
+      "Une migration repose l'unicité du triplet en contrainte Prisma ordinaire. Il faut un CREATE UNIQUE INDEX ... NULLS NOT DISTINCT (ADR-022).",
+    ).toEqual([]);
+  });
+
+  /**
+   * La moitié qui compte : le RETRAIT.
+   *
+   * Le test ci-dessus cherche la clause dans la concaténation de tout
+   * l'historique. Une migration ultérieure qui ferait
+   * `DROP INDEX "…_key";` sans la recréer laisserait le texte du `CREATE`
+   * intact dans son ancien fichier : le test passerait, et l'unicité aurait
+   * disparu. C'est exactement le trou que le test frère d'`Action_origine_xor`
+   * ferme depuis toujours, et qui n'avait pas été repris ici.
+   *
+   * La règle : une migration a le droit de déposer l'index, à condition de le
+   * reposer dans le même fichier — c'est ce que fait `porteur_etablissement`
+   * lui-même, qui commence par un `DROP INDEX IF EXISTS`.
+   */
+  it("ne retire jamais l'index unique du calendrier sans le reposer (ADR-022)", () => {
+    const NOM = "Verification_etablissementId_obligationId_equipementId_key";
+    const orphelines = migrations.filter((m) => {
+      const sql = normaliser(m.sql);
+      const retire = new RegExp(
+        `DROP\\s+INDEX\\s+(IF\\s+EXISTS\\s+)?"${NOM}"`,
+        "i",
+      ).test(sql);
+      if (!retire) return false;
+      const repose = new RegExp(
+        `CREATE UNIQUE INDEX (IF NOT EXISTS )?"${NOM}"[^;]*NULLS NOT DISTINCT`,
+        "i",
+      ).test(sql);
+      return !repose;
+    });
+
+    expect(
+      orphelines.map((m) => m.nom),
+      "Une migration retire l'index unique du calendrier sans le recréer avec `NULLS NOT DISTINCT` dans le même fichier. Les échéances portées par l'établissement se dupliqueraient à chaque régénération (ADR-022).",
+    ).toEqual([]);
+  });
 });
 
 describe("conservation 40 ans du DUERP (art. R. 4121-4 CT)", () => {

@@ -32,7 +32,7 @@ import type {
  * L'ancienne version approximait « moins de 300 → 5ᵉ catégorie », et ne
  * produisait donc **jamais** de 4ᵉ catégorie. L'approximation n'était pas
  * neutre : un restaurant de 250 personnes classé à tort en 5ᵉ recevait la
- * vérification électrique triennale de 5ᵉ catégorie (`elec-erp-cat5-quinquennale`, id historique) au lieu
+ * vérification électrique triennale de 5ᵉ catégorie au lieu
  * de la vérification ANNUELLE par organisme agréé de criticité 5
  * (`elec-erp-cat1-4-annuelle`), et perdait la vérification triennale du SSI.
  * Un faux négatif silencieux sur une obligation vitale.

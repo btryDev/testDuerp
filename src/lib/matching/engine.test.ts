@@ -188,15 +188,45 @@ describe("moteur matching — typologie Travail seule", () => {
     expect(ids).toContain("elec-travail-periodique-annuelle");
     expect(ids).toContain("elec-travail-mise-en-service");
     expect(ids).toContain("incendie-travail-moyens-lutte");
-    expect(ids).toContain("aeration-travail-entretien-annuel");
+    expect(ids).toContain("aeration-controle-installations-r4222-20");
     // Pas d'obligations ERP
     expect(ids).not.toContain("elec-erp-cat1-4-annuelle");
-    expect(ids).not.toContain("elec-erp-cat5-quinquennale");
+    expect(ids).not.toContain("incendie-erp-pe4-entretien-installations-techniques");
   });
 
-  it("bureau sans équipement → aucune obligation déclenchée (même si typologie travail)", () => {
+  it("bureau sans équipement → aucune obligation d'ÉQUIPEMENT déclenchée", () => {
     const res = determineObligationsApplicables(etabBureau(), []);
-    expect(res).toHaveLength(0);
+    const parEquipement = res.filter((r) => r.porteur === "equipement");
+    expect(parEquipement).toHaveLength(0);
+  });
+
+  it("bureau sans équipement → les obligations d'établissement s'appliquent quand même", () => {
+    // Le faux négatif que l'ADR-022 supprime, et que ce test asseyait
+    // jusqu'au 2026-08-27 : un employeur sans aucun appareil déclaré ne
+    // voyait rien, alors que R. 4222-20 lui impose d'entretenir et de
+    // contrôler l'ensemble de ses installations d'aération. Rendre zéro
+    // n'était pas « rien à faire », c'était « on ne sait pas le dire ».
+    const res = determineObligationsApplicables(etabBureau(), []);
+    const parEtablissement = res.filter((r) => r.porteur === "etablissement");
+
+    expect(idsObligations(res)).toContain(
+      "aeration-controle-installations-r4222-20",
+    );
+    // Une ligne, pas N : le porteur établissement ne se démultiplie pas.
+    for (const oa of parEtablissement) {
+      expect(oa.equipementsConcernes).toHaveLength(0);
+    }
+  });
+
+  it("une obligation d'établissement explique pourquoi elle s'applique", () => {
+    // Le mode explain doit savoir parler quand ce n'est pas un équipement qui
+    // déclenche : sans raison, la ligne apparaît sans que rien ne la motive.
+    const res = determineObligationsApplicables(etabBureau(), []);
+    const oa = res.find(
+      (r) => r.obligation.id === "aeration-controle-installations-r4222-20",
+    );
+    expect(oa).toBeDefined();
+    expect(oa!.raisons.join(" ")).toContain("porte sur l'établissement");
   });
 
   it("registre de sécurité (periodicite=autre) apparaît quand travail+ERP+équipements de lutte", () => {
@@ -252,7 +282,7 @@ describe("moteur matching — typologie ERP", () => {
   it("restaurant ERP cat 5 → déclenche la règle quinquennale PE 4, pas l'annuelle cat 1-4", () => {
     const res = determineObligationsApplicables(etabRestoErpCat5(), [elec()]);
     const ids = idsObligations(res);
-    expect(ids).toContain("elec-erp-cat5-quinquennale");
+    expect(ids).toContain("incendie-erp-pe4-entretien-installations-techniques");
     expect(ids).not.toContain("elec-erp-cat1-4-annuelle");
   });
 
@@ -260,14 +290,14 @@ describe("moteur matching — typologie ERP", () => {
     const res = determineObligationsApplicables(etabErpCat3(), [elec()]);
     const ids = idsObligations(res);
     expect(ids).toContain("elec-erp-cat1-4-annuelle");
-    expect(ids).not.toContain("elec-erp-cat5-quinquennale");
+    expect(ids).not.toContain("incendie-erp-pe4-entretien-installations-techniques");
   });
 
   it("ERP sans équipement électrique déclaré → pas d'obligation élec ERP", () => {
     const res = determineObligationsApplicables(etabErpCat3(), [extincteur()]);
     const ids = idsObligations(res);
     expect(ids).not.toContain("elec-erp-cat1-4-annuelle");
-    expect(ids).not.toContain("elec-erp-cat5-quinquennale");
+    expect(ids).not.toContain("incendie-erp-pe4-entretien-installations-techniques");
   });
 
   it("ERP cat 5 → visite commission PE locaux à sommeil (typologie cat N5)", () => {
@@ -568,7 +598,7 @@ describe("moteur matching — scénarios intégrés", () => {
     // Élec — cat 5 : quinquennale + mise en service + travail annuelle + initiale + reg sécurité élec
     expect(ids).toContain("elec-travail-periodique-annuelle");
     expect(ids).toContain("elec-travail-mise-en-service");
-    expect(ids).toContain("elec-erp-cat5-quinquennale");
+    expect(ids).toContain("incendie-erp-pe4-entretien-installations-techniques");
     expect(ids).toContain("elec-erp-mise-en-service");
     expect(ids).toContain("elec-travail-consignation-registre");
     // Incendie
@@ -578,7 +608,7 @@ describe("moteur matching — scénarios intégrés", () => {
     expect(ids).toContain("incendie-erp-baes-annuelle");
     expect(ids).toContain("incendie-registre-securite");
     // Aération
-    expect(ids).toContain("aeration-travail-entretien-annuel");
+    expect(ids).toContain("aeration-controle-installations-r4222-20");
     expect(ids).toContain("aeration-erp-chauffage-ventilation-annuelle");
     // Ramonage annuel des circuits d'extraction (GC 20) : une seule entrée
     // depuis la fusion du doublon `aeration-hotte-pro-annuelle`.
@@ -999,7 +1029,15 @@ describe("moteur matching — cartographie des catégories sans obligation", () 
         const res = determineObligationsApplicables(etab, [
           { id: `eq-${categorie}`, libelle: categorie, categorie, caracteristiques: null },
         ]);
-        return idsObligations(res).length === 0;
+        // Ne comptent que les obligations que CET APPAREIL déclenche. Depuis
+        // l'ADR-022, les obligations portées par l'établissement s'appliquent
+        // quoi qu'on déclare : les compter ici ferait passer toute catégorie
+        // pour couverte, et ce test — dont l'objet est justement de figer les
+        // trous de couverture par équipement — cesserait de rien vérifier.
+        const parEquipement = res.filter(
+          (r) => r.porteur === "equipement" && r.equipementsConcernes.length > 0,
+        );
+        return parEquipement.length === 0;
       });
 
       expect(

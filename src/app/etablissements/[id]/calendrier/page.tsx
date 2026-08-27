@@ -265,14 +265,23 @@ export default async function CalendrierPage({
     etat0.aVenir === 0 &&
     etat0.realisees12m === 0;
 
+  // Le garde « au moins un équipement déclaré » a été retiré le 2026-08-27
+  // (ADR-022). Il datait d'un référentiel où toute obligation naissait d'un
+  // équipement : sans équipement, il n'y avait rien à générer, et sauter la
+  // génération évitait d'écrire un repère de version sur un établissement en
+  // cours d'onboarding.
+  //
+  // Ce n'est plus vrai. `PE 4 § 2` et `R. 4222-20` sont dues sans qu'aucun
+  // appareil soit déclaré — c'est exactement la population que le chantier du
+  // porteur existe pour servir. Le garde faisait donc, à lui seul, que ces
+  // deux lignes n'atteignaient jamais la base chez ceux qui en ont le plus
+  // besoin : le premier `if` était pris, la seconde branche jamais atteinte,
+  // et le calendrier restait vide en silence.
+  //
+  // Générer sans équipement est sans effet de bord : le moteur ne rend que ce
+  // qui s'applique, et la réconciliation est idempotente (ADR-012).
   let regenere = false;
-  if (aucuneOccurrenceEnBase) {
-    const nbEquipements = (await listerEquipementsDeLEtablissement(id)).length;
-    if (nbEquipements > 0) {
-      await genererCalendrier(id);
-      regenere = true;
-    }
-  } else if (await calendrierDesynchronise(id)) {
+  if (aucuneOccurrenceEnBase || (await calendrierDesynchronise(id))) {
     await genererCalendrier(id);
     regenere = true;
   }
@@ -495,6 +504,11 @@ export default async function CalendrierPage({
   >();
 
   for (const v of verifsVisibles) {
+    // Cette vue range les échéances **par équipement**. Celles qui portent
+    // sur l'établissement (ADR-022) n'y ont pas de colonne : elles restent
+    // lisibles dans la vue chronologique, qui les affiche « Tout
+    // l'établissement ». Les forcer ici créerait un appareil qui n'existe pas.
+    if (!v.equipement) continue;
     const cle = v.equipement.id;
     let e = parEquipement.get(cle);
     if (!e) {
@@ -1170,10 +1184,16 @@ export default async function CalendrierPage({
                               type="verification"
                               titre={v.libelleObligation}
                               meta={
-                                (lieuDe(v.equipement.batiment)
-                                  ? `${v.equipement.batiment.nom} · `
-                                  : "") +
-                                `${v.equipement.libelle} · ` +
+                                // Sans équipement, l'échéance porte sur
+                                // l'établissement (ADR-022) : elle se nomme
+                                // par ce qu'elle est, pas par un appareil
+                                // absent — et elle reste ici, sous tous les
+                                // filtres de bâtiment (ADR-010).
+                                (v.equipement
+                                  ? (lieuDe(v.equipement.batiment)
+                                      ? `${v.equipement.batiment.nom} · `
+                                      : "") + `${v.equipement.libelle} · `
+                                  : `${LABEL_TOUT_ETABLISSEMENT} · `) +
                                 LABEL_PERIODICITE[v.periodicite] +
                                 (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : "")
                               }

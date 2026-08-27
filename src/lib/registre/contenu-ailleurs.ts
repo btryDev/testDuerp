@@ -48,7 +48,10 @@ export type VerificationTenue = {
   datePrevue: Date | null;
   dateRealisee: Date | null;
   statut: StatutVerification;
-  equipement: { libelle: string; categorie: string };
+  /** `null` = l'échéance porte sur l'établissement, pas sur un appareil
+   *  (ADR-022). Une telle ligne n'a pas de catégorie, donc pas de fiche de
+   *  registre à laquelle se rattacher : voir le filtre plus bas. */
+  equipement: { libelle: string; categorie: string } | null;
 };
 
 /** Une ligne de ce que la fiche porte, telle qu'elle se lira. */
@@ -143,12 +146,18 @@ export function contenuTenuAilleursDepuis(
   if (PARTIES_VERIFICATIONS.has(partieId)) {
     return {
       lignes: verifications
-        .filter((v) => cats.has(v.equipement.categorie))
+        // Les fiches de registre sont rangées par catégorie d'équipement ;
+        // une échéance portée par l'établissement (ADR-022) n'en a pas, et
+        // n'a donc aucune fiche où atterrir. Elle n'est pas perdue pour
+        // autant : elle reste au calendrier et dans le dossier de conformité.
+        // Limite assumée — le jour où une fiche de registre couvrira une
+        // obligation d'établissement, ce filtre devra changer de critère.
+        .filter((v) => v.equipement !== null && cats.has(v.equipement.categorie))
         .map((v) => ({
           id: v.id,
           titre: v.libelleObligation,
           meta: [
-            v.equipement.libelle,
+            v.equipement?.libelle,
             v.dateRealisee
               ? `faite le ${formaterDateCourteFr(v.dateRealisee)}`
               : v.datePrevue

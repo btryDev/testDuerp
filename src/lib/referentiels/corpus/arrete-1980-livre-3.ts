@@ -59,13 +59,25 @@ export const CORPUS_PE: Corpus = {
       ref: "PE 4",
       intitule: "Vérifications techniques",
       versionEnVigueur: "2026-07-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
-      statut: "obligation_manquante",
-      motif:
-        "Impose DEUX obligations périodiques que le référentiel ne porte pas : au § 2, l'entretien et la vérification de l'ensemble des installations techniques « tous les trois ans au plus » par des techniciens compétents, pour tous les établissements ; au § 1, un contrat annuel d'entretien du système de détection incendie, restreint aux établissements avec locaux à sommeil. Version réécrite par l'arrêté du 1er décembre 2025.",
-      bloquePar:
-        "Porteur d'échéance. Trois obligations CITENT PE 4 § 2 — `elec-erp-cat5-quinquennale`, `cuisson-gaz-installations-triennale`, et les notes de `incendie-erp-ria-annuelle` — mais chacune accroche un fragment à une catégorie d'équipement : installations électriques, appareils de cuisson, moyens de secours. Citer l'article n'est pas porter l'obligation. Le texte vise « l'ensemble des installations et des équipements techniques de son établissement », pris comme un tout, avec une liste ouverte (« etc. »). Un ERP de 5e catégorie qui n'a déclaré aucun équipement de ces catégories ne reçoit AUCUNE ligne triennale, alors que PE 2 § 3 maintient PE 4 jusqu'aux établissements de moins de vingt personnes. La décomposition par domaine reproduit exactement le faux négatif que le porteur « établissement » doit corriger — elle le masque au lieu de le révéler. Repassé de « retenu » à « obligation manquante » le 2026-08-26, sur signalement.",
+      luLe: "2026-08-27",
+      lecture: "premiere_main",
+      citationCle:
+        "Tous les trois ans au plus, l'exploitant doit procéder, ou faire procéder, par des techniciens compétents, aux opérations d'entretien et de vérification des installations techniques.",
+      statut: "retenu",
+      obligations: [
+        // L'obligation portée par l'établissement (ADR-022), qui prend le § 2
+        // pour ce qu'il dit : l'ensemble des installations techniques.
+        "incendie-erp-pe4-entretien-installations-techniques",
+        // Une seule entrée, et c'est le résultat du chantier, pas une
+        // amputation. Les deux fragments qui citaient aussi PE 4 § 2 en
+        // fondement — `elec-erp-cat5-quinquennale` et
+        // `cuisson-gaz-installations-triennale` — ont été RETIRÉS le
+        // 2026-08-27 : ils n'avaient pas de fondement propre, et l'obligation
+        // ci-dessus porte l'article entier (ADR-022). Voir
+        // `OBLIGATIONS_RETIREES` dans `conformite/index.ts`.
+      ],
+      reserve:
+        "Le § 2 est encodé depuis l'ADR-022 (porteur établissement, triennal). Restent deux choses. Le § 1 impose un contrat annuel d'entretien du système de détection automatique d'incendie, restreint aux établissements comportant des locaux à sommeil : il attend l'attribut `Etablissement.locauxSommeil`, qui n'existe pas — la caractéristique `dessertLocauxSommeil` porte sur un équipement, pas sur l'établissement, et ne peut donc pas conditionner une obligation qu'aucun équipement ne déclenche. Et le chapeau ajouté par l'arrêté du 1er décembre 2025, applicable au 2026-07-01, soumet les installations de gaz neuves ou modifiées aux vérifications de PE 10 B : c'est un contrôle à la construction ou après travaux, pas une échéance récurrente, et il n'est pas instruit.",
     },
     {
       ref: "PE 5",
@@ -286,7 +298,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Impose au § 5 que « le personnel doit être instruit sur les conduites à tenir en cas d'incendie et être entraîné à la manœuvre des moyens de secours », sans périodicité écrite, pour tous les ERP de 5e catégorie. Le référentiel ne porte aucune ligne de formation du personnel côté ERP. Le § 4 c précise que l'information « peut être complétée par des exercices périodiques d'évacuation » — facultatif, à ne pas confondre avec R. 4227-39. N'ouvre le Livre II que sur MS 70. Réécrit par l'arrêté du 4 février 2026.",
       bloquePar:
-        "Porteur d'échéance : l'obligation naît de l'établissement, pas d'un équipement. `categoriesEquipement` est requis et `Verification.equipementId` n'est pas nullable.",
+        "Porteur d'échéance : l'obligation naît de l'établissement, pas d'un équipement. Corrigé le 2026-08-27 (ADR-022) : ce n'est plus le modèle qui bloque — `categoriesEquipement` n'est plus requis et `Verification.equipementId` est nullable. PE 27 § 5 est une obligation d'établissement, et le porteur existe. Ce qui bloque encore est ce que dit le motif : l'article n'écrit aucune périodicité, et en inventer une serait décider à la place du texte.",
     },
     {
       ref: "PE 28",

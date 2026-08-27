@@ -80,11 +80,18 @@ Sources primaires libres d'accès uniquement :
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **78 obligations sur 10 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes). Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **84 obligations sur 10 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes). Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
-Ces 78 obligations sont toutes déclenchées par un **équipement déclaré** : le type
-`Obligation` exige `categoriesEquipement` non vide. C'est une limite du modèle, pas du
-domaine — cf. la section suivante.
+**82 d'entre elles sont déclenchées par un équipement déclaré ; deux sont portées par
+l'établissement** — `PE 4 § 2` (entretien triennal de l'ensemble des installations
+techniques en ERP de 5ᵉ catégorie) et `R. 4222-20` (contrôle annuel de l'ensemble des
+installations d'aération, tout employeur). Ces deux-là s'appliquent **même si aucun
+équipement n'est déclaré**, et produisent **une seule ligne** chacune, jamais une par
+installation (ADR-022).
+
+Le type `Obligation` est une union discriminée sur `porteur` : catégorie d'équipement
+requise et non vide d'un côté, interdite de l'autre. Le compte faisant foi est le préfixe
+d'`EMPREINTE_ATTENDUE` (`conformite.test.ts`), doublé d'un test qui nomme le nombre.
 
 ### Registre des obligations : déclencheurs et porteurs
 
@@ -92,21 +99,35 @@ Rojer couvre les obligations de **santé-sécurité au travail et de sécurité 
 — Code du travail, CCH, et Code de l'environnement quand il porte sur la sécurité des
 installations ou des personnes. Une obligation y naît de cinq déclencheurs possibles :
 
-1. **Équipement déclaré** — les 78 obligations livrées
+1. **Équipement déclaré** — 82 obligations livrées
 2. **Statut d'employeur** — dès un salarié : formation à la sécurité, affichages SST, suivi médical
 3. **Effectif** — seuils 11, 25, 50
 4. **Typologie et caractéristiques du bâtiment** — ERP, locaux à sommeil, année du permis
 5. **Activité réellement exercée** — un fait de tâche, ni statut ni équipement : habilitation électrique, conduite d'engins, travail en hauteur
 
-Elle est portée par un **équipement**, un **salarié** ou l'**établissement**, et prend
+Elle est portée par un **équipement**, un **salarié** ou l'**établissement** — trois
+porteurs, pas quatre : le bâtiment est un **lieu** et ne porte aucune échéance (ADR-019),
+le bâtiment d'une échéance se lisant en remontant la chaîne par l'équipement. Elle prend
 quatre natures : échéance récurrente, état permanent à constituer puis maintenir,
 obligation ponctuelle, obligation événementielle.
 
-Seul le premier déclencheur, le premier porteur et la première nature sont implémentés à
-ce jour. Les quatre autres déclencheurs représentent **62 obligations recensées** —
-détail et sources dans `docs/carto-obligations-hors-equipement.md`.
+**Il n'y a pas de sixième déclencheur « événement ».** Un accident, une embauche ou un
+chantier *datent* une obligation, ils ne la font pas naître — et les seules lignes
+réellement événementielles recensées sont hors périmètre (déclaration d'AT, registre des
+accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
+l'ADR-022, sans mécanisme.
 
-**Règle du non-renseigné** — *l'incertitude ne réduit jamais la couverture*. `null` ne
+Deux porteurs sur trois sont implémentés : l'équipement et l'établissement (ADR-022). Le
+porteur **salarié** est décidé mais pas livré — il suppose d'abord la réécriture de
+`docs/rgpd.md`, le dépouillement d'INRS ED 6298 et un onglet Personnel. Les quatre
+déclencheurs non implémentés représentent **62 obligations recensées** — détail et sources
+dans `docs/carto-obligations-hors-equipement.md`.
+
+**Règle du non-renseigné** — *l'incertitude ne réduit jamais la couverture*. Posée par
+l'ADR-022, **pas encore appliquée partout** : deux attributs d'établissement font
+aujourd'hui l'inverse et sont recensés dans l'ADR (`manipuleMatieresR422722` absent lu
+« non », `personnesPresentesHabituellement` absent retombant sur `effectifSurSite`). Toute
+condition d'établissement **nouvelle** suit la règle. `null` ne
 vaut pas « non » : une obligation conditionnée à un attribut d'établissement non renseigné
 s'affiche « à confirmer », et un allègement de régime conditionné à l'absence de cet
 attribut ne s'applique pas tant que l'absence n'est pas déclarée. C'est l'inverse de
@@ -193,12 +214,18 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
 16. **016** — La nature d'une échéance est un type fermé, la famille s'en déduit
 17. **017** — Les opérations ponctuelles ne sont ni des corrections ni des registres
 18. **018** — Le module Interventions est retiré
+19. **019** — Le bâtiment est un lieu : il ne porte aucun régime, et
+    `Verification`/`Action` n'ont pas de `batimentId` — le bâtiment d'une
+    échéance se lit en remontant la chaîne
 20. **020** — Ce qu'un DUERP ne couvre pas se déclare, et se grave avec lui
+21. **021** — Le registre est composé, pas imprimé à l'identique
 
-Le 019 manque : il est porté par le chantier « le bâtiment est un lieu », encore
-en cours sur une autre branche. La puce reprend le numéro de l'ADR et non son
-rang dans la liste, pour que les branches puissent atterrir dans n'importe quel
-ordre sans se contredire.
+La puce reprend le numéro de l'ADR et non son rang dans la liste, pour que les
+branches puissent atterrir dans n'importe quel ordre sans se contredire.
+
+**Deux fichiers portent le numéro 014** — `014-prescriptions-particulieres.md`
+et `014-provenance-navigation.md`. La liste ci-dessus n'en cite qu'un (le
+second) ; les deux sont en vigueur. Collision à trancher, elle ne l'est pas ici.
 
 Toute nouvelle décision structurante → nouvel ADR avant de coder.
 

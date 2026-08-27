@@ -208,8 +208,15 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     // périodicité écrite. Si ce test casse, c'est qu'un article a changé de
     // statut — donc que quelqu'un a relu, ou que quelqu'un s'est trompé.
     const refs = obligationsManquantes().map((o) => o.ref);
-    // PE 4 a quitté la liste : le référentiel le cite désormais (domaine
-    // électricité), il est donc « retenu ». PE 27 reste manquant.
+    // PE 4 et R. 4222-20 ont quitté la liste le 2026-08-27 : le porteur
+    // « établissement » de l'ADR-022 les rend encodables, et ils le sont —
+    // `incendie-erp-pe4-entretien-installations-techniques` et
+    // `aeration-controle-installations-r4222-20`. Ce sont les deux premières
+    // sorties de cette liste par livraison plutôt que par requalification.
+    // Aucun des deux n'est retenu en entier : leurs `reserve` disent ce qui
+    // reste (PE 4 § 1 attend `locauxSommeil`, la pollution spécifique attend
+    // un secteur qui la concerne), et `reservesDeLecture()` les compte.
+    // PE 27 reste manquant.
     // PE 27 : instruction du personnel côté ERP, sans périodicité écrite.
     // R. 4544-11-1 : attestation médicale quinquennale, en vigueur depuis
     // octobre 2025, nominative donc bloquée par le porteur d'échéance.
@@ -234,7 +241,6 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     // sait pas porter. La liste s'allonge parce qu'on voit mieux.
     // L'ordre suit la déclaration des corpus, pas l'alphabet.
     expect(refs).toEqual([
-      "PE 4",
       "PE 27",
       // PE 37 : SEUL article du Livre III fixant une périodicité de visite de
       // commission — cinq ans. Ajouté le 2026-08-26 en rectification d'une
@@ -251,7 +257,6 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // que PO 7 : aucun équipement porteur.
       "PO 12",
       "R. 4544-11-1",
-      "R. 4222-20",
       "Arrêté 23-02-2018 art. 26 § 3",
     ]);
   });

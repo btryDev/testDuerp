@@ -81,7 +81,9 @@ export async function etatVerificationsParEquipement(
  *  occurrences doivent arriver **triées par date croissante**. */
 export function repartirParEquipement(
   verifs: Array<{
-    equipementId: string;
+    /** `null` = ligne portée par l'établissement (ADR-022) : elle n'entre
+     *  dans l'état d'aucun équipement, et la boucle la saute. */
+    equipementId: string | null;
     libelleObligation: string;
     statut: string;
     datePrevue: Date;
@@ -93,6 +95,10 @@ export function repartirParEquipement(
   const parEquipement = new Map<string, EtatEquipement>();
 
   for (const v of verifs) {
+    // Une échéance d'établissement ne pèse sur aucun appareil : l'attribuer
+    // à l'un d'eux serait faux, et la ranger sous une clé fourre-tout ferait
+    // apparaître un « équipement » qui n'existe pas.
+    if (v.equipementId === null) continue;
     const courant = parEquipement.get(v.equipementId) ?? {
       enRetard: 0,
       prochaine: null,

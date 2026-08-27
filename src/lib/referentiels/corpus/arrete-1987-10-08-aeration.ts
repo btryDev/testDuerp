@@ -15,13 +15,18 @@ export const ARRETE_1987_10_08_AERATION: Corpus = {
   articles: [
     {
       ref: "Arrêté 1987-10-08 art. 3",
+      intitule: "Locaux à pollution non spécifique",
       versionEnVigueur: "1988-04-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-08-27",
+      lecture: "premiere_main",
+      citationCle:
+        "Au minimum une fois par an, les opérations suivantes doivent être effectuées et leurs résultats portés sur le dossier de maintenance mentionné à l'article 2 (b) : contrôle du débit global minimal d'air neuf de l'installation ; examen de l'état des éléments de l'installation (système d'introduction et d'extraction, gaines, ventilateurs) […] ; examen de l'état des systèmes de traitement de l'air (humidificateur, batterie d'échangeurs) ; lorsque le dossier de valeurs de référence est constitué, contrôle des pressions statiques ou des vitesses d'air aux points caractéristiques de l'installation.",
       statut: "retenu",
       obligations: [
-        "aeration-travail-entretien-annuel",
         "aeration-travail-mise-en-service",
+        // Le rythme annuel de l'obligation portée par l'établissement vient
+        // de cet article : R. 4222-20 dit « régulièrement » sans chiffre.
+        "aeration-controle-installations-r4222-20",
       ],
     },
     {

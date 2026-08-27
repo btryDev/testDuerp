@@ -152,8 +152,18 @@ export function appliquerPrescriptions(
       if (cibles.length === 0) {
         ignorees.push({
           prescription: p,
+          // Le motif générique parlerait d'un équipement que l'utilisateur
+          // n'a jamais désigné. Une prescription qui renforce la périodicité
+          // d'une obligation portée par l'établissement (ADR-022) n'a pas
+          // d'équipement cible par construction : `equipementsConcernes` est
+          // vide, et la boucle de surcharge, indexée par identifiant
+          // d'équipement, n'a nulle part où écrire. C'est une limite du
+          // modèle de surcharge, pas une erreur de saisie — et le dire est le
+          // minimum tant qu'elle n'est pas levée.
           raison:
-            "L'équipement visé n'est pas (ou plus) un déclencheur de cette obligation.",
+            oa.porteur === "etablissement"
+              ? "Cette obligation porte sur l'établissement et non sur un appareil : le renforcement de périodicité ne sait pas encore s'y appliquer (ADR-022)."
+              : "L'équipement visé n'est pas (ou plus) un déclencheur de cette obligation.",
         });
         continue;
       }

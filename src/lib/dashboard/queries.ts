@@ -36,6 +36,8 @@ import { repartirVerifications } from "@/lib/pdf/etat-verifications";
 import type { ModulesMatrice } from "./obligations";
 import { evaluerEtatDuerp, type EtatDuerp } from "./duerp";
 import { calculerScoreDepuisEtat, type Score } from "./score";
+import { porteeBatiment } from "@/lib/calendrier/portee";
+import { LABEL_TOUT_ETABLISSEMENT } from "@/lib/calendrier/labels";
 import {
   genererRecommandations,
   type Recommandation,
@@ -93,9 +95,12 @@ export type EvenementFenetre = {
   libelle: string;
   date: Date;
   tone: "alerte" | "warn" | "ok";
+  /** L'appareil, ou « Tout l'établissement » (ADR-022). */
   equipement: string;
-  /** Le bâtiment de l'équipement (ADR-019). */
-  batiment: BatimentEcheance;
+  /** Le bâtiment de l'équipement (ADR-019). `null` quand l'échéance porte sur
+   *  l'établissement : elle n'est dans aucun bâtiment, et reste donc visible
+   *  sous tous les filtres (ADR-010). */
+  batiment: BatimentEcheance | null;
 };
 
 /**
@@ -139,9 +144,7 @@ export async function listerEvenementsFenetre(
       etablissementId,
       etablissement: { entreprise: { userId: user.id } },
       datePrevue: { lte: fin },
-      ...(filtres?.batimentId
-        ? { equipement: { batimentId: filtres.batimentId } }
-        : {}),
+      ...porteeBatiment(filtres?.batimentId),
       ...(filtres?.urgentsSeulement
         ? { statut: { in: ["a_planifier", "depassee"] } }
         : {}),
@@ -176,8 +179,10 @@ export async function listerEvenementsFenetre(
         libelle: libelleCourt(v.libelleObligation),
         date: lec.date,
         tone: TON_REGISTRE[lec.registre],
-        equipement: v.equipement.libelle,
-        batiment: v.equipement.batiment,
+        equipement: v.equipement?.libelle ?? LABEL_TOUT_ETABLISSEMENT,
+        // Pas d'équipement, pas de bâtiment : la ligne reste visible sous
+        // tous les filtres par bâtiment (ADR-010, ADR-019).
+        batiment: v.equipement?.batiment ?? null,
       })),
   );
 }
@@ -245,6 +250,12 @@ export async function compterVerifsParEquipement(
   };
 
   for (const v of verifs) {
+    // Statistiques **par équipement** : une échéance portée par
+    // l'établissement (ADR-022) n'appartient à aucun appareil. La compter
+    // ici ferait apparaître une entrée sous une clé qui n'est l'id d'aucun
+    // équipement, et les écrans qui joignent sur cette Map afficheraient un
+    // appareil fantôme.
+    if (v.equipementId === null) continue;
     const s = getStats(v.equipementId);
     // Même dépli que le calendrier : une ligne soldée compte son
     // rendez-vous suivant dans la charge — un appareil à jour dont le
@@ -676,7 +687,7 @@ export const getDashboardData = cache(async function getDashboardData(
           datePrevue: v.datePrevue,
           dateRealisee: v.dateRealisee,
           libelleObligation: v.libelleObligation,
-          equipementLibelle: v.equipement.libelle,
+          equipementLibelle: v.equipement?.libelle ?? LABEL_TOUT_ETABLISSEMENT,
         })),
       actions: actionsOuvertes.map((a) => ({
         id: a.id,

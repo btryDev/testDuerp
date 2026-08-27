@@ -182,6 +182,30 @@ export function obligationsManquantes(): {
 }
 
 /**
+ * Ce que des articles RETENUS imposent encore et que le référentiel ne porte
+ * pas.
+ *
+ * Le pendant d'`obligationsManquantes()` pour les articles partiellement
+ * couverts. Un article retenu se lit spontanément comme un article fini ;
+ * sans ce compte, la moitié non encodée d'un article à plusieurs paragraphes
+ * disparaîtrait du tableau de bord du dépouillement — et une disparition est
+ * exactement ce qu'un inventaire doit empêcher.
+ */
+export function reservesDeLecture(): {
+  corpus: string;
+  ref: string;
+  reserve: string;
+}[] {
+  return CORPUS.flatMap((c) =>
+    c.articles.flatMap((a) =>
+      a.statut === "retenu" && a.reserve
+        ? [{ corpus: c.id, ref: a.ref, reserve: a.reserve }]
+        : [],
+    ),
+  );
+}
+
+/**
  * Les références qui ne portent pas encore de clé d'article.
  *
  * Sans clé, une référence ne peut être rattachée à aucun corpus : elle compte

@@ -12,6 +12,7 @@ import { cleJourCivil, debutDuJour } from "@/lib/dates";
 // lui pour que l'en-tête de la page, le tableau de bord et le dossier de
 // conformité annoncent nécessairement les mêmes nombres.
 import { repartirVerifications } from "@/lib/pdf/etat-verifications";
+import { porteeBatiment } from "./portee";
 
 /**
  * Lectures du calendrier des vérifications périodiques.
@@ -58,9 +59,7 @@ export async function listerVerifications(
     where: {
       etablissementId,
       etablissement: { entreprise: { userId: user.id } },
-      ...(filtres.batimentId
-        ? { equipement: { batimentId: filtres.batimentId } }
-        : {}),
+      ...porteeBatiment(filtres.batimentId),
       ...(filtres.urgentsSeulement
         ? {
             dateRealisee: null,
@@ -151,9 +150,7 @@ export async function compterEtatCalendrier(
     where: {
       etablissementId,
       etablissement: { entreprise: { userId: user.id } },
-      ...(filtres.batimentId
-        ? { equipement: { batimentId: filtres.batimentId } }
-        : {}),
+      ...porteeBatiment(filtres.batimentId),
     },
     // `libelleObligation` porte le marqueur d'archivage (ADR-012) :
     // `repartirVerifications` en a besoin pour ne pas compter en retard une

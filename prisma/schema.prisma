@@ -379,8 +379,14 @@ model Verification {
   id              String        @id @default(cuid())
   etablissementId String
   etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
-  equipementId    String
-  equipement      Equipement    @relation(fields: [equipementId], references: [id], onDelete: Cascade)
+  // `null` = l'échéance est portée par l'établissement lui-même et non par un
+  // appareil (ADR-022). Deux articles en vigueur l'imposent : `PE 4 § 2`, dû
+  // via `PE 2 § 3` par les établissements qui ont le moins déclaré, et
+  // `R. 4222-20`, qui vise tout employeur. Les accrocher à un équipement
+  // arbitraire les faisait disparaître en silence chez qui ne l'avait pas
+  // déclaré.
+  equipementId    String?
+  equipement      Equipement?   @relation(fields: [equipementId], references: [id], onDelete: Cascade)
 
   obligationId      String
   libelleObligation String
@@ -429,6 +435,24 @@ model Verification {
   // etablissementId est inclus bien qu'il soit déductible de equipementId :
   // il rend la clé utilisable directement dans un `where` scopé par
   // établissement, sans jointure.
+  //
+  // ATTENTION — la clause `NULLS NOT DISTINCT` de cet index n'est PAS
+  // exprimable en Prisma. `equipementId` étant devenu nullable (ADR-022), un
+  // index unique ordinaire ne contraindrait plus les lignes portées par
+  // l'établissement : en PostgreSQL, deux `NULL` ne se conflictent pas, et le
+  // même couple (établissement, obligation) s'insérerait à chaque
+  // régénération du calendrier — une ligne de plus par ouverture de page.
+  //
+  // La migration `porteur_etablissement` remplace donc l'index par un
+  // `CREATE UNIQUE INDEX … NULLS NOT DISTINCT` **portant le même nom**
+  // (PostgreSQL >= 15 ; la production est en 17.6). `@@unique` est conservé
+  // ici pour deux raisons : le client garde le `where` composé, et
+  // `prisma migrate diff` compare nom, colonnes et unicité — il voit donc un
+  // index conforme, sans dérive. Ce que Prisma ne voit pas, c'est la clause
+  // elle-même : un `prisma db push` la perdrait en recréant l'index.
+  //
+  // C'est pourquoi `src/lib/migrations-contraintes.test.ts` la vérifie dans le
+  // SQL, ET vérifie qu'aucune migration ultérieure ne la retire.
   @@unique([etablissementId, obligationId, equipementId])
   @@index([etablissementId, datePrevue])
   @@index([equipementId])

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { obligationsIncendie } from "@/lib/referentiels/conformite";
-import type { Obligation } from "@/lib/referentiels/conformite/types";
+import {
+  porteurDe,
+  type Obligation,
+} from "@/lib/referentiels/conformite/types";
 import {
   appliquerPrescriptions,
   estObligationSurMesure,
@@ -45,7 +48,12 @@ function applicable(
   o: Obligation,
   equipements: EquipementMatching[],
 ): ObligationApplicable {
-  return { obligation: o, equipementsConcernes: equipements, raisons: ["ERP"] };
+  return {
+    obligation: o,
+    equipementsConcernes: equipements,
+    porteur: porteurDe(o),
+    raisons: ["ERP"],
+  };
 }
 
 function prescription(

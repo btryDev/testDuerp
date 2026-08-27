@@ -32,6 +32,24 @@ export type StatutArticle =
       statut: "retenu";
       /** Les `Obligation.id` qui s'appuient dessus. Au moins un. */
       obligations: [string, ...string[]];
+      /**
+       * Ce que l'article impose ENCORE et que le référentiel ne porte pas.
+       *
+       * Un article n'est pas toujours retenu en entier. `PE 4` en est le cas
+       * type : son § 2 est encodé depuis l'ADR-022, son § 1 — contrat annuel
+       * du système de détection, réservé aux locaux à sommeil — attend un
+       * attribut d'établissement qui n'existe pas.
+       *
+       * Sans ce champ, il fallait choisir entre deux mensonges : « retenu »
+       * tout court, qui efface le manque, ou « obligation manquante », qui
+       * nie ce qui est fait. Les deux font disparaître la moitié de la
+       * vérité, et c'est exactement ce que le dépouillement existe pour
+       * empêcher.
+       *
+       * Une réserve n'est pas une note : elle se compte, comme une obligation
+       * manquante — voir `reservesDeLecture()`.
+       */
+      reserve?: string;
     }
   /**
    * Lu, dans le périmètre, mais ne produit aucune échéance : définition,

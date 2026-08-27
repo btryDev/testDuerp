@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { ObligationApplicable } from "@/lib/matching";
-import type { Obligation } from "@/lib/referentiels/conformite/types";
+import {
+  porteurDe,
+  type Obligation,
+  type ObligationPorteeParEquipement,
+  type ObligationPorteeParEtablissement,
+} from "@/lib/referentiels/conformite/types";
 import type { EquipementMatching } from "@/lib/matching/types";
 import {
+  cleDeLigne,
   comparerParUrgence,
   estMarqueeNonApplicable,
   genererProchainesVerifications,
@@ -18,20 +24,45 @@ import {
 // Fixtures
 // ============================================================================
 
+type ObligationEq = ObligationPorteeParEquipement;
+
 function fakeObligation(
-  over: Partial<Obligation> & Pick<Obligation, "id" | "periodicite">,
-): Obligation {
+  over: Partial<ObligationEq> & Pick<ObligationEq, "id" | "periodicite">,
+): ObligationEq {
   return {
     domaine: "electricite",
     libelle: `Obligation ${over.id}`,
     referencesLegales: [
       { source: "CODE_TRAVAIL", reference: "R. test" },
-    ] as Obligation["referencesLegales"],
-    realisateurs: ["personne_qualifiee"] as Obligation["realisateurs"],
+    ] as ObligationEq["referencesLegales"],
+    realisateurs: ["personne_qualifiee"] as ObligationEq["realisateurs"],
     criticite: 3,
     typologies: { travail: true },
-    categoriesEquipement: ["INSTALLATION_ELECTRIQUE"] as Obligation["categoriesEquipement"],
+    categoriesEquipement: [
+      "INSTALLATION_ELECTRIQUE",
+    ] as ObligationEq["categoriesEquipement"],
     ...over,
+  };
+}
+
+/** Obligation portée par l'établissement : aucun déclencheur d'équipement. */
+function fakeObligationEtablissement(
+  over: Partial<ObligationPorteeParEtablissement> &
+    Pick<ObligationPorteeParEtablissement, "id" | "periodicite">,
+): ObligationPorteeParEtablissement {
+  return {
+    domaine: "incendie",
+    libelle: `Obligation ${over.id}`,
+    referencesLegales: [
+      { source: "ARRETE", reference: "PE 4 § 2" },
+    ] as ObligationPorteeParEtablissement["referencesLegales"],
+    realisateurs: [
+      "personne_qualifiee",
+    ] as ObligationPorteeParEtablissement["realisateurs"],
+    criticite: 3,
+    typologies: { erp: true },
+    ...over,
+    porteur: "etablissement",
   };
 }
 
@@ -45,7 +76,12 @@ function fakeEquipement(id = "eq-1"): EquipementMatching {
 }
 
 function applique(o: Obligation, eqs: EquipementMatching[]): ObligationApplicable {
-  return { obligation: o, equipementsConcernes: eqs, raisons: ["test"] };
+  return {
+    obligation: o,
+    equipementsConcernes: eqs,
+    porteur: porteurDe(o),
+    raisons: ["test"],
+  };
 }
 
 // ============================================================================
@@ -400,6 +436,158 @@ function ligneExistante(
     ...over,
   };
 }
+
+describe("générateur calendrier — porteur établissement (ADR-022)", () => {
+  const applicableEtablissement = (o: ObligationPorteeParEtablissement) => ({
+    obligation: o as Obligation,
+    equipementsConcernes: [],
+    porteur: "etablissement" as const,
+    raisons: ["test"],
+  });
+
+  it("produit une ligne sans équipement, alors qu'aucun n'est déclaré", () => {
+    // Le faux négatif que l'ADR-022 supprime, pris à la racine : jusqu'ici la
+    // boucle du générateur itérait sur `equipementsConcernes`, donc une
+    // obligation d'établissement — dont la liste est vide par construction —
+    // ne produisait AUCUNE ligne.
+    const o = fakeObligationEtablissement({
+      id: "pe4",
+      periodicite: "triennale",
+    });
+
+    const res = genererProchainesVerifications(
+      [applicableEtablissement(o)],
+      new Map(),
+      { now: NOW },
+    );
+
+    expect(res).toHaveLength(1);
+    expect(res[0].equipementId).toBeNull();
+    expect(res[0].obligationId).toBe("pe4");
+  });
+
+  it("produit UNE ligne, pas une par équipement déclaré", () => {
+    // L'argument décisif de l'ADR : décomposer par installation produirait
+    // zéro ligne chez qui n'a rien déclaré, et N lignes chez les autres pour
+    // une obligation que le texte pose comme un tout.
+    const o = fakeObligationEtablissement({
+      id: "pe4",
+      periodicite: "triennale",
+    });
+
+    const res = genererProchainesVerifications(
+      [applicableEtablissement(o)],
+      new Map(),
+      { now: NOW },
+    );
+
+    expect(res).toHaveLength(1);
+  });
+
+  it("la clé distingue deux porteurs, là où l'interpolation les confondait", () => {
+    // Le second obstacle du chantier, invisible en base : `parCle` range les
+    // lignes en MÉMOIRE avant que Postgres n'entre en jeu. Avec une clé
+    // construite par interpolation, `null` devenait la chaîne "null" et
+    // pouvait entrer en collision avec un identifiant d'équipement.
+    expect(cleDeLigne("obl", null)).not.toBe(cleDeLigne("obl", "null"));
+    expect(cleDeLigne("obl", null)).not.toBe(cleDeLigne("obl", "eq-1"));
+    expect(cleDeLigne("obl", null)).toBe(cleDeLigne("obl", null));
+  });
+
+  it("se réconcilie sans rien créer ni supprimer quand la ligne existe déjà", () => {
+    // L'idempotence, sur le cas neuf. Si la clé de la ligne générée et celle
+    // de la ligne existante divergeaient — c'est exactement ce que deux
+    // constructions séparées produisent — la réconciliation prendrait la
+    // ligne existante pour une ligne disparue et, faute de preuve attachée,
+    // la SUPPRIMERAIT tout en recréant sa jumelle.
+    const o = fakeObligationEtablissement({
+      id: "pe4",
+      periodicite: "triennale",
+    });
+    const aGenerer = genererProchainesVerifications(
+      [applicableEtablissement(o)],
+      new Map(),
+      { now: NOW },
+    );
+
+    const existante = ligneExistante({
+      id: "v-pe4",
+      obligationId: "pe4",
+      equipementId: null,
+      libelleObligation: "Obligation pe4",
+      periodicite: "triennale",
+      datePrevue: aGenerer[0].datePrevue,
+      statut: aGenerer[0].statut,
+    });
+
+    const plan = reconcilierCalendrier([existante], aGenerer, { now: NOW });
+
+    expect(plan.aSupprimer).toEqual([]);
+    expect(plan.aCreer).toEqual([]);
+    expect(plan.aArchiver).toEqual([]);
+    expect(plan.inchangees).toBe(1);
+  });
+
+  it("n'écrase pas la ligne d'équipement de la même obligation", () => {
+    // Deux porteurs, une seule obligation. Sans le porteur dans la clé, les
+    // deux lignes se rangeraient sous "obl::…" identiques et l'une des deux
+    // disparaîtrait du plan.
+    const oEtab = fakeObligationEtablissement({
+      id: "mixte",
+      periodicite: "annuelle",
+    });
+    const oEquip = fakeObligation({ id: "mixte", periodicite: "annuelle" });
+    const eq = fakeEquipement("eq-1");
+
+    const aGenerer = [
+      ...genererProchainesVerifications([applicableEtablissement(oEtab)], new Map(), {
+        now: NOW,
+      }),
+      ...genererProchainesVerifications([applique(oEquip, [eq])], new Map(), {
+        now: NOW,
+      }),
+    ];
+
+    expect(aGenerer).toHaveLength(2);
+    expect(new Set(aGenerer.map((v) => v.cleUnique)).size).toBe(2);
+
+    const plan = reconcilierCalendrier([], aGenerer, { now: NOW });
+    expect(plan.aCreer).toHaveLength(2);
+  });
+
+  it("une obligation d'établissement retirée du référentiel et sans preuve est supprimée", () => {
+    // Le pendant : la réconciliation traite la ligne d'établissement comme
+    // les autres. Rien de spécial, et c'est ce qu'on veut vérifier — un
+    // porteur neuf qui échapperait aux règles communes serait une dette.
+    const existante = ligneExistante({
+      id: "v-pe4",
+      obligationId: "pe4",
+      equipementId: null,
+      libelleObligation: "Obligation pe4",
+      porteUnePreuve: false,
+    });
+
+    const plan = reconcilierCalendrier([existante], [], { now: NOW });
+    expect(plan.aSupprimer).toEqual(["v-pe4"]);
+  });
+
+  it("une obligation d'établissement porteuse d'une preuve est archivée, pas supprimée", () => {
+    const existante = ligneExistante({
+      id: "v-pe4",
+      obligationId: "pe4",
+      equipementId: null,
+      libelleObligation: "Obligation pe4",
+      porteUnePreuve: true,
+    });
+
+    const plan = reconcilierCalendrier([existante], [], { now: NOW });
+    expect(plan.aSupprimer).toEqual([]);
+    expect(plan.aArchiver).toHaveLength(1);
+    expect(estMarqueeNonApplicable(plan.aArchiver[0].libelleObligation)).toBe(
+      true,
+    );
+  });
+});
 
 describe("réconciliation — survie des actions correctives", () => {
   // Scénario du chantier : le dirigeant crée une action corrective sur sa

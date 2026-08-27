@@ -25,6 +25,55 @@ import type { Obligation } from "./types";
 
 export const obligationsAeration: Obligation[] = [
   // ---------------------------------------------------------------------------
+  // Porteur : l'établissement (ADR-022)
+  // ---------------------------------------------------------------------------
+  {
+    id: "aeration-controle-installations-r4222-20",
+    domaine: "aeration",
+    libelle:
+      "Contrôle périodique de l'ensemble des installations d'aération et d'assainissement",
+    description:
+      "L'employeur maintient l'ensemble des installations d'aération et d'assainissement de ses locaux de travail en bon état de fonctionnement et en assure régulièrement le contrôle. Le rythme est fixé par l'arrêté du 8 octobre 1987 : au minimum une fois par an en local à pollution non spécifique — le cas des bureaux, commerces et salles de restaurant. L'obligation porte sur l'ensemble, pas sur tel ou tel appareil : elle est due même si aucune installation n'est déclarée dans l'outil.",
+    referencesLegales: [
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4222-20",
+        article: "R. 4222-20",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
+        versionConstatee: "2008-05-01",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4222-22",
+        article: "R. 4222-22",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532289/",
+        versionConstatee: "2008-05-01",
+      },
+      {
+        source: "ARRETE",
+        reference: "Arrêté du 8 octobre 1987, art. 3",
+        article: "Arrêté 1987-10-08 art. 3",
+        url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006072614/",
+        // Entrée en vigueur, pas date de lecture : l'article 6 de l'arrêté
+        // le rend applicable six mois après sa publication.
+        versionConstatee: "1988-04-01",
+      },
+    ],
+    periodicite: "annuelle",
+    // Réalisateurs repris de `aeration-travail-entretien-annuel`, que cette
+    // ligne absorbe (ADR-022) : ne pas restreindre ce que l'utilisateur
+    // pouvait déclarer.
+    realisateurs: ["personne_qualifiee", "personne_competente"],
+    // 4, la criticité du fragment absorbé : c'est le même acte sur le même
+    // texte, il ne change pas de rang en changeant de porteur.
+    criticite: 4,
+    typologies: { travail: true },
+    porteur: "etablissement",
+    equipementsEnContexte: ["VMC", "CTA", "HOTTE_PRO"],
+    notesInternes:
+      "Porteur établissement (ADR-022). Verbatim relevé en première main le 2026-08-26, article relu le 2026-08-27 : « L'employeur maintient l'ensemble des installations mentionnées au présent chapitre en bon état de fonctionnement et en assure régulièrement le contrôle. » Le « présent chapitre » est le chapitre II « Aération, assainissement » (R. 4222-1 à R. 4222-26) — relevé sur le chemin hiérarchique affiché par Légifrance, et il borne la portée matérielle : ce sont les installations de ventilation et d'assainissement, pas toutes les installations techniques. Le champ personnel, lui, est bien « tout employeur ».\n\nLe rythme ne vient pas de l'article, qui dit « régulièrement » sans chiffre. Il vient de la chaîne R. 4222-22 → arrêté du 8 octobre 1987, dont l'article 3 impose « au minimum une fois par an » en local à pollution non spécifique. Les trois secteurs cibles y sont. L'article 4 (pollution spécifique) impose le même rythme annuel, et un contrôle semestriel supplémentaire aux seules installations avec recyclage. Ce dernier cas N'EST PORTÉ PAR AUCUNE OBLIGATION : une première rédaction de cette note le disait couvert par un `aeration-travail-recyclage-semestriel` qui N'EXISTE PAS — identifiant inventé, corrigé le 2026-08-27. Le semestriel de recyclage est décrit dans `aeration-travail-locaux-pollution-specifique` mais n'y est pas planifié, faute d'une propriété d'équipement « recyclage » que le formulaire ne pose pas : ses propres notes le disent. C'est un manque réel, et il n'est pas de mon fait — il précède ce chantier.\n\nCe qu'elle absorbe, et ce qu'elle n'absorbe pas. Cette note affirmait d'abord qu'aucune des obligations citant R. 4222-20 n'était retirée ; c'est devenu faux le jour même. `aeration-travail-entretien-annuel` A ÉTÉ RETIRÉE : elle décrivait le même acte, au même rythme annuel, sur le même arrêté du 8 octobre 1987 art. 3, et n'en projetait le tout que sur `VMC` et `CTA`. Aucun fondement propre, donc un fragment — et le garder aurait fait deux lignes annuelles pour un seul contrôle.\n\nCe qui RESTE, et pourquoi ce ne sont pas des fragments : `aeration-travail-mise-en-service` est un acte distinct — le contrôle initial, une seule fois, dans le mois qui suit la mise en service. `aeration-travail-locaux-pollution-specifique` et `stockage-dangereux-ventilation-locaux` relèvent de l'ARTICLE 4 du même arrêté, celui des locaux à pollution spécifique : autre régime. Réserve à ne pas perdre de vue : la première d'entre elles est conditionnée à `estLocalPollutionSpecifique` en propriété booléenne, donc en opt-in strict — elle ne se déclenche que si l'utilisateur a répondu « oui » explicitement, et ne rattrape donc rien par défaut.\n\nAutrement dit : un employeur qui a déclaré sa VMC voit désormais UNE ligne annuelle et non deux, plus son contrôle initial ; un employeur qui n'a rien déclaré, qui ne voyait rien, voit cette ligne.",
+  },
+  // ---------------------------------------------------------------------------
   // Travail (Code du travail + arrêté du 8 octobre 1987)
   // ---------------------------------------------------------------------------
   {
@@ -62,34 +111,23 @@ export const obligationsAeration: Obligation[] = [
     typologies: { travail: true },
     categoriesEquipement: ["VMC", "CTA"],
   },
-  {
-    id: "aeration-travail-entretien-annuel",
-    domaine: "aeration",
-    libelle: "Contrôle périodique annuel des installations d'aération (travail)",
-    description:
-      "L'employeur fait procéder une fois par an à des mesures et contrôles du débit global d'air neuf, du recyclage éventuel, de l'efficacité des systèmes d'épuration, et à l'entretien des systèmes de ventilation. Les résultats sont consignés au dossier.",
-    referencesLegales: [
-      {
-        source: "CODE_TRAVAIL",
-        reference: "R. 4222-20",
-        article: "R. 4222-20",
-        url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
-      },
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 8 octobre 1987, art. 3",
-        article: "Arrêté 1987-10-08 art. 3",
-        url:
-          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678610",
-      },
-    ],
-    periodicite: "annuelle",
-    realisateurs: ["personne_qualifiee", "personne_competente"],
-    criticite: 4,
-    typologies: { travail: true },
-    categoriesEquipement: ["VMC", "CTA"],
-  },
+  // `aeration-travail-entretien-annuel` a été RETIRÉ le 2026-08-27 (ADR-022).
+  //
+  // Même cas que les deux fragments de PE 4 § 2 : son article fondateur était
+  // R. 4222-20, son rythme venait de l'arrêté du 8 octobre 1987 art. 3, et il
+  // ne projetait le tout que sur `VMC` et `CTA`. Aucun fondement propre. Un
+  // employeur dont la ventilation n'était déclarée sous aucune de ces deux
+  // catégories ne recevait rien, alors que l'article vise l'ensemble des
+  // installations du chapitre II — c'est exactement le faux négatif que
+  // `aeration-controle-installations-r4222-20` supprime.
+  //
+  // À ne pas confondre avec les deux lignes voisines, qui restent :
+  // `aeration-travail-mise-en-service` est un acte distinct (contrôle initial,
+  // une seule fois), et `aeration-travail-locaux-pollution-specifique` relève
+  // de l'ARTICLE 4 du même arrêté — les locaux à pollution spécifique, un
+  // autre régime, avec son contrôle semestriel propre en cas de recyclage.
+  //
+  // L'id ne doit jamais être réemployé : il est dans `OBLIGATIONS_RETIREES`.
   {
     id: "aeration-travail-locaux-pollution-specifique",
     domaine: "aeration",

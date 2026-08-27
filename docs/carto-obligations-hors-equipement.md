@@ -164,7 +164,12 @@ C'est la couche qui manquait à l'analyse initiale : ni statut, ni équipement, 
 | ❌ absentes | 48 |
 | dont **formations réglementaires** | 13 |
 
-Pour mémoire, côté équipement : **78 obligations encodées** sur ~481 lignes AOCR.
+Pour mémoire, côté équipement : **84 obligations encodées** sur ~481 lignes AOCR.
+*(Corrigé deux fois le 2026-08-27 : 78 → 85 au constat, puis 85 → 84 après le retrait
+de trois fragments absorbés par l'ADR-022. Le compte faisant foi est le préfixe de
+`EMPREINTE_ATTENDUE` dans `src/lib/referentiels/conformite/conformite.test.ts` — cherchez
+la constante, pas un numéro de ligne, qui se périme à chaque édition. Les mentions de 78, 80 et 81 qui
+subsistent plus bas dans ce document datent de rédactions successives.)*
 
 ## Ce que la carto implique pour le modèle
 
@@ -211,8 +216,17 @@ l'obligation de déclarer sous 48 h, un chantier déclenche un plan de préventi
 embauche déclenche formation et visite d'information. Ce sont bien des déclencheurs, et
 ils ne se confondent avec aucun des cinq autres. **Six déclencheurs, donc.**
 
-**Le porteur « bâtiment » manque.** Le modèle `Batiment` existe (`prisma/schema.prisma:288`)
-et le chantier ADR-019 « le bâtiment est un lieu » est en cours sur une autre branche. Un
+**Le porteur « bâtiment » manque.** *Corrigé le 2026-08-27 : l'ADR-019 « le bâtiment est un
+lieu » n'est pas en cours sur une branche — elle est **livrée sur `main`** depuis le
+2026-08-21 (`b0c489e`), et elle **refuse** ce porteur : « `Verification` et `Action` n'ont pas
+de `batimentId` […] Le bâtiment d'une échéance se lit en remontant la chaîne. » Le DTA reste
+donc bloqué par **deux** manques distincts — un porteur bâtiment **et** un attribut d'année de
+permis, que `Batiment` ne porte pas (il n'a que `nom`, `complementAdresse`, `ordre`). Aucun des
+deux n'est l'`EnsembleClasse` que l'ADR-019 réserve : celle-ci est faite pour les **régimes**
+(flags ERP/IGH, catégorie, effectif accueilli), et l'année du permis est une propriété physique,
+pas un régime.* Le paragraphe d'origine suit, pour le raisonnement qu'il porte.
+
+Le modèle `Batiment` existe (`prisma/schema.prisma:288`). Un
 DTA se rattache à un bâtiment — c'est l'année de son permis de construire qui déclenche —
 et un établissement peut en occuper plusieurs, d'époques différentes. Porter le DTA sur
 l'établissement serait faux dès le deuxième bâtiment. **Quatre porteurs, donc.**
@@ -403,9 +417,20 @@ ligne pour qui n'a rien déclaré.
 
 Toute obligation dont le déclencheur n'est pas un équipement déclaré est soit absente,
 soit accrochée à un équipement arbitraire — et dans ce second cas elle disparaît en
-silence pour l'établissement qui n'a pas déclaré cet équipement. Trois faux négatifs
-sont déjà documentés dans le référentiel lui-même
-(`src/lib/referentiels/conformite/incendie.ts:162`, « LIMITE CONNUE, NON CORRIGÉE ICI »).
+silence pour l'établissement qui n'a pas déclaré cet équipement.
+
+*Corrigé le 2026-08-27, puis rectifié le même jour.* Ce passage annonçait « trois faux négatifs
+déjà documentés dans le référentiel lui-même (`src/lib/referentiels/conformite/incendie.ts:162`,
+"LIMITE CONNUE, NON CORRIGÉE ICI") ». Une première rectification affirmait que cette chaîne
+n'avait jamais existé ; elle se fondait sur un `git log -S` lancé sur `main` seul. Sur `--all`,
+la chaîne apparaît : elle a été introduite par le commit `7736869` du 2026-08-26, puis perdue
+par un rebase dont la rapatriation n'a repris qu'une partie du contenu. **La note a été
+restaurée** dans `incendie.ts`. Seule la référence par numéro de ligne était bien périmée —
+`incendie.ts:162` désigne aujourd'hui une note sur `CCH R. 141-10`. Ce que le référentiel porte réellement, ce sont **neuf sur-applications assumées** — six dans `incendie.ts`, trois dans `electricite.ts` —
+(lignes 343, 367, 403, 426, 481, 504) — des faux **positifs** délibérés, maintenus pour éviter
+des faux négatifs muets, et dont chaque note nomme déjà sa condition de levée : « À reprendre
+lorsque le référentiel saura porter PE 4 § 2, dont le porteur est l'établissement et non un
+équipement. »
 
 ## Décisions tranchées
 

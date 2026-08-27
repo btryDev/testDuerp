@@ -27,6 +27,7 @@
 
 import { createHash } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
+import { cleDeLigne } from "@/lib/calendrier/generateur";
 
 const ETABLISSEMENTS = {
   paloa: "cmocnriid0002rlti0taekm4y",
@@ -78,7 +79,10 @@ async function etaler(cible: Cible): Promise<void> {
 
   let deplacees = 0;
   for (const o of occurrences) {
-    const nouvelle = auJour(decalage(`${o.obligationId}::${o.equipementId}`));
+    // Même clé que la réconciliation, produite par la même fonction : le
+    // décalage d'une échéance doit rester stable d'un lancement à l'autre, et
+    // une seconde construction de la clé divergerait tôt ou tard (ADR-022).
+    const nouvelle = auJour(decalage(cleDeLigne(o.obligationId, o.equipementId)));
     await prisma.verification.update({
       where: { id: o.id },
       data: { datePrevue: nouvelle },

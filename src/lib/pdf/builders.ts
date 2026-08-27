@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { compterActions, listerActions, origineDeLAction } from "@/lib/actions/queries";
 import { listerVerifications, type VerificationListee } from "@/lib/calendrier/queries";
+import { LABEL_TOUT_ETABLISSEMENT } from "@/lib/calendrier/labels";
 import { listerRapportsDeLEtablissement } from "@/lib/rapports/queries";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import { calculerScoreDepuisEtat } from "@/lib/dashboard/score";
@@ -94,14 +95,20 @@ function contexteAction(a: {
   } | null;
   verification: {
     libelleObligation: string;
-    equipement: { libelle: string };
+    equipement: { libelle: string } | null;
   } | null;
 }): string {
   if (a.risque) {
     return `DUERP — ${a.risque.unite.nom} · ${a.risque.libelle}`;
   }
   if (a.verification) {
-    return `Vérification — ${a.verification.equipement.libelle}`;
+    // Sans équipement, l'échéance porte sur l'établissement (ADR-022) : on
+    // imprime l'obligation elle-même. Écrire « Vérification — » suivi de rien
+    // laisserait un inspecteur devant une ligne qui ne dit pas sur quoi elle
+    // porte.
+    return a.verification.equipement
+      ? `Vérification — ${a.verification.equipement.libelle}`
+      : `Vérification — ${a.verification.libelleObligation}`;
   }
   return "Libre";
 }
@@ -113,9 +120,14 @@ function contexteAction(a: {
  * ne dirait rien.
  */
 function libelleEquipementSitue(
-  eq: { libelle: string; batiment: { nom: string } },
+  eq: { libelle: string; batiment: { nom: string } } | null,
   multiBatiments: boolean,
 ): string {
+  // `null` = l'échéance porte sur l'établissement, pas sur un appareil
+  // (ADR-022). Elle s'imprime sous le même mot que dans le calendrier —
+  // la lire au même endroit que les autres est tout l'intérêt d'une ligne
+  // qui n'a pas de lieu.
+  if (!eq) return LABEL_TOUT_ETABLISSEMENT;
   return multiBatiments ? `${eq.batiment.nom} — ${eq.libelle}` : eq.libelle;
 }
 

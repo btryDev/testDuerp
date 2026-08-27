@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { reperterSansEcheance } from "./hors-referentiel";
-import type { Obligation } from "@/lib/referentiels/conformite/types";
+import type { ObligationPorteeParEquipement } from "@/lib/referentiels/conformite/types";
 import type {
   EquipementMatching,
   EtablissementMatching,
@@ -33,7 +33,9 @@ const equipement = (
   caracteristiques,
 });
 
-const obligation = (o: Partial<Obligation> = {}): Obligation => ({
+const obligation = (
+  o: Partial<ObligationPorteeParEquipement> = {},
+): ObligationPorteeParEquipement => ({
   id: "test-1",
   domaine: "electricite",
   libelle: "Vérification de test",
