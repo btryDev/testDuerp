@@ -1,4 +1,5 @@
 import { Label } from "@/components/ui/label";
+import type { Charte } from "@/components/ui-kit";
 
 /**
  * Le champ « Bâtiment » des formulaires à rattachement optionnel — permis
@@ -7,27 +8,49 @@ import { Label } from "@/components/ui/label";
  * Rien n'est rendu en mono-bâtiment : le formulaire ne change pas tant que
  * la question n'a pas de sens. À partir de deux, un select avec « Tout
  * l'établissement » en première option, qui vaut « non précisé ».
+ *
+ * Comme `SelecteurBatiment`, ce champ est appelé des deux côtés de la
+ * migration visuelle : le formulaire de permis de feu est passé au board,
+ * ceux du plan de prévention et du carnet sanitaire sont encore en papier.
+ * D'où une prop plutôt qu'une réécriture (`ui-kit/charte.ts`) : un champ à
+ * rayon 6 au milieu d'une carte à rayon 30 se voit, et l'inverse aussi. Le
+ * défaut reste `papier`, ce que ce composant rendait avant.
  */
 export function ChampBatiment({
   batiments,
   defaultValue,
   erreur,
   aide,
+  charte = "papier",
 }: {
   batiments: { id: string; nom: string }[];
   defaultValue?: string | null;
   erreur?: string;
   aide?: string;
+  /** La grammaire visuelle du formulaire qui porte le champ. */
+  charte?: Charte;
 }) {
   if (batiments.length < 2) return null;
+
+  const board = charte === "board";
   return (
-    <div className="space-y-1.5">
-      <Label htmlFor="batimentId">Bâtiment</Label>
+    <div className={board ? undefined : "space-y-1.5"}>
+      {board ? (
+        <label className="label-board" htmlFor="batimentId">
+          Bâtiment
+        </label>
+      ) : (
+        <Label htmlFor="batimentId">Bâtiment</Label>
+      )}
       <select
         id="batimentId"
         name="batimentId"
         defaultValue={defaultValue ?? ""}
-        className="h-9 w-full rounded-md border border-rule bg-background px-3 py-1 text-sm shadow-sm"
+        className={
+          board
+            ? "champ-board"
+            : "h-9 w-full rounded-md border border-rule bg-background px-3 py-1 text-sm shadow-sm"
+        }
         aria-invalid={Boolean(erreur)}
       >
         <option value="">Non précisé</option>
@@ -38,9 +61,27 @@ export function ChampBatiment({
         ))}
       </select>
       {aide ? (
-        <p className="text-[0.82rem] text-muted-foreground">{aide}</p>
+        <p
+          className={
+            board
+              ? "m-0 mt-1.5 text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]"
+              : "text-[0.82rem] text-muted-foreground"
+          }
+        >
+          {aide}
+        </p>
       ) : null}
-      {erreur ? <p className="text-sm text-destructive">{erreur}</p> : null}
+      {erreur ? (
+        <p
+          className={
+            board
+              ? "m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]"
+              : "text-sm text-destructive"
+          }
+        >
+          {erreur}
+        </p>
+      ) : null}
     </div>
   );
 }

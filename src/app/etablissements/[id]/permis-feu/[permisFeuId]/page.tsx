@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { StatutPermisFeu } from "@prisma/client";
 import { Check, Flame } from "lucide-react";
 import { lireProvenance } from "@/lib/navigation/provenance";
 import {
@@ -43,6 +44,56 @@ function dureeHhMm(minutes: number): string {
 
 function numero(n: number): string {
   return `PF-${String(n).padStart(3, "0")}`;
+}
+
+/**
+ * L'état d'un permis, par une table exhaustive plutôt que par une cascade.
+ *
+ * La cascade de ternaires qu'elle remplace finissait par un `else` fourre-tout
+ * qui affichait « Brouillon ». Un permis `annule` y tombait : il s'affichait
+ * donc comme un brouillon, c'est-à-dire comme quelque chose qu'il reste à
+ * remplir — l'inverse de ce qu'il est. Le `Record` rend l'oubli impossible :
+ * ajouter une valeur à l'enum sans la nommer ici ne compile pas.
+ */
+const ETAT_DU_PERMIS: Record<
+  StatutPermisFeu,
+  { ton: "fait" | "retard" | "bleu" | "proche" | "neutre"; mot: string }
+> = {
+  brouillon: { ton: "neutre", mot: "Brouillon" },
+  attente_signatures: { ton: "proche", mot: "signature manquante" },
+  valide: { ton: "bleu", mot: "Prêt à démarrer" },
+  en_cours: { ton: "retard", mot: "Travaux en cours" },
+  termine: { ton: "fait", mot: "Travaux terminés" },
+  // Ni vert, ni rose : une opération annulée n'a plus de rendez-vous. Elle
+  // n'est pas « faite », et rien n'y est en retard.
+  annule: { ton: "neutre", mot: "Annulé" },
+};
+
+function PastilleStatut({
+  statut,
+  manquantes,
+}: {
+  statut: StatutPermisFeu;
+  manquantes: number;
+}) {
+  const { ton, mot } = ETAT_DU_PERMIS[statut];
+
+  if (statut === "attente_signatures") {
+    // Le nombre plutôt que le seul mot : l'utilisateur ne devrait pas avoir à
+    // ouvrir la fiche pour savoir combien de signatures il attend.
+    return (
+      <PastilleFiche ton={ton}>
+        {manquantes > 1 ? `${manquantes} signatures manquantes` : `1 ${mot}`}
+      </PastilleFiche>
+    );
+  }
+
+  return (
+    <PastilleFiche ton={ton}>
+      {statut === "en_cours" && <Flame className="size-3.5" aria-hidden />}
+      {mot}
+    </PastilleFiche>
+  );
 }
 
 export default async function PermisFeuDetailPage({
@@ -112,31 +163,14 @@ export default async function PermisFeuDetailPage({
       <HeroFiche
         date={permis.dateDebut}
         etat={etat}
-        famille="travaux"
-        surtitre={`Correction · Permis de feu ${numero(permis.numero)}`}
+        famille="operations"
+        surtitre={`Opération encadrée · Permis de feu ${numero(permis.numero)}`}
         titre={permis.prestataireRaison}
         chapeau={permis.lieu}
         faits={faits}
         pastilles={
           <>
-            {permis.statut === "termine" ? (
-              <PastilleFiche ton="fait">Travaux terminés</PastilleFiche>
-            ) : permis.statut === "en_cours" ? (
-              <PastilleFiche ton="retard">
-                <Flame className="size-3.5" aria-hidden />
-                Travaux en cours
-              </PastilleFiche>
-            ) : permis.statut === "valide" ? (
-              <PastilleFiche ton="bleu">Prêt à démarrer</PastilleFiche>
-            ) : permis.statut === "attente_signatures" ? (
-              <PastilleFiche ton="proche">
-                {manquantes > 1
-                  ? "2 signatures manquantes"
-                  : "1 signature manquante"}
-              </PastilleFiche>
-            ) : (
-              <PastilleFiche ton="neutre">Brouillon</PastilleFiche>
-            )}
+            <PastilleStatut statut={permis.statut} manquantes={manquantes} />
             {permis.naturesTravaux.map((n) => (
               <PastilleFiche key={n} ton="neutre">
                 {LABEL_NATURE[n]}
