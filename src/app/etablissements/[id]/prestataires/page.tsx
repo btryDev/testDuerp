@@ -141,6 +141,7 @@ export default async function PrestatairesPage({
           </p>
           <div className="mt-4">
             <LegalBadge
+              charte="board"
               reference="Art. L. 8222-1 · D. 8222-5 CT"
               href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037389145"
               extrait="Toute personne qui conclut un contrat dont l'objet porte sur une obligation d'un montant minimum de 5 000 euros hors taxes est tenue, lors de la conclusion et tous les six mois jusqu'à la fin de son exécution, de se faire remettre par son cocontractant les documents attestant qu'il a fait l'objet des vérifications et déclarations."

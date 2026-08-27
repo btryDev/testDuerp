@@ -243,6 +243,7 @@ export default async function PlanPreventionDetailPage({
           </p>
           {signatureEU ? (
             <SignatureBlock
+              charte="board"
               signataireNom={signatureEU.signataireNom}
               signataireRole={signatureEU.signataireRole}
               signataireEmail={signatureEU.signataireEmail}
@@ -272,6 +273,7 @@ export default async function PlanPreventionDetailPage({
           </p>
           {signatureEF ? (
             <SignatureBlock
+              charte="board"
               signataireNom={signatureEF.signataireNom}
               signataireRole={signatureEF.signataireRole}
               signataireEmail={signatureEF.signataireEmail}
@@ -299,6 +301,7 @@ export default async function PlanPreventionDetailPage({
 
       <div className="pt-2">
         <LegalBadge
+          charte="board"
           reference="Art. R4512-6 à R4512-12 CT · décret 92-158"
           href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018491957"
           defaultOpen

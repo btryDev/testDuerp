@@ -1,4 +1,10 @@
-export { StatusPill, STATUS_LABEL, type StatusKind } from "./StatusPill";
+export type { Charte } from "./charte";
+export {
+  StatusPill,
+  STATUS_LABEL,
+  STATUS_LABEL_BOARD,
+  type StatusKind,
+} from "./StatusPill";
 export { LegalBadge } from "./LegalBadge";
 export { WhyCard } from "./WhyCard";
 export { SignatureBlock } from "./SignatureBlock";

@@ -300,6 +300,7 @@ export default async function PermisFeuDetailPage({
           </p>
           {signatureDonneur ? (
             <SignatureBlock
+              charte="board"
               signataireNom={signatureDonneur.signataireNom}
               signataireRole={signatureDonneur.signataireRole}
               signataireEmail={signatureDonneur.signataireEmail}
@@ -335,6 +336,7 @@ export default async function PermisFeuDetailPage({
           </p>
           {signaturePrestataire ? (
             <SignatureBlock
+              charte="board"
               signataireNom={signaturePrestataire.signataireNom}
               signataireRole={signaturePrestataire.signataireRole}
               signataireEmail={signaturePrestataire.signataireEmail}
@@ -371,6 +373,7 @@ export default async function PermisFeuDetailPage({
 
       <div className="pt-2">
         <LegalBadge
+          charte="board"
           reference="INRS ED 6030 · APSAD R43 · Art. R4224-17 CT"
           defaultOpen
         >

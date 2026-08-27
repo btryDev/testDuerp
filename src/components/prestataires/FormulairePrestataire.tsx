@@ -105,7 +105,7 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
           <legend className="label-board">
             Domaines d&apos;intervention
           </legend>
-          <p className="text-[0.78rem] text-[color:var(--muted-foreground)]">
+          <p className="text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             Cochez tout ce qui s&apos;applique — ces tags servent ensuite à pré-sélectionner
             le bon prestataire quand vous créez une vérification ou un plan de prévention.
           </p>
@@ -194,6 +194,7 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
         <header className="space-y-3">
           <h2 className="board-titre m-0 text-[17px]">Obligation de vigilance</h2>
           <LegalBadge
+            charte="board"
             reference="Art. L8222-1 et D8222-5 CT"
             href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037389145"
             extrait="Toute personne qui conclut un contrat dont l'objet porte sur une obligation d'un montant minimum de 5 000 euros hors taxes est tenue, lors de la conclusion et tous les six mois jusqu'à la fin de son exécution, de se faire remettre par son cocontractant les documents attestant qu'il a fait l'objet des vérifications."
@@ -202,7 +203,7 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
             (vous) doit vérifier que son prestataire est à jour de ses obligations
             sociales. Renouvellement <strong>tous les 6 mois</strong>.
           </LegalBadge>
-          <p className="text-[0.85rem] text-[color:var(--muted-foreground)]">
+          <p className="text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             Téléversez les pièces justificatives dès maintenant si vous les avez.
             Vous pourrez toujours les ajouter plus tard ; la plateforme vous enverra
             une alerte 30 jours avant expiration.

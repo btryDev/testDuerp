@@ -158,6 +158,7 @@ export default async function PrestataireDetailPage({
               </p>
               <div className="mt-3">
                 <LegalBadge
+                  charte="board"
                   reference="Art. L. 8222-1 CT"
                   href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037389145"
                 />
