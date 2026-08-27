@@ -81,7 +81,7 @@ export function BarreCompte({
     // `flex-shrink` vaut 1 par défaut et porte sur la **hauteur**. Sans lui,
     // la barre est écrasée à la taille de son contenu et sa hauteur déclarée
     // n'a aucun effet, quelle que soit la valeur.
-    <div className="flex h-[67px] flex-none items-center justify-end border-b border-[color:var(--rule-soft)] bg-[color:var(--paper)] px-[var(--board-gutter)]">
+    <div className="flex h-[67px] flex-none items-center justify-end border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] px-[var(--board-gutter)]">
       {/* La gélule : le lieu où l'on revient, et celui à qui l'on revient.
           Les deux sont des repères de session — les séparer les ferait lire
           comme deux fonctions sans rapport. */}

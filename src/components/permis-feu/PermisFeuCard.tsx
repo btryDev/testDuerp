@@ -1,4 +1,5 @@
 import type { PermisFeu, StatutPermisFeu } from "@prisma/client";
+import { ETAT_PERMIS } from "@/lib/permis-feu/etats";
 import {
   LigneFiche,
   PastilleFiche,
@@ -38,14 +39,6 @@ const TON_STATUT: Record<
   annule: "neutre",
 };
 
-const LABEL_STATUT: Record<StatutPermisFeu, string> = {
-  brouillon: "Brouillon",
-  attente_signatures: "En attente de signatures",
-  valide: "Validé",
-  en_cours: "Travaux en cours",
-  termine: "Terminé",
-  annule: "Annulé",
-};
 
 export function PermisFeuCard({
   etablissementId,
@@ -98,7 +91,7 @@ export function PermisFeuCard({
       }
       droite={
         <PastilleFiche ton={TON_STATUT[permis.statut]}>
-          {LABEL_STATUT[permis.statut]}
+          {ETAT_PERMIS[permis.statut].mot}
         </PastilleFiche>
       }
     />

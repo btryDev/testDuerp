@@ -5,7 +5,11 @@ import { LegalBadge } from "@/components/ui-kit";
 import { PrestataireCard } from "@/components/prestataires/PrestataireCard";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { listPrestataires } from "@/lib/prestataires/queries";
-import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
+import {
+  CHAMP_ETAT,
+  ENCRE_ETAT,
+  type RegistreLigne,
+} from "@/lib/calendrier/etats";
 
 /**
  * L'annuaire des prestataires, en charte board (`docs/charte-board.md`).
@@ -24,10 +28,23 @@ export default async function PrestatairesPage({
   const { etablissement } = await requireEtablissement(id);
   const prestataires = await listPrestataires(id);
 
+  // Le compteur porte le volume, mais la COULEUR vient de l'état le plus grave
+  // réellement présent. Peindre en rose un établissement dont les seules
+  // pièces manquantes n'ont jamais été fournies annonce un retard qui n'existe
+  // pas : rien n'a d'échéance tant qu'il n'y a pas de document.
   const nbAlertes = prestataires.reduce(
     (acc, p) => acc + p.vigilance.alertesOuvertes,
     0,
   );
+  const etatDuLot: RegistreLigne | null = prestataires.some(
+    (p) => p.vigilance.etatLePlusGrave === "enRetard",
+  )
+    ? "enRetard"
+    : prestataires.some((p) => p.vigilance.etatLePlusGrave === "proche")
+      ? "proche"
+      : prestataires.some((p) => p.vigilance.etatLePlusGrave === "aPlanifier")
+        ? "aPlanifier"
+        : null;
 
   return (
     <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
@@ -54,12 +71,12 @@ export default async function PrestatairesPage({
           <div className="flex flex-wrap items-center gap-3">
             {/* Le compteur ne s'affiche qu'en cas d'alerte : un « 0 à
                 régulariser » permanent occupe la place sans rien apprendre. */}
-            {nbAlertes > 0 && (
+            {etatDuLot !== null && (
               <span
                 className="inline-flex items-center gap-2 rounded-full px-4 py-[9px]"
                 style={{
-                  background: CHAMP_ETAT.enRetard,
-                  color: ENCRE_ETAT.enRetard,
+                  background: CHAMP_ETAT[etatDuLot],
+                  color: ENCRE_ETAT[etatDuLot],
                 }}
               >
                 <span className="board-titre text-[20px] tabular-nums leading-none">

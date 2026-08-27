@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import type { StatutPlanPrevention } from "@prisma/client";
+import { ETAT_PLAN } from "@/lib/plan-prevention/etats";
 import { lireProvenance } from "@/lib/navigation/provenance";
 import {
   BlocCreux,
@@ -37,29 +37,6 @@ function numero(n: number): string {
   return `PP-${String(n).padStart(3, "0")}`;
 }
 
-/**
- * L'état d'un plan, par une table exhaustive plutôt que par une cascade.
- *
- * La cascade qu'elle remplace finissait par un `else` fourre-tout affichant
- * « Brouillon ». Deux statuts y tombaient — `annule` et `inspection_faite` —
- * et s'affichaient donc comme quelque chose qu'il reste à remplir. Pour
- * `inspection_faite` c'est même l'inverse exact : l'inspection commune
- * préalable a eu lieu, c'est l'étape que R. 4512-2 rend obligatoire avant
- * toute intervention. Le `Record` rend l'oubli impossible : ajouter une valeur
- * à l'enum sans la nommer ici ne compile pas.
- */
-const ETAT_DU_PLAN: Record<
-  StatutPlanPrevention,
-  { ton: "fait" | "bleu" | "proche" | "neutre"; mot: string }
-> = {
-  brouillon: { ton: "neutre", mot: "Brouillon" },
-  inspection_faite: { ton: "bleu", mot: "Inspection commune faite" },
-  attente_signatures: { ton: "proche", mot: "En attente de signatures" },
-  valide: { ton: "bleu", mot: "Validé" },
-  clos: { ton: "fait", mot: "Plan clos" },
-  // Ni vert, ni rose : une opération annulée n'a plus de rendez-vous.
-  annule: { ton: "neutre", mot: "Annulé" },
-};
 
 export default async function PlanPreventionDetailPage({
   params,
@@ -126,8 +103,8 @@ export default async function PlanPreventionDetailPage({
         faits={faits}
         pastilles={
           <>
-            <PastilleFiche ton={ETAT_DU_PLAN[plan.statut].ton}>
-              {ETAT_DU_PLAN[plan.statut].mot}
+            <PastilleFiche ton={ETAT_PLAN[plan.statut].ton}>
+              {ETAT_PLAN[plan.statut].mot}
             </PastilleFiche>
             {/* Le seuil réglementaire n'est pas un statut : il dit ce que la
                 loi impose, pas où en est le dossier. Le commentaire disait
@@ -152,11 +129,16 @@ export default async function PlanPreventionDetailPage({
 
             <CarteFiche
               titre="Inspection commune préalable"
+              // Ardoise et non ambre sur « à planifier » : c'est l'absence
+              // de rendez-vous, pas une urgence — et l'ambre dit ailleurs
+              // « échéance dans moins de trente jours » (charte, interdit 4).
+              // La table de la liste, écrite dans le même lot, applique déjà
+              // la règle : la fiche contredisait le commentaire de sa liste.
               droite={
                 plan.inspectionDate ? (
                   <PastilleFiche ton="fait">Réalisée</PastilleFiche>
                 ) : (
-                  <PastilleFiche ton="proche">À planifier</PastilleFiche>
+                  <PastilleFiche ton="neutre">À planifier</PastilleFiche>
                 )
               }
             >

@@ -48,6 +48,22 @@ export type StatutPiece =
   | "manquante";
 
 export type VigilanceSnapshot = {
+  /** Pièces expirées — le seul cas qui justifie le rose. */
+  piecesExpirees: number;
+  /** Pièces qui expirent dans moins de 30 jours. */
+  piecesProches: number;
+  /**
+   * Pièces jamais fournies. **Ce n'est pas un retard** : rien n'a d'échéance
+   * tant qu'il n'y a pas de document. Elles portent l'ardoise, comme
+   * « à planifier » au calendrier.
+   */
+  piecesManquantes: number;
+  /**
+   * L'état à peindre : le plus grave réellement présent, `null` si tout est à
+   * jour. **Les écrans lisent celui-ci**, jamais `alertesOuvertes` — qui
+   * compte un volume et ne dit rien de la gravité.
+   */
+  etatLePlusGrave: "enRetard" | "proche" | "aPlanifier" | null;
   urssaf: StatutPiece;
   /** Jours civils restants — négatif si la pièce n'est plus opposable. */
   urssafExpireDans: number | null;
@@ -139,10 +155,39 @@ export function computeVigilance(
   );
   const kbis: "present" | "absent" = prestataire.kbisCle ? "present" : "absent";
 
-  const alertesOuvertes =
-    (u.statut === "a_jour" ? 0 : 1) + (r.statut === "a_jour" ? 0 : 1);
+  // Trois comptes, pas un. `alertesOuvertes` fondait « expirée », « expire
+  // bientôt » et « jamais fournie » dans le même chiffre, que les écrans
+  // peignaient ensuite en rose — si bien qu'une carte pouvait afficher une
+  // tête « en retard » au-dessus d'une pastille « Non fournie » en ardoise,
+  // se contredisant elle-même. Rien n'a d'échéance tant qu'il n'y a pas de
+  // document : une pièce absente n'est pas en retard (charte, interdits 3 et 4).
+  const pieces = [u.statut, r.statut];
+  const piecesExpirees = pieces.filter((s) => s === "expiree").length;
+  const piecesProches = pieces.filter((s) => s === "expire_bientot").length;
+  const piecesManquantes = pieces.filter((s) => s === "manquante").length;
+
+  /** Tout ce qui n'est pas à jour, pour un compteur de volume. Ne sert JAMAIS
+   *  à choisir une couleur : c'est `etatLePlusGrave` qui le fait. */
+  const alertesOuvertes = piecesExpirees + piecesProches + piecesManquantes;
+
+  /**
+   * L'état à peindre : le plus grave réellement présent, ou `null` si tout
+   * est à jour. C'est lui que les cartes et les compteurs doivent lire.
+   */
+  const etatLePlusGrave: "enRetard" | "proche" | "aPlanifier" | null =
+    piecesExpirees > 0
+      ? "enRetard"
+      : piecesProches > 0
+        ? "proche"
+        : piecesManquantes > 0
+          ? "aPlanifier"
+          : null;
 
   return {
+    piecesExpirees,
+    piecesProches,
+    piecesManquantes,
+    etatLePlusGrave,
     urssaf: u.statut,
     urssafExpireDans: u.joursRestants,
     urssafOpposableJusquA: opposabilite.date,

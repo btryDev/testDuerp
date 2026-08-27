@@ -120,7 +120,9 @@ export default async function PlanActionsPage({
       origine: origineFiltre,
       enCoursSeulement,
     }),
-    compterActions(id),
+    // Les compteurs suivent le filtre : sinon l'en-tête annonce un nombre
+    // que la liste sous lui ne montre pas.
+    compterActions(id, new Date(), { origine: origineFiltre }),
   ]);
   // Un seul `new Date()` pour toute la page — composant serveur, l'horloge
   // est lue une fois par requête : la pastille de retard compte ses jours
@@ -226,6 +228,7 @@ export default async function PlanActionsPage({
           </span>
           <Link
             href={makeHref({ origine: "" })}
+            aria-current={!origineFiltre ? "page" : undefined}
             className={`${CHIP_BASE} ${!origineFiltre ? CHIP_ACTIF : CHIP_INACTIF}`}
           >
             Toutes
@@ -234,6 +237,10 @@ export default async function PlanActionsPage({
             <Link
               key={o.key}
               href={makeHref({ origine: o.key })}
+              // Sans lui, l'état actif ne tient qu'à la couleur : au lecteur
+              // d'écran, les quatre puces sont indiscernables et rien ne dit
+              // laquelle est appliquée (charte, interdit 10).
+              aria-current={origineFiltre === o.key ? "page" : undefined}
               className={`${CHIP_BASE} ${
                 origineFiltre === o.key ? CHIP_ACTIF : CHIP_INACTIF
               }`}

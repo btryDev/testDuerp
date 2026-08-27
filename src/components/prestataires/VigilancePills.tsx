@@ -74,9 +74,13 @@ export function VigilancePiecePill({
         className="inline-flex flex-none items-center gap-1.5 whitespace-nowrap text-[11.5px] font-semibold"
         style={{ color: ENCRE_ETAT[etat] }}
       >
+        {/* Un cerne, sinon la puce disparaît dans le seul cas qui compte :
+            `CHAMP_ETAT.aPlanifier` vaut exactement le fond de cette tuile, si
+            bien qu'une pièce jamais fournie — un document légal absent —
+            perdait son point pendant que toutes les autres gardaient le leur. */}
         <span
           aria-hidden
-          className="size-[7px] flex-none rounded-full"
+          className="size-[7px] flex-none rounded-full ring-1 ring-inset ring-[color:var(--board-slate)]"
           style={{ background: CHAMP_ETAT[etat] }}
         />
         {LABEL[statut]}

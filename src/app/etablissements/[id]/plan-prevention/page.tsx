@@ -12,6 +12,7 @@ import {
   WhyCard,
 } from "@/components/ui-kit";
 import { requireEtablissement } from "@/lib/auth/scope";
+import { ETAT_PLAN } from "@/lib/plan-prevention/etats";
 import { listPlansPrevention } from "@/lib/plan-prevention/queries";
 import { classerDate, type RegistreLigne } from "@/lib/calendrier/etats";
 import { formaterDateCourteFr } from "@/lib/dates";
@@ -20,32 +21,6 @@ export const metadata = {
   title: "Plans de prévention",
 };
 
-const LABEL_STATUT = {
-  brouillon: "Brouillon",
-  inspection_faite: "Inspection faite",
-  attente_signatures: "Attente signatures",
-  valide: "Validé",
-  clos: "Clos",
-  annule: "Annulé",
-} as const;
-
-/**
- * Table statique (interdit 23), et le couple champ/encre vient de
- * `PastilleFiche` : jamais une table de couleurs recopiée ici.
- *
- * `brouillon` et `inspection_faite` partagent l'ardoise — c'est le mot qui
- * les distingue, pas la teinte. Le board ne réserve ses champs colorés
- * qu'aux états qui appellent un geste : les signatures à obtenir (ambre),
- * le plan prêt (bleu), le plan clos (vert).
- */
-const TON_STATUT = {
-  brouillon: "neutre",
-  inspection_faite: "neutre",
-  attente_signatures: "proche",
-  valide: "bleu",
-  clos: "fait",
-  annule: "neutre",
-} as const;
 
 /**
  * Le registre des plans de prévention, en charte board — jumeau de l'écran
@@ -175,8 +150,8 @@ export default async function PlanPreventionListePage({
                       </>
                     }
                     droite={
-                      <PastilleFiche ton={TON_STATUT[p.statut]}>
-                        {LABEL_STATUT[p.statut]}
+                      <PastilleFiche ton={ETAT_PLAN[p.statut].ton}>
+                        {ETAT_PLAN[p.statut].mot}
                       </PastilleFiche>
                     }
                   />

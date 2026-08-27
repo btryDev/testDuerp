@@ -27,22 +27,28 @@ C'est le premier fait à connaître, et celui qui coûte le plus cher à ignorer
 | Classes | `carte-board`, `board-eyebrow`, `pastille-board`, `champ-board`, `board-titre` | `cartouche`, `label-admin`, `filet-pointille` |
 | Enveloppe | `px-[var(--board-gutter)]`, pleine largeur | `mx-auto max-w-5xl px-6` |
 | Rayons | 30 / 22 / 18 / 16 px | 6 px |
-| Écrans | calendrier, équipements, registre, fiches, tableau de bord | prestataires, DUERP, accessibilité |
+| Écrans | calendrier, équipements, registre, fiches, tableau de bord, **prestataires, équipe, chrome, auth, onboarding, permis de feu, plans de prévention, actions, prescriptions, bâtiments, fiche établissement** | **DUERP, guide « Comprendre », carnet sanitaire, accessibilité, signatures et pages publiques** |
+
+*(Relevé au 2026-08-27, après la vague de migration. Le tableau se corrige à
+chaque module repris — un document qui retarde sur le code envoie chercher un
+modèle là où il n'y en a plus.)*
 
 Les écrans « papier » ne sont pas des exemples : ce sont des écrans à reprendre.
 Les copier produit un écran **immédiatement discernable** du reste — même
 palette, mêmes mots, mais un rayon de 6 px au milieu d'une carte à rayon 30, et
 un gris qui n'appartient pas à la famille.
 
-Le piège précis : **Prestataires** est le module fonctionnellement le plus proche
-d'un annuaire (des tiers, des pièces qui expirent, des pastilles d'alerte), et
-il est en charte papier. Sa *logique* est un bon modèle — `vigilance.ts` en
-particulier. Son *apparence* ne l'est pas.
+Le piège a changé de côté, et c'est utile de savoir pourquoi. **Prestataires**
+était le module fonctionnellement le plus proche d'un annuaire — des tiers, des
+pièces qui expirent, des pastilles d'alerte — et il était en papier : on allait
+naturellement le copier, et on repartait avec la mauvaise charte. Il est
+maintenant board, et c'est **le** modèle à copier pour un annuaire : liste,
+carte, fiche, formulaire. Le piège est aujourd'hui le **DUERP**, gros, central,
+et entièrement en papier.
 
-Deux couleurs brutes traînent d'ailleurs hors palette dans ces écrans :
-`bg-amber-100 text-amber-900` (`components/prestataires/VigilancePills.tsx:7`)
-et `text-indigo-700` (`components/layout/EmptyState.tsx:58`). Ce sont des
-symptômes, pas des exemples.
+Les deux couleurs hors palette signalées ici — `bg-amber-100 text-amber-900`
+dans les pastilles de vigilance, `text-indigo-700` dans l'état vide — ont été
+supprimées le 2026-08-27.
 
 ---
 
@@ -138,7 +144,9 @@ Règle relevée pour les marques carrées : `borderRadius: Math.round(taille * 0
 Toutes sur `rgba(13, 18, 36, α)` — un bleu-noir, pas du noir pur. Celle de la
 carte est dans `.carte-board` ; **ne pas la recopier en littéral**, elle a déjà
 vécu en trois exemplaires. Une copie non résorbée subsiste dans
-`components/calendrier/SectionMois.tsx:47`.
+`components/calendrier/SectionMois.tsx:47`, `app/etablissements/[id]/calendrier/page.tsx:1030`
+et `components/dashboard/widgets/impl/board.tsx:105` — **trois**, relevées le
+2026-08-27, et non une seule comme l'affirmait ce document.
 
 ---
 
@@ -242,6 +250,52 @@ depuis le calendrier ». Réutiliser plutôt que refaire.
 
 Hors kit : `MarqueurFamille` / `MarqueurEcheance`, `BadgeStatut`,
 `MarqueCategorie`, `ChampSaisie`.
+
+### `ChampBoard` et `SectionChamps` — le formulaire
+
+`src/components/ui-kit/ChampBoard.tsx`. **Sers-t'en plutôt que d'écrire un
+champ à la main** : les classes `.champ-board` / `.label-board` existent, mais
+chaque formulaire migré recopiait les mêmes six lignes — ou renonçait et
+gardait les primitives `Input`/`Label` au rayon de 6 px.
+
+Il porte les trois choses qu'on oublie une fois sur deux :
+
+- l'astérisque des champs requis, posé par la prop `requis` plutôt qu'écrit
+  dans le libellé, pour qu'il soit toujours au même endroit ;
+- `aria-describedby` qui chaîne **l'aide ET l'erreur**, pas seulement l'une des
+  deux ;
+- l'erreur en `--board-signal-ink`, jamais en `text-destructive`, qui
+  appartient à l'autre charte.
+
+L'aide se passe en prop `aide`, jamais en infobulle (interdit 18) : une
+infobulle n'existe pas au doigt.
+
+`SectionChamps` groupe les champs sous un titre et un chapeau. **Il ne numérote
+pas** : la numérotation ne se garde que si l'ordre porte une information — un
+vrai déroulé, une chronologie. Sur un formulaire dont on remplit les champs
+dans l'ordre qu'on veut, elle décore.
+
+### La prop `charte` — la cohabitation, et son piège
+
+`src/components/ui-kit/charte.ts`. Quatre composants du kit servent **les deux
+chartes** : `LegalBadge` (19 appelants), `WhyCard`, `StatusPill`,
+`SignatureBlock`. Ils prennent une prop `charte?: "board" | "papier"`.
+
+**Le défaut est `"papier"`**, pour que les écrans non migrés ne cassent pas. La
+conséquence est le piège : un appelant board qui oublie la prop obtient
+**silencieusement** un encart papier au milieu de sa carte — pas d'erreur, pas
+d'avertissement, juste un rayon de 6 px et un gris d'une autre famille.
+
+Sur un écran board, passe donc `charte="board"` sur chacun de ces quatre.
+
+Un composant hors kit suit le même contrat : `batiments/SelecteurBatiment` et
+`batiments/ChampBatiment`, bicharte par conception parce que leurs appelants ne
+sont pas tous du même côté.
+
+La méthode, quand un composant partagé doit passer au board : **ajouter la
+variante à côté**, laisser les appelants papier sur l'ancienne, retirer
+l'ancienne quand le dernier est passé. C'est ce qu'a fait `ui/button.tsx`. Ce
+fichier se vide, il ne se remplit pas.
 
 ### Boutons
 

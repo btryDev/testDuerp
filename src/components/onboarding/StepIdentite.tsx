@@ -62,12 +62,17 @@ export function StepIdentite({ state, update, errors }: StepProps) {
             />
 
             <div>
-              <label className="label-board" htmlFor="siret">
-                SIRET
+              {/* L'infobulle est SORTIE du <label> : elle rend un <button>,
+                  et un contrôle interactif dans un label vole le clic au
+                  champ tout en entrant dans son nom accessible. */}
+              <span className="flex items-center gap-1">
+                <label className="label-board" htmlFor="siret">
+                  SIRET
+                </label>
                 <InfoTooltip>
                   Le SIRET figurera en en-tête de vos documents officiels.
                 </InfoTooltip>
-              </label>
+              </span>
               <input
                 className="champ-board"
                 id="siret"
@@ -78,7 +83,9 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                 inputMode="numeric"
                 pattern="\d{14}"
                 aria-invalid={Boolean(errors?.siret)}
-                aria-describedby="siret-aide"
+                aria-describedby={
+                  errors?.siret ? "siret-aide siret-erreur" : "siret-aide"
+                }
               />
               <p
                 id="siret-aide"
@@ -87,7 +94,10 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                 14 chiffres — facultatif
               </p>
               {errors?.siret && (
-                <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                <p
+                  id="siret-erreur"
+                  className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]"
+                >
                   {errors.siret}
                 </p>
               )}
@@ -146,14 +156,16 @@ export function StepIdentite({ state, update, errors }: StepProps) {
 
             <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
               <div>
-                <label className="label-board" htmlFor="codeNaf">
-                  Code NAF *
+                <span className="flex items-center gap-1">
+                  <label className="label-board" htmlFor="codeNaf">
+                    Code NAF *
+                  </label>
                   <InfoTooltip>
                     Code INSEE qui figure sur votre avis de situation.
                     Détermine votre secteur et pré-remplit les risques types
                     pour le DUERP.
                   </InfoTooltip>
-                </label>
+                </span>
                 <input
                   className="champ-board uppercase"
                   id="codeNaf"
@@ -168,9 +180,29 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                     Boolean(errors?.codeNaf) ||
                     scope?.status === "hors_perimetre"
                   }
+                  // Les trois messages de ce champ lui sont chaînés, et non
+                  // le seul premier : le panneau « secteur non couvert »
+                  // annonce que l'inscription ne peut pas aboutir. Le champ
+                  // passait « invalide » sans que rien ne dise pourquoi.
+                  aria-describedby={
+                    [
+                      errors?.codeNaf ? "codeNaf-erreur" : null,
+                      scope?.status === "ok" && !errors?.codeNaf
+                        ? "codeNaf-secteur"
+                        : null,
+                      scope?.status === "hors_perimetre" && !errors?.codeNaf
+                        ? "codeNaf-hors-perimetre"
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" ") || undefined
+                  }
                 />
                 {errors?.codeNaf && (
-                  <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                  <p
+                    id="codeNaf-erreur"
+                    className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]"
+                  >
                     {errors.codeNaf}
                   </p>
                 )}
@@ -179,13 +211,20 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                     board (« fait ») convient, et la coche évite que
                     l'information ne tienne qu'à la couleur. */}
                 {scope?.status === "ok" && !errors?.codeNaf ? (
-                  <p className="m-0 mt-1.5 flex items-center gap-1.5 text-[12.5px] text-[color:var(--board-green-ink)]">
+                  <p
+                    id="codeNaf-secteur"
+                    className="m-0 mt-1.5 flex items-center gap-1.5 text-[12.5px] text-[color:var(--board-green-ink)]"
+                  >
                     <Check aria-hidden className="size-3.5" />
                     Secteur reconnu : {scope.secteurNom}
                   </p>
                 ) : null}
                 {scope?.status === "hors_perimetre" && !errors?.codeNaf ? (
-                  <div className="mt-2 rounded-[18px] bg-[color:var(--board-signal-wash)] px-3.5 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)] shadow-[inset_0_0_0_1px_var(--board-signal-line)]">
+                  <div
+                    id="codeNaf-hors-perimetre"
+                    role="alert"
+                    className="mt-2 rounded-[18px] bg-[color:var(--board-signal-wash)] px-3.5 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)] shadow-[inset_0_0_0_1px_var(--board-signal-line)]"
+                  >
                     <p className="m-0 font-semibold">
                       Secteur non couvert par la V2
                     </p>
@@ -257,7 +296,11 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                         | "non",
                     })
                   }
-                  aria-describedby="manipuleMatieresR422722-aide"
+                  aria-describedby={
+                    errors?.manipuleMatieresR422722
+                      ? "manipuleMatieresR422722-aide manipuleMatieresR422722-erreur"
+                      : "manipuleMatieresR422722-aide"
+                  }
                   className="champ-board"
                 >
                   <option value="">Je ne sais pas encore</option>
@@ -274,7 +317,10 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                   l&apos;effectif.
                 </p>
                 {errors?.manipuleMatieresR422722 && (
-                  <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                  <p
+                    id="manipuleMatieresR422722-erreur"
+                    className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]"
+                  >
                     {errors.manipuleMatieresR422722}
                   </p>
                 )}

@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { Building2 } from "lucide-react";
+// `Building2` nommait déjà « Mon établissement » dans le rail et sur la
+// page publique : une entreprise tierce ne peut pas porter le glyphe de son
+// propre site (charte, interdit 9). `Handshake` dit la relation contractuelle.
+import { Handshake } from "lucide-react";
+import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
 import { LABEL_DOMAINE } from "@/lib/prestataires/schema";
 import type { PrestataireAvecVigilance } from "@/lib/prestataires/queries";
 import { VigilancePiecePill } from "./VigilancePills";
@@ -26,26 +30,35 @@ export function PrestataireCard({
   prestataire: PrestataireAvecVigilance;
 }) {
   const { vigilance } = prestataire;
-  const nbAlertes = vigilance.alertesOuvertes;
+  // L'état le plus grave réellement présent, jamais le nombre d'alertes :
+  // celui-ci fondait « expirée », « expire bientôt » et « jamais fournie » en
+  // un chiffre, que la tête peignait en rose. Une carte pouvait donc annoncer
+  // un retard au-dessus d'une pastille « Non fournie » en ardoise, trois
+  // centimètres plus bas — se contredisant elle-même. Rien n'a d'échéance tant
+  // qu'il n'y a pas de document (charte, interdits 3 et 4).
+  const etat = vigilance.etatLePlusGrave;
 
   return (
     <Link
       href={`/etablissements/${etablissementId}/prestataires/${prestataire.id}`}
       className="carte-board group flex flex-col overflow-hidden rounded-[22px]"
     >
-      {/* La tête : le nom, et l'état de vigilance en un coup d'œil. Le champ
-          passe au rose quand une pièce manque ou expire — la couleur dit
-          l'état, jamais le volume (charte § 7). */}
+      {/* La tête : le nom, et l'état de vigilance en un coup d'œil. La couleur
+          dit l'état, jamais le volume (charte § 7) — et elle vient de
+          `CHAMP_ETAT`, source unique, jamais d'un couple inventé. */}
       <span
-        className={
-          "flex flex-none flex-col items-start justify-end gap-2 p-3.5 pt-4 " +
-          (nbAlertes > 0
-            ? "bg-[color:var(--board-signal)] text-[color:var(--board-signal-ink)]"
-            : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]")
+        className="flex flex-none flex-col items-start justify-end gap-2 p-3.5 pt-4"
+        style={
+          etat === null
+            ? {
+                background: "var(--board-blue-pale)",
+                color: "var(--board-blue-ink)",
+              }
+            : { background: CHAMP_ETAT[etat], color: ENCRE_ETAT[etat] }
         }
       >
         <span className="flex w-full items-start justify-between gap-2">
-          <Building2 className="size-[22px] flex-none" aria-hidden />
+          <Handshake className="size-[22px] flex-none" aria-hidden />
           {prestataire.estOrganismeAgree && (
             <span className="rounded-full bg-[color:var(--board-card)]/70 px-2 py-[3px] font-mono text-[9.5px] font-semibold uppercase tracking-[0.12em]">
               Organisme agréé

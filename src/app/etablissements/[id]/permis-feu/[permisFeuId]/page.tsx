@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { StatutPermisFeu } from "@prisma/client";
-import { Check, Flame } from "lucide-react";
+import { ETAT_PERMIS } from "@/lib/permis-feu/etats";
+import { Check } from "lucide-react";
 import { lireProvenance } from "@/lib/navigation/provenance";
 import {
   BlocCreux,
@@ -46,28 +47,6 @@ function numero(n: number): string {
   return `PF-${String(n).padStart(3, "0")}`;
 }
 
-/**
- * L'état d'un permis, par une table exhaustive plutôt que par une cascade.
- *
- * La cascade de ternaires qu'elle remplace finissait par un `else` fourre-tout
- * qui affichait « Brouillon ». Un permis `annule` y tombait : il s'affichait
- * donc comme un brouillon, c'est-à-dire comme quelque chose qu'il reste à
- * remplir — l'inverse de ce qu'il est. Le `Record` rend l'oubli impossible :
- * ajouter une valeur à l'enum sans la nommer ici ne compile pas.
- */
-const ETAT_DU_PERMIS: Record<
-  StatutPermisFeu,
-  { ton: "fait" | "retard" | "bleu" | "proche" | "neutre"; mot: string }
-> = {
-  brouillon: { ton: "neutre", mot: "Brouillon" },
-  attente_signatures: { ton: "proche", mot: "signature manquante" },
-  valide: { ton: "bleu", mot: "Prêt à démarrer" },
-  en_cours: { ton: "retard", mot: "Travaux en cours" },
-  termine: { ton: "fait", mot: "Travaux terminés" },
-  // Ni vert, ni rose : une opération annulée n'a plus de rendez-vous. Elle
-  // n'est pas « faite », et rien n'y est en retard.
-  annule: { ton: "neutre", mot: "Annulé" },
-};
 
 function PastilleStatut({
   statut,
@@ -76,7 +55,7 @@ function PastilleStatut({
   statut: StatutPermisFeu;
   manquantes: number;
 }) {
-  const { ton, mot } = ETAT_DU_PERMIS[statut];
+  const { ton, mot } = ETAT_PERMIS[statut];
 
   if (statut === "attente_signatures") {
     // Le nombre plutôt que le seul mot : l'utilisateur ne devrait pas avoir à
@@ -90,7 +69,6 @@ function PastilleStatut({
 
   return (
     <PastilleFiche ton={ton}>
-      {statut === "en_cours" && <Flame className="size-3.5" aria-hidden />}
       {mot}
     </PastilleFiche>
   );

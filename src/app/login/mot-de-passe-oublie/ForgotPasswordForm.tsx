@@ -48,7 +48,10 @@ export function ForgotPasswordForm() {
       />
 
       {state.error ? (
-        <p className="m-0 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)]">
+        <p
+          role="alert"
+          className="m-0 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)]"
+        >
           {state.error}
         </p>
       ) : null}

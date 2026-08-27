@@ -94,7 +94,10 @@ export function ResetPasswordForm() {
   if (status === "invalid") {
     return (
       <div className="flex flex-col items-start gap-5">
-        <p className="m-0 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)]">
+        <p
+          role="alert"
+          className="m-0 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)]"
+        >
           Ce lien de réinitialisation est invalide ou a expiré.
         </p>
         {/* Une porte, pas un cul-de-sac : le lien mène là où l'on en
@@ -135,7 +138,10 @@ export function ResetPasswordForm() {
           formulaire entier : l'erreur porte sur la paire, pas sur l'un des
           deux champs. */}
       {error ? (
-        <p className="m-0 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)]">
+        <p
+          role="alert"
+          className="m-0 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)]"
+        >
           {error}
         </p>
       ) : null}
