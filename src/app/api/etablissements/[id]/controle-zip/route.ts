@@ -397,7 +397,7 @@ function genererReadme(args: {
     " [ ] Registre d'accessibilité affiché (ERP) — QR code en entrée",
     " [ ] Formation sécurité du personnel à jour",
     " [ ] Permis de feu signés avant tout travail par point chaud",
-    " [ ] Plans de prévention signés avant toute intervention EE > 400h",
+    " [ ] Plans de prévention signés avant toute intervention EE ≥ 400 h",
     " [ ] Carnet sanitaire renseigné (si ECS) — relevés hebdo",
     "",
     "────────────────────────────────────────────────────────────",

@@ -373,19 +373,37 @@ describe("le nom d'un salarié ne sort pas du produit", () => {
    * Ce test tient la frontière par le SOURCE, comme celui de la frontière
    * médicale : le cas dangereux est celui qui n'existe pas encore.
    */
-  const SURFACES_SORTANTES = [
-    "lib/mcp/queries.ts",
-    "lib/mcp/tools.ts",
-    "lib/pdf/builders.ts",
+  /**
+   * Les surfaces qui sortent du produit, désignées par leur EMPLACEMENT.
+   *
+   * La première version était une liste de trois fichiers en dur. Elle ratait
+   * `api/etablissements/[id]/controle-zip/route.ts`, qui écrit trois fichiers
+   * texte en clair hors des constructeurs de PDF — et une quatrième surface
+   * n'y serait jamais entrée toute seule. Une liste que personne ne met à jour
+   * n'est pas une garde, c'est une photographie.
+   */
+  const CHEMINS_SORTANTS = [
+    /^lib\/mcp\//,
+    /^lib\/pdf\//,
+    /^app\/api\//,
+    /^scripts\/mcp-server\.ts$/,
   ];
+
+  function surfacesSortantes(): string[] {
+    return fichiersSource(join(RACINE, "src"))
+      .map((c) => relative(RACINE, c).replace(/^src\//, ""))
+      .filter((rel) => CHEMINS_SORTANTS.some((r) => r.test(rel)));
+  }
 
   it("les surfaces sortantes n'emploient pas le libellé nominatif", () => {
     const fautives: string[] = [];
-    for (const rel of SURFACES_SORTANTES) {
+    for (const rel of surfacesSortantes()) {
       const source = readFileSync(join(RACINE, "src", rel), "utf8");
       // `libellePorteurSansNom` contient `libellePorteur` : on cherche donc
       // l'appel nominatif seul, pas la sous-chaîne.
       if (/\blibellePorteur\s*\(/.test(source)) fautives.push(rel);
+      // Et la construction à la main, que ni l'un ni l'autre motif n'attrape.
+      if (/\.salarie[?]?\.(nom|prenom)\b/.test(source)) fautives.push(rel);
     }
 
     expect(
@@ -396,7 +414,7 @@ describe("le nom d'un salarié ne sort pas du produit", () => {
 
   it("aucune surface sortante ne sélectionne le nom d'un salarié", () => {
     const fautives: string[] = [];
-    for (const rel of SURFACES_SORTANTES) {
+    for (const rel of surfacesSortantes()) {
       const source = readFileSync(join(RACINE, "src", rel), "utf8");
       if (/salarie:\s*\{\s*select/.test(source)) fautives.push(rel);
     }

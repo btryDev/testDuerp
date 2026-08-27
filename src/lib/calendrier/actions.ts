@@ -9,6 +9,7 @@ import {
   determineObligationsApplicables,
 } from "@/lib/matching";
 import {
+  estPorteeParSalarie,
   obligationParId,
   REFERENTIEL_VERSION,
 } from "@/lib/referentiels/conformite";
@@ -219,9 +220,36 @@ export async function genererCalendrier(
   // Le cas n'est pas théorique, et c'est celui-là même que le garde-fou cite :
   // l'habilitation électrique passée de `triennale` à `autre` (ADR-023 § 6)
   // cesse de produire une échéance, sans cesser un instant de s'appliquer.
-  for (const obligationId of titresSalaries.keys()) {
+  //
+  // La requête porte sur TOUS les titres déclarés, y compris ceux de salariés
+  // sortis de l'effectif — contrairement à `titresBruts`, qui filtre sur
+  // `actif` parce qu'une personne partie ne doit plus produire de NOUVELLE
+  // ligne. Les deux périmètres sont différents et c'est voulu :
+  //
+  //   · générer : les personnes présentes ;
+  //   · ne pas barrer : toute obligation qu'un titre a un jour instanciée.
+  //
+  // Sans cette distinction, le départ du seul détenteur faisait sortir
+  // l'obligation du garde-fou : sa ligne était barrée « Ne s'applique plus »
+  // alors que l'obligation s'applique parfaitement — c'est la personne qui est
+  // partie. Et le résultat dépendait d'un fait sans rapport, qu'un collègue
+  // détienne ou non le même titre.
+  //
+  // Le filtre `estPorteeParSalarie` n'est pas décoratif : `TitreSalarie.
+  // obligationId` n'a pas de clé étrangère (le référentiel vit en TypeScript),
+  // donc un titre déclaré par erreur sur une obligation d'ÉQUIPEMENT ferait
+  // sinon entrer celle-ci dans le garde-fou, et empêcherait l'archivage
+  // légitime de ses lignes le jour où elle est retirée.
+  const obligationsInstanciees = await prisma.titreSalarie.findMany({
+    where: { salarie: { etablissementId } },
+    select: { obligationId: true },
+    distinct: ["obligationId"],
+  });
+  for (const { obligationId } of obligationsInstanciees) {
     const o = obligationParId(obligationId);
-    if (o !== undefined) obligationsEncoreApplicables.add(obligationId);
+    if (o !== undefined && estPorteeParSalarie(o)) {
+      obligationsEncoreApplicables.add(obligationId);
+    }
   }
 
   const plan = reconcilierCalendrier(existantes, aGenerer, {

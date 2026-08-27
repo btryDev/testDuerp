@@ -137,12 +137,19 @@ export type SalarieDetail = NonNullable<Awaited<ReturnType<typeof getSalarie>>>;
 export async function libellesTitresDeclares(
   etablissementId: string,
 ): Promise<string[]> {
+  // Sans `actif: true`, délibérément — le seul `where` du module dans ce cas.
+  // Le traitement se poursuit après le départ d'une personne (art. 17.3.b), et
+  // le texte d'information doit décrire le traitement réel, pas seulement sa
+  // part en cours.
   const lignes = await prisma.titreSalarie.groupBy({
     by: ["obligationId"],
     where: { salarie: { etablissementId } },
   });
+  // `?? l.obligationId` et non un filtre : un titre dont l'identifiant ne
+  // résout plus au référentiel disparaîtrait sinon en silence du texte
+  // d'information — qui sous-décrirait le traitement, exactement la faute que
+  // cette fonction corrige, en miroir. `getSalarie` gère déjà le cas ainsi.
   return lignes
-    .map((l) => titreParId(l.obligationId)?.libelle)
-    .filter((v): v is string => v !== undefined)
+    .map((l) => titreParId(l.obligationId)?.libelle ?? l.obligationId)
     .sort((a, b) => a.localeCompare(b, "fr"));
 }

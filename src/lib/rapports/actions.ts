@@ -88,12 +88,40 @@ export async function uploadRapport(
       etablissementId: true,
       datePrevue: true,
       dateRealisee: true,
+      salarieId: true,
     },
   });
   if (!verif) {
     return { status: "error", message: "Vérification introuvable" };
   }
   await assertEtablissementOwnership(verif.etablissementId);
+
+  // LA FRONTIÈRE MÉDICALE, TENUE ICI ET NON SEULEMENT À L'ÉCRAN.
+  //
+  // D'un titre de salarié, l'outil ne garde que l'existence, la date et
+  // l'échéance — jamais le document (ADR-023 § 2, `docs/rgpd.md` § 2.3,
+  // CLAUDE.md). Trois documents l'affirmaient ; rien ne l'empêchait.
+  //
+  // La garde ne vivait que dans un ternaire JSX de la fiche de vérification.
+  // Un appel direct à cette action serveur — elle est exposée en RPC —, ou une
+  // refonte de cet écran, déposait le fichier sans un mot : le buffer partait
+  // au stockage et le `RapportVerification` était créé. C'est-à-dire
+  // l'attestation médicale d'une personne dans le système de fichiers,
+  // exactement ce que la décision produit interdit.
+  //
+  // Elle porte sur le PORTEUR, pas sur le drapeau `pieceMedicale` : le
+  // référentiel compte dix-huit titres salarié non encore encodés, dont la
+  // plupart ne sont pas médicaux, et aucun d'eux n'a de document à déposer ici
+  // non plus.
+  if (verif.salarieId !== null) {
+    return {
+      status: "error",
+      message:
+        "Cette échéance concerne le titre d'une personne. Rojer en enregistre " +
+        "l'existence et les dates, jamais le document : conservez l'original " +
+        "de votre côté.",
+    };
+  }
 
   // 4. Lire le fichier en buffer + stocker
   const buffer = Buffer.from(await fichier.arrayBuffer());

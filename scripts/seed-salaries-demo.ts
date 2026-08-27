@@ -186,14 +186,26 @@ async function creer(): Promise<void> {
   );
 }
 
-async function annuler(): Promise<void> {
+async function annuler(etablissementId: string): Promise<void> {
   // Les titres partent avec le salarié par cascade ; les lignes de calendrier,
   // elles, sont en `Restrict` (ADR-023) — c'est délibéré, la preuve d'une
   // habilitation ne doit pas disparaître avec la fiche de la personne. On les
   // retire donc explicitement, ce qui n'est acceptable QUE parce que ces
   // salariés-là sont fictifs.
+  //
+  // TROIS GARDES, et chacune ferme un trou réel de la première version :
+  //
+  //  1. `etablissementId` dans le `where`. Sans lui, la recherche portait sur
+  //     TOUTE la base, tous tenants confondus. Le `.env` pointe la production.
+  //  2. Un `deleteMany` sur `Verification` contourne le `ON DELETE RESTRICT`
+  //     posé exprès, et emporte en cascade les `RapportVerification` et les
+  //     `Action` attachés. On refuse donc de toucher une ligne qui porte une
+  //     preuve : le commentaire ci-dessus énonçait la condition de sûreté
+  //     (« ces salariés-là sont fictifs ») sans jamais la vérifier.
+  //  3. Le préfixe reste, mais il ne suffit pas seul : rien n'empêche un vrai
+  //     salarié de porter un nom qui commence par la même chaîne.
   const salaries = await prisma.salarie.findMany({
-    where: { nom: { startsWith: PREFIXE } },
+    where: { etablissementId, nom: { startsWith: PREFIXE } },
     select: { id: true },
   });
   if (salaries.length === 0) {
@@ -202,11 +214,33 @@ async function annuler(): Promise<void> {
   }
   const ids = salaries.map((s) => s.id);
 
+  const avecPreuve = await prisma.verification.findMany({
+    where: {
+      salarieId: { in: ids },
+      OR: [
+        { dateRealisee: { not: null } },
+        { rapports: { some: {} } },
+        { actions: { some: {} } },
+      ],
+    },
+    select: { id: true, libelleObligation: true },
+  });
+  if (avecPreuve.length > 0) {
+    console.error(
+      `REFUS : ${avecPreuve.length} ligne(s) de calendrier de ces salariés ` +
+        `portent une preuve (réalisation, rapport ou action). Les supprimer ` +
+        `contournerait le garde-fou du schéma et détruirait des pièces.\n` +
+        avecPreuve.map((v) => `  - ${v.libelleObligation}`).join("\n"),
+    );
+    process.exitCode = 1;
+    return;
+  }
+
   const verifs = await prisma.verification.deleteMany({
-    where: { salarieId: { in: ids } },
+    where: { salarieId: { in: ids }, etablissementId },
   });
   const supprimes = await prisma.salarie.deleteMany({
-    where: { id: { in: ids } },
+    where: { id: { in: ids }, etablissementId },
   });
 
   console.log(
@@ -217,8 +251,21 @@ async function annuler(): Promise<void> {
 
 async function main(): Promise<void> {
   const annulation = process.argv.includes("--annuler");
-  if (annulation) await annuler();
-  else await creer();
+  if (annulation) {
+    // Établissement par établissement, et non d'un seul `deleteMany` global :
+    // le filtre de tenancy n'a de sens que s'il porte une valeur, et chaque
+    // établissement doit pouvoir être refusé séparément si l'un d'eux porte
+    // une preuve.
+    const etablissements = await prisma.etablissement.findMany({
+      select: { id: true, raisonDisplay: true },
+    });
+    for (const etab of etablissements) {
+      console.log(`— ${etab.raisonDisplay}`);
+      await annuler(etab.id);
+    }
+  } else {
+    await creer();
+  }
 }
 
 main()

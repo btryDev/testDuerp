@@ -17,6 +17,9 @@ type LigneVerif = {
   datePrevue: Date;
   dateRealisee: Date | null;
   statut: string;
+  /** Porteur de la ligne. Non nul = échéance d'une personne, sur laquelle
+   *  aucun document ne se dépose (ADR-023 § 2). */
+  salarieId: string | null;
 };
 
 const h = vi.hoisted(() => {
@@ -103,6 +106,7 @@ beforeEach(() => {
   h.stockage.fichiers.clear();
   h.genererCalendrier.mockClear();
   h.db.verification = {
+    salarieId: null,
     id: "v-1",
     etablissementId: "etab-1",
     datePrevue: new Date("2026-01-15T00:00:00Z"), // échéance déjà passée
@@ -173,6 +177,7 @@ describe("supprimerRapport", () => {
   it("rouvre le cycle quand le dernier justificatif disparaît", async () => {
     // Une vérification réalisée, dont le rapport est retiré du registre.
     h.db.verification = {
+    salarieId: null,
       id: "v-1",
       etablissementId: "etab-1",
       datePrevue: new Date("2026-01-15T00:00:00Z"),
@@ -200,5 +205,63 @@ describe("supprimerRapport", () => {
     expect(h.db.verification?.statut).toBe("depassee");
     // Le fichier n'est libéré qu'après le commit.
     expect(h.stockage.fichiers.size).toBe(0);
+  });
+});
+
+describe("uploadRapport — la frontière médicale, tenue côté serveur", () => {
+  /**
+   * D'un titre de salarié, l'outil ne garde que l'existence, la date et
+   * l'échéance — jamais le document (ADR-023 § 2, `docs/rgpd.md` § 2.3).
+   *
+   * Trois documents l'affirmaient, et rien ne l'empêchait : la garde vivait
+   * dans un ternaire JSX de la fiche de vérification. Cette action serveur est
+   * exposée en RPC ; un appel direct, ou une refonte de cet écran, déposait le
+   * fichier sans un mot — l'attestation médicale d'une personne dans le
+   * système de fichiers.
+   */
+  beforeEach(() => {
+    h.db.verification = {
+      salarieId: "sal-1",
+      id: "v-titre",
+      etablissementId: "etab-1",
+      datePrevue: new Date("2026-01-15T00:00:00Z"),
+      dateRealisee: null,
+      statut: "a_planifier",
+    };
+  });
+
+  it("refuse un dépôt sur l'échéance d'une personne", async () => {
+    const res = await uploadRapport(
+      "v-titre",
+      { status: "idle" },
+      formulaire("conforme", "2026-06-01"),
+    );
+    expect(res.status).toBe("error");
+  });
+
+  it("ne stocke aucun fichier et ne crée aucun rapport", async () => {
+    // Le point qui compte : le refus doit intervenir AVANT l'écriture. Un
+    // message d'erreur rendu après avoir posé le buffer dans le stockage ne
+    // vaudrait rien.
+    await uploadRapport(
+      "v-titre",
+      { status: "idle" },
+      formulaire("conforme", "2026-06-01"),
+    );
+    expect(h.stockage.fichiers.size).toBe(0);
+    expect(h.db.rapports).toEqual([]);
+  });
+
+  it("le refus porte sur le PORTEUR, pas sur le caractère médical", async () => {
+    // Dix-neuf titres salarié restent à encoder, dont la plupart ne sont pas
+    // médicaux — SST, CACES, autorisation de conduite. Aucun n'a de document à
+    // déposer ici non plus : indexer la garde sur `pieceMedicale` la lèverait
+    // au premier d'entre eux.
+    const res = await uploadRapport(
+      "v-titre",
+      { status: "idle" },
+      formulaire("conforme", "2026-06-01"),
+    );
+    expect(res.status === "error" && res.message).toMatch(/personne/i);
   });
 });

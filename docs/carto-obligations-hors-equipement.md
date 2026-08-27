@@ -164,7 +164,7 @@ C'est la couche qui manquait à l'analyse initiale : ni statut, ni équipement, 
 | ❌ absentes | 48 |
 | dont **formations réglementaires** | 13 |
 
-Pour mémoire, côté équipement : **84 obligations encodées** sur ~481 lignes AOCR.
+Pour mémoire, côté équipement : **85 obligations encodées, dont 82 portées par un équipement** sur ~481 lignes AOCR.
 *(Corrigé deux fois le 2026-08-27 : 78 → 85 au constat, puis 85 → 84 après le retrait
 de trois fragments absorbés par l'ADR-022. Le compte faisant foi est le préfixe de
 `EMPREINTE_ATTENDUE` dans `src/lib/referentiels/conformite/conformite.test.ts` — cherchez

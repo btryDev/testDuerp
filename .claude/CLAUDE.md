@@ -123,7 +123,7 @@ sont **pas dérivées** par le moteur. Rien ne dit qu'une personne opère sur de
 électriques — ce serait le cinquième déclencheur, non implémenté —, donc l'employeur déclare
 qui détient quel titre (`Salarie`, `TitreSalarie`), et le référentiel fournit le catalogue.
 Une seule obligation salarié est livrée : l'attestation médicale quinquennale de
-`R. 4544-11-1`. Le reste — 19 lignes recensées — attend son dépouillement, et le corpus n'a
+`R. 4544-11-1`. Le reste — 18 lignes recensées — attend son dépouillement, et le corpus n'a
 encore rien sur `R. 4141-*`, `R. 4624-*`, le SST, le CACES ni l'autorisation de conduite.
 
 Les quatre déclencheurs non implémentés représentent **62 obligations recensées** — détail et

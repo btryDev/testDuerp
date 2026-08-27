@@ -398,3 +398,27 @@ describe("le bâtiment est un lieu, jamais un régime (ADR-019)", () => {
     }
   });
 });
+
+describe("Verification.salarieId — Restrict, comme DuerpVersion.duerp", () => {
+  /**
+   * Le schéma affirme : « C'est le même garde-fou que `DuerpVersion.duerp`, et
+   * la même forme. » `DuerpVersion.duerp` a son test ici depuis longtemps ;
+   * `Verification_salarieId_fkey` n'y figurait pas. La parité était donc
+   * affirmée sans être vérifiée — et c'est elle qui empêche qu'une suppression
+   * de salarié emporte la preuve qu'il était habilité au moment où il a opéré
+   * (`docs/rgpd.md` § 4.3).
+   */
+  const schema = readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8");
+
+  it("la relation est déclarée en Restrict au schéma", () => {
+    const m = schema.match(/\bmodel\s+Verification\s*\{([\s\S]*?)\n\}/);
+    expect(m, "modèle Verification introuvable").not.toBeNull();
+    const relation = m![1].match(/salarie\s+Salarie\?\s+@relation\([^)]*\)/);
+    expect(
+      relation,
+      "la relation `Verification.salarie` est introuvable",
+    ).not.toBeNull();
+    expect(relation![0]).toContain("onDelete: Restrict");
+  });
+});
+

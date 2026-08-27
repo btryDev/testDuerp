@@ -146,7 +146,7 @@ export default async function VerificationDetailPage({
   //  1. D'un titre, l'outil ne garde que l'existence et les dates, médical ou
   //     non (ADR-023 § 2). Indexer la garde sur `pieceMedicale` la lèverait le
   //     jour où arrive une obligation salarié qui n'est pas médicale — SST,
-  //     CACES, autorisation de conduite : dix-neuf attendent au recensement.
+  //     CACES, autorisation de conduite : dix-huit attendent au recensement.
   //  2. La garde reposait sur `obligation !== undefined`. Si l'identifiant
   //     cesse de résoudre — obligation retirée du référentiel, cas déjà vécu
   //     et documenté dans `schema.prisma` —, `obligation` vaut `undefined`,

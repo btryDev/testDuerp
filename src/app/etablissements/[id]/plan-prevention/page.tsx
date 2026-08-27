@@ -70,7 +70,7 @@ export default async function PlanPreventionListePage({
         >
           <p>
             Le plan de prévention est <strong>écrit obligatoire</strong> si les
-            travaux dépassent <strong>400 h sur 12 mois</strong> OU figurent sur
+            travaux atteignent <strong>400 h sur 12 mois</strong> OU figurent sur
             la liste des travaux dangereux de l&apos;arrêté du 19-03-1993. Dans
             tous les cas, une inspection commune préalable est imposée.
           </p>

@@ -1309,6 +1309,34 @@ describe("réconciliation — la date d'un titre est un fait, pas un calcul", ()
     expect(plan.aMettreAJour[0]?.statut).toBe("depassee");
   });
 
+  it("adopte l'échéance même quand la ligne porte une réalisation", () => {
+    // Le cas que la première correction ratait. La branche du fait déclaré
+    // était placée APRÈS `ex.dateRealisee !== null` : dès qu'un rapport avait
+    // été déposé sur la ligne, la date recalculée depuis `dateRealisee +
+    // périodicité` écrasait celle que l'employeur venait de déclarer. Le
+    // renouvellement était donc perdu sur un chemin sur deux — et le
+    // calendrier affichait une échéance que personne n'avait saisie.
+    const plan = reconcilierCalendrier(
+      [
+        ligneDeTitre({
+          dateRealisee: new Date("2024-03-01T00:00:00Z"),
+          statut: "realisee_conforme",
+        }),
+      ],
+      [generee("2031-06-01T00:00:00Z")],
+      { now: NOW, obligationsEncoreApplicables: new Set(["elec-attestation"]) },
+    );
+
+    expect(plan.aMettreAJour[0]?.datePrevue).toEqual(
+      new Date("2031-06-01T00:00:00Z"),
+    );
+    // Et la preuve ne bouge pas.
+    expect(plan.aMettreAJour[0]?.dateRealisee).toEqual(
+      new Date("2024-03-01T00:00:00Z"),
+    );
+    expect(plan.aMettreAJour[0]?.statut).toBe("realisee_conforme");
+  });
+
   it("ne bouge pas l'échéance calculée d'un équipement", () => {
     // La garantie inverse, et c'est elle qui justifie le drapeau plutôt qu'un
     // changement de règle générale : déclarer un extincteur de plus ne doit

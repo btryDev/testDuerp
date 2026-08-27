@@ -753,7 +753,25 @@ export function reconcilierCalendrier(
     let dateRealisee: Date | null;
     let statut: StatutVerificationPersiste;
 
-    if (ex.dateRealisee !== null) {
+    if (g.datePrevueFaisantFoi === true) {
+      // EN PREMIER, et c'est le correctif du correctif. Placée après la
+      // branche `dateRealisee`, elle n'était jamais atteinte dès qu'une ligne
+      // de titre portait une réalisation : la date recalculée depuis
+      // `dateRealisee + périodicité` écrasait celle que l'employeur venait de
+      // déclarer. Le renouvellement était perdu sur un chemin sur deux.
+      //
+      // La date d'un titre n'est pas un calcul : elle est écrite sur la pièce
+      // que l'employeur a en main. Elle prime donc sur tout, y compris sur ce
+      // qu'une réalisation antérieure ferait déduire — c'est la rectification
+      // que `docs/rgpd.md` § 5.2 promet (art. 16).
+      //
+      // La preuve ne bouge pas : `dateRealisee` et le statut réalisé sont
+      // repris tels quels, et une ligne portant un rapport n'est de toute
+      // façon jamais candidate à la suppression.
+      datePrevue = g.datePrevue;
+      dateRealisee = ex.dateRealisee;
+      statut = estStatutRealise(ex.statut) ? ex.statut : g.statut;
+    } else if (ex.dateRealisee !== null) {
       const prochaine = prochaineDate(ex.dateRealisee, g.periodicite);
       if (prochaine === null) {
         // Périodicité sans échéance suivante (`mise_en_service_uniquement`,
@@ -774,27 +792,6 @@ export function reconcilierCalendrier(
         dateRealisee = null;
         statut = "depassee";
       }
-    } else if (g.datePrevueFaisantFoi === true) {
-      // La date déclarée prime sur celle déjà en base, dans les DEUX sens :
-      // un renouvellement repousse l'échéance, et la correction d'une coquille
-      // vers une date passée fait apparaître le retard qui était masqué.
-      //
-      // Sans cette branche, la ligne d'un titre était écrite à sa création et
-      // jamais réécrite : le générateur produisait bien la nouvelle date, la
-      // réconciliation la jetait, et le plan rendu était vide. Le calendrier
-      // annonçait l'attestation dépassée pour toujours.
-      //
-      // La preuve, elle, ne bouge pas : `dateRealisee` est reprise si elle
-      // existe, et une ligne portant un rapport n'est jamais supprimée.
-      datePrevue = g.datePrevue;
-      dateRealisee = estStatutRealise(ex.statut) ? ex.dateRealisee : null;
-      // Le statut du générateur, et non `statutCycleOuvert` : son vocabulaire
-      // ne convient pas ici. « À planifier » veut dire « aucun rendez-vous
-      // n'est encore pris avec le prestataire » — or la date d'un titre est
-      // écrite sur la pièce que l'employeur a en main. Il n'y a rien à
-      // planifier, la date est arrêtée. `genererVerificationsDepuisTitres`
-      // rend donc `planifiee` ou `depassee`, jamais `a_planifier`.
-      statut = estStatutRealise(ex.statut) ? ex.statut : g.statut;
     } else if (ex.statut === "a_planifier" && g.statut === "planifiee") {
       // La ligne n'avait qu'un **placeholder** — « à planifier » n'est pas
       // un rendez-vous, c'est son absence — et le générateur sait désormais
