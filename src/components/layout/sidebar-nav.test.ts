@@ -148,11 +148,35 @@ describe("construireSections — structure", () => {
     }
   });
 
-  it("marque « Équipe » comme à venir plutôt qu'en lien mort", () => {
+  it("« Équipe » mène à son écran et n'est plus annoncée à venir", () => {
+    // L'entrée est restée inerte le temps que le porteur salarié existe
+    // (ADR-023). Il existe : elle doit mener quelque part, et surtout ne plus
+    // porter `bientot` — une entrée « à venir » qui navigue ment deux fois.
     const equipe = sections()
       .flatMap((s) => s.items)
       .find((i) => i.id === "equipe");
-    expect(equipe?.bientot).toBe(true);
+    expect(equipe?.href).toBe(`/etablissements/${ID}/equipe`);
+    expect(equipe?.bientot).toBeFalsy();
+  });
+
+  it("surligne « Équipe » sur la fiche d'une personne", () => {
+    // La fiche vit sous `/equipe/<id>` : sans branche dans `deduireActif`,
+    // elle retomberait sur « Tableau de bord » et le rail désignerait un
+    // écran que l'utilisateur n'a pas ouvert.
+    expect(deduireActif(`/etablissements/${ID}/equipe`, ID)).toBe("equipe");
+    expect(deduireActif(`/etablissements/${ID}/equipe/abc`, ID)).toBe("equipe");
+  });
+
+  it("ne donne pas deux fois la même icône à deux entrées", () => {
+    // « La même icône ne peut pas nommer un objet ici et une action là »
+    // (docs/charte-board.md). `Users` désignait Prestataires ET Équipe.
+    const items = sections().flatMap((s) => s.items);
+    const parIcone = new Map<unknown, string[]>();
+    for (const it of items) {
+      parIcone.set(it.Icon, [...(parIcone.get(it.Icon) ?? []), it.id]);
+    }
+    const collisions = [...parIcone.values()].filter((ids) => ids.length > 1);
+    expect(collisions).toEqual([]);
   });
 });
 

@@ -52,11 +52,13 @@ import {
   Wrench,
   Calendar,
   FileText,
+  NotebookText,
   ListChecks,
   ListTodo,
   FileCheck2,
   Settings,
   Users,
+  IdCard,
   Accessibility,
   Flame,
   HandshakeIcon,
@@ -130,6 +132,10 @@ export type SidebarCounts = {
   enRetardTotal?: number;
   actions?: number;
   prestatairesAlertes?: number;
+  /** Titres de salariés dont l'échéance est dépassée, effectif actif
+   *  seulement. Un titre sans terme écrit n'y entre pas : il n'est pas en
+   *  attente, il n'a simplement pas de rendez-vous (ADR-023 § 6). */
+  titresEnRetard?: number;
 };
 
 /**
@@ -207,6 +213,7 @@ export function deduireActif(
   if (pathname.startsWith(`${base}/equipements`)) return "equipements";
   if (pathname.startsWith(`${base}/batiments`)) return "batiments";
   if (pathname.startsWith(`${base}/prestataires`)) return "prestataires";
+  if (pathname.startsWith(`${base}/equipe`)) return "equipe";
   if (pathname.startsWith(`${base}/prescriptions`)) return "prescriptions";
   if (pathname.startsWith(`${base}/accessibilite`)) return "accessibilite";
   if (pathname.startsWith(`${base}/permis-feu`)) return "permis-feu";
@@ -295,10 +302,14 @@ export function construireSections({
     {
       id: "equipe",
       label: LABEL_ITEM.equipe,
-      href: "#",
-      Icon: Users,
-      // Multi-utilisateurs hors périmètre V2 (cf. CLAUDE.md).
-      bientot: true,
+      href: href("/equipe"),
+      // `Users` nommait déjà « Prestataires » : la même icône ne peut pas
+      // désigner deux objets. `IdCard` est aussi plus juste ici — l'écran ne
+      // gère pas des personnes en tant qu'utilisateurs, il tient le registre
+      // des titres nominatifs qu'elles détiennent.
+      Icon: IdCard,
+      count: counts?.titresEnRetard,
+      alert: (counts?.titresEnRetard ?? 0) > 0,
     },
   ];
 
@@ -353,7 +364,11 @@ export function construireSections({
       id: "registre",
       label: LABEL_ITEM.registre,
       href: href("/registre"),
-      Icon: FileText,
+      // `FileText` nommait aussi « Prescriptions ». Collision antérieure à
+      // l'entrée Équipe, révélée par le test d'unicité : un registre est un
+      // cahier qu'on tient, une prescription est une pièce qu'on reçoit — les
+      // deux ne peuvent pas porter la même icône.
+      Icon: NotebookText,
     },
     {
       id: "accessibilite",
