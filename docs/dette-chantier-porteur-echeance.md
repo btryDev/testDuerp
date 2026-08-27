@@ -254,32 +254,39 @@ qui n'existe pas encore.
 
 ## 7. Dettes de plomberie
 
-### 7.0 `DROP INDEX` sans `IF EXISTS` dans `_porteur_salarie` — risque de déploiement
+### 7.0 `DROP INDEX` sans `IF EXISTS` — vérifié, risque écarté
 
-`prisma/migrations/20260827140000_porteur_salarie/migration.sql` fait :
+Une revue a signalé que `20260827140000_porteur_salarie` fait
+`DROP INDEX "Verification_etablissementId_obligationId_equipementId_key"` sans
+`IF EXISTS`, là où sa migration sœur l'écrit — et qu'un index absent sous ce nom
+ferait échouer `prisma migrate deploy`, donc le déploiement entier.
 
-```sql
-DROP INDEX "Verification_etablissementId_obligationId_equipementId_key";
-```
+**Vérifié le 2026-08-27, et le risque n'existe pas :**
 
-Sa migration sœur `_porteur_etablissement` écrit, elle, `DROP INDEX IF EXISTS`.
-Si l'index n'existe pas sous ce nom exact — et le dépôt sait que sa production
-a dérivé de `main` (§ 7 ci-dessous) —, la migration abandonne. Comme le script
-de build enchaîne `prisma migrate deploy`, **le déploiement échoue**, en
-laissant dans `_prisma_migrations` une entrée `failed` qui bloque toutes les
-suivantes.
+- l'index est créé sur `main` par `20260810120000_integrite_et_conservation`,
+  sous exactement ce nom ;
+- `20260827120000_porteur_etablissement`, qui s'exécute **juste avant** dans la
+  même branche, le supprime et **le recrée sous le même nom** (en y ajoutant
+  `NULLS NOT DISTINCT`) ;
+- quand `_porteur_salarie` s'exécute, l'index existe donc par construction.
 
-**Non corrigé, et c'est délibéré** : modifier une migration déjà appliquée
-change son empreinte, ce que Prisma refuse. Impossible de vérifier si celle-ci
-l'est sans interroger la production. À trancher par quelqu'un qui peut le
-constater — si elle n'est pas encore appliquée, le `IF EXISTS` s'ajoute ; si
-elle l'est, le risque est passé et il n'y a rien à faire.
+`_porteur_salarie` est par ailleurs **absente de `main`** : la production, qui
+déploie `main`, ne l'a jamais appliquée. Le premier déploiement qui la portera
+exécutera d'abord `_porteur_etablissement`, dans l'ordre.
 
-Même famille, signalé par la revue et non vérifié : le nom d'index
-`Verification_etablissementId_obligationId_equipementId_sala_key` est écrit à
-la main sur 63 caractères. Si la troncature de Prisma ne produit pas exactement
+Le fichier n'est donc pas modifié — ce qui est de toute façon la bonne
+conduite : il est appliqué sur la base locale, et changer une migration
+appliquée casse son empreinte.
+
+*(Ce paragraphe affirmait le contraire jusqu'au 2026-08-27 : j'avais recopié le
+constat de la revue sans le vérifier. Une dette qui se trompe sur elle-même
+envoie corriger ce qui n'est pas cassé.)*
+
+Reste ouvert, non vérifié : le nom d'index
+`Verification_etablissementId_obligationId_equipementId_sala_key` est écrit à la
+main sur 63 caractères. Si la troncature de Prisma ne produit pas exactement
 cette chaîne, `prisma migrate diff` verra une dérive permanente — ce que la
-migration `_index_redondant` avait justement été écrite pour supprimer.
+migration `_index_redondant` avait été écrite pour supprimer.
 
 ### 7.1 Autres
 
