@@ -1,0 +1,435 @@
+# La charte « board »
+
+Le langage visuel de l'application. Écrit le 2026-08-27, à partir d'un relevé du
+code — pas d'une maquette.
+
+**Pourquoi ce document existe.** La charte était réelle mais dispersée : des
+tokens dans `globals.css`, des classes dans `@layer components`, un kit dans
+`ui-kit/fiche/`, et une trentaine de règles vivant en commentaires. Chacune
+argumentée, plusieurs testées, aucune rassemblée. Conséquence pratique : pour
+faire un écran, le réflexe est de copier le module fonctionnellement le plus
+proche — et ce réflexe produit régulièrement un écran hors charte, parce que le
+module le plus proche est souvent l'un des plus anciens.
+
+**Ce document décrit ce qui est vrai dans le code**, avec ses emplacements. Il
+n'invente rien. Quand il diverge du code, c'est lui qui a tort : relever à
+nouveau, et le corriger.
+
+---
+
+## 0. Deux chartes cohabitent. Une seule est en vigueur.
+
+C'est le premier fait à connaître, et celui qui coûte le plus cher à ignorer.
+
+| | **Board** — en vigueur | **Papier** — dette |
+|---|---|---|
+| Tokens | `--board-*` | `--paper`, `--ink`, `--rule`, `--seal`, `--minium`, `--warm` |
+| Classes | `carte-board`, `board-eyebrow`, `pastille-board`, `champ-board`, `board-titre` | `cartouche`, `label-admin`, `filet-pointille` |
+| Enveloppe | `px-[var(--board-gutter)]`, pleine largeur | `mx-auto max-w-5xl px-6` |
+| Rayons | 30 / 22 / 18 / 16 px | 6 px |
+| Écrans | calendrier, équipements, registre, fiches, tableau de bord | prestataires, DUERP, accessibilité |
+
+Les écrans « papier » ne sont pas des exemples : ce sont des écrans à reprendre.
+Les copier produit un écran **immédiatement discernable** du reste — même
+palette, mêmes mots, mais un rayon de 6 px au milieu d'une carte à rayon 30, et
+un gris qui n'appartient pas à la famille.
+
+Le piège précis : **Prestataires** est le module fonctionnellement le plus proche
+d'un annuaire (des tiers, des pièces qui expirent, des pastilles d'alerte), et
+il est en charte papier. Sa *logique* est un bon modèle — `vigilance.ts` en
+particulier. Son *apparence* ne l'est pas.
+
+Deux couleurs brutes traînent d'ailleurs hors palette dans ces écrans :
+`bg-amber-100 text-amber-900` (`components/prestataires/VigilancePills.tsx:7`)
+et `text-indigo-700` (`components/layout/EmptyState.tsx:58`). Ce sont des
+symptômes, pas des exemples.
+
+---
+
+## 1. Les tokens
+
+Tous dans `src/app/globals.css`, un seul `:root` (l. 49-193). Les commentaires
+qui les accompagnent portent les ratios de contraste et l'historique des
+valeurs : les lire avant de changer une teinte.
+
+### 1.1 La gouttière — seul token d'espacement
+
+```css
+--board-gutter: clamp(32px, calc((100vw - 1560px) / 2 + 32px), 140px);
+```
+`globals.css:90`. Fixe à 32 px jusqu'à ~1500 px de viewport ; au-delà elle
+absorbe la moitié du surplus de chaque côté — la zone utile cesse de s'élargir
+vers 1190 px — puis plafonne à 140 px.
+
+**Un écran board n'utilise jamais `mx-auto max-w-*`.** Il utilise
+`px-[var(--board-gutter)]`.
+
+### 1.2 Surfaces
+
+| Token | Valeur | Rôle |
+|---|---|---|
+| `--board-canvas` | `#f6f9fb` | Fond de page, **derrière** les cartes |
+| `--board-card` | `#ffffff` | Surface de carte, bandeaux d'en-tête |
+| `--board-ink` | `#0a0a0a` | Encre principale, boutons pleins |
+
+Le canvas n'est pas un gris neutre : c'est un bleu très pâle de la même famille
+que le reste. Un gris « mort » y avait été essayé et retiré.
+
+### 1.3 Bleu glacier — le registre calme et actif
+
+| Token | Valeur | Rôle |
+|---|---|---|
+| `--board-blue-pale` | `#d8eef9` | **Champ** des pilules et tuiles |
+| `--board-blue-soft` | `#a9d3ec` | Champ de l'état « lointain » |
+| `--board-blue-strong` | `#5d93b8` | Contour de focus |
+| `--board-blue-ink` | `#376881` | **Encre** de la famille, liens secondaires |
+
+Couple canonique, employé une cinquantaine de fois :
+`bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]`.
+
+### 1.4 Ardoise — le texte et les filets
+
+| Token | Valeur | Rôle |
+|---|---|---|
+| `--board-slate-pale` | `#edf2f5` | **Surface creuse** : sous-blocs, hover, champ de saisie |
+| `--board-slate-line` | `#dfe8ee` | **Filets et séparateurs** |
+| `--board-slate` | `#b5d1e3` | Graduations, pointillés — **jamais une encre** (~1,6:1) |
+| `--board-slate-soft` | `#5c7182` | Sur-titres, petits labels |
+| `--board-slate-mid` | `#4d5d6b` | **Texte courant secondaire** — le gris de travail |
+| `--board-slate-ink` | `#304148` | Texte appuyé |
+
+### 1.5 États — un champ, une encre, jamais l'un sans l'autre
+
+| État | Champ | Encre |
+|---|---|---|
+| En retard | `--board-signal` `#ff9d9e` | `--board-signal-ink` `#8a2a23` |
+| Proche (< 30 j) | `--board-amber` `#fff3ba` | `--board-amber-ink` `#754d0a` |
+| Lointain | `--board-blue-soft` | `--board-blue-ink` |
+| Fait | `--board-green` `#bdfdb5` | `--board-green-ink` `#216037` |
+| À planifier | `--board-slate-pale` | `--board-slate-mid` |
+
+**La source unique est `src/lib/calendrier/etats.ts`** — `CHAMP_ETAT` et
+`ENCRE_ETAT`. Ne jamais redéclarer une table de couleurs locale : elles ont
+existé en trois exemplaires, et un mois « à venir » rendu rose dans un seul des
+trois suffit à faire lire un futur comme un retard.
+
+Voiles de ligne entière : `--board-signal-wash` `#fff5f5`, `--board-amber-wash`
+`#fffaf0`.
+
+### 1.6 Rayons — pas de token, mais une échelle
+
+Les valeurs sont des littéraux. L'échelle de fait :
+
+| Rayon | Emploi |
+|---|---|
+| `30px` | Carte board |
+| `28px` | Tuile-date de fiche (84 px) |
+| `26px` | Panneau modal |
+| `22px` | Sous-bloc creux, vignette |
+| `18px` | Bloc interne |
+| `17px` | Tuile-date de liste (50 px) |
+| `16px` | Champ de saisie |
+| `9999px` | Pastilles, boutons |
+
+Règle relevée pour les marques carrées : `borderRadius: Math.round(taille * 0.34)`.
+
+### 1.7 Ombres — trois recettes, jamais une quatrième
+
+Toutes sur `rgba(13, 18, 36, α)` — un bleu-noir, pas du noir pur. Celle de la
+carte est dans `.carte-board` ; **ne pas la recopier en littéral**, elle a déjà
+vécu en trois exemplaires. Une copie non résorbée subsiste dans
+`components/calendrier/SectionMois.tsx:47`.
+
+---
+
+## 2. Les classes
+
+Dans `@layer components` de `globals.css`.
+
+### `.carte-board` (l. 808)
+```css
+background: var(--board-card);
+border-radius: 30px;
+box-shadow: 0 0 0 1px rgba(13,18,36,.06), 0 1px 2px rgba(13,18,36,.04),
+            0 12px 32px -14px rgba(13,18,36,.1);
+```
+Gouttières internes canoniques : **`px-7 py-6 sm:px-8`**.
+
+### `.board-eyebrow` (l. 774)
+JetBrains Mono, 11 px, 500, `letter-spacing: .2em`, capitales,
+`--board-blue-ink`. En pratique presque toujours surchargée, sous deux formes :
+
+- **section** : `board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]`
+- **ligne / sous-bloc** : `board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]`
+
+### `.pastille-board` (l. 821)
+`inline-flex`, `gap: 7px`, `rounded-full`, `padding: 6px 13px`, `12px`, 600.
+**La forme, pas la couleur** : le couple champ/encre vient des jetons d'état ou
+de `PastilleFiche`.
+
+### `.board-titre` (l. 793)
+Instrument Sans, 600, `letter-spacing: -.032em`, `line-height: 1.12`,
+`text-wrap: balance`.
+
+### `.champ-board` / `.label-board` (l. 838, 862)
+Le champ de formulaire du board : rayon 16, fond `--board-slate-pale`, bordure
+`--board-slate-line`, 13.5 px, focus en `outline: 2px solid --board-blue-strong`.
+
+**Les primitives `Input` / `Label` de `ui/` ne sont pas une alternative** : leur
+rayon de 6 px sonne comme un encart d'un autre logiciel au milieu d'une carte à
+rayon 30. Elles restent en place sur les écrans non repris, c'est tout.
+
+---
+
+## 3. Typographie
+
+Trois polices, chargées dans `src/app/layout.tsx` :
+
+| Variable | Police | Emploi |
+|---|---|---|
+| `--font-body` | IBM Plex Sans | Corps et interface |
+| `--font-titre` | Instrument Sans | `.board-titre` |
+| `--font-mono` | JetBrains Mono | Sur-titres, tuiles-date, dates |
+
+### Le barème, par rôle
+
+| Rôle | Motif |
+|---|---|
+| Titre de page | `board-titre m-0 text-[clamp(29px,3vw,39px)]` |
+| Titre de liste | `board-titre m-0 text-[clamp(22px,2.2vw,27px)]` |
+| Titre de fiche | `board-titre m-0 text-[clamp(23px,2.1vw,30px)]` |
+| Titre de section / carte | `board-titre m-0 text-[22px]` |
+| Sur-titre de section | `board-eyebrow text-[10.5px] tracking-[0.18em]` + `--board-slate-soft` |
+| Sur-titre de ligne | `board-eyebrow text-[10px] tracking-[0.16em]` + `--board-slate-soft` |
+| Chapeau de page | `text-[14.5px] leading-[1.55]` + `--board-slate-mid` + `max-w-[62ch]` |
+| Corps de carte | `text-[13.5px] leading-[1.6]` + `--board-slate-mid` |
+| Corps explicatif | `text-[12.5px] leading-[1.55]` + `max-w-[62ch]` |
+| Titre de ligne | `text-[16px] font-semibold leading-[1.3] tracking-[-0.01em]` + `--board-ink` |
+| Méta de ligne | `text-[12.5px]` + `--board-slate-mid` |
+| Clé de champ (`dt`) | `text-[12.5px]` + `--board-slate-mid`, `sm:w-[168px]` |
+| Valeur de champ (`dd`) | `text-[14px] leading-[1.45]` + `--board-ink` |
+| Fil de retour | `font-mono text-[10.5px] uppercase tracking-[0.16em]` |
+
+**Règle de `tracking`** : positif (0.1 → 0.2em) uniquement en mono capitales.
+Négatif (−0.01 → −0.032em) sur les titres. Rien entre les deux.
+
+**Les chiffres portent toujours `tabular-nums`.**
+
+Les largeurs de texte sont bornées : `max-w-[62ch]` / `[66ch]` / `[68ch]`.
+
+---
+
+## 4. Le kit
+
+`src/components/ui-kit/fiche/` — « un seul jeu pour les cinq fiches qu'on ouvre
+depuis le calendrier ». Réutiliser plutôt que refaire.
+
+| Composant | Rôle |
+|---|---|
+| `EcranFiche` | L'enveloppe : fil de retour, bandeau optionnel, rythme `gap-[22px]` |
+| `CorpsFiche` | `principal` / `cote` — les faits à gauche, le geste attendu à droite |
+| `TitreSection` | Sur-titre + titre + compte + zone droite |
+| `CarteFiche` | La carte. `titre` (eyebrow) et `titreFort` **s'excluent** |
+| `ChampsFiche` / `ChampFiche` | La `<dl>` clé/valeur |
+| `BlocCreux` | Sous-bloc `rounded-[22px]` sur `--board-slate-pale` |
+| `HeroFiche` | Tête d'échéance : tuile-date, faits, pastilles |
+| `PastilleFiche` | Pastille par **ton** : `retard` / `proche` / `fait` / `bleu` / `neutre` |
+| `PastilleRetard` | « En retard de 13 jours » — le nombre, pas le mot |
+| `LigneFiche` | Ligne de liste, avec voile d'état optionnel |
+| `TuileDate` | Le carré de date, deux tailles (`liste` 50 px, `fiche` 84 px) |
+| `FilRetour` | Le retour de provenance (ADR-014) |
+| `AideEcran` | Le bouton `?` et son panneau |
+
+Hors kit : `MarqueurFamille` / `MarqueurEcheance`, `BadgeStatut`,
+`MarqueCategorie`, `ChampSaisie`.
+
+### Boutons
+
+`variant="board"` (encre pleine) et `variant="boardClair"` (contour),
+`size="board"` (h-10) ou `"boardSm"` (h-8). Les variantes historiques parlent en
+petites capitales monospacées — c'est le registre « document administratif », il
+cohabite le temps que les écrans passent au board.
+
+---
+
+## 5. Les patrons d'écran
+
+### Liste — modèle : `app/etablissements/[id]/equipements/page.tsx`
+
+```
+<main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
+  <BandeauParc … />                                        ← en-tête
+  <div className="flex flex-col gap-7 px-[var(--board-gutter)] pt-6">
+     … état vide, ou sections de cartes
+  </div>
+</main>
+```
+
+L'en-tête : `border-b border-[--board-slate-line] bg-[--board-card]
+px-[var(--board-gutter)] py-[22px]`, avec à gauche un chevron rond, le `h1` et
+son chapeau ; à droite les compteurs et le bouton d'action.
+
+**Un en-tête ne doit jamais contredire ce qu'il coiffe** : les compteurs se
+calculent sur ce qui est réellement affiché, filtre compris.
+
+### Fiche — modèle : `app/etablissements/[id]/registre/[sectionId]/page.tsx`
+
+```
+<EcranFiche provenance={…} canonique={…}>
+  <CorpsFiche principal={<><CarteFiche …/>…</>} cote={<CarteFiche titre="Et ensuite">…</CarteFiche>} />
+</EcranFiche>
+```
+
+Avec bandeau bord à bord quand la fiche ouvre un chapitre plutôt qu'elle ne
+prolonge une ligne — modèle : `equipements/[equipementId]/page.tsx`.
+
+### Formulaire
+
+`useActionState` + server action + Zod **côté serveur**. Le type d'état :
+
+```ts
+| { status: "idle" }
+| { status: "error"; message: string; fieldErrors?: Record<string, string[]> }
+| { status: "success"; id: string }
+```
+
+`react-hook-form` et `zodResolver` sont dans `package.json` mais **utilisés
+nulle part**. Ne pas les introduire.
+
+Champs en `.label-board` / `.champ-board`. **L'erreur de validation est en
+`text-[12.5px]` `--board-signal-ink`**, pas `text-destructive`.
+
+Détails de saisie : date → `type="date"` ; nombre → `type="text"
+inputMode="numeric"` (la molette d'un champ nombre modifie une valeur déjà
+saisie par accident) ; `aria-describedby` chaîne l'aide et l'erreur.
+
+---
+
+## 6. L'état vide
+
+Il n'y a pas de composant unique. `EmptyState` existe mais porte la charte
+papier.
+
+Le motif board, en trois cas distincts :
+
+1. **Vraiment vide** — une carte board qui dit ce que l'écran fera quand il y
+   aura des données, **d'où elles viendront**, et donne une porte.
+2. **Filtré** — un registre plus léger, `rounded-[22px]` sur
+   `--board-slate-pale`, « Rien ne correspond à ces filtres » + « Retirer les
+   filtres ».
+3. **Sous-ensemble vide dans une liste pleine** — une seule phrase, pas une page
+   d'accueil.
+
+**Vide ≠ filtré.** Envoyer « déclarez vos équipements » à quelqu'un qui vient de
+le faire lui fait chercher une erreur de saisie qui n'existe pas.
+
+On n'écrit jamais « Aucun résultat ». Jamais d'icône d'alerte. Un état vide ne
+doit pas ressembler à une erreur.
+
+Corollaire : **un emplacement vide se pose quand même.** Un emplacement qui
+n'apparaît qu'une fois rempli ne se remplit jamais — personne ne devine qu'on
+peut joindre la plaque signalétique d'un extincteur si rien ne le dit. L'état
+vide est le plus important des deux : il énonce ce qu'on attend, et pourquoi.
+
+---
+
+## 7. Les interdits, et leur raison
+
+Chacun vient d'un commentaire du code, souvent écrit après le bug qu'il évite.
+
+### Couleur
+
+1. **Jamais de blanc sur le rose.** L'encre rouge sombre tient 4,7 sur ce champ,
+   le noir 9,8, le blanc 2,0.
+2. **La couleur dit l'état, jamais le volume.**
+3. **Pas de rose là où rien n'a d'échéance.** Une fiche à remplir n'est pas en
+   retard.
+4. **L'ambre est l'attention, pas l'absence.** « À planifier » porte l'ardoise :
+   ce n'est pas une urgence, c'est l'absence de rendez-vous.
+5. **`--board-slate` n'est pas une encre** (~1,6:1).
+6. **Une seule couleur dans une ligne de champ** : l'encre de retard, et
+   seulement si un délai est dépassé.
+7. **Ne pas mélanger les deux familles de gris.**
+
+### Icônes
+
+8. **La même icône ne peut pas nommer un objet ici et une action là.**
+9. **Rien qui nomme déjà autre chose** ; et l'objet plutôt que le thème — le
+   réfrigérateur, pas le flocon ; le manomètre, pas le triangle de danger.
+10. **Jamais la couleur seule** : picto + mot (WCAG 2.1 AA). Une signalétique
+    qui tient à une icône disparaît en niveaux de gris, à l'impression, et pour
+    qui n'y voit pas.
+
+> **Conflit ouvert au 2026-08-27** : `Users` désigne trois choses — les
+> Prestataires dans le rail, la famille `personnel` du calendrier, et le type
+> `attestation`. Le prochain écran qui en a besoin doit en choisir une autre.
+
+### Hiérarchie
+
+11. **Jamais deux niveaux de titrage dans une carte.**
+12. **Pas de sur-titre quand le titre nomme déjà la vue.**
+13. **La précision ne devient jamais le grand titre.**
+
+### Vérité
+
+14. **Le retard ne remplace jamais le statut, il s'ajoute.** L'écran qui
+    n'affichait que « en retard » perdait l'information que personne ne s'en
+    était encore saisi.
+15. **Le silence ne doit jamais ressembler à une réponse.** Sans mention, un
+    appareil muet et un appareil à jour affichent la même chose : rien.
+16. **Un fait de saisie, jamais un jugement.** « Renseignée » n'est pas
+    « conforme », et aucun libellé ne doit le laisser entendre.
+17. **Deux faits, jamais un verdict.** Pas un mot de conformité.
+
+### Interaction
+
+18. **Une phrase d'avertissement s'écrit en clair, jamais en infobulle** — une
+    infobulle n'existe pas au doigt.
+19. **Pas de lien mort** : mieux vaut une porte annoncée fermée qu'un bouton
+    inerte.
+20. **Un vrai `<button disabled>`**, pas un `<span aria-disabled>` : sans
+    `role`, l'attribut n'est pas exposé.
+21. **Une commande qu'on n'atteint qu'en défaisant son défilement n'est pas
+    atteignable.**
+22. **Respecter `prefers-reduced-motion`.**
+
+### Technique
+
+23. **Ne pas construire un nom de classe Tailwind à la volée** — Tailwind ne le
+    voit pas. Table statique.
+24. **`overflow-x: clip`, pas `hidden`** : `hidden` fait de l'élément un
+    conteneur de défilement et neutralise `position: sticky` à l'intérieur.
+25. **Filets et voiles sur le `<li>`, jamais sur le lien** : un lien est
+    toujours l'unique enfant de sa ligne, donc `first:` y correspond à chaque
+    fois et efface tous les séparateurs.
+26. **Ne pas recopier `.carte-board`, `.pastille-board`, `.champ-board`** en
+    littéral.
+
+---
+
+## Une checklist, pour finir
+
+1. `bg-[color:var(--board-canvas)]` et `px-[var(--board-gutter)]` — jamais
+   `mx-auto max-w-*`.
+2. Rythme vertical : `gap-[22px]` en fiche, `gap-7` en liste.
+3. Cartes : `.carte-board` + `px-7 py-6 sm:px-8`.
+4. Pastilles : `.pastille-board` + un ton de `PastilleFiche`.
+5. Couleurs d'état : `CHAMP_ETAT` / `ENCRE_ETAT`, jamais un couple inventé.
+6. Formulaires : `.label-board` / `.champ-board`, erreurs en
+   `--board-signal-ink`.
+7. Réutiliser le kit avant d'écrire un composant.
+8. État vide : dire d'où viendront les données, et distinguer vide de filtré.
+
+---
+
+## Ce que ce document ne fait pas
+
+Il ne remplace pas les commentaires du code, qui portent le détail et
+l'historique — pourquoi le canvas a changé de teinte, pourquoi le `Restrict`
+d'une contrainte, pourquoi telle icône a été écartée. Il en est l'index.
+
+Il ne décrit pas la page publique (`.lp-*`), qui partage les couleurs et les
+cartes mais pas le reste.
+
+Et il ne dit pas comment migrer les écrans restés en charte papier. C'est un
+chantier, pas une règle.
