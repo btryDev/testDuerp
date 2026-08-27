@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { salarieSchema, titreSchema } from "./schema";
 import { cataloguerTitres, titreParId } from "./catalogue";
 import { classerTitre } from "./queries";
+import { texteInformation } from "./droits";
 
 const LE_3_MARS = "2026-03-03";
 
@@ -103,5 +104,56 @@ describe("classerTitre", () => {
 
   it("laisse au loin une échéance lointaine", () => {
     expect(classerTitre(new Date("2027-03-03T12:00:00.000Z"), now)).toBe("lointain");
+  });
+});
+
+describe("texteInformation — art. 13", () => {
+  const texte = texteInformation({
+    raisonSociale: "Boulangerie Martin",
+    titresSuivis: ["Attestation médicale (habilitation électrique)"],
+  });
+
+  it("nomme le responsable de traitement", () => {
+    // Le salarié doit savoir à qui s'adresser. « Rojer » n'est pas le
+    // responsable de traitement : l'employeur l'est.
+    expect(texte).toContain("Boulangerie Martin");
+  });
+
+  it("dit que la base légale n'est pas le consentement", () => {
+    // Un consentement donné à son employeur n'est pas libre. Un texte
+    // d'information qui invoquerait le consentement serait faux, et le
+    // traitement reposerait sur une base qui ne tient pas.
+    expect(texte).toContain("6.1.c");
+    expect(texte).toMatch(/pas un traitement fondé sur votre consentement/i);
+  });
+
+  it("dit qu'aucune donnée de santé n'est enregistrée", () => {
+    expect(texte).toMatch(/aucune donnée de santé/i);
+    expect(texte).toContain("L. 4624-8");
+  });
+
+  it("n'annonce pas un droit à l'effacement que rien ne peut honorer", () => {
+    // Promettre l'effacement puis le refuser serait pire que de l'annoncer
+    // limité. L'article 17.3.b excepte ce qui relève d'une obligation légale.
+    expect(texte).toContain("17.3.b");
+    expect(texte).toMatch(/limité/i);
+  });
+
+  it("nomme la durée de conservation et son fondement", () => {
+    expect(texte).toContain("D. 4711-3");
+  });
+
+  it("indique le recours à la CNIL", () => {
+    expect(texte).toContain("cnil.fr");
+  });
+
+  it("liste les titres réellement suivis", () => {
+    // Un texte type générique décrirait un autre traitement que celui-ci.
+    expect(texte).toContain("Attestation médicale (habilitation électrique)");
+  });
+
+  it("le dit franchement quand rien n'est encore suivi", () => {
+    const vide = texteInformation({ raisonSociale: "X", titresSuivis: [] });
+    expect(vide).toMatch(/aucun titre suivi/i);
   });
 });

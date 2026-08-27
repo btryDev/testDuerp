@@ -6,6 +6,8 @@ import { SalarieCard } from "@/components/salaries/SalarieCard";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { listerEquipe } from "@/lib/salaries/queries";
 import { cataloguerTitres } from "@/lib/salaries/catalogue";
+import { texteInformation } from "@/lib/salaries/droits";
+import { TexteInformation } from "@/components/salaries/TexteInformation";
 import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
 
 /**
@@ -160,6 +162,29 @@ export default async function EquipePage({
             />
           </div>
         </section>
+
+        {/* L'information des personnes (art. 13 RGPD). Elle est due, et elle
+            incombe à l'employeur — l'outil ne peut pas informer à sa place.
+            La carte n'apparaît que s'il y a quelqu'un à informer : avant, elle
+            réclamerait un geste sans objet. */}
+        {equipe.length > 0 && (
+          <section className="carte-board px-7 py-6 sm:px-8">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+              Votre obligation envers eux
+            </p>
+            <h2 className="board-titre m-0 mt-2 text-[22px]">
+              Informer les personnes suivies
+            </h2>
+            <div className="mt-3">
+              <TexteInformation
+                texte={texteInformation({
+                  raisonSociale: etablissement.raisonDisplay,
+                  titresSuivis: catalogue.map((o) => o.libelle),
+                })}
+              />
+            </div>
+          </section>
+        )}
 
         {actifs > 0 && (
           <p className="m-0 px-1 text-[12px] text-[color:var(--board-slate-soft)]">

@@ -20,6 +20,9 @@ import { cataloguerTitres } from "@/lib/salaries/catalogue";
 import { declarerTitre } from "@/lib/salaries/actions";
 import { CHAMP_ETAT, ENCRE_ETAT, type RegistreLigne } from "@/lib/calendrier/etats";
 import { formaterDateLongueFr } from "@/lib/dates";
+import { Download } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import Link from "next/link";
 
 /**
  * La fiche d'une personne : ce qu'elle détient, et jusqu'à quand.
@@ -193,6 +196,39 @@ export default async function SalarieDetailPage({
                   dejaDeclares={s.titres.map((t) => t.obligationId)}
                 />
               )}
+            </CarteFiche>
+
+            {/* Le droit d'accès de la personne suivie (art. 15 RGPD). Elle n'a
+                pas accès à l'outil : elle demande à son employeur, qui est le
+                responsable de traitement. Sans ce bouton, l'employeur devrait
+                recopier un écran à la main pour honorer une demande — et
+                `docs/rgpd.md` § 5.2 promettrait un droit que rien ne sert. */}
+            <CarteFiche titre="Ce que Rojer enregistre sur cette personne">
+              <p className="m-0 max-w-[64ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+                Son nom, son poste, sa date d&apos;entrée, et pour chaque titre
+                sa nature et ses dates. Rien d&apos;autre — pas de date de
+                naissance, pas de numéro de sécurité sociale, aucune donnée de
+                santé. Si elle vous demande ce que vous détenez sur elle, vous
+                pouvez le lui remettre :
+              </p>
+              <div className="mt-4">
+                <Link
+                  href={`/api/etablissements/${id}/equipe/${s.id}/donnees`}
+                  className={buttonVariants({
+                    variant: "boardClair",
+                    size: "boardSm",
+                  })}
+                >
+                  <Download className="size-3.5" aria-hidden />
+                  Éditer ses données
+                </Link>
+              </div>
+              <p className="m-0 mt-3 max-w-[64ch] text-[12px] leading-[1.55] text-[color:var(--board-slate-soft)]">
+                Le droit à l&apos;effacement est limité sur ces données :
+                l&apos;article 17.3.b du RGPD excepte ce qui est conservé au
+                titre d&apos;une obligation légale. Mieux vaut le lui dire que
+                lui promettre un droit qu&apos;on ne peut pas honorer.
+              </p>
             </CarteFiche>
 
             <CarteFiche titre="Repères">

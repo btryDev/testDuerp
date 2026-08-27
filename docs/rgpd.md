@@ -256,11 +256,27 @@ s'exercent auprès de son employeur, qui est le responsable de traitement.
   ne peut pas s'opposer à ce que son habilitation soit suivie, pas plus qu'il
   ne peut s'opposer à son bulletin de paie.
 
-### 5.3 Ce qui n'est pas encore fait
+### 5.3 Ce qui est livré, et ce qui ne l'est pas
 
-L'export par personne (5.2, accès) et le texte d'information type ne sont pas
-livrés. Ils sont dus dès que des salariés réels sont saisis, et ce document ne
-prétend pas le contraire.
+**Livrés avec l'écran Équipe** (2026-08-27), parce que cet écran est
+précisément ce qui rend possible de saisir un salarié réel :
+
+- **L'extraction par personne** (5.2, accès) — `GET
+  /api/etablissements/<id>/equipe/<salarieId>/donnees`, bouton « Éditer ses
+  données » sur la fiche. JSON lisible, chaque bloc portant son explication en
+  français : la personne a droit à un format exploitable, et l'employeur doit
+  pouvoir relire ce qu'il transmet.
+- **Le texte d'information** (art. 13) — `texteInformation()`, affiché sur
+  l'écran Équipe dès qu'une personne y figure. Il est **écrit sur ce que
+  l'outil collecte réellement**, et non repris d'un modèle générique qui
+  décrirait un autre traitement. L'outil le fournit ; il n'informe pas à la
+  place de l'employeur, qui reste le responsable de traitement.
+
+**Non livré, et à ne pas confondre avec ce qui précède** : l'export complet du
+titulaire du compte annoncé au 5.1 (art. 15 et 20, « export JSON complet »)
+**n'existe pas**. Aucune route, aucune action. La phrase du 5.1 décrit une
+intention, pas une fonctionnalité — elle est due, elle n'est pas rendue, et
+c'est un manque distinct de celui que l'écran Équipe vient de combler.
 
 ---
 
