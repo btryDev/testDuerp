@@ -42,9 +42,74 @@ const data: RegistreData = {
   verifsEnAttente: [],
 };
 
+/** Le nombre de pages d'un PDF, lu dans son catalogue d'objets. */
+function nombreDePages(pdf: Buffer): number {
+  return (pdf.toString("latin1").match(/\/Type\s*\/Page[^s]/g) ?? []).length;
+}
+
+/** Une fiche journal de `n` lignes, seule dans son registre. */
+function registreJournal(n: number): RegistreData {
+  return {
+    entreprise: "E",
+    etablissement: "E",
+    adresse: "A",
+    genereLe: new Date("2026-01-01T00:00:00Z"),
+    bilan: {
+      dues: 1,
+      outillees: 1,
+      faites: 1,
+      aRemplir: 0,
+      tenuesAilleurs: 0,
+      nonOutillees: 0,
+    },
+    parties: [
+      {
+        id: "4",
+        titre: "Événements",
+        fiches: [
+          {
+            id: "e",
+            titre: "Comptes rendus d'incendie",
+            attendu: "Date, nature, suites données.",
+            raisons: [],
+            etat: `${n} lignes consignées`,
+            ton: "faite",
+            misAJourLe: null,
+            colonnes: ["Date", "Nature", "Suites"],
+            lignes: Array.from({ length: n }, (_, i) => [
+              "01/01/2026",
+              `nature ${i}`,
+              `suites ${i}`,
+            ]),
+          },
+        ],
+      },
+    ],
+    rapports: [],
+    verifsEnAttente: [],
+  };
+}
+
 describe("RegistreDocument", () => {
   it("rend un PDF non vide avec les quatre formes de fiche", async () => {
     const buf = await renderToBuffer(<RegistreDocument data={data} />);
     expect(buf.length).toBeGreaterThan(2000);
   }, 30000);
+
+  // Le défaut que ce test empêche de revenir : `FichePdfVue` a porté
+  // `wrap={false}`, et react-pdf n'imprime pas ce qui dépasse d'un bloc
+  // insécable. Un journal de 400 lignes rendait alors 5 pages, un journal de
+  // 1000 lignes en rendait 5 aussi. Le registre se coupait au milieu d'une
+  // fiche, en silence, dans un document qu'on présente à un inspecteur.
+  //
+  // Le test ne compte pas des pages exactes — une marge changerait le
+  // chiffre. Il vérifie que le document GRANDIT avec son contenu, ce qu'un
+  // bloc tronqué ne fait jamais.
+  it("pagine un long journal au lieu de le tronquer", async () => {
+    const court = nombreDePages(await renderToBuffer(<RegistreDocument data={registreJournal(400)} />));
+    const long = nombreDePages(await renderToBuffer(<RegistreDocument data={registreJournal(1000)} />));
+
+    expect(court).toBeGreaterThan(5);
+    expect(long).toBeGreaterThan(court * 1.5);
+  }, 60000);
 });

@@ -102,7 +102,14 @@ export default async function FicheDuRegistrePage({
             depuisCetteFiche,
           ),
         };
-  const restantes = indices.filter(attend).length;
+  // `attend` exclut la fiche affichée, parce que « suivante » ne doit jamais
+  // reproposer celle qu'on regarde. Le COMPTE, lui, la comprend : sinon une
+  // fiche vide dont aucune autre n'attend affiche « 0 restantes », et le pied
+  // annonce que c'était la dernière à quelqu'un qui en regarde une non
+  // remplie. Deux questions différentes, deux calculs différents.
+  const restantes = indices.filter(
+    (i) => tonCompletude(etats[i].completude) === "attente",
+  ).length;
 
   return (
     <EcranFiche provenance={provenance} canonique={canonique}>

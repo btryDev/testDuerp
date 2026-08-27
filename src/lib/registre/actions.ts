@@ -11,12 +11,41 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import { saisiePourSection } from "./champs";
-import { lignesDuJournal, schemaDeLaFiche, type LigneJournal } from "./schema";
+import { schemaDeLaFiche, type LigneJournal } from "./schema";
 
 export type EtatFiche =
   | { status: "idle" }
   | { status: "error"; message: string; fieldErrors?: Record<string, string[]> }
   | { status: "success" };
+
+/**
+ * Garantit la ligne `FicheRegistre`, sans échouer si quelqu'un vient de la
+ * créer. Deux premières écritures en course tombaient sur un P2002 de
+ * `[etablissementId, sectionId]` que rien ne rattrapait : le perdant recevait
+ * une erreur 500 alors que sa ligne était parfaitement légitime.
+ */
+async function creerLaFicheSiAbsente(
+  etablissementId: string,
+  sectionId: string,
+): Promise<void> {
+  try {
+    await prisma.ficheRegistre.create({
+      data: {
+        id: `fic_${randomUUID()}`,
+        etablissementId,
+        sectionId,
+        contenu: { lignes: [] },
+      },
+    });
+  } catch (e) {
+    // P2002 = la fiche existe déjà, ce qui est exactement ce qu'on voulait.
+    if (
+      !(e && typeof e === "object" && "code" in e && e.code === "P2002")
+    ) {
+      throw e;
+    }
+  }
+}
 
 /** Toute écriture passe par là : scope, existence de la fiche, validation. */
 type Prepare =
@@ -134,33 +163,36 @@ export async function ajouterLigneJournal(
     return { status: "error", message: "Renseignez au moins un champ." };
   }
 
-  const existante = await prisma.ficheRegistre.findUnique({
-    where: { etablissementId_sectionId: { etablissementId, sectionId } },
-    select: { id: true, contenu: true },
-  });
-
   const ligne: LigneJournal = {
     id: `lig_${randomUUID()}`,
     valeurs: p.valeurs,
     saisieLe: new Date().toISOString(),
   };
-  const lignes = [...lignesDuJournal(existante?.contenu), ligne];
 
-  if (existante) {
-    await prisma.ficheRegistre.update({
-      where: { id: existante.id },
-      data: { contenu: { lignes } },
-    });
-  } else {
-    await prisma.ficheRegistre.create({
-      data: {
-        id: `fic_${randomUUID()}`,
-        etablissementId,
-        sectionId,
-        contenu: { lignes },
-      },
-    });
-  }
+  // ⚠ L'ajout est fait **en une seule instruction SQL**, et il ne faut pas
+  // revenir à un lire-puis-écrire.
+  //
+  // La version précédente faisait `findUnique`, concaténait en TypeScript,
+  // puis `update`. Deux soumissions en vol — un double-clic sur « Consigner
+  // cette ligne », deux onglets, une requête rejouée — lisaient le même
+  // tableau, et le second `update` écrasait la ligne du premier. C'est une
+  // suppression silencieuse dans un journal dont toute la valeur tient à ce
+  // qu'une ligne consignée ne disparaît pas. Le pire défaut possible pour
+  // cette fiche, et aucun test ne l'aurait vu.
+  //
+  // Ici, Postgres lit et écrit `contenu` dans la même instruction : deux
+  // ajouts concurrents s'empilent au lieu de s'écraser.
+  await creerLaFicheSiAbsente(etablissementId, sectionId);
+  await prisma.$executeRaw`
+    UPDATE "FicheRegistre"
+    SET "contenu" = jsonb_build_object(
+          'lignes',
+          COALESCE("contenu"->'lignes', '[]'::jsonb) || ${JSON.stringify([ligne])}::jsonb
+        ),
+        "updatedAt" = NOW()
+    WHERE "etablissementId" = ${etablissementId}
+      AND "sectionId" = ${sectionId}
+  `;
 
   revalider(etablissementId);
   return { status: "success" };

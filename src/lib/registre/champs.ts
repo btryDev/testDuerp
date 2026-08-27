@@ -424,5 +424,12 @@ export const CHAMPS_PAR_SECTION: Readonly<Record<string, FormeSaisie>> = {
 
 /** La forme de saisie d'une fiche, si l'application sait la recueillir. */
 export function saisiePourSection(sectionId: string): FormeSaisie | undefined {
-  return CHAMPS_PAR_SECTION[sectionId];
+  // `Object.hasOwn` et non un accès direct : `sectionId` vient du client, et
+  // un objet littéral hérite du prototype. `CHAMPS_PAR_SECTION["constructor"]`
+  // rendait une fonction — donc une valeur vraie — et le garde
+  // `if (!saisie || !schema)` de `preparer` n'était jamais atteint. Un
+  // identifiant forgé produisait une erreur 500 au lieu du refus prévu.
+  return Object.hasOwn(CHAMPS_PAR_SECTION, sectionId)
+    ? CHAMPS_PAR_SECTION[sectionId]
+    : undefined;
 }

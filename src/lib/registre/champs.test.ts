@@ -101,3 +101,19 @@ describe("saisiePourSection", () => {
     expect(saisiePourSection("exercices-comptes-rendus")).toBeUndefined();
   });
 });
+
+describe("saisiePourSection — identifiant venu du client", () => {
+  // `sectionId` traverse l'URL et le formulaire : il n'est pas de confiance.
+  // Un accès direct sur un objet littéral rendait les membres du prototype,
+  // donc une valeur vraie, et le refus prévu par l'action n'arrivait jamais.
+  it.each(["constructor", "toString", "__proto__", "hasOwnProperty"])(
+    "ne rend rien pour la clé héritée %s",
+    (cle) => {
+      expect(saisiePourSection(cle)).toBeUndefined();
+    },
+  );
+
+  it("rend toujours les fiches réelles", () => {
+    expect(saisiePourSection("telephones-utiles")).toBeDefined();
+  });
+});

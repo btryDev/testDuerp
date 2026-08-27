@@ -277,24 +277,36 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
   const largeur = (n: number) => `${(100 / n).toFixed(4)}%`;
 
   return (
-    <View style={{ marginTop: 14 }} wrap={false}>
-      <View style={sr.ficheTete}>
-        <Text style={sr.ficheTitre}>{fiche.titre}</Text>
-        <Text
-          style={[
-            sr.pastille,
-            {
-              backgroundColor: HABILLAGE_ETAT[fiche.ton].fond,
-              color: HABILLAGE_ETAT[fiche.ton].encre,
-            },
-            fiche.ton === "muet" ? CONTOUR_MUET : {},
-          ]}
-        >
-          {fiche.etat}
-        </Text>
+    // ⚠ Cette vue SE PAGINE, et il ne faut pas y remettre `wrap={false}`.
+    //
+    // Elle l'a porté, et react-pdf ne sait pas couper un bloc non sécable :
+    // tout ce qui dépassait la page était émis hors-page et jamais imprimé.
+    // Mesuré sur ce composant — un journal de 400 lignes rendait 5 pages, un
+    // journal de 1000 lignes en rendait 5 aussi, seul le poids du fichier
+    // changeait. Le dirigeant tendait alors à un inspecteur un registre
+    // coupé au milieu d'une fiche, sans que rien ne l'indique.
+    //
+    // Seule la tête reste insécable : un titre de fiche seul en bas de page
+    // est laid, un corps tronqué est faux.
+    <View style={{ marginTop: 14 }}>
+      <View wrap={false}>
+        <View style={sr.ficheTete}>
+          <Text style={sr.ficheTitre}>{fiche.titre}</Text>
+          <Text
+            style={[
+              sr.pastille,
+              {
+                backgroundColor: HABILLAGE_ETAT[fiche.ton].fond,
+                color: HABILLAGE_ETAT[fiche.ton].encre,
+              },
+              fiche.ton === "muet" ? CONTOUR_MUET : {},
+            ]}
+          >
+            {fiche.etat}
+          </Text>
+        </View>
+        <Text style={[s.small, { marginTop: 3 }]}>{fiche.attendu}</Text>
       </View>
-
-      <Text style={[s.small, { marginTop: 3 }]}>{fiche.attendu}</Text>
 
       {/* Forme « établissement » ou « formulaire » : des questions, des
           réponses. Une question sans réponse s'imprime quand même — c'est
@@ -304,6 +316,7 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
           {fiche.champs.map((c) => (
             <View
               key={c.libelle}
+              wrap={false}
               style={{
                 flexDirection: "row",
                 borderBottomWidth: 0.5,
@@ -319,10 +332,13 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
       )}
 
       {/* Forme « journal ». Les colonnes s'impriment même sans ligne : une
-          fiche vide doit montrer ce qu'on attendait d'elle. */}
+          fiche vide doit montrer ce qu'on attendait d'elle.
+
+          L'en-tête est `fixed` : une table qui court sur plusieurs pages
+          sans rappeler ses intitulés ne se lit plus dès la deuxième. */}
       {fiche.colonnes && (
         <View style={{ marginTop: 6 }}>
-          <View style={sr.bandeTete}>
+          <View style={sr.bandeTete} fixed>
             {fiche.colonnes.map((c) => (
               <Text
                 key={c}
@@ -338,7 +354,7 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
             </Text>
           ) : (
             fiche.lignes!.map((ligne, i) => (
-              <View key={i} style={sr.ligneTableau}>
+              <View key={i} style={sr.ligneTableau} wrap={false}>
                 {ligne.map((v, j) => (
                   <Text
                     key={j}
@@ -366,18 +382,20 @@ function FichePdfVue({ fiche }: { fiche: FichePdf }) {
             </Text>
           ) : (
             <>
-              <View style={sr.bandeTete}>
+              <View style={sr.bandeTete} fixed>
                 <Text style={[sr.bandeTh, { width: "50%" }]}>Désignation</Text>
                 <Text style={[sr.bandeTh, { width: "50%" }]}>
                   Emplacement ou échéance
                 </Text>
               </View>
               {fiche.tenues.map((t, i) => (
-                <View key={i} style={sr.ligneTableau}>
+                <View key={i} style={sr.ligneTableau} wrap={false}>
                   <Text style={[s.td, { width: "50%", color: BOARD.encre }]}>
                     {t.titre}
                   </Text>
-                  <Text style={[s.td, { width: "50%", color: BOARD.ardoiseMoyenne }]}>
+                  <Text
+                    style={[s.td, { width: "50%", color: BOARD.ardoiseMoyenne }]}
+                  >
                     {t.meta}
                   </Text>
                 </View>
@@ -528,19 +546,21 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
       <Page size="A4" style={s.page}>
         {data.parties.map((partie) => (
           <View key={partie.id}>
-            {/* L'en-tête voyage avec sa première fiche : seul en bas de page,
-                il annonce une partie qui commence à la suivante — le lecteur
-                tourne alors la page pour retrouver le titre qu'il vient de
-                lire. `minPresenceAhead` ne suffisait pas à l'empêcher. */}
-            <View wrap={false}>
+            {/* L'en-tête a voyagé avec sa première fiche, dans un même bloc
+                insécable, pour éviter qu'un titre de partie reste seul en bas
+                de page. L'intention était bonne, la portée trop large : la
+                partie 4 n'ayant qu'une fiche, son journal d'événements se
+                retrouvait toujours enfermé, donc tronqué dès qu'il grossissait.
+                Un titre orphelin est un défaut d'allure ; une fiche coupée est
+                un document faux. Seul l'en-tête reste insécable. */}
+            <View wrap={false} minPresenceAhead={70}>
               <View style={sr.partieAccent} />
               <View style={[sr.partieTete, { marginTop: 6 }]}>
                 <Text style={sr.partieNum}>{partie.id}</Text>
                 <Text style={sr.partieTitre}>{partie.titre}</Text>
               </View>
-              {partie.fiches[0] && <FichePdfVue fiche={partie.fiches[0]} />}
             </View>
-            {partie.fiches.slice(1).map((fiche) => (
+            {partie.fiches.map((fiche) => (
               <FichePdfVue key={fiche.id} fiche={fiche} />
             ))}
           </View>
