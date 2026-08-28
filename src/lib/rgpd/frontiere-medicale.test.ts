@@ -513,15 +513,138 @@ describe("le nom d'un salarié ne sort pas du produit", () => {
 });
 
 /**
- * Retire commentaires de bloc et de ligne, pour qu'un motif cherchant une
- * lecture ne morde pas l'explication de son absence.
+ * Retire commentaires de ligne et de bloc — en connaissant les chaînes et les
+ * littéraux d'expression régulière.
  *
- * Le garde `[^:]` évite de couper une URL sur son `//`.
+ * La première version était un couple de `replace`, avec un garde `[^:]` censé
+ * épargner `https://`. Elle neutralisait du vrai code, et la preuve était dans
+ * un fichier surveillé : `lib/mcp/hotes.ts` contient
+ * `valeur.replace(/^https?:\/\//, "")`, dont le littéral se termine par `\/`
+ * suivi du `/` fermant. Le `//` ainsi formé n'est précédé d'aucun `:` : le
+ * garde le laissait passer, et tout ce qui suivait sur la ligne disparaissait.
+ * Une lecture écrite après ce `replace`, sur la même ligne, serait donc passée
+ * au vert.
+ *
+ * D'où un vrai balayage : on suit l'état — code, chaîne simple, double,
+ * gabarit, littéral d'expression régulière, commentaire — au lieu de deviner
+ * par le voisinage. La détection d'un littéral d'expression régulière emploie
+ * l'heuristique usuelle : un `/` en ouvre un quand le dernier caractère
+ * significatif ne peut pas terminer une expression.
  */
+const PEUT_PRECEDER_UNE_REGEX = /[(,=:[!&|?{};+\-*%~^<>]|^$/;
+
 export function sansCommentaires(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, " ")
-    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+  let sortie = "";
+  let precedent = "";
+  let i = 0;
+
+  /** Avale une séquence délimitée en gérant l'échappement, et la recopie. */
+  function avaler(fin: string): void {
+    sortie += source[i];
+    i++;
+    while (i < source.length) {
+      const c = source[i];
+      if (c === "\\") {
+        sortie += source.slice(i, i + 2);
+        i += 2;
+        continue;
+      }
+      sortie += c;
+      i++;
+      if (c === fin) return;
+      // Une expression régulière ne franchit pas la fin de ligne : sans cette
+      // sortie, un opérateur de division pris pour une ouverture avalerait
+      // tout le reste du fichier.
+      if (fin === "/" && c === "\n") return;
+    }
+  }
+
+  while (i < source.length) {
+    const c = source[i];
+    const d = source[i + 1];
+
+    if (c === "/" && d === "/") {
+      while (i < source.length && source[i] !== "\n") i++;
+      continue;
+    }
+    if (c === "/" && d === "*") {
+      i += 2;
+      while (i < source.length && !(source[i] === "*" && source[i + 1] === "/")) i++;
+      i += 2;
+      sortie += " ";
+      continue;
+    }
+    if (c === '"' || c === "'" || c === "`") {
+      avaler(c);
+      precedent = c;
+      continue;
+    }
+    if (c === "/" && PEUT_PRECEDER_UNE_REGEX.test(precedent)) {
+      avaler("/");
+      precedent = "/";
+      continue;
+    }
+
+    sortie += c;
+    if (!/\s/.test(c)) precedent = c;
+    i++;
+  }
+
+  return sortie;
+}
+
+/**
+ * Les blocs `{...}` équilibrés qui suivent un appel de lecture Prisma.
+ *
+ * Sert à juger la FORME d'une requête, là où chercher un nom de champ ne peut
+ * rien voir : une requête sans `select` rend tous les scalaires du modèle, et
+ * un `include` rend en plus tous ceux de la relation ouverte. Aucun jeton du
+ * champ n'apparaît alors dans le source.
+ */
+export function requetesDeLecture(source: string): string[] {
+  const code = sansCommentaires(source);
+  const appel = /\.(findMany|findFirst|findUnique|findFirstOrThrow|findUniqueOrThrow)\s*\(\s*\{/g;
+  const blocs: string[] = [];
+  let m: RegExpExecArray | null;
+
+  while ((m = appel.exec(code)) !== null) {
+    let profondeur = 1;
+    let j = m.index + m[0].length;
+    while (j < code.length && profondeur > 0) {
+      if (code[j] === "{") profondeur++;
+      else if (code[j] === "}") profondeur--;
+      j++;
+    }
+    blocs.push(code.slice(m.index, j));
+    appel.lastIndex = j;
+  }
+  return blocs;
+}
+
+/** Une requête qui rend plus que ce qu'elle nomme. */
+export function requeteTropLarge(bloc: string): boolean {
+  if (/\binclude\s*:/.test(bloc)) return true;
+  return !/\bselect\s*:/.test(bloc);
+}
+
+/**
+ * Lire un champ, sous les formes qu'on écrit vraiment.
+ *
+ * La première version n'en connaissait que deux — le déréférencement pointé et
+ * `champ: true` sans espace. Quatre autres passaient au vert en lisant
+ * pourtant le champ ; elles sont couvertes ici, et la plus banale de toutes —
+ * une requête sans `select` — ne relève pas du tout de cette fonction mais de
+ * `requeteTropLarge`, parce qu'aucun nom de champ n'y figure.
+ */
+export function litChampNominatif(source: string, champ: string): boolean {
+  const code = sansCommentaires(source);
+  const formes = [
+    `\\.${champ}\\b`,
+    `\\[\\s*["'\`]${champ}["'\`]\\s*\\]`,
+    `\\b${champ}\\s*:\\s*true\\b`,
+    `\\{[^{}]*\\b${champ}\\b[^{}]*\\}\\s*=`,
+  ];
+  return new RegExp(formes.join("|")).test(code);
 }
 
 describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers un tiers", () => {
@@ -533,8 +656,7 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
    * Ils ne relèvent pas de la frontière médicale, et pas non plus du nom du
    * salarié : personne ne les dérive d'un modèle, c'est l'employeur qui les
    * tape. Mais ils sortaient par les deux mêmes portes, et la décision du
-   * 2026-08-28 ne les traite pas pareil — parce que les destinataires
-   * diffèrent :
+   * 2026-08-28 ne les traite pas pareil, parce que les destinataires diffèrent.
    *
    * — `responsable` reste dans les documents que l'employeur remet lui-même
    *   (PDF du plan d'actions, dossier de conformité, DUERP) : un plan
@@ -543,7 +665,7 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
    *   l'assistant qu'il branche. Un nom lu là part vers un LLM par défaut,
    *   contre le principe fondateur « zéro IA sur le contenu utilisateur ».
    *
-   * — `operateur` sort de l'**export ZIP**, remis « à un inspecteur, un
+   * — `operateur` sortait de l'**export ZIP**, remis « à un inspecteur, un
    *   assureur, un bailleur ou un acquéreur ». Aucun texte ne l'exige :
    *   l'article 3 de l'arrêté du 1er février 2010 demande de consigner « les
    *   modalités et les résultats » dans un fichier sanitaire tenu à
@@ -553,23 +675,7 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
    * La règle porte sur la LECTURE du champ, pas sur son affichage : ce qui
    * n'est pas lu ne peut pas ressortir par une colonne ajoutée plus tard.
    */
-
-  // Les commentaires sont retirés avant de chercher (`sansCommentaires`).
-  // Sans ça, la règle mordrait les commentaires qui expliquent pourquoi le
-  // champ n'est PAS lu — et il y en a un dans chacun des deux fichiers
-  // qu'elle surveille. Le motif serait rouge en permanence, et la réparation
-  // naturelle serait de l'affaiblir jusqu'à ce qu'il ne morde plus rien.
-  /** Lire le champ : le déréférencer, ou le demander à Prisma. */
-  function litChampNominatif(source: string, champ: string): boolean {
-    const code = sansCommentaires(source);
-    return new RegExp(`\\.${champ}\\b|\\b${champ}:\\s*true\\b`).test(code);
-  }
-
-  const CHAMPS_LIBRES: {
-    champ: string;
-    chemins: RegExp[];
-    message: string;
-  }[] = [
+  const CHAMPS_LIBRES: { champ: string; chemins: RegExp[]; message: string }[] = [
     {
       champ: "responsable",
       chemins: [/^lib\/mcp\//, /^scripts\/mcp-server\.ts$/],
@@ -589,64 +695,135 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
     },
   ];
 
-  it("le détecteur voit une lecture, et ignore un commentaire qui la nomme", () => {
-    // Le cas fabriqué est celui des deux fichiers réels : un commentaire qui
-    // explique la retenue, et pas de lecture.
-    expect(litChampNominatif("const x = a.responsable;", "responsable")).toBe(true);
-    expect(litChampNominatif("select: { responsable: true }", "responsable")).toBe(true);
+  /**
+   * Là où une requête doit nommer ce qu'elle lit.
+   *
+   * Restreint au MCP : c'est la surface qui part vers un tiers non maîtrisé, et
+   * la seule où « rendre un champ de trop » a un destinataire. Étendre la règle
+   * à tout `app/api/` obligerait des routes internes à énumérer des dizaines de
+   * colonnes sans rien protéger — et une règle qu'on excepte partout finit par
+   * ne plus être lue.
+   */
+  const CHEMINS_REQUETE_NOMMEE = [/^lib\/mcp\//, /^scripts\/mcp-server\.ts$/];
+
+  function sources(): { abs: string; rel: string }[] {
+    return [
+      ...fichiersSource(join(RACINE, "src")),
+      ...fichiersSource(join(RACINE, "scripts")),
+    ].map((abs) => ({ abs, rel: relative(RACINE, abs).replace(/^src\//, "") }));
+  }
+
+  it("le retrait des commentaires épargne chaînes et expressions régulières", () => {
+    // Le cas réel, celui qui a fait tomber la première version : le littéral
+    // de `lib/mcp/hotes.ts` se termine par `\/` suivi du `/` fermant.
+    const vrai = 'return valeur.replace(/^https?:\\/\\//, "").split("/")[0];';
+    expect(sansCommentaires(vrai)).toBe(vrai);
+
+    // Et une lecture écrite après ce `replace`, sur la même ligne, survit.
+    expect(
+      litChampNominatif(
+        'const q = { hote: u.replace(/^https?:\\/\\//, ""), pilote: a.responsable };',
+        "responsable",
+      ),
+    ).toBe(true);
+
+    // Une URL dans une chaîne n'est pas un commentaire.
+    expect(sansCommentaires('const u = "http://x/y";')).toBe('const u = "http://x/y";');
+
+    // Un vrai commentaire, lui, s'en va.
+    expect(sansCommentaires("const x = 1; // a.responsable\n").trim()).toBe("const x = 1;");
+    expect(sansCommentaires("/* a.responsable */ const x = 1;").trim()).toBe("const x = 1;");
+  });
+
+  it("le détecteur connaît les formes sous lesquelles on lit un champ", () => {
+    for (const forme of [
+      "const x = a.responsable;",
+      'const x = a["responsable"];',
+      "select: { responsable: true }",
+      "select: { responsable : true }",
+      "const { responsable } = action;",
+      "const { libelle, responsable, statut } = action;",
+    ]) {
+      expect(litChampNominatif(forme, "responsable"), forme).toBe(true);
+    }
+
+    // Et il ne mord pas l'explication de l'absence — chacun des deux fichiers
+    // surveillés en porte une.
     expect(
       litChampNominatif(
         "// `Action.responsable` n'est PAS sélectionné, et c'est délibéré.\nconst x = 1;",
         "responsable",
       ),
     ).toBe(false);
-    expect(
-      litChampNominatif(
-        "/* On ne lit pas a.responsable ici. */\nconst x = 1;",
-        "responsable",
-      ),
-    ).toBe(false);
-    // Une URL n'est pas un commentaire de ligne.
-    expect(
-      litChampNominatif('const u = "https://x/y"; const v = a.operateur;', "operateur"),
-    ).toBe(true);
+  });
+
+  it("le juge de forme voit une requête qui rend plus qu'elle ne nomme", () => {
+    // La forme la plus banale, et celle qu'aucune recherche de nom ne peut
+    // voir : sans `select`, Prisma rend tous les scalaires du modèle.
+    const nue = "await prisma.action.findMany({ where: { etablissementId } });";
+    expect(requetesDeLecture(nue).map(requeteTropLarge)).toEqual([true]);
+
+    // `include` est pire : il rend aussi tous ceux de la relation ouverte.
+    const avecInclude =
+      "await prisma.duerp.findFirst({ where: { id }, include: { versions: { take: 1 } } });";
+    expect(requetesDeLecture(avecInclude).map(requeteTropLarge)).toEqual([true]);
+
+    // Une requête qui nomme ce qu'elle lit passe.
+    const nommee =
+      "await prisma.duerp.findFirst({ where: { id }, select: { versions: { select: { numero: true } } } });";
+    expect(requetesDeLecture(nommee).map(requeteTropLarge)).toEqual([false]);
+
+    // Les blocs imbriqués ne trompent pas le compteur d'accolades.
+    expect(requetesDeLecture(nommee)).toHaveLength(1);
   });
 
   it("aucune surface interdite ne lit ces champs", () => {
     const fautifs: string[] = [];
-    const fichiers = [
-      ...fichiersSource(join(RACINE, "src")),
-      ...fichiersSource(join(RACINE, "scripts")),
-    ].map((abs) => ({ abs, rel: relative(RACINE, abs).replace(/^src\//, "") }));
-
     for (const { champ, chemins, message } of CHAMPS_LIBRES) {
-      for (const { abs, rel } of fichiers) {
+      for (const { abs, rel } of sources()) {
         if (!chemins.some((r) => r.test(rel))) continue;
         if (litChampNominatif(readFileSync(abs, "utf8"), champ)) {
           fautifs.push(`${rel} → ${champ} — ${message}`);
         }
       }
     }
-
     expect(fautifs).toEqual([]);
+  });
+
+  it("les requêtes du MCP nomment ce qu'elles lisent", () => {
+    const fautives: string[] = [];
+    for (const { abs, rel } of sources()) {
+      if (!CHEMINS_REQUETE_NOMMEE.some((r) => r.test(rel))) continue;
+      const source = readFileSync(abs, "utf8");
+      for (const bloc of requetesDeLecture(source)) {
+        if (requeteTropLarge(bloc)) fautives.push(`${rel} : ${bloc.slice(0, 90)}…`);
+      }
+    }
+
+    expect(
+      fautives,
+      "Cette requête du MCP emploie `include`, ou n'a pas de `select` : elle rend " +
+        "donc des colonnes que personne n'a demandées. C'est ainsi que " +
+        "`DuerpVersion.snapshot` — qui porte le `responsable` de chaque mesure — " +
+        "revenait dans le serveur MCP sans qu'aucun nom de champ n'apparaisse dans " +
+        "le source. Nommez les colonnes lues (docs/rgpd.md § 2.5).",
+    ).toEqual([]);
   });
 
   it("les chemins surveillés désignent des fichiers qui existent", () => {
     // Un motif de chemin qui ne matche rien est une garde morte : elle donne
     // l'assurance écrite d'une surveillance qui ne s'exerce sur rien. C'est
     // exactement le défaut corrigé plus haut sur `scripts/mcp-server.ts`.
-    const rels = [
-      ...fichiersSource(join(RACINE, "src")),
-      ...fichiersSource(join(RACINE, "scripts")),
-    ].map((abs) => relative(RACINE, abs).replace(/^src\//, ""));
-
-    for (const { champ, chemins } of CHAMPS_LIBRES) {
-      for (const motif of chemins) {
-        expect(
-          rels.some((r) => motif.test(r)),
-          `${champ} : le motif ${motif} ne désigne aucun fichier`,
-        ).toBe(true);
-      }
+    const rels = sources().map((f) => f.rel);
+    const motifs = [
+      ...CHAMPS_LIBRES.flatMap((c) => c.chemins),
+      ...CHEMINS_REQUETE_NOMMEE,
+    ];
+    for (const motif of motifs) {
+      expect(
+        rels.some((r) => motif.test(r)),
+        `le motif ${motif} ne désigne aucun fichier`,
+      ).toBe(true);
     }
   });
 });

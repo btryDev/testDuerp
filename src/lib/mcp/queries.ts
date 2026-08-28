@@ -122,14 +122,33 @@ export async function getEtatDuerp(
 ): Promise<EtatDuerpLu> {
   const duerp = await prismaMcp.duerp.findFirst({
     where: { etablissementId },
-    include: {
-      versions: { orderBy: { numero: "desc" }, take: 1 },
+    // `select` de bout en bout, et jamais `include`. `include` rend TOUS les
+    // scalaires du modèle qu'il ouvre : ici il ramenait la colonne
+    // `DuerpVersion.snapshot`, un JSON qui porte le `responsable` de chaque
+    // mesure (`versions/snapshot-builder.ts`). Le formateur n'en lisait que
+    // `numero` et `createdAt`, donc rien ne partait vers l'assistant — mais la
+    // règle de ce module est que la retenue vit dans la REQUÊTE, pas dans le
+    // formateur, et elle vivait dans le formateur.
+    //
+    // Un blob JSON ne porte aucun jeton `.responsable` dans le source : la
+    // garde de `frontiere-medicale.test.ts` ne pouvait pas le voir. C'est
+    // pourquoi elle interdit désormais `include` tout court dans `lib/mcp/` —
+    // une règle sur la FORME de la requête attrape ce qu'une règle sur les
+    // noms de champs ne peut pas atteindre.
+    select: {
+      versions: {
+        orderBy: { numero: "desc" },
+        take: 1,
+        select: { numero: true, createdAt: true },
+      },
       etablissement: {
         select: { entreprise: { select: { effectif: true } } },
       },
       unites: {
         orderBy: { nom: "asc" },
-        include: {
+        select: {
+          nom: true,
+          estTransverse: true,
           risques: {
             orderBy: { criticite: "desc" },
             select: {
