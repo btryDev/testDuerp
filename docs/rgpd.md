@@ -358,14 +358,33 @@ pour un défaut, et refaisait l'analyse. Les trois sont légitimes ; ce qui ne
 l'est pas, c'est une quatrième.
 
 **Méthode, pour que ce relevé soit refaisable plutôt que cru sur parole.**
-Énumérer les appels — `prisma*.<modèle>.(findMany|findFirst|findUnique|count|
-groupBy|aggregate)` dans les 21 `src/lib/*/queries.ts` — puis classer **chaque
-appel**, pas chaque fichier. Au 2026-08-28 : 56 appels. La première rédaction
-de cette section annonçait un relevé « sur les 21 fichiers » sans donner la
-méthode, et elle en avait manqué trois — dont deux dans `batiments`, le module
-qu'elle citait en exemple. Un inventaire qui se dit exhaustif sans dire comment
-il a été fait est plus dangereux qu'une absence d'inventaire : on ne le rouvre
-pas.
+Énumérer les appels, puis classer **chaque appel**, pas chaque fichier :
+
+```
+grep -nE 'prisma[A-Za-z]*\.[a-zA-Z]+\.(findMany|findFirst|findUnique|count|groupBy|aggregate)' \
+  src/lib/*/queries.ts
+```
+
+**76 lignes au 2026-08-28**, dont une qui n'est pas un appel mais une expression
+de type (`actions/queries.ts:23`, `Parameters<typeof prisma.action.findMany>`) :
+**75 appels**. Le nombre n'est là que pour qu'un relecteur sache s'il regarde le
+même ensemble ; s'il en trouve un autre, c'est le relevé qui est périmé, pas lui.
+
+Deux avertissements sur cette commande, pour qu'elle ne trompe pas à son tour.
+Elle ne couvre que les 21 `queries.ts` : les `actions.ts` et les modules qui
+ouvrent la base ailleurs (`etablissements/modules.ts`, `equipements/fiche.ts`,
+`versions/snapshot-builder.ts`, `pdf/builders.ts`…) ne sont pas dans ce relevé.
+Et elle liste des **appels**, pas des portées : un appel qui reprend le `where`
+construit plus haut (`actions/queries.ts:48`) ou une variable de portée
+(`salaries`, via `portee()`) paraît nu au grep sans l'être. Il faut ouvrir.
+
+*Pourquoi ce paragraphe existe.* La première rédaction annonçait un relevé « sur
+les 21 fichiers » sans donner la méthode, et elle en avait manqué trois — dont
+deux dans `batiments`, le module qu'elle citait en exemple. La deuxième donnait
+la méthode mais un total (« 56 ») que cette commande ne rend pas : un relecteur
+l'aurait tenu pour périmé et aurait tout refait, soit la dépense que ce
+paragraphe prétend éviter. Un inventaire qui se dit exhaustif sans qu'on puisse
+le refaire à l'identique est plus dangereux qu'une absence d'inventaire.
 
 **La forme se choisit par lecture, pas par module** — plusieurs fichiers en
 mêlent deux, et c'est normal : une fonction qui reçoit un `etablissementId`
@@ -395,9 +414,12 @@ paramètre. Garantie équivalente à A : l'identifiant filtré ne vient pas de
 l'appelant, il sort d'une lecture déjà scopée qui a fait 404 sinon. *Lectures
 en B* : accessibilite (`getRegistreAccessibilite`), carnet-sanitaire
 (`getCarnetSanitaire`), permis-feu et plan-prevention (leurs `list*` et
-`get*`), prestataires. Les trois derniers portent aussi des lectures en A —
-`dernierRelevesParPoint`, `nextNumeroPermisFeu`, `nextNumeroPlan` reçoivent un
-identifiant nu et portent donc le prédicat.
+`get*`), prestataires — ce dernier **intégralement** en B.
+
+Trois modules mêlent B et A, et ce sont ceux dont une fonction reçoit un
+identifiant nu plutôt qu'un identifiant sorti d'une garde : carnet-sanitaire
+(`dernierRelevesParPoint`), permis-feu (`nextNumeroPermisFeu`) et
+plan-prevention (`nextNumeroPlan`) portent donc le prédicat.
 
 **C — pas de portée, et la raison est écrite dans le fichier.** Trois cas,
 tous délibérés :

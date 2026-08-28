@@ -77,9 +77,10 @@ export async function batimentParDefaut(etablissementId: string) {
  * L'`etablissementId` vient lui aussi de l'appelant, et cette fonction est
  * ce qui **valide** un identifiant avant qu'il soit écrit : sans le prédicat,
  * un `etablissementId` non gardé lui ferait confirmer comme valide le
- * bâtiment d'un autre compte, et le permis de feu s'y rattacherait. Les
- * quatre appelants posent bien leur garde aujourd'hui — c'est justement ce
- * qui ne doit pas être la seule chose qui tienne.
+ * bâtiment d'un autre compte, et le permis de feu s'y rattacherait. Ses trois
+ * appelants — `carnet-sanitaire`, `permis-feu`, `plan-prevention` — posent
+ * bien `assertEtablissementOwnership` avant l'appel ; c'est justement ce qui
+ * ne doit pas être la seule chose qui tienne.
  */
 export async function resoudreBatimentOptionnel(
   etablissementId: string,
