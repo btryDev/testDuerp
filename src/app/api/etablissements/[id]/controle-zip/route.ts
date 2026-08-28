@@ -233,7 +233,7 @@ export async function GET(
   if (plansList.length > 0) {
     const txt = [
       `PLANS DE PRÉVENTION — 12 derniers mois (${plansList.length})`,
-      `Art. R4512-6 à R4512-12 CT (décret 92-158).`,
+      `Art. R4512-6 à R4512-12 du code du travail.`,
       "",
       "────────────────────────────────────────────────────────────",
       ...plansList.flatMap((p) => [

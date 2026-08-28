@@ -121,10 +121,10 @@ export default async function PermisFeuListePage({
           tonalite="info"
         >
           <p className="m-0">
-            Ce n&apos;est pas imposé par un article unique du Code du travail,
-            mais par un <strong>faisceau d&apos;obligations</strong> : sécurité
-            incendie du bâtiment, exigence quasi-systématique des assureurs
-            (APSAD R43), règlement ERP (art. MS 52) pour les travaux en ERP.
+            Aucun texte n&apos;impose le permis de feu sous ce nom. Il
+            matérialise un <strong>faisceau d&apos;obligations</strong> :
+            l&apos;entretien des installations de sécurité, et, en ERP,
+            l&apos;interdiction de travaux dangereux en présence du public.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <LegalBadge
@@ -135,13 +135,44 @@ export default async function PermisFeuListePage({
               Recommandation de référence — checklist officielle des mesures
               préventives avant, pendant, après.
             </LegalBadge>
+            {/* L'URL pointait sur LEGIARTI000018530333, qui n'est pas
+                R. 4224-17 mais R. 4434-9 (bruit). Relu à la source le
+                2026-08-28 ; l'identifiant juste est celui que citent déjà les
+                autres écrans. */}
             <LegalBadge
               charte="board"
-              reference="Art. R4224-17 CT"
-              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530333"
+              reference="Art. R. 4224-17 CT"
+              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532197"
+              extrait="Les installations et dispositifs techniques et de sécurité des lieux de travail sont entretenus et vérifiés suivant une périodicité appropriée. Toute défectuosité susceptible d'affecter la santé et la sécurité des travailleurs est éliminée le plus rapidement possible."
             />
-            <LegalBadge charte="board" reference="MS 52 ERP · APSAD R43" />
+            {/* Ici se tenait « MS 52 ERP · APSAD R43 », sans lien. Les deux
+                références étaient fausses, chacune à sa manière, et le
+                2026-08-28 les a relues à la source :
+
+                — MS 52 de l'arrêté du 25 juin 1980 s'intitule « Présence de
+                  l'exploitant » et traite de qui doit se trouver dans
+                  l'établissement pendant l'ouverture au public. Il ne dit rien
+                  des travaux. L'article ERP qui les vise est GN 13, et il ne
+                  prescrit pas de permis de feu : il interdit le chantier
+                  dangereux en présence du public.
+
+                — APSAD R43 est une règle de la profession de l'assurance. Ce
+                  dépôt ne cite que des sources primaires ou institutionnelles
+                  (`conformite/types.ts`, ADR-003) : une règle d'assureur ne
+                  prend pas la pastille d'un article de code. Elle reste
+                  nommée en clair sous les pastilles, pour ce qu'elle est. */}
+            <LegalBadge
+              charte="board"
+              reference="Art. GN 13 · Règlement ERP"
+              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020303866"
+              extrait="L'exploitant ne peut effectuer ou faire effectuer, en présence du public, des travaux qui feraient courir un danger quelconque à ce dernier ou qui apporteraient une gêne pour son évacuation."
+            />
           </div>
+          <p className="m-0 mt-3 text-[13px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+            Votre assureur l&apos;exigera probablement au titre de la règle
+            APSAD R43. C&apos;est un référentiel de la profession de
+            l&apos;assurance, opposable par votre contrat — pas par le droit.
+          </p>
         </WhyCard>
       </div>
     </main>

@@ -180,10 +180,18 @@ export default async function PlanPreventionListePage({
               reference="Art. R4512-6 à R4512-12 CT"
               href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018529787/"
             />
-            <LegalBadge charte="board" reference="Décret 92-158" />
+            {/* Ici se tenait « Décret 92-158 », sans lien. Relu à la source
+                le 2026-08-28 : ce décret est ABROGÉ depuis le 1er mai 2008
+                (décret n° 2008-244, recodification). Il est l'ancêtre des
+                articles R. 4512-* cités ci-contre, pas une source en vigueur.
+                Une pastille de source ne cite pas un texte abrogé — la
+                filiation, si elle intéresse, se lit dans un commentaire de
+                code, pas dans un écran qu'on ouvre devant un inspecteur. */}
             <LegalBadge
               charte="board"
-              reference="Arrêté 19-03-1993 — liste dangereuse"
+              reference="Arrêté du 19 mars 1993 · Travaux dangereux"
+              href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000179892/"
+              extrait="Un plan de prévention est établi par écrit dans les conditions prévues au deuxième alinéa de l'article R. 4512-7 du code du travail pour les travaux dangereux ci-après énumérés."
             />
           </div>
         </WhyCard>

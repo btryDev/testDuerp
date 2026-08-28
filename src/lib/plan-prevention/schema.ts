@@ -2,10 +2,16 @@ import { z } from "zod";
 import { depuisCleJourCivil, depuisSaisieDateHeure } from "@/lib/dates";
 
 /**
- * Plan de prévention — art. R4512-6 à R4512-12 CT (décret 92-158).
+ * Plan de prévention — art. R. 4512-6 à R. 4512-12 du code du travail.
+ *
+ * Ces articles viennent du décret n° 92-158 du 20 février 1992, **abrogé le
+ * 1er mai 2008** par le décret n° 2008-244 qui l'a codifié. La filiation se
+ * dit ici, dans un commentaire ; elle ne se cite plus à l'écran ni dans le
+ * ZIP remis à un tiers, où « décret 92-158 » passait pour une source en
+ * vigueur.
  *
  * Le diagnostic initial aide le dirigeant à savoir s'il doit établir un
- * plan ÉCRIT (obligatoire) ou juste oral. Les critères du décret :
+ * plan ÉCRIT (obligatoire) ou juste oral. Les critères :
  *
  *   - Durée totale ≥ 400 h sur 12 mois : écrit obligatoire
  *   - Travaux sur liste dangereuse (arrêté 19-03-1993) : écrit obligatoire

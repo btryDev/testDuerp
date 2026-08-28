@@ -289,15 +289,50 @@ export default async function ControlePage({
               base, voir qui l&apos;a modifiée et quand. Aucune opération cachée.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <LegalBadge charte="board" reference="Art. R4121-1 CT · DUERP" />
+              <LegalBadge
+                charte="board"
+                reference="Art. R. 4121-1 CT · DUERP"
+                href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000023795562"
+                extrait="L'employeur transcrit et met à jour dans un document unique les résultats de l'évaluation des risques pour la santé et la sécurité des travailleurs à laquelle il procède en application de l'article L. 4121-3."
+              />
               <LegalBadge
                 charte="board"
                 reference="Art. R. 4323-25 CT · Registre"
                 href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018531481/"
                 extrait="Le résultat des vérifications générales périodiques est consigné sur le ou les registres de sécurité mentionnés à l'article L. 4711-5."
               />
-              <LegalBadge charte="board" reference="Arrêté 19-04-2017 · Accessibilité" />
-              <LegalBadge charte="board" reference="Art. L8222-1 CT · Vigilance" />
+              {/* L'ancienne pastille citait « Arrêté 19-04-2017 » seul, sans
+                  lien. Relu à la source le 2026-08-28 : l'arrêté fixe le
+                  CONTENU du registre, il ne l'institue pas — c'est
+                  R. 164-6 CCH qui l'impose à l'exploitant, depuis la
+                  recodification du 1er juillet 2021 (ex-R. 111-19-60). C'est
+                  donc l'article qui est cité et ouvert ; l'arrêté est nommé
+                  dans le complément, là où il agit. */}
+              <LegalBadge
+                charte="board"
+                reference="Art. R. 164-6 CCH · Accessibilité"
+                href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043819305"
+                extrait="L'exploitant de tout établissement recevant du public au sens de l'article R. 143-2 élabore le registre public d'accessibilité prévu à l'article L. 164-1. Celui-ci précise les dispositions prises pour permettre à tous, notamment aux personnes handicapées, quel que soit leur handicap, de bénéficier des prestations en vue desquelles cet établissement a été conçu."
+              >
+                <p>
+                  L&apos;arrêté du 19 avril 2017 en fixe le contenu et les
+                  modalités de diffusion : prestations fournies, pièces
+                  administratives d&apos;accessibilité, formation du personnel
+                  d&apos;accueil.
+                </p>
+              </LegalBadge>
+              <LegalBadge
+                charte="board"
+                reference="Art. L. 8222-1 CT · Vigilance"
+                href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024197683"
+                extrait="Toute personne vérifie lors de la conclusion d'un contrat dont l'objet porte sur une obligation d'un montant minimum en vue de l'exécution d'un travail, de la fourniture d'une prestation de services ou de l'accomplissement d'un acte de commerce, et périodiquement jusqu'à la fin de l'exécution du contrat, que son cocontractant s'acquitte des formalités mentionnées aux articles L. 8221-3 et L. 8221-5."
+              >
+                <p>
+                  Le montant plancher — 5 000 € HT — et le rythme semestriel
+                  ne sont pas dans cet article : ils viennent de
+                  R. 8222-1 et D. 8222-5.
+                </p>
+              </LegalBadge>
             </div>
           </WhyCard>
         </section>
