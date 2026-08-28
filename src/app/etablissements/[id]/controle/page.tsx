@@ -72,7 +72,11 @@ export default async function ControlePage({
       present: true,
       etat:
         dashboard.compteurs.verifsEnRetard > 0 ? "en_retard" : "a_jour",
-      reference: "Art. L4711-5 CT",
+      // R. 4323-25 fonde la consignation des vérifications, R. 4323-26
+      // l'annexion des rapports d'un tiers — c'est ce que cette carte compte.
+      // Ce n'est PAS L. 4711-5, qui autorise seulement à réunir plusieurs
+      // registres en un seul (verbatim relevé le 2026-08-28).
+      reference: "Art. R. 4323-25 et R. 4323-26 CT",
     },
     {
       titre: "Plan d'actions correctives",
@@ -286,7 +290,12 @@ export default async function ControlePage({
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <LegalBadge charte="board" reference="Art. R4121-1 CT · DUERP" />
-              <LegalBadge charte="board" reference="Art. L4711-5 CT · Registre" />
+              <LegalBadge
+                charte="board"
+                reference="Art. R. 4323-25 CT · Registre"
+                href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018531481/"
+                extrait="Le résultat des vérifications générales périodiques est consigné sur le ou les registres de sécurité mentionnés à l'article L. 4711-5."
+              />
               <LegalBadge charte="board" reference="Arrêté 19-04-2017 · Accessibilité" />
               <LegalBadge charte="board" reference="Art. L8222-1 CT · Vigilance" />
             </div>
