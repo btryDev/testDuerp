@@ -68,12 +68,29 @@ export default async function CarnetSanitairePage({
           tonalite="info"
         >
           <div className="mt-3 flex flex-wrap gap-2">
+            {/* L'extrait affiché ici était FABRIQUÉ : ni « bonne
+                surveillance », ni « carnet sanitaire », ni « toutes les
+                opérations réalisées » ne figurent dans l'arrêté. Il
+                reformulait le texte avec le vocabulaire du produit, entre
+                guillemets, sous une prop documentée « cité textuellement ».
+                Personne ne pouvait le voir : l'URL d'à côté ne rendait aucun
+                contenu, donc la citation ne pouvait être confrontée à rien.
+                C'est en réparant le lien que le faux est apparu.
+                Verbatim de l'article 3, version en vigueur au 2023-01-01,
+                relevé le 2026-08-28. */}
             <LegalBadge
               charte="board"
-              reference="Arrêté du 1er février 2010"
+              reference="Arrêté du 1er février 2010, art. 3"
               href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000021795143/"
-              extrait="Le responsable des installations de production, de stockage et de distribution d'eau chaude sanitaire s'assure de la bonne surveillance des installations notamment par un carnet sanitaire dans lequel sont consignées toutes les opérations réalisées."
-            />
+              extrait="Le responsable des installations assure la traçabilité de cette surveillance. Il consigne les modalités et les résultats de cette surveillance avec les éléments descriptifs des réseaux d'eau chaude sanitaire et ceux relatifs à leur maintenance dans un fichier sanitaire des installations, qui est tenu à disposition du directeur général de l'agence régionale de santé."
+            >
+              <p>
+                Le texte dit <strong>« fichier sanitaire des installations »</strong>.
+                « Carnet sanitaire » est le nom que cet outil donne à son
+                module, pas celui de l&apos;arrêté — et le destinataire du
+                fichier est l&apos;ARS.
+              </p>
+            </LegalBadge>
             <LegalBadge
               charte="board"
               reference="Art. R. 1321-23 CSP"
