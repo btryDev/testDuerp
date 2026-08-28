@@ -289,9 +289,26 @@ parce qu'il énonce le piège. Ce qui a changé :
   devenues « Personnel ». Il prend maintenant une ventilation par nature, et
   `compterEtatCalendrier` la produit d'une seule lecture.
 
-Ce que l'utilisateur voit : la pilule « Personnel » apparaît et filtre ; le
-badge « Contrôles matériel » cesse de compter les attestations médicales ; le
-compteur de retards du rail garde sa valeur — seule sa ventilation change.
+Ce que l'utilisateur voit : la pilule « Titres du personnel » apparaît et
+filtre ; la ventilation du board et la phrase du brief nomment les titres au
+lieu de les fondre dans les vérifications ; la fiche d'une ligne de titre cesse
+d'afficher le pictogramme des contrôles. Le compteur de retards du rail garde
+sa valeur — il est de toute façon annoncé toutes familles confondues.
+
+**Ce que l'utilisateur ne voit PAS, et qu'une première rédaction de cet
+amendement annonçait à tort** : le badge « Contrôles matériel » ne cesse rien,
+parce qu'**il n'existe plus**. L'ADR-015 l'a retiré du rail, qui ne porte
+qu'`enRetardTotal` ; la chaîne ne figure plus dans aucun texte rendu, seulement
+dans des commentaires et des noms de tests. Et `RetardsParFamille.verifications`,
+le champ qu'il lisait, **n'a plus aucun lecteur** hors tests : sa correction est
+juste et sans effet visible.
+
+La leçon vaut d'être gardée : le commentaire de `retards.ts` décrivait ce badge
+au présent bien avant ce lot. Un commentaire périmé qui dort est une dette ; le
+promouvoir en effet utilisateur constaté, sans vérifier que la chaîne existe
+encore à l'écran, en fait une affirmation fausse dans un document de décision.
+La règle du dépôt — ouvrir le fichier avant de qualifier ce qu'il contient —
+vaut aussi pour ce qu'on hérite d'un commentaire.
 
 `REFERENTIEL_VERSION` **n'a pas bougé** : `empreinteReferentiel()` ne hache que
 l'identifiant, la périodicité, le libellé, les réalisateurs, les typologies,

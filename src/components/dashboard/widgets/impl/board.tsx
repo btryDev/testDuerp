@@ -836,8 +836,10 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
               href={hrefCalendrier}
               // Toutes familles confondues, comme le calendrier et le
               // bandeau d'accueil — et non les seules vérifications, comme
-              // le badge « Contrôles matériel » de la barre latérale, qui
-              // nomme explicitement son périmètre plus étroit.
+              // le sous-compte `verifications`, qui nomme explicitement son
+              // périmètre plus étroit. (Il servait le badge « Contrôles
+              // matériel » de la barre latérale, retiré depuis par
+              // l'ADR-015 ; il n'a plus de lecteur.)
               title={`${nbEnRetard} échéance${nbEnRetard > 1 ? "s" : ""} en retard, toutes familles confondues — ${libelleVentilation(retards)}`}
               className="hidden sm:inline-block"
             >

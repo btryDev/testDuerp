@@ -74,10 +74,9 @@ export const FAMILLE_DE_TYPE: Record<TypeEcheance, FamilleEcheance> = {
   legionelles: "controle",
   // La ligne d'un titre de salarié n'est pas un contrôle d'appareil.
   // Elle vivait pourtant dans `controle` jusqu'ici, faute de type : une
-  // attestation médicale s'annonçait sous le badge « Contrôles matériel »,
-  // qui « nomme ce qui a un calendrier réglementaire d'équipement »
-  // (ADR-015). C'est le rattachement que l'ADR-023 § 7 avait consigné à la
-  // dette.
+  // attestation médicale se rangeait sous « Vérifications », se filtrait
+  // avec les contrôles d'équipement et se comptait avec eux. C'est le
+  // rattachement que l'ADR-023 § 7 avait consigné à la dette.
   "titre-salarie": "personnel",
   "action-duerp": "travaux",
   "action-verification": "travaux",
@@ -149,6 +148,41 @@ export function typeDeVerification(v: {
   // (`undefined` — un objet de test, un `select` incomplet) rangeait une
   // vérification d'équipement en « Personnel », soit le sens inverse.
   return v.salarieId ? "titre-salarie" : "verification";
+}
+
+/**
+ * Les familles à proposer en pilules : celles qui portent réellement quelque
+ * chose dans le périmètre affiché.
+ *
+ * Deux sources, parce que les familles viennent de deux flux — les lignes de
+ * `Verification`, ventilées par nature, et le registre. Une famille vide
+ * n'encombre pas la rangée, et surtout ne mène pas à « Rien ne correspond à
+ * ces filtres ».
+ *
+ * **Aucun cas particulier.** La page portait un `f === "controle" ||` en tête,
+ * hérité du temps où le flux des vérifications n'avait pas de ventilation :
+ * une fois `parType` disponible, il ne servait plus que le cas où AUCUNE ligne
+ * de contrôle n'existe — c'est-à-dire le seul où la pilule ne doit pas
+ * s'afficher. Un établissement sans équipement, non-ERP, avec un titre
+ * déclaré, se voyait donc proposer « Vérifications » pour tomber sur un écran
+ * vide.
+ *
+ * Extraite de la page pour être testable, comme `FAMILLES_FILTRABLES` :
+ * l'assemblage d'un composant serveur n'est couvert par rien dans ce dépôt, et
+ * c'est là que les deux défauts de ce lot se sont logés.
+ */
+export function famillesAvecEcheances(
+  parType: Record<TypeVerification, number>,
+  autres: readonly { famille: FamilleEcheance }[],
+): FamilleEcheance[] {
+  const desVerifs = new Set(
+    TYPES_VERIFICATION.filter((t) => parType[t] > 0).map(
+      (t) => FAMILLE_DE_TYPE[t],
+    ),
+  );
+  return FAMILLES_FILTRABLES.filter(
+    (f) => desVerifs.has(f) || autres.some((e) => e.famille === f),
+  );
 }
 
 export type EcheanceCalendrier = {

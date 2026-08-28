@@ -22,7 +22,7 @@ import {
 import {
   FAMILLE_DE_TYPE,
   FAMILLES_FILTRABLES,
-  TYPES_VERIFICATION,
+  famillesAvecEcheances,
   filtrerParBatiment,
   listerAutresEcheances,
   typeDeVerification,
@@ -837,17 +837,12 @@ export default async function CalendrierPage({
   // domaine et l'urgence : une pilule qui s'efface sous « En retard
   // seulement » ne se retrouve plus, et c'est le sort qu'elle a déjà évité
   // pour « Opérations ».
+  //
+  // La règle elle-même vit dans `calendrier/echeances.ts`, où elle est testée.
   const echeancesDuLieu = filtrerParBatiment(autresEcheances, filtreBatiment);
-  const famillesDesVerifs = new Set(
-    TYPES_VERIFICATION.filter((t) => etat.toutesParType[t] > 0).map(
-      (t) => FAMILLE_DE_TYPE[t],
-    ),
-  );
-  const famillesPresentes = FAMILLES_FILTRABLES.filter(
-    (f) =>
-      f === "controle" ||
-      famillesDesVerifs.has(f) ||
-      echeancesDuLieu.some((e) => e.famille === f),
+  const famillesPresentes = famillesAvecEcheances(
+    etat.toutesParType,
+    echeancesDuLieu,
   );
 
   const baseHref = `/etablissements/${id}/calendrier`;

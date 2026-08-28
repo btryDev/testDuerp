@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { cleJourCivil } from "@/lib/dates";
+import type { FamilleEcheance } from "./echeances";
 import {
   MOIS_ANALYSE_LEGIONELLES,
   MOIS_MAJ_DUERP,
@@ -11,6 +12,7 @@ import {
   echeancesPrestataire,
   FAMILLE_DE_TYPE,
   FAMILLES_FILTRABLES,
+  famillesAvecEcheances,
   origineAction,
   typeDeVerification,
   tonPourDate,
@@ -128,6 +130,58 @@ describe("FAMILLE_DE_TYPE", () => {
     });
     expect(e?.type).toBe("duerp-maj");
     expect(e?.famille).toBe(FAMILLE_DE_TYPE["duerp-maj"]);
+  });
+});
+
+describe("famillesAvecEcheances", () => {
+  const aucune = { verification: 0, "titre-salarie": 0 } as const;
+  const fam = (famille: FamilleEcheance) => ({ famille });
+
+  it("ne propose que les familles qui portent quelque chose", () => {
+    expect(
+      famillesAvecEcheances({ verification: 4, "titre-salarie": 0 }, [
+        fam("papiers"),
+      ]),
+    ).toEqual(["controle", "papiers"]);
+  });
+
+  it("propose « Personnel » dès qu'un titre existe", () => {
+    expect(
+      famillesAvecEcheances({ verification: 0, "titre-salarie": 2 }, []),
+    ).toEqual(["personnel"]);
+  });
+
+  it("ne propose plus « Vérifications » quand il n'y a aucun contrôle", () => {
+    // Le cas du cul-de-sac : un établissement sans équipement, non-ERP, avec
+    // un titre déclaré. La clause `f === "controle"` en tête proposait la
+    // pilule, qui menait à « Rien ne correspond à ces filtres ».
+    const out = famillesAvecEcheances(
+      { verification: 0, "titre-salarie": 1 },
+      [],
+    );
+    expect(out).not.toContain("controle");
+  });
+
+  it("garde « Vérifications » pour une analyse légionelles seule", () => {
+    // Elle vient du registre, pas du flux des vérifications : sans cette
+    // seconde source, retirer la clause aurait fait disparaître la pilule
+    // d'un établissement qui n'a qu'un carnet sanitaire.
+    expect(famillesAvecEcheances(aucune, [fam("controle")])).toEqual([
+      "controle",
+    ]);
+  });
+
+  it("rend les familles dans l'ordre du filtre, jamais celui des données", () => {
+    expect(
+      famillesAvecEcheances({ verification: 1, "titre-salarie": 1 }, [
+        fam("papiers"),
+        fam("travaux"),
+      ]),
+    ).toEqual(["controle", "travaux", "papiers", "personnel"]);
+  });
+
+  it("ne propose rien sur un dossier vide", () => {
+    expect(famillesAvecEcheances(aucune, [])).toEqual([]);
   });
 });
 
