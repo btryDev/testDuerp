@@ -130,6 +130,10 @@ const VERBE: Record<RecoBrief["kind"], string> = {
   amorce_equipements: "Déclarer",
   amorce_duerp: "Ouvrir",
   amorce_rapport: "Déposer",
+  // Un verbe qui invite, pas qui somme : ces deux-là nomment un écart, pas
+  // une échéance (ADR-024).
+  transmission_prestataire: "Compléter l'annuaire",
+  transmission_salarie: "Voir l'équipe",
 };
 
 /**

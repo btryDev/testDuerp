@@ -18,6 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { compterActions } from "@/lib/actions/queries";
 import { computeVigilance } from "@/lib/prestataires/vigilance";
+import { chargerTransmissions } from "./transmissions";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 import {
@@ -675,9 +676,12 @@ export const getDashboardData = cache(async function getDashboardData(
     duerp: etatDuerp.ouvert ? etatDuerp : null,
   });
 
+  const transmissions = await chargerTransmissions(etablissementId, user.id);
+
   const recommandations = genererRecommandations(
     {
       etablissementId,
+      transmissions,
       // Ordre d'urgence réelle : les retards d'abord (échéance croissante,
       // la plus ancienne en tête), puis ce qui arrive, puis les occurrences
       // sans date arrêtée — dont aucune règle ne tire de proposition, mais

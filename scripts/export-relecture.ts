@@ -33,6 +33,7 @@ import type {
   ConditionApplication,
   Obligation,
   ReferenceLegale,
+  Transmission,
 } from "../src/lib/referentiels/conformite/types";
 import {
   articlesNonCouverts,
@@ -168,10 +169,44 @@ function alertes(
     }
     if (art.versionFuture) a.push(`VERSION_FUTURE:${art.versionFuture}`);
   }
+  if (
+    rang === 0 &&
+    o.transmet.some((t) => t.vers === "salarie_designe" && t.titre === null)
+  ) {
+    // L'obligation dit qu'une personne nommée est supposée, et le catalogue ne
+    // porte pas encore le titre correspondant. Constat mécanique, pas verdict :
+    // il se vérifie sans lire le texte, ce qui est le critère de cette colonne.
+    a.push("TITRE_HORS_CATALOGUE");
+  }
   if (!r.versionConstatee) a.push("VERSION_JAMAIS_CONSTATEE");
   if (!r.url && !e?.article.url) a.push("SANS_URL");
 
   return a;
+}
+
+/**
+ * Une transmission, rendue pour un relecteur (ADR-024).
+ *
+ * C'est LA colonne que ce script existe désormais pour porter. Un relecteur a
+ * l'article sous les yeux sur Légifrance ; le schéma « ceci se transmet là »
+ * doit être devant lui à ce moment-là, pas redécouvert trois mois plus tard en
+ * revue. Les treize implications recensées l'ont toutes été de cette façon.
+ *
+ * Le motif n'est pas repris ici — il est long, et cette colonne se lit en
+ * diagonale. Elle dit VERS QUOI ça part ; le motif est dans le référentiel, à
+ * côté de la déclaration, où il se relit avec elle.
+ */
+function rendreTransmission(t: Transmission): string {
+  switch (t.vers) {
+    case "salarie_designe":
+      return t.titre === null
+        ? "salarié désigné (aucun titre au catalogue)"
+        : `salarié désigné → ${t.titre}`;
+    case "modele_absent":
+      return `modèle absent → ${t.modele}`;
+    case "attribut_absent":
+      return `attribut absent → ${t.sujet}.${t.attribut}`;
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -187,6 +222,7 @@ type Ligne = {
   criticite: number;
   champ: string;
   conditions: string;
+  transmet: string;
   rang: string;
   source: string;
   reference: string;
@@ -219,6 +255,7 @@ function lignes(): Ligne[] {
         criticite: o.criticite,
         champ: rendreTypologies(o.typologies),
         conditions: (o.conditions ?? []).map(rendreCondition).join(" ET "),
+        transmet: o.transmet.map(rendreTransmission).join(" ; "),
         rang: i === 0 ? "fondement" : `contexte ${i}`,
         source: r.source,
         reference: r.reference,
@@ -246,7 +283,7 @@ function lignes(): Ligne[] {
 
 const COLONNES: (keyof Ligne)[] = [
   "obligation", "domaine", "libelle", "periodicite", "realisateurs",
-  "criticite", "champ", "conditions", "rang", "source", "reference",
+  "criticite", "champ", "conditions", "transmet", "rang", "source", "reference",
   "article", "url", "versionConstatee", "corpus", "statutCorpus", "lecture",
   "luLe", "versionEnVigueur", "prescrit", "verbatim", "note", "alertes",
 ];
@@ -265,7 +302,7 @@ function csv(rows: Ligne[]): string {
 function md(rows: Ligne[]): string {
   const cols: (keyof Ligne)[] = [
     "obligation", "rang", "reference", "article", "periodicite",
-    "statutCorpus", "lecture", "verbatim", "alertes",
+    "statutCorpus", "lecture", "transmet", "verbatim", "alertes",
   ];
   const cell = (v: string | number) =>
     String(v).replaceAll("|", "\\|").replaceAll("\n", " ") || "—";
@@ -311,6 +348,7 @@ function resume(rows: Ligne[]): string {
     ["SANS_VERBATIM", "article retenu sans citation relevée — rien à relire"],
     ["VERSION_DIVERGENTE", "version constatée ≠ version lue au corpus"],
     ["VERSION_FUTURE", "version future programmée"],
+    ["TITRE_HORS_CATALOGUE", "l'obligation suppose une personne nommée, aucun titre au catalogue ne la porte"],
     ["VERSION_JAMAIS_CONSTATEE", "aucune date de version constatée"],
     ["SANS_URL", "aucun lien consultable"],
   ] as const) {
@@ -322,6 +360,26 @@ function resume(rows: Ligne[]): string {
     l.push(`       ${quoi}`);
   }
   l.push("");
+  const avecTransmission = obligationsConformite.filter(
+    (o) => o.transmet.length > 0,
+  );
+  l.push(
+    `Transmissions déclarées : ${avecTransmission.length} obligations sur ${nbObl} (ADR-024)`,
+  );
+  for (const o of avecTransmission) {
+    for (const t of o.transmet) {
+      l.push(`  ${o.id}`);
+      l.push(`       ${rendreTransmission(t)}`);
+    }
+  }
+  l.push(
+    `  Les ${nbObl - avecTransmission.length} autres déclarent n'impliquer rien ailleurs.`,
+  );
+  l.push(
+    "  Un tableau vide est une réponse ; un champ absent n'en serait pas une,",
+  );
+  l.push("  et c'est pourquoi le champ est requis.");
+  l.push("");
   l.push("Ce que cet export ne dit pas :");
   l.push("  — si une périodicité est exacte. Il dit seulement si un texte cité");
   l.push("    peut la porter.");
@@ -329,6 +387,8 @@ function resume(rows: Ligne[]): string {
   l.push("    le bâti technique ; rien ici ne le compare à ce qu'on en a fait.");
   l.push("  — ce qui manque. Un article jamais cité n'a pas de ligne : c'est le");
   l.push("    bloc ci-dessous, tenu par le corpus, qui le porte.");
+  l.push("  — si une transmission déclarée est complète. Il dit ce que quelqu'un");
+  l.push("    a écrit en lisant le texte, pas ce que le texte implique vraiment.");
   l.push("");
   l.push(completude());
   return l.join("\n");
