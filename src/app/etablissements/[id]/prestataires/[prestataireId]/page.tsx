@@ -28,6 +28,22 @@ function formatDate(d: Date | null): string | null {
   return formaterDateLongueFr(d);
 }
 
+/**
+ * L'état de vigilance le plus grave, traduit en ton de pastille.
+ *
+ * Trois lignes seulement, mais posées ici plutôt qu'en ternaire : `aPlanifier`
+ * doit porter l'ardoise et non le rose. Rien n'a d'échéance tant qu'il n'y a
+ * pas de document — une pièce jamais fournie n'est pas en retard.
+ */
+const TON_DE_L_ETAT: Record<
+  "enRetard" | "proche" | "aPlanifier",
+  "retard" | "proche" | "neutre"
+> = {
+  enRetard: "retard",
+  proche: "proche",
+  aPlanifier: "neutre",
+};
+
 export default async function PrestataireDetailPage({
   params,
   searchParams,
@@ -48,7 +64,16 @@ export default async function PrestataireDetailPage({
     label: "Annuaire",
   };
 
-  const nbAlertes = p.vigilance.alertesOuvertes;
+  // Le VOLUME pour le mot, l'ÉTAT LE PLUS GRAVE pour la couleur. Les deux ne
+  // se déduisent pas l'un de l'autre : `alertesOuvertes` fond « expirée »,
+  // « expire bientôt » et « jamais fournie » dans un seul chiffre.
+  //
+  // La carte de l'annuaire avait été corrigée, pas cette fiche — qui est
+  // pourtant la surface où la contradiction se voit le mieux : elle rend
+  // quelques centimètres plus bas les pastilles de pièces, où « Non fournie »
+  // porte l'ardoise. Un prestataire créé ce matin affichait donc « 2 pièces à
+  // demander » en rose au-dessus de deux pastilles ardoise.
+  const { alertesOuvertes: nbAlertes, etatLePlusGrave } = p.vigilance;
 
   return (
     <EcranFiche provenance={provenance} canonique={annuaire}>
@@ -71,8 +96,8 @@ export default async function PrestataireDetailPage({
                     {/* Le nombre plutôt que le seul mot : l'utilisateur ne
                         devrait pas avoir à compter les pastilles pour savoir
                         combien de pièces lui manquent. */}
-                    {nbAlertes > 0 ? (
-                      <PastilleFiche ton="retard">
+                    {etatLePlusGrave !== null ? (
+                      <PastilleFiche ton={TON_DE_L_ETAT[etatLePlusGrave]}>
                         {nbAlertes > 1
                           ? `${nbAlertes} pièces à demander`
                           : "1 pièce à demander"}

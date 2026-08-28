@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { StatutPermisFeu } from "@prisma/client";
-import { ETAT_PERMIS } from "@/lib/permis-feu/etats";
+import { ETAT_PERMIS, libellePastillePermis } from "@/lib/permis-feu/etats";
 import { Check } from "lucide-react";
 import { lireProvenance } from "@/lib/navigation/provenance";
 import {
@@ -55,21 +55,16 @@ function PastilleStatut({
   statut: StatutPermisFeu;
   manquantes: number;
 }) {
-  const { ton, mot } = ETAT_PERMIS[statut];
+  const { ton } = ETAT_PERMIS[statut];
 
-  if (statut === "attente_signatures") {
-    // Le nombre plutôt que le seul mot : l'utilisateur ne devrait pas avoir à
-    // ouvrir la fiche pour savoir combien de signatures il attend.
-    return (
-      <PastilleFiche ton={ton}>
-        {manquantes > 1 ? `${manquantes} signatures manquantes` : `1 ${mot}`}
-      </PastilleFiche>
-    );
-  }
-
+  // Le libellé vient de `libellePastillePermis`, fonction pure et testée. Il
+  // était construit ici, en interpolant le mot de la table — `1 ${mot}` — ce
+  // qui a produit « 1 En attente de signatures » le jour où ce mot a été unifié
+  // avec celui de la liste. Une table de vocabulaire d'état et un décompte
+  // d'objets ne se concatènent pas.
   return (
     <PastilleFiche ton={ton}>
-      {mot}
+      {libellePastillePermis(statut, manquantes)}
     </PastilleFiche>
   );
 }
