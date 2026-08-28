@@ -611,8 +611,20 @@ export function requetesDeLecture(source: string): string[] {
     let profondeur = 1;
     let j = m.index + m[0].length;
     while (j < code.length && profondeur > 0) {
-      if (code[j] === "{") profondeur++;
-      else if (code[j] === "}") profondeur--;
+      const c = code[j];
+      // Même précaution que dans `clesDirectes` : une accolade entre
+      // guillemets refermerait le bloc trop tôt, et tout ce qui suit — le
+      // `select`, par exemple — deviendrait invisible.
+      if (c === '"' || c === "'" || c === "`") {
+        const fin = c;
+        j++;
+        while (j < code.length) {
+          if (code[j] === "\\") j += 2;
+          else if (code[j] === fin) break;
+          else j++;
+        }
+      } else if (c === "{") profondeur++;
+      else if (c === "}") profondeur--;
       j++;
     }
     blocs.push(code.slice(m.index, j));
@@ -641,6 +653,20 @@ function clesDirectes(objet: string): { cle: string; valeur: string }[] {
 
   while (i < objet.length) {
     const c = objet[i];
+    // Une accolade entre guillemets n'est pas une accolade. Sans ce saut,
+    // `note: "x}y"` refermait l'objet et rendait muettes toutes les clés
+    // suivantes — un faux vert, la pire des deux erreurs.
+    if (c === '"' || c === "'" || c === "`") {
+      const fin = c;
+      i++;
+      while (i < objet.length) {
+        if (objet[i] === "\\") i += 2;
+        else if (objet[i] === fin) break;
+        else i++;
+      }
+      i++;
+      continue;
+    }
     if (c === "{" || c === "[" || c === "(") profondeur++;
     else if (c === "}" || c === "]" || c === ")") {
       if (profondeur === 0) {
@@ -649,6 +675,14 @@ function clesDirectes(objet: string): { cle: string; valeur: string }[] {
       }
       profondeur--;
     } else if (profondeur === 0) {
+      if (c === "." && objet.slice(i, i + 3) === "..." && cle === null) {
+        // Une diffusion n'a pas de clé, donc n'émettrait aucune paire — et
+        // l'objet diffusé peut contenir n'importe quoi, relations comprises.
+        // Elle est signalée pour que l'appelant la refuse.
+        paires.push({ cle: "…diffusion", valeur: "" });
+        i += 3;
+        continue;
+      }
       if (c === ":" && cle === null) {
         const avant = objet.slice(0, i);
         const m = /([A-Za-z_$][\w$]*)\s*$/.exec(avant);
@@ -663,17 +697,54 @@ function clesDirectes(objet: string): { cle: string; valeur: string }[] {
   return paires;
 }
 
-/** Les noms de champs qui désignent une relation, lus dans le schéma Prisma. */
-export function champsDeRelation(schema: string): Set<string> {
-  const modeles = new Set(
-    [...schema.matchAll(/^model\s+(\w+)\s*\{/gm)].map((m) => m[1]),
+/**
+ * Les noms de champs SCALAIRES, lus dans le schéma Prisma.
+ *
+ * La première version faisait l'inverse : elle listait les relations, et
+ * refusait `X: true` quand `X` en était une. Cette polarité échoue OUVERTE.
+ * Toute lacune d'analyse — un `model` indenté, un champ écrit dans une
+ * graphie non prévue — retire un nom de l'ensemble, et le `X: true`
+ * correspondant passe alors au vert. C'est ce qu'a montré la revue : en
+ * indentant `model Prestataire {` d'un espace, le schéma reste valide pour
+ * `prisma validate`, l'ensemble tombe de 43 à 41, la suite reste verte, et
+ * `select: { prestataires: true }` devient acceptable dans `lib/mcp/`.
+ *
+ * La polarité est donc renversée : `X: true` n'est accepté que si `X` est un
+ * scalaire RECONNU — type primitif Prisma ou énumération déclarée. Tout ce
+ * que l'analyse ne comprend pas devient un refus, donc un rouge bruyant, au
+ * lieu d'un vert muet. C'est la dissymétrie appliquée partout ailleurs dans
+ * ce fichier : le pire échec possible doit être le faux rouge.
+ *
+ * Un cliquet sur le nombre de relations aurait fermé l'autre moitié seulement.
+ * Il aurait vu ce cas — le compte baisse — mais pas une relation AJOUTÉE dans
+ * une graphie non reconnue : le compte ne bouge pas. Et son plancher se relève
+ * à la main précisément quand on ajoute des relations, c'est-à-dire au seul
+ * moment où une relation invisible est indiscernable.
+ */
+const TYPES_PRIMITIFS = new Set([
+  "String",
+  "Boolean",
+  "Int",
+  "BigInt",
+  "Float",
+  "Decimal",
+  "DateTime",
+  "Json",
+  "Bytes",
+]);
+
+export function champsScalaires(schema: string): Set<string> {
+  // `^\s*` et non `^` : une déclaration indentée est du Prisma valide, et
+  // c'est l'ancrage strict qui a ouvert la faille.
+  const enums = new Set(
+    [...schema.matchAll(/^\s*enum\s+(\w+)\s*\{/gm)].map((m) => m[1]),
   );
-  const relations = new Set<string>();
+  const scalaires = new Set<string>();
   for (const ligne of schema.split("\n")) {
-    const m = /^\s{2,}(\w+)\s+(\w+)(\[\])?\??\s*(@|$)/.exec(ligne);
-    if (m && modeles.has(m[2])) relations.add(m[1]);
+    const m = /^\s+(\w+)\s+(\w+)(\[\])?\??/.exec(ligne);
+    if (m && (TYPES_PRIMITIFS.has(m[2]) || enums.has(m[2]))) scalaires.add(m[1]);
   }
-  return relations;
+  return scalaires;
 }
 
 /**
@@ -696,7 +767,7 @@ export function champsDeRelation(schema: string): Set<string> {
  */
 export function relationsNonNommees(
   bloc: string,
-  relations: Set<string>,
+  scalaires: Set<string>,
 ): string[] {
   if (/\binclude\s*:/.test(bloc)) return ["include"];
 
@@ -704,18 +775,22 @@ export function relationsNonNommees(
 
   function descendre(objetSelect: string, chemin: string): void {
     for (const { cle, valeur } of clesDirectes(objetSelect)) {
+      // `_count` ne se descend pas : sa charge utile ne rend que des nombres,
+      // quel que soit le filtre imbriqué, et aucun modèle ne peut porter un
+      // champ de ce nom — un champ Prisma commence par une lettre.
       if (cle === "_count") continue;
       const ici = chemin ? `${chemin}.${cle}` : cle;
 
       if (valeur.startsWith("{")) {
         const sien = clesDirectes(valeur).find((p) => p.cle === "select");
-        if (!sien) {
-          fautes.push(ici);
-          continue;
-        }
-        descendre(sien.valeur, ici);
-      } else if (/^true\b/.test(valeur) && relations.has(cle)) {
-        fautes.push(ici);
+        if (!sien) fautes.push(ici);
+        else descendre(sien.valeur, ici);
+      } else if (!(/^true\b/.test(valeur) && scalaires.has(cle))) {
+        // Tout le reste est refusé : une relation prise en bloc, une valeur
+        // qu'on ne sait pas lire (variable, diffusion, clé calculée, clé entre
+        // guillemets, ternaire), un nom que l'analyse du schéma n'a pas
+        // reconnu. Chacun de ces cas peut cacher une relation entière.
+        fautes.push(ici || "(clé illisible)");
       }
     }
   }
@@ -857,9 +932,15 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
   });
 
   it("le juge de forme voit une requête qui rend plus qu'elle ne nomme", () => {
-    const RELATIONS = new Set(["versions", "unites", "risques", "etablissement"]);
+    const SCALAIRES = new Set([
+      "numero",
+      "createdAt",
+      "nom",
+      "libelle",
+      "effectif",
+    ]);
     const juger = (src: string) =>
-      requetesDeLecture(src).flatMap((b) => relationsNonNommees(b, RELATIONS));
+      requetesDeLecture(src).flatMap((b) => relationsNonNommees(b, SCALAIRES));
 
     // La forme la plus banale, et celle qu'aucune recherche de nom ne peut
     // voir : sans `select`, Prisma rend tous les scalaires du modèle.
@@ -910,10 +991,38 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
       ),
     ).toEqual([]);
 
-    // Un scalaire homonyme d'aucune relation reste sélectionnable par `true`.
+    // Un scalaire reconnu reste sélectionnable par `true`.
     expect(
       juger("await prisma.duerp.findFirst({ select: { libelle: true } });"),
     ).toEqual([]);
+
+    // LA POLARITÉ, éprouvée : ce que l'analyse ne reconnaît pas est REFUSÉ.
+    // C'est ce qui rend la garde insensible à une lacune du parse du schéma —
+    // le `model` indenté qui a fait tomber la version précédente donne
+    // désormais un rouge, pas un vert.
+    expect(
+      juger("await prisma.duerp.findFirst({ select: { prestataires: true } });"),
+    ).toEqual(["prestataires"]);
+
+    // Les cinq formes héritées que la revue signale comme passant au vert :
+    // chacune peut cacher une relation entière, chacune est maintenant refusée.
+    for (const [nom, src] of [
+      ["variable", "prisma.duerp.findFirst({ select: { versions: argsVersions } });"],
+      ["diffusion", "prisma.duerp.findFirst({ select: { ...CHAMPS, nom: true } });"],
+      ["clé entre guillemets", 'prisma.duerp.findFirst({ select: { "versions": true } });'],
+      ["clé calculée", 'prisma.duerp.findFirst({ select: { ["versions"]: true } });'],
+      ["ternaire", "prisma.duerp.findFirst({ select: { versions: x ? a : b } });"],
+    ] as const) {
+      expect(juger(`await ${src}`).length, nom).toBeGreaterThan(0);
+    }
+
+    // Une accolade fermante dans une chaîne ne tronque plus la lecture des
+    // clés : sans ce cas, `versions: true` devenait invisible après elle.
+    expect(
+      juger(
+        'await prisma.duerp.findFirst({ select: { nom: true, note: "x}y", versions: true } });',
+      ),
+    ).toContain("versions");
 
     // Les blocs imbriqués ne trompent pas le compteur d'accolades.
     expect(
@@ -923,17 +1032,42 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
     ).toHaveLength(1);
   });
 
-  it("les relations sont lues dans le schéma Prisma, pas devinées", () => {
-    // Une liste écrite à la main vieillirait en silence : un modèle ajouté
-    // plus tard échapperait à la règle sans que rien ne le dise.
-    const relations = champsDeRelation(
-      readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8"),
-    );
-    for (const attendu of ["versions", "unites", "risques", "pointsReleve", "releves"]) {
-      expect(relations.has(attendu), attendu).toBe(true);
+  it("les scalaires sont lus dans le schéma Prisma, et une relation n'en est pas", () => {
+    const schema = readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8");
+    const scalaires = champsScalaires(schema);
+
+    for (const attendu of ["libelle", "createdAt", "numero", "nom", "statut"]) {
+      expect(scalaires.has(attendu), attendu).toBe(true);
     }
-    // Et un scalaire n'y entre pas.
-    expect(relations.has("libelle")).toBe(false);
+    // Une relation n'est pas un scalaire : `X: true` y sera donc refusé.
+    for (const relation of ["versions", "unites", "risques", "releves"]) {
+      expect(scalaires.has(relation), relation).toBe(false);
+    }
+  });
+
+  it("une déclaration indentée ne fait plus tomber la garde du bon côté", () => {
+    // Le cas exact de la revue, reproduit sur un schéma fabriqué : indenter
+    // `model` d'un espace reste du Prisma valide. L'ancienne polarité y
+    // perdait la relation et laissait passer `prestataires: true` ; la
+    // nouvelle ne reconnaît simplement pas le nom, et refuse.
+    const schema = [
+      " model Prestataire {",
+      "  id String @id",
+      "  libelle String",
+      " }",
+      "model Etablissement {",
+      "  prestataires Prestataire[]",
+      "  raison String",
+      "}",
+    ].join("\n");
+    const scalaires = champsScalaires(schema);
+
+    expect(scalaires.has("prestataires")).toBe(false);
+    expect(
+      requetesDeLecture(
+        "await prisma.etablissement.findFirst({ select: { prestataires: true } });",
+      ).flatMap((b) => relationsNonNommees(b, scalaires)),
+    ).toEqual(["prestataires"]);
   });
 
   it("aucune surface interdite ne lit ces champs", () => {
@@ -950,7 +1084,7 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
   });
 
   it("les requêtes du MCP nomment ce qu'elles lisent, à chaque niveau", () => {
-    const relations = champsDeRelation(
+    const scalaires = champsScalaires(
       readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8"),
     );
     const fautives: string[] = [];
@@ -958,7 +1092,7 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
     for (const { abs, rel } of sources()) {
       if (!CHEMINS_REQUETE_NOMMEE.some((r) => r.test(rel))) continue;
       for (const bloc of requetesDeLecture(readFileSync(abs, "utf8"))) {
-        for (const faute of relationsNonNommees(bloc, relations)) {
+        for (const faute of relationsNonNommees(bloc, scalaires)) {
           fautives.push(`${rel} → ${faute}`);
         }
       }
@@ -971,7 +1105,10 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
         "C'est ainsi que `DuerpVersion.snapshot` — qui porte le `responsable` de " +
         "chaque mesure — revenait dans le serveur MCP sans qu'aucun nom de champ " +
         "n'apparaisse dans le source. Un `select` à la racine ne suffit pas : " +
-        "chaque relation ouverte porte le sien (docs/rgpd.md § 2.5).",
+        "chaque relation ouverte porte le sien. Et seul un scalaire reconnu du " +
+        "schéma s'écrit `X: true` — une valeur que cette garde ne sait pas lire " +
+        "est refusée plutôt qu'admise, parce qu'elle peut cacher une relation " +
+        "entière (docs/rgpd.md § 2.5).",
     ).toEqual([]);
   });
 

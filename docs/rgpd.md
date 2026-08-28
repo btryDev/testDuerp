@@ -198,11 +198,30 @@ quelque part dans la requête. La nuance n'est pas théorique : une première
 rédaction se contentait du second, et une relation imbriquée sans `select`
 propre la satisfaisait tout en ramenant la ligne entière — le défaut d'origine
 se réécrivait à l'identique sous garde verte, sous la graphie la plus naturelle
-pour qui vient de lire « pas d'`include`, mets un `select` ». Deux formes sont
-donc refusées à chaque niveau : une relation ouverte sans son `select`, et une
-relation prise en bloc par `true`. Les noms de relations sont lus dans
-`prisma/schema.prisma` plutôt qu'énumérés à la main, faute de quoi un modèle
-ajouté plus tard échapperait à la règle en silence.
+pour qui vient de lire « pas d'`include`, mets un `select` ».
+
+**La règle échoue fermée.** Une deuxième rédaction listait les relations, lues
+dans `prisma/schema.prisma`, et refusait `X: true` quand `X` en était une.
+Cette polarité-là échoue **ouverte** : toute lacune d'analyse retire un nom de
+la liste, et le `X: true` correspondant passe au vert. Une revue l'a montré en
+indentant `model Prestataire {` d'un espace — schéma toujours valide pour
+`prisma validate`, garde toujours verte, `select: { prestataires: true }`
+devenu acceptable.
+
+La polarité est donc inversée : `X: true` n'est accepté que si `X` est un
+scalaire **reconnu** — type primitif Prisma ou énumération déclarée. Tout ce
+que l'analyse ne comprend pas est refusé : une relation, une variable, une
+diffusion, une clé entre guillemets ou calculée, un ternaire, un nom que la
+lecture du schéma n'a pas vu. Chacun de ces cas peut cacher une relation
+entière, et chacun produit désormais un rouge bruyant plutôt qu'un vert muet.
+C'est la dissymétrie tenue partout ailleurs ici : le pire échec possible doit
+être le faux rouge.
+
+Un cliquet sur le nombre de relations aurait fermé la moitié du trou — il
+aurait vu le modèle indenté, dont le compte baisse, mais pas une relation
+**ajoutée** dans une graphie non reconnue, dont le compte ne bouge pas. Et son
+plancher se relève à la main au moment précis où l'on ajoute des relations,
+c'est-à-dire au seul moment où une relation invisible est indiscernable.
 
 Sur `app/api/`, elle ne tient que les lectures nommées d'`operateur`. La règle
 de forme n'y est **pas** appliquée : elle obligerait des dizaines de routes
