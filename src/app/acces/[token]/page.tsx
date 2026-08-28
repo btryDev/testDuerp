@@ -26,8 +26,8 @@ export default async function AccesParTokenPage({
   if (!res.ok) {
     return (
       <main className="mx-auto max-w-xl px-6 py-16 sm:px-10">
-        <div className="rounded-2xl border border-[color:var(--rule-soft)] bg-[color:var(--paper-elevated)] p-8">
-          <p className="label-admin">Lien invalide</p>
+        <div className="rounded-2xl border border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] p-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">Lien invalide</p>
           <h1 className="mt-2 text-[1.5rem] font-semibold tracking-[-0.02em]">
             {res.raison === "inexistant" && "Ce lien n'existe pas"}
             {res.raison === "expire" && "Ce lien a expiré"}
@@ -66,7 +66,7 @@ export default async function AccesParTokenPage({
     return (
       <main className="mx-auto max-w-2xl px-6 py-12 sm:px-10">
         <header className="space-y-3">
-          <p className="label-admin">Signature demandée par</p>
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">Signature demandée par</p>
           <h1 className="text-[1.6rem] font-semibold tracking-[-0.02em] leading-tight">
             {etablissement.entreprise.raisonSociale}
             <span className="text-[color:var(--muted-foreground)]">
@@ -77,12 +77,12 @@ export default async function AccesParTokenPage({
         </header>
 
         <div className="mt-8">
-          <WhyCard
+          <WhyCard charte="board"
             kicker="Ce que vous signez"
             titre={libelleObjet.titre}
             enjeu={libelleObjet.description}
           >
-            <LegalBadge
+            <LegalBadge charte="board"
               reference="Art. 1366 · 1367 Code civil · eIDAS simple"
               extrait="L'écrit électronique a la même force probante que l'écrit sur support papier, sous réserve que puisse être dûment identifiée la personne dont il émane et qu'il soit établi et conservé dans des conditions de nature à en garantir l'intégrité."
             >
@@ -111,7 +111,7 @@ export default async function AccesParTokenPage({
   // Autres scopes — placeholders pour phases futures.
   return (
     <main className="mx-auto max-w-xl px-6 py-16 sm:px-10 text-center">
-      <p className="label-admin">Accès externe</p>
+      <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">Accès externe</p>
       <h1 className="mt-2 text-[1.5rem] font-semibold tracking-[-0.02em]">
         Cette action n&apos;est pas encore disponible
       </h1>
@@ -122,7 +122,7 @@ export default async function AccesParTokenPage({
       </p>
       <Link
         href="/"
-        className="mt-6 inline-block font-mono text-[0.8rem] uppercase tracking-[0.12em] text-[color:var(--warm)] hover:underline"
+        className="mt-6 inline-block font-mono text-[0.8rem] uppercase tracking-[0.12em] text-[color:var(--board-blue-ink)] hover:underline"
       >
         Retour à l&apos;accueil
       </Link>

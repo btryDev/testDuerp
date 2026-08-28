@@ -20,8 +20,8 @@ export default async function VerifierSignaturePage({
   if (res.ok === false && res.raison === "inexistante") {
     return (
       <main className="mx-auto max-w-xl px-6 py-16 sm:px-10">
-        <div className="cartouche p-8">
-          <p className="label-admin">Signature introuvable</p>
+        <div className="carte-board px-7 py-7 sm:px-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">Signature introuvable</p>
           <h1 className="mt-2 text-[1.4rem] font-semibold tracking-[-0.02em]">
             Aucune signature avec cet identifiant
           </h1>
@@ -41,19 +41,19 @@ export default async function VerifierSignaturePage({
         : "Document introuvable";
     return (
       <main className="mx-auto max-w-xl px-6 py-16 sm:px-10">
-        <div className="rounded-2xl border border-[color:var(--minium)]/50 bg-[color:color-mix(in_oklch,var(--minium)_8%,transparent)] p-8">
-          <p className="label-admin text-[color:var(--minium)]">Échec de la vérification</p>
-          <h1 className="mt-2 text-[1.5rem] font-semibold tracking-[-0.02em] text-[color:var(--minium)]">
+        <div className="rounded-2xl border border-[color:var(--board-signal-ink)]/50 bg-[color:color-mix(in_oklch,var(--board-signal-ink)_8%,transparent)] p-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)] text-[color:var(--board-signal-ink)]">Échec de la vérification</p>
+          <h1 className="mt-2 text-[1.5rem] font-semibold tracking-[-0.02em] text-[color:var(--board-signal-ink)]">
             {titre}
           </h1>
           {res.raison === "document_modifie" && (
-            <div className="mt-4 space-y-2 text-[0.85rem] text-[color:var(--ink)]">
+            <div className="mt-4 space-y-2 text-[0.85rem] text-[color:var(--board-ink)]">
               <p>
                 Le document actuel ne correspond pas à celui qui a été signé.
                 Son empreinte SHA-256 est différente — un octet au moins a été
                 modifié depuis la signature.
               </p>
-              <p className="font-mono text-[0.7rem] text-[color:var(--seal)]">
+              <p className="font-mono text-[0.7rem] text-[color:var(--board-slate-soft)]">
                 Hash attendu&nbsp;: {res.hashAttendu.slice(0, 16)}…
                 <br />
                 Hash actuel&nbsp;: {res.hashActuel.slice(0, 16)}…
@@ -78,13 +78,13 @@ export default async function VerifierSignaturePage({
       <nav>
         <Link
           href="/"
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground hover:text-ink"
+          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)] hover:text-[color:var(--board-ink)]"
         >
           ← Accueil
         </Link>
       </nav>
       <header className="mt-6 space-y-3">
-        <p className="label-admin">Vérification publique d&apos;intégrité</p>
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">Vérification publique d&apos;intégrité</p>
         <h1 className="text-[1.5rem] font-semibold tracking-[-0.02em]">
           Signature valide — document inchangé
         </h1>
@@ -96,7 +96,7 @@ export default async function VerifierSignaturePage({
       </header>
 
       <div className="mt-8">
-        <SignatureBlock
+        <SignatureBlock charte="board"
           signataireNom={s.signataireNom}
           signataireRole={s.signataireRole}
           signataireEmail={s.signataireEmail}
@@ -108,7 +108,7 @@ export default async function VerifierSignaturePage({
         />
       </div>
 
-      <footer className="mt-8 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-[color:var(--seal)]">
+      <footer className="mt-8 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-[color:var(--board-slate-soft)]">
         Fondement légal : art. 1366-1367 Code civil, règlement eIDAS (UE)
         910/2014 · niveau simple.
       </footer>

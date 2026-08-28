@@ -58,19 +58,19 @@ export function SignaturePreviewModal({
   return (
     <dialog
       ref={dialogRef}
-      className="m-0 h-screen max-h-none w-screen max-w-none bg-transparent p-0 backdrop:bg-[color:color-mix(in_oklch,var(--ink)_60%,transparent)]"
+      className="m-0 h-screen max-h-none w-screen max-w-none bg-transparent p-0 backdrop:bg-[color:color-mix(in_oklch,var(--board-ink)_60%,transparent)]"
       aria-labelledby="sig-preview-title"
     >
       <div className="flex h-full w-full items-stretch justify-center p-6">
-        <div className="flex h-full w-full max-w-6xl overflow-hidden rounded-2xl border border-[color:var(--rule)] bg-[color:var(--paper-elevated)] shadow-2xl">
+        <div className="flex h-full w-full max-w-6xl overflow-hidden rounded-2xl border border-[color:var(--board-slate)] bg-[color:var(--board-card)] shadow-2xl">
           {/* Colonne gauche : instructions + OTP */}
-          <aside className="flex w-[340px] flex-col gap-5 border-r border-[color:var(--rule-soft)] bg-[color:var(--paper-sunk)] p-6">
+          <aside className="flex w-[340px] flex-col gap-5 border-r border-[color:var(--board-slate-line)] bg-[color:var(--board-slate-pale)] p-6">
             <div className="flex items-center justify-between">
-              <p className="label-admin">Mode démo local</p>
+              <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">Mode démo local</p>
               <button
                 type="button"
                 onClick={close}
-                className="rounded-full border border-[color:var(--rule)] px-2 py-0.5 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-[color:var(--muted-foreground)] hover:text-[color:var(--ink)]"
+                className="rounded-full border border-[color:var(--board-slate)] px-2 py-0.5 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-[color:var(--muted-foreground)] hover:text-[color:var(--board-ink)]"
                 aria-label="Fermer"
               >
                 ✕ Fermer
@@ -82,18 +82,18 @@ export function SignaturePreviewModal({
               <br />
               du lien par email
             </h2>
-            <p className="text-[0.85rem] leading-relaxed text-[color:var(--ink)]">
+            <p className="text-[0.85rem] leading-relaxed text-[color:var(--board-ink)]">
               La page de droite est exactement celle que votre prestataire verra.
               Utilisez le code ci-dessous pour signer, puis fermez la fenêtre —
               la signature apparaîtra sur le rapport.
             </p>
 
-            <div className="mt-2 rounded-xl border border-[color:var(--rule-soft)] bg-[color:var(--paper-elevated)] p-4">
-              <p className="label-admin">Code OTP (valable 10 min)</p>
+            <div className="mt-2 rounded-xl border border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] p-4">
+              <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">Code OTP (valable 10 min)</p>
               <button
                 type="button"
                 onClick={copier}
-                className="mt-2 block w-full rounded-lg border border-dashed border-[color:var(--warm)] bg-[color:var(--warm-soft)] py-4 text-center font-mono text-[1.75rem] font-semibold tracking-[0.4em] text-[color:var(--warm)] transition hover:border-solid"
+                className="mt-2 block w-full rounded-lg border border-dashed border-[color:var(--board-blue-ink)] bg-[color:var(--board-blue-pale)] py-4 text-center font-mono text-[1.75rem] font-semibold tracking-[0.4em] text-[color:var(--board-blue-ink)] transition hover:border-solid"
                 title="Cliquer pour copier"
               >
                 {otp}
@@ -112,14 +112,14 @@ export function SignaturePreviewModal({
                   href={urlAcces}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[color:var(--warm)] underline"
+                  className="text-[color:var(--board-blue-ink)] underline"
                 >
                   {urlAcces}
                 </a>
               </p>
             </details>
 
-            <div className="mt-auto border-t border-[color:var(--rule-soft)] pt-4 text-[0.72rem] leading-relaxed text-[color:var(--muted-foreground)]">
+            <div className="mt-auto border-t border-[color:var(--board-slate-line)] pt-4 text-[0.72rem] leading-relaxed text-[color:var(--muted-foreground)]">
               En production avec un driver email (Resend / SMTP), ce modal ne
               s&apos;ouvre plus : le destinataire reçoit un véritable email.
             </div>
@@ -127,17 +127,17 @@ export function SignaturePreviewModal({
 
           {/* Colonne droite : iframe de la page publique */}
           <div className="flex flex-1 flex-col">
-            <header className="flex items-center gap-2 border-b border-[color:var(--rule-soft)] bg-[color:var(--paper-sunk)] px-4 py-2 font-mono text-[0.72rem] text-[color:var(--seal)]">
+            <header className="flex items-center gap-2 border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-slate-pale)] px-4 py-2 font-mono text-[0.72rem] text-[color:var(--board-slate-soft)]">
               <span
                 aria-hidden
-                className="inline-block h-2 w-2 rounded-full bg-[color:var(--accent-vif)]"
+                className="inline-block h-2 w-2 rounded-full bg-[color:var(--board-green-ink)]"
               />
               <span className="truncate">{urlAcces}</span>
             </header>
             <iframe
               src={urlAcces}
               title="Aperçu de la page de signature du prestataire"
-              className="flex-1 bg-[color:var(--paper)]"
+              className="flex-1 bg-[color:var(--board-canvas)]"
             />
           </div>
         </div>

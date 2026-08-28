@@ -46,9 +46,9 @@ export function SignatureExterneForm({
   if (state.status === "success") {
     // Transition — la page de confirmation va s'afficher immédiatement.
     return (
-      <div className="rounded-2xl border border-[color:var(--accent-vif)]/40 bg-[color:var(--accent-vif-soft)] p-8 text-center">
-        <p className="label-admin">Redirection…</p>
-        <p className="mt-2 text-[0.9rem] text-[color:var(--ink)]">
+      <div className="rounded-2xl border border-[color:var(--board-green-ink)]/40 bg-[color:var(--board-green)] p-8 text-center">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">Redirection…</p>
+        <p className="mt-2 text-[0.9rem] text-[color:var(--board-ink)]">
           Votre signature est enregistrée. Vous allez être redirigé(e) vers
           l&apos;accusé de réception.
         </p>
@@ -58,17 +58,17 @@ export function SignatureExterneForm({
 
   return (
     <form action={formAction} className="space-y-6">
-      <div className="rounded-xl border border-[color:var(--rule-soft)] bg-[color:var(--paper-sunk)] p-4">
-        <p className="label-admin">Identité (remplie automatiquement)</p>
+      <div className="rounded-xl border border-[color:var(--board-slate-line)] bg-[color:var(--board-slate-pale)] p-4">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">Identité (remplie automatiquement)</p>
         <dl className="mt-2 grid grid-cols-1 gap-y-1 text-[0.85rem] sm:grid-cols-[auto_1fr] sm:gap-x-4">
           {destinataire.nom && (
             <>
               <dt className="text-[color:var(--muted-foreground)]">Nom :</dt>
-              <dd className="text-[color:var(--ink)]">{destinataire.nom}</dd>
+              <dd className="text-[color:var(--board-ink)]">{destinataire.nom}</dd>
             </>
           )}
           <dt className="text-[color:var(--muted-foreground)]">Email :</dt>
-          <dd className="font-mono text-[color:var(--ink)]">{destinataire.email}</dd>
+          <dd className="font-mono text-[color:var(--board-ink)]">{destinataire.email}</dd>
         </dl>
       </div>
 
@@ -113,7 +113,7 @@ export function SignatureExterneForm({
       </div>
 
       {state.status === "error" && (
-        <div className="rounded-lg border border-[color:var(--minium)]/40 bg-[color:color-mix(in_oklch,var(--minium)_8%,transparent)] p-3 text-[0.85rem] text-[color:var(--minium)]">
+        <div className="rounded-lg border border-[color:var(--board-signal-ink)]/40 bg-[color:color-mix(in_oklch,var(--board-signal-ink)_8%,transparent)] p-3 text-[0.85rem] text-[color:var(--board-signal-ink)]">
           {state.message}
         </div>
       )}
