@@ -5,8 +5,16 @@ import { getOptionalUserEtablissement } from "@/lib/auth/scope";
 import { signOutAction } from "@/lib/auth/actions";
 
 /**
- * Header global persistant — visible sur toutes les pages.
- * Minimal, cohérent avec l'esthétique papier/cartouche de l'app.
+ * Header global persistant — visible partout où l'app n'a pas son propre
+ * chrome (cf. `AppHeaderGate`) : connexion, création de compte, pages
+ * publiques hors accueil.
+ *
+ * Il portait la charte papier — surfaces et gris du papier, filet
+ * pointillé, boutons du registre administratif. C'était un constat de
+ * dette, pas une justification : la charte en vigueur est le board
+ * (`docs/charte-board.md`), et un en-tête papier au-dessus d'écrans board
+ * se lit comme un morceau d'un autre logiciel.
+ *
  * Server component : lit la session Supabase pour afficher l'email + logout
  * quand l'utilisateur est connecté, ou les liens de connexion sinon.
  */
@@ -17,17 +25,19 @@ export async function AppHeader() {
   const dashboardLabel = etab ? "Mon dossier" : "Commencer";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-dashed border-rule/60 bg-paper/95 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)]/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-3 sm:px-10">
         <Link href="/" className="group flex items-center gap-3">
-          <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-ink text-[0.6rem] font-bold uppercase tracking-widest text-paper">
+          {/* Marque carrée : le rayon suit la règle du board pour ces
+              marques — un tiers du côté, ici 28 px. */}
+          <span className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-[color:var(--board-ink)] text-[0.6rem] font-bold uppercase tracking-widest text-[color:var(--board-card)]">
             R
           </span>
           <span className="flex flex-col leading-tight">
-            <span className="text-[0.88rem] font-semibold tracking-[-0.01em]">
+            <span className="text-[0.88rem] font-semibold tracking-[-0.01em] text-[color:var(--board-ink)]">
               Rojer
             </span>
-            <span className="font-mono text-[0.56rem] uppercase tracking-[0.22em] text-muted-foreground">
+            <span className="board-eyebrow m-0 text-[9px] tracking-[0.22em] text-[color:var(--board-slate-soft)]">
               Conformité santé-sécurité — TPE / PME
             </span>
           </span>
@@ -38,12 +48,12 @@ export async function AppHeader() {
             <>
               <Link
                 href={dashboardHref}
-                className="font-mono text-[0.66rem] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-ink"
+                className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
               >
                 {dashboardLabel} →
               </Link>
               <span
-                className="hidden max-w-[220px] truncate font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground sm:inline"
+                className="board-eyebrow m-0 hidden max-w-[220px] truncate text-[9.5px] tracking-[0.16em] text-[color:var(--board-slate-soft)] sm:inline"
                 title={user.email ?? ""}
               >
                 {user.email}
@@ -51,7 +61,7 @@ export async function AppHeader() {
               <form action={signOutAction}>
                 <button
                   type="submit"
-                  className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-muted-foreground underline decoration-rule decoration-dotted underline-offset-4 transition-colors hover:text-ink hover:decoration-ink"
+                  className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] underline decoration-[color:var(--board-slate)] decoration-1 underline-offset-4 transition-colors hover:text-[color:var(--board-ink)] hover:decoration-[color:var(--board-ink)]"
                 >
                   Déconnexion
                 </button>
@@ -61,13 +71,16 @@ export async function AppHeader() {
             <>
               <Link
                 href="/login"
-                className={buttonVariants({ variant: "outline", size: "sm" })}
+                className={buttonVariants({
+                  variant: "boardClair",
+                  size: "boardSm",
+                })}
               >
                 Se connecter
               </Link>
               <Link
                 href="/signup"
-                className={buttonVariants({ size: "sm" })}
+                className={buttonVariants({ variant: "board", size: "boardSm" })}
               >
                 Créer un compte
               </Link>

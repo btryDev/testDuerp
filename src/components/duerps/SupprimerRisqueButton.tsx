@@ -8,8 +8,8 @@ export function SupprimerRisqueButton({ id }: { id: string }) {
   const [pending, startTransition] = useTransition();
   return (
     <Button
-      size="sm"
-      variant="ghost"
+      variant="boardClair"
+      size="boardSm"
       disabled={pending}
       onClick={() => {
         if (!confirm("Supprimer ce risque et ses mesures associées ?")) return;

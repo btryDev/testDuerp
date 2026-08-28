@@ -1,7 +1,13 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { buttonVariants } from "@/components/ui/button";
-import { FilRetour, LegalBadge, WhyCard } from "@/components/ui-kit";
+import {
+  CarteFiche,
+  ChampFiche,
+  ChampsFiche,
+  CorpsFiche,
+  EcranFiche,
+  LegalBadge,
+  PastilleFiche,
+} from "@/components/ui-kit";
 import { lireProvenance } from "@/lib/navigation/provenance";
 import { VigilancePiecePill } from "@/components/prestataires/VigilancePills";
 import { SupprimerPrestataireButton } from "@/components/prestataires/SupprimerPrestataireButton";
@@ -9,10 +15,34 @@ import { getPrestataire } from "@/lib/prestataires/queries";
 import { LABEL_DOMAINE } from "@/lib/prestataires/schema";
 import { formaterDateLongueFr } from "@/lib/dates";
 
+/**
+ * La fiche d'un prestataire, en charte board (`docs/charte-board.md`).
+ *
+ * Elle recomposait à la main ce que le kit `ui-kit/fiche/` fait déjà —
+ * `cartouche`, `cartouche-sunk`, une `<dl>` maison, une quatrième pastille de
+ * Kbis bâtie sur `--accent-vif` et `--paper-sunk`. Elle passe au kit : même
+ * vocabulaire que les cinq autres fiches qu'on ouvre depuis le calendrier.
+ */
 function formatDate(d: Date | null): string | null {
   if (!d) return null;
   return formaterDateLongueFr(d);
 }
+
+/**
+ * L'état de vigilance le plus grave, traduit en ton de pastille.
+ *
+ * Trois lignes seulement, mais posées ici plutôt qu'en ternaire : `aPlanifier`
+ * doit porter l'ardoise et non le rose. Rien n'a d'échéance tant qu'il n'y a
+ * pas de document — une pièce jamais fournie n'est pas en retard.
+ */
+const TON_DE_L_ETAT: Record<
+  "enRetard" | "proche" | "aPlanifier",
+  "retard" | "proche" | "neutre"
+> = {
+  enRetard: "retard",
+  proche: "proche",
+  aPlanifier: "neutre",
+};
 
 export default async function PrestataireDetailPage({
   params,
@@ -34,157 +64,142 @@ export default async function PrestataireDetailPage({
     label: "Annuaire",
   };
 
-  const nbAlertes = p.vigilance.alertesOuvertes;
+  // Le VOLUME pour le mot, l'ÉTAT LE PLUS GRAVE pour la couleur. Les deux ne
+  // se déduisent pas l'un de l'autre : `alertesOuvertes` fond « expirée »,
+  // « expire bientôt » et « jamais fournie » dans un seul chiffre.
+  //
+  // La carte de l'annuaire avait été corrigée, pas cette fiche — qui est
+  // pourtant la surface où la contradiction se voit le mieux : elle rend
+  // quelques centimètres plus bas les pastilles de pièces, où « Non fournie »
+  // porte l'ardoise. Un prestataire créé ce matin affichait donc « 2 pièces à
+  // demander » en rose au-dessus de deux pastilles ardoise.
+  const { alertesOuvertes: nbAlertes, etatLePlusGrave } = p.vigilance;
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-14 sm:px-10">
-      <FilRetour provenance={provenance} canonique={annuaire} />
-
-      <header className="mt-8 flex flex-wrap items-start justify-between gap-6">
-        <div className="min-w-0 flex-1 space-y-3">
-          <p className="label-admin">
-            {p.estOrganismeAgree ? "Organisme agréé · " : ""}
-            {p.siret ? `SIRET ${p.siret}` : "SIRET non renseigné"}
-          </p>
-          <h1 className="text-[1.8rem] font-semibold tracking-[-0.02em] leading-tight">
-            {p.raisonSociale}
-          </h1>
-          {p.domaines.length > 0 && (
-            <ul className="flex flex-wrap gap-1.5">
-              {p.domaines.map((d) => (
-                <li
-                  key={d}
-                  className="rounded-full bg-[color:var(--paper-sunk)] px-2.5 py-0.5 text-[0.72rem] text-[color:var(--seal)]"
-                >
-                  {LABEL_DOMAINE[d]}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <SupprimerPrestataireButton
-          etablissementId={id}
-          prestataireId={p.id}
-        />
-      </header>
-
-      {/* -------- Contact -------- */}
-      <section className="mt-10 cartouche p-6">
-        <p className="label-admin">Contact</p>
-        <dl className="mt-3 grid grid-cols-1 gap-y-2 text-[0.9rem] sm:grid-cols-[140px_1fr]">
-          <dt className="text-[color:var(--muted-foreground)]">Nom :</dt>
-          <dd className="text-[color:var(--ink)]">{p.contactNom}</dd>
-          <dt className="text-[color:var(--muted-foreground)]">Email :</dt>
-          <dd>
-            <a
-              href={`mailto:${p.contactEmail}`}
-              className="font-mono text-[color:var(--warm)] hover:underline"
-            >
-              {p.contactEmail}
-            </a>
-          </dd>
-          {p.contactTelephone && (
-            <>
-              <dt className="text-[color:var(--muted-foreground)]">Téléphone :</dt>
-              <dd className="font-mono text-[color:var(--ink)]">
-                {p.contactTelephone}
-              </dd>
-            </>
-          )}
-        </dl>
-      </section>
-
-      {/* -------- Vigilance -------- */}
-      <section className="mt-10">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="label-admin">Obligation de vigilance</p>
-            <h2 className="mt-1 text-[1.2rem] font-semibold tracking-[-0.015em]">
-              {nbAlertes === 0
-                ? "Toutes les pièces sont à jour"
-                : `${nbAlertes} pièce${nbAlertes > 1 ? "s" : ""} à régulariser`}
-            </h2>
-          </div>
-          <LegalBadge
-            reference="Art. L8222-1 CT"
-            href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037389145"
-          />
-        </div>
-
-        <div className="mt-5 grid grid-cols-1 gap-3 lg:grid-cols-3">
-          <VigilancePiecePill
-            libelle="Attestation URSSAF"
-            statut={p.vigilance.urssaf}
-            jours={p.vigilance.urssafExpireDans}
-          />
-          <VigilancePiecePill
-            libelle="RC Pro"
-            statut={p.vigilance.rcPro}
-            jours={p.vigilance.rcProExpireDans}
-          />
-          <div className="flex items-center gap-3 rounded-lg border border-[color:var(--rule-soft)] bg-[color:var(--paper-elevated)] px-3 py-2">
-            <span
-              aria-hidden
-              className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-mono text-[0.85rem] ${
-                p.vigilance.kbis === "present"
-                  ? "bg-[color:var(--accent-vif-soft)] text-[color:var(--accent-vif)]"
-                  : "bg-[color:var(--paper-sunk)] text-[color:var(--seal)]"
-              }`}
-            >
-              {p.vigilance.kbis === "present" ? "●" : "—"}
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="label-admin">Extrait Kbis</div>
-              <div className="mt-0.5 text-[0.85rem] font-medium text-[color:var(--ink)]">
-                {p.vigilance.kbis === "present" ? "Fourni" : "Non fourni"}
-              </div>
-              {p.kbisDateEmission && (
-                <div className="text-[0.72rem] text-[color:var(--muted-foreground)]">
-                  Émis le {formatDate(p.kbisDateEmission)}
+    <EcranFiche provenance={provenance} canonique={annuaire}>
+      <CorpsFiche
+        principal={
+          <>
+            <section className="carte-board px-7 py-6 sm:px-8">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+                    {p.siret ? `SIRET ${p.siret}` : "SIRET non renseigné"}
+                  </p>
+                  <h1 className="board-titre m-0 mt-2 max-w-[30ch] text-[clamp(23px,2.1vw,30px)]">
+                    {p.raisonSociale}
+                  </h1>
+                  <div className="mt-3.5 flex flex-wrap items-center gap-2">
+                    {p.estOrganismeAgree && (
+                      <PastilleFiche ton="bleu">Organisme agréé</PastilleFiche>
+                    )}
+                    {/* Le nombre plutôt que le seul mot : l'utilisateur ne
+                        devrait pas avoir à compter les pastilles pour savoir
+                        combien de pièces lui manquent. */}
+                    {etatLePlusGrave !== null ? (
+                      <PastilleFiche ton={TON_DE_L_ETAT[etatLePlusGrave]}>
+                        {nbAlertes > 1
+                          ? `${nbAlertes} pièces à demander`
+                          : "1 pièce à demander"}
+                      </PastilleFiche>
+                    ) : (
+                      <PastilleFiche ton="fait">Pièces à jour</PastilleFiche>
+                    )}
+                    {p.domaines.map((d) => (
+                      <PastilleFiche key={d} ton="neutre">
+                        {LABEL_DOMAINE[d]}
+                      </PastilleFiche>
+                    ))}
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
+                <SupprimerPrestataireButton
+                  etablissementId={id}
+                  prestataireId={p.id}
+                />
+              </div>
+            </section>
 
-        {nbAlertes > 0 && (
-          <div className="mt-6">
-            <WhyCard
-              kicker="Conseil"
-              titre="Demandez les pièces manquantes par email"
-              enjeu="Un email standard suffit pour obtenir une attestation URSSAF de vigilance — le prestataire la génère en 30 secondes depuis son espace URSSAF."
-              tonalite="info"
-            >
-              <p>
-                Prochaine étape du produit : demande automatique par lien sécurisé,
-                le prestataire dépose sa pièce en un clic sans se créer de compte.
+            <CarteFiche titreFort="Contact">
+              <ChampsFiche>
+                <ChampFiche cle="Nom">{p.contactNom}</ChampFiche>
+                <ChampFiche cle="Email">
+                  <a
+                    href={`mailto:${p.contactEmail}`}
+                    className="font-mono text-[13px] text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
+                  >
+                    {p.contactEmail}
+                  </a>
+                </ChampFiche>
+                {p.contactTelephone && (
+                  <ChampFiche cle="Téléphone">
+                    <span className="font-mono text-[13px]">
+                      {p.contactTelephone}
+                    </span>
+                  </ChampFiche>
+                )}
+                <ChampFiche cle="Ajouté le">
+                  {formatDate(p.createdAt)}
+                </ChampFiche>
+              </ChampsFiche>
+            </CarteFiche>
+
+            <CarteFiche titreFort="Obligation de vigilance">
+              <div className="flex flex-col gap-2">
+                <VigilancePiecePill
+                  libelle="Attestation URSSAF"
+                  statut={p.vigilance.urssaf}
+                  jours={p.vigilance.urssafExpireDans}
+                />
+                <VigilancePiecePill
+                  libelle="RC Pro"
+                  statut={p.vigilance.rcPro}
+                  jours={p.vigilance.rcProExpireDans}
+                />
+                {/* Le Kbis n'a pas de statut d'expiration, et c'est délibéré :
+                    aucun texte ne lui assortit de périodicité citable. Le
+                    produit informe de son âge, il ne décrète pas une échéance
+                    (cf. `lib/prestataires/vigilance.ts`). */}
+                <span className="flex items-center justify-between gap-3 rounded-[14px] bg-[color:var(--board-slate-pale)] px-3 py-2">
+                  <span className="min-w-0">
+                    <span className="board-eyebrow block text-[9.5px] tracking-[0.14em] text-[color:var(--board-slate-soft)]">
+                      Extrait Kbis
+                    </span>
+                    {p.kbisDateEmission && (
+                      <span className="mt-0.5 block text-[11.5px] leading-[1.4] text-[color:var(--board-slate-mid)]">
+                        Émis le {formatDate(p.kbisDateEmission)}
+                      </span>
+                    )}
+                  </span>
+                  <span className="whitespace-nowrap text-[11.5px] font-semibold text-[color:var(--board-slate-mid)]">
+                    {p.vigilance.kbis === "present" ? "Fourni" : "Non fourni"}
+                  </span>
+                </span>
+              </div>
+
+              <p className="m-0 mt-4 max-w-[64ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                L&apos;attestation de vigilance se redemande tous les six mois
+                tant que le contrat court. Le prestataire la génère depuis son
+                espace URSSAF ; un courriel suffit à l&apos;obtenir.
               </p>
-            </WhyCard>
-          </div>
-        )}
-      </section>
+              <div className="mt-3">
+                <LegalBadge
+                  charte="board"
+                  reference="Art. L. 8222-1 CT"
+                  href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037389145"
+                />
+              </div>
+            </CarteFiche>
 
-      {/* -------- Notes -------- */}
-      {p.notesInternes && (
-        <section className="mt-10 cartouche-sunk p-6">
-          <p className="label-admin">Notes internes</p>
-          <p className="mt-3 whitespace-pre-wrap text-[0.9rem] leading-relaxed text-[color:var(--ink)]">
-            {p.notesInternes}
-          </p>
-        </section>
-      )}
-
-      {/* -------- Ajouté le -------- */}
-      <footer className="mt-10 flex items-center justify-between border-t border-[color:var(--rule-soft)] pt-4 text-[0.75rem] text-[color:var(--muted-foreground)]">
-        <span>Ajouté le {formatDate(p.createdAt)}</span>
-        <Link
-          href={(provenance ?? annuaire).href}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
-          ← {provenance ? provenance.label : "Retour à l'annuaire"}
-        </Link>
-      </footer>
-    </main>
+            {p.notesInternes && (
+              <CarteFiche titre="Notes internes">
+                <p className="m-0 whitespace-pre-wrap text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+                  {p.notesInternes}
+                </p>
+              </CarteFiche>
+            )}
+          </>
+        }
+      />
+    </EcranFiche>
   );
 }

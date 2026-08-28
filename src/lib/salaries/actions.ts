@@ -38,10 +38,7 @@ export type TitreActionState =
  * Sans cette marque, l'échec passerait inaperçu — le calendrier n'étant ni vide
  * ni périmé en version, rien ne le reprendrait.
  */
-async function regenererEtRafraichir(
-  etablissementId: string,
-  salarieId?: string,
-): Promise<void> {
+async function regenererEtRafraichir(etablissementId: string): Promise<void> {
   try {
     await genererCalendrier(etablissementId);
   } catch (err) {
@@ -167,7 +164,7 @@ export async function basculerActif(
   });
   // Une sortie de l'effectif change le périmètre des échéances : le générateur
   // doit repasser.
-  await regenererEtRafraichir(etablissementId, salarieId);
+  await regenererEtRafraichir(etablissementId);
 }
 
 export async function declarerTitre(
@@ -232,7 +229,7 @@ export async function declarerTitre(
     },
   });
 
-  await regenererEtRafraichir(etablissementId, salarieId);
+  await regenererEtRafraichir(etablissementId);
   return { status: "success" };
 }
 
@@ -245,5 +242,5 @@ export async function retirerTitre(
   await prisma.titreSalarie.deleteMany({
     where: { id: titreId, salarie: { id: salarieId, etablissementId } },
   });
-  await regenererEtRafraichir(etablissementId, salarieId);
+  await regenererEtRafraichir(etablissementId);
 }

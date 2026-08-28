@@ -39,13 +39,13 @@ export function ChezVous({
   return (
     <section>
       <header className="mb-8">
-        <p className="g-kicker">§ Chez vous, concrètement</p>
-        <h2 className="g-h2 mt-3 max-w-[22ch]">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">§ Chez vous, concrètement</p>
+        <h2 className="board-titre text-[clamp(22px,2.2vw,27px)] mt-3 max-w-[22ch]">
           Vos obligations,
           <br />
-          <span className="g-h2-em">résolues sur vos déclarations.</span>
+          <span className="text-[color:var(--board-blue-ink)]">résolues sur vos déclarations.</span>
         </h2>
-        <p className="outils-intro-text mt-5">
+        <p className="text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)] mt-5">
           Ce que vous lisez ici est calculé depuis votre dossier —{" "}
           <strong>{raisonDisplay}</strong>, {data.duerp.effectif} salarié
           {data.duerp.effectif > 1 ? "s" : ""} sur site
@@ -56,8 +56,8 @@ export function ChezVous({
       </header>
 
       {/* DUERP : seuil résolu */}
-      <div className="cartouche px-6 py-5 sm:px-8">
-        <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+      <div className="carte-board px-7 py-6 sm:px-8 px-6 py-5 sm:px-8">
+        <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]">
           DUERP — rythme de mise à jour
         </p>
         <p className="mt-2 max-w-3xl text-[0.95rem] leading-relaxed">
@@ -83,7 +83,7 @@ export function ChezVous({
           )}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <LegalBadge
+          <LegalBadge charte="board"
             reference="Art. R. 4121-2 CT"
             href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000045386446"
             extrait="La mise à jour du document unique d'évaluation des risques est réalisée : au moins chaque année dans les entreprises d'au moins onze salariés ; lors de toute décision d'aménagement important…"
@@ -93,7 +93,7 @@ export function ChezVous({
 
       {/* Vérifications : résumé par domaine */}
       {data.aucunEquipement ? (
-        <div className="cartouche mt-4 px-6 py-5 sm:px-8">
+        <div className="carte-board px-7 py-6 sm:px-8 mt-4 px-6 py-5 sm:px-8">
           <p className="max-w-3xl text-[0.95rem] leading-relaxed">
             <strong>Aucun équipement déclaré pour l&apos;instant</strong> —
             la plateforme ne peut donc calculer aucune vérification
@@ -102,7 +102,7 @@ export function ChezVous({
           </p>
           <Link
             href={`${base}/equipements`}
-            className="mt-3 inline-block text-[0.88rem] font-medium text-[color:var(--warm)] hover:underline"
+            className="mt-3 inline-block text-[0.88rem] font-medium text-[color:var(--board-blue-ink)] hover:underline"
           >
             Déclarer mes équipements →
           </Link>
@@ -111,17 +111,17 @@ export function ChezVous({
         <>
           <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {data.domaines.map((d) => (
-              <li key={d.domaine} className="cartouche px-6 py-5">
+              <li key={d.domaine} className="carte-board px-7 py-6 sm:px-8 px-6 py-5">
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="text-[1.02rem] font-semibold tracking-[-0.01em]">
                     {LABEL_DOMAINE[d.domaine]}
                   </p>
-                  <p className="shrink-0 font-mono text-[0.66rem] uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="shrink-0 font-mono text-[0.66rem] uppercase tracking-[0.14em] text-[color:var(--board-slate-mid)]">
                     {d.nbObligations} obligation
                     {d.nbObligations > 1 ? "s" : ""}
                   </p>
                 </div>
-                <p className="mt-2 text-[0.84rem] leading-relaxed text-muted-foreground">
+                <p className="mt-2 text-[0.84rem] leading-relaxed text-[color:var(--board-slate-mid)]">
                   Rythmes :{" "}
                   {d.periodicites
                     .map((p) => LABEL_PERIODICITE[p])
@@ -136,7 +136,7 @@ export function ChezVous({
                     </>
                   )}
                 </p>
-                <p className="mt-3 border-t border-dashed border-rule-soft pt-3 text-[0.8rem] leading-relaxed text-muted-foreground">
+                <p className="mt-3 border-t border-dashed border-[color:var(--board-slate-line)] pt-3 text-[0.8rem] leading-relaxed text-[color:var(--board-slate-mid)]">
                   <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em]">
                     Pourquoi chez vous —{" "}
                   </span>
@@ -148,11 +148,11 @@ export function ChezVous({
               </li>
             ))}
           </ul>
-          <p className="mt-4 text-[0.82rem] text-muted-foreground">
+          <p className="mt-4 text-[0.82rem] text-[color:var(--board-slate-mid)]">
             Le détail daté de chaque vérification vit dans votre{" "}
             <Link
               href={`${base}/calendrier`}
-              className="font-medium text-[color:var(--warm)] hover:underline"
+              className="font-medium text-[color:var(--board-blue-ink)] hover:underline"
             >
               calendrier
             </Link>
@@ -163,8 +163,8 @@ export function ChezVous({
 
       {/* Trous honnêtes */}
       {data.categoriesSansObligation.length > 0 && (
-        <div className="mt-4 rounded-2xl border border-dashed border-rule px-6 py-4 sm:px-8">
-          <p className="max-w-3xl text-[0.84rem] leading-relaxed text-muted-foreground">
+        <div className="mt-4 rounded-2xl border border-dashed border-[color:var(--board-slate)] px-6 py-4 sm:px-8">
+          <p className="max-w-3xl text-[0.84rem] leading-relaxed text-[color:var(--board-slate-mid)]">
             <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em]">
               À noter —{" "}
             </span>
@@ -183,7 +183,7 @@ export function ChezVous({
         </div>
       )}
 
-      <p className="mt-6 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="mt-6 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[color:var(--board-slate-mid)]">
         Calcul déterministe depuis vos déclarations · ne vaut pas
         attestation de conformité
       </p>

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
 
 /**
  * Guide de mise en place progressif, affiché sur la page "Vue d'ensemble"
@@ -10,6 +12,12 @@ import Link from "next/link";
  *
  * Aucune étape n'est bloquante. La checklist s'efface d'elle-même dès
  * que tout est fait — on ne harcèle pas l'utilisateur qui a fini.
+ *
+ * Charte board (`docs/charte-board.md`) : le bloc était une carte papier à
+ * filets pointillés, avec un vert `emerald` qui n'appartient à aucune des
+ * deux palettes. Le vert du board dit « fait », et il vient de
+ * `CHAMP_ETAT` / `ENCRE_ETAT` — une table de couleurs locale de plus, et
+ * l'étape faite ici cesse d'être du même vert que l'échéance faite là-bas.
  */
 
 export type EtapeOnboarding = {
@@ -39,21 +47,21 @@ export function OnboardingChecklist({
   return (
     <section
       aria-labelledby="onboarding-heading"
-      className="cartouche relative overflow-hidden"
+      className="carte-board relative overflow-hidden"
     >
       {/* Bandeau haut */}
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-dashed border-rule/60 px-6 pt-6 pb-5 sm:px-8">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[color:var(--board-slate-line)] px-7 pt-6 pb-5 sm:px-8">
         <div className="min-w-0">
           <p
             id="onboarding-heading"
-            className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground"
+            className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]"
           >
             Guide de mise en place
           </p>
-          <h2 className="mt-2 text-[1.15rem] font-semibold tracking-[-0.012em]">
+          <h2 className="board-titre m-0 mt-2 text-[22px]">
             Quelques étapes pour couvrir l&apos;essentiel de {etablissementRaison}
           </h2>
-          <p className="mt-2 max-w-xl text-[0.85rem] leading-relaxed text-muted-foreground">
+          <p className="m-0 mt-2 max-w-[62ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
             Pas d&apos;urgence : chaque étape se traite à votre rythme.
             L&apos;outil met simplement en lumière les éléments qu&apos;un
             contrôle (inspection du travail, commission de sécurité,
@@ -63,24 +71,24 @@ export function OnboardingChecklist({
 
         {/* Progression numérique + segments */}
         <div className="flex min-w-[160px] flex-col items-start gap-2 sm:items-end">
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="board-eyebrow m-0 text-[10px] tabular-nums tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             {/* Numéro de l'étape courante (le composant retourne null quand
                 tout est fait, donc indexProchaine >= 0 ici). */}
             Étape {indexProchaine + 1}{" "}
-            <span className="text-ink">sur {total}</span>
+            <span className="text-[color:var(--board-ink)]">sur {total}</span>
           </p>
           <div className="flex gap-1" aria-hidden>
             {etapes.map((e, i) => (
               <span
                 key={e.id}
-                className={
-                  "h-[5px] w-8 rounded-full " +
-                  (e.faite
-                    ? "bg-emerald-500"
+                className="h-[5px] w-8 rounded-full"
+                style={{
+                  background: e.faite
+                    ? CHAMP_ETAT.faite
                     : i === indexProchaine
-                      ? "bg-ink"
-                      : "bg-rule")
-                }
+                      ? "var(--board-ink)"
+                      : "var(--board-slate)",
+                }}
               />
             ))}
           </div>
@@ -88,27 +96,36 @@ export function OnboardingChecklist({
       </div>
 
       {/* Liste des étapes */}
-      <ol className="divide-y divide-dashed divide-rule/50">
+      <ol className="divide-y divide-[color:var(--board-slate-line)]">
         {etapes.map((e, i) => {
           const prochaine = i === indexProchaine;
           return (
             <li
               key={e.id}
               className={
-                "flex items-start gap-4 px-6 py-5 sm:px-8 " +
-                (prochaine ? "bg-paper-sunk/30" : "")
+                "flex items-start gap-4 px-7 py-5 sm:px-8 " +
+                (prochaine ? "bg-[color:var(--board-slate-pale)]" : "")
               }
             >
-              {/* Puce de statut */}
+              {/* Puce de statut. Le vert vient des jetons d'état : c'est le
+                  même « fait » qu'ailleurs, champ et encre ensemble. */}
               <div
                 aria-hidden
                 className={
                   "mt-1 flex size-6 shrink-0 items-center justify-center rounded-full border " +
-                  (e.faite
-                    ? "border-emerald-400 bg-emerald-50 text-emerald-700"
+                  (e.faite || prochaine
+                    ? "border-transparent"
+                    : "border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] text-[color:var(--board-slate-mid)]")
+                }
+                style={
+                  e.faite
+                    ? { background: CHAMP_ETAT.faite, color: ENCRE_ETAT.faite }
                     : prochaine
-                      ? "border-ink bg-ink text-paper"
-                      : "border-rule bg-paper text-muted-foreground")
+                      ? {
+                          background: "var(--board-ink)",
+                          color: "var(--board-card)",
+                        }
+                      : undefined
                 }
               >
                 {e.faite ? (
@@ -134,13 +151,15 @@ export function OnboardingChecklist({
               <div className="min-w-0 flex-1">
                 <p
                   className={
-                    "text-[0.95rem] font-semibold tracking-[-0.01em] " +
-                    (e.faite ? "text-muted-foreground line-through" : "")
+                    "m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] " +
+                    (e.faite
+                      ? "text-[color:var(--board-slate-mid)] line-through"
+                      : "text-[color:var(--board-ink)]")
                   }
                 >
                   {e.titre}
                 </p>
-                <p className="mt-1 text-[0.82rem] leading-relaxed text-muted-foreground">
+                <p className="m-0 mt-1 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                   {e.pourquoi}
                 </p>
 
@@ -148,12 +167,10 @@ export function OnboardingChecklist({
                   <div className="mt-3">
                     <Link
                       href={e.href}
-                      className={
-                        "inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-[0.82rem] font-medium transition-colors " +
-                        (prochaine
-                          ? "bg-ink text-paper hover:bg-ink/90"
-                          : "border border-rule bg-paper hover:border-ink")
-                      }
+                      className={buttonVariants({
+                        variant: prochaine ? "board" : "boardClair",
+                        size: "boardSm",
+                      })}
                     >
                       {e.cta} →
                     </Link>
@@ -166,8 +183,8 @@ export function OnboardingChecklist({
       </ol>
 
       {/* Bandeau bas rassurance */}
-      <div className="border-t border-dashed border-rule/60 bg-paper-sunk/40 px-6 py-3 sm:px-8">
-        <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted-foreground">
+      <div className="border-t border-[color:var(--board-slate-line)] bg-[color:var(--board-slate-pale)] px-7 py-3.5 sm:px-8">
+        <p className="board-eyebrow m-0 text-[10px] tracking-[0.14em] text-[color:var(--board-slate-soft)]">
           Ce guide disparaîtra automatiquement une fois les étapes complétées.
         </p>
       </div>

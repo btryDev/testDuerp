@@ -72,7 +72,11 @@ export default async function ControlePage({
       present: true,
       etat:
         dashboard.compteurs.verifsEnRetard > 0 ? "en_retard" : "a_jour",
-      reference: "Art. L4711-5 CT",
+      // R. 4323-25 fonde la consignation des vérifications, R. 4323-26
+      // l'annexion des rapports d'un tiers — c'est ce que cette carte compte.
+      // Ce n'est PAS L. 4711-5, qui autorise seulement à réunir plusieurs
+      // registres en un seul (verbatim relevé le 2026-08-28).
+      reference: "Art. R. 4323-25 et R. 4323-26 CT",
     },
     {
       titre: "Plan d'actions correctives",
@@ -136,44 +140,29 @@ export default async function ControlePage({
         ]}
       />
 
-      <main className="mx-auto max-w-4xl px-8 py-8 pb-20">
+      <main className="flex flex-1 flex-col gap-7 bg-[color:var(--board-canvas)] px-[var(--board-gutter)] py-7 pb-16">
         {/* HERO — statut de préparation + gros CTA */}
-        <section className="cartouche relative overflow-hidden">
-          <span
-            aria-hidden
-            className="absolute inset-x-0 top-0 h-[3px]"
-            style={{
-              background:
-                pourcentPret >= 90
-                  ? "var(--accent-vif)"
-                  : pourcentPret >= 60
-                    ? "var(--warn)"
-                    : "var(--minium)",
-            }}
-          />
+        <section className="carte-board relative overflow-hidden">
           <div className="grid gap-0 md:grid-cols-[1fr_auto]">
             {/* Gauche : statut */}
-            <div className="border-b border-dashed border-rule/60 px-8 py-8 md:border-b-0 md:border-r md:px-10 md:py-10">
-              <p className="label-admin">Dossier 1 clic</p>
-              <h1 className="mt-3 text-[2rem] font-semibold leading-tight tracking-[-0.025em]">
+            <div className="border-b border-[color:var(--board-slate-line)] px-8 py-8 md:border-b-0 md:border-r md:px-10 md:py-10">
+              <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">Dossier 1 clic</p>
+              <h1 className="mt-3 text-[clamp(22px,2.2vw,27px)] font-semibold leading-tight tracking-[-0.025em]">
                 Vous êtes prêt à
                 <br />
-                <span
-                  className="accent-serif"
-                  style={{ color: "var(--warm)" }}
-                >
+                <span>
                   passer un contrôle
                 </span>
                 {pourcentPret >= 90 ? "." : " ?"}
               </h1>
-              <p className="mt-4 max-w-prose text-[0.95rem] leading-relaxed text-ink/80">
+              <p className="mt-4 max-w-prose text-[0.95rem] leading-relaxed text-[color:var(--board-ink)]/80">
                 Cette page rassemble, en un seul dossier ZIP, tout ce qu&apos;un
                 inspecteur du travail, une commission de sécurité, un assureur
                 ou un bailleur peut demander. Vérifiez l&apos;état de chaque pièce,
                 puis téléchargez le dossier.
               </p>
               {pourcentPret < 90 && (
-                <p className="mt-4 text-[0.85rem] text-[color:var(--minium)]">
+                <p className="mt-4 text-[0.85rem] text-[color:var(--board-signal-ink)]">
                   Certaines pièces sont incomplètes. Le dossier reste
                   téléchargeable, mais corrigez-les avant une présentation
                   formelle.
@@ -182,7 +171,7 @@ export default async function ControlePage({
             </div>
 
             {/* Droite : score + CTA */}
-            <div className="flex flex-col items-center justify-center gap-4 bg-[color:var(--paper-sunk)] px-8 py-10 md:px-10">
+            <div className="flex flex-col items-center justify-center gap-4 bg-[color:var(--board-slate-pale)] px-8 py-10 md:px-10">
               <div className="relative h-28 w-28">
                 <svg viewBox="0 0 36 36" className="h-28 w-28 -rotate-90">
                   <circle
@@ -190,7 +179,7 @@ export default async function ControlePage({
                     cy="18"
                     r="16"
                     fill="none"
-                    stroke="var(--rule)"
+                    stroke="var(--board-slate)"
                     strokeWidth="2"
                   />
                   <circle
@@ -200,10 +189,10 @@ export default async function ControlePage({
                     fill="none"
                     stroke={
                       pourcentPret >= 90
-                        ? "var(--accent-vif)"
+                        ? "var(--board-green-ink)"
                         : pourcentPret >= 60
-                          ? "var(--warn)"
-                          : "var(--minium)"
+                          ? "var(--board-amber)"
+                          : "var(--board-signal-ink)"
                     }
                     strokeWidth="2"
                     strokeDasharray={`${pourcentPret} 100`}
@@ -215,18 +204,18 @@ export default async function ControlePage({
                   <span className="font-mono text-[1.75rem] font-semibold tabular-nums">
                     {pourcentPret}
                   </span>
-                  <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted-foreground">
+                  <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-[color:var(--board-slate-mid)]">
                     % prêt
                   </span>
                 </span>
               </div>
               <a
                 href={`/api/etablissements/${id}/controle-zip`}
-                className="inline-flex items-center gap-2 rounded-md bg-[color:var(--ink)] px-5 py-3 text-[0.92rem] font-medium text-[color:var(--paper-elevated)] shadow-sm transition-colors hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-md bg-[color:var(--board-ink)] px-5 py-3 text-[0.92rem] font-medium text-[color:var(--board-card)] shadow-sm transition-colors hover:opacity-90"
               >
                 Télécharger le dossier ZIP ↓
               </a>
-              <p className="font-mono text-[0.66rem] uppercase tracking-[0.12em] text-muted-foreground">
+              <p className="font-mono text-[0.66rem] uppercase tracking-[0.12em] text-[color:var(--board-slate-mid)]">
                 ~5 Mo · généré à la volée
               </p>
             </div>
@@ -236,11 +225,11 @@ export default async function ControlePage({
         {/* CHECKLIST — ce que contient le dossier */}
         <section className="mt-10">
           <header className="mb-5">
-            <p className="label-admin">Contenu du dossier</p>
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">Contenu du dossier</p>
             <h2 className="mt-1 text-[1.2rem] font-semibold tracking-[-0.015em]">
               Pièces incluses
             </h2>
-            <p className="mt-1 text-[0.85rem] text-muted-foreground">
+            <p className="mt-1 text-[0.85rem] text-[color:var(--board-slate-mid)]">
               Chaque pièce est vérifiée avant d&apos;être mise au ZIP. Statut des
               données à l&apos;instant de la génération.
             </p>
@@ -250,9 +239,9 @@ export default async function ControlePage({
             {elements.map((el, idx) => (
               <li
                 key={el.titre}
-                className="cartouche flex items-start gap-5 px-6 py-5 sm:px-7"
+                className="carte-board flex items-start gap-5 px-7 py-6 sm:px-8"
               >
-                <span className="shrink-0 font-mono text-[1.1rem] font-light tabular-nums text-[color:var(--seal)]">
+                <span className="shrink-0 font-mono text-[1.1rem] font-light tabular-nums text-[color:var(--board-slate-soft)]">
                   {String(idx + 1).padStart(2, "0")}
                 </span>
                 <div className="min-w-0 flex-1">
@@ -261,14 +250,14 @@ export default async function ControlePage({
                       {el.titre}
                     </h3>
                     {el.etat && (
-                      <StatusPill status={el.etat} size="sm" />
+                      <StatusPill charte="board" status={el.etat} size="sm" />
                     )}
                   </div>
-                  <p className="mt-1 text-[0.85rem] text-muted-foreground">
+                  <p className="mt-1 text-[0.85rem] text-[color:var(--board-slate-mid)]">
                     {el.description}
                   </p>
                   {el.reference && (
-                    <p className="mt-1.5 font-mono text-[0.66rem] uppercase tracking-[0.14em] text-[color:var(--seal)]">
+                    <p className="mt-1.5 font-mono text-[0.66rem] uppercase tracking-[0.14em] text-[color:var(--board-slate-soft)]">
                       § {el.reference}
                     </p>
                   )}
@@ -277,7 +266,7 @@ export default async function ControlePage({
                   aria-hidden
                   className={
                     "shrink-0 font-mono text-[1.1rem] " +
-                    (el.present ? "text-[color:var(--accent-vif)]" : "text-[color:var(--seal)]")
+                    (el.present ? "text-[color:var(--board-green-ink)]" : "text-[color:var(--board-slate-soft)]")
                   }
                 >
                   {el.present ? "✓" : "○"}
@@ -289,7 +278,7 @@ export default async function ControlePage({
 
         {/* Pourquoi ça nous rassure */}
         <section className="mt-10">
-          <WhyCard
+          <WhyCard charte="board"
             kicker="Notre engagement"
             titre="Traçabilité totale — zéro IA, zéro reformulation."
             enjeu="Chaque document de ce dossier a été généré à partir de vos saisies brutes, sans retraitement. Les références réglementaires sont sourcées Légifrance et INRS."
@@ -300,21 +289,26 @@ export default async function ControlePage({
               base, voir qui l&apos;a modifiée et quand. Aucune opération cachée.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <LegalBadge reference="Art. R4121-1 CT · DUERP" />
-              <LegalBadge reference="Art. L4711-5 CT · Registre" />
-              <LegalBadge reference="Arrêté 19-04-2017 · Accessibilité" />
-              <LegalBadge reference="Art. L8222-1 CT · Vigilance" />
+              <LegalBadge charte="board" reference="Art. R4121-1 CT · DUERP" />
+              <LegalBadge
+                charte="board"
+                reference="Art. R. 4323-25 CT · Registre"
+                href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018531481/"
+                extrait="Le résultat des vérifications générales périodiques est consigné sur le ou les registres de sécurité mentionnés à l'article L. 4711-5."
+              />
+              <LegalBadge charte="board" reference="Arrêté 19-04-2017 · Accessibilité" />
+              <LegalBadge charte="board" reference="Art. L8222-1 CT · Vigilance" />
             </div>
           </WhyCard>
         </section>
 
         {/* Rappel footer */}
-        <footer className="mt-10 border-t border-dashed border-rule pt-6 text-center font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground">
+        <footer className="mt-10 border-t border-dashed border-[color:var(--board-slate)] pt-6 text-center font-mono text-[0.68rem] uppercase tracking-[0.14em] text-[color:var(--board-slate-mid)]">
           Ce dossier est un outil d&apos;aide · la responsabilité juridique
           reste celle de l&apos;employeur.{" "}
           <Link
             href={`/etablissements/${id}/guide`}
-            className="text-[color:var(--warm)] hover:underline"
+            className="text-[color:var(--board-blue-ink)] hover:underline"
           >
             Consulter le guide →
           </Link>

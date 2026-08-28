@@ -2,8 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ChampBoard } from "@/components/ui-kit";
 import {
   requestPasswordResetAction,
   type AuthActionState,
@@ -24,38 +23,46 @@ export function ForgotPasswordForm() {
   useEffect(() => setOrigin(window.location.origin), []);
 
   if (state.message) {
+    // Le message est volontairement le même que le compte existe ou non
+    // (cf. l'action) : le registre calme du glacier le dit sans laisser
+    // croire à un accusé de réception personnel.
     return (
-      <p className="rounded-md border border-dashed border-rule bg-paper-elevated px-4 py-3 text-[0.82rem] leading-[1.5] text-ink/80">
+      <p className="m-0 rounded-[18px] bg-[color:var(--board-blue-pale)] px-4 py-3 text-[13px] leading-[1.5] text-[color:var(--board-blue-ink)]">
         {state.message}
       </p>
     );
   }
 
   return (
-    <form action={action} className="space-y-5">
+    <form action={action} className="flex flex-col gap-5">
       <input type="hidden" name="origin" value={origin} />
 
-      <div className="space-y-2">
-        <Label htmlFor="email" className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
-          E-mail
-        </Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          placeholder="vous@exemple.fr"
-        />
-      </div>
+      <ChampBoard
+        id="email"
+        name="email"
+        type="email"
+        label="E-mail"
+        autoComplete="email"
+        required
+        placeholder="vous@exemple.fr"
+      />
 
       {state.error ? (
-        <p className="text-[0.82rem] text-[color:var(--minium)]">
+        <p
+          role="alert"
+          className="m-0 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)]"
+        >
           {state.error}
         </p>
       ) : null}
 
-      <Button type="submit" size="lg" disabled={pending} className="w-full">
+      <Button
+        type="submit"
+        variant="board"
+        size="board"
+        disabled={pending}
+        className="w-full"
+      >
         {pending ? "Envoi…" : "Recevoir le lien →"}
       </Button>
     </form>

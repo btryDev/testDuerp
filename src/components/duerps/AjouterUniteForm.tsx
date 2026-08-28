@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ChampBoard } from "@/components/ui-kit";
 import {
   ajouterUnite,
   type UniteActionState,
@@ -27,59 +27,61 @@ export function AjouterUniteForm({ duerpId }: { duerpId: string }) {
 
   if (!ouvert) {
     return (
-      <div className="px-6 py-4 sm:px-8">
+      <div className="px-7 py-4 sm:px-8">
         <button
           type="button"
           onClick={() => setOuvert(true)}
-          className="inline-flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-ink"
+          className="board-eyebrow inline-flex items-center gap-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
         >
-          <span aria-hidden className="text-[0.95rem] leading-none">+</span>
+          <span aria-hidden className="text-[13px] leading-none">+</span>
           Ajouter une unité de travail
         </button>
       </div>
     );
   }
 
+  const erreurNom =
+    state.status === "error" ? state.fieldErrors?.nom?.[0] : undefined;
+
   return (
     <form
       ref={formRef}
       action={formAction}
-      className="bg-paper-sunk/40 px-6 py-5 sm:px-8"
+      className="bg-[color:var(--board-slate-pale)] px-7 py-5 sm:px-8"
     >
-      <p className="font-mono text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
         Nouvelle unité
       </p>
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-        <Input
+      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <ChampBoard
+          id="unite-nom"
           name="nom"
+          label="Nom de l'unité"
           placeholder="ex. Terrasse, Atelier, Entrepôt"
-          required
+          requis
           autoFocus
-          aria-invalid={Boolean(
-            state.status === "error" && state.fieldErrors?.nom,
-          )}
+          erreur={erreurNom}
         />
-        <Input
+        <ChampBoard
+          id="unite-description"
           name="description"
+          label="Description"
           placeholder="Description courte (facultatif)"
-          className="sm:max-w-xs"
         />
-        <Button type="submit" disabled={pending}>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button type="submit" variant="board" size="board" disabled={pending}>
           {pending ? "Ajout…" : "Ajouter"}
         </Button>
         <Button
           type="button"
-          variant="ghost"
+          variant="boardClair"
+          size="board"
           onClick={() => setOuvert(false)}
         >
           Annuler
         </Button>
       </div>
-      {state.status === "error" && state.fieldErrors?.nom && (
-        <p className="mt-2 text-sm text-destructive">
-          {state.fieldErrors.nom[0]}
-        </p>
-      )}
     </form>
   );
 }

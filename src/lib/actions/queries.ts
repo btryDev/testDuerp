@@ -27,17 +27,7 @@ export async function listerActions(
     },
   };
 
-  if (filtres.origine === "duerp") {
-    where.where = { ...where.where, risqueId: { not: null } };
-  } else if (filtres.origine === "verification") {
-    where.where = { ...where.where, verificationId: { not: null } };
-  } else if (filtres.origine === "libre") {
-    where.where = {
-      ...where.where,
-      risqueId: null,
-      verificationId: null,
-    };
-  }
+  where.where = { ...where.where, ...clauseOrigine(filtres.origine) };
 
   if (filtres.statut) {
     where.where = { ...where.where, statut: filtres.statut };
@@ -122,14 +112,38 @@ export async function getAction(id: string) {
  * toute sa journée. Le calendrier, lui, normalisait déjà : les deux
  * écrans annonçaient des nombres différents le matin.
  */
+/**
+ * Restreint un `where` à une origine d'action, exactement comme
+ * `listerActions`. Extraite pour que la liste et ses compteurs ne puissent
+ * plus diverger : ils divergeaient, et l'écran affichait « 12 en retard » en
+ * rose au-dessus de trois lignes filtrées.
+ */
+function clauseOrigine(origine: OrigineAction | undefined) {
+  if (origine === "duerp") return { risqueId: { not: null } };
+  if (origine === "verification") return { verificationId: { not: null } };
+  if (origine === "libre") return { risqueId: null, verificationId: null };
+  return {};
+}
+
 export async function compterActions(
   etablissementId: string,
   now: Date = new Date(),
+  /**
+   * Le filtre appliqué à la liste que ces compteurs coiffent. Par défaut
+   * aucun — les appelants qui résument l'ensemble du plan (sidebar, PDF) ne
+   * changent pas.
+   *
+   * La charte l'impose : « un en-tête ne doit jamais contredire ce qu'il
+   * coiffe ; les compteurs se calculent sur ce qui est réellement affiché,
+   * filtre compris ».
+   */
+  filtres: { origine?: OrigineAction } = {},
 ) {
   const user = await requireUser();
   const scope = {
     etablissementId,
     etablissement: { entreprise: { userId: user.id } },
+    ...clauseOrigine(filtres.origine),
   } as const;
   const debut = debutDuJour(now);
   // Le module de dates expose la liste en `readonly string[]` — il reste

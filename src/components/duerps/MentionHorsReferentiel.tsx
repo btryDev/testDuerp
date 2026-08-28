@@ -13,12 +13,16 @@
  *
  * Registre : on décrit ce que fait l'outil, jamais ce que vaut le document.
  * Pas de « incomplet », pas de « non conforme », pas de rassurance inverse.
+ *
+ * Et pas de couleur d'état non plus : constater que le référentiel se tait
+ * n'est ni un retard ni une alerte (charte, interdit 3). La mention porte
+ * donc la surface creuse de l'ardoise, comme un sous-bloc.
  */
 
 /** Format court, pour une ligne de liste déjà dense. */
 export function LigneHorsReferentiel() {
   return (
-    <p className="mt-2 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+    <p className="board-eyebrow m-0 mt-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
       Hors référentiel sectoriel · aucun risque type proposé
     </p>
   );
@@ -29,25 +33,25 @@ export function MentionHorsReferentiel() {
   return (
     <section
       aria-label="Unité hors référentiel sectoriel"
-      className="rounded-2xl border border-dashed border-rule bg-paper-sunk/40 px-6 py-5 sm:px-8"
+      className="rounded-[22px] bg-[color:var(--board-slate-pale)] px-7 py-6 sm:px-8"
     >
-      <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
         Hors référentiel sectoriel
       </p>
-      <p className="mt-2 max-w-prose text-[0.92rem] leading-relaxed text-ink">
+      <p className="m-0 mt-2.5 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
         Cette unité ne correspond à aucune unité type du référentiel sectoriel
         chargé pour votre activité. Aucun risque type ne peut donc vous être
         proposé ici : l&apos;inventaire, la cotation et les mesures de
         prévention sont entièrement à votre main.
       </p>
-      <p className="mt-3 max-w-prose text-[0.88rem] leading-relaxed text-muted-foreground">
+      <p className="m-0 mt-3 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
         Ajoutez vos risques un par un depuis «&nbsp;Ajouter un risque
         spécifique&nbsp;» plus bas. Chaque risque ajouté démarre sur une
         cotation neutre — c&apos;est un point de départ à ajuster, pas une
         appréciation. Si après examen l&apos;unité ne présente pas de risque
         significatif, vous pouvez le déclarer et le justifier.
       </p>
-      <p className="mt-3 max-w-prose text-[0.82rem] leading-relaxed text-muted-foreground">
+      <p className="m-0 mt-3 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
         Le DUERP généré porte la mention que cette unité a été évaluée hors
         référentiel sectoriel, afin que le lecteur du document sache d&apos;où
         vient son contenu.

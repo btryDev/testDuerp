@@ -1,5 +1,6 @@
 "use client";
 
+import { PastilleFiche } from "@/components/ui-kit/fiche";
 import type { StepProps } from "./types";
 import {
   CHOIX_ACTIVITE_ERP,
@@ -8,7 +9,7 @@ import {
 
 /**
  * Étape 3 sur 3 — Résumé.
- * Carte summary des informations saisies + carte « la suite » qui annonce
+ * Carte des informations saisies + carte « la suite » qui annonce
  * uniquement ce qui existe réellement après la création (pas de promesse
  * de contenu pré-généré : le calendrier vient des équipements déclarés,
  * le DUERP s'ouvre ensuite, le registre se remplit avec les rapports).
@@ -49,12 +50,12 @@ export function StepResume({ state }: StepProps) {
     .join(", ");
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-[22px]">
       <div>
-        <h2 className="text-[2rem] font-semibold leading-tight tracking-[-0.03em]">
+        <h2 className="board-titre m-0 text-[clamp(22px,2.2vw,27px)]">
           Vérification
         </h2>
-        <p className="mt-3 max-w-[56ch] text-[0.95rem] leading-[1.55] text-muted-foreground">
+        <p className="m-0 mt-2.5 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           Tout est bon ? En créant l&apos;espace, on enregistre votre
           établissement. La suite se joue en une étape : déclarer vos
           équipements — ce sont eux qui alimentent votre calendrier de
@@ -62,16 +63,16 @@ export function StepResume({ state }: StepProps) {
         </p>
       </div>
 
-      {/* Summary card */}
-      <section className="rounded-2xl border border-rule-soft bg-paper-elevated p-6">
+      {/* Ce qui a été saisi */}
+      <section className="carte-board px-7 py-6 sm:px-8">
         <div>
-          <strong className="text-[1.2rem] font-semibold tracking-[-0.02em]">
+          <strong className="board-titre block text-[22px]">
             {state.raisonSociale || "—"}
           </strong>
           {state.siret ? (
-            <em className="mt-1 block font-mono text-[0.82rem] not-italic text-muted-foreground">
+            <span className="mt-1.5 block font-mono text-[11.5px] tabular-nums text-[color:var(--board-slate-mid)]">
               SIRET {state.siret}
-            </em>
+            </span>
           ) : null}
         </div>
         <dl className="mt-5 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
@@ -100,18 +101,17 @@ export function StepResume({ state }: StepProps) {
         </dl>
       </section>
 
-      {/* Forecast */}
-      <section className="rounded-2xl border border-[color:color-mix(in_oklch,var(--accent-vif)_20%,transparent)] bg-[color:color-mix(in_oklch,var(--accent-vif)_5%,var(--paper-elevated))] px-6 py-5">
+      {/* Ce qui existera après la création. Aucune couleur d'état : rien
+          n'est encore fait, et le vert du board dirait justement « fait ». */}
+      <section className="carte-board px-7 py-6 sm:px-8">
         <div>
-          <strong className="block text-[1rem] font-medium text-[color:var(--accent-vif)]">
-            La suite, concrètement
-          </strong>
-          <em className="mt-1 block text-[0.82rem] not-italic text-muted-foreground">
+          <h3 className="board-titre m-0 text-[22px]">La suite, concrètement</h3>
+          <p className="m-0 mt-2 max-w-[62ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
             Dès que vous déclarerez vos équipements, le calendrier des
             vérifications se remplira automatiquement.
-          </em>
+          </p>
         </div>
-        <ul className="mt-4 flex flex-col gap-2 text-[0.9rem]">
+        <ul className="m-0 mt-4 flex list-none flex-col gap-2.5 p-0 text-[13.5px] leading-[1.5] text-[color:var(--board-slate-ink)]">
           <ForecastLi>
             Espace entreprise + premier établissement liés
           </ForecastLi>
@@ -135,11 +135,13 @@ export function StepResume({ state }: StepProps) {
 
 function SumLigne({ label, valeur }: { label: string; valeur: string }) {
   return (
-    <div className="border-t border-dashed border-rule-soft pt-4">
-      <dt className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">
+    <div className="border-t border-[color:var(--board-slate-line)] pt-4">
+      <dt className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
         {label}
       </dt>
-      <dd className="mt-1.5 text-[0.92rem]">{valeur}</dd>
+      <dd className="m-0 mt-1.5 text-[14px] leading-[1.45] text-[color:var(--board-ink)]">
+        {valeur}
+      </dd>
     </div>
   );
 }
@@ -152,18 +154,18 @@ function SumLignePills({
   pills: string[];
 }) {
   return (
-    <div className="border-t border-dashed border-rule-soft pt-4">
-      <dt className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">
+    <div className="border-t border-[color:var(--board-slate-line)] pt-4">
+      <dt className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
         {label}
       </dt>
-      <dd className="mt-1.5 flex flex-wrap gap-1.5">
+      {/* Les régimes sont des faits déclarés, pas des états : la pastille
+          bleue, le registre calme du board — surtout pas le vert, qui dit
+          « fait », ni l'ambre, qui appelle une action. */}
+      <dd className="m-0 mt-1.5 flex flex-wrap gap-1.5">
         {pills.map((p, i) => (
-          <span
-            key={`${p}-${i}`}
-            className="rounded-full bg-[color:var(--accent-vif-soft)] px-2.5 py-0.5 text-[0.76rem] font-medium text-[color:var(--accent-vif)]"
-          >
+          <PastilleFiche key={`${p}-${i}`} ton={p === "—" ? "neutre" : "bleu"}>
             {p}
-          </span>
+          </PastilleFiche>
         ))}
       </dd>
     </div>
@@ -172,10 +174,10 @@ function SumLignePills({
 
 function ForecastLi({ children }: { children: React.ReactNode }) {
   return (
-    <li className="flex items-center gap-2.5">
+    <li className="flex items-baseline gap-2.5">
       <span
         aria-hidden
-        className="inline-block size-1.5 rounded-full bg-[color:var(--accent-vif)]"
+        className="inline-block size-1.5 shrink-0 rounded-full bg-[color:var(--board-slate)]"
       />
       {children}
     </li>

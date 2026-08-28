@@ -47,34 +47,36 @@ export default async function RisquesUnitePage({
   const etape2Faite = etape1Faite && aEvaluerCount === 0;
 
   return (
-    <div className="space-y-12">
+    <div className="flex flex-col gap-[22px]">
       <nav>
         <Link
           href={`/duerp/${id}/risques`}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
+          className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
         >
           ← Toutes les unités
         </Link>
       </nav>
 
-      <header className="max-w-2xl">
-        <p className="label-admin">Unité de travail</p>
-        <h2 className="mt-3 text-[1.6rem] font-semibold tracking-[-0.018em] leading-tight">
+      <header className="max-w-[68ch]">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+          Unité de travail
+        </p>
+        <h2 className="board-titre m-0 mt-2.5 text-[clamp(23px,2.1vw,30px)]">
           {unite.nom}
         </h2>
         {unite.description && (
-          <p className="mt-3 text-[0.95rem] leading-[1.7] text-muted-foreground">
+          <p className="m-0 mt-2.5 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             {unite.description}
           </p>
         )}
-        <p className="mt-5 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="board-eyebrow m-0 mt-4 text-[10px] tracking-[0.16em] tabular-nums text-[color:var(--board-slate-soft)]">
           {String(risquesRetenus.length).padStart(2, "0")} risque
           {risquesRetenus.length > 1 ? "s" : ""} retenu
           {risquesRetenus.length > 1 ? "s" : ""}
           {aEvaluerCount > 0 && (
             <>
-              <span className="mx-2 text-rule">·</span>
-              <span className="text-[color:var(--warm)]">
+              <span className="mx-2 text-[color:var(--board-slate)]">·</span>
+              <span className="text-[color:var(--board-blue-ink)]">
                 {String(aEvaluerCount).padStart(2, "0")} à évaluer
               </span>
             </>
@@ -84,22 +86,21 @@ export default async function RisquesUnitePage({
 
       {horsReferentiel && <MentionHorsReferentiel />}
 
-      <section
-        aria-label="Marche à suivre"
-        className="relative overflow-hidden rounded-[calc(var(--radius)*1.4)] bg-[color:var(--warm-soft)] ring-1 ring-[color:var(--warm)]/10"
-      >
-        {/* En-tête éditorial */}
-        <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-dashed border-[color:var(--warm)]/15 px-6 py-5 sm:px-8">
-          <p className="font-mono text-[0.66rem] font-medium uppercase tracking-[0.18em] text-[color:var(--warm)]">
+      {/* La marche à suivre est une carte pédagogique, pas un état : elle
+          n'a donc pas de champ coloré, sur le modèle de `WhyCard` en board.
+          Le bleu du board n'y sert qu'à désigner le geste en cours. */}
+      <section aria-label="Marche à suivre" className="carte-board">
+        <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-[color:var(--board-slate-line)] px-7 py-5 sm:px-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
             Marche à suivre
           </p>
-          <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[color:var(--warm)]/60">
+          <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             Progression de cette unité
           </p>
         </div>
 
         {/* Barre continue 2 segments + légendes sous-jacentes */}
-        <div className="px-6 pt-6 sm:px-8">
+        <div className="px-7 pt-6 sm:px-8">
           <div
             role="progressbar"
             aria-valuemin={0}
@@ -108,23 +109,23 @@ export default async function RisquesUnitePage({
             className="flex gap-1.5"
           >
             <span
-              className={`h-[6px] flex-1 rounded-[2px] transition-colors duration-300 ${
+              className={`h-[6px] flex-1 rounded-full transition-colors duration-300 ${
                 etape1Faite
-                  ? "bg-[color:var(--warm)]"
-                  : "bg-[color:var(--warm)]/20"
+                  ? "bg-[color:var(--board-ink)]"
+                  : "bg-[color:var(--board-slate-line)]"
               }`}
             />
             <span
-              className={`h-[6px] flex-1 rounded-[2px] transition-colors duration-300 ${
+              className={`h-[6px] flex-1 rounded-full transition-colors duration-300 ${
                 etape2Faite
-                  ? "bg-[color:var(--warm)]"
+                  ? "bg-[color:var(--board-ink)]"
                   : etape1Faite
-                    ? "bg-[color:var(--warm)]/40"
-                    : "bg-[color:var(--warm)]/12"
+                    ? "bg-[color:var(--board-blue-ink)]"
+                    : "bg-[color:var(--board-slate-line)]"
               }`}
             />
           </div>
-          <div className="mt-2 flex justify-between font-mono text-[0.58rem] uppercase tracking-[0.2em] text-[color:var(--warm)]/55 tabular-nums">
+          <div className="board-eyebrow mt-2 flex justify-between text-[10px] tracking-[0.16em] tabular-nums text-[color:var(--board-slate-soft)]">
             <span>
               01 /{" "}
               {etape1Faite ? "terminé" : "à faire"}
@@ -140,28 +141,27 @@ export default async function RisquesUnitePage({
           </div>
         </div>
 
-        {/* Les 2 étapes côte à côte, séparées par un filet pointillé */}
-        <ol className="mt-5 grid grid-cols-1 sm:grid-cols-2">
-          <li className="flex items-start gap-4 border-b border-dashed border-[color:var(--warm)]/15 px-6 py-6 sm:border-b-0 sm:border-r sm:px-8">
+        <ol className="mt-5 grid list-none grid-cols-1 p-0 sm:grid-cols-2">
+          <li className="flex items-start gap-4 border-b border-[color:var(--board-slate-line)] px-7 py-6 sm:border-b-0 sm:border-r sm:px-8">
             <span
               aria-hidden
-              className={`flex size-11 shrink-0 items-center justify-center rounded-full font-mono text-[0.78rem] font-semibold tabular-nums transition-colors ${
+              className={`flex size-11 shrink-0 items-center justify-center rounded-full font-mono text-[12.5px] font-semibold tabular-nums transition-colors ${
                 etape1Faite
-                  ? "bg-[color:var(--warm)] text-[color:var(--paper-elevated)]"
-                  : "border border-[color:var(--warm)]/45 text-[color:var(--warm)]"
+                  ? "bg-[color:var(--board-ink)] text-white"
+                  : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
               }`}
             >
               01
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[1rem] font-semibold tracking-[-0.012em] leading-snug text-[color:var(--warm)]">
+              <p className="m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
                 {horsReferentiel
                   ? "Inventorier les risques"
                   : "Cocher les risques concernés"}
               </p>
               {/* Renvoyer vers « la liste du référentiel plus bas » quand elle
                   n'existe pas enverrait le dirigeant chercher un écran vide. */}
-              <p className="mt-1.5 text-[0.86rem] leading-relaxed text-[color:var(--warm)]/70">
+              <p className="m-0 mt-1.5 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                 {horsReferentiel ? (
                   <>
                     Aucun risque type n&apos;est proposé pour cette unité :
@@ -177,10 +177,10 @@ export default async function RisquesUnitePage({
                 )}
               </p>
               <span
-                className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.14em] ${
+                className={`pastille-board mt-3 tabular-nums ${
                   etape1Faite
-                    ? "bg-[color:var(--paper-elevated)] text-[color:var(--warm)] ring-1 ring-[color:var(--warm)]/20"
-                    : "bg-[color:var(--warm)] text-[color:var(--paper-elevated)]"
+                    ? "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]"
+                    : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
                 }`}
               >
                 {etape1Faite ? (
@@ -196,54 +196,48 @@ export default async function RisquesUnitePage({
             </div>
           </li>
 
-          <li className="flex items-start gap-4 px-6 py-6 sm:px-8">
+          <li className="flex items-start gap-4 px-7 py-6 sm:px-8">
             <span
               aria-hidden
-              className={`flex size-11 shrink-0 items-center justify-center rounded-full font-mono text-[0.78rem] font-semibold tabular-nums transition-colors ${
+              className={`flex size-11 shrink-0 items-center justify-center rounded-full font-mono text-[12.5px] font-semibold tabular-nums transition-colors ${
                 etape2Faite
-                  ? "bg-[color:var(--warm)] text-[color:var(--paper-elevated)]"
+                  ? "bg-[color:var(--board-ink)] text-white"
                   : etape1Faite
-                    ? "border border-[color:var(--warm)]/45 text-[color:var(--warm)]"
-                    : "border border-dashed border-[color:var(--warm)]/25 text-[color:var(--warm)]/40"
+                    ? "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
+                    : "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]"
               }`}
             >
               02
             </span>
             <div className="min-w-0 flex-1">
               <p
-                className={`text-[1rem] font-semibold tracking-[-0.012em] leading-snug ${
+                className={`m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] ${
                   etape1Faite
-                    ? "text-[color:var(--warm)]"
-                    : "text-[color:var(--warm)]/45"
+                    ? "text-[color:var(--board-ink)]"
+                    : "text-[color:var(--board-slate-mid)]"
                 }`}
               >
                 Évaluer chaque risque retenu
               </p>
-              <p
-                className={`mt-1.5 text-[0.86rem] leading-relaxed ${
-                  etape1Faite
-                    ? "text-[color:var(--warm)]/70"
-                    : "text-[color:var(--warm)]/40"
-                }`}
-              >
+              <p className="m-0 mt-1.5 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                 Pour chaque risque, en deux temps :{" "}
-                <span className="font-semibold">
+                <span className="font-semibold text-[color:var(--board-ink)]">
                   01 · coter (gravité, probabilité, maîtrise)
                 </span>{" "}
                 puis{" "}
-                <span className="font-semibold">
+                <span className="font-semibold text-[color:var(--board-ink)]">
                   02 · lister les mesures de prévention
                 </span>
                 . Les deux vont ensemble — la maîtrise cotée reflète ce qui
                 existe déjà.
               </p>
               <span
-                className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.14em] ${
+                className={`pastille-board mt-3 tabular-nums ${
                   !etape1Faite
-                    ? "border border-dashed border-[color:var(--warm)]/30 text-[color:var(--warm)]/50"
+                    ? "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]"
                     : etape2Faite
-                      ? "bg-[color:var(--paper-elevated)] text-[color:var(--warm)] ring-1 ring-[color:var(--warm)]/20"
-                      : "bg-[color:var(--warm)] text-[color:var(--paper-elevated)]"
+                      ? "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]"
+                      : "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]"
                 }`}
               >
                 {!etape1Faite ? (
@@ -265,22 +259,22 @@ export default async function RisquesUnitePage({
       <div
         className={
           nonSelectionnes.length > 0
-            ? "grid gap-6 lg:grid-cols-2 lg:items-start"
+            ? "grid gap-[22px] lg:grid-cols-2 lg:items-start"
             : ""
         }
       >
-        <section className="cartouche">
-        <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-          <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+        <section className="carte-board">
+        <div className="flex items-baseline justify-between gap-4 border-b border-[color:var(--board-slate-line)] px-7 py-5 sm:px-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
             Risques retenus
           </p>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             Enregistrés automatiquement
           </p>
         </div>
 
         {risquesRetenus.length === 0 ? (
-          <p className="px-6 py-8 text-[0.9rem] text-muted-foreground sm:px-8">
+          <p className="m-0 px-7 py-8 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)] sm:px-8">
             {horsReferentiel ? (
               <>
                 Aucun risque retenu pour cette unité. Ajoutez vos risques
@@ -296,40 +290,40 @@ export default async function RisquesUnitePage({
             )}
           </p>
         ) : (
-          <ul className="divide-y divide-dashed divide-rule/50">
+          <ul className="m-0 list-none divide-y divide-[color:var(--board-slate-line)] p-0">
             {risquesRetenus.map((r) => {
               const mesureFaite = r.mesures.length > 0;
               const evalComplete = r.cotationSaisie && mesureFaite;
               return (
               <li
                 key={r.id}
-                className="flex flex-col items-start justify-between gap-4 px-6 py-5 sm:flex-row sm:items-center sm:px-8"
+                className="flex flex-col items-start justify-between gap-4 px-7 py-5 sm:flex-row sm:items-center sm:px-8"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-[1rem] font-semibold tracking-[-0.01em] leading-snug">
+                  <p className="m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
                     {r.libelle}
                   </p>
                   {r.description && (
-                    <p className="mt-1 text-[0.88rem] leading-relaxed text-muted-foreground">
+                    <p className="m-0 mt-1 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                       {r.description}
                     </p>
                   )}
 
                   {/* Progression compacte 01 · 02 de l'évaluation de ce risque */}
-                  <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[0.6rem] uppercase tracking-[0.16em]">
+                  <div className="board-eyebrow mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] tracking-[0.16em]">
                     <span
                       className={`inline-flex items-center gap-1.5 ${
                         r.cotationSaisie
-                          ? "text-ink"
-                          : "text-[color:var(--warm)]"
+                          ? "text-[color:var(--board-ink)]"
+                          : "text-[color:var(--board-blue-ink)]"
                       }`}
                     >
                       <span
                         aria-hidden
                         className={`inline-block size-1.5 rounded-full ${
                           r.cotationSaisie
-                            ? "bg-ink"
-                            : "bg-[color:var(--warm)]"
+                            ? "bg-[color:var(--board-ink)]"
+                            : "bg-[color:var(--board-blue-ink)]"
                         }`}
                       />
                       01 ·{" "}
@@ -346,26 +340,26 @@ export default async function RisquesUnitePage({
                         "à coter"
                       )}
                     </span>
-                    <span aria-hidden className="text-rule">
+                    <span aria-hidden className="text-[color:var(--board-slate)]">
                       ·
                     </span>
                     <span
                       className={`inline-flex items-center gap-1.5 ${
                         !r.cotationSaisie
-                          ? "text-muted-foreground/50"
+                          ? "text-[color:var(--board-slate-soft)]"
                           : mesureFaite
-                            ? "text-ink"
-                            : "text-[color:var(--warm)]"
+                            ? "text-[color:var(--board-ink)]"
+                            : "text-[color:var(--board-blue-ink)]"
                       }`}
                     >
                       <span
                         aria-hidden
                         className={`inline-block size-1.5 rounded-full ${
                           !r.cotationSaisie
-                            ? "bg-rule-soft"
+                            ? "bg-[color:var(--board-slate)]"
                             : mesureFaite
-                              ? "bg-ink"
-                              : "bg-[color:var(--warm)]"
+                              ? "bg-[color:var(--board-ink)]"
+                              : "bg-[color:var(--board-blue-ink)]"
                         }`}
                       />
                       02 ·{" "}
@@ -379,10 +373,10 @@ export default async function RisquesUnitePage({
                     </span>
                     {!r.referentielId && (
                       <>
-                        <span aria-hidden className="text-rule">
+                        <span aria-hidden className="text-[color:var(--board-slate)]">
                           ·
                         </span>
-                        <span className="inline-flex items-center text-[color:var(--warm)]">
+                        <span className="inline-flex items-center text-[color:var(--board-slate-soft)]">
                           personnalisé
                           <InfoTooltip align="left">
                             Risque ajouté manuellement (hors référentiel
@@ -395,39 +389,29 @@ export default async function RisquesUnitePage({
                   </div>
                 </div>
                 <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:flex-nowrap">
-                  <span className="group/tip relative inline-flex">
-                    <Link
-                      href={`/duerp/${id}/risques/${uniteId}/${r.id}`}
-                      className={buttonVariants({
-                        size: "sm",
-                        variant: evalComplete ? "outline" : "default",
-                      })}
-                    >
-                      {!r.cotationSaisie
-                        ? "Évaluer"
-                        : !mesureFaite
-                          ? "Continuer l'évaluation"
-                          : "Modifier l'évaluation"}
-                    </Link>
-                    <span
-                      role="tooltip"
-                      className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 w-max max-w-[18rem] translate-y-1 rounded-md bg-ink px-3 py-2 text-left text-[0.72rem] leading-relaxed text-paper-elevated opacity-0 shadow-lg transition-all duration-150 group-hover/tip:translate-y-0 group-hover/tip:opacity-100 [font-family:var(--font-body)]"
-                    >
-                      Évaluation en deux temps : d&apos;abord la cotation
-                      (3 questions), puis les mesures de prévention. Les deux
-                      sont enchaînés dans le même flux.
-                      <span
-                        aria-hidden
-                        className="absolute right-4 top-full border-4 border-transparent border-t-ink"
-                      />
-                    </span>
-                  </span>
+                  {/* Le déroulé « cotation puis mesures » se lisait ici dans
+                      une bulle au survol — invisible au doigt (interdit 18),
+                      et déjà écrit en clair dans la marche à suivre ci-dessus.
+                      Elle n'a pas été traduite, elle a été retirée. */}
+                  <Link
+                    href={`/duerp/${id}/risques/${uniteId}/${r.id}`}
+                    className={buttonVariants({
+                      size: "boardSm",
+                      variant: evalComplete ? "boardClair" : "board",
+                    })}
+                  >
+                    {!r.cotationSaisie
+                      ? "Évaluer"
+                      : !mesureFaite
+                        ? "Continuer l'évaluation"
+                        : "Modifier l'évaluation"}
+                  </Link>
                   {evalComplete && (
                     <Link
                       href={`/duerp/${id}/risques/${uniteId}/${r.id}/mesures`}
                       className={buttonVariants({
-                        size: "sm",
-                        variant: "ghost",
+                        size: "boardSm",
+                        variant: "boardClair",
                       })}
                     >
                       Mesures →
@@ -452,25 +436,25 @@ export default async function RisquesUnitePage({
       </section>
 
       {nonSelectionnes.length > 0 && (
-        <section className="cartouche overflow-hidden">
-          <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-            <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+        <section className="carte-board overflow-clip">
+          <div className="flex items-baseline justify-between gap-4 border-b border-[color:var(--board-slate-line)] px-7 py-5 sm:px-8">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
               Autres risques du référentiel
             </p>
-            <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] tabular-nums text-[color:var(--board-slate-soft)]">
               {String(nonSelectionnes.length).padStart(2, "0")} à envisager
             </p>
           </div>
-          <p className="border-b border-dashed border-rule/50 px-6 py-4 text-[0.88rem] leading-relaxed text-muted-foreground sm:px-8">
+          <p className="m-0 border-b border-[color:var(--board-slate-line)] px-7 py-4 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)] sm:px-8">
             Cochez ceux qui s&apos;appliquent. Les risques non cochés sont
             considérés comme écartés pour cette unité.
           </p>
-          <ul className="divide-y divide-dashed divide-rule/50">
+          <ul className="m-0 list-none divide-y divide-[color:var(--board-slate-line)] p-0">
             {nonSelectionnes.map((refId) => {
               const ref = refMap.get(refId);
               if (!ref) return null;
               return (
-                <li key={refId} className="px-6 py-4 sm:px-8">
+                <li key={refId} className="px-7 py-4 sm:px-8">
                   <RisqueToggleRow
                     uniteId={uniteId}
                     referentielId={refId}
@@ -486,13 +470,13 @@ export default async function RisquesUnitePage({
       )}
       </div>
 
-      <section className="cartouche overflow-hidden">
-        <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-          <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="carte-board overflow-clip">
+        <div className="border-b border-[color:var(--board-slate-line)] px-7 py-5 sm:px-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
             Ajouter un risque spécifique
           </p>
         </div>
-        <div className="px-6 py-5 sm:px-8">
+        <div className="px-7 py-5 sm:px-8">
           <AjouterRisqueCustomForm uniteId={uniteId} />
         </div>
       </section>
@@ -506,22 +490,22 @@ export default async function RisquesUnitePage({
         </section>
       )}
 
-      <div className="flex items-center justify-between border-t border-dashed border-rule/60 pt-8">
+      <div className="flex items-center justify-between gap-4 border-t border-[color:var(--board-slate-line)] pt-7">
         <Link
           href={`/duerp/${id}/risques`}
-          className={buttonVariants({ variant: "ghost" })}
+          className={buttonVariants({ variant: "boardClair", size: "board" })}
         >
           Annuler
         </Link>
         <Link
           href={`/duerp/${id}/risques`}
-          className={buttonVariants({ size: "lg" })}
+          className={buttonVariants({ variant: "board", size: "board" })}
         >
           Valider et revenir →
         </Link>
       </div>
 
-      <p className="text-center text-[0.72rem] text-muted-foreground">
+      <p className="m-0 max-w-[66ch] text-center text-[12px] leading-[1.55] text-[color:var(--board-slate-soft)] sm:mx-auto">
         Toutes vos modifications sont enregistrées au fur et à mesure.
         &laquo;&nbsp;Valider et revenir&nbsp;&raquo; vous ramène à la liste
         des unités.

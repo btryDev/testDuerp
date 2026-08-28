@@ -9,13 +9,13 @@ export function GuideHero() {
   return (
     <section className="grid grid-cols-1 gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-16">
       <div>
-        <p className="g-kicker">§ Guide de l&apos;employeur</p>
-        <h1 className="g-h2 mt-4 text-[clamp(2.2rem,4.2vw,3.2rem)]">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">§ Guide de l&apos;employeur</p>
+        <h1 className="board-titre text-[clamp(22px,2.2vw,27px)] mt-4 text-[clamp(2.2rem,4.2vw,3.2rem)]">
           Vos obligations de santé-sécurité,
           <br />
-          <em className="g-h2-em">au clair</em>.
+          <em className="text-[color:var(--board-blue-ink)]">au clair</em>.
         </h1>
-        <p className="mt-5 max-w-[52ch] text-[1rem] leading-[1.65] text-ink/75">
+        <p className="mt-5 max-w-[52ch] text-[1rem] leading-[1.65] text-[color:var(--board-ink)]/75">
           Ce que la loi attend d&apos;un employeur, comment votre
           établissement est concerné, et quels outils la plateforme tient
           à jour pour vous.
@@ -47,19 +47,19 @@ function MetaPastille({
       className={
         "inline-flex flex-col rounded-xl border px-3.5 py-2 " +
         (highlight
-          ? "border-[color:var(--accent-vif)]/40 bg-[color:var(--accent-vif-soft)]"
-          : "border-rule bg-paper-sunk/60")
+          ? "border-[color:var(--board-green-ink)]/40 bg-[color:var(--board-green)]"
+          : "border-[color:var(--board-slate)] bg-[color:var(--board-slate-pale)]/60")
       }
     >
       <strong
         className={
           "text-[0.92rem] font-semibold " +
-          (highlight ? "text-[color:var(--accent-vif)]" : "text-ink")
+          (highlight ? "text-[color:var(--board-green-ink)]" : "text-[color:var(--board-ink)]")
         }
       >
         {titre}
       </strong>
-      <em className="font-mono text-[0.6rem] not-italic uppercase tracking-[0.18em] text-muted-foreground">
+      <em className="font-mono text-[0.6rem] not-italic uppercase tracking-[0.18em] text-[color:var(--board-slate-mid)]">
         {sous}
       </em>
     </li>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { cleJourCivil, formaterDateFr } from "@/lib/dates";
 import { chargerPagePrescriptions } from "@/lib/prescriptions/queries";
@@ -13,6 +14,31 @@ import { PrescriptionActions } from "@/components/prescriptions/PrescriptionActi
  * L'état de chaque prescription (active / levée / ignorée avec raison) est
  * recalculé à l'affichage par la même fonction pure que le générateur.
  */
+
+// Les trois états d'une prescription, en champs du board.
+//
+// Le vert est écarté : il dit « fait » (interdits 16-17), et une
+// prescription active n'est pas un acquis — c'est un acte qui produit
+// effet, donc le glacier, registre calme et actif. « Levée » est un
+// classement sans suite : l'ardoise. « Non appliquée » demande un regard —
+// la prescription vise quelque chose que l'établissement n'a pas — sans
+// être une urgence datée : l'ambre de l'attention.
+const CHAMP_ETAT_PRESCRIPTION = {
+  active:
+    "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]",
+  levee:
+    "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]",
+  ignoree: "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]",
+} as const;
+
+function champEtat(etat: string): string {
+  return etat === "active"
+    ? CHAMP_ETAT_PRESCRIPTION.active
+    : etat === "levee"
+      ? CHAMP_ETAT_PRESCRIPTION.levee
+      : CHAMP_ETAT_PRESCRIPTION.ignoree;
+}
+
 export default async function PrescriptionsPage({
   params,
 }: {
@@ -25,98 +51,105 @@ export default async function PrescriptionsPage({
   const action = creerPrescription.bind(null, id);
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-14 sm:px-10">
-      <nav>
-        <Link
-          href={`/etablissements/${id}`}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
-        >
-          ← {etablissement.raisonDisplay}
-        </Link>
-      </nav>
-
-      <header className="mt-8 space-y-3">
-        <p className="label-admin">Prescriptions propres à votre établissement</p>
-        <h1 className="text-[1.8rem] font-semibold tracking-[-0.02em] leading-tight">
-          Ce qu&apos;une autorité vous a prescrit, à vous seul
-        </h1>
-        <p className="max-w-2xl text-[0.9rem] leading-relaxed text-muted-foreground">
-          Le calendrier est calculé à partir d&apos;un référentiel commun à tous
-          les établissements. Un arrêté du maire ou du préfet pris après avis de
-          la commission de sécurité, un arrêté préfectoral ICPE ou une demande
-          de l&apos;inspection du travail peuvent imposer davantage — un rythme
-          plus court, une vérification supplémentaire. Déclarez-les ici : le
-          calendrier les reprend, avec leur référence.
-        </p>
+    <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
+      <header className="border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] px-[var(--board-gutter)] py-[22px]">
+        <div className="min-w-0">
+          <Link
+            href={`/etablissements/${id}`}
+            className="board-eyebrow inline-flex items-center gap-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
+          >
+            <ArrowLeft className="size-3" aria-hidden />
+            {etablissement.raisonDisplay}
+          </Link>
+          <h1 className="board-titre m-0 mt-2.5 text-[clamp(22px,2.2vw,27px)]">
+            Ce qu&apos;une autorité vous a prescrit, à vous seul
+          </h1>
+          <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+            Le calendrier est calculé à partir d&apos;un référentiel commun à
+            tous les établissements. Un arrêté du maire ou du préfet pris après
+            avis de la commission de sécurité, un arrêté préfectoral ICPE ou une
+            demande de l&apos;inspection du travail peuvent imposer davantage —
+            un rythme plus court, une vérification supplémentaire. Déclarez-les
+            ici&nbsp;: le calendrier les reprend, avec leur référence.
+          </p>
+        </div>
       </header>
 
-      <section className="mt-10 space-y-4">
-        <h2 className="text-[1.05rem] font-semibold">Prescriptions déclarées</h2>
-        {prescriptions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Aucune prescription déclarée. Si aucune autorité ne vous a rien
-            prescrit, il n&apos;y a rien à faire ici.
-          </p>
-        ) : (
-          <ul className="divide-y divide-rule/60 rounded-md border border-rule/60">
-            {prescriptions.map((p) => (
-              <li key={p.id} className="space-y-1 px-5 py-4">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <p className="font-medium">
-                    {LABEL_SOURCE_PRESCRIPTION[p.source as keyof typeof LABEL_SOURCE_PRESCRIPTION] ?? p.source}{" "}
-                    {p.reference}
-                    {p.autorite ? ` — ${p.autorite}` : ""}
-                  </p>
-                  <span
-                    className={
-                      p.etat.etat === "active"
-                        ? "font-mono text-[0.68rem] uppercase tracking-[0.14em] text-emerald-700"
+      <div className="flex flex-col gap-7 px-[var(--board-gutter)] pt-6">
+        <section className="flex flex-col gap-4">
+          <h2 className="board-titre m-0 text-[22px]">
+            Prescriptions déclarées
+          </h2>
+          {prescriptions.length === 0 ? (
+            <p className="carte-board m-0 px-7 py-5 text-[14px] leading-[1.6] text-[color:var(--board-slate-mid)] sm:px-8">
+              Aucune prescription déclarée. Si aucune autorité ne vous a rien
+              prescrit, il n&apos;y a rien à faire ici.
+            </p>
+          ) : (
+            <ul className="carte-board m-0 list-none p-0">
+              {prescriptions.map((p) => (
+                // Le filet appartient à la ligne, jamais à son contenu.
+                <li
+                  key={p.id}
+                  className="border-t border-[color:var(--board-slate-line)] px-7 py-5 first:border-t-0 sm:px-8"
+                >
+                  <div className="flex flex-wrap items-baseline justify-between gap-3">
+                    <p className="m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
+                      {LABEL_SOURCE_PRESCRIPTION[
+                        p.source as keyof typeof LABEL_SOURCE_PRESCRIPTION
+                      ] ?? p.source}{" "}
+                      {p.reference}
+                      {p.autorite ? ` — ${p.autorite}` : ""}
+                    </p>
+                    <span
+                      className={`pastille-board ${champEtat(p.etat.etat)}`}
+                    >
+                      {p.etat.etat === "active"
+                        ? "Active"
                         : p.etat.etat === "levee"
-                          ? "font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground"
-                          : "font-mono text-[0.68rem] uppercase tracking-[0.14em] text-amber-700"
-                    }
-                  >
-                    {p.etat.etat === "active"
-                      ? "Active"
-                      : p.etat.etat === "levee"
-                        ? "Levée"
-                        : "Non appliquée"}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {p.effet === "renforce_periodicite"
-                    ? `Renforce « ${p.libelleObligationCiblee} »`
-                    : `Obligation sur mesure : ${p.libelle}`}
-                  {" · "}
-                  {/* `formaterDateFr` et non `toISOString()` : une date d'acte
-                      est stockée à minuit Paris (ADR-011), et le slice de
-                      l'ISO affichait la veille. */}
-                  acte du {formaterDateFr(p.dateDocument)}
-                </p>
-                <p className="text-sm">{p.etat.detail}</p>
-                <div className="pt-2">
-                  <PrescriptionActions
-                    etablissementId={id}
-                    prescriptionId={p.id}
-                    estLevee={p.etat.etat === "levee"}
-                    lignesAvecPreuve={p.lignesAvecPreuve}
-                    dateDocument={cleJourCivil(p.dateDocument)}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                          ? "Levée"
+                          : "Non appliquée"}
+                    </span>
+                  </div>
+                  <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-slate-mid)]">
+                    {p.effet === "renforce_periodicite"
+                      ? `Renforce « ${p.libelleObligationCiblee} »`
+                      : `Obligation sur mesure : ${p.libelle}`}
+                    {" · "}
+                    {/* `formaterDateFr` et non `toISOString()` : une date d'acte
+                        est stockée à minuit Paris (ADR-011), et le slice de
+                        l'ISO affichait la veille. */}
+                    acte du {formaterDateFr(p.dateDocument)}
+                  </p>
+                  <p className="m-0 mt-1.5 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-ink)]">
+                    {p.etat.detail}
+                  </p>
+                  <div className="pt-3">
+                    <PrescriptionActions
+                      etablissementId={id}
+                      prescriptionId={p.id}
+                      estLevee={p.etat.etat === "levee"}
+                      lignesAvecPreuve={p.lignesAvecPreuve}
+                      dateDocument={cleJourCivil(p.dateDocument)}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
-      <section className="mt-12 space-y-4">
-        <h2 className="text-[1.05rem] font-semibold">Déclarer une prescription</h2>
-        <PrescriptionForm
-          action={action}
-          obligations={obligations}
-          equipements={equipements}
-        />
-      </section>
+        <section className="flex flex-col gap-4">
+          <h2 className="board-titre m-0 text-[22px]">
+            Déclarer une prescription
+          </h2>
+          <PrescriptionForm
+            action={action}
+            obligations={obligations}
+            equipements={equipements}
+          />
+        </section>
+      </div>
     </main>
   );
 }

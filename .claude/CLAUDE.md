@@ -250,6 +250,17 @@ Toute nouvelle décision structurante → nouvel ADR avant de coder.
 
 ## Expérience utilisateur
 
+**La charte visuelle est dans `docs/charte-board.md`** — tokens, barème
+typographique, composants du kit, patrons d'écran, et les interdits avec leur
+raison. À lire avant d'écrire un écran.
+
+Le point qu'on rate le plus souvent : **deux chartes cohabitent**. Le « board »
+(`--board-*`, `carte-board`, rayon 30) est en vigueur ; le « papier »
+(`cartouche`, `label-admin`, rayon 6) est de la dette, jamais une option. Or
+plusieurs modules non repris — prestataires, DUERP, accessibilité — sont en
+papier. Copier le module fonctionnellement le plus proche produit donc
+régulièrement un écran hors charte.
+
 ### Navigation (double sidebar : rail + panneau)
 
 Une entrée de rail = une **page d'entrée** + un **panneau** : cliquer navigue

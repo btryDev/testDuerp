@@ -2,10 +2,8 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { ChampBoard } from "@/components/ui-kit";
 import type { ActionState } from "@/lib/entreprises/actions";
 
 type Valeurs = {
@@ -38,112 +36,85 @@ export function EntrepriseForm({
     state.status === "error" ? state.fieldErrors?.[champ]?.[0] : undefined;
 
   return (
-    <form action={formAction} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="raisonSociale">Raison sociale *</Label>
-        <Input
-          id="raisonSociale"
-          name="raisonSociale"
-          defaultValue={valeursInitiales?.raisonSociale}
-          required
-          aria-invalid={Boolean(err("raisonSociale"))}
-        />
-        {err("raisonSociale") && (
-          <p className="text-sm text-destructive">{err("raisonSociale")}</p>
-        )}
-      </div>
+    <form action={formAction} className="flex flex-col gap-6">
+      <ChampBoard
+        id="raisonSociale"
+        name="raisonSociale"
+        label="Raison sociale"
+        requis
+        defaultValue={valeursInitiales?.raisonSociale}
+        erreur={err("raisonSociale")}
+      />
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="siret" className="inline-flex items-center">
-            SIRET
-            <InfoTooltip>
-              Numéro à 14 chiffres identifiant votre établissement. Facultatif
-              ici — figurera en en-tête du DUERP s&apos;il est renseigné.
-            </InfoTooltip>
-          </Label>
-          <Input
-            id="siret"
-            name="siret"
-            inputMode="numeric"
-            pattern="\d{14}"
-            defaultValue={valeursInitiales?.siret ?? ""}
-            placeholder="14 chiffres"
-            aria-invalid={Boolean(err("siret"))}
-          />
-          {err("siret") && (
-            <p className="text-sm text-destructive">{err("siret")}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="codeNaf" className="inline-flex items-center">
-            Code NAF *
-            <InfoTooltip>
-              Code d&apos;activité INSEE (ex : 56.10A pour restauration, 47.11A
-              pour commerce alimentaire, 71.12B pour bureau d&apos;études). Il
-              sert à pré-remplir les risques types de votre secteur.
-            </InfoTooltip>
-          </Label>
-          <Input
-            id="codeNaf"
-            name="codeNaf"
-            defaultValue={valeursInitiales?.codeNaf}
-            placeholder="ex. 56.10A"
-            required
-            aria-invalid={Boolean(err("codeNaf"))}
-          />
-          {err("codeNaf") && (
-            <p className="text-sm text-destructive">{err("codeNaf")}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="effectif">Effectif *</Label>
-        <Input
-          id="effectif"
-          name="effectif"
-          type="number"
-          min={1}
-          defaultValue={valeursInitiales?.effectif}
-          required
-          aria-invalid={Boolean(err("effectif"))}
+        <ChampBoard
+          id="siret"
+          name="siret"
+          label="SIRET"
+          inputMode="numeric"
+          pattern="\d{14}"
+          defaultValue={valeursInitiales?.siret ?? ""}
+          placeholder="14 chiffres"
+          aide="Numéro à 14 chiffres identifiant votre établissement. Facultatif ici — figurera en en-tête du DUERP s'il est renseigné."
+          erreur={err("siret")}
         />
-        {err("effectif") && (
-          <p className="text-sm text-destructive">{err("effectif")}</p>
-        )}
+
+        <ChampBoard
+          id="codeNaf"
+          name="codeNaf"
+          label="Code NAF"
+          requis
+          defaultValue={valeursInitiales?.codeNaf}
+          placeholder="ex. 56.10A"
+          aide="Code d'activité INSEE (ex : 56.10A pour restauration, 47.11A pour commerce alimentaire, 71.12B pour bureau d'études). Il sert à pré-remplir les risques types de votre secteur."
+          erreur={err("codeNaf")}
+        />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="adresse">Adresse *</Label>
-        <Input
-          id="adresse"
-          name="adresse"
-          defaultValue={valeursInitiales?.adresse}
-          required
-          aria-invalid={Boolean(err("adresse"))}
-        />
-        {err("adresse") && (
-          <p className="text-sm text-destructive">{err("adresse")}</p>
-        )}
-      </div>
+      <ChampBoard
+        id="effectif"
+        name="effectif"
+        label="Effectif"
+        requis
+        // La molette d'un champ nombre modifie une valeur déjà saisie sans
+        // que rien ne le signale ; la borne reste au serveur.
+        type="text"
+        inputMode="numeric"
+        defaultValue={valeursInitiales?.effectif}
+        erreur={err("effectif")}
+      />
+
+      <ChampBoard
+        id="adresse"
+        name="adresse"
+        label="Adresse"
+        requis
+        defaultValue={valeursInitiales?.adresse}
+        erreur={err("adresse")}
+      />
 
       {state.status === "error" && !state.fieldErrors && (
-        <p className="text-sm text-destructive">{state.message}</p>
+        <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+          {state.message}
+        </p>
       )}
       {state.status === "success" && (
-        <p className="text-sm text-green-600">Enregistré.</p>
+        <p className="m-0 text-[12.5px] text-[color:var(--board-green-ink)]">
+          Enregistré.
+        </p>
       )}
 
       <div className="flex gap-3">
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" variant="board" size="board" disabled={pending}>
           {pending ? "Enregistrement…" : libelleSubmit}
         </Button>
         {labelAnnuler && (
           <Link
             href={labelAnnuler.href}
-            className={buttonVariants({ variant: "outline" })}
+            className={buttonVariants({
+              variant: "boardClair",
+              size: "board",
+            })}
           >
             {labelAnnuler.libelle}
           </Link>

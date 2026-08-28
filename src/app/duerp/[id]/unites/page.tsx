@@ -29,11 +29,11 @@ export default async function UnitesPage({
   });
 
   return (
-    <div className="space-y-12">
+    <div className="flex flex-col gap-[22px]">
       <WizardSteps etapes={etapes} />
 
-      <header className="max-w-2xl">
-        <p className="label-admin inline-flex items-center">
+      <header className="max-w-[68ch]">
+        <p className="board-eyebrow m-0 inline-flex items-center text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
           Unités de travail
           <InfoTooltip align="left">
             Une « unité de travail » regroupe des salariés exposés aux mêmes
@@ -42,10 +42,10 @@ export default async function UnitesPage({
             fait unité par unité.
           </InfoTooltip>
         </p>
-        <h2 className="mt-4 text-[1.6rem] font-semibold tracking-[-0.018em] leading-tight">
+        <h2 className="board-titre m-0 mt-3 text-[clamp(23px,2.1vw,30px)]">
           Vérifiez, ajustez, complétez.
         </h2>
-        <p className="mt-4 text-[0.95rem] leading-[1.7] text-muted-foreground">
+        <p className="m-0 mt-3 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           Une unité regroupe des salariés exposés aux mêmes risques (un poste,
           une zone, une activité). Les unités ci-dessous ont été pré-remplies
           selon votre secteur. Vous pouvez les renommer, les supprimer, ou en
@@ -53,23 +53,23 @@ export default async function UnitesPage({
         </p>
       </header>
 
-      <section className="cartouche overflow-hidden">
-        <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-          <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="carte-board overflow-clip">
+        <div className="flex items-baseline justify-between gap-4 border-b border-[color:var(--board-slate-line)] px-7 py-5 sm:px-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] tabular-nums text-[color:var(--board-slate-soft)]">
             {String(unitesVisibles.length).padStart(2, "0")} unité
             {unitesVisibles.length > 1 ? "s" : ""}
           </p>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             Modifiables
           </p>
         </div>
 
         {unitesVisibles.length === 0 ? (
-          <p className="px-6 py-8 text-[0.9rem] text-muted-foreground sm:px-8">
+          <p className="m-0 px-7 py-8 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)] sm:px-8">
             Aucune unité de travail. Ajoutez-en au moins une pour continuer.
           </p>
         ) : (
-          <ul className="divide-y divide-dashed divide-rule/50">
+          <ul className="m-0 list-none divide-y divide-[color:var(--board-slate-line)] p-0">
             {unitesVisibles.map((u) => (
               <UniteRow
                 key={u.id}
@@ -82,21 +82,32 @@ export default async function UnitesPage({
           </ul>
         )}
 
-        <div className="border-t border-dashed border-rule/60">
+        <div className="border-t border-[color:var(--board-slate-line)]">
           <AjouterUniteForm duerpId={id} />
         </div>
       </section>
 
       <div className="flex items-center justify-end">
-        <Link
-          href={`/duerp/${id}/risques`}
-          className={buttonVariants({ size: "lg" })}
-          aria-disabled={!unitesOk}
-          tabIndex={unitesOk ? undefined : -1}
-          style={!unitesOk ? { pointerEvents: "none", opacity: 0.5 } : undefined}
-        >
-          Étape suivante : risques →
-        </Link>
+        {/* Un vrai `disabled` plutôt qu'un `aria-disabled` posé sur un lien :
+            sans `role`, l'attribut n'est pas exposé (interdit 20). Le lien
+            reste un lien tant qu'il mène quelque part, et devient un bouton
+            inerte et annoncé comme tel quand aucune unité n'est saisie. */}
+        {unitesOk ? (
+          <Link
+            href={`/duerp/${id}/risques`}
+            className={buttonVariants({ variant: "board", size: "board" })}
+          >
+            Étape suivante : risques →
+          </Link>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className={buttonVariants({ variant: "board", size: "board" })}
+          >
+            Étape suivante : risques →
+          </button>
+        )}
       </div>
     </div>
   );

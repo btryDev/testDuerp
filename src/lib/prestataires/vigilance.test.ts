@@ -262,3 +262,68 @@ describe("messageExpiration", () => {
     expect(messageExpiration(120)).toBe("Valide 120 j de plus");
   });
 });
+
+describe("etatLePlusGrave — la couleur ne se déduit pas du compte", () => {
+  /**
+   * `alertesOuvertes` fond trois états dans un chiffre : pièce expirée, pièce
+   * qui expire bientôt, pièce jamais fournie. Les écrans qui s'en servaient
+   * pour CHOISIR UNE COULEUR peignaient donc en rose un prestataire créé le
+   * matin même, dont aucune pièce n'a d'échéance — au-dessus de ses propres
+   * pastilles « Non fournie » en ardoise, sur la même page.
+   *
+   * Corrigé trois fois : la carte, le compteur d'en-tête, puis la fiche. Les
+   * deux premières fois sans test, d'où la troisième. `alertesOuvertes` était
+   * assuré cinq fois dans ce fichier, `etatLePlusGrave` jamais.
+   */
+  it("une pièce jamais fournie n'est pas un retard", () => {
+    const v = computeVigilance(
+      prestataireFake({
+        attestationUrssafValableJusquA: null,
+        assuranceRcProValableJusquA: null,
+      }),
+      NOW,
+    );
+    expect(v.alertesOuvertes).toBe(2);
+    expect(v.piecesManquantes).toBe(2);
+    expect(v.piecesExpirees).toBe(0);
+    // Le point du test : deux alertes, et pourtant PAS de rose.
+    expect(v.etatLePlusGrave).toBe("aPlanifier");
+  });
+
+  it("une pièce expirée l'emporte sur tout le reste", () => {
+    const v = computeVigilance(
+      prestataireFake({
+        attestationUrssafValableJusquA: jour("2026-07-01"),
+        assuranceRcProValableJusquA: null,
+      }),
+      NOW,
+    );
+    expect(v.piecesExpirees).toBe(1);
+    expect(v.etatLePlusGrave).toBe("enRetard");
+  });
+
+  it("une échéance proche l'emporte sur une absence, pas sur une expiration", () => {
+    const v = computeVigilance(
+      prestataireFake({
+        attestationUrssafValableJusquA: jour("2026-08-20"),
+        assuranceRcProValableJusquA: null,
+      }),
+      NOW,
+    );
+    expect(v.piecesProches).toBe(1);
+    expect(v.piecesManquantes).toBe(1);
+    expect(v.etatLePlusGrave).toBe("proche");
+  });
+
+  it("rien à signaler quand les deux pièces sont à jour", () => {
+    const v = computeVigilance(
+      prestataireFake({
+        attestationUrssafValableJusquA: jour("2026-09-20"),
+        assuranceRcProValableJusquA: jour("2027-06-01"),
+      }),
+      NOW,
+    );
+    expect(v.alertesOuvertes).toBe(0);
+    expect(v.etatLePlusGrave).toBeNull();
+  });
+});

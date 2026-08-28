@@ -2,8 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ChampBoard, StatusPill } from "@/components/ui-kit";
 import {
   ajouterReleve,
   type CarnetActionState,
@@ -35,7 +34,7 @@ export function AjoutReleveForm({
   const [ouvert, setOuvert] = useState(false);
 
   const tempNum = temperature ? parseFloat(temperature) : null;
-  const conformePreview =
+  const dansLaPlage =
     tempNum === null
       ? null
       : typeReseau === "EFS"
@@ -44,13 +43,14 @@ export function AjoutReleveForm({
 
   if (!ouvert) {
     return (
-      <button
+      <Button
         type="button"
+        variant="board"
+        size="boardSm"
         onClick={() => setOuvert(true)}
-        className="inline-flex items-center gap-1 rounded-md bg-[color:var(--warm)] px-3 py-1.5 text-[0.82rem] font-medium text-white transition-colors hover:opacity-90"
       >
         + Saisir un relevé
-      </button>
+      </Button>
     );
   }
 
@@ -60,26 +60,30 @@ export function AjoutReleveForm({
   const today = cleJourCivil(new Date());
 
   return (
-    <form action={formAction} className="space-y-4 rounded-xl border border-dashed border-[color:var(--rule)] bg-[color:var(--paper-sunk)] p-5">
+    <form
+      action={formAction}
+      className="flex flex-col gap-4 rounded-[22px] bg-[color:var(--board-slate-pale)] p-5"
+    >
       <input type="hidden" name="pointReleveId" value={pointReleveId} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_1.5fr]">
-        <div className="space-y-1.5">
-          <Label htmlFor={`dateReleve-${pointReleveId}`}>Date *</Label>
-          <Input
-            id={`dateReleve-${pointReleveId}`}
-            name="dateReleve"
-            type="date"
-            required
-            defaultValue={today}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor={`temperatureCelsius-${pointReleveId}`}>
+        <ChampBoard
+          id={`dateReleve-${pointReleveId}`}
+          name="dateReleve"
+          label="Date"
+          requis
+          type="date"
+          defaultValue={today}
+        />
+        <div>
+          <label
+            className="label-board"
+            htmlFor={`temperatureCelsius-${pointReleveId}`}
+          >
             Température (°C) *
-          </Label>
+          </label>
           <div className="flex items-center gap-3">
-            <Input
+            <input
               id={`temperatureCelsius-${pointReleveId}`}
               name="temperatureCelsius"
               type="number"
@@ -91,56 +95,57 @@ export function AjoutReleveForm({
               value={temperature}
               onChange={(e) => setTemperature(e.target.value)}
               placeholder="52.3"
-              className="text-center text-2xl font-semibold tabular-nums"
+              className="champ-board text-center text-[22px] font-semibold tabular-nums"
+              aria-describedby={`seuil-${pointReleveId}`}
             />
-            {conformePreview !== null && (
-              <span
-                className={
-                  "shrink-0 rounded-full px-3 py-1 font-mono text-[0.72rem] font-semibold uppercase tracking-[0.1em] " +
-                  (conformePreview
-                    ? "bg-[color:var(--accent-vif-soft)] text-[color:var(--accent-vif)]"
-                    : "bg-[color:color-mix(in_oklch,var(--minium)_12%,transparent)] text-[color:var(--minium)]")
-                }
-              >
-                {conformePreview ? "✓ conforme" : "⚠ non conforme"}
-              </span>
+            {/* « Conforme » ne se dit pas : l'outil constate qu'une mesure
+                tombe dans la plage attendue, ou qu'elle en sort — il ne
+                prononce pas la conformité de l'installation (interdits
+                16-17). Mêmes mots que la pastille du carnet. */}
+            {dansLaPlage !== null && (
+              <StatusPill
+                charte="board"
+                size="sm"
+                status={dansLaPlage ? "a_jour" : "non_conforme"}
+                label={dansLaPlage ? "Dans la plage" : undefined}
+                className="shrink-0"
+              />
             )}
           </div>
-          <p className="text-[0.72rem] text-muted-foreground">
+          <p
+            id={`seuil-${pointReleveId}`}
+            className="m-0 mt-1.5 text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]"
+          >
             Seuil {typeReseau === "EFS" ? "max" : "min"} : {seuilMinCelsius} °C
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor={`operateur-${pointReleveId}`}>
-            Opérateur (facultatif)
-          </Label>
-          <Input
-            id={`operateur-${pointReleveId}`}
-            name="operateur"
-            maxLength={200}
-            placeholder="Prénom Nom"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor={`commentaire-${pointReleveId}`}>Commentaire</Label>
-          <Input
-            id={`commentaire-${pointReleveId}`}
-            name="commentaire"
-            maxLength={1000}
-            placeholder="Ex : après purge"
-          />
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <ChampBoard
+          id={`operateur-${pointReleveId}`}
+          name="operateur"
+          label="Opérateur (facultatif)"
+          maxLength={200}
+          placeholder="Prénom Nom"
+        />
+        <ChampBoard
+          id={`commentaire-${pointReleveId}`}
+          name="commentaire"
+          label="Commentaire"
+          maxLength={1000}
+          placeholder="Ex : après purge"
+        />
       </div>
 
       {state.status === "error" && (
-        <p className="text-sm text-destructive">{state.message}</p>
+        <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+          {state.message}
+        </p>
       )}
 
-      <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={pending}>
+      <div className="flex items-center gap-3">
+        <Button type="submit" variant="board" size="boardSm" disabled={pending}>
           {pending ? "…" : "Enregistrer le relevé"}
         </Button>
         <button
@@ -149,7 +154,7 @@ export function AjoutReleveForm({
             setOuvert(false);
             setTemperature("");
           }}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.1em] text-muted-foreground hover:text-ink"
+          className="text-[12.5px] font-medium text-[color:var(--board-slate-mid)] transition-colors hover:text-[color:var(--board-ink)]"
         >
           Annuler
         </button>

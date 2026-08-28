@@ -2,8 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ChampBoard } from "@/components/ui-kit";
 import { signUpAction, type AuthActionState } from "@/lib/auth/actions";
 
 const initialState: AuthActionState = {};
@@ -18,54 +17,56 @@ export function SignupForm({
   const [state, action, pending] = useActionState(signUpAction, initialState);
 
   return (
-    <form action={action} className="space-y-5">
+    <form action={action} className="flex flex-col gap-5">
       <input type="hidden" name="next" value={next} />
       <input type="hidden" name="origin" value={origin} />
 
-      <div className="space-y-2">
-        <Label htmlFor="email" className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
-          E-mail
-        </Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          placeholder="vous@exemple.fr"
-        />
-      </div>
+      <ChampBoard
+        id="email"
+        name="email"
+        type="email"
+        label="E-mail"
+        autoComplete="email"
+        required
+        placeholder="vous@exemple.fr"
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="password" className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
-          Mot de passe
-        </Label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-        />
-        <p className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-muted-foreground">
-          8 caractères minimum
-        </p>
-      </div>
+      {/* La contrainte passe en `aide` : posée là, elle est lue avec le champ
+          par un lecteur d'écran (aria-describedby) au lieu de flotter à côté
+          en petites capitales. */}
+      <ChampBoard
+        id="password"
+        name="password"
+        type="password"
+        label="Mot de passe"
+        autoComplete="new-password"
+        required
+        minLength={8}
+        aide="8 caractères minimum"
+      />
 
       {state.error ? (
-        <p className="text-[0.82rem] text-[color:var(--minium)]">
+        <p
+          role="alert"
+          className="m-0 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)]"
+        >
           {state.error}
         </p>
       ) : null}
 
       {state.message ? (
-        <p className="rounded-md border border-dashed border-rule bg-paper-elevated px-4 py-3 text-[0.82rem] leading-[1.5] text-ink/80">
+        <p className="m-0 rounded-[18px] bg-[color:var(--board-blue-pale)] px-4 py-3 text-[13px] leading-[1.5] text-[color:var(--board-blue-ink)]">
           {state.message}
         </p>
       ) : null}
 
-      <Button type="submit" size="lg" disabled={pending} className="w-full">
+      <Button
+        type="submit"
+        variant="board"
+        size="board"
+        disabled={pending}
+        className="w-full"
+      >
         {pending ? "Création…" : "Créer mon compte →"}
       </Button>
     </form>

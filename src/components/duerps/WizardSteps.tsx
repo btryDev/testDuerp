@@ -8,6 +8,15 @@ export type Etape = {
   actuelle?: boolean;
 };
 
+/**
+ * Le fil des étapes du DUERP, en charte board.
+ *
+ * Trois valeurs, trois traitements — et jamais la couleur seule
+ * (interdit 10) : l'étape en cours porte l'encre bleue du board **et** le
+ * mot « En cours », l'étape franchie l'encre principale **et** « Ouvert »,
+ * l'étape à venir l'ardoise **et** « À venir ». `aria-current="step"`
+ * double le tout pour qui n'a pas la couleur du tout.
+ */
 export function WizardSteps({ etapes }: { etapes: Etape[] }) {
   const total = etapes.length;
   const indexActuelle = etapes.findIndex((e) => e.actuelle);
@@ -18,14 +27,14 @@ export function WizardSteps({ etapes }: { etapes: Etape[] }) {
     <nav aria-label="Sommaire du DUERP" className="not-prose">
       {/* Compteur haut */}
       <div className="mb-4 flex items-baseline justify-between">
-        <p className="font-mono text-[0.66rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
           Progression
         </p>
-        <p className="font-mono text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
-          <span className="[font-family:var(--font-mono)] text-[0.95rem] tabular-nums text-ink">
+        <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+          <span className="text-[13px] tabular-nums text-[color:var(--board-ink)]">
             {String(numeroActuelle).padStart(2, "0")}
           </span>
-          <span className="mx-1 text-rule">/</span>
+          <span className="mx-1 text-[color:var(--board-slate)]">/</span>
           <span className="tabular-nums">{String(total).padStart(2, "0")}</span>
         </p>
       </div>
@@ -39,21 +48,21 @@ export function WizardSteps({ etapes }: { etapes: Etape[] }) {
         className="flex gap-1.5"
       >
         {etapes.map((e) => {
-          let fill = "bg-rule-soft";
-          if (e.atteinte && !e.actuelle) fill = "bg-ink";
-          if (e.actuelle) fill = "bg-[color:var(--warm)]";
+          let fill = "bg-[color:var(--board-slate-line)]";
+          if (e.atteinte && !e.actuelle) fill = "bg-[color:var(--board-ink)]";
+          if (e.actuelle) fill = "bg-[color:var(--board-blue-ink)]";
           return (
             <span
               key={e.id}
               aria-hidden
-              className={`h-[5px] flex-1 rounded-[1px] ${fill}`}
+              className={`h-[5px] flex-1 rounded-full ${fill}`}
             />
           );
         })}
       </div>
 
       {/* Libellés alignés sous chaque segment */}
-      <ol className="mt-4 grid grid-cols-1 gap-y-5 sm:grid-cols-2 lg:grid-cols-5 lg:gap-x-6 lg:gap-y-0">
+      <ol className="mt-4 grid list-none grid-cols-1 gap-y-5 p-0 sm:grid-cols-2 lg:grid-cols-5 lg:gap-x-6 lg:gap-y-0">
         {etapes.map((e, i) => {
           const numero = String(i + 1).padStart(2, "0");
           const muet = !e.atteinte && !e.actuelle;
@@ -67,14 +76,14 @@ export function WizardSteps({ etapes }: { etapes: Etape[] }) {
                 aria-disabled={muet}
                 className={`group block ${muet ? "pointer-events-none" : ""}`}
               >
-                <div className="flex items-baseline gap-2 font-mono text-[0.62rem] uppercase tracking-[0.18em]">
+                <div className="board-eyebrow flex items-baseline gap-2 text-[10px] tracking-[0.16em]">
                   <span
                     className={`tabular-nums ${
                       e.actuelle
-                        ? "text-[color:var(--warm)] font-semibold"
+                        ? "font-semibold text-[color:var(--board-blue-ink)]"
                         : e.atteinte
-                          ? "text-ink"
-                          : "text-muted-foreground"
+                          ? "text-[color:var(--board-ink)]"
+                          : "text-[color:var(--board-slate-soft)]"
                     }`}
                   >
                     {numero}
@@ -82,8 +91,8 @@ export function WizardSteps({ etapes }: { etapes: Etape[] }) {
                   <span
                     className={
                       e.actuelle
-                        ? "text-[color:var(--warm)] font-semibold"
-                        : "text-muted-foreground"
+                        ? "font-semibold text-[color:var(--board-blue-ink)]"
+                        : "text-[color:var(--board-slate-soft)]"
                     }
                   >
                     {e.actuelle
@@ -95,12 +104,12 @@ export function WizardSteps({ etapes }: { etapes: Etape[] }) {
                 </div>
 
                 <p
-                  className={`mt-2 text-[0.95rem] leading-tight tracking-[-0.005em] ${
+                  className={`m-0 mt-2 text-[14px] leading-[1.3] tracking-[-0.01em] ${
                     muet
-                      ? "text-muted-foreground/55"
+                      ? "text-[color:var(--board-slate-mid)]"
                       : e.actuelle
-                        ? "text-ink font-semibold"
-                        : "text-ink font-medium"
+                        ? "font-semibold text-[color:var(--board-ink)]"
+                        : "font-medium text-[color:var(--board-ink)]"
                   } ${clickable ? "transition-opacity group-hover:opacity-60" : ""}`}
                 >
                   {e.libelle}

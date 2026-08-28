@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { renommerUnite, supprimerUnite } from "@/lib/duerps/actions";
 
 type Props = {
@@ -18,18 +17,23 @@ export function UniteRow({ id, nom, description, nombreRisques }: Props) {
   const [pending, startTransition] = useTransition();
 
   return (
-    <li className="flex items-start justify-between gap-6 px-6 py-5 sm:px-8">
+    <li className="flex items-start justify-between gap-6 px-7 py-5 sm:px-8">
       <div className="min-w-0 flex-1">
         {editing ? (
           <div className="flex flex-wrap items-center gap-2">
-            <Input
+            {/* Renommage sur place : le libellé serait redondant avec le nom
+                qu'on est en train de corriger, mais un champ sans nom
+                accessible ne s'annonce pas — d'où l'`aria-label`. */}
+            <input
+              className="champ-board max-w-md"
+              aria-label="Nom de l'unité de travail"
               value={valeur}
               onChange={(e) => setValeur(e.target.value)}
               autoFocus
-              className="max-w-md"
             />
             <Button
-              size="sm"
+              variant="board"
+              size="boardSm"
               disabled={pending || !valeur.trim()}
               onClick={() => {
                 startTransition(async () => {
@@ -41,8 +45,8 @@ export function UniteRow({ id, nom, description, nombreRisques }: Props) {
               OK
             </Button>
             <Button
-              size="sm"
-              variant="ghost"
+              variant="boardClair"
+              size="boardSm"
               onClick={() => {
                 setValeur(nom);
                 setEditing(false);
@@ -53,15 +57,15 @@ export function UniteRow({ id, nom, description, nombreRisques }: Props) {
           </div>
         ) : (
           <>
-            <p className="text-[1rem] font-semibold tracking-[-0.01em] leading-snug">
+            <p className="m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
               {nom}
             </p>
             {description && (
-              <p className="mt-1 text-[0.88rem] leading-relaxed text-muted-foreground">
+              <p className="m-0 mt-1 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                 {description}
               </p>
             )}
-            <p className="mt-2 font-mono text-[0.64rem] uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="board-eyebrow m-0 mt-2 text-[10px] tracking-[0.16em] tabular-nums text-[color:var(--board-slate-soft)]">
               {nombreRisques === 0
                 ? "Aucun risque renseigné"
                 : `${String(nombreRisques).padStart(2, "0")} risque${nombreRisques > 1 ? "s" : ""} renseigné${nombreRisques > 1 ? "s" : ""}`}
@@ -70,13 +74,17 @@ export function UniteRow({ id, nom, description, nombreRisques }: Props) {
         )}
       </div>
       {!editing && (
-        <div className="flex shrink-0 gap-1">
-          <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
+        <div className="flex shrink-0 gap-1.5">
+          <Button
+            variant="boardClair"
+            size="boardSm"
+            onClick={() => setEditing(true)}
+          >
             Renommer
           </Button>
           <Button
-            size="sm"
-            variant="ghost"
+            variant="boardClair"
+            size="boardSm"
             disabled={pending}
             onClick={() => {
               if (

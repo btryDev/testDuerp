@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   modifierRisqueCustom,
   type RisqueActionState,
@@ -31,37 +30,54 @@ export function ModifierRisqueCustomButton({
 
   if (!ouvert) {
     return (
-      <Button size="sm" variant="ghost" onClick={() => setOuvert(true)}>
+      <Button
+        variant="boardClair"
+        size="boardSm"
+        onClick={() => setOuvert(true)}
+      >
         Modifier
       </Button>
     );
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-2 sm:flex-row sm:items-start">
-      <Input
+    <form
+      action={formAction}
+      className="flex flex-col gap-2 sm:flex-row sm:items-start"
+    >
+      {/* Correction sur place : le nom du risque est déjà sous les yeux, un
+          libellé au-dessus le redirait — mais un champ sans nom accessible
+          ne s'annonce pas, d'où les `aria-label`. */}
+      <input
+        className="champ-board sm:max-w-sm"
+        aria-label="Libellé du risque"
         name="libelle"
         defaultValue={libelle}
         autoFocus
         required
-        className="sm:max-w-sm"
         aria-invalid={Boolean(
           state.status === "error" && state.fieldErrors?.libelle,
         )}
       />
-      <Input
+      <input
+        className="champ-board sm:max-w-xs"
+        aria-label="Description du risque"
         name="description"
         defaultValue={description ?? ""}
         placeholder="Description (facultatif)"
-        className="sm:max-w-xs"
       />
-      <div className="flex gap-1">
-        <Button size="sm" type="submit" disabled={pending}>
+      <div className="flex gap-1.5">
+        <Button
+          variant="board"
+          size="boardSm"
+          type="submit"
+          disabled={pending}
+        >
           {pending ? "…" : "OK"}
         </Button>
         <Button
-          size="sm"
-          variant="ghost"
+          variant="boardClair"
+          size="boardSm"
           type="button"
           onClick={() => setOuvert(false)}
         >

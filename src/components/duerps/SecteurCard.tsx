@@ -28,6 +28,9 @@ export function SecteurCard({
   const [pending, startTransition] = useTransition();
 
   return (
+    // La carte board porte déjà sa surface, son rayon et son ombre : le
+    // choix courant se marque par un liseré d'encre en plus, pas par une
+    // seconde ombre recopiée en littéral (interdit 26).
     <button
       type="button"
       disabled={pending}
@@ -36,48 +39,52 @@ export function SecteurCard({
           await choisirSecteur(duerpId, secteurId);
         });
       }}
-      className={`group relative flex h-full flex-col rounded-2xl border p-7 text-left transition-all hover:border-ink/40 ${
+      className={`carte-board group flex h-full flex-col px-7 py-6 text-left transition-all sm:px-8 ${
         dejaChoisi
-          ? "border-ink/60 bg-paper-elevated shadow-[0_0_0_1px_var(--ink)]"
-          : "border-rule bg-paper-elevated"
+          ? "ring-1 ring-[color:var(--board-ink)] ring-offset-2 ring-offset-[color:var(--board-canvas)]"
+          : ""
       } ${pending ? "opacity-60" : ""}`}
     >
-      <p className="label-admin">Secteur</p>
-      <h3 className="mt-3 text-[1.2rem] font-semibold tracking-[-0.015em] leading-tight">
-        {nom}
-      </h3>
-      <p className="mt-3 text-[0.88rem] leading-[1.65] text-muted-foreground">
+      <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+        Secteur
+      </p>
+      <h3 className="board-titre m-0 mt-2.5 text-[22px]">{nom}</h3>
+      <p className="m-0 mt-2.5 text-[12.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
         {description}
       </p>
 
-      <dl className="mt-6 grid grid-cols-2 gap-y-2 border-t border-dashed border-rule/60 pt-4">
-        <dt className="label-admin !text-[0.62rem]">Unités</dt>
-        <dd className="text-right [font-family:var(--font-mono)] text-[0.88rem] tabular-nums">
+      <dl className="mt-6 grid grid-cols-2 gap-y-2 border-t border-[color:var(--board-slate-line)] pt-4">
+        <dt className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+          Unités
+        </dt>
+        <dd className="m-0 text-right font-mono text-[13.5px] tabular-nums text-[color:var(--board-ink)]">
           {nombreUnites}
         </dd>
-        <dt className="label-admin !text-[0.62rem]">Risques</dt>
-        <dd className="text-right [font-family:var(--font-mono)] text-[0.88rem] tabular-nums">
+        <dt className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+          Risques
+        </dt>
+        <dd className="m-0 text-right font-mono text-[13.5px] tabular-nums text-[color:var(--board-ink)]">
           {nombreRisques}
         </dd>
       </dl>
 
-      <div className="mt-4 flex flex-wrap gap-1 pt-2">
+      <div className="mt-4 flex flex-wrap gap-1.5 pt-2">
         {codesNaf.slice(0, 4).map((n) => (
           <span
             key={n}
-            className="rounded-full border border-rule-soft px-2 py-0.5 font-mono text-[0.62rem] text-muted-foreground"
+            className="rounded-full bg-[color:var(--board-slate-pale)] px-2.5 py-0.5 font-mono text-[10.5px] tabular-nums text-[color:var(--board-slate-mid)]"
           >
             {n}
           </span>
         ))}
         {codesNaf.length > 4 && (
-          <span className="self-center font-mono text-[0.62rem] text-muted-foreground">
+          <span className="self-center font-mono text-[10.5px] tabular-nums text-[color:var(--board-slate-soft)]">
             +{codesNaf.length - 4}
           </span>
         )}
       </div>
 
-      <span className="mt-6 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-ink transition-transform group-hover:translate-x-1">
+      <span className="board-eyebrow mt-6 text-[10px] tracking-[0.16em] text-[color:var(--board-ink)] transition-transform group-hover:translate-x-1">
         {pending
           ? "Application…"
           : dejaChoisi

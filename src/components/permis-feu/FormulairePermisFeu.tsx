@@ -4,8 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ChampBoard, SectionChamps } from "@/components/ui-kit";
 import { ChampBatiment } from "@/components/batiments/ChampBatiment";
 import {
   creerPermisFeu,
@@ -24,6 +23,27 @@ type PrestataireLite = {
   contactNom: string;
   contactEmail: string;
 };
+
+/**
+ * Pilule de choix — le même objet pour les trois listes du formulaire :
+ * l'annuaire, les natures de point chaud, les durées de surveillance. Le
+ * papier les peignait en `--minium` une fois cochées, ce qui faisait lire
+ * une sélection comme un retard. Dans le board, un choix retenu est bleu
+ * glacier : le registre calme et actif.
+ */
+const PILULE =
+  "inline-flex cursor-pointer items-center gap-2 rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-colors";
+const PILULE_REPOS =
+  "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)]";
+const PILULE_RETENUE =
+  "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]";
+
+/**
+ * La variante cochable porte son état par `has-[:checked]`. Le contour de
+ * focus est explicite parce que la case elle-même est `sr-only` : sans lui,
+ * une tabulation traverserait la liste sans que rien ne bouge à l'écran.
+ */
+const PILULE_COCHABLE = `${PILULE} ${PILULE_REPOS} has-[:checked]:bg-[color:var(--board-blue-pale)] has-[:checked]:text-[color:var(--board-blue-ink)] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[color:var(--board-blue-strong)]`;
 
 export function FormulairePermisFeu({
   etablissementId,
@@ -62,371 +82,314 @@ export function FormulairePermisFeu({
   ).filter((m) => m.priorite === "obligatoire").length;
 
   return (
-    <form action={formAction} className="space-y-10">
-      {/* 1 — Prestataire */}
-      <section className="cartouche relative overflow-hidden">
-        <span
-          aria-hidden
-          className="absolute inset-x-0 top-0 h-[3px]"
-          style={{ background: "var(--warm)" }}
-        />
-        <header className="px-7 pb-4 pt-7">
-          <p className="label-admin">1 · Qui intervient</p>
-          <h2 className="mt-2 text-[1.1rem] font-semibold tracking-[-0.015em]">
-            Entreprise qui réalise les travaux
-          </h2>
-        </header>
+    <form action={formAction} className="flex flex-col gap-9">
+      {/* Les sections ne sont plus numérotées : la numérotation ne se garde
+          que si l'ordre porte une information, et on remplit ces champs
+          dans l'ordre qu'on veut. */}
+      <SectionChamps titre="Entreprise qui réalise les travaux">
+        {prestataires.length > 0 && (
+          <fieldset className="m-0 border-0 p-0">
+            <legend className="label-board">
+              Choisir dans l&apos;annuaire
+            </legend>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {prestataires.map((p) => {
+                const actif = prestataireChoisi?.id === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    aria-pressed={actif}
+                    onClick={() => setPrestataireChoisi(actif ? null : p)}
+                    className={
+                      `${PILULE} ` +
+                      (actif
+                        ? PILULE_RETENUE
+                        : `${PILULE_REPOS} hover:bg-[color:var(--board-blue-pale)] hover:text-[color:var(--board-blue-ink)]`)
+                    }
+                  >
+                    {p.raisonSociale}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="m-0 mt-2 text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+              Sinon, saisissez manuellement ci-dessous.
+            </p>
+          </fieldset>
+        )}
 
-        <div className="space-y-5 px-7 pb-7">
-          {prestataires.length > 0 && (
+        <input
+          type="hidden"
+          name="prestataireId"
+          value={prestataireChoisi?.id ?? ""}
+        />
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <ChampBoard
+            id="prestataireRaison"
+            name="prestataireRaison"
+            label="Raison sociale"
+            requis
+            maxLength={200}
+            defaultValue={prestataireChoisi?.raisonSociale ?? ""}
+            key={prestataireChoisi?.id ?? "libre"}
+            erreur={err("prestataireRaison")}
+          />
+          <ChampBoard
+            id="prestataireContact"
+            name="prestataireContact"
+            label="Nom du technicien"
+            requis
+            maxLength={200}
+            defaultValue={prestataireChoisi?.contactNom ?? ""}
+            key={`contact-${prestataireChoisi?.id ?? "libre"}`}
+            erreur={err("prestataireContact")}
+          />
+        </div>
+
+        <ChampBoard
+          id="prestataireEmail"
+          name="prestataireEmail"
+          type="email"
+          label="Email du technicien"
+          requis
+          maxLength={200}
+          placeholder="jean.dupond@entreprise.fr"
+          defaultValue={prestataireChoisi?.contactEmail ?? ""}
+          key={`email-${prestataireChoisi?.id ?? "libre"}`}
+          erreur={err("prestataireEmail")}
+          aide="Utilisé pour envoyer le lien de signature au technicien."
+        />
+      </SectionChamps>
+
+      <SectionChamps titre="Donneur d'ordre" chapeau="Qui signe côté site.">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <ChampBoard
+            id="donneurOrdreNom"
+            name="donneurOrdreNom"
+            label="Nom et prénom"
+            requis
+            maxLength={200}
+            erreur={err("donneurOrdreNom")}
+          />
+          <ChampBoard
+            id="donneurOrdreFonction"
+            name="donneurOrdreFonction"
+            label="Fonction"
+            maxLength={120}
+            placeholder="Ex : Gérant, Responsable technique…"
+          />
+        </div>
+      </SectionChamps>
+
+      <SectionChamps
+        titre="Nature et lieu des travaux"
+        chapeau="Quoi, où, quand."
+      >
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <ChampBoard
+            id="dateDebut"
+            name="dateDebut"
+            type="datetime-local"
+            label="Début des travaux"
+            requis
+            erreur={err("dateDebut")}
+          />
+          <ChampBoard
+            id="dateFin"
+            name="dateFin"
+            type="datetime-local"
+            label="Fin des travaux"
+            requis
+            erreur={err("dateFin")}
+          />
+        </div>
+
+        <ChampBatiment
+          charte="board"
+          batiments={batiments}
+          erreur={err("batimentId")}
+        />
+
+        <ChampBoard
+          id="lieu"
+          name="lieu"
+          label="Lieu précis"
+          requis
+          maxLength={500}
+          placeholder="Ex : Sous-sol, local technique nord, près de la chaudière"
+          erreur={err("lieu")}
+        />
+
+        <fieldset className="m-0 border-0 p-0">
+          <legend className="label-board">Type(s) de point chaud *</legend>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {NATURES_TRAVAUX.map((n) => (
+              <label key={n} className={PILULE_COCHABLE}>
+                <input
+                  type="checkbox"
+                  name="naturesTravaux"
+                  value={n}
+                  className="sr-only"
+                />
+                {LABEL_NATURE[n]}
+              </label>
+            ))}
+          </div>
+          {err("naturesTravaux") && (
+            <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
+              {err("naturesTravaux")}
+            </p>
+          )}
+        </fieldset>
+
+        <div>
+          <label className="label-board" htmlFor="descriptionTravaux">
+            Description des travaux *
+          </label>
+          <textarea
+            id="descriptionTravaux"
+            name="descriptionTravaux"
+            required
+            rows={4}
+            maxLength={4000}
+            minLength={10}
+            className="champ-board min-h-[104px] resize-y"
+            aria-invalid={Boolean(err("descriptionTravaux"))}
+            aria-describedby={
+              err("descriptionTravaux")
+                ? "descriptionTravaux-erreur"
+                : undefined
+            }
+            placeholder="Ex : Soudage de raccords sur tuyauterie inox au plafond du local technique. 4 soudures, durée estimée 3h."
+          />
+          {err("descriptionTravaux") && (
+            <p
+              id="descriptionTravaux-erreur"
+              className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]"
+            >
+              {err("descriptionTravaux")}
+            </p>
+          )}
+        </div>
+      </SectionChamps>
+
+      <SectionChamps
+        titre="Check-list à valider avant, pendant, après"
+        chapeau={`Référentiel INRS ED 6030. ${nbObligatoires} mesures obligatoires. Cochez au fur et à mesure qu'elles sont en place.`}
+      >
+        {/* Les trois groupes sont séparés par le blanc, pas par un filet
+            pointillé : le board sépare par filet plein ou pas du tout, et
+            ici chaque mesure est déjà un bloc creux qui se détache. */}
+        {(["avant", "pendant", "apres"] as const).map((g) => (
+          <div key={g} className="flex flex-col gap-2.5">
             <div>
-              <Label>Choisir dans l&apos;annuaire</Label>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {prestataires.map((p) => {
-                  const actif = prestataireChoisi?.id === p.id;
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setPrestataireChoisi(actif ? null : p)}
-                      className={
-                        "rounded-full border px-3 py-1.5 text-[0.82rem] transition " +
-                        (actif
-                          ? "border-[color:var(--warm)] bg-[color:var(--warm-soft)] text-[color:var(--warm)]"
-                          : "border-[color:var(--rule)] bg-[color:var(--paper-elevated)] hover:border-[color:var(--warm)]")
-                      }
-                    >
-                      {p.raisonSociale}
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="mt-2 text-[0.78rem] text-muted-foreground">
-                Sinon, saisissez manuellement ci-dessous.
+              <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+                {GROUPES_LABEL[g].label}
+              </p>
+              <p className="m-0 mt-1 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+                {GROUPES_LABEL[g].sous}
               </p>
             </div>
-          )}
-
-          <input
-            type="hidden"
-            name="prestataireId"
-            value={prestataireChoisi?.id ?? ""}
-          />
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="prestataireRaison">Raison sociale *</Label>
-              <Input
-                id="prestataireRaison"
-                name="prestataireRaison"
-                required
-                maxLength={200}
-                defaultValue={prestataireChoisi?.raisonSociale ?? ""}
-                key={prestataireChoisi?.id ?? "libre"}
-              />
-              {err("prestataireRaison") && (
-                <p className="text-sm text-destructive">{err("prestataireRaison")}</p>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="prestataireContact">Nom du technicien *</Label>
-              <Input
-                id="prestataireContact"
-                name="prestataireContact"
-                required
-                maxLength={200}
-                defaultValue={prestataireChoisi?.contactNom ?? ""}
-                key={`contact-${prestataireChoisi?.id ?? "libre"}`}
-              />
-              {err("prestataireContact") && (
-                <p className="text-sm text-destructive">{err("prestataireContact")}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="prestataireEmail">Email du technicien *</Label>
-            <Input
-              id="prestataireEmail"
-              name="prestataireEmail"
-              type="email"
-              required
-              maxLength={200}
-              placeholder="jean.dupond@entreprise.fr"
-              defaultValue={prestataireChoisi?.contactEmail ?? ""}
-              key={`email-${prestataireChoisi?.id ?? "libre"}`}
-            />
-            {err("prestataireEmail") && (
-              <p className="text-sm text-destructive">{err("prestataireEmail")}</p>
-            )}
-            <p className="text-[0.78rem] text-muted-foreground">
-              Utilisé pour envoyer le lien de signature au technicien.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 2 — Donneur d'ordre */}
-      <section className="cartouche relative overflow-hidden">
-        <span
-          aria-hidden
-          className="absolute inset-x-0 top-0 h-[3px]"
-          style={{ background: "var(--warm)" }}
-        />
-        <header className="px-7 pb-4 pt-7">
-          <p className="label-admin">2 · Donneur d&apos;ordre</p>
-          <h2 className="mt-2 text-[1.1rem] font-semibold tracking-[-0.015em]">
-            Qui signe côté site
-          </h2>
-        </header>
-        <div className="grid grid-cols-1 gap-4 px-7 pb-7 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="donneurOrdreNom">Nom et prénom *</Label>
-            <Input
-              id="donneurOrdreNom"
-              name="donneurOrdreNom"
-              required
-              maxLength={200}
-            />
-            {err("donneurOrdreNom") && (
-              <p className="text-sm text-destructive">{err("donneurOrdreNom")}</p>
-            )}
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="donneurOrdreFonction">Fonction</Label>
-            <Input
-              id="donneurOrdreFonction"
-              name="donneurOrdreFonction"
-              maxLength={120}
-              placeholder="Ex : Gérant, Responsable technique…"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* 3 — Travaux */}
-      <section className="cartouche relative overflow-hidden">
-        <span
-          aria-hidden
-          className="absolute inset-x-0 top-0 h-[3px]"
-          style={{ background: "var(--minium)" }}
-        />
-        <header className="px-7 pb-4 pt-7">
-          <p className="label-admin">3 · Nature et lieu des travaux</p>
-          <h2 className="mt-2 text-[1.1rem] font-semibold tracking-[-0.015em]">
-            Quoi, où, quand
-          </h2>
-        </header>
-        <div className="space-y-5 px-7 pb-7">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="dateDebut">Début des travaux *</Label>
-              <Input
-                id="dateDebut"
-                name="dateDebut"
-                type="datetime-local"
-                required
-              />
-              {err("dateDebut") && (
-                <p className="text-sm text-destructive">{err("dateDebut")}</p>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="dateFin">Fin des travaux *</Label>
-              <Input
-                id="dateFin"
-                name="dateFin"
-                type="datetime-local"
-                required
-              />
-              {err("dateFin") && (
-                <p className="text-sm text-destructive">{err("dateFin")}</p>
-              )}
-            </div>
-          </div>
-
-          <ChampBatiment batiments={batiments} erreur={err("batimentId")} />
-
-          <div className="space-y-1.5">
-            <Label htmlFor="lieu">Lieu précis *</Label>
-            <Input
-              id="lieu"
-              name="lieu"
-              required
-              maxLength={500}
-              placeholder="Ex : Sous-sol, local technique nord, près de la chaudière"
-            />
-            {err("lieu") && (
-              <p className="text-sm text-destructive">{err("lieu")}</p>
-            )}
-          </div>
-
-          <fieldset className="space-y-2">
-            <legend className="text-[0.88rem] font-medium">
-              Type(s) de point chaud *
-            </legend>
-            <div className="flex flex-wrap gap-2">
-              {NATURES_TRAVAUX.map((n) => (
-                <label
-                  key={n}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[color:var(--rule)] bg-[color:var(--paper-elevated)] px-3 py-1.5 text-[0.82rem] transition hover:border-[color:var(--minium)] has-[:checked]:border-[color:var(--minium)] has-[:checked]:bg-[color:color-mix(in_oklch,var(--minium)_12%,transparent)] has-[:checked]:text-[color:var(--minium)]"
-                >
-                  <input
-                    type="checkbox"
-                    name="naturesTravaux"
-                    value={n}
-                    className="sr-only"
-                  />
-                  {LABEL_NATURE[n]}
-                </label>
-              ))}
-            </div>
-            {err("naturesTravaux") && (
-              <p className="text-sm text-destructive">{err("naturesTravaux")}</p>
-            )}
-          </fieldset>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="descriptionTravaux">Description des travaux *</Label>
-            <textarea
-              id="descriptionTravaux"
-              name="descriptionTravaux"
-              required
-              rows={4}
-              maxLength={4000}
-              minLength={10}
-              className="w-full rounded-md border border-rule bg-background px-3 py-2 text-sm shadow-sm"
-              placeholder="Ex : Soudage de raccords sur tuyauterie inox au plafond du local technique. 4 soudures, durée estimée 3h."
-            />
-            {err("descriptionTravaux") && (
-              <p className="text-sm text-destructive">{err("descriptionTravaux")}</p>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 4 — Mesures de prévention */}
-      <section className="cartouche relative overflow-hidden">
-        <span
-          aria-hidden
-          className="absolute inset-x-0 top-0 h-[3px]"
-          style={{ background: "var(--accent-vif)" }}
-        />
-        <header className="px-7 pb-4 pt-7">
-          <p className="label-admin">4 · Mesures de prévention — INRS ED 6030</p>
-          <h2 className="mt-2 text-[1.1rem] font-semibold tracking-[-0.015em]">
-            Check-list à valider avant, pendant, après
-          </h2>
-          <p className="mt-2 text-[0.85rem] text-muted-foreground">
-            {nbObligatoires} mesures obligatoires. Cochez au fur et à mesure
-            qu&apos;elles sont en place.
-          </p>
-        </header>
-        <div className="divide-y divide-dashed divide-rule/50">
-          {(["avant", "pendant", "apres"] as const).map((g) => (
-            <div key={g} className="px-7 py-5">
-              <div className="mb-3">
-                <p className="text-[0.95rem] font-semibold">
-                  {GROUPES_LABEL[g].label}
-                </p>
-                <p className="text-[0.78rem] text-muted-foreground">
-                  {GROUPES_LABEL[g].sous}
-                </p>
-              </div>
-              <ul className="space-y-2">
-                {groupes[g].map((m) => (
-                  <li key={m.id}>
-                    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-[color:var(--rule-soft)] bg-[color:var(--paper-elevated)] p-3 transition hover:border-[color:var(--warm)] has-[:checked]:border-[color:var(--accent-vif)] has-[:checked]:bg-[color:var(--accent-vif-soft)]">
-                      <input
-                        type="checkbox"
-                        name="mesuresValidees"
-                        value={m.id}
-                        className="mt-0.5 size-4"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[0.88rem] font-medium">
-                            {m.libelle}
+            <ul className="m-0 flex list-none flex-col gap-2 p-0">
+              {groupes[g].map((m) => (
+                <li key={m.id}>
+                  {/* Cocher est un fait de saisie — « cette mesure est en
+                      place » —, jamais un verdict de conformité : c'est
+                      exactement ce que dit le vert du board. */}
+                  <label className="flex cursor-pointer items-start gap-3 rounded-[18px] bg-[color:var(--board-slate-pale)] px-4 py-3 transition-colors has-[:checked]:bg-[color:var(--board-green)] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[color:var(--board-blue-strong)]">
+                    <input
+                      type="checkbox"
+                      name="mesuresValidees"
+                      value={m.id}
+                      className="mt-0.5 size-4 flex-none accent-[color:var(--board-ink)]"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-baseline gap-2">
+                        <span className="text-[13.5px] font-semibold leading-[1.4] text-[color:var(--board-ink)]">
+                          {m.libelle}
+                        </span>
+                        {m.priorite === "obligatoire" && (
+                          <span className="text-[11.5px] font-semibold text-[color:var(--board-signal-ink)]">
+                            obligatoire
                           </span>
-                          {m.priorite === "obligatoire" && (
-                            <span className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.1em] text-[color:var(--minium)]">
-                              obligatoire
-                            </span>
-                          )}
-                        </div>
-                        {m.explication && (
-                          <p className="mt-1 text-[0.76rem] leading-relaxed text-muted-foreground">
-                            {m.explication}
-                          </p>
                         )}
-                      </div>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="space-y-3 border-t border-dashed border-rule/50 px-7 py-5">
-          <div className="space-y-1.5">
-            <Label htmlFor="dureeSurveillanceMinutes">
-              Durée de surveillance post-travaux *
-            </Label>
-            <div className="flex flex-wrap gap-2">
-              {[120, 240, 360].map((mn) => (
-                <label
-                  key={mn}
-                  className="cursor-pointer rounded-full border border-[color:var(--rule)] bg-[color:var(--paper-elevated)] px-3 py-1.5 text-[0.82rem] transition has-[:checked]:border-[color:var(--minium)] has-[:checked]:bg-[color:color-mix(in_oklch,var(--minium)_10%,transparent)] has-[:checked]:text-[color:var(--minium)]"
-                >
-                  <input
-                    type="radio"
-                    name="dureeSurveillanceMinutes"
-                    value={mn}
-                    defaultChecked={mn === 120}
-                    className="sr-only"
-                  />
-                  {mn / 60}h {mn === 120 ? "(standard)" : mn === 240 ? "(renforcé)" : "(intensif)"}
-                </label>
+                      </span>
+                      {m.explication && (
+                        <span className="mt-1 block text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+                          {m.explication}
+                        </span>
+                      )}
+                    </span>
+                  </label>
+                </li>
               ))}
-            </div>
-            <p className="text-[0.78rem] text-muted-foreground">
-              2h minimum INRS. Passez à 4h si matières combustibles profondes
-              (bois, isolants), 6h si risque incendie élevé.
-            </p>
+            </ul>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="mesuresNotes">
-              Notes additionnelles sur la prévention
-            </Label>
-            <textarea
-              id="mesuresNotes"
-              name="mesuresNotes"
-              rows={3}
-              maxLength={2000}
-              className="w-full rounded-md border border-rule bg-background px-3 py-2 text-sm shadow-sm"
-              placeholder="Mesures spécifiques liées aux contraintes du site…"
-            />
-          </div>
-        </div>
-      </section>
+        ))}
 
-      {/* Actions */}
+        <fieldset className="m-0 border-0 p-0">
+          <legend className="label-board">
+            Durée de surveillance post-travaux *
+          </legend>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {[120, 240, 360].map((mn) => (
+              <label key={mn} className={PILULE_COCHABLE}>
+                <input
+                  type="radio"
+                  name="dureeSurveillanceMinutes"
+                  value={mn}
+                  defaultChecked={mn === 120}
+                  className="sr-only"
+                />
+                {mn / 60}h{" "}
+                {mn === 120
+                  ? "(standard)"
+                  : mn === 240
+                    ? "(renforcé)"
+                    : "(intensif)"}
+              </label>
+            ))}
+          </div>
+          <p className="m-0 mt-2 max-w-[62ch] text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+            2h minimum INRS. Passez à 4h si matières combustibles profondes
+            (bois, isolants), 6h si risque incendie élevé.
+          </p>
+        </fieldset>
+
+        <div>
+          <label className="label-board" htmlFor="mesuresNotes">
+            Notes additionnelles sur la prévention
+          </label>
+          <textarea
+            id="mesuresNotes"
+            name="mesuresNotes"
+            rows={3}
+            maxLength={2000}
+            className="champ-board min-h-[84px] resize-y"
+            placeholder="Mesures spécifiques liées aux contraintes du site…"
+          />
+        </div>
+      </SectionChamps>
+
+      {state.status === "error" && !state.fieldErrors && (
+        <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+          {state.message}
+        </p>
+      )}
+
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={pending}>
+        <Button variant="board" size="board" type="submit" disabled={pending}>
           {pending ? "Création…" : "Créer le permis et demander les signatures"}
         </Button>
         <Link
           href={`/etablissements/${etablissementId}/permis-feu`}
-          className={buttonVariants({ variant: "outline", size: "default" })}
+          className={buttonVariants({ variant: "boardClair", size: "board" })}
         >
           Annuler
         </Link>
       </div>
-
-      {state.status === "error" && !state.fieldErrors && (
-        <p className="text-sm text-destructive">{state.message}</p>
-      )}
     </form>
   );
 }

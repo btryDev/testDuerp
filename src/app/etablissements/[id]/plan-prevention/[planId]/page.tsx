@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ETAT_PLAN } from "@/lib/plan-prevention/etats";
 import { lireProvenance } from "@/lib/navigation/provenance";
 import {
   BlocCreux,
@@ -35,6 +36,7 @@ const FMT_HEURE = new Intl.DateTimeFormat("fr-FR", {
 function numero(n: number): string {
   return `PP-${String(n).padStart(3, "0")}`;
 }
+
 
 export default async function PlanPreventionDetailPage({
   params,
@@ -94,30 +96,23 @@ export default async function PlanPreventionDetailPage({
       <HeroFiche
         date={plan.dateDebut}
         etat={etat}
-        famille="travaux"
-        surtitre={`Correction · Plan de prévention ${numero(plan.numero)}`}
+        famille="operations"
+        surtitre={`Opération encadrée · Plan de prévention ${numero(plan.numero)}`}
         titre={plan.entrepriseExterieureRaison}
         chapeau={plan.lieux}
         faits={faits}
         pastilles={
           <>
-            {plan.statut === "clos" ? (
-              <PastilleFiche ton="fait">Plan clos</PastilleFiche>
-            ) : plan.statut === "valide" ? (
-              <PastilleFiche ton="bleu">Validé</PastilleFiche>
-            ) : plan.statut === "attente_signatures" ? (
-              <PastilleFiche ton="proche">
-                En attente de signatures
-              </PastilleFiche>
-            ) : (
-              <PastilleFiche ton="neutre">Brouillon</PastilleFiche>
-            )}
-            {/* Le seuil réglementaire n'est pas un statut : il dit ce que
-                la loi impose, pas où en est le dossier. */}
+            <PastilleFiche ton={ETAT_PLAN[plan.statut].ton}>
+              {ETAT_PLAN[plan.statut].mot}
+            </PastilleFiche>
+            {/* Le seuil réglementaire n'est pas un statut : il dit ce que la
+                loi impose, pas où en est le dossier. Le commentaire disait
+                déjà cela, la couleur disait le contraire — le rose annonce un
+                retard, or rien n'est en retard : le plan s'écrit en ce moment
+                même, et son avancement est dit par la pastille voisine. */}
             {diag.ecritObligatoire && (
-              <PastilleFiche ton="retard">
-                Plan écrit obligatoire
-              </PastilleFiche>
+              <PastilleFiche ton="bleu">Plan écrit obligatoire</PastilleFiche>
             )}
           </>
         }
@@ -134,11 +129,16 @@ export default async function PlanPreventionDetailPage({
 
             <CarteFiche
               titre="Inspection commune préalable"
+              // Ardoise et non ambre sur « à planifier » : c'est l'absence
+              // de rendez-vous, pas une urgence — et l'ambre dit ailleurs
+              // « échéance dans moins de trente jours » (charte, interdit 4).
+              // La table de la liste, écrite dans le même lot, applique déjà
+              // la règle : la fiche contredisait le commentaire de sa liste.
               droite={
                 plan.inspectionDate ? (
                   <PastilleFiche ton="fait">Réalisée</PastilleFiche>
                 ) : (
-                  <PastilleFiche ton="proche">À planifier</PastilleFiche>
+                  <PastilleFiche ton="neutre">À planifier</PastilleFiche>
                 )
               }
             >
@@ -243,6 +243,7 @@ export default async function PlanPreventionDetailPage({
           </p>
           {signatureEU ? (
             <SignatureBlock
+              charte="board"
               signataireNom={signatureEU.signataireNom}
               signataireRole={signatureEU.signataireRole}
               signataireEmail={signatureEU.signataireEmail}
@@ -272,6 +273,7 @@ export default async function PlanPreventionDetailPage({
           </p>
           {signatureEF ? (
             <SignatureBlock
+              charte="board"
               signataireNom={signatureEF.signataireNom}
               signataireRole={signatureEF.signataireRole}
               signataireEmail={signatureEF.signataireEmail}
@@ -299,6 +301,7 @@ export default async function PlanPreventionDetailPage({
 
       <div className="pt-2">
         <LegalBadge
+          charte="board"
           reference="Art. R4512-6 à R4512-12 CT · décret 92-158"
           href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018529787/"
           defaultOpen

@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
-import { Check, Flame } from "lucide-react";
+import type { StatutPermisFeu } from "@prisma/client";
+import { ETAT_PERMIS, libellePastillePermis } from "@/lib/permis-feu/etats";
+import { Check } from "lucide-react";
 import { lireProvenance } from "@/lib/navigation/provenance";
 import {
   BlocCreux,
@@ -43,6 +45,28 @@ function dureeHhMm(minutes: number): string {
 
 function numero(n: number): string {
   return `PF-${String(n).padStart(3, "0")}`;
+}
+
+
+function PastilleStatut({
+  statut,
+  manquantes,
+}: {
+  statut: StatutPermisFeu;
+  manquantes: number;
+}) {
+  const { ton } = ETAT_PERMIS[statut];
+
+  // Le libellé vient de `libellePastillePermis`, fonction pure et testée. Il
+  // était construit ici, en interpolant le mot de la table — `1 ${mot}` — ce
+  // qui a produit « 1 En attente de signatures » le jour où ce mot a été unifié
+  // avec celui de la liste. Une table de vocabulaire d'état et un décompte
+  // d'objets ne se concatènent pas.
+  return (
+    <PastilleFiche ton={ton}>
+      {libellePastillePermis(statut, manquantes)}
+    </PastilleFiche>
+  );
 }
 
 export default async function PermisFeuDetailPage({
@@ -112,31 +136,14 @@ export default async function PermisFeuDetailPage({
       <HeroFiche
         date={permis.dateDebut}
         etat={etat}
-        famille="travaux"
-        surtitre={`Correction · Permis de feu ${numero(permis.numero)}`}
+        famille="operations"
+        surtitre={`Opération encadrée · Permis de feu ${numero(permis.numero)}`}
         titre={permis.prestataireRaison}
         chapeau={permis.lieu}
         faits={faits}
         pastilles={
           <>
-            {permis.statut === "termine" ? (
-              <PastilleFiche ton="fait">Travaux terminés</PastilleFiche>
-            ) : permis.statut === "en_cours" ? (
-              <PastilleFiche ton="retard">
-                <Flame className="size-3.5" aria-hidden />
-                Travaux en cours
-              </PastilleFiche>
-            ) : permis.statut === "valide" ? (
-              <PastilleFiche ton="bleu">Prêt à démarrer</PastilleFiche>
-            ) : permis.statut === "attente_signatures" ? (
-              <PastilleFiche ton="proche">
-                {manquantes > 1
-                  ? "2 signatures manquantes"
-                  : "1 signature manquante"}
-              </PastilleFiche>
-            ) : (
-              <PastilleFiche ton="neutre">Brouillon</PastilleFiche>
-            )}
+            <PastilleStatut statut={permis.statut} manquantes={manquantes} />
             {permis.naturesTravaux.map((n) => (
               <PastilleFiche key={n} ton="neutre">
                 {LABEL_NATURE[n]}
@@ -300,6 +307,7 @@ export default async function PermisFeuDetailPage({
           </p>
           {signatureDonneur ? (
             <SignatureBlock
+              charte="board"
               signataireNom={signatureDonneur.signataireNom}
               signataireRole={signatureDonneur.signataireRole}
               signataireEmail={signatureDonneur.signataireEmail}
@@ -335,6 +343,7 @@ export default async function PermisFeuDetailPage({
           </p>
           {signaturePrestataire ? (
             <SignatureBlock
+              charte="board"
               signataireNom={signaturePrestataire.signataireNom}
               signataireRole={signaturePrestataire.signataireRole}
               signataireEmail={signaturePrestataire.signataireEmail}
@@ -371,6 +380,7 @@ export default async function PermisFeuDetailPage({
 
       <div className="pt-2">
         <LegalBadge
+          charte="board"
           reference="INRS ED 6030 · APSAD R43 · Art. R4224-17 CT"
           defaultOpen
         >

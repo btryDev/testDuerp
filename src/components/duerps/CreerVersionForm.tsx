@@ -2,8 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ChampBoard } from "@/components/ui-kit";
 import { creerVersion } from "@/lib/versions/actions";
 import {
   MOTIFS_VERSION,
@@ -28,15 +27,18 @@ export function CreerVersionForm({
   const precisionRequise = motifCle === "autre";
 
   return (
+    // Sous-bloc creux : le formulaire vit DANS la carte « Versions figées »,
+    // il n'en ouvre pas une seconde (deux cartes emboîtées font deux niveaux
+    // de titrage dans une même carte).
     <form
       action={formAction}
-      className="space-y-5 rounded-[calc(var(--radius)*1.4)] border border-rule-soft bg-card p-5"
+      className="space-y-5 rounded-[22px] bg-[color:var(--board-slate-pale)] px-5 py-5"
     >
       <div>
-        <p className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
           Nouvelle version
         </p>
-        <p className="mt-2 text-[0.86rem] leading-relaxed text-muted-foreground">
+        <p className="m-0 mt-2 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           L&apos;art. R. 4121-2 impose d&apos;indiquer le motif à chaque mise
           à jour. Choisissez la raison qui déclenche cette nouvelle version.
         </p>
@@ -52,10 +54,10 @@ export function CreerVersionForm({
               <label
                 key={cle}
                 htmlFor={id}
-                className={`flex cursor-pointer items-start gap-3 rounded-[calc(var(--radius)*1)] border p-3 transition-colors ${
+                className={`flex cursor-pointer items-start gap-3 rounded-[16px] border p-3 transition-colors ${
                   checked
-                    ? "border-ink bg-paper-sunk/60"
-                    : "border-rule-soft hover:bg-paper-sunk/30"
+                    ? "border-[color:var(--board-ink)] bg-[color:var(--board-card)]"
+                    : "border-[color:var(--board-slate-line)] bg-[color:var(--board-card)]/60 hover:bg-[color:var(--board-card)]"
                 }`}
               >
                 <input
@@ -65,35 +67,31 @@ export function CreerVersionForm({
                   value={cle}
                   checked={checked}
                   onChange={() => setMotifCle(cle)}
-                  className="mt-1 accent-ink"
+                  className="mt-1 accent-[color:var(--board-ink)]"
                   required
                 />
-                <span className="text-[0.88rem] leading-snug">{libelle}</span>
+                <span className="text-[13.5px] leading-[1.45] text-[color:var(--board-ink)]">
+                  {libelle}
+                </span>
               </label>
             );
           },
         )}
       </fieldset>
 
-      <div className="space-y-2">
-        <Label
-          htmlFor="motifPrecision"
-          className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground"
-        >
-          Précision
-          {precisionRequise ? " (requise)" : " (facultative)"}
-        </Label>
-        <Input
-          id="motifPrecision"
-          name="motifPrecision"
-          placeholder="ex. ouverture service de livraison — juin 2026"
-          required={precisionRequise}
-          maxLength={300}
-        />
-      </div>
+      <ChampBoard
+        id="motifPrecision"
+        name="motifPrecision"
+        label={`Précision${precisionRequise ? " (requise)" : " (facultative)"}`}
+        placeholder="ex. ouverture service de livraison — juin 2026"
+        required={precisionRequise}
+        maxLength={300}
+      />
 
       {!aucunRisqueNonCote && (
-        <p className="rounded-[calc(var(--radius)*1)] border border-dashed border-[color:var(--minium)]/40 bg-[color:var(--minium)]/8 p-3 text-[0.8rem] leading-relaxed text-[color:var(--minium)]">
+        // Voile de ligne entière, pas champ plein : le dossier n'a pas
+        // d'échéance dépassée, il porte un écart relevé avant de figer.
+        <p className="m-0 rounded-[16px] bg-[color:var(--board-signal-wash)] p-3 text-[12.5px] leading-[1.55] text-[color:var(--board-signal-ink)]">
           Certains risques ne sont pas encore cotés. La version figera
           l&apos;état actuel tel quel — la cotation manquante sera marquée
           « n.c. » dans le PDF.
@@ -101,15 +99,17 @@ export function CreerVersionForm({
       )}
 
       {state.status === "error" && (
-        <p className="text-[0.82rem] text-destructive">{state.message}</p>
+        <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+          {state.message}
+        </p>
       )}
       {state.status === "success" && (
-        <p className="text-[0.82rem] text-emerald-700 dark:text-emerald-400">
+        <p className="m-0 text-[12.5px] text-[color:var(--board-green-ink)]">
           Version v{state.numero} créée. Le PDF est disponible ci-dessous.
         </p>
       )}
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" variant="board" size="board" disabled={pending}>
         {pending ? "Création…" : "Valider — créer une nouvelle version"}
       </Button>
     </form>

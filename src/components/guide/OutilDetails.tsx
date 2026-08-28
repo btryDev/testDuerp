@@ -88,13 +88,13 @@ const DETAILS: OutilDetail[] = [
 function bordureCouleur(c: Couleur): string {
   switch (c) {
     case "vif":
-      return "var(--accent-vif)";
+      return "var(--board-green-ink)";
     case "warm":
-      return "var(--warm)";
+      return "var(--board-blue-ink)";
     case "ink":
-      return "var(--ink)";
+      return "var(--board-ink)";
     case "minium":
-      return "var(--minium)";
+      return "var(--board-signal-ink)";
   }
 }
 
@@ -102,11 +102,11 @@ export function OutilDetails({ etablissementId }: { etablissementId: string }) {
   return (
     <section>
       <header className="mb-10 max-w-[64ch]">
-        <p className="g-kicker">§ Détail — ce que dit la loi · ce que fait l&apos;app</p>
-        <h2 className="g-h2 mt-3">
-          Pour chaque outil, <span className="g-h2-em">deux colonnes</span>.
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">§ Détail — ce que dit la loi · ce que fait l&apos;app</p>
+        <h2 className="board-titre text-[clamp(22px,2.2vw,27px)] mt-3">
+          Pour chaque outil, <span className="text-[color:var(--board-blue-ink)]">deux colonnes</span>.
         </h2>
-        <p className="mt-3 text-[0.92rem] leading-[1.55] text-muted-foreground">
+        <p className="mt-3 text-[0.92rem] leading-[1.55] text-[color:var(--board-slate-mid)]">
           À gauche, l&apos;obligation légale. À droite, ce que la
           plateforme génère, suit ou rappelle pour vous la tenir.
         </p>
@@ -139,7 +139,7 @@ function CarteOutilDetail({
 
   return (
     <article
-      className="flex flex-col gap-5 overflow-hidden rounded-2xl border border-rule-soft bg-paper-elevated p-6"
+      className="flex flex-col gap-5 overflow-hidden rounded-2xl border border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] p-6"
       style={{
         borderTop: `3px solid ${bordureCouleur(detail.couleur)}`,
       }}
@@ -156,7 +156,7 @@ function CarteOutilDetail({
             {detail.titre}
           </h3>
         </div>
-        <code className="mt-1.5 block font-mono text-[0.7rem] text-muted-foreground">
+        <code className="mt-1.5 block font-mono text-[0.7rem] text-[color:var(--board-slate-mid)]">
           {detail.source}
         </code>
       </header>
@@ -176,7 +176,7 @@ function CarteOutilDetail({
 
       <Link
         href={ctaHref}
-        className="inline-flex w-fit items-center gap-1.5 self-start text-[0.86rem] font-medium text-[color:var(--accent-vif)] transition-opacity hover:opacity-80"
+        className="inline-flex w-fit items-center gap-1.5 self-start text-[0.86rem] font-medium text-[color:var(--board-green-ink)] transition-opacity hover:opacity-80"
       >
         {detail.cta.libelle} →
       </Link>
@@ -198,16 +198,16 @@ function BlocColonne({
       className={
         "flex flex-col gap-2 rounded-lg px-3.5 py-3 " +
         (ton === "vif"
-          ? "bg-[color:var(--accent-vif-soft)]"
-          : "bg-paper-sunk")
+          ? "bg-[color:var(--board-green)]"
+          : "bg-[color:var(--board-slate-pale)]")
       }
     >
       <p
         className={
           "font-mono text-[0.62rem] uppercase tracking-[0.18em] " +
           (ton === "vif"
-            ? "text-[color:var(--accent-vif)]"
-            : "text-muted-foreground")
+            ? "text-[color:var(--board-green-ink)]"
+            : "text-[color:var(--board-slate-mid)]")
         }
       >
         {titre}

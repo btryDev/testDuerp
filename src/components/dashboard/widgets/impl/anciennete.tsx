@@ -63,7 +63,7 @@ export function WidgetAnciennete({ bundle }: { bundle: DashboardBundle }) {
           seuilWarn={180}
         />
       </ul>
-      <p className="mt-auto font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="mt-auto font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]">
         Un document de plus d&apos;un an perd sa valeur d&apos;audit.
       </p>
     </BentoCell>
@@ -86,17 +86,17 @@ function LigneAge({
   const tone = toneFromAge(age, seuilOk, seuilWarn);
   const toneClass =
     tone === "alerte"
-      ? "text-[color:var(--minium)]"
+      ? "text-[color:var(--board-signal-ink)]"
       : tone === "warn"
-        ? "text-[color:var(--warn-ink)]"
+        ? "text-[color:var(--board-amber-ink)]"
         : tone === "ok"
-          ? "text-[color:var(--accent-vif)]"
-          : "text-muted-foreground";
+          ? "text-[color:var(--board-green-ink)]"
+          : "text-[color:var(--board-slate-mid)]";
   return (
     <li className="grid grid-cols-[1fr_auto] items-baseline gap-4">
       <div className="min-w-0">
         <p className="text-[0.9rem] font-medium">{label}</p>
-        <p className="mt-0.5 truncate text-[0.74rem] text-muted-foreground">
+        <p className="mt-0.5 truncate text-[12px] text-[color:var(--board-slate-mid)]">
           {sousLibelle}
         </p>
       </div>

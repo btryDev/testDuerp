@@ -2,6 +2,8 @@
 // (mois courant mis en évidence). Server component : reçoit les données
 // agrégées depuis `compterObligationsParMois`.
 
+import { CHAMP_ETAT } from "@/lib/calendrier/etats";
+
 export type BarMois = {
   mois: number; // 0-11 (janv = 0)
   annee: number;
@@ -29,14 +31,20 @@ export function BarsObligations({
         const total = d.couvert + d.aVenir + d.retard;
         const heightPct = (total / max) * 100;
         const isCourant = d.mois === moisCourant;
+        // Les couleurs viennent de `CHAMP_ETAT`, source unique du produit, et
+        // non d'une table locale : un « en retard » d'une teinte ici et d'une
+        // autre au calendrier fait lire deux états là où il n'y en a qu'un.
+        //
+        // Un mois sans échéance prend l'ardoise et non le filet : c'est une
+        // absence, pas une graduation.
         const tone =
           d.retard > 0
-            ? "var(--minium)"
+            ? CHAMP_ETAT.enRetard
             : d.aVenir > 0
-              ? "var(--accent-vif)"
+              ? CHAMP_ETAT.proche
               : total > 0
-                ? "var(--ink)"
-                : "var(--rule)";
+                ? CHAMP_ETAT.faite
+                : "var(--board-slate-pale)";
         return (
           <div
             key={`${d.annee}-${d.mois}`}
@@ -46,7 +54,7 @@ export function BarsObligations({
               className={
                 "w-full rounded-t transition-[height] duration-500 " +
                 (isCourant
-                  ? "outline outline-2 outline-offset-2 outline-[color:var(--accent-vif)]"
+                  ? "outline outline-2 outline-offset-2 outline-[color:var(--board-ink)]"
                   : "")
               }
               style={{
@@ -56,7 +64,7 @@ export function BarsObligations({
               }}
               title={`${total} obligation${total > 1 ? "s" : ""} — ${d.couvert} couvertes, ${d.aVenir} à venir, ${d.retard} en retard`}
             />
-            <span className="font-mono text-[0.66rem] text-muted-foreground">
+            <span className="font-mono text-[11px] text-[color:var(--board-slate-mid)]">
               {LABELS_MOIS[d.mois]}
             </span>
           </div>
@@ -68,10 +76,10 @@ export function BarsObligations({
 
 export function LegendeBarsObligations() {
   return (
-    <span className="flex items-center gap-3 text-[0.72rem] text-muted-foreground">
-      <LegendDot color="var(--ink)" /> Couvert
-      <LegendDot color="var(--accent-vif)" /> À venir
-      <LegendDot color="var(--minium)" /> Retard
+    <span className="flex items-center gap-3 text-[12px] text-[color:var(--board-slate-mid)]">
+      <LegendDot color={CHAMP_ETAT.faite} /> Couvert
+      <LegendDot color={CHAMP_ETAT.proche} /> À venir
+      <LegendDot color={CHAMP_ETAT.enRetard} /> Retard
     </span>
   );
 }

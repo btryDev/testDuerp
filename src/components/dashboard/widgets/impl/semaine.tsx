@@ -65,16 +65,16 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
               className={
                 "flex min-h-[96px] flex-col rounded-lg p-2 " +
                 (isToday
-                  ? "bg-[color:var(--accent-vif-soft)]"
-                  : "bg-paper-sunk")
+                  ? "bg-[color:var(--board-blue-soft)]"
+                  : "bg-[color:var(--board-slate-pale)]")
               }
             >
               <div
                 className={
-                  "font-mono text-[0.6rem] uppercase tracking-[0.14em] " +
+                  "font-mono text-[10px] uppercase tracking-[0.14em] " +
                   (isToday
-                    ? "text-[color:var(--accent-vif)]"
-                    : "text-muted-foreground")
+                    ? "text-[color:var(--board-blue-ink)]"
+                    : "text-[color:var(--board-slate-mid)]")
                 }
               >
                 {jour.libelleJour}
@@ -82,7 +82,7 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
               <div
                 className={
                   "mt-0.5 text-[0.92rem] font-semibold tabular-nums " +
-                  (isToday ? "text-[color:var(--accent-vif)]" : "text-ink")
+                  (isToday ? "text-[color:var(--board-blue-ink)]" : "text-[color:var(--board-ink)]")
                 }
               >
                 {jour.numero}
@@ -94,12 +94,12 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
                       href={`/etablissements/${etablissementId}/verifications/${e.id}`}
                       title={`${e.libelle} — ${e.equipement}`}
                       className={
-                        "block truncate rounded-sm px-1 text-[0.62rem] font-medium leading-tight transition-opacity hover:opacity-80 " +
+                        "block truncate rounded-sm px-1 text-[10px] font-medium leading-tight transition-opacity hover:opacity-80 " +
                         (e.tone === "alerte"
-                          ? "bg-[color:color-mix(in_oklch,var(--minium)_15%,transparent)] text-[color:var(--minium)]"
+                          ? "bg-[color:color-mix(in_oklch,var(--board-signal-ink)_15%,transparent)] text-[color:var(--board-signal-ink)]"
                           : e.tone === "warn"
-                            ? "bg-[color:var(--warn-soft)] text-[color:var(--warn-ink)]"
-                            : "bg-paper-elevated text-ink")
+                            ? "bg-[color:var(--board-amber)] text-[color:var(--board-amber-ink)]"
+                            : "bg-[color:var(--board-card)] text-[color:var(--board-ink)]")
                       }
                     >
                       {e.libelle}
@@ -110,7 +110,7 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
                   <li>
                     <Link
                       href={`/etablissements/${etablissementId}/calendrier`}
-                      className="block text-[0.6rem] text-muted-foreground hover:text-ink hover:underline"
+                      className="block text-[10px] text-[color:var(--board-slate-mid)] hover:text-[color:var(--board-ink)] hover:underline"
                     >
                       +{events.length - 3}
                     </Link>

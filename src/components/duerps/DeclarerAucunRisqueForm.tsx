@@ -21,34 +21,42 @@ export function DeclarerAucunRisqueForm({
       <button
         type="button"
         onClick={() => setOuvert(true)}
-        className="inline-flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-ink"
+        className="board-eyebrow inline-flex items-center gap-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
       >
-        <span aria-hidden className="text-[0.95rem] leading-none">+</span>
+        <span aria-hidden className="text-[13px] leading-none">+</span>
         Déclarer « aucun risque significatif »
       </button>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-dashed border-[color:var(--warm)]/50 bg-[color:var(--warm-soft)] px-6 py-5">
-      <p className="font-mono text-[0.66rem] uppercase tracking-[0.16em] text-[color:var(--warm)]">
+    // Déclarer l'absence de risque significatif est une saisie du dirigeant,
+    // pas un état d'échéance : le bloc porte la surface creuse de l'ardoise,
+    // sans champ de couleur (charte, interdit 3).
+    <div className="rounded-[22px] bg-[color:var(--board-slate-pale)] px-7 py-6 sm:px-8">
+      <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
         Déclaration — aucun risque significatif
       </p>
-      <p className="mt-2 text-[0.82rem] leading-relaxed text-ink">
+      <p className="m-0 mt-2.5 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
         Cette déclaration sera reprise dans le DUERP généré. Précisez la
         nature de l&apos;évaluation (ex : « poste purement administratif, pas
         d&apos;exposition physique identifiée hors risques transverses »).
       </p>
+      <label className="label-board mt-4 block" htmlFor="aucun-risque-justif">
+        Justification
+      </label>
       <textarea
+        id="aucun-risque-justif"
         value={valeur}
         onChange={(e) => setValeur(e.target.value)}
         placeholder="Justification libre (quelques mots)"
         rows={3}
-        className="mt-4 w-full rounded-xl border border-rule bg-paper-elevated px-3 py-2 text-[0.9rem] leading-relaxed focus:border-ink focus:outline-none"
+        className="champ-board"
       />
       <div className="mt-4 flex flex-wrap gap-2">
         <Button
-          size="sm"
+          variant="board"
+          size="boardSm"
           disabled={pending || !valeur.trim()}
           onClick={() => {
             startTransition(async () => {
@@ -64,8 +72,8 @@ export function DeclarerAucunRisqueForm({
         </Button>
         {declaree && (
           <Button
-            size="sm"
-            variant="ghost"
+            variant="boardClair"
+            size="boardSm"
             disabled={pending}
             onClick={() => {
               startTransition(async () => {
@@ -79,8 +87,8 @@ export function DeclarerAucunRisqueForm({
           </Button>
         )}
         <Button
-          size="sm"
-          variant="ghost"
+          variant="boardClair"
+          size="boardSm"
           onClick={() => {
             setValeur(justifInitiale ?? "");
             if (!justifInitiale) setOuvert(false);

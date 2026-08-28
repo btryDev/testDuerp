@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ChampBoard } from "@/components/ui-kit";
 import { signInAction, type AuthActionState } from "@/lib/auth/actions";
 
 const initialState: AuthActionState = {};
@@ -13,52 +12,63 @@ export function LoginForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState(signInAction, initialState);
 
   return (
-    <form action={action} className="space-y-5">
+    <form action={action} className="flex flex-col gap-5">
       <input type="hidden" name="next" value={next} />
 
-      <div className="space-y-2">
-        <Label htmlFor="email" className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
-          E-mail
-        </Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          placeholder="vous@exemple.fr"
-        />
-      </div>
+      <ChampBoard
+        id="email"
+        name="email"
+        type="email"
+        label="E-mail"
+        autoComplete="email"
+        required
+        placeholder="vous@exemple.fr"
+      />
 
-      <div className="space-y-2">
-        <div className="flex items-baseline justify-between">
-          <Label htmlFor="password" className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground">
-            Mot de passe
-          </Label>
-          <Link
-            href="/login/mot-de-passe-oublie"
-            className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-muted-foreground underline decoration-rule decoration-dotted underline-offset-4 hover:text-ink"
-          >
-            Oublié ?
-          </Link>
-        </div>
-        <Input
+      <div>
+        <ChampBoard
           id="password"
           name="password"
           type="password"
+          label="Mot de passe"
           autoComplete="current-password"
           required
           minLength={8}
         />
+        {/* Sous le champ et non dans la ligne du libellé : `ChampBoard` pose
+            son propre <label>, et y glisser un lien reviendrait à réécrire le
+            champ à la main pour un placement. On y gagne l'ordre de
+            tabulation attendu — on n'atteint « Oublié ? » qu'après avoir
+            essayé de taper son mot de passe. */}
+        <p className="m-0 mt-2 text-right text-[12.5px]">
+          <Link
+            href="/login/mot-de-passe-oublie"
+            className="text-[color:var(--board-blue-ink)] underline decoration-[color:var(--board-blue-soft)] underline-offset-4 transition-colors hover:decoration-[color:var(--board-blue-ink)]"
+          >
+            Oublié ?
+          </Link>
+        </p>
       </div>
 
+      {/* Erreur de formulaire, pas de champ : le message ne dit jamais lequel
+          des deux identifiants est en cause. Le voile porte donc l'erreur au
+          niveau du bloc, là où `ChampBoard` la poserait sous un champ. */}
       {state.error ? (
-        <p className="text-[0.82rem] text-[color:var(--minium)]">
+        <p
+          role="alert"
+          className="m-0 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)]"
+        >
           {state.error}
         </p>
       ) : null}
 
-      <Button type="submit" size="lg" disabled={pending} className="w-full">
+      <Button
+        type="submit"
+        variant="board"
+        size="board"
+        disabled={pending}
+        className="w-full"
+      >
         {pending ? "Connexion…" : "Se connecter →"}
       </Button>
     </form>

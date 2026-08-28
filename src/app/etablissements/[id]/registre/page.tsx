@@ -136,6 +136,7 @@ export default async function RegistrePage({
       </p>
       <div className="flex flex-wrap gap-2 pt-1">
         <LegalBadge
+          charte="board"
           reference="Art. R. 143-44 CCH"
           href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043819037"
           extrait="Dans les établissements soumis aux prescriptions du présent chapitre, il doit être tenu un registre de sécurité sur lequel sont reportés les renseignements indispensables à la bonne marche du service de sécurité."
@@ -148,11 +149,13 @@ export default async function RegistrePage({
           </p>
         </LegalBadge>
         <LegalBadge
+          charte="board"
           reference="Art. L. 4711-1 CT"
           href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903383"
           extrait="Les attestations, consignes, résultats et rapports relatifs aux vérifications et contrôles mis à la charge de l'employeur au titre de la santé et de la sécurité au travail comportent des mentions obligatoires déterminées par voie réglementaire."
         />
         <LegalBadge
+          charte="board"
           reference="Art. L. 4711-5 CT"
           href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389"
           extrait="[…] l'employeur est autorisé à réunir ces informations dans un registre unique dès lors que cette mesure est de nature à faciliter la conservation et la consultation de ces informations."

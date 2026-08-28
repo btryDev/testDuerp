@@ -36,7 +36,9 @@ export function CloturerActionForm({ action, rapportsDisponibles }: Props) {
           placeholder="Décrivez brièvement l'action menée et son résultat (traçabilité)."
         />
         {err("commentaire") && (
-          <p className="text-sm text-destructive">{err("commentaire")}</p>
+          <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
+            {err("commentaire")}
+          </p>
         )}
       </div>
 
@@ -62,10 +64,20 @@ export function CloturerActionForm({ action, rapportsDisponibles }: Props) {
       )}
 
       {state.status === "error" && !state.fieldErrors && (
-        <p className="text-sm text-destructive">{state.message}</p>
+        <p
+          role="alert"
+          className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]"
+        >
+          {state.message}
+        </p>
       )}
       {state.status === "success" && (
-        <p className="text-sm text-emerald-700">Action clôturée.</p>
+        <p
+          role="status"
+          className="m-0 text-[12.5px] text-[color:var(--board-green-ink)]"
+        >
+          Action clôturée.
+        </p>
       )}
 
       <div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Label } from "@/components/ui/label";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import {
   CATEGORIES_ERP,
@@ -20,12 +19,17 @@ import type { StepProps } from "./types";
 
 /**
  * Étape 2 sur 3 — Assistant pour déterminer la typologie d'établissement
- * (ERP / IGH / habitation). Trois questions séquentielles avec grille
- * visuelle pour le type d'activité et la classe IGH.
+ * (ERP / IGH / habitation). Trois questions avec grille visuelle pour le
+ * type d'activité et la classe IGH.
  *
  * Un mode avancé permet aux utilisateurs qui connaissent déjà leur
  * catégorie ERP et leur classe IGH de les saisir directement via des
  * dropdowns.
+ *
+ * Les questions ne sont plus numérotées : elles sont posées toutes les
+ * trois en même temps et se répondent dans n'importe quel ordre — le
+ * numéro n'y portait aucune information, contrairement aux étapes du
+ * wizard. Le compteur d'étape reste, lui, dans l'enveloppe.
  */
 export function StepTypologie({ state, update, errors }: StepProps) {
   const [modeAvance, setModeAvance] = useState(false);
@@ -50,13 +54,15 @@ export function StepTypologie({ state, update, errors }: StepProps) {
 
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-[22px]">
       <div>
-        <p className="label-admin mb-2">Étape 2 sur 3 · Type d&apos;établissement</p>
-        <h2 className="text-[1.6rem] font-semibold tracking-[-0.015em] leading-tight">
+        <p className="board-eyebrow m-0 mb-2 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+          Type d&apos;établissement
+        </p>
+        <h2 className="board-titre m-0 text-[clamp(22px,2.2vw,27px)]">
           Quelques questions pour cadrer les obligations applicables.
         </h2>
-        <p className="mt-3 max-w-xl text-[0.88rem] leading-relaxed text-muted-foreground">
+        <p className="m-0 mt-2.5 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           Pas de jargon : on vous guide pour déterminer votre régime
           réglementaire. Aucun champ n&apos;est bloquant — en cas de doute,
           cochez le choix le plus proche, vous pourrez ajuster plus tard.
@@ -68,16 +74,13 @@ export function StepTypologie({ state, update, errors }: StepProps) {
         <ModeAvance state={state} update={update} errors={errors} />
       ) : (
         <>
-          {/* ─── Question 1 — Accueil du public (ERP) ─────────── */}
-          <section className="cartouche space-y-6 px-6 py-7 sm:px-8">
+          {/* ─── Accueil du public (ERP) ──────────────────────── */}
+          <section className="carte-board flex flex-col gap-6 px-7 py-6 sm:px-8">
             <div>
-              <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
-                Question 1
-              </p>
-              <h3 className="mt-1 text-[1.05rem] font-semibold tracking-[-0.01em]">
+              <h3 className="board-titre m-0 text-[22px]">
                 Accueillez-vous du public sur ce lieu ?
               </h3>
-              <p className="mt-1 text-[0.82rem] text-muted-foreground">
+              <p className="m-0 mt-2 max-w-[62ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                 Clients, patients, élèves, visiteurs… Si oui, votre
                 établissement est un ERP (Établissement Recevant du
                 Public) et des règles incendie spécifiques s&apos;appliquent.
@@ -107,15 +110,11 @@ export function StepTypologie({ state, update, errors }: StepProps) {
 
             {/* Sub-question activité ERP */}
             {state.estERP && (
-              <div className="space-y-4">
-                <div className="border-t border-dashed border-rule/60 pt-5">
-                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
-                    Quelle est votre activité principale ?
-                  </p>
-                  <p className="mt-1 text-[0.8rem] text-muted-foreground">
-                    Choisissez la catégorie la plus proche.
-                  </p>
-                </div>
+              <div className="flex flex-col gap-4">
+                <SousQuestion
+                  question="Quelle est votre activité principale ?"
+                  aide="Choisissez la catégorie la plus proche."
+                />
                 <div
                   role="radiogroup"
                   aria-label="Activité principale"
@@ -134,7 +133,9 @@ export function StepTypologie({ state, update, errors }: StepProps) {
                   ))}
                 </div>
                 {errors?.typeErp && (
-                  <p className="text-sm text-destructive">{errors.typeErp}</p>
+                  <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                    {errors.typeErp}
+                  </p>
                 )}
               </div>
             )}
@@ -145,16 +146,13 @@ export function StepTypologie({ state, update, errors }: StepProps) {
             )}
           </section>
 
-          {/* ─── Question 2 — IGH ─────────────────────────────── */}
-          <section className="cartouche space-y-6 px-6 py-7 sm:px-8">
+          {/* ─── IGH ─────────────────────────────────────────── */}
+          <section className="carte-board flex flex-col gap-6 px-7 py-6 sm:px-8">
             <div>
-              <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
-                Question 2
-              </p>
-              <h3 className="mt-1 text-[1.05rem] font-semibold tracking-[-0.01em]">
+              <h3 className="board-titre m-0 text-[22px]">
                 Votre bâtiment fait-il plus de 28 mètres de hauteur ?
               </h3>
-              <p className="mt-1 text-[0.82rem] text-muted-foreground">
+              <p className="m-0 mt-2 max-w-[62ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                 Environ 9 étages et plus. Ce cas (IGH) est très rare en
                 TPE/PME — si vous êtes au rez-de-chaussée ou dans un
                 immeuble de quelques étages, répondez « Non ».
@@ -177,12 +175,8 @@ export function StepTypologie({ state, update, errors }: StepProps) {
             </div>
 
             {state.estIGH && (
-              <div className="space-y-4">
-                <div className="border-t border-dashed border-rule/60 pt-5">
-                  <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
-                    Quelle est la nature du bâtiment ?
-                  </p>
-                </div>
+              <div className="flex flex-col gap-4">
+                <SousQuestion question="Quelle est la nature du bâtiment ?" />
                 <div
                   role="radiogroup"
                   aria-label="Classe IGH"
@@ -201,22 +195,21 @@ export function StepTypologie({ state, update, errors }: StepProps) {
                   ))}
                 </div>
                 {errors?.classeIgh && (
-                  <p className="text-sm text-destructive">{errors.classeIgh}</p>
+                  <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                    {errors.classeIgh}
+                  </p>
                 )}
               </div>
             )}
           </section>
 
-          {/* ─── Question 3 — Habitation ───────────────────────── */}
-          <section className="cartouche space-y-4 px-6 py-7 sm:px-8">
+          {/* ─── Habitation ──────────────────────────────────── */}
+          <section className="carte-board flex flex-col gap-4 px-7 py-6 sm:px-8">
             <div>
-              <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
-                Question 3
-              </p>
-              <h3 className="mt-1 text-[1.05rem] font-semibold tracking-[-0.01em]">
+              <h3 className="board-titre m-0 text-[22px]">
                 Gérez-vous un immeuble d&apos;habitation ?
               </h3>
-              <p className="mt-1 text-[0.82rem] text-muted-foreground">
+              <p className="m-0 mt-2 max-w-[62ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                 Uniquement si vous êtes propriétaire ou syndic d&apos;un
                 logement collectif (ramonage, VMC-Gaz…). Rare pour les
                 commerces et restaurants.
@@ -243,13 +236,39 @@ export function StepTypologie({ state, update, errors }: StepProps) {
         <button
           type="button"
           onClick={() => setModeAvance((v) => !v)}
-          className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-muted-foreground underline decoration-dashed underline-offset-4 hover:text-ink"
+          className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] underline decoration-[color:var(--board-slate)] decoration-dotted underline-offset-4 transition-colors hover:text-[color:var(--board-ink)]"
         >
           {modeAvance
             ? "← Revenir au mode guidé"
             : "Je connais déjà ma catégorie ERP →"}
         </button>
       </div>
+    </div>
+  );
+}
+
+/**
+ * L'amorce d'une sous-question, sous le filet qui la sépare de la question
+ * principale. Elle reste un paragraphe et non un titre : une carte board ne
+ * porte jamais deux niveaux de titrage (charte, interdit 11).
+ */
+function SousQuestion({
+  question,
+  aide,
+}: {
+  question: string;
+  aide?: string;
+}) {
+  return (
+    <div className="border-t border-[color:var(--board-slate-line)] pt-5">
+      <p className="m-0 text-[14px] font-semibold leading-[1.35] tracking-[-0.01em] text-[color:var(--board-ink)]">
+        {question}
+      </p>
+      {aide ? (
+        <p className="m-0 mt-1.5 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+          {aide}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -269,10 +288,10 @@ function BoutonOuiNon({
       onClick={onClick}
       aria-pressed={actif}
       className={
-        "min-w-[100px] rounded-full border px-5 py-2 text-[0.88rem] font-semibold tracking-[-0.005em] transition-colors " +
+        "min-w-[100px] rounded-full px-5 py-2 text-[12.5px] font-semibold tracking-[-0.01em] transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--board-blue-strong)] " +
         (actif
-          ? "border-ink bg-ink text-paper"
-          : "border-rule bg-paper text-muted-foreground hover:border-ink hover:text-ink")
+          ? "bg-[color:var(--board-ink)] text-white"
+          : "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-mid)] hover:bg-[color:var(--board-blue-pale)] hover:text-[color:var(--board-blue-ink)]")
       }
     >
       {label}
@@ -282,19 +301,19 @@ function BoutonOuiNon({
 
 function ModeAvance({ state, update, errors }: StepProps) {
   return (
-    <section className="cartouche space-y-6 px-6 py-7 sm:px-8">
+    <section className="carte-board flex flex-col gap-6 px-7 py-6 sm:px-8">
       <div>
-        <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
           Mode avancé
         </p>
-        <p className="mt-2 text-[0.85rem] leading-relaxed text-muted-foreground">
+        <p className="m-0 mt-2 max-w-[62ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
           Cochez les régimes qui s&apos;appliquent puis précisez les
           catégories. Les invariants ERP ↔ catégorie et IGH ↔ classe sont
           vérifiés à la validation.
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         <label className="flex items-start gap-3">
           <input
             type="checkbox"
@@ -302,11 +321,13 @@ function ModeAvance({ state, update, errors }: StepProps) {
             onChange={(e) =>
               update({ estEtablissementTravail: e.currentTarget.checked })
             }
-            className="mt-1 size-4 rounded border-rule"
+            className="mt-1 size-4 rounded border-[color:var(--board-slate)] accent-[color:var(--board-ink)]"
           />
           <div className="min-w-0">
-            <p className="text-[0.9rem] font-semibold">Établissement de travail</p>
-            <p className="text-[0.78rem] text-muted-foreground">
+            <p className="m-0 text-[13.5px] font-semibold text-[color:var(--board-ink)]">
+              Établissement de travail
+            </p>
+            <p className="m-0 mt-1 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
               Coché par défaut — désactivez uniquement en cas d&apos;immeuble
               sans salarié.
             </p>
@@ -324,19 +345,23 @@ function ModeAvance({ state, update, errors }: StepProps) {
                 categorieErp: e.currentTarget.checked ? state.categorieErp : "",
               })
             }
-            className="mt-1 size-4 rounded border-rule"
+            className="mt-1 size-4 rounded border-[color:var(--board-slate)] accent-[color:var(--board-ink)]"
           />
           <div className="min-w-0 flex-1">
-            <p className="text-[0.9rem] font-semibold">Établissement Recevant du Public</p>
+            <p className="m-0 text-[13.5px] font-semibold text-[color:var(--board-ink)]">
+              Établissement Recevant du Public
+            </p>
             {state.estERP && (
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="typeErp">Type ERP *</Label>
+                  <label className="label-board" htmlFor="typeErp">
+                    Type ERP *
+                  </label>
                   <select
                     id="typeErp"
                     value={state.typeErp}
                     onChange={(e) => update({ typeErp: e.currentTarget.value })}
-                    className="mt-1 h-9 w-full rounded-md border border-rule bg-background px-3 text-sm"
+                    className="champ-board"
                   >
                     <option value="">— Sélectionner —</option>
                     {TYPE_ERP.map((t) => (
@@ -346,27 +371,27 @@ function ModeAvance({ state, update, errors }: StepProps) {
                     ))}
                   </select>
                   {errors?.typeErp && (
-                    <p className="mt-1 text-xs text-destructive">
+                    <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
                       {errors.typeErp}
                     </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="categorieErp" className="inline-flex items-center">
+                  <label className="label-board" htmlFor="categorieErp">
                     Catégorie *
                     <InfoTooltip>
                       La catégorie dépend de la capacité d&apos;accueil :
                       1ʳᵉ (&gt;1500) · 2ᵉ (701-1500) · 3ᵉ (301-700) ·
                       4ᵉ/5ᵉ (≤300).
                     </InfoTooltip>
-                  </Label>
+                  </label>
                   <select
                     id="categorieErp"
                     value={state.categorieErp}
                     onChange={(e) =>
                       update({ categorieErp: e.currentTarget.value })
                     }
-                    className="mt-1 h-9 w-full rounded-md border border-rule bg-background px-3 text-sm"
+                    className="champ-board"
                   >
                     <option value="">— Sélectionner —</option>
                     {CATEGORIES_ERP.map((c) => (
@@ -376,7 +401,7 @@ function ModeAvance({ state, update, errors }: StepProps) {
                     ))}
                   </select>
                   {errors?.categorieErp && (
-                    <p className="mt-1 text-xs text-destructive">
+                    <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
                       {errors.categorieErp}
                     </p>
                   )}
@@ -396,18 +421,22 @@ function ModeAvance({ state, update, errors }: StepProps) {
                 classeIgh: e.currentTarget.checked ? state.classeIgh : "",
               })
             }
-            className="mt-1 size-4 rounded border-rule"
+            className="mt-1 size-4 rounded border-[color:var(--board-slate)] accent-[color:var(--board-ink)]"
           />
           <div className="min-w-0 flex-1">
-            <p className="text-[0.9rem] font-semibold">Immeuble de Grande Hauteur</p>
+            <p className="m-0 text-[13.5px] font-semibold text-[color:var(--board-ink)]">
+              Immeuble de Grande Hauteur
+            </p>
             {state.estIGH && (
               <div className="mt-3">
-                <Label htmlFor="classeIgh">Classe *</Label>
+                <label className="label-board" htmlFor="classeIgh">
+                  Classe *
+                </label>
                 <select
                   id="classeIgh"
                   value={state.classeIgh}
                   onChange={(e) => update({ classeIgh: e.currentTarget.value })}
-                  className="mt-1 h-9 w-full rounded-md border border-rule bg-background px-3 text-sm"
+                  className="champ-board"
                 >
                   <option value="">— Sélectionner —</option>
                   {CLASSES_IGH.map((c) => (
@@ -417,7 +446,7 @@ function ModeAvance({ state, update, errors }: StepProps) {
                   ))}
                 </select>
                 {errors?.classeIgh && (
-                  <p className="mt-1 text-xs text-destructive">
+                  <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
                     {errors.classeIgh}
                   </p>
                 )}
@@ -431,10 +460,12 @@ function ModeAvance({ state, update, errors }: StepProps) {
             type="checkbox"
             checked={state.estHabitation}
             onChange={(e) => update({ estHabitation: e.currentTarget.checked })}
-            className="mt-1 size-4 rounded border-rule"
+            className="mt-1 size-4 rounded border-[color:var(--board-slate)] accent-[color:var(--board-ink)]"
           />
           <div className="min-w-0">
-            <p className="text-[0.9rem] font-semibold">Immeuble d&apos;habitation</p>
+            <p className="m-0 text-[13.5px] font-semibold text-[color:var(--board-ink)]">
+              Immeuble d&apos;habitation
+            </p>
           </div>
         </label>
       </div>

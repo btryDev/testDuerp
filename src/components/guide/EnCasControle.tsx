@@ -28,11 +28,11 @@ export function EnCasControle({
   return (
     <section>
       <header className="mb-10 max-w-[56ch]">
-        <p className="g-kicker">§ En cas de contrôle</p>
-        <h2 className="g-h2 mt-3">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">§ En cas de contrôle</p>
+        <h2 className="board-titre text-[clamp(22px,2.2vw,27px)] mt-3">
           Quatre documents.
           <br />
-          <span className="g-h2-em">Tout ce qu&apos;on vous demandera.</span>
+          <span className="text-[color:var(--board-blue-ink)]">Tout ce qu&apos;on vous demandera.</span>
         </h2>
       </header>
 
@@ -45,15 +45,15 @@ export function EnCasControle({
           ))}
 
           {/* 4ᵉ item — mis en évidence */}
-          <li className="relative mt-2 flex flex-col gap-3 overflow-hidden rounded-2xl border border-[color:var(--accent-vif)]/40 bg-[color:var(--accent-vif-soft)] p-5">
-            <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-[color:var(--accent-vif)] px-2.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.2em] text-[color:var(--paper-elevated)]">
+          <li className="relative mt-2 flex flex-col gap-3 overflow-hidden rounded-2xl border border-[color:var(--board-green-ink)]/40 bg-[color:var(--board-green)] p-5">
+            <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-[color:var(--board-green-ink)] px-2.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.2em] text-[color:var(--board-card)]">
               <ArrowDown aria-hidden className="size-3" />
               Généré ici
             </span>
             <div className="flex items-baseline gap-4">
               <span
                 className="font-mono text-[1.15rem] font-medium tabular-nums"
-                style={{ color: "var(--accent-vif)" }}
+                style={{ color: "var(--board-green-ink)" }}
               >
                 04
               </span>
@@ -61,7 +61,7 @@ export function EnCasControle({
                 <h3 className="text-[1.05rem] font-semibold tracking-[-0.012em]">
                   Dossier consolidé
                 </h3>
-                <p className="mt-0.5 text-[0.86rem] text-ink/75">
+                <p className="mt-0.5 text-[0.86rem] text-[color:var(--board-ink)]/75">
                   PDF unique · consolide DUERP + registre + plan
                   d&apos;actions + mentions légales.
                 </p>
@@ -74,7 +74,7 @@ export function EnCasControle({
               >
                 Générer mon dossier PDF ↓
               </Link>
-              <span className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+              <span className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[color:var(--board-slate-mid)]">
                 ~30 secondes
               </span>
             </div>
@@ -95,15 +95,15 @@ function Ligne({
   description: string;
 }) {
   return (
-    <li className="flex items-baseline gap-4 rounded-xl bg-paper-sunk/60 px-5 py-4">
-      <span className="font-mono text-[1.15rem] font-medium tabular-nums text-muted-foreground">
+    <li className="flex items-baseline gap-4 rounded-xl bg-[color:var(--board-slate-pale)]/60 px-5 py-4">
+      <span className="font-mono text-[1.15rem] font-medium tabular-nums text-[color:var(--board-slate-mid)]">
         {n}
       </span>
       <div className="min-w-0">
         <h3 className="text-[1rem] font-semibold tracking-[-0.012em]">
           {titre}
         </h3>
-        <p className="mt-0.5 text-[0.84rem] text-muted-foreground">
+        <p className="mt-0.5 text-[0.84rem] text-[color:var(--board-slate-mid)]">
           {description}
         </p>
       </div>
@@ -138,7 +138,7 @@ function ControleStamp() {
         </defs>
 
         {/* Disque sombre */}
-        <circle cx={cx} cy={cy} r="120" fill="var(--ink)" />
+        <circle cx={cx} cy={cy} r="120" fill="var(--board-ink)" />
 
         {/* Ring pointillé en rotation */}
         <g className="g-stamp-ring" style={{ transformOrigin: "50% 50%" }}>
@@ -147,7 +147,7 @@ function ControleStamp() {
             cy={cy}
             r={ringRadius}
             fill="none"
-            stroke="var(--accent-vif)"
+            stroke="var(--board-green-ink)"
             strokeWidth="1"
             strokeDasharray="3 6"
             opacity="0.7"
@@ -155,7 +155,7 @@ function ControleStamp() {
           <text
             fontFamily="var(--font-mono)"
             fontSize="8.5"
-            fill="var(--accent-vif)"
+            fill="var(--board-green-ink)"
             letterSpacing="4"
           >
             <textPath xlinkHref={`#${pathId}`} startOffset="0%">
@@ -172,7 +172,7 @@ function ControleStamp() {
             y1={cy}
             x2={cx - 50}
             y2={cy}
-            stroke="var(--paper-elevated)"
+            stroke="var(--board-card)"
             strokeWidth="0.5"
           />
           <line
@@ -180,18 +180,18 @@ function ControleStamp() {
             y1={cy}
             x2={cx + 80}
             y2={cy}
-            stroke="var(--paper-elevated)"
+            stroke="var(--board-card)"
             strokeWidth="0.5"
           />
         </g>
       </svg>
 
       {/* Texte central */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-[color:var(--paper-elevated)]">
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-[color:var(--board-card)]">
         <span className="font-mono text-[0.58rem] uppercase tracking-[0.24em] opacity-80">
           Statut
         </span>
-        <span className="accent-serif mt-2 text-[1.7rem] italic leading-[1.05] text-[color:var(--accent-vif)]">
+        <span className=" mt-2 text-[1.7rem] italic leading-[1.05] text-[color:var(--board-green-ink)]">
           Prêt pour
           <br />
           contrôle

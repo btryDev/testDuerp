@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { modifierMesure, supprimerMesure } from "@/lib/mesures/actions";
 import { LABEL_TYPE_MESURE } from "@/lib/mesures/labels";
 import type { TypeMesure } from "@/lib/referentiels/types";
@@ -50,8 +49,10 @@ export function MesureRow({
     <div>
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-start sm:gap-4">
         <div className="min-w-0 flex-1">
-          <p className="font-medium">{libelle}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="m-0 text-[14px] font-medium leading-[1.45] text-[color:var(--board-ink)]">
+            {libelle}
+          </p>
+          <p className="m-0 mt-1 text-[12.5px] text-[color:var(--board-slate-mid)]">
             {LABEL_TYPE_MESURE[type]}
             {origine === "custom" && " · ajoutée manuellement"}
           </p>
@@ -60,26 +61,26 @@ export function MesureRow({
           <div
             role="radiogroup"
             aria-label="Statut de cette mesure"
-            className="inline-flex items-center rounded-full border border-rule/70 bg-paper-sunk/40 p-0.5 text-[0.72rem] font-medium"
+            className="inline-flex items-center rounded-full border border-[color:var(--board-slate-line)] bg-[color:var(--board-slate-pale)] p-0.5 text-[12px] font-semibold"
           >
             <SegButton
               active={statut === "existante"}
-              activeTone="green"
+              activeTone="fait"
               onClick={() => setStatut("existante")}
               disabled={pending}
               label="Déjà en place"
             />
             <SegButton
               active={statut === "prevue"}
-              activeTone="warm"
+              activeTone="prevu"
               onClick={() => setStatut("prevue")}
               disabled={pending}
               label="À prévoir"
             />
           </div>
           <Button
-            size="sm"
-            variant="ghost"
+            variant="boardClair"
+            size="boardSm"
             disabled={pending}
             onClick={() => {
               if (!confirm("Supprimer cette mesure ?")) return;
@@ -94,8 +95,9 @@ export function MesureRow({
       </div>
 
       {statut === "prevue" && (
-        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <ChampValidable
+            id={`mesure-${id}-echeance`}
             label="Échéance"
             type="date"
             initial={formatDateISO(echeance)}
@@ -104,6 +106,7 @@ export function MesureRow({
             }}
           />
           <ChampValidable
+            id={`mesure-${id}-responsable`}
             label="Responsable"
             placeholder="Nom ou rôle"
             initial={responsable ?? ""}
@@ -128,6 +131,7 @@ export function MesureRow({
  *   sur le bouton est le signal explicite attendu par l'utilisateur).
  */
 function ChampValidable({
+  id,
   label,
   initial,
   type = "text",
@@ -135,6 +139,7 @@ function ChampValidable({
   transformAvantSave,
   onSave,
 }: {
+  id: string;
   label: string;
   initial: string;
   type?: "text" | "date";
@@ -169,43 +174,58 @@ function ChampValidable({
   };
 
   return (
-    <label className="block text-xs text-muted-foreground">
-      <span className="block">{label}</span>
-      <Input
+    <div>
+      <label className="label-board" htmlFor={id}>
+        {label}
+      </label>
+      <input
+        id={id}
+        className="champ-board"
         type={type}
         value={value}
         placeholder={placeholder}
         onChange={(e) => setValue(e.currentTarget.value)}
         onBlur={enregistrer}
         disabled={etat === "saving"}
-        className="mt-1"
       />
-      <span className="mt-5 flex h-[20px] items-center justify-end gap-2">
+      <span className="mt-2 flex h-[20px] items-center justify-end gap-2">
         {dirty ? (
           <>
-            <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[color:var(--warm)]">
+            <span className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-blue-ink)]">
               Non enregistré
             </span>
             <Button
               type="button"
-              size="sm"
+              variant="board"
+              size="boardSm"
               onClick={enregistrer}
               disabled={etat === "saving"}
-              className="h-7 rounded-full px-3 text-[0.72rem]"
+              className="h-7 rounded-full px-3 text-[12px]"
             >
               {etat === "saving" ? "…" : "Enregistrer"}
             </Button>
           </>
         ) : etat === "saved" ? (
-          <span className="inline-flex items-center gap-1 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[color:var(--board-green-ink)]">
+          <span className="board-eyebrow inline-flex items-center gap-1 text-[10px] tracking-[0.16em] text-[color:var(--board-green-ink)]">
             <Check aria-hidden className="h-2.5 w-2.5" strokeWidth={3} />
             Enregistré
           </span>
         ) : null}
       </span>
-    </label>
+    </div>
   );
 }
+
+// Table statique : Tailwind ne voit pas un nom de classe construit à la
+// volée (interdit 23). « Déjà en place » est un fait — le vert du board dit
+// « fait », pas « conforme » ; « à prévoir » est un rendez-vous à tenir, il
+// prend le bleu, pas l'ambre : l'ambre est l'attention d'une échéance
+// proche, et une mesure qu'on vient de cocher n'en a pas encore.
+const SEG_ACTIF = {
+  fait: "bg-[color:var(--board-green)] text-[color:var(--board-green-ink)]",
+  prevu:
+    "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]",
+} as const;
 
 function SegButton({
   active,
@@ -215,15 +235,11 @@ function SegButton({
   label,
 }: {
   active: boolean;
-  activeTone: "green" | "warm";
+  activeTone: keyof typeof SEG_ACTIF;
   onClick: () => void;
   disabled: boolean;
   label: string;
 }) {
-  const activeClass =
-    activeTone === "green"
-      ? "bg-[color:var(--board-green-ink)] text-paper-elevated shadow-sm"
-      : "bg-[color:var(--warm)] text-paper-elevated shadow-sm";
   return (
     <button
       type="button"
@@ -233,8 +249,8 @@ function SegButton({
       disabled={disabled}
       className={`rounded-full px-3 py-1 transition-colors ${
         active
-          ? activeClass
-          : "text-muted-foreground hover:text-ink"
+          ? SEG_ACTIF[activeTone]
+          : "text-[color:var(--board-slate-mid)] hover:text-[color:var(--board-ink)]"
       }`}
     >
       {label}

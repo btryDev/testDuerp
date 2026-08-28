@@ -4,6 +4,7 @@
 //  - list     : liste verticale V2 (titre + equip · date J+N + pill)
 //  - timeline : axe horizontal avec dots marqués aux dates (historique)
 
+import { CHAMP_ETAT } from "@/lib/calendrier/etats";
 import Link from "next/link";
 import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { BentoCell } from "@/components/dashboard/BentoCell";
@@ -52,14 +53,14 @@ export function WidgetProchainesEcheances({
 
   if (prochainesVerifs.length === 0) {
     return (
-      <section className="bento-cell">
+      <section className="carte-board px-7 py-6 sm:px-8">
         <header className="flex items-start justify-between gap-3">
           <div>
             <h3 className="v2-title">Prochaines échéances</h3>
             <p className="v2-subtitle">Les 5 prochaines vérifications</p>
           </div>
         </header>
-        <p className="text-[0.88rem] text-muted-foreground">
+        <p className="text-[0.88rem] text-[color:var(--board-slate-mid)]">
           Aucune vérification planifiée pour l&apos;instant.
         </p>
       </section>
@@ -86,7 +87,7 @@ export function WidgetProchainesEcheances({
 
   // Variant "list" V2 : titre + equip (gauche) · date + J+N + pill (droite)
   return (
-    <section className="bento-cell">
+    <section className="carte-board px-7 py-6 sm:px-8">
       <header className="flex items-start justify-between gap-3">
         <div>
           <h3 className="v2-title">Prochaines échéances</h3>
@@ -94,7 +95,7 @@ export function WidgetProchainesEcheances({
         </div>
         <Link
           href={`/etablissements/${etablissementId}/calendrier`}
-          className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink/75 hover:text-ink"
+          className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-[color:var(--board-slate-ink)] hover:text-[color:var(--board-ink)]"
         >
           Tout voir ↗
         </Link>
@@ -119,28 +120,28 @@ export function WidgetProchainesEcheances({
               ? "À planifier"
               : libelleEcart(v.datePrevue, aujourdhui);
           const dansColor =
-            c.tone === "alerte" ? "text-[color:var(--board-signal-ink)]" : "text-muted-foreground";
+            c.tone === "alerte" ? "text-[color:var(--board-signal-ink)]" : "text-[color:var(--board-slate-mid)]";
           return (
             <li
               key={v.id}
               style={{
-                borderTop: i === 0 ? "0" : "1px dashed var(--rule)",
+                borderTop: i === 0 ? "0" : "1px dashed var(--board-slate)",
               }}
             >
               <LienProvenance
                 href={`/etablissements/${etablissementId}/verifications/${v.id}`}
-                className="grid grid-cols-[1fr_auto] items-start gap-3 rounded-md py-3 transition-colors hover:bg-paper-sunk"
+                className="grid grid-cols-[1fr_auto] items-start gap-3 rounded-md py-3 transition-colors hover:bg-[color:var(--board-slate-pale)]"
               >
                 <div className="min-w-0">
                   <p className="truncate text-[13.5px] font-medium tracking-[-0.005em]">
                     {v.libelleObligation}
                   </p>
-                  <p className="mt-[3px] truncate font-mono text-[11px] tracking-[0.04em] text-muted-foreground">
+                  <p className="mt-[3px] truncate font-mono text-[11px] tracking-[0.04em] text-[color:var(--board-slate-mid)]">
                     {v.equipement.libelle}
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <span className="font-mono text-[12px] tabular-nums text-ink/75">
+                  <span className="font-mono text-[12px] tabular-nums text-[color:var(--board-slate-ink)]">
                     {c.libelleDate}
                   </span>
                   <div className="flex items-center gap-1.5">
@@ -195,7 +196,7 @@ function TimelineEcheances({
           style={{ left: `${((toJour - minPasse) / span) * 100}%` }}
         >
           <div className="h-8 w-px bg-ink" />
-          <span className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[0.58rem] uppercase tracking-[0.2em] text-ink">
+          <span className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[0.58rem] uppercase tracking-[0.2em] text-[color:var(--board-ink)]">
             aujourd&apos;hui
           </span>
         </div>
@@ -206,10 +207,10 @@ function TimelineEcheances({
             ((v.datePrevue.getTime() - minPasse) / span) * 100;
           const color =
             c.tone === "alerte"
-              ? "var(--minium)"
+              ? CHAMP_ETAT.enRetard
               : c.tone === "warn"
-                ? "var(--warn)"
-                : "var(--accent-vif)";
+                ? CHAMP_ETAT.proche
+                : CHAMP_ETAT.lointain;
           return (
             <div
               key={v.id}
@@ -222,7 +223,7 @@ function TimelineEcheances({
                 style={{ background: color }}
               />
               <span
-                className="invisible absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-ink px-2 py-0.5 font-mono text-[0.62rem] text-paper-elevated group-hover:visible"
+                className="invisible absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-ink px-2 py-0.5 font-mono text-[10px] text-paper-elevated group-hover:visible"
                 role="tooltip"
               >
                 {v.libelleObligation} · {c.libelleDate}
@@ -238,15 +239,15 @@ function TimelineEcheances({
           const c = classifier(v.statut, v.datePrevue, aujourdhui);
           const dotColor =
             c.tone === "alerte"
-              ? "var(--minium)"
+              ? CHAMP_ETAT.enRetard
               : c.tone === "warn"
-                ? "var(--warn)"
-                : "var(--accent-vif)";
+                ? CHAMP_ETAT.proche
+                : CHAMP_ETAT.lointain;
           return (
             <li key={v.id}>
               <LienProvenance
                 href={`/etablissements/${etablissementId}/verifications/${v.id}`}
-                className="flex items-center gap-3 rounded-md px-1 py-1 text-[0.82rem] transition-colors hover:bg-paper-sunk"
+                className="flex items-center gap-3 rounded-md px-1 py-1 text-[0.82rem] transition-colors hover:bg-[color:var(--board-slate-pale)]"
               >
                 <span
                   aria-hidden
@@ -254,7 +255,7 @@ function TimelineEcheances({
                   style={{ background: dotColor }}
                 />
                 <span className="flex-1 truncate">{v.libelleObligation}</span>
-                <span className="font-mono text-[0.76rem] text-muted-foreground">
+                <span className="font-mono text-[0.76rem] text-[color:var(--board-slate-mid)]">
                   {c.libelleDate}
                 </span>
               </LienProvenance>

@@ -84,13 +84,13 @@ export function OutilsConformite() {
   return (
     <section>
       <header className="mb-10">
-        <p className="g-kicker">§ Les outils de conformité</p>
-        <h2 className="g-h2 mt-3 max-w-[18ch]">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">§ Les outils de conformité</p>
+        <h2 className="board-titre text-[clamp(22px,2.2vw,27px)] mt-3 max-w-[18ch]">
           Une vue d&apos;ensemble
           <br />
-          <span className="g-h2-em">sur votre conformité.</span>
+          <span className="text-[color:var(--board-blue-ink)]">sur votre conformité.</span>
         </h2>
-        <p className="outils-intro-text mt-5">
+        <p className="text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)] mt-5">
           Vous déclarez vos équipements et votre matériel ; la plateforme{" "}
           <strong>génère les documents attendus</strong> (DUERP, registre,
           plan d&apos;actions…), les met à jour au fil de vos
@@ -113,15 +113,15 @@ export function OutilsConformite() {
 function bordureCouleur(c: Couleur): string {
   switch (c) {
     case "vif":
-      return "var(--accent-vif)";
+      return "var(--board-green-ink)";
     case "warm":
-      return "var(--warm)";
+      return "var(--board-blue-ink)";
     case "ink":
-      return "var(--ink)";
+      return "var(--board-ink)";
     case "minium":
-      return "var(--minium)";
+      return "var(--board-signal-ink)";
     default:
-      return "var(--rule)";
+      return "var(--board-slate)";
   }
 }
 
@@ -131,7 +131,7 @@ function OutilCard({ outil }: { outil: Outil }) {
   return (
     <li
       className={
-        "relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-rule-soft bg-paper-elevated p-6 transition-colors hover:border-rule " +
+        "relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] p-6 transition-colors hover:border-[color:var(--board-slate)] " +
         (bientot ? "opacity-[0.75]" : "")
       }
     >
@@ -142,7 +142,7 @@ function OutilCard({ outil }: { outil: Outil }) {
       />
 
       <div className="flex items-start justify-between gap-3">
-        <div className="flex size-10 items-center justify-center rounded-xl bg-paper-sunk">
+        <div className="flex size-10 items-center justify-center rounded-xl bg-[color:var(--board-slate-pale)]">
           <Icon
             aria-hidden
             className="size-5"
@@ -157,12 +157,12 @@ function OutilCard({ outil }: { outil: Outil }) {
         <h3 className="mt-1 text-[1.15rem] font-semibold tracking-[-0.012em]">
           {outil.titre}
         </h3>
-        <p className="mt-0.5 font-mono text-[0.66rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="mt-0.5 font-mono text-[0.66rem] uppercase tracking-[0.18em] text-[color:var(--board-slate-mid)]">
           {outil.sousTitre}
         </p>
       </div>
 
-      <p className="text-[0.88rem] leading-[1.55] text-ink/75">
+      <p className="text-[0.88rem] leading-[1.55] text-[color:var(--board-ink)]/75">
         {outil.description}
       </p>
     </li>
@@ -172,14 +172,14 @@ function OutilCard({ outil }: { outil: Outil }) {
 function TagStatut({ statut }: { statut: Outil["statut"] }) {
   if (statut === "actif") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--accent-vif-soft)] px-2.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[color:var(--accent-vif)]">
+      <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--board-green)] px-2.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[color:var(--board-green-ink)]">
         <Dot aria-hidden className="size-3 fill-current" strokeWidth={3} />
         Actif
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-rule bg-paper-sunk/60 px-2.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-muted-foreground">
+    <span className="inline-flex items-center gap-1 rounded-full border border-[color:var(--board-slate)] bg-[color:var(--board-slate-pale)]/60 px-2.5 py-0.5 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[color:var(--board-slate-mid)]">
       Bientôt
     </span>
   );

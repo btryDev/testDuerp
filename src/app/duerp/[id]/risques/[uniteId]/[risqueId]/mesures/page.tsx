@@ -56,42 +56,42 @@ export default async function MesuresPage({
     : undefined;
 
   return (
-    <div className="space-y-10">
+    <div className="flex flex-col gap-[22px]">
       <nav>
         <Link
           href={hrefUnite}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
+          className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
         >
           ← {risque.unite.nom}
         </Link>
       </nav>
 
-      <header className="max-w-2xl space-y-4">
-        <div className="flex flex-wrap items-baseline gap-2 font-mono text-[0.66rem] uppercase tracking-[0.18em]">
-          <span className="label-admin !text-ink !tracking-[0.18em]">
+      <header className="max-w-[68ch]">
+        <div className="board-eyebrow flex flex-wrap items-baseline gap-2 text-[10.5px] tracking-[0.18em]">
+          <span className="text-[color:var(--board-ink)]">
             Évaluation du risque
           </span>
-          <span aria-hidden className="text-rule">
+          <span aria-hidden className="text-[color:var(--board-slate)]">
             ·
           </span>
-          <span className="tabular-nums text-muted-foreground">
+          <span className="tabular-nums text-[color:var(--board-slate-soft)]">
             {String(idxCourant + 1).padStart(2, "0")}
-            <span className="mx-1 text-rule">/</span>
+            <span className="mx-1 text-[color:var(--board-slate)]">/</span>
             {String(risquesUnite.length).padStart(2, "0")}
           </span>
         </div>
-        <h2 className="text-[1.8rem] font-semibold tracking-[-0.022em] leading-[1.12]">
+        <h2 className="board-titre m-0 mt-3 text-[clamp(23px,2.1vw,30px)]">
           {risque.libelle}
         </h2>
-        <p className="font-mono text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="board-eyebrow m-0 mt-3 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
           Criticité cotée{" "}
-          <span className="text-ink tabular-nums">
+          <span className="tabular-nums text-[color:var(--board-ink)]">
             {String(risque.criticite).padStart(2, "0")} / 16
           </span>
-          <span className="mx-2 text-rule">·</span>
+          <span className="mx-2 text-[color:var(--board-slate)]">·</span>
           <Link
             href={hrefCotation}
-            className="underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-ink [font-family:var(--font-body)] normal-case tracking-normal text-[0.78rem]"
+            className="text-[12.5px] font-medium normal-case tracking-normal text-[color:var(--board-blue-ink)] [font-family:var(--font-body)] hover:underline"
           >
             revoir la cotation
           </Link>
@@ -106,24 +106,24 @@ export default async function MesuresPage({
         hrefMesures={hrefMesures}
       />
 
-      <section aria-labelledby="partie-mesures" className="space-y-8 pt-2">
+      <section aria-labelledby="partie-mesures" className="flex flex-col gap-[22px] pt-2">
         <div className="flex flex-wrap items-baseline gap-3">
-          <span className="font-mono text-[1.1rem] font-semibold tabular-nums text-[color:var(--warm)]">
+          <span className="font-mono text-[18px] font-semibold tabular-nums text-[color:var(--board-blue-ink)]">
             02
           </span>
           <h3
             id="partie-mesures"
-            className="text-[1.1rem] font-semibold tracking-[-0.012em]"
+            className="board-titre m-0 text-[22px]"
           >
             Mesures de prévention
           </h3>
-          <span aria-hidden className="text-rule">
+          <span aria-hidden className="text-[color:var(--board-slate)]">
             /
           </span>
-          <span className="inline-flex items-center font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="board-eyebrow inline-flex items-center text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             Hiérarchie L. 4121-2 — existantes et prévues
             <InfoTooltip variant="legal" align="left" label="Hiérarchie de prévention — art. L. 4121-2">
-              <span className="block font-mono text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-paper-elevated/70">
+              <span className="block font-mono text-[9.5px] font-semibold uppercase tracking-[0.2em] opacity-70">
                 Art. L. 4121-2 · Code du travail
               </span>
               <span className="mt-2 block font-medium normal-case tracking-normal">
@@ -142,7 +142,7 @@ export default async function MesuresPage({
                   <span className="font-mono tabular-nums opacity-60">3.</span>{" "}
                   Protection collective
                 </span>
-                <span className="mt-1 block border-t border-paper-elevated/20 pt-1">
+                <span className="mt-1 block border-t border-white/20 pt-1">
                   <span className="font-mono tabular-nums opacity-60">4.</span>{" "}
                   EPI (individuelle)
                 </span>
@@ -155,7 +155,7 @@ export default async function MesuresPage({
                   Mesure organisationnelle
                 </span>
               </span>
-              <span className="mt-2 block text-[0.68rem] italic opacity-75">
+              <span className="mt-2 block text-[11px] opacity-75">
                 EPI et formation viennent en dernier, jamais en substitut des
                 trois premiers niveaux.
               </span>
@@ -163,17 +163,17 @@ export default async function MesuresPage({
           </span>
         </div>
 
-        <div className="max-w-2xl space-y-3">
-          <p className="text-[0.98rem] font-medium leading-[1.5] tracking-[-0.005em] text-ink">
+        <div className="max-w-[66ch] space-y-2.5">
+          <p className="m-0 text-[14.5px] font-medium leading-[1.55] text-[color:var(--board-ink)]">
             Sélectionnez les mesures déjà en place et celles que vous comptez
             mettre en œuvre.
           </p>
-          <p className="text-[0.82rem] leading-relaxed text-muted-foreground">
+          <p className="m-0 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             Si votre inventaire diffère de la maîtrise que vous aviez cotée,
             vous pourrez{" "}
             <Link
               href={hrefCotation}
-              className="text-ink underline decoration-rule decoration-dotted underline-offset-[3px] transition-colors hover:decoration-ink"
+              className="font-medium text-[color:var(--board-blue-ink)] hover:underline"
             >
               revenir ajuster la cotation
             </Link>
@@ -182,11 +182,14 @@ export default async function MesuresPage({
         </div>
 
         {alerteBasNiveau && (
-          <div className="rounded-[calc(var(--radius)*1.4)] border border-dashed border-[color:var(--minium)]/40 bg-[color:var(--minium)]/8 px-5 py-4">
-            <p className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[color:var(--minium)]">
+          // Un écart relevé sur la hiérarchie de prévention, pas une
+          // échéance dépassée : encre de signal sur voile, jamais le champ
+          // rose (charte, interdit 3).
+          <div className="rounded-[22px] bg-[color:var(--board-signal-wash)] px-6 py-5">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-signal-ink)]">
               Hiérarchie de prévention · art. L. 4121-2
             </p>
-            <p className="mt-2 text-[0.88rem] leading-[1.6] text-ink">
+            <p className="m-0 mt-2 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
               Les mesures retenues ne comportent que des EPI, de la formation
               ou de l&apos;organisation. Avez-vous étudié une solution
               collective ou une réduction à la source ? Le Code du travail
@@ -195,41 +198,45 @@ export default async function MesuresPage({
           </div>
         )}
 
-        <section className="cartouche overflow-hidden">
-          <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-            <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <section className="carte-board overflow-clip">
+          <div className="flex items-baseline justify-between gap-4 border-b border-[color:var(--board-slate-line)] px-7 py-5 sm:px-8">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
               Mesures retenues
             </p>
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground tabular-nums">
+            <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] tabular-nums text-[color:var(--board-slate-soft)]">
               {String(mesuresAffichees.length).padStart(2, "0")} au total
             </p>
           </div>
           {mesuresAffichees.length === 0 ? (
-            <p className="px-6 py-8 text-[0.9rem] text-muted-foreground sm:px-8">
+            <p className="m-0 px-7 py-8 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)] sm:px-8">
               Aucune mesure retenue pour ce risque. Cochez ci-dessous dans le
               référentiel, ou ajoutez une mesure personnalisée.
             </p>
           ) : (
             <>
-              <p className="flex items-baseline gap-2 border-b border-dashed border-rule/50 px-6 py-3 text-[0.82rem] leading-relaxed text-muted-foreground sm:px-8">
+              <p className="m-0 flex flex-wrap items-baseline gap-2 border-b border-[color:var(--board-slate-line)] px-7 py-3 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)] sm:px-8">
                 <span
                   aria-hidden
-                  className="font-mono text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-[color:var(--warm)]"
+                  className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-blue-ink)]"
                 >
                   À faire
                 </span>
                 <span className="min-w-0 flex-1">
                   Pour chaque mesure, indiquez si elle est{" "}
-                  <span className="font-medium text-ink">déjà en place</span>{" "}
+                  <span className="font-medium text-[color:var(--board-ink)]">
+                    déjà en place
+                  </span>{" "}
                   ou{" "}
-                  <span className="font-medium text-ink">à prévoir</span>. Les
-                  mesures « à prévoir » deviennent des actions avec échéance et
-                  responsable.
+                  <span className="font-medium text-[color:var(--board-ink)]">
+                    à prévoir
+                  </span>
+                  . Les mesures « à prévoir » deviennent des actions avec
+                  échéance et responsable.
                 </span>
               </p>
-              <ul className="divide-y divide-dashed divide-rule/50">
+              <ul className="m-0 list-none divide-y divide-[color:var(--board-slate-line)] p-0">
                 {mesuresAffichees.map((m) => (
-                  <li key={m.id} className="px-6 py-4 sm:px-8">
+                  <li key={m.id} className="px-7 py-4 sm:px-8">
                     <MesureRow
                       id={m.id}
                       libelle={m.libelle}
@@ -247,24 +254,24 @@ export default async function MesuresPage({
         </section>
 
         {mesuresRefNonSelectionnees.length > 0 && (
-          <section className="cartouche overflow-hidden">
-            <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-              <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
+          <section className="carte-board overflow-clip">
+            <div className="flex items-baseline justify-between gap-4 border-b border-[color:var(--board-slate-line)] px-7 py-5 sm:px-8">
+              <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
                 Mesures recommandées par le référentiel
               </p>
-              <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground tabular-nums">
+              <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] tabular-nums text-[color:var(--board-slate-soft)]">
                 {String(mesuresRefNonSelectionnees.length).padStart(2, "0")} à
                 envisager
               </p>
             </div>
-            <p className="border-b border-dashed border-rule/50 px-6 py-4 text-[0.86rem] leading-relaxed text-muted-foreground sm:px-8">
+            <p className="m-0 border-b border-[color:var(--board-slate-line)] px-7 py-4 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)] sm:px-8">
               Cochez celles qui sont déjà en place ou prévues. Vous pourrez
               ensuite préciser le statut (existante / prévue), l&apos;échéance
               et le responsable.
             </p>
-            <ul className="divide-y divide-dashed divide-rule/50">
+            <ul className="m-0 list-none divide-y divide-[color:var(--board-slate-line)] p-0">
               {mesuresRefNonSelectionnees.map((m) => (
-                <li key={m.id} className="px-6 py-4 sm:px-8">
+                <li key={m.id} className="px-7 py-4 sm:px-8">
                   <MesureReferentielToggle
                     risqueId={risqueId}
                     mesureRefId={m.id}
@@ -278,45 +285,45 @@ export default async function MesuresPage({
           </section>
         )}
 
-        <section className="cartouche overflow-hidden">
-          <div className="border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-            <p className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <section className="carte-board overflow-clip">
+          <div className="border-b border-[color:var(--board-slate-line)] px-7 py-5 sm:px-8">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
               Ajouter une mesure personnalisée
             </p>
           </div>
-          <div className="px-6 py-5 sm:px-8">
+          <div className="px-7 py-5 sm:px-8">
             <AjouterMesureCustomForm risqueId={risqueId} />
           </div>
         </section>
       </section>
 
       {/* Actions */}
-      <div className="space-y-4 border-t border-dashed border-rule pt-7">
+      <div className="space-y-4 border-t border-[color:var(--board-slate-line)] pt-7">
         <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <Link
             href={hrefUnite}
-            className={buttonVariants({ variant: "ghost", size: "sm" })}
+            className={buttonVariants({ variant: "boardClair", size: "boardSm" })}
           >
             ← Retour à l&apos;unité
           </Link>
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href={hrefCotation}
-              className={buttonVariants({ variant: "outline" })}
+              className={buttonVariants({ variant: "boardClair", size: "board" })}
             >
               ← Revoir la cotation
             </Link>
             {hrefSuivant ? (
               <Link
                 href={hrefSuivant}
-                className={buttonVariants({ size: "lg" })}
+                className={buttonVariants({ variant: "board", size: "board" })}
               >
                 Risque suivant →
               </Link>
             ) : (
               <Link
                 href={hrefUnite}
-                className={buttonVariants({ size: "lg" })}
+                className={buttonVariants({ variant: "board", size: "board" })}
               >
                 Valider et revenir à l&apos;unité →
               </Link>
@@ -324,7 +331,7 @@ export default async function MesuresPage({
           </div>
         </div>
 
-        <p className="text-center text-[0.72rem] leading-relaxed text-muted-foreground">
+        <p className="m-0 max-w-[66ch] text-center text-[12px] leading-[1.55] text-[color:var(--board-slate-soft)] sm:mx-auto">
           Les mesures sont enregistrées au fur et à mesure. « Risque suivant »
           vous fait reprendre l&apos;évaluation sur le risque suivant de
           l&apos;unité.

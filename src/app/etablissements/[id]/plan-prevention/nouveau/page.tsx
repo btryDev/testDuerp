@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppTopbar } from "@/components/layout/AppTopbar";
+import { ArrowLeft } from "lucide-react";
 import { FormulairePlanPrevention } from "@/components/plan-prevention/FormulairePlanPrevention";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { listPrestataires } from "@/lib/prestataires/queries";
@@ -9,13 +9,18 @@ export const metadata = {
   title: "Nouveau plan de prévention",
 };
 
+/**
+ * L'écran de saisie d'un plan de prévention, en charte board — même gabarit
+ * que son jumeau `permis-feu/nouveau` : bandeau bord à bord, puis une seule
+ * carte qui porte le formulaire.
+ */
 export default async function NouveauPlanPreventionPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { etablissement } = await requireEtablissement(id);
+  await requireEtablissement(id);
   const prestatairesAnnuaire = await listPrestataires(id);
   const batiments = await listerBatimentsDeLEtablissement(id);
 
@@ -28,35 +33,32 @@ export default async function NouveauPlanPreventionPage({
   }));
 
   return (
-    <>
-      <AppTopbar
-        title="Nouveau plan de prévention"
-        subtitle="Diagnostic, inspection commune, matrice risques/mesures."
-        crumbs={[
-          { href: `/etablissements/${id}`, label: etablissement.raisonDisplay },
-          {
-            href: `/etablissements/${id}/plan-prevention`,
-            label: "Plans de prévention",
-          },
-          { label: "Nouveau" },
-        ]}
-        actions={
-          <Link
-            href={`/etablissements/${id}/plan-prevention`}
-            className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground hover:text-ink"
-          >
-            Retour à la liste →
-          </Link>
-        }
-      />
+    <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
+      <header className="border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] px-[var(--board-gutter)] py-[22px]">
+        <Link
+          href={`/etablissements/${id}/plan-prevention`}
+          className="board-eyebrow inline-flex items-center gap-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
+        >
+          <ArrowLeft className="size-3" aria-hidden />
+          Plans de prévention
+        </Link>
+        <h1 className="board-titre m-0 mt-2.5 text-[clamp(22px,2.2vw,27px)]">
+          Nouveau plan de prévention
+        </h1>
+        <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+          Diagnostic, inspection commune, matrice risques/mesures.
+        </p>
+      </header>
 
-      <main className="mx-auto max-w-3xl px-8 py-8 pb-16">
-        <FormulairePlanPrevention
-          etablissementId={id}
-          prestataires={prestataires}
-          batiments={batiments}
-        />
-      </main>
-    </>
+      <div className="px-[var(--board-gutter)] pt-6">
+        <div className="carte-board max-w-[880px] px-7 py-7 sm:px-8">
+          <FormulairePlanPrevention
+            etablissementId={id}
+            prestataires={prestataires}
+            batiments={batiments}
+          />
+        </div>
+      </div>
+    </main>
   );
 }

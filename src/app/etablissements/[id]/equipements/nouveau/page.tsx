@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { EquipementForm } from "@/components/equipements/EquipementForm";
 import { creerEquipement } from "@/lib/equipements/actions";
 import { getEtablissement } from "@/lib/etablissements/queries";
@@ -39,41 +40,44 @@ export default async function NouvelEquipementPage({
   const action = creerEquipement.bind(null, id);
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-14 sm:px-10">
-      <nav>
+    <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
+      <header className="border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] px-[var(--board-gutter)] py-[22px]">
         <Link
           href={`/etablissements/${id}/equipements`}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
+          className="board-eyebrow inline-flex items-center gap-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
         >
-          ← Équipements de {etab.raisonDisplay}
+          <ArrowLeft className="size-3" aria-hidden />
+          Équipements de {etab.raisonDisplay}
         </Link>
-      </nav>
-
-      <header className="mt-8 space-y-3">
-        <p className="label-admin">Nouvel équipement</p>
-        <h1 className="text-[1.8rem] font-semibold tracking-[-0.02em] leading-tight">
+        {/* Le sur-titre « Nouvel équipement » redisait le titre : le board
+            ne pose pas de sur-titre quand le titre nomme déjà la vue. */}
+        <h1 className="board-titre m-0 mt-2.5 text-[clamp(22px,2.2vw,27px)]">
           Déclarer un équipement
         </h1>
       </header>
 
-      <div className="mt-10">
-        <EquipementForm
-          action={action}
-          batiments={batiments}
-          valeursInitiales={
-            categorieInitiale || batimentInitial
-              ? {
-                  ...(categorieInitiale ? { categorie: categorieInitiale } : {}),
-                  ...(batimentInitial ? { batimentId: batimentInitial } : {}),
-                }
-              : undefined
-          }
-          libelleSubmit="Créer l'équipement"
-          labelAnnuler={{
-            libelle: "Annuler",
-            href: `/etablissements/${id}/equipements`,
-          }}
-        />
+      <div className="px-[var(--board-gutter)] pt-6">
+        <div className="carte-board max-w-[880px] px-7 py-7 sm:px-8">
+          <EquipementForm
+            action={action}
+            batiments={batiments}
+            valeursInitiales={
+              categorieInitiale || batimentInitial
+                ? {
+                    ...(categorieInitiale
+                      ? { categorie: categorieInitiale }
+                      : {}),
+                    ...(batimentInitial ? { batimentId: batimentInitial } : {}),
+                  }
+                : undefined
+            }
+            libelleSubmit="Créer l'équipement"
+            labelAnnuler={{
+              libelle: "Annuler",
+              href: `/etablissements/${id}/equipements`,
+            }}
+          />
+        </div>
       </div>
     </main>
   );

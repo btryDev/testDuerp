@@ -41,24 +41,24 @@ export function WidgetEtablissement({ bundle }: { bundle: DashboardBundle }) {
   return (
     <section
       aria-label="Identité de l'établissement"
-      className="flex h-full flex-col overflow-hidden rounded-[14px] border border-[color:var(--board-blue-ink)]/20 bg-gradient-to-br from-[color:var(--board-blue-ink)]/10 via-[color:var(--board-blue-ink)]/4 to-[color:var(--warm)]/10 p-5 transition-colors hover:border-[color:var(--board-blue-ink)]/35"
+      className="flex h-full flex-col overflow-hidden rounded-[22px] border border-[color:var(--board-blue-ink)]/20 bg-gradient-to-br from-[color:var(--board-blue-ink)]/10 via-[color:var(--board-blue-ink)]/4 to-[color:var(--board-blue-ink)]/10 p-5 transition-colors hover:border-[color:var(--board-blue-ink)]/35"
     >
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.22em] text-[color:var(--board-blue-ink)]/80">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-[color:var(--board-blue-ink)]/80">
             § Établissement
           </p>
-          <p className="mt-2 truncate text-[1.15rem] font-semibold leading-[1.15] tracking-[-0.016em] text-ink">
+          <p className="mt-2 truncate text-[1.15rem] font-semibold leading-[1.15] tracking-[-0.016em] text-[color:var(--board-ink)]">
             {etab.raisonDisplay}
           </p>
-          <p className="mt-0.5 truncate text-[0.78rem] text-muted-foreground">
+          <p className="mt-0.5 truncate text-[12.5px] text-[color:var(--board-slate-mid)]">
             {ville} · {etab.entreprise.raisonSociale}
           </p>
         </div>
         <Link
           href={`/etablissements/${etab.id}/modifier`}
           aria-label="Modifier la fiche établissement"
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[color:var(--board-blue-ink)]/20 bg-paper-elevated/80 text-muted-foreground transition-colors hover:border-[color:var(--board-blue-ink)]/40 hover:text-ink"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[color:var(--board-blue-ink)]/20 bg-[color:var(--board-card)]/80 text-[color:var(--board-slate-mid)] transition-colors hover:border-[color:var(--board-blue-ink)]/40 hover:text-[color:var(--board-ink)]"
         >
           <Pencil aria-hidden className="h-3.5 w-3.5" />
         </Link>
@@ -76,7 +76,7 @@ export function WidgetEtablissement({ bundle }: { bundle: DashboardBundle }) {
             label="Effectif"
             value={
               <span>
-                <span className="font-mono text-[0.82rem] tabular-nums text-ink">
+                <span className="font-mono text-[0.82rem] tabular-nums text-[color:var(--board-ink)]">
                   {chiffreEffectif}
                 </span>{" "}
                 sur site
@@ -86,7 +86,7 @@ export function WidgetEtablissement({ bundle }: { bundle: DashboardBundle }) {
           <Ligne
             label="NAF"
             value={
-              <span className="font-mono tabular-nums tracking-[0.04em] text-ink">
+              <span className="font-mono tabular-nums tracking-[0.04em] text-[color:var(--board-ink)]">
                 {naf}
               </span>
             }
@@ -95,7 +95,7 @@ export function WidgetEtablissement({ bundle }: { bundle: DashboardBundle }) {
             <Ligne
               label="SIRET"
               value={
-                <span className="font-mono text-[0.7rem] tabular-nums tracking-[0.04em] text-ink">
+                <span className="font-mono text-[0.7rem] tabular-nums tracking-[0.04em] text-[color:var(--board-ink)]">
                   {etab.entreprise.siret}
                 </span>
               }
@@ -115,7 +115,7 @@ export function WidgetEtablissement({ bundle }: { bundle: DashboardBundle }) {
       )}
 
       <div className="mt-3 flex items-center justify-between gap-3">
-        <p className="text-[0.72rem] leading-snug text-muted-foreground">
+        <p className="text-[12px] leading-snug text-[color:var(--board-slate-mid)]">
           Un doute sur une obligation ?
         </p>
         <button
@@ -123,7 +123,7 @@ export function WidgetEtablissement({ bundle }: { bundle: DashboardBundle }) {
           disabled
           aria-disabled
           title="Bientôt disponible"
-          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-[color:var(--board-blue-ink)]/25 bg-paper-elevated/70 px-3 font-mono text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--board-blue-ink)] transition-colors hover:border-[color:var(--board-blue-ink)]/45 hover:bg-paper-elevated disabled:cursor-not-allowed"
+          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-[color:var(--board-blue-ink)]/25 bg-[color:var(--board-card)]/70 px-3 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--board-blue-ink)] transition-colors hover:border-[color:var(--board-blue-ink)]/45 hover:bg-[color:var(--board-card)] disabled:cursor-not-allowed"
         >
           <Phone aria-hidden className="h-3 w-3" />
           Contacter un expert
@@ -144,11 +144,11 @@ function Ligne({
 }) {
   return (
     <>
-      <dt className="self-center whitespace-nowrap font-mono text-[0.58rem] uppercase tracking-[0.18em] text-muted-foreground">
+      <dt className="self-center whitespace-nowrap font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[color:var(--board-slate-mid)]">
         {label}
       </dt>
       <dd
-        className={`self-center min-w-0 text-muted-foreground ${
+        className={`self-center min-w-0 text-[color:var(--board-slate-mid)] ${
           truncate ? "truncate" : ""
         }`}
       >
@@ -166,14 +166,14 @@ function FacadeIllustration() {
       aria-hidden
       fill="none"
     >
-      <circle cx="104" cy="22" r="3.5" fill="var(--warm)" opacity="0.95" />
-      <line x1="99" y1="22" x2="95" y2="22" stroke="var(--warm)" strokeWidth="0.7" opacity="0.75" />
-      <line x1="109" y1="22" x2="113" y2="22" stroke="var(--warm)" strokeWidth="0.7" opacity="0.75" />
-      <line x1="104" y1="17" x2="104" y2="14" stroke="var(--warm)" strokeWidth="0.7" opacity="0.75" />
-      <line x1="104" y1="27" x2="104" y2="30" stroke="var(--warm)" strokeWidth="0.7" opacity="0.75" />
+      <circle cx="104" cy="22" r="3.5" fill="var(--board-blue-ink)" opacity="0.95" />
+      <line x1="99" y1="22" x2="95" y2="22" stroke="var(--board-blue-ink)" strokeWidth="0.7" opacity="0.75" />
+      <line x1="109" y1="22" x2="113" y2="22" stroke="var(--board-blue-ink)" strokeWidth="0.7" opacity="0.75" />
+      <line x1="104" y1="17" x2="104" y2="14" stroke="var(--board-blue-ink)" strokeWidth="0.7" opacity="0.75" />
+      <line x1="104" y1="27" x2="104" y2="30" stroke="var(--board-blue-ink)" strokeWidth="0.7" opacity="0.75" />
 
       <path d="M 20 42 L 64 24 L 108 42" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-      <rect x="24" y="42" width="80" height="60" stroke="currentColor" strokeWidth="1.2" fill="var(--paper-elevated)" />
+      <rect x="24" y="42" width="80" height="60" stroke="currentColor" strokeWidth="1.2" fill="var(--board-card)" />
 
       <rect x="32" y="50" width="12" height="12" stroke="currentColor" strokeWidth="0.9" />
       <line x1="38" y1="50" x2="38" y2="62" stroke="currentColor" strokeWidth="0.4" opacity="0.45" />
@@ -187,12 +187,12 @@ function FacadeIllustration() {
       <line x1="90" y1="50" x2="90" y2="62" stroke="currentColor" strokeWidth="0.4" opacity="0.45" />
       <line x1="84" y1="56" x2="96" y2="56" stroke="currentColor" strokeWidth="0.4" opacity="0.45" />
 
-      <rect x="24" y="68" width="80" height="3" fill="var(--warm)" opacity="0.85" />
+      <rect x="24" y="68" width="80" height="3" fill="var(--board-blue-ink)" opacity="0.85" />
 
       <rect x="32" y="76" width="14" height="26" stroke="currentColor" strokeWidth="1" />
       <line x1="32" y1="88" x2="46" y2="88" stroke="currentColor" strokeWidth="0.4" opacity="0.5" />
 
-      <rect x="55" y="74" width="18" height="28" stroke="currentColor" strokeWidth="1.1" fill="var(--paper-elevated)" />
+      <rect x="55" y="74" width="18" height="28" stroke="currentColor" strokeWidth="1.1" fill="var(--board-card)" />
       <line x1="64" y1="74" x2="64" y2="102" stroke="currentColor" strokeWidth="0.55" opacity="0.5" />
       <circle cx="60" cy="89" r="0.8" fill="currentColor" opacity="0.6" />
       <circle cx="68" cy="89" r="0.8" fill="currentColor" opacity="0.6" />

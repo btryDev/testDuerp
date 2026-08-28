@@ -40,23 +40,25 @@ export function QuestionTransverseRow({
   };
 
   return (
-    <li className="rounded-lg border bg-card p-4">
-      <p className="font-medium">{intitule}</p>
-      <p className="mt-1 text-xs text-muted-foreground">
+    <li className="carte-board px-7 py-6 sm:px-8">
+      <p className="m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
+        {intitule}
+      </p>
+      <p className="m-0 mt-1.5 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
         Si oui → ajoute le risque « {libelleRisque} » à votre DUERP.
       </p>
-      <div className="mt-3 flex gap-2">
+      <div className="mt-4 flex gap-2">
         <Button
-          size="sm"
-          variant={active ? "default" : "outline"}
+          variant={active ? "board" : "boardClair"}
+          size="boardSm"
           disabled={pending}
           onClick={() => set(true)}
         >
           Oui
         </Button>
         <Button
-          size="sm"
-          variant="outline"
+          variant="boardClair"
+          size="boardSm"
           disabled={pending}
           onClick={() => set(false)}
         >

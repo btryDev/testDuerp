@@ -473,6 +473,7 @@ export default async function VerificationDetailPage({
                           {sigs.map((s) => (
                             <SignatureBlock
                               key={s.id}
+                              charte="board"
                               signataireNom={s.signataireNom}
                               signataireRole={s.signataireRole}
                               signataireEmail={s.signataireEmail}

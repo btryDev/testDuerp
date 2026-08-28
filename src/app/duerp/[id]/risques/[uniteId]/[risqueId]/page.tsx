@@ -33,41 +33,41 @@ export default async function CotationPage({
     : undefined;
 
   return (
-    <div className="space-y-10">
+    <div className="flex flex-col gap-[22px]">
       <nav>
         <Link
           href={hrefRetourUnite}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
+          className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
         >
           ← {risque.unite.nom}
         </Link>
       </nav>
 
-      <header className="max-w-2xl space-y-4">
-        <div className="flex flex-wrap items-baseline gap-2 font-mono text-[0.66rem] uppercase tracking-[0.18em]">
-          <span className="label-admin !text-ink !tracking-[0.18em]">
+      <header className="max-w-[68ch]">
+        <div className="board-eyebrow flex flex-wrap items-baseline gap-2 text-[10.5px] tracking-[0.18em]">
+          <span className="text-[color:var(--board-ink)]">
             Évaluation du risque
           </span>
-          <span aria-hidden className="text-rule">
+          <span aria-hidden className="text-[color:var(--board-slate)]">
             ·
           </span>
-          <span className="tabular-nums text-muted-foreground">
+          <span className="tabular-nums text-[color:var(--board-slate-soft)]">
             {String(idxCourant + 1).padStart(2, "0")}
-            <span className="mx-1 text-rule">/</span>
+            <span className="mx-1 text-[color:var(--board-slate)]">/</span>
             {String(risquesUnite.length).padStart(2, "0")}
           </span>
-          <span aria-hidden className="text-rule">
+          <span aria-hidden className="text-[color:var(--board-slate)]">
             ·
           </span>
-          <span className="text-muted-foreground">
+          <span className="text-[color:var(--board-slate-soft)]">
             {risque.cotationSaisie ? "déjà coté" : "à coter"}
           </span>
         </div>
-        <h2 className="text-[1.8rem] font-semibold tracking-[-0.022em] leading-[1.12]">
+        <h2 className="board-titre m-0 mt-3 text-[clamp(23px,2.1vw,30px)]">
           {risque.libelle}
         </h2>
         {risque.description && (
-          <p className="text-[0.95rem] leading-[1.7] text-muted-foreground">
+          <p className="m-0 mt-2.5 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             {risque.description}
           </p>
         )}
@@ -81,24 +81,18 @@ export default async function CotationPage({
         hrefMesures={hrefMesures}
       />
 
-      <section
-        aria-labelledby="partie-cotation"
-        className="space-y-8 pt-2"
-      >
-        <div className="flex items-baseline gap-3">
-          <span className="font-mono text-[1.1rem] font-semibold tabular-nums text-[color:var(--warm)]">
+      <section aria-labelledby="partie-cotation" className="flex flex-col gap-[22px] pt-2">
+        <div className="flex flex-wrap items-baseline gap-3">
+          <span className="font-mono text-[18px] font-semibold tabular-nums text-[color:var(--board-blue-ink)]">
             01
           </span>
-          <h3
-            id="partie-cotation"
-            className="text-[1.1rem] font-semibold tracking-[-0.012em]"
-          >
+          <h3 id="partie-cotation" className="board-titre m-0 text-[22px]">
             Cotation
           </h3>
-          <span aria-hidden className="text-rule">
+          <span aria-hidden className="text-[color:var(--board-slate)]">
             /
           </span>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+          <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             3 questions — criticité calculée
           </p>
         </div>

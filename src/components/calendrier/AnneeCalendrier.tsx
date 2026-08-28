@@ -91,9 +91,7 @@ export function AnneeCalendrier({
   useEffect(() => {
     const el = sentinelle.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([e]) =>
-      setCollee(!e.isIntersecting),
-    );
+    const obs = new IntersectionObserver(([e]) => setCollee(!e.isIntersecting));
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
@@ -347,7 +345,7 @@ function BarreAnnee({
             onClick={onAnneePrecedente}
           />
           {/* Millésime et compte dans un même champ, posés sur la même
-              ligne : empilés, le cartouche devenait un bloc de 56 px de
+              ligne : empilés, la pilule devenait un bloc de 56 px de
               haut au milieu d'une barre — c'est ce qui le faisait flotter.
               Le compte voyage avec le millésime, il ne s'en détache pas. */}
           <p className="m-0 flex items-baseline gap-2.5 rounded-full bg-[color:var(--board-blue-pale)] px-[18px] py-[7px]">
@@ -505,7 +503,8 @@ function CoutureMois({
     >
       <ChevronDown
         className={
-          "size-4 flex-none transition-transform " + (ouvert ? "rotate-180" : "")
+          "size-4 flex-none transition-transform " +
+          (ouvert ? "rotate-180" : "")
         }
       />
       {libelle}

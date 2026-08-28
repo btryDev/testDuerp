@@ -1,9 +1,8 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { ChampBoard } from "@/components/ui-kit";
 import {
   creerBatiment,
   modifierBatiment,
@@ -23,9 +22,6 @@ import type { BatimentListe } from "@/lib/batiments/queries";
 
 const ETAT_INITIAL: BatimentActionState = { status: "idle" };
 
-const CLASSE_SELECT =
-  "h-9 w-full rounded-md border border-rule bg-background px-3 py-1 text-sm shadow-sm";
-
 /**
  * L'erreur d'un champ, ou celle du formulaire.
  *
@@ -35,17 +31,28 @@ const CLASSE_SELECT =
  * sans effet et sans message — le garde-fou serveur restait muet, et
  * l'utilisateur n'avait plus qu'à deviner.
  */
-function Erreur({ state, champ }: { state: BatimentActionState; champ?: string }) {
+function Erreur({
+  state,
+  champ,
+}: {
+  state: BatimentActionState;
+  champ?: string;
+}) {
   if (state.status !== "error") return null;
   const autres = Object.entries(state.fieldErrors ?? {})
     .filter(([cle]) => cle !== "nom")
     .flatMap(([, messages]) => messages);
   // Le message précis passe devant le générique : le serveur répond toujours
   // « Formulaire invalide » en plus du détail, et c'est le détail qui aide.
-  const message = champ ? state.fieldErrors?.[champ]?.[0] : (autres[0] ?? state.message);
+  const message = champ
+    ? state.fieldErrors?.[champ]?.[0]
+    : (autres[0] ?? state.message);
   if (!message) return null;
   return (
-    <p role="alert" className="text-sm text-destructive">
+    <p
+      role="alert"
+      className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]"
+    >
       {message}
     </p>
   );
@@ -59,8 +66,8 @@ export function BatimentsManager({
   batiments: BatimentListe[];
 }) {
   return (
-    <div className="space-y-8">
-      <ul className="divide-y divide-rule rounded-2xl border border-rule">
+    <div className="flex flex-col gap-7">
+      <ul className="carte-board m-0 list-none p-0">
         {batiments.map((b) => (
           <LigneBatiment
             key={b.id}
@@ -87,12 +94,16 @@ function LigneBatiment({
   );
 
   return (
-    <li className="px-5 py-4">
+    // Le filet appartient à la ligne, jamais à son contenu : `first:` doit
+    // désigner la première ligne de la liste.
+    <li className="border-t border-[color:var(--board-slate-line)] px-7 py-5 first:border-t-0 sm:px-8">
       {mode === "lecture" && (
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0 space-y-1">
-            <p className="font-medium">{batiment.nom}</p>
-            <p className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="min-w-0">
+            <p className="m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
+              {batiment.nom}
+            </p>
+            <p className="board-eyebrow m-0 mt-1.5 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
               {batiment.nbEquipements === 0
                 ? "Aucun équipement"
                 : batiment.nbEquipements === 1
@@ -102,13 +113,17 @@ function LigneBatiment({
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setMode("renommer")}>
+            <Button
+              variant="boardClair"
+              size="boardSm"
+              onClick={() => setMode("renommer")}
+            >
               Renommer
             </Button>
             {autres.length > 0 && (
               <Button
-                variant="outline"
-                size="sm"
+                variant="boardClair"
+                size="boardSm"
                 onClick={() => setMode("supprimer")}
               >
                 Supprimer
@@ -145,38 +160,42 @@ function FormulaireAjout({ etablissementId }: { etablissementId: string }) {
       action={formAction}
       // Vider le formulaire après succès : la clé change, React remonte.
       key={state.status === "success" ? state.id : "vierge"}
-      className="cartouche space-y-5 p-6"
+      className="carte-board flex flex-col gap-5 px-7 py-6 sm:px-8"
     >
-      <p className="label-admin">Ajouter un bâtiment</p>
+      <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+        Ajouter un bâtiment
+      </p>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="nouveau-nom">Nom *</Label>
-          <Input
+        <div>
+          <ChampBoard
             id="nouveau-nom"
             name="nom"
-            required
+            label="Nom"
+            requis
             maxLength={80}
             placeholder="Ex : Réserve, Atelier, Annexe"
-            aria-invalid={state.status === "error" && Boolean(state.fieldErrors?.nom)}
+            aria-invalid={
+              state.status === "error" && Boolean(state.fieldErrors?.nom)
+            }
           />
           <Erreur state={state} champ="nom" />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="nouveau-complement">Complément d&apos;adresse</Label>
-          <Input
-            id="nouveau-complement"
-            name="complementAdresse"
-            maxLength={200}
-            placeholder="Facultatif — si le bâtiment a sa propre entrée"
-          />
-        </div>
+        <ChampBoard
+          id="nouveau-complement"
+          name="complementAdresse"
+          label="Complément d'adresse"
+          maxLength={200}
+          placeholder="Facultatif — si le bâtiment a sa propre entrée"
+        />
       </div>
       {state.status === "error" && !state.fieldErrors?.nom && (
         <Erreur state={state} />
       )}
-      <Button type="submit" size="sm" disabled={pending}>
-        {pending ? "Ajout…" : "Ajouter"}
-      </Button>
+      <div>
+        <Button type="submit" variant="board" size="boardSm" disabled={pending}>
+          {pending ? "Ajout…" : "Ajouter"}
+        </Button>
+      </div>
     </form>
   );
 }
@@ -199,40 +218,41 @@ function FormulaireRenommage({
   );
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor={`nom-${batiment.id}`}>Nom *</Label>
-          <Input
+        <div>
+          <ChampBoard
             id={`nom-${batiment.id}`}
             name="nom"
-            required
+            label="Nom"
+            requis
             maxLength={80}
             defaultValue={batiment.nom}
             autoFocus
           />
           <Erreur state={state} champ="nom" />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor={`complement-${batiment.id}`}>
-            Complément d&apos;adresse
-          </Label>
-          <Input
-            id={`complement-${batiment.id}`}
-            name="complementAdresse"
-            maxLength={200}
-            defaultValue={batiment.complementAdresse ?? ""}
-          />
-        </div>
+        <ChampBoard
+          id={`complement-${batiment.id}`}
+          name="complementAdresse"
+          label="Complément d'adresse"
+          maxLength={200}
+          defaultValue={batiment.complementAdresse ?? ""}
+        />
       </div>
       {state.status === "error" && !state.fieldErrors?.nom && (
         <Erreur state={state} />
       )}
       <div className="flex gap-2">
-        <Button type="submit" size="sm" disabled={pending}>
+        <Button type="submit" variant="board" size="boardSm" disabled={pending}>
           {pending ? "Enregistrement…" : "Enregistrer"}
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={onFin}>
+        <Button
+          type="button"
+          variant="boardClair"
+          size="boardSm"
+          onClick={onFin}
+        >
           Annuler
         </Button>
       </div>
@@ -255,8 +275,8 @@ function FormulaireSuppression({
   const aContenu = batiment.nbEquipements > 0;
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm leading-relaxed text-foreground/85">
+    <div className="flex flex-col gap-4">
+      <p className="m-0 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-ink)]">
         {aContenu ? (
           <>
             <strong>{batiment.nom}</strong> contient{" "}
@@ -276,13 +296,15 @@ function FormulaireSuppression({
         )}
       </p>
 
-      <div className="max-w-sm space-y-2">
-        <Label htmlFor={`dest-${batiment.id}`}>Déplacer vers</Label>
+      <div className="max-w-sm">
+        <label className="label-board" htmlFor={`dest-${batiment.id}`}>
+          Déplacer vers
+        </label>
         <select
           id={`dest-${batiment.id}`}
           value={destination}
           onChange={(e) => setDestination(e.currentTarget.value)}
-          className={CLASSE_SELECT}
+          className="champ-board"
         >
           {autres.map((a) => (
             <option key={a.id} value={a.id}>
@@ -293,15 +315,18 @@ function FormulaireSuppression({
       </div>
 
       {erreur && (
-        <p role="alert" className="text-sm text-destructive">
+        <p
+          role="alert"
+          className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]"
+        >
           {erreur}
         </p>
       )}
 
       <div className="flex gap-2">
         <Button
-          size="sm"
-          variant="outline"
+          variant="board"
+          size="boardSm"
           disabled={pending}
           onClick={() => {
             setErreur(null);
@@ -318,7 +343,12 @@ function FormulaireSuppression({
               ? "Déplacer et supprimer"
               : "Supprimer"}
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={onFin}>
+        <Button
+          type="button"
+          variant="boardClair"
+          size="boardSm"
+          onClick={onFin}
+        >
           Annuler
         </Button>
       </div>

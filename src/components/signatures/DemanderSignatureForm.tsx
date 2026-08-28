@@ -89,7 +89,7 @@ export function DemanderSignatureForm({
           <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-green-ink)]">
             Lien envoyé
           </p>
-          <p className="mt-1 text-[color:var(--ink)]">
+          <p className="mt-1 text-[color:var(--board-ink)]">
             Le destinataire va recevoir un email avec le lien et le code OTP.
           </p>
           {result.otpClair && (
