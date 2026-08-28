@@ -193,11 +193,14 @@ export function FormulairePrestataire({ etablissementId, action }: Props) {
       <section className="space-y-5">
         <header className="space-y-3">
           <h2 className="board-titre m-0 text-[17px]">Obligation de vigilance</h2>
+          {/* Même défaut que sur les deux écrans prestataires : URL 404 et
+              extrait qui n'était le texte d'aucun des deux articles cités.
+              Relu à la source le 2026-08-28. */}
           <LegalBadge
             charte="board"
-            reference="Art. L8222-1 et D8222-5 CT"
-            href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037389145"
-            extrait="Toute personne qui conclut un contrat dont l'objet porte sur une obligation d'un montant minimum de 5 000 euros hors taxes est tenue, lors de la conclusion et tous les six mois jusqu'à la fin de son exécution, de se faire remettre par son cocontractant les documents attestant qu'il a fait l'objet des vérifications."
+            reference="Art. L. 8222-1 CT"
+            href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024197683"
+            extrait="Toute personne vérifie lors de la conclusion d'un contrat dont l'objet porte sur une obligation d'un montant minimum en vue de l'exécution d'un travail, de la fourniture d'une prestation de services ou de l'accomplissement d'un acte de commerce, et périodiquement jusqu'à la fin de l'exécution du contrat, que son cocontractant s'acquitte des formalités mentionnées aux articles L. 8221-3 et L. 8221-5."
           >
             Pour <strong>tout contrat ≥ 5 000 € HT</strong>, le donneur d&apos;ordre
             (vous) doit vérifier que son prestataire est à jour de ses obligations

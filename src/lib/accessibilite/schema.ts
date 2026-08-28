@@ -9,8 +9,11 @@ import {
  * Validation du registre d'accessibilité ERP.
  *
  * Les 4 sections correspondent au contenu imposé par l'arrêté du
- * 19 avril 2017 (NOR: LHAL1702706A, publié au JO) pris en application
- * de l'article D111-19-33 du Code de la construction et de l'habitation :
+ * 19 avril 2017 (NOR: LHAL1702706A, publié au JO), pris en application de
+ * l'article R. 111-19-60 du code de la construction et de l'habitation —
+ * devenu **R. 164-6** à la recodification du 1er juillet 2021. Le module
+ * citait « D111-19-33 », qui portait l'attestation d'accessibilité et non le
+ * registre, et qui est abrogé depuis 2021 (relu à la source le 2026-08-28) :
  *
  *   1. Informations sur les prestations fournies par l'ERP
  *   2. Liste des pièces administratives et techniques (attestation

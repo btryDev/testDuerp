@@ -144,7 +144,7 @@ export async function GET(
     zip.file(
       "05_Accessibilite_URL.txt",
       `Registre d'accessibilité publique\n` +
-        `Arrêté du 19 avril 2017 (art. D111-19-33 CCH)\n\n` +
+        `Art. R. 164-6 CCH · arrêté du 19 avril 2017\n\n` +
         `URL consultable par le public : ${url}\n\n` +
         `Affiche A4 imprimable avec QR code : ${publicAppUrl()}/api/accessibilite/${registreAccess.slugPublic}/affiche\n`,
     );

@@ -174,15 +174,27 @@ export default async function AccessibilitePage({
           }
           tonalite={registre?.publie ? "ok" : "info"}
         >
+          {/* Deux erreurs, relues à la source le 2026-08-28.
+              — `D111-19-33` n'institue pas le registre public
+                d'accessibilité : R. 111-19-33 portait l'attestation
+                d'accessibilité, et il est abrogé depuis 2021. Le registre
+                vient de R. 111-19-60, devenu **R. 164-6 CCH** à la
+                recodification du 1er juillet 2021. L'extrait ci-dessous était
+                d'ailleurs déjà celui de cet article-là.
+              — `JORFTEXT000034463079` ne désigne aucun texte. L'arrêté du
+                19 avril 2017 est `JORFTEXT000034454237`, et il est cité dans
+                le complément, là où il agit : il fixe le contenu, il
+                n'institue rien. */}
           <LegalBadge
             charte="board"
-            reference="Arrêté du 19 avril 2017 · Art. D111-19-33 CCH"
-            href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000034463079/"
-            extrait="Le registre public d'accessibilité précise les dispositions prises pour permettre à tous, notamment aux personnes handicapées, quel que soit leur handicap, de bénéficier des prestations en vue desquelles cet établissement a été conçu."
+            reference="Art. R. 164-6 CCH · Registre d'accessibilité"
+            href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043819305"
+            extrait="L'exploitant de tout établissement recevant du public au sens de l'article R. 143-2 élabore le registre public d'accessibilité prévu à l'article L. 164-1. Celui-ci précise les dispositions prises pour permettre à tous, notamment aux personnes handicapées, quel que soit leur handicap, de bénéficier des prestations en vue desquelles cet établissement a été conçu."
           >
-            L&apos;arrêté définit <strong>4 rubriques obligatoires</strong> :
-            prestations fournies, pièces administratives d&apos;accessibilité,
-            formation du personnel, et modalités de maintenance.
+            L&apos;arrêté du 19 avril 2017 définit{" "}
+            <strong>4 rubriques obligatoires</strong> : prestations fournies,
+            pièces administratives d&apos;accessibilité, formation du
+            personnel, et modalités de maintenance.
           </LegalBadge>
         </WhyCard>
 
