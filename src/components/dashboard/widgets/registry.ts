@@ -54,9 +54,21 @@ export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
     // Un manque qu'on peut décocher n'est plus une déclaration : c'est une
     // option, et c'est la première qu'un dirigeant pressé décocherait.
     obligatoire: true,
-    // Mais il se tait quand il n'y a rien à dire : une carte qui répète
+    // Le garde-fou d'un dossier sans rien à signaler : une carte qui répète
     // « rien à signaler » cesse d'être lue, et le jour où elle dit quelque
     // chose personne ne le voit.
+    //
+    // ⚠ Il ne se déclenche jamais en l'état, et le prétendre serait faux.
+    // L'axe `famille_obligation` porte les articles `non_couvert` du corpus,
+    // qui sont une propriété du PRODUIT et non du dossier : tant que le corpus
+    // en compte au moins un — vingt-sept au 2026-08-28 —, la carte est visible
+    // sur tous les boards. Elle le restera jusqu'au rattachement des articles
+    // à un type d'établissement (`Etablissement.typeErp`, ADR-004), qui rendra
+    // l'axe propre au dossier et ce garde atteignable.
+    //
+    // Conservé parce qu'il énonce la règle voulue, pas l'état courant : le
+    // retirer obligerait à la redécouvrir ce jour-là. Mais il ne compte pas
+    // comme une garantie, et rien ne doit s'appuyer dessus.
     visibleQuand: (b) =>
       Boolean(
         b.couverture &&

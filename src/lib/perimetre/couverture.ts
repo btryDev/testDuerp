@@ -52,6 +52,7 @@
 // `reperterSansEcheance` / `equipementsSansEcheance`.
 
 import type { EtatCouverture } from "@/lib/duerps/couverture";
+import type { CorrespondanceSecteur } from "./secteur";
 import type { CategorieErp } from "@/lib/referentiels/types-communs";
 
 /**
@@ -171,23 +172,20 @@ export type FaitDuerp = {
    *  couvre pas. Le détail se lit dans le DUERP, pas ici. */
   nbActivitesDeclarees: number;
   /**
-   * Le secteur retenu est-il celui que le code NAF désigne ?
+   * Le rapport entre le secteur retenu et celui que le code NAF désigne
+   * (`perimetre/secteur.ts`).
    *
-   * `false` veut dire que le dirigeant a choisi « le secteur le plus proche »
-   * faute de mieux — ce que la page de choix du DUERP lui propose
-   * explicitement quand son code n'est rattaché à rien. Le DUERP sort alors
-   * avec des unités et des risques pré-remplis pour une **autre** activité que
-   * la sienne : le pire cas du produit, un silence qui prend l'apparence d'une
-   * réponse.
+   * `diverge` veut dire que le document unique s'appuie sur le référentiel
+   * d'un autre métier — soit parce qu'aucun n'est instruit pour cette activité
+   * et que la page de choix a proposé « le secteur le plus proche », soit
+   * parce que le dirigeant a changé de secteur depuis la recommandation. Les
+   * deux appellent une phrase différente, d'où `referentielDuNaf` : le
+   * confondre faisait affirmer « aucun référentiel n'est instruit pour votre
+   * activité » à une boulangerie dont le référentiel commerce existe.
    *
-   * Aucune heuristique : les deux termes sont des données déclarées, le code
-   * NAF saisi et l'identifiant de secteur confirmé. On compare, on ne devine
-   * pas.
-   *
-   * `null` quand la comparaison n'a pas de sens — pas de secteur confirmé
-   * (l'axe le dit déjà autrement), ou pas de code NAF.
+   * Aucune heuristique : des données déclarées comparées.
    */
-  secteurCorrespondAuNaf: boolean | null;
+  correspondance: CorrespondanceSecteur;
 };
 
 /**
@@ -368,20 +366,29 @@ function axeDuerp(
  * confondre ferait disparaître le second — c'est le cas que l'ouverture de la
  * porte d'onboarding (B1) rend courant, et il serait invisible sans cette
  * ligne.
+ *
+ * Deux phrases, parce qu'il y a deux situations et qu'une seule d'entre elles
+ * autorise à dire qu'aucun référentiel n'existe pour l'activité. La première
+ * version les confondait et affirmait, jusque dans le dossier remis à un
+ * tiers, un fait que la comparaison n'établit pas.
  */
 function axeSecteurParDefaut(
   duerp: FaitDuerp | null,
   manques: ManqueCouverture[],
 ): void {
-  if (duerp === null || duerp.secteurCorrespondAuNaf !== false) return;
+  if (duerp === null || duerp.correspondance.statut !== "diverge") return;
+
+  const refDuNaf = duerp.correspondance.referentielDuNaf;
+  const retenu = duerp.secteurNom
+    ? `le référentiel « ${duerp.secteurNom} »`
+    : "un référentiel";
 
   manques.push({
     axe: "secteur_duerp",
-    motif: duerp.secteurNom
-      ? `Le document unique s'appuie sur le référentiel « ${duerp.secteurNom} », qui ne correspond pas à votre code d'activité.`
-      : "Le document unique s'appuie sur un référentiel qui ne correspond pas à votre code d'activité.",
-    consequence:
-      "Aucun référentiel n'est instruit pour votre activité : celui-ci a été retenu comme le plus proche. Les unités de travail et les risques pré-chargés décrivent donc un autre métier que le vôtre — à relire un par un, et à compléter par ce qu'ils ne prévoient pas.",
+    motif: `Le document unique s'appuie sur ${retenu}, qui ne correspond pas à votre code d'activité.`,
+    consequence: refDuNaf
+      ? `Votre code d'activité désigne le référentiel « ${refDuNaf.nom} ». Les unités de travail et les risques pré-chargés dans ce document décrivent donc une autre activité que celle que vous avez déclarée — à relire un par un, et à compléter par ce qu'ils ne prévoient pas.`
+      : "Aucun référentiel n'est instruit pour votre activité : celui-ci a été retenu comme le plus proche. Les unités de travail et les risques pré-chargés décrivent donc un autre métier que le vôtre — à relire un par un, et à compléter par ce qu'ils ne prévoient pas.",
   });
 }
 

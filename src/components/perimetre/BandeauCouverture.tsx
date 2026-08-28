@@ -16,8 +16,10 @@
 // vrais en même temps : le bandeau rend alors deux blocs, et pas un compromis
 // entre les deux tons.
 //
-// Une entrée par axe, jamais un total. Quatre manques sur quatre axes ne font
-// pas « 4 » : ils font quatre phrases, chacune vraie d'une chose différente.
+// Une entrée par fait, jamais un total. Quatre manques ne font pas « 4 » :
+// ils font quatre phrases, chacune vraie d'une chose différente. Et un même
+// axe peut en porter deux — un DUERP dont le référentiel ne couvre pas tout
+// ET qui s'appuie sur celui d'un autre métier —, d'où des clés indexées.
 
 import Link from "next/link";
 import { AlertTriangle, HelpCircle } from "lucide-react";
@@ -98,11 +100,16 @@ function Bloc({
       </span>
 
       <div className="flex min-w-0 flex-col gap-5">
-        {entrees.map((e) => {
+        {entrees.map((e, i) => {
           const lien = lienDeLAxe(e.axe, hrefs);
           const suite = "consequence" in e ? e.consequence : e.quoiFaire;
           return (
-            <div key={e.axe} className="min-w-0">
+            // L'axe ne suffit PAS comme clé : `axeDuerp` et
+            // `axeSecteurParDefaut` poussent tous deux `secteur_duerp`, et
+            // c'est voulu — les deux faits sont vrais en même temps. React
+            // rendait les deux au premier passage mais déclare le doublon non
+            // supporté, et en avertissait à chaque rendu serveur concerné.
+            <div key={`${e.axe}-${i}`} className="min-w-0">
               <p
                 className="m-0 text-[14px] font-semibold leading-[1.4] tracking-[-0.015em]"
                 style={{

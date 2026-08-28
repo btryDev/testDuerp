@@ -21,7 +21,7 @@ import {
   reperterSansEcheance,
 } from "@/lib/equipements/hors-referentiel";
 import { famillesNonPortees } from "./familles";
-import { secteurCorrespondAuNaf } from "./secteur";
+import { correspondanceSecteur } from "./secteur";
 import {
   couvertureDeLEtablissement,
   type CouvertureEtablissement,
@@ -51,6 +51,9 @@ export async function faitsDeCouverture(
   const etab = await prisma.etablissement.findFirst({
     where: { id: etablissementId, entreprise: { userId: user.id } },
     include: {
+      // Le code NAF de l'entreprise : celui de l'établissement n'est
+      // renseigné que lorsqu'il en diffère (cf. `illustration.ts`).
+      entreprise: { select: { codeNaf: true } },
       // Le parc **en service** : un équipement désactivé ne génère plus rien.
       equipements: { where: { actif: true } },
       // « 1 établissement = 1 DUERP » est un invariant de base
@@ -116,8 +119,14 @@ export async function faitsDeCouverture(
       // `secteur.ts` : écrite ici, entre deux appels Prisma, elle n'était
       // couverte par aucun test — une mutation qui la remplaçait par `true`
       // constant passait au vert.
-      secteurCorrespondAuNaf: secteurCorrespondAuNaf(
-        etab.codeNaf,
+      //
+      // Les DEUX codes NAF, et c'est le type qui l'impose désormais :
+      // `Etablissement.codeNaf` est optionnel, renseigné seulement s'il
+      // diffère de celui de l'entreprise. Passer le premier seul faisait taire
+      // l'axe sur tout établissement secondaire sans NAF propre — le cas
+      // courant, et précisément celui qu'il devait signaler.
+      correspondance: correspondanceSecteur(
+        { etablissement: etab.codeNaf, entreprise: etab.entreprise.codeNaf },
         duerp?.referentielSecteurId,
       ),
     },
