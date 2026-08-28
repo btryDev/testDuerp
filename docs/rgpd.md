@@ -315,13 +315,72 @@ retirer les lignes à porteur salarié plutôt que les anonymiser ? Voir
 
 - HTTPS exclusivement en production.
 - Authentification déléguée à Supabase (mots de passe hachés côté fournisseur).
-- Cloisonnement par établissement : chaque lecture porte le prédicat
-  d'appartenance. Prisma opère en rôle `postgres` et contourne donc RLS
-  (ADR-005) — l'isolation est une **convention applicative**, ce qui la rend
-  d'autant plus critique à respecter dans toute nouvelle requête. Une lecture
-  de données de salariés qui omettrait le scope serait une fuite.
+- Cloisonnement par établissement : **toute lecture établit son
+  appartenance**, sous l'une des trois formes ci-dessous. Prisma opère en rôle
+  `postgres` et contourne donc RLS (ADR-005) — l'isolation est une **convention
+  applicative**, ce qui la rend d'autant plus critique à respecter dans toute
+  nouvelle requête. Une lecture de données de salariés qui omettrait le scope
+  serait une fuite.
 - Fichiers : validation MIME et taille (20 Mo), pas d'archives, refus des
   chemins remontants (`LocalFileStorage`).
+
+### 7.1 Les trois formes de portée, et pourquoi il y en a trois
+
+Relevé sur les 21 `src/lib/*/queries.ts` le 2026-08-28. La phrase précédente
+disait « chaque lecture porte le prédicat », ce qui laissait croire à une forme
+unique : le relecteur suivant prenait la forme B pour un défaut, et refaisait
+l'analyse. Les trois sont légitimes ; ce qui ne l'est pas, c'est une quatrième.
+
+**La forme se choisit par lecture, pas par module** — plusieurs fichiers en
+mêlent deux, et c'est normal : une fonction qui reçoit un `etablissementId`
+et une fonction qui reçoit l'identifiant d'un objet déjà chargé n'ont pas le
+même problème.
+
+**A — le prédicat est porté dans le `where`.** `requireUser()`, puis
+`etablissement: { entreprise: { userId: user.id } }` dans la clause. C'est la
+forme par défaut, et la seule qui vaille quand l'identifiant du `where` vient
+de l'appelant. Sa raison est écrite dans `src/lib/batiments/queries.ts` : le
+prédicat est porté **même si l'appelant vient de le vérifier**, parce qu'une
+lecture qui ne le porte pas devient une fuite au premier appelant qui ne
+vérifiera pas. *Intégralement en A* : batiments, calendrier, actions,
+dashboard, duerps, entreprises, equipements, etablissements, prescriptions,
+rapports, registre, risques, salaries, versions.
+
+**B — la fonction établit l'appartenance elle-même**, via
+`requireEtablissement()` (`src/lib/auth/scope.ts`), puis n'utilise dans le
+`where` que l'identifiant **rendu par la garde** — jamais celui reçu en
+paramètre. Garantie équivalente à A : l'identifiant filtré ne vient pas de
+l'appelant, il sort d'une lecture déjà scopée qui a fait 404 sinon. *Lectures
+en B* : accessibilite (`getRegistreAccessibilite`), carnet-sanitaire
+(`getCarnetSanitaire`), permis-feu et plan-prevention (leurs `list*` et
+`get*`), prestataires. Les trois derniers portent aussi des lectures en A —
+`dernierRelevesParPoint`, `nextNumeroPermisFeu`, `nextNumeroPlan` reçoivent un
+identifiant nu et portent donc le prédicat.
+
+**C — pas de portée, et la raison est écrite dans le fichier.** Trois cas,
+tous délibérés :
+- `accessibilite/queries.ts` — `getRegistrePublicParSlug` sert la page
+  publique du registre d'accessibilité, que le public consulte sans compte.
+  Elle ne rend rien tant que `publie` est faux, et seulement les champs
+  publiables.
+- `signatures/queries.ts` — la clé `(objetType, objetId)` n'est pas un secret,
+  et `getSignature` sert la page publique `/verifier/[signatureId]` qu'un tiers
+  consulte sans compte. En contrepartie, l'identifiant est un UUID non
+  énumérable et la projection est limitée à ce qui fait preuve.
+- `mcp/queries.ts` — hors du runtime Next, il n'y a ni requête ni cookies, donc
+  pas de session à lire : la portée vient de l'`etablissementId` reçu au
+  démarrage du serveur, et **chaque `where` le porte**, relations comprises.
+
+**La quatrième forme n'existe pas** : une lecture sans garde et sans raison
+écrite est un défaut, pas un quatrième idiome. Il y en avait huit au
+2026-08-28 — les quatre lectures de `salaries`, `chargerPagePrescriptions`,
+`dernierRelevesParPoint`, `nextNumeroPermisFeu` et `nextNumeroPlan` — toutes
+passées en A depuis. Aucune ne fuyait : leurs appelants vérifiaient tous en
+amont. C'est la convention qui était rompue, pas encore le cloisonnement —
+et `navigation/sidebar-counts.ts` appelait déjà `compterTitresEnRetard` avec
+un identifiant nu. `salaries/isolation.test.ts` éprouve la garantie en la
+cassant : deux entreprises, l'une lit l'identifiant de l'autre, la lecture doit
+rendre vide.
 
 **Habilitations d'accès internes** : le multi-utilisateur par entreprise n'est
 pas implémenté. Il n'y a donc aujourd'hui qu'un seul accès par entreprise,
