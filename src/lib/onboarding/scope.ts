@@ -1,26 +1,58 @@
 /**
- * Filtrage du périmètre V2 (cf. .claude/CLAUDE.md — section Périmètre du MVP V2).
+ * Le code NAF a-t-il un référentiel sectoriel de DUERP ?
  *
- * La plateforme ne couvre que 3 secteurs : restauration (56.xx), commerce
- * de détail (47.xx), bureau/tertiaire (62-74, 78, 82). Hors de ces
- * familles, le référentiel sectoriel est vide, la cotation DUERP n'est
- * pas pré-remplie, les obligations de vérification ne sont pas
- * exhaustives — le document généré serait trompeur sur un document à
- * valeur légale. On refuse donc l'onboarding dans les autres secteurs.
+ * Trois secteurs sont instruits : restauration (56.xx), commerce de détail
+ * (47.xx), bureau/tertiaire (62-74, 78, 82). Ailleurs, il n'y a pas d'unités
+ * de travail ni de risques types à pré-charger.
  *
- * Cette fonction reste volontairement simple : la source de vérité est
- * `trouverReferentielParNaf` (lib/referentiels). On se contente
- * d'enrichir pour l'UX avec la raison du refus quand on peut la nommer.
+ * ## Ce n'était pas la bonne question, et ça fermait la porte
+ *
+ * Cette fonction a longtemps décidé si l'onboarding pouvait aboutir. Elle
+ * refusait la création d'un dossier hors des trois secteurs, au motif que
+ * « le DUERP produit ne serait pas fiable ».
+ *
+ * Le raisonnement mélangeait deux choses que le produit sépare partout
+ * ailleurs. Le référentiel de **conformité** — 84 obligations opposables,
+ * échéances, registre de sécurité — ne lit **jamais** le code NAF : il se
+ * déclenche sur les équipements déclarés et sur la typologie
+ * (`lib/matching/engine.ts`). Un hôtelier qui voulait seulement tenir son
+ * registre et ses échéances d'ascenseur — ce que le produit sait faire — se
+ * faisait refuser pour une cotation de risques qu'il n'avait pas demandée.
+ * La partie molle verrouillait l'accès à la partie dure.
+ *
+ * Et il n'existe **aucune** référence réglementaire du document unique par
+ * secteur : `L. 4121-3` et `R. 4121-1` disent « évaluez les risques » sans
+ * nommer ni secteur, ni unité de travail, ni liste. Un secteur manque au
+ * produit quand l'INRS n'a pas publié son guide — c'est une limite
+ * éditoriale, pas juridique. Refuser au nom du droit était donc faux au fond,
+ * et pas seulement trop strict.
+ *
+ * ## Ce qu'elle décide maintenant : rien
+ *
+ * Elle **constate**, elle ne barre plus. Aucun de ses états n'empêche la
+ * création d'un dossier ; ils choisissent la phrase que l'écran affiche, et
+ * l'absence de référentiel se dit alors au lieu de fermer la porte.
+ *
+ * Ouvrir sans déclarer serait pire que refuser : `sans_referentiel` doit donc
+ * toujours se lire **avec** le socle de couverture
+ * (`lib/perimetre/couverture.ts`, axe `secteur_duerp`), qui reprend le constat
+ * en permanence sur le dossier — pas seulement au moment de la saisie.
+ *
+ * La source de vérité reste `trouverReferentielParNaf` (lib/referentiels) ; on
+ * se contente de nommer la famille d'activité quand on sait la nommer.
  */
 
 import { trouverReferentielParNaf } from "@/lib/referentiels";
 
 const NAF_REGEX = /^(\d{2})\.?\d{2}[A-Z]?$/;
 
-// Familles explicitement hors périmètre V2 d'après CLAUDE.md — permet
-// de fournir une explication ciblée à l'utilisateur plutôt qu'un simple
-// « non couvert ». Clé = division NAF à 2 chiffres.
-const HORS_PERIMETRE_NOMME: Record<string, string> = {
+// Familles pour lesquelles aucun référentiel sectoriel n'est instruit —
+// permet de nommer l'activité à l'utilisateur plutôt que de lui servir un
+// « non couvert » anonyme. Clé = division NAF à 2 chiffres.
+//
+// Cette table ne décide de rien : elle ne sert qu'à écrire une phrase. Une
+// division absente donne la même issue, avec une phrase plus générale.
+const SANS_REFERENTIEL_NOMME: Record<string, string> = {
   "01": "agriculture",
   "02": "sylviculture",
   "03": "pêche",
@@ -79,12 +111,28 @@ const HORS_PERIMETRE_NOMME: Record<string, string> = {
 };
 
 export type ScopeResult =
+  /** Un référentiel sectoriel couvre ce code : le DUERP sera pré-rempli. */
   | { status: "ok"; secteurId: string; secteurNom: string }
+  /** Le code saisi n'a pas la forme d'un code NAF. Le seul état qui empêche
+   *  encore d'avancer — mais c'est une erreur de saisie, pas un refus de
+   *  périmètre. */
   | { status: "format_invalide" }
   | {
-      status: "hors_perimetre";
-      raison: string;
-      exemple: string;
+      /**
+       * Aucun référentiel sectoriel n'est instruit pour ce code.
+       *
+       * **Ne bloque rien.** Le dossier se crée, le référentiel de conformité
+       * fonctionne normalement — il ne lit pas le NAF —, et c'est le document
+       * unique, et lui seul, qui partira sans base pré-chargée. Les deux
+       * champs ci-dessous sont des phrases à afficher, jamais un motif de
+       * refus.
+       */
+      status: "sans_referentiel";
+      /** Le fait, en une phrase : ce que le produit n'a pas pour ce code. */
+      constat: string;
+      /** Ce que ça change concrètement pour le dossier — et ce que ça ne
+       *  change pas. */
+      consequence: string;
     };
 
 export function evaluerScopeSecteur(codeNaf: string): ScopeResult {
@@ -102,13 +150,13 @@ export function evaluerScopeSecteur(codeNaf: string): ScopeResult {
   }
 
   const division = m[1];
-  const familleNommee = HORS_PERIMETRE_NOMME[division];
+  const familleNommee = SANS_REFERENTIEL_NOMME[division];
   return {
-    status: "hors_perimetre",
-    raison: familleNommee
-      ? `Votre activité relève de ${familleNommee}, un secteur non couvert par la plateforme actuellement.`
-      : "Votre activité ne correspond pas aux secteurs couverts par la plateforme actuellement.",
-    exemple:
-      "La V2 couvre uniquement la restauration, le commerce de détail et les activités de bureau/tertiaire. Pour d'autres secteurs (BTP, industrie, santé, chimie, transport, etc.), la plateforme ne propose pas les obligations réglementaires spécifiques à votre activité et ne peut pas produire un DUERP fiable.",
+    status: "sans_referentiel",
+    constat: familleNommee
+      ? `Votre activité relève de ${familleNommee}. Aucun référentiel de risques types n'est encore instruit pour ce secteur.`
+      : "Aucun référentiel de risques types n'est encore instruit pour ce code d'activité.",
+    consequence:
+      "Vous pouvez créer votre dossier : le suivi des obligations, le calendrier des vérifications et le registre de sécurité ne dépendent pas de votre code d'activité — ils se déclenchent sur vos équipements et sur votre typologie d'établissement. Seul le document unique démarrera sans unités de travail ni risques pré-remplis : vous choisirez le secteur le plus proche, ou vous les saisirez vous-même. Votre dossier indiquera en permanence que ce point n'est pas couvert.",
   };
 }

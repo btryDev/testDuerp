@@ -305,13 +305,62 @@ describe("corpus — ce qu'on ne couvre pas, et où on le dit", () => {
   });
 
   it("le nombre de manques non déclarés à l'utilisateur ne remonte pas", () => {
-    // 31 aujourd'hui : rien dans l'application n'annonce à un exploitant
-    // hôtelier, ou à un établissement à locaux à sommeil, que des obligations
-    // qui le visent ne sont pas portées. Ce chiffre doit descendre — soit en
-    // couvrant, soit en déclarant.
-    const MUETS = 31;
+    // 27 au 2026-08-28, et le chiffre REMONTE de 0 à 27 ce jour-là. La cause
+    // doit se lire ici, sinon le prochain lecteur conclura à une régression du
+    // référentiel : il n'y en a pas eu. Ces vingt-cinq articles ont été
+    // annoncés à l'écran, sur le tableau de bord de chaque établissement,
+    // pendant une journée ; **une décision produit a retiré cette surface** —
+    // déclarer ce que le produit ne couvre pas suppose d'avoir tranché ce
+    // qu'il couvre, et cette question ne l'est pas. Ils sont donc de nouveau
+    // annoncés à personne.
+    //
+    // Le laisser à 0 aurait fait affirmer à ce test que vingt-sept manques
+    // sont déclarés à quelqu'un. C'est faux, et un cliquet qui ment est pire
+    // que pas de cliquet. Le maintenir à 0 « parce qu'un cliquet ne remonte
+    // pas » aurait été la rustine exacte que le dépôt interdit : desserrer un
+    // chiffre plutôt que de nommer la cause.
+    //
+    // Le faire redescendre suppose de **couvrir** ces obligations, ou de leur
+    // rendre une adresse **visible par l'exploitant**. Pas de trouver un autre
+    // document interne où les ranger : `docs/couverture-declaree-du-produit.md`
+    // n'en est pas une, et il le dit lui-même.
+    //
+    // 27 et non 25, parce que le prédicat compte désormais les notes internes.
+    // Les deux `declareA` qui citaient déjà `docs/veille-arbitrage-2026-08-26.md`
+    // passaient le cliquet pour la mauvaise raison : un document de travail
+    // n'annonce rien à un exploitant, et le chiffre les tenait pourtant pour
+    // déclarés. Le compte n'a donc pas augmenté de deux — c'est la mesure qui
+    // a cessé de se tromper de deux.
+    //
+    // ⚠ **Le cliquet est saturé, et c'est nouveau.** 27 muets sur 27 articles
+    // `non_couvert` : le plafond touche le total. Vérifié par mutation le
+    // 2026-08-28 — retirer le `declareA` d'un article ne le fait plus bouger,
+    // puisque cet article était déjà compté. Ce qu'il garde encore, vérifié de
+    // la même façon : un 28ᵉ article `non_couvert` ajouté sans adresse le fait
+    // passer à 28 et le test tombe.
+    //
+    // Autrement dit il protège encore contre l'ARRIVÉE d'un manque muet, plus
+    // contre la PERTE d'une adresse existante. C'est une conséquence
+    // mécanique du retour à 27, pas un affaiblissement délibéré — mais il ne
+    // faut pas lui prêter la garantie qu'il n'a plus.
+    //
+    // ⚠ Deux autres angles morts connus, qui relèvent du lot 3 :
+    // il cherche la chaîne littérale « Non déclaré », définie nulle part — et
+    // cette branche est aujourd'hui morte, plus aucun article ne la déclenche ;
+    // et il vérifie qu'un `declareA` est PRÉSENT, jamais que l'adresse citée
+    // existe. Un meilleur invariant serait « tout article `non_couvert` a une
+    // adresse, et cette adresse mène quelque part ».
+    const MUETS = 27;
+    // Une note interne n'est pas une annonce à l'exploitant. `declareA`
+    // mélange aujourd'hui les deux natures — une adresse produit et un
+    // document de travail — et cette distinction reste à trancher (lot 3) ;
+    // en attendant, un manque rangé dans `docs/` est compté comme muet, parce
+    // que c'est ce qu'il est du point de vue du dirigeant.
     const muets = articlesNonCouverts().filter(
-      (a) => !a.declareA || a.declareA.startsWith("Non déclaré"),
+      (a) =>
+        !a.declareA ||
+        a.declareA.startsWith("Non déclaré") ||
+        a.declareA.startsWith("docs/"),
     );
     expect(
       muets.length,
