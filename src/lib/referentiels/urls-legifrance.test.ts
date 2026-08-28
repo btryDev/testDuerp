@@ -105,12 +105,14 @@ const DEROGATIONS: {
   identifiant: string;
   raison: string;
 }[] = [
-  {
-    article: "R. 4224-17",
-    identifiant: "LEGIARTI000018530333",
-    raison:
-      "`permis-feu/page.tsx` annonce « Art. R4224-17 CT » et pointe un identifiant qui sert R. 4434-9 — un article sur le bruit. Le défaut est réel et déjà corrigé sur la branche `fix/affirmations-ecran`, validée en revue et en attente de merge. Le corriger ici aussi produirait un conflit sur la même ligne, pour un gain nul. À retirer de cette liste au merge de cette branche : le test ci-dessous tombera pour le rappeler.",
-  },
+  // Vide, et c'est le résultat attendu. Une dérogation a vécu ici le
+  // 2026-08-28 : `R. 4224-17` pointait un identifiant servant `R. 4434-9`,
+  // un article sur le bruit. Le défaut était corrigé sur une branche voisine
+  // et le corriger deux fois aurait produit un conflit pour un gain nul.
+  //
+  // Le test ci-dessous a fait exactement ce qu'on attendait de lui : au merge
+  // réel des deux branches, il est tombé pour réclamer le retrait de sa
+  // propre dérogation. Il n'avait jusque-là été éprouvé qu'en simulation.
 ];
 
 function fichiersSource(dir: string, acc: string[] = []): string[] {
