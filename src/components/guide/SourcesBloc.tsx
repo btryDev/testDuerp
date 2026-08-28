@@ -11,7 +11,7 @@ const SOURCES: Source[] = [
   {
     titre: "Légifrance · Code du travail",
     sousTitre: "Partie santé-sécurité, articles L. 4121 à L. 4641",
-    url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000006160964/",
+    url: "https://www.legifrance.gouv.fr/codes/id/LEGISCTA000006132338",
     hote: "legifrance.gouv.fr",
   },
   {
@@ -23,7 +23,7 @@ const SOURCES: Source[] = [
   {
     titre: "Ministère du travail",
     sousTitre: "Fiches « Prévention des risques pour la santé au travail »",
-    url: "https://travail-emploi.gouv.fr/sante-au-travail/prevention-des-risques-pour-la-sante-au-travail",
+    url: "https://travail-emploi.gouv.fr/",
     hote: "travail-emploi.gouv.fr",
   },
 ];

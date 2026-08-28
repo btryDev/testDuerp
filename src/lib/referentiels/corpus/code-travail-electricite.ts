@@ -7,7 +7,7 @@ import type { Corpus } from "./types";
 export const CODE_TRAVAIL_ELECTRICITE: Corpus = {
   id: "code-travail-electricite",
   intitule: "Code du travail — installations électriques et habilitation",
-  url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018532293/",
+  url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489059/",
   etendue: "articles_cites",
   portee:
     "Vérifications des installations électriques (R. 4226-14 et s.) et habilitation des travailleurs (R. 4544-9 et s.). ATTENTION : R. 4544-10 et R. 4544-11 ont été réécrits au 1er octobre 2025 par le décret n° 2025-355, et deux articles ont été créés (R. 4544-11-1 et -11-2) — non encore cités par le référentiel.",
