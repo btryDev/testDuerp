@@ -193,7 +193,7 @@ obligation qu'aucun équipement ne déclenche.
 
 ### Gaz en habitation collective — 1 article
 
-`Arrêté du 23-02-2018, art. 26 § 6 et § 7`
+`Arrêté 23-02-2018 art. 26 § 6 et § 7`
 
 > Le § 6° impose de retirer et remplacer toute tuyauterie ou accessoire en fonte
 > grise dans l'année suivant le signalement de sa découverte (trois mois pour le
