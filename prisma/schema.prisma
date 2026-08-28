@@ -866,7 +866,10 @@ enum ScopeAccessToken {
 }
 
 // ----------------------------------------------------------------------------
-// Registre d'accessibilité ERP — arrêté du 19 avril 2017 (art. D111-19-33 CCH).
+// Registre d'accessibilité ERP — art. R. 164-6 CCH, arrêté du 19 avril 2017.
+// (R. 111-19-60 avant la recodification du 1er juillet 2021 ; « D111-19-33 »,
+// cité ici jusqu'au 2026-08-28, portait l'attestation d'accessibilité et est
+// abrogé.)
 // Tout ERP doit tenir un registre public consultable sur place ou en ligne,
 // qui décrit : (1) prestations fournies, (2) pièces administratives et
 // techniques relatives à l'accessibilité, (3) formations du personnel
@@ -938,9 +941,13 @@ enum RegimeConformiteErp {
 }
 
 // ----------------------------------------------------------------------------
-// Permis de feu — recommandation INRS ED 6030, art. R4224-17 CT, MS 52 ERP,
-// exigence APSAD R43 (assurance). Document obligatoire pour tout travail par
-// point chaud (soudage, découpe, brasage, meulage…) sur site.
+// Permis de feu — art. R. 4224-17 CT, recommandation INRS ED 6030, et en ERP
+// l'art. GN 13 (« Travaux dangereux »), qui interdit le chantier dangereux en
+// présence du public. Ce document n'est imposé sous ce nom par aucun texte : il
+// matérialise un faisceau d'obligations. « MS 52 ERP », cité ici jusqu'au
+// 2026-08-28, s'intitule « Présence de l'exploitant » et ne dit rien des
+// travaux. La règle APSAD R43 est un référentiel de la profession de
+// l'assurance, opposable par un contrat et non par le droit.
 // ----------------------------------------------------------------------------
 
 model PermisFeu {
@@ -1017,9 +1024,12 @@ enum StatutPermisFeu {
 }
 
 // ----------------------------------------------------------------------------
-// Plan de prévention — art. R4512-6 à R4512-12 CT (décret 92-158).
+// Plan de prévention — art. R. 4512-6 à R. 4512-12 du code du travail.
+// (Issus du décret 92-158, abrogé le 1er mai 2008 par le décret 2008-244 qui
+// l'a codifié : la filiation se dit, la source non.)
 // Obligatoire en écrit si :
-//   - durée totale > 400h/an des travaux d'entreprise(s) extérieure(s), OU
+//   - durée totale ≥ 400 h sur 12 mois des travaux d'entreprise(s)
+//     extérieure(s) — R. 4512-7 dit « égal au moins à 400 heures », OU
 //   - figure sur la liste de travaux dangereux de l'arrêté du 19 mars 1993.
 // Inspection commune préalable obligatoire (art. R4512-7).
 // ----------------------------------------------------------------------------
