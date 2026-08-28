@@ -22,8 +22,12 @@ const SOURCES: Source[] = [
   },
   {
     titre: "Ministère du travail",
-    sousTitre: "Fiches « Prévention des risques pour la santé au travail »",
-    url: "https://travail-emploi.gouv.fr/",
+    // Seule URL de ce bloc qu'aucun outil ne peut vérifier : le site sert un
+    // CAPTCHA à tout ce qui n'est pas un navigateur, sur la racine comme sur
+    // un chemin profond. Celle-ci a été ouverte dans un navigateur humain le
+    // 2026-08-28, et le sous-titre décrit ce qui s'y trouvait alors.
+    sousTitre: "Fiches par risque : DUERP, chutes de hauteur, bruit, TMS, RPS",
+    url: "https://travail-emploi.gouv.fr/prevention-des-risques",
     hote: "travail-emploi.gouv.fr",
   },
 ];
