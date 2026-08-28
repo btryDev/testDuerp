@@ -12,10 +12,9 @@ const charge: CouvertureEtablissement = {
       consequence: "Le livre II s'applique en entier.",
     },
     {
-      axe: "famille_obligation",
-      motif: "Le référentiel a lu 27 articles…",
-      consequence: "Ces obligations existent…",
-      details: [{ titre: "PE 28", texte: "Un motif de dépouillement long." }],
+      axe: "domaine_equipement",
+      motif: "27 équipements de votre inventaire ne déclenchent aucune obligation.",
+      consequence: "Le détail se lit sur la page Équipements.",
     },
   ],
   indeterminations: [
@@ -49,20 +48,20 @@ describe("mentions de périmètre du dossier de conformité", () => {
   it("rend un bloc par axe, les faits établis avant les questions ouvertes", () => {
     expect(blocsPerimetre(charge).map((b) => b.titre)).toEqual([
       "Cet établissement relève de la 2ᵉ catégorie.",
-      "Le référentiel a lu 27 articles…",
+      "27 équipements de votre inventaire ne déclenchent aucune obligation.",
       "La catégorie n'est pas renseignée.",
     ]);
   });
 
-  it("n'imprime pas le détail article par article dans une pièce remise à un tiers", () => {
-    // Vingt-sept motifs de dépouillement, rédigés pour un relecteur interne,
-    // rendraient la page illisible et feraient passer une note de travail
-    // pour une pièce du dossier. Le décompte reste, le détail non.
-    const rendu = JSON.stringify(blocsPerimetre(charge));
-    expect(rendu).not.toContain("Un motif de dépouillement long.");
-    expect(rendu).not.toContain("PE 28");
-    // Mais le nombre, lui, est bien dit.
-    expect(rendu).toContain("27 articles");
+  it("ne rend qu'un titre et un corps par bloc — rien d'autre ne passe", () => {
+    // Le contrat de sortie est fermé à deux champs. Il l'était déjà quand un
+    // axe portait une liste d'articles que le PDF ne devait pas imprimer :
+    // vingt-sept motifs de dépouillement rédigés pour un relecteur interne
+    // auraient fait passer une note de travail pour une pièce du dossier.
+    // L'axe est parti, la fermeture reste — c'est elle qui tenait.
+    for (const b of blocsPerimetre(charge)) {
+      expect(Object.keys(b).sort()).toEqual(["corps", "titre"]);
+    }
   });
 
   it("ne conclut jamais sur le droit", () => {

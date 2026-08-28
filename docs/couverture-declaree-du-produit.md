@@ -225,14 +225,22 @@ répondait à une question qui n'était pas posée.
 
 Deux conséquences à ne pas perdre :
 
-- **`MUETS` est remonté à 25**, et le nombre doit se lire avec sa cause. Il ne
+- **`MUETS` est remonté à 27**, et le nombre doit se lire avec sa cause. Il ne
   remonte pas parce que le référentiel a régressé : il remonte parce que la
   surface qui déclarait ces articles a été retirée. Le laisser à 0 aurait fait
   affirmer au test que 27 manques sont annoncés à quelqu'un, ce qui est faux —
   et un cliquet qui ment est pire que pas de cliquet. Le faire redescendre
   suppose de **couvrir** ces obligations, ou de leur rendre une adresse
   **visible par l'exploitant**. Pas de trouver un autre document interne où les
-  ranger : ce document-ci n'en est pas une.
+  ranger : ce document-ci n'en est pas une, et son `declareA` le dit en
+  toutes lettres.
+
+  **27 et non 25**, parce que le prédicat du cliquet compte désormais les notes
+  internes. Les deux `declareA` qui citaient déjà
+  `docs/veille-arbitrage-2026-08-26.md` le passaient pour la mauvaise raison :
+  un document de travail n'annonce rien à un exploitant, et le chiffre les
+  tenait pourtant pour déclarés. Le compte n'a pas augmenté de deux — c'est la
+  mesure qui a cessé de se tromper de deux.
 - **Le mécanisme, lui, est intact.** Les quatre autres axes tournent, les
   bandeaux et le PDF les portent. Réactiver `famille_obligation` est un ajout
   de quelques lignes le jour où la question sera tranchée — de préférence
@@ -266,8 +274,17 @@ chiffre doit descendre, soit en couvrant, soit en déclarant ». **La question
 était posée, comptée et suivie depuis le dépouillement.** Ce qui manquait était
 une adresse. C'est ce document, désormais.
 
-**Deux limites du cliquet, à connaître avant de s'y fier** (elles relèvent du
-lot 3, non traité ici) :
+**Trois limites du cliquet, à connaître avant de s'y fier** (les deux dernières
+relèvent du lot 3, non traité ici) :
+
+0. **Il est saturé.** 27 muets pour un plafond de 27, c'est-à-dire la totalité
+   des articles `non_couvert`. Vérifié par mutation : retirer le `declareA`
+   d'un article ne le fait plus bouger, puisqu'il était déjà compté. Il protège
+   encore contre l'**arrivée** d'un manque muet — un 28ᵉ article sans adresse
+   le fait tomber — mais plus contre la **perte** d'une adresse existante.
+   Conséquence mécanique du retour à 27, et raison de plus de lui préférer
+   l'invariant du point 2.
+
 
 1. Il cherche la chaîne littérale « Non déclaré », définie nulle part et écrite
    à la main dans chaque entrée. Une reformulation sort un article du compte en

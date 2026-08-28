@@ -25,7 +25,6 @@ import { prisma } from "@/lib/prisma";
 import { composantesCiviles, joursCivilsEntre } from "@/lib/dates";
 import { libellePorteur } from "@/lib/calendrier/labels";
 import { porteeBatiment } from "@/lib/calendrier/portee";
-import { couvertureDuDossier } from "@/lib/perimetre/faits";
 
 export default async function EtablissementPage({
   params,
@@ -186,7 +185,6 @@ export default async function EtablissementPage({
   // objects traversent la frontière server/client via l'App Router.
   const bundle: DashboardBundle = {
     etablissementId: id,
-    couverture: await couvertureDuDossier(id),
     batiments,
     batimentFiltre: batiments.find((b) => b.id === batimentFiltre) ?? null,
     etablissement: {

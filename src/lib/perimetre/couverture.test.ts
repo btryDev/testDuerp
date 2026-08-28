@@ -22,7 +22,6 @@ function faits(partiel: Partial<FaitsCouverture> = {}): FaitsCouverture {
     regime: regimeCouvert,
     duerp: null,
     equipements: { nbSansObligation: 0, nbEquipements: 12 },
-    famillesNonPortees: [],
     ...partiel,
   };
 }
@@ -398,32 +397,10 @@ describe("axe domaine_equipement", () => {
   });
 });
 
-/* ─── L'axe des familles non portées ──────────────────────────────────── */
-
-describe("axe famille_obligation", () => {
-  it("se tait quand tous les manques du corpus sont déclarés ailleurs", () => {
-    const c = couvertureDeLEtablissement(faits({ famillesNonPortees: [] }));
-    expect(riensASignaler(c)).toBe(true);
-  });
-
-  it("dit combien d'articles le produit a lus sans les porter", () => {
-    const c = couvertureDeLEtablissement(
-      faits({
-        famillesNonPortees: [
-          { corpus: "arrete-1980-l3", ref: "PE 28", motif: "…" },
-          { corpus: "arrete-1980-l3", ref: "PE 32", motif: "…" },
-        ],
-      }),
-    );
-    expect(axes(c)).toEqual(["famille_obligation"]);
-    expect(c.manques[0].motif).toContain("2 articles");
-  });
-});
-
 /* ─── Ce que les axes ne font pas ─────────────────────────────────────── */
 
 describe("les axes ne s'additionnent ni ne se recouvrent", () => {
-  const quatreManques = couvertureDeLEtablissement({
+  const troisManques = couvertureDeLEtablissement({
     regime: { estERP: true, estIGH: false, categorieErp: "N2" },
     duerp: {
       etat: "secteur_inconnu",
@@ -432,15 +409,13 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
       correspondance: { statut: "sans_naf" as const },
     },
     equipements: { nbSansObligation: 4, nbEquipements: 9 },
-    famillesNonPortees: [{ corpus: "c", ref: "PE 28", motif: "…" }],
   });
 
   it("rend un manque par axe, dans un ordre stable — le régime d'abord", () => {
-    expect(axes(quatreManques)).toEqual([
+    expect(axes(troisManques)).toEqual([
       "categorie_erp",
       "secteur_duerp",
       "domaine_equipement",
-      "famille_obligation",
     ]);
   });
 
@@ -448,7 +423,7 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
     // Un chiffre unique laisserait croire à une mesure de la complétude, que
     // rien ne fonde : quatre manques sur quatre axes ne sont pas quatre fois
     // la même chose. Le contrat de sortie est donc fermé à deux listes.
-    expect(Object.keys(quatreManques).sort()).toEqual([
+    expect(Object.keys(troisManques).sort()).toEqual([
       "indeterminations",
       "manques",
     ]);
@@ -456,7 +431,7 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
 
   it("ne qualifie jamais la situation au regard du droit", () => {
     const interdits = /conforme|non conforme|infraction|complet à|% couvert/i;
-    for (const m of quatreManques.manques) {
+    for (const m of troisManques.manques) {
       expect(m.motif).not.toMatch(interdits);
       expect(m.consequence).not.toMatch(interdits);
     }

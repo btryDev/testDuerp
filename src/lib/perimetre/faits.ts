@@ -20,7 +20,6 @@ import {
   compterSansObligation,
   reperterSansEcheance,
 } from "@/lib/equipements/hors-referentiel";
-import { famillesNonPortees } from "./familles";
 import { correspondanceSecteur } from "./secteur";
 import {
   couvertureDeLEtablissement,
@@ -134,6 +133,5 @@ export async function faitsDeCouverture(
       nbSansObligation: compterSansObligation(sansEcheance),
       nbEquipements: etab.equipements.length,
     },
-    famillesNonPortees: famillesNonPortees(),
   };
 }

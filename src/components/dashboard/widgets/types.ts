@@ -6,7 +6,6 @@
 
 import type { BatimentCharge } from "@/lib/batiments/queries";
 import type { ComponentType } from "react";
-import type { CouvertureEtablissement } from "@/lib/perimetre/couverture";
 import type {
   BarMois,
   DashboardData,
@@ -21,7 +20,6 @@ export type Taille = "small" | "medium" | "large";
 // small = 2 col · medium = 3 col · large = 6 col (grille à 6 colonnes)
 
 export type WidgetId =
-  | "couverture"
   | "etablissement"
   | "score"
   | "indicateurs"
@@ -128,16 +126,6 @@ type DuerpLite = {
 
 export type DashboardBundle = {
   etablissementId: string;
-  /**
-   * Ce que l'outil ne sait pas dire de ce dossier, sur ses cinq axes
-   * (`lib/perimetre/couverture.ts`). `null` seulement si le dossier n'a pas pu
-   * être lu — jamais un état rassurant par défaut.
-   *
-   * Le bundle la porte plutôt que le widget ne la charge : c'est une page
-   * serveur qui l'assemble, et un widget client ne peut ni lire la base ni
-   * appeler le moteur de matching.
-   */
-  couverture: CouvertureEtablissement | null;
   /** Les bâtiments de l'établissement (ADR-019) — un seul le plus souvent.
    *  Le hero en affiche une carte chacun, avec son parc et sa charge. */
   batiments: BatimentCharge[];

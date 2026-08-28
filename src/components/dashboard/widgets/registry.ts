@@ -38,44 +38,9 @@ import {
 import { WidgetAnciennete } from "./impl/anciennete";
 import { WidgetSemaine } from "./impl/semaine";
 import { WidgetMeteo } from "./impl/meteo";
-import { WidgetCouverture } from "./impl/couverture";
 import type { LayoutItem, WidgetDefinition, WidgetId } from "./types";
 
 export const REGISTRY: Record<WidgetId, WidgetDefinition> = {
-  couverture: {
-    id: "couverture",
-    titre: "Ce que Rojer ne couvre pas",
-    description:
-      "Les bords du référentiel pour ce dossier : régime hors périmètre, secteur du document unique, appareils sans échéance, obligations lues et non portées.",
-    taille: "large",
-    variants: [{ id: "default", label: "Défaut" }],
-    defaultVariant: "default",
-    Component: WidgetCouverture,
-    // Un manque qu'on peut décocher n'est plus une déclaration : c'est une
-    // option, et c'est la première qu'un dirigeant pressé décocherait.
-    obligatoire: true,
-    // Le garde-fou d'un dossier sans rien à signaler : une carte qui répète
-    // « rien à signaler » cesse d'être lue, et le jour où elle dit quelque
-    // chose personne ne le voit.
-    //
-    // ⚠ Il ne se déclenche jamais en l'état, et le prétendre serait faux.
-    // L'axe `famille_obligation` porte les articles `non_couvert` du corpus,
-    // qui sont une propriété du PRODUIT et non du dossier : tant que le corpus
-    // en compte au moins un — vingt-sept au 2026-08-28 —, la carte est visible
-    // sur tous les boards. Elle le restera jusqu'au rattachement des articles
-    // à un type d'établissement (`Etablissement.typeErp`, ADR-004), qui rendra
-    // l'axe propre au dossier et ce garde atteignable.
-    //
-    // Conservé parce qu'il énonce la règle voulue, pas l'état courant : le
-    // retirer obligerait à la redécouvrir ce jour-là. Mais il ne compte pas
-    // comme une garantie, et rien ne doit s'appuyer dessus.
-    visibleQuand: (b) =>
-      Boolean(
-        b.couverture &&
-          (b.couverture.manques.length > 0 ||
-            b.couverture.indeterminations.length > 0),
-      ),
-  },
   etablissement: {
     id: "etablissement",
     titre: "Identité établissement",
@@ -421,12 +386,6 @@ export function variantValide(
  * « Ajouter un widget » — le board est un point de départ, pas un mur.
  */
 const ORDRE_DEFAUT: WidgetId[] = [
-  // En tête, et pour la même raison que le bandeau de couverture se lit avant
-  // le calendrier qu'il qualifie : ce que l'outil ne dit pas doit se lire
-  // avant ce qu'il dit, sinon il arrive trop tard. La carte se masque d'
-  // elle-même quand il n'y a rien à signaler, elle ne coûte donc rien au
-  // dossier qui n'a aucun bord à annoncer.
-  "couverture",
   "calendrier-type",
   "equipements-grid",
   "a-faire",

@@ -52,10 +52,6 @@ function lienDeLAxe(
       return hrefs.equipements
         ? { href: hrefs.equipements, libelle: "Voir les équipements" }
         : null;
-    case "famille_obligation":
-      // Aucun geste : le manque est du produit, pas du dossier. Proposer une
-      // action laisserait croire que le dirigeant peut le lever.
-      return null;
   }
 }
 

@@ -15,7 +15,7 @@
 // paraissent complets alors qu'ils ignorent la moitié du règlement sont pires
 // qu'un refus : le dirigeant s'y fierait devant une commission.
 //
-// ## Cinq axes, une seule adresse
+// ## Quatre axes, une seule adresse
 //
 // Le régime ERP n'est pas le seul bord du produit, et il n'a jamais été le
 // seul. Trois autres mécanismes disaient déjà, chacun dans son coin, une
@@ -28,6 +28,18 @@
 //  - `lib/referentiels/corpus/` — les articles lus dont le produit ne porte
 //    pas l'obligation (`non_couvert`), avec `declareA` qui dit **où** le
 //    manque est annoncé.
+//
+// Un cinquième axe, `famille_obligation`, a projeté ce dernier pendant une
+// journée : il nommait à chaque dirigeant les vingt-sept articles que le
+// produit ne porte pas. Retiré le 2026-08-28 par décision produit, et pas
+// parce qu'il était faux — c'était le seul des cinq à énoncer une propriété
+// du PRODUIT et non du dossier, la même pour tout le monde, et déclarer ce
+// qu'on ne couvre pas suppose d'avoir tranché ce qu'on couvre. Il répondait à
+// une question qui n'était pas encore posée.
+// Ces vingt-sept articles vivent désormais dans
+// `docs/couverture-declaree-du-produit.md`, qui dit aussi ce qu'il faudrait
+// pour rendre l'axe propre au dossier : un rattachement article →
+// `Etablissement.typeErp`.
 //
 // Ce dernier champ est ce qui a décidé de la forme de ce module. Au
 // 2026-08-28, vingt-cinq des vingt-huit articles `non_couvert` portent
@@ -43,8 +55,10 @@
 // commentaire interdisait.
 //
 // Ni total, ni pourcentage, ni score : les axes ne s'additionnent pas. Quatre
-// manques sur quatre axes différents ne font pas « 4 » — ils font quatre
-// phrases, chacune vraie d'une chose différente. Un chiffre laisserait croire
+// manques ne font pas « 4 » — ils font quatre phrases, chacune vraie d'une
+// chose différente. Et un même axe peut en porter deux : `secteur_duerp` dit
+// à la fois ce que le DUERP déclare ne pas couvrir et le fait qu'il s'appuie
+// sur le référentiel d'un autre métier. Un chiffre laisserait croire
 // à une mesure de la complétude, que rien ne fonde.
 //
 // Module **pur** : ni Prisma, ni React, ni horloge. Les faits lui sont
@@ -84,10 +98,7 @@ export type AxeCouverture =
   | "secteur_duerp"
   /** Des appareils du parc ne portent aucune échéance — rappel de
    *  `equipements/hors-referentiel.ts`. */
-  | "domaine_equipement"
-  /** Des articles lus imposent quelque chose que le référentiel ne porte pas
-   *  — projection du statut `non_couvert` du corpus. */
-  | "famille_obligation";
+  | "domaine_equipement";
 
 /**
  * Un fait établi : l'outil ne sait pas dire quelque chose, et on sait quoi.
@@ -102,17 +113,6 @@ export type ManqueCouverture = {
   motif: string;
   /** Ce que l'application ne sait donc pas lui dire. */
   consequence: string;
-  /**
-   * Ce que le manque recouvre, nommé une entrée à la fois — quand la liste
-   * existe déjà ailleurs et qu'elle est ce qu'il faut montrer.
-   *
-   * Absent sur la plupart des axes, et c'est voulu : le DUERP nomme ses
-   * activités dans son propre document, la page Équipements nomme ses
-   * appareils. Les recopier ici en produirait des variantes qui vieilliraient
-   * à part. L'axe `famille_obligation` fait exception parce qu'il n'a **aucun**
-   * autre écran : cette liste est sa seule adresse.
-   */
-  details?: { titre: string; texte: string }[];
 };
 
 /**
@@ -204,26 +204,12 @@ export type FaitEquipements = {
   nbEquipements: number;
 };
 
-/**
- * Un article lu dont le produit ne porte pas l'obligation (`non_couvert`).
- * Projection directe du corpus : ni le motif ni la référence ne sont réécrits
- * ici — ils sont rédigés là où l'article a été dépouillé.
- */
-export type FamilleNonPortee = {
-  corpus: string;
-  ref: string;
-  motif: string;
-};
-
 export type FaitsCouverture = {
   regime: RegimeEtablissement;
   /** `null` quand le dossier n'a pas de DUERP : l'axe se tait alors, il ne
    *  conclut pas. Un DUERP absent est un autre sujet que mal couvert. */
   duerp: FaitDuerp | null;
   equipements: FaitEquipements;
-  /** Les articles `non_couvert` du corpus. Liste du **produit**, pas de cet
-   *  établissement : rien ici ne dépend de son NAF ni de son parc. */
-  famillesNonPortees: readonly FamilleNonPortee[];
 };
 
 /* ─── Les axes ────────────────────────────────────────────────────────── */
@@ -454,35 +440,6 @@ function axeEquipements(
   });
 }
 
-/**
- * Projette les articles `non_couvert` du corpus.
- *
- * Cette liste est celle du **produit**, pas celle de l'établissement : rien
- * n'est déduit de son code d'activité, de son parc ou de sa raison sociale.
- * La restreindre demanderait des attributs que la base ne porte pas — l'un des
- * articles concernés attend littéralement `Etablissement.locauxSommeil` — et
- * la deviner serait l'heuristique que le dépôt refuse partout.
- *
- * Dire trop est ici le moindre mal : un dirigeant averti d'un manque qui ne le
- * vise pas perd une minute, un dirigeant non averti d'un manque qui le vise
- * s'appuie sur un document incomplet.
- */
-function axeFamilles(
-  familles: readonly FamilleNonPortee[],
-  manques: ManqueCouverture[],
-): void {
-  if (familles.length === 0) return;
-
-  const pluriel = familles.length > 1;
-  manques.push({
-    axe: "famille_obligation",
-    motif: `Le référentiel a lu ${familles.length} article${pluriel ? "s" : ""} qui impose${pluriel ? "nt" : ""} quelque chose à un exploitant sans que le produit le porte.`,
-    consequence:
-      "Ces obligations existent et l'outil n'en tire aucune échéance. La liste vaut pour le produit entier, pas pour votre seul établissement : le référentiel ne rattache pas encore ces articles à un type d'établissement, et le deviner serait une supposition. Chacune est nommée ci-dessous, avec la raison pour laquelle le référentiel s'arrête là.",
-    details: familles.map((f) => ({ titre: f.ref, texte: f.motif })),
-  });
-}
-
 /* ─── L'entrée ────────────────────────────────────────────────────────── */
 
 /**
@@ -505,7 +462,6 @@ export function couvertureDeLEtablissement(
   axeDuerp(faits.duerp, manques, indeterminations);
   axeSecteurParDefaut(faits.duerp, manques);
   axeEquipements(faits.equipements, manques);
-  axeFamilles(faits.famillesNonPortees, manques);
 
   return { manques, indeterminations };
 }
@@ -525,6 +481,5 @@ export function couvertureDuRegime(
     regime,
     duerp: null,
     equipements: { nbSansObligation: 0, nbEquipements: 0 },
-    famillesNonPortees: [],
   });
 }
