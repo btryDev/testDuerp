@@ -284,12 +284,16 @@ export async function GET(
           // n'est pas lu ne peut pas ressortir par une colonne qu'on
           // ajouterait plus tard.
           //
-          // Conséquence à ne pas maquiller : ce ZIP était le SEUL lecteur du
-          // champ. Le formulaire le demande, le zod le valide, la base le
-          // garde — et plus rien ne le lit. Une donnée collectée sans
-          // finalité tient mal sous la minimisation ; la question est ouverte
-          // au niveau produit (docs/rgpd.md § 2.5), elle n'est pas tranchée
-          // ici.
+          // Ce ZIP en était le seul lecteur, et le retirer d'ici a d'abord
+          // laissé un champ que le formulaire demande, que le zod valide, que
+          // la base garde, et que plus rien ne lisait — une donnée sans
+          // finalité, qui tient plus mal sous la minimisation que l'usage
+          // interne auquel elle était destinée. Le champ s'affiche donc
+          // désormais sur la carte du point de relevé
+          // (`carnet-sanitaire/page.tsx`), où l'exploitant sait à qui
+          // demander quand une mesure surprend. Il ne ressort pas de
+          // l'établissement pour autant : la retenue posée ici tient
+          // (docs/rgpd.md § 2.5).
           releves: {
             orderBy: { dateReleve: "desc" },
             take: 10,

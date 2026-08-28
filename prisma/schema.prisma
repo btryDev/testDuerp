@@ -867,9 +867,10 @@ enum ScopeAccessToken {
 
 // ----------------------------------------------------------------------------
 // Registre d'accessibilité ERP — art. R. 164-6 CCH, arrêté du 19 avril 2017.
-// (R. 111-19-60 avant la recodification du 1er juillet 2021 ; « D111-19-33 »,
-// cité ici jusqu'au 2026-08-28, portait l'attestation d'accessibilité et est
-// abrogé.)
+// (R. 111-19-60 avant la recodification du 1er juillet 2021. « D111-19-33 »,
+// cité ici jusqu'au 2026-08-28, ne désigne aucun article du CCH : la coquille
+// vise R. 111-19-33, qui portait l'attestation d'accessibilité — pas le
+// registre — et que le décret 2021-872 a abrogé.)
 // Tout ERP doit tenir un registre public consultable sur place ou en ligne,
 // qui décrit : (1) prestations fournies, (2) pièces administratives et
 // techniques relatives à l'accessibilité, (3) formations du personnel
@@ -1025,13 +1026,19 @@ enum StatutPermisFeu {
 
 // ----------------------------------------------------------------------------
 // Plan de prévention — art. R. 4512-6 à R. 4512-12 du code du travail.
-// (Issus du décret 92-158, abrogé le 1er mai 2008 par le décret 2008-244 qui
-// l'a codifié : la filiation se dit, la source non.)
+// (Issus du décret 92-158, dont les dispositions ont été abrogées et codifiées
+// par le décret n° 2008-244 du 7 mars 2008 : la filiation se dit, la source
+// non. La fiche consolidée du décret ne porte pas de bandeau « Abrogé » — la
+// sortie de vigueur a été portée article par article.)
 // Obligatoire en écrit si :
 //   - durée totale ≥ 400 h sur 12 mois des travaux d'entreprise(s)
 //     extérieure(s) — R. 4512-7 dit « égal au moins à 400 heures », OU
 //   - figure sur la liste de travaux dangereux de l'arrêté du 19 mars 1993.
-// Inspection commune préalable obligatoire (art. R4512-7).
+// Inspection commune préalable obligatoire — art. R. 4512-2, et non
+// R. 4512-7 comme écrit ici jusqu'au 2026-08-28 : R. 4512-6 institue le plan,
+// R. 4512-7 pose les deux cas qui imposent l'écrit (dont le seuil ci-dessus),
+// R. 4512-8 en fixe le contenu. L'inspection est ailleurs, et elle est due
+// quelle que soit la durée.
 // ----------------------------------------------------------------------------
 
 model PlanPrevention {

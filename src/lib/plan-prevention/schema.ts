@@ -4,8 +4,9 @@ import { depuisCleJourCivil, depuisSaisieDateHeure } from "@/lib/dates";
 /**
  * Plan de prévention — art. R. 4512-6 à R. 4512-12 du code du travail.
  *
- * Ces articles viennent du décret n° 92-158 du 20 février 1992, **abrogé le
- * 1er mai 2008** par le décret n° 2008-244 qui l'a codifié. La filiation se
+ * Ces articles viennent du décret n° 92-158 du 20 février 1992, dont les dispositions ont été abrogées et codifiées par le décret n° 2008-244 du 7 mars 2008.
+ * La fiche consolidée du décret ne porte pas de bandeau « Abrogé » : la sortie
+ * de vigueur a été portée article par article. La filiation se
  * dit ici, dans un commentaire ; elle ne se cite plus à l'écran ni dans le
  * ZIP remis à un tiers, où « décret 92-158 » passait pour une source en
  * vigueur.

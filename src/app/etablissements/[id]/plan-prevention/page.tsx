@@ -181,8 +181,12 @@ export default async function PlanPreventionListePage({
               href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018529787/"
             />
             {/* Ici se tenait « Décret 92-158 », sans lien. Relu à la source
-                le 2026-08-28 : ce décret est ABROGÉ depuis le 1er mai 2008
-                (décret n° 2008-244, recodification). Il est l'ancêtre des
+                le 2026-08-28 : les dispositions de ce décret ont été
+                ABROGÉES ET CODIFIÉES par le décret n° 2008-244 du 7 mars
+                2008. Sa fiche consolidée ne porte pas de bandeau « Abrogé »,
+                la sortie de vigueur ayant été portée article par article — la
+                vérifier au niveau du texte ne rend donc rien, il faut aller à
+                l'article. Il est l'ancêtre des
                 articles R. 4512-* cités ci-contre, pas une source en vigueur.
                 Une pastille de source ne cite pas un texte abrogé — la
                 filiation, si elle intéresse, se lit dans un commentaire de
