@@ -202,7 +202,8 @@ async function annuler(etablissementId: string): Promise<void> {
   //     d'utilisateur ni d'entreprise — exactement comme `creer()`. Le
   //     périmètre est donc le même qu'avant.
   //
-  //     La garde qui borne réellement, c'est la troisième.
+  //     La garde qui borne réellement, c'est la DEUXIÈME — le refus si une
+  //     ligne porte une preuve.
   //  2. Un `deleteMany` sur `Verification` contourne le `ON DELETE RESTRICT`
   //     posé exprès, et emporte en cascade les `RapportVerification` et les
   //     `Action` attachés. On refuse donc de toucher une ligne qui porte une

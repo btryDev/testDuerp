@@ -475,7 +475,14 @@ describe("le nom d'un salarié ne sort pas du produit", () => {
     // dérogation dont le fichier a disparu est une permission qui traîne, et
     // qui couvrira un jour un fichier neuf portant le même nom.
     for (const { fichier, raison } of DEROGATIONS_SORTANTES) {
-      expect(() => statSync(join(RACINE, "src", fichier)), fichier).not.toThrow();
+      // Le préfixe suit la convention de `rel` : `src/` retiré, `scripts/`
+      // conservé. Coder `join(RACINE, "src", fichier)` en dur ferait échouer à
+      // tort une future dérogation sous `scripts/` — le répertoire que le
+      // balayage vient justement d'apprendre à parcourir.
+      const abs = fichier.startsWith("scripts/")
+        ? join(RACINE, fichier)
+        : join(RACINE, "src", fichier);
+      expect(() => statSync(abs), fichier).not.toThrow();
       expect(raison.length, fichier).toBeGreaterThan(120);
     }
   });

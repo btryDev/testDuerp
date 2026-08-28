@@ -54,7 +54,7 @@ beforeEach(() => {
 });
 
 describe("modifierSalarie — la correction d'un nom se repropage", () => {
-  it("invalide le calendrier et le tableau de bord", async () => {
+  it("invalide le sous-arbre entier de l'établissement", async () => {
     const res = await modifierSalarie(
       "etab-1",
       "sal-1",
@@ -63,18 +63,29 @@ describe("modifierSalarie — la correction d'un nom se repropage", () => {
     );
     expect(res.status).toBe("success");
 
-    const chemins = h.revalidatePath.mock.calls.map((c) => c[0]);
-    // Les deux qui manquaient — le nom s'y affiche par `libellePorteur`.
-    expect(chemins).toContain("/etablissements/etab-1/calendrier");
-    expect(chemins).toContain("/etablissements/etab-1");
-    // Et les deux du module lui-même, qui n'avaient pas disparu.
-    expect(chemins).toContain("/etablissements/etab-1/equipe");
-    expect(chemins).toContain("/etablissements/etab-1/equipe/sal-1");
+    // `toEqual` sur la liste complète, et non `toContain` sur quelques
+    // chemins : la première version assurait quatre chemins présents, ce qui
+    // ne pouvait pas voir que trois écrans sur cinq restaient hors de portée.
+    // Un test qui vérifie une présence ne mesure pas une couverture.
+    expect(h.revalidatePath.mock.calls).toEqual([
+      ["/etablissements/etab-1", "layout"],
+    ]);
   });
 
-  it("ne relance PAS le générateur — renommer ne change aucune échéance", () => {
+  it("ne relance PAS le générateur — renommer ne change aucune échéance", async () => {
     // Le nom n'est écrit dans aucune colonne de `Verification` : il est joint à
     // la lecture. Régénérer ici serait une transaction complète pour rien.
+    //
+    // La première version de ce test N'APPELAIT JAMAIS l'action : son corps
+    // était une assertion sur un mock que `beforeEach` venait de remettre à
+    // zéro. Il passait quoi qu'il arrive, y compris si l'action régénérait le
+    // calendrier à chaque frappe.
+    await modifierSalarie(
+      "etab-1",
+      "sal-1",
+      { status: "idle" },
+      formulaire("Dupont", "Jean"),
+    );
     expect(h.genererCalendrier).not.toHaveBeenCalled();
   });
 
@@ -99,7 +110,8 @@ describe("creerSalarie — n'invalide que son module, et c'est voulu", () => {
     // n'était justifiée nulle part, ce qui a fait penser à un oubli. C'en
     // était un.
     await creerSalarie("etab-1", { status: "idle" }, formulaire("Martin", "Léa"));
-    const chemins = h.revalidatePath.mock.calls.map((c) => c[0]);
-    expect(chemins).toEqual(["/etablissements/etab-1/equipe"]);
+    expect(h.revalidatePath.mock.calls).toEqual([
+      ["/etablissements/etab-1/equipe"],
+    ]);
   });
 });

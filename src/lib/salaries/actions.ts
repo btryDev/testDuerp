@@ -52,12 +52,13 @@ async function regenererEtRafraichir(
     await marquerCalendrierPerime(etablissementId);
   }
 
-  revalidatePath(`/etablissements/${etablissementId}/equipe`);
-  if (salarieId) {
-    revalidatePath(`/etablissements/${etablissementId}/equipe/${salarieId}`);
-  }
-  revalidatePath(`/etablissements/${etablissementId}/calendrier`);
-  revalidatePath(`/etablissements/${etablissementId}`);
+  // `"layout"` et non le chemin nu : une échéance de titre s'affiche sur CINQ
+  // écrans de l'établissement — tableau de bord, calendrier, plan d'actions,
+  // fiche d'action, registre —, tous par `libellePorteur`. `revalidatePath`
+  // sans second argument n'invalide que le chemin exact, ce qui en couvrait
+  // deux sur cinq. La forme large invalide le sous-arbre entier, et le dépôt
+  // l'emploie déjà (`lib/auth/actions.ts`).
+  revalidatePath(`/etablissements/${etablissementId}`, "layout");
 }
 
 export async function creerSalarie(
@@ -125,24 +126,21 @@ export async function modifierSalarie(
     return { status: "error", message: "Cette personne est introuvable" };
   }
 
-  // Le calendrier et le tableau de bord aussi : `libellePorteur` y affiche le
-  // NOM de la personne sur ses échéances — cinq écrans hors du module Équipe
-  // le font. Un employeur qui corrige une orthographe, geste que cet écran
-  // existe pour permettre au titre de l'article 16 du RGPD, ne repropageait
-  // donc pas sa correction.
+  // Le sous-arbre entier de l'établissement : `libellePorteur` affiche le NOM
+  // de la personne sur ses échéances, et cinq écrans le font — tableau de
+  // bord, calendrier, plan d'actions, fiche d'action, registre. Un employeur
+  // qui corrige une orthographe, geste que cet écran existe pour permettre au
+  // titre de l'article 16 du RGPD, ne la voyait nulle part ailleurs.
   //
   // Pas de `genererCalendrier` en revanche, contrairement aux mutations de
   // titre : renommer quelqu'un ne change aucune échéance. Le nom n'est écrit
   // dans aucune colonne de `Verification`, il est joint à la lecture.
   //
   // L'oubli vient du remplacement de `rafraichir` par `regenererEtRafraichir` :
-  // les deux `revalidatePath` que la première faisait ont disparu avec elle,
-  // sans que rien ne le signale. Le cas de `creerSalarie` est justifié en
+  // les `revalidatePath` que la première faisait ont disparu avec elle, sans
+  // que rien ne le signale. Le cas de `creerSalarie` est justifié en
   // commentaire ; celui-ci ne l'était nulle part.
-  revalidatePath(`/etablissements/${etablissementId}/equipe`);
-  revalidatePath(`/etablissements/${etablissementId}/equipe/${salarieId}`);
-  revalidatePath(`/etablissements/${etablissementId}/calendrier`);
-  revalidatePath(`/etablissements/${etablissementId}`);
+  revalidatePath(`/etablissements/${etablissementId}`, "layout");
   return { status: "success", salarieId };
 }
 
