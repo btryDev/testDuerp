@@ -120,7 +120,7 @@ export const obligationsElectricite: Obligation[] = [
         reference: "R. 4544-9 à R. 4544-11",
         article: "R. 4544-10",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022849102/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051500368",
       },
       {
         source: "INRS",
@@ -419,7 +419,7 @@ export const obligationsElectricite: Obligation[] = [
         reference: "R. 4226-16 (vérification périodique annuelle)",
         article: "R. 4226-16",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490547/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070/",
       },
     ],
     periodicite: "quadriennale",
