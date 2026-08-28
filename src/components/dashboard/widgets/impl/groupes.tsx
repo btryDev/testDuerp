@@ -40,9 +40,9 @@ function Kpi({ def, first }: { def: KpiDef; first: boolean }) {
   return (
     <div
       className="flex flex-col gap-2 px-4 py-1.5"
-      style={{ borderLeft: first ? "0" : "1px dashed var(--rule)" }}
+      style={{ borderLeft: first ? "0" : "1px dashed var(--board-slate)" }}
     >
-      <span className="font-mono text-[10.5px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+      <span className="font-mono text-[10.5px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]">
         {def.k}
       </span>
       <div className="flex items-baseline gap-2">
@@ -58,14 +58,14 @@ function Kpi({ def, first }: { def: KpiDef; first: boolean }) {
           style={{ background: toneHex(def.tone) }}
         />
       </div>
-      <div className="text-[11.5px] leading-[1.35] text-muted-foreground">
+      <div className="text-[11.5px] leading-[1.35] text-[color:var(--board-slate-mid)]">
         {def.hint}
         {/* Certains états font converger trend et hint sur la même
             phrase — on ne l'affiche pas deux fois. */}
         {def.trend !== def.hint ? (
           <>
             <br />
-            <span className="text-ink/75">{def.trend}</span>
+            <span className="text-[color:var(--board-slate-ink)]">{def.trend}</span>
           </>
         ) : null}
       </div>
@@ -141,7 +141,7 @@ export function WidgetIndicateurs({ bundle }: { bundle: DashboardBundle }) {
   ];
 
   return (
-    <section className="bento-cell">
+    <section className="carte-board px-7 py-6 sm:px-8">
       <header className="flex items-start justify-between gap-3">
         <div>
           <h3 className="v2-title">Indicateurs</h3>
@@ -173,7 +173,7 @@ function miniToneClass(t: MiniTone): string {
     case "ok":
       return "text-[color:var(--board-green-ink)]";
     default:
-      return "text-ink";
+      return "text-[color:var(--board-ink)]";
   }
 }
 
@@ -190,7 +190,7 @@ function MiniStat({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--board-slate-mid)]">
         {label}
       </p>
       <p
@@ -202,7 +202,7 @@ function MiniStat({
         {valeur}
       </p>
       {sub ? (
-        <p className="text-[0.72rem] text-muted-foreground">{sub}</p>
+        <p className="text-[12px] text-[color:var(--board-slate-mid)]">{sub}</p>
       ) : null}
     </div>
   );

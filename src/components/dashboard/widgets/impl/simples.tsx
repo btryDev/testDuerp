@@ -6,6 +6,7 @@
 // Le plan d'actions a migré vers `impl/board.tsx` (rendu en anneau) lors
 // de la refonte du tableau de bord ; il garde le même id de registre.
 
+import { CHAMP_ETAT } from "@/lib/calendrier/etats";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LienProvenance } from "@/components/navigation/LienProvenance";
@@ -51,13 +52,13 @@ export function WidgetRegistre({ bundle }: { bundle: DashboardBundle }) {
       }}
     >
       {rapportsRecents.length === 0 ? (
-        <p className="text-[0.88rem] text-muted-foreground">
+        <p className="text-[0.88rem] text-[color:var(--board-slate-mid)]">
           Aucun rapport déposé pour l&apos;instant.
         </p>
       ) : (
         <table className="w-full border-collapse text-[0.88rem]">
           <thead>
-            <tr className="border-b border-rule-soft text-left font-mono text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground">
+            <tr className="border-b border-[color:var(--board-slate-line)] text-left font-mono text-[11px] uppercase tracking-[0.16em] text-[color:var(--board-slate-mid)]">
               <th className="py-2 font-medium">Date</th>
               <th className="py-2 font-medium">Document</th>
               <th className="py-2 text-right font-medium">Statut</th>
@@ -67,9 +68,9 @@ export function WidgetRegistre({ bundle }: { bundle: DashboardBundle }) {
             {rapportsRecents.map((r) => (
               <tr
                 key={r.id}
-                className="group cursor-pointer border-b border-dashed border-rule-soft transition-colors last:border-b-0 hover:bg-paper-sunk"
+                className="group cursor-pointer border-b border-dashed border-[color:var(--board-slate-line)] transition-colors last:border-b-0 hover:bg-[color:var(--board-slate-pale)]"
               >
-                <td className="py-2.5 font-mono text-[0.82rem] text-muted-foreground">
+                <td className="py-2.5 font-mono text-[0.82rem] text-[color:var(--board-slate-mid)]">
                   <LienProvenance
                     href={`/etablissements/${etablissementId}/verifications/${r.verificationId}`}
                     className="block"
@@ -470,7 +471,7 @@ export function WidgetDuerp({ bundle }: { bundle: DashboardBundle }) {
   if (!duerpDernier) {
     return (
       <BentoCell kicker="DUERP">
-        <p className="text-[0.88rem] text-muted-foreground">
+        <p className="text-[0.88rem] text-[color:var(--board-slate-mid)]">
           Pas encore initié. Il se crée automatiquement dès la première
           unité de travail évaluée.
         </p>
@@ -485,7 +486,7 @@ export function WidgetDuerp({ bundle }: { bundle: DashboardBundle }) {
           <p className="text-[0.95rem] font-medium">
             Document Unique d&apos;Évaluation des Risques
           </p>
-          <p className="mt-0.5 text-[0.78rem] text-muted-foreground">
+          <p className="mt-0.5 text-[12.5px] text-[color:var(--board-slate-mid)]">
             {derniereVersion
               ? `v${derniereVersion.numero} du ${formaterDateFr(derniereVersion.createdAt)}`
               : "En cours — pas encore validé"}
@@ -579,7 +580,7 @@ export function WidgetRecos({ bundle }: { bundle: DashboardBundle }) {
   return (
     <BentoCell kicker="À faire en priorité" count={recos.length}>
       {recos.length === 0 ? (
-        <p className="text-[0.88rem] text-muted-foreground">
+        <p className="text-[0.88rem] text-[color:var(--board-slate-mid)]">
           Aucune action prioritaire pour l&apos;instant — tout est à jour. ✓
         </p>
       ) : (
@@ -593,16 +594,16 @@ export function WidgetRecos({ bundle }: { bundle: DashboardBundle }) {
                   : "info";
             const bgClass =
               tone === "alerte"
-                ? "border-l-[color:var(--minium)] bg-[color:color-mix(in_oklch,var(--minium)_4%,var(--paper-sunk))]"
+                ? "border-l-[color:var(--board-signal-ink)] bg-[color:color-mix(in_oklch,var(--board-signal-ink)_4%,var(--board-slate-pale))]"
                 : tone === "warn"
-                  ? "border-l-[color:var(--warn)] bg-[color:var(--warn-pale)]"
-                  : "border-l-[color:var(--accent-vif)] bg-paper-sunk";
+                  ? "border-l-[color:var(--board-amber)] bg-[color:var(--warn-pale)]"
+                  : "border-l-[color:var(--board-blue-ink)] bg-[color:var(--board-slate-pale)]";
             const dotColor =
               tone === "alerte"
-                ? "var(--minium)"
+                ? CHAMP_ETAT.enRetard
                 : tone === "warn"
-                  ? "var(--warn)"
-                  : "var(--accent-vif)";
+                  ? CHAMP_ETAT.proche
+                  : CHAMP_ETAT.lointain;
             return (
               <li
                 key={i}
@@ -621,14 +622,14 @@ export function WidgetRecos({ bundle }: { bundle: DashboardBundle }) {
                     {r.titre}
                   </strong>
                   {r.sousTitre ? (
-                    <em className="mt-0.5 block truncate text-[0.76rem] not-italic text-muted-foreground">
+                    <em className="mt-0.5 block truncate text-[0.76rem] not-italic text-[color:var(--board-slate-mid)]">
                       {r.sousTitre}
                     </em>
                   ) : null}
                 </div>
                 <Link
                   href={r.href}
-                  className="rounded-md bg-ink px-3 py-1.5 text-[0.78rem] text-paper-elevated transition-colors hover:bg-[color:color-mix(in_oklch,var(--ink)_85%,var(--accent-vif))]"
+                  className="rounded-md bg-ink px-3 py-1.5 text-[12.5px] text-paper-elevated transition-colors hover:bg-[color:color-mix(in_oklch,var(--board-ink)_85%,var(--board-blue-ink))]"
                 >
                   Ouvrir →
                 </Link>

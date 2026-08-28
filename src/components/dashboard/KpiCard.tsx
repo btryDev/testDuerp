@@ -1,8 +1,14 @@
-// KPI — carte métrique compacte. Tone colore la valeur :
-//  - default : ink
-//  - ok : vert accent-vif
-//  - warn : ambre
-//  - alerte : minium (rouge)
+// Carte métrique compacte du tableau de bord. `tone` colore la VALEUR, et les
+// quatre tons reprennent le vocabulaire d'état du produit — l'encre neutre, le
+// vert « fait », l'ambre « proche », le rose « en retard ». Ils viennent de
+// `ENCRE_ETAT`, source unique, et non d'une cinquième table locale.
+//
+// La TENDANCE, elle, ne porte plus de couleur, et c'est un changement de sens
+// assumé. Elle peignait « up » en vert et « down » en rouge, ce qui suppose
+// qu'une hausse est toujours bonne — or ces cartes comptent aussi bien des
+// vérifications faites que des échéances en retard, où c'est l'inverse. Une
+// couleur qui juge sans savoir de quoi elle parle vaut moins que pas de
+// couleur : la flèche et le libellé disent la direction, le lecteur juge.
 
 import type { ReactNode } from "react";
 
@@ -23,20 +29,20 @@ export function KpiCard({
   tone?: KpiTone;
 }) {
   return (
-    <div className="rounded-xl border border-rule-soft bg-paper-elevated px-5 py-4">
-      <div className="font-mono text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground">
+    <div className="rounded-[18px] bg-[color:var(--board-slate-pale)] px-5 py-4">
+      <div className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
         {label}
       </div>
       <div
         className={
-          "mt-2.5 text-[1.85rem] font-semibold leading-none tracking-[-0.03em] tabular-nums " +
+          "mt-2.5 text-[30px] font-semibold leading-none tracking-[-0.03em] tabular-nums " +
           toneClass(tone)
         }
       >
         {value}
       </div>
       {trend ? (
-        <div className={"mt-2 text-[0.74rem] " + trendClass(trend.dir)}>
+        <div className="mt-2 text-[12px] text-[color:var(--board-slate-mid)]">
           {trend.label}
         </div>
       ) : null}
@@ -44,21 +50,13 @@ export function KpiCard({
   );
 }
 
-function toneClass(tone: KpiTone) {
-  switch (tone) {
-    case "ok":
-      return "text-[color:var(--accent-vif)]";
-    case "warn":
-      return "text-[color:var(--warn-ink)]";
-    case "alerte":
-      return "text-[color:var(--minium)]";
-    default:
-      return "text-ink";
-  }
-}
+const ENCRE_DU_TON: Record<KpiTone, string> = {
+  default: "text-[color:var(--board-ink)]",
+  ok: "text-[color:var(--board-green-ink)]",
+  warn: "text-[color:var(--board-amber-ink)]",
+  alerte: "text-[color:var(--board-signal-ink)]",
+};
 
-function trendClass(dir: "up" | "down" | "flat") {
-  if (dir === "up") return "text-[color:var(--accent-vif)]";
-  if (dir === "down") return "text-[color:var(--minium)]";
-  return "text-muted-foreground";
+function toneClass(tone: KpiTone) {
+  return ENCRE_DU_TON[tone];
 }

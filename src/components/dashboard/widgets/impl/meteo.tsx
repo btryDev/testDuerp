@@ -4,6 +4,7 @@
 // Heatmap 30 jours glissants. Chaque cellule = un jour, couleur selon
 // la pire urgence du jour (retard > à planifier > OK > rien).
 
+import { CHAMP_ETAT } from "@/lib/calendrier/etats";
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import { cleJourCivil } from "@/lib/dates";
 import { colonnesJours } from "../temps";
@@ -52,11 +53,11 @@ export function WidgetMeteo({ bundle }: { bundle: DashboardBundle }) {
           const tone = toneParJour.get(jour.cle);
           const bg = tone
             ? tone === "alerte"
-              ? "var(--minium)"
+              ? CHAMP_ETAT.enRetard
               : tone === "warn"
-                ? "var(--warn)"
-                : "var(--accent-vif)"
-            : "var(--rule-soft)";
+                ? CHAMP_ETAT.proche
+                : CHAMP_ETAT.lointain
+            : "var(--board-slate-pale)";
           const isToday = jour.estAujourdhui;
           return (
             <div
@@ -69,7 +70,7 @@ export function WidgetMeteo({ bundle }: { bundle: DashboardBundle }) {
               className={
                 "aspect-square rounded " +
                 (isToday
-                  ? "outline outline-2 outline-offset-1 outline-[color:var(--ink)]"
+                  ? "outline outline-2 outline-offset-1 outline-[color:var(--board-ink)]"
                   : "")
               }
               style={{ background: bg, opacity: tone ? 1 : 0.5 }}
@@ -78,13 +79,13 @@ export function WidgetMeteo({ bundle }: { bundle: DashboardBundle }) {
         })}
       </div>
 
-      <div className="mt-auto flex flex-wrap items-center gap-3 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-muted-foreground">
-        <LegendePt color="var(--minium)" label={`${compte.alerte} retard`} />
+      <div className="mt-auto flex flex-wrap items-center gap-3 font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--board-slate-mid)]">
+        <LegendePt color={CHAMP_ETAT.enRetard} label={`${compte.alerte} retard`} />
         <LegendePt
-          color="var(--warn)"
+          color={CHAMP_ETAT.proche}
           label={`${compte.warn} à planifier`}
         />
-        <LegendePt color="var(--accent-vif)" label={`${compte.ok} planifié`} />
+        <LegendePt color={CHAMP_ETAT.lointain} label={`${compte.ok} planifié`} />
       </div>
     </BentoCell>
   );

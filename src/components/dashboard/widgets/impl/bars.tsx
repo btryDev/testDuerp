@@ -4,6 +4,7 @@
 //  - bars   : grille 12 mois (BarsObligations existant)
 //  - radial : donut agrégé par statut (couvert / à venir / retard)
 
+import { CHAMP_ETAT } from "@/lib/calendrier/etats";
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import {
   BarsObligations,
@@ -59,7 +60,7 @@ export function WidgetBarsObligations({
 
 function EmptyBars() {
   return (
-    <div className="flex h-[160px] items-center justify-center rounded-md border border-dashed border-rule-soft bg-paper-sunk/40 p-6 text-center text-[0.86rem] text-muted-foreground">
+    <div className="flex h-[160px] items-center justify-center rounded-md border border-dashed border-[color:var(--board-slate-line)] bg-[color:var(--board-slate-pale)]/40 p-6 text-center text-[0.86rem] text-[color:var(--board-slate-mid)]">
       Le calendrier se remplit dès que vous déclarez vos équipements.
     </div>
   );
@@ -86,7 +87,7 @@ function DonutStatuts({
             cy="70"
             r="48"
             fill="none"
-            stroke="var(--rule-soft)"
+            stroke="var(--board-slate-pale)"
             strokeWidth="14"
           />
           {totaux.retard > 0 ? (
@@ -95,7 +96,7 @@ function DonutStatuts({
               cy="70"
               r="48"
               fill="none"
-              stroke="var(--minium)"
+              stroke={CHAMP_ETAT.enRetard}
               strokeWidth="14"
               strokeDasharray={`${pct(totaux.retard) * circ} ${circ}`}
               strokeDashoffset={-offRetard}
@@ -107,7 +108,7 @@ function DonutStatuts({
               cy="70"
               r="48"
               fill="none"
-              stroke="var(--accent-vif)"
+              stroke={CHAMP_ETAT.lointain}
               strokeWidth="14"
               strokeDasharray={`${pct(totaux.aVenir) * circ} ${circ}`}
               strokeDashoffset={-offAVenir}
@@ -119,7 +120,7 @@ function DonutStatuts({
               cy="70"
               r="48"
               fill="none"
-              stroke="var(--ink)"
+              stroke="var(--board-ink)"
               strokeWidth="14"
               strokeDasharray={`${pct(totaux.couvert) * circ} ${circ}`}
               strokeDashoffset={-offCouvert}
@@ -130,26 +131,26 @@ function DonutStatuts({
           <span className="text-[1.8rem] font-semibold leading-none tabular-nums">
             {total}
           </span>
-          <span className="mt-1 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-muted-foreground">
+          <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--board-slate-mid)]">
             Au total
           </span>
         </div>
       </div>
       <ul className="flex flex-1 flex-col gap-2 text-[0.88rem]">
         <Item
-          color="var(--ink)"
+          color="var(--board-ink)"
           label="Couvertes"
           value={totaux.couvert}
           total={total}
         />
         <Item
-          color="var(--accent-vif)"
+          color={CHAMP_ETAT.lointain}
           label="À venir"
           value={totaux.aVenir}
           total={total}
         />
         <Item
-          color="var(--minium)"
+          color={CHAMP_ETAT.enRetard}
           label="En retard"
           value={totaux.retard}
           total={total}
@@ -178,10 +179,10 @@ function Item({
         className="inline-block size-2 rounded-full"
         style={{ background: color }}
       />
-      <span className="flex-1 text-ink">{label}</span>
+      <span className="flex-1 text-[color:var(--board-ink)]">{label}</span>
       <span className="font-mono text-[0.82rem] tabular-nums">
         {value}
-        <span className="ml-1 text-muted-foreground">({pct}%)</span>
+        <span className="ml-1 text-[color:var(--board-slate-mid)]">({pct}%)</span>
       </span>
     </li>
   );

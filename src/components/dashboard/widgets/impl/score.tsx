@@ -133,7 +133,7 @@ export function WidgetScore({
         }
       >
         <div className="flex flex-col gap-1">
-          <span className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--board-slate-mid)]">
             Score actuel
           </span>
           <div className="flex items-baseline gap-3">
@@ -162,7 +162,7 @@ export function WidgetScore({
         : { classe: "pill-v2 pill-v2-alert", label: LIBELLE_NIVEAU.rattrapage };
 
   return (
-    <section className="bento-cell">
+    <section className="carte-board px-7 py-6 sm:px-8">
       <header className="flex items-start justify-between gap-3">
         <div>
           <h3 className="v2-title inline-flex items-center">
@@ -182,11 +182,11 @@ export function WidgetScore({
         </div>
 
         <div className="flex flex-col gap-3">
-          <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[color:var(--board-slate-mid)]">
             Vérifications à jour par famille
           </p>
           {familles.length === 0 ? (
-            <p className="text-[0.85rem] text-muted-foreground">
+            <p className="text-[0.85rem] text-[color:var(--board-slate-mid)]">
               Déclarez vos équipements pour suivre l&apos;état des
               vérifications par famille.
             </p>
@@ -199,7 +199,7 @@ export function WidgetScore({
                     key={f.nom}
                     className="grid grid-cols-[110px_1fr_auto] items-center gap-3 md:grid-cols-[140px_1fr_auto]"
                   >
-                    <div className="text-[0.84rem] text-ink/75">{f.nom}</div>
+                    <div className="text-[0.84rem] text-[color:var(--board-slate-ink)]">{f.nom}</div>
                     <div className="v2-bar-track">
                       <div
                         className="v2-bar-fill"
@@ -210,10 +210,10 @@ export function WidgetScore({
                       />
                     </div>
                     <div
-                      className="text-right font-mono text-[0.74rem] tabular-nums"
+                      className="text-right font-mono text-[12px] tabular-nums"
                       style={{
                         color:
-                          f.enRetard > 0 ? "var(--board-signal-ink)" : "var(--ink)",
+                          f.enRetard > 0 ? "var(--board-signal-ink)" : "var(--board-ink)",
                         opacity: 0.85,
                       }}
                       title={
@@ -260,7 +260,7 @@ function ScoreRingV2({
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="var(--paper-sunk)"
+        stroke="var(--board-slate-pale)"
         strokeWidth={stroke}
       />
       <circle
@@ -282,7 +282,7 @@ function ScoreRingV2({
         fontFamily="var(--font-body)"
         fontSize="32"
         fontWeight="600"
-        fill="var(--ink)"
+        fill="var(--board-ink)"
         style={{ letterSpacing: "-0.03em" }}
       >
         {pct}
@@ -390,8 +390,8 @@ function calculerFamilles(
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between border-b border-dashed border-rule-soft py-1.5 last:border-b-0">
-      <span className="text-muted-foreground">{label}</span>
+    <div className="flex items-center justify-between border-b border-dashed border-[color:var(--board-slate-line)] py-1.5 last:border-b-0">
+      <span className="text-[color:var(--board-slate-mid)]">{label}</span>
       <strong className="font-semibold tabular-nums">{value}</strong>
     </div>
   );
@@ -448,7 +448,7 @@ function GaugeScore({ valeur }: { valeur: number }) {
         <path
           d={`M ${arcStart.x} ${arcStart.y} A ${rayon} ${rayon} 0 0 1 ${arcEnd.x} ${arcEnd.y}`}
           fill="none"
-          stroke="var(--rule-soft)"
+          stroke="var(--board-slate-pale)"
           strokeWidth="10"
           strokeLinecap="round"
         />
@@ -466,7 +466,7 @@ function GaugeScore({ valeur }: { valeur: number }) {
             y1={t.y1}
             x2={t.x2}
             y2={t.y2}
-            stroke="var(--ink)"
+            stroke="var(--board-ink)"
             strokeWidth={t.major ? 1.1 : 0.6}
             opacity={t.major ? 0.7 : 0.3}
             strokeLinecap="round"
@@ -477,11 +477,11 @@ function GaugeScore({ valeur }: { valeur: number }) {
           y1={cy}
           x2={cx + Math.cos(valAngle) * (rayon - 14)}
           y2={cy + Math.sin(valAngle) * (rayon - 14)}
-          stroke="var(--ink)"
+          stroke="var(--board-ink)"
           strokeWidth="2"
           strokeLinecap="round"
         />
-        <circle cx={cx} cy={cy} r="5" fill="var(--ink)" />
+        <circle cx={cx} cy={cy} r="5" fill="var(--board-ink)" />
         <text
           x={cx}
           y={cy + 25}
@@ -489,7 +489,7 @@ function GaugeScore({ valeur }: { valeur: number }) {
           fontFamily="var(--font-body)"
           fontSize="22"
           fontWeight="600"
-          fill="var(--ink)"
+          fill="var(--board-ink)"
           style={{ letterSpacing: "-0.03em" }}
         >
           {valeur}
