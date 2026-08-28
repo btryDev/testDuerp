@@ -157,10 +157,24 @@ vit dans le SQL — donc elle est testée là où les autres le sont.
 `porteurDe(o)` reste le seul lecteur autorisé, et les deux points de bascule
 cessent d'être des ternaires :
 
-- `engine.ts` construit un `switch` sur le porteur, dont chaque branche pose sa
-  propre valeur. Aucune branche ne conclut par défaut.
-- `generateur.ts` fait de même pour choisir ce sur quoi il boucle : un
-  équipement, un salarié, ou rien.
+- `engine.ts` teste le porteur **cas par cas, en retours anticipés**, et non
+  par un `switch` : `porteur === "salarie"` rend `null`, `porteur ===
+  "etablissement"` a son bloc, et le cas équipement qui reste est gardé par
+  `estPorteeParEquipement(o)`. C'est cette garde qui tient lieu d'analyse de
+  cas : une quatrième valeur de porteur y rendrait `false` et l'obligation
+  serait **écartée bruyamment**, jamais requalifiée en silence dans le cas
+  précédent.
+- `generateur.ts` porte le `switch`, pour choisir ce sur quoi il boucle : un
+  équipement, un salarié, ou rien. Il **a** une branche par défaut, et c'est sa
+  valeur : elle affecte `oa.porteur` à un `never` — donc la disparition d'un
+  `case` cesse de compiler — puis lève en nommant l'obligation et la valeur
+  fautive. Le défaut ne conclut pas à la place d'un cas manquant, il refuse.
+
+*(Rédaction corrigée le 2026-08-28 : ce paragraphe attribuait le `switch` à
+`engine.ts` et affirmait qu'aucune branche ne concluait par défaut. Les deux
+étaient faux — le `switch` est dans `generateur.ts` et son `default` est
+délibéré. Le principe, lui, tient : le porteur se lit par analyse de cas, et
+jamais par négation.)*
 
 Ce n'est pas du style. Une négation (`!estPorteeParEquipement`) est une porte
 qui s'ouvre à tout ce qu'on ajoutera ensuite, et qui l'attribue au cas précédent

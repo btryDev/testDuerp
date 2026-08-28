@@ -21,21 +21,55 @@ raison, et ce qu'il faudrait pour la lever.
 C'est la catégorie la plus dangereuse : un document affirme au présent une
 chose que le code ne fait pas. Le lecteur suivant s'y fiera.
 
-### 1.1 L'export du titulaire du compte — `docs/rgpd.md` § 5.1
+### 1.1 L'export **et la suppression** du titulaire du compte — `docs/rgpd.md` § 5.1
 
-> « **Accès et portabilité** (art. 15 et 20) — export JSON complet. »
+**Ce qui manque est l'outil, pas le droit.** Les articles 15, 17 et 20 donnent
+un droit réel, et il est servi : par demande à `contact@btry.fr`, traitée à la
+main dans le délai d'un mois de l'article 12.3. Ce qui n'existe pas, c'est le
+libre-service. La nuance commande la rédaction : un document qui supprimerait
+la ligne dirait, en creux, que le droit n'existe pas — ce serait remplacer une
+contre-vérité par une autre.
 
-**Il n'existe pas.** Aucune route, aucune action serveur, rien dans le dépôt.
-C'est une intention écrite au présent. Vérifié le 2026-08-27 par recherche sur
-`src/app`, `src/lib`, `src/components`.
+Deux manques, pas un. Le second a été manqué à la première rédaction de cette
+section, le 2026-08-27, qui ne recensait que l'export :
 
-À ne pas confondre avec l'extraction **par salarié** (§ 5.2), qui, elle, est
-livrée avec l'écran Équipe. Ce sont deux manques distincts ; celui-ci reste
-entier.
+**a) L'export complet (art. 15 et 20).** Aucune route, aucune action serveur.
+Vérifié le 2026-08-27 sur `src/app`, `src/lib`, `src/components`, et de
+nouveau le 2026-08-28 : `src/app/api/` porte dix routes, dont une seule
+d'extraction. À ne pas confondre avec l'extraction **par salarié** (§ 5.2),
+livrée avec l'écran Équipe.
 
 *Pour le lever* : une route sur le modèle de
 `api/etablissements/[id]/equipe/[salarieId]/donnees`, élargie à l'entreprise,
-ses établissements, ses équipements et ses documents.
+ses établissements, ses équipements et ses documents. Reste à trancher : ce
+qu'on fait des fichiers déposés (`attestationCle`, `agendaAdapCle`, rapports
+en stockage) — les inclure, ou n'en donner que l'inventaire.
+
+**b) La suppression de compte (art. 17).** Aucune action non plus. Vérifié le
+2026-08-28 : rien ne répond à `supprimerCompte`, `deleteAccount` ni
+`deleteUser` dans `src/`.
+
+*Ce n'est pas une route à écrire, c'est une décision produit à prendre.* Les
+versions de DUERP se conservent 40 ans au titre d'une obligation légale
+(`rgpd.md` § 4.2) : la suppression ne peut être que **partielle**, et personne
+n'a encore décidé ce qu'elle emporte, ce qu'elle laisse, ni ce que
+l'utilisateur en lit au moment où il la demande. La livrer sans cette décision
+produirait soit un effacement qui détruit une preuve légale, soit un bouton
+qui ne supprime pas grand-chose et le dit mal.
+
+**Ce qui a été corrigé le 2026-08-28** : `rgpd.md` § 5.1 annonçait les deux au
+présent, comme des fonctionnalités. Le § 5.3 démentait l'export 34 lignes plus
+bas ; la suppression n'était démentie nulle part. Les deux disent désormais par
+quel chemin le droit s'exerce.
+
+**Ce qui reste à corriger** : `.claude/CLAUDE.md` règle 9 porte la même promesse
+au présent — « RGPD : hébergement UE, politique de rétention explicite, export
+et suppression **possibles à tout moment** » — et n'est démentie nulle part. Le
+pointeur de `CLAUDE.md:134` ne vise que l'export. Cette ligne n'a pas été
+touchée avec les autres : `CLAUDE.md` est le document qui gouverne le travail
+sur ce dépôt, et sa modification revient à sa propriétaire, pas à la session
+qui corrige les autres documents. La correction attendue est la même que
+celle du § 5.1 : dire par quel chemin le droit s'exerce, sans retirer le droit.
 
 ### 1.2 Le cinquième déclencheur — l'activité réellement exercée
 

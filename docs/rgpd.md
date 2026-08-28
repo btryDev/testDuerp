@@ -228,12 +228,33 @@ Deux catégories de personnes, deux chemins.
 
 ### 5.1 Le titulaire du compte (le dirigeant)
 
-1. **Accès et portabilité** (art. 15 et 20) — export JSON complet.
+Les quatre droits sont dus et exercés. Ce qui change d'une ligne à l'autre,
+c'est **par quel chemin** : deux passent par l'application, deux par une
+demande traitée à la main. La colonne de droite dit lequel, et ne promet pas
+d'écran là où il n'y en a pas.
+
+1. **Accès et portabilité** (art. 15 et 20) — **par demande à
+   `contact@btry.fr`**, traitée manuellement dans le délai d'un mois de
+   l'article 12.3. *L'export JSON en libre-service n'existe pas* : aucune
+   route, aucune action serveur. Il est dû au produit, il n'est pas rendu —
+   cf. `docs/dette-chantier-porteur-echeance.md` § 1.1. À ne pas confondre
+   avec l'extraction **par salarié** du § 5.2, qui, elle, est livrée.
 2. **Rectification** (art. 16) — les formulaires d'édition.
-3. **Effacement** (art. 17) — suppression du compte, hors ce qui est soumis à
-   obligation légale (`DuerpVersion`).
+3. **Effacement** (art. 17) — **par demande à `contact@btry.fr`**, même délai.
+   *La suppression de compte en libre-service n'existe pas non plus.* L'effacement
+   ne peut de toute façon pas être total : les versions de DUERP sont conservées
+   au titre d'une obligation légale (§ 4.2) et ne s'effacent pas à la demande,
+   exception de l'article 17.3.b. Ce que la suppression emporte et ce qu'elle
+   laisse est une décision produit qui reste à prendre — cf. dette § 1.1.
 4. **Opposition et limitation** (art. 18 et 21) — par courriel, traitement
    manuel.
+
+*Rédaction corrigée le 2026-08-28.* Les points 1 et 3 annonçaient
+« export JSON complet » et « suppression du compte » **au présent**, comme des
+fonctionnalités. Ni l'une ni l'autre n'existe. Le § 5.3 démentait l'export
+34 lignes plus bas ; la suppression n'était démentie nulle part. Le droit,
+lui, n'a jamais cessé d'exister — il est servi hors de l'outil, et c'est ce
+que ces lignes disent désormais.
 
 ### 5.2 Le salarié suivi — il n'est pas l'utilisateur, et ses droits existent quand même
 
@@ -272,11 +293,15 @@ précisément ce qui rend possible de saisir un salarié réel :
   décrirait un autre traitement. L'outil le fournit ; il n'informe pas à la
   place de l'employeur, qui reste le responsable de traitement.
 
-**Non livré, et à ne pas confondre avec ce qui précède** : l'export complet du
-titulaire du compte annoncé au 5.1 (art. 15 et 20, « export JSON complet »)
-**n'existe pas**. Aucune route, aucune action. La phrase du 5.1 décrit une
-intention, pas une fonctionnalité — elle est due, elle n'est pas rendue, et
-c'est un manque distinct de celui que l'écran Équipe vient de combler.
+**Non livré, et à ne pas confondre avec ce qui précède** : les deux
+libres-services du titulaire du compte (§ 5.1, points 1 et 3) — **l'export
+complet** et **la suppression de compte**. Aucune route, aucune action, ni pour
+l'un ni pour l'autre. Les deux droits sont servis à la main, sur demande ; ce
+qui manque est l'outil, pas le droit. Manques distincts de celui que l'écran
+Équipe vient de combler, et recensés en dette § 1.1.
+
+*Jusqu'au 2026-08-28, ce paragraphe ne visait que l'export : la suppression
+était promise au présent au § 5.1 et démentie nulle part.*
 
 ---
 

@@ -171,7 +171,8 @@ model AccessToken {
 
 ### Relation Prestataire ↔ AccessToken ↔ autres entités
 
-- Une `Verification`, `PermisFeu`, `PlanPrevention`, `Intervention`… peut référencer un `prestataireId` (FK optionnelle). Cela connecte l'annuaire à l'historique sans imposer la création préalable d'une fiche prestataire (le dirigeant peut aussi saisir un prestataire inconnu à la volée).
+- `PermisFeu`, `PlanPrevention` et `Intervention` portent un `prestataireId` (FK optionnelle, `ON DELETE SET NULL`). Cela connecte l'annuaire à l'historique sans imposer la création préalable d'une fiche prestataire (le dirigeant peut aussi saisir un prestataire inconnu à la volée).
+- **`Verification`, en revanche, n'en porte pas** — et n'en a jamais porté. La rédaction d'origine la citait en tête de liste ; c'était faux dès l'écriture de cet ADR, et vérifié tel quel au schéma le 2026-08-28 (`prisma/schema.prisma`, modèle `Verification`). Les quatre modèles qui portent la colonne sont `AccessToken`, `PermisFeu`, `PlanPrevention` et `Intervention`. Le réalisateur d'une occurrence de vérification se lit donc ailleurs — `RapportVerification.organismeVerif`, en texte libre — et rien ne relie aujourd'hui une occurrence à une fiche de l'annuaire.
 - Un `AccessToken` peut référencer un `prestataireId` si connu, mais ce n'est pas obligatoire (un artisan ponctuel peut recevoir un lien sans qu'on crée sa fiche).
 
 ## Conséquences

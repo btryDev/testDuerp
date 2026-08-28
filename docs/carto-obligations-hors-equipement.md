@@ -20,19 +20,27 @@ version constatée tracée (cf. `ReferenceLegale.versionConstatee`, branche
 `chore/veille-reglementaire`). Plusieurs sont probablement périmées ou mal
 numérotées : le décret n° 2025-1100 a réécrit une partie du CCH au 1er juillet 2026.
 
-## ⚠️ Conflit avec le périmètre déclaré
+## Le périmètre a été amendé — ce paragraphe disait le contraire
 
-`.claude/CLAUDE.md` liste aujourd'hui en **hors périmètre** : « suivi nominatif
-formations/habilitations », visites médicales, registre unique du personnel, registre des
-AT bénins, dangers graves et imminents, EPI — ainsi qu'ATEX et rayonnements ionisants.
+*Corrigé le 2026-08-28.* Ce document annonçait un conflit avec le périmètre
+déclaré : « `.claude/CLAUDE.md` liste aujourd'hui en hors périmètre : suivi nominatif
+formations/habilitations, visites médicales… ». **C'était déjà faux à la publication.**
+Le commit qui a créé ce document — `704d5d0`, le 2026-08-26 — est celui-là même qui a
+retiré **« suivi nominatif formations/habilitations » et « visites médicales »** de la
+liste hors périmètre de `CLAUDE.md`. Le paragraphe décrivait l'état d'avant l'amendement
+livré avec lui.
 
-La quasi-totalité de ce document porte donc sur des sujets **déclarés hors périmètre**.
-Ce n'est pas une extension technique, c'est un changement de périmètre produit. Il doit
-être décidé comme tel, et `CLAUDE.md` mis à jour **avant** toute implémentation — sinon
-le document et le code se contredisent.
+**Le suivi nominatif est dans le périmètre** (`.claude/CLAUDE.md`, « Suivi nominatif des
+salariés »), et il est en partie livré : le porteur salarié existe (ADR-023), avec une
+obligation encodée, l'attestation médicale quinquennale de `R. 4544-11-1`.
 
-Les lignes marquées ⛔ restent hors périmètre même après ce changement (ATEX,
-rayonnements) : elles relèvent de secteurs industriels hors cible.
+Restent **hors périmètre** parmi les sujets de ce document : registre unique du personnel,
+accidents du travail et AT bénins, dangers graves et imminents, EPI, ainsi qu'ATEX et
+rayonnements ionisants (⛔ ci-dessous, secteurs industriels hors cible).
+
+Le reste du document garde sa valeur de spec d'entrée : ce qui y est recensé n'est
+toujours pas encodé, et la mise en garde ci-dessus sur les références présumées reste
+entière.
 
 ## Périmètre retenu
 
