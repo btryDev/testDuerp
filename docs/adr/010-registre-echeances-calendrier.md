@@ -71,6 +71,28 @@ injectée), conformément au principe zéro-IA / déterminisme.
   vérifiable → pas d'échéance inventée (règle n°6 du projet).
 - **Kbis** : informatif, sans date-cible (choix ADR-007 / vigilance).
 - **Tokens d'accès, signatures** : dates techniques, pas des obligations.
+- **Dépôt de l'Ad'AP** (`RegistreAccessibilite.dateDepotAdap`) et **date de
+  l'attestation de conformité** (`.dateConformite`) : **des dates d'événement
+  passé, pas des points de départ d'un rythme.** L'une horodate le dépôt d'un
+  agenda d'accessibilité programmée, l'autre la délivrance d'une attestation ;
+  ni l'une ni l'autre n'ouvre une périodicité. Leur donner une échéance
+  demanderait d'inventer un intervalle qu'aucun texte relevé ne pose — pas
+  d'échéance inventée (règle n°6 du projet).
+
+  Le modèle le dit de lui-même : chaque colonne est saisie **une fois**, dans
+  un formulaire qui ne demande aucun intervalle, et elle voyage avec la pièce
+  qu'elle date (`agendaAdapCle`, `attestationCle`). Ce sont des pièces
+  justificatives datées — le module Accessibilité les saisit et les affiche —
+  et non des points de départ dont un rendez-vous suivant se déduirait. Rien
+  dans le schéma, le formulaire ni le référentiel ne fournit l'intervalle
+  qu'il faudrait pour en faire une source.
+
+  *Ajoutées le 2026-08-28.* Les quatre colonnes datées de
+  `RegistreAccessibilite` sont hors du registre de sources ; deux seulement
+  étaient documentées ici (`dateDerniereFormation`,
+  `dernierControleMaintenance`). Les deux autres étaient exactement le « champ
+  date orphelin non documenté » que la dernière ligne de cet ADR qualifie de
+  bug de revue. La règle a fini par s'appliquer à elle-même.
 
 ## Conséquences
 
