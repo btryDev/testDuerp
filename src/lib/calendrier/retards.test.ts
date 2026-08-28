@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { EcheanceCalendrier, FamilleEcheance } from "./echeances";
-import { repartirRetards, repartirSous30j } from "./retards";
+import { repartirRetards, repartirSous30j, type VerifsParType } from "./retards";
 
 /**
  * Seules les deux fonctions pures sont testées : ce sont elles qui portent
@@ -29,6 +29,17 @@ const echeance = (
   batiment: null,
 });
 
+/**
+ * Le flux des vérifications, ventilé par nature (ADR-016).
+ *
+ * `verifs(3)` = trois lignes d'équipement ; `verifs(3, 2)` y ajoute deux
+ * titres de salariés, qui ne relèvent PAS de la même famille.
+ */
+const verifs = (verification: number, titreSalarie = 0): VerifsParType => ({
+  verification,
+  "titre-salarie": titreSalarie,
+});
+
 describe("repartirRetards", () => {
   it("ventile les échéances dépassées par famille", () => {
     const r = repartirRetards(
@@ -37,7 +48,7 @@ describe("repartirRetards", () => {
         echeance("travaux", "alerte"),
         echeance("papiers", "alerte"),
       ],
-      0,
+      verifs(0),
     );
 
     expect(r.parFamille.travaux).toBe(2);
@@ -47,7 +58,7 @@ describe("repartirRetards", () => {
   it("ignore ce qui n'est pas dépassé", () => {
     const r = repartirRetards(
       [echeance("travaux", "ok"), echeance("papiers", "ok")],
-      0,
+      verifs(0),
     );
 
     expect(r.total).toBe(0);
@@ -61,7 +72,7 @@ describe("repartirRetards", () => {
         echeance("travaux", "alerte"),
         echeance("papiers", "alerte"),
       ],
-      3,
+      verifs(3),
     );
 
     expect(r.total).toBe(6);
@@ -70,15 +81,15 @@ describe("repartirRetards", () => {
   it("distingue les vérifications du reste de la famille « controle »", () => {
     // Une analyse légionelle est rangée en famille `controle` par le
     // registre : elle pèse dans `parFamille.controle`, jamais dans le
-    // badge « Contrôles matériel ».
-    const r = repartirRetards([echeance("controle", "alerte")], 3);
+    // sous-compte `verifications`.
+    const r = repartirRetards([echeance("controle", "alerte")], verifs(3));
 
     expect(r.verifications).toBe(3);
     expect(r.parFamille.controle).toBe(4);
   });
 
   it("présente toutes les familles, même celles sans ligne", () => {
-    const r = repartirRetards([], 0);
+    const r = repartirRetards([], verifs(0));
 
     expect(r.parFamille).toEqual({
       controle: 0,
@@ -91,10 +102,45 @@ describe("repartirRetards", () => {
   });
 
   it("compte les vérifications même sans aucune autre échéance", () => {
-    const r = repartirRetards([], 5);
+    const r = repartirRetards([], verifs(5));
 
     expect(r.total).toBe(5);
     expect(r.parFamille.controle).toBe(5);
+  });
+
+  it("range le retard d'un titre de salarié en « personnel », pas en « controle »", () => {
+    // Le défaut d'origine : `parFamille.controle = verifsEnRetard` versait le
+    // flux entier dans une seule famille. Une attestation médicale dépassée
+    // se comptait donc parmi les contrôles d'équipement.
+    const r = repartirRetards([], verifs(0, 2));
+
+    expect(r.parFamille.personnel).toBe(2);
+    expect(r.parFamille.controle).toBe(0);
+  });
+
+  it("ne change pas le total quand une ligne change de famille", () => {
+    // La promesse tenue à l'écran : le compteur du rail garde sa valeur,
+    // seule sa ventilation bouge. Deux ventilations de même somme.
+    const avant = repartirRetards([], verifs(5, 0));
+    const apres = repartirRetards([], verifs(3, 2));
+
+    expect(apres.total).toBe(avant.total);
+    expect(apres.parFamille.controle).toBe(3);
+    expect(apres.parFamille.personnel).toBe(2);
+  });
+
+  it("laisse les titres de salariés hors du sous-compte `verifications`", () => {
+    // `verifications` nomme « ce qui a un calendrier réglementaire
+    // d'équipement » : une attestation médicale n'en est pas un.
+    //
+    // Le champ **n'a aucun lecteur aujourd'hui** — le badge « Contrôles
+    // matériel » qu'il servait a été retiré du rail par l'ADR-015. Ce test
+    // ne garde donc rien à l'écran, et son nom ne doit pas le laisser croire ;
+    // il garde la justesse du champ pour le jour où quelqu'un le relira.
+    const r = repartirRetards([], verifs(3, 4));
+
+    expect(r.verifications).toBe(3);
+    expect(r.total).toBe(7);
   });
 });
 
@@ -109,7 +155,7 @@ describe("repartirSous30j", () => {
         echeance("papiers", "ok", dans(0)),
         echeance("operations", "ok", dans(30)),
       ],
-      0,
+      verifs(0),
       CE_MIDI,
     );
 
@@ -121,7 +167,7 @@ describe("repartirSous30j", () => {
   it("écarte le trente-et-unième jour", () => {
     const v = repartirSous30j(
       [echeance("papiers", "ok", dans(31))],
-      0,
+      verifs(0),
       CE_MIDI,
     );
 
@@ -133,7 +179,7 @@ describe("repartirSous30j", () => {
     // d'hier ne peut pas être annoncée deux fois, en retard *et* à venir.
     const v = repartirSous30j(
       [echeance("travaux", "alerte", dans(-1))],
-      0,
+      verifs(0),
       CE_MIDI,
     );
 
@@ -141,14 +187,22 @@ describe("repartirSous30j", () => {
   });
 
   it("verse les vérifications à venir dans la famille des contrôles", () => {
-    const v = repartirSous30j([], 4, CE_MIDI);
+    const v = repartirSous30j([], verifs(4), CE_MIDI);
 
     expect(v.parFamille.controle).toBe(4);
     expect(v.total).toBe(4);
   });
 
+  it("verse les titres de salariés à venir dans « personnel »", () => {
+    const v = repartirSous30j([], verifs(4, 3), CE_MIDI);
+
+    expect(v.parFamille.controle).toBe(4);
+    expect(v.parFamille.personnel).toBe(3);
+    expect(v.total).toBe(7);
+  });
+
   it("présente toutes les familles, même celles sans ligne", () => {
-    const v = repartirSous30j([], 0, CE_MIDI);
+    const v = repartirSous30j([], verifs(0), CE_MIDI);
 
     expect(v.parFamille).toEqual({
       controle: 0,

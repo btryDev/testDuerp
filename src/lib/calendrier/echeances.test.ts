@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { cleJourCivil } from "@/lib/dates";
+import type { FamilleEcheance } from "./echeances";
 import {
   MOIS_ANALYSE_LEGIONELLES,
   MOIS_MAJ_DUERP,
@@ -10,7 +11,10 @@ import {
   echeancePlanPrevention,
   echeancesPrestataire,
   FAMILLE_DE_TYPE,
+  FAMILLES_FILTRABLES,
+  famillesAvecEcheances,
   origineAction,
+  typeDeVerification,
   tonPourDate,
 } from "./echeances";
 
@@ -89,6 +93,33 @@ describe("FAMILLE_DE_TYPE", () => {
     expect(FAMILLE_DE_TYPE["plan-prevention"]).toBe("operations");
     expect(FAMILLE_DE_TYPE["duerp-maj"]).toBe("papiers");
     expect(FAMILLE_DE_TYPE.attestation).toBe("papiers");
+    // ADR-023 § 7 : une attestation médicale n'est pas un contrôle
+    // d'appareil, et c'est pourtant sous ce badge qu'elle s'affichait.
+    expect(FAMILLE_DE_TYPE["titre-salarie"]).toBe("personnel");
+  });
+
+  it("déduit la nature d'une ligne de vérification de son porteur", () => {
+    expect(typeDeVerification({ salarieId: null })).toBe("verification");
+    expect(typeDeVerification({ salarieId: "sal-1" })).toBe("titre-salarie");
+  });
+
+  it("ne prend pas un porteur absent pour un porteur salarié", () => {
+    // Le cast est délibéré : il rejoue une lecture dont le `select` a oublié
+    // `salarieId`. Le test écrit d'abord en négation (`=== null`) faisait
+    // basculer TOUTES ces lignes en « Personnel » — l'erreur inverse, muette,
+    // et rencontrée pour de vrai sur un objet de test.
+    const sansPorteur = {} as { salarieId: string | null };
+    expect(typeDeVerification(sansPorteur)).toBe("verification");
+  });
+
+  it("ne produit aucune famille que le calendrier ne sait pas filtrer", () => {
+    // La garantie qui manquait. Une famille rattachée à un type mais absente
+    // de la rangée de pilules donne des lignes visibles sous « Tout » et
+    // introuvables sous toute pilule — la régression que ce lot évite.
+    const produites = new Set(Object.values(FAMILLE_DE_TYPE));
+    expect([...produites].filter((f) => !FAMILLES_FILTRABLES.includes(f))).toEqual(
+      [],
+    );
   });
 
   it("déduit la bonne famille pour les échéances qu'il produit", () => {
@@ -99,6 +130,58 @@ describe("FAMILLE_DE_TYPE", () => {
     });
     expect(e?.type).toBe("duerp-maj");
     expect(e?.famille).toBe(FAMILLE_DE_TYPE["duerp-maj"]);
+  });
+});
+
+describe("famillesAvecEcheances", () => {
+  const aucune = { verification: 0, "titre-salarie": 0 } as const;
+  const fam = (famille: FamilleEcheance) => ({ famille });
+
+  it("ne propose que les familles qui portent quelque chose", () => {
+    expect(
+      famillesAvecEcheances({ verification: 4, "titre-salarie": 0 }, [
+        fam("papiers"),
+      ]),
+    ).toEqual(["controle", "papiers"]);
+  });
+
+  it("propose « Personnel » dès qu'un titre existe", () => {
+    expect(
+      famillesAvecEcheances({ verification: 0, "titre-salarie": 2 }, []),
+    ).toEqual(["personnel"]);
+  });
+
+  it("ne propose plus « Vérifications » quand il n'y a aucun contrôle", () => {
+    // Le cas du cul-de-sac : un établissement sans équipement, non-ERP, avec
+    // un titre déclaré. La clause `f === "controle"` en tête proposait la
+    // pilule, qui menait à « Rien ne correspond à ces filtres ».
+    const out = famillesAvecEcheances(
+      { verification: 0, "titre-salarie": 1 },
+      [],
+    );
+    expect(out).not.toContain("controle");
+  });
+
+  it("garde « Vérifications » pour une analyse légionelles seule", () => {
+    // Elle vient du registre, pas du flux des vérifications : sans cette
+    // seconde source, retirer la clause aurait fait disparaître la pilule
+    // d'un établissement qui n'a qu'un carnet sanitaire.
+    expect(famillesAvecEcheances(aucune, [fam("controle")])).toEqual([
+      "controle",
+    ]);
+  });
+
+  it("rend les familles dans l'ordre du filtre, jamais celui des données", () => {
+    expect(
+      famillesAvecEcheances({ verification: 1, "titre-salarie": 1 }, [
+        fam("papiers"),
+        fam("travaux"),
+      ]),
+    ).toEqual(["controle", "travaux", "papiers", "personnel"]);
+  });
+
+  it("ne propose rien sur un dossier vide", () => {
+    expect(famillesAvecEcheances(aucune, [])).toEqual([]);
   });
 });
 

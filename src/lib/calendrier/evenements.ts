@@ -19,6 +19,7 @@ import type { EvenementFenetre } from "@/lib/dashboard/queries";
 import { JOURS_APRES } from "@/lib/dashboard/frise";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 import {
+  FAMILLE_DE_TYPE,
   filtrerParBatiment,
   listerAutresEcheances,
   type EcheanceCalendrier,
@@ -74,13 +75,19 @@ export function fusionnerEvenements({
   // Les vérifications arrivent déjà réduites au bâtiment par la requête ;
   // le filtre est réappliqué ici pour qu'un appelant qui les aurait
   // chargées sans filtre obtienne le même résultat (fonction pure).
-  const verifsVisibles =
-    famille && famille !== "controle"
-      ? []
-      : filtrerParBatiment(
-          verifications.filter((e) => e.tone !== "warn"),
-          batimentId,
-        );
+  //
+  // Le filtre famille se lit **ligne par ligne**, sur la famille déduite du
+  // type (ADR-016) : ce flux en porte deux depuis l'ADR-023. Écarter le flux
+  // entier dès que la famille demandée n'était pas `controle` faisait
+  // disparaître les titres de salariés sous « Personnel » — et les laissait
+  // sous « Vérifications », où ils n'ont rien à faire.
+  const verifsVisibles = filtrerParBatiment(
+    verifications.filter(
+      (e) =>
+        e.tone !== "warn" && (!famille || famille === FAMILLE_DE_TYPE[e.type]),
+    ),
+    batimentId,
+  );
 
   // Le domaine écarte les autres familles en bloc : il ne les qualifie
   // pas, et prétendre le contraire ferait disparaître des échéances sans
@@ -100,8 +107,8 @@ export function fusionnerEvenements({
     ...verifsVisibles.map(
       (e): EvenementGrille => ({
         ...e,
-        type: "verification",
-        famille: "controle",
+        type: e.type,
+        famille: FAMILLE_DE_TYPE[e.type],
         href: `/etablissements/${etablissementId}/verifications/${e.id}`,
       }),
     ),

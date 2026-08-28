@@ -21,6 +21,10 @@ import {
 } from "@/lib/dates/retard";
 import { classerVerification } from "@/lib/calendrier/etats";
 import {
+  FAMILLE_DE_TYPE,
+  typeDeVerification,
+} from "@/lib/calendrier/echeances";
+import {
   LABEL_DOMAINE,
   LABEL_PERIODICITE,
   LABEL_REALISATEUR,
@@ -210,7 +214,12 @@ export default async function VerificationDetailPage({
       <HeroFiche
         date={v.datePrevue}
         etat={etat}
-        famille="controle"
+        /* Déduite du porteur, comme partout ailleurs (ADR-016) : la page
+           connaît déjà `v.salarie`, qu'elle affiche vingt lignes plus haut.
+           Posée en dur, elle rendait le presse-papiers des contrôles
+           matériel sur la fiche d'une attestation médicale — le dernier
+           endroit du chemin qui l'ignorait encore. */
+        famille={FAMILLE_DE_TYPE[typeDeVerification(v)]}
         surtitre={
           <>
             {obligation ? LABEL_DOMAINE[obligation.domaine] : "Vérification"}

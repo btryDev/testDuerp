@@ -13,6 +13,11 @@ import { cleJourCivil, debutDuJour } from "@/lib/dates";
 // conformité annoncent nécessairement les mêmes nombres.
 import { repartirVerifications } from "@/lib/pdf/etat-verifications";
 import { porteeBatiment } from "./portee";
+import {
+  TYPES_VERIFICATION,
+  typeDeVerification,
+  type TypeVerification,
+} from "./echeances";
 
 /**
  * Lectures du calendrier des vérifications périodiques.
@@ -166,6 +171,9 @@ export async function compterEtatCalendrier(
       datePrevue: true,
       dateRealisee: true,
       libelleObligation: true,
+      // Le porteur, pour ventiler par famille (ADR-016) : une ligne à
+      // porteur salarié est un titre, pas un contrôle d'appareil.
+      salarieId: true,
     },
   });
 
@@ -175,7 +183,34 @@ export async function compterEtatCalendrier(
     aPlanifier: etat.aPlanifier.length,
     aVenir: etat.aVenir.length,
     realisees12m: etat.realisees12m.length,
+    /**
+     * Les deux mêmes ensembles, ventilés par nature — c'est ce que
+     * `repartirRetards` verse dans les familles. Un total et sa ventilation
+     * sortent d'**une seule** lecture : deux requêtes voisines finissent par
+     * se contredire (ADR-015), et c'est ce que ce fichier existe pour
+     * empêcher.
+     */
+    enRetardParType: ventilerParType(etat.enRetard),
+    aVenirParType: ventilerParType(etat.aVenir),
+    /**
+     * Toutes les lignes lues, quel que soit leur état — ce qui répond à
+     * « cette famille existe-t-elle ici ? », et non « a-t-elle du retard ? ».
+     * C'est ce que la rangée de pilules du calendrier demande : une pilule
+     * qui disparaît sous « En retard seulement » ne se retrouve plus.
+     */
+    toutesParType: ventilerParType(verifs),
   };
+}
+
+/** Compte une liste de lignes par la nature que leur porteur détermine. */
+function ventilerParType(
+  verifs: readonly { salarieId: string | null }[],
+): Record<TypeVerification, number> {
+  const out = Object.fromEntries(
+    TYPES_VERIFICATION.map((t) => [t, 0]),
+  ) as Record<TypeVerification, number>;
+  for (const v of verifs) out[typeDeVerification(v)] += 1;
+  return out;
 }
 
 /**
