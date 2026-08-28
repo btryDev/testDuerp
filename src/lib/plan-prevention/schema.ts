@@ -4,12 +4,19 @@ import { depuisCleJourCivil, depuisSaisieDateHeure } from "@/lib/dates";
 /**
  * Plan de prévention — art. R. 4512-6 à R. 4512-12 du code du travail.
  *
- * Ces articles viennent du décret n° 92-158 du 20 février 1992, dont les dispositions ont été abrogées et codifiées par le décret n° 2008-244 du 7 mars 2008.
- * La fiche consolidée du décret ne porte pas de bandeau « Abrogé » : la sortie
- * de vigueur a été portée article par article. La filiation se
- * dit ici, dans un commentaire ; elle ne se cite plus à l'écran ni dans le
- * ZIP remis à un tiers, où « décret 92-158 » passait pour une source en
- * vigueur.
+ * Ces articles descendent du décret n° 92-158 du 20 février 1992, qui a créé
+ * les art. R. 237-1 à R. 237-28 du code du travail. Ce sont **ces articles-là**
+ * que le décret n° 2008-244 du 7 mars 2008 a abrogés au 1er mai 2008, en les
+ * recodifiant en R. 4511-* / R. 4512-*.
+ *
+ * La fiche du décret 92-158 reste affichée « en vigueur », et ce n'est pas une
+ * anomalie : c'est un texte modificateur, sans contenu normatif propre.
+ * L'abrogation se lit sur les articles du code — « Abrogé par Décret n°2008-244
+ * du 7 mars 2008 - art. 9 (V) » sur R. 237-1 —, jamais sur le décret lui-même.
+ *
+ * La filiation se dit ici, dans un commentaire ; elle ne se cite plus à
+ * l'écran ni dans le ZIP remis à un tiers, où « décret 92-158 » passait pour
+ * une source en vigueur.
  *
  * Le diagnostic initial aide le dirigeant à savoir s'il doit établir un
  * plan ÉCRIT (obligatoire) ou juste oral. Les critères :

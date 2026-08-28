@@ -181,12 +181,12 @@ export default async function PlanPreventionListePage({
               href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018529787/"
             />
             {/* Ici se tenait « Décret 92-158 », sans lien. Relu à la source
-                le 2026-08-28 : les dispositions de ce décret ont été
-                ABROGÉES ET CODIFIÉES par le décret n° 2008-244 du 7 mars
-                2008. Sa fiche consolidée ne porte pas de bandeau « Abrogé »,
-                la sortie de vigueur ayant été portée article par article — la
-                vérifier au niveau du texte ne rend donc rien, il faut aller à
-                l'article. Il est l'ancêtre des
+                le 2026-08-28 : ce décret a créé les art. R. 237-1 à
+                R. 237-28 du code du travail, et ce sont EUX que le décret
+                n° 2008-244 du 7 mars 2008 a ABROGÉS au 1er mai 2008 en les
+                recodifiant. Sa propre fiche reste affichée « en vigueur »,
+                parce que c'est un texte modificateur : l'abrogation se lit
+                sur les articles du code, pas sur lui. Il est l'ancêtre des
                 articles R. 4512-* cités ci-contre, pas une source en vigueur.
                 Une pastille de source ne cite pas un texte abrogé — la
                 filiation, si elle intéresse, se lit dans un commentaire de

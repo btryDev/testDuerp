@@ -1026,10 +1026,13 @@ enum StatutPermisFeu {
 
 // ----------------------------------------------------------------------------
 // Plan de prévention — art. R. 4512-6 à R. 4512-12 du code du travail.
-// (Issus du décret 92-158, dont les dispositions ont été abrogées et codifiées
-// par le décret n° 2008-244 du 7 mars 2008 : la filiation se dit, la source
-// non. La fiche consolidée du décret ne porte pas de bandeau « Abrogé » — la
-// sortie de vigueur a été portée article par article.)
+// (Le décret 92-158 a créé les art. R. 237-1 à R. 237-28 du code du travail ;
+// ce sont eux que le décret 2008-244 a abrogés au 1er mai 2008 en les
+// recodifiant en R. 4511-* / R. 4512-*. La fiche du décret 92-158 reste
+// affichée « en vigueur » : c'est un texte modificateur, l'abrogation se lit
+// sur les articles du code — « Abrogé par Décret n°2008-244 du 7 mars 2008 -
+// art. 9 (V) » sur R. 237-1 —, pas sur lui. La filiation se dit, la source
+// non.)
 // Obligatoire en écrit si :
 //   - durée totale ≥ 400 h sur 12 mois des travaux d'entreprise(s)
 //     extérieure(s) — R. 4512-7 dit « égal au moins à 400 heures », OU
