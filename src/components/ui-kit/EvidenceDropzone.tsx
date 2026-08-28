@@ -88,11 +88,11 @@ export function EvidenceDropzone({
         onDragLeave={() => setDrag(false)}
         onDrop={onDrop}
         className={cn(
-          "group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 text-center transition",
+          "group flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[22px] border-2 border-dashed p-6 text-center transition-colors",
           drag
-            ? "border-[color:var(--warm)] bg-[color:var(--warm-soft)]"
-            : "border-[color:var(--rule)] bg-[color:var(--paper-sunk)] hover:border-[color:var(--warm)]",
-          erreur && "border-[color:var(--minium)]/60",
+            ? "border-[color:var(--board-blue-ink)] bg-[color:var(--board-blue-pale)]"
+            : "border-[color:var(--board-slate)] bg-[color:var(--board-slate-pale)] hover:border-[color:var(--board-blue-ink)]",
+          erreur && "border-[color:var(--board-signal-ink)]/60",
         )}
       >
         <input
@@ -106,20 +106,20 @@ export function EvidenceDropzone({
         />
         <span
           aria-hidden
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--paper-elevated)] text-[color:var(--warm)]"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--board-card)] text-[color:var(--board-blue-ink)]"
         >
           ⬆
         </span>
-        <span className="text-[0.9rem] font-medium text-[color:var(--ink)]">
+        <span className="text-[13.5px] font-semibold text-[color:var(--board-slate-ink)]">
           {fichier ? fichier.name : label}
         </span>
         {!fichier && hint && (
-          <span className="text-[0.78rem] text-[color:var(--muted-foreground)]">
+          <span className="text-[12px] text-[color:var(--board-slate-mid)]">
             {hint}
           </span>
         )}
         {!fichier && (
-          <span className="font-mono text-[0.68rem] uppercase tracking-[0.1em] text-[color:var(--seal)]">
+          <span className="board-eyebrow text-[10px] tracking-[0.12em] text-[color:var(--board-slate-soft)]">
             Glisser-déposer ou cliquer · max {maxMo} Mo
           </span>
         )}
@@ -131,14 +131,14 @@ export function EvidenceDropzone({
               valider(null);
               if (inputRef.current) inputRef.current.value = "";
             }}
-            className="mt-1 font-mono text-[0.7rem] uppercase tracking-[0.1em] text-[color:var(--muted-foreground)] hover:text-[color:var(--minium)]"
+            className="board-eyebrow mt-1 text-[10px] tracking-[0.12em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-signal-ink)]"
           >
             Retirer
           </button>
         )}
       </label>
       {erreur && (
-        <p className="font-mono text-[0.72rem] text-[color:var(--minium)]">
+        <p role="alert" className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
           {erreur}
         </p>
       )}

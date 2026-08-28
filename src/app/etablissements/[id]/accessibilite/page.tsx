@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppTopbar } from "@/components/layout/AppTopbar";
-import { LegalBadge, WhyCard } from "@/components/ui-kit";
+import { LegalBadge, PastilleFiche, WhyCard } from "@/components/ui-kit";
+import { buttonVariants } from "@/components/ui/button";
 import { FormSection1 } from "@/components/accessibilite/FormSection1";
 import { FormSection2 } from "@/components/accessibilite/FormSection2";
 import { FormSection3 } from "@/components/accessibilite/FormSection3";
@@ -18,6 +19,18 @@ export const metadata = {
   title: "Registre d'accessibilité ERP",
 };
 
+/**
+ * Les quatre rubriques de l'arrêté du 19 avril 2017, chacune dépliable.
+ *
+ * La numérotation reste : ici l'ordre porte une information — ce sont les
+ * quatre rubriques que le texte énumère, et un contrôleur les cherche dans
+ * cet ordre. C'est l'exception que la règle du kit prévoit
+ * (`SectionChamps` ne numérote pas, faute d'ordre signifiant).
+ *
+ * Le liseré de tête coloré du papier disparaît : le board ne peint pas un
+ * état sur une bande, il le dit par une pastille — un champ, une encre, et
+ * le mot (interdit 10).
+ */
 function Section({
   numero,
   titre,
@@ -32,45 +45,33 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <details className="cartouche group relative overflow-hidden" open={!rempli}>
-      <span
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-[3px]"
-        style={{
-          background: rempli
-            ? "var(--accent-vif)"
-            : "color-mix(in oklch, var(--rule) 40%, transparent)",
-        }}
-      />
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-7 py-5 sm:px-10">
+    <details className="carte-board group" open={!rempli}>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-7 py-5 sm:px-8">
         <div className="flex items-baseline gap-4">
-          <span className="font-mono text-[1.5rem] font-light tabular-nums text-[color:var(--seal)]">
+          <span className="font-mono text-[22px] font-light tabular-nums text-[color:var(--board-slate-soft)]">
             {numero}
           </span>
           <div>
-            <p className="text-[1.05rem] font-semibold tracking-[-0.015em]">
-              {titre}
-            </p>
-            <p className="mt-0.5 text-[0.82rem] text-muted-foreground">
+            <p className="board-titre m-0 text-[17px]">{titre}</p>
+            <p className="m-0 mt-1 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
               {sousTitre}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {rempli && (
-            <span className="font-mono text-[0.66rem] uppercase tracking-[0.14em] text-[color:var(--accent-vif)]">
-              ✓ Rempli
-            </span>
-          )}
+          {/* « Rempli » est un fait de saisie, jamais « conforme » : le vert
+              du board dit qu'on a renseigné, pas que le droit est satisfait
+              (interdits 16-17). */}
+          {rempli && <PastilleFiche ton="fait">Rempli</PastilleFiche>}
           <span
             aria-hidden
-            className="text-[0.78rem] text-muted-foreground transition-transform group-open:rotate-180"
+            className="text-[12px] text-[color:var(--board-slate-mid)] transition-transform group-open:rotate-180"
           >
             ▾
           </span>
         </div>
       </summary>
-      <div className="border-t border-dashed border-rule/60 px-7 py-7 sm:px-10">
+      <div className="border-t border-[color:var(--board-slate-line)] px-7 py-7 sm:px-8">
         {children}
       </div>
     </details>
@@ -95,26 +96,33 @@ export default async function AccessibilitePage({
             { label: "Accessibilité" },
           ]}
         />
-        <main className="mx-auto max-w-3xl px-8 py-12">
-          <div className="cartouche-sunk p-8 text-center">
-            <p className="label-admin">Non applicable</p>
-            <h1 className="mt-2 text-[1.4rem] font-semibold tracking-[-0.02em]">
+        <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] px-[var(--board-gutter)] pt-7 pb-16">
+          <section className="carte-board px-7 py-8 sm:px-8">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+              Non applicable
+            </p>
+            <h1 className="board-titre m-0 mt-2 text-[clamp(22px,2.2vw,27px)]">
               Cet établissement n&apos;est pas un ERP
             </h1>
-            <p className="mt-3 text-[0.9rem] leading-relaxed text-muted-foreground">
+            <p className="m-0 mt-3 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
               Le registre d&apos;accessibilité est une obligation qui ne concerne
               que les <strong>Établissements Recevant du Public</strong>{" "}
               (restaurants, commerces, bureaux ouverts au public…). Vous pouvez
               modifier le régime de votre établissement si celui-ci doit être
               déclaré ERP.
             </p>
-            <Link
-              href={`/etablissements/${id}/modifier`}
-              className="mt-5 inline-block font-mono text-[0.72rem] uppercase tracking-[0.14em] text-[color:var(--warm)] hover:underline"
-            >
-              Modifier la fiche établissement →
-            </Link>
-          </div>
+            <div className="mt-5">
+              <Link
+                href={`/etablissements/${id}/modifier`}
+                className={buttonVariants({
+                  variant: "boardClair",
+                  size: "board",
+                })}
+              >
+                Modifier la fiche établissement →
+              </Link>
+            </div>
+          </section>
         </main>
       </>
     );
@@ -153,9 +161,10 @@ export default async function AccessibilitePage({
         ]}
       />
 
-      <main className="mx-auto max-w-4xl px-8 py-8 pb-16">
+      <main className="flex flex-1 flex-col gap-7 bg-[color:var(--board-canvas)] px-[var(--board-gutter)] pt-7 pb-16">
         {/* Why */}
         <WhyCard
+          charte="board"
           kicker="Obligation"
           titre="Ce que la loi attend de vous"
           enjeu={
@@ -166,6 +175,7 @@ export default async function AccessibilitePage({
           tonalite={registre?.publie ? "ok" : "info"}
         >
           <LegalBadge
+            charte="board"
             reference="Arrêté du 19 avril 2017 · Art. D111-19-33 CCH"
             href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000034463079/"
             extrait="Le registre public d'accessibilité précise les dispositions prises pour permettre à tous, notamment aux personnes handicapées, quel que soit leur handicap, de bénéficier des prestations en vue desquelles cet établissement a été conçu."
@@ -177,7 +187,7 @@ export default async function AccessibilitePage({
         </WhyCard>
 
         {/* Progression */}
-        <div className="mt-8 flex items-center gap-4 rounded-xl border border-[color:var(--rule-soft)] bg-[color:var(--paper-elevated)] p-5">
+        <div className="carte-board flex items-center gap-4 px-7 py-6 sm:px-8">
           <div className="relative h-14 w-14 shrink-0">
             <svg viewBox="0 0 36 36" className="h-14 w-14 -rotate-90">
               <circle
@@ -185,9 +195,12 @@ export default async function AccessibilitePage({
                 cy="18"
                 r="16"
                 fill="none"
-                stroke="var(--rule)"
+                stroke="var(--board-slate-line)"
                 strokeWidth="2"
               />
+              {/* Complet = tout est renseigné, un fait de saisie : le vert du
+                  board. En cours = le registre calme et actif du bleu, pas
+                  l'ambre, qui est l'attention et non l'inachevé (interdit 4). */}
               <circle
                 cx="18"
                 cy="18"
@@ -195,8 +208,8 @@ export default async function AccessibilitePage({
                 fill="none"
                 stroke={
                   progression === 100
-                    ? "var(--accent-vif)"
-                    : "var(--warm)"
+                    ? "var(--board-green-ink)"
+                    : "var(--board-blue-ink)"
                 }
                 strokeWidth="2"
                 strokeDasharray={`${progression} 100`}
@@ -204,19 +217,19 @@ export default async function AccessibilitePage({
                 strokeLinecap="round"
               />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center font-mono text-[0.78rem] font-semibold tabular-nums">
+            <span className="absolute inset-0 flex items-center justify-center font-mono text-[12.5px] font-semibold tabular-nums text-[color:var(--board-ink)]">
               {progression}%
             </span>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[0.95rem] font-medium">
+            <p className="m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
               {progression === 0
                 ? "Registre vide"
                 : progression === 100
                   ? "Registre complet"
                   : "En cours de remplissage"}
             </p>
-            <p className="mt-0.5 text-[0.82rem] text-muted-foreground">
+            <p className="m-0 mt-1 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
               {progression < 100
                 ? "Remplissez chaque section en plusieurs passes — rien n'est bloquant."
                 : "Toutes les rubriques de l'arrêté sont renseignées."}
@@ -226,19 +239,17 @@ export default async function AccessibilitePage({
 
         {/* Publication */}
         {registre && (
-          <div className="mt-6">
-            <PublicationPanel
-              etablissementId={id}
-              slugPublic={registre.slugPublic}
-              publie={registre.publie}
-              urlPublique={urlPublique}
-              qrDataUrl={qrDataUrl}
-            />
-          </div>
+          <PublicationPanel
+            etablissementId={id}
+            slugPublic={registre.slugPublic}
+            publie={registre.publie}
+            urlPublique={urlPublique}
+            qrDataUrl={qrDataUrl}
+          />
         )}
 
         {/* Sections */}
-        <div className="mt-10 space-y-4">
+        <div className="flex flex-col gap-4">
           <Section
             numero="01"
             titre="Prestations fournies au public"

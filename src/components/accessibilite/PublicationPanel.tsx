@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { PastilleFiche } from "@/components/ui-kit";
 import {
   depublierRegistre,
   publierRegistre,
@@ -49,57 +50,60 @@ export function PublicationPanel({
 
   if (!publie) {
     return (
-      <div className="cartouche-sunk p-6">
-        <p className="label-admin">Publication</p>
-        <h3 className="mt-2 text-[1.05rem] font-semibold tracking-[-0.01em]">
+      <div className="carte-board px-7 py-6 sm:px-8">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+          Publication
+        </p>
+        <h3 className="board-titre m-0 mt-2 text-[22px]">
           Votre registre n&apos;est pas encore public
         </h3>
-        <p className="mt-2 text-[0.85rem] leading-relaxed text-muted-foreground">
+        <p className="m-0 mt-2 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
           Dès que les sections <strong>1 (prestations)</strong> et{" "}
           <strong>2 (conformité)</strong> sont remplies, vous pouvez publier. Une
           URL publique sera générée, consultable avec un simple QR code collé à
           l&apos;entrée de votre établissement.
         </p>
         {erreur && (
-          <p className="mt-3 text-[0.85rem] text-[color:var(--minium)]">
+          <p className="m-0 mt-3 text-[12.5px] text-[color:var(--board-signal-ink)]">
             {erreur}
           </p>
         )}
-        <Button
-          type="button"
-          onClick={onPublier}
-          disabled={pending}
-          className="mt-4"
-        >
-          {pending ? "Publication…" : "Publier le registre"}
-        </Button>
+        <div className="mt-4">
+          <Button
+            type="button"
+            variant="board"
+            size="board"
+            onClick={onPublier}
+            disabled={pending}
+          >
+            {pending ? "Publication…" : "Publier le registre"}
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="cartouche relative overflow-hidden">
-      <span
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-[3px]"
-        style={{ background: "var(--accent-vif)" }}
-      />
+    // Plus de liseré vert en tête de carte : le board ne peint pas un état
+    // sur une bande, il le dit par une pastille — un champ, une encre, et
+    // le mot. « Publié » est un fait de saisie, pas un verdict.
+    <div className="carte-board overflow-clip">
       <div className="grid gap-0 md:grid-cols-[auto_1fr]">
         {/* QR code */}
-        <div className="flex items-center justify-center border-b border-dashed border-rule/60 bg-[color:var(--paper-sunk)] px-8 py-8 md:border-b-0 md:border-r">
-          <div className="space-y-3">
+        <div className="flex items-center justify-center border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-slate-pale)] px-8 py-8 md:border-b-0 md:border-r">
+          <div className="flex flex-col gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element -- data-URL locale, next/image n'optimiserait rien */}
             <img
               src={qrDataUrl}
               alt={`QR code vers le registre d'accessibilité — ${urlPublique}`}
               width={180}
               height={180}
-              className="rounded-lg bg-white p-3 shadow-sm"
+              className="rounded-[16px] bg-[color:var(--board-card)] p-3"
             />
             <a
               href={`/api/accessibilite/${slugPublic}/affiche`}
               className={
-                buttonVariants({ variant: "outline", size: "sm" }) +
+                buttonVariants({ variant: "boardClair", size: "boardSm" }) +
                 " w-full justify-center"
               }
             >
@@ -109,21 +113,21 @@ export function PublicationPanel({
         </div>
 
         {/* Actions + URL */}
-        <div className="flex flex-col gap-4 px-7 py-7">
+        <div className="flex flex-col gap-4 px-7 py-6 sm:px-8">
           <div>
-            <p className="label-admin text-[color:var(--accent-vif)]">Publié</p>
-            <h3 className="mt-1.5 text-[1.2rem] font-semibold tracking-[-0.015em]">
+            <PastilleFiche ton="fait">Publié</PastilleFiche>
+            <h3 className="board-titre m-0 mt-2.5 text-[22px]">
               Votre registre est accessible en un clic
             </h3>
-            <p className="mt-2 text-[0.85rem] leading-relaxed text-muted-foreground">
+            <p className="m-0 mt-2 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
               Collez le QR code à l&apos;entrée ou à l&apos;accueil : les
               visiteurs scannent avec leur téléphone et accèdent à votre
               registre en 2 secondes.
             </p>
           </div>
 
-          <div className="rounded-lg border border-[color:var(--rule)] bg-[color:var(--paper-sunk)] p-3">
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="rounded-[18px] bg-[color:var(--board-slate-pale)] px-4 py-3">
+            <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
               URL publique
             </p>
             <div className="mt-1.5 flex items-center gap-2">
@@ -131,26 +135,32 @@ export function PublicationPanel({
                 href={urlPublique}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="min-w-0 flex-1 truncate font-mono text-[0.82rem] text-[color:var(--warm)] underline-offset-2 hover:underline"
+                className="min-w-0 flex-1 truncate font-mono text-[12.5px] text-[color:var(--board-blue-ink)] underline-offset-2 hover:underline"
               >
                 {urlPublique}
               </a>
               <button
                 type="button"
                 onClick={copierUrl}
-                className="shrink-0 rounded-md border border-[color:var(--rule)] bg-[color:var(--paper-elevated)] px-2.5 py-1 font-mono text-[0.68rem] uppercase tracking-[0.1em] text-[color:var(--seal)] hover:text-[color:var(--ink)]"
+                className={
+                  buttonVariants({ variant: "boardClair", size: "boardSm" }) +
+                  " shrink-0 bg-[color:var(--board-card)]"
+                }
               >
                 {copie ? "✓ Copié" : "Copier"}
               </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-2">
+          <div className="flex flex-wrap gap-2 pt-1">
             <a
               href={urlPublique}
               target="_blank"
               rel="noopener noreferrer"
-              className={buttonVariants({ variant: "outline", size: "sm" })}
+              className={buttonVariants({
+                variant: "boardClair",
+                size: "boardSm",
+              })}
             >
               Prévisualiser ↗
             </a>
@@ -158,7 +168,10 @@ export function PublicationPanel({
               type="button"
               onClick={onDepublier}
               disabled={pending}
-              className={buttonVariants({ variant: "outline", size: "sm" })}
+              className={buttonVariants({
+                variant: "boardClair",
+                size: "boardSm",
+              })}
             >
               {pending ? "…" : "Retirer la publication"}
             </button>

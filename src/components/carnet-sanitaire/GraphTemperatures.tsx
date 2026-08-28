@@ -5,6 +5,28 @@ import { formaterJourMoisFr } from "@/lib/dates";
  * Graph SVG simple de l'évolution des températures pour un point de
  * relevé. Affiche une ligne brisée + zone de seuil. Pas de lib, pas
  * d'interaction complexe — juste une visualisation lisible.
+ *
+ * Passage à la charte board (`docs/charte-board.md`). Le graphe porte un
+ * **seuil réglementaire** — l'arrêté du 1er février 2010 pour l'eau chaude
+ * sanitaire —, et c'est la seule chose que le remappage des couleurs ne
+ * pouvait pas se permettre de déplacer. Trois choix en découlent :
+ *
+ * - **Le seuil garde le registre rouge.** `--minium` devient
+ *   `--board-signal-ink` : encre plus sombre, même famille, même trait
+ *   pointillé, même graduation chiffrée à gauche. La zone hors plage passe
+ *   du `color-mix(--minium 8%)` au voile `--board-signal-wash`, qui est
+ *   exactement le jeton que le board réserve à ça. Géométrie inchangée :
+ *   la lecture « au-dessus / au-dessous de la ligne » ne bouge pas d'un
+ *   pixel.
+ * - **Rien ne peint « dans la plage ».** Le vert du board dit « fait »,
+ *   pas « conforme » (interdits 16-17) ; une mesure dans la plage attendue
+ *   n'est pas un fait accompli, c'est le cas normal. Les points dans la
+ *   plage prennent donc l'encre de la série, et seuls ceux qui en sortent
+ *   portent le signal.
+ * - **La couleur n'y est jamais seule** (interdit 10) : c'est la position
+ *   du point par rapport à la ligne pointillée et au voile qui dit de quel
+ *   côté du seuil il tombe. La teinte ne fait que redoubler cette lecture,
+ *   elle ne la porte pas.
  */
 export function GraphTemperatures({
   releves,
@@ -21,9 +43,7 @@ export function GraphTemperatures({
 }) {
   if (releves.length === 0) {
     return (
-      <div
-        className="flex h-32 items-center justify-center rounded-lg border border-dashed border-[color:var(--rule)] bg-[color:var(--paper-sunk)] text-[0.82rem] text-muted-foreground"
-      >
+      <div className="flex h-32 items-center justify-center rounded-[22px] bg-[color:var(--board-slate-pale)] text-[12.5px] text-[color:var(--board-slate-mid)]">
         Aucun relevé enregistré pour l&apos;instant.
       </div>
     );
@@ -61,27 +81,34 @@ export function GraphTemperatures({
     .map((r, i) => `${i === 0 ? "M" : "L"} ${xCoord(i)} ${yCoord(r.temperatureCelsius)}`)
     .join(" ");
 
-  // Indication de conformité globale (% de relevés conformes)
-  const nbConformes = ordered.filter((r) => r.conforme).length;
-  const pourcent = Math.round((nbConformes / ordered.length) * 100);
+  // Part des relevés qui tombent du bon côté du seuil. Le champ s'appelle
+  // encore `conforme` en base, mais l'outil ne prononce pas la conformité
+  // d'un établissement : il constate qu'une mesure est dans la plage
+  // attendue, ou qu'elle en sort (CLAUDE.md, règle 8).
+  const nbDansLaPlage = ordered.filter((r) => r.conforme).length;
+  const pourcent = Math.round((nbDansLaPlage / ordered.length) * 100);
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="font-mono text-[0.66rem] uppercase tracking-[0.14em] text-[color:var(--seal)]">
+        <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
           Évolution sur {ordered.length} relevé{ordered.length > 1 ? "s" : ""}
         </p>
+        {/* Trois paliers, et l'ambre au milieu : `--warm` n'a pas
+            d'équivalent board pour un accent d'impulsion, mais son rôle ici
+            est celui de l'attention entre « tout va bien » et « il faut
+            agir » — c'est la définition de l'ambre du board (interdit 4). */}
         <p
           className={
-            "font-mono text-[0.72rem] font-semibold " +
+            "font-mono text-[11px] font-semibold tabular-nums " +
             (pourcent === 100
-              ? "text-[color:var(--accent-vif)]"
+              ? "text-[color:var(--board-green-ink)]"
               : pourcent >= 80
-                ? "text-[color:var(--warm)]"
-                : "text-[color:var(--minium)]")
+                ? "text-[color:var(--board-amber-ink)]"
+                : "text-[color:var(--board-signal-ink)]")
           }
         >
-          {pourcent}% conformes
+          {pourcent}% dans la plage
         </p>
       </div>
       <svg
@@ -89,14 +116,15 @@ export function GraphTemperatures({
         className="w-full h-auto"
         preserveAspectRatio="none"
       >
-        {/* Zone « sous le seuil » (non conforme pour ECS) teintée */}
+        {/* Zone hors plage teintée — sous le seuil pour l'ECS, au-dessus
+            pour l'eau froide, dont le seuil est un maximum. */}
         {typeReseau !== "EFS" && (
           <rect
             x={padL}
             y={ySeuil}
             width={w}
             height={height - padB - ySeuil}
-            fill="color-mix(in oklch, var(--minium) 8%, transparent)"
+            fill="var(--board-signal-wash)"
           />
         )}
         {typeReseau === "EFS" && (
@@ -105,7 +133,7 @@ export function GraphTemperatures({
             y={padT}
             width={w}
             height={ySeuil - padT}
-            fill="color-mix(in oklch, var(--minium) 8%, transparent)"
+            fill="var(--board-signal-wash)"
           />
         )}
 
@@ -115,7 +143,7 @@ export function GraphTemperatures({
           x2={width - padR}
           y1={ySeuil}
           y2={ySeuil}
-          stroke="var(--minium)"
+          stroke="var(--board-signal-ink)"
           strokeWidth="1"
           strokeDasharray="4 3"
         />
@@ -124,7 +152,7 @@ export function GraphTemperatures({
           y={ySeuil + 3}
           textAnchor="end"
           fontSize="9"
-          fill="var(--minium)"
+          fill="var(--board-signal-ink)"
           fontFamily="var(--font-mono), monospace"
         >
           {seuilMinCelsius}°
@@ -138,18 +166,19 @@ export function GraphTemperatures({
             y={yCoord(t) + 3}
             textAnchor="end"
             fontSize="9"
-            fill="var(--seal)"
+            fill="var(--board-slate-soft)"
             fontFamily="var(--font-mono), monospace"
           >
             {t}°
           </text>
         ))}
 
-        {/* Courbe */}
+        {/* Courbe — l'encre de la série, pas un état : le bleu glacier est
+            le registre « calme et actif » du board. */}
         <path
           d={path}
           fill="none"
-          stroke="var(--warm)"
+          stroke="var(--board-blue-ink)"
           strokeWidth="1.5"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -162,7 +191,11 @@ export function GraphTemperatures({
             cx={xCoord(i)}
             cy={yCoord(r.temperatureCelsius)}
             r={3}
-            fill={r.conforme ? "var(--accent-vif)" : "var(--minium)"}
+            fill={
+              r.conforme
+                ? "var(--board-blue-ink)"
+                : "var(--board-signal-ink)"
+            }
           />
         ))}
 
@@ -171,7 +204,7 @@ export function GraphTemperatures({
           x={padL}
           y={height - 6}
           fontSize="9"
-          fill="var(--seal)"
+          fill="var(--board-slate-soft)"
           fontFamily="var(--font-mono), monospace"
         >
           {formaterJourMoisFr(ordered[0].dateReleve)}
@@ -180,7 +213,7 @@ export function GraphTemperatures({
           x={width - padR}
           y={height - 6}
           fontSize="9"
-          fill="var(--seal)"
+          fill="var(--board-slate-soft)"
           textAnchor="end"
           fontFamily="var(--font-mono), monospace"
         >

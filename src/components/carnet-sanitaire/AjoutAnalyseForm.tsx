@@ -1,10 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { EvidenceDropzone } from "@/components/ui-kit";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { ChampBoard, EvidenceDropzone, StatusPill } from "@/components/ui-kit";
 import {
   ajouterAnalyseLegionelle,
   type CarnetActionState,
@@ -26,14 +24,14 @@ export function AjoutAnalyseForm({
   const [valeur, setValeur] = useState<string>("");
 
   const ufcNum = valeur ? parseInt(valeur, 10) : null;
-  const conforme = ufcNum !== null && ufcNum < SEUIL_LEGIONELLE_UFC_PAR_L;
+  const sousLeSeuil = ufcNum !== null && ufcNum < SEUIL_LEGIONELLE_UFC_PAR_L;
 
   if (!ouvert) {
     return (
       <button
         type="button"
         onClick={() => setOuvert(true)}
-        className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-[color:var(--warm)] hover:underline"
+        className={buttonVariants({ variant: "boardClair", size: "boardSm" })}
       >
         + Enregistrer une analyse
       </button>
@@ -48,36 +46,32 @@ export function AjoutAnalyseForm({
     <form
       action={formAction}
       encType="multipart/form-data"
-      className="space-y-4 rounded-xl border border-dashed border-[color:var(--rule)] bg-[color:var(--paper-sunk)] p-5"
+      className="flex flex-col gap-4 rounded-[22px] bg-[color:var(--board-slate-pale)] p-5"
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="dateAnalyse">Date de l&apos;analyse *</Label>
-          <Input
-            id="dateAnalyse"
-            name="dateAnalyse"
-            type="date"
-            required
-            defaultValue={today}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="laboratoire">Laboratoire</Label>
-          <Input
-            id="laboratoire"
-            name="laboratoire"
-            maxLength={200}
-            placeholder="Ex : Eurofins, Inovalys"
-          />
-        </div>
+        <ChampBoard
+          id="dateAnalyse"
+          name="dateAnalyse"
+          label="Date de l'analyse"
+          requis
+          type="date"
+          defaultValue={today}
+        />
+        <ChampBoard
+          id="laboratoire"
+          name="laboratoire"
+          label="Laboratoire"
+          maxLength={200}
+          placeholder="Ex : Eurofins, Inovalys"
+        />
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="valeurUfcParL">
+      <div>
+        <label className="label-board" htmlFor="valeurUfcParL">
           Résultat (UFC/L de Legionella pneumophila)
-        </Label>
+        </label>
         <div className="flex items-center gap-3">
-          <Input
+          <input
             id="valeurUfcParL"
             name="valeurUfcParL"
             type="number"
@@ -85,32 +79,35 @@ export function AjoutAnalyseForm({
             value={valeur}
             onChange={(e) => setValeur(e.target.value)}
             placeholder="0"
-            className="max-w-[180px] text-center text-xl font-semibold tabular-nums"
+            className="champ-board max-w-[180px] text-center text-[20px] font-semibold tabular-nums"
+            aria-describedby="valeurUfcParL-aide"
           />
+          {/* Le libellé nomme le seuil, pas un verdict : c'est déjà ce que
+              disait le papier, et le board le garde tel quel. */}
           {ufcNum !== null && (
-            <span
-              className={
-                "shrink-0 rounded-full px-3 py-1 font-mono text-[0.72rem] font-semibold uppercase tracking-[0.1em] " +
-                (conforme
-                  ? "bg-[color:var(--accent-vif-soft)] text-[color:var(--accent-vif)]"
-                  : "bg-[color:color-mix(in_oklch,var(--minium)_12%,transparent)] text-[color:var(--minium)]")
+            <StatusPill
+              charte="board"
+              size="sm"
+              status={sousLeSeuil ? "a_jour" : "non_conforme"}
+              label={
+                sousLeSeuil ? "Sous le seuil d'action" : "Action obligatoire"
               }
-            >
-              {conforme
-                ? "✓ sous le seuil d'action"
-                : "⚠ action obligatoire"}
-            </span>
+              className="shrink-0"
+            />
           )}
         </div>
-        <p className="text-[0.72rem] text-muted-foreground">
+        <p
+          id="valeurUfcParL-aide"
+          className="m-0 mt-1.5 text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]"
+        >
           Seuil d&apos;action légal : {SEUIL_LEGIONELLE_UFC_PAR_L} UFC/L
           (arrêté 01-02-2010 annexe II). Au-delà, mesures correctives
           immédiates obligatoires.
         </p>
       </div>
 
-      <div className="space-y-1.5">
-        <Label>Rapport du laboratoire (facultatif)</Label>
+      <div>
+        <p className="label-board">Rapport du laboratoire (facultatif)</p>
         <EvidenceDropzone
           name="rapport"
           label="Rapport d'analyse PDF"
@@ -118,24 +115,28 @@ export function AjoutAnalyseForm({
         />
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="commentaire">Commentaire / mesures correctives</Label>
+      <div>
+        <label className="label-board" htmlFor="commentaire">
+          Commentaire / mesures correctives
+        </label>
         <textarea
           id="commentaire"
           name="commentaire"
           rows={3}
           maxLength={2000}
-          className="w-full rounded-md border border-rule bg-background px-3 py-2 text-sm shadow-sm"
+          className="champ-board min-h-[84px] resize-y"
           placeholder="Ex : Choc thermique programmé le JJ/MM, prélèvement de contrôle à 2 semaines"
         />
       </div>
 
       {state.status === "error" && (
-        <p className="text-sm text-destructive">{state.message}</p>
+        <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+          {state.message}
+        </p>
       )}
 
-      <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={pending}>
+      <div className="flex items-center gap-3">
+        <Button type="submit" variant="board" size="boardSm" disabled={pending}>
           {pending ? "Enregistrement…" : "Enregistrer l'analyse"}
         </Button>
         <button
@@ -144,7 +145,7 @@ export function AjoutAnalyseForm({
             setOuvert(false);
             setValeur("");
           }}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.1em] text-muted-foreground hover:text-ink"
+          className="text-[12.5px] font-medium text-[color:var(--board-slate-mid)] transition-colors hover:text-[color:var(--board-ink)]"
         >
           Annuler
         </button>

@@ -9,12 +9,14 @@ import type { Charte } from "@/components/ui-kit";
  * la question n'a pas de sens. À partir de deux, un select avec « Tout
  * l'établissement » en première option, qui vaut « non précisé ».
  *
- * Comme `SelecteurBatiment`, ce champ est appelé des deux côtés de la
- * migration visuelle : les formulaires de permis de feu et de plan de
- * prévention sont passés au board, celui du carnet sanitaire est encore en
- * papier. D'où une prop plutôt qu'une réécriture (`ui-kit/charte.ts`) : un champ à
- * rayon 6 au milieu d'une carte à rayon 30 se voit, et l'inverse aussi. Le
- * défaut reste `papier`, ce que ce composant rendait avant.
+ * Ce champ a reçu une prop de charte parce qu'il était appelé des deux côtés
+ * de la migration visuelle (`ui-kit/charte.ts`) : un champ à rayon 6 au milieu
+ * d'une carte à rayon 30 se voit, et l'inverse aussi.
+ *
+ * **Ses trois appelants sont désormais board** — permis de feu, plan de
+ * prévention, et le carnet sanitaire depuis le 2026-08-28. La branche `papier`
+ * n'a donc plus d'appelant : elle se retire au prochain passage, avec le
+ * défaut qui l'accompagne. Ce fichier se vide, il ne se remplit pas.
  */
 export function ChampBatiment({
   batiments,
