@@ -24,10 +24,21 @@ import { fileURLToPath } from "node:url";
  * identifiant. Trois des quatre erreurs de ce lot étaient exactement cela — le
  * bon identifiant existait ailleurs dans le dépôt, pour le même article.
  *
- * CE QU'IL NE PROUVE PAS : qu'un identifiant cité UNE SEULE FOIS soit le bon.
- * Un article isolé, faux partout, passe au vert. Il n'y a pas de remède local à
- * ça : il faudrait ouvrir la page, et un test ne le fera pas. C'est la limite,
- * elle est réelle, et elle est écrite ici pour ne pas passer pour acquise.
+ * CE QU'IL NE PROUVE PAS : qu'un article servi par un seul identifiant
+ * DISTINCT soit servi par le bon. Le nombre de citations n'y change rien, et la
+ * première rédaction de cette phrase — « cité une seule fois » — sous-estimait
+ * le trou. Le mauvais identifiant de `R. 4224-13` était cité DEUX fois, aux
+ * deux emplacements du même fichier : réinjecté ainsi, la garde reste verte.
+ * C'est un des quatre défauts de ce lot, et il lui échappe. Il n'y a pas de
+ * remède local : il faudrait ouvrir la page, et un test ne le fera pas.
+ *
+ * Deuxième limite, de portée : la règle ne s'appuie que sur un numéro
+ * d'article de CODE. Les quarante et une occurrences `LEGIARTI` dont la
+ * référence voisine nomme un article d'arrêté — « MS 73 », « EL 19 »,
+ * « Arrêté 2004-03-01 art. 23 » — n'ont pas de clé comparable et restent hors
+ * de portée.
+ *
+ * Ces deux limites sont écrites ici pour ne pas passer pour acquises.
  */
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
@@ -38,8 +49,15 @@ const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
  * Le dépôt écrit « Art. R4121-1 CT », « R. 4121-1 », « Art. R. 4121-1 CT ·
  * DUERP ». Comparer ces chaînes telles quelles ne rapprocherait rien. Seule la
  * lettre et le numéro comptent, et ils suffisent à identifier l'article.
+ *
+ * `\d{2,4}` et non `\d{4}` : le Code du travail numérote sur quatre chiffres
+ * (R. 4121-1), mais le CCH et le code de l'environnement sur trois (R. 134-6,
+ * R. 143-44, R. 543-79). La première rédaction les rendait tous invisibles —
+ * dont `ascenseurs.ts`, qui cite le même identifiant pour « CCH R. 134-6 » à
+ * quatre endroits. Mesuré : 62 occurrences `LEGIARTI` rattachées avant,
+ * 72 après, sans aucune contradiction nouvelle.
  */
-const MOTIF_ARTICLE = /\b([LRD])\.?\s?(\d{4}-\d+(?:-\d+)*)\b/g;
+const MOTIF_ARTICLE = /\b([LRD])\.?\s?(\d{2,4}-\d+(?:-\d+)*)\b/g;
 
 export function articlesCites(texte: string): string[] {
   return [...texte.matchAll(MOTIF_ARTICLE)].map((m) => `${m[1]}. ${m[2]}`);
@@ -136,6 +154,22 @@ function contradictions(): { article: string; detail: string }[] {
   return sorties;
 }
 
+/**
+ * Le sens inverse — un identifiant revendiqué pour deux articles — n'est PAS
+ * testé, et c'est une décision, pas un oubli.
+ *
+ * Il porte la même signature de copier-coller, donc l'idée est bonne. Mais elle
+ * est mesurée : le dépôt n'en compte qu'un cas, `LEGIARTI000037389145` cité
+ * pour « Art. L. 8222-1 · D. 8222-5 CT ». Ce n'est pas une faute — c'est une
+ * référence qui nomme légitimement deux articles, et le dépôt en écrit
+ * couramment (« R. 4224-12 et R. 4224-13 », « R. 4544-9 à R. 4544-11 »).
+ *
+ * La règle serait donc rouge dès son écriture, sur son unique cas réel, et il
+ * faudrait l'excepter aussitôt — ou la vider en dispensant toute référence qui
+ * nomme plus d'un article, c'est-à-dire précisément celles qu'elle viserait.
+ * Une règle qu'on excepte sur son seul cas n'est pas une garde.
+ */
+
 describe("URL Légifrance — un article, un identifiant", () => {
   it("le repérage des articles ramène les graphies du dépôt à une seule", () => {
     // Sans ce contrôle, le test comparerait des chaînes qui ne se rencontrent
@@ -148,6 +182,12 @@ describe("URL Légifrance — un article, un identifiant", () => {
     ]) {
       expect(articlesCites(graphie), graphie).toContain("R. 4121-1");
     }
+    // Le CCH et le code de l'environnement numérotent sur trois chiffres, et
+    // échappaient entièrement au motif.
+    expect(articlesCites("CCH R. 134-6")).toContain("R. 134-6");
+    expect(articlesCites("Art. R. 143-44 CCH")).toContain("R. 143-44");
+    expect(articlesCites("C. env. R. 543-79, al. 1")).toContain("R. 543-79");
+
     // Une citation de plage rend ses deux bornes.
     expect(articlesCites("R. 4224-12 et R. 4224-13")).toEqual([
       "R. 4224-12",
