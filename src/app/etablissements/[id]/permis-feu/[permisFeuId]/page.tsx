@@ -379,15 +379,23 @@ export default async function PermisFeuDetailPage({
       </div>
 
       <div className="pt-2">
+        {/* APSAD R43 partageait cette pastille avec un article du Code du
+            travail et une recommandation INRS. C'est une règle de la
+            profession de l'assurance : le dépôt ne cite en pastille que des
+            sources primaires ou institutionnelles (`conformite/types.ts`,
+            ADR-003). Elle est donc nommée dans le complément, qualifiée. */}
         <LegalBadge
           charte="board"
-          reference="INRS ED 6030 · APSAD R43 · Art. R4224-17 CT"
+          reference="Art. R. 4224-17 CT · INRS ED 6030"
+          href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532197"
           defaultOpen
         >
           Le permis de feu engage conjointement l&apos;entreprise utilisatrice
           et l&apos;entreprise extérieure. Il fait foi de l&apos;analyse de
           risque menée avant travaux et des mesures prises. En cas de sinistre,
-          ce document est le premier demandé par l&apos;assureur.
+          ce document est le premier demandé par l&apos;assureur, au titre de
+          la règle APSAD R43 — un référentiel de la profession de
+          l&apos;assurance, opposable par le contrat et non par le droit.
         </LegalBadge>
       </div>
     </EcranFiche>

@@ -202,7 +202,8 @@ export async function GET(
   if (permisFeuList.length > 0) {
     const txt = [
       `PERMIS DE FEU — 12 derniers mois (${permisFeuList.length})`,
-      `Recommandation INRS ED 6030, exigence assurance APSAD R43.`,
+      `Recommandation INRS ED 6030 ; règle APSAD R43 exigée par les assureurs.`,
+      `Ni l'une ni l'autre n'est un texte réglementaire — cf. le dossier de contrôle.`,
       "",
       "────────────────────────────────────────────────────────────",
       ...permisFeuList.flatMap((p) => [
@@ -407,12 +408,30 @@ function genererReadme(args: {
     " DUERP :                    art. R4121-1 à R4121-4 Code du travail",
     " Vérifications :            art. R4226-16 et s. Code du travail",
     " Registre de sécurité :     art. L4711-5 Code du travail",
-    " Accessibilité ERP :        arrêté 19-04-2017 · art. D111-19-33 CCH",
+    " Accessibilité ERP :        art. R164-6 CCH · arrêté 19-04-2017",
     " Vigilance donneur d'ordre : art. L8222-1 Code du travail",
-    " Permis de feu :            INRS ED 6030 · art. R4224-17 CT · APSAD R43",
-    " Plan de prévention :       art. R4512-6 à R4512-12 CT (décret 92-158)",
+    " Permis de feu :            art. R4224-17 Code du travail",
+    " Plan de prévention :       art. R4512-6 à R4512-12 CT",
     " Carnet sanitaire eau :     arrêté 01-02-2010 · art. R1321-23 CSP",
     " Maintien en conformité :   art. R4224-17 Code du travail",
+    "",
+    // APSAD R43 et l'INRS ED 6030 figuraient dans la liste ci-dessus, entre
+    // deux articles de code, sous le titre « CADRE LÉGAL ». Ce document est
+    // remis à un inspecteur, un assureur, un bailleur ou un acquéreur : y
+    // présenter une règle de la profession de l'assurance comme du droit est
+    // une affirmation que le produit ne peut pas soutenir. Les deux
+    // référentiels restent nommés — ils fondent réellement la pratique — mais
+    // sous leur propre titre, et en disant ce qu'ils opposent.
+    "────────────────────────────────────────────────────────────",
+    " RÉFÉRENTIELS NON OPPOSABLES CITÉS DANS CE DOSSIER",
+    "────────────────────────────────────────────────────────────",
+    "",
+    " INRS ED 6030 :             recommandation de l'Institut national de",
+    "                            recherche et de sécurité. Bonne pratique",
+    "                            reconnue, sans valeur réglementaire propre.",
+    " Règle APSAD R43 :          référentiel de la profession de l'assurance",
+    "                            (travaux par points chauds). Opposable par",
+    "                            votre contrat d'assurance, pas par le droit.",
     "",
     "────────────────────────────────────────────────────────────",
     "",
