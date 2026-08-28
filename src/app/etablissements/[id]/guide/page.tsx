@@ -130,7 +130,7 @@ export default async function GuidePage({
           <SourcesBloc />
         </GReveal>
 
-        <footer className="border-t border-dashed border-rule-soft pt-6 text-center font-mono text-[0.62rem] uppercase tracking-[0.22em] text-muted-foreground">
+        <footer className="border-t border-dashed border-[color:var(--board-slate-line)] pt-6 text-center font-mono text-[0.62rem] uppercase tracking-[0.22em] text-[color:var(--board-slate-mid)]">
           § Guide rédigé à partir des sources primaires Légifrance + INRS ·
           Mis à jour 04/2026
         </footer>
