@@ -511,3 +511,142 @@ describe("le nom d'un salarié ne sort pas du produit", () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * Retire commentaires de bloc et de ligne, pour qu'un motif cherchant une
+ * lecture ne morde pas l'explication de son absence.
+ *
+ * Le garde `[^:]` évite de couper une URL sur son `//`.
+ */
+export function sansCommentaires(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, " ")
+    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+}
+
+describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers un tiers", () => {
+  /**
+   * Deux champs de texte libre où l'utilisateur écrit le nom d'une personne :
+   * `Action.responsable` (qui pilote une action corrective) et
+   * `ReleveTemperature.operateur` (qui a fait le relevé d'eau chaude).
+   *
+   * Ils ne relèvent pas de la frontière médicale, et pas non plus du nom du
+   * salarié : personne ne les dérive d'un modèle, c'est l'employeur qui les
+   * tape. Mais ils sortaient par les deux mêmes portes, et la décision du
+   * 2026-08-28 ne les traite pas pareil — parce que les destinataires
+   * diffèrent :
+   *
+   * — `responsable` reste dans les documents que l'employeur remet lui-même
+   *   (PDF du plan d'actions, dossier de conformité, DUERP) : un plan
+   *   d'actions sans porteur nommé perd sa fonction. Il sort du **MCP**, seule
+   *   surface qui parte vers un tiers que l'utilisateur ne maîtrise pas —
+   *   l'assistant qu'il branche. Un nom lu là part vers un LLM par défaut,
+   *   contre le principe fondateur « zéro IA sur le contenu utilisateur ».
+   *
+   * — `operateur` sort de l'**export ZIP**, remis « à un inspecteur, un
+   *   assureur, un bailleur ou un acquéreur ». Aucun texte ne l'exige :
+   *   l'article 3 de l'arrêté du 1er février 2010 demande de consigner « les
+   *   modalités et les résultats » dans un fichier sanitaire tenu à
+   *   disposition de l'ARS. `D. 4711-2` ne vise que la santé-sécurité AU
+   *   TRAVAIL et ne couvre ni l'un ni l'autre (docs/rgpd.md § 2.4).
+   *
+   * La règle porte sur la LECTURE du champ, pas sur son affichage : ce qui
+   * n'est pas lu ne peut pas ressortir par une colonne ajoutée plus tard.
+   */
+
+  // Les commentaires sont retirés avant de chercher (`sansCommentaires`).
+  // Sans ça, la règle mordrait les commentaires qui expliquent pourquoi le
+  // champ n'est PAS lu — et il y en a un dans chacun des deux fichiers
+  // qu'elle surveille. Le motif serait rouge en permanence, et la réparation
+  // naturelle serait de l'affaiblir jusqu'à ce qu'il ne morde plus rien.
+  /** Lire le champ : le déréférencer, ou le demander à Prisma. */
+  function litChampNominatif(source: string, champ: string): boolean {
+    const code = sansCommentaires(source);
+    return new RegExp(`\\.${champ}\\b|\\b${champ}:\\s*true\\b`).test(code);
+  }
+
+  const CHAMPS_LIBRES: {
+    champ: string;
+    chemins: RegExp[];
+    message: string;
+  }[] = [
+    {
+      champ: "responsable",
+      chemins: [/^lib\/mcp\//, /^scripts\/mcp-server\.ts$/],
+      message:
+        "Le serveur MCP lit `Action.responsable`. Ce champ porte le nom d'une " +
+        "personne et le MCP alimente un assistant tiers : ne le sélectionnez pas " +
+        "(docs/rgpd.md § 2.5). Il reste rendu dans les PDF que l'employeur remet.",
+    },
+    {
+      champ: "operateur",
+      chemins: [/^app\/api\//],
+      message:
+        "Une route d'API lit `ReleveTemperature.operateur`. Ce champ porte le nom " +
+        "de qui a fait le relevé, et l'export part vers un tiers. Aucun texte ne " +
+        "l'exige (docs/rgpd.md § 2.5) : sélectionnez la date, la température et la " +
+        "conformité.",
+    },
+  ];
+
+  it("le détecteur voit une lecture, et ignore un commentaire qui la nomme", () => {
+    // Le cas fabriqué est celui des deux fichiers réels : un commentaire qui
+    // explique la retenue, et pas de lecture.
+    expect(litChampNominatif("const x = a.responsable;", "responsable")).toBe(true);
+    expect(litChampNominatif("select: { responsable: true }", "responsable")).toBe(true);
+    expect(
+      litChampNominatif(
+        "// `Action.responsable` n'est PAS sélectionné, et c'est délibéré.\nconst x = 1;",
+        "responsable",
+      ),
+    ).toBe(false);
+    expect(
+      litChampNominatif(
+        "/* On ne lit pas a.responsable ici. */\nconst x = 1;",
+        "responsable",
+      ),
+    ).toBe(false);
+    // Une URL n'est pas un commentaire de ligne.
+    expect(
+      litChampNominatif('const u = "https://x/y"; const v = a.operateur;', "operateur"),
+    ).toBe(true);
+  });
+
+  it("aucune surface interdite ne lit ces champs", () => {
+    const fautifs: string[] = [];
+    const fichiers = [
+      ...fichiersSource(join(RACINE, "src")),
+      ...fichiersSource(join(RACINE, "scripts")),
+    ].map((abs) => ({ abs, rel: relative(RACINE, abs).replace(/^src\//, "") }));
+
+    for (const { champ, chemins, message } of CHAMPS_LIBRES) {
+      for (const { abs, rel } of fichiers) {
+        if (!chemins.some((r) => r.test(rel))) continue;
+        if (litChampNominatif(readFileSync(abs, "utf8"), champ)) {
+          fautifs.push(`${rel} → ${champ} — ${message}`);
+        }
+      }
+    }
+
+    expect(fautifs).toEqual([]);
+  });
+
+  it("les chemins surveillés désignent des fichiers qui existent", () => {
+    // Un motif de chemin qui ne matche rien est une garde morte : elle donne
+    // l'assurance écrite d'une surveillance qui ne s'exerce sur rien. C'est
+    // exactement le défaut corrigé plus haut sur `scripts/mcp-server.ts`.
+    const rels = [
+      ...fichiersSource(join(RACINE, "src")),
+      ...fichiersSource(join(RACINE, "scripts")),
+    ].map((abs) => relative(RACINE, abs).replace(/^src\//, ""));
+
+    for (const { champ, chemins } of CHAMPS_LIBRES) {
+      for (const motif of chemins) {
+        expect(
+          rels.some((r) => motif.test(r)),
+          `${champ} : le motif ${motif} ne désigne aucun fichier`,
+        ).toBe(true);
+      }
+    }
+  });
+});

@@ -269,9 +269,29 @@ export async function GET(
       pointsReleve: {
         where: { actif: true },
         include: {
+          // `select` et non `include` : `ReleveTemperature.operateur` est un
+          // champ de texte libre où l'exploitant écrit qui a relevé, et ce ZIP
+          // est remis « à un inspecteur, un assureur, un bailleur ou un
+          // acquéreur ». Aucun texte n'exige ce nom : l'article 3 de l'arrêté
+          // du 1er février 2010 demande de consigner « les modalités et les
+          // résultats » de la surveillance dans un fichier sanitaire tenu à
+          // disposition de l'ARS — pas l'identité de qui relève, et pas pour
+          // ces destinataires-là. `D. 4711-2`, qui exige l'identité du
+          // vérificateur, ne vise que la santé-sécurité AU TRAVAIL ; un relevé
+          // d'eau chaude sanitaire relève du code de la santé publique.
+          //
+          // La retenue est dans la requête et non dans le formateur : ce qui
+          // n'est pas lu ne peut pas ressortir par une colonne qu'on
+          // ajouterait plus tard. Le nom reste en base et à l'écran, où il
+          // sert à l'exploitant.
           releves: {
             orderBy: { dateReleve: "desc" },
             take: 10,
+            select: {
+              dateReleve: true,
+              temperatureCelsius: true,
+              conforme: true,
+            },
           },
         },
       },
@@ -291,7 +311,7 @@ export async function GET(
         `  10 derniers relevés :`,
         ...pt.releves.map(
           (r) =>
-            `    ${formaterDateFr(r.dateReleve)} · ${r.temperatureCelsius.toFixed(1)}°C · ${r.conforme ? "CONFORME" : "NON CONFORME"}${r.operateur ? ` (${r.operateur})` : ""}`,
+            `    ${formaterDateFr(r.dateReleve)} · ${r.temperatureCelsius.toFixed(1)}°C · ${r.conforme ? "CONFORME" : "NON CONFORME"}`,
         ),
         "",
       ]),

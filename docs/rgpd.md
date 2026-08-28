@@ -116,6 +116,20 @@ vérification ». Le nom du technicien n'y est pas par accident.
 L'utilisateur reste responsable de ce qu'il dépose : un rapport peut contenir
 davantage (signature scannée, numéro d'habilitation d'un tiers).
 
+**La portée de `D. 4711-2` s'arrête ici.** L'article vise les vérifications et
+contrôles mis à la charge de l'employeur « au titre de la santé et de la
+sécurité **au travail** ». Il ne couvre donc ni `Action.responsable` — la
+personne à qui l'employeur confie une action corrective n'est pas un
+vérificateur — ni `ReleveTemperature.operateur` : un relevé d'eau chaude
+sanitaire relève du carnet sanitaire (arrêté du 1er février 2010,
+`R. 1321-23` CSP), dont l'article 3 demande de consigner « les modalités et
+les résultats » de la surveillance, et non l'identité de qui relève.
+
+Le maintien de `responsable` dans les documents remis est donc un fondement
+**produit**, pas légal : un plan d'actions sans porteur nommé perd sa
+fonction. Ce qu'aucun texte n'impose, aucune formulation de ce document ne
+doit le faire croire.
+
 ### 2.5 Autres personnes physiques déjà en base
 
 Pour que l'inventaire soit complet, et parce que l'ancienne version de ce
@@ -129,6 +143,25 @@ document les passait sous silence :
 | `PermisFeu.prestataireContact`, `donneurOrdreNom` | instantané d'une opération datée |
 | `PlanPrevention.efChefNom`, `euChefNom` | instantané d'une inspection commune |
 | `Action.responsable` | texte libre saisi par l'utilisateur |
+| `ReleveTemperature.operateur` | texte libre : qui a fait le relevé |
+
+`operateur` manquait à ce tableau, qui se présente pourtant comme
+l'inventaire complet. Le champ existait depuis le carnet sanitaire.
+
+**Où ces deux champs sortent, et où ils ne sortent pas.** Un inventaire qui ne
+distingue pas les destinataires ne dit pas grand-chose : les deux champs sont
+du texte libre nominatif, et la décision du 2026-08-28 ne les traite pas
+pareil.
+
+| Champ | Sort | Ne sort pas | Pourquoi |
+|---|---|---|---|
+| `Action.responsable` | PDF du plan d'actions, dossier de conformité, DUERP — et le snapshot conservé 40 ans, qui conserve ce qui a été remis | serveur MCP (`src/lib/mcp/`) | L'employeur remet ces documents lui-même, en connaissance de cause. Le MCP alimente l'assistant qu'il branche : un nom lu là part vers un LLM tiers par défaut, contre le principe « zéro IA sur le contenu utilisateur ». |
+| `ReleveTemperature.operateur` | rien | export ZIP de contrôle (`app/api/`) | Le ZIP est remis « à un inspecteur, un assureur, un bailleur ou un acquéreur ». Le fichier sanitaire, lui, est tenu à disposition de l'ARS — et n'exige pas ce nom. Le champ reste en base et à l'écran, où il sert à l'exploitant. |
+
+Les deux retenues sont posées dans la **requête** et non dans le formateur :
+ce qui n'est pas lu ne peut pas ressortir par une colonne ajoutée plus tard.
+Elles sont tenues par `src/lib/rgpd/frontiere-medicale.test.ts`, éprouvé en
+réinjectant chacun des deux défauts.
 
 ### 2.6 Risques et mesures du DUERP
 
