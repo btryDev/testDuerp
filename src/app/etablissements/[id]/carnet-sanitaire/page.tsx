@@ -137,9 +137,9 @@ export default async function CarnetSanitairePage({
           ) : (
             <ul className="m-0 flex list-none flex-col gap-5 p-0">
               {carnet.pointsReleve.map((p) => {
-                const tempActuelle =
-                  p.releves[0]?.temperatureCelsius ?? null;
-                const dansLaPlage = p.releves[0]?.conforme ?? null;
+                const dernier = p.releves[0] ?? null;
+                const tempActuelle = dernier?.temperatureCelsius ?? null;
+                const dansLaPlage = dernier?.conforme ?? null;
                 return (
                   <li key={p.id} className="carte-board">
                     <div className="flex flex-wrap items-start justify-between gap-3 px-7 pb-3 pt-6 sm:px-8">
@@ -154,6 +154,24 @@ export default async function CarnetSanitairePage({
                           {p.typeReseau === "EFS" ? "max" : "min"}{" "}
                           {p.seuilMinCelsius}°C
                         </p>
+                        {/* Qui a relevé, et quand. Le formulaire demande ce
+                            nom depuis toujours ; jusqu'au 2026-08-28 son seul
+                            lecteur était l'export ZIP remis à un tiers — d'où
+                            il a été retiré, aucun texte ne l'exigeant. Le
+                            champ s'est alors retrouvé collecté sans finalité,
+                            ce qui tient plus mal sous la minimisation que
+                            l'usage interne auquel il était destiné. Il le
+                            retrouve ici : l'exploitant sait à qui demander
+                            quand une mesure surprend. Le nom ne ressort
+                            toujours pas de l'établissement. */}
+                        {dernier && (
+                          <p className="m-0 mt-1.5 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+                            Dernier relevé le {formatDate(dernier.dateReleve)}
+                            {dernier.operateur
+                              ? ` · par ${dernier.operateur}`
+                              : ""}
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-3">
                         {tempActuelle !== null && (
