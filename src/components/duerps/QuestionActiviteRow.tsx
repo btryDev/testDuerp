@@ -61,31 +61,35 @@ export function QuestionActiviteRow({
   };
 
   return (
-    <li className="rounded-lg border bg-card p-4">
-      <p className="font-medium">{question}</p>
+    <li className="carte-board px-7 py-6 sm:px-8">
+      <p className="m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
+        {question}
+      </p>
       {aide && (
-        <p className="mt-1 text-xs text-muted-foreground">{aide}</p>
+        <p className="m-0 mt-1.5 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+          {aide}
+        </p>
       )}
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-4 flex flex-wrap items-center gap-2">
         <Button
-          size="sm"
-          variant={exercee === true ? "default" : "outline"}
+          variant={exercee === true ? "board" : "boardClair"}
+          size="boardSm"
           disabled={pending}
           onClick={() => repondre(true)}
         >
           Oui
         </Button>
         <Button
-          size="sm"
-          variant={exercee === false ? "default" : "outline"}
+          variant={exercee === false ? "board" : "boardClair"}
+          size="boardSm"
           disabled={pending}
           onClick={() => repondre(false)}
         >
           Non
         </Button>
         {exercee === undefined ? (
-          <span className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+          <span className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             Sans réponse
           </span>
         ) : (
@@ -98,7 +102,7 @@ export function QuestionActiviteRow({
             type="button"
             disabled={pending}
             onClick={() => repondre(null)}
-            className="text-xs italic text-muted-foreground underline-offset-4 hover:text-ink hover:underline disabled:opacity-50"
+            className="text-[12.5px] text-[color:var(--board-blue-ink)] underline-offset-4 hover:underline disabled:opacity-50"
           >
             retirer ma réponse
           </button>
@@ -106,19 +110,22 @@ export function QuestionActiviteRow({
       </div>
 
       {echec && (
-        <p role="alert" className="mt-2 text-[0.82rem] text-destructive">
+        <p
+          role="alert"
+          className="m-0 mt-3 text-[12.5px] text-[color:var(--board-signal-ink)]"
+        >
           Cette réponse n&apos;a pas pu être enregistrée. Rechargez la page,
           puis réessayez.
         </p>
       )}
 
       {exercee === true && (
-        <div className="mt-3 max-w-prose border-l-2 border-dashed border-rule pl-3">
-          <p className="text-[0.82rem] leading-relaxed text-muted-foreground">
+        <div className="mt-4 max-w-[66ch] border-l-2 border-[color:var(--board-slate-line)] pl-4">
+          <p className="m-0 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             Ce que le référentiel de votre secteur ne propose pas pour cette
             activité&nbsp;: {cequiManque}
           </p>
-          <p className="mt-1.5 text-[0.82rem] leading-relaxed text-muted-foreground">
+          <p className="m-0 mt-1.5 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             L&apos;inventaire reste à votre main — créez au besoin une unité de
             travail dédiée à l&apos;étape suivante. Le DUERP généré porte la
             mention de cette déclaration.

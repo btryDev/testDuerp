@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { WhyCard } from "@/components/ui-kit/WhyCard";
 import { LegalBadge } from "@/components/ui-kit/LegalBadge";
@@ -34,31 +35,35 @@ export default async function EtablissementDuerpPage({
   const creerAction = creerDuerp.bind(null, id);
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-14 sm:px-10">
-      <nav>
+    // Écran d'application plein : la gouttière, pas une colonne centrée.
+    // L'exception de largeur de la charte porte sur le wizard lui-même
+    // (`duerp/[id]/layout.tsx`), pas sur cette porte d'entrée.
+    <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
+      <header className="border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] px-[var(--board-gutter)] py-[22px]">
         <Link
           href={`/etablissements/${id}`}
-          className="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-ink"
+          className="board-eyebrow inline-flex items-center gap-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
         >
-          ← {etab.raisonDisplay}
+          <ArrowLeft className="size-3" aria-hidden />
+          {etab.raisonDisplay}
         </Link>
-      </nav>
-
-      <header className="mt-8 space-y-3">
-        <p className="label-admin">Document unique</p>
-        <h1 className="text-[1.8rem] font-semibold tracking-[-0.02em] leading-tight">
+        <p className="board-eyebrow m-0 mt-2.5 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+          Document unique
+        </p>
+        <h1 className="board-titre m-0 mt-1.5 text-[clamp(22px,2.2vw,27px)]">
           Votre DUERP
         </h1>
       </header>
 
-      <div className="mt-8 space-y-6">
+      <div className="flex flex-col gap-[22px] px-[var(--board-gutter)] pt-6">
         <WhyCard
+          charte="board"
           kicker="Pourquoi ce document"
           titre="Le DUERP : votre évaluation des risques, posée par écrit"
           enjeu="Obligatoire dès le premier salarié. En cas de contrôle ou d'accident, c'est le premier document demandé."
           tonalite="info"
         >
-          <p>
+          <p className="m-0">
             Vous décrivez votre activité, l&apos;outil vous propose les
             risques typiques de votre secteur, vous ajustez. Comptez une
             trentaine de minutes — tout est enregistré au fur et à mesure,
@@ -67,11 +72,13 @@ export default async function EtablissementDuerpPage({
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <LegalBadge
+              charte="board"
               reference="Art. R. 4121-1 CT"
               href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000023795562"
               extrait="L'employeur transcrit et met à jour dans un document unique les résultats de l'évaluation des risques pour la santé et la sécurité des travailleurs à laquelle il procède en application de l'article L. 4121-3."
             />
             <LegalBadge
+              charte="board"
               reference="Art. R. 4121-2 CT"
               href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000045386446"
               extrait="La mise à jour du document unique d'évaluation des risques est réalisée : au moins chaque année dans les entreprises d'au moins onze salariés ; lors de toute décision d'aménagement important…"
@@ -83,6 +90,7 @@ export default async function EtablissementDuerpPage({
               </p>
             </LegalBadge>
             <LegalBadge
+              charte="board"
               reference="Art. L. 4121-3-1 CT"
               href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043893919"
               extrait="Le document unique d'évaluation des risques professionnels […] est conservé, dans ses versions successives, […] pendant une durée qui ne peut être inférieure à quarante ans."
@@ -96,15 +104,15 @@ export default async function EtablissementDuerpPage({
           </div>
         </WhyCard>
 
-        <div className="cartouche flex flex-wrap items-center justify-between gap-4 px-6 py-5 sm:px-8">
-          <p className="text-[0.88rem] text-muted-foreground">
+        <div className="carte-board flex flex-wrap items-center justify-between gap-4 px-7 py-6 sm:px-8">
+          <p className="m-0 max-w-[62ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
             Première étape : choisir votre secteur d&apos;activité
             (restauration, commerce ou bureau — 3 secteurs couverts).
           </p>
           {duerp ? (
             <Link
               href={`/duerp/${duerp.id}/secteur`}
-              className={buttonVariants({ size: "default" })}
+              className={buttonVariants({ variant: "board", size: "board" })}
             >
               Commencer mon DUERP →
             </Link>
@@ -112,7 +120,7 @@ export default async function EtablissementDuerpPage({
             <form action={creerAction}>
               <button
                 type="submit"
-                className={buttonVariants({ size: "default" })}
+                className={buttonVariants({ variant: "board", size: "board" })}
               >
                 Commencer mon DUERP →
               </button>

@@ -47,18 +47,18 @@ export default async function SecteurPage({
     }));
 
   return (
-    <div className="space-y-14">
+    <div className="flex flex-col gap-[22px]">
       <WizardSteps etapes={etapes} />
 
       {/* Raccourci : importer un DUERP existant plutôt que reconstruire */}
-      <aside className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-[color:var(--rule)] bg-[color:var(--paper-sunk)] px-5 py-3 text-[0.82rem]">
-        <span className="text-[color:var(--ink)]">
+      <aside className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] bg-[color:var(--board-slate-pale)] px-6 py-4">
+        <span className="text-[13.5px] leading-[1.55] text-[color:var(--board-slate-ink)]">
           <strong>Déjà un DUERP ?</strong> Importez-le au format Excel plutôt
           que de repartir de zéro.
         </span>
         <Link
           href={`/etablissements/${duerp.etablissementId}/duerp/import`}
-          className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-[color:var(--warm)] hover:underline"
+          className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-blue-ink)] hover:underline"
         >
           Importer depuis Excel →
         </Link>
@@ -66,11 +66,13 @@ export default async function SecteurPage({
 
       {refRecommande ? (
         <>
-          <header className="max-w-2xl">
-            <p className="label-admin">Secteur d&apos;activité</p>
-            <p className="mt-4 text-[0.95rem] leading-[1.7] text-muted-foreground">
+          <header className="max-w-[68ch]">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+              Secteur d&apos;activité
+            </p>
+            <p className="m-0 mt-3 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
               À partir du code NAF{" "}
-              <span className="font-mono text-ink">
+              <span className="font-mono tabular-nums text-[color:var(--board-ink)]">
                 {duerp.entreprise.codeNaf}
               </span>
               , le secteur ci-dessous a été détecté. Confirmez pour charger
@@ -78,36 +80,36 @@ export default async function SecteurPage({
             </p>
           </header>
 
-          <section className="cartouche relative overflow-hidden px-8 py-10 sm:px-12 sm:py-12">
-            <span
-              aria-hidden
-              className="absolute left-0 top-0 h-1 w-20 bg-[color:var(--warm)]"
-            />
-            <p className="label-admin">Secteur détecté</p>
+          <section className="carte-board px-7 py-6 sm:px-8">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+              Secteur détecté
+            </p>
 
-            <div className="mt-6 grid gap-12 sm:grid-cols-[1fr_auto] sm:items-end">
-              <div>
-                <h3 className="text-[1.65rem] font-semibold tracking-[-0.018em] leading-tight">
+            <div className="mt-5 grid gap-8 sm:grid-cols-[1fr_auto] sm:items-end">
+              <div className="min-w-0">
+                <h3 className="board-titre m-0 text-[clamp(23px,2.1vw,30px)]">
                   {refRecommande.nom}
                 </h3>
-                <p className="mt-4 max-w-xl text-[0.95rem] leading-[1.7] text-muted-foreground">
+                <p className="m-0 mt-3 max-w-[62ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                   {descriptionPourSecteur(refRecommande.id)}
                 </p>
 
-                <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
+                <dl className="mt-7 flex flex-wrap gap-x-10 gap-y-4">
                   <div className="flex items-baseline gap-2.5">
-                    <span className="[font-family:var(--font-mono)] text-[1.2rem] tabular-nums">
+                    <dt className="sr-only">Unités pré-remplies</dt>
+                    <dd className="m-0 font-mono text-[20px] tabular-nums text-[color:var(--board-ink)]">
                       {String(refRecommande.unitesTravailSuggerees.length).padStart(2, "0")}
-                    </span>
-                    <span className="text-[0.82rem] text-muted-foreground">
+                    </dd>
+                    <span className="text-[12.5px] text-[color:var(--board-slate-mid)]">
                       unités pré-remplies
                     </span>
                   </div>
                   <div className="flex items-baseline gap-2.5">
-                    <span className="[font-family:var(--font-mono)] text-[1.2rem] tabular-nums">
+                    <dt className="sr-only">Risques référencés</dt>
+                    <dd className="m-0 font-mono text-[20px] tabular-nums text-[color:var(--board-ink)]">
                       {String(refRecommande.risques.length).padStart(2, "0")}
-                    </span>
-                    <span className="text-[0.82rem] text-muted-foreground">
+                    </dd>
+                    <span className="text-[12.5px] text-[color:var(--board-slate-mid)]">
                       risques référencés
                     </span>
                   </div>
@@ -131,11 +133,13 @@ export default async function SecteurPage({
         </>
       ) : (
         <>
-          <header className="max-w-2xl">
-            <p className="label-admin">Secteur d&apos;activité</p>
-            <p className="mt-4 text-[0.95rem] leading-[1.7] text-muted-foreground">
+          <header className="max-w-[68ch]">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+              Secteur d&apos;activité
+            </p>
+            <p className="m-0 mt-3 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
               Le code NAF{" "}
-              <span className="font-mono text-ink">
+              <span className="font-mono tabular-nums text-[color:var(--board-ink)]">
                 {duerp.entreprise.codeNaf}
               </span>{" "}
               n&apos;est pas couvert par un référentiel dédié. Choisissez le
@@ -145,8 +149,10 @@ export default async function SecteurPage({
           </header>
 
           <section>
-            <p className="label-admin mb-8">Secteurs disponibles</p>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <p className="board-eyebrow m-0 mb-5 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+              Secteurs disponibles
+            </p>
+            <div className="grid gap-[22px] md:grid-cols-2 lg:grid-cols-3">
               {referentielsSectoriels.map((r) => (
                 <SecteurCard
                   key={r.id}

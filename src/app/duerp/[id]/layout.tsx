@@ -18,8 +18,15 @@ import {
  * chrome que /etablissements/[id]/* : rail gauche persistant (AppSidebar
  * avec l'item "DUERP" actif) + topbar sticky avec crumbs → raison sociale
  * → DUERP. L'ancien header éditorial centré a été remplacé ; le contenu
- * interne (wizard steps, cartouches secteur, tableaux risques) garde sa
+ * interne (fil du wizard, carte de secteur, tableaux de risques) garde sa
  * largeur max-w-5xl pour préserver la lecture de type « document ».
+ *
+ * Cette largeur est l'exception nommée de la charte board (§ 5, « la
+ * largeur de lecture ») : ces pages se lisent en phrases longues, et une
+ * ligne de 1400 px ne se lit pas. Elle porte sur la largeur, et sur rien
+ * d'autre — le contenu est en charte board comme partout ailleurs, d'où
+ * le canvas posé ici : des cartes blanches sur `--paper` ne se
+ * détachaient plus du fond.
  */
 export default async function DuerpLayout({
   children,
@@ -74,7 +81,7 @@ export default async function DuerpLayout({
         modules={modules}
       />
 
-      <div className="flex min-w-0 flex-col lg:overflow-y-auto">
+      <div className="flex min-w-0 flex-col bg-[color:var(--board-canvas)] lg:overflow-y-auto">
         {/* Le compte se tient en haut à droite ici aussi : le shell DUERP
             partage la même sidebar, donc la même règle. */}
         <BarreCompte
@@ -95,7 +102,10 @@ export default async function DuerpLayout({
           actions={
             <Link
               href={`/duerp/${id}/pdf/preview`}
-              className={buttonVariants({ size: "sm" })}
+              className={buttonVariants({
+                variant: "boardClair",
+                size: "boardSm",
+              })}
             >
               PDF DUERP ↓
             </Link>

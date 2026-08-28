@@ -31,18 +31,18 @@ export function AutresSecteurs({
         type="button"
         onClick={() => setOuvert((o) => !o)}
         aria-expanded={ouvert}
-        className={`group inline-flex items-center gap-2 font-mono text-[0.66rem] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-ink ${
+        className={`board-eyebrow group inline-flex items-center gap-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)] ${
           alignDroite ? "self-end" : ""
         }`}
       >
         {ouvert ? "Masquer les autres secteurs" : "Changer de secteur"}
-        <span aria-hidden className="text-[0.85rem] leading-none">
+        <span aria-hidden className="text-[13px] leading-none">
           {ouvert ? "−" : "+"}
         </span>
       </button>
 
       {ouvert && (
-        <div className="col-span-full mt-8 border-t border-dashed border-rule/60 pt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="col-span-full mt-8 grid gap-[22px] border-t border-[color:var(--board-slate-line)] pt-8 md:grid-cols-2 lg:grid-cols-3">
           {secteurs.map((r) => (
             <SecteurCard
               key={r.id}

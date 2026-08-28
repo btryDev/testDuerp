@@ -15,7 +15,8 @@ export function ConfirmerSecteurButton({
 
   return (
     <Button
-      size="lg"
+      variant="board"
+      size="board"
       disabled={pending}
       onClick={() => {
         startTransition(async () => {

@@ -58,22 +58,24 @@ export default async function ActivitesPage({
   const sansReponse = questions.filter((q) => q.exercee === undefined);
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-[22px]">
       <WizardSteps etapes={etapes} />
 
-      <header className="max-w-2xl">
-        <p className="label-admin">Périmètre du référentiel</p>
-        <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+      <header className="max-w-[68ch]">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+          Périmètre du référentiel
+        </p>
+        <h2 className="board-titre m-0 mt-3 text-[clamp(23px,2.1vw,30px)]">
           Ce que {referentiel ? `le référentiel « ${referentiel.nom} »` : "le référentiel retenu"}{" "}
           ne couvre pas
         </h2>
-        <p className="mt-4 text-[0.95rem] leading-[1.7] text-muted-foreground">
+        <p className="m-0 mt-3 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           Un référentiel sectoriel est bâti sur une activité type. Le vôtre ne
           connaît ni les ateliers, ni les métiers annexes que vous exercez
           peut-être en plus. Les questions ci-dessous servent uniquement à le
           savoir.
         </p>
-        <p className="mt-3 text-[0.95rem] leading-[1.7] text-muted-foreground">
+        <p className="m-0 mt-3 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           Répondre «&nbsp;oui&nbsp;» ne bloque rien, n&apos;ajoute aucun risque
           et n&apos;en retire aucun. Cela enregistre un fait sur le périmètre de
           votre dossier, qui sera repris dans le DUERP généré : le lecteur du
@@ -81,7 +83,7 @@ export default async function ActivitesPage({
         </p>
       </header>
 
-      <ul className="space-y-3">
+      <ul className="m-0 flex list-none flex-col gap-3 p-0">
         {questions.map((q) => (
           <QuestionActiviteRow
             key={q.activite.id}
@@ -99,7 +101,7 @@ export default async function ActivitesPage({
           verdict sur le dossier et sans taux de complétude — un pourcentage
           laisserait croire à une mesure de la qualité du DUERP. */}
       {sansReponse.length > 0 && (
-        <p className="text-[0.82rem] leading-relaxed text-muted-foreground">
+        <p className="m-0 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           {sansReponse.length} question{sansReponse.length > 1 ? "s" : ""} sans
           réponse. Vous pouvez continuer sans répondre&nbsp;: le document ne
           dira alors ni que ces activités sont exercées, ni qu&apos;elles ne le
@@ -107,14 +109,17 @@ export default async function ActivitesPage({
         </p>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[color:var(--board-slate-line)] pt-6">
         <Link
           href={`/duerp/${id}/secteur`}
-          className={buttonVariants({ variant: "outline" })}
+          className={buttonVariants({ variant: "boardClair", size: "board" })}
         >
           ← Secteur d&apos;activité
         </Link>
-        <Link href={`/duerp/${id}/unites`} className={buttonVariants()}>
+        <Link
+          href={`/duerp/${id}/unites`}
+          className={buttonVariants({ variant: "board", size: "board" })}
+        >
           Unités de travail →
         </Link>
       </div>

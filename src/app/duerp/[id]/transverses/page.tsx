@@ -43,22 +43,22 @@ export default async function TransversesPage({
   const risquesParId = new Map(risquesTransverses.map((r) => [r.id, r]));
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-[22px]">
       <WizardSteps etapes={etapes} />
 
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight">
+      <header className="max-w-[68ch]">
+        <h2 className="board-titre m-0 text-[clamp(23px,2.1vw,30px)]">
           Questions transverses
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="m-0 mt-3 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           Ces questions couvrent des risques présents dans la plupart des
           entreprises, quel que soit le métier. Chaque « oui » ajoute
           automatiquement le risque correspondant à votre DUERP — vous pourrez
           ensuite le coter comme les autres.
         </p>
-      </div>
+      </header>
 
-      <ul className="space-y-3">
+      <ul className="m-0 flex list-none flex-col gap-3 p-0">
         {questionsDetectionTransverses.map((q) => {
           const risque = risquesParId.get(q.risqueIdAssocie);
           if (!risque) return null;
@@ -76,16 +76,16 @@ export default async function TransversesPage({
       </ul>
 
       {uniteTransverse && uniteTransverse.risques.length > 0 && (
-        <section className="rounded-lg border bg-card p-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium">
+        <section className="carte-board px-7 py-6 sm:px-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="m-0 text-[14px] font-medium leading-[1.45] text-[color:var(--board-ink)]">
                 {uniteTransverse.risques.length} risque
                 {uniteTransverse.risques.length > 1 ? "s" : ""} transverse
                 {uniteTransverse.risques.length > 1 ? "s" : ""} ajouté
                 {uniteTransverse.risques.length > 1 ? "s" : ""}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="m-0 mt-1 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                 {
                   uniteTransverse.risques.filter((r) => !r.cotationSaisie)
                     .length
@@ -96,7 +96,10 @@ export default async function TransversesPage({
             </div>
             <Link
               href={`/duerp/${id}/risques/${uniteTransverse.id}`}
-              className={buttonVariants({ variant: "outline", size: "sm" })}
+              className={buttonVariants({
+                variant: "boardClair",
+                size: "boardSm",
+              })}
             >
               Coter les risques transverses →
             </Link>
@@ -104,10 +107,10 @@ export default async function TransversesPage({
         </section>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[color:var(--board-slate-line)] pt-6">
         <Link
           href={`/duerp/${id}/risques`}
-          className={buttonVariants({ variant: "outline" })}
+          className={buttonVariants({ variant: "boardClair", size: "board" })}
         >
           ← Risques
         </Link>

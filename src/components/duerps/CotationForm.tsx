@@ -4,8 +4,7 @@ import { useEffect, useMemo, useState, useActionState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ChampBoard } from "@/components/ui-kit";
 import { calculerCriticite } from "@/lib/cotation";
 import { questionsCotation } from "@/lib/cotation/questions";
 import {
@@ -102,14 +101,14 @@ export function CotationForm({
         const estMaitrise = q.axe === "maitrise";
         return (
           <fieldset key={q.axe} className="space-y-4">
-            <div className="flex items-baseline gap-3 border-b border-dashed border-rule/70 pb-3">
-              <span className="font-mono text-[0.66rem] font-medium uppercase tracking-[0.18em] text-muted-foreground tabular-nums">
+            <div className="flex items-baseline gap-3 border-b border-[color:var(--board-slate-line)] pb-3">
+              <span className="board-eyebrow text-[10px] tracking-[0.16em] tabular-nums text-[color:var(--board-slate-soft)]">
                 {String(i + 1).padStart(2, "0")}
-                <span className="mx-1 text-rule">/</span>
+                <span className="mx-1 text-[color:var(--board-slate)]">/</span>
                 {String(nombreAxes).padStart(2, "0")}
               </span>
-              <legend className="text-[0.98rem] font-semibold tracking-[-0.01em] leading-snug">
-                <span className="block font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">
+              <legend className="text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
+                <span className="board-eyebrow block text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
                   {titreAxe[q.axe] ?? q.axe}
                 </span>
                 <span className="mt-1 block">{q.intitule}</span>
@@ -117,11 +116,13 @@ export function CotationForm({
             </div>
 
             {estMaitrise && (
-              <aside className="rounded-[calc(var(--radius)*1.2)] border border-dashed border-[color:var(--warm)]/30 bg-[color:var(--warm-soft)]/70 px-5 py-3.5">
-                <p className="font-mono text-[0.58rem] font-medium uppercase tracking-[0.2em] text-[color:var(--warm)]">
+              // Note de lecture, pas état : sous-bloc creux, et le bleu du
+              // board seulement sur le sur-titre.
+              <aside className="rounded-[22px] bg-[color:var(--board-slate-pale)] px-6 py-4">
+                <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-blue-ink)]">
                   À lire avant de cocher
                 </p>
-                <p className="mt-1.5 text-[0.86rem] leading-[1.6] text-[color:var(--warm)]">
+                <p className="m-0 mt-1.5 max-w-[66ch] text-[12.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
                   La maîtrise décrit l&apos;état{" "}
                   <span className="font-semibold">actuel</span> de votre
                   prévention pour ce risque.{" "}
@@ -143,10 +144,10 @@ export function CotationForm({
                   <label
                     key={id}
                     htmlFor={id}
-                    className={`flex cursor-pointer items-start gap-3 rounded-[calc(var(--radius)*1)] border p-3.5 transition-colors ${
+                    className={`flex cursor-pointer items-start gap-3 rounded-[16px] border p-3.5 transition-colors ${
                       checked
-                        ? "border-ink bg-paper-sunk/60"
-                        : "border-rule-soft hover:bg-paper-sunk/30"
+                        ? "border-[color:var(--board-ink)] bg-[color:var(--board-slate-pale)]"
+                        : "border-[color:var(--board-slate-line)] hover:bg-[color:var(--board-slate-pale)]"
                     }`}
                   >
                     <input
@@ -156,14 +157,14 @@ export function CotationForm({
                       value={opt.valeur}
                       defaultChecked={checked}
                       onChange={() => setter(q.axe)(opt.valeur)}
-                      className="mt-1 accent-ink"
+                      className="mt-1 accent-[color:var(--board-ink)]"
                       required
                     />
                     <span className="flex min-w-0 flex-1 items-baseline gap-3">
-                      <span className="font-mono text-[0.68rem] font-medium text-muted-foreground tabular-nums">
+                      <span className="font-mono text-[12px] font-semibold tabular-nums text-[color:var(--board-slate-soft)]">
                         {opt.valeur}
                       </span>
-                      <span className="text-[0.9rem] leading-[1.55]">
+                      <span className="text-[13.5px] leading-[1.55] text-[color:var(--board-ink)]">
                         {opt.libelle}
                       </span>
                     </span>
@@ -175,35 +176,41 @@ export function CotationForm({
         );
       })}
 
-      {/* Résultat calculé — n'apparaît qu'après les 3 réponses */}
-      <div className="grid gap-4 rounded-[calc(var(--radius)*1.4)] bg-paper-sunk px-6 py-6 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-8">
+      {/* Résultat calculé — n'apparaît qu'après les 3 réponses.
+          La criticité ne prend aucune couleur de niveau : la charte board
+          n'a pas de barème de cotation, et ses couples champ/encre disent
+          tous un état d'échéance. Peindre un 14/16 en rose le ferait lire
+          « en retard ». Le nombre et le rappel de la formule suffisent. */}
+      <div className="grid gap-4 rounded-[22px] bg-[color:var(--board-slate-pale)] px-6 py-6 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-8">
         <div className="flex items-baseline gap-3">
           <span
-            className={`font-mono text-[5rem] font-semibold leading-none tabular-nums ${
-              criticiteLive !== null ? "text-ink" : "text-muted-foreground/40"
+            className={`font-mono text-[64px] font-semibold leading-none tabular-nums ${
+              criticiteLive !== null
+                ? "text-[color:var(--board-ink)]"
+                : "text-[color:var(--board-slate)]"
             }`}
           >
             {criticiteLive !== null
               ? String(criticiteLive).padStart(2, "0")
               : "—"}
           </span>
-          <span className="font-mono text-[0.78rem] uppercase tracking-[0.16em] text-muted-foreground">
+          <span className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             <span className="block">sur 16</span>
             <span className="block">criticité</span>
           </span>
         </div>
         <div>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             {criticiteLive !== null ? "Formule retenue" : "En attente"}
           </p>
           {criticiteLive !== null ? (
-            <p className="mt-1 text-[0.88rem] leading-relaxed text-ink">
+            <p className="m-0 mt-1.5 max-w-[66ch] text-[12.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
               (gravité × probabilité) ÷ maîtrise — arrondi à l&apos;entier et
               borné entre 1 et 16. Plus la note est haute, plus le risque est
               prioritaire.
             </p>
           ) : (
-            <p className="mt-1 text-[0.88rem] leading-relaxed text-muted-foreground">
+            <p className="m-0 mt-1.5 max-w-[66ch] text-[12.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
               Répondez aux{" "}
               <span className="tabular-nums">
                 {[gravite, probabilite, maitrise].filter((v) => v > 0).length}
@@ -216,71 +223,57 @@ export function CotationForm({
         </div>
       </div>
 
-      <fieldset className="space-y-5 rounded-[calc(var(--radius)*1.4)] border border-dashed border-rule/70 px-6 py-6">
-        <legend className="px-2 font-mono text-[0.62rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+      <fieldset className="space-y-5 rounded-[22px] border border-[color:var(--board-slate-line)] px-6 py-6">
+        <legend className="board-eyebrow px-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
           Informations complémentaires · facultatives
         </legend>
-        <p className="text-[0.82rem] leading-relaxed text-muted-foreground">
+        <p className="m-0 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           Utiles pour la traçabilité et certaines annexes obligatoires
           (pénibilité, CMR, mesures physiques réglementées).
         </p>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label
-              htmlFor="nombreSalariesExposes"
-              className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground"
-            >
-              Nombre de salariés exposés
-            </Label>
-            <Input
-              id="nombreSalariesExposes"
-              name="nombreSalariesExposes"
-              type="number"
-              min={0}
-              step={1}
-              defaultValue={initial.nombreSalariesExposes ?? ""}
-              placeholder="ex. 3"
-            />
-            <p className="text-[0.72rem] leading-relaxed text-muted-foreground">
-              Critère d&apos;appréciation recommandé par l&apos;INRS (ED 840).
-            </p>
-          </div>
+          {/* `type="number"` est conservé à dessein, contre la règle de saisie
+              de la charte : le schéma serveur (`infosComplementairesSchema`)
+              rejette tout le bloc complémentaire d'un coup si la valeur ne
+              coerce pas, et une saisie libre y ferait disparaître en silence
+              la date de mesures et la case CMR. La règle attend que ce
+              schéma tolère l'entrée non numérique. */}
+          <ChampBoard
+            id="nombreSalariesExposes"
+            name="nombreSalariesExposes"
+            label="Nombre de salariés exposés"
+            type="number"
+            min={0}
+            step={1}
+            defaultValue={initial.nombreSalariesExposes ?? ""}
+            placeholder="ex. 3"
+            aide="Critère d'appréciation recommandé par l'INRS (ED 840)."
+          />
 
-          <div className="space-y-2">
-            <Label
-              htmlFor="dateMesuresPhysiques"
-              className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground"
-            >
-              Dernières mesures physiques
-            </Label>
-            <Input
-              id="dateMesuresPhysiques"
-              name="dateMesuresPhysiques"
-              type="date"
-              defaultValue={initial.dateMesuresPhysiques ?? ""}
-            />
-            <p className="text-[0.72rem] leading-relaxed text-muted-foreground">
-              Bruit (R. 4432), éclairement (R. 4223-4), ambiances thermiques,
-              vibrations (R. 4441). À renseigner si l&apos;activité impose une
-              mesure par un organisme habilité.
-            </p>
-          </div>
+          <ChampBoard
+            id="dateMesuresPhysiques"
+            name="dateMesuresPhysiques"
+            label="Dernières mesures physiques"
+            type="date"
+            defaultValue={initial.dateMesuresPhysiques ?? ""}
+            aide="Bruit (R. 4432), éclairement (R. 4223-4), ambiances thermiques, vibrations (R. 4441). À renseigner si l'activité impose une mesure par un organisme habilité."
+          />
         </div>
 
-        <label className="flex items-start gap-3 rounded-[calc(var(--radius)*1)] border border-dashed border-rule p-4">
+        <label className="flex items-start gap-3 rounded-[16px] border border-[color:var(--board-slate-line)] p-4">
           <input
             type="checkbox"
             id="exposeCMR"
             name="exposeCMR"
             defaultChecked={initial.exposeCMR}
-            className="mt-0.5 accent-ink"
+            className="mt-0.5 accent-[color:var(--board-ink)]"
           />
-          <span className="space-y-1.5 text-[0.82rem]">
-            <span className="block text-[0.9rem] font-semibold tracking-[-0.008em]">
+          <span className="space-y-1.5">
+            <span className="block text-[14px] font-semibold tracking-[-0.01em] text-[color:var(--board-ink)]">
               Exposition à un agent CMR
             </span>
-            <span className="block leading-[1.55] text-muted-foreground">
+            <span className="block max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
               Cancérogène, Mutagène ou toxique pour la Reproduction
               (art. R. 4412-59 et suivants). À cocher si un ou plusieurs
               salariés sont exposés — cela déclenche des obligations renforcées
@@ -291,21 +284,26 @@ export function CotationForm({
       </fieldset>
 
       {state.status === "success" && state.alerte && (
-        <div className="rounded-[calc(var(--radius)*1.4)] border border-dashed border-[color:var(--minium)]/40 bg-[color:var(--minium)]/8 px-5 py-4">
-          <p className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[color:var(--minium)]">
+        // Écart avec un repère indicatif : encre de signal sur voile, jamais
+        // le champ rose — rien ici n'a d'échéance dépassée (interdit 3).
+        <div className="rounded-[22px] bg-[color:var(--board-signal-wash)] px-6 py-5">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-signal-ink)]">
             Écart avec le repère indicatif
           </p>
-          <p className="mt-2 text-[0.88rem] leading-[1.6] text-ink">
+          <p className="m-0 mt-2 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
             {state.alerte}
           </p>
-          <p className="mt-3 text-[0.8rem] leading-relaxed text-muted-foreground">
+          <p className="m-0 mt-3 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             Vous pouvez rester ici et ajuster vos réponses, ou enchaîner vers
             les mesures si vous assumez la cotation.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link
               href={hrefMesures}
-              className={buttonVariants({ size: "sm", variant: "outline" })}
+              className={buttonVariants({
+                variant: "boardClair",
+                size: "boardSm",
+              })}
             >
               Passer aux mesures malgré tout →
             </Link>
@@ -314,27 +312,32 @@ export function CotationForm({
       )}
 
       {state.status === "success" && !state.alerte && cotationSaisie && (
-        <div className="rounded-[calc(var(--radius)*1.4)] bg-paper-sunk px-5 py-4">
-          <p className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="rounded-[22px] bg-[color:var(--board-slate-pale)] px-6 py-4">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] tabular-nums text-[color:var(--board-green-ink)]">
             Cotation mise à jour · criticité{" "}
             {String(state.criticite).padStart(2, "0")} / 16
           </p>
-          <p className="mt-1.5 text-[0.86rem] text-muted-foreground">
+          <p className="m-0 mt-1.5 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             Les mesures (partie 02) reflètent votre prévention concrète.
           </p>
         </div>
       )}
 
       {state.status === "error" && (
-        <p className="text-[0.82rem] text-destructive">{state.message}</p>
+        <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+          {state.message}
+        </p>
       )}
 
       {/* Actions — primaire à droite, navigation de repli à gauche */}
-      <div className="space-y-5 border-t border-dashed border-rule pt-7">
+      <div className="space-y-5 border-t border-[color:var(--board-slate-line)] pt-7">
         <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <Link
             href={hrefRetourUnite}
-            className={buttonVariants({ variant: "ghost", size: "sm" })}
+            className={buttonVariants({
+              variant: "boardClair",
+              size: "boardSm",
+            })}
           >
             ← Retour à l&apos;unité
           </Link>
@@ -343,14 +346,18 @@ export function CotationForm({
               <>
                 <Button
                   type="submit"
-                  variant="outline"
+                  variant="boardClair"
+                  size="board"
                   disabled={pending || !toutesReponses}
                 >
                   {pending ? "Enregistrement…" : "Mettre à jour la cotation"}
                 </Button>
                 <Link
                   href={hrefMesures}
-                  className={buttonVariants({ size: "lg" })}
+                  className={buttonVariants({
+                    variant: "board",
+                    size: "board",
+                  })}
                 >
                   <span className="mr-2 font-mono tabular-nums opacity-70">
                     02
@@ -361,7 +368,8 @@ export function CotationForm({
             ) : (
               <Button
                 type="submit"
-                size="lg"
+                variant="board"
+                size="board"
                 disabled={pending || !toutesReponses}
               >
                 {pending
@@ -375,11 +383,11 @@ export function CotationForm({
         </div>
 
         {hrefSuivant && cotationSaisie && (
-          <p className="text-center text-[0.72rem] leading-relaxed text-muted-foreground">
+          <p className="m-0 max-w-[66ch] text-center text-[12px] leading-[1.55] text-[color:var(--board-slate-soft)] sm:mx-auto">
             Ou passez directement au{" "}
             <Link
               href={hrefSuivant}
-              className="underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-ink"
+              className="font-medium text-[color:var(--board-blue-ink)] hover:underline"
             >
               risque suivant à coter
             </Link>{" "}

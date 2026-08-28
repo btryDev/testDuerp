@@ -7,6 +7,7 @@ import {
   activitesDuSecteur,
   lireReponsesActivites,
 } from "@/lib/activites/reponses";
+import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
 import { evaluerCouverture } from "@/lib/duerps/couverture";
 import { construireEtapes } from "@/lib/duerps/etapes";
 import { getDuerp } from "@/lib/duerps/queries";
@@ -25,16 +26,6 @@ import type { TypeMesure } from "@/lib/referentiels/types";
 function formatDate(d: Date | null) {
   if (!d) return "—";
   return formaterDateCourteFr(d);
-}
-
-function classeCriticite(c: number) {
-  if (c >= 12)
-    return "bg-minium/15 text-minium border-minium/40";
-  if (c >= 6)
-    return "bg-seal/15 text-seal border-seal/40";
-  if (c >= 3)
-    return "bg-yellow-400/10 text-yellow-800 border-yellow-600/30 dark:text-yellow-300";
-  return "bg-emerald-500/10 text-emerald-800 border-emerald-600/30 dark:text-emerald-300";
 }
 
 export default async function SynthesePage({
@@ -112,26 +103,42 @@ export default async function SynthesePage({
     aujourdhui,
   );
   const { majEchue, jamaisValide } = etatDuerp;
+  // Deux situations, deux états — et pas le même. L'échéance annuelle
+  // dépassée est un retard : le champ rose le dit. Un dossier dont aucune
+  // version n'a jamais été figée n'a, lui, aucune échéance dépassée : c'est
+  // l'absence de rendez-vous, donc l'ardoise (charte, interdits 3 et 4).
+  // La table d'états est celle du calendrier, jamais une locale.
+  const etatMaj = majEchue ? "enRetard" : "aPlanifier";
 
   return (
-    <div className="space-y-14">
+    <div className="flex flex-col gap-[22px]">
       <WizardSteps etapes={etapes} />
 
       {(majEchue || jamaisValide) && (
         <section
           role="alert"
-          className="rounded-[calc(var(--radius)*1.4)] border border-dashed border-[color:var(--minium)]/50 bg-[color:var(--minium)]/8 px-6 py-5"
+          className="carte-board px-7 py-6 sm:px-8"
+          style={{ background: CHAMP_ETAT[etatMaj] }}
         >
           <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <p className="font-mono text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[color:var(--minium)]">
+            <p
+              className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em]"
+              style={{ color: ENCRE_ETAT[etatMaj] }}
+            >
               Mise à jour requise · art. R. 4121-2
             </p>
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[color:var(--minium)]/80">
+            <p
+              className="board-eyebrow m-0 text-[10px] tracking-[0.16em] tabular-nums"
+              style={{ color: ENCRE_ETAT[etatMaj] }}
+            >
               Effectif {duerp.entreprise.effectif} salarié
               {duerp.entreprise.effectif > 1 ? "s" : ""}
             </p>
           </div>
-          <p className="mt-2 text-[0.9rem] leading-[1.6] text-ink">
+          <p
+            className="m-0 mt-2.5 max-w-[68ch] text-[13.5px] leading-[1.6]"
+            style={{ color: ENCRE_ETAT[etatMaj] }}
+          >
             {jamaisValide ? (
               <>
                 Aucune version n&apos;a encore été validée pour ce DUERP.
@@ -142,7 +149,7 @@ export default async function SynthesePage({
             ) : (
               <>
                 La dernière version date de{" "}
-                <span className="font-semibold">
+                <span className="font-semibold tabular-nums">
                   {joursDepuisDerniereVersion} jours
                 </span>
                 . La mise à jour annuelle est obligatoire pour les entreprises
@@ -155,28 +162,20 @@ export default async function SynthesePage({
       )}
 
       {/* Couverture du dossier */}
-      <section className="cartouche relative px-8 py-10">
-        <div className="absolute -top-3 left-8 bg-paper px-3">
-          <span className="label-admin">§ IV · Synthèse générale</span>
-        </div>
-        <div className="grid items-start gap-8 md:grid-cols-[1fr_auto]">
-          <div>
-            <p className="label-admin">Dossier DUERP</p>
-            <h2 className="display-xl mt-2 text-5xl">
-              Synthèse <span className="display-italic">générale</span>
-            </h2>
-            <p className="mt-4 max-w-xl text-muted-foreground">
-              Vue d&apos;ensemble de votre évaluation et plan d&apos;actions
-              priorisé. Chaque validation fige un exemplaire consultable et
-              téléchargeable.
-            </p>
-          </div>
-          <div className="sceau shrink-0">
-            ÉVAL.<br />DES RISQUES
-          </div>
-        </div>
+      <section className="carte-board px-7 py-6 sm:px-8">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+          Dossier DUERP
+        </p>
+        <h2 className="board-titre m-0 mt-2 text-[clamp(29px,3vw,39px)]">
+          Synthèse générale
+        </h2>
+        <p className="m-0 mt-3 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+          Vue d&apos;ensemble de votre évaluation et plan d&apos;actions
+          priorisé. Chaque validation fige un exemplaire consultable et
+          téléchargeable.
+        </p>
 
-        <div className="filet mt-10 grid grid-cols-2 divide-x divide-rule sm:grid-cols-4">
+        <div className="mt-7 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-[color:var(--board-slate-line)] pt-6 sm:grid-cols-4">
           <Stat libelle="Unités" valeur={synthese.nbUnites} />
           <Stat libelle="Risques" valeur={synthese.nbRisques} />
           <Stat
@@ -193,9 +192,11 @@ export default async function SynthesePage({
       {(synthese.nbRisquesNonCotes > 0 ||
         synthese.nbAlertesSousCotation > 0 ||
         synthese.nbAlertesHierarchie > 0) && (
-        <section>
-          <p className="label-admin">§ Points à vérifier</p>
-          <ul className="filet mt-2 space-y-0 border-b border-rule">
+        <section className="carte-board px-7 py-6 sm:px-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+            Points à vérifier
+          </p>
+          <ul className="m-0 mt-3 list-none p-0">
             {synthese.nbRisquesNonCotes > 0 && (
               <AlerteItem
                 intitule={`${synthese.nbRisquesNonCotes} risque${
@@ -227,85 +228,112 @@ export default async function SynthesePage({
         </section>
       )}
 
-      <section>
-        <div className="flex items-baseline justify-between gap-4">
-          <div>
-            <p className="label-admin">§ Inventaire priorisé</p>
-            <h3 className="display-lg mt-1 text-2xl">
+      <section className="carte-board px-7 py-6 sm:px-8">
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
+          <div className="min-w-0">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+              Inventaire priorisé
+            </p>
+            <h3 className="board-titre m-0 mt-1.5 text-[22px]">
               Risques classés par criticité
             </h3>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="m-0 text-[12.5px] text-[color:var(--board-slate-mid)]">
             Tri : criticité décroissante · gravité en départage
           </p>
         </div>
 
         {synthese.lignes.length === 0 ? (
-          <p className="cartouche mt-6 p-6 text-sm text-muted-foreground">
+          <p className="m-0 mt-5 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
             Aucun risque n&apos;a encore été ajouté.
           </p>
         ) : (
-          <div className="filet mt-4 cartouche overflow-x-auto">
-            <table className="w-full min-w-[720px] text-sm">
-              <thead className="bg-paper-sunk/60">
-                <tr className="border-b border-rule text-left">
-                  <th className="label-admin p-3 !text-[0.625rem]">Criticité</th>
-                  <th className="label-admin p-3 !text-[0.625rem]">Risque</th>
-                  <th className="label-admin p-3 !text-[0.625rem]">Unité</th>
-                  <th className="label-admin p-3 !text-[0.625rem] font-mono">
+          <div className="mt-5 overflow-x-auto">
+            <table className="w-full min-w-[46rem] border-collapse text-[13.5px]">
+              <caption className="sr-only">
+                Risques retenus, criticité décroissante, gravité en départage.
+              </caption>
+              <thead>
+                <tr className="border-b border-[color:var(--board-slate-line)] text-left">
+                  <th scope="col" className={TH}>
+                    Criticité
+                  </th>
+                  <th scope="col" className={TH}>
+                    Risque
+                  </th>
+                  <th scope="col" className={TH}>
+                    Unité
+                  </th>
+                  <th scope="col" className={TH}>
                     G × P / M
                   </th>
-                  <th className="label-admin p-3 !text-[0.625rem]">Mesures</th>
-                  <th className="p-3" />
+                  <th scope="col" className={TH}>
+                    Mesures
+                  </th>
+                  <th scope="col" className={TH}>
+                    <span className="sr-only">Ouvrir</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {synthese.lignes.map((l) => (
                   <tr
                     key={l.risqueId}
-                    className="border-b border-rule/70 last:border-b-0"
+                    className="border-b border-[color:var(--board-slate-line)] align-top last:border-b-0"
                   >
-                    <td className="p-3">
-                      <span
-                        className={`inline-flex min-w-14 items-center justify-center rounded-sm border px-2 py-0.5 font-mono text-xs font-semibold ${classeCriticite(
-                          l.criticite,
-                        )}`}
-                      >
+                    {/* La criticité ne prend aucune couleur, et c'est
+                        délibéré. Elle était rendue par un dégradé de quatre
+                        bandes (minium / seal / jaune / émeraude) : la charte
+                        board n'a pas de barème de cotation, et ses cinq
+                        couples champ/encre sont tous pris par les états
+                        d'échéance (`CHAMP_ETAT`). Un risque coté 14 peint en
+                        `--board-signal` se lirait « en retard » à quelques
+                        centimètres du plan d'actions, qui porte de vraies
+                        échéances. La couleur dit l'état, pas la grandeur
+                        (interdit 2) ; ici le nombre sur 16 et le tri
+                        décroissant portent l'information, plus précisément
+                        que quatre bandes. */}
+                    <td className={TD}>
+                      <span className="pastille-board bg-[color:var(--board-slate-pale)] font-mono text-[12px] tabular-nums text-[color:var(--board-slate-ink)]">
                         {l.cotationSaisie ? `${l.criticite}/16` : "n.c."}
                       </span>
                     </td>
-                    <td className="p-3">
-                      <p className="font-medium">{l.libelle}</p>
+                    <td className={TD}>
+                      <span className="font-medium text-[color:var(--board-ink)]">
+                        {l.libelle}
+                      </span>
                       {(l.alerteSousCotation || l.alerteHierarchieBasse) && (
-                        <p className="mt-0.5 font-mono text-[0.65rem] uppercase tracking-widest text-minium">
+                        <span className="mt-0.5 block font-mono text-[11px] uppercase tracking-[0.12em] text-[color:var(--board-signal-ink)]">
                           {l.alerteSousCotation && "⚑ Sous-cotation"}
                           {l.alerteSousCotation && l.alerteHierarchieBasse && " · "}
                           {l.alerteHierarchieBasse && "⚑ EPI seuls"}
-                        </p>
+                        </span>
                       )}
                     </td>
-                    <td className="p-3 text-muted-foreground">
+                    <td className={TD}>
                       {l.uniteNom}
                       {l.estTransverse && (
-                        <span className="ml-1 italic text-seal">(transv.)</span>
+                        <span className="ml-1 text-[color:var(--board-slate-soft)]">
+                          (transv.)
+                        </span>
                       )}
                     </td>
-                    <td className="p-3 font-mono text-xs text-muted-foreground">
+                    <td className={`${TD} font-mono tabular-nums`}>
                       {l.gravite} × {l.probabilite} / {l.maitrise}
                     </td>
-                    <td className="p-3 text-muted-foreground">
+                    <td className={`${TD} tabular-nums`}>
                       {l.nombreMesures}
                       {l.nombreMesuresPrevues > 0 && (
-                        <span className="text-xs">
+                        <span className="text-[12.5px]">
                           {" "}
                           ({l.nombreMesuresPrevues} prév.)
                         </span>
                       )}
                     </td>
-                    <td className="p-3">
+                    <td className={TD}>
                       <Link
                         href={`/duerp/${id}/risques/${l.uniteId}/${l.risqueId}`}
-                        className="text-sm italic text-primary hover:underline"
+                        className="font-medium text-[color:var(--board-blue-ink)] hover:underline"
                       >
                         ouvrir →
                       </Link>
@@ -318,35 +346,46 @@ export default async function SynthesePage({
         )}
       </section>
 
-      <section>
-        <div className="flex items-baseline justify-between gap-4">
-          <div>
-            <p className="label-admin">§ Plan d&apos;actions</p>
-            <h3 className="display-lg mt-1 text-2xl">
+      <section className="carte-board px-7 py-6 sm:px-8">
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
+          <div className="min-w-0">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+              Plan d&apos;actions
+            </p>
+            <h3 className="board-titre m-0 mt-1.5 text-[22px]">
               Mesures à mettre en œuvre
             </h3>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="m-0 text-[12.5px] text-[color:var(--board-slate-mid)]">
             Tri : échéance croissante · criticité en départage
           </p>
         </div>
         {synthese.actionsPrevues.length === 0 ? (
-          <p className="cartouche mt-6 p-6 text-sm text-muted-foreground">
+          <p className="m-0 mt-5 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
             Aucune action planifiée pour le moment. Ajoutez des mesures
             « prévues » sur vos risques.
           </p>
         ) : (
-          <div className="filet mt-4 cartouche overflow-x-auto">
-            <table className="w-full min-w-[720px] text-sm">
-              <thead className="bg-paper-sunk/60">
-                <tr className="border-b border-rule text-left">
-                  <th className="label-admin p-3 !text-[0.625rem]">Échéance</th>
-                  <th className="label-admin p-3 !text-[0.625rem]">Action</th>
-                  <th className="label-admin p-3 !text-[0.625rem]">Type</th>
-                  <th className="label-admin p-3 !text-[0.625rem]">
+          <div className="mt-5 overflow-x-auto">
+            <table className="w-full min-w-[42rem] border-collapse text-[13.5px]">
+              <caption className="sr-only">
+                Mesures prévues, échéance croissante, criticité en départage.
+              </caption>
+              <thead>
+                <tr className="border-b border-[color:var(--board-slate-line)] text-left">
+                  <th scope="col" className={TH}>
+                    Échéance
+                  </th>
+                  <th scope="col" className={TH}>
+                    Action
+                  </th>
+                  <th scope="col" className={TH}>
+                    Type
+                  </th>
+                  <th scope="col" className={TH}>
                     Risque · Unité
                   </th>
-                  <th className="label-admin p-3 !text-[0.625rem]">
+                  <th scope="col" className={TH}>
                     Responsable
                   </th>
                 </tr>
@@ -355,22 +394,27 @@ export default async function SynthesePage({
                 {synthese.actionsPrevues.map((a) => (
                   <tr
                     key={a.mesureId}
-                    className="border-b border-rule/70 last:border-b-0"
+                    className="border-b border-[color:var(--board-slate-line)] align-top last:border-b-0"
                   >
-                    <td className="p-3 font-mono text-xs">
+                    <td className={`${TD} font-mono tabular-nums`}>
                       {formatDate(a.echeance)}
                     </td>
-                    <td className="p-3">{a.libelleMesure}</td>
-                    <td className="p-3 text-muted-foreground">
+                    <td className={`${TD} text-[color:var(--board-ink)]`}>
+                      {a.libelleMesure}
+                    </td>
+                    <td className={TD}>
                       {LABEL_TYPE_MESURE[a.type as TypeMesure] ?? a.type}
                     </td>
-                    <td className="p-3 text-muted-foreground">
-                      <p>{a.libelleRisque}</p>
-                      <p className="text-xs">{a.uniteNom}</p>
+                    <td className={TD}>
+                      {a.libelleRisque}
+                      {/* L'unité se range sous le risque : une colonne de
+                          plus se paierait en largeur sur tous les écrans
+                          étroits (charte § 5, tableau dense). */}
+                      <span className="mt-0.5 block text-[11px] text-[color:var(--board-slate-soft)]">
+                        {a.uniteNom}
+                      </span>
                     </td>
-                    <td className="p-3 text-muted-foreground">
-                      {a.responsable ?? "—"}
-                    </td>
+                    <td className={TD}>{a.responsable ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -380,22 +424,24 @@ export default async function SynthesePage({
       </section>
 
       {perimetreQuestionne && (
-        <section>
+        <section className="carte-board px-7 py-6 sm:px-8">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <div>
-              <p className="label-admin">§ Périmètre du référentiel</p>
-              <h3 className="display-lg mt-1 text-2xl">
+            <div className="min-w-0">
+              <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+                Périmètre du référentiel
+              </p>
+              <h3 className="board-titre m-0 mt-1.5 text-[22px]">
                 Ce que le document ne traite pas
               </h3>
             </div>
             <Link
               href={`/duerp/${id}/activites`}
-              className="text-sm italic text-primary hover:underline"
+              className="text-[12.5px] font-medium text-[color:var(--board-blue-ink)] hover:underline"
             >
               revoir les réponses →
             </Link>
           </div>
-          <div className="cartouche mt-4 p-6">
+          <div className="mt-4">
             {perimetreDeclare.length === 0 ? (
               // Deux dossiers sans activité déclarée ne disent pas la même
               // chose : celui qui a répondu « non » partout a tranché, celui
@@ -405,7 +451,7 @@ export default async function SynthesePage({
               // (`mentionSansReponseIsolee`), qui n'avait pas été transposé à
               // l'écran.
               couverture.etat === "aucun_manque_identifie" ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="m-0 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                   Vous avez répondu «&nbsp;non&nbsp;» à{" "}
                   {couverture.activitesEcartees.length > 1
                     ? `chacune des ${couverture.activitesEcartees.length} questions`
@@ -414,7 +460,7 @@ export default async function SynthesePage({
                   déclarée.
                 </p>
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="m-0 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                   Aucune activité hors référentiel n&apos;a été déclarée, et{" "}
                   {perimetreSansReponse.length > 1
                     ? `${perimetreSansReponse.length} questions de périmètre n'ont pas été tranchées`
@@ -425,17 +471,22 @@ export default async function SynthesePage({
               )
             ) : (
               <>
-                <p className="max-w-2xl text-[0.9rem] leading-relaxed text-ink">
+                <p className="m-0 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                   Vous avez déclaré exercer {perimetreDeclare.length} activité
                   {perimetreDeclare.length > 1 ? "s" : ""} que le référentiel
                   sectoriel ne couvre pas. Le DUERP généré les nomme et précise
                   ce qu&apos;il ne traite pas à leur sujet.
                 </p>
-                <ul className="filet mt-4 space-y-0">
+                <ul className="m-0 mt-4 list-none p-0">
                   {perimetreDeclare.map((a) => (
-                    <li key={a.id} className="border-t border-rule py-3">
-                      <p className="font-medium">{a.libelle}</p>
-                      <p className="mt-0.5 text-sm text-muted-foreground">
+                    <li
+                      key={a.id}
+                      className="border-t border-[color:var(--board-slate-line)] py-3"
+                    >
+                      <p className="m-0 text-[14px] font-medium leading-[1.45] text-[color:var(--board-ink)]">
+                        {a.libelle}
+                      </p>
+                      <p className="m-0 mt-1 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                         {a.cequiManque}
                       </p>
                     </li>
@@ -444,7 +495,7 @@ export default async function SynthesePage({
               </>
             )}
             {perimetreSansReponse.length > 0 && perimetreDeclare.length > 0 && (
-              <p className="mt-4 text-[0.82rem] leading-relaxed text-muted-foreground">
+              <p className="m-0 mt-4 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                 {perimetreSansReponse.length} question
                 {perimetreSansReponse.length > 1 ? "s" : ""} sur le périmètre
                 {perimetreSansReponse.length > 1 ? " restent" : " reste"} sans
@@ -457,50 +508,54 @@ export default async function SynthesePage({
         </section>
       )}
 
-      <section>
+      <section className="carte-board px-7 py-6 sm:px-8">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <div>
-            <p className="label-admin">§ Versions figées</p>
-            <h3 className="display-lg mt-1 text-2xl">Historique du dossier</h3>
+          <div className="min-w-0">
+            <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+              Versions figées
+            </p>
+            <h3 className="board-titre m-0 mt-1.5 text-[22px]">
+              Historique du dossier
+            </h3>
           </div>
           <a
             href={`/duerp/${id}/pdf/preview`}
             target="_blank"
             rel="noopener noreferrer"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={buttonVariants({ variant: "boardClair", size: "boardSm" })}
           >
             Aperçu PDF brouillon ↗
           </a>
         </div>
-        <p className="mt-2 max-w-2xl text-[0.82rem] leading-relaxed text-muted-foreground">
+        <p className="m-0 mt-3 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           L&apos;aperçu télécharge un PDF estampillé{" "}
           <span className="font-semibold">« Document non validé »</span> sur
           chaque page, sans créer de version. Pour un PDF officiel consultable
           et archivé, validez une version ci-dessous.
         </p>
         {versions.length === 0 ? (
-          <p className="cartouche mt-4 p-6 text-sm text-muted-foreground">
+          <p className="m-0 mt-4 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
             Aucune version validée pour l&apos;instant. L&apos;aperçu
             ci-dessus vous permet toutefois de vérifier le rendu avant de
             figer une version.
           </p>
         ) : (
-          <ul className="filet mt-4 cartouche divide-y divide-rule">
+          <ul className="m-0 mt-4 list-none p-0">
             {versions.map((v) => (
               <li
                 key={v.id}
-                className="flex items-center justify-between gap-4 p-4"
+                className="flex flex-wrap items-center justify-between gap-4 border-t border-[color:var(--board-slate-line)] py-3.5"
               >
-                <div className="flex items-baseline gap-4">
-                  <span className="numero-section text-2xl">
+                <div className="flex min-w-0 items-baseline gap-4">
+                  <span className="font-mono text-[18px] tabular-nums text-[color:var(--board-slate-soft)]">
                     v{v.numero}
                   </span>
-                  <div>
-                    <p className="text-sm">
+                  <div className="min-w-0">
+                    <p className="m-0 text-[14px] leading-[1.45] text-[color:var(--board-ink)]">
                       {formaterDateLongueFr(v.createdAt)}
                     </p>
                     {v.motif && (
-                      <p className="text-sm italic text-muted-foreground">
+                      <p className="m-0 mt-0.5 text-[12.5px] text-[color:var(--board-slate-mid)]">
                         « {v.motif} »
                       </p>
                     )}
@@ -510,7 +565,10 @@ export default async function SynthesePage({
                   href={`/duerp/${id}/versions/${v.numero}/pdf`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                  className={buttonVariants({
+                    variant: "boardClair",
+                    size: "boardSm",
+                  })}
                 >
                   Télécharger le PDF
                 </a>
@@ -527,14 +585,14 @@ export default async function SynthesePage({
         </div>
       </section>
 
-      <div className="filet flex items-center justify-between pt-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[color:var(--board-slate-line)] pt-6">
         <Link
           href={`/duerp/${id}/transverses`}
-          className={buttonVariants({ variant: "outline" })}
+          className={buttonVariants({ variant: "boardClair", size: "board" })}
         >
           ← Étape précédente
         </Link>
-        <p className="text-xs italic text-muted-foreground">
+        <p className="m-0 text-[12.5px] text-[color:var(--board-slate-mid)]">
           Fait à {formaterDateFr(aujourdhui)}
         </p>
       </div>
@@ -542,15 +600,37 @@ export default async function SynthesePage({
   );
 }
 
+// Le patron de tableau dense de la charte (§ 5), relevé sur
+// `registre/FicheJournal`. Deux tableaux le portent ici, et il tenait à
+// une dizaine d'utilitaires : les nommer une fois évite qu'ils divergent
+// d'un tableau à l'autre sur le même écran.
+const TH =
+  "board-eyebrow py-2 pr-4 text-[9.5px] font-semibold tracking-[0.12em] text-[color:var(--board-slate-soft)] last:pr-0";
+const TD =
+  "py-2.5 pr-4 leading-[1.55] text-[color:var(--board-slate-ink)] last:pr-0";
+
 function Stat({ libelle, valeur }: { libelle: string; valeur: number }) {
   return (
-    <div className="px-4 py-5">
-      <p className="label-admin">{libelle}</p>
-      <p className="mt-1 [font-family:var(--font-mono)] text-4xl tabular-nums tracking-[-0.03em]">{valeur}</p>
+    <div>
+      <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+        {libelle}
+      </p>
+      <p className="m-0 mt-1.5 font-mono text-[30px] tabular-nums leading-none tracking-[-0.02em] text-[color:var(--board-ink)]">
+        {valeur}
+      </p>
     </div>
   );
 }
 
+/**
+ * Une ligne de « Points à vérifier ».
+ *
+ * Le ton « alerte » porte l'encre de signal — un écart relevé, pas un
+ * verdict. Il ne prend pas le champ rose : rien ici n'a d'échéance
+ * dépassée (charte, interdit 3), et le champ est réservé aux états du
+ * calendrier. Le glyphe ne porte jamais seul : le mot le suit
+ * (interdit 10).
+ */
 function AlerteItem({
   intitule,
   detail,
@@ -560,23 +640,28 @@ function AlerteItem({
   detail: string;
   ton: "alerte" | "neutre";
 }) {
+  const encre =
+    ton === "alerte"
+      ? "text-[color:var(--board-signal-ink)]"
+      : "text-[color:var(--board-slate-soft)]";
   return (
-    <li
-      className={`flex items-start gap-4 border-t border-rule py-3 ${
-        ton === "alerte" ? "text-minium" : ""
-      }`}
-    >
-      <span
-        aria-hidden
-        className={`mt-1 font-mono text-xs ${
-          ton === "alerte" ? "text-minium" : "text-muted-foreground"
-        }`}
-      >
+    <li className="flex items-start gap-3.5 border-t border-[color:var(--board-slate-line)] py-3">
+      <span aria-hidden className={`mt-0.5 font-mono text-[12.5px] ${encre}`}>
         {ton === "alerte" ? "⚑" : "·"}
       </span>
-      <div className="flex-1">
-        <p className="font-medium">{intitule}</p>
-        <p className="text-sm text-muted-foreground">{detail}</p>
+      <div className="min-w-0 flex-1">
+        <p
+          className={`m-0 text-[14px] font-medium leading-[1.45] ${
+            ton === "alerte"
+              ? "text-[color:var(--board-signal-ink)]"
+              : "text-[color:var(--board-ink)]"
+          }`}
+        >
+          {intitule}
+        </p>
+        <p className="m-0 mt-1 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+          {detail}
+        </p>
       </div>
     </li>
   );

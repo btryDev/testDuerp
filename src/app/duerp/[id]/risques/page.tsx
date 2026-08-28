@@ -9,6 +9,33 @@ import { construireEtapes } from "@/lib/duerps/etapes";
 import { getDuerp } from "@/lib/duerps/queries";
 import { estHorsReferentiel, unitesHorsReferentiel } from "@/lib/risques/helpers";
 
+const ETAPES_MARCHE = [
+  {
+    n: "01",
+    titre: "Ouvrir une unité",
+    corps:
+      "Cliquez sur une unité de la liste ci-dessous pour accéder à ses risques.",
+  },
+  {
+    n: "02",
+    titre: "Cocher ce qui s'applique",
+    corps:
+      "Les risques types de votre secteur vous sont proposés, décochés. Cochez ceux qui vous concernent — les autres seront considérés comme écartés.",
+  },
+  {
+    n: "03",
+    titre: "Coter chaque risque retenu",
+    corps:
+      "3 questions comportementales par risque — gravité, probabilité, maîtrise. La criticité se calcule automatiquement.",
+  },
+  {
+    n: "04",
+    titre: "Ajouter vos risques spécifiques",
+    corps:
+      "Un risque particulier à votre activité ? Ajoutez-le manuellement et cotez-le comme les autres.",
+  },
+] as const;
+
 export default async function RisquesOverviewPage({
   params,
 }: {
@@ -40,11 +67,11 @@ export default async function RisquesOverviewPage({
   const horsRef = unitesHorsReferentiel(unitesVisibles);
 
   return (
-    <div className="space-y-12">
+    <div className="flex flex-col gap-[22px]">
       <WizardSteps etapes={etapes} />
 
-      <header className="max-w-2xl">
-        <p className="label-admin inline-flex items-center">
+      <header className="max-w-[68ch]">
+        <p className="board-eyebrow m-0 inline-flex items-center text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
           Risques par unité
           <InfoTooltip align="left">
             Un « risque professionnel » est tout ce qui peut causer un
@@ -53,80 +80,58 @@ export default async function RisquesOverviewPage({
             chaque unité.
           </InfoTooltip>
         </p>
-        <h2 className="mt-4 text-[1.6rem] font-semibold tracking-[-0.018em] leading-tight">
+        <h2 className="board-titre m-0 mt-3 text-[clamp(23px,2.1vw,30px)]">
           Pour chaque unité, cochez les risques qui s&apos;appliquent.
         </h2>
       </header>
 
-      <section
-        aria-label="Marche à suivre pour chaque unité"
-        className="relative overflow-hidden rounded-[calc(var(--radius)*1.4)] bg-[color:var(--warm-soft)] ring-1 ring-[color:var(--warm)]/10"
-      >
-        <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-dashed border-[color:var(--warm)]/15 px-6 py-3.5 sm:px-8">
-          <p className="font-mono text-[0.66rem] font-medium uppercase tracking-[0.18em] text-[color:var(--warm)]">
+      {/* Carte pédagogique, pas état : aucune surface colorée, le bleu du
+          board sert seulement à numéroter la marche à suivre. */}
+      <section aria-label="Marche à suivre pour chaque unité" className="carte-board">
+        <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-[color:var(--board-slate-line)] px-7 py-4 sm:px-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
             Marche à suivre
           </p>
-          <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[color:var(--warm)]/60">
+          <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             Sur chaque unité de travail
           </p>
         </div>
 
-        <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              n: "01",
-              titre: "Ouvrir une unité",
-              corps:
-                "Cliquez sur une unité de la liste ci-dessous pour accéder à ses risques.",
-            },
-            {
-              n: "02",
-              titre: "Cocher ce qui s'applique",
-              corps:
-                "Les risques types de votre secteur vous sont proposés, décochés. Cochez ceux qui vous concernent — les autres seront considérés comme écartés.",
-            },
-            {
-              n: "03",
-              titre: "Coter chaque risque retenu",
-              corps:
-                "3 questions comportementales par risque — gravité, probabilité, maîtrise. La criticité se calcule automatiquement.",
-            },
-            {
-              n: "04",
-              titre: "Ajouter vos risques spécifiques",
-              corps:
-                "Un risque particulier à votre activité ? Ajoutez-le manuellement et cotez-le comme les autres.",
-            },
-          ].map((e, i, arr) => {
+        <ol className="grid list-none grid-cols-1 p-0 sm:grid-cols-2 lg:grid-cols-4">
+          {ETAPES_MARCHE.map((e, i, arr) => {
             const estDernier = i === arr.length - 1;
             const estAvantDernier = i === arr.length - 2;
             return (
               <li
                 key={e.n}
                 className={[
-                  "flex items-start gap-3 px-5 py-4 sm:px-6",
+                  "flex items-start gap-3 px-6 py-5 sm:px-7",
                   !estDernier
-                    ? "border-b border-dashed border-[color:var(--warm)]/15"
+                    ? "border-b border-[color:var(--board-slate-line)]"
                     : "",
                   estAvantDernier ? "sm:border-b-0" : "",
-                  i % 2 === 0 ? "sm:border-r sm:border-dashed sm:border-[color:var(--warm)]/15" : "",
+                  i % 2 === 0
+                    ? "sm:border-r sm:border-[color:var(--board-slate-line)]"
+                    : "",
                   "lg:border-b-0",
-                  !estDernier ? "lg:border-r lg:border-dashed lg:border-[color:var(--warm)]/15" : "lg:border-r-0",
+                  !estDernier
+                    ? "lg:border-r lg:border-[color:var(--board-slate-line)]"
+                    : "lg:border-r-0",
                 ]
                   .filter(Boolean)
                   .join(" ")}
               >
                 <span
                   aria-hidden
-                  className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[color:var(--warm)]/45 font-mono text-[0.68rem] font-semibold tabular-nums text-[color:var(--warm)]"
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[color:var(--board-blue-pale)] font-mono text-[11px] font-semibold tabular-nums text-[color:var(--board-blue-ink)]"
                 >
                   {e.n}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[0.93rem] font-semibold tracking-[-0.008em] leading-snug text-[color:var(--warm)]">
+                  <p className="m-0 text-[14px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
                     {e.titre}
                   </p>
-                  <p className="mt-1 text-[0.8rem] leading-snug text-[color:var(--warm)]/70">
+                  <p className="m-0 mt-1 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                     {e.corps}
                   </p>
                 </div>
@@ -135,33 +140,33 @@ export default async function RisquesOverviewPage({
           })}
         </ol>
 
-        <div className="flex items-center gap-3 border-t border-dashed border-[color:var(--warm)]/15 px-6 py-2.5 sm:px-8">
+        <div className="flex flex-wrap items-baseline gap-3 border-t border-[color:var(--board-slate-line)] px-7 py-3 sm:px-8">
           <span
             aria-hidden
-            className="font-mono text-[0.58rem] uppercase tracking-[0.18em] text-[color:var(--warm)]/55"
+            className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]"
           >
             Cas particulier
           </span>
-          <p className="flex-1 text-[0.8rem] leading-snug text-[color:var(--warm)]/75">
+          <p className="m-0 min-w-0 flex-1 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             Si une unité n&apos;a aucun risque significatif, vous pourrez le
             déclarer explicitement sur sa page.
           </p>
         </div>
       </section>
 
-      <section className="cartouche overflow-hidden">
-        <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-rule/60 px-6 py-5 sm:px-8">
-          <p className="font-mono text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+      <section className="carte-board overflow-clip">
+        <div className="flex items-baseline justify-between gap-4 border-b border-[color:var(--board-slate-line)] px-7 py-5 sm:px-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] tabular-nums text-[color:var(--board-slate-soft)]">
             {String(unitesVisibles.length).padStart(2, "0")} unité
             {unitesVisibles.length > 1 ? "s" : ""} · {String(totalRisques).padStart(2, "0")} risque
             {totalRisques > 1 ? "s" : ""}
           </p>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             Cliquez pour ouvrir
           </p>
         </div>
 
-        <ul className="divide-y divide-dashed divide-rule/50">
+        <ul className="m-0 list-none divide-y divide-[color:var(--board-slate-line)] p-0">
           {unitesVisibles.map((u) => {
             const nbRisques = u.risques.length;
             const declaree = Boolean(u.aucunRisqueJustif);
@@ -173,43 +178,46 @@ export default async function RisquesOverviewPage({
               <li key={u.id}>
                 <Link
                   href={`/duerp/${id}/risques/${u.id}`}
-                  className="group flex items-start justify-between gap-6 px-6 py-5 transition-colors hover:bg-paper-sunk/40 sm:px-8"
+                  className="group flex items-start justify-between gap-6 px-7 py-5 transition-colors hover:bg-[color:var(--board-slate-pale)] sm:px-8"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-[1rem] font-semibold tracking-[-0.01em] leading-snug">
+                    <p className="m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
                       {u.nom}
                     </p>
                     {u.description && (
-                      <p className="mt-1 text-[0.88rem] leading-relaxed text-muted-foreground">
+                      <p className="m-0 mt-1 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                         {u.description}
                       </p>
                     )}
                     {estHorsReferentiel(u) && <LigneHorsReferentiel />}
                     {nbRisques === 0 && declaree && (
-                      <p className="mt-2 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[color:var(--warm)]">
+                      // Un fait de saisie — la déclaration a été faite et
+                      // justifiée. Le vert du board dit « fait », jamais
+                      // « conforme » (interdits 16 et 17).
+                      <p className="board-eyebrow m-0 mt-2 text-[10px] tracking-[0.16em] text-[color:var(--board-green-ink)]">
                         ✓ Aucun risque significatif — justifié
                       </p>
                     )}
                     {nbRisques === 0 && !declaree && (
-                      <p className="mt-2 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted-foreground">
+                      <p className="board-eyebrow m-0 mt-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
                         ⚠ à cocher ou à déclarer sans risque
                       </p>
                     )}
                   </div>
                   <div className="flex shrink-0 items-center gap-4">
                     <div className="text-right">
-                      <p className="[font-family:var(--font-mono)] text-[1.1rem] tabular-nums leading-none">
+                      <p className="m-0 font-mono text-[18px] tabular-nums leading-none text-[color:var(--board-ink)]">
                         {nbRisques === 0 && declaree
                           ? "—"
                           : String(nbRisques).padStart(2, "0")}
                       </p>
-                      <p className="mt-1 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground">
+                      <p className="board-eyebrow m-0 mt-1.5 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
                         {etatLibelle}
                       </p>
                     </div>
                     <span
                       aria-hidden
-                      className="font-mono text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground transition-all group-hover:translate-x-1 group-hover:text-ink"
+                      className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-all group-hover:translate-x-1 group-hover:text-[color:var(--board-ink)]"
                     >
                       Ouvrir →
                     </span>
@@ -222,11 +230,13 @@ export default async function RisquesOverviewPage({
       </section>
 
       {horsRef.length > 0 && (
-        <div className="rounded-2xl border border-dashed border-rule bg-paper-sunk/40 px-6 py-4">
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-muted-foreground">
+        // Un fait sur le référentiel, pas un état du dossier : sous-bloc
+        // creux, sans champ de couleur.
+        <div className="rounded-[22px] bg-[color:var(--board-slate-pale)] px-7 py-5 sm:px-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
             Hors référentiel sectoriel
           </p>
-          <p className="mt-1.5 max-w-prose text-[0.88rem] leading-relaxed text-ink">
+          <p className="m-0 mt-2 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
             {horsRef.length > 1
               ? `${horsRef.length} unités ne correspondent`
               : "1 unité ne correspond"}{" "}
@@ -240,11 +250,13 @@ export default async function RisquesOverviewPage({
       )}
 
       {unitesSansRisqueSansJustif.length > 0 && (
-        <div className="rounded-2xl border border-dashed border-[color:var(--warm)]/40 bg-[color:var(--warm-soft)] px-6 py-4">
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[color:var(--warm)]">
+        // Point à vérifier avant de continuer : l'encre de signal le dit,
+        // sans champ rose — aucune échéance n'est dépassée (interdit 3).
+        <div className="carte-board px-7 py-5 sm:px-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-signal-ink)]">
             Avertissement
           </p>
-          <p className="mt-1.5 text-[0.88rem] leading-relaxed text-ink">
+          <p className="m-0 mt-2 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
             {unitesSansRisqueSansJustif.length} unité
             {unitesSansRisqueSansJustif.length > 1 ? "s n'ont" : " n'a"} aucun
             risque coché. Vous pouvez continuer, mais il est recommandé de
@@ -254,16 +266,16 @@ export default async function RisquesOverviewPage({
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <Link
           href={`/duerp/${id}/unites`}
-          className={buttonVariants({ variant: "outline" })}
+          className={buttonVariants({ variant: "boardClair", size: "board" })}
         >
           ← Unités
         </Link>
         <Link
           href={`/duerp/${id}/transverses`}
-          className={buttonVariants({ size: "lg" })}
+          className={buttonVariants({ variant: "board", size: "board" })}
         >
           Étape suivante : questions transverses →
         </Link>

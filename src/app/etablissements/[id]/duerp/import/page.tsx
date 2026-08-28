@@ -29,21 +29,22 @@ export default async function ImportDuerpPage({
         actions={
           <Link
             href={`/etablissements/${id}/duerp`}
-            className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted-foreground hover:text-ink"
+            className="board-eyebrow text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] transition-colors hover:text-[color:var(--board-ink)]"
           >
             Retour au DUERP →
           </Link>
         }
       />
 
-      <main className="mx-auto max-w-3xl px-8 py-8 pb-16">
+      <main className="flex flex-1 flex-col gap-[22px] bg-[color:var(--board-canvas)] px-[var(--board-gutter)] pb-16 pt-6">
         <WhyCard
+          charte="board"
           kicker="Pourquoi importer"
           titre="Repartez de ce que vous avez déjà."
           enjeu="La loi ne vous demande pas de repartir de zéro à chaque outil : elle exige un DUERP tenu à jour, peu importe son support d'origine."
           tonalite="info"
         >
-          <p>
+          <p className="m-0">
             Téléversez votre DUERP Excel actuel. Nous détectons les colonnes
             automatiquement, vous vérifiez l&apos;aperçu, vous importez. Les
             risques, unités de travail et mesures existantes sont créés en base,
@@ -51,6 +52,7 @@ export default async function ImportDuerpPage({
           </p>
           <div className="mt-3">
             <LegalBadge
+              charte="board"
               reference="Art. R4121-1 CT"
               href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530833"
               extrait="L'employeur transcrit et met à jour dans un document unique les résultats de l'évaluation des risques pour la santé et la sécurité des travailleurs à laquelle il procède."
@@ -61,13 +63,13 @@ export default async function ImportDuerpPage({
           </div>
         </WhyCard>
 
-        <div className="mt-10">
-          <ImportDuerpWizard etablissementId={id} />
-        </div>
+        <ImportDuerpWizard etablissementId={id} />
 
-        <div className="mt-10 rounded-xl border border-[color:var(--rule-soft)] bg-[color:var(--paper-sunk)] p-5">
-          <p className="label-admin">Format attendu</p>
-          <ul className="mt-3 space-y-1 text-[0.82rem] text-[color:var(--ink)]">
+        <div className="rounded-[22px] bg-[color:var(--board-slate-pale)] px-7 py-5 sm:px-8">
+          <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+            Format attendu
+          </p>
+          <ul className="m-0 mt-3 flex max-w-[68ch] list-none flex-col gap-1.5 p-0 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-ink)]">
             <li>
               <strong>Colonnes obligatoires :</strong> Unité de travail · Risque
               · Gravité (1-4) · Probabilité (1-4) · Maîtrise (1-4)

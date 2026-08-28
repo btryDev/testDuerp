@@ -24,8 +24,10 @@ export function MesureReferentielToggle({
 
   return (
     <label
-      className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
-        selectionne ? "border-foreground/30 bg-muted/30" : "hover:bg-muted/20"
+      className={`flex cursor-pointer items-start gap-3 rounded-[16px] border p-3 transition-colors ${
+        selectionne
+          ? "border-[color:var(--board-ink)] bg-[color:var(--board-slate-pale)]"
+          : "border-[color:var(--board-slate-line)] hover:bg-[color:var(--board-slate-pale)]"
       } ${pending ? "opacity-60" : ""}`}
     >
       <input
@@ -37,11 +39,13 @@ export function MesureReferentielToggle({
             await toggleMesureReferentiel(risqueId, mesureRefId);
           });
         }}
-        className="mt-1"
+        className="mt-1 accent-[color:var(--board-ink)]"
       />
-      <div>
-        <p className="font-medium">{libelle}</p>
-        <p className="text-xs text-muted-foreground">
+      <div className="min-w-0">
+        <p className="m-0 text-[14px] font-medium leading-[1.45] text-[color:var(--board-ink)]">
+          {libelle}
+        </p>
+        <p className="m-0 mt-0.5 text-[12.5px] text-[color:var(--board-slate-mid)]">
           {LABEL_TYPE_MESURE[type]}
         </p>
       </div>

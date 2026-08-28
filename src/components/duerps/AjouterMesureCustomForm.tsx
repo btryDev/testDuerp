@@ -2,8 +2,7 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ChampBoard } from "@/components/ui-kit";
 import {
   ajouterMesureCustom,
   type MesureActionState,
@@ -22,32 +21,37 @@ export function AjouterMesureCustomForm({ risqueId }: { risqueId: string }) {
     if (state.status === "success") formRef.current?.reset();
   }, [state]);
 
+  const erreurLibelle =
+    state.status === "error" ? state.fieldErrors?.libelle?.[0] : undefined;
+
   return (
-    <form
-      ref={formRef}
-      action={formAction}
-      className="space-y-3 rounded-lg border border-dashed p-4"
-    >
-      <p className="text-sm font-medium">Ajouter une mesure</p>
+    <form ref={formRef} action={formAction} className="space-y-4">
+      <p className="m-0 text-[13.5px] font-medium text-[color:var(--board-ink)]">
+        Ajouter une mesure
+      </p>
 
-      <div className="space-y-2">
-        <Label htmlFor="mesure-libelle">Description *</Label>
-        <Input
-          id="mesure-libelle"
-          name="libelle"
-          placeholder="ex. Révision annuelle de la friteuse par un technicien"
-          required
-        />
-      </div>
+      <ChampBoard
+        id="mesure-libelle"
+        name="libelle"
+        label="Description"
+        placeholder="ex. Révision annuelle de la friteuse par un technicien"
+        requis
+        erreur={erreurLibelle}
+      />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="mesure-type">Type *</Label>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label className="label-board" htmlFor="mesure-type">
+            Type *
+          </label>
+          {/* Le `<select>` n'a pas d'équivalent dans `ChampBoard`, qui rend un
+              `<input>` : il porte donc `.champ-board` directement, plutôt que
+              de recopier le rayon et le creux en littéral (interdit 26). */}
           <select
             id="mesure-type"
             name="type"
             required
-            className="flex h-8 w-full rounded-lg border bg-background px-2.5 text-sm"
+            className="champ-board"
             defaultValue="reduction_source"
           >
             {Object.entries(LABEL_TYPE_MESURE).map(([v, l]) => (
@@ -58,13 +62,15 @@ export function AjouterMesureCustomForm({ risqueId }: { risqueId: string }) {
           </select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="mesure-statut">Statut *</Label>
+        <div>
+          <label className="label-board" htmlFor="mesure-statut">
+            Statut *
+          </label>
           <select
             id="mesure-statut"
             name="statut"
             required
-            className="flex h-8 w-full rounded-lg border bg-background px-2.5 text-sm"
+            className="champ-board"
             defaultValue="existante"
           >
             <option value="existante">Existante</option>
@@ -73,28 +79,22 @@ export function AjouterMesureCustomForm({ risqueId }: { risqueId: string }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="mesure-echeance">Échéance (si prévue)</Label>
-          <Input type="date" id="mesure-echeance" name="echeance" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="mesure-responsable">Responsable</Label>
-          <Input
-            id="mesure-responsable"
-            name="responsable"
-            placeholder="Nom ou rôle"
-          />
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <ChampBoard
+          id="mesure-echeance"
+          name="echeance"
+          type="date"
+          label="Échéance (si prévue)"
+        />
+        <ChampBoard
+          id="mesure-responsable"
+          name="responsable"
+          label="Responsable"
+          placeholder="Nom ou rôle"
+        />
       </div>
 
-      {state.status === "error" && state.fieldErrors?.libelle && (
-        <p className="text-sm text-destructive">
-          {state.fieldErrors.libelle[0]}
-        </p>
-      )}
-
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" variant="board" size="board" disabled={pending}>
         {pending ? "Ajout…" : "Ajouter la mesure"}
       </Button>
     </form>

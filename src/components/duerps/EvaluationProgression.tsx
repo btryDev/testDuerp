@@ -11,9 +11,13 @@ type Props = {
 };
 
 /**
- * Diptyque éditorial montrant que la cotation et les mesures sont deux
- * moitiés d'une même évaluation, pas deux étapes séparées du wizard.
- * Visible en tête des pages cotation et mesures d'un risque.
+ * Diptyque montrant que la cotation et les mesures sont deux moitiés d'une
+ * même évaluation, pas deux étapes séparées du wizard. Visible en tête des
+ * pages cotation et mesures d'un risque.
+ *
+ * Chaque partie porte son état par un mot (« En cours », « Ouvert »,
+ * « Verrouillé », « À faire ») autant que par sa couleur : la couleur seule
+ * disparaît en niveaux de gris et pour qui n'y voit pas (interdit 10).
  */
 export function EvaluationProgression({
   etape,
@@ -27,14 +31,14 @@ export function EvaluationProgression({
   return (
     <nav
       aria-label="Parties de l'évaluation du risque"
-      className="rounded-[calc(var(--radius)*1.4)] bg-paper-elevated p-0 ring-1 ring-rule-soft"
+      className="carte-board"
     >
       {/* Bandeau */}
-      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-dashed border-rule/60 px-6 py-4 sm:px-7">
-        <p className="font-mono text-[0.64rem] font-medium uppercase tracking-[0.2em] text-ink">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-[color:var(--board-slate-line)] px-7 py-4 sm:px-8">
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
           Évaluation en deux temps
         </p>
-        <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
           {etape === "cotation"
             ? "Partie 01 en cours"
             : "Partie 02 en cours"}
@@ -42,7 +46,7 @@ export function EvaluationProgression({
       </div>
 
       {/* Barre de progression — 2 segments */}
-      <div className="px-6 pt-5 sm:px-7">
+      <div className="px-7 pt-5 sm:px-8">
         <div
           role="progressbar"
           aria-valuemin={1}
@@ -52,32 +56,28 @@ export function EvaluationProgression({
         >
           <span
             aria-hidden
-            className={`h-[5px] flex-1 rounded-[1px] transition-colors ${
+            className={`h-[5px] flex-1 rounded-full transition-colors ${
               etape === "cotation"
-                ? "bg-[color:var(--warm)]"
+                ? "bg-[color:var(--board-blue-ink)]"
                 : cotationSaisie
-                  ? "bg-ink"
-                  : "bg-rule-soft"
+                  ? "bg-[color:var(--board-ink)]"
+                  : "bg-[color:var(--board-slate-line)]"
             }`}
           />
           <span
             aria-hidden
-            className={`h-[5px] flex-1 rounded-[1px] transition-colors ${
+            className={`h-[5px] flex-1 rounded-full transition-colors ${
               etape === "mesures"
-                ? "bg-[color:var(--warm)]"
-                : "bg-rule-soft"
+                ? "bg-[color:var(--board-blue-ink)]"
+                : "bg-[color:var(--board-slate-line)]"
             }`}
           />
         </div>
       </div>
 
-      {/* Les 2 sous-parties, côte à côte, séparées par un filet pointillé vertical */}
-      <ol className="grid grid-cols-1 sm:grid-cols-2">
-        <li
-          className={`border-b border-dashed border-rule/60 px-6 py-6 sm:border-b-0 sm:border-r sm:px-7 ${
-            etape === "cotation" ? "" : ""
-          }`}
-        >
+      {/* Les 2 sous-parties, côte à côte */}
+      <ol className="grid list-none grid-cols-1 p-0 sm:grid-cols-2">
+        <li className="border-b border-[color:var(--board-slate-line)] px-7 py-6 sm:border-b-0 sm:border-r sm:px-8">
           <SousPartie
             numero="01"
             titre="Cotation"
@@ -93,7 +93,7 @@ export function EvaluationProgression({
             compteur={cotationSaisie ? "cotation enregistrée" : "3 questions"}
           />
         </li>
-        <li className="px-6 py-6 sm:px-7">
+        <li className="px-7 py-6 sm:px-8">
           <SousPartie
             numero="02"
             titre="Mesures"
@@ -122,10 +122,11 @@ export function EvaluationProgression({
       </ol>
 
       {/* Pied : rappel du couplage */}
-      <p className="border-t border-dashed border-rule/60 px-6 py-3.5 text-[0.78rem] leading-relaxed text-muted-foreground sm:px-7">
+      <p className="m-0 border-t border-[color:var(--board-slate-line)] px-7 py-3.5 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)] sm:px-8">
         La maîtrise notée en{" "}
-        <span className="font-medium text-ink">01</span> décrit l&apos;état actuel ;
-        les mesures de <span className="font-medium text-ink">02</span> la
+        <span className="font-medium text-[color:var(--board-ink)]">01</span>{" "}
+        décrit l&apos;état actuel ; les mesures de{" "}
+        <span className="font-medium text-[color:var(--board-ink)]">02</span> la
         documentent et peuvent vous amener à la réajuster.
       </p>
     </nav>
@@ -133,6 +134,25 @@ export function EvaluationProgression({
 }
 
 type Statut = "en-cours" | "fait" | "a-faire" | "verrouille";
+
+// Table statique : Tailwind ne voit pas un nom de classe construit à la
+// volée (interdit 23).
+const MARQUE_STATUT: Record<Statut, string> = {
+  "en-cours":
+    "bg-[color:var(--board-blue-pale)] text-[color:var(--board-blue-ink)]",
+  fait: "bg-[color:var(--board-ink)] text-white",
+  verrouille:
+    "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-soft)]",
+  "a-faire":
+    "bg-[color:var(--board-slate-pale)] text-[color:var(--board-slate-ink)]",
+};
+
+const TITRE_STATUT: Record<Statut, string> = {
+  "en-cours": "text-[color:var(--board-blue-ink)]",
+  fait: "text-[color:var(--board-ink)]",
+  verrouille: "text-[color:var(--board-slate-mid)]",
+  "a-faire": "text-[color:var(--board-ink)]",
+};
 
 function SousPartie({
   numero,
@@ -150,12 +170,6 @@ function SousPartie({
   compteur: string;
 }) {
   const clickable = href !== undefined && statut !== "en-cours";
-  const titleColor =
-    statut === "en-cours"
-      ? "text-[color:var(--warm)]"
-      : statut === "verrouille"
-        ? "text-muted-foreground/60"
-        : "text-ink";
 
   const labelStatut =
     statut === "en-cours"
@@ -170,38 +184,24 @@ function SousPartie({
     <div className="flex items-start gap-4">
       <span
         aria-hidden
-        className={`flex size-10 shrink-0 items-center justify-center rounded-full font-mono text-[0.72rem] font-semibold tabular-nums transition-colors ${
-          statut === "en-cours"
-            ? "bg-[color:var(--warm)] text-[color:var(--paper-elevated)]"
-            : statut === "fait"
-              ? "bg-ink text-paper-elevated"
-              : statut === "verrouille"
-                ? "border border-dashed border-rule text-muted-foreground/50"
-                : "border border-rule text-ink"
-        }`}
+        className={`flex size-10 shrink-0 items-center justify-center rounded-full font-mono text-[11.5px] font-semibold tabular-nums transition-colors ${MARQUE_STATUT[statut]}`}
       >
         {numero}
       </span>
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="board-eyebrow flex items-baseline gap-2 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
           <span>{labelStatut}</span>
-          <span aria-hidden className="text-rule">
+          <span aria-hidden className="text-[color:var(--board-slate)]">
             ·
           </span>
           <span className="truncate">{compteur}</span>
         </div>
         <p
-          className={`mt-1.5 text-[1.02rem] font-semibold tracking-[-0.014em] leading-snug ${titleColor}`}
+          className={`m-0 mt-1.5 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] ${TITRE_STATUT[statut]}`}
         >
           {titre}
         </p>
-        <p
-          className={`mt-1 text-[0.86rem] leading-[1.55] ${
-            statut === "verrouille"
-              ? "text-muted-foreground/55"
-              : "text-muted-foreground"
-          }`}
-        >
+        <p className="m-0 mt-1 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
           {description}
         </p>
       </div>

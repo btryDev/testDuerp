@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ChampBoard } from "@/components/ui-kit";
 import {
   ajouterRisqueCustom,
   type RisqueActionState,
@@ -20,38 +20,43 @@ export function AjouterRisqueCustomForm({ uniteId }: { uniteId: string }) {
     if (state.status === "success") formRef.current?.reset();
   }, [state]);
 
+  const erreurLibelle =
+    state.status === "error" ? state.fieldErrors?.libelle?.[0] : undefined;
+
   return (
-    <form
-      ref={formRef}
-      action={formAction}
-      className="rounded-lg border border-dashed p-4"
-    >
-      <p className="mb-3 text-sm font-medium">
+    // Les deux champs n'avaient qu'un placeholder pour libellé : il
+    // disparaît dès la première frappe, et un lecteur d'écran n'a plus rien
+    // à annoncer. `ChampBoard` pose un vrai `<label>`, l'astérisque du
+    // champ requis, et l'erreur en encre de signal.
+    <form ref={formRef} action={formAction}>
+      <p className="m-0 mb-3 text-[13.5px] font-medium text-[color:var(--board-ink)]">
         Ajouter un risque spécifique à cette unité
       </p>
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <Input
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <ChampBoard
+          id="risque-custom-libelle"
           name="libelle"
+          label="Risque"
           placeholder="ex. Tension avec les clients lors du rush"
-          required
-          aria-invalid={Boolean(
-            state.status === "error" && state.fieldErrors?.libelle,
-          )}
+          requis
+          erreur={erreurLibelle}
         />
-        <Input
+        <ChampBoard
+          id="risque-custom-description"
           name="description"
-          placeholder="Description (facultatif)"
-          className="sm:max-w-xs"
+          label="Description"
+          placeholder="Facultatif"
         />
-        <Button type="submit" disabled={pending}>
-          {pending ? "Ajout…" : "Ajouter"}
-        </Button>
       </div>
-      {state.status === "error" && state.fieldErrors?.libelle && (
-        <p className="mt-2 text-sm text-destructive">
-          {state.fieldErrors.libelle[0]}
-        </p>
-      )}
+      <Button
+        type="submit"
+        variant="board"
+        size="board"
+        disabled={pending}
+        className="mt-4"
+      >
+        {pending ? "Ajout…" : "Ajouter"}
+      </Button>
     </form>
   );
 }
