@@ -41,6 +41,10 @@ function baseEntree(): EntreeRecos {
     nbEquipements: 3,
     duerpSecteurChoisi: true,
     nbRapports: 2,
+    transmissions: {
+      domainesSansPrestataire: [],
+      obligationsSupposantUnePersonne: [],
+    },
   };
 }
 
@@ -440,6 +444,7 @@ describe("genererRecommandations — amorçage (règles 6-8)", () => {
     const e: EntreeRecos = {
       ...baseEntree(),
       nbRapports: 0,
+  transmissions: { domainesSansPrestataire: [], obligationsSupposantUnePersonne: [] },
       verifications: [
         {
           id: "v1",

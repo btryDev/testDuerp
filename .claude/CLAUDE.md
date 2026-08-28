@@ -238,6 +238,8 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
 22. **022** — Une obligation naît d'un déclencheur et se porte sur un sujet
     (équipement, établissement, salarié)
 23. **023** — Le salarié porte ses titres, et l'outil n'en garde que l'échéance
+24. **024** — Une obligation déclare ce qu'elle implique ailleurs : le
+    produit nomme la transmission, il ne la dérive jamais
 
 La puce reprend le numéro de l'ADR et non son rang dans la liste, pour que les
 branches puissent atterrir dans n'importe quel ordre sans se contredire.

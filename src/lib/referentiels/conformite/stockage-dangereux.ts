@@ -46,6 +46,7 @@ export const obligationsStockageDangereux: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["STOCKAGE_MATIERE_DANGEREUSE"],
     notesInternes:
@@ -86,6 +87,7 @@ export const obligationsStockageDangereux: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["STOCKAGE_MATIERE_DANGEREUSE"],
     notesInternes:
@@ -119,6 +121,7 @@ export const obligationsStockageDangereux: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["STOCKAGE_MATIERE_DANGEREUSE"],
     notesInternes:
@@ -149,6 +152,7 @@ export const obligationsStockageDangereux: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["STOCKAGE_MATIERE_DANGEREUSE"],
     notesInternes:
@@ -172,6 +176,7 @@ export const obligationsStockageDangereux: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["STOCKAGE_MATIERE_DANGEREUSE"],
   },
@@ -200,6 +205,7 @@ export const obligationsStockageDangereux: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["STOCKAGE_MATIERE_DANGEREUSE"],
     notesInternes:

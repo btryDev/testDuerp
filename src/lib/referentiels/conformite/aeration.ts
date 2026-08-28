@@ -67,6 +67,7 @@ export const obligationsAeration: Obligation[] = [
     // 4, la criticité du fragment absorbé : c'est le même acte sur le même
     // texte, il ne change pas de rang en changeant de porteur.
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     porteur: "etablissement",
     equipementsEnContexte: ["VMC", "CTA", "HOTTE_PRO"],
@@ -108,6 +109,7 @@ export const obligationsAeration: Obligation[] = [
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["VMC", "CTA"],
   },
@@ -146,6 +148,7 @@ export const obligationsAeration: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["VMC", "CTA", "HOTTE_PRO"],
     conditions: [
@@ -200,6 +203,7 @@ export const obligationsAeration: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["VMC", "CTA"],
   },
@@ -221,6 +225,7 @@ export const obligationsAeration: Obligation[] = [
     periodicite: "biennale",
     realisateurs: ["personne_qualifiee"],
     criticite: 3,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["VMC"],
     conditions: [
@@ -253,6 +258,7 @@ export const obligationsAeration: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["VMC"],
     conditions: [
@@ -299,6 +305,7 @@ export const obligationsAeration: Obligation[] = [
     periodicite: "quinquennale",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { habitation: true },
     categoriesEquipement: ["VMC"],
     conditions: [
@@ -332,6 +339,7 @@ export const obligationsAeration: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { habitation: true },
     categoriesEquipement: ["VMC"],
     conditions: [

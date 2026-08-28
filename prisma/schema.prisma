@@ -757,6 +757,15 @@ enum DomainePrestataire {
   equipement_pression
   levage
   stockage_dangereux
+  // Contrôle d'étanchéité des fluides frigorigènes. Le domaine d'obligation
+  // `froid` existait sans aucune contrepartie ici — et c'est précisément
+  // l'obligation qui exige un opérateur CERTIFIÉ (attestation de capacité,
+  // règlement (UE) 2024/573). Le produit savait donc dire « il vous faut un
+  // opérateur certifié » et ne savait pas dire lequel, ni constater qu'aucun
+  // n'était déclaré. Le trou est resté invisible parce que rien n'obligeait
+  // les deux vocabulaires à se correspondre ; c'est désormais le cas
+  // (`prestataires/domaines.ts`, ADR-024).
+  froid
   carnet_sanitaire
   bureau_controle
   entretien_general

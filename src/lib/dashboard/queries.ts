@@ -18,6 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { compterActions } from "@/lib/actions/queries";
 import { computeVigilance } from "@/lib/prestataires/vigilance";
+import { chargerTransmissions } from "./transmissions";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 import {
@@ -600,6 +601,7 @@ export const getDashboardData = cache(async function getDashboardData(
     actionsTotal,
     duerp,
     nbEquipements,
+    transmissions,
     nbRapports,
   ] = await Promise.all([
     // Un seul passage sur les vérifications qui comptent : les occurrences
@@ -662,6 +664,11 @@ export const getDashboardData = cache(async function getDashboardData(
       },
     }),
     prisma.equipement.count({ where: scope }),
+    // Dans le `Promise.all` et non derrière lui : le rapprochement ne dépend
+    // que de `etablissementId` et `user.id`, tous deux disponibles avant.
+    // Placé après, il ajoutait trois requêtes sérialisées derrière tout le
+    // reste du tableau de bord (ADR-024).
+    chargerTransmissions(etablissementId, user.id),
     prisma.rapportVerification.count({
       where: { verification: scope },
     }),
@@ -696,6 +703,7 @@ export const getDashboardData = cache(async function getDashboardData(
   const recommandations = genererRecommandations(
     {
       etablissementId,
+      transmissions,
       // Ordre d'urgence réelle : les retards d'abord (échéance croissante,
       // la plus ancienne en tête), puis ce qui arrive, puis les occurrences
       // sans date arrêtée — dont aucune règle ne tire de proposition, mais

@@ -15,6 +15,17 @@
  *      → « Ouvrez votre DUERP »
  *   8. Amorçage : vérifications planifiées mais aucun rapport déposé
  *      → « Déposez votre premier rapport »
+ *   9. Transmission : un domaine d'obligation qu'aucun prestataire déclaré
+ *      ne couvre (ADR-024)
+ *  10. Transmission : une obligation qui suppose une personne nommée, alors
+ *      qu'aucun titre n'est déclaré (ADR-024)
+ *
+ * Les huit premières règles sont fondées sur des DATES. Les deux dernières
+ * sont fondées sur une **incohérence entre deux modules**, et c'est la
+ * famille qui manquait à ce moteur : le produit savait faire naître une
+ * obligation et ne savait jamais dire ce qu'elle exige ailleurs. Elles
+ * héritent de la règle des amorçages — elles ne passent jamais devant une
+ * urgence réelle.
  *
  * Les amorçages (6-8) sont des invitations neutres, jamais des alertes :
  * ils ne passent jamais devant une urgence réelle (priorités 1-5) et ne
@@ -65,7 +76,9 @@ export type Recommandation = {
     | "duerp_a_jour"
     | "amorce_equipements"
     | "amorce_duerp"
-    | "amorce_rapport";
+    | "amorce_rapport"
+    | "transmission_prestataire"
+    | "transmission_salarie";
   titre: string;
   sousTitre?: string;
   href: string;
@@ -108,6 +121,32 @@ export type EntreeRecos = {
   duerpSecteurChoisi: boolean;
   /** Nombre de rapports de vérification déposés (amorçage règle 8). */
   nbRapports: number;
+  /**
+   * Les écarts entre deux déclarations de l'utilisateur (ADR-024, règles 9-10).
+   *
+   * Requis, comme `nbEquipements` et `duerpSecteurChoisi` : optionnel, un
+   * appelant qui l'oublierait éteindrait la famille entière sans qu'aucun test
+   * ne rougisse — le faux négatif muet que ce dépôt passe son temps à
+   * supprimer.
+   *
+   * Le calcul n'est pas ici, et c'est délibéré : ce module est une fonction
+   * pure de règles, sur des faits que l'appelant établit. Il en va de même de
+   * `nbRapports`. Y faire entrer le rapprochement lui-même l'obligerait à
+   * importer le référentiel et un enum Prisma, et il cesserait d'être testable
+   * sans base.
+   */
+  transmissions: {
+    /**
+     * Domaines d'obligation applicables qu'aucun prestataire déclaré ne
+     * couvre, avec leur nom lisible.
+     */
+    domainesSansPrestataire: Array<{ domaine: string; libelle: string }>;
+    /**
+     * Obligations applicables qui supposent une personne nommée, alors
+     * qu'aucun titre n'est déclaré à l'équipe.
+     */
+    obligationsSupposantUnePersonne: Array<{ id: string; libelle: string }>;
+  };
 };
 
 export type OptionsRecommandations = {
@@ -263,6 +302,49 @@ export function genererRecommandations(
       sousTitre: "Chaque rapport reçu rejoint votre registre de sécurité",
       href: `/etablissements/${etab}/calendrier`,
       priorite: 8,
+    });
+  }
+
+  // 9-10. Transmissions (ADR-024) — un écart entre deux déclarations de
+  //       l'utilisateur, pas une date. C'est la seule famille de ce moteur qui
+  //       ne soit pas fondée sur le temps, et c'est ce qui lui manquait : le
+  //       produit savait faire naître une obligation, et jamais dire ce
+  //       qu'elle exige ailleurs.
+  //
+  //       Priorités 9 et 10, donc DERRIÈRE les amorçages. Une transmission ne
+  //       passe jamais devant une urgence réelle : un retard réglementaire est
+  //       un fait, une transmission est une question.
+  //
+  //       Registre de la phrase : on nomme un écart, on ne porte aucun
+  //       jugement. Ni « vous êtes en faute », ni « vous devez signer avec
+  //       quelqu'un ». Le dirigeant a très probablement le prestataire et ne
+  //       l'a pas saisi — c'est même le cas le plus probable, et la formule
+  //       doit le permettre.
+  for (const d of e.transmissions.domainesSansPrestataire) {
+    acc.push({
+      kind: "transmission_prestataire",
+      titre: `Aucun prestataire déclaré en ${d.libelle.toLowerCase()}`,
+      sousTitre:
+        "Une de vos obligations suppose l'intervention d'un tiers qualifié",
+      href: `/etablissements/${etab}/prestataires`,
+      priorite: 9,
+    });
+  }
+  for (const o of e.transmissions.obligationsSupposantUnePersonne) {
+    acc.push({
+      kind: "transmission_salarie",
+      titre: o.libelle,
+      // « suppose » et pas « exige » : l'outil ne sait pas qui, dans
+      // l'effectif, opère sur quoi — le dériver serait un faux positif de
+      // masse (ADR-023).
+      //
+      // Et « aucun titre » et non « aucune personne » : ce qui manque est la
+      // déclaration d'un TITRE, pas celle d'un salarié. Un employeur qui a
+      // saisi douze personnes et zéro titre lisait « aucune n'est déclarée »
+      // et pouvait comprendre que sa saisie n'avait pas été prise.
+      sousTitre: "Suppose un titre nominatif — aucun n'est déclaré",
+      href: `/etablissements/${etab}/equipe`,
+      priorite: 10,
     });
   }
 
