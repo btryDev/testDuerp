@@ -94,12 +94,38 @@ const h = vi.hoisted(() => {
   function trier(lignes: Ligne[], orderBy: unknown): Ligne[] {
     if (orderBy === undefined) return lignes;
     const criteres = Array.isArray(orderBy) ? orderBy : [orderBy];
+
+    // Validation AVANT le tri, jamais dedans. `Array.sort` n'appelle pas son
+    // comparateur sur 0 ou 1 ligne : une vérification qui n'y vivrait que
+    // serait muette exactement là où la fixture est la plus petite, et
+    // rendrait la ligne sans avoir évalué la clause — ce que l'en-tête de ce
+    // fichier promet de ne jamais faire.
+    //
+    // Attrape du même coup les deux formes que ce faux ne sait pas lire : le
+    // tri relationnel (`{ etablissement: { nom: "asc" } }`) et la forme longue
+    // de Prisma (`{ nom: { sort: "asc", nulls: "last" } }`), où le sens est un
+    // objet et non « asc » / « desc ».
+    for (const critere of criteres) {
+      const entrees = Object.entries(critere as Ligne);
+      if (entrees.length !== 1) {
+        throw new Error(
+          `Faux Prisma : critère de tri à ${entrees.length} clés — ` +
+            `${JSON.stringify(critere)}. Un critère porte un champ et un sens.`,
+        );
+      }
+      const [cle, sens] = entrees[0];
+      if (sens !== "asc" && sens !== "desc") {
+        throw new Error(
+          `Faux Prisma : sens de tri non géré sur « ${cle} » — ` +
+            `${JSON.stringify(sens)}. Étendre \`trier\` plutôt que laisser ` +
+            `passer un tri non évalué.`,
+        );
+      }
+    }
+
     return [...lignes].sort((a, b) => {
       for (const critere of criteres) {
         const [cle, sens] = Object.entries(critere as Ligne)[0];
-        if (sens !== "asc" && sens !== "desc") {
-          throw new Error(`Faux Prisma : sens de tri non géré — ${String(sens)}.`);
-        }
         const va = a[cle];
         const vb = b[cle];
         if (va === vb) continue;
@@ -149,7 +175,7 @@ const h = vi.hoisted(() => {
     },
   };
 
-  return { db, prisma, requireUser: vi.fn() };
+  return { db, prisma, trier, requireUser: vi.fn() };
 });
 
 vi.mock("@/lib/prisma", () => ({ prisma: h.prisma }));

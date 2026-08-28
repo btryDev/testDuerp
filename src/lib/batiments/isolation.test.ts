@@ -11,10 +11,16 @@
 // `where` ET le `orderBy` contre deux entreprises en mémoire, et lève sur toute
 // clause qu'il ne sait pas interpréter — jamais de clause ignorée en silence.
 //
-// Le `orderBy` manquait à la première rédaction de ce fichier, dont l'en-tête
-// annonçait déjà cette garantie : le faux rendait la première ligne insérée
-// quel que soit le tri demandé. La phrase était vraie pour `where`, fausse pour
-// le reste, et le cas de tri passait au vert sans rien éprouver.
+// Cette phrase a été fausse deux fois, et le bloc « le faux Prisma refuse ce
+// qu'il ne sait pas évaluer », en fin de fichier, existe pour qu'elle cesse de
+// dépendre de la bonne foi du lecteur :
+//   1. le `orderBy` manquait tout court — le faux rendait la première ligne
+//      insérée quel que soit le tri demandé ;
+//   2. puis il n'était validé qu'à l'intérieur du comparateur de `Array.sort`,
+//      que le moteur n'appelle **jamais** en dessous de deux lignes. La garantie
+//      était donc muette exactement là où une fixture minimale la solliciterait.
+// Les critères sont désormais validés avant le tri, donc indépendamment du
+// nombre de lignes.
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -68,15 +74,38 @@ const h = vi.hoisted(() => {
   function trier(lignes: Ligne[], orderBy: unknown): Ligne[] {
     if (orderBy === undefined) return lignes;
     const criteres = Array.isArray(orderBy) ? orderBy : [orderBy];
+
+    // Validation AVANT le tri, jamais dedans. `Array.sort` n'appelle pas son
+    // comparateur sur 0 ou 1 ligne : une vérification qui n'y vivrait que
+    // serait muette exactement là où la fixture est la plus petite, et
+    // rendrait la ligne sans avoir évalué la clause — ce que l'en-tête de ce
+    // fichier promet de ne jamais faire.
+    //
+    // Attrape du même coup les deux formes que ce faux ne sait pas lire : le
+    // tri relationnel (`{ etablissement: { nom: "asc" } }`) et la forme longue
+    // de Prisma (`{ nom: { sort: "asc", nulls: "last" } }`), où le sens est un
+    // objet et non « asc » / « desc ».
+    for (const critere of criteres) {
+      const entrees = Object.entries(critere as Ligne);
+      if (entrees.length !== 1) {
+        throw new Error(
+          `Faux Prisma : critère de tri à ${entrees.length} clés — ` +
+            `${JSON.stringify(critere)}. Un critère porte un champ et un sens.`,
+        );
+      }
+      const [cle, sens] = entrees[0];
+      if (sens !== "asc" && sens !== "desc") {
+        throw new Error(
+          `Faux Prisma : sens de tri non géré sur « ${cle} » — ` +
+            `${JSON.stringify(sens)}. Étendre \`trier\` plutôt que laisser ` +
+            `passer un tri non évalué.`,
+        );
+      }
+    }
+
     return [...lignes].sort((a, b) => {
       for (const critere of criteres) {
         const [cle, sens] = Object.entries(critere as Ligne)[0];
-        if (sens !== "asc" && sens !== "desc") {
-          throw new Error(
-            `Faux Prisma : sens de tri non géré sur « ${cle} » — ` +
-              `${String(sens)}.`,
-          );
-        }
         const va = a[cle];
         const vb = b[cle];
         if (va === vb) continue;
@@ -115,7 +144,7 @@ const h = vi.hoisted(() => {
     },
   };
 
-  return { db, prisma, requireUser: vi.fn() };
+  return { db, prisma, trier, requireUser: vi.fn() };
 });
 
 vi.mock("@/lib/prisma", () => ({ prisma: h.prisma }));
@@ -219,5 +248,72 @@ describe("batimentParDefaut", () => {
     expect(await batimentParDefaut(ETAB_A)).toMatchObject({
       id: "bat-a-siege",
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Le faux Prisma lui-même.
+//
+// Ce fichier a déjà livré une fois une garantie que son en-tête annonçait et
+// que son code n'assurait pas. Elle est donc éprouvée ici, et pas seulement
+// affirmée — sur les tailles où elle a lâché : `Array.sort` n'appelle pas son
+// comparateur en dessous de deux lignes, si bien qu'une validation logée dans
+// le comparateur est muette exactement là où une fixture minimale la
+// solliciterait.
+// ---------------------------------------------------------------------------
+
+describe("le faux Prisma refuse ce qu'il ne sait pas évaluer", () => {
+  const UNE = [{ id: "seul", ordre: 0, nom: "Siège" }];
+
+  it("lève sur un sens invalide, même à une seule ligne", () => {
+    expect(() => h.trier(UNE, [{ ordre: "PAS_UN_SENS" }])).toThrow(
+      /sens de tri non géré/,
+    );
+  });
+
+  it("lève sur un sens invalide, même à zéro ligne", () => {
+    expect(() => h.trier([], [{ ordre: "PAS_UN_SENS" }])).toThrow(
+      /sens de tri non géré/,
+    );
+  });
+
+  it("lève sur un tri relationnel", () => {
+    // `orderBy: { etablissement: { nom: "asc" } }` : le sens est un objet.
+    // Le faux ne sait pas traverser une relation pour trier — il doit le dire
+    // plutôt que rendre les lignes dans leur ordre d'insertion.
+    expect(() =>
+      h.trier(UNE, [{ etablissement: { nom: "asc" } }]),
+    ).toThrow(/sens de tri non géré/);
+  });
+
+  it("lève sur la forme longue de Prisma", () => {
+    // `{ nom: { sort: "asc", nulls: "last" } }` — valide côté Prisma, illisible
+    // pour ce faux.
+    expect(() =>
+      h.trier(UNE, [{ nom: { sort: "asc", nulls: "last" } }]),
+    ).toThrow(/sens de tri non géré/);
+  });
+
+  it("lève sur un critère à deux clés", () => {
+    expect(() => h.trier(UNE, [{ ordre: "asc", nom: "asc" }])).toThrow(
+      /critère de tri à 2 clés/,
+    );
+  });
+
+  it("trie normalement ce qu'il sait lire", () => {
+    // Contre-épreuve : sans elle, un `trier` qui lèverait sur tout passerait
+    // les cinq cas ci-dessus.
+    const deux = [
+      { id: "b", ordre: 1 },
+      { id: "a", ordre: 0 },
+    ];
+    expect(h.trier(deux, [{ ordre: "asc" }]).map((l) => l.id)).toEqual([
+      "a",
+      "b",
+    ]);
+    expect(h.trier(deux, [{ ordre: "desc" }]).map((l) => l.id)).toEqual([
+      "b",
+      "a",
+    ]);
   });
 });
