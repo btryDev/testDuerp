@@ -336,9 +336,13 @@ export function genererRecommandations(
       titre: o.libelle,
       // « suppose » et pas « exige » : l'outil ne sait pas qui, dans
       // l'effectif, opère sur quoi — le dériver serait un faux positif de
-      // masse (ADR-023). Il sait que l'obligation vise une personne nommée et
-      // qu'aucune n'est déclarée. Il dit exactement cela.
-      sousTitre: "Suppose une personne nommée — aucune n'est déclarée",
+      // masse (ADR-023).
+      //
+      // Et « aucun titre » et non « aucune personne » : ce qui manque est la
+      // déclaration d'un TITRE, pas celle d'un salarié. Un employeur qui a
+      // saisi douze personnes et zéro titre lisait « aucune n'est déclarée »
+      // et pouvait comprendre que sa saisie n'avait pas été prise.
+      sousTitre: "Suppose un titre nominatif — aucun n'est déclaré",
       href: `/etablissements/${etab}/equipe`,
       priorite: 10,
     });

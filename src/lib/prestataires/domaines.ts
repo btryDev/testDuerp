@@ -87,9 +87,27 @@ const REALISATEURS_TIERS: ReadonlySet<Realisateur> = new Set<Realisateur>([
   "bureau_controle",
 ]);
 
-/** Vrai si l'obligation suppose qu'un tiers intervienne. */
+/**
+ * Vrai si l'obligation **impose** qu'un tiers intervienne.
+ *
+ * `every` et non `some`, et c'est tout le sujet. `realisateurs` est une
+ * **disjonction** — « Réalisateurs acceptés […] parfois 2 (ex. "personne
+ * qualifiée OU organisme agréé") », dit le type. Un `some` retournait donc
+ * vrai dès qu'un tiers figurait dans la liste, y compris quand `exploitant`
+ * y figurait aussi, c'est-à-dire quand le texte autorise expressément le
+ * dirigeant à faire l'acte lui-même.
+ *
+ * Trois obligations sont dans ce cas et produisaient le faux positif :
+ * `cuisson-erp-circuits-extraction-nettoyage` (GC 21 § 2 admet
+ * l'exploitant), `elec-erp-groupe-electrogene-annuel` et
+ * `esp-declaration-mise-en-service`. Un restaurateur avec une hotte
+ * s'entendait dire « aucun prestataire déclaré en cuisson et hotte » alors
+ * qu'il a le droit de nettoyer lui-même — exactement le faux positif que le
+ * commentaire ci-dessus s'interdisait, et que le test ne voyait pas parce
+ * qu'il n'éprouvait que `["exploitant"]` seul.
+ */
 export function supposeUnTiers(o: Obligation): boolean {
-  return o.realisateurs.some((r) => REALISATEURS_TIERS.has(r));
+  return o.realisateurs.every((r) => REALISATEURS_TIERS.has(r));
 }
 
 /**

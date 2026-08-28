@@ -3,8 +3,10 @@
 - Statut : acceptée
 - Date : 2026-08-28
 - Portée : `src/lib/referentiels/conformite/types.ts` (`Transmission`,
-  `ObligationCommune.transmet`), `src/lib/referentiels/conformite/domaines.ts`
-  (correspondance domaine d'obligation → domaine de prestataire),
+  `ObligationCommune.transmet`), `src/lib/prestataires/domaines.ts`
+  (correspondance domaine d'obligation → domaine de prestataire — **côté
+  prestataires**, cf. § « Ce qui est dérivable n'est pas déclaré » : le
+  référentiel n'importe rien de Prisma), `src/lib/dashboard/transmissions.ts`,
   `src/lib/dashboard/recommandations.ts`, `scripts/export-relecture.ts`
 - Dépend de : ADR-003 (référentiel en TypeScript versionné), ADR-010 (registre
   des sources d'échéances), ADR-019 (le bâtiment est un lieu),

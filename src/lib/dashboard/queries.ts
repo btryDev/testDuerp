@@ -583,6 +583,7 @@ export const getDashboardData = cache(async function getDashboardData(
     actionsTotal,
     duerp,
     nbEquipements,
+    transmissions,
     nbRapports,
   ] = await Promise.all([
     // Un seul passage sur les vérifications qui comptent : les occurrences
@@ -645,6 +646,11 @@ export const getDashboardData = cache(async function getDashboardData(
       },
     }),
     prisma.equipement.count({ where: scope }),
+    // Dans le `Promise.all` et non derrière lui : le rapprochement ne dépend
+    // que de `etablissementId` et `user.id`, tous deux disponibles avant.
+    // Placé après, il ajoutait trois requêtes sérialisées derrière tout le
+    // reste du tableau de bord (ADR-024).
+    chargerTransmissions(etablissementId, user.id),
     prisma.rapportVerification.count({
       where: { verification: scope },
     }),
@@ -675,8 +681,6 @@ export const getDashboardData = cache(async function getDashboardData(
     },
     duerp: etatDuerp.ouvert ? etatDuerp : null,
   });
-
-  const transmissions = await chargerTransmissions(etablissementId, user.id);
 
   const recommandations = genererRecommandations(
     {

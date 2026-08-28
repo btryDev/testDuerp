@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { rapprocher } from "./transmissions";
+import { supposeUnTiers } from "@/lib/prestataires/domaines";
 import { genererRecommandations, type EntreeRecos } from "./recommandations";
 import type { Obligation } from "@/lib/referentiels/conformite/types";
 
@@ -38,7 +39,7 @@ const habilitation = () =>
 
 describe("rapprochement des transmissions (ADR-024)", () => {
   it("signale un domaine qu'aucun prestataire déclaré ne couvre", () => {
-    const t = rapprocher([obligation()], [], 0);
+    const t = rapprocher([obligation()], [], new Set());
     expect(t.domainesSansPrestataire).toEqual([
       { domaine: "electricite", libelle: "Électricité" },
     ]);
@@ -46,12 +47,12 @@ describe("rapprochement des transmissions (ADR-024)", () => {
 
   it("se tait dès qu'un prestataire couvre le domaine", () => {
     expect(
-      rapprocher([obligation()], ["electricite"], 0).domainesSansPrestataire,
+      rapprocher([obligation()], ["electricite"], new Set()).domainesSansPrestataire,
     ).toEqual([]);
   });
 
   it("signale une obligation qui suppose une personne, quand aucun titre n'est déclaré", () => {
-    const t = rapprocher([habilitation()], ["electricite"], 0);
+    const t = rapprocher([habilitation()], ["electricite"], new Set());
     expect(t.obligationsSupposantUnePersonne).toEqual([
       { id: "habilitation", libelle: "Habilitation électrique du personnel" },
     ]);
@@ -63,7 +64,7 @@ describe("rapprochement des transmissions (ADR-024)", () => {
     // existe » — et insister reviendrait à réclamer un titre qu'on ne sait
     // pas dire dû (ADR-023).
     expect(
-      rapprocher([habilitation()], ["electricite"], 1)
+      rapprocher([habilitation()], ["electricite"], new Set(["autre-titre"]))
         .obligationsSupposantUnePersonne,
     ).toEqual([]);
   });
@@ -72,7 +73,7 @@ describe("rapprochement des transmissions (ADR-024)", () => {
     // Contre-épreuve : sans elle, une implémentation qui signalerait TOUTE
     // obligation passerait les tests précédents.
     expect(
-      rapprocher([obligation()], ["electricite"], 0)
+      rapprocher([obligation()], ["electricite"], new Set())
         .obligationsSupposantUnePersonne,
     ).toEqual([]);
   });
@@ -80,8 +81,63 @@ describe("rapprochement des transmissions (ADR-024)", () => {
   it("une obligation réalisée par l'exploitant ne réclame aucun prestataire", () => {
     // Le faux positif à ne jamais produire : envoyer chercher un tiers pour
     // une obligation que le dirigeant réalise lui-même.
-    const t = rapprocher([obligation({ realisateurs: ["exploitant"] })], [], 0);
+    const t = rapprocher([obligation({ realisateurs: ["exploitant"] })], [], new Set());
     expect(t.domainesSansPrestataire).toEqual([]);
+  });
+
+  it("une obligation que l'exploitant PEUT réaliser n'en réclame pas non plus", () => {
+    // Le cas que le test précédent ne couvrait pas, et le défaut qui était
+    // livré : `realisateurs` est une DISJONCTION. « personne qualifiée OU
+    // exploitant » veut dire que le dirigeant a le droit de faire l'acte
+    // lui-même. Trois obligations réelles sont dans ce cas, dont le nettoyage
+    // des circuits d'extraction (GC 21 § 2) — un restaurateur avec une hotte
+    // s'entendait dire qu'aucun prestataire ne couvrait son domaine.
+    const o = obligation({
+      domaine: "cuisson_hotte",
+      realisateurs: ["personne_qualifiee", "exploitant"],
+    });
+    expect(supposeUnTiers(o)).toBe(false);
+    expect(rapprocher([o], [], new Set()).domainesSansPrestataire).toEqual([]);
+  });
+
+  it("une disjonction entièrement composée de tiers en réclame bien un", () => {
+    // Contre-épreuve du test précédent : sans elle, un `every` qui rendrait
+    // toujours faux passerait les deux.
+    const o = obligation({
+      realisateurs: ["personne_qualifiee", "organisme_agree"],
+    });
+    expect(supposeUnTiers(o)).toBe(true);
+    expect(rapprocher([o], [], new Set()).domainesSansPrestataire).toEqual([
+      { domaine: "electricite", libelle: "Électricité" },
+    ]);
+  });
+
+  it("une transmission qui nomme son titre ne se tait que sur CE titre", () => {
+    // Le faux négatif muet qu'un compte global aurait produit : un cuisinier
+    // détenteur d'une attestation SST aurait fait disparaître la suggestion
+    // de CACES d'un cariste.
+    const o = obligation({
+      id: "levage-caces",
+      libelle: "Autorisation de conduite",
+      transmet: [
+        {
+          vers: "salarie_designe",
+          titre: "levage-caces-titre",
+          motif:
+            "Motif de test, assez long pour tenir le contrôle de substance du motif.",
+        },
+      ],
+    });
+    // Un autre titre déclaré ne doit rien éteindre.
+    expect(
+      rapprocher([o], ["electricite"], new Set(["sst"]))
+        .obligationsSupposantUnePersonne,
+    ).toHaveLength(1);
+    // Le titre nommé, lui, éteint.
+    expect(
+      rapprocher([o], ["electricite"], new Set(["levage-caces-titre"]))
+        .obligationsSupposantUnePersonne,
+    ).toEqual([]);
   });
 });
 

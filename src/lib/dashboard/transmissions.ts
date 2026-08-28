@@ -39,16 +39,25 @@ export const AUCUNE_TRANSMISSION: Transmissions = {
 /**
  * Le calcul, sans la base : la partie testable.
  *
- * `titresDeclares` vaut 0 quand l'employeur n'a déclaré aucun titre. C'est le
- * seul seuil : dès qu'il en déclare un, on cesse de signaler, parce qu'à
- * partir de là l'outil ne peut plus distinguer « il n'a pas fini de saisir »
- * de « il a saisi ce qui existe ». Insister au-delà reviendrait à réclamer un
- * titre qu'on ne sait pas dire dû.
+ * `titresDeclares` porte les **identifiants d'obligation** des titres saisis,
+ * pas leur nombre. La distinction n'est pas cosmétique :
+ *
+ *  - une transmission qui **nomme** le titre attendu (`titre` non nul) se tait
+ *    dès que CE titre est déclaré, et pas avant. Un compte global aurait fait
+ *    taire une suggestion de CACES parce qu'un cuisinier détient une
+ *    attestation SST — un faux négatif muet, la famille de défauts que
+ *    l'ADR-022 existe pour supprimer ;
+ *  - une transmission qui ne peut pas le nommer (`titre: null`, faute de
+ *    catalogue) retombe sur le seul seuil disponible : dès qu'un titre
+ *    quelconque est déclaré, on cesse de signaler. Au-delà, l'outil ne
+ *    distingue plus « il n'a pas fini de saisir » de « il a saisi ce qui
+ *    existe », et insister reviendrait à réclamer un titre qu'on ne sait pas
+ *    dire dû.
  */
 export function rapprocher(
   applicables: readonly Obligation[],
   domainesPrestatairesDeclares: readonly DomainePrestataire[],
-  titresDeclares: number,
+  titresDeclares: ReadonlySet<string>,
 ): Transmissions {
   const domaines = domainesSansPrestataire(
     applicables,
@@ -58,14 +67,17 @@ export function rapprocher(
     libelle: LABEL_DOMAINE_OBLIGATION[d],
   }));
 
-  const personnes =
-    titresDeclares > 0
-      ? []
-      : applicables
-          .filter((o) =>
-            o.transmet.some((t) => t.vers === "salarie_designe"),
-          )
-          .map((o) => ({ id: o.id, libelle: o.libelle }));
+  const personnes = applicables
+    .filter((o) =>
+      o.transmet.some(
+        (t) =>
+          t.vers === "salarie_designe" &&
+          (t.titre === null
+            ? titresDeclares.size === 0
+            : !titresDeclares.has(t.titre)),
+      ),
+    )
+    .map((o) => ({ id: o.id, libelle: o.libelle }));
 
   return {
     domainesSansPrestataire: domaines,
@@ -93,7 +105,10 @@ export async function chargerTransmissions(
       where: { etablissementId: etab.id },
       select: { domaines: true },
     }),
-    prisma.titreSalarie.count({
+    // `groupBy` et non `count` : on a besoin de SAVOIR lesquels sont
+    // déclarés, pas combien. Cf. `rapprocher`.
+    prisma.titreSalarie.groupBy({
+      by: ["obligationId"],
       where: { salarie: { etablissementId: etab.id, actif: true } },
     }),
   ]);
@@ -109,6 +124,13 @@ export async function chargerTransmissions(
       typeErp: etab.typeErp,
       categorieErp: etab.categorieErp,
       classeIgh: etab.classeIgh,
+      // Ces deux-là manquaient, et leur absence créait la divergence même
+      // que ce lot corrige ailleurs : le générateur de calendrier les
+      // transmet (`calendrier/actions.ts`), pas cette lecture. Le moteur
+      // retombait alors sur `effectifSurSite`, et deux modules calculaient
+      // deux ensembles applicables différents pour le même établissement.
+      personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
+      manipuleMatieresR422722: etab.manipuleMatieresR422722,
     },
     etab.equipements.map((eq) => ({
       id: eq.id,
@@ -124,6 +146,6 @@ export async function chargerTransmissions(
   return rapprocher(
     applicables,
     prestataires.flatMap((p) => p.domaines),
-    titresDeclares,
+    new Set(titresDeclares.map((t) => t.obligationId)),
   );
 }

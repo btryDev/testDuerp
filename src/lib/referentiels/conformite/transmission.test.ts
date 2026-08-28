@@ -38,12 +38,26 @@ describe("transmissions (ADR-024)", () => {
   });
 
   it("le renvoi mort est bien attrapé", () => {
-    // Réinjection du défaut : si le test ci-dessus passait sur un identifiant
-    // inventé, il ne garantirait rien.
+    // Contre-épreuve du test précédent, et elle a dû être réécrite : sa
+    // première version se contentait de `titres.has("titre-qui-n-existe-pas")`,
+    // vraie pour n'importe quelle implémentation, y compris un ensemble vide.
+    //
+    // Pire, elle masquait un fait : sur le référentiel livré, la boucle du
+    // test précédent n'exécute AUCUNE assertion. Il n'existe qu'une
+    // transmission `salarie_designe`, et son `titre` est `null` — la garantie
+    // ne mord que sur un ajout futur. Ce test rejoue donc la vérification sur
+    // une obligation fabriquée, pour qu'elle soit éprouvée aujourd'hui et pas
+    // le jour où quelqu'un ajoutera une ligne.
     const titres = new Set(
       obligationsConformite.filter(estPorteeParSalarie).map((o) => o.id),
     );
-    expect(titres.has("titre-qui-n-existe-pas")).toBe(false);
+    const verifier = (t: string | null) =>
+      t === null || titres.has(t);
+
+    expect(verifier(null)).toBe(true); // réponse déclarée
+    expect(verifier([...titres][0])).toBe(true); // titre réel
+    expect(verifier("titre-qui-n-existe-pas")).toBe(false); // renvoi mort
+    expect(titres.size).toBeGreaterThan(0); // sinon les deux premiers mentent
   });
 
   it("chaque transmission porte un motif substantiel", () => {
