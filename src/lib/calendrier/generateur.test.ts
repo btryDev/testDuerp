@@ -40,6 +40,7 @@ function fakeObligation(
     ] as ObligationEq["referencesLegales"],
     realisateurs: ["personne_qualifiee"] as ObligationEq["realisateurs"],
     criticite: 3,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: [
       "INSTALLATION_ELECTRIQUE",
@@ -63,6 +64,7 @@ function fakeObligationSalarie(
       "exploitant",
     ] as ObligationPorteeParSalarie["realisateurs"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     pieceMedicale: false,
     ...over,
@@ -85,6 +87,7 @@ function fakeObligationEtablissement(
       "personne_qualifiee",
     ] as ObligationPorteeParEtablissement["realisateurs"],
     criticite: 3,
+    transmet: [],
     typologies: { erp: true },
     ...over,
     porteur: "etablissement",

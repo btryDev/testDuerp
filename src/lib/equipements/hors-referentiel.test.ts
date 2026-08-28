@@ -43,6 +43,7 @@ const obligation = (
   periodicite: "annuelle",
   realisateurs: ["organisme_agree"],
   criticite: 3,
+  transmet: [],
   typologies: { travail: true },
   categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
   ...o,

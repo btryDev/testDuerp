@@ -48,6 +48,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["organisme_accredite"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
   },
@@ -77,6 +78,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["organisme_accredite", "personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
   },
@@ -105,6 +107,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
   },
@@ -151,6 +154,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
@@ -186,6 +190,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "quinquennale",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     porteur: "salarie",
     pieceMedicale: true,
@@ -221,6 +226,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
@@ -244,6 +250,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: {
       erp: { categories: ["N1", "N2", "N3", "N4"] },
     },
@@ -290,6 +297,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "bimensuelle",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
@@ -320,6 +328,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "mensuelle",
     realisateurs: ["exploitant", "personne_qualifiee", "organisme_agree"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     conditions: [
@@ -355,6 +364,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { igh: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
@@ -392,6 +402,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { erp: { categories: ["N5"], types: ["O"] } },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
@@ -425,6 +436,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "quadriennale",
     realisateurs: ["organisme_accredite", "personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:

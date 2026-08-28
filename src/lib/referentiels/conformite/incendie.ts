@@ -87,6 +87,7 @@ export const obligationsIncendie: Obligation[] = [
     // rabaisser à 4 déclasserait dans le calendrier un contrôle d'installation
     // de gaz qui y figurait en tête.
     criticite: 5,
+    transmet: [],
     // 5ᵉ catégorie SEULEMENT. `{ erp: true }` — la première rédaction — était
     // une sur-application : `evaluerErp` traite `true` comme « tout ERP » sans
     // regarder la catégorie, et un ERP de 2ᵉ catégorie recevait une ligne dont
@@ -137,6 +138,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["personne_qualifiee", "personne_competente"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EXTINCTEUR"],
     notesInternes:
@@ -165,6 +167,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
+    transmet: [],
     typologies: { travail: true, personnesPresentesMin: 51, champR422734: true },
     categoriesEquipement: ["EXTINCTEUR", "ALARME_INCENDIE"],
     notesInternes:
@@ -201,6 +204,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "semestrielle",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true, personnesPresentesMin: 51, champR422734: true },
     categoriesEquipement: ["ALARME_INCENDIE"],
     notesInternes:
@@ -267,6 +271,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
+    transmet: [],
     typologies: { travail: true, erp: true },
     categoriesEquipement: ["EXTINCTEUR", "ALARME_INCENDIE"],
     notesInternes:
@@ -328,6 +333,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "mensuelle",
     realisateurs: ["exploitant"],
     criticite: 3,
+    transmet: [],
     typologies: { travail: true, erp: false },
     categoriesEquipement: ["BAES"],
     notesInternes:
@@ -376,6 +382,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "semestrielle",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true, erp: false },
     categoriesEquipement: ["BAES"],
     notesInternes:
@@ -421,6 +428,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "mensuelle",
     realisateurs: ["exploitant"],
     criticite: 3,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["BAES"],
     notesInternes:
@@ -445,6 +453,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "semestrielle",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["BAES"],
     notesInternes:
@@ -481,6 +490,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["EXTINCTEUR"],
     notesInternes:
@@ -504,6 +514,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["ALARME_INCENDIE"],
     notesInternes:
@@ -527,6 +538,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "triennale",
     realisateurs: ["organisme_agree"],
     criticite: 4,
+    transmet: [],
     typologies: {
       erp: { categories: ["N1", "N2", "N3", "N4"] },
     },
@@ -559,6 +571,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["BAES"],
     notesInternes:
@@ -582,6 +595,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["DESENFUMAGE"],
     notesInternes:
@@ -605,6 +619,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["RIA"],
     notesInternes:
@@ -649,6 +664,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["organisme_agree"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: { categories: ["N5"] } },
     categoriesEquipement: ["ALARME_INCENDIE"],
     conditions: [
@@ -683,6 +699,7 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { igh: true },
     categoriesEquipement: ["ALARME_INCENDIE", "EXTINCTEUR", "DESENFUMAGE"],
     notesInternes:

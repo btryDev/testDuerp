@@ -74,6 +74,7 @@ export const obligationsAscenseurs: Obligation[] = [
     periodicite: "six_semaines",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
     notesInternes:
@@ -105,6 +106,7 @@ export const obligationsAscenseurs: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
     notesInternes:
@@ -136,6 +138,7 @@ export const obligationsAscenseurs: Obligation[] = [
     periodicite: "semestrielle",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
     notesInternes:
@@ -167,6 +170,7 @@ export const obligationsAscenseurs: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
     notesInternes:
@@ -198,6 +202,7 @@ export const obligationsAscenseurs: Obligation[] = [
     periodicite: "quinquennale",
     realisateurs: ["bureau_controle", "personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
     notesInternes:
@@ -221,6 +226,7 @@ export const obligationsAscenseurs: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
+    transmet: [],
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
   },
@@ -242,6 +248,7 @@ export const obligationsAscenseurs: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
     notesInternes:
