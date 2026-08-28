@@ -381,6 +381,11 @@ describe("le nom d'un salarié ne sort pas du produit", () => {
    * texte en clair hors des constructeurs de PDF — et une quatrième surface
    * n'y serait jamais entrée toute seule. Une liste que personne ne met à jour
    * n'est pas une garde, c'est une photographie.
+   *
+   * `app/api/` est ratissé LARGE, délibérément : mieux vaut inclure une route
+   * qui n'en avait pas besoin et la déroger en disant pourquoi, que d'oublier
+   * celle qui comptait. Les dérogations sont plus bas, et elles portent leur
+   * raison.
    */
   const CHEMINS_SORTANTS = [
     /^lib\/mcp\//,
@@ -389,16 +394,56 @@ describe("le nom d'un salarié ne sort pas du produit", () => {
     /^scripts\/mcp-server\.ts$/,
   ];
 
-  function surfacesSortantes(): string[] {
-    return fichiersSource(join(RACINE, "src"))
-      .map((c) => relative(RACINE, c).replace(/^src\//, ""))
-      .filter((rel) => CHEMINS_SORTANTS.some((r) => r.test(rel)));
+  /**
+   * Les surfaces que la règle attrape et qui doivent pourtant nommer une
+   * personne. **Il n'y en a qu'une, et sortir le nom EST sa raison d'être.**
+   *
+   * La règle posait `app/api/` comme « ce qui sort vers un tiers ». C'est faux
+   * pour au moins une route : l'extraction de l'article 15 du RGPD s'adresse à
+   * l'employeur, responsable de traitement, à propos de ses propres données —
+   * pas à un tiers. Elle ne passait jusqu'ici que par accident : la fuite s'y
+   * épelle `donnees.identite.prenom` et non `.salarie.nom`, et aucun des deux
+   * motifs ne la voyait. Le jour où quelqu'un réécrit cet export en ligne, la
+   * règle tombe sur une sortie parfaitement légitime — et la réparation
+   * naturelle est d'excepter en silence, ce que le commentaire de
+   * `CHEMINS_DU_SALARIE` décrit précisément comme à éviter.
+   *
+   * Mieux vaut donc l'excepter maintenant, en écrivant pourquoi.
+   */
+  const DEROGATIONS_SORTANTES: { fichier: string; raison: string }[] = [
+    {
+      fichier: "app/api/etablissements/[id]/equipe/[salarieId]/donnees/route.ts",
+      raison:
+        "C'est l'extraction de l'article 15 du RGPD — le droit d'accès de la personne suivie. Elle s'adresse à l'employeur, responsable de traitement, à propos d'une personne de son propre effectif : rendre le nom EST sa fonction, et un export anonyme ne répondrait à aucune demande. La portée de tenancy est vérifiée deux fois (`requireEtablissement`, puis `where` sur les deux clés) et la réponse porte `Cache-Control: no-store`.",
+    },
+  ];
+
+  function surfacesSortantes(): { abs: string; rel: string }[] {
+    // `scripts/` en plus de `src/` : le point d'entrée stdio du serveur MCP y
+    // vit, et la règle prétendait le couvrir alors qu'aucun chemin produit ne
+    // pouvait commencer par `scripts/` — le motif était mort depuis sa
+    // naissance, dans le commit même qui remplaçait une liste en dur au motif
+    // qu'« une liste que personne ne met à jour n'est pas une garde ».
+    const fichiers = [
+      ...fichiersSource(join(RACINE, "src")),
+      ...fichiersSource(join(RACINE, "scripts")),
+    ].map((abs) => ({
+      abs,
+      // Nom d'affichage : `src/` retiré, `scripts/` conservé — c'est ce que
+      // portent `CHEMINS_SORTANTS` et les dérogations.
+      rel: relative(RACINE, abs).replace(/^src\//, ""),
+    }));
+    const derogees = new Set(DEROGATIONS_SORTANTES.map((d) => d.fichier));
+    return fichiers.filter(
+      ({ rel }) =>
+        CHEMINS_SORTANTS.some((r) => r.test(rel)) && !derogees.has(rel),
+    );
   }
 
   it("les surfaces sortantes n'emploient pas le libellé nominatif", () => {
     const fautives: string[] = [];
-    for (const rel of surfacesSortantes()) {
-      const source = readFileSync(join(RACINE, "src", rel), "utf8");
+    for (const { abs, rel } of surfacesSortantes()) {
+      const source = readFileSync(abs, "utf8");
       // `libellePorteurSansNom` contient `libellePorteur` : on cherche donc
       // l'appel nominatif seul, pas la sous-chaîne.
       if (/\blibellePorteur\s*\(/.test(source)) fautives.push(rel);
@@ -412,10 +457,44 @@ describe("le nom d'un salarié ne sort pas du produit", () => {
     ).toEqual([]);
   });
 
+  it("le point d'entrée du serveur MCP est réellement balayé", () => {
+    // La règle annonçait couvrir `scripts/mcp-server.ts` par un motif qui ne
+    // pouvait rien matcher : le balayage ne parcourait que `src/` et retirait
+    // ce préfixe, donc aucun chemin produit ne commençait par `scripts/`. Le
+    // motif était mort depuis sa naissance, et donnait l'assurance ÉCRITE que
+    // le point d'entrée stdio du MCP était surveillé.
+    //
+    // Une garde dont la couverture annoncée dépasse la couverture réelle est
+    // pire qu'une garde absente : elle dispense de vigilance.
+    const balayes = surfacesSortantes().map((f) => f.rel);
+    expect(balayes).toContain("scripts/mcp-server.ts");
+  });
+
+  it("chaque dérogation sortante dit pourquoi, et son fichier existe", () => {
+    // Même exigence que les dérogations de la frontière médicale : une
+    // dérogation dont le fichier a disparu est une permission qui traîne, et
+    // qui couvrira un jour un fichier neuf portant le même nom.
+    for (const { fichier, raison } of DEROGATIONS_SORTANTES) {
+      expect(() => statSync(join(RACINE, "src", fichier)), fichier).not.toThrow();
+      expect(raison.length, fichier).toBeGreaterThan(120);
+    }
+  });
+
+  it("la seule dérogation est l'extraction de l'article 15", () => {
+    // Le fond de l'affaire : `app/api/` est ratissé large parce qu'on ne sait
+    // pas d'avance quelle route produira un document pour un tiers. Une seule
+    // y échappe, et c'est celle dont sortir le nom EST la fonction. Si une
+    // seconde apparaît, ce test tombe — et c'est le bon moment pour se
+    // demander si la règle n'est pas en train de se vider.
+    expect(DEROGATIONS_SORTANTES.map((d) => d.fichier)).toEqual([
+      "app/api/etablissements/[id]/equipe/[salarieId]/donnees/route.ts",
+    ]);
+  });
+
   it("aucune surface sortante ne sélectionne le nom d'un salarié", () => {
     const fautives: string[] = [];
-    for (const rel of surfacesSortantes()) {
-      const source = readFileSync(join(RACINE, "src", rel), "utf8");
+    for (const { abs, rel } of surfacesSortantes()) {
+      const source = readFileSync(abs, "utf8");
       if (/salarie:\s*\{\s*select/.test(source)) fautives.push(rel);
     }
 

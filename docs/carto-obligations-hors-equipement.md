@@ -165,8 +165,11 @@ C'est la couche qui manquait à l'analyse initiale : ni statut, ni équipement, 
 | dont **formations réglementaires** | 13 |
 
 Pour mémoire, côté équipement : **85 obligations encodées, dont 82 portées par un équipement** sur ~481 lignes AOCR.
-*(Corrigé deux fois le 2026-08-27 : 78 → 85 au constat, puis 85 → 84 après le retrait
-de trois fragments absorbés par l'ADR-022. Le compte faisant foi est le préfixe de
+*(Corrigé le 2026-08-27 : 78 → 85 au constat. Le retrait de trois fragments
+absorbés par l'ADR-022 s'est fait **à compte constant** — ils ont été remplacés
+par les deux obligations à porteur établissement et celle à porteur salarié —,
+le total reste donc 85. Une version antérieure de cette parenthèse annonçait
+« 85 → 84 » et contredisait la ligne juste au-dessus. Le compte faisant foi est le préfixe de
 `EMPREINTE_ATTENDUE` dans `src/lib/referentiels/conformite/conformite.test.ts` — cherchez
 la constante, pas un numéro de ligne, qui se périme à chaque édition. Les mentions de 78, 80 et 81 qui
 subsistent plus bas dans ce document datent de rédactions successives.)*

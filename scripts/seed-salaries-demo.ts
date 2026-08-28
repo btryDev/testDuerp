@@ -195,8 +195,14 @@ async function annuler(etablissementId: string): Promise<void> {
   //
   // TROIS GARDES, et chacune ferme un trou réel de la première version :
   //
-  //  1. `etablissementId` dans le `where`. Sans lui, la recherche portait sur
-  //     TOUTE la base, tous tenants confondus. Le `.env` pointe la production.
+  //  1. `etablissementId` dans le `where` — mais ATTENTION à ce que cette
+  //     garde fait vraiment, parce que je l'ai d'abord décrite faux. Elle rend
+  //     chaque `deleteMany` précis ; elle ne RÉDUIT PAS l'ensemble atteint.
+  //     `main()` boucle sur tous les établissements de la base, sans filtre
+  //     d'utilisateur ni d'entreprise — exactement comme `creer()`. Le
+  //     périmètre est donc le même qu'avant.
+  //
+  //     La garde qui borne réellement, c'est la troisième.
   //  2. Un `deleteMany` sur `Verification` contourne le `ON DELETE RESTRICT`
   //     posé exprès, et emporte en cascade les `RapportVerification` et les
   //     `Action` attachés. On refuse donc de toucher une ligne qui porte une

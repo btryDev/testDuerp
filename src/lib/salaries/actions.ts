@@ -125,8 +125,24 @@ export async function modifierSalarie(
     return { status: "error", message: "Cette personne est introuvable" };
   }
 
+  // Le calendrier et le tableau de bord aussi : `libellePorteur` y affiche le
+  // NOM de la personne sur ses échéances — cinq écrans hors du module Équipe
+  // le font. Un employeur qui corrige une orthographe, geste que cet écran
+  // existe pour permettre au titre de l'article 16 du RGPD, ne repropageait
+  // donc pas sa correction.
+  //
+  // Pas de `genererCalendrier` en revanche, contrairement aux mutations de
+  // titre : renommer quelqu'un ne change aucune échéance. Le nom n'est écrit
+  // dans aucune colonne de `Verification`, il est joint à la lecture.
+  //
+  // L'oubli vient du remplacement de `rafraichir` par `regenererEtRafraichir` :
+  // les deux `revalidatePath` que la première faisait ont disparu avec elle,
+  // sans que rien ne le signale. Le cas de `creerSalarie` est justifié en
+  // commentaire ; celui-ci ne l'était nulle part.
   revalidatePath(`/etablissements/${etablissementId}/equipe`);
   revalidatePath(`/etablissements/${etablissementId}/equipe/${salarieId}`);
+  revalidatePath(`/etablissements/${etablissementId}/calendrier`);
+  revalidatePath(`/etablissements/${etablissementId}`);
   return { status: "success", salarieId };
 }
 
