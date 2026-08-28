@@ -3,7 +3,7 @@
 //
 // Même raison d'être que `mentions-couverture.ts`, un cran plus haut :
 // celui-là porte les mentions du **DUERP** (ADR-020), celui-ci celles du
-// **dossier** — les cinq axes de `lib/perimetre/couverture.ts`. Les deux
+// **dossier** — les quatre axes de `lib/perimetre/couverture.ts`. Les deux
 // existent parce que le dossier `pdf/` n'a presque aucun test de rendu : une
 // condition inversée dans le JSX passait la suite verte, alors que ces
 // phrases sont la seule chose qui empêche un document d'apparence complète
@@ -50,10 +50,16 @@ export function chapeauPerimetre(
  * un état normal.
  *
  * Les manques d'abord, les questions ouvertes ensuite — un fait établi se lit
- * avant une question à laquelle personne n'a répondu. Le détail article par
- * article (`details`) n'est **pas** imprimé : le dossier de conformité se
- * remet à un tiers, et vingt-sept motifs de dépouillement rédigés pour un
- * relecteur interne y seraient illisibles. Le décompte, lui, y est.
+ * avant une question à laquelle personne n'a répondu.
+ *
+ * **Deux champs par bloc, et pas un de plus.** Le contrat de sortie est fermé,
+ * et un test le vérifie. Il l'a été le jour où un axe portait la liste des
+ * vingt-sept articles que le produit ne porte pas : les imprimer aurait fait
+ * passer des motifs de dépouillement, rédigés pour un relecteur interne, pour
+ * des pièces du dossier remis à un tiers. Cet axe a été retiré depuis
+ * (`docs/couverture-declaree-du-produit.md`) ; la fermeture reste, parce que
+ * c'est elle qui tenait — la prochaine donnée de travail qui remontera
+ * jusqu'ici butera dessus sans qu'on ait à y repenser.
  */
 export function blocsPerimetre(
   couverture: CouvertureEtablissement,

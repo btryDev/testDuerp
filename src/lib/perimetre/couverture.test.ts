@@ -331,6 +331,43 @@ describe("axe secteur_duerp — `secteur_inconnu` couvre trois situations", () =
     );
   });
 
+  it("le secteur retiré depuis : une seule phrase, et pas son contraire", () => {
+    // La quatrième combinaison, oubliée par le `describe` d'origine et
+    // introduite par la correction précédente. `secteur_inconnu` + `diverge` :
+    // le document PORTE un identifiant de secteur — d'où `diverge` — mais plus
+    // aucun référentiel ne le résout. C'est le second cas que l'ADR-020 nomme,
+    // « ou secteur retiré depuis ».
+    //
+    // La première version tirait `referentielDuNaf` de `sans_secteur_retenu`
+    // OU de `diverge` et écrivait la phrase du premier dans les deux cas. Le
+    // bandeau et le PDF sortaient alors deux blocs contradictoires à une ligne
+    // d'intervalle : « n'a pas ENCORE de référentiel sectoriel » suivi de
+    // « s'APPUIE sur un référentiel ».
+    const c = inconnuAvec({
+      statut: "diverge",
+      referentielDuNaf: { id: "commerce", nom: "Commerce de détail" },
+    });
+
+    // Un seul manque : `axeSecteurParDefaut` se tait, `secteur_inconnu` a tout
+    // dit. Deux messages pour un fait tireraient vers une comparaison qui n'a
+    // plus d'objet.
+    expect(c.manques).toHaveLength(1);
+    expect(c.manques[0].motif).toContain("n'existe plus dans l'outil");
+    expect(c.manques[0].consequence).toContain("Commerce de détail");
+
+    // Et surtout : aucune des deux phrases contradictoires.
+    const tout = `${c.manques[0].motif} ${c.manques[0].consequence}`;
+    expect(tout).not.toMatch(/n'a pas encore de référentiel/i);
+    expect(tout).not.toMatch(/s'appuie sur/i);
+  });
+
+  it("le secteur retiré depuis, sans référentiel pour le NAF non plus", () => {
+    const c = inconnuAvec({ statut: "diverge", referentielDuNaf: null });
+    expect(c.manques).toHaveLength(1);
+    expect(c.manques[0].motif).toContain("n'existe plus dans l'outil");
+    expect(c.manques[0].consequence).not.toMatch(/correspond à votre code/i);
+  });
+
   it("dit dans les trois cas que le référentiel de conformité fonctionne", () => {
     // La phrase qui empêche de lire « votre dossier ne sert à rien ». Le
     // moteur de conformité ne lit jamais le code NAF.

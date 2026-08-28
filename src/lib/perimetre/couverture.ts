@@ -86,8 +86,9 @@ import type { CategorieErp } from "@/lib/referentiels/types-communs";
 export const CATEGORIES_COUVERTES: readonly CategorieErp[] = ["N5"];
 
 /**
- * De quoi le manque parle. Cinq axes qui ne se confondent ni ne s'additionnent
- * — chacun a sa source, et chacun se répare par un geste différent.
+ * De quoi le manque parle. Quatre axes qui ne se confondent ni ne
+ * s'additionnent — chacun a sa source, et chacun se répare par un geste
+ * différent.
  */
 export type AxeCouverture =
   /** Le régime de l'établissement met tout le reste hors de portée (IGH). */
@@ -298,20 +299,31 @@ function axeDuerp(
       // tiers qu'aucun référentiel ne correspondait à son activité, pendant
       // que l'écran suivant lui recommandait Commerce de détail.
       const c = duerp.correspondance;
-      const refDuNaf =
-        c.statut === "sans_secteur_retenu" || c.statut === "diverge"
-          ? c.referentielDuNaf
-          : null;
 
       const sansBase =
         "Le document unique a été ouvert sans base de risques types : aucune unité de travail, aucun risque et aucune mesure n'y sont pré-chargés. Le référentiel de conformité, lui, fonctionne normalement — il ne lit pas votre code d'activité.";
 
-      if (refDuNaf) {
+      const conseilNaf = (nom: string) =>
+        ` Le référentiel « ${nom} » correspond à votre code d'activité : le retenir depuis le document unique chargera ses unités et ses risques types.`;
+
+      // `diverge` sous `secteur_inconnu` : le document PORTE un identifiant de
+      // secteur, mais plus aucun référentiel ne le résout. C'est le second cas
+      // que l'ADR-020 nomme — « ou secteur retiré depuis ».
+      //
+      // Il mérite sa phrase, et surtout pas celle d'en dessous : une première
+      // version tirait `referentielDuNaf` de `sans_secteur_retenu` OU de
+      // `diverge` et écrivait dans les deux cas « n'a pas encore de référentiel
+      // sectoriel » — l'inverse exact de ce que `diverge` établit, puisqu'un
+      // identifiant y est présent. Le bandeau et le PDF sortaient alors deux
+      // blocs qui se contredisaient à une ligne d'intervalle.
+      if (c.statut === "diverge") {
         manques.push({
           axe: "secteur_duerp",
           motif:
-            "Le document unique n'a pas encore de référentiel sectoriel, alors que votre code d'activité en désigne un.",
-          consequence: `${sansBase} Le référentiel « ${refDuNaf.nom} » correspond à votre code d'activité : le confirmer depuis le document unique chargera ses unités et ses risques types.`,
+            "Le référentiel sectoriel retenu par le document unique n'existe plus dans l'outil.",
+          consequence:
+            "Le document conserve ce qui y a été saisi, mais plus rien ne le rattache à un référentiel : les risques types de son secteur ne peuvent plus lui être proposés." +
+            (c.referentielDuNaf ? conseilNaf(c.referentielDuNaf.nom) : ""),
         });
         return;
       }
@@ -322,6 +334,21 @@ function axeDuerp(
           motif:
             "Le document unique n'a pas de référentiel sectoriel, et aucun code d'activité n'est renseigné.",
           consequence: `${sansBase} Sans code d'activité, on ne peut pas non plus vous dire quel référentiel conviendrait.`,
+        });
+        return;
+      }
+
+      // Reste `sans_secteur_retenu` — `correspond` est impossible ici, il
+      // suppose un identifiant que le référentiel résout.
+      const refDuNaf =
+        c.statut === "sans_secteur_retenu" ? c.referentielDuNaf : null;
+
+      if (refDuNaf) {
+        manques.push({
+          axe: "secteur_duerp",
+          motif:
+            "Le document unique n'a pas encore de référentiel sectoriel, alors que votre code d'activité en désigne un.",
+          consequence: sansBase + conseilNaf(refDuNaf.nom),
         });
         return;
       }
@@ -402,6 +429,13 @@ function axeSecteurParDefaut(
   manques: ManqueCouverture[],
 ): void {
   if (duerp === null || duerp.correspondance.statut !== "diverge") return;
+
+  // `secteur_inconnu` a déjà tout dit : là, l'identifiant retenu ne résout
+  // aucun référentiel, et « il ne correspond pas à votre code d'activité » est
+  // vrai mais creux — le fait utile est qu'il n'existe plus. Deux messages
+  // pour un fait, dont l'un tirerait le lecteur vers une comparaison qui n'a
+  // plus d'objet.
+  if (duerp.etat === "secteur_inconnu") return;
 
   const refDuNaf = duerp.correspondance.referentielDuNaf;
   const retenu = duerp.secteurNom
