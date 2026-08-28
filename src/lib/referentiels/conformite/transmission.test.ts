@@ -6,6 +6,28 @@ import {
 import { estPorteeParSalarie, type Obligation } from "./types";
 
 /**
+ * Les transmissions qui nomment un titre absent du catalogue.
+ *
+ * Extraite pour que la garantie et sa contre-épreuve emploient **le même**
+ * prédicat : quand la contre-épreuve recopiait la logique, neutraliser la
+ * garantie la laissait verte — elles ne partageaient plus rien.
+ */
+function renvoisMorts(obligations: readonly Obligation[]): string[] {
+  const titres = new Set(
+    obligations.filter(estPorteeParSalarie).map((o) => o.id),
+  );
+  const morts: string[] = [];
+  for (const o of obligations) {
+    for (const t of o.transmet) {
+      if (t.vers !== "salarie_designe") continue;
+      if (t.titre === null) continue; // réponse déclarée, cf. types.ts
+      if (!titres.has(t.titre)) morts.push(`${o.id} → ${t.titre}`);
+    }
+  }
+  return morts;
+}
+
+/**
  * Les garanties de l'ADR-024. Chacune est éprouvée en réinjectant le défaut
  * qu'elle prétend interdire : une garantie qu'on n'a pas vue mordre est une
  * décoration.
@@ -25,39 +47,66 @@ describe("transmissions (ADR-024)", () => {
     // mort, et un renvoi mort dans ce référentiel se lit comme « rien à
     // signaler » — exactement le faux négatif muet que l'ADR-022 existe pour
     // supprimer.
-    const titres = new Set(
-      obligationsConformite.filter(estPorteeParSalarie).map((o) => o.id),
-    );
-    for (const o of obligationsConformite) {
-      for (const t of o.transmet) {
-        if (t.vers !== "salarie_designe") continue;
-        if (t.titre === null) continue; // réponse déclarée, cf. types.ts
-        expect(titres, `${o.id} → ${t.titre}`).toContain(t.titre);
-      }
-    }
+    expect(renvoisMorts(obligationsConformite)).toEqual([]);
   });
 
-  it("le renvoi mort est bien attrapé", () => {
-    // Contre-épreuve du test précédent, et elle a dû être réécrite : sa
-    // première version se contentait de `titres.has("titre-qui-n-existe-pas")`,
-    // vraie pour n'importe quelle implémentation, y compris un ensemble vide.
+  it("le renvoi mort est bien attrapé, sur le prédicat que la garantie emploie", () => {
+    // Contre-épreuve, réécrite deux fois. La première se réduisait à
+    // `titres.has("titre-qui-n-existe-pas")`, vraie de n'importe quelle
+    // implémentation. La seconde éprouvait un prédicat RECOPIÉ dans le test :
+    // neutraliser la garantie laissait la contre-épreuve verte, puisqu'elles
+    // ne partageaient plus rien. Les deux appellent maintenant `renvoisMorts`.
     //
-    // Pire, elle masquait un fait : sur le référentiel livré, la boucle du
-    // test précédent n'exécute AUCUNE assertion. Il n'existe qu'une
-    // transmission `salarie_designe`, et son `titre` est `null` — la garantie
-    // ne mord que sur un ajout futur. Ce test rejoue donc la vérification sur
-    // une obligation fabriquée, pour qu'elle soit éprouvée aujourd'hui et pas
-    // le jour où quelqu'un ajoutera une ligne.
-    const titres = new Set(
-      obligationsConformite.filter(estPorteeParSalarie).map((o) => o.id),
-    );
-    const verifier = (t: string | null) =>
-      t === null || titres.has(t);
+    // Et ce test porte une seconde charge : sur le référentiel livré, la
+    // garantie ne traverse AUCUNE transmission nommée — il n'en existe qu'une
+    // à porteur salarié, et son `titre` est `null`. Éprouvée sur le seul
+    // référentiel, elle ne mordrait que le jour d'un ajout. Les cas fabriqués
+    // ci-dessous la font mordre aujourd'hui.
+    const titreReel = obligationsConformite.filter(estPorteeParSalarie)[0];
+    expect(titreReel, "le référentiel doit porter au moins un titre").toBeDefined();
 
-    expect(verifier(null)).toBe(true); // réponse déclarée
-    expect(verifier([...titres][0])).toBe(true); // titre réel
-    expect(verifier("titre-qui-n-existe-pas")).toBe(false); // renvoi mort
-    expect(titres.size).toBeGreaterThan(0); // sinon les deux premiers mentent
+    const avecTransmission = (titre: string | null): Obligation => ({
+      id: "temoin-renvoi",
+      domaine: "electricite",
+      libelle: "Obligation témoin",
+      referencesLegales: [{ source: "CODE_TRAVAIL", reference: "R. 0000-0" }],
+      periodicite: "autre",
+      realisateurs: ["exploitant"],
+      criticite: 3,
+      transmet: [
+        {
+          vers: "salarie_designe",
+          titre,
+          motif:
+            "Motif de test, assez long pour tenir le contrôle de substance du motif.",
+        },
+      ],
+      typologies: { travail: true },
+      categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    });
+
+    // `null` : réponse déclarée, jamais un renvoi mort.
+    expect(renvoisMorts([...obligationsConformite, avecTransmission(null)])).toEqual([]);
+    // Un titre réel du catalogue : accepté.
+    expect(
+      renvoisMorts([...obligationsConformite, avecTransmission(titreReel.id)]),
+    ).toEqual([]);
+    // Un identifiant inventé : attrapé, et nommé.
+    expect(
+      renvoisMorts([...obligationsConformite, avecTransmission("titre-inexistant")]),
+    ).toEqual(["temoin-renvoi → titre-inexistant"]);
+
+    // Et le cas qui exerce la FINESSE du prédicat, pas seulement son
+    // existence : une obligation portée par l'ÉTABLISSEMENT n'est pas un
+    // titre, et la nommer est un renvoi mort. Sans ce cas, élargir
+    // `estPorteeParSalarie` en `porteurDe(o) !== "equipement"` — le piège que
+    // sa propre docstring décrit — laissait les six tests verts.
+    expect(
+      renvoisMorts([
+        ...obligationsConformite,
+        avecTransmission("aeration-controle-installations-r4222-20"),
+      ]),
+    ).toEqual(["temoin-renvoi → aeration-controle-installations-r4222-20"]);
   });
 
   it("chaque transmission porte un motif substantiel", () => {

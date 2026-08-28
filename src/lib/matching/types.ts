@@ -30,18 +30,31 @@ export type EtablissementMatching = {
   classeIgh: ClasseIgh | null;
   /**
    * Personnes habituellement présentes, salariés + public + tiers réguliers
-   * (R. 4227-34 : « occupées ou réunies habituellement »). Optionnel pour ne
-   * pas casser les projections existantes : absent ou `null` ⇒ le moteur
+   * (R. 4227-34 : « occupées ou réunies habituellement »). `null` ⇒ le moteur
    * retombe sur `effectifSurSite`, sous-estimation assumée.
+   *
+   * **Requis, et il l'est devenu pour une raison mesurée.** Il était optionnel
+   * « pour ne pas casser les projections existantes ». Quatre modules
+   * projettent un établissement vers le moteur ; trois omettaient ce champ, et
+   * l'omission compilait. Un établissement manipulant des matières R. 4227-22
+   * voyait son calendrier engendrer trois obligations incendie quand le guide
+   * « Chez vous » n'en annonçait qu'une et que la fiche équipement badgeait
+   * « aucune échéance datable ». Faux négatif muet, invisible aux tests.
+   *
+   * Requis, l'omission ne compile plus, et un cinquième site devra répondre.
+   * `null` reste une réponse — c'est l'absence de réponse qui est interdite.
    */
-  personnesPresentesHabituellement?: number | null;
+  personnesPresentesHabituellement: number | null;
   /**
    * Manipulation et mise en œuvre de matières visées par R. 4227-22
-   * (explosives, comburantes, extrêmement inflammables). Absent ou `null` ⇒
-   * lu comme « non » : cette branche ne fait qu'ajouter des cas, aucun
-   * établissement ne peut perdre une obligation par son silence.
+   * (explosives, comburantes, extrêmement inflammables). `null` ⇒ lu comme
+   * « non » : cette branche ne fait qu'ajouter des cas, aucun établissement
+   * ne peut perdre une obligation par son silence.
+   *
+   * Requis pour la même raison que le champ ci-dessus, et par le même
+   * incident.
    */
-  manipuleMatieresR422722?: boolean | null;
+  manipuleMatieresR422722: boolean | null;
 };
 
 export type EquipementMatching = {

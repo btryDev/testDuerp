@@ -19,6 +19,8 @@ const etablissement = (
   typeErp: null,
   categorieErp: null,
   classeIgh: null,
+  personnesPresentesHabituellement: null,
+  manipuleMatieresR422722: null,
   ...o,
 });
 

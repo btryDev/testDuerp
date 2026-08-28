@@ -124,11 +124,15 @@ export async function chargerTransmissions(
       typeErp: etab.typeErp,
       categorieErp: etab.categorieErp,
       classeIgh: etab.classeIgh,
-      // Ces deux-là manquaient, et leur absence créait la divergence même
-      // que ce lot corrige ailleurs : le générateur de calendrier les
-      // transmet (`calendrier/actions.ts`), pas cette lecture. Le moteur
-      // retombait alors sur `effectifSurSite`, et deux modules calculaient
-      // deux ensembles applicables différents pour le même établissement.
+      // Ces deux-là manquaient. La première rédaction de ce commentaire
+      // parlait d'« une » divergence et la déclarait résorbée : il y en avait
+      // deux autres, dans `equipements/hors-referentiel.ts` et dans la page
+      // guide. Corriger un site sur trois et l'écrire au singulier était la
+      // faute que ce lot corrige ailleurs.
+      //
+      // La cause tenait au type : les deux champs y étaient optionnels
+      // « pour ne pas casser les projections existantes », donc les omettre
+      // compilait. Ils sont requis depuis (`matching/types.ts`).
       personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
       manipuleMatieresR422722: etab.manipuleMatieresR422722,
     },

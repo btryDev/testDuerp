@@ -862,6 +862,8 @@ describe("référentiel conformité — éclairage de sécurité en lieu de trav
       typeErp: "N" as const,
       categorieErp: "N5" as const,
       classeIgh: null,
+      personnesPresentesHabituellement: null,
+      manipuleMatieresR422722: null,
     };
     const parc = [
       { id: "eq-baes", libelle: "BAES", categorie: "BAES" as const, caracteristiques: null },

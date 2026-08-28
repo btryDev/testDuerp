@@ -28,6 +28,8 @@ function etabBureau(over: Partial<EtablissementMatching> = {}): EtablissementMat
     typeErp: null,
     categorieErp: null,
     classeIgh: null,
+    personnesPresentesHabituellement: null,
+    manipuleMatieresR422722: null,
     ...over,
   };
 }
@@ -45,6 +47,8 @@ function etabRestoErpCat5(
     typeErp: "N",
     categorieErp: "N5",
     classeIgh: null,
+    personnesPresentesHabituellement: null,
+    manipuleMatieresR422722: null,
     ...over,
   };
 }
@@ -60,6 +64,8 @@ function etabErpCat3(): EtablissementMatching {
     typeErp: "M",
     categorieErp: "N3",
     classeIgh: null,
+    personnesPresentesHabituellement: null,
+    manipuleMatieresR422722: null,
   };
 }
 
@@ -74,6 +80,8 @@ function etabIgh(): EtablissementMatching {
     typeErp: "W",
     categorieErp: "N1",
     classeIgh: "GHW",
+    personnesPresentesHabituellement: null,
+    manipuleMatieresR422722: null,
   };
 }
 
@@ -88,6 +96,8 @@ function etabHabitationPure(): EtablissementMatching {
     typeErp: null,
     categorieErp: null,
     classeIgh: null,
+    personnesPresentesHabituellement: null,
+    manipuleMatieresR422722: null,
   };
 }
 
@@ -723,6 +733,8 @@ describe("moteur matching — cohérence avec le référentiel", () => {
       typeErp: "M",
       categorieErp: "N1",
       classeIgh: "GHZ",
+      personnesPresentesHabituellement: null,
+      manipuleMatieresR422722: null,
     };
     const eqComplet: EquipementMatching[] = [
       elec({ caracteristiques: { aGroupeElectrogene: true } }),
@@ -1070,6 +1082,8 @@ describe("moteur matching — aucun établissement existant ne perd une obligati
     typeErp: "N",
     categorieErp: "N2",
     classeIgh: "GHZ",
+    personnesPresentesHabituellement: null,
+    manipuleMatieresR422722: null,
   };
 
   /** Un équipement sans caractéristiques pour chacune des catégories. */
