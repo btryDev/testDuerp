@@ -158,6 +158,7 @@ export default async function EquipePage({
           </p>
           <div className="mt-4">
             <LegalBadge
+              charte="board"
               reference="Art. R. 4544-10 CT"
               href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051500368"
             />
