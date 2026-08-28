@@ -204,7 +204,14 @@ export const obligationsIncendie: Obligation[] = [
     periodicite: "semestrielle",
     realisateurs: ["exploitant"],
     criticite: 4,
-    transmet: [],
+    transmet: [
+      {
+        vers: "modele_absent",
+        modele: "ExerciceSecurite",
+        motif:
+          "R. 4227-39 impose que la date et les observations des exercices soient consignées sur un registre. Le produit ouvre bien l'échéance, mais ne sait la solder que par un dépôt de fichier — là où le texte attend un formulaire. Manque recensé priorité 1 par docs/registre-securite-ecart.md § 3.2.",
+      },
+    ],
     typologies: { travail: true, personnesPresentesMin: 51, champR422734: true },
     categoriesEquipement: ["ALARME_INCENDIE"],
     notesInternes:

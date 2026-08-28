@@ -154,7 +154,22 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 4,
-    transmet: [],
+    transmet: [
+      {
+        vers: "salarie_designe",
+        // `null`, et c'est une réponse, pas un oubli. R. 4544-10 délivre
+        // l'habilitation « à un travailleur désigné » : l'obligation est donc
+        // nominative par nature. Mais le catalogue des titres ne porte pas
+        // l'habilitation elle-même — seulement l'attestation médicale qui la
+        // conditionne, qui est une autre obligation avec sa propre ligne.
+        // Pointer vers elle dirait quelque chose de faux ; c'est bien
+        // l'habilitation qui manque au catalogue, et le dépouillement des
+        // normes qu'elle appelle n'est pas fait.
+        titre: null,
+        motif:
+          "R. 4544-10 fait délivrer l'habilitation à un travailleur désigné : l'obligation suppose une personne nommée. Le produit ne peut pas deviner qui opère sur ou à proximité des installations — ce serait le cinquième déclencheur, non implémenté (ADR-023) — mais il peut dire qu'aucune personne n'est déclarée.",
+      },
+    ],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
