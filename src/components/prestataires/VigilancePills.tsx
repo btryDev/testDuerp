@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import type { StatutPiece } from "@/lib/prestataires/vigilance";
 import { messageExpiration } from "@/lib/prestataires/vigilance";
@@ -77,11 +78,21 @@ export function VigilancePiecePill({
         {/* Un cerne, sinon la puce disparaît dans le seul cas qui compte :
             `CHAMP_ETAT.aPlanifier` vaut exactement le fond de cette tuile, si
             bien qu'une pièce jamais fournie — un document légal absent —
-            perdait son point pendant que toutes les autres gardaient le leur. */}
+            perdait son point pendant que toutes les autres gardaient le leur.
+ 
+            Le cerne porte l'ENCRE de l'état, pas `--board-slate`. Le premier
+            correctif employait celui-ci : 1,41:1 sur la tuile, là où WCAG 1.4.11
+            demande 3:1 pour un élément graphique porteur d'information — la
+            justification du correctif était l'accessibilité, et il ne
+            l'atteignait pas. L'encre d'un état est lisible sur son propre champ
+            par construction (c'est la définition du couple), et
+            `ENCRE_ETAT.aPlanifier` donne 6,02:1 sur le fond de la tuile. Une
+            règle uniforme, conforme dans les cinq cas, sans exception à
+            entretenir. */}
         <span
           aria-hidden
-          className="size-[7px] flex-none rounded-full ring-1 ring-inset ring-[color:var(--board-slate)]"
-          style={{ background: CHAMP_ETAT[etat] }}
+          className="size-[7px] flex-none rounded-full ring-1 ring-inset"
+          style={{ background: CHAMP_ETAT[etat], "--tw-ring-color": ENCRE_ETAT[etat] } as CSSProperties}
         />
         {LABEL[statut]}
       </span>

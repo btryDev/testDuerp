@@ -1,4 +1,4 @@
-import type { PermisFeu, StatutPermisFeu } from "@prisma/client";
+import type { PermisFeu } from "@prisma/client";
 import { ETAT_PERMIS } from "@/lib/permis-feu/etats";
 import {
   LigneFiche,
@@ -22,22 +22,6 @@ import { formaterDateCourteFr } from "@/lib/dates";
  * ligne, on ouvre une tête qui reprend la même date au même endroit.
  */
 
-/**
- * Table statique : Tailwind ne voit pas un nom de classe construit à la
- * volée (interdit 23), et le couple champ/encre vient de `PastilleFiche`,
- * jamais d'une table de couleurs recopiée ici.
- */
-const TON_STATUT: Record<
-  StatutPermisFeu,
-  "retard" | "proche" | "fait" | "bleu" | "neutre"
-> = {
-  brouillon: "neutre",
-  attente_signatures: "proche",
-  valide: "bleu",
-  en_cours: "retard",
-  termine: "fait",
-  annule: "neutre",
-};
 
 
 export function PermisFeuCard({
@@ -90,7 +74,7 @@ export function PermisFeuCard({
         </>
       }
       droite={
-        <PastilleFiche ton={TON_STATUT[permis.statut]}>
+        <PastilleFiche ton={ETAT_PERMIS[permis.statut].ton}>
           {ETAT_PERMIS[permis.statut].mot}
         </PastilleFiche>
       }

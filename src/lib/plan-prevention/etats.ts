@@ -17,7 +17,18 @@ export const ETAT_PLAN: Record<
   { ton: "fait" | "bleu" | "proche" | "neutre"; mot: string }
 > = {
   brouillon: { ton: "neutre", mot: "Brouillon" },
-  inspection_faite: { ton: "bleu", mot: "Inspection commune faite" },
+  // Ardoise, et c'est une RESTAURATION. La table de la liste posait
+  // `inspection_faite: "neutre"` sous une règle explicite : « le board ne
+  // réserve ses champs colorés qu'aux états qui appellent un geste — les
+  // signatures à obtenir (ambre), le plan prêt (bleu), le plan clos (vert) ».
+  // L'unification liste/fiche a imposé le bleu et emporté la règle avec la
+  // table, sans qu'un mot le dise : la liste a changé de couleur sur ce statut
+  // sans que ce soit décidé.
+  //
+  // Le mot suffit à distinguer ce statut du brouillon — « Inspection commune
+  // faite » ne se confond avec rien —, et les trois couleurs restent réservées
+  // aux trois jalons qui commandent la suite.
+  inspection_faite: { ton: "neutre", mot: "Inspection commune faite" },
   attente_signatures: { ton: "proche", mot: "En attente de signatures" },
   valide: { ton: "bleu", mot: "Validé" },
   clos: { ton: "fait", mot: "Plan clos" },
