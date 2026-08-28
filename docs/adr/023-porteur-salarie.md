@@ -230,15 +230,30 @@ tous les filtres par bâtiment — comme les échéances d'établissement, et po
 même raison (ADR-010 : « les masquer ferait mentir le calendrier par
 omission »).
 
-Elle rejoint la famille **`personnel`** du registre des sources, déclarée depuis
-l'ADR-010 et restée sans aucun type rattaché jusqu'ici. `FAMILLE_DE_TYPE` cesse
-donc d'avoir une famille orpheline.
+**Elle ne rejoint PAS la famille `personnel`, et ces deux paragraphes ont
+longtemps affirmé le contraire.** Rectifié le 2026-08-28, après vérification :
 
-Une correction accompagne l'arrivée : `FAMILLES_FILTRABLES`, dans la page du
-calendrier, excluait `personnel` avec le commentaire « attendra ses modules ».
-C'est un tableau, pas un `Record` — il ne casse pas à la compilation, et une
-échéance de personnel s'y serait affichée dans « Tout », comptée dans les
-retards, nommée dans le brief, **et seulement infiltrable**.
+- `FAMILLE_DE_TYPE` ne rend `personnel` pour aucun type. Le commentaire de
+  `calendrier/echeances.ts` dit toujours « réservée aux modules à venir ». La
+  famille reste orpheline.
+- `FAMILLES_FILTRABLES`, dans la page du calendrier, garde ses quatre entrées
+  et exclut toujours `personnel`.
+
+**Le produit est cohérent malgré tout, et c'est pourquoi personne ne l'a vu :
+les deux manques se compensent.** Faute de famille rattachée, une échéance de
+titre tombe dans `controle` — donc elle s'affiche, se compte dans les retards,
+et reste filtrable. Rien n'est cassé.
+
+**Corriger l'un sans l'autre casserait le filtre** : rattacher le type à
+`personnel` sans ajouter la famille à `FAMILLES_FILTRABLES` rendrait les
+échéances de titres visibles dans « Tout » mais infiltrables — exactement le
+défaut que ce paragraphe prétendait avoir corrigé. Les deux changements vont
+ensemble, ou aucun.
+
+Reste que `controle` porte le badge « Contrôles matériel », qui « nomme ce qui a
+un calendrier réglementaire d'équipement » : une attestation médicale n'en est
+pas un. C'est le vrai motif de rattacher un jour la famille `personnel`, et il
+est consigné au registre de la dette.
 
 ## Ce que cet ADR ne décide pas
 

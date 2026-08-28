@@ -74,9 +74,9 @@ vitesse du dépouillement.
 lui-même** que son catalogue n'est pas exhaustif et dit à l'utilisateur de
 continuer à suivre les autres titres par ses moyens habituels.
 
-### 2.2 Sept articles restent `obligation_manquante` au corpus
+### 2.2 Six articles restent `obligation_manquante` au corpus
 
-Relevés dans `arrete-1980-livre-3.ts` (six) et
+Relevés dans `arrete-1980-livre-3.ts` (cinq) et
 `arrete-2018-02-23-gaz-habitation.ts` (un). Ce statut signifie : l'article est
 lu et son verbatim est relevé, mais aucune obligation du référentiel ne s'y
 adosse.
@@ -85,9 +85,9 @@ PE 4 et R. 4222-20 **sont sortis** de cette liste avec le lot 1 — c'est ce qui
 a éteint les cinq lignes `FONDEMENT_NON_RETENU` de
 `docs/relecture-depliage-2026-08-27.md`, sans qu'on y touche.
 
-### 2.3 Onze sur-applications assumées dans `incendie.ts`
+### 2.3 Neuf sur-applications assumées — six dans `incendie.ts`, trois dans `electricite.ts`
 
-Le fichier porte onze marques de sur-application : des obligations appliquées
+Neuf obligations sont appliquées
 plus largement que le texte ne l'exige, pour éviter un faux négatif. C'est un
 choix — mieux vaut annoncer une vérification de trop qu'en taire une due — mais
 c'en est un, et il n'a pas été rerevu article par article depuis que PE 4 § 2
@@ -282,11 +282,12 @@ appliquée casse son empreinte.
 constat de la revue sans le vérifier. Une dette qui se trompe sur elle-même
 envoie corriger ce qui n'est pas cassé.)*
 
-Reste ouvert, non vérifié : le nom d'index
-`Verification_etablissementId_obligationId_equipementId_sala_key` est écrit à la
-main sur 63 caractères. Si la troncature de Prisma ne produit pas exactement
-cette chaîne, `prisma migrate diff` verra une dérive permanente — ce que la
-migration `_index_redondant` avait été écrite pour supprimer.
+**Le point du nom d'index se referme aussi.** `Verification_etablissementId_obligationId_equipementId_sala_key`
+fait exactement **63 caractères**, mesuré — soit la limite d'identifiant de
+PostgreSQL, et donc précisément ce que produit la troncature de Prisma. Il n'y
+a pas de dérive à craindre.
+
+Ce paragraphe n'a donc plus de point ouvert.
 
 ### 7.1 Autres
 
