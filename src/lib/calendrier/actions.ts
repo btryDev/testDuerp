@@ -68,6 +68,45 @@ export type GenerationResult = {
 export async function genererCalendrier(
   etablissementId: string,
 ): Promise<GenerationResult> {
+  const resultat = await regenererSansInvalider(etablissementId);
+  // L'invalidation est ICI et non dans `regenererSansInvalider` : c'est la
+  // seule différence entre les deux, et c'est celle qui compte.
+  revalidatePath(`/etablissements/${etablissementId}`, "layout");
+  return resultat;
+}
+
+/**
+ * La régénération seule, **sans aucun effet de cache**.
+ *
+ * Elle existe parce que la page du calendrier appelle la régénération PENDANT
+ * SON RENDU, pour réparer un calendrier vide ou périmé. Next l'a dit à
+ * l'ouverture :
+ *
+ *   Route /etablissements/[id]/calendrier used "revalidatePath ..." during
+ *   render which is unsupported.
+ *
+ * L'appel était ignoré — la génération passait, la transaction s'exécutait, les
+ * échéances existaient ; seule l'invalidation du tableau de bord et de la fiche
+ * ne se faisait pas, et ils se rafraîchissaient à la navigation suivante. Rien
+ * n'était perdu, mais Next le déclare non supporté et le fera devenir une
+ * erreur dure.
+ *
+ * DEUX FONCTIONS PLUTÔT QU'UN DRAPEAU : celle qui n'a pas d'effet de cache le
+ * dit dans son nom. Un booléen `invalider` obligerait à relire l'appelant pour
+ * savoir ce qui se passe, et c'est précisément la lecture qu'on veut éviter sur
+ * un effet de bord invisible.
+ *
+ * L'APPEL PENDANT LE RENDU EST ANCIEN — il remonte à la génération automatique
+ * sur mutation d'équipement. Il ne se voyait pas parce qu'un garde
+ * `if (nbEquipements > 0)` empêchait la régénération chez les établissements
+ * sans équipement, et qu'ailleurs le calendrier était déjà à jour. Le chantier
+ * du porteur d'échéance a retiré ce garde — à raison, il masquait un vrai faux
+ * négatif — et la ligne s'exécute désormais à la première ouverture de chaque
+ * dossier. Le défaut n'a pas été créé, il a été rendu atteignable.
+ */
+export async function regenererSansInvalider(
+  etablissementId: string,
+): Promise<GenerationResult> {
   await assertEtablissementOwnership(etablissementId);
   const now = new Date();
 
@@ -343,9 +382,6 @@ export async function genererCalendrier(
 
   // Les opérations s'exécutent dans l'ordre du tableau, en une transaction.
   await prisma.$transaction(operations);
-
-  revalidatePath(`/etablissements/${etablissementId}/calendrier`);
-  revalidatePath(`/etablissements/${etablissementId}`);
 
   return {
     created: plan.aCreer.length,

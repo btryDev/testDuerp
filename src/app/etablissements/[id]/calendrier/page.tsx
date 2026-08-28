@@ -13,7 +13,7 @@ import {
   compterSansObligation,
   equipementsSansEcheance,
 } from "@/lib/equipements/hors-referentiel";
-import { genererCalendrier } from "@/lib/calendrier/actions";
+import { regenererSansInvalider } from "@/lib/calendrier/actions";
 import {
   calendrierDesynchronise,
   compterEtatCalendrier,
@@ -283,7 +283,16 @@ export default async function CalendrierPage({
   // qui s'applique, et la réconciliation est idempotente (ADR-012).
   let regenere = false;
   if (aucuneOccurrenceEnBase || (await calendrierDesynchronise(id))) {
-    await genererCalendrier(id);
+    // `regenererSansInvalider` et non `genererCalendrier` : nous sommes DANS
+    // un rendu, et Next refuse `revalidatePath` à cet endroit — « unsupported,
+    // it must always happen outside of renders ». Invalider ici n'aurait
+    // d'ailleurs aucun sens : la page se calcule à l'instant, elle n'a rien à
+    // invalider d'elle-même.
+    //
+    // Le tableau de bord et la fiche établissement se rafraîchissent donc à la
+    // navigation suivante plutôt qu'immédiatement. C'était déjà le
+    // comportement réel — l'appel était ignoré, pas honoré.
+    await regenererSansInvalider(id);
     regenere = true;
   }
 
