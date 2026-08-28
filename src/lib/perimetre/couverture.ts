@@ -15,8 +15,43 @@
 // paraissent complets alors qu'ils ignorent la moitié du règlement sont pires
 // qu'un refus : le dirigeant s'y fierait devant une commission.
 //
-// Module **pur** : ni Prisma, ni React.
+// ## Cinq axes, une seule adresse
+//
+// Le régime ERP n'est pas le seul bord du produit, et il n'a jamais été le
+// seul. Trois autres mécanismes disaient déjà, chacun dans son coin, une
+// partie de ce que l'outil ignore :
+//
+//  - `lib/duerps/couverture.ts` (ADR-020) — ce que le DUERP ne couvre pas,
+//    déclaré par l'employeur et gravé avec la version ;
+//  - `lib/equipements/hors-referentiel.ts` — les appareils pour lesquels le
+//    référentiel ne calcule aucune échéance, en trois motifs distincts ;
+//  - `lib/referentiels/corpus/` — les articles lus dont le produit ne porte
+//    pas l'obligation (`non_couvert`), avec `declareA` qui dit **où** le
+//    manque est annoncé.
+//
+// Ce dernier champ est ce qui a décidé de la forme de ce module. Au
+// 2026-08-28, vingt-cinq des vingt-huit articles `non_couvert` portent
+// `declareA: "Non déclaré à ce jour."`, et l'un d'eux nomme le défaut mot pour
+// mot : « Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux
+// à sommeil. » Le corpus attendait donc une adresse où déclarer ses manques,
+// et il n'y en avait pas.
+//
+// Ce module est cette adresse. Il **n'ajoute aucune source de vérité** : il
+// projette celles qui existent en une même forme, lisible au même endroit.
+// C'est la règle à tenir dans toute évolution — un axe qui déclare au lieu de
+// projeter fait de ce module la troisième déclaration que son propre
+// commentaire interdisait.
+//
+// Ni total, ni pourcentage, ni score : les axes ne s'additionnent pas. Quatre
+// manques sur quatre axes différents ne font pas « 4 » — ils font quatre
+// phrases, chacune vraie d'une chose différente. Un chiffre laisserait croire
+// à une mesure de la complétude, que rien ne fonde.
+//
+// Module **pur** : ni Prisma, ni React, ni horloge. Les faits lui sont
+// donnés ; leur collecte vit dans `faits.ts`, sur le modèle du couple
+// `reperterSansEcheance` / `equipementsSansEcheance`.
 
+import type { EtatCouverture } from "@/lib/duerps/couverture";
 import type { CategorieErp } from "@/lib/referentiels/types-communs";
 
 /**
@@ -35,36 +70,147 @@ import type { CategorieErp } from "@/lib/referentiels/types-communs";
  */
 export const CATEGORIES_COUVERTES: readonly CategorieErp[] = ["N5"];
 
-export type Couverture =
-  | { statut: "couvert" }
-  | {
-      /**
-       * L'établissement sort du périmètre : ce que l'application montre est
-       * incomplet, et le restera tant que le périmètre n'aura pas changé.
-       */
-      statut: "hors_perimetre";
-      /** Ce qui l'en fait sortir, en une phrase adressée au dirigeant. */
-      motif: string;
-      /** Ce que l'application ne sait donc pas lui dire. */
-      consequence: string;
-    }
-  | {
-      /**
-       * On ne peut pas trancher : la donnée qui décide manque. Ne jamais
-       * traiter ce cas comme « couvert » — c'est exactement l'hypothèse
-       * silencieuse qu'il faut éviter.
-       */
-      statut: "indetermine";
-      motif: string;
-      /** Le geste qui lève le doute. */
-      quoiFaire: string;
-    };
+/**
+ * De quoi le manque parle. Cinq axes qui ne se confondent ni ne s'additionnent
+ * — chacun a sa source, et chacun se répare par un geste différent.
+ */
+export type AxeCouverture =
+  /** Le régime de l'établissement met tout le reste hors de portée (IGH). */
+  | "igh"
+  /** La catégorie d'ERP rouvre le livre II, que le référentiel ne connaît pas. */
+  | "categorie_erp"
+  /** Le DUERP ne couvre pas tout — projection de l'ADR-020. */
+  | "secteur_duerp"
+  /** Des appareils du parc ne portent aucune échéance — rappel de
+   *  `equipements/hors-referentiel.ts`. */
+  | "domaine_equipement"
+  /** Des articles lus imposent quelque chose que le référentiel ne porte pas
+   *  — projection du statut `non_couvert` du corpus. */
+  | "famille_obligation";
 
-export type EtablissementCouverture = {
+/**
+ * Un fait établi : l'outil ne sait pas dire quelque chose, et on sait quoi.
+ *
+ * `motif` énonce le fait, `consequence` ce que l'outil ne sait donc pas dire.
+ * Aucun des deux ne qualifie la situation de l'établissement au regard du
+ * droit — ni « incomplet », ni « non conforme », ni l'inverse rassurant.
+ */
+export type ManqueCouverture = {
+  axe: AxeCouverture;
+  /** Le fait, en une phrase adressée au dirigeant. */
+  motif: string;
+  /** Ce que l'application ne sait donc pas lui dire. */
+  consequence: string;
+  /**
+   * Ce que le manque recouvre, nommé une entrée à la fois — quand la liste
+   * existe déjà ailleurs et qu'elle est ce qu'il faut montrer.
+   *
+   * Absent sur la plupart des axes, et c'est voulu : le DUERP nomme ses
+   * activités dans son propre document, la page Équipements nomme ses
+   * appareils. Les recopier ici en produirait des variantes qui vieilliraient
+   * à part. L'axe `famille_obligation` fait exception parce qu'il n'a **aucun**
+   * autre écran : cette liste est sa seule adresse.
+   */
+  details?: { titre: string; texte: string }[];
+};
+
+/**
+ * On ne peut pas trancher : la donnée qui décide manque. Ne jamais traiter ce
+ * cas comme « couvert » — c'est exactement l'hypothèse silencieuse que ce
+ * module existe pour empêcher.
+ */
+export type IndeterminationCouverture = {
+  axe: AxeCouverture;
+  motif: string;
+  /** Le geste qui lève le doute. */
+  quoiFaire: string;
+};
+
+/**
+ * L'état de couverture d'un dossier.
+ *
+ * Deux listes, jamais un état unique : un dossier peut très bien être hors
+ * périmètre par sa catégorie **et** avoir une question de secteur non
+ * tranchée. Les rabattre sur un mot en perdrait une moitié.
+ *
+ * Les deux listes vides veut dire « aucun manque identifié », et pas « le
+ * dossier est complet » : le référentiel a un périmètre, le droit n'en a pas.
+ */
+export type CouvertureEtablissement = {
+  manques: ManqueCouverture[];
+  indeterminations: IndeterminationCouverture[];
+};
+
+/** `true` quand il n'y a ni manque ni question ouverte. */
+export function riensASignaler(c: CouvertureEtablissement): boolean {
+  return c.manques.length === 0 && c.indeterminations.length === 0;
+}
+
+/* ─── Les faits, tels que le module les reçoit ────────────────────────── */
+
+/** Le régime déclaré de l'établissement. */
+export type RegimeEtablissement = {
   estERP: boolean;
   estIGH: boolean;
   categorieErp: CategorieErp | null;
 };
+
+/**
+ * Ce que l'ADR-020 a déjà établi du DUERP, projeté ici sans être recalculé.
+ *
+ * `etat` est le type même que rend `evaluerCouverture` : l'importer plutôt que
+ * de le recopier est ce qui empêche cet axe de devenir une seconde
+ * déclaration. Le `switch` qui le lit est exhaustif — si l'ADR-020 gagne un
+ * état, la compilation s'arrête ici, et quelqu'un décide de la phrase.
+ */
+export type FaitDuerp = {
+  etat: EtatCouverture;
+  /** Le nom du secteur retenu, ou `null` si l'identifiant n'a rien résolu. */
+  secteurNom: string | null;
+  /** Combien d'activités le dirigeant déclare exercer et que le référentiel ne
+   *  couvre pas. Le détail se lit dans le DUERP, pas ici. */
+  nbActivitesDeclarees: number;
+};
+
+/**
+ * Ce que `equipements/hors-referentiel.ts` a déjà compté.
+ *
+ * Le décompte vient de `compterSansObligation`, qui exclut délibérément les
+ * obligations permanentes : là, des règles s'appliquent bel et bien, elles
+ * n'ont simplement pas de date. Les recompter ici annulerait ce travail — d'où
+ * un seul nombre en entrée, et pas la Map des motifs.
+ */
+export type FaitEquipements = {
+  /** Appareils du parc en service pour lesquels aucune obligation ne
+   *  s'applique. */
+  nbSansObligation: number;
+  /** Taille du parc en service, pour situer le nombre sans en faire un taux. */
+  nbEquipements: number;
+};
+
+/**
+ * Un article lu dont le produit ne porte pas l'obligation (`non_couvert`).
+ * Projection directe du corpus : ni le motif ni la référence ne sont réécrits
+ * ici — ils sont rédigés là où l'article a été dépouillé.
+ */
+export type FamilleNonPortee = {
+  corpus: string;
+  ref: string;
+  motif: string;
+};
+
+export type FaitsCouverture = {
+  regime: RegimeEtablissement;
+  /** `null` quand le dossier n'a pas de DUERP : l'axe se tait alors, il ne
+   *  conclut pas. Un DUERP absent est un autre sujet que mal couvert. */
+  duerp: FaitDuerp | null;
+  equipements: FaitEquipements;
+  /** Les articles `non_couvert` du corpus. Liste du **produit**, pas de cet
+   *  établissement : rien ici ne dépend de son NAF ni de son parc. */
+  famillesNonPortees: readonly FamilleNonPortee[];
+};
+
+/* ─── Les axes ────────────────────────────────────────────────────────── */
 
 const LIBELLE_CATEGORIE: Record<CategorieErp, string> = {
   N1: "1ʳᵉ catégorie",
@@ -74,43 +220,214 @@ const LIBELLE_CATEGORIE: Record<CategorieErp, string> = {
   N5: "5ᵉ catégorie",
 };
 
-export function couvertureDeLEtablissement(
-  etab: EtablissementCouverture,
-): Couverture {
+function axeRegime(
+  regime: RegimeEtablissement,
+  manques: ManqueCouverture[],
+  indeterminations: IndeterminationCouverture[],
+): void {
   // L'IGH d'abord : il est hors périmètre quelle que soit la suite, et le
   // dire en second laisserait croire que la catégorie ERP suffit à trancher.
-  if (etab.estIGH) {
-    return {
-      statut: "hors_perimetre",
-      motif:
-        "Cet établissement est déclaré immeuble de grande hauteur (IGH).",
+  if (regime.estIGH) {
+    manques.push({
+      axe: "igh",
+      motif: "Cet établissement est déclaré immeuble de grande hauteur (IGH).",
       consequence:
         "Le règlement de sécurité des IGH impose un service de sécurité permanent et des vérifications que cet outil ne connaît pas. Ce que vous lisez ici ne couvre pas votre régime.",
-    };
+    });
+    return;
   }
 
   // Un établissement qui n'est pas ERP ne relève que du Code du travail, que
   // le référentiel couvre sans distinction de catégorie.
-  if (!etab.estERP) return { statut: "couvert" };
+  if (!regime.estERP) return;
 
-  if (etab.categorieErp === null) {
-    return {
-      statut: "indetermine",
+  if (regime.categorieErp === null) {
+    indeterminations.push({
+      axe: "categorie_erp",
       motif:
         "La catégorie de votre établissement recevant du public n'est pas renseignée.",
       quoiFaire:
         "Elle figure sur votre arrêté d'ouverture ou sur le procès-verbal de la commission de sécurité. C'est elle qui décide de ce que la réglementation vous impose — sans elle, votre calendrier et votre registre sont incomplets sans qu'on puisse vous dire de combien.",
-    };
+    });
+    return;
   }
 
-  if (CATEGORIES_COUVERTES.includes(etab.categorieErp)) {
-    return { statut: "couvert" };
-  }
+  if (CATEGORIES_COUVERTES.includes(regime.categorieErp)) return;
 
-  return {
-    statut: "hors_perimetre",
-    motif: `Cet établissement relève de la ${LIBELLE_CATEGORIE[etab.categorieErp]}.`,
+  manques.push({
+    axe: "categorie_erp",
+    motif: `Cet établissement relève de la ${LIBELLE_CATEGORIE[regime.categorieErp]}.`,
     consequence:
       "Rojer est construit pour les ERP de 5ᵉ catégorie. Au-dessus, le règlement de sécurité applique en entier son livre II — moyens de secours, service de sécurité incendie, et des obligations propres à votre type d'activité — que cet outil ne connaît pas. Votre calendrier et votre registre sont donc incomplets, et le resteront.",
-  };
+  });
+}
+
+/**
+ * Projette l'état de couverture du DUERP (ADR-020) sur l'axe `secteur_duerp`.
+ *
+ * Le `switch` est exhaustif par construction : `EtatCouverture` est importé,
+ * pas recopié, et le `never` final fait échouer la compilation le jour où
+ * l'ADR-020 gagne un état. C'est la seule chose qui garantit que cet axe reste
+ * une projection et ne dérive pas en seconde déclaration.
+ *
+ * Aucune phrase ici ne cite une activité : le détail est écrit dans le DUERP,
+ * avec son `cequiManque` rédigé pour un tiers, et le recopier en produirait
+ * une variante qui vieillirait à part.
+ */
+function axeDuerp(
+  duerp: FaitDuerp | null,
+  manques: ManqueCouverture[],
+  indeterminations: IndeterminationCouverture[],
+): void {
+  if (duerp === null) return;
+
+  const secteur = duerp.secteurNom;
+
+  switch (duerp.etat) {
+    case "secteur_inconnu":
+      manques.push({
+        axe: "secteur_duerp",
+        motif:
+          "Aucun référentiel sectoriel ne correspond à l'activité de cet établissement.",
+        consequence:
+          "Le document unique a été ouvert sans base de risques types : aucune unité de travail, aucun risque et aucune mesure n'y sont pré-chargés. Le référentiel de conformité, lui, fonctionne normalement — il ne lit pas votre code d'activité.",
+      });
+      return;
+
+    case "secteur_non_instruit":
+      manques.push({
+        axe: "secteur_duerp",
+        motif: secteur
+          ? `Le référentiel « ${secteur} » ne dit pas quelles activités il laisse de côté.`
+          : "Le référentiel retenu ne dit pas quelles activités il laisse de côté.",
+        consequence:
+          "Sa liste d'activités non couvertes n'a pas encore été instruite. Une liste vide n'affirme pas qu'un secteur couvre tout : elle affirme que personne n'a encore regardé.",
+      });
+      return;
+
+    case "manques_identifies":
+      manques.push({
+        axe: "secteur_duerp",
+        motif:
+          duerp.nbActivitesDeclarees > 0
+            ? `Le document unique nomme ${duerp.nbActivitesDeclarees} activité${duerp.nbActivitesDeclarees > 1 ? "s" : ""} ou unité${duerp.nbActivitesDeclarees > 1 ? "s" : ""} que son référentiel ne couvre pas.`
+            : "Le document unique nomme au moins une unité de travail que son référentiel ne couvre pas.",
+        consequence:
+          "Ce que le document ne traite pas à leur sujet y est écrit, activité par activité, et s'imprime avec lui.",
+      });
+      return;
+
+    case "reponses_incompletes":
+      indeterminations.push({
+        axe: "secteur_duerp",
+        motif:
+          "Des questions d'activité du document unique n'ont pas reçu de réponse.",
+        quoiFaire:
+          "Elles se répondent depuis la page « Activités » du document unique. Tant qu'elles restent ouvertes, on ne peut pas dire si le référentiel couvre ou non ce que vous exercez — un silence n'est pas un « non ».",
+      });
+      return;
+
+    case "aucun_manque_identifie":
+      return;
+  }
+
+  const jamais: never = duerp.etat;
+  throw new Error(`État de couverture DUERP inconnu : ${String(jamais)}`);
+}
+
+/**
+ * Rappelle ce que `equipements/hors-referentiel.ts` a déjà établi, sans le
+ * refaire : ce module-là garde ses trois motifs et ses trois phrases, appareil
+ * par appareil, sur la page équipements. Ici on ne dit que le fait agrégé, et
+ * on renvoie à la page où il se détaille.
+ */
+function axeEquipements(
+  eq: FaitEquipements,
+  manques: ManqueCouverture[],
+): void {
+  if (eq.nbSansObligation <= 0) return;
+
+  const pluriel = eq.nbSansObligation > 1;
+  manques.push({
+    axe: "domaine_equipement",
+    motif: `${eq.nbSansObligation} équipement${pluriel ? "s" : ""} de votre inventaire ne déclenche${pluriel ? "nt" : ""} aucune obligation du référentiel${
+      eq.nbEquipements > 0 ? `, sur ${eq.nbEquipements} en service` : ""
+    }.`,
+    consequence:
+      "Leur catégorie n'est citée par aucune règle que le référentiel porte, ou aucune ne s'applique compte tenu de la typologie de l'établissement. Cela ne veut pas dire qu'aucune vérification ne leur est due : le détail, appareil par appareil, se lit sur la page Équipements.",
+  });
+}
+
+/**
+ * Projette les articles `non_couvert` du corpus.
+ *
+ * Cette liste est celle du **produit**, pas celle de l'établissement : rien
+ * n'est déduit de son code d'activité, de son parc ou de sa raison sociale.
+ * La restreindre demanderait des attributs que la base ne porte pas — l'un des
+ * articles concernés attend littéralement `Etablissement.locauxSommeil` — et
+ * la deviner serait l'heuristique que le dépôt refuse partout.
+ *
+ * Dire trop est ici le moindre mal : un dirigeant averti d'un manque qui ne le
+ * vise pas perd une minute, un dirigeant non averti d'un manque qui le vise
+ * s'appuie sur un document incomplet.
+ */
+function axeFamilles(
+  familles: readonly FamilleNonPortee[],
+  manques: ManqueCouverture[],
+): void {
+  if (familles.length === 0) return;
+
+  const pluriel = familles.length > 1;
+  manques.push({
+    axe: "famille_obligation",
+    motif: `Le référentiel a lu ${familles.length} article${pluriel ? "s" : ""} qui impose${pluriel ? "nt" : ""} quelque chose à un exploitant sans que le produit le porte.`,
+    consequence:
+      "Ces obligations existent et l'outil n'en tire aucune échéance. La liste vaut pour le produit entier, pas pour votre seul établissement : le référentiel ne rattache pas encore ces articles à un type d'établissement, et le deviner serait une supposition. Chacune est nommée ci-dessous, avec la raison pour laquelle le référentiel s'arrête là.",
+    details: familles.map((f) => ({ titre: f.ref, texte: f.motif })),
+  });
+}
+
+/* ─── L'entrée ────────────────────────────────────────────────────────── */
+
+/**
+ * Rend tout ce que l'outil ne sait pas dire de ce dossier, axe par axe.
+ *
+ * Fonction pure : aucun accès base, aucune lecture d'horloge, aucun effet de
+ * bord. Les faits lui sont donnés — `faits.ts` les collecte.
+ *
+ * L'ordre des manques est stable et voulu : le régime d'abord, parce qu'il
+ * peut mettre tout le reste hors de portée ; puis ce qui est propre à ce
+ * dossier (DUERP, parc) ; puis ce qui est vrai du produit entier.
+ */
+export function couvertureDeLEtablissement(
+  faits: FaitsCouverture,
+): CouvertureEtablissement {
+  const manques: ManqueCouverture[] = [];
+  const indeterminations: IndeterminationCouverture[] = [];
+
+  axeRegime(faits.regime, manques, indeterminations);
+  axeDuerp(faits.duerp, manques, indeterminations);
+  axeEquipements(faits.equipements, manques);
+  axeFamilles(faits.famillesNonPortees, manques);
+
+  return { manques, indeterminations };
+}
+
+/**
+ * Le seul axe du régime, pour les écrans qui n'ont que l'établissement sous la
+ * main et pas encore le reste des faits.
+ *
+ * ⚠ Ce n'est pas une seconde API de couverture : c'est le même axe, appelé
+ * seul. Un écran qui s'en contente affiche moins que la vérité — préférer
+ * `couvertureDeLEtablissement` partout où les faits sont collectables.
+ */
+export function couvertureDuRegime(
+  regime: RegimeEtablissement,
+): CouvertureEtablissement {
+  return couvertureDeLEtablissement({
+    regime,
+    duerp: null,
+    equipements: { nbSansObligation: 0, nbEquipements: 0 },
+    famillesNonPortees: [],
+  });
 }

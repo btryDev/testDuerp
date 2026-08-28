@@ -305,11 +305,17 @@ describe("corpus — ce qu'on ne couvre pas, et où on le dit", () => {
   });
 
   it("le nombre de manques non déclarés à l'utilisateur ne remonte pas", () => {
-    // 31 aujourd'hui : rien dans l'application n'annonce à un exploitant
-    // hôtelier, ou à un établissement à locaux à sommeil, que des obligations
-    // qui le visent ne sont pas portées. Ce chiffre doit descendre — soit en
-    // couvrant, soit en déclarant.
-    const MUETS = 31;
+    // 0 depuis le 2026-08-28. Le chiffre était de 25 : rien dans
+    // l'application n'annonçait à un exploitant hôtelier, ni à un
+    // établissement à locaux à sommeil, que des obligations qui le visent ne
+    // sont pas portées. La carte « Ce que Rojer ne couvre pas » du tableau de
+    // bord est désormais cette adresse, et chaque `declareA` y renvoie.
+    //
+    // Zéro ne veut pas dire que la dette est éteinte : ces obligations restent
+    // non portées, et `articlesNonCouverts()` les compte toujours. Il veut
+    // dire qu'aucune n'est plus tue. Le cliquet garde son sens — un article
+    // ajouté sans adresse le fait remonter à 1, et le test tombe.
+    const MUETS = 0;
     const muets = articlesNonCouverts().filter(
       (a) => !a.declareA || a.declareA.startsWith("Non déclaré"),
     );

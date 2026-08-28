@@ -10,35 +10,74 @@
 // D'où un bandeau, et pas une note en pied de page : il se lit avant le
 // contenu qu'il qualifie, sinon il arrive trop tard.
 //
-// Deux tons, jamais confondus. « Hors périmètre » est un fait établi et
-// durable — encre signal. « Indéterminé » est une question ouverte dont la
-// réponse appartient au dirigeant — ambre, et un geste à faire.
+// Deux tons, jamais confondus. « Manque » est un fait établi et durable —
+// encre signal. « Indétermination » est une question ouverte dont la réponse
+// appartient au dirigeant — ambre, et un geste à faire. Les deux peuvent être
+// vrais en même temps : le bandeau rend alors deux blocs, et pas un compromis
+// entre les deux tons.
+//
+// Une entrée par axe, jamais un total. Quatre manques sur quatre axes ne font
+// pas « 4 » : ils font quatre phrases, chacune vraie d'une chose différente.
 
 import Link from "next/link";
 import { AlertTriangle, HelpCircle } from "lucide-react";
-import type { Couverture } from "@/lib/perimetre/couverture";
+import type {
+  CouvertureEtablissement,
+  ManqueCouverture,
+  IndeterminationCouverture,
+} from "@/lib/perimetre/couverture";
+import { riensASignaler } from "@/lib/perimetre/couverture";
 
-export function BandeauCouverture({
-  couverture,
-  hrefEtablissement,
+/** Le geste proposé, par axe. Un lien par manque serait du bruit ; un lien
+ *  vers la fiche établissement quand c'est le régime qui est en cause, et
+ *  vers l'endroit où la question se répond sinon. */
+function lienDeLAxe(
+  axe: ManqueCouverture["axe"],
+  hrefs: { etablissement: string; duerp?: string; equipements?: string },
+): { href: string; libelle: string } | null {
+  switch (axe) {
+    case "igh":
+    case "categorie_erp":
+      return {
+        href: hrefs.etablissement,
+        libelle: "Vérifier le régime de l'établissement",
+      };
+    case "secteur_duerp":
+      return hrefs.duerp
+        ? { href: hrefs.duerp, libelle: "Ouvrir le document unique" }
+        : null;
+    case "domaine_equipement":
+      return hrefs.equipements
+        ? { href: hrefs.equipements, libelle: "Voir les équipements" }
+        : null;
+    case "famille_obligation":
+      // Aucun geste : le manque est du produit, pas du dossier. Proposer une
+      // action laisserait croire que le dirigeant peut le lever.
+      return null;
+  }
+}
+
+function Bloc({
+  ton,
+  entrees,
+  hrefs,
 }: {
-  couverture: Couverture;
-  /** La fiche établissement, où se corrige ou se renseigne le régime. */
-  hrefEtablissement: string;
+  ton: "signal" | "ambre";
+  entrees: (ManqueCouverture | IndeterminationCouverture)[];
+  hrefs: { etablissement: string; duerp?: string; equipements?: string };
 }) {
-  if (couverture.statut === "couvert") return null;
-
-  const horsPerimetre = couverture.statut === "hors_perimetre";
+  if (entrees.length === 0) return null;
+  const signal = ton === "signal";
 
   return (
     <section
       className="carte-board flex gap-4 px-7 py-5 sm:px-8"
       style={{
-        background: horsPerimetre
+        background: signal
           ? "var(--board-signal-wash)"
           : "var(--board-amber-wash)",
         boxShadow: `0 0 0 1px ${
-          horsPerimetre ? "var(--board-signal-line)" : "var(--board-amber)"
+          signal ? "var(--board-signal-line)" : "var(--board-amber)"
         }`,
       }}
       role="note"
@@ -46,41 +85,80 @@ export function BandeauCouverture({
       <span
         className="mt-0.5 flex-none"
         style={{
-          color: horsPerimetre
+          color: signal
             ? "var(--board-signal-ink)"
             : "var(--board-amber-ink)",
         }}
       >
-        {horsPerimetre ? (
+        {signal ? (
           <AlertTriangle aria-hidden className="size-[18px]" />
         ) : (
           <HelpCircle aria-hidden className="size-[18px]" />
         )}
       </span>
 
-      <div className="min-w-0">
-        <p
-          className="m-0 text-[14px] font-semibold leading-[1.4] tracking-[-0.015em]"
-          style={{
-            color: horsPerimetre
-              ? "var(--board-signal-ink)"
-              : "var(--board-amber-ink)",
-          }}
-        >
-          {couverture.motif}
-        </p>
-        <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
-          {horsPerimetre ? couverture.consequence : couverture.quoiFaire}
-        </p>
-        <Link
-          href={hrefEtablissement}
-          className="mt-3 inline-block text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
-        >
-          {horsPerimetre
-            ? "Vérifier le régime de l'établissement"
-            : "Renseigner la catégorie"}
-        </Link>
+      <div className="flex min-w-0 flex-col gap-5">
+        {entrees.map((e) => {
+          const lien = lienDeLAxe(e.axe, hrefs);
+          const suite = "consequence" in e ? e.consequence : e.quoiFaire;
+          return (
+            <div key={e.axe} className="min-w-0">
+              <p
+                className="m-0 text-[14px] font-semibold leading-[1.4] tracking-[-0.015em]"
+                style={{
+                  color: signal
+                    ? "var(--board-signal-ink)"
+                    : "var(--board-amber-ink)",
+                }}
+              >
+                {e.motif}
+              </p>
+              <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-ink)]">
+                {suite}
+              </p>
+              {lien ? (
+                <Link
+                  href={lien.href}
+                  className="mt-3 inline-block text-[12.5px] font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
+                >
+                  {lien.libelle}
+                </Link>
+              ) : null}
+            </div>
+          );
+        })}
       </div>
     </section>
+  );
+}
+
+export function BandeauCouverture({
+  couverture,
+  hrefEtablissement,
+  hrefDuerp,
+  hrefEquipements,
+}: {
+  couverture: CouvertureEtablissement;
+  /** La fiche établissement, où se corrige ou se renseigne le régime. */
+  hrefEtablissement: string;
+  /** Le document unique, où se répondent les questions d'activité. */
+  hrefDuerp?: string;
+  /** L'inventaire, où le détail appareil par appareil se lit. */
+  hrefEquipements?: string;
+}) {
+  if (riensASignaler(couverture)) return null;
+  const hrefs = {
+    etablissement: hrefEtablissement,
+    duerp: hrefDuerp,
+    equipements: hrefEquipements,
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Les faits établis d'abord : une question ouverte se lit mieux après
+          ce qui est déjà tranché. */}
+      <Bloc ton="signal" entrees={couverture.manques} hrefs={hrefs} />
+      <Bloc ton="ambre" entrees={couverture.indeterminations} hrefs={hrefs} />
+    </div>
   );
 }

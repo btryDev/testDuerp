@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { AideEcran } from "@/components/ui-kit/AideEcran";
 import { BandeauCouverture } from "@/components/perimetre/BandeauCouverture";
-import { couvertureDeLEtablissement } from "@/lib/perimetre/couverture";
+import { couvertureDuDossier } from "@/lib/perimetre/faits";
 import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
@@ -224,6 +224,11 @@ export default async function CalendrierPage({
   const { domaine, urgent, famille, batiment } = await searchParams;
   const etab = await getEtablissement(id);
   if (!etab) notFound();
+
+  // Ce que l'outil ne couvre pas, sur les cinq axes. Lu ici, une fois : le
+  // bandeau se rend loin plus bas, et une collecte au point de rendu se
+  // referait à chaque variante de la page.
+  const couverture = await couvertureDuDossier(id);
 
   // Le filtre bâtiment n'existe qu'à partir de deux bâtiments (ADR-019) ;
   // un id inconnu vaut « tout l'établissement ».
@@ -1030,14 +1035,13 @@ export default async function CalendrierPage({
             complète qui ignore tout le livre II du règlement de sécurité
             (PE 1 § 1) : c'est le seul écran où le taire serait grave, parce
             que c'est celui qu'on suit pour savoir quoi faire. */}
-        <BandeauCouverture
-          couverture={couvertureDeLEtablissement({
-            estERP: etab.estERP,
-            estIGH: etab.estIGH,
-            categorieErp: etab.categorieErp,
-          })}
-          hrefEtablissement={`/etablissements/${id}/modifier`}
-        />
+        {couverture && (
+          <BandeauCouverture
+            couverture={couverture}
+            hrefEtablissement={`/etablissements/${id}/modifier`}
+            hrefEquipements={`/etablissements/${id}/equipements`}
+          />
+        )}
 
         {lignes.length === 0 ? (
           <div>

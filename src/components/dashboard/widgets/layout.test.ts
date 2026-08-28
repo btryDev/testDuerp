@@ -40,6 +40,7 @@ describe("registre de widgets", () => {
     // « À faire » (fusion prochaine échéance + actions en retard) ouvre
     // la rangée 3 : une seule to-do vérifs + actions, triée par urgence.
     expect(layoutParDefaut().map((i) => i.widgetId)).toEqual([
+      "couverture",
       "calendrier-type",
       "equipements-grid",
       "a-faire",
@@ -61,25 +62,35 @@ describe("registre de widgets", () => {
     const cols = layoutParDefaut().map(
       (i) => tailleEnCol(REGISTRY[i.widgetId].taille),
     );
-    expect(cols).toEqual([3, 3, 3, 3, 3, 3, 3, 3]);
+    expect(cols).toEqual([6, 3, 3, 3, 3, 3, 3, 3, 3]);
     expect(cols.every((c) => c % 3 === 0)).toBe(true);
   });
 
-  it("seul le widget équipements est obligatoire", () => {
-    // Les équipements sont le socle du calendrier de vérifications :
-    // le widget est fixe — non retirable, réinjecté s'il manque du
-    // layout persisté. Le reste du board demeure entièrement libre.
+  it("deux widgets sont obligatoires, et chacun pour une raison écrite", () => {
+    // « Couverture » : ce que l'outil ne dit pas. Un manque qu'on peut
+    // décocher n'est plus une déclaration, c'est une option — et c'est la
+    // première qu'un dirigeant pressé décocherait. Il se masque en revanche
+    // seul quand il n'y a rien à signaler (`visibleQuand`), donc il ne coûte
+    // rien au board d'un dossier sans bord à annoncer.
+    //
+    // « Équipements » : le socle du calendrier de vérifications.
+    //
+    // Le reste du board demeure entièrement libre. Ajouter un troisième
+    // obligatoire se paie sur tous les layouts déjà persistés — `epingler`
+    // le réinjecte chez chaque utilisateur — et demande donc la même
+    // justification.
     const obligatoires = Object.values(REGISTRY)
       .filter((d) => d.obligatoire)
       .map((d) => d.id);
-    expect(obligatoires).toEqual(["equipements-grid"]);
+    expect(obligatoires).toEqual(["couverture", "equipements-grid"]);
   });
 });
 
 describe("useLayoutPerso — migration et normalisation", () => {
   // Un layout personnalisé est restitué dans l'ordre choisi par
-  // l'utilisateur ; seul le widget équipements (obligatoire) est
-  // réinjecté s'il manque — à sa place du board par défaut.
+  // l'utilisateur ; seuls les widgets obligatoires — « couverture » en tête
+  // de board, « équipements » sous le calendrier — sont réinjectés s'ils
+  // manquent, à leur place du board par défaut.
 
   it("relit un layout à la version courante en préservant l'ordre utilisateur", () => {
     const entree = {
@@ -94,6 +105,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     expect(sortie).not.toBeNull();
     expect(sortie?.version).toBe(SCHEMA_VERSION);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "couverture",
       "equipements-grid",
       "indicateurs",
       "score",
@@ -112,6 +124,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "couverture",
       "equipements-grid",
       "indicateurs",
       "score",
@@ -162,6 +175,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.version).toBe(SCHEMA_VERSION);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "couverture",
       "calendrier-type",
       "equipements-grid",
       "a-faire",
@@ -181,6 +195,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "couverture",
       "calendrier-type",
       "equipements-grid",
       "guide",
@@ -200,6 +215,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.version).toBe(SCHEMA_VERSION);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "couverture",
       "calendrier-type",
       "equipements-grid",
       "score",
@@ -226,6 +242,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "couverture",
       "equipements-grid",
       "indicateurs",
       "guide",
@@ -245,6 +262,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "couverture",
       "guide",
       "calendrier-type",
       "equipements-grid",
@@ -265,6 +283,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "couverture",
       "calendrier-type",
       "equipements-grid",
       "score",
@@ -281,6 +300,7 @@ describe("useLayoutPerso — migration et normalisation", () => {
     };
     const sortie = __internal.migrerLayout(entree);
     expect(sortie?.items.map((i) => i.widgetId)).toEqual([
+      "couverture",
       "equipements-grid",
       "guide",
       "score",

@@ -11,6 +11,8 @@ import {
   stylesCommuns as s,
 } from "./styles";
 import type { Score } from "@/lib/dashboard/score";
+import type { CouvertureEtablissement } from "@/lib/perimetre/couverture";
+import { blocsPerimetre, chapeauPerimetre } from "./mentions-perimetre";
 
 export type DossierData = {
   entreprise: string;
@@ -21,6 +23,12 @@ export type DossierData = {
   codeNaf: string | null;
   regimesTexte: string; // ex: "Établissement de travail, ERP type N cat. 5"
   genereLe: Date;
+  /**
+   * Ce que le référentiel ne traite pas pour cet établissement, sur ses cinq
+   * axes. `null` seulement si la couverture n'a pas pu être lue — auquel cas
+   * le document reste muet plutôt que de rassurer.
+   */
+  couverture: CouvertureEtablissement | null;
 
   score: Score;
   duerp:
@@ -76,6 +84,11 @@ function ScoreLigne({ score }: { score: Score }) {
 }
 
 export function DossierConformiteDocument({ data }: { data: DossierData }) {
+  // Muet si la couverture n'a pas pu être lue : un document qui ne sait pas
+  // ce qu'il ignore ne doit pas écrire qu'il n'ignore rien.
+  const chapeau = data.couverture ? chapeauPerimetre(data.couverture) : null;
+  const blocs = data.couverture ? blocsPerimetre(data.couverture) : [];
+
   return (
     <Document>
       {/* Page de garde */}
@@ -357,6 +370,28 @@ export function DossierConformiteDocument({ data }: { data: DossierData }) {
             ))}
           </View>
         )}
+
+        {/* Ce que ce dossier ne couvre pas — avant les mentions légales, et
+            avec elles sur la même page : le lecteur tiers qui vérifie ce que
+            la pièce engage lit les deux d'un même mouvement. Les phrases
+            viennent de `mentions-perimetre.ts`, qui les rend testables ; ce
+            document ne décide de rien. */}
+        {chapeau ? (
+          <>
+            <Text style={s.h2}>Ce que ce dossier ne couvre pas</Text>
+            <View style={s.mentionsLegalesBloc}>
+              <Text>{chapeau}</Text>
+              {blocs.map((b, i) => (
+                <View key={i} style={{ marginTop: 6 }}>
+                  <Text style={{ fontFamily: "Helvetica-Bold" }}>
+                    — {b.titre}
+                  </Text>
+                  <Text style={{ marginTop: 2 }}>{b.corps}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        ) : null}
 
         <Text style={s.h2}>Mentions légales</Text>
         <View style={s.mentionsLegalesBloc}>

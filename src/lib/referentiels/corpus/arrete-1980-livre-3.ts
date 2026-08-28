@@ -310,7 +310,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
       declareA:
-        "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PE 29",
@@ -322,7 +322,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
       declareA:
-        "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PE 30",
@@ -334,7 +334,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
       declareA:
-        "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PE 31",
@@ -346,7 +346,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
       declareA:
-        "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PE 32",
@@ -358,7 +358,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
       declareA:
-        "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PE 33",
@@ -370,7 +370,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
       declareA:
-        "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PE 34",
@@ -382,7 +382,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
       declareA:
-        "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PE 35",
@@ -394,7 +394,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
       declareA:
-        "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PE 36",
@@ -406,7 +406,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
       declareA:
-        "Non déclaré à ce jour. Le bandeau de couverture annonce la catégorie d'ERP, pas les locaux à sommeil.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PE 37",
@@ -465,7 +465,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
       declareA:
-        "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PO 3",
@@ -477,7 +477,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
       declareA:
-        "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PO 4",
@@ -489,7 +489,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
       declareA:
-        "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PO 5",
@@ -501,7 +501,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
       declareA:
-        "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PO 6",
@@ -513,7 +513,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
       declareA:
-        "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PO 8",
@@ -538,7 +538,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
       declareA:
-        "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PO 10",
@@ -550,7 +550,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
       declareA:
-        "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PO 11",
@@ -562,7 +562,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
       declareA:
-        "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PO 12",
@@ -596,7 +596,7 @@ export const CORPUS_PE: Corpus = {
       motif:
         "Chapitre IV — règles spécifiques aux hôtels (type O), établissements de 5ᵉ catégorie. PO 1 § 3 et PO 7 portent les périodicités chiffrées du chapitre IV — PE 37 en porte une autre, la visite quinquennale de commission : contrôle biennal des installations techniques, annuel pour l'électricité et la détection, et deux séances d'instruction du personnel par an. Un très petit hôtel est exactement le genre de TPE que le produit sait servir par ailleurs — le manque est un choix, pas une impossibilité.",
       declareA:
-        "Non déclaré à ce jour. Un exploitant hôtelier ne verra rien qui l'avertisse que ces trois obligations lui manquent.",
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PU 1",
@@ -607,7 +607,8 @@ export const CORPUS_PE: Corpus = {
       statut: "non_couvert",
       motif:
         "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
-      declareA: "Non déclaré à ce jour.",
+      declareA:
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PU 2",
@@ -618,7 +619,8 @@ export const CORPUS_PE: Corpus = {
       statut: "non_couvert",
       motif:
         "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
-      declareA: "Non déclaré à ce jour.",
+      declareA:
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PU 3",
@@ -629,7 +631,8 @@ export const CORPUS_PE: Corpus = {
       statut: "non_couvert",
       motif:
         "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
-      declareA: "Non déclaré à ce jour.",
+      declareA:
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PU 4",
@@ -640,7 +643,8 @@ export const CORPUS_PE: Corpus = {
       statut: "non_couvert",
       motif:
         "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
-      declareA: "Non déclaré à ce jour.",
+      declareA:
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PU 5",
@@ -651,7 +655,8 @@ export const CORPUS_PE: Corpus = {
       statut: "non_couvert",
       motif:
         "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
-      declareA: "Non déclaré à ce jour.",
+      declareA:
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PU 6",
@@ -662,7 +667,8 @@ export const CORPUS_PE: Corpus = {
       statut: "non_couvert",
       motif:
         "Chapitre V — petits établissements de soins (type U). Ces articles n'imposent aucune échéance récurrente à l'exploitant : ce sont des règles de construction et d'équipement, plus un renvoi aux articles U 51 à U 64 sur les gaz médicaux, qui n'a pas été dépouillé. Le manque de couverture porte donc surtout sur ce renvoi.",
-      declareA: "Non déclaré à ce jour.",
+      declareA:
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
     {
       ref: "PX 1",
@@ -673,7 +679,8 @@ export const CORPUS_PE: Corpus = {
       statut: "non_couvert",
       motif:
         "Chapitre VI — établissements sportifs. Article de pur renvoi qui importe tout le chapitre XII du Livre II, non dépouillé. Les équipements sportifs figurent par ailleurs parmi les risques spécialisés que le produit déclare ne pas traiter.",
-      declareA: "Non déclaré à ce jour.",
+      declareA:
+        "Tableau de bord et fiche établissement — carte « Ce que Rojer ne couvre pas », axe `famille_obligation` (`src/lib/perimetre/couverture.ts`). La carte nomme cet article et cite ce motif ; elle ne le restreint pas encore aux établissements que le chapitre vise, faute d'un rattachement article → type d'ERP dans le corpus.",
     },
   ],
 };
