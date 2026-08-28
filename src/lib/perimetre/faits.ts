@@ -83,6 +83,14 @@ export async function faitsDeCouverture(
       typeErp: etab.typeErp,
       categorieErp: etab.categorieErp,
       classeIgh: etab.classeIgh,
+      // Cinquième projection du dépôt, et elle a été trouvée AU MERGE : la
+      // branche qui a rendu ces deux champs requis et celle qui a écrit ce
+      // module travaillaient en parallèle, chacune ignorant l'autre. Trois
+      // projections sur cinq les omettaient, et l'omission compilait tant
+      // qu'ils étaient optionnels. C'est le type qui a attrapé celle-ci,
+      // aucun test ne la couvrait.
+      personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
+      manipuleMatieresR422722: etab.manipuleMatieresR422722,
     },
     equipementsMatching,
   );
