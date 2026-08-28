@@ -70,20 +70,39 @@ describe("correspondanceSecteur", () => {
     }
   });
 
-  it("ne tranche pas sans secteur retenu — et ne suppose surtout pas que ça colle", () => {
-    // « indéterminable » n'est pas un « correspond » prudent : rendre
-    // « correspond » ferait passer pour vérifiée une correspondance que
-    // personne n'a établie.
+  it("sans secteur retenu, rend quand même ce que le NAF désigne", () => {
+    // La donnée que la première version perdait. Le DUERP naît SANS secteur
+    // (`duerps/actions.ts` crée puis redirige vers l'écran de choix) : rendre
+    // « indéterminable » faisait affirmer à l'écran « aucun référentiel ne
+    // correspond à l'activité de cet établissement » pendant que l'écran
+    // suivant en recommandait un.
     for (const secteur of [null, undefined, ""]) {
-      expect(correspondanceSecteur(naf("56.10A"), secteur)).toEqual({
-        statut: "indeterminable",
+      expect(correspondanceSecteur(naf("47.24Z"), secteur)).toEqual({
+        statut: "sans_secteur_retenu",
+        referentielDuNaf: { id: "commerce", nom: "Commerce de détail" },
       });
     }
   });
 
-  it("ne tranche pas quand aucun code NAF n'est renseigné", () => {
+  it("sans secteur retenu et sans référentiel pour le NAF, le dit sans le déduire", () => {
+    expect(correspondanceSecteur(naf("43.22A"), null)).toEqual({
+      statut: "sans_secteur_retenu",
+      referentielDuNaf: null,
+    });
+  });
+
+  it("distingue « pas de code NAF » de « ce code n'a pas de référentiel »", () => {
+    // Deux faits différents que la première version rangeait tous deux sous
+    // un `null`. Un `null` qui recouvre deux faits finit par en faire
+    // affirmer un pour l'autre — c'est la faute que ce module corrige.
     expect(correspondanceSecteur(naf(null, null), "restauration")).toEqual({
-      statut: "indeterminable",
+      statut: "sans_naf",
+    });
+    expect(correspondanceSecteur(naf(null, null), null)).toEqual({
+      statut: "sans_naf",
+    });
+    expect(correspondanceSecteur(naf("43.22A"), null)).not.toEqual({
+      statut: "sans_naf",
     });
   });
 

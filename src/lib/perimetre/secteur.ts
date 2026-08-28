@@ -50,8 +50,9 @@ export function nafEffectif(naf: NafDuDossier): string | null {
 /**
  * Le rapport entre le secteur retenu et celui que le code NAF désigne.
  *
- * Trois états, et le troisième porte une donnée que la seule comparaison
- * booléenne n'avait pas : **quel** référentiel le NAF désigne, s'il en désigne
+ * Quatre états, et **chacun ne porte que ce qu'il sait**. C'est la règle du
+ * module, apprise deux fois : `referentielDuNaf` porte une donnée que la
+ * comparaison booléenne d'origine n'avait pas — **quel** référentiel le NAF désigne, s'il en désigne
  * un. Sans elle, l'écran affirmait « aucun référentiel n'est instruit pour
  * votre activité » dans les deux cas — vrai quand le NAF ne résout rien, faux
  * quand le dirigeant a simplement changé de secteur depuis la recommandation
@@ -62,13 +63,26 @@ export function nafEffectif(naf: NafDuDossier): string | null {
  */
 export type CorrespondanceSecteur =
   /**
-   * Rien à comparer : aucun secteur confirmé (l'axe DUERP le dit déjà
-   * autrement), ou aucun code NAF nulle part.
+   * Aucun code NAF nulle part — ni sur l'établissement, ni sur l'entreprise.
+   * Rien ne peut être dit du référentiel qui conviendrait.
    *
-   * Ce n'est **pas** un « ça correspond » prudent. Rendre « correspond » ici
-   * ferait passer pour vérifiée une correspondance que personne n'a établie.
+   * Distinct de `sans_secteur_retenu` dont le `referentielDuNaf` vaut `null` :
+   * là, on a regardé et il n'y en a pas ; ici, on n'a pas de quoi regarder.
+   * Les confondre serait la faute même que ce module corrige ailleurs — un
+   * `null` qui recouvre deux faits différents finit par en faire affirmer un
+   * pour l'autre.
    */
-  | { statut: "indeterminable" }
+  | { statut: "sans_naf" }
+  | {
+      /**
+       * Le DUERP n'a pas encore de référentiel sectoriel — l'état normal
+       * entre la création du dossier (`duerps/actions.ts`, qui crée sans
+       * secteur puis redirige vers l'écran de choix) et la confirmation.
+       */
+      statut: "sans_secteur_retenu";
+      /** Celui que le code NAF désigne, ou `null` si aucun n'est instruit. */
+      referentielDuNaf: { id: string; nom: string } | null;
+    }
   /** Le secteur retenu est celui du code NAF. */
   | { statut: "correspond" }
   | {
@@ -86,13 +100,21 @@ export function correspondanceSecteur(
   referentielSecteurId: string | null | undefined,
 ): CorrespondanceSecteur {
   const code = nafEffectif(naf);
-  if (!referentielSecteurId || !code) return { statut: "indeterminable" };
+  if (!code) return { statut: "sans_naf" };
 
   const ref = trouverReferentielParNaf(code);
+  const referentielDuNaf = ref ? { id: ref.id, nom: ref.nom } : null;
+
+  // Pas encore de secteur retenu : on rend quand même ce que le NAF désigne.
+  // La première version répondait « indéterminable » et perdait la donnée —
+  // l'écran affirmait alors « aucun référentiel sectoriel ne correspond à
+  // l'activité de cet établissement » dès qu'un DUERP venait d'être créé,
+  // pendant que l'écran suivant lui en recommandait un.
+  if (!referentielSecteurId) {
+    return { statut: "sans_secteur_retenu", referentielDuNaf };
+  }
+
   if (ref?.id === referentielSecteurId) return { statut: "correspond" };
 
-  return {
-    statut: "diverge",
-    referentielDuNaf: ref ? { id: ref.id, nom: ref.nom } : null,
-  };
+  return { statut: "diverge", referentielDuNaf };
 }

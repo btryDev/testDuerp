@@ -200,12 +200,24 @@ describe("axe secteur_duerp — le secteur retenu par défaut", () => {
     );
   });
 
-  it("se tait quand la comparaison n'a pas de sens", () => {
-    // Pas de secteur confirmé, ou pas de code NAF nulle part. L'axe DUERP dit
-    // déjà le premier ; inventer un second message serait du bruit.
-    expect(
-      riensASignaler(avecCorrespondance({ statut: "indeterminable" })),
-    ).toBe(true);
+  it.each([
+    ["sans_naf", { statut: "sans_naf" } as const],
+    [
+      "sans_secteur_retenu",
+      { statut: "sans_secteur_retenu", referentielDuNaf: null } as const,
+    ],
+    [
+      "sans_secteur_retenu, NAF résolu",
+      {
+        statut: "sans_secteur_retenu",
+        referentielDuNaf: { id: "commerce", nom: "Commerce de détail" },
+      } as const,
+    ],
+  ])("se tait sur l'axe « par défaut » quand rien ne diverge (%s)", (_, c) => {
+    // Cet axe-là ne parle que de divergence. Les deux autres états sont dits
+    // par `axeDuerp`, qui a la donnée pour les distinguer ; les redire ici
+    // ferait deux messages pour un fait.
+    expect(riensASignaler(avecCorrespondance(c))).toBe(true);
   });
 
   it("le dit quand le référentiel retenu n'est pas celui du code NAF", () => {
@@ -260,6 +272,81 @@ describe("axe secteur_duerp — le secteur retenu par défaut", () => {
     );
     expect(axes(c)).toEqual(["secteur_duerp"]);
     expect(c.manques[0].motif).toContain("s'appuie sur un référentiel");
+  });
+});
+
+describe("axe secteur_duerp — `secteur_inconnu` couvre trois situations", () => {
+  // Un seul état de l'ADR-020, trois faits distincts, et une seule des trois
+  // situations autorise à dire qu'aucun référentiel n'existe pour l'activité.
+  // La première version disait cette phrase dans les trois cas, sans jamais
+  // regarder le code NAF — et `duerps/actions.ts` crée le DUERP SANS secteur
+  // puis redirige vers l'écran de choix, donc le cas passe par là à chaque
+  // création de dossier.
+  const inconnuAvec = (correspondance: CorrespondanceSecteur) =>
+    couvertureDeLEtablissement(
+      faits({
+        duerp: {
+          etat: "secteur_inconnu",
+          secteurNom: null,
+          nbActivitesDeclarees: 0,
+          correspondance,
+        },
+      }),
+    );
+
+  it("n'affirme PAS l'absence de référentiel quand le NAF en désigne un", () => {
+    // Le défaut : la boulangerie 47.24Z venait de créer son DUERP et lisait,
+    // sur son board comme dans le PDF remis à un tiers, qu'aucun référentiel
+    // ne correspondait à son activité — pendant que l'écran suivant lui
+    // recommandait Commerce de détail.
+    const c = inconnuAvec({
+      statut: "sans_secteur_retenu",
+      referentielDuNaf: { id: "commerce", nom: "Commerce de détail" },
+    });
+    expect(axes(c)).toEqual(["secteur_duerp"]);
+    expect(c.manques[0].motif).toContain("pas encore de référentiel sectoriel");
+    expect(c.manques[0].consequence).toContain("Commerce de détail");
+    for (const t of [c.manques[0].motif, c.manques[0].consequence]) {
+      expect(t).not.toMatch(/aucun référentiel/i);
+    }
+  });
+
+  it("l'affirme quand le NAF n'en désigne effectivement aucun", () => {
+    const c = inconnuAvec({
+      statut: "sans_secteur_retenu",
+      referentielDuNaf: null,
+    });
+    expect(c.manques[0].motif).toContain(
+      "Aucun référentiel sectoriel n'est instruit",
+    );
+  });
+
+  it("dit qu'il ne peut pas se prononcer quand aucun code NAF n'est renseigné", () => {
+    // Ne pas avoir de code n'est pas la même chose que d'en avoir un sans
+    // référentiel. Les confondre affirmerait l'inexistence sur une donnée
+    // absente — l'hypothèse silencieuse que ce dossier existe pour empêcher.
+    const c = inconnuAvec({ statut: "sans_naf" });
+    expect(c.manques[0].motif).toContain("aucun code d'activité n'est renseigné");
+    expect(c.manques[0].consequence).toContain(
+      "on ne peut pas non plus vous dire quel référentiel conviendrait",
+    );
+  });
+
+  it("dit dans les trois cas que le référentiel de conformité fonctionne", () => {
+    // La phrase qui empêche de lire « votre dossier ne sert à rien ». Le
+    // moteur de conformité ne lit jamais le code NAF.
+    for (const c of [
+      inconnuAvec({ statut: "sans_naf" }),
+      inconnuAvec({ statut: "sans_secteur_retenu", referentielDuNaf: null }),
+      inconnuAvec({
+        statut: "sans_secteur_retenu",
+        referentielDuNaf: { id: "commerce", nom: "Commerce de détail" },
+      }),
+    ]) {
+      expect(c.manques[0].consequence).toContain(
+        "Le référentiel de conformité, lui, fonctionne normalement",
+      );
+    }
   });
 });
 
@@ -342,7 +429,7 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
       etat: "secteur_inconnu",
       secteurNom: null,
       nbActivitesDeclarees: 0,
-      correspondance: { statut: "indeterminable" as const },
+      correspondance: { statut: "sans_naf" as const },
     },
     equipements: { nbSansObligation: 4, nbEquipements: 9 },
     famillesNonPortees: [{ corpus: "c", ref: "PE 28", motif: "…" }],

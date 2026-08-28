@@ -300,15 +300,54 @@ function axeDuerp(
   const secteur = duerp.secteurNom;
 
   switch (duerp.etat) {
-    case "secteur_inconnu":
+    case "secteur_inconnu": {
+      // Trois situations sous un seul état de l'ADR-020, et une seule des
+      // trois autorise à dire qu'aucun référentiel n'existe pour l'activité.
+      //
+      // La première version disait cette phrase dans les trois cas, sans
+      // jamais regarder le code NAF. Or `duerps/actions.ts` crée le DUERP
+      // SANS secteur puis redirige vers l'écran de choix : pendant tout cet
+      // intervalle — et définitivement si le dirigeant abandonne — une
+      // boulangerie en 47.24Z lisait sur son board et dans le PDF remis à un
+      // tiers qu'aucun référentiel ne correspondait à son activité, pendant
+      // que l'écran suivant lui recommandait Commerce de détail.
+      const c = duerp.correspondance;
+      const refDuNaf =
+        c.statut === "sans_secteur_retenu" || c.statut === "diverge"
+          ? c.referentielDuNaf
+          : null;
+
+      const sansBase =
+        "Le document unique a été ouvert sans base de risques types : aucune unité de travail, aucun risque et aucune mesure n'y sont pré-chargés. Le référentiel de conformité, lui, fonctionne normalement — il ne lit pas votre code d'activité.";
+
+      if (refDuNaf) {
+        manques.push({
+          axe: "secteur_duerp",
+          motif:
+            "Le document unique n'a pas encore de référentiel sectoriel, alors que votre code d'activité en désigne un.",
+          consequence: `${sansBase} Le référentiel « ${refDuNaf.nom} » correspond à votre code d'activité : le confirmer depuis le document unique chargera ses unités et ses risques types.`,
+        });
+        return;
+      }
+
+      if (c.statut === "sans_naf") {
+        manques.push({
+          axe: "secteur_duerp",
+          motif:
+            "Le document unique n'a pas de référentiel sectoriel, et aucun code d'activité n'est renseigné.",
+          consequence: `${sansBase} Sans code d'activité, on ne peut pas non plus vous dire quel référentiel conviendrait.`,
+        });
+        return;
+      }
+
       manques.push({
         axe: "secteur_duerp",
         motif:
-          "Aucun référentiel sectoriel ne correspond à l'activité de cet établissement.",
-        consequence:
-          "Le document unique a été ouvert sans base de risques types : aucune unité de travail, aucun risque et aucune mesure n'y sont pré-chargés. Le référentiel de conformité, lui, fonctionne normalement — il ne lit pas votre code d'activité.",
+          "Aucun référentiel sectoriel n'est instruit pour l'activité de cet établissement.",
+        consequence: sansBase,
       });
       return;
+    }
 
     case "secteur_non_instruit":
       manques.push({

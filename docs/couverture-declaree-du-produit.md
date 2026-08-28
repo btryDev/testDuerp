@@ -68,6 +68,15 @@ de choix offre quand même « Changer de secteur ». Le produit lui affirmait do
 jusque dans le PDF remis à un tiers, un fait qu'il ne savait pas. Corrigé par un
 troisième état qui porte le référentiel que le NAF désigne.
 
+**« Aucun référentiel sectoriel ne correspond à l'activité de cet
+établissement », dès la création du dossier.** Même faute, quinze lignes plus
+haut, laissée intacte quand la première a été corrigée. `duerps/actions.ts` crée
+le DUERP **sans secteur** puis redirige vers l'écran de choix : pendant tout cet
+intervalle — et définitivement si le dirigeant abandonne — la même boulangerie
+lisait cette phrase pendant que l'écran suivant lui recommandait Commerce de
+détail. L'état `secteur_inconnu` de l'ADR-020 recouvre trois situations, et une
+seule autorise cette affirmation. Il en rend trois phrases distinctes.
+
 **Le silence sur un établissement sans code NAF propre.**
 `Etablissement.codeNaf` est optionnel — renseigné seulement s'il diffère de
 celui de l'entreprise. Lu seul, il faisait taire l'axe sur exactement le dossier
@@ -96,6 +105,22 @@ serait une heuristique sur du texte libre, ce que ce dépôt refuse partout.
 **C'est la suite naturelle de ce socle**, et c'est littéralement ce que
 réclamaient les `declareA` d'origine : « Un exploitant hôtelier ne verra rien
 qui l'avertisse que ces trois obligations lui manquent. »
+
+### Une asymétrie signalée et non corrigée
+
+`app/duerp/[id]/secteur/page.tsx` lit `duerp.entreprise.codeNaf` **seul**,
+jamais celui de l'établissement — l'inverse du repli appliqué partout ailleurs,
+et l'inverse de ce que fait désormais l'axe `secteur_duerp`.
+
+Quand l'établissement porte un code propre — siège en `56.10A`, secondaire en
+`47.24Z` —, la recommandation de l'écran vient donc de l'entreprise pendant que
+le dossier nomme un référentiel tiré de l'établissement. **Le dossier peut ainsi
+nommer un référentiel déduit d'un code que les écrans DUERP n'affichent jamais.**
+
+Non corrigé volontairement : ce n'est pas un oubli symétrique du précédent, c'est
+une question de fond — lequel des deux codes doit gouverner le choix du
+référentiel sectoriel ? Elle se tranche avec la propriétaire, pas dans un lot de
+couverture.
 
 ---
 
