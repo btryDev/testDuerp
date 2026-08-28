@@ -621,10 +621,109 @@ export function requetesDeLecture(source: string): string[] {
   return blocs;
 }
 
-/** Une requête qui rend plus que ce qu'elle nomme. */
-export function requeteTropLarge(bloc: string): boolean {
-  if (/\binclude\s*:/.test(bloc)) return true;
-  return !/\bselect\s*:/.test(bloc);
+/**
+ * Les clés directes d'un objet littéral, avec leur valeur brute.
+ *
+ * Le comptage d'accolades ignore ce qui vit dans une chaîne : `sansCommentaires`
+ * est passé avant, mais une accolade entre guillemets fausserait la profondeur.
+ */
+function clesDirectes(objet: string): { cle: string; valeur: string }[] {
+  const paires: { cle: string; valeur: string }[] = [];
+  let i = objet.indexOf("{") + 1;
+  let profondeur = 0;
+  let cle: string | null = null;
+  let debut = i;
+
+  const pousser = (fin: number) => {
+    if (cle !== null) paires.push({ cle, valeur: objet.slice(debut, fin).trim() });
+    cle = null;
+  };
+
+  while (i < objet.length) {
+    const c = objet[i];
+    if (c === "{" || c === "[" || c === "(") profondeur++;
+    else if (c === "}" || c === "]" || c === ")") {
+      if (profondeur === 0) {
+        pousser(i);
+        break;
+      }
+      profondeur--;
+    } else if (profondeur === 0) {
+      if (c === ":" && cle === null) {
+        const avant = objet.slice(0, i);
+        const m = /([A-Za-z_$][\w$]*)\s*$/.exec(avant);
+        cle = m ? m[1] : "";
+        debut = i + 1;
+      } else if (c === "," && cle !== null) {
+        pousser(i);
+      }
+    }
+    i++;
+  }
+  return paires;
+}
+
+/** Les noms de champs qui désignent une relation, lus dans le schéma Prisma. */
+export function champsDeRelation(schema: string): Set<string> {
+  const modeles = new Set(
+    [...schema.matchAll(/^model\s+(\w+)\s*\{/gm)].map((m) => m[1]),
+  );
+  const relations = new Set<string>();
+  for (const ligne of schema.split("\n")) {
+    const m = /^\s{2,}(\w+)\s+(\w+)(\[\])?\??\s*(@|$)/.exec(ligne);
+    if (m && modeles.has(m[2])) relations.add(m[1]);
+  }
+  return relations;
+}
+
+/**
+ * Une requête qui rend plus que ce qu'elle nomme, à N'IMPORTE quel niveau.
+ *
+ * La première version cherchait `select:` **quelque part** dans le bloc. Une
+ * relation imbriquée sans `select` propre la satisfaisait donc, tout en
+ * ramenant tous les scalaires de la relation — exactement ce que faisait
+ * `include`. Le défaut d'origine se réécrivait à l'identique sous garde verte,
+ * et sous la graphie la plus naturelle pour qui vient de lire « pas
+ * d'`include`, mets un `select` » :
+ *
+ *   select: { versions: { orderBy: { numero: "desc" }, take: 1 } }
+ *
+ * Deux formes sont donc refusées, à chaque niveau : un bloc de relation qui ne
+ * porte pas SON `select`, et une relation prise en bloc par `true`.
+ *
+ * `_count` fait exception et ne se descend pas : `_count: { select: { x: true } }`
+ * compte, il ne sélectionne rien.
+ */
+export function relationsNonNommees(
+  bloc: string,
+  relations: Set<string>,
+): string[] {
+  if (/\binclude\s*:/.test(bloc)) return ["include"];
+
+  const fautes: string[] = [];
+
+  function descendre(objetSelect: string, chemin: string): void {
+    for (const { cle, valeur } of clesDirectes(objetSelect)) {
+      if (cle === "_count") continue;
+      const ici = chemin ? `${chemin}.${cle}` : cle;
+
+      if (valeur.startsWith("{")) {
+        const sien = clesDirectes(valeur).find((p) => p.cle === "select");
+        if (!sien) {
+          fautes.push(ici);
+          continue;
+        }
+        descendre(sien.valeur, ici);
+      } else if (/^true\b/.test(valeur) && relations.has(cle)) {
+        fautes.push(ici);
+      }
+    }
+  }
+
+  const racine = clesDirectes(bloc).find((p) => p.cle === "select");
+  if (!racine) return ["(requête sans select)"];
+  descendre(racine.valeur, "");
+  return fautes;
 }
 
 /**
@@ -758,23 +857,83 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
   });
 
   it("le juge de forme voit une requête qui rend plus qu'elle ne nomme", () => {
+    const RELATIONS = new Set(["versions", "unites", "risques", "etablissement"]);
+    const juger = (src: string) =>
+      requetesDeLecture(src).flatMap((b) => relationsNonNommees(b, RELATIONS));
+
     // La forme la plus banale, et celle qu'aucune recherche de nom ne peut
     // voir : sans `select`, Prisma rend tous les scalaires du modèle.
-    const nue = "await prisma.action.findMany({ where: { etablissementId } });";
-    expect(requetesDeLecture(nue).map(requeteTropLarge)).toEqual([true]);
+    expect(
+      juger("await prisma.action.findMany({ where: { etablissementId } });"),
+    ).toEqual(["(requête sans select)"]);
 
-    // `include` est pire : il rend aussi tous ceux de la relation ouverte.
-    const avecInclude =
-      "await prisma.duerp.findFirst({ where: { id }, include: { versions: { take: 1 } } });";
-    expect(requetesDeLecture(avecInclude).map(requeteTropLarge)).toEqual([true]);
+    // `include` rend en plus tous ceux de la relation ouverte.
+    expect(
+      juger(
+        "await prisma.duerp.findFirst({ where: { id }, include: { versions: { take: 1 } } });",
+      ),
+    ).toEqual(["include"]);
 
-    // Une requête qui nomme ce qu'elle lit passe.
-    const nommee =
-      "await prisma.duerp.findFirst({ where: { id }, select: { versions: { select: { numero: true } } } });";
-    expect(requetesDeLecture(nommee).map(requeteTropLarge)).toEqual([false]);
+    // LE CAS QUI PASSAIT AU VERT, et qui a rouvert le défaut d'origine : un
+    // `select` à la racine, une relation imbriquée sans le sien. Prisma rend
+    // alors la ligne `DuerpVersion` entière, `snapshot` comprise.
+    expect(
+      juger(
+        'await prisma.duerp.findFirst({ where: { id }, select: { versions: { orderBy: { numero: "desc" }, take: 1 } } });',
+      ),
+    ).toEqual(["versions"]);
+
+    // Sa variante courte, qui passait aussi.
+    expect(
+      juger("await prisma.duerp.findFirst({ select: { versions: true } });"),
+    ).toEqual(["versions"]);
+
+    // Le défaut se voit à n'importe quelle profondeur.
+    expect(
+      juger(
+        "await prisma.duerp.findFirst({ select: { unites: { select: { nom: true, risques: { take: 3 } } } } });",
+      ),
+    ).toEqual(["unites.risques"]);
+
+    // Une requête qui nomme ce qu'elle lit, à tous les niveaux, passe.
+    expect(
+      juger(
+        'await prisma.duerp.findFirst({ where: { id }, select: { versions: { orderBy: { numero: "desc" }, take: 1, select: { numero: true, createdAt: true } } } });',
+      ),
+    ).toEqual([]);
+
+    // `_count` ne se descend pas : il compte, il ne sélectionne rien — et sa
+    // clé porte justement un nom de relation.
+    expect(
+      juger(
+        "await prisma.duerp.findFirst({ select: { unites: { select: { nom: true, _count: { select: { risques: true } } } } } });",
+      ),
+    ).toEqual([]);
+
+    // Un scalaire homonyme d'aucune relation reste sélectionnable par `true`.
+    expect(
+      juger("await prisma.duerp.findFirst({ select: { libelle: true } });"),
+    ).toEqual([]);
 
     // Les blocs imbriqués ne trompent pas le compteur d'accolades.
-    expect(requetesDeLecture(nommee)).toHaveLength(1);
+    expect(
+      requetesDeLecture(
+        "await prisma.duerp.findFirst({ select: { unites: { select: { nom: true } } } });",
+      ),
+    ).toHaveLength(1);
+  });
+
+  it("les relations sont lues dans le schéma Prisma, pas devinées", () => {
+    // Une liste écrite à la main vieillirait en silence : un modèle ajouté
+    // plus tard échapperait à la règle sans que rien ne le dise.
+    const relations = champsDeRelation(
+      readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8"),
+    );
+    for (const attendu of ["versions", "unites", "risques", "pointsReleve", "releves"]) {
+      expect(relations.has(attendu), attendu).toBe(true);
+    }
+    // Et un scalaire n'y entre pas.
+    expect(relations.has("libelle")).toBe(false);
   });
 
   it("aucune surface interdite ne lit ces champs", () => {
@@ -790,23 +949,29 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
     expect(fautifs).toEqual([]);
   });
 
-  it("les requêtes du MCP nomment ce qu'elles lisent", () => {
+  it("les requêtes du MCP nomment ce qu'elles lisent, à chaque niveau", () => {
+    const relations = champsDeRelation(
+      readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8"),
+    );
     const fautives: string[] = [];
+
     for (const { abs, rel } of sources()) {
       if (!CHEMINS_REQUETE_NOMMEE.some((r) => r.test(rel))) continue;
-      const source = readFileSync(abs, "utf8");
-      for (const bloc of requetesDeLecture(source)) {
-        if (requeteTropLarge(bloc)) fautives.push(`${rel} : ${bloc.slice(0, 90)}…`);
+      for (const bloc of requetesDeLecture(readFileSync(abs, "utf8"))) {
+        for (const faute of relationsNonNommees(bloc, relations)) {
+          fautives.push(`${rel} → ${faute}`);
+        }
       }
     }
 
     expect(
       fautives,
-      "Cette requête du MCP emploie `include`, ou n'a pas de `select` : elle rend " +
-        "donc des colonnes que personne n'a demandées. C'est ainsi que " +
-        "`DuerpVersion.snapshot` — qui porte le `responsable` de chaque mesure — " +
-        "revenait dans le serveur MCP sans qu'aucun nom de champ n'apparaisse dans " +
-        "le source. Nommez les colonnes lues (docs/rgpd.md § 2.5).",
+      "Cette requête du MCP emploie `include`, ou laisse une relation sans son " +
+        "propre `select` : elle rend donc des colonnes que personne n'a demandées. " +
+        "C'est ainsi que `DuerpVersion.snapshot` — qui porte le `responsable` de " +
+        "chaque mesure — revenait dans le serveur MCP sans qu'aucun nom de champ " +
+        "n'apparaisse dans le source. Un `select` à la racine ne suffit pas : " +
+        "chaque relation ouverte porte le sien (docs/rgpd.md § 2.5).",
     ).toEqual([]);
   });
 

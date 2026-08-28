@@ -187,12 +187,22 @@ défaut plutôt qu'en le décrivant.
 
 **Ce que la garde tient, et ce qu'elle ne tient pas.** Sur `src/lib/mcp/`,
 elle tient les deux bouts : les six formes sous lesquelles on lit un champ
-nommément, et la **forme des requêtes** — `include` interdit, `select`
-obligatoire. Ce second volet est indispensable, et il manquait : une requête
-sans `select` rend tous les scalaires du modèle sans qu'aucun nom de champ
-n'apparaisse dans le source. C'est ainsi que `DuerpVersion.snapshot`, qui
-porte le `responsable` de chaque mesure, revenait dans le serveur MCP — vu par
-un relecteur, pas par la garde.
+nommément, et la **forme des requêtes**. Ce second volet est indispensable —
+une requête sans `select` rend tous les scalaires du modèle sans qu'aucun nom
+de champ n'apparaisse dans le source. C'est ainsi que `DuerpVersion.snapshot`,
+qui porte le `responsable` de chaque mesure, revenait dans le serveur MCP :
+vu par un relecteur, pas par la garde.
+
+La règle de forme exige un `select` **à chaque niveau**, et non un `select`
+quelque part dans la requête. La nuance n'est pas théorique : une première
+rédaction se contentait du second, et une relation imbriquée sans `select`
+propre la satisfaisait tout en ramenant la ligne entière — le défaut d'origine
+se réécrivait à l'identique sous garde verte, sous la graphie la plus naturelle
+pour qui vient de lire « pas d'`include`, mets un `select` ». Deux formes sont
+donc refusées à chaque niveau : une relation ouverte sans son `select`, et une
+relation prise en bloc par `true`. Les noms de relations sont lus dans
+`prisma/schema.prisma` plutôt qu'énumérés à la main, faute de quoi un modèle
+ajouté plus tard échapperait à la règle en silence.
 
 Sur `app/api/`, elle ne tient que les lectures nommées d'`operateur`. La règle
 de forme n'y est **pas** appliquée : elle obligerait des dizaines de routes
