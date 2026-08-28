@@ -28,6 +28,17 @@ export const ETAT_PLAN: Record<
   // Le mot suffit à distinguer ce statut du brouillon — « Inspection commune
   // faite » ne se confond avec rien —, et les trois couleurs restent réservées
   // aux trois jalons qui commandent la suite.
+  //
+  // CETTE TABLE ÉTANT PARTAGÉE, LA FICHE CHANGE AUSSI, et il faut le dire.
+  // Son histoire en trois temps : elle affichait « Brouillon » sur ce statut
+  // (une cascade à `else` fourre-tout, corrigée depuis), puis « Inspection
+  // commune faite » en bleu, et maintenant la même chose en ardoise. Le vrai
+  // correctif — nommer le statut au lieu de le confondre avec un brouillon —
+  // est intact ; seule la teinte s'aligne sur la règle de la liste.
+  //
+  // C'est le sens même de l'unification : la liste et la fiche doivent dire la
+  // même chose. Les laisser diverger sur la couleur aurait reconduit le défaut
+  // qu'elle corrigeait, à l'envers.
   inspection_faite: { ton: "neutre", mot: "Inspection commune faite" },
   attente_signatures: { ton: "proche", mot: "En attente de signatures" },
   valide: { ton: "bleu", mot: "Validé" },

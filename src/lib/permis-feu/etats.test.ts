@@ -31,11 +31,26 @@ describe("libellePastillePermis", () => {
     // La forme exacte du bogue : le libellé ne doit pas contenir le mot d'état
     // précédé d'un chiffre. Ce test tombe si quelqu'un réintroduit
     // l'interpolation, quel que soit le mot que la table portera alors.
+    //
+    // DEUX antislashs, pas quatre. La première version en portait quatre : dans
+    // un gabarit, cela produit la chaîne `\\d+\\s+…`, donc une regex qui
+    // cherche un antislash littéral suivi d'un `d`. Elle n'appariait jamais
+    // rien, et le `not.toMatch` était vrai par construction — le test le plus
+    // important du fichier ne testait rien.
+    //
+    // C'est le même mode de panne que le motif `/^scripts\/mcp-server\.ts$/`
+    // corrigé le même jour sur l'autre branche : une expression régulière qui
+    // ne peut structurellement rien attraper, dans une garde qui affirme
+    // couvrir.
+    const motif = new RegExp(
+      `\\d+\\s+${ETAT_PERMIS.attente_signatures.mot}`,
+    );
+    // Le motif se vérifie lui-même avant de servir : sans cela, on ne saurait
+    // pas s'il regarde au bon endroit.
+    expect("1 " + ETAT_PERMIS.attente_signatures.mot).toMatch(motif);
+
     for (const n of [0, 1, 2, 5]) {
-      const libelle = libellePastillePermis("attente_signatures", n);
-      expect(libelle).not.toMatch(
-        new RegExp(`\\\\d+\\\\s+${ETAT_PERMIS.attente_signatures.mot}`),
-      );
+      expect(libellePastillePermis("attente_signatures", n)).not.toMatch(motif);
     }
   });
 

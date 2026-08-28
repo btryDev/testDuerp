@@ -76,12 +76,17 @@ describe("contraste des couples champ/encre", () => {
    * peut plus EMPIRER sans qu'un test tombe, et l'écart est écrit noir sur
    * blanc au lieu de dormir dans une palette que personne ne mesure.
    */
+  // Les planchers serrent au millième la valeur mesurée pour les deux couples
+  // sous le seuil, et non à la décimale : « 4,3 » laissait environ 1 % de marge
+  // sous 4,338, si bien qu'« ils ne peuvent plus empirer » était vrai à peu
+  // près et pas exactement. Les trois autres gardent le seuil de 4,5 — ils en
+  // sont loin au-dessus, et c'est lui qui compte pour eux.
   const PLANCHER: Record<RegistreLigne, number> = {
-    enRetard: 4.3, // ← 4,34 mesuré. Sous 4,5, à trancher au niveau de la charte.
-    proche: 4.5, // 6,65
-    lointain: 3.8, // ← 3,82 mesuré. Le plus bas des cinq.
-    faite: 4.5, // 6,40
-    aPlanifier: 4.5, // 6,02
+    enRetard: 4.338, // mesuré 4,3383. Sous 4,5 — à trancher au niveau de la charte.
+    proche: 4.5, // mesuré 6,65
+    lointain: 3.82, // mesuré 3,8201. Le plus bas des cinq.
+    faite: 4.5, // mesuré 6,40
+    aPlanifier: 4.5, // mesuré 6,02
   };
 
   it("chaque encre est lisible sur son propre champ", () => {
