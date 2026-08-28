@@ -229,9 +229,10 @@ Deux catégories de personnes, deux chemins.
 ### 5.1 Le titulaire du compte (le dirigeant)
 
 Les quatre droits sont dus et exercés. Ce qui change d'une ligne à l'autre,
-c'est **par quel chemin** : deux passent par l'application, deux par une
-demande traitée à la main. La colonne de droite dit lequel, et ne promet pas
-d'écran là où il n'y en a pas.
+c'est **par quel chemin** : **un seul** passe par l'application — la
+rectification, par les formulaires d'édition. Les **trois autres** s'exercent
+par demande à `contact@btry.fr`, traitée à la main. Chaque point ci-dessous dit
+lequel, et ne promet pas d'écran là où il n'y en a pas.
 
 1. **Accès et portabilité** (art. 15 et 20) — **par demande à
    `contact@btry.fr`**, traitée manuellement dans le délai d'un mois de
@@ -351,10 +352,20 @@ retirer les lignes à porteur salarié plutôt que les anonymiser ? Voir
 
 ### 7.1 Les trois formes de portée, et pourquoi il y en a trois
 
-Relevé sur les 21 `src/lib/*/queries.ts` le 2026-08-28. La phrase précédente
-disait « chaque lecture porte le prédicat », ce qui laissait croire à une forme
-unique : le relecteur suivant prenait la forme B pour un défaut, et refaisait
-l'analyse. Les trois sont légitimes ; ce qui ne l'est pas, c'est une quatrième.
+La phrase précédente disait « chaque lecture porte le prédicat », ce qui
+laissait croire à une forme unique : le relecteur suivant prenait la forme B
+pour un défaut, et refaisait l'analyse. Les trois sont légitimes ; ce qui ne
+l'est pas, c'est une quatrième.
+
+**Méthode, pour que ce relevé soit refaisable plutôt que cru sur parole.**
+Énumérer les appels — `prisma*.<modèle>.(findMany|findFirst|findUnique|count|
+groupBy|aggregate)` dans les 21 `src/lib/*/queries.ts` — puis classer **chaque
+appel**, pas chaque fichier. Au 2026-08-28 : 56 appels. La première rédaction
+de cette section annonçait un relevé « sur les 21 fichiers » sans donner la
+méthode, et elle en avait manqué trois — dont deux dans `batiments`, le module
+qu'elle citait en exemple. Un inventaire qui se dit exhaustif sans dire comment
+il a été fait est plus dangereux qu'une absence d'inventaire : on ne le rouvre
+pas.
 
 **La forme se choisit par lecture, pas par module** — plusieurs fichiers en
 mêlent deux, et c'est normal : une fonction qui reçoit un `etablissementId`
@@ -370,6 +381,12 @@ lecture qui ne le porte pas devient une fuite au premier appelant qui ne
 vérifiera pas. *Intégralement en A* : batiments, calendrier, actions,
 dashboard, duerps, entreprises, equipements, etablissements, prescriptions,
 rapports, registre, risques, salaries, versions.
+
+⚠️ *Attention au cas de `batiments`* : ce module **porte** la doctrine (le
+commentaire de `listerBatimentsAvecCharge`) et l'enfreignait tout de même sur
+deux lectures — `batimentParDefaut` et `resoudreBatimentOptionnel`, corrigées
+le 2026-08-28. Une doctrine écrite dans un fichier ne s'applique pas d'elle-même
+au reste du fichier.
 
 **B — la fonction établit l'appartenance elle-même**, via
 `requireEtablissement()` (`src/lib/auth/scope.ts`), puis n'utilise dans le
@@ -397,15 +414,40 @@ tous délibérés :
   démarrage du serveur, et **chaque `where` le porte**, relations comprises.
 
 **La quatrième forme n'existe pas** : une lecture sans garde et sans raison
-écrite est un défaut, pas un quatrième idiome. Il y en avait huit au
-2026-08-28 — les quatre lectures de `salaries`, `chargerPagePrescriptions`,
-`dernierRelevesParPoint`, `nextNumeroPermisFeu` et `nextNumeroPlan` — toutes
-passées en A depuis. Aucune ne fuyait : leurs appelants vérifiaient tous en
-amont. C'est la convention qui était rompue, pas encore le cloisonnement —
-et `navigation/sidebar-counts.ts` appelait déjà `compterTitresEnRetard` avec
-un identifiant nu. `salaries/isolation.test.ts` éprouve la garantie en la
-cassant : deux entreprises, l'une lit l'identifiant de l'autre, la lecture doit
-rendre vide.
+écrite est un défaut, pas un quatrième idiome. Il y en avait **onze** au
+2026-08-28, toutes passées en A depuis :
+
+- les quatre lectures de `salaries` ;
+- `prescriptions/chargerPagePrescriptions` — la plus exposée en volume rendu ;
+- `carnet-sanitaire/dernierRelevesParPoint` ;
+- `permis-feu/nextNumeroPermisFeu`, `plan-prevention/nextNumeroPlan` ;
+- `batiments/batimentParDefaut`, `batiments/resoudreBatimentOptionnel` ;
+- la lecture des `pointReleve` dans `dashboard/getModulesMatrice`.
+
+**Aucune ne fuyait** : leurs appelants vérifiaient tous en amont, vérification
+faite appelant par appelant. C'est la convention qui était rompue, pas encore le
+cloisonnement — mais `navigation/sidebar-counts.ts` appelait déjà
+`compterTitresEnRetard` avec un identifiant nu, et `resoudreBatimentOptionnel`
+est ce qui **valide** un `batimentId` avant écriture : un appelant non gardé lui
+ferait confirmer le bâtiment d'un autre compte.
+
+**Ce qui est éprouvé, et ce qui ne l'est pas.** `salaries/isolation.test.ts` et
+`batiments/isolation.test.ts` cassent la garantie pour la vérifier — deux
+entreprises, l'une lit l'identifiant de l'autre, la lecture doit rendre vide —
+et les deux ont été éprouvés par réinjection du défaut. Les six autres
+corrections ne sont **pas** couvertes : leur module n'a pas de harnais et en
+construire un (neuf modèles simulés pour `getModulesMatrice`) coûterait plus
+que la garantie ne vaut, ces lectures recevant déjà un identifiant scopé. Le
+`where` y est du renfort, pas la seule barrière. Écrit ici plutôt que taire :
+une correction non testable se signale.
+
+Deux limites de ce qui est éprouvé, pour ne pas surestimer le filet. Le faux
+Prisma de ces deux fichiers n'implémente que les formes de `where` que les
+fonctions testées émettent — il **lève** sur les autres, donc il ne couvre
+jamais une clause en silence, mais il ne dit rien d'une requête réécrite tant
+que le faux n'a pas suivi. Et le magasin simulé de `dashboard/queries.test.ts`
+**ignore délibérément** les clés de portée : ce fichier teste des filtres
+métier, pas le cloisonnement.
 
 **Habilitations d'accès internes** : le multi-utilisateur par entreprise n'est
 pas implémenté. Il n'y a donc aujourd'hui qu'un seul accès par entreprise,

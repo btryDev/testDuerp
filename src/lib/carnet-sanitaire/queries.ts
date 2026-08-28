@@ -29,10 +29,16 @@ export async function getCarnetSanitaire(etablissementId: string) {
  * Dernier relevé par point — utilisé pour afficher un statut rapide en
  * dashboard / page index.
  *
- * Le prédicat d'appartenance est porté ici aussi, bien que les appelants
- * passent un `carnetId` qui sort déjà d'une lecture scopée : sans RLS
- * (ADR-005), une lecture qui ne le porte pas devient une fuite au premier
- * appelant qui prendra l'identifiant ailleurs.
+ * Le prédicat d'appartenance est porté ici aussi, bien que le `carnetId`
+ * soit destiné à sortir d'une lecture scopée : sans RLS (ADR-005), une
+ * lecture qui ne le porte pas devient une fuite au premier appelant qui
+ * prendra l'identifiant ailleurs.
+ *
+ * **Sans appelant au 2026-08-28.** La requête vivante équivalente est dans
+ * `dashboard/queries.ts` (`getModulesMatrice`), qui porte le même prédicat.
+ * Constatée morte, non supprimée — même traitement que `ComplianceTimeline`
+ * (`docs/dette-chantier-porteur-echeance.md` § 6.4) : la suppression est une
+ * décision à part, pas un effet de bord d'un lot de sécurité.
  */
 export async function dernierRelevesParPoint(carnetId: string) {
   const user = await requireUser();

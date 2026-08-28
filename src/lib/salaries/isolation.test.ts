@@ -86,6 +86,38 @@ const h = vi.hoisted(() => {
     return true;
   }
 
+  /**
+   * Applique un `orderBy` Prisma. Même politique que `correspond` : ce qui
+   * n'est pas compris lève, plutôt que de rendre un ordre arbitraire qu'une
+   * assertion prendrait pour le bon.
+   */
+  function trier(lignes: Ligne[], orderBy: unknown): Ligne[] {
+    if (orderBy === undefined) return lignes;
+    const criteres = Array.isArray(orderBy) ? orderBy : [orderBy];
+    return [...lignes].sort((a, b) => {
+      for (const critere of criteres) {
+        const [cle, sens] = Object.entries(critere as Ligne)[0];
+        if (sens !== "asc" && sens !== "desc") {
+          throw new Error(`Faux Prisma : sens de tri non géré — ${String(sens)}.`);
+        }
+        const va = a[cle];
+        const vb = b[cle];
+        if (va === vb) continue;
+        let cmp: number;
+        if (typeof va === "boolean" && typeof vb === "boolean") cmp = va ? 1 : -1;
+        else if (typeof va === "string" && typeof vb === "string") cmp = va < vb ? -1 : 1;
+        else if (va instanceof Date && vb instanceof Date) cmp = va < vb ? -1 : 1;
+        else {
+          throw new Error(
+            `Faux Prisma : tri non géré sur « ${cle} » (${typeof va}).`,
+          );
+        }
+        return sens === "asc" ? cmp : -cmp;
+      }
+      return 0;
+    });
+  }
+
   /** Les titres d'un salarié, tels que `include`/`select` les rendrait. */
   const titresDe = (salarieId: unknown) =>
     db.titres.filter((t) => t.salarieId === salarieId);
@@ -94,8 +126,11 @@ const h = vi.hoisted(() => {
 
   const prisma = {
     salarie: {
-      findMany: async ({ where }: { where: Ligne }) =>
-        db.salaries.filter((s) => correspond(s, where)).map(hydrater),
+      findMany: async ({ where, orderBy }: { where: Ligne; orderBy?: unknown }) =>
+        trier(
+          db.salaries.filter((s) => correspond(s, where)),
+          orderBy,
+        ).map(hydrater),
       findFirst: async ({ where }: { where: Ligne }) => {
         const s = db.salaries.find((l) => correspond(l, where));
         return s ? hydrater(s) : null;
@@ -167,6 +202,20 @@ beforeEach(() => {
       actif: true,
       createdAt: NOW,
     },
+    // Sortie de l'effectif, chez A. Son nom la placerait **première** par
+    // ordre alphabétique : seul `actif: "desc"` la renvoie en fin de liste.
+    // Et son titre ne doit pas disparaître du texte d'information (art. 13),
+    // le traitement se poursuivant après son départ (art. 17.3.b).
+    {
+      id: "sal-a-partie",
+      etablissementId: ETAB_A,
+      nom: "Ali",
+      prenom: "Neyla",
+      poste: null,
+      entreLe: null,
+      actif: false,
+      createdAt: NOW,
+    },
   ];
   h.db.titres = [
     {
@@ -182,6 +231,17 @@ beforeEach(() => {
       salarieId: "sal-b",
       obligationId: "attestation_medicale_r4544_11_1",
       delivreLe: new Date("2021-01-15T00:00:00+01:00"),
+      echeanceLe: ECHUE,
+      note: null,
+    },
+    // Titre de la personne partie, sur une **autre** obligation : c'est ce
+    // qui rend visible la disparition si un `actif: true` s'invitait dans le
+    // `where` de `libellesTitresDeclares`.
+    {
+      id: "titre-a-partie",
+      salarieId: "sal-a-partie",
+      obligationId: "habilitation_electrique_bs_be",
+      delivreLe: new Date("2020-06-01T00:00:00+02:00"),
       echeanceLe: ECHUE,
       note: null,
     },
@@ -234,19 +294,38 @@ describe("un identifiant d'établissement d'un autre dossier ne rend rien", () =
 describe("le propriétaire lit son propre dossier", () => {
   it("listerEquipe rend son équipe, titres compris", async () => {
     const equipe = await listerEquipe(ETAB_A, NOW);
-    expect(equipe.map((s) => s.nom)).toEqual(["Martin"]);
+    expect(equipe.map((s) => s.nom)).toEqual(["Martin", "Ali"]);
     expect(equipe[0].titres).toHaveLength(1);
+  });
+
+  it("listerEquipe garde les personnes sorties de l'effectif, en dernier", async () => {
+    // Deux propriétés en une, et c'est voulu : la personne partie reste
+    // **visible** — son titre prouve qu'elle était habilitée au moment où
+    // elle a opéré, et cette preuve couvre l'employeur (`rgpd.md` § 4.3) —
+    // mais elle passe **après** les actifs. « Ali » précède « Martin »
+    // alphabétiquement : sans `actif: "desc"` en tête du tri, l'ordre
+    // s'inverse et ce test tombe.
+    const equipe = await listerEquipe(ETAB_A, NOW);
+    expect(equipe.map((s) => s.actif)).toEqual([true, false]);
+    expect(equipe.map((s) => s.nom)).toEqual(["Martin", "Ali"]);
   });
 
   it("getSalarie rend la fiche demandée", async () => {
     expect((await getSalarie(ETAB_A, "sal-a", NOW))?.nom).toBe("Martin");
   });
 
-  it("compterTitresEnRetard compte le titre échu", async () => {
+  it("compterTitresEnRetard ne compte que les personnes en poste", async () => {
+    // Les deux titres de A sont échus, mais l'un est celui d'une personne
+    // partie : le rail ne réclame pas un geste pour quelqu'un qui n'est plus
+    // là. C'est la seule des quatre lectures qui filtre sur `actif`.
     expect(await compterTitresEnRetard(ETAB_A, NOW)).toBe(1);
   });
 
-  it("libellesTitresDeclares rend le titre déclaré", async () => {
-    expect(await libellesTitresDeclares(ETAB_A)).toHaveLength(1);
+  it("libellesTitresDeclares décrit AUSSI le titre d'une personne partie", async () => {
+    // Sans `actif: true`, délibérément (art. 17.3.b) : le traitement se
+    // poursuit après le départ, et le texte d'information remis aux salariés
+    // doit décrire le traitement réel. Ajouter `actif: true` au `where` fait
+    // tomber ce test de 2 à 1 — c'est ce qui garde la propriété.
+    expect(await libellesTitresDeclares(ETAB_A)).toHaveLength(2);
   });
 });

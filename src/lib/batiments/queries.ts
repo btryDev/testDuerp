@@ -43,10 +43,20 @@ export async function listerBatimentsDeLEtablissement(
  *
  * Lève si l'établissement n'a aucun bâtiment : c'est une violation
  * d'invariant, pas un cas à rattraper en silence.
+ *
+ * « Périmètre déjà vérifié » décrit l'usage, pas une dispense : le prédicat
+ * est porté ici aussi, pour la raison écrite plus bas dans
+ * `listerBatimentsAvecCharge`. Un établissement d'un autre compte lève donc
+ * l'erreur d'invariant plutôt que de rendre son bâtiment — c'est le bon
+ * refus : bruyant, et sans rien divulguer de l'autre dossier.
  */
 export async function batimentParDefaut(etablissementId: string) {
+  const user = await requireUser();
   const b = await prisma.batiment.findFirst({
-    where: { etablissementId },
+    where: {
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
     orderBy: [{ ordre: "asc" }, { createdAt: "asc" }],
     select: { id: true, nom: true },
   });
@@ -63,14 +73,26 @@ export async function batimentParDefaut(etablissementId: string) {
  * précisé (`null`), sinon le bâtiment doit appartenir à l'établissement —
  * la base ne le vérifie pas (clé simple), l'action le fait ici. `ok: false`
  * = id étranger ou inconnu.
+ *
+ * L'`etablissementId` vient lui aussi de l'appelant, et cette fonction est
+ * ce qui **valide** un identifiant avant qu'il soit écrit : sans le prédicat,
+ * un `etablissementId` non gardé lui ferait confirmer comme valide le
+ * bâtiment d'un autre compte, et le permis de feu s'y rattacherait. Les
+ * quatre appelants posent bien leur garde aujourd'hui — c'est justement ce
+ * qui ne doit pas être la seule chose qui tienne.
  */
 export async function resoudreBatimentOptionnel(
   etablissementId: string,
   batimentId: string | null | undefined,
 ): Promise<{ ok: true; id: string | null } | { ok: false }> {
   if (!batimentId) return { ok: true, id: null };
+  const user = await requireUser();
   const b = await prisma.batiment.findFirst({
-    where: { id: batimentId, etablissementId },
+    where: {
+      id: batimentId,
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
     select: { id: true },
   });
   return b ? { ok: true, id: b.id } : { ok: false };

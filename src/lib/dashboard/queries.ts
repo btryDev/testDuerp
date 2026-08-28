@@ -454,7 +454,15 @@ export async function getModulesMatrice(
   let nbPoints = 0;
   if (carnet) {
     const points = await prisma.pointReleve.findMany({
-      where: { carnetId: carnet.id, actif: true },
+      // `carnet.id` sort du `findFirst` scopé ci-dessus, donc la portée est
+      // déjà établie — le prédicat est porté quand même, pour que cette
+      // lecture ne dépende pas de la provenance de son argument (cf.
+      // `docs/rgpd.md` § 7.1, forme A).
+      where: {
+        carnetId: carnet.id,
+        actif: true,
+        carnet: { etablissement: { entreprise: { userId: user.id } } },
+      },
       select: {
         id: true,
         releves: {

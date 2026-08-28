@@ -171,9 +171,12 @@ model AccessToken {
 
 ### Relation Prestataire ↔ AccessToken ↔ autres entités
 
-- `PermisFeu`, `PlanPrevention` et `Intervention` portent un `prestataireId` (FK optionnelle, `ON DELETE SET NULL`). Cela connecte l'annuaire à l'historique sans imposer la création préalable d'une fiche prestataire (le dirigeant peut aussi saisir un prestataire inconnu à la volée).
-- **`Verification`, en revanche, n'en porte pas** — et n'en a jamais porté. La rédaction d'origine la citait en tête de liste ; c'était faux dès l'écriture de cet ADR, et vérifié tel quel au schéma le 2026-08-28 (`prisma/schema.prisma`, modèle `Verification`). Les quatre modèles qui portent la colonne sont `AccessToken`, `PermisFeu`, `PlanPrevention` et `Intervention`. Le réalisateur d'une occurrence de vérification se lit donc ailleurs — `RapportVerification.organismeVerif`, en texte libre — et rien ne relie aujourd'hui une occurrence à une fiche de l'annuaire.
+- `PermisFeu` et `PlanPrevention` portent un `prestataireId` **relié** à l'annuaire : FK optionnelle, `ON DELETE SET NULL`, avec la relation inverse déclarée sur `Prestataire`. Cela connecte l'annuaire à l'historique sans imposer la création préalable d'une fiche prestataire (le dirigeant peut aussi saisir un prestataire inconnu à la volée). `AccessToken` porte la même FK (cf. ci-dessous).
+- **`Verification` n'en porte pas** — et n'en a jamais porté. La rédaction d'origine la citait en tête de liste ; c'était faux dès l'écriture de cet ADR. Le réalisateur d'une occurrence de vérification se lit donc ailleurs — `RapportVerification.organismeVerif`, en texte libre — et rien ne relie aujourd'hui une occurrence à une fiche de l'annuaire.
+- **`Intervention` porte la colonne mais aucune clé étrangère** : `prestataireId String?` seul, sans `@relation`, sans inverse sur `Prestataire`, et la migration `20260423210000_interventions` ne pose que deux `FOREIGN KEY` (`etablissementId`, `interventionId`). Rien ne garantit donc que la valeur désigne un prestataire existant, et rien ne la nettoie à la suppression d'une fiche. Sans conséquence pratique : le module Interventions est **retiré** (ADR-018), la colonne est un vestige.
 - Un `AccessToken` peut référencer un `prestataireId` si connu, mais ce n'est pas obligatoire (un artisan ponctuel peut recevoir un lien sans qu'on crée sa fiche).
+
+*Corrigé le 2026-08-28, en deux fois.* La rédaction d'origine plaçait `Verification` en tête de cette liste. La première correction a retiré `Verification` mais qualifié les trois restants de « FK optionnelle `ON DELETE SET NULL` » — vrai pour deux d'entre eux, faux pour `Intervention`, soit le défaut corrigé rejoué dans sa correction. Relevé au schéma et aux migrations, modèle par modèle : quatre modèles portent la **colonne** (`AccessToken`, `PermisFeu`, `PlanPrevention`, `Intervention`), trois seulement portent la **clé étrangère**.
 
 ## Conséquences
 
