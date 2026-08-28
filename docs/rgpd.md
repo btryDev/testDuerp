@@ -116,6 +116,20 @@ vérification ». Le nom du technicien n'y est pas par accident.
 L'utilisateur reste responsable de ce qu'il dépose : un rapport peut contenir
 davantage (signature scannée, numéro d'habilitation d'un tiers).
 
+**La portée de `D. 4711-2` s'arrête ici.** L'article vise les vérifications et
+contrôles mis à la charge de l'employeur « au titre de la santé et de la
+sécurité **au travail** ». Il ne couvre donc ni `Action.responsable` — la
+personne à qui l'employeur confie une action corrective n'est pas un
+vérificateur — ni `ReleveTemperature.operateur` : un relevé d'eau chaude
+sanitaire relève du carnet sanitaire (arrêté du 1er février 2010,
+`R. 1321-23` CSP), dont l'article 3 demande de consigner « les modalités et
+les résultats » de la surveillance, et non l'identité de qui relève.
+
+Le maintien de `responsable` dans les documents remis est donc un fondement
+**produit**, pas légal : un plan d'actions sans porteur nommé perd sa
+fonction. Ce qu'aucun texte n'impose, aucune formulation de ce document ne
+doit le faire croire.
+
 ### 2.5 Autres personnes physiques déjà en base
 
 Pour que l'inventaire soit complet, et parce que l'ancienne version de ce
@@ -129,6 +143,99 @@ document les passait sous silence :
 | `PermisFeu.prestataireContact`, `donneurOrdreNom` | instantané d'une opération datée |
 | `PlanPrevention.efChefNom`, `euChefNom` | instantané d'une inspection commune |
 | `Action.responsable` | texte libre saisi par l'utilisateur |
+| `ReleveTemperature.operateur` | texte libre : qui a fait le relevé — lu sur l'écran du carnet sanitaire, jamais exporté |
+
+`operateur` manquait à ce tableau, qui se présente pourtant comme
+l'inventaire complet. Le champ existait depuis le carnet sanitaire.
+
+**Où ces deux champs sortent, et où ils ne sortent pas.** Un inventaire qui ne
+distingue pas les destinataires ne dit pas grand-chose : les deux champs sont
+du texte libre nominatif, et la décision du 2026-08-28 ne les traite pas
+pareil.
+
+| Champ | Sort | Ne sort pas | Pourquoi |
+|---|---|---|---|
+| `Action.responsable` | PDF du plan d'actions, dossier de conformité, DUERP — et le snapshot conservé 40 ans, qui conserve ce qui a été remis | serveur MCP (`src/lib/mcp/`) | L'employeur remet ces documents lui-même, en connaissance de cause. Le MCP alimente l'assistant qu'il branche : un nom lu là part vers un LLM tiers par défaut, contre le principe « zéro IA sur le contenu utilisateur ». |
+| `ReleveTemperature.operateur` | rien | export ZIP de contrôle (`app/api/`) | Le ZIP est remis « à un inspecteur, un assureur, un bailleur ou un acquéreur ». Le fichier sanitaire, lui, est tenu à disposition de l'ARS — et n'exige pas ce nom. |
+
+**Où `operateur` est lu, et pourquoi il l'est.** Sur l'écran du carnet
+sanitaire (`app/etablissements/[id]/carnet-sanitaire/page.tsx`), sur la carte
+de chaque point de relevé : « Dernier relevé le 12/08/2026 · par … ».
+L'exploitant sait à qui demander quand une mesure surprend, ce qui est
+l'usage pour lequel le formulaire demande ce nom. Le champ ne sort pas de
+l'établissement, déjà responsable de traitement des personnes qu'il emploie.
+
+Cette finalité a été rendue au champ le 2026-08-28, après qu'il l'eut perdue
+le même jour. Le retrait du ZIP était juste — aucun texte n'exige ce nom, et
+le ZIP part vers un tiers — mais il laissait un champ que le formulaire
+demande, que le schéma valide, que la base conserve, et que plus rien ne
+lisait. Une donnée collectée sans finalité tient plus mal sous le principe de
+minimisation que la même donnée employée à quelque chose : la corriger
+demandait de lui rendre un usage interne, pas de la ressortir.
+
+Une rédaction antérieure de ce paragraphe affirmait déjà que le champ « reste
+en base et à l'écran ». Elle était fausse au moment où elle a été écrite —
+aucun écran ne le rendait. Une affirmation invérifiable inscrite dans le
+registre RGPD lui-même est exactement la classe de défaut que ce lot corrige
+ailleurs ; elle a été relevée en revue, et non par celui qui l'avait écrite.
+
+Les deux retenues sont posées dans la **requête** et non dans le formateur :
+une colonne ajoutée plus tard au formateur ne peut pas faire ressortir ce que
+la requête ne charge pas. Elles sont tenues par
+`src/lib/rgpd/frontiere-medicale.test.ts`, éprouvé en réinjectant chaque
+défaut plutôt qu'en le décrivant.
+
+**Ce que la garde tient, et ce qu'elle ne tient pas.** Sur `src/lib/mcp/`,
+elle tient les deux bouts : les six formes sous lesquelles on lit un champ
+nommément, et la **forme des requêtes**. Ce second volet est indispensable —
+une requête sans `select` rend tous les scalaires du modèle sans qu'aucun nom
+de champ n'apparaisse dans le source. C'est ainsi que `DuerpVersion.snapshot`,
+qui porte le `responsable` de chaque mesure, revenait dans le serveur MCP :
+vu par un relecteur, pas par la garde.
+
+La règle de forme exige un `select` **à chaque niveau**, et non un `select`
+quelque part dans la requête. La nuance n'est pas théorique : une première
+rédaction se contentait du second, et une relation imbriquée sans `select`
+propre la satisfaisait tout en ramenant la ligne entière — le défaut d'origine
+se réécrivait à l'identique sous garde verte, sous la graphie la plus naturelle
+pour qui vient de lire « pas d'`include`, mets un `select` ».
+
+**La règle échoue fermée.** Une deuxième rédaction listait les relations, lues
+dans `prisma/schema.prisma`, et refusait `X: true` quand `X` en était une.
+Cette polarité-là échoue **ouverte** : toute lacune d'analyse retire un nom de
+la liste, et le `X: true` correspondant passe au vert. Une revue l'a montré en
+indentant `model Prestataire {` d'un espace — schéma toujours valide pour
+`prisma validate`, garde toujours verte, `select: { prestataires: true }`
+devenu acceptable.
+
+La polarité est donc inversée : `X: true` n'est accepté que si `X` est un
+scalaire **reconnu** — type primitif Prisma ou énumération déclarée, et jamais
+déclaré autrement ailleurs. Cette dernière condition n'est pas théorique : la
+garde lit du texte et ne sait pas de quel modèle part une requête, donc son
+inventaire est indexé par nom de champ. Deux noms du schéma sont portés à la
+fois par un scalaire et par une relation — `risque` et `commentaires` — et
+`Action.risque` est une relation que le serveur MCP interroge. Sans la
+disqualification, l'homonyme scalaire aurait fait accepter `risque: true`. Tout ce
+que l'analyse ne comprend pas est refusé : une relation, une variable, une
+diffusion, une clé entre guillemets ou calculée, un ternaire, un nom que la
+lecture du schéma n'a pas vu. Chacun de ces cas peut cacher une relation
+entière, et chacun produit désormais un rouge bruyant plutôt qu'un vert muet.
+C'est la dissymétrie tenue partout ailleurs ici : le pire échec possible doit
+être le faux rouge.
+
+Un cliquet sur le nombre de relations aurait fermé la moitié du trou — il
+aurait vu le modèle indenté, dont le compte baisse, mais pas une relation
+**ajoutée** dans une graphie non reconnue, dont le compte ne bouge pas. Et son
+plancher se relève à la main au moment précis où l'on ajoute des relations,
+c'est-à-dire au seul moment où une relation invisible est indiscernable.
+
+Sur `app/api/`, elle ne tient que les lectures nommées d'`operateur`. La règle
+de forme n'y est **pas** appliquée : elle obligerait des dizaines de routes
+internes à énumérer leurs colonnes sans rien protéger, et une règle qu'on
+excepte partout finit par ne plus être lue. Une route qui ferait un
+`findMany` sans `select` sur `ReleveTemperature` chargerait donc `operateur`
+en silence. Elle ne l'écrirait nulle part — le second volet de la garde reste
+absent, il est écrit ici pour ne pas passer pour acquis.
 
 ### 2.6 Risques et mesures du DUERP
 

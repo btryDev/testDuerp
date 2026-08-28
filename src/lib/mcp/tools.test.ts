@@ -184,7 +184,6 @@ describe("plan d'actions", () => {
     type: "protection_collective",
     criticite: 12,
     echeance: jour("2026-08-01"),
-    responsable: null,
     risqueId: "risq_1",
     verificationId: null,
     risque: { libelle: "Chute dans l'escalier" },

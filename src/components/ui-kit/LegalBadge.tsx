@@ -14,8 +14,8 @@ import type { Charte } from "./charte";
 // Les deux voix vivent côte à côte plutôt que dans deux fichiers : le
 // balisage est le même des deux côtés — un bouton, un panneau, une
 // citation, un lien — seules les teintes et les rayons changent. Deux
-// composants auraient dupliqué la logique d'ouverture et la règle
-// `hasDetails`, qui sont la seule chose fragile ici.
+// composants auraient dupliqué la logique d'ouverture, qui est la seule
+// chose fragile ici.
 
 const BOUTON: Record<Charte, string> = {
   papier:
@@ -68,60 +68,78 @@ const LIEN: Record<Charte, string> = {
     "mt-3 inline-flex items-center gap-1 font-mono text-[10.5px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-blue-ink)] hover:underline",
 };
 
-export function LegalBadge({
-  reference,
-  href,
-  extrait,
-  children,
-  className,
-  defaultOpen = false,
-  charte = "papier",
-}: {
+type SocleLegalBadge = {
   /** Référence courte, ex: "Art. R4224-17 CT" */
   reference: string;
-  /** URL Légifrance / INRS / autre source officielle */
-  href?: string;
-  /** Extrait court (< 400 car.) cité textuellement */
-  extrait?: string;
-  /** Contenu rédactionnel optionnel (complément pédagogique) */
-  children?: ReactNode;
   className?: string;
   defaultOpen?: boolean;
   /** La grammaire visuelle de l'écran qui porte la pastille. */
   charte?: Charte;
-}) {
+};
+
+/**
+ * Ce qu'une pastille doit porter pour avoir le droit d'exister.
+ *
+ * Le type n'exigeait que `reference`. Une pastille sans `href`, sans
+ * `extrait` et sans enfant compilait donc — et rendait un BOUTON MORT : même
+ * fond, même graisse, même capitales que ses voisines cliquables, mais rien
+ * dessous. Six ont été écrites ainsi, dont quatre sur l'écran qu'on ouvre
+ * devant un inspecteur, sous un bandeau qui promet « références sourcées
+ * Légifrance et INRS ».
+ *
+ * L'union impose donc AU MOINS une des trois. Ce n'est pas une préférence de
+ * rédaction : c'est la seule forme qui empêche d'écrire à nouveau le défaut.
+ * Un test n'y suffirait pas — il faudrait qu'il tourne, et le défaut se
+ * fabrique à l'écriture.
+ *
+ * Corollaire assumé : une référence dont on n'a pas l'URL ne s'affiche plus
+ * en pastille. Elle s'écrit en texte, comme `controle/page.tsx` le fait déjà
+ * pour les éléments de sa check-list. Une source qu'on ne peut pas ouvrir
+ * n'est pas une source dégradée, c'est autre chose.
+ */
+type SourceLegalBadge =
+  | { href: string; extrait?: string; children?: ReactNode }
+  | { href?: string; extrait: string; children?: ReactNode }
+  | { href?: string; extrait?: string; children: ReactNode };
+
+export function LegalBadge(props: SocleLegalBadge & SourceLegalBadge) {
+  const {
+    reference,
+    href,
+    extrait,
+    children,
+    className,
+    defaultOpen = false,
+    charte = "papier",
+  } = props;
   const [open, setOpen] = useState(defaultOpen);
-  const hasDetails = Boolean(extrait || children || href);
 
   return (
     <div className={cn("inline-flex flex-col gap-2 align-top", className)}>
       <button
         type="button"
-        onClick={() => hasDetails && setOpen((o) => !o)}
+        onClick={() => setOpen((o) => !o)}
         className={cn(
           "group inline-flex items-center gap-2 self-start rounded-full transition",
           BOUTON[charte],
-          hasDetails && BOUTON_DEPLIABLE[charte],
-          !hasDetails && "cursor-default",
+          BOUTON_DEPLIABLE[charte],
         )}
-        aria-expanded={hasDetails ? open : undefined}
+        aria-expanded={open}
       >
         <span aria-hidden className="text-[0.75rem] leading-none">§</span>
         <span>{reference}</span>
-        {hasDetails && (
-          <span
-            aria-hidden
-            className={cn(
-              "inline-block text-[0.6rem] transition-transform",
-              open && "rotate-180",
-            )}
-          >
-            ▾
-          </span>
-        )}
+        <span
+          aria-hidden
+          className={cn(
+            "inline-block text-[0.6rem] transition-transform",
+            open && "rotate-180",
+          )}
+        >
+          ▾
+        </span>
       </button>
 
-      {open && hasDetails && (
+      {open && (
         <div className={PANNEAU[charte]}>
           {extrait && (
             <blockquote className={CITATION[charte]}>

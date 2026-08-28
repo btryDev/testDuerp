@@ -38,7 +38,7 @@ export type LigneMatrice = {
  * Modules complémentaires — chacun ajoute une ligne à la matrice, mais
  * seulement quand il concerne l'établissement :
  *
- *   - accessibilité : tout ERP doit tenir le registre (D111-19-33 CCH),
+ *   - accessibilité : tout ERP doit tenir le registre (R. 164-6 CCH),
  *     la ligne apparaît donc dès que l'établissement est ERP, même si
  *     rien n'a été créé — c'est précisément le « reste à faire » ;
  *   - permis de feu, plans de prévention, prestataires : événementiels,

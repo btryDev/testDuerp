@@ -144,7 +144,7 @@ export async function GET(
     zip.file(
       "05_Accessibilite_URL.txt",
       `Registre d'accessibilité publique\n` +
-        `Arrêté du 19 avril 2017 (art. D111-19-33 CCH)\n\n` +
+        `Art. R. 164-6 CCH · arrêté du 19 avril 2017\n\n` +
         `URL consultable par le public : ${url}\n\n` +
         `Affiche A4 imprimable avec QR code : ${publicAppUrl()}/api/accessibilite/${registreAccess.slugPublic}/affiche\n`,
     );
@@ -202,7 +202,8 @@ export async function GET(
   if (permisFeuList.length > 0) {
     const txt = [
       `PERMIS DE FEU — 12 derniers mois (${permisFeuList.length})`,
-      `Recommandation INRS ED 6030, exigence assurance APSAD R43.`,
+      `Recommandation INRS ED 6030 ; règle APSAD R43 exigée par les assureurs.`,
+      `Ni l'une ni l'autre n'est un texte réglementaire — cf. le dossier de contrôle.`,
       "",
       "────────────────────────────────────────────────────────────",
       ...permisFeuList.flatMap((p) => [
@@ -233,7 +234,7 @@ export async function GET(
   if (plansList.length > 0) {
     const txt = [
       `PLANS DE PRÉVENTION — 12 derniers mois (${plansList.length})`,
-      `Art. R4512-6 à R4512-12 CT (décret 92-158).`,
+      `Art. R4512-6 à R4512-12 du code du travail.`,
       "",
       "────────────────────────────────────────────────────────────",
       ...plansList.flatMap((p) => [
@@ -268,9 +269,39 @@ export async function GET(
       pointsReleve: {
         where: { actif: true },
         include: {
+          // `select` et non `include` : `ReleveTemperature.operateur` est un
+          // champ de texte libre où l'exploitant écrit qui a relevé, et ce ZIP
+          // est remis « à un inspecteur, un assureur, un bailleur ou un
+          // acquéreur ». Aucun texte n'exige ce nom : l'article 3 de l'arrêté
+          // du 1er février 2010 demande de consigner « les modalités et les
+          // résultats » de la surveillance dans un fichier sanitaire tenu à
+          // disposition de l'ARS — pas l'identité de qui relève, et pas pour
+          // ces destinataires-là. `D. 4711-2`, qui exige l'identité du
+          // vérificateur, ne vise que la santé-sécurité AU TRAVAIL ; un relevé
+          // d'eau chaude sanitaire relève du code de la santé publique.
+          //
+          // La retenue est dans la requête et non dans le formateur : ce qui
+          // n'est pas lu ne peut pas ressortir par une colonne qu'on
+          // ajouterait plus tard.
+          //
+          // Ce ZIP en était le seul lecteur, et le retirer d'ici a d'abord
+          // laissé un champ que le formulaire demande, que le zod valide, que
+          // la base garde, et que plus rien ne lisait — une donnée sans
+          // finalité, qui tient plus mal sous la minimisation que l'usage
+          // interne auquel elle était destinée. Le champ s'affiche donc
+          // désormais sur la carte du point de relevé
+          // (`carnet-sanitaire/page.tsx`), où l'exploitant sait à qui
+          // demander quand une mesure surprend. Il ne ressort pas de
+          // l'établissement pour autant : la retenue posée ici tient
+          // (docs/rgpd.md § 2.5).
           releves: {
             orderBy: { dateReleve: "desc" },
             take: 10,
+            select: {
+              dateReleve: true,
+              temperatureCelsius: true,
+              conforme: true,
+            },
           },
         },
       },
@@ -290,7 +321,7 @@ export async function GET(
         `  10 derniers relevés :`,
         ...pt.releves.map(
           (r) =>
-            `    ${formaterDateFr(r.dateReleve)} · ${r.temperatureCelsius.toFixed(1)}°C · ${r.conforme ? "CONFORME" : "NON CONFORME"}${r.operateur ? ` (${r.operateur})` : ""}`,
+            `    ${formaterDateFr(r.dateReleve)} · ${r.temperatureCelsius.toFixed(1)}°C · ${r.conforme ? "CONFORME" : "NON CONFORME"}`,
         ),
         "",
       ]),
@@ -407,12 +438,30 @@ function genererReadme(args: {
     " DUERP :                    art. R4121-1 à R4121-4 Code du travail",
     " Vérifications :            art. R4226-16 et s. Code du travail",
     " Registre de sécurité :     art. L4711-5 Code du travail",
-    " Accessibilité ERP :        arrêté 19-04-2017 · art. D111-19-33 CCH",
+    " Accessibilité ERP :        art. R164-6 CCH · arrêté 19-04-2017",
     " Vigilance donneur d'ordre : art. L8222-1 Code du travail",
-    " Permis de feu :            INRS ED 6030 · art. R4224-17 CT · APSAD R43",
-    " Plan de prévention :       art. R4512-6 à R4512-12 CT (décret 92-158)",
+    " Permis de feu :            art. R4224-17 Code du travail",
+    " Plan de prévention :       art. R4512-6 à R4512-12 CT",
     " Carnet sanitaire eau :     arrêté 01-02-2010 · art. R1321-23 CSP",
     " Maintien en conformité :   art. R4224-17 Code du travail",
+    "",
+    // APSAD R43 et l'INRS ED 6030 figuraient dans la liste ci-dessus, entre
+    // deux articles de code, sous le titre « CADRE LÉGAL ». Ce document est
+    // remis à un inspecteur, un assureur, un bailleur ou un acquéreur : y
+    // présenter une règle de la profession de l'assurance comme du droit est
+    // une affirmation que le produit ne peut pas soutenir. Les deux
+    // référentiels restent nommés — ils fondent réellement la pratique — mais
+    // sous leur propre titre, et en disant ce qu'ils opposent.
+    "────────────────────────────────────────────────────────────",
+    " RÉFÉRENTIELS NON OPPOSABLES CITÉS DANS CE DOSSIER",
+    "────────────────────────────────────────────────────────────",
+    "",
+    " INRS ED 6030 :             recommandation de l'Institut national de",
+    "                            recherche et de sécurité. Bonne pratique",
+    "                            reconnue, sans valeur réglementaire propre.",
+    " Règle APSAD R43 :          référentiel de la profession de l'assurance",
+    "                            (travaux par points chauds). Opposable par",
+    "                            votre contrat d'assurance, pas par le droit.",
     "",
     "────────────────────────────────────────────────────────────",
     "",

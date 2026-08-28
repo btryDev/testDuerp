@@ -511,3 +511,668 @@ describe("le nom d'un salarié ne sort pas du produit", () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * Retire commentaires de ligne et de bloc — en connaissant les chaînes et les
+ * littéraux d'expression régulière.
+ *
+ * La première version était un couple de `replace`, avec un garde `[^:]` censé
+ * épargner `https://`. Elle neutralisait du vrai code, et la preuve était dans
+ * un fichier surveillé : `lib/mcp/hotes.ts` contient
+ * `valeur.replace(/^https?:\/\//, "")`, dont le littéral se termine par `\/`
+ * suivi du `/` fermant. Le `//` ainsi formé n'est précédé d'aucun `:` : le
+ * garde le laissait passer, et tout ce qui suivait sur la ligne disparaissait.
+ * Une lecture écrite après ce `replace`, sur la même ligne, serait donc passée
+ * au vert.
+ *
+ * D'où un vrai balayage : on suit l'état — code, chaîne simple, double,
+ * gabarit, littéral d'expression régulière, commentaire — au lieu de deviner
+ * par le voisinage. La détection d'un littéral d'expression régulière emploie
+ * l'heuristique usuelle : un `/` en ouvre un quand le dernier caractère
+ * significatif ne peut pas terminer une expression.
+ */
+const PEUT_PRECEDER_UNE_REGEX = /[(,=:[!&|?{};+\-*%~^<>]|^$/;
+
+export function sansCommentaires(source: string): string {
+  let sortie = "";
+  let precedent = "";
+  let i = 0;
+
+  /** Avale une séquence délimitée en gérant l'échappement, et la recopie. */
+  function avaler(fin: string): void {
+    sortie += source[i];
+    i++;
+    while (i < source.length) {
+      const c = source[i];
+      if (c === "\\") {
+        sortie += source.slice(i, i + 2);
+        i += 2;
+        continue;
+      }
+      sortie += c;
+      i++;
+      if (c === fin) return;
+      // Une expression régulière ne franchit pas la fin de ligne : sans cette
+      // sortie, un opérateur de division pris pour une ouverture avalerait
+      // tout le reste du fichier.
+      if (fin === "/" && c === "\n") return;
+    }
+  }
+
+  while (i < source.length) {
+    const c = source[i];
+    const d = source[i + 1];
+
+    if (c === "/" && d === "/") {
+      while (i < source.length && source[i] !== "\n") i++;
+      continue;
+    }
+    if (c === "/" && d === "*") {
+      i += 2;
+      while (i < source.length && !(source[i] === "*" && source[i + 1] === "/")) i++;
+      i += 2;
+      sortie += " ";
+      continue;
+    }
+    if (c === '"' || c === "'" || c === "`") {
+      avaler(c);
+      precedent = c;
+      continue;
+    }
+    if (c === "/" && PEUT_PRECEDER_UNE_REGEX.test(precedent)) {
+      avaler("/");
+      precedent = "/";
+      continue;
+    }
+
+    sortie += c;
+    if (!/\s/.test(c)) precedent = c;
+    i++;
+  }
+
+  return sortie;
+}
+
+/**
+ * Les blocs `{...}` équilibrés qui suivent un appel de lecture Prisma.
+ *
+ * Sert à juger la FORME d'une requête, là où chercher un nom de champ ne peut
+ * rien voir : une requête sans `select` rend tous les scalaires du modèle, et
+ * un `include` rend en plus tous ceux de la relation ouverte. Aucun jeton du
+ * champ n'apparaît alors dans le source.
+ */
+export function requetesDeLecture(source: string): string[] {
+  const code = sansCommentaires(source);
+  const appel = /\.(findMany|findFirst|findUnique|findFirstOrThrow|findUniqueOrThrow)\s*\(\s*\{/g;
+  const blocs: string[] = [];
+  let m: RegExpExecArray | null;
+
+  while ((m = appel.exec(code)) !== null) {
+    let profondeur = 1;
+    let j = m.index + m[0].length;
+    while (j < code.length && profondeur > 0) {
+      const c = code[j];
+      // Même précaution que dans `clesDirectes` : une accolade entre
+      // guillemets refermerait le bloc trop tôt, et tout ce qui suit — le
+      // `select`, par exemple — deviendrait invisible.
+      if (c === '"' || c === "'" || c === "`") {
+        const fin = c;
+        j++;
+        while (j < code.length) {
+          if (code[j] === "\\") j += 2;
+          else if (code[j] === fin) break;
+          else j++;
+        }
+      } else if (c === "{") profondeur++;
+      else if (c === "}") profondeur--;
+      j++;
+    }
+    blocs.push(code.slice(m.index, j));
+    appel.lastIndex = j;
+  }
+  return blocs;
+}
+
+/**
+ * Les clés directes d'un objet littéral, avec leur valeur brute.
+ *
+ * Le comptage d'accolades ignore ce qui vit dans une chaîne : `sansCommentaires`
+ * est passé avant, mais une accolade entre guillemets fausserait la profondeur.
+ */
+function clesDirectes(objet: string): { cle: string; valeur: string }[] {
+  const paires: { cle: string; valeur: string }[] = [];
+  let i = objet.indexOf("{") + 1;
+  let profondeur = 0;
+  let cle: string | null = null;
+  let debut = i;
+
+  const pousser = (fin: number) => {
+    if (cle !== null) paires.push({ cle, valeur: objet.slice(debut, fin).trim() });
+    cle = null;
+  };
+
+  while (i < objet.length) {
+    const c = objet[i];
+    // Une accolade entre guillemets n'est pas une accolade. Sans ce saut,
+    // `note: "x}y"` refermait l'objet et rendait muettes toutes les clés
+    // suivantes — un faux vert, la pire des deux erreurs.
+    if (c === '"' || c === "'" || c === "`") {
+      const fin = c;
+      i++;
+      while (i < objet.length) {
+        if (objet[i] === "\\") i += 2;
+        else if (objet[i] === fin) break;
+        else i++;
+      }
+      i++;
+      continue;
+    }
+    if (c === "{" || c === "[" || c === "(") profondeur++;
+    else if (c === "}" || c === "]" || c === ")") {
+      if (profondeur === 0) {
+        pousser(i);
+        break;
+      }
+      profondeur--;
+    } else if (profondeur === 0) {
+      if (c === "." && objet.slice(i, i + 3) === "..." && cle === null) {
+        // Une diffusion n'a pas de clé, donc n'émettrait aucune paire — et
+        // l'objet diffusé peut contenir n'importe quoi, relations comprises.
+        // Elle est signalée pour que l'appelant la refuse.
+        paires.push({ cle: "…diffusion", valeur: "" });
+        i += 3;
+        continue;
+      }
+      if (c === ":" && cle === null) {
+        const avant = objet.slice(0, i);
+        const m = /([A-Za-z_$][\w$]*)\s*$/.exec(avant);
+        cle = m ? m[1] : "";
+        debut = i + 1;
+      } else if (c === "," && cle !== null) {
+        pousser(i);
+      }
+    }
+    i++;
+  }
+  return paires;
+}
+
+/**
+ * Les noms de champs SCALAIRES, lus dans le schéma Prisma.
+ *
+ * La première version faisait l'inverse : elle listait les relations, et
+ * refusait `X: true` quand `X` en était une. Cette polarité échoue OUVERTE.
+ * Toute lacune d'analyse — un `model` indenté, un champ écrit dans une
+ * graphie non prévue — retire un nom de l'ensemble, et le `X: true`
+ * correspondant passe alors au vert. C'est ce qu'a montré la revue : en
+ * indentant `model Prestataire {` d'un espace, le schéma reste valide pour
+ * `prisma validate`, l'ensemble tombe de 43 à 41, la suite reste verte, et
+ * `select: { prestataires: true }` devient acceptable dans `lib/mcp/`.
+ *
+ * La polarité est donc renversée : `X: true` n'est accepté que si `X` est un
+ * scalaire RECONNU — type primitif Prisma ou énumération déclarée. Tout ce
+ * que l'analyse ne comprend pas devient un refus, donc un rouge bruyant, au
+ * lieu d'un vert muet. C'est la dissymétrie appliquée partout ailleurs dans
+ * ce fichier : le pire échec possible doit être le faux rouge.
+ *
+ * Un cliquet sur le nombre de relations aurait fermé l'autre moitié seulement.
+ * Il aurait vu ce cas — le compte baisse — mais pas une relation AJOUTÉE dans
+ * une graphie non reconnue : le compte ne bouge pas. Et son plancher se relève
+ * à la main précisément quand on ajoute des relations, c'est-à-dire au seul
+ * moment où une relation invisible est indiscernable.
+ */
+const TYPES_PRIMITIFS = new Set([
+  "String",
+  "Boolean",
+  "Int",
+  "BigInt",
+  "Float",
+  "Decimal",
+  "DateTime",
+  "Json",
+  "Bytes",
+]);
+
+export function champsScalaires(schema: string): Set<string> {
+  // `^\s*` et non `^` : une déclaration indentée est du Prisma valide, et
+  // c'est l'ancrage strict qui a ouvert la faille.
+  const enums = new Set(
+    [...schema.matchAll(/^\s*enum\s+(\w+)\s*\{/gm)].map((m) => m[1]),
+  );
+
+  // L'ensemble est indexé par NOM de champ, pas par (modèle, champ) : la garde
+  // lit du texte, elle ne sait pas de quel modèle part une requête. Un nom
+  // porté à la fois par un scalaire et par une relation serait donc « sauvé »
+  // par son homonyme, et `X: true` accepté là où X est une relation. Le schéma
+  // en compte deux aujourd'hui — `risque` (String ici, relation `Risque?`
+  // ailleurs) et `commentaires` (String? ici, relation ailleurs) —, et
+  // `Action.risque` EST une relation que `lib/mcp/` interroge.
+  //
+  // Un nom est donc scalaire seulement s'il n'est JAMAIS déclaré autrement.
+  // Une déclaration dont le type n'est ni primitif ni énuméré le disqualifie,
+  // qu'il s'agisse d'une relation ou d'un type que l'analyse n'a pas su lire —
+  // la même polarité que le reste : le doute exclut.
+  const scalaires = new Set<string>();
+  const disqualifies = new Set<string>();
+  for (const ligne of schema.split("\n")) {
+    const m = /^\s+(\w+)\s+(\w+)(\[\])?\??/.exec(ligne);
+    if (!m) continue;
+    if (TYPES_PRIMITIFS.has(m[2]) || enums.has(m[2])) scalaires.add(m[1]);
+    else disqualifies.add(m[1]);
+  }
+  for (const nom of disqualifies) scalaires.delete(nom);
+  return scalaires;
+}
+
+/**
+ * Une requête qui rend plus que ce qu'elle nomme, à N'IMPORTE quel niveau.
+ *
+ * La première version cherchait `select:` **quelque part** dans le bloc. Une
+ * relation imbriquée sans `select` propre la satisfaisait donc, tout en
+ * ramenant tous les scalaires de la relation — exactement ce que faisait
+ * `include`. Le défaut d'origine se réécrivait à l'identique sous garde verte,
+ * et sous la graphie la plus naturelle pour qui vient de lire « pas
+ * d'`include`, mets un `select` » :
+ *
+ *   select: { versions: { orderBy: { numero: "desc" }, take: 1 } }
+ *
+ * Deux formes sont donc refusées, à chaque niveau : un bloc de relation qui ne
+ * porte pas SON `select`, et une relation prise en bloc par `true`.
+ *
+ * `_count` fait exception et ne se descend pas : `_count: { select: { x: true } }`
+ * compte, il ne sélectionne rien.
+ */
+export function relationsNonNommees(
+  bloc: string,
+  scalaires: Set<string>,
+): string[] {
+  if (/\binclude\s*:/.test(bloc)) return ["include"];
+
+  const fautes: string[] = [];
+
+  function descendre(objetSelect: string, chemin: string): void {
+    for (const { cle, valeur } of clesDirectes(objetSelect)) {
+      // `_count` ne se descend pas : sa charge utile ne rend que des nombres,
+      // quel que soit le filtre imbriqué, et aucun modèle ne peut porter un
+      // champ de ce nom — un champ Prisma commence par une lettre.
+      if (cle === "_count") continue;
+      const ici = chemin ? `${chemin}.${cle}` : cle;
+
+      if (valeur.startsWith("{")) {
+        const sien = clesDirectes(valeur).find((p) => p.cle === "select");
+        if (!sien) fautes.push(ici);
+        else descendre(sien.valeur, ici);
+      } else if (!(/^true\b/.test(valeur) && scalaires.has(cle))) {
+        // Tout le reste est refusé : une relation prise en bloc, une valeur
+        // qu'on ne sait pas lire (variable, diffusion, clé calculée, clé entre
+        // guillemets, ternaire), un nom que l'analyse du schéma n'a pas
+        // reconnu. Chacun de ces cas peut cacher une relation entière.
+        fautes.push(ici || "(clé illisible)");
+      }
+    }
+  }
+
+  const racine = clesDirectes(bloc).find((p) => p.cle === "select");
+  if (!racine) return ["(requête sans select)"];
+  descendre(racine.valeur, "");
+  return fautes;
+}
+
+/**
+ * Lire un champ, sous les formes qu'on écrit vraiment.
+ *
+ * La première version n'en connaissait que deux — le déréférencement pointé et
+ * `champ: true` sans espace. Quatre autres passaient au vert en lisant
+ * pourtant le champ ; elles sont couvertes ici, et la plus banale de toutes —
+ * une requête sans `select` — ne relève pas du tout de cette fonction mais de
+ * `requeteTropLarge`, parce qu'aucun nom de champ n'y figure.
+ */
+export function litChampNominatif(source: string, champ: string): boolean {
+  const code = sansCommentaires(source);
+  const formes = [
+    `\\.${champ}\\b`,
+    `\\[\\s*["'\`]${champ}["'\`]\\s*\\]`,
+    `\\b${champ}\\s*:\\s*true\\b`,
+    `\\{[^{}]*\\b${champ}\\b[^{}]*\\}\\s*=`,
+  ];
+  return new RegExp(formes.join("|")).test(code);
+}
+
+describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers un tiers", () => {
+  /**
+   * Deux champs de texte libre où l'utilisateur écrit le nom d'une personne :
+   * `Action.responsable` (qui pilote une action corrective) et
+   * `ReleveTemperature.operateur` (qui a fait le relevé d'eau chaude).
+   *
+   * Ils ne relèvent pas de la frontière médicale, et pas non plus du nom du
+   * salarié : personne ne les dérive d'un modèle, c'est l'employeur qui les
+   * tape. Mais ils sortaient par les deux mêmes portes, et la décision du
+   * 2026-08-28 ne les traite pas pareil, parce que les destinataires diffèrent.
+   *
+   * — `responsable` reste dans les documents que l'employeur remet lui-même
+   *   (PDF du plan d'actions, dossier de conformité, DUERP) : un plan
+   *   d'actions sans porteur nommé perd sa fonction. Il sort du **MCP**, seule
+   *   surface qui parte vers un tiers que l'utilisateur ne maîtrise pas —
+   *   l'assistant qu'il branche. Un nom lu là part vers un LLM par défaut,
+   *   contre le principe fondateur « zéro IA sur le contenu utilisateur ».
+   *
+   * — `operateur` sortait de l'**export ZIP**, remis « à un inspecteur, un
+   *   assureur, un bailleur ou un acquéreur ». Aucun texte ne l'exige :
+   *   l'article 3 de l'arrêté du 1er février 2010 demande de consigner « les
+   *   modalités et les résultats » dans un fichier sanitaire tenu à
+   *   disposition de l'ARS. `D. 4711-2` ne vise que la santé-sécurité AU
+   *   TRAVAIL et ne couvre ni l'un ni l'autre (docs/rgpd.md § 2.4).
+   *
+   * La règle porte sur la LECTURE du champ, pas sur son affichage : ce qui
+   * n'est pas lu ne peut pas ressortir par une colonne ajoutée plus tard.
+   */
+  const CHAMPS_LIBRES: { champ: string; chemins: RegExp[]; message: string }[] = [
+    {
+      champ: "responsable",
+      chemins: [/^lib\/mcp\//, /^scripts\/mcp-server\.ts$/],
+      message:
+        "Le serveur MCP lit `Action.responsable`. Ce champ porte le nom d'une " +
+        "personne et le MCP alimente un assistant tiers : ne le sélectionnez pas " +
+        "(docs/rgpd.md § 2.5). Il reste rendu dans les PDF que l'employeur remet.",
+    },
+    {
+      champ: "operateur",
+      chemins: [/^app\/api\//],
+      message:
+        "Une route d'API lit `ReleveTemperature.operateur`. Ce champ porte le nom " +
+        "de qui a fait le relevé, et l'export part vers un tiers. Aucun texte ne " +
+        "l'exige (docs/rgpd.md § 2.5) : sélectionnez la date, la température et la " +
+        "conformité.",
+    },
+  ];
+
+  /**
+   * Là où une requête doit nommer ce qu'elle lit.
+   *
+   * Restreint au MCP : c'est la surface qui part vers un tiers non maîtrisé, et
+   * la seule où « rendre un champ de trop » a un destinataire. Étendre la règle
+   * à tout `app/api/` obligerait des routes internes à énumérer des dizaines de
+   * colonnes sans rien protéger — et une règle qu'on excepte partout finit par
+   * ne plus être lue.
+   */
+  const CHEMINS_REQUETE_NOMMEE = [/^lib\/mcp\//, /^scripts\/mcp-server\.ts$/];
+
+  function sources(): { abs: string; rel: string }[] {
+    return [
+      ...fichiersSource(join(RACINE, "src")),
+      ...fichiersSource(join(RACINE, "scripts")),
+    ].map((abs) => ({ abs, rel: relative(RACINE, abs).replace(/^src\//, "") }));
+  }
+
+  it("le retrait des commentaires épargne chaînes et expressions régulières", () => {
+    // Le cas réel, celui qui a fait tomber la première version : le littéral
+    // de `lib/mcp/hotes.ts` se termine par `\/` suivi du `/` fermant.
+    const vrai = 'return valeur.replace(/^https?:\\/\\//, "").split("/")[0];';
+    expect(sansCommentaires(vrai)).toBe(vrai);
+
+    // Et une lecture écrite après ce `replace`, sur la même ligne, survit.
+    expect(
+      litChampNominatif(
+        'const q = { hote: u.replace(/^https?:\\/\\//, ""), pilote: a.responsable };',
+        "responsable",
+      ),
+    ).toBe(true);
+
+    // Une URL dans une chaîne n'est pas un commentaire.
+    expect(sansCommentaires('const u = "http://x/y";')).toBe('const u = "http://x/y";');
+
+    // Un vrai commentaire, lui, s'en va.
+    expect(sansCommentaires("const x = 1; // a.responsable\n").trim()).toBe("const x = 1;");
+    expect(sansCommentaires("/* a.responsable */ const x = 1;").trim()).toBe("const x = 1;");
+  });
+
+  it("le détecteur connaît les formes sous lesquelles on lit un champ", () => {
+    for (const forme of [
+      "const x = a.responsable;",
+      'const x = a["responsable"];',
+      "select: { responsable: true }",
+      "select: { responsable : true }",
+      "const { responsable } = action;",
+      "const { libelle, responsable, statut } = action;",
+    ]) {
+      expect(litChampNominatif(forme, "responsable"), forme).toBe(true);
+    }
+
+    // Et il ne mord pas l'explication de l'absence — chacun des deux fichiers
+    // surveillés en porte une.
+    expect(
+      litChampNominatif(
+        "// `Action.responsable` n'est PAS sélectionné, et c'est délibéré.\nconst x = 1;",
+        "responsable",
+      ),
+    ).toBe(false);
+  });
+
+  it("le juge de forme voit une requête qui rend plus qu'elle ne nomme", () => {
+    const SCALAIRES = new Set([
+      "numero",
+      "createdAt",
+      "nom",
+      "libelle",
+      "effectif",
+    ]);
+    const juger = (src: string) =>
+      requetesDeLecture(src).flatMap((b) => relationsNonNommees(b, SCALAIRES));
+
+    // La forme la plus banale, et celle qu'aucune recherche de nom ne peut
+    // voir : sans `select`, Prisma rend tous les scalaires du modèle.
+    expect(
+      juger("await prisma.action.findMany({ where: { etablissementId } });"),
+    ).toEqual(["(requête sans select)"]);
+
+    // `include` rend en plus tous ceux de la relation ouverte.
+    expect(
+      juger(
+        "await prisma.duerp.findFirst({ where: { id }, include: { versions: { take: 1 } } });",
+      ),
+    ).toEqual(["include"]);
+
+    // LE CAS QUI PASSAIT AU VERT, et qui a rouvert le défaut d'origine : un
+    // `select` à la racine, une relation imbriquée sans le sien. Prisma rend
+    // alors la ligne `DuerpVersion` entière, `snapshot` comprise.
+    expect(
+      juger(
+        'await prisma.duerp.findFirst({ where: { id }, select: { versions: { orderBy: { numero: "desc" }, take: 1 } } });',
+      ),
+    ).toEqual(["versions"]);
+
+    // Sa variante courte, qui passait aussi.
+    expect(
+      juger("await prisma.duerp.findFirst({ select: { versions: true } });"),
+    ).toEqual(["versions"]);
+
+    // Le défaut se voit à n'importe quelle profondeur.
+    expect(
+      juger(
+        "await prisma.duerp.findFirst({ select: { unites: { select: { nom: true, risques: { take: 3 } } } } });",
+      ),
+    ).toEqual(["unites.risques"]);
+
+    // Une requête qui nomme ce qu'elle lit, à tous les niveaux, passe.
+    expect(
+      juger(
+        'await prisma.duerp.findFirst({ where: { id }, select: { versions: { orderBy: { numero: "desc" }, take: 1, select: { numero: true, createdAt: true } } } });',
+      ),
+    ).toEqual([]);
+
+    // `_count` ne se descend pas : il compte, il ne sélectionne rien — et sa
+    // clé porte justement un nom de relation.
+    expect(
+      juger(
+        "await prisma.duerp.findFirst({ select: { unites: { select: { nom: true, _count: { select: { risques: true } } } } } });",
+      ),
+    ).toEqual([]);
+
+    // Un scalaire reconnu reste sélectionnable par `true`.
+    expect(
+      juger("await prisma.duerp.findFirst({ select: { libelle: true } });"),
+    ).toEqual([]);
+
+    // LA POLARITÉ, éprouvée : ce que l'analyse ne reconnaît pas est REFUSÉ.
+    // C'est ce qui rend la garde insensible à une lacune du parse du schéma —
+    // le `model` indenté qui a fait tomber la version précédente donne
+    // désormais un rouge, pas un vert.
+    expect(
+      juger("await prisma.duerp.findFirst({ select: { prestataires: true } });"),
+    ).toEqual(["prestataires"]);
+
+    // Les cinq formes héritées que la revue signale comme passant au vert :
+    // chacune peut cacher une relation entière, chacune est maintenant refusée.
+    for (const [nom, src] of [
+      ["variable", "prisma.duerp.findFirst({ select: { versions: argsVersions } });"],
+      ["diffusion", "prisma.duerp.findFirst({ select: { ...CHAMPS, nom: true } });"],
+      ["clé entre guillemets", 'prisma.duerp.findFirst({ select: { "versions": true } });'],
+      ["clé calculée", 'prisma.duerp.findFirst({ select: { ["versions"]: true } });'],
+      ["ternaire", "prisma.duerp.findFirst({ select: { versions: x ? a : b } });"],
+    ] as const) {
+      expect(juger(`await ${src}`).length, nom).toBeGreaterThan(0);
+    }
+
+    // Une accolade fermante dans une chaîne ne tronque plus la lecture des
+    // clés : sans ce cas, `versions: true` devenait invisible après elle.
+    expect(
+      juger(
+        'await prisma.duerp.findFirst({ select: { nom: true, note: "x}y", versions: true } });',
+      ),
+    ).toContain("versions");
+
+    // Les blocs imbriqués ne trompent pas le compteur d'accolades.
+    expect(
+      requetesDeLecture(
+        "await prisma.duerp.findFirst({ select: { unites: { select: { nom: true } } } });",
+      ),
+    ).toHaveLength(1);
+  });
+
+  it("les scalaires sont lus dans le schéma Prisma, et une relation n'en est pas", () => {
+    const schema = readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8");
+    const scalaires = champsScalaires(schema);
+
+    for (const attendu of ["libelle", "createdAt", "numero", "nom", "statut"]) {
+      expect(scalaires.has(attendu), attendu).toBe(true);
+    }
+    // Une relation n'est pas un scalaire : `X: true` y sera donc refusé.
+    for (const relation of ["versions", "unites", "risques", "releves"]) {
+      expect(scalaires.has(relation), relation).toBe(false);
+    }
+
+    // Et un nom porté à la fois par un scalaire et par une relation est
+    // disqualifié — sinon l'homonyme scalaire ferait accepter `risque: true`
+    // là où `Action.risque` est une relation que le MCP interroge.
+    for (const ambigu of ["risque", "commentaires"]) {
+      expect(scalaires.has(ambigu), ambigu).toBe(false);
+    }
+  });
+
+  it("un nom scalaire quelque part et relation ailleurs est refusé", () => {
+    const schema = [
+      "model Risque {",
+      "  id String @id",
+      "  libelle String",
+      "}",
+      "model Action {",
+      "  risque Risque? @relation(fields: [risqueId], references: [id])",
+      "}",
+      "model Rapport {",
+      "  risque String",
+      "}",
+    ].join("\n");
+    const scalaires = champsScalaires(schema);
+
+    expect(scalaires.has("risque")).toBe(false);
+    expect(
+      requetesDeLecture(
+        "await prisma.action.findMany({ select: { risque: true } });",
+      ).flatMap((b) => relationsNonNommees(b, scalaires)),
+    ).toEqual(["risque"]);
+  });
+
+  it("une déclaration indentée ne fait plus tomber la garde du bon côté", () => {
+    // Le cas exact de la revue, reproduit sur un schéma fabriqué : indenter
+    // `model` d'un espace reste du Prisma valide. L'ancienne polarité y
+    // perdait la relation et laissait passer `prestataires: true` ; la
+    // nouvelle ne reconnaît simplement pas le nom, et refuse.
+    const schema = [
+      " model Prestataire {",
+      "  id String @id",
+      "  libelle String",
+      " }",
+      "model Etablissement {",
+      "  prestataires Prestataire[]",
+      "  raison String",
+      "}",
+    ].join("\n");
+    const scalaires = champsScalaires(schema);
+
+    expect(scalaires.has("prestataires")).toBe(false);
+    expect(
+      requetesDeLecture(
+        "await prisma.etablissement.findFirst({ select: { prestataires: true } });",
+      ).flatMap((b) => relationsNonNommees(b, scalaires)),
+    ).toEqual(["prestataires"]);
+  });
+
+  it("aucune surface interdite ne lit ces champs", () => {
+    const fautifs: string[] = [];
+    for (const { champ, chemins, message } of CHAMPS_LIBRES) {
+      for (const { abs, rel } of sources()) {
+        if (!chemins.some((r) => r.test(rel))) continue;
+        if (litChampNominatif(readFileSync(abs, "utf8"), champ)) {
+          fautifs.push(`${rel} → ${champ} — ${message}`);
+        }
+      }
+    }
+    expect(fautifs).toEqual([]);
+  });
+
+  it("les requêtes du MCP nomment ce qu'elles lisent, à chaque niveau", () => {
+    const scalaires = champsScalaires(
+      readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8"),
+    );
+    const fautives: string[] = [];
+
+    for (const { abs, rel } of sources()) {
+      if (!CHEMINS_REQUETE_NOMMEE.some((r) => r.test(rel))) continue;
+      for (const bloc of requetesDeLecture(readFileSync(abs, "utf8"))) {
+        for (const faute of relationsNonNommees(bloc, scalaires)) {
+          fautives.push(`${rel} → ${faute}`);
+        }
+      }
+    }
+
+    expect(
+      fautives,
+      "Cette requête du MCP emploie `include`, ou laisse une relation sans son " +
+        "propre `select` : elle rend donc des colonnes que personne n'a demandées. " +
+        "C'est ainsi que `DuerpVersion.snapshot` — qui porte le `responsable` de " +
+        "chaque mesure — revenait dans le serveur MCP sans qu'aucun nom de champ " +
+        "n'apparaisse dans le source. Un `select` à la racine ne suffit pas : " +
+        "chaque relation ouverte porte le sien. Et seul un scalaire reconnu du " +
+        "schéma s'écrit `X: true` — une valeur que cette garde ne sait pas lire " +
+        "est refusée plutôt qu'admise, parce qu'elle peut cacher une relation " +
+        "entière (docs/rgpd.md § 2.5).",
+    ).toEqual([]);
+  });
+
+  it("les chemins surveillés désignent des fichiers qui existent", () => {
+    // Un motif de chemin qui ne matche rien est une garde morte : elle donne
+    // l'assurance écrite d'une surveillance qui ne s'exerce sur rien. C'est
+    // exactement le défaut corrigé plus haut sur `scripts/mcp-server.ts`.
+    const rels = sources().map((f) => f.rel);
+    const motifs = [
+      ...CHAMPS_LIBRES.flatMap((c) => c.chemins),
+      ...CHEMINS_REQUETE_NOMMEE,
+    ];
+    for (const motif of motifs) {
+      expect(
+        rels.some((r) => motif.test(r)),
+        `le motif ${motif} ne désigne aucun fichier`,
+      ).toBe(true);
+    }
+  });
+});

@@ -866,7 +866,11 @@ enum ScopeAccessToken {
 }
 
 // ----------------------------------------------------------------------------
-// Registre d'accessibilité ERP — arrêté du 19 avril 2017 (art. D111-19-33 CCH).
+// Registre d'accessibilité ERP — art. R. 164-6 CCH, arrêté du 19 avril 2017.
+// (R. 111-19-60 avant la recodification du 1er juillet 2021. « D111-19-33 »,
+// cité ici jusqu'au 2026-08-28, ne désigne aucun article du CCH : la coquille
+// vise R. 111-19-33, qui portait l'attestation d'accessibilité — pas le
+// registre — et que le décret 2021-872 a abrogé.)
 // Tout ERP doit tenir un registre public consultable sur place ou en ligne,
 // qui décrit : (1) prestations fournies, (2) pièces administratives et
 // techniques relatives à l'accessibilité, (3) formations du personnel
@@ -938,9 +942,13 @@ enum RegimeConformiteErp {
 }
 
 // ----------------------------------------------------------------------------
-// Permis de feu — recommandation INRS ED 6030, art. R4224-17 CT, MS 52 ERP,
-// exigence APSAD R43 (assurance). Document obligatoire pour tout travail par
-// point chaud (soudage, découpe, brasage, meulage…) sur site.
+// Permis de feu — art. R. 4224-17 CT, recommandation INRS ED 6030, et en ERP
+// l'art. GN 13 (« Travaux dangereux »), qui interdit le chantier dangereux en
+// présence du public. Ce document n'est imposé sous ce nom par aucun texte : il
+// matérialise un faisceau d'obligations. « MS 52 ERP », cité ici jusqu'au
+// 2026-08-28, s'intitule « Présence de l'exploitant » et ne dit rien des
+// travaux. La règle APSAD R43 est un référentiel de la profession de
+// l'assurance, opposable par un contrat et non par le droit.
 // ----------------------------------------------------------------------------
 
 model PermisFeu {
@@ -1017,11 +1025,23 @@ enum StatutPermisFeu {
 }
 
 // ----------------------------------------------------------------------------
-// Plan de prévention — art. R4512-6 à R4512-12 CT (décret 92-158).
+// Plan de prévention — art. R. 4512-6 à R. 4512-12 du code du travail.
+// (Le décret 92-158 a créé les art. R. 237-1 à R. 237-28 du code du travail ;
+// ce sont eux que le décret 2008-244 a abrogés au 1er mai 2008 en les
+// recodifiant en R. 4511-* / R. 4512-*. La fiche du décret 92-158 reste
+// affichée « en vigueur » : c'est un texte modificateur, l'abrogation se lit
+// sur les articles du code — « Abrogé par Décret n°2008-244 du 7 mars 2008 -
+// art. 9 (V) » sur R. 237-1 —, pas sur lui. La filiation se dit, la source
+// non.)
 // Obligatoire en écrit si :
-//   - durée totale > 400h/an des travaux d'entreprise(s) extérieure(s), OU
+//   - durée totale ≥ 400 h sur 12 mois des travaux d'entreprise(s)
+//     extérieure(s) — R. 4512-7 dit « égal au moins à 400 heures », OU
 //   - figure sur la liste de travaux dangereux de l'arrêté du 19 mars 1993.
-// Inspection commune préalable obligatoire (art. R4512-7).
+// Inspection commune préalable obligatoire — art. R. 4512-2, et non
+// R. 4512-7 comme écrit ici jusqu'au 2026-08-28 : R. 4512-6 institue le plan,
+// R. 4512-7 pose les deux cas qui imposent l'écrit (dont le seuil ci-dessus),
+// R. 4512-8 en fixe le contenu. L'inspection est ailleurs, et elle est due
+// quelle que soit la durée.
 // ----------------------------------------------------------------------------
 
 model PlanPrevention {

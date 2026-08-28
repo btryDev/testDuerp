@@ -121,7 +121,7 @@ export function FormulairePlanPrevention({
         <div className="mt-4">
           <LegalBadge
             charte="board"
-            reference="Art. R4512-7 CT · décret 92-158"
+            reference="Art. R. 4512-7 CT"
             href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018529783"
           />
         </div>
