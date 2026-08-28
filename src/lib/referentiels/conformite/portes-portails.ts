@@ -35,7 +35,7 @@ export const obligationsPortesPortails: Obligation[] = [
         reference: "R. 4224-13",
         article: "R. 4224-13",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532211/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532209/",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -109,7 +109,7 @@ export const obligationsPortesPortails: Obligation[] = [
         reference: "R. 4224-12 et R. 4224-13",
         article: "R. 4224-13",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532211/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532209/",
       },
       {
         source: "CODE_TRAVAIL",

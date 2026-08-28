@@ -10,9 +10,9 @@
  *   sécurité contre les risques d'incendie et de panique dans les ERP.
  *   https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/
  * - Arrêté du 22 juin 1990 (ERP 5ᵉ cat — règles PE).
- *   https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000171201/
+ *   https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000000525278
  * - Arrêté du 30 décembre 2011 (IGH — règlement de sécurité).
- *   https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025118025/
+ *   https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025167121
  * - CCH art. R. 143-1 s. (ERP) et R. 146-3 s. (IGH).
  */
 

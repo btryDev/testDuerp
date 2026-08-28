@@ -8,7 +8,7 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
   id: "code-travail-levage",
   intitule:
     "Code du travail — vérifications des équipements de travail (levage)",
-  url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018531485/",
+  url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489757/",
   etendue: "articles_cites",
   portee:
     "Section 4 du chapitre III : vérification initiale (R. 4323-22), vérifications périodiques (R. 4323-23 et s.), remise en service (R. 4323-28), consignation au registre (R. 4323-25 à -27). S'applique à tout employeur.",

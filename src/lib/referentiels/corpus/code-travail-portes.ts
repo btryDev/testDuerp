@@ -8,7 +8,7 @@ export const CODE_TRAVAIL_PORTES: Corpus = {
   id: "code-travail-portes",
   intitule:
     "Code du travail — portes et portails, maintenance des lieux de travail",
-  url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018532213/",
+  url: "https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018532219/",
   etendue: "articles_cites",
   portee:
     "Section 2 « Portes et portails » (R. 4224-12, R. 4224-13) et section 4 « Maintenance, entretien et vérifications » (R. 4224-17). R. 4224-13 est un article de renvoi : il n'institue aucun examen.",
