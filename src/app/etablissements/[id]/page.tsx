@@ -267,6 +267,11 @@ export default async function EtablissementPage({
       {multiBatiments ? (
         <div className="bg-[color:var(--board-canvas)] px-[var(--board-gutter)] pt-2">
           <SelecteurBatiment
+            // Sans lui, le sélecteur rend en papier — son défaut — au milieu
+            // d'un bandeau posé sur `--board-canvas`. L'oubli est silencieux :
+            // ni erreur ni avertissement, juste un rayon de 6 px et un gris
+            // d'une autre famille.
+            ton="board"
             baseHref={`/etablissements/${id}`}
             batiments={batiments}
             actif={batimentFiltre}

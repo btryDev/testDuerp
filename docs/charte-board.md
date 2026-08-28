@@ -288,9 +288,13 @@ d'avertissement, juste un rayon de 6 px et un gris d'une autre famille.
 
 Sur un écran board, passe donc `charte="board"` sur chacun de ces quatre.
 
-Un composant hors kit suit le même contrat : `batiments/SelecteurBatiment` et
-`batiments/ChampBatiment`, bicharte par conception parce que leurs appelants ne
-sont pas tous du même côté.
+Deux composants hors kit suivent le même contrat, **mais `SelecteurBatiment`
+nomme sa prop `ton` et non `charte`** — antériorité, et piège de plus : un
+appelant board qui écrit `charte="board"` dessus ne provoque aucune erreur et
+obtient le rendu papier. `ChampBatiment`, lui, prend bien `charte`.
+
+`ChampBatiment` n'a d'ailleurs **plus aucun appelant papier** depuis le
+2026-08-28 : sa branche papier se retire au prochain passage.
 
 La méthode, quand un composant partagé doit passer au board : **ajouter la
 variante à côté**, laisser les appelants papier sur l'ancienne, retirer
