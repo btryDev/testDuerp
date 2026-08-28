@@ -71,13 +71,13 @@ export default async function CarnetSanitairePage({
             <LegalBadge
               charte="board"
               reference="Arrêté du 1er février 2010"
-              href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000021790390/"
+              href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000021795143/"
               extrait="Le responsable des installations de production, de stockage et de distribution d'eau chaude sanitaire s'assure de la bonne surveillance des installations notamment par un carnet sanitaire dans lequel sont consignées toutes les opérations réalisées."
             />
             <LegalBadge
               charte="board"
-              reference="Art. R1321-23 CSP"
-              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006908173"
+              reference="Art. R. 1321-23 CSP"
+              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006909518"
             />
           </div>
         </WhyCard>
