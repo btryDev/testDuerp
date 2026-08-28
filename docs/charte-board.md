@@ -308,6 +308,82 @@ cohabite le temps que les écrans passent au board.
 
 ## 5. Les patrons d'écran
 
+### La largeur de lecture — une exception, nommée
+
+La règle est la gouttière : `px-[var(--board-gutter)]`, pleine largeur, jamais
+`mx-auto max-w-*`. Elle vaut pour tout écran d'application — une liste, une
+fiche, un formulaire pleine page.
+
+**Deux exceptions, et seulement deux :**
+
+1. **L'écran d'entrée étroit** — connexion, création de compte, formulaire isolé
+   sans contexte. Un formulaire de 460 px n'a rien à étaler ; la gouttière le
+   collerait à gauche devant 1200 px de vide. Colonne centrée, 460 px (560 si
+   le contenu porte un déroulé).
+2. **Le document de lecture suivie** — le DUERP. `duerp/[id]/layout.tsx` garde
+   `max-w-5xl`, et l'argument tient : ces pages se lisent comme un document, en
+   phrases longues, et une ligne de texte de 1400 px ne se lit pas. C'est la
+   même raison qui borne les paragraphes à `62/66/68ch` partout ailleurs — ici
+   la borne porte sur l'enveloppe parce que c'est tout le contenu qui est de la
+   prose.
+
+**Ce que l'exception ne couvre PAS.** Elle porte sur la largeur, et sur rien
+d'autre. Elle ne justifie ni `.cartouche`, ni `.label-admin`, ni `--minium` :
+le DUERP passe au board comme les autres, dans une colonne plus étroite. La
+confusion a coûté cher — l'argument de largeur a servi de raison à ne pas
+toucher le module du tout.
+
+Un tableau dense y déborde sa colonne ? Il défile dans son conteneur, comme
+partout (voir ci-dessus).
+
+### Tableau dense
+
+La charte n'en avait pas, et c'est ce qui bloquait la reprise du DUERP — le
+seul module qui en réclame. Le patron n'était pas à inventer : il existe déjà,
+en board, dans `components/registre/FicheJournal.tsx`. Il est relevé ici pour
+qu'il ne se réinvente pas à chaque écran.
+
+```
+<div className="overflow-x-auto">            ← le conteneur défile, jamais la page
+  <table className="w-full min-w-[34rem] border-collapse text-[13.5px]">
+    <caption className="sr-only">…</caption>  ← ce que le tableau montre, et son tri
+    <thead>
+      <tr className="border-b border-[color:var(--board-slate-line)] text-left">
+        <th scope="col" className="board-eyebrow py-2 pr-4 text-[9.5px]
+            font-semibold tracking-[0.12em] text-[color:var(--board-slate-soft)]
+            last:pr-0">
+    <tbody>
+      <tr className="border-b border-[color:var(--board-slate-line)] align-top
+          last:border-b-0">
+        <td className="py-2.5 pr-4 leading-[1.55]
+            text-[color:var(--board-slate-ink)] last:pr-0">
+```
+
+Ce qui s'y décide, et pourquoi :
+
+- **Filets pleins et horizontaux seulement.** Pas de `divide-x` : une grille
+  quadrillée ajoute autant de traits que de colonnes, et le regard suit les
+  lignes, pas les cases. Le dernier `<tr>` perd son filet (`last:border-b-0`) —
+  un trait au ras du bord de carte double celui de la carte.
+- **L'en-tête est un sur-titre, pas un titre** : `.board-eyebrow` en 9,5 px,
+  `--board-slate-soft`. Il nomme la colonne, il ne pèse pas autant que la
+  donnée.
+- **`min-w-` sur la table, `overflow-x-auto` sur son conteneur.** C'est le
+  conteneur qui défile ; le corps de page ne défile jamais horizontalement.
+- **`align-top`** : une cellule longue ne doit pas décentrer ses voisines.
+- **Une `<caption class="sr-only">`** dit ce que le tableau montre et dans quel
+  ordre il est trié. Sans elle, un lecteur d'écran entre dans une grille sans
+  savoir ce qu'elle contient.
+- **Une seconde information se range SOUS la première colonne**, en 11 px
+  `--board-slate-soft`, plutôt que de prendre une colonne. Une colonne de plus
+  se paie en largeur sur tous les écrans étroits.
+- **Les chiffres portent `tabular-nums`** — règle générale de la charte, elle
+  vaut particulièrement ici où ils s'alignent en colonne.
+
+Le tableau vit **dans** une `.carte-board`, pas à côté : c'est la carte qui
+porte la surface et le rayon, la table n'a ni fond ni bordure propres.
+
+
 ### Liste — modèle : `app/etablissements/[id]/equipements/page.tsx`
 
 ```
