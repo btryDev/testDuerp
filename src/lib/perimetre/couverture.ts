@@ -170,6 +170,24 @@ export type FaitDuerp = {
   /** Combien d'activités le dirigeant déclare exercer et que le référentiel ne
    *  couvre pas. Le détail se lit dans le DUERP, pas ici. */
   nbActivitesDeclarees: number;
+  /**
+   * Le secteur retenu est-il celui que le code NAF désigne ?
+   *
+   * `false` veut dire que le dirigeant a choisi « le secteur le plus proche »
+   * faute de mieux — ce que la page de choix du DUERP lui propose
+   * explicitement quand son code n'est rattaché à rien. Le DUERP sort alors
+   * avec des unités et des risques pré-remplis pour une **autre** activité que
+   * la sienne : le pire cas du produit, un silence qui prend l'apparence d'une
+   * réponse.
+   *
+   * Aucune heuristique : les deux termes sont des données déclarées, le code
+   * NAF saisi et l'identifiant de secteur confirmé. On compare, on ne devine
+   * pas.
+   *
+   * `null` quand la comparaison n'a pas de sens — pas de secteur confirmé
+   * (l'axe le dit déjà autrement), ou pas de code NAF.
+   */
+  secteurCorrespondAuNaf: boolean | null;
 };
 
 /**
@@ -331,8 +349,40 @@ function axeDuerp(
       return;
   }
 
+  // Le garde d'exhaustivité, et il n'est pas décoratif : `EtatCouverture` est
+  // importé de l'ADR-020, pas recopié. Le jour où elle gagne un état, la
+  // compilation s'arrête ici et quelqu'un doit décider de la phrase — c'est
+  // la seule chose qui empêche cet axe de dériver en seconde déclaration.
+  // Surtout, aucun `default` : il rattraperait l'état nouveau en silence et
+  // rendrait ce garde inutile.
   const jamais: never = duerp.etat;
   throw new Error(`État de couverture DUERP inconnu : ${String(jamais)}`);
+}
+
+/**
+ * Le secteur retenu n'est pas celui du code NAF.
+ *
+ * Axe distinct des cinq états de l'ADR-020, et qui s'ajoute à eux : un DUERP
+ * peut très bien n'avoir « aucun manque identifié » au sens de sa propre
+ * liste d'activités, et reposer sur le référentiel d'un autre métier. Les
+ * confondre ferait disparaître le second — c'est le cas que l'ouverture de la
+ * porte d'onboarding (B1) rend courant, et il serait invisible sans cette
+ * ligne.
+ */
+function axeSecteurParDefaut(
+  duerp: FaitDuerp | null,
+  manques: ManqueCouverture[],
+): void {
+  if (duerp === null || duerp.secteurCorrespondAuNaf !== false) return;
+
+  manques.push({
+    axe: "secteur_duerp",
+    motif: duerp.secteurNom
+      ? `Le document unique s'appuie sur le référentiel « ${duerp.secteurNom} », qui ne correspond pas à votre code d'activité.`
+      : "Le document unique s'appuie sur un référentiel qui ne correspond pas à votre code d'activité.",
+    consequence:
+      "Aucun référentiel n'est instruit pour votre activité : celui-ci a été retenu comme le plus proche. Les unités de travail et les risques pré-chargés décrivent donc un autre métier que le vôtre — à relire un par un, et à compléter par ce qu'ils ne prévoient pas.",
+  });
 }
 
 /**
@@ -407,6 +457,7 @@ export function couvertureDeLEtablissement(
 
   axeRegime(faits.regime, manques, indeterminations);
   axeDuerp(faits.duerp, manques, indeterminations);
+  axeSecteurParDefaut(faits.duerp, manques);
   axeEquipements(faits.equipements, manques);
   axeFamilles(faits.famillesNonPortees, manques);
 

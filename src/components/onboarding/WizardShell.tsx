@@ -46,9 +46,19 @@ const ETAPES: Etape[] = [
       if (s.codeNaf.trim().length === 0) return "Indiquez le code NAF.";
       if (!/^\d{2}\.?\d{2}[A-Z]?$/i.test(s.codeNaf.trim()))
         return "Le code NAF doit ressembler à 56.10A.";
-      const scope = evaluerScopeSecteur(s.codeNaf);
-      if (scope.status === "hors_perimetre") {
-        return `Secteur non couvert. ${scope.raison}`;
+      // Le code NAF n'a plus à désigner un secteur instruit pour qu'on
+      // avance. Il doit seulement AVOIR la forme d'un code NAF : sans ça, ni
+      // le référentiel sectoriel ni les écrans ne savent quoi en faire, et
+      // c'est une erreur de saisie, pas un refus de périmètre.
+      //
+      // `sans_referentiel` ne bloque rien : l'absence de référentiel se dit à
+      // l'écran (`StepIdentite`) puis, en permanence, sur le dossier
+      // (`perimetre/couverture.ts`, axe `secteur_duerp`). Barrer ici privait
+      // l'établissement de tout le référentiel de conformité — qui ne lit
+      // jamais le NAF — pour une cotation de risques qu'il n'avait pas
+      // demandée.
+      if (evaluerScopeSecteur(s.codeNaf).status === "format_invalide") {
+        return "Le code NAF doit ressembler à 56.10A.";
       }
       const n = Number(s.effectifSurSite);
       if (!Number.isInteger(n) || n < 1)

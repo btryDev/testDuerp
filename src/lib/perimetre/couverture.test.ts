@@ -83,7 +83,12 @@ describe("axe secteur_duerp — projection de l'ADR-020", () => {
   const avecEtat = (etat: EtatCouverture, nbActivitesDeclarees = 0) =>
     couvertureDeLEtablissement(
       faits({
-        duerp: { etat, secteurNom: "Commerce de détail", nbActivitesDeclarees },
+        duerp: {
+          etat,
+          secteurNom: "Commerce de détail",
+          nbActivitesDeclarees,
+          secteurCorrespondAuNaf: true,
+        },
       }),
     );
 
@@ -138,6 +143,7 @@ describe("axe secteur_duerp — projection de l'ADR-020", () => {
           etat: "secteur_non_instruit",
           secteurNom: null,
           nbActivitesDeclarees: 0,
+          secteurCorrespondAuNaf: true,
         },
       }),
     );
@@ -160,6 +166,71 @@ describe("axe secteur_duerp — projection de l'ADR-020", () => {
     for (const etat of tous) {
       expect(() => avecEtat(etat)).not.toThrow();
     }
+  });
+});
+
+describe("axe secteur_duerp — le secteur retenu par défaut", () => {
+  // Le cas que l'ouverture de la porte d'onboarding (B1) rend courant : plus
+  // aucun code NAF n'est refusé, donc un dirigeant hors des trois secteurs
+  // instruits arrive à la page de choix du DUERP, qui lui propose de prendre
+  // « le secteur le plus proche ». Son document sort alors pré-rempli pour un
+  // autre métier que le sien — et sans cette ligne, rien ne le dirait.
+  const avecCorrespondance = (
+    secteurCorrespondAuNaf: boolean | null,
+    etat: EtatCouverture = "aucun_manque_identifie",
+  ) =>
+    couvertureDeLEtablissement(
+      faits({
+        duerp: {
+          etat,
+          secteurNom: "Commerce de détail",
+          nbActivitesDeclarees: 0,
+          secteurCorrespondAuNaf,
+        },
+      }),
+    );
+
+  it("se tait quand le secteur retenu est celui du code NAF", () => {
+    expect(riensASignaler(avecCorrespondance(true))).toBe(true);
+  });
+
+  it("se tait quand la comparaison n'a pas de sens", () => {
+    // `null` = pas de secteur confirmé, ou pas de code NAF. L'axe DUERP dit
+    // déjà l'un ; inventer un second message pour l'autre serait du bruit.
+    expect(riensASignaler(avecCorrespondance(null))).toBe(true);
+  });
+
+  it("le dit quand le référentiel retenu n'est pas celui du code NAF", () => {
+    const c = avecCorrespondance(false);
+    expect(axes(c)).toEqual(["secteur_duerp"]);
+    expect(c.manques[0].motif).toContain("Commerce de détail");
+    expect(c.manques[0].consequence).toContain("un autre métier que le vôtre");
+  });
+
+  it("s'ajoute à l'état de l'ADR-020 au lieu de s'y substituer", () => {
+    // Un DUERP peut n'avoir « aucun manque identifié » au sens de sa propre
+    // liste d'activités ET reposer sur le référentiel d'un autre métier. Les
+    // deux sont vrais, et les confondre ferait disparaître le second — c'est
+    // précisément le silence qui prend l'apparence d'une réponse.
+    const c = avecCorrespondance(false, "manques_identifies");
+    expect(axes(c)).toEqual(["secteur_duerp", "secteur_duerp"]);
+    expect(c.manques[0].motif).toContain("ne couvre pas");
+    expect(c.manques[1].motif).toContain("ne correspond pas à votre code");
+  });
+
+  it("se passe du nom du secteur quand il manque, sans se taire", () => {
+    const c = couvertureDeLEtablissement(
+      faits({
+        duerp: {
+          etat: "aucun_manque_identifie",
+          secteurNom: null,
+          nbActivitesDeclarees: 0,
+          secteurCorrespondAuNaf: false,
+        },
+      }),
+    );
+    expect(axes(c)).toEqual(["secteur_duerp"]);
+    expect(c.manques[0].motif).toContain("un référentiel qui ne correspond pas");
   });
 });
 
@@ -242,6 +313,7 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
       etat: "secteur_inconnu",
       secteurNom: null,
       nbActivitesDeclarees: 0,
+      secteurCorrespondAuNaf: null,
     },
     equipements: { nbSansObligation: 4, nbEquipements: 9 },
     famillesNonPortees: [{ corpus: "c", ref: "PE 28", motif: "…" }],

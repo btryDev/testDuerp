@@ -21,6 +21,7 @@ import {
   reperterSansEcheance,
 } from "@/lib/equipements/hors-referentiel";
 import { famillesNonPortees } from "./familles";
+import { secteurCorrespondAuNaf } from "./secteur";
 import {
   couvertureDeLEtablissement,
   type CouvertureEtablissement,
@@ -111,6 +112,14 @@ export async function faitsDeCouverture(
       nbActivitesDeclarees:
         couvertureDuerp.activitesDeclarees.length +
         couvertureDuerp.unitesHorsReferentiel.length,
+      // Deux données déclarées comparées, aucune devinée. La règle vit dans
+      // `secteur.ts` : écrite ici, entre deux appels Prisma, elle n'était
+      // couverte par aucun test — une mutation qui la remplaçait par `true`
+      // constant passait au vert.
+      secteurCorrespondAuNaf: secteurCorrespondAuNaf(
+        etab.codeNaf,
+        duerp?.referentielSecteurId,
+      ),
     },
     equipements: {
       nbSansObligation: compterSansObligation(sansEcheance),
