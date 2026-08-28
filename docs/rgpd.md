@@ -143,7 +143,7 @@ document les passait sous silence :
 | `PermisFeu.prestataireContact`, `donneurOrdreNom` | instantané d'une opération datée |
 | `PlanPrevention.efChefNom`, `euChefNom` | instantané d'une inspection commune |
 | `Action.responsable` | texte libre saisi par l'utilisateur |
-| `ReleveTemperature.operateur` | texte libre : qui a fait le relevé |
+| `ReleveTemperature.operateur` | texte libre : qui a fait le relevé — **collecté, plus lu nulle part**, voir ci-dessous |
 
 `operateur` manquait à ce tableau, qui se présente pourtant comme
 l'inventaire complet. Le champ existait depuis le carnet sanitaire.
@@ -156,12 +156,48 @@ pareil.
 | Champ | Sort | Ne sort pas | Pourquoi |
 |---|---|---|---|
 | `Action.responsable` | PDF du plan d'actions, dossier de conformité, DUERP — et le snapshot conservé 40 ans, qui conserve ce qui a été remis | serveur MCP (`src/lib/mcp/`) | L'employeur remet ces documents lui-même, en connaissance de cause. Le MCP alimente l'assistant qu'il branche : un nom lu là part vers un LLM tiers par défaut, contre le principe « zéro IA sur le contenu utilisateur ». |
-| `ReleveTemperature.operateur` | rien | export ZIP de contrôle (`app/api/`) | Le ZIP est remis « à un inspecteur, un assureur, un bailleur ou un acquéreur ». Le fichier sanitaire, lui, est tenu à disposition de l'ARS — et n'exige pas ce nom. Le champ reste en base et à l'écran, où il sert à l'exploitant. |
+| `ReleveTemperature.operateur` | rien | export ZIP de contrôle (`app/api/`) | Le ZIP est remis « à un inspecteur, un assureur, un bailleur ou un acquéreur ». Le fichier sanitaire, lui, est tenu à disposition de l'ARS — et n'exige pas ce nom. |
+
+**Une question ouverte sur `operateur`, et il faut la poser plutôt que
+l'habiller.** Le ZIP en était le **seul lecteur**. Depuis son retrait, le
+formulaire de relevé demande toujours ce nom, le schéma de validation
+l'accepte, la base le conserve — et aucun écran, aucun document, aucune
+requête ne le lit. Une donnée collectée sans finalité tient plus mal sous le
+principe de minimisation que la même donnée employée à quelque chose.
+
+Deux issues, aucune tranchée ici : lui rendre un usage — l'afficher sur la
+fiche du point de relevé, où il aide l'exploitant à savoir qui a relevé — ou
+retirer le champ, du formulaire jusqu'au schéma. La seconde demande une
+migration et la perte de l'historique déjà saisi. La décision revient à la
+propriétaire du produit.
+
+Une rédaction antérieure de ce paragraphe affirmait que le champ « reste en
+base et à l'écran, où il sert à l'exploitant ». C'était faux : aucun écran ne
+le rend. L'affirmation invérifiable inscrite dans le registre RGPD lui-même
+est exactement la classe de défaut que ce lot corrige ailleurs.
 
 Les deux retenues sont posées dans la **requête** et non dans le formateur :
-ce qui n'est pas lu ne peut pas ressortir par une colonne ajoutée plus tard.
-Elles sont tenues par `src/lib/rgpd/frontiere-medicale.test.ts`, éprouvé en
-réinjectant chacun des deux défauts.
+une colonne ajoutée plus tard au formateur ne peut pas faire ressortir ce que
+la requête ne charge pas. Elles sont tenues par
+`src/lib/rgpd/frontiere-medicale.test.ts`, éprouvé en réinjectant chaque
+défaut plutôt qu'en le décrivant.
+
+**Ce que la garde tient, et ce qu'elle ne tient pas.** Sur `src/lib/mcp/`,
+elle tient les deux bouts : les six formes sous lesquelles on lit un champ
+nommément, et la **forme des requêtes** — `include` interdit, `select`
+obligatoire. Ce second volet est indispensable, et il manquait : une requête
+sans `select` rend tous les scalaires du modèle sans qu'aucun nom de champ
+n'apparaisse dans le source. C'est ainsi que `DuerpVersion.snapshot`, qui
+porte le `responsable` de chaque mesure, revenait dans le serveur MCP — vu par
+un relecteur, pas par la garde.
+
+Sur `app/api/`, elle ne tient que les lectures nommées d'`operateur`. La règle
+de forme n'y est **pas** appliquée : elle obligerait des dizaines de routes
+internes à énumérer leurs colonnes sans rien protéger, et une règle qu'on
+excepte partout finit par ne plus être lue. Une route qui ferait un
+`findMany` sans `select` sur `ReleveTemperature` chargerait donc `operateur`
+en silence. Elle ne l'écrirait nulle part — le second volet de la garde reste
+absent, il est écrit ici pour ne pas passer pour acquis.
 
 ### 2.6 Risques et mesures du DUERP
 

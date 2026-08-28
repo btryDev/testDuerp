@@ -282,8 +282,14 @@ export async function GET(
           //
           // La retenue est dans la requête et non dans le formateur : ce qui
           // n'est pas lu ne peut pas ressortir par une colonne qu'on
-          // ajouterait plus tard. Le nom reste en base et à l'écran, où il
-          // sert à l'exploitant.
+          // ajouterait plus tard.
+          //
+          // Conséquence à ne pas maquiller : ce ZIP était le SEUL lecteur du
+          // champ. Le formulaire le demande, le zod le valide, la base le
+          // garde — et plus rien ne le lit. Une donnée collectée sans
+          // finalité tient mal sous la minimisation ; la question est ouverte
+          // au niveau produit (docs/rgpd.md § 2.5), elle n'est pas tranchée
+          // ici.
           releves: {
             orderBy: { dateReleve: "desc" },
             take: 10,
