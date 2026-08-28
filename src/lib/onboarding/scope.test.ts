@@ -24,6 +24,26 @@ describe("evaluerScopeSecteur — les trois secteurs instruits", () => {
   it("normalise en majuscules (56.10a → ok)", () => {
     expect(evaluerScopeSecteur("56.10a").status).toBe("ok");
   });
+
+  it("reconnaît un code écrit sans point — « 5610A » est un NAF normal", () => {
+    // Le format accepte le point comme facultatif ; la résolution le
+    // supposait présent. Un restaurateur qui saisissait « 5610A » passait la
+    // validation et s'entendait répondre qu'aucun référentiel n'existait pour
+    // son activité, alors que le sien est livré. Corrigé le 2026-08-28 dans
+    // `trouverReferentielParNaf`, qui normalisait déjà la casse et les
+    // espaces mais pas le séparateur.
+    const r = evaluerScopeSecteur("5610A");
+    expect(r.status).toBe("ok");
+    if (r.status === "ok") expect(r.secteurId).toBe("restauration");
+    expect(evaluerScopeSecteur("4711B").status).toBe("ok");
+    expect(evaluerScopeSecteur("7022z").status).toBe("ok");
+  });
+
+  it("ne confond pas les deux écritures : un code hors secteur le reste", () => {
+    // La normalisation ne doit pas élargir le filet.
+    expect(evaluerScopeSecteur("4322A").status).toBe("sans_referentiel");
+    expect(evaluerScopeSecteur("43.22A").status).toBe("sans_referentiel");
+  });
 });
 
 describe("evaluerScopeSecteur — hors des trois secteurs, elle constate", () => {

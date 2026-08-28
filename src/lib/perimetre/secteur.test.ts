@@ -39,20 +39,43 @@ describe("secteurCorrespondAuNaf", () => {
     expect(secteurCorrespondAuNaf("56.10a", "restauration")).toBe(true);
   });
 
-  it("NE tolère PAS le point absent — comportement constaté, pas voulu", () => {
-    // Défaut préexistant, signalé et non corrigé ici (hors périmètre du lot).
+  it("tolère le point absent — « 5610A » désigne bien la restauration", () => {
+    // Corrigé le 2026-08-28 dans `trouverReferentielParNaf`. Avant :
+    // `evaluerScopeSecteur` validait le NAF avec le point FACULTATIF puis
+    // déléguait à une comparaison par préfixe contre des codes écrits AVEC le
+    // point. Un restaurateur qui saisissait « 5610A » passait la validation et
+    // s'entendait dire qu'aucun référentiel n'existait pour son activité,
+    // alors que le sien est livré.
     //
-    // `evaluerScopeSecteur` valide le code NAF avec `/^(\d{2})\.?\d{2}[A-Z]?$/`
-    // — le point est FACULTATIF — puis délègue à `trouverReferentielParNaf`,
-    // qui compare par `startsWith` à des codes écrits AVEC le point
-    // (« 56.10 »). Un restaurateur qui saisit « 5610A » passe donc la
-    // validation et s'entend dire qu'aucun référentiel n'existe pour son
-    // activité. Rien dans le wizard ne réinsère le point : `StepIdentite` ne
-    // fait que `.toUpperCase()`.
-    //
-    // Ce test fige le fait pour qu'il ne se découvre pas deux fois. Le jour où
-    // la normalisation est faite, il tombe au rouge, et c'est le signal
-    // attendu — pas une régression.
-    expect(secteurCorrespondAuNaf("5610A", "restauration")).toBe(false);
+    // B1 aggravait le défaut plutôt que de le laisser dormir : le cas était
+    // refusé avant, il créait ensuite un dossier portant un axe « secteur
+    // retenu par défaut » injustifié — une fausse déclaration de non-
+    // couverture, exactement ce que ce dossier existe pour empêcher.
+    expect(secteurCorrespondAuNaf("5610A", "restauration")).toBe(true);
+    expect(secteurCorrespondAuNaf("5610a", "restauration")).toBe(true);
+    expect(secteurCorrespondAuNaf("4711B", "commerce")).toBe(true);
+  });
+
+  it("n'invente pas de point dans un code trop court pour en porter un", () => {
+    // Les référentiels écrivent aussi des divisions nues (« 62 » pour le
+    // tertiaire). Y insérer un séparateur casserait la comparaison par
+    // préfixe dans l'autre sens.
+    expect(secteurCorrespondAuNaf("62", "bureau")).toBe(true);
+  });
+
+  it("ne tronque pas un code trop long pour en fabriquer un valide", () => {
+    // Le motif de normalisation est ancré aux deux bouts, et c'est ce qui
+    // compte ici. Non ancré, « 561011 » et « 5610AB » se feraient rogner en
+    // « 56.10 » et « 56.10A » — deux codes malformés promus en restauration,
+    // et un dossier pré-rempli pour un métier que personne n'a déclaré.
+    expect(secteurCorrespondAuNaf("561011", "restauration")).toBe(false);
+    expect(secteurCorrespondAuNaf("5610AB", "restauration")).toBe(false);
+  });
+
+  it("ne rend pas un code sans point plus permissif qu'avec", () => {
+    // La normalisation ne doit pas élargir le filet : « 5610A » vaut
+    // « 56.10A », pas « n'importe quoi qui commence par 56 ».
+    expect(secteurCorrespondAuNaf("5610A", "commerce")).toBe(false);
+    expect(secteurCorrespondAuNaf("4322A", "restauration")).toBe(false);
   });
 });
