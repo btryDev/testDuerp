@@ -739,11 +739,28 @@ export function champsScalaires(schema: string): Set<string> {
   const enums = new Set(
     [...schema.matchAll(/^\s*enum\s+(\w+)\s*\{/gm)].map((m) => m[1]),
   );
+
+  // L'ensemble est indexé par NOM de champ, pas par (modèle, champ) : la garde
+  // lit du texte, elle ne sait pas de quel modèle part une requête. Un nom
+  // porté à la fois par un scalaire et par une relation serait donc « sauvé »
+  // par son homonyme, et `X: true` accepté là où X est une relation. Le schéma
+  // en compte deux aujourd'hui — `risque` (String ici, relation `Risque?`
+  // ailleurs) et `commentaires` (String? ici, relation ailleurs) —, et
+  // `Action.risque` EST une relation que `lib/mcp/` interroge.
+  //
+  // Un nom est donc scalaire seulement s'il n'est JAMAIS déclaré autrement.
+  // Une déclaration dont le type n'est ni primitif ni énuméré le disqualifie,
+  // qu'il s'agisse d'une relation ou d'un type que l'analyse n'a pas su lire —
+  // la même polarité que le reste : le doute exclut.
   const scalaires = new Set<string>();
+  const disqualifies = new Set<string>();
   for (const ligne of schema.split("\n")) {
     const m = /^\s+(\w+)\s+(\w+)(\[\])?\??/.exec(ligne);
-    if (m && (TYPES_PRIMITIFS.has(m[2]) || enums.has(m[2]))) scalaires.add(m[1]);
+    if (!m) continue;
+    if (TYPES_PRIMITIFS.has(m[2]) || enums.has(m[2])) scalaires.add(m[1]);
+    else disqualifies.add(m[1]);
   }
+  for (const nom of disqualifies) scalaires.delete(nom);
   return scalaires;
 }
 
@@ -1043,6 +1060,36 @@ describe("les noms saisis en texte libre ne partent ni vers un assistant ni vers
     for (const relation of ["versions", "unites", "risques", "releves"]) {
       expect(scalaires.has(relation), relation).toBe(false);
     }
+
+    // Et un nom porté à la fois par un scalaire et par une relation est
+    // disqualifié — sinon l'homonyme scalaire ferait accepter `risque: true`
+    // là où `Action.risque` est une relation que le MCP interroge.
+    for (const ambigu of ["risque", "commentaires"]) {
+      expect(scalaires.has(ambigu), ambigu).toBe(false);
+    }
+  });
+
+  it("un nom scalaire quelque part et relation ailleurs est refusé", () => {
+    const schema = [
+      "model Risque {",
+      "  id String @id",
+      "  libelle String",
+      "}",
+      "model Action {",
+      "  risque Risque? @relation(fields: [risqueId], references: [id])",
+      "}",
+      "model Rapport {",
+      "  risque String",
+      "}",
+    ].join("\n");
+    const scalaires = champsScalaires(schema);
+
+    expect(scalaires.has("risque")).toBe(false);
+    expect(
+      requetesDeLecture(
+        "await prisma.action.findMany({ select: { risque: true } });",
+      ).flatMap((b) => relationsNonNommees(b, scalaires)),
+    ).toEqual(["risque"]);
   });
 
   it("une déclaration indentée ne fait plus tomber la garde du bon côté", () => {

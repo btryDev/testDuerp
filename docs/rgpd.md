@@ -209,7 +209,13 @@ indentant `model Prestataire {` d'un espace — schéma toujours valide pour
 devenu acceptable.
 
 La polarité est donc inversée : `X: true` n'est accepté que si `X` est un
-scalaire **reconnu** — type primitif Prisma ou énumération déclarée. Tout ce
+scalaire **reconnu** — type primitif Prisma ou énumération déclarée, et jamais
+déclaré autrement ailleurs. Cette dernière condition n'est pas théorique : la
+garde lit du texte et ne sait pas de quel modèle part une requête, donc son
+inventaire est indexé par nom de champ. Deux noms du schéma sont portés à la
+fois par un scalaire et par une relation — `risque` et `commentaires` — et
+`Action.risque` est une relation que le serveur MCP interroge. Sans la
+disqualification, l'homonyme scalaire aurait fait accepter `risque: true`. Tout ce
 que l'analyse ne comprend pas est refusé : une relation, une variable, une
 diffusion, une clé entre guillemets ou calculée, un ternaire, un nom que la
 lecture du schéma n'a pas vu. Chacun de ces cas peut cacher une relation
