@@ -107,10 +107,13 @@ describe("compterEtatCalendrier", () => {
     statut: string,
     datePrevue: string,
     dateRealisee: string | null = null,
+    /** Le porteur (ADR-023) : `null` = équipement ou établissement. */
+    salarieId: string | null = null,
   ) => ({
     statut,
     datePrevue: jour(datePrevue),
     dateRealisee: dateRealisee ? jour(dateRealisee) : null,
+    salarieId,
   });
 
   it("partitionne en quatre ensembles disjoints", async () => {
@@ -137,6 +140,34 @@ describe("compterEtatCalendrier", () => {
       aPlanifier: 1,
       aVenir: 2,
       realisees12m: 1,
+      enRetardParType: { verification: 3, "titre-salarie": 0 },
+      aVenirParType: { verification: 2, "titre-salarie": 0 },
+      toutesParType: { verification: 9, "titre-salarie": 0 },
+    });
+  });
+
+  it("ventile les mêmes lignes par nature, selon leur porteur", async () => {
+    // Le total ne bouge pas, sa ventilation si — c'est toute la promesse
+    // du rattachement de la famille « personnel » (ADR-016, ADR-023).
+    prismaMock.verification.findMany.mockResolvedValue([
+      verif("depassee", "2026-06-01"),
+      verif("depassee", "2026-06-01", null, "sal-1"),
+      verif("planifiee", "2026-08-10", null, "sal-2"),
+    ]);
+
+    const etat = await compterEtatCalendrier("etab-1", NOW);
+    expect(etat.enRetard).toBe(2);
+    expect(etat.enRetardParType).toEqual({
+      verification: 1,
+      "titre-salarie": 1,
+    });
+    expect(etat.aVenirParType).toEqual({
+      verification: 0,
+      "titre-salarie": 1,
+    });
+    expect(etat.toutesParType).toEqual({
+      verification: 1,
+      "titre-salarie": 2,
     });
   });
 

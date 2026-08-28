@@ -28,7 +28,10 @@ import { estEnRetard } from "@/lib/dates/retard";
  *   - `operations` — « Opérations encadrées » : un chantier daté dont le
  *     préalable est obligatoire (permis de feu, plan de prévention) ;
  *   - `papiers`    — « Documents à renouveler » (DUERP, attestations) ;
- *   - `personnel`  — réservée aux modules à venir.
+ *   - `personnel`  — « Titres du personnel » : l'échéance d'un titre que
+ *     détient une personne (ADR-023). Une seule obligation la porte
+ *     aujourd'hui — l'attestation médicale quinquennale de
+ *     `R. 4544-11-1` — et le libellé de la famille ne promet pas plus.
  *
  * Chaque ligne dit d'où elle sort en toutes lettres (`origine`) —
  * jamais de jargon interne en interface. Les classements par date sont
@@ -52,6 +55,7 @@ export type FamilleEcheance =
  */
 export type TypeEcheance =
   | "verification"
+  | "titre-salarie"
   | "action-duerp"
   | "action-verification"
   | "permis-feu"
@@ -68,6 +72,13 @@ export type TypeEcheance =
 export const FAMILLE_DE_TYPE: Record<TypeEcheance, FamilleEcheance> = {
   verification: "controle",
   legionelles: "controle",
+  // La ligne d'un titre de salarié n'est pas un contrôle d'appareil.
+  // Elle vivait pourtant dans `controle` jusqu'ici, faute de type : une
+  // attestation médicale s'annonçait sous le badge « Contrôles matériel »,
+  // qui « nomme ce qui a un calendrier réglementaire d'équipement »
+  // (ADR-015). C'est le rattachement que l'ADR-023 § 7 avait consigné à la
+  // dette.
+  "titre-salarie": "personnel",
   "action-duerp": "travaux",
   "action-verification": "travaux",
   // Ni des corrections ni des registres : des opérations ponctuelles.
@@ -80,6 +91,65 @@ export const FAMILLE_DE_TYPE: Record<TypeEcheance, FamilleEcheance> = {
   "duerp-maj": "papiers",
   attestation: "papiers",
 };
+
+/**
+ * Les familles que la rangée de pilules du calendrier propose de filtrer.
+ *
+ * **Invariant** : toute famille qu'un type peut produire est ici. La liste
+ * vit à côté de `FAMILLE_DE_TYPE` — et non dans la page — pour être
+ * testable : les deux se sont contredites sans que rien ne le dise.
+ * `personnel` n'était rattachée à aucun type, donc exclue du filtre ; les
+ * deux manques se compensaient, et corriger l'un sans l'autre aurait rendu
+ * des lignes visibles sous « Tout » et introuvables sous toute pilule.
+ */
+export const FAMILLES_FILTRABLES: FamilleEcheance[] = [
+  "controle",
+  "travaux",
+  "operations",
+  "papiers",
+  "personnel",
+];
+
+/**
+ * Les deux natures que porte une ligne de `Verification`.
+ *
+ * Le modèle en a fondu deux depuis l'ADR-023 : la vérification périodique
+ * d'un équipement (ou de l'établissement), et l'échéance d'un titre détenu
+ * par une personne. Rien en base ne les distingue sinon le porteur.
+ */
+export type TypeVerification = Extract<
+  TypeEcheance,
+  "verification" | "titre-salarie"
+>;
+
+/** Les deux, pour ventiler — et pour qu'une troisième ne s'oublie pas. */
+export const TYPES_VERIFICATION: readonly TypeVerification[] = [
+  "verification",
+  "titre-salarie",
+];
+
+/**
+ * La nature d'une ligne de `Verification`, déduite de son porteur.
+ *
+ * **`salarieId` et non le porteur de l'obligation** : c'est le fait écrit sur
+ * la ligne, et la contrainte `porteur_xor` garantit qu'il n'y en a qu'un
+ * (ADR-023 § 3). Passer par le référentiel ferait dépendre l'affichage d'une
+ * table que la ligne ne connaît pas — et une obligation retirée rendrait la
+ * nature indéterminable sur une ligne pourtant bien là.
+ *
+ * Le paramètre est REQUIS et nullable, jamais optionnel : un appelant qui
+ * oublie `salarieId` dans son `select` doit avoir une erreur de compilation,
+ * pas un repli silencieux (même précaution que `libellePorteur`).
+ */
+export function typeDeVerification(v: {
+  salarieId: string | null;
+}): TypeVerification {
+  // Le test est POSITIF : il faut un identifiant pour conclure au titre. Écrit
+  // `=== null ? "verification" : "titre-salarie"`, un `salarieId` absent
+  // (`undefined` — un objet de test, un `select` incomplet) rangeait une
+  // vérification d'équipement en « Personnel », soit le sens inverse.
+  return v.salarieId ? "titre-salarie" : "verification";
+}
 
 export type EcheanceCalendrier = {
   /** Unique inter-modules : préfixé par le module (`action-…`). */

@@ -255,6 +255,35 @@ un calendrier réglementaire d'équipement » : une attestation médicale n'en e
 pas un. C'est le vrai motif de rattacher un jour la famille `personnel`, et il
 est consigné au registre de la dette.
 
+**Amendement du 2026-08-28 — la dette est levée, et les deux changements sont
+partis ensemble.** Ce qui précède décrit l'état antérieur ; il reste écrit
+parce qu'il énonce le piège. Ce qui a changé :
+
+- `FAMILLE_DE_TYPE` rattache un type nouveau, `titre-salarie`, à `personnel`.
+  Il se déduit du porteur écrit sur la ligne (`Verification.salarieId`), par
+  `typeDeVerification()` — jamais du référentiel : une obligation retirée
+  rendrait la nature indéterminable sur une ligne pourtant bien là.
+- `FAMILLES_FILTRABLES` prend `personnel` et **quitte la page** pour
+  `calendrier/echeances.ts`, à côté de `FAMILLE_DE_TYPE`. Les deux listes se
+  sont contredites sans que rien ne le dise ; un test tient désormais
+  l'invariant — aucune famille produite par un type n'est absente du filtre.
+- **Un troisième point, que ni l'audit ni cet ADR n'avaient vu** :
+  `repartirRetards` posait `parFamille.controle = verifsEnRetard` en bloc.
+  Sans le scinder, le compteur aurait attribué à « Contrôles » des lignes
+  devenues « Personnel ». Il prend maintenant une ventilation par nature, et
+  `compterEtatCalendrier` la produit d'une seule lecture.
+
+Ce que l'utilisateur voit : la pilule « Personnel » apparaît et filtre ; le
+badge « Contrôles matériel » cesse de compter les attestations médicales ; le
+compteur de retards du rail garde sa valeur — seule sa ventilation change.
+
+`REFERENTIEL_VERSION` **n'a pas bougé** : `empreinteReferentiel()` ne hache que
+l'identifiant, la périodicité, le libellé, les réalisateurs, les typologies,
+les conditions, les catégories d'équipement, le porteur et
+`equipementsEnContexte`. Ce lot ne touche aucun de ces champs — la nature est
+déduite à la lecture, rien n'est écrit en base — donc aucune réconciliation de
+parc n'est déclenchée.
+
 ## Ce que cet ADR ne décide pas
 
 - **Le contenu au-delà d'une obligation.** Les 19 lignes à porteur salarié

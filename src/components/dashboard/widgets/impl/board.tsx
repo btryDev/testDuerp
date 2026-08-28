@@ -216,7 +216,9 @@ const MOT_FAMILLE: Record<FamilleEcheance, [string, string]> = {
   travaux: ["correction", "corrections"],
   operations: ["opération", "opérations"],
   papiers: ["document", "documents"],
-  personnel: ["échéance personnel", "échéances personnel"],
+  // Cf. `NOM_RETARD` dans `lib/dashboard/brief.ts` : la famille porte des
+  // lignes depuis l'ADR-023, ces mots se lisent maintenant à l'écran.
+  personnel: ["titre de salarié", "titres de salariés"],
 };
 
 /** Le mot de la famille pour `n` éléments. */

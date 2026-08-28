@@ -31,7 +31,11 @@ import {
 } from "@/lib/dates";
 import { estActionEnRetard } from "@/lib/dates/retard";
 import { TON_REGISTRE, lecturesCalendrier } from "@/lib/calendrier/etats";
-import type { BatimentEcheance } from "@/lib/calendrier/echeances";
+import {
+  typeDeVerification,
+  type BatimentEcheance,
+  type TypeVerification,
+} from "@/lib/calendrier/echeances";
 import { repartirVerifications } from "@/lib/pdf/etat-verifications";
 import type { ModulesMatrice } from "./obligations";
 import { evaluerEtatDuerp, type EtatDuerp } from "./duerp";
@@ -95,6 +99,11 @@ export type EvenementFenetre = {
   libelle: string;
   date: Date;
   tone: "alerte" | "warn" | "ok";
+  /** Ce que la ligne **est** (ADR-016), et donc la famille qui s'en déduit.
+   *  Ce flux en porte deux depuis l'ADR-023 : la vérification d'un
+   *  équipement et l'échéance du titre d'une personne. Requis — l'oublier
+   *  rangerait de nouveau une attestation médicale dans « Contrôles ». */
+  type: TypeVerification;
   /** L'appareil, ou « Tout l'établissement » (ADR-022). */
   equipement: string;
   /** Le bâtiment de l'équipement (ADR-019). `null` quand l'échéance porte sur
@@ -182,6 +191,7 @@ export async function listerEvenementsFenetre(
         libelle: libelleCourt(v.libelleObligation),
         date: lec.date,
         tone: TON_REGISTRE[lec.registre],
+        type: typeDeVerification(v),
         equipement: libellePorteur(v),
         // Pas d'équipement, pas de bâtiment : la ligne reste visible sous
         // tous les filtres par bâtiment (ADR-010, ADR-019).

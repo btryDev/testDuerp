@@ -10,7 +10,9 @@ import {
   echeancePlanPrevention,
   echeancesPrestataire,
   FAMILLE_DE_TYPE,
+  FAMILLES_FILTRABLES,
   origineAction,
+  typeDeVerification,
   tonPourDate,
 } from "./echeances";
 
@@ -89,6 +91,33 @@ describe("FAMILLE_DE_TYPE", () => {
     expect(FAMILLE_DE_TYPE["plan-prevention"]).toBe("operations");
     expect(FAMILLE_DE_TYPE["duerp-maj"]).toBe("papiers");
     expect(FAMILLE_DE_TYPE.attestation).toBe("papiers");
+    // ADR-023 § 7 : une attestation médicale n'est pas un contrôle
+    // d'appareil, et c'est pourtant sous ce badge qu'elle s'affichait.
+    expect(FAMILLE_DE_TYPE["titre-salarie"]).toBe("personnel");
+  });
+
+  it("déduit la nature d'une ligne de vérification de son porteur", () => {
+    expect(typeDeVerification({ salarieId: null })).toBe("verification");
+    expect(typeDeVerification({ salarieId: "sal-1" })).toBe("titre-salarie");
+  });
+
+  it("ne prend pas un porteur absent pour un porteur salarié", () => {
+    // Le cast est délibéré : il rejoue une lecture dont le `select` a oublié
+    // `salarieId`. Le test écrit d'abord en négation (`=== null`) faisait
+    // basculer TOUTES ces lignes en « Personnel » — l'erreur inverse, muette,
+    // et rencontrée pour de vrai sur un objet de test.
+    const sansPorteur = {} as { salarieId: string | null };
+    expect(typeDeVerification(sansPorteur)).toBe("verification");
+  });
+
+  it("ne produit aucune famille que le calendrier ne sait pas filtrer", () => {
+    // La garantie qui manquait. Une famille rattachée à un type mais absente
+    // de la rangée de pilules donne des lignes visibles sous « Tout » et
+    // introuvables sous toute pilule — la régression que ce lot évite.
+    const produites = new Set(Object.values(FAMILLE_DE_TYPE));
+    expect([...produites].filter((f) => !FAMILLES_FILTRABLES.includes(f))).toEqual(
+      [],
+    );
   });
 
   it("déduit la bonne famille pour les échéances qu'il produit", () => {

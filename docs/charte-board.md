@@ -497,6 +497,12 @@ Chacun vient d'un commentaire du code, souvent écrit après le bug qu'il évite
 > **Conflit ouvert au 2026-08-27** : `Users` désigne trois choses — les
 > Prestataires dans le rail, la famille `personnel` du calendrier, et le type
 > `attestation`. Le prochain écran qui en a besoin doit en choisir une autre.
+>
+> **2026-08-28** — c'est ce qu'a fait le type `titre-salarie`, premier type
+> rattaché à la famille `personnel` : il prend `IdCard`, l'icône de « Équipe »
+> dans le rail, suivant la règle de l'ADR-016 (« chaque type porte l'icône de
+> son module dans le rail »). Le conflit à trois reste ouvert : `Users` désigne
+> toujours les Prestataires, la famille `personnel` et le type `attestation`.
 
 ### Hiérarchie
 

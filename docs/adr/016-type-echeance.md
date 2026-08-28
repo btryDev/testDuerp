@@ -95,6 +95,16 @@ iconifiée mais aucune source ne la produit, et `FAMILLES_FILTRABLES` l'exclut.
 `FAMILLE_DE_TYPE` ne la référence donc pas encore ; le jour où un module la
 produira, il déclarera son type et la table le rattachera.
 
+**Ce jour est venu le 2026-08-28** (ADR-023 § 7, amendement) : le type
+`titre-salarie` rattache `personnel`, et `FAMILLES_FILTRABLES` — désormais
+voisine de `FAMILLE_DE_TYPE` dans `calendrier/echeances.ts` plutôt que dans la
+page — l'inclut. Le mécanisme a tenu sa promesse : le rattachement s'est fait
+en déclarant un type, sans que la fusion, la grille ni la frise aient à
+connaître la famille. Il n'a pas suffi pour autant, et c'est l'enseignement du
+lot : le **compteur** de retards ne passe pas par `FAMILLE_DE_TYPE` —
+`repartirRetards` versait le flux des vérifications dans `controle` en bloc.
+Une table de dérivation ne protège que les lecteurs qui la consultent.
+
 ## Correction — `action-libre` n'a jamais pu exister
 
 La liste ci-dessus comptait un dixième type, `action-libre`, « action saisie
