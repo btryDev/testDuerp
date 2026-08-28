@@ -166,6 +166,22 @@ Ce n'est pas du style. Une négation (`!estPorteeParEquipement`) est une porte
 qui s'ouvre à tout ce qu'on ajoutera ensuite, et qui l'attribue au cas précédent
 sans le dire. C'est précisément ce qui aurait cassé ici.
 
+**Le motif s'est rejoué le 2026-08-28, sur le même sujet et dans le même
+sens.** `typeDeVerification()` — le lecteur qui déduit la nature d'une ligne de
+son porteur (§ 7, amendement) — a d'abord été écrit
+`salarieId === null ? "verification" : "titre-salarie"`. Une négation, encore :
+tout ce qui n'est **pas** exactement `null` conclut au titre. Un objet dont le
+`select` omet `salarieId` porte `undefined`, et rangeait donc **toutes** les
+vérifications d'équipement en famille « Personnel » — sans erreur de
+compilation, la signature promettant `string | null`. Le défaut a été trouvé
+par un test existant, pas par relecture.
+
+La règle se formule donc plus largement que « pas de ternaire » : **le test
+porte sur le cas qu'on affirme, pas sur son complément.** Il faut un
+identifiant pour conclure au porteur salarié ; son absence, sous quelque forme
+qu'elle se présente, vaut « pas de porteur salarié ». Une nullité écrite en
+négation n'est pas une analyse de cas, c'est la même porte, plus étroite.
+
 ### 5. `porteUnePreuve` accueille l'attestation nominative dans le même commit
 
 L'ADR-022 le posait en obligation : « Tout futur porteur de preuve — une
