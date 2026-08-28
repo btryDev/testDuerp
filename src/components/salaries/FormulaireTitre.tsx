@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChampBoard } from "@/components/ui-kit";
@@ -66,19 +66,25 @@ export function FormulaireTitre({
   const titre = catalogue.find((o) => o.id === choisi);
   const renouvellement = dejaDeclares.includes(choisi);
 
-  const [cle, setCle] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
     // Vider le formulaire après un enregistrement réussi : sans cela, les
     // dates de la déclaration précédente restent dans les champs et la
     // suivante part d'une valeur qui n'a rien à voir.
-    if (state.status === "success") setCle((k) => k + 1);
+    //
+    // `form.reset()` plutôt qu'une clé de remontage incrémentée dans l'effet :
+    // appeler `setState` depuis un effet déclenche un second rendu en cascade,
+    // et ici il n'y a rien à recalculer — seulement des champs à vider. Le
+    // choix du titre survit, ce qui est voulu : on enchaîne souvent deux
+    // déclarations du même titre sur deux personnes.
+    if (state.status === "success") formRef.current?.reset();
   }, [state]);
 
   const err = (champ: string) =>
     state.status === "error" ? state.fieldErrors?.[champ]?.[0] : undefined;
 
   return (
-    <form key={cle} action={formAction} className="flex flex-col gap-5">
+    <form ref={formRef} action={formAction} className="flex flex-col gap-5">
       <fieldset className="m-0 border-0 p-0">
         <legend className="label-board">Quel titre ?</legend>
         <div className="mt-1 flex flex-col gap-2">
