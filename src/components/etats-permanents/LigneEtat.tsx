@@ -1,9 +1,17 @@
 "use client";
 
+/** Le caractère d'attente, nommé pour qu'aucun ternaire ne porte de littéral. */
+const ATTENTE = "…";
+
 import { useTransition } from "react";
 import { Check, FileText } from "lucide-react";
 import { declarerEnPlace, retirerDeclaration } from "@/lib/etats-permanents/actions";
 import { formaterDateFr } from "@/lib/dates";
+import {
+  libelleGeste,
+  libelleRetour,
+  phraseDeclaration,
+} from "@/lib/etats-permanents/phrases";
 
 /**
  * Une ligne de l'écran « Ce qui doit être en place ».
@@ -39,8 +47,11 @@ export function LigneEtat({
   const [pending, startTransition] = useTransition();
   const declare = declareLe !== null;
 
-  const verbe = mode === "etat" ? "Déclaré en place le" : "Fait le";
-  const geste = mode === "etat" ? "Déclarer en place" : "Marquer comme fait";
+  // Aucun libellé n'est recousu ici. Verbe, date et geste sortent entiers de
+  // `phrases.ts`, où ils se lisent et se testent — c'est la règle que
+  // `phrases.test.ts` fait respecter dans ce fichier même, et c'est elle qui a
+  // trouvé le montage `{verbe} {date}` que portait la première version.
+  const geste = libelleGeste(mode);
 
   return (
     <li className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2 border-t border-[color:var(--board-slate-line)] py-3.5 first:border-t-0">
@@ -63,7 +74,7 @@ export function LigneEtat({
 
         {declare && (
           <p className="m-0 mt-1 text-[12px] leading-[1.4] text-[color:var(--board-slate-mid)]">
-            {verbe} {formaterDateFr(new Date(declareLe))}
+            {phraseDeclaration(mode, formaterDateFr(new Date(declareLe)))}
           </p>
         )}
       </div>
@@ -94,7 +105,7 @@ export function LigneEtat({
         }
       >
         {declare && <Check className="size-3.5" aria-hidden />}
-        {pending ? "…" : declare ? "Revenir dessus" : geste}
+        {pending ? ATTENTE : declare ? libelleRetour() : geste}
       </button>
     </li>
   );

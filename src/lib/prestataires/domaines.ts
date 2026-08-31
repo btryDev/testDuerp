@@ -223,7 +223,21 @@ export const TIERS_LUI_MEME_OBLIGATOIRE: Partial<
   Record<DomaineObligation, { titre: string; sousTitre: string }>
 > = {
   sante_travail: {
-    titre: "Aucun service de prévention et de santé au travail déclaré",
+    // ⚠ « À VOTRE ANNUAIRE », ET PAS « DÉCLARÉ » TOUT COURT.
+    //
+    // Le mot a été retiré le 2026-08-31, après un contrôle visuel : l'écran
+    // « Ce qui doit être en place » permet désormais de DÉCLARER EN PLACE
+    // l'organisation d'un service de santé au travail (`L. 4622-1`). Un
+    // dirigeant qui venait de le faire lisait sur son accueil qu'il n'avait
+    // « rien déclaré ».
+    //
+    // Les deux constats sont justes et différents — l'un parle de l'annuaire
+    // des prestataires, l'autre de l'état déclaré par l'employeur — mais ils
+    // employaient LE MÊME VERBE pour dire l'inverse. C'est la double surface
+    // que l'écran des états permanents venait retirer, revenue par la
+    // rédaction. Deux messages qui disent des choses différentes doivent le
+    // dire avec des mots différents.
+    titre: "Aucun service de prévention et de santé au travail à votre annuaire",
     // ⚠ LA LONGUEUR EST UNE CONTRAINTE DE FOND ICI, PAS UNE COQUETTERIE.
     //
     // La rédaction précédente disait tout ce qu'il fallait — ce qui est dû avec

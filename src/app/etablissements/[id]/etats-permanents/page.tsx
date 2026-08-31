@@ -4,6 +4,11 @@ import { requireEtablissement } from "@/lib/auth/scope";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 import { listerEtatsPermanents } from "@/lib/etats-permanents/queries";
 import { LigneEtat } from "@/components/etats-permanents/LigneEtat";
+import {
+  phraseCompteur,
+  phraseFaitsDates,
+  phraseRestantes,
+} from "@/lib/etats-permanents/phrases";
 
 export const metadata = {
   title: "Ce qui doit être en place — Rojer",
@@ -53,7 +58,7 @@ export default async function EtatsPermanentsPage({
   const { etablissement } = await requireEtablissement(id);
   const equipements = await listerEquipementsDeLEtablissement(id);
 
-  const { groupes, enPlace, total, faitsDates, faitsDatesRenseignes } =
+  const { groupes, faits, enPlace, total, faitsDates, faitsDatesRenseignes } =
     await listerEtatsPermanents(
       etablissement,
       equipements.map((eq) => ({
@@ -68,6 +73,12 @@ export default async function EtatsPermanentsPage({
     );
 
   const restantes = total - enPlace;
+  // Les phrases qui s'accordent en nombre vivent dans `phrases.ts` et non dans
+  // ce JSX. Une locution coupée par un ternaire s'y était cassée au rendu —
+  // « Elles n'entrepas dans le compte » — et rien ne pouvait l'attraper tant
+  // que la phrase n'existait nulle part en entier.
+  const texteRestantes = phraseRestantes(restantes);
+  const texteFaits = phraseFaitsDates(faitsDates, faitsDatesRenseignes);
 
   return (
     <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
@@ -89,7 +100,7 @@ export default async function EtatsPermanentsPage({
               s&apos;agit d&apos;un état à mettre en place puis à maintenir. Une
               bonne partie est sans doute déjà vraie chez vous — de l&apos;eau au
               robinet, des toilettes, une affiche au mur. Passez-les en revue :
-              ce qui restera décochera ce qu&apos;il vous reste à faire.
+              ce qui restera décoché dira ce qu&apos;il vous reste à faire.
             </p>
           </div>
 
@@ -108,7 +119,7 @@ export default async function EtatsPermanentsPage({
                 {enPlace} sur {total}
               </p>
               <p className="board-eyebrow m-0 mt-1.5 text-[9.5px] tracking-[0.12em] text-[color:var(--board-slate-soft)]">
-                déclarés en place par vous
+                {phraseCompteur(enPlace, total)}
               </p>
             </div>
           )}
@@ -153,6 +164,51 @@ export default async function EtatsPermanentsPage({
             ))}
 
             {/*
+              LE SECOND VERBE A SA PROPRE SECTION, ET C'EST UNE CORRECTION.
+
+              Les deux verbes cohabitaient dans les mêmes cartes, avec deux
+              pastilles strictement identiques — même fond, même rayon, même
+              position — et la seule différence tenait dans les trois mots du
+              bouton. Le contrôle visuel du 2026-08-31 a coché douze lignes en
+              sept secondes sans en lire une seule : dans ce geste-là, deux
+              pastilles qui se ressemblent sont la même action.
+
+              La distinction est donc portée par le REGROUPEMENT, qui se voit
+              sans se lire. Pas par une teinte — la charte interdit la couleur
+              seule — ni par une icône qu'il faudrait décoder. Et l'explication
+              vit ici, à côté des lignes concernées, au lieu du pied de page
+              « là où l'on arrive après avoir tout coché ».
+
+              L'écran ne perd rien de sa vitesse : à l'intérieur de chaque
+              section, cliquer reste immédiat.
+            */}
+            {faits.length > 0 && (
+              <section className="carte-board px-7 py-6 sm:px-8">
+                <h2 className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+                  Ce qui revient, sans rythme écrit
+                </h2>
+                {texteFaits && (
+                  <p className="m-0 mt-2 max-w-[72ch] text-[13px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+                    {texteFaits}
+                  </p>
+                )}
+                <ul className="m-0 mt-3 list-none p-0">
+                  {faits.map((l) => (
+                    <LigneEtat
+                      key={l.obligation.id}
+                      etablissementId={id}
+                      obligationId={l.obligation.id}
+                      libelle={l.obligation.libelle}
+                      mode={l.mode}
+                      pieceAttendue={l.pieceAttendue}
+                      declareLe={l.declareLe ? l.declareLe.toISOString() : null}
+                    />
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {/*
               Ce que l'écran dit de lui-même. Le produit nomme ce qu'il ne couvre
               pas plutôt que de se taire — c'est sa marque, et l'ADR-024 en fait
               un mécanisme.
@@ -181,31 +237,11 @@ export default async function EtatsPermanentsPage({
                   quel rythme revoir ce que vous avez mis en place. La date
                   s&apos;affiche, vous jugez vous-même si elle a vieilli.
                 </p>
-                {restantes > 0 && (
-                  <p className="m-0">
-                    {restantes === 1
-                      ? "Une ligne reste à passer en revue."
-                      : `${restantes} lignes restent à passer en revue.`}{" "}
-                    Une ligne non cochée n&apos;est pas un manquement constaté :
-                    c&apos;est une question à laquelle vous n&apos;avez pas
-                    encore répondu.
-                  </p>
-                )}
-                {faitsDates > 0 && (
-                  <p className="m-0">
-                    {faitsDates === 1
-                      ? "Une ligne se date"
-                      : `${faitsDates} lignes se datent`}{" "}
-                    (« fait le ») plutôt que de se déclarer en place :{" "}
-                    {faitsDates === 1 ? "le texte la" : "les textes les"} fait
-                    revenir sans dire à quel rythme.{" "}
-                    {faitsDatesRenseignes > 0
-                      ? `${faitsDatesRenseignes} sur ${faitsDates} ${faitsDatesRenseignes === 1 ? "porte" : "portent"} une date.`
-                      : "Aucune ne porte encore de date."}{" "}
-                    {faitsDates === 1 ? "Elle n'entre" : "Elles n'entrent"} pas
-                    dans le compte ci-dessus, qui ne parle que d&apos;états.
-                  </p>
-                )}
+                {/* Une seule expression, jamais une phrase recousue dans le
+                    JSX : c'est le défaut qui a produit « Elles n'entrepas ».
+                    L'accord et la ponctuation vivent dans `phrases.ts`, où ils
+                    se lisent en entier et où toutes leurs branches se testent. */}
+                {texteRestantes && <p className="m-0">{texteRestantes}</p>}
               </div>
             </section>
           </>

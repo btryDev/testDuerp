@@ -1,8 +1,12 @@
 # Rapport — l'écran des états permanents
 
 Branche `feat/etats-permanents`, sur `origin/integration/2026-08-31` (`d562981`).
-**1815 tests verts**, `tsc` propre, un avertissement eslint préexistant
+**1824 tests verts**, `tsc` propre, un avertissement eslint préexistant
 (`normaliserFormData`).
+
+> Le § 10, en fin de document, porte les trois retours du contrôle visuel et
+> leur correction — dont un quatrième défaut que la garde écrite pour le
+> troisième a trouvé toute seule.
 
 La seconde des quatre natures d'obligation de l'ADR-022 a un écran. Elle était la
 seule à n'avoir ni surface ni support de persistance, alors que trois lots
@@ -272,3 +276,80 @@ exception se voie.
   « quinze autres », « quatorze des quarante-trois ») ne sont pas repris : le
   brief fait foi, et mes propres mesures le confirment sur deux points et le
   corrigent sur deux autres (§ 4).
+
+---
+
+## 10. Après le contrôle visuel — trois retours, et un quatrième défaut trouvé en route
+
+Le contrôle a validé les deux points que je lui avais signalés : le portail est
+**au calendrier et absent de cet écran** (pas de double surface, sur le dossier
+avec parc que je n'avais pas exercé), et le compteur n'absorbe rien — 0 sur 12
+chez Atelier Vermeil, 0 sur 19 au Bistrot, une ligne « fait le » exclue de chaque
+côté. Tout cocher est gratuit et **rien ne bouge ailleurs** : le « % prêt » de
+Préparer un contrôle reste à 67 % avant comme après.
+
+### a) La distinction de verbe ne se lisait pas — corrigée par le regroupement
+
+Verdict du contrôle : « en l'état, c'est une note interne ». Deux lignes voisines
+dans la même carte, **deux pastilles strictement identiques**, et la seule
+différence dans les trois mots du bouton. Or l'écran demande qu'on clique vite —
+et il a raison de le demander : le relecteur a coché douze lignes **en sept
+secondes sans en lire une seule**. Dans ce geste, deux pastilles qui se
+ressemblent sont la même action. Mon explication existait, mais en pied de page,
+« là où l'on arrive après avoir tout coché ».
+
+Ce qui a été fait : les lignes « fait le » sortent des cartes de domaine et
+forment **leur propre section**, « Ce qui revient, sans rythme écrit », avec
+l'explication **à côté d'elles** et non en bas.
+
+Pourquoi le regroupement plutôt qu'une teinte ou une icône : une différence de
+couleur seule est interdite par la charte et ne survit pas à un lecteur d'écran ;
+une icône se décode, donc se lit. Un groupe se voit sans se lire, et il ne coûte
+rien à la vitesse — à l'intérieur de chaque section, cliquer reste immédiat.
+
+### b) Le tableau de bord contredisait l'écran — corrigé en rédaction
+
+Le relecteur déclare le service de santé au travail « en place », et l'accueil
+affiche toujours « **Aucun** service de prévention et de santé au travail
+**déclaré** ». Les deux constats sont justes et différents — l'un parle de
+l'annuaire des prestataires, l'autre de l'état déclaré — mais ils employaient
+**le même verbe pour dire l'inverse**.
+
+C'était la double surface que ce lot retirait, revenue par la rédaction. Le titre
+dit maintenant « … **à votre annuaire** », et la raison est écrite dans
+`prestataires/domaines.ts` pour que personne ne la reprenne.
+
+### c) Deux fautes de texte, dont une d'assemblage — et une garde
+
+« ce qui restera décochera » → « ce qui restera **décoché dira** ».
+
+Et « Elles **n'entrepas** dans le compte », qui venait de
+`{n === 1 ? "Elle n'entre" : "Elles n'entrent"} pas`. **Le défaut n'est pas
+l'espace perdu, c'est la coupure** : couper une locution au milieu confie sa
+cohésion à une règle de mise en page, et personne ne relit une phrase qui
+n'existe nulle part en entier — ni un humain, qui ne voit que des fragments, ni
+un test, qui ne lit pas du JSX.
+
+Toutes les phrases qui s'accordent vivent donc dans `etats-permanents/phrases.ts`
+et en sortent **complètes**. Deux gardes les tiennent :
+
+1. **l'égalité exacte, branche par branche** — une première version cherchait les
+   collages par expression régulière ; elle attrapait « n'entrepas » parce qu'on
+   l'avait écrit en dur dans le motif, et laissait passer « lignereste ». Un
+   collage entre deux mots minuscules n'est pas reconnaissable sans
+   dictionnaire. L'égalité, si : quelqu'un écrit la phrase telle qu'elle doit se
+   lire, et toute jonction manquée fait diverger la chaîne ;
+2. **aucun ternaire de chaîne dans les `.tsx` de l'écran** — la règle
+   structurelle, celle que le contrôle demandait : « si celle-ci est cassée, les
+   autres peuvent l'être dans une branche non exercée ».
+
+**La seconde garde a trouvé un quatrième défaut, que le contrôle n'avait pas
+vu.** `LigneEtat` rendait `{verbe} {formaterDateFr(date)}`, où `verbe` sortait
+d'un ternaire — le même montage, deux composants plus loin. Il n'avait pas encore
+produit de collage visible ; il attendait son tour. Verbe, date et libellés de
+bouton sortent maintenant entiers de `phrases.ts`.
+
+Éprouvé en réinjectant le défaut : remettre le ternaire dans `LigneEtat` fait
+tomber la garde avec le fichier et la ligne (`LigneEtat.tsx:54`).
+
+**1824 tests verts** après correction.
