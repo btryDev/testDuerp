@@ -44,7 +44,23 @@ export type GroupeEtatsPermanents = {
 };
 
 export type EtatsPermanentsDuDossier = {
+  /** Les états à déclarer en place, groupés par domaine. */
   groupes: GroupeEtatsPermanents[];
+  /**
+   * Ce qui revient sans rythme écrit, **à part et non mêlé aux états**.
+   *
+   * Le contrôle visuel du 2026-08-31 a tranché ce point : les deux verbes
+   * cohabitaient dans la même carte, avec deux pastilles strictement
+   * identiques, et la seule différence tenait dans les trois mots du bouton. Le
+   * relecteur a coché douze lignes en sept secondes sans en lire une seule — et
+   * dans ce geste-là, deux pastilles qui se ressemblent sont la même action.
+   *
+   * La distinction est donc portée par le **regroupement**, qui se voit sans se
+   * lire, et non par une teinte ou une icône qu'il faudrait décoder. C'est
+   * aussi ce qui permet à l'explication de vivre à côté des lignes concernées
+   * plutôt qu'en pied de page, « là où l'on arrive après avoir tout coché ».
+   */
+  faits: LigneEtatPermanent[];
   /**
    * Le compteur d'en-tête. **Mesuré, jamais écrit à la main** : le brief le
    * demande, et ce dépôt s'est fait prendre plusieurs fois par des comptes
@@ -86,6 +102,7 @@ export async function listerEtatsPermanents(
   const parObligation = new Map(declarations.map((d) => [d.obligationId, d]));
 
   const parDomaine = new Map<DomaineObligation, LigneEtatPermanent[]>();
+  const faits: LigneEtatPermanent[] = [];
   let enPlace = 0;
   let total = 0;
   let faitsDates = 0;
@@ -123,9 +140,13 @@ export async function listerEtatsPermanents(
       if (ligne.declareLe) faitsDatesRenseignes += 1;
     }
 
-    const liste = parDomaine.get(o.domaine) ?? [];
-    liste.push(ligne);
-    parDomaine.set(o.domaine, liste);
+    if (mode.mode === "fait") {
+      faits.push(ligne);
+    } else {
+      const liste = parDomaine.get(o.domaine) ?? [];
+      liste.push(ligne);
+      parDomaine.set(o.domaine, liste);
+    }
   }
 
   const groupes: GroupeEtatsPermanents[] = [...parDomaine.entries()]
@@ -143,5 +164,14 @@ export async function listerEtatsPermanents(
     }))
     .sort((a, b) => a.libelle.localeCompare(b.libelle, "fr"));
 
-  return { groupes, enPlace, total, faitsDates, faitsDatesRenseignes };
+  // Les lignes « fait le » sont triées comme les autres : ce qui reste à faire
+  // d'abord. Un écran dont le haut est déjà coché ne dit pas ce qu'il reste.
+  faits.sort((a, b) => {
+    if ((a.declareLe === null) !== (b.declareLe === null)) {
+      return a.declareLe === null ? -1 : 1;
+    }
+    return a.obligation.libelle.localeCompare(b.obligation.libelle, "fr");
+  });
+
+  return { groupes, faits, enPlace, total, faitsDates, faitsDatesRenseignes };
 }
