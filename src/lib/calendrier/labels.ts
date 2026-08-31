@@ -48,6 +48,10 @@ export const LABEL_DOMAINE: Record<DomaineObligation, string> = {
   formation_securite: "Formation à la sécurité",
   sante_travail: "Santé au travail",
   secours: "Premiers secours",
+  organisation_prevention: "Organisation de la prévention",
+  information_travailleurs: "Information des travailleurs",
+  locaux_sociaux: "Locaux sociaux",
+  co_activite: "Co-activité",
 };
 
 export const MOIS_FR = [

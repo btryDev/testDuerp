@@ -345,6 +345,12 @@ describe("frontière médicale — le drapeau est une décision, pas un défaut"
       "conduite-salarie-formation → pieceMedicale: false",
       "elec-salarie-attestation-medicale-voisinage → pieceMedicale: true",
       "formation-securite-salarie-accueil → pieceMedicale: false",
+      // Lot 8. Le mot « santé » est dans l'intitulé de la formation
+      // (« santé, sécurité et conditions de travail ») et la pièce n'est pas
+      // médicale pour autant : elle atteste d'une compétence acquise en stage,
+      // pas d'un état de santé. C'est exactement le cas que `pieceMedicale`
+      // existe pour faire trancher par quelqu'un plutôt que par un mot-clé.
+      "formation-securite-salarie-cse-sst → pieceMedicale: false",
       "sante-travail-salarie-sir → pieceMedicale: true",
       "sante-travail-salarie-sir-categorie-a → pieceMedicale: true",
       "sante-travail-salarie-sir-visite-intermediaire → pieceMedicale: true",

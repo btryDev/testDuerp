@@ -314,4 +314,103 @@ export const obligationsFormationSecurite: Obligation[] = [
     notesInternes:
       "PAS D'ÉCHÉANCE DANS LE TEXTE, ET C'EST LA RÉPONSE À LA QUESTION POSÉE PAR LE BRIEF. R. 4323-56 a été relu en entier le 2026-08-31 dans sa version du 1er octobre 2025 : aucune durée n'est attachée à l'autorisation de conduite. Les cinq ans qu'il mentionne portent sur l'attestation médicale, et sur elle seule. `periodicite: \"autre\"` — un état à maintenir.\n\nMAIS LA VALIDITÉ EST CHAÎNÉE, et c'est ce que la transmission dit. Une autorisation sans attestation valide n'est plus valide, alors même que rien ne la fait « expirer » au calendrier. C'est précisément le cas que l'ADR-024 existe pour nommer : le produit ne dérive pas, il déclare.\n\nLE RÉFÉRENTIEL NE PEUT PAS DIRE QUELS ÉQUIPEMENTS SONT CONCERNÉS. R. 4323-57, 2° confie à des arrêtés le soin de fixer « les catégories d'équipements de travail dont la conduite nécessite d'être titulaire d'une autorisation de conduite ». Un arrêté du 26 septembre 2025 relatif à la formation à la conduite existe ; il n'est pas dépouillé, donc aucune obligation ne s'y appuie et aucune liste d'équipements n'est encodée. Le corpus le dit en toutes lettres.",
   },
+
+  // ---------------------------------------------------------------------------
+  // Formations liées à une activité ou à un mandat (lot 8)
+  //
+  // Trois lignes, deux porteurs, et le partage n'est pas arbitraire : deux
+  // d'entre elles sont des obligations d'ORGANISER que rien ne rattache à une
+  // personne identifiable, la troisième est un titre qu'une personne nommée
+  // détient. Le critère appliqué est celui du lot 7 : une formation devient un
+  // titre de salarié quand le texte la date par personne ou lui fait produire
+  // une pièce nominative. Le développer ligne par ligne en `notesInternes`.
+  // ---------------------------------------------------------------------------
+  {
+    id: "formation-securite-etablissement-manutention",
+    domaine: "formation_securite",
+    libelle: "Formation à la manutention manuelle (gestes et postures)",
+    description:
+      "L'employeur fait bénéficier les travailleurs dont l'activité comporte des manutentions manuelles d'une information sur les risques qu'ils encourent lorsque les activités ne sont pas exécutées d'une manière techniquement correcte, et d'une formation adéquate à la sécurité relative à l'exécution de ces opérations. Au cours de cette formation, essentiellement à caractère pratique, les travailleurs sont informés sur les gestes et postures à adopter. Le Code ne fixe aucune durée de validité ni aucun recyclage.",
+    referencesLegales: [
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "R. 4541-8 (information sur les risques et formation adéquate à la sécurité des travailleurs dont l'activité comporte des manutentions manuelles)",
+        article: "R. 4541-8",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018528891",
+        versionConstatee: "2008-05-01",
+      },
+    ],
+    periodicite: "autre",
+    realisateurs: ["exploitant"],
+    criticite: 3,
+    typologies: { travail: true },
+    porteur: "etablissement",
+    transmet: [],
+    notesInternes:
+      "PORTEUR ÉTABLISSEMENT ET NON SALARIÉ, ET C'EST LA QUESTION QUE LE BRIEF POSAIT. Le critère du lot 7 pour faire d'une formation un titre de salarié était double : le texte la date par personne (R. 4141-20 : « à compter de l'affectation DU TRAVAILLEUR à son emploi »), ou il lui fait produire une pièce nominative (L. 4141-5 : passeport de prévention). R. 4541-8 ne fait ni l'un ni l'autre. Il n'écrit aucun délai, aucune attestation, aucune validité : il écrit « l'employeur fait bénéficier les travailleurs [...] d'une formation adéquate ». C'est une obligation d'organiser, et elle se solde à l'échelle de l'établissement.\n\nET SURTOUT : LE PORTEUR SALARIÉ AURAIT ÉTÉ INAPPLICABLE ICI. Une obligation salarié ne produit de ligne que si l'employeur déclare qui détient le titre (ADR-023). Or R. 4541-8 vise « les travailleurs dont l'activité comporte des manutentions manuelles » — une qualification que le produit ne détient pas et ne peut pas dériver : ce serait le cinquième déclencheur, l'activité réellement exercée, non implémenté. On aurait donc eu un titre que personne ne sait à qui attribuer, et zéro ligne tant que le dirigeant n'aurait pas deviné. Le porteur établissement pose au contraire une ligne unique et exacte : « organisez cette formation pour ceux qui manutentionnent ».\n\nCE QUE CE CHOIX COÛTE, ET JE LE DIS. Avec un porteur établissement, l'outil ne saura jamais QUI a été formé — donc rien ne se prouve nominativement en contrôle. C'est une perte réelle. Elle est préférée au faux négatif muet du porteur salarié, et elle se rattrape le jour où le cinquième déclencheur existera.\n\nAUCUN RECYCLAGE. On lit couramment « gestes et postures à renouveler tous les deux ans » ou « tous les cinq ans ». Le texte, relu en entier le 2026-08-31 dans sa version du 2008-05-01, n'écrit aucune durée. `periodicite: \"autre\"`.\n\nR. 4541-6 EST CITÉ PAR L'ARTICLE ET N'EST PAS DÉPOUILLÉ. Le 1° renvoie aux « facteurs individuels de risque définis par l'arrêté prévu à l'article R. 4541-6 ». Cet arrêté n'a pas été ouvert, aucune obligation ne s'y appuie, et le corpus le dit.\n\nCriticité 3 : les troubles musculo-squelettiques sont la première cause de maladie professionnelle reconnue en restauration et en commerce, mais le manquement n'expose pas à un accident immédiat.",
+  },
+
+  {
+    id: "formation-securite-etablissement-travail-sur-ecran",
+    domaine: "formation_securite",
+    libelle: "Information et formation au travail sur écran de visualisation",
+    description:
+      "L'employeur assure l'information et la formation des travailleurs sur les modalités d'utilisation de l'écran et de l'équipement de travail dans lequel cet écran est intégré. Chaque travailleur en bénéficie avant sa première affectation à un travail sur écran de visualisation, et chaque fois que l'organisation du poste de travail est modifiée de manière substantielle.",
+    referencesLegales: [
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "R. 4542-16 (information et formation avant la première affectation à un travail sur écran et à chaque modification substantielle du poste)",
+        article: "R. 4542-16",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018528838",
+        versionConstatee: "2008-05-01",
+      },
+    ],
+    periodicite: "autre",
+    realisateurs: ["exploitant"],
+    criticite: 2,
+    typologies: { travail: true },
+    porteur: "etablissement",
+    transmet: [],
+    notesInternes:
+      "MÊME RAISONNEMENT DE PORTEUR QUE LA MANUTENTION, AVEC UNE NUANCE QUI AURAIT PU LE RENVERSER. R. 4542-16 date bien l'obligation par personne — « chaque travailleur en bénéficie AVANT SA PREMIÈRE AFFECTATION à un travail sur écran » —, ce qui est le premier des deux critères du lot 7. Mais il ne remplit pas le second : aucune pièce nominative, aucune attestation, aucune validité. Et surtout, l'obstacle décisif reste le même : le produit ne sait pas qui travaille sur écran. Un titre que personne ne sait attribuer ne produit aucune ligne. Porteur établissement, donc, avec le même coût assumé : l'outil ne saura pas qui a été formé.\n\nLE SECOND DÉCLENCHEMENT EST ÉVÉNEMENTIEL, ET IL N'EST PAS SIMULÉ. « Chaque fois que l'organisation du poste de travail est modifiée de manière substantielle » : un événement, non daté et non détectable. C'est exactement ce que `.claude/CLAUDE.md` décrit en refusant un sixième déclencheur — l'événement date l'obligation, il ne la fait pas naître. La description le porte en toutes lettres, l'outil n'en fabrique aucune échéance.\n\nAUCUNE PÉRIODICITÉ : le texte n'écrit ni durée ni recyclage. Verbatim relu le 2026-08-31, version du 2008-05-01. `periodicite: \"autre\"`.\n\nCE QUI N'EST PAS ENCODÉ DE CE CHAPITRE, ET POURQUOI. R. 4542-1 et s. imposent aussi une analyse des postes (R. 4542-3), des règles d'ambiance et d'interface, et un examen ophtalmologique approprié (R. 4542-17). Aucun de ces articles n'a été ouvert sur Légifrance dans ce lot : ils ne sont donc ni encodés ni décrits, et le corpus les porte comme non dépouillés plutôt que comme absents. C'est un manque annoncé, pas un silence.\n\nCriticité 2 : la fatigue visuelle et les TMS liés à l'écran sont des risques différés, sans exposition immédiate.",
+  },
+
+  {
+    id: "formation-securite-salarie-cse-sst",
+    domaine: "formation_securite",
+    libelle:
+      "Formation en santé, sécurité et conditions de travail (membre du CSE, salarié désigné)",
+    description:
+      "Les membres de la délégation du personnel du comité social et économique et le référent en matière de lutte contre le harcèlement sexuel bénéficient de la formation nécessaire à l'exercice de leurs missions en matière de santé, de sécurité et de conditions de travail. Cette formation dure au minimum cinq jours lors du premier mandat, et trois jours pour chaque membre en cas de renouvellement. Son financement est pris en charge par l'employeur. Le même régime de formation s'applique, par renvoi de L. 4644-1, au salarié désigné compétent en protection et prévention.",
+    referencesLegales: [
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "L. 2315-18 (formation en santé, sécurité et conditions de travail des membres de la délégation du personnel du CSE : cinq jours au premier mandat, trois au renouvellement)",
+        article: "L. 2315-18",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036761949",
+        versionConstatee: "2022-03-31",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "L. 4644-1 I alinéa 2 (le salarié désigné compétent bénéficie d'une formation dans les conditions prévues aux articles L. 2315-16 à L. 2315-18)",
+        article: "L. 4644-1",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043893856",
+        versionConstatee: "2022-03-31",
+        note: "Référence de contexte : elle étend le même régime de formation au salarié désigné, sans en créer un second.",
+      },
+    ],
+    periodicite: "autre",
+    realisateurs: ["exploitant"],
+    criticite: 3,
+    typologies: { travail: true, effectifMin: 11 },
+    porteur: "salarie",
+    pieceMedicale: false,
+    transmet: [],
+    notesInternes:
+      "PORTEUR SALARIÉ, ET C'EST LE CAS OÙ LES DEUX CRITÈRES DU LOT 7 SONT REMPLIS. Le texte date la formation PAR PERSONNE — « cinq jours lors du PREMIER MANDAT des membres de la délégation du personnel », « trois jours POUR CHAQUE MEMBRE » en cas de renouvellement — et il la rattache à un mandat individuel, nominatif par construction : un membre du CSE est élu, il a un nom. C'est la différence avec la manutention et l'écran, où le texte vise « les travailleurs dont l'activité comporte », une catégorie que personne ne sait nommer. Ici, le dirigeant sait exactement qui a été élu.\n\nUNE SEULE LIGNE POUR DEUX POPULATIONS, ET C'EST LE TEXTE QUI L'IMPOSE. L. 4644-1 renvoie la formation du salarié désigné compétent « aux conditions prévues aux articles L. 2315-16 à L. 2315-18 » : même régime, même contenu, mêmes durées. En écrire une seconde obligation aurait posé DEUX lignes sur le même article fondateur L. 2315-18 — ce que le test anti-doublon de `conformite.test.ts` attrape, et à raison. La ligne de catalogue est donc unique, son libellé nomme les deux qualités, et `prevention-etablissement-salarie-designe` y renvoie par une `Transmission`, comme `prevention-etablissement-cse`.\n\nUNE SEULE OBLIGATION ET NON DEUX AU TITRE DU FINANCEMENT. L. 2315-18 dernier alinéa met le financement à la charge de l'employeur. Ce n'est pas un second livrable : c'est une règle de prise en charge d'un acte unique. En faire une obligation d'établissement distincte aurait produit deux lignes que le dirigeant solde du même geste — la fragmentation que l'ADR-022 a corrigée.\n\nCINQ JOURS ET TROIS JOURS SONT DES DURÉES DE STAGE, PAS DES PÉRIODICITÉS. C'est le piège de cette ligne, et il est facile à manquer : le texte porte des chiffres, mais ils comptent des jours de formation, pas des années entre deux formations. Le rythme réel suit le mandat, qui dure quatre ans par défaut (L. 2314-33) mais qu'un accord peut ramener à deux — et que le produit ne connaît pas, faute d'un modèle de mandat CSE. Encoder `quadriennale` aurait inventé une échéance à partir d'une durée par défaut : exactement le « triennal » d'origine NF que ce dépôt a déjà eu à retirer. `periodicite: \"autre\"`, et `TitreSalarie.echeanceLe` reste nullable — l'employeur qui connaît la fin du mandat la saisit.\n\n`effectifMin: 11` PARCE QU'UN CSE N'EXISTE PAS EN DEÇÀ. L. 2311-2 le met en place « dans les entreprises d'au moins onze salariés ». Sans ce seuil, le catalogue aurait proposé à un dirigeant de trois personnes un titre que personne chez lui ne peut détenir. Le seuil restreint le catalogue, il n'engendre aucune ligne par lui-même : les instances d'une obligation salarié naissent d'un `TitreSalarie` déclaré, jamais du moteur.\n\nCE SEUIL A UN EFFET DE BORD À CONNAÎTRE. Le salarié désigné compétent de L. 4644-1, lui, est dû DÈS LE PREMIER SALARIÉ. Un employeur de six personnes doit donc désigner quelqu'un (`prevention-etablissement-salarie-designe`, sans seuil) et lui donner une formation dont la ligne de catalogue est, elle, filtrée à onze. C'est une incohérence réelle du référentiel, pas du droit. Deux façons d'en sortir : retirer le seuil, au prix d'un titre CSE proposé à des entreprises sans CSE ; ou scinder en deux lignes, au prix du doublon sur L. 2315-18. J'ai retenu le seuil et je signale le trou plutôt que de le combler par une ligne fausse. Porté au rapport du lot 8.\n\n`pieceMedicale: false` — une formation en santé, sécurité et conditions de travail atteste d'une compétence, pas d'un état de santé. Le mot « santé » dans l'intitulé de la formation ne la rend pas médicale, et c'est précisément le genre d'inférence par mot-clé que ce référentiel refuse : quelqu'un tranche, et sa décision est écrite.\n\nLE RÉFÉRENT HARCÈLEMENT EST DANS LE TEXTE ET N'EST PAS ENCODÉ À PART. L. 2315-18 vise aussi « le référent prévu au dernier alinéa de l'article L. 2314-1 ». Il bénéficie de la même formation, sur le même fondement : il partage la ligne. Sa désignation, elle, relève de L. 2314-1, qui n'a pas été dépouillé dans ce lot et sur lequel aucune obligation ne s'appuie.",
+  },
 ];

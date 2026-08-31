@@ -157,9 +157,20 @@ describe("construireChezVous — trous honnêtes", () => {
     // Ce test figeait donc, une deuxième fois, un faux négatif — plus large que
     // celui corrigé le 2026-08-27, et de même nature : une liste courte qu'on
     // avait prise pour la liste complète.
+    //
+    // Le lot 8 ajoute quatre domaines à cette liste — `co_activite`,
+    // `information_travailleurs`, `locaux_sociaux`, `organisation_prevention`.
+    // Cette phrase dit ce que CE lot ajoute, et rien de plus : deux autres lots
+    // touchent la même assertion le même jour, et un commentaire qui
+    // annoncerait « ce lot livre le total » se tromperait comme les précédents
+    // se sont trompés. Le total se recompte à l'intégration, pas ici.
     expect(r.domaines.map((d) => d.domaine).sort()).toEqual([
       "aeration",
+      "co_activite",
       "formation_securite",
+      "information_travailleurs",
+      "locaux_sociaux",
+      "organisation_prevention",
       "sante_travail",
       "secours",
     ]);

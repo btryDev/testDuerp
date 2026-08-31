@@ -204,5 +204,45 @@ export const CODE_TRAVAIL_SANTE_TRAVAIL: Corpus = {
         "sante-travail-salarie-sir-visite-intermediaire",
       ],
     },
+    // -------------------------------------------------------------------------
+    // Section 3 « Documents et rapports » — la fiche d'entreprise (lot 8)
+    //
+    // L'en-tête de ce corpus annonçait la fiche d'entreprise parmi les articles
+    // NON lus de la quarantaine que compte le chapitre IV. Elle l'est désormais,
+    // et les deux articles qui la portent entrent ici plutôt que dans un corpus
+    // séparé : c'est le même chapitre, le même service, le même dossier.
+    // -------------------------------------------------------------------------
+    {
+      ref: "R. 4624-46",
+      intitule: "Établissement et mise à jour de la fiche d'entreprise",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000045677119",
+      versionEnVigueur: "2022-04-28",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Le médecin du travail ou, dans les services interentreprises, l'équipe pluridisciplinaire établit et met à jour, pour chaque entreprise ou établissement, une fiche portant les risques professionnels et les effectifs de salariés qui y sont exposés.",
+      citationCle:
+        "Pour chaque entreprise ou établissement, le médecin du travail ou, dans les services de prévention et de santé au travail interentreprises, l'équipe pluridisciplinaire établit et met à jour une fiche d'entreprise ou d'établissement sur laquelle figurent, notamment, les risques professionnels et les effectifs de salariés qui y sont exposés.",
+      statut: "retenu",
+      obligations: ["sante-travail-etablissement-fiche-entreprise"],
+      reserve:
+        "« ÉTABLIT ET MET À JOUR », SANS AUCUN RYTHME. C'était le piège de cet article : on lit couramment que la fiche se met à jour tous les quatre ans, ou à chaque changement notable. Ni l'un ni l'autre n'est écrit. L'obligation porte `periodicite: \"autre\"`. Les articles R. 4624-48 à R. 4624-50 — transmission à l'employeur, présentation au CSE, accès de l'inspection, modèle fixé par arrêté — n'ont PAS été ouverts sur Légifrance : ils sont connus par le sommaire de la sous-section, ce qui ne vaut pas lecture.",
+    },
+    {
+      ref: "R. 4624-47",
+      intitule: "Délai d'établissement pour les entreprises adhérentes",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018493214/",
+      versionEnVigueur: "2022-04-28",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Pour les entreprises adhérentes à un service de prévention et de santé au travail interentreprises, la fiche d'entreprise est établie dans l'année qui suit l'adhésion.",
+      citationCle:
+        "Pour les entreprises adhérentes à un service de prévention et de santé au travail interentreprises, la fiche d'entreprise est établie dans l'année qui suit l'adhésion de l'entreprise ou de l'établissement à ce service.",
+      statut: "retenu",
+      obligations: ["sante-travail-etablissement-fiche-entreprise"],
+      reserve:
+        "UNE ANNÉE EST UN DÉLAI, PAS UNE PÉRIODICITÉ : c'est un point de départ unique, pas un rythme de renouvellement. Le produit ne porte pas la date d'adhésion au service, donc ce délai n'engendre aucune ligne de calendrier ; il est rappelé dans la description de l'obligation. Aucune transmission `attribut_absent` n'est déclarée : l'attribut manquant ne conditionne pas l'applicabilité, seulement la date d'exigibilité.",
+    },
   ],
 };

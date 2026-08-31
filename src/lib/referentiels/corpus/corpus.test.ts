@@ -284,6 +284,16 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // ne connaîtrait pas l'accident qui déclenche l'obligation.
       "R. 4141-8",
       "R. 4141-12",
+      // R. 4225-3 entre avec le lot 8, et pour la même raison que les
+      // précédentes : un texte lu de plus, pas un défaut d'encodage. La
+      // boisson non alcoolisée gratuite est due « lorsque des conditions
+      // particulières de travail conduisent les travailleurs à se désaltérer
+      // fréquemment » — une qualification que ni le parc d'équipements ni le
+      // code NAF ne donnent, et que le déduire ferait relever du cinquième
+      // déclencheur, non implémenté. La liste des postes concernés, que
+      // l'employeur tient après avis du médecin du travail et du CSE, est
+      // bloquée par le même manque.
+      "R. 4225-3",
     ]);
   });
 

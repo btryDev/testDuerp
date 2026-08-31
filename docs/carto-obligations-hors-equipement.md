@@ -73,35 +73,35 @@ S'applique dès qu'il y a au moins un salarié, quels que soient le NAF, l'effec
 | # | Obligation | Porteur | Nature | Référence présumée | Statut |
 |---|---|---|---|---|---|
 | A1 | DUERP établi et mis à jour (≥ 1×/an, et à chaque modification importante) | ÉTS | RÉC | CT L.4121-3, R.4121-1/2 | ✅ c'est le produit |
-| A2 | Modalités d'accès au DUERP portées à connaissance | ÉTS | PERM | CT R.4121-4 | ❌ |
+| A2 | **Avis affiché** indiquant les modalités d'accès au DUERP | ÉTS | PERM | CT R.4121-4 **dernier alinéa** | ✅ `information-etablissement-avis-acces-duerp` (lot 8) — l'information ORALE due à chaque salarié est distincte : `L.4141-1` / `R.4141-3-1`, lot 7 |
 | A3 | Conservation des versions successives du DUERP (40 ans) | ÉTS | PERM | CT L.4121-3-1 | ✅ `DuerpVersion` |
 | A4 | Liste d'actions de prévention (< 50) ou PAPRIPACT (≥ 50) | ÉTS | RÉC | CT L.4121-3-1 | ⚠️ actions existent, pas le livrable annuel |
 | A5 | **Formation à la sécurité à l'embauche** (générale) | SAL | PONC | CT L.4141-2, R.4141-1 et s. | ❌ |
-| A6 | Salarié désigné compétent en protection/prévention | SAL | PERM | CT L.4644-1 | ❌ |
-| A7 | Adhésion à un SPST | ÉTS | PERM | CT L.4622-1 | ❌ |
-| A8 | Fiche d'entreprise établie par le SPST | ÉTS | PERM | CT R.4624-46 | ❌ |
+| A6 | Salarié désigné compétent en protection/prévention | **ÉTS** | PERM | CT L.4644-1 | ✅ `prevention-etablissement-salarie-designe` (lot 8) — porteur ÉTS et non SAL : le texte impose de DÉSIGNER, acte de l'employeur ; la formation du désigné est une seconde ligne, portée par le salarié (cf. B2) |
+| A7 | Adhésion à un SPST | ÉTS | PERM | CT L.4622-1, D.4622-1/2 | ✅ `sante-travail-etablissement-adhesion-spst` (lot 8) — `L.4622-7`, souvent cité, ne fonde PAS l'adhésion : il traite de la responsabilité des dirigeants du service |
+| A8 | Fiche d'entreprise établie par le SPST | ÉTS | PERM | CT R.4624-46/47 | ✅ `sante-travail-etablissement-fiche-entreprise` (lot 8) — aucune périodicité de mise à jour dans le texte ; l'année de `R.4624-47` est un délai depuis l'adhésion, pas un rythme |
 | A9 | **VIP à l'embauche** + périodicité (≤ 5 ans) | SAL | RÉC | CT R.4624-10 et s. | ❌ |
 | A10 | **SIR** — suivi individuel renforcé, postes à risques (≤ 4 ans + visite intermédiaire) | SAL | RÉC | CT R.4624-22 et s. | ❌ |
 | A11 | Matériel de premiers secours + personnel formé au secourisme (**SST**) | ÉTS + SAL | PERM + RÉC | CT R.4224-14 à R.4224-16 | ❌ |
-| A12 | Consignes de premiers secours affichées | ÉTS | PERM | CT R.4224-16 | ❌ |
+| A12 | ~~Consignes de premiers secours affichées~~ → **Mesures d'organisation des premiers secours, consignées dans un DOCUMENT** tenu à disposition de l'inspection | ÉTS | PERM | CT R.4224-16 | ✅ `secours-etablissement-mesures` (lot 7). **Ligne corrigée le 2026-08-31** : `R.4224-16` n'écrit ni « consignes » ni « affiche », il impose un écrit. L'affichage des secours existe, mais c'est le 2° de `D.4711-1` (cf. A14). Encodée telle qu'elle était écrite, cette ligne aurait posé deux fois l'affichage et zéro fois le document |
 | A13 | Consignes de sécurité incendie établies et affichées | ÉTS | PERM | CT R.4227-37 et s. | ⚠️ `incendie-consigne-securite`, ancrée équipement |
-| A14 | Affichages SST : inspection du travail, médecine du travail, secours | ÉTS | PERM | CT D.4711-1 | ❌ |
+| A14 | Affichages SST : inspection du travail, médecine du travail, secours | ÉTS | PERM | CT D.4711-1 | ✅ `information-etablissement-affichages-obligatoires` (lot 8) |
 | A15 | Registre unique de sécurité (regroupement des registres) | ÉTS | PERM | CT D.4711-1 à D.4711-3 | ⚠️ partiel |
 | A16 | Registre des accidents bénins | ÉTS | PERM | CSS L.441-4, D.441-1 | ❌ — listé hors périmètre dans CLAUDE.md |
 | A17 | Déclaration d'accident du travail (48 h) | ÉTS | ÉVÈN | CSS L.441-2 | ❌ — listé hors périmètre dans CLAUDE.md |
-| A18 | Vestiaires, sanitaires, lavabos conformes | ÉTS | PERM | CT R.4228-1 et s. | ❌ |
-| A19 | Eau potable à disposition | ÉTS | PERM | CT R.4225-2/3 | ❌ |
+| A18 | Vestiaires, sanitaires, lavabos conformes | ÉTS | PERM | CT R.4228-1 | ✅ `locaux-etablissement-installations-sanitaires` (lot 8) — seul `R.4228-1` est dépouillé ; `R.4228-2` à `-18` règlent l'aménagement et ne sont PAS lus |
+| A19 | Eau potable à disposition | ÉTS | PERM | CT R.4225-2 | ✅ `locaux-etablissement-eau-potable` (lot 8) — article réécrit au 2025-06-02. `R.4225-3` (boisson gratuite) reste NON encodé : son champ suppose de qualifier des « conditions particulières de travail », soit le 5ᵉ déclencheur, non implémenté |
 | A20 | FDS accessibles + notice de poste (agents chimiques) | ÉTS | PERM | CT R.4412-38 et s. | ❌ |
 
 ## B. Déclencheur : effectif
 
 | # | Obligation | Porteur | Nature | Référence présumée | Statut |
 |---|---|---|---|---|---|
-| B1 | Mise en place du CSE (≥ 11 sur 12 mois consécutifs) | ÉTS | ÉVÈN | CT L.2311-2 | ❌ |
-| B2 | **Formation santé-sécurité des membres du CSE** | SAL | RÉC | CT L.2315-18 | ❌ |
+| B1 | Mise en place du CSE (≥ 11 sur 12 mois consécutifs) | ÉTS | **PERM** | CT L.2311-2 | ✅ `prevention-etablissement-cse` (lot 8), `effectifMin: 11`. Nature corrigée : ce n'est pas événementiel — les douze mois DATENT l'obligation, ils ne la font pas naître. Le produit n'historisant pas l'effectif, la ligne apparaît au franchissement constaté, en avance sur l'échéance légale |
+| B2 | **Formation santé-sécurité des membres du CSE** | SAL | **PERM** | CT L.2315-18 | ✅ `formation-securite-salarie-cse-sst` (lot 8). Nature corrigée : cinq et trois jours sont des DURÉES DE STAGE, pas des périodicités — le rythme suit le mandat, que le produit ne modélise pas. Même ligne pour le salarié désigné de A6, par renvoi exprès de `L.4644-1` |
 | B3 | CSSCT obligatoire (≥ 300) | ÉTS | ÉVÈN | CT L.2315-36 | ❌ (hors cible V2 ?) |
-| B4 | Local de restauration (≥ 50) / emplacement de restauration (< 50) | ÉTS | PERM | CT R.4228-22/23 | ❌ |
-| B5 | Règlement intérieur — volet hygiène et sécurité (≥ 50) | ÉTS | PERM | CT L.1311-2 | ❌ |
+| B4 | Local de restauration (≥ 50) / emplacement de restauration (< 50) | ÉTS | PERM | CT R.4228-22/23 | ✅ **DEUX** obligations (lot 8) : `locaux-etablissement-local-restauration` (`effectifMin: 50`) et `locaux-etablissement-emplacement-restauration` (`effectifMax: 49`). Deux régimes exclusifs, pas une règle et son exception — le seuil est bien à 50 depuis le décret n° 2019-1586, non à 25 |
+| B5 | Règlement intérieur — volet hygiène et sécurité (≥ 50) | ÉTS | PERM | CT **L.1321-1 1°** (fondateur), L.1311-2 (seuil) | ✅ `prevention-etablissement-reglement-interieur` (lot 8). **Référence corrigée** : `L.1311-2` ne dit rien du contenu, seulement le seuil et le délai de douze mois. C'est `L.1321-1` 1° qui fait entrer le règlement intérieur dans le périmètre santé-sécurité |
 | B6 | PAPRIPACT (≥ 50) | ÉTS | RÉC | CT L.4121-3-1 | ❌ (cf. A4) |
 
 ## C. Déclencheur : typologie du bâtiment (ERP / IGH)
@@ -143,9 +143,9 @@ C'est la couche qui manquait à l'analyse initiale : ni statut, ni équipement, 
 | E1b | **Attestation médicale d'absence de contre-indication** conditionnant l'habilitation au voisinage de pièces nues sous tension — l'employeur en conserve copie pendant sa validité | SAL | RÉC (5 ans) | CT **R.4544-11-1**, créé le 01/10/2025 par le décret n° 2025-355 — relevé par l'audit `chore/veille-reglementaire` | 🚫 nominatif **et** médical — en vigueur depuis 11 mois, jamais porté |
 | E2 | **Autorisation de conduite** (équipements mobiles automoteurs, levage) | SAL | RÉC | CT R.4323-56 | ❌ |
 | E3 | Formation à la conduite / CACES | SAL | RÉC | CT R.4323-55 | ❌ |
-| E4 | Travail en hauteur, utilisation d'EPI antichute | SAL | RÉC | CT R.4323-104 et s. | ❌ |
-| E5 | Formation à la manutention manuelle (gestes et postures) | SAL | RÉC | CT R.4541-8 | ❌ |
-| E6 | Formation « travail sur écran » | SAL | PONC | CT R.4542-16 | ❌ (pertinent tertiaire) |
+| E4 | Travail en hauteur, utilisation d'EPI antichute | SAL | RÉC | CT R.4323-104 et s. | ❌ — **non encodée au lot 8, et la référence est à revoir**. `R.4323-104` porte l'INFORMATION sur les EPI en général, `R.4323-105` la consigne d'utilisation, `R.4323-106` la formation au port (« renouvelée aussi souvent que nécessaire » : aucune périodicité). Aucun des trois ne parle de travail en hauteur, qui relève de `R.4323-58` et s. Par ailleurs les EPI sont listés hors périmètre dans `.claude/CLAUDE.md` |
+| E5 | Formation à la manutention manuelle (gestes et postures) | **ÉTS** | **PERM** | CT R.4541-8 | ✅ `formation-securite-etablissement-manutention` (lot 8). Porteur ÉTS et non SAL : le texte n'écrit ni durée de validité ni pièce nominative, et « les travailleurs dont l'activité comporte des manutentions manuelles » est une qualification que le produit ne détient pas — un titre que personne ne sait attribuer ne produit aucune ligne |
+| E6 | Formation « travail sur écran » | **ÉTS** | **PERM** | CT R.4542-16 | ✅ `formation-securite-etablissement-travail-sur-ecran` (lot 8). Même raison de porteur que E5. Le second déclenchement — « modification substantielle du poste » — est un événement non détectable : décrit, jamais planifié |
 | E7 | Agents chimiques dangereux / CMR — formation, notice de poste | SAL | RÉC | CT R.4412-38, R.4412-87 | ⚠️ 1 entrée, ancrée équipement |
 | E8 | Amiante sous-section 4 | SAL | RÉC (3 ans) | CT R.4412-117 et s. | ❌ |
 | E9 | Bruit — évaluation, EPI, examen audiométrique | SAL + ÉTS | RÉC | CT R.4431-1 et s. | ❌ (AOCR : 3 lignes) |
@@ -153,7 +153,7 @@ C'est la couche qui manquait à l'analyse initiale : ni statut, ni équipement, 
 | E11 | Jeunes travailleurs — dérogation aux travaux réglementés | ÉTS | PERM | CT R.4153-38 et s. | ❌ |
 | E12 | Femmes enceintes — postes à risques | ÉTS | PERM | CT D.4152-x | ❌ |
 | E13 | Rayonnements ionisants — PCR, zonage, dosimétrie | SAL + ÉTS | RÉC | CT R.4451-x | ⛔ hors périmètre (CLAUDE.md) |
-| E14 | **Protocole de sécurité chargement/déchargement** | ÉTS | PERM | Arrêté du 26/04/1996 | ❌ **universel dès qu'un camion livre** |
+| E14 | **Protocole de sécurité chargement/déchargement** | ÉTS | PERM | **CT R.4515-1, R.4515-4 et s.** | ✅ `co-activite-etablissement-protocole-securite` (lot 8), **universel dès qu'un camion livre**. **Référence corrigée** : l'arrêté du 26/04/1996 est à l'origine du dispositif mais renvoie à l'article `R.237-1`, numérotation d'avant la recodification de 2008. Le dispositif est codifié à `R.4515-1` à `R.4515-11` |
 | E15 | Plan de prévention (entreprise extérieure) | ÉTS | ÉVÈN | CT R.4512-6 et s. | ✅ `PlanPrevention` |
 | E16 | Permis de feu | ÉTS | ÉVÈN | Arrêté 19/03/1993 | ✅ `PermisFeu` |
 | E17 | Coordination SPS | ÉTS | ÉVÈN | CT L.4532-2 | ❌ |

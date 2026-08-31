@@ -987,7 +987,19 @@ describe("référentiel conformité — version et empreinte", () => {
   // `REFERENTIEL_VERSION` n'est délibérément pas incrémentée ici : le lot 7, le
   // palier 1 et le lot 8 ont posé la même valeur chacun de leur côté, et c'est
   // la session d'intégration qui la tranche pour les trois.
-  const EMPREINTE_ATTENDUE = "100-ea718b9391d464eb";
+  
+  // +15 au lot 8 (2026-08-31), qui n'annonce PAS le total : deux autres lots
+  // touchent ce compte le même jour, et chacun ne connaît que son propre
+  // apport. Ce que celui-ci ajoute, et rien d'autre : organisation de la
+  // prévention (3 — salarié désigné, CSE, règlement intérieur), information
+  // des travailleurs (2 — affichages de D. 4711-1, avis d'accès au DUERP),
+  // locaux sociaux (4 — sanitaires, eau potable, et les deux régimes de
+  // restauration qui se partagent le seuil de cinquante), co-activité (1 —
+  // protocole de sécurité de chargement), santé au travail (2 — adhésion au
+  // service, fiche d'entreprise) et formation à la sécurité (3 — manutention,
+  // travail sur écran, formation santé-sécurité du CSE et du salarié désigné).
+  // Quatre domaines entrent avec lui.
+  const EMPREINTE_ATTENDUE = "115-75b4f63c9d18ec30";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1105,7 +1117,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(100);
+    ).toBe(115);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {

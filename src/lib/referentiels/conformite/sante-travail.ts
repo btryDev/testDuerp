@@ -288,4 +288,89 @@ export const obligationsSanteTravail: Obligation[] = [
     notesInternes:
       "LE JUMEAU EXACT DE `elec-salarie-attestation-medicale-voisinage`. Les deux articles ont été réécrits le même jour par le même texte — le décret n° 2025-355 du 18 avril 2025, en vigueur au 1er octobre 2025 — et se lisent presque mot pour mot : même durée de cinq ans, même délivrance par le médecin du travail à l'issue d'un examen, même conservation d'une copie par l'employeur. Le référentiel n'en portait que la moitié ; voici la seconde.\n\nLES CINQ ANS SONT ÉCRITS, sans plafond ni interprétation : « Cette attestation, d'une validité de cinq ans, est délivrée par le médecin du travail à l'issue d'un examen médical qu'il réalise. » Verbatim relevé le 2026-08-31. C'est, avec l'annuelle de la liste des postes à risques, la seule périodicité ferme du lot 7.\n\nPOURQUOI DANS `sante_travail` PLUTÔT QUE DANS `formation_securite`, où vivent l'autorisation de conduite et la formation qu'elle suppose. Parce que le domaine ne sert pas à ranger par sujet, il sert à dire quel tiers l'obligation appelle : `DOMAINES_PRESTATAIRE_ATTENDUS` traduit chaque domaine en catégorie de prestataire attendue à l'annuaire. Une attestation délivrée par le médecin du travail appelle un service de prévention et de santé au travail, jamais un organisme de formation. La ranger avec la formation aurait fait dire à l'outil « aucun organisme de formation déclaré » à un dirigeant qui a besoin d'un SPST.\n\nCELA DIVERGE DU PRÉCÉDENT ÉLECTRIQUE, qui range son attestation médicale dans le domaine `electricite`. La divergence est assumée et signalée au rapport du lot 7 : à l'époque aucun domaine de santé n'existait, le choix n'en était pas un. L'obligation électrique n'est pas déplacée ici — changer le domaine et le réalisateur d'une obligation publiée déplace son empreinte et son affichage sur des dossiers vivants, ce qui excède le périmètre de ce lot.\n\nLE LIEN AVEC L'AUTORISATION EST NOMMÉ, PAS DÉRIVÉ : `conduite-salarie-autorisation` porte une transmission vers ce titre, parce que sa validité en dépend (R. 4323-56).\n\nCE QUE L'OUTIL EN DÉTIENT : existence, date, échéance. Rien d'autre (docs/rgpd.md § 2.3).",
   },
+
+  // ---------------------------------------------------------------------------
+  // Le socle de l'employeur (lot 8) — ce qui est dû AVANT tout suivi individuel
+  //
+  // Les cinq obligations qui précèdent supposent toutes un service de
+  // prévention et de santé au travail : sans lui, aucune visite d'information
+  // et de prévention, aucun suivi renforcé, aucune attestation. Les deux qui
+  // suivent portent ce préalable — y adhérer, et recevoir la fiche d'entreprise
+  // qu'il établit.
+  // ---------------------------------------------------------------------------
+  {
+    id: "sante-travail-etablissement-adhesion-spst",
+    domaine: "sante_travail",
+    libelle: "Adhésion à un service de prévention et de santé au travail",
+    description:
+      "Les employeurs organisent des services de prévention et de santé au travail. Le service est organisé sous la forme soit d'un service autonome, soit d'un service de prévention et de santé au travail interentreprises ; lorsque l'entreprise a le choix entre les deux, ce choix appartient à l'employeur. En pratique, une TPE ou une PME adhère à un service interentreprises. C'est le préalable de tout le suivi individuel de l'état de santé : sans adhésion, aucune visite d'information et de prévention ne peut avoir lieu.",
+    referencesLegales: [
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "L. 4622-1 (les employeurs organisent des services de prévention et de santé au travail)",
+        article: "L. 4622-1",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043893834",
+        versionConstatee: "2022-03-31",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "D. 4622-1 (le service est organisé sous la forme soit d'un service autonome, soit d'un service interentreprises)",
+        article: "D. 4622-1",
+        url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018492757/",
+        versionConstatee: "2022-04-28",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "D. 4622-2 (le choix entre les deux formes de service est fait par l'employeur)",
+        article: "D. 4622-2",
+        url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018492757/",
+        versionConstatee: "2022-04-28",
+      },
+    ],
+    periodicite: "autre",
+    realisateurs: ["exploitant"],
+    criticite: 4,
+    typologies: { travail: true },
+    porteur: "etablissement",
+    transmet: [],
+    notesInternes:
+      "L'ARTICLE FONDATEUR EST D'UNE MINCEUR REMARQUABLE, ET IL A FALLU LE VÉRIFIER. `L. 4622-1`, dans sa version en vigueur depuis le 2022-03-31, tient en une phrase, relevée sur Légifrance le 2026-08-31 : « Les employeurs relevant du présent titre organisent des services de prévention et de santé au travail. » Rien d'autre : ni « adhèrent », ni « interentreprises », ni délai.\n\nCE QUE J'AI VÉRIFIÉ AVANT DE M'EN CONTENTER. `L. 4622-7` est souvent cité comme l'article de l'adhésion. Ouvert le 2026-08-31, il dit tout autre chose : « Lorsque le service de prévention et de santé au travail est assuré par un groupement ou organisme distinct de l'établissement employant les travailleurs bénéficiaires de ce service, les responsables de ce groupement ou de cet organisme sont soumis, dans les mêmes conditions que l'employeur et sous les mêmes sanctions, aux prescriptions du présent titre. » C'est la responsabilité des dirigeants du service, pas l'obligation de l'employeur. Le citer en fondateur aurait été l'erreur exacte que la règle du dépôt existe pour empêcher.\n\nCE SONT DONC `D. 4622-1` ET `D. 4622-2` QUI DONNENT SA FORME À L'OBLIGATION : le service est autonome ou interentreprises, et le choix appartient à l'employeur quand il l'a. Ils sont en contexte, pas en fondateur — ils organisent, ils n'imposent pas.\n\nAUCUNE PÉRIODICITÉ. Ni `L. 4622-1` ni les articles D. ne fixent de durée, de renouvellement, ni d'échéance d'adhésion. `periodicite: \"autre\"` : un état à constituer puis maintenir. Une cotisation annuelle existe en pratique, elle n'est pas dans le texte et n'a pas à devenir une échéance.\n\nRÉALISATEUR `exploitant` ET NON `service_sante_travail`, ce qui peut surprendre dans ce domaine. L'acte à accomplir est ADHÉRER, et c'est l'employeur qui adhère ; le service ne s'auto-adhère pas. Mettre `service_sante_travail` aurait annoncé au dirigeant qu'un tiers réalise à sa place la démarche qui lui incombe. Le domaine `sante_travail` attend malgré tout un `service_sante_travail` à l'annuaire, ce qui est le bon rapprochement : un dossier sans SPST déclaré signale ici, précisément, un manquement probable.\n\nCriticité 4 : l'absence d'adhésion éteint tout le suivi médical. Ce n'est pas un manquement formel, c'est celui qui en entraîne cinq autres.",
+  },
+
+  {
+    id: "sante-travail-etablissement-fiche-entreprise",
+    domaine: "sante_travail",
+    libelle: "Fiche d'entreprise établie par le service de santé au travail",
+    description:
+      "Pour chaque entreprise ou établissement, le médecin du travail ou, dans les services de prévention et de santé au travail interentreprises, l'équipe pluridisciplinaire établit et met à jour une fiche d'entreprise ou d'établissement sur laquelle figurent, notamment, les risques professionnels et les effectifs de salariés qui y sont exposés. Pour les entreprises adhérentes à un service interentreprises, la fiche est établie dans l'année qui suit l'adhésion. Elle est transmise à l'employeur.",
+    referencesLegales: [
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "R. 4624-46 (le médecin du travail ou l'équipe pluridisciplinaire établit et met à jour une fiche d'entreprise)",
+        article: "R. 4624-46",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000045677119",
+        versionConstatee: "2022-04-28",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "R. 4624-47 (pour les entreprises adhérentes à un service interentreprises, la fiche est établie dans l'année qui suit l'adhésion)",
+        article: "R. 4624-47",
+        url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018493214/",
+        versionConstatee: "2022-04-28",
+      },
+    ],
+    periodicite: "autre",
+    realisateurs: ["medecin_travail", "professionnel_sante_travail"],
+    criticite: 2,
+    typologies: { travail: true },
+    porteur: "etablissement",
+    transmet: [],
+    notesInternes:
+      "LA SEULE OBLIGATION DE CE LOT QUE L'EMPLOYEUR NE RÉALISE PAS, et c'est ce qui a décidé de son réalisateur. `R. 4624-46` confie l'établissement de la fiche au médecin du travail ou à l'équipe pluridisciplinaire — verbatim relevé le 2026-08-31, version en vigueur depuis le 2022-04-28. L'employeur ne l'écrit pas : il la reçoit. `realisateurs: [\"medecin_travail\", \"professionnel_sante_travail\"]`, les deux valeurs ajoutées par le lot 7, dans l'ordre où le texte les cite.\n\nET AUCUNE DES DEUX N'EST EXACTE, CE QUI SE DIT PLUTÔT QUE DE SE TAIRE. Le texte écrit « le médecin du travail OU, dans les services de prévention et de santé au travail interentreprises, L'ÉQUIPE PLURIDISCIPLINAIRE ». Or l'équipe pluridisciplinaire de L. 4622-8 est plus large que les professionnels de SANTÉ : elle comprend aussi les intervenants en prévention des risques professionnels, qui ne sont pas des soignants. `professionnel_sante_travail` — défini par le lot 7 comme « l'un des professionnels de santé mentionnés au premier alinéa de l'article L. 4624-1 » — les exclut donc. La valeur juste serait `equipe_pluridisciplinaire`, qui n'existe pas ; l'ajouter suppose une migration Prisma sur l'enum `Realisateur`, qui est du ressort du lot 7 et non du mien. Le repli retenu est le moins faux des deux disponibles — il désigne bien un tiers du service de santé au travail, et non l'exploitant — et l'écart est signalé au rapport du lot 8 plutôt que masqué. C'est la cible du produit qui est concernée : une TPE adhère à un service interentreprises, donc c'est l'équipe, pas le médecin seul, qui établit sa fiche.\n\nPOURQUOI L'ENCODER MALGRÉ TOUT COMME UNE OBLIGATION DE L'ÉTABLISSEMENT. Parce que c'est ainsi qu'elle se présente en contrôle : l'inspection demande la fiche d'entreprise, et l'employeur qui n'en a pas est en défaut, même si l'acte incombe au service. C'est exactement le régime des vérifications périodiques réalisées par un organisme agréé — l'obligation est celle de l'exploitant, la réalisation celle d'un tiers.\n\nAUCUNE PÉRIODICITÉ, ET C'ÉTAIT LE PIÈGE. `R. 4624-46` écrit « établit ET MET À JOUR », sans dire à quel rythme. On lit couramment que la fiche se met à jour tous les quatre ans, ou à chaque changement notable ; aucune de ces durées n'est dans l'article. `periodicite: \"autre\"`. Ce dépôt a déjà retiré un « triennal » qui venait d'une norme NF ; un « quadriennal » venant d'un usage professionnel serait la même faute.\n\nL'ANNÉE DE `R. 4624-47` EST UN DÉLAI, PAS UNE PÉRIODICITÉ. « La fiche d'entreprise est établie dans l'année qui suit l'adhésion » : c'est un point de départ unique, pas un rythme. Le produit ne porte pas la date d'adhésion au service, donc ce délai n'engendre aucune ligne de calendrier ; il est rappelé en description. L'exposer supposerait un attribut d'établissement qui n'existe pas — et je n'en déclare pas de `Transmission` `attribut_absent`, parce que cet attribut ne conditionne pas l'APPLICABILITÉ de l'obligation, seulement la date à laquelle elle devient exigible. Nommer un attribut absent pour une échéance qu'on ne calcule de toute façon pas aurait été du bruit.\n\nCriticité 2 : le manquement est réel en contrôle, mais il ne pèse pas d'abord sur l'employeur — c'est au service qu'il incombe d'établir la fiche.",
+  },
 ];

@@ -158,6 +158,15 @@ describe("les domaines dont la contrepartie n'est pas encore atteinte", () => {
     // Quand ce test tombe, c'est qu'un domaine a basculé. Mettez la liste à
     // jour ET le commentaire qui l'explique — c'est leur divergence qui a
     // produit la fausse affirmation.
+    //
+    // IL EST TOMBÉ UNE FOIS, ET IL A FAIT CE QU'ON ATTENDAIT DE LUI.
+    // `sante_travail` a quitté cette liste avec le lot 8 : la fiche d'entreprise
+    // de `R. 4624-46` est portée par l'établissement — donc elle franchit le
+    // moteur — et réalisée par le médecin du travail ou l'équipe
+    // pluridisciplinaire — donc `supposeUnTiers()` est vrai. C'est très
+    // exactement le cas que le commentaire de `DOMAINES_PRESTATAIRE_ATTENDUS`
+    // annonçait comme futur. Le commentaire a été réécrit en même temps que
+    // cette liste, comme la consigne ci-dessus le demande.
     // DEUX conditions, et la seconde est facile à oublier — la première
     // rédaction de ce test l'a oubliée, et il a classé `sante_travail` parmi
     // les domaines atteints alors qu'il ne l'est pas. `supposeUnTiers()` seul
@@ -187,6 +196,6 @@ describe("les domaines dont la contrepartie n'est pas encore atteinte", () => {
         "erreur en soi — mettez la liste à jour, et vérifiez que le commentaire " +
         "de `DOMAINES_PRESTATAIRE_ATTENDUS` dit toujours la vérité sur ce que " +
         "le rapprochement fait et ne fait pas.",
-    ).toEqual(["formation_securite", "sante_travail", "secours"]);
+    ).toEqual(["formation_securite", "secours"]);
   });
 });
