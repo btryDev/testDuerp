@@ -962,7 +962,36 @@ describe("référentiel conformité — version et empreinte", () => {
   // 84 depuis le 2026-08-27 : 85 au départ, +2 obligations portées par
   // l'établissement (PE 4 § 2, R. 4222-20), −3 fragments de ces mêmes
   // articles qu'elles absorbent (ADR-022).
-  const EMPREINTE_ATTENDUE = "85-a1ecbc416487d453";
+  // 98 depuis le 2026-08-31 : +13 au lot 7, les trois premiers domaines qui ne
+  // naissent d'aucun équipement. Formation à la sécurité (3, dont la première
+  // ligne de catalogue due à TOUS les salariés), conduite d'équipements (2),
+  // santé au travail (5, dont VIP et SIR), premiers secours (3). Le compte
+  // saute de treize d'un coup parce que le dépouillement de quatre textes a été
+  // livré en un lot, pas parce qu'un article a été découpé en morceaux : chaque
+  // obligation cite un article distinct ou un alinéa distinct, et le corpus le
+  // montre article par article.
+  // 100 depuis la revue du 2026-08-31 : +2 dérogations de périodicité que le
+  // premier passage avait manquées, et dont les `notesInternes` affirmaient le
+  // contraire. `R. 4624-17` ramène la VIP à trois ans au plus pour les
+  // travailleurs handicapés, les titulaires d'une pension d'invalidité et les
+  // travailleurs de nuit ; `R. 4451-82` porte le suivi renforcé à un an pour la
+  // catégorie A des rayonnements ionisants, et y supprime la visite
+  // intermédiaire. Deux populations pour lesquelles le référentiel annonçait
+  // une échéance trop tardive.
+  // L'empreinte bouge sans que le compte change : le libellé de
+  // `sante-travail-etablissement-liste-postes-risques` porte désormais le
+  // conditionnel du III de R. 4624-23 (« s'il le juge nécessaire »). Le libellé
+  // entre dans l'empreinte parce qu'il s'affiche au calendrier — c'est
+  // exactement ce qu'on veut voir bouger.
+  //
+  // `REFERENTIEL_VERSION` n'est délibérément pas incrémentée ici : le lot 7, le
+  // palier 1 et le lot 8 ont posé la même valeur chacun de leur côté, et c'est
+  // la session d'intégration qui la tranche pour les trois.
+  // Troisième déplacement du 2026-08-31, et le seul qui touche une obligation
+  // ANTÉRIEURE au lot : `elec-salarie-attestation-medicale-voisinage` passe de
+  // `realisateurs: ["exploitant"]` à `["medecin_travail"]`. Le réalisateur
+  // entre dans l'empreinte, le compte ne bouge pas.
+  const EMPREINTE_ATTENDUE = "100-32a2f742135e2f24";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1080,7 +1109,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(85);
+    ).toBe(100);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1322,6 +1351,85 @@ const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
     "Contraste à garder en tête : l'habilitation elle-même n'a AUCUN chiffre " +
     "— R. 4544-10 renvoie aux modalités des normes, que R. 4544-3 qualifie de " +
     "recommandées — et c'est pourquoi elle est passée à `autre` (ADR-023 § 6).",
+
+  // ---------------------------------------------------------------------------
+  // Lot 7 — les cinq périodicités chiffrées du dépouillement du 2026-08-31.
+  //
+  // Treize obligations sont entrées, cinq seulement portent un chiffre. Les
+  // huit autres sont à `autre`, et c'est le résultat du dépouillement, pas une
+  // paresse : le chapitre R. 4141-* ne chiffre RIEN, R. 4323-55 dit
+  // « réactualisée chaque fois que nécessaire », et aucun des trois articles de
+  // la section secours ne porte de durée. Le « recyclage SST tous les
+  // vingt-quatre mois » vient du dispositif INRS/CNAM et le « recyclage CACES à
+  // cinq ans » des recommandations de l'assurance maladie — ni l'un ni l'autre
+  // n'est du droit, et ni l'un ni l'autre n'est encodé.
+  //
+  // ⚠ TROIS DES CINQ SONT DES PLAFONDS, PAS DES RYTHMES, et c'est la nuance à
+  // ne pas perdre. R. 4624-16 et R. 4624-28 écrivent « qui ne peut excéder » et
+  // « qui ne peut être supérieure à » : le médecin du travail fixe le délai
+  // réel, plus court. Le chiffre encodé est la borne extérieure — la date
+  // au-delà de laquelle l'employeur est nécessairement en défaut. Ce n'est
+  // défendable que parce que `TitreSalarie.echeanceLe`, déclaré par
+  // l'employeur, prime sur tout calcul : un dirigeant dont le médecin a fixé
+  // trois ans saisit trois ans. Sans cette échappatoire, il aurait fallu
+  // passer à `autre` et ne rien dire du tout.
+  // ---------------------------------------------------------------------------
+  "sante-travail-salarie-vip":
+    "R. 4624-16 porte le chiffre : « Le travailleur bénéficie d'un " +
+    "renouvellement de la visite d'information et de prévention initiale […] " +
+    "selon une périodicité **qui ne peut excéder cinq ans**. » Relu à la " +
+    "source le 2026-08-31, version en vigueur du 2017-01-01. PLAFOND : la " +
+    "phrase suivante ajoute que « ce délai […] est fixé par le médecin du " +
+    "travail dans le cadre du protocole mentionné à l'article L. 4624-1 ».",
+  "sante-travail-salarie-sir":
+    "R. 4624-28 porte le chiffre : renouvellement « effectuée par le médecin " +
+    "du travail selon une périodicité qu'il détermine et **qui ne peut être " +
+    "supérieure à quatre ans** ». Relu à la source le 2026-08-31, version en " +
+    "vigueur du 2017-01-01. PLAFOND, comme la VIP.",
+  "sante-travail-salarie-sir-visite-intermediaire":
+    "R. 4624-28, seconde phrase : « Une visite intermédiaire est effectuée " +
+    "par un professionnel de santé mentionné au premier alinéa de l'article " +
+    "L. 4624-1 **au plus tard deux ans** après la visite avec le médecin du " +
+    "travail. » Relu à la source le 2026-08-31. PLAFOND, et son point de " +
+    "départ est la visite du MÉDECIN, non la précédente visite intermédiaire " +
+    "— nuance que `Periodicite` n'exprime pas.",
+  "sante-travail-etablissement-liste-postes-risques":
+    "R. 4624-23, III porte le chiffre, et c'est la seule périodicité FERME du " +
+    "lot 7 : la liste des postes à risques particuliers « est transmise au " +
+    "service de prévention et de santé au travail, tenue à disposition […] et " +
+    "**mise à jour tous les ans** ». Relu à la source le 2026-08-31, version " +
+    "en vigueur du 2026-04-10 (décret n° 2026-253 du 8 avril 2026) — l'article " +
+    "le plus récemment modifié de tout le référentiel.",
+  "conduite-salarie-attestation-medicale":
+    "R. 4323-56 porte le chiffre, dans les mêmes termes que R. 4544-11-1 et " +
+    "par le même décret : « Cette attestation, **d'une validité de cinq ans**, " +
+    "est délivrée par le médecin du travail à l'issue d'un examen médical " +
+    "qu'il réalise. » Relu à la source le 2026-08-31, version en vigueur du " +
+    "2025-10-01 (décret n° 2025-355 du 18 avril 2025). Contraste à garder en " +
+    "tête, exactement comme en électricité : l'autorisation de conduite " +
+    "elle-même n'a AUCUNE durée écrite, et elle est passée à `autre`.",
+
+  // Les deux dérogations relevées à la revue du 2026-08-31. Elles ne s'ajoutent
+  // pas aux plafonds ci-dessus : elles les CORRIGENT pour deux populations que
+  // le premier passage rangeait à tort sous le régime général.
+  "sante-travail-salarie-vip-adaptee":
+    "R. 4624-17 porte le chiffre : le travailleur dont l'état de santé, l'âge, " +
+    "les conditions de travail ou les risques le nécessitent — « notamment les " +
+    "travailleurs handicapés, les travailleurs qui déclarent être titulaires " +
+    "d'une pension d'invalidité et les travailleurs de nuit mentionnés à " +
+    "l'article L. 3122-5 » — bénéficie de modalités adaptées « selon une " +
+    "périodicité **qui n'excède pas une durée de trois ans** ». Relu à la " +
+    "source le 2026-08-31, version en vigueur du 2017-01-01. PLAFOND, comme le " +
+    "reste du suivi médical — mais un plafond à TROIS ans, là où " +
+    "`sante-travail-salarie-vip` en annonce cinq.",
+  "sante-travail-salarie-sir-categorie-a":
+    "R. 4451-82 porte le chiffre, et c'est une périodicité FERME : « Pour un " +
+    "travailleur classé en catégorie A, la visite médicale mentionnée à " +
+    "l'article R. 4624-28 **est renouvelée chaque année**. La visite " +
+    "intermédiaire mentionnée au même article n'est pas requise. » Relu à la " +
+    "source le 2026-08-31, version en vigueur du 2018-07-01 (décret " +
+    "n° 2018-437 du 4 juin 2018). Ni « au plus », ni « qui ne peut excéder » : " +
+    "c'est un rythme, pas une borne.",
 };
 
 describe("référentiel conformité — d'où vient le chiffre", () => {

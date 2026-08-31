@@ -1,12 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { obligationsConformite } from "@/lib/referentiels/conformite";
 import {
+  AUCUN_TIERS_ATTENDU,
   DOMAINES_PRESTATAIRE_ATTENDUS,
   domainesSansPrestataire,
   supposeUnTiers,
+  type PrestatairesAttendus,
 } from "./domaines";
 import { LABEL_DOMAINE as LABEL_PRESTATAIRE } from "./schema";
-import type { Obligation } from "@/lib/referentiels/conformite/types";
+import { porteurDe } from "@/lib/referentiels/conformite/types";
+import type {
+  DomaineObligation,
+  Obligation,
+} from "@/lib/referentiels/conformite/types";
 
 const obligation = (o: Partial<Obligation> = {}): Obligation =>
   ({
@@ -31,7 +37,13 @@ describe("correspondance domaine d'obligation → domaine de prestataire", () =>
     // référentiel sans contrepartie et personne ne l'a vu pendant des mois.
     for (const [domaine, attendus] of Object.entries(
       DOMAINES_PRESTATAIRE_ATTENDUS,
-    )) {
+    ) as [DomaineObligation, PrestatairesAttendus][]) {
+      // Le marqueur est une réponse, pas une absence de réponse : il dit que
+      // le texte ne renvoie à aucun tiers. Il n'a donc pas de libellé
+      // d'annuaire à vérifier — mais il reste soumis à la même exigence que
+      // le reste, ci-dessous : personne ne peut l'employer pour se dispenser
+      // de nommer un tiers qui existe.
+      if (attendus === AUCUN_TIERS_ATTENDU) continue;
       expect(attendus.length, domaine).toBeGreaterThan(0);
       for (const d of attendus) {
         expect(LABEL_PRESTATAIRE[d], `${domaine} → ${d}`).toBeTruthy();
@@ -48,6 +60,36 @@ describe("correspondance domaine d'obligation → domaine de prestataire", () =>
         `${o.id} (${o.domaine})`,
       ).toBeDefined();
     }
+  });
+
+  it("`aucun_tiers_attendu` ne couvre jamais une obligation qui appelle un tiers", () => {
+    // LA garde du marqueur, et sans elle il ne vaudrait rien.
+    //
+    // `aucun_tiers_attendu` dit « le texte ne renvoie à personne ». Employé sur
+    // un domaine dont une obligation exige en réalité un organisme agréé, il
+    // rétablirait exactement le silence de `froid: []` — en plus poli, donc en
+    // plus difficile à repérer : un tableau vide se remarque, un marqueur
+    // explicite a l'air d'une décision.
+    //
+    // L'invariant se lit sur le référentiel livré, pas sur des cas construits :
+    // un domaine marqué ne doit contenir AUCUNE obligation pour laquelle
+    // `supposeUnTiers()` est vrai. Le jour où quelqu'un ajoute au lot 8 une
+    // obligation à réalisateur tiers dans `information_travailleurs`, ce test
+    // tombe et le marqueur doit céder la place à une vraie valeur d'enum — au
+    // besoin nouvelle, avec sa migration.
+    const abus = obligationsConformite
+      .filter((o) => DOMAINES_PRESTATAIRE_ATTENDUS[o.domaine] === AUCUN_TIERS_ATTENDU)
+      .filter((o) => supposeUnTiers(o))
+      .map((o) => `${o.id} (${o.domaine}) → ${o.realisateurs.join(", ")}`);
+
+    expect(
+      abus,
+      "Ces obligations vivent dans un domaine déclaré `aucun_tiers_attendu` " +
+        "alors que tous leurs réalisateurs sont des tiers. Le marqueur affirme " +
+        "que le texte n'attend personne ; ici il attend quelqu'un. Donnez au " +
+        "domaine une vraie valeur `DomainePrestataire` — au besoin une nouvelle, " +
+        "avec sa migration — au lieu de masquer le manque.",
+    ).toEqual([]);
   });
 
   it("une obligation réalisée par l'exploitant n'appelle aucun prestataire", () => {
@@ -93,5 +135,58 @@ describe("correspondance domaine d'obligation → domaine de prestataire", () =>
     expect(DOMAINES_PRESTATAIRE_ATTENDUS.froid).not.toContain(
       "entretien_general",
     );
+  });
+});
+
+describe("les domaines dont la contrepartie n'est pas encore atteinte", () => {
+  it("dit lesquels, plutôt que de laisser croire que le rapprochement les couvre", () => {
+    // Ce test est un REGISTRE, pas une garde : il ne défend rien, il empêche
+    // une affirmation de vieillir en silence.
+    //
+    // Le commentaire de `DOMAINES_PRESTATAIRE_ATTENDUS` a affirmé qu'un
+    // dirigeant sans service de santé au travail déclaré « s'en verrait
+    // averti », et que c'était « justement ce que le rapprochement sert à faire
+    // voir ». C'était faux : aucune obligation de ces domaines n'atteint la
+    // règle, pour deux raisons cumulées et toutes deux délibérées — le moteur
+    // écarte les porteurs salarié (ADR-023), et les obligations
+    // d'établissement de ces domaines sont réalisées par l'exploitant.
+    //
+    // Une entrée inatteignable n'est pas un défaut : elle est prête pour le
+    // jour où une obligation appellera vraiment ce tiers. Ce qui était un
+    // défaut, c'est de l'écrire comme si elle servait déjà.
+    //
+    // Quand ce test tombe, c'est qu'un domaine a basculé. Mettez la liste à
+    // jour ET le commentaire qui l'explique — c'est leur divergence qui a
+    // produit la fausse affirmation.
+    // DEUX conditions, et la seconde est facile à oublier — la première
+    // rédaction de ce test l'a oubliée, et il a classé `sante_travail` parmi
+    // les domaines atteints alors qu'il ne l'est pas. `supposeUnTiers()` seul
+    // se lit sur le référentiel entier ; or une obligation à porteur salarié
+    // n'entre JAMAIS dans les applicables (`matching/engine.ts` rend `null`),
+    // donc elle ne peut pas déclencher la règle, quels que soient ses
+    // réalisateurs. C'est le cas de la VIP et du suivi renforcé, réalisés par
+    // un professionnel de santé : des tiers bien réels, que le rapprochement
+    // ne verra pourtant jamais.
+    const atteignables = new Set(
+      obligationsConformite
+        .filter((o) => porteurDe(o) !== "salarie")
+        .filter(supposeUnTiers)
+        .map((o) => o.domaine),
+    );
+    const inatteignables = (
+      Object.keys(DOMAINES_PRESTATAIRE_ATTENDUS) as DomaineObligation[]
+    )
+      .filter((d) => DOMAINES_PRESTATAIRE_ATTENDUS[d] !== AUCUN_TIERS_ATTENDU)
+      .filter((d) => !atteignables.has(d))
+      .sort();
+
+    expect(
+      inatteignables,
+      "La liste des domaines dont la contrepartie de prestataire ne peut être " +
+        "atteinte par aucune obligation livrée a changé. Ce n'est pas une " +
+        "erreur en soi — mettez la liste à jour, et vérifiez que le commentaire " +
+        "de `DOMAINES_PRESTATAIRE_ATTENDUS` dit toujours la vérité sur ce que " +
+        "le rapprochement fait et ne fait pas.",
+    ).toEqual(["formation_securite", "sante_travail", "secours"]);
   });
 });

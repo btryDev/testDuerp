@@ -24,6 +24,10 @@ import { ICPE_STOCKAGE } from "./icpe-stockage";
 import { INRS_DOCUMENTAIRE } from "./inrs-documentaire";
 import { CODE_TRAVAIL_LEVAGE } from "./code-travail-levage";
 import { FROID_FLUIDES } from "./froid-fluides";
+import { CODE_TRAVAIL_FORMATION_SECURITE } from "./code-travail-formation-securite";
+import { CODE_TRAVAIL_SANTE_TRAVAIL } from "./code-travail-sante-travail";
+import { CODE_TRAVAIL_SECOURS } from "./code-travail-secours";
+import { CODE_TRAVAIL_CONDUITE } from "./code-travail-conduite";
 import { couverture, type Corpus, type CouvertureCorpus } from "./types";
 
 export * from "./types";
@@ -60,6 +64,11 @@ export const CORPUS: readonly Corpus[] = [
   ARRETE_2018_02_23_GAZ_HABITATION,
   INRS_DOCUMENTAIRE,
   ARRETES_MODIFICATIFS_ERP,
+  // Lot 7 — les textes qui portent les obligations de salarié.
+  CODE_TRAVAIL_FORMATION_SECURITE,
+  CODE_TRAVAIL_SANTE_TRAVAIL,
+  CODE_TRAVAIL_SECOURS,
+  CODE_TRAVAIL_CONDUITE,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {

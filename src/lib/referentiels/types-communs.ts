@@ -84,6 +84,37 @@ export const REALISATEURS = [
   "exploitant",
   "fabricant",
   "bureau_controle",
+  // Le médecin du travail, nommément. Ajouté avec le suivi médical (lot 7) :
+  // `R. 4624-28` réserve le renouvellement du suivi individuel renforcé au
+  // médecin du travail, et `R. 4323-56` lui réserve la délivrance de
+  // l'attestation d'absence de contre-indication à la conduite. Aucune valeur
+  // existante ne le disait. `exploitant` aurait été le repli naturel — c'est
+  // celui qu'a pris `elec-salarie-attestation-medicale-voisinage` avant ce lot
+  // — et il annonce au dirigeant qu'il réalise lui-même un acte qu'il lui est
+  // interdit de réaliser.
+  "medecin_travail",
+  // « L'un des professionnels de santé mentionnés au premier alinéa de
+  // l'article L. 4624-1 » — médecin du travail, mais aussi collaborateur
+  // médecin, interne, infirmier de santé au travail. `R. 4624-10` (visite
+  // d'information et de prévention) et la visite intermédiaire de
+  // `R. 4624-28` l'écrivent ainsi, là où le renouvellement du SIR exige le
+  // médecin. La distinction est dans le texte : la rabattre sur une seule
+  // valeur ferait croire qu'une VIP requiert un médecin du travail, ce qui
+  // resserre l'obligation au-delà de ce que le Code impose.
+  "professionnel_sante_travail",
+  // L'équipe pluridisciplinaire d'un service de prévention et de santé au
+  // travail interentreprises. `R. 4624-46` la distingue explicitement du
+  // médecin : la fiche d'entreprise est établie « par le médecin du travail
+  // OU, dans les services de prévention et de santé au travail
+  // interentreprises, l'équipe pluridisciplinaire » — verbatim relevé le
+  // 2026-08-31, version en vigueur du 2022-04-28.
+  //
+  // Ce n'est pas un cas limite mais le cas ORDINAIRE de la cible du produit :
+  // une TPE de six personnes adhère à un service interentreprises, elle ne
+  // salarie pas de médecin du travail. Rabattre ce réalisateur sur
+  // `professionnel_sante_travail` restreindrait au personnel soignant une
+  // mission que le texte confie à une équipe qui ne l'est pas toute.
+  "equipe_pluridisciplinaire",
 ] as const;
 
 export type Realisateur = (typeof REALISATEURS)[number];

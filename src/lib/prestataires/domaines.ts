@@ -40,6 +40,39 @@ import type { Realisateur } from "@/lib/referentiels/types-communs";
  *    exactement le silence qu'on corrige. Un tableau vide serait ici la
  *    réponse d'un modèle qui n'a pas de mot, pas la réponse d'un texte.
  *
+ * ## `"aucun_tiers_attendu"` — ce que le tableau vide confondait
+ *
+ * L'interdiction du tableau vide était juste, et elle le reste, mais elle
+ * traitait deux situations comme une seule :
+ *
+ *  1. **le modèle n'a pas de mot** pour le tiers que l'obligation appelle —
+ *     c'est `froid: []`, et c'est un silence à corriger ;
+ *  2. **le texte n'attend personne** — l'obligation est réalisée par
+ *     l'exploitant seul, parce que le Code la lui confie. Un affichage
+ *     obligatoire, l'accès des salariés au DUERP, un règlement intérieur : il
+ *     n'existe aucun prestataire à déclarer, et il n'en manque aucun.
+ *
+ * Le second cas n'a pas de réponse honnête dans un tableau de domaines de
+ * prestataire. `["autre"]` serait le mot vide déguisé, et `[]` ferait passer
+ * une réponse tranchée pour un trou de vocabulaire — exactement l'inverse de
+ * ce que ce `Record` existe pour rendre visible.
+ *
+ * D'où un **marqueur nommé** plutôt qu'un tableau vide : `"aucun_tiers_attendu"`
+ * dit que quelqu'un a lu le texte et constaté qu'il ne renvoie à personne. Le
+ * choix est **écrit**, pas déduit d'une absence.
+ *
+ * Ce marqueur ne relâche aucune garde : `supposeUnTiers()` ne déclenche que
+ * lorsque TOUS les réalisateurs d'une obligation sont des tiers, donc un
+ * domaine réalisé par l'exploitant ne fait de toute façon jamais parler la
+ * règle. Le marqueur ne change pas le comportement — il rend la raison
+ * lisible, ce qu'un `[]` ne faisait pas.
+ *
+ * ⚠ Il ne s'emploie **que** pour le cas 2. Un domaine dont le texte appelle un
+ * tiers que l'enum `DomainePrestataire` ne sait pas nommer doit recevoir une
+ * valeur d'enum — au besoin une nouvelle, avec sa migration, comme
+ * `organisme_formation` et `service_sante_travail` en ont reçu une. Employer le
+ * marqueur là serait rétablir le silence de `froid`, sous un nom plus poli.
+ *
  * Trois domaines portent deux noms selon le module — `aeration` /
  * `ventilation_vmc`, `porte_portail` / `porte_automatique`,
  * `equipement_sous_pression` / `equipement_pression`. Cette table est le seul
@@ -52,9 +85,19 @@ import type { Realisateur } from "@/lib/referentiels/types-communs";
  * intervient transversalement, et l'exclure ferait dire « aucun prestataire ne
  * couvre ce domaine » à un dirigeant qui a justement déclaré celui qui le fait.
  */
+export const AUCUN_TIERS_ATTENDU = "aucun_tiers_attendu" as const;
+
+/**
+ * Ce qu'un domaine d'obligation attend de l'annuaire : une liste non vide de
+ * domaines de prestataire, ou le constat explicite qu'il n'attend personne.
+ */
+export type PrestatairesAttendus =
+  | readonly [DomainePrestataire, ...DomainePrestataire[]]
+  | typeof AUCUN_TIERS_ATTENDU;
+
 export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
   DomaineObligation,
-  readonly [DomainePrestataire, ...DomainePrestataire[]]
+  PrestatairesAttendus
 > = {
   electricite: ["electricite", "bureau_controle"],
   incendie: ["incendie", "bureau_controle"],
@@ -66,6 +109,52 @@ export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
   stockage_dangereux: ["stockage_dangereux"],
   levage: ["levage", "bureau_controle"],
   froid: ["froid"],
+  // Les trois domaines du lot 7. Aucun d'eux n'appelle un vérificateur
+  // d'équipement : ils appellent un formateur ou un service de santé au
+  // travail. `autre` aurait compilé et aurait été le mot vide que le
+  // commentaire ci-dessus interdit — le tiers a un nom réel dans les deux cas,
+  // et il fallait le donner à l'enum plutôt que le taire.
+  //
+  // ⚠ AUCUNE DES TROIS ENTRÉES N'EST ATTEINTE AUJOURD'HUI, et il faut le lire
+  // avant de s'y fier. La première rédaction affirmait ici que le rapprochement
+  // « sert justement à faire voir » qu'un dirigeant n'a déclaré aucun service de
+  // santé au travail. C'est faux, deux fois :
+  //
+  //  1. les onze obligations salarié de ces domaines n'entrent jamais dans les
+  //     applicables — `matching/engine.ts` rend `null` pour tout porteur
+  //     salarié, délibérément (ADR-023 : rien ne dit qui opère sur quoi) ;
+  //  2. les sept obligations d'établissement de ces domaines portent toutes
+  //     `realisateurs: ["exploitant"]`, donc `supposeUnTiers()` est faux — le
+  //     Code confie ces actes à l'employeur, et c'est juste.
+  //
+  // Ces entrées existent donc pour satisfaire le `Record` exhaustif et pour
+  // être prêtes le jour où une obligation de ces domaines appellera vraiment un
+  // tiers — la fiche d'entreprise de `R. 4624-46`, réalisée par le médecin du
+  // travail ou l'équipe pluridisciplinaire, en est le cas type.
+  //
+  // Elles ne sont PAS `aucun_tiers_attendu` : le tiers existe et a un nom, il
+  // n'est simplement pas encore appelé par une obligation livrée. Confondre les
+  // deux ferait dire « le texte n'attend personne » là où il attend quelqu'un.
+  // `domaines.test.ts` fige cet état pour qu'il ne se perde pas.
+  formation_securite: ["organisme_formation"],
+  // La VIP et le suivi individuel renforcé sont réalisés par les professionnels
+  // de santé du service de prévention et de santé au travail (`R. 4624-10`,
+  // `R. 4624-28`).
+  //
+  // Et le service lui-même n'est pas facultatif : `L. 4622-1` — « Les employeurs
+  // relevant du présent titre ORGANISENT des services de prévention et de santé
+  // au travail » — met l'organisation d'un tel service à la charge de
+  // l'employeur. « Organisent », et non « adhèrent » : l'adhésion à un service
+  // interentreprises en est une modalité, régie par des textes que personne
+  // n'a dépouillés ici. L'obligation elle-même reste non encodée
+  // (`obligation_manquante` au corpus).
+  sante_travail: ["service_sante_travail"],
+  // Le Code ne dit pas qui délivre la formation de secouriste de `R. 4224-15`.
+  // Le domaine de prestataire attendu est donc l'organisme de formation, sans
+  // qualification supplémentaire : l'habilitation INRS/CNAM du formateur SST
+  // est un dispositif conventionnel, pas une exigence du Code, et l'écrire ici
+  // ferait passer une pratique pour du droit.
+  secours: ["organisme_formation"],
 };
 
 /**
@@ -85,6 +174,29 @@ const REALISATEURS_TIERS: ReadonlySet<Realisateur> = new Set<Realisateur>([
   "personne_qualifiee",
   "personne_competente",
   "bureau_controle",
+  // Les deux réalisateurs de santé au travail, ajoutés avec le lot 7. Ce sont
+  // des tiers au sens plein, et c'est la seule raison qui compte : l'employeur
+  // ne peut PAS réaliser lui-même une visite d'information et de prévention ni
+  // délivrer une attestation médicale. `R. 4624-10` la réserve à « l'un des
+  // professionnels de santé mentionnés au premier alinéa de l'article
+  // L. 4624-1 », `R. 4624-28` au médecin du travail.
+  //
+  // Une première rédaction ajoutait qu'à défaut,
+  // `DOMAINES_PRESTATAIRE_ATTENDUS.sante_travail` serait « une entrée morte,
+  // consultée jamais ». L'argument se réfute trente lignes plus haut : cette
+  // entrée est inatteignable de toute façon, puisque les obligations salarié
+  // n'entrent pas dans les applicables. Les inclure ne ressuscite rien — ils
+  // sont ici parce qu'ils sont des tiers, pas pour éviter une mort déjà
+  // survenue.
+  "medecin_travail",
+  "professionnel_sante_travail",
+  // Même raison, et la règle de cet ensemble tient : « les réalisateurs qui
+  // supposent un tiers déclaré à l'annuaire ». Une équipe pluridisciplinaire
+  // est un tiers qualifié qu'on choisit et qu'on inscrit — c'est même le tiers
+  // que la cible du produit a réellement, puisqu'une TPE adhère à un service
+  // interentreprises plutôt que de salarier un médecin. Sa contrepartie est
+  // `service_sante_travail`, déjà déclarée.
+  "equipe_pluridisciplinaire",
 ]);
 
 /**
@@ -133,6 +245,15 @@ export function domainesSansPrestataire(
   for (const o of obligationsApplicables) {
     if (!supposeUnTiers(o)) continue;
     const attendus = DOMAINES_PRESTATAIRE_ATTENDUS[o.domaine];
+    // Un domaine que le texte confie à l'exploitant n'a aucun prestataire à
+    // manquer. En théorie inatteignable — `supposeUnTiers()` a déjà écarté les
+    // obligations réalisées par l'exploitant, et un domaine marqué
+    // `aucun_tiers_attendu` ne devrait en contenir aucune autre. On ne s'y fie
+    // pas : les deux faits vivent dans deux fichiers différents, et rien ne
+    // garantit qu'ils resteront d'accord. Le jour où ils divergent, le silence
+    // est la bonne issue — annoncer « aucun prestataire déclaré » pour un
+    // affichage obligatoire serait un faux positif adressé au dirigeant.
+    if (attendus === AUCUN_TIERS_ATTENDU) continue;
     if (attendus.some((d) => declares.has(d))) continue;
     manquants.add(o.domaine);
   }

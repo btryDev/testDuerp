@@ -5,6 +5,8 @@ import { ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChampBoard } from "@/components/ui-kit";
 import type { TitreActionState } from "@/lib/salaries/actions";
+import { LABEL_PERIODICITE } from "@/lib/calendrier/labels";
+import type { Periodicite } from "@/lib/referentiels/types-communs";
 
 type TitreDuCatalogue = {
   id: string;
@@ -12,6 +14,17 @@ type TitreDuCatalogue = {
   /** Optionnelle au référentiel : toutes les obligations n'en portent pas. */
   description?: string;
   pieceMedicale: boolean;
+  /**
+   * Nécessaire pour dire la vérité sur le champ « Valable jusqu'au ».
+   *
+   * L'aide de ce champ promettait « Rojer n'inventera pas d'échéance ». La
+   * promesse était vraie par coïncidence : le seul titre du catalogue portait
+   * une périodicité `autre`, pour laquelle le générateur ne calcule rien. Dès
+   * qu'un titre porte une durée chiffrée, le générateur calcule bel et bien
+   * `delivreLe + periodicite` quand l'échéance est laissée vide
+   * (`calendrier/generateur.ts`), et la promesse devenait fausse.
+   */
+  periodicite: Periodicite;
 };
 
 /**
@@ -44,6 +57,13 @@ type TitreDuCatalogue = {
  * assumé — un outil qui héberge des pièces médicales de salariés change de
  * nature réglementaire, pour une valeur ajoutée nulle (`docs/rgpd.md` § 2.3).
  */
+/**
+ * Les périodicités pour lesquelles le générateur ne calcule aucune échéance —
+ * `PERIODICITE_EN_JOURS` y vaut `null`. Sur ces titres-là, et sur eux seuls,
+ * la promesse « Rojer n'inventera pas d'échéance » est vraie.
+ */
+const SANS_DUREE = new Set<Periodicite>(["autre", "mise_en_service_uniquement"]);
+
 export function FormulaireTitre({
   catalogue,
   action,
@@ -129,11 +149,11 @@ export function FormulaireTitre({
           />
           <p className="m-0 text-[12.5px] leading-[1.55] text-[color:var(--board-blue-ink)]">
             <strong>Ne déposez pas le document.</strong> Rojer enregistre
-            qu&apos;une attestation existe, sa date et son échéance —
-            rien d&apos;autre. Le motif médical, l&apos;avis du médecin et la
-            pièce elle-même ne vous sont pas destinés et n&apos;ont pas à
-            transiter ici. Vous conservez l&apos;original de votre côté,
-            comme aujourd&apos;hui.
+            qu&apos;une attestation ou une visite a eu lieu, sa date et son
+            échéance — rien d&apos;autre. Le motif médical, l&apos;avis
+            d&apos;aptitude et la pièce elle-même ne vous sont pas destinés et
+            n&apos;ont pas à transiter ici. Vous conservez l&apos;original de
+            votre côté, comme aujourd&apos;hui.
           </p>
         </div>
       )}
@@ -153,7 +173,11 @@ export function FormulaireTitre({
           label="Valable jusqu'au"
           type="date"
           erreur={err("echeanceLe")}
-          aide="Laissez vide si aucune date n'est portée sur le titre. Rojer n'inventera pas d'échéance."
+          aide={
+            titre && LABEL_PERIODICITE[titre.periodicite] && !SANS_DUREE.has(titre.periodicite)
+              ? `Si le document porte une date de fin, saisissez-la : elle prime toujours. Laissée vide, Rojer la calcule à partir de la date de délivrance et de la durée écrite dans le texte (${LABEL_PERIODICITE[titre.periodicite]}) — une durée qui est souvent un maximum légal, que le service de santé au travail peut avoir raccourci.`
+              : "Laissez vide si aucune date n'est portée sur le titre. Aucun texte ne donne de durée de validité à ce titre : Rojer n'inventera pas d'échéance."
+          }
         />
       </div>
 

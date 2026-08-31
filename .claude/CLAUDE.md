@@ -80,14 +80,24 @@ Sources primaires libres d'accès uniquement :
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **85 obligations sur 10 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes). Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **100 obligations sur 13 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
-**82 d'entre elles sont déclenchées par un équipement déclaré, deux sont portées par
-l'établissement, une par un salarié** — `PE 4 § 2` (entretien triennal de l'ensemble des installations
-techniques en ERP de 5ᵉ catégorie) et `R. 4222-20` (contrôle annuel de l'ensemble des
-installations d'aération, tout employeur). Ces deux-là s'appliquent **même si aucun
-équipement n'est déclaré**, et produisent **une seule ligne** chacune, jamais une par
-installation (ADR-022).
+**82 d'entre elles sont déclenchées par un équipement déclaré, sept sont portées par
+l'établissement, onze par un salarié.**
+
+Les sept obligations d'établissement s'appliquent **même si aucun équipement n'est
+déclaré**, et produisent **une seule ligne** chacune, jamais une par installation
+(ADR-022) : `PE 4 § 2` (entretien triennal des installations techniques en ERP de
+5ᵉ catégorie), `R. 4222-20` (contrôle annuel des installations d'aération), et les cinq
+entrées du lot 7 — organiser la formation à la sécurité (`L. 4141-2`), informer les
+salariés et leur donner accès au DUERP (`R. 4141-3-1`), tenir à jour la liste des postes
+à risques particuliers (`R. 4624-23 III`, annuelle), équiper les lieux d'un matériel de
+premiers secours (`R. 4224-14`) et organiser par écrit les premiers secours
+(`R. 4224-16`).
+
+**Les trois derniers domaines ne naissent d'aucun équipement**, et c'est ce qui les
+distingue des dix premiers : leur déclencheur est le statut d'employeur. Un bureau sans
+le moindre appareil déclaré doit désormais sept obligations, contre une seule auparavant.
 
 Le type `Obligation` est une union discriminée sur `porteur` : catégorie d'équipement
 requise et non vide d'un côté, interdite de l'autre. Le compte faisant foi est le préfixe
@@ -99,8 +109,13 @@ Rojer couvre les obligations de **santé-sécurité au travail et de sécurité 
 — Code du travail, CCH, et Code de l'environnement quand il porte sur la sécurité des
 installations ou des personnes. Une obligation y naît de cinq déclencheurs possibles :
 
-1. **Équipement déclaré** — 80 obligations livrées
-2. **Statut d'employeur** — dès un salarié : formation à la sécurité, affichages SST, suivi médical
+1. **Équipement déclaré** — 82 obligations livrées
+2. **Statut d'employeur** — dès un salarié : formation à la sécurité, affichages SST,
+   suivi médical. **15 obligations livrées au lot 7** (2026-08-31) : formation à la
+   sécurité, information et accès au DUERP, VIP, suivi individuel renforcé et sa visite
+   intermédiaire, liste des postes à risques, matériel et organisation des premiers
+   secours, secouriste, conduite d'équipements. Restent non couverts les affichages
+   obligatoires (`D. 4711-1`) et la fiche d'entreprise (`R. 4624-46`)
 3. **Effectif** — seuils 11, 25, 50
 4. **Typologie et caractéristiques du bâtiment** — ERP, locaux à sommeil, année du permis
 5. **Activité réellement exercée** — un fait de tâche, ni statut ni équipement : habilitation électrique, conduite d'engins, travail en hauteur
@@ -129,9 +144,29 @@ déclarés alors qu'aucun texte ne les y subordonne. Voir `docs/revues/rapport-p
 sont **pas dérivées** par le moteur. Rien ne dit qu'une personne opère sur des installations
 électriques — ce serait le cinquième déclencheur, non implémenté —, donc l'employeur déclare
 qui détient quel titre (`Salarie`, `TitreSalarie`), et le référentiel fournit le catalogue.
-Une seule obligation salarié est livrée : l'attestation médicale quinquennale de
-`R. 4544-11-1`. Le reste — 18 lignes recensées — attend son dépouillement, et le corpus n'a
-encore rien sur `R. 4141-*`, `R. 4624-*`, le SST, le CACES ni l'autorisation de conduite.
+
+**Onze obligations salarié sont livrées** depuis le lot 7 (2026-08-31) — le catalogue n'en
+comptait qu'une jusque-là, l'attestation médicale quinquennale de `R. 4544-11-1` :
+formation à la sécurité reçue (`R. 4141-20`, due à TOUS les salariés), formation à la
+conduite et autorisation de conduite (`R. 4323-55`, `R. 4323-56`), attestation médicale de
+conduite (`R. 4323-56`, quinquennale), secouriste SST (`R. 4224-15`), VIP (`R. 4624-16`,
+quinquennale), suivi individuel renforcé (`R. 4624-28`, quadriennale) et sa visite
+intermédiaire (biennale).
+
+**Deux dérogations de périodicité, à ne pas oublier en étendant le suivi médical** : la VIP
+tombe à **trois ans au plus** pour le travailleur handicapé, celui qui déclare une pension
+d'invalidité et le travailleur de nuit (`R. 4624-17`), et le suivi renforcé passe à **un an
+ferme sans visite intermédiaire** pour le travailleur exposé aux rayonnements ionisants
+classé en catégorie A (`R. 4451-82`). Chacune a sa ligne de catalogue. Les textes propres
+aux quatre autres expositions du `R. 4624-23 I` — CMR, agents biologiques 3 et 4,
+hyperbare, échafaudages — **n'ont pas été ouverts** ; ne pas conclure de ce silence qu'ils
+ne dérogent pas.
+
+Les corpus `R. 4141-*` (26 articles, intégral), `R. 4624-*` (6 articles cités),
+`R. 4224-14` à `-16` (intégral) et `R. 4323-55` à `-57` (intégral) sont dépouillés.
+**Le CACES n'est pas encodé et ne doit pas l'être** : il n'est dans aucun des trois
+articles de la section 7 — c'est un dispositif conventionnel de la CNAM, le Code
+n'exigeant qu'une « formation adéquate » et une autorisation de conduite.
 
 Les quatre déclencheurs non implémentés représentent **62 obligations recensées** — détail et
 sources dans `docs/carto-obligations-hors-equipement.md`.

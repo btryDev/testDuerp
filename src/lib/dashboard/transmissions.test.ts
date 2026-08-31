@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { rapprocher } from "./transmissions";
+import { obligationsConformite } from "@/lib/referentiels/conformite";
 import { supposeUnTiers } from "@/lib/prestataires/domaines";
 import { genererRecommandations, type EntreeRecos } from "./recommandations";
 import type { Obligation } from "@/lib/referentiels/conformite/types";
@@ -58,15 +59,48 @@ describe("rapprochement des transmissions (ADR-024)", () => {
     ]);
   });
 
-  it("se tait dès qu'un seul titre est déclaré", () => {
-    // Le seuil est délibérément à un. Au-delà, l'outil ne sait plus
-    // distinguer « il n'a pas fini de saisir » de « il a saisi ce qui
-    // existe » — et insister reviendrait à réclamer un titre qu'on ne sait
-    // pas dire dû (ADR-023).
+  it("se tait quand un titre DU MÊME DOMAINE est déclaré", () => {
+    // L'attestation médicale de voisinage est le seul titre d'électricité du
+    // catalogue. La déclarer, c'est avoir saisi ce qu'on savait saisir dans ce
+    // domaine — insister au-delà reviendrait à réclamer un titre que le
+    // référentiel ne sait pas nommer (ADR-023).
     expect(
-      rapprocher([habilitation()], ["electricite"], new Set(["autre-titre"]))
-        .obligationsSupposantUnePersonne,
+      rapprocher(
+        [habilitation()],
+        ["electricite"],
+        new Set(["elec-salarie-attestation-medicale-voisinage"]),
+      ).obligationsSupposantUnePersonne,
     ).toEqual([]);
+  });
+
+  it("ne se tait PAS quand le titre déclaré relève d'un autre domaine", () => {
+    // LA régression que le lot 7 a failli livrer, et le seul test qui
+    // l'attrape.
+    //
+    // La règle disait « dès qu'un titre QUELCONQUE est déclaré ». Elle était
+    // juste tant que le catalogue tenait en une ligne : « un titre quelconque »
+    // et « un titre d'électricité » désignaient alors la même chose. Le lot 7
+    // a porté le catalogue à neuf lignes et l'équivalence est tombée.
+    //
+    // Le scénario, tel qu'il se produirait : un restaurateur déclare une
+    // installation électrique, voit « une habilitation est peut-être due,
+    // personne n'est déclaré », et saisit la formation à la sécurité de sa
+    // plongeuse — le PREMIER geste que le catalogue élargi l'invite à faire.
+    // Avec l'ancienne règle, le signal sur l'habilitation disparaissait
+    // définitivement sans que rien n'en ait été dit.
+    //
+    // Les deux identifiants sont réels et le doivent : le domaine se lit sur
+    // le référentiel, un id inventé n'en aurait aucun et le test passerait
+    // pour la mauvaise raison.
+    expect(
+      rapprocher(
+        [habilitation()],
+        ["electricite"],
+        new Set(["formation-securite-salarie-accueil"]),
+      ).obligationsSupposantUnePersonne,
+    ).toEqual([
+      { id: "habilitation", libelle: "Habilitation électrique du personnel" },
+    ]);
   });
 
   it("l'obligation qui ne transmet rien ne produit aucun signal de personne", () => {
@@ -210,5 +244,42 @@ describe("règles 9-10 : une transmission ne passe jamais devant une urgence", (
     expect(recs.find((r) => r.kind === "transmission_salarie")?.href).toBe(
       "/etablissements/etab-x/equipe",
     );
+  });
+});
+
+describe("le parc de levage nomme la conduite (revue du lot 7)", () => {
+  it("un chariot déclaré fait dire que quelqu'un doit être formé à le conduire", () => {
+    // Le trou que ce test ferme, et il était béant : un commerce déclarait un
+    // gerbeur, recevait sa vérification semestrielle, et n'apprenait JAMAIS que
+    // la personne qui le conduit doit avoir reçu une formation adéquate
+    // (R. 4323-55). Le fait déclencheur était pourtant déjà déclaré — la
+    // propriété `estChariotOuGerbeur` de l'équipement.
+    //
+    // C'est très exactement le « troisième terme » de l'ADR-024 : ni dériver
+    // qui conduit — le produit ne le sait pas —, ni se taire. Nommer.
+    //
+    // L'obligation est prise au référentiel réel : une copie de test aurait
+    // passé le jour où quelqu'un retirerait la transmission.
+    const vgp = obligationsConformite.find(
+      (o) => o.id === "levage-vgp-semestrielle-chariot-gerbeur",
+    )!;
+    expect(
+      rapprocher([vgp], [], new Set()).obligationsSupposantUnePersonne.map(
+        (o) => o.id,
+      ),
+    ).toContain("levage-vgp-semestrielle-chariot-gerbeur");
+  });
+
+  it("se tait une fois la formation à la conduite déclarée", () => {
+    // La transmission NOMME le titre attendu, donc elle se tait sur ce
+    // titre-là précisément — pas sur « un titre quelconque », ni même sur
+    // « un titre du même domaine ».
+    const vgp = obligationsConformite.find(
+      (o) => o.id === "levage-vgp-semestrielle-chariot-gerbeur",
+    )!;
+    expect(
+      rapprocher([vgp], [], new Set(["conduite-salarie-formation"]))
+        .obligationsSupposantUnePersonne,
+    ).toEqual([]);
   });
 });

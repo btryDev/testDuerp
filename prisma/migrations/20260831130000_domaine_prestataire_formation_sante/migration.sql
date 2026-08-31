@@ -1,0 +1,43 @@
+-- Les deux domaines de prestataire qu'appellent les obligations hors équipement.
+--
+-- Le lot 7 fait entrer trois domaines d'obligation qui ne naissent d'aucun
+-- équipement : `formation_securite`, `sante_travail`, `secours`.
+-- `DOMAINES_PRESTATAIRE_ATTENDUS` (src/lib/prestataires/domaines.ts) exige pour
+-- chacun une contrepartie NON VIDE — c'est la garantie écrite après `froid`,
+-- qui avait vécu au référentiel sans jamais avoir de domaine de prestataire.
+--
+-- `autre` aurait compilé. C'est précisément ce que le commentaire de ce Record
+-- interdit : « `froid: []` aurait compilé et rétabli exactement le silence
+-- qu'on corrige. Un tableau vide serait ici la réponse d'un modèle qui n'a pas
+-- de mot, pas la réponse d'un texte. » Le tiers a un nom réel dans les deux
+-- cas, et il fallait le donner à l'enum plutôt que le taire :
+--
+--   * `organisme_formation` — la formation à la sécurité (`L. 4141-2`), la
+--     formation de secouriste (`R. 4224-15`) et la formation à la conduite
+--     (`R. 4323-55`) sont dispensées par un organisme de formation quand elles
+--     ne le sont pas en interne ;
+--   * `service_sante_travail` — la visite d'information et de prévention et le
+--     suivi individuel renforcé sont réalisés par les professionnels de santé du
+--     service de prévention et de santé au travail (`R. 4624-10`, `R. 4624-28`,
+--     lus à la source le 2026-08-31).
+--
+--     S'y ajoute `L. 4622-1`, lu à la source le 2026-08-31 : « Les employeurs
+--     relevant du présent titre ORGANISENT des services de prévention et de
+--     santé au travail. » Version en vigueur du 2022-03-31 (loi n° 2021-1018 du
+--     2 août 2021, art. 1). Un dirigeant qui n'a déclaré aucun service à
+--     l'annuaire n'a donc pas seulement un trou de vigilance.
+--
+-- ⚠ « Organisent », et pas « adhèrent ». L'adhésion à un service
+-- INTERENTREPRISES est une modalité de cette obligation, pas l'obligation
+-- elle-même, et le texte qui la régit n'est pas dépouillé. La nuance a coûté
+-- deux tours de revue : une première rédaction de ce commentaire écrivait
+-- « l'adhésion est elle-même une obligation (L. 4622-1) », une relecture a
+-- proposé de corriger en `L. 4622-7`, et l'ouverture des deux articles a montré
+-- que `L. 4622-7` porte sur la responsabilité des RESPONSABLES DU SERVICE, pas
+-- sur l'employeur. La citation d'origine était la bonne ; c'est sa formulation
+-- qui ne l'était pas.
+--
+-- Additif et rétrocompatible, même régime que la migration `..._froid`.
+
+ALTER TYPE "DomainePrestataire" ADD VALUE IF NOT EXISTS 'organisme_formation' AFTER 'nettoyage';
+ALTER TYPE "DomainePrestataire" ADD VALUE IF NOT EXISTS 'service_sante_travail' AFTER 'organisme_formation';
