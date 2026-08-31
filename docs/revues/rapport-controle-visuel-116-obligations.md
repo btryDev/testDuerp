@@ -226,11 +226,70 @@ le chip isolé. C'est la cause mécanique du §2.
   procès-verbal de commission est un avis ; l'acte qui prescrit est l'arrêté ») et
   refuse d'enregistrer un allègement. C'est du soin rare.
 
+## 6. Avec un salarié : la correction de l'habilitation tient, et elle rend une phrase fausse
+
+Ajout d'une personne par l'interface — **Nadia Kerbrat**, assistante de
+direction, entrée le 4 mars 2024 — puis déclaration d'**un titre non
+électrique** : *Membre du personnel formé au secourisme (SST)*, délivré le
+10 septembre 2024, valable jusqu'au 10 septembre 2026, badge « Expire bientôt »,
+pastille `§ R. 4224-15`.
+
+**Le catalogue offre bien treize titres** (comptés dans le DOM, `input[type=radio]`) :
+
+```
+conduite-salarie-attestation-medicale        formation-securite-salarie-cse-sst
+elec-salarie-attestation-medicale-voisinage  secours-salarie-secouriste
+conduite-salarie-autorisation                sante-travail-salarie-sir
+conduite-salarie-formation                   sante-travail-salarie-sir-categorie-a
+formation-securite-salarie-accueil           sante-travail-salarie-sir-visite-intermediaire
+formation-securite-salarie-designe-competent sante-travail-salarie-vip-adaptee
+                                             sante-travail-salarie-vip
+```
+
+**La correction fonctionne.** Avec un titre déclaré — mais pas celui attendu — le
+signal continue de parler :
+
+> **Organiser la formation à la sécurité des salariés**
+> *Suppose un titre nominatif — aucun n'est déclaré*
+
+Avant la correction, n'importe quel titre l'aurait fait taire. C'est le faux
+négatif muet que l'ADR-022 existe pour supprimer, et il ne se produit plus.
+
+**Mais la correction crée un état que la phrase n'avait pas prévu.** Nadia
+Kerbrat détient un titre, déclaré, visible sur sa fiche. Et le tableau de bord
+lui dit « **aucun n'est déclaré** ». La phrase voulait dire « aucun titre de ce
+type » ; elle dit « aucun », dans un dossier où il y en a un. Avant la
+correction, cet état était impossible : un titre déclaré fermait le message. La
+correction l'a rendu atteignable, et le libellé n'a pas suivi.
+
+C'est exactement la famille de contradiction relevée aux §2 et §4 : un compteur
+ou une phrase qui n'a pas été relue après que la règle sous lui a changé.
+
+**Et la famille « Titres du personnel » apparaît bien** dans le panneau de
+filtres dès qu'un titre daté existe, avec son icône `IdCard` — vérifiée ce matin
+dans le DOM.
+
+**Le §2 s'aggrave d'un cran.** Avec ce titre daté au 10 septembre 2026, l'écran
+affiche maintenant :
+
+| | |
+|---|---|
+| Pilule d'année | **2026 · 1 ÉCHÉANCE** |
+| Compteurs | 0 en retard · **1 sous 30 jours** · 0 à venir · 0 faite |
+| Chip isolé | **2 à planifier** |
+| Carte d'août | 2 ce mois-ci · 2 à planifier |
+| Carte de septembre | 1 ce mois-ci |
+| **Lignes réellement listées** | **trois** |
+
+« 1 échéance » au-dessus de trois lignes. Le total d'année ne compte que ce qui
+porte une date ; la liste montre tout. L'écart n'est plus de deux à zéro, il est
+de trois à un — et il grandira à chaque obligation sans date.
+
+Captures : `captures-pr10b/20-titre.png`, `21-tdb-apres-titre.png`,
+`22-calendrier-titre.png`.
+
 ## Ce que je n'ai pas regardé
 
-- La famille « Titres du personnel » et le message de conséquence sur
-  l'habilitation : ils demandent au moins un salarié saisi, ce dossier n'en a
-  aucun.
 - Les obligations conditionnées par les réponses d'onboarding — exercices
   d'évacuation, consignes incendie — hors du cas demandé.
 - Le rendu des 116 obligations sur un dossier chargé en équipements : ce contrôle
