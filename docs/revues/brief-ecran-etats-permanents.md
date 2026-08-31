@@ -93,6 +93,28 @@ en recopiant ce que le code rend, et ce dépôt s'est fait avoir deux fois
 aujourd'hui par des listes exhaustives (`chez-vous.test.ts`, l'histoire est dans
 son en-tête).
 
+## Une déclaration n'est pas une preuve, et le produit ne doit pas les confondre
+
+**Contrainte ferme, ajoutée après une remarque du contrôle visuel.**
+
+Une case cochée sur cet écran est **une déclaration de l'employeur**. Ce n'est ni
+un rapport de vérification, ni une pièce, ni un constat du produit.
+
+Conséquence : cocher ces seize cases **ne doit rien allumer ailleurs**. Ni faire
+progresser le « % prêt » de *Préparer un contrôle*, ni passer un indicateur au
+vert, ni entrer dans le ZIP comme une pièce du dossier. Le produit
+récompenserait une déclaration non vérifiée **sur l'écran qu'on ouvre devant un
+inspecteur** — c'est-à-dire exactement là où la distinction coûte le plus cher.
+
+Ce dépôt a déjà rencontré ce défaut sous une autre forme le 2026-08-31 : une
+coche verte à droite d'un badge rouge « En retard », sur ce même écran, sans rien
+qui dise ce que la coche comptait. La colonne a été légendée. Ne recrée pas la
+confusion par un autre chemin.
+
+Si l'écran doit faire remonter quelque chose, que ce soit **nommé comme une
+déclaration** : « 6 sur 16 déclarés en place par l'employeur », jamais « 6 sur 16
+conformes ». Le produit assiste, il ne certifie pas (`CLAUDE.md`, règle 8).
+
 ## Ce que l'écran doit dire de lui-même
 
 Le produit **nomme ce qu'il ne couvre pas** au lieu de se taire — c'est sa marque,
