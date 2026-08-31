@@ -270,3 +270,58 @@ absents de la page.
 sans date restent nommées à un seul endroit du produit : le menu déroulant du
 formulaire de déclaration de prescription. C'est l'écran de checklist annoncé qui
 répondra à ce constat, pas celui-ci.
+
+
+---
+
+# Troisième passe — `3738a15` : la phrase est juste, l'écran la coupe ★
+
+La réserve de vocabulaire est traitée dans le texte. Le sous-titre dit
+désormais :
+
+> *Tout employeur doit en organiser un (L. 4622-1) : service autonome, ou
+> adhésion à un service interentreprises (D. 4622-1) — en pratique la voie des
+> petites structures. Si vous y adhérez déjà, il reste à l'inscrire.*
+
+C'est la bonne réponse à ma réserve : les deux branches sont nommées, « en
+pratique » n'impose rien que le Code ne dise, et un dirigeant de six personnes
+sait **quoi faire** et plus seulement que c'est dû.
+
+**Sauf qu'il ne la lit pas.** Voici ce que l'écran affiche :
+
+> Tout employeur doit en organiser un (L. 4622-1) : service autonome, ou adhésion
+> à un service interentreprises (D. 46**…**
+
+Mesuré dans le DOM :
+
+| | |
+|---|---|
+| Texte réel | **213 caractères** |
+| Largeur nécessaire | **1 115 px** |
+| Largeur disponible | **638 px** |
+| Style | `white-space: nowrap` · `overflow: hidden` · `text-overflow: ellipsis` |
+| Tronqué | **oui**, à ~57 % |
+| Témoin — sous-titre de l'aération | 104 caractères, 638 px, **pile la largeur, non tronqué** |
+
+Le sous-titre est rendu sur **une seule ligne, sans retour à la ligne possible**.
+La carte a été dimensionnée pour des phrases d'une centaine de signes — celle de
+l'aération tient au pixel près. Tout ce que la correction a ajouté tombe dans la
+partie coupée : « en pratique la voie des petites structures », et surtout
+**« Si vous y adhérez déjà, il reste à l'inscrire »** — la clause qui évite le
+ton de reproche, celle qui avait été saluée au §5.
+
+**Et la coupe tombe au milieu d'une référence d'article.** L'écran affiche
+`(D. 46…`. Sur un produit dont la règle est de ne jamais citer un texte que
+personne n'a dépouillé, une référence tronquée par la mise en page est un
+problème d'une autre nature qu'une phrase coupée : `D. 46…` n'est pas un article.
+
+C'est le même motif que les neuf autres défauts de la journée, à un cran de
+plus : **la correction est juste dans le modèle, et le rendu la défait.** Le test
+qui vérifie que l'article cité est dépouillé ne peut rien voir de cela — il lit
+la chaîne, pas la largeur.
+
+Capture : `captures-pr10c/53-carte.png`.
+
+**Rien d'autre à signaler sur cette passe** : console propre sur trois
+chargements, cinq recommandations, ordre inchangé, et les trois autres
+sous-titres tiennent dans la largeur.
