@@ -1,5 +1,21 @@
 # Écran « Ce qui doit être en place »
 
+> **DEUXIÈME RÉDACTION — 2026-08-31.** La première dimensionnait cet écran sur
+> **quarante-trois** obligations, au motif qu'elles n'avaient pas de périodicité.
+> Un audit puis le lot d'encodage de la nature (ADR-026) ont montré que ce critère
+> **mélangeait trois natures** et que le bon chiffre est **trente**.
+>
+> **Le critère est `nature === "etat_permanent"`.** Pas `periodicite === "autre"`,
+> qui recouvre aussi des obligations récurrentes à rythme inconnu, des ponctuelles
+> et des événementielles — auxquelles une case « déclaré en place » mentirait.
+>
+> Trois choses changent par rapport à la première rédaction, et elles sont
+> détaillées dans la section « Ce que l'audit a établi » :
+> **le périmètre** (30, pas 43), **un second verbe** pour quatre lignes qui
+> reviennent sans rythme écrit, et **quatre exclusions** dont une parce que la
+> surface existe déjà ailleurs et qu'en créer une seconde ferait diverger deux
+> états.
+
 ## Le constat qui l'appelle
 
 Un contrôle visuel du 2026-08-31, sur un dossier né de l'onboarding — six
@@ -45,7 +61,56 @@ CE QUI DOIT ÊTRE EN PLACE                    6 sur 16 déclarés
   ○  Salarié désigné compétent en protection et prévention
 ```
 
-## Les deux décisions déjà prises
+## Ce que l'audit a établi, et qui change la première rédaction
+
+`ObligationCommune` porte désormais `nature` (requis) et
+`pieceAttendue: string | null` — l'écrit que le texte exige, quand il en exige un.
+
+| Nature | Nombre |
+|---|---|
+| échéance récurrente | 65 |
+| **état permanent** | **30** ← ton écran |
+| ponctuelle | 9 |
+| événementielle | 12 |
+
+**Douze des trente portent un `pieceAttendue`** — registre électrique, carnet
+d'ascenseur, dossier de maintenance, mesures de secours consignées. Tu ne demandes
+pas la pièce (décision 1), mais **cocher « en place » sur un registre de sécurité
+est une déclaration qui ressemble à une preuve** : `pieceAttendue` doit se voir,
+au minimum en nommant ce que le texte attend.
+
+### Quatre lignes de plus, sous un autre verbe
+
+Quatre obligations sont `echeance_recurrente` avec `periodicite: "autre"` — elles
+reviennent, on ne sait pas à quel rythme. Elles tiennent ici **à deux conditions** :
+
+- **le verbe change** : « **fait le** 12/03/2025 », jamais « en place ». Un fait
+  daté vieillit ; un état ne vieillit pas.
+- **elles n'entrent pas dans le compteur d'en-tête.** « 6 sur 30 déclarés en
+  place » ne peut pas compter une obligation qui revient : le compteur porte une
+  affirmation, pas seulement un décompte.
+
+**Exception, à ne pas mettre** : `incendie-erp-5-visite-commission`. La visite est
+**initiée par l'administration** — elle n'a sa place sous aucun des deux verbes.
+Ce qui se trace est la visite quand elle a eu lieu, et le registre le fait déjà.
+
+### Ce qui ne va PAS sur cet écran
+
+- **Les quatre titres de salarié.** L'écran Équipe leur donne **déjà** une surface
+  juste : « Sans terme écrit · Délivré le 12/03/2025 · aucune date de fin portée
+  sur le titre ». **Ne les duplique pas** — deux surfaces pour la même obligation,
+  ce sont deux états qui divergeront. On a passé la journée à en retirer.
+- **Les cinq événementielles.** « En place » ment (elle redevient due) ; « fait
+  le » ment aussi (l'acte n'est pas dû tant que le fait n'a pas eu lieu). Cocher
+  « contrôle d'étanchéité après modification » dirait « aucune modification
+  n'attend son contrôle » — ce que le produit ne peut pas savoir.
+- **La ponctuelle.** Elle n'a pas besoin d'un écran mais d'une date, et le
+  mécanisme existe.
+
+
+---
+
+## Les trois décisions déjà prises
 
 Elles sont tranchées, ne les rouvre pas — mais dis-moi si le dépouillement du code
 les contredit.
@@ -136,8 +201,15 @@ distance.
 **Ce lot a une vérification qui lui est propre** : le point est qu'une obligation
 sans date devienne visible. Un test qui passe ne le montre pas. Écris donc un test
 qui établit, **par le moteur**, qu'un établissement de six personnes sans
-équipement reçoit seize obligations sans date, et que l'écran les rend toutes.
+équipement reçoit N états permanents — **mesure N par le moteur, ne l'écris pas** —
+et que l'écran les rend tous.
 Éprouve-le en réinjectant le défaut.
+
+**Et une garde de rendu.** Trois défauts de la journée venaient de deux widgets
+qui rendaient la même chose et divergeaient à chaque correction ; un quatrième
+d'un libellé tronqué en silence à 638 px. La ligne tracée aujourd'hui :
+**partage la règle, pas la mise en page.** Si ton écran partage une politique
+d'affichage avec un écran existant, elle vit à un seul endroit.
 
 ## Les règles du dépôt
 
