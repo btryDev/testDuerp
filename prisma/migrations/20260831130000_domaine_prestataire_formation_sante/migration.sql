@@ -21,12 +21,21 @@
 --     service de prévention et de santé au travail (`R. 4624-10`, `R. 4624-28`,
 --     lus à la source le 2026-08-31).
 --
--- Une première rédaction ajoutait ici que « l'adhésion à un service est
--- elle-même une obligation de l'employeur (L. 4622-1) ». La citation est
--- retirée : ni `L. 4622-1` ni `L. 4622-7` n'ont été ouverts, et le titre II du
--- livre VI n'est dépouillé par aucun corpus. L'affirmation est probablement
--- juste — elle n'est pas vérifiée, et une référence non lue n'a rien à faire
--- dans ce dépôt, fût-ce en commentaire de migration.
+--     S'y ajoute `L. 4622-1`, lu à la source le 2026-08-31 : « Les employeurs
+--     relevant du présent titre ORGANISENT des services de prévention et de
+--     santé au travail. » Version en vigueur du 2022-03-31 (loi n° 2021-1018 du
+--     2 août 2021, art. 1). Un dirigeant qui n'a déclaré aucun service à
+--     l'annuaire n'a donc pas seulement un trou de vigilance.
+--
+-- ⚠ « Organisent », et pas « adhèrent ». L'adhésion à un service
+-- INTERENTREPRISES est une modalité de cette obligation, pas l'obligation
+-- elle-même, et le texte qui la régit n'est pas dépouillé. La nuance a coûté
+-- deux tours de revue : une première rédaction de ce commentaire écrivait
+-- « l'adhésion est elle-même une obligation (L. 4622-1) », une relecture a
+-- proposé de corriger en `L. 4622-7`, et l'ouverture des deux articles a montré
+-- que `L. 4622-7` porte sur la responsabilité des RESPONSABLES DU SERVICE, pas
+-- sur l'employeur. La citation d'origine était la bonne ; c'est sa formulation
+-- qui ne l'était pas.
 --
 -- Additif et rétrocompatible, même régime que la migration `..._froid`.
 

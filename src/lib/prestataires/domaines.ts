@@ -139,10 +139,15 @@ export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
   formation_securite: ["organisme_formation"],
   // La VIP et le suivi individuel renforcé sont réalisés par les professionnels
   // de santé du service de prévention et de santé au travail (`R. 4624-10`,
-  // `R. 4624-28`). Le jour où l'adhésion à un tel service sera elle-même
-  // encodée, c'est par ce domaine qu'un dirigeant qui n'en a déclaré aucun s'en
-  // verra averti — le titre II du livre VI (`L. 4622-*`) n'est dépouillé par
-  // aucun corpus, donc rien ne s'y appuie encore.
+  // `R. 4624-28`).
+  //
+  // Et le service lui-même n'est pas facultatif : `L. 4622-1` — « Les employeurs
+  // relevant du présent titre ORGANISENT des services de prévention et de santé
+  // au travail » — met l'organisation d'un tel service à la charge de
+  // l'employeur. « Organisent », et non « adhèrent » : l'adhésion à un service
+  // interentreprises en est une modalité, régie par des textes que personne
+  // n'a dépouillés ici. L'obligation elle-même reste non encodée
+  // (`obligation_manquante` au corpus).
   sante_travail: ["service_sante_travail"],
   // Le Code ne dit pas qui délivre la formation de secouriste de `R. 4224-15`.
   // Le domaine de prestataire attendu est donc l'organisme de formation, sans

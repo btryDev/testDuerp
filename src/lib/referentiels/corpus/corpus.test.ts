@@ -284,6 +284,18 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // ne connaîtrait pas l'accident qui déclenche l'obligation.
       "R. 4141-8",
       "R. 4141-12",
+      // L. 4622-1 : « Les employeurs relevant du présent titre organisent des
+      // services de prévention et de santé au travail. » Une phrase, et le
+      // socle de tout le corpus de santé au travail — sans service, ni VIP ni
+      // suivi renforcé ne peuvent avoir lieu.
+      //
+      // Elle entre ici parce qu'un commentaire de `prestataires/domaines.ts` la
+      // citait sans qu'aucun corpus ne l'ait lue. Ce n'était pas une infraction
+      // au cliquet — il ne garde que les obligations, pas les commentaires —
+      // mais citer un texte que personne n'a ouvert est ce que ce dépôt a passé
+      // la journée à corriger ailleurs. Ce qu'il en a coûté de ne pas l'ouvrir :
+      // deux tours de revue et une correction proposée qui était fausse.
+      "L. 4622-1",
     ]);
   });
 

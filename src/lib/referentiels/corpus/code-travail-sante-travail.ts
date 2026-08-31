@@ -58,8 +58,26 @@ export const CODE_TRAVAIL_SANTE_TRAVAIL: Corpus = {
   url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018493140/",
   etendue: "articles_cites",
   portee:
-    "Extraits de la section 2 du chapitre IV : visite d'information et de prévention, sa périodicité et ses modalités adaptées (R. 4624-10, R. 4624-16 à R. 4624-18), suivi individuel renforcé — champ, liste des postes à risques particuliers, examen d'aptitude et périodicité (R. 4624-22 à R. 4624-24, R. 4624-28). S'y ajoute R. 4451-82, hors de cette section : il déroge à la périodicité du suivi renforcé pour les travailleurs exposés aux rayonnements ionisants classés en catégorie A, et il n'a de sens que lu avec R. 4624-28. ATTENTION : R. 4624-23 a été réécrit au 10 avril 2026 par le décret n° 2026-253 du 8 avril 2026 — c'est l'article le plus récemment modifié de tout le référentiel.",
+    "Un article du titre II du livre VI — `L. 4622-1`, qui met à la charge de l'employeur l'organisation d'un service de prévention et de santé au travail, socle de tout ce qui suit et seul article de ce titre à avoir été lu. Puis des extraits de la section 2 du chapitre IV : visite d'information et de prévention, sa périodicité et ses modalités adaptées (R. 4624-10, R. 4624-16 à R. 4624-18), suivi individuel renforcé — champ, liste des postes à risques particuliers, examen d'aptitude et périodicité (R. 4624-22 à R. 4624-24, R. 4624-28). S'y ajoute R. 4451-82, hors de cette section : il déroge à la périodicité du suivi renforcé pour les travailleurs exposés aux rayonnements ionisants classés en catégorie A, et il n'a de sens que lu avec R. 4624-28. ATTENTION : R. 4624-23 a été réécrit au 10 avril 2026 par le décret n° 2026-253 du 8 avril 2026 — c'est l'article le plus récemment modifié de tout le référentiel.",
   articles: [
+    {
+      ref: "L. 4622-1",
+      intitule:
+        "Obligation pour l'employeur d'organiser un service de prévention et de santé au travail",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043893834",
+      versionEnVigueur: "2022-03-31",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "L'employeur organise un service de prévention et de santé au travail.",
+      citationCle:
+        "Les employeurs relevant du présent titre organisent des services de prévention et de santé au travail.",
+      statut: "obligation_manquante",
+      motif:
+        "Une phrase, et c'est le socle de tout ce corpus : sans service de prévention et de santé au travail, ni la visite d'information et de prévention ni le suivi individuel renforcé ne peuvent avoir lieu. Le référentiel porte les visites et ne porte pas le service qui les rend possibles.\n\nATTENTION AU VERBE. Le texte dit « ORGANISENT », pas « adhèrent ». L'adhésion à un service interentreprises est une modalité de cette obligation — celle que retiennent la quasi-totalité des TPE — et non l'obligation elle-même : un employeur peut aussi organiser un service autonome. Écrire « l'adhésion est une obligation » resserrerait le texte, et c'est l'erreur qu'une première rédaction du commentaire de `prestataires/domaines.ts` a commise.",
+      bloquePar:
+        "L'obligation est un état permanent sans échéance ni pièce datable : le modèle la porterait (porteur établissement, périodicité `autre`), mais rien dans le produit ne permettrait de la solder — l'annuaire des prestataires dit qu'un service est déclaré, pas qu'il en existe un. Surtout, le titre II du livre VI n'est dépouillé par aucun corpus : cet article est le SEUL qui en ait été lu, et encoder une obligation sur un titre dont on n'a lu qu'une phrase reviendrait à faire ce que le cliquet de `corpus.test.ts` interdit, à l'échelle du texte plutôt que de l'article.",
+    },
     {
       ref: "R. 4624-10",
       intitule: "Visite d'information et de prévention initiale",
