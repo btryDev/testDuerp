@@ -2,8 +2,8 @@
 //
 // Étendue « articles_cites » : la section 2 du chapitre IV court de R. 4624-10
 // à R. 4624-45-9 — une quarantaine d'articles, dont les examens de reprise, le
-// suivi post-exposition, la fiche d'entreprise, les contestations d'avis. Six
-// seulement sont lus ici, ceux sur lesquels s'appuient les quatre obligations
+// suivi post-exposition, la fiche d'entreprise, les contestations d'avis. Neuf
+// seulement sont lus ici, ceux sur lesquels s'appuient les six obligations
 // encodées. Le reste n'est pas dépouillé et ne se déclare pas lu.
 //
 // CE QUE CE CORPUS A DE PARTICULIER, ET QUI DOIT SE LIRE AVANT DE L'ÉTENDRE.
@@ -26,6 +26,27 @@
 // c'est pourquoi chaque obligation le dit dans sa `description`, et pourquoi
 // `TitreSalarie.echeanceLe`, déclaré par l'employeur, prime sur tout calcul.
 //
+// ⚠ LES CINQ ET QUATRE ANS NE SONT PAS DES BORNES UNIVERSELLES, et la première
+// rédaction de ce corpus l'a affirmé à tort. Deux articles y dérogent, tous
+// deux relevés le 2026-08-31 à la relecture :
+//
+//  * `R. 4624-17` — pour le travailleur handicapé, celui qui déclare une
+//    pension d'invalidité et le travailleur de nuit, la périodicité « n'excède
+//    pas une durée de trois ans ». Annoncer cinq ans à ces salariés, c'est se
+//    tromper de deux ans, et dans le sens permissif ;
+//  * `R. 4451-82` — pour le travailleur exposé aux rayonnements ionisants
+//    classé en catégorie A, la visite du suivi renforcé « est renouvelée chaque
+//    année » et « la visite intermédiaire n'est pas requise ». Quatre ans au
+//    lieu d'un, et une échéance intermédiaire que le droit exclut.
+//
+// Les deux sont désormais encodés, chacun par sa propre ligne de catalogue.
+// Restent NON OUVERTS les textes propres aux cinq autres expositions du
+// `R. 4624-23 I` — agents CMR, agents biologiques des groupes 3 et 4, risque
+// hyperbare, chute de hauteur au montage d'échafaudages, et le radon au-delà de
+// ce que R. 4451-82 en dit. Amiante (`R. 4412-118`) et plomb (`R. 4412-160`)
+// renvoient aux articles R. 4624-22 à R. 4624-28 sans y déroger. Ne pas
+// conclure des cinq autres qu'ils ne dérogent pas : personne ne les a lus.
+//
 // Lecture : `agent_verbatim`, relevés sur Légifrance le 2026-08-31.
 
 import type { Corpus } from "./types";
@@ -37,7 +58,7 @@ export const CODE_TRAVAIL_SANTE_TRAVAIL: Corpus = {
   url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018493140/",
   etendue: "articles_cites",
   portee:
-    "Extraits de la section 2 du chapitre IV : visite d'information et de prévention et sa périodicité (R. 4624-10, R. 4624-16), suivi individuel renforcé — champ, liste des postes à risques particuliers, examen d'aptitude et périodicité (R. 4624-22 à R. 4624-24, R. 4624-28). ATTENTION : R. 4624-23 a été réécrit au 10 avril 2026 par le décret n° 2026-253 du 8 avril 2026 — c'est l'article le plus récemment modifié de tout le référentiel.",
+    "Extraits de la section 2 du chapitre IV : visite d'information et de prévention, sa périodicité et ses modalités adaptées (R. 4624-10, R. 4624-16 à R. 4624-18), suivi individuel renforcé — champ, liste des postes à risques particuliers, examen d'aptitude et périodicité (R. 4624-22 à R. 4624-24, R. 4624-28). S'y ajoute R. 4451-82, hors de cette section : il déroge à la périodicité du suivi renforcé pour les travailleurs exposés aux rayonnements ionisants classés en catégorie A, et il n'a de sens que lu avec R. 4624-28. ATTENTION : R. 4624-23 a été réécrit au 10 avril 2026 par le décret n° 2026-253 du 8 avril 2026 — c'est l'article le plus récemment modifié de tout le référentiel.",
   articles: [
     {
       ref: "R. 4624-10",
@@ -68,6 +89,57 @@ export const CODE_TRAVAIL_SANTE_TRAVAIL: Corpus = {
         "Le travailleur bénéficie d'un renouvellement de la visite d'information et de prévention initiale, réalisée par un professionnel de santé mentionné au premier alinéa de l'article L. 4624-1, selon une périodicité qui ne peut excéder cinq ans. Ce délai, qui prend en compte les conditions de travail, l'âge et l'état de santé du salarié, ainsi que les risques auxquels il est exposé, est fixé par le médecin du travail dans le cadre du protocole mentionné à l'article L. 4624-1.",
       statut: "retenu",
       obligations: ["sante-travail-salarie-vip"],
+    },
+    {
+      ref: "R. 4624-17",
+      intitule:
+        "Modalités de suivi adaptées — périodicité qui n'excède pas trois ans",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033769059",
+      versionEnVigueur: "2017-01-01",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Le travailleur dont l'état de santé, l'âge, les conditions de travail ou les risques le nécessitent — notamment le travailleur handicapé, celui qui déclare être titulaire d'une pension d'invalidité et le travailleur de nuit — bénéficie de modalités de suivi adaptées, selon une périodicité qui n'excède pas trois ans.",
+      citationCle:
+        "Tout travailleur dont l'état de santé, l'âge, les conditions de travail ou les risques professionnels auxquels il est exposé le nécessitent, notamment les travailleurs handicapés, les travailleurs qui déclarent être titulaires d'une pension d'invalidité et les travailleurs de nuit mentionnés à l'article L. 3122-5, bénéficie, à l'issue de la visite d'information et de prévention, de modalités de suivi adaptées déterminées dans le cadre du protocole écrit prévu au troisième alinéa de l'article L. 4624-1, selon une périodicité qui n'excède pas une durée de trois ans.",
+      statut: "retenu",
+      obligations: ["sante-travail-salarie-vip-adaptee"],
+      reserve:
+        "Le produit ne DÉCLENCHE pas cette modalité : rien dans le modèle ne dit qu'un salarié est handicapé, titulaire d'une pension d'invalidité ou travailleur de nuit, et il ne faut surtout pas le déduire — ce serait une donnée sensible dérivée, exactement ce que `docs/rgpd.md` interdit. Le questionnaire DUERP pose bien une question sur le travail de nuit (`q-travail-nuit`), mais elle porte sur l'ORGANISATION de l'établissement, pas sur des personnes nommées. L'employeur déclare le titre pour qui il sait concerné ; l'outil fournit la ligne de catalogue et le rythme.",
+    },
+    {
+      ref: "R. 4624-18",
+      intitule:
+        "Visite préalable à l'affectation — travailleurs de nuit et mineurs",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033769047",
+      versionEnVigueur: "2017-01-01",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Le travailleur de nuit et le travailleur de moins de dix-huit ans bénéficient d'une visite d'information et de prévention PRÉALABLEMENT à leur affectation sur le poste, et non dans les trois mois qui suivent.",
+      citationCle:
+        "Tout travailleur de nuit mentionné à l'article L. 3122-5 et tout travailleur âgé de moins de dix-huit ans bénéficie d'une visite d'information et de prévention réalisée par un professionnel de santé mentionné au premier alinéa de l'article L. 4624-1 préalablement à son affectation sur le poste.",
+      statut: "retenu",
+      obligations: ["sante-travail-salarie-vip-adaptee"],
+      reserve:
+        "L'article renverse le calendrier d'entrée de R. 4624-10 : la visite est due AVANT l'affectation, quand le régime général l'admet dans les trois mois qui suivent. Ce renversement n'est pas calculé — le modèle ne porte pas la date d'affectation, et `Periodicite` décrit une récurrence, pas un délai à compter d'un fait d'emploi. Il est écrit dans la description de l'obligation. À noter aussi : le travailleur de moins de dix-huit ans n'est PAS dans la liste de R. 4624-17, donc il relève du rythme général de cinq ans tout en ayant cette visite d'entrée anticipée. Les deux articles ne se recouvrent qu'en partie.",
+    },
+    {
+      ref: "R. 4451-82",
+      intitule:
+        "Rayonnements ionisants — dérogation à la périodicité du suivi renforcé (catégorie A)",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037024438",
+      versionEnVigueur: "2018-07-01",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Pour un travailleur classé en catégorie A, la visite médicale du suivi individuel renforcé est renouvelée chaque année, et la visite intermédiaire n'est pas requise.",
+      citationCle:
+        "Le suivi individuel renforcé des travailleurs classés au sens de l'article R. 4451-57 ou des travailleurs faisant l'objet d'un suivi individuel de l'exposition au radon prévu à l'article R. 4451-65 est assuré dans les conditions prévues aux articles R. 4624-22 à R. 4624-28. Pour un travailleur classé en catégorie A, la visite médicale mentionnée à l'article R. 4624-28 est renouvelée chaque année. La visite intermédiaire mentionnée au même article n'est pas requise.",
+      statut: "retenu",
+      obligations: ["sante-travail-salarie-sir-categorie-a"],
+      reserve:
+        "L'article déroge DEUX FOIS à R. 4624-28 : la périodicité passe de quatre ans à un an, et la visite intermédiaire biennale disparaît. Le second point compte autant que le premier — déclarer une visite intermédiaire à un travailleur de catégorie A inscrirait au calendrier une échéance que le droit exclut expressément. La classification en catégorie A (R. 4451-57) n'est pas dérivée : l'employeur déclare le titre.",
     },
     {
       ref: "R. 4624-22",

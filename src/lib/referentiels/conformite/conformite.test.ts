@@ -970,7 +970,15 @@ describe("référentiel conformité — version et empreinte", () => {
   // livré en un lot, pas parce qu'un article a été découpé en morceaux : chaque
   // obligation cite un article distinct ou un alinéa distinct, et le corpus le
   // montre article par article.
-  const EMPREINTE_ATTENDUE = "98-104d0fb8da32927e";
+  // 100 depuis la revue du 2026-08-31 : +2 dérogations de périodicité que le
+  // premier passage avait manquées, et dont les `notesInternes` affirmaient le
+  // contraire. `R. 4624-17` ramène la VIP à trois ans au plus pour les
+  // travailleurs handicapés, les titulaires d'une pension d'invalidité et les
+  // travailleurs de nuit ; `R. 4451-82` porte le suivi renforcé à un an pour la
+  // catégorie A des rayonnements ionisants, et y supprime la visite
+  // intermédiaire. Deux populations pour lesquelles le référentiel annonçait
+  // une échéance trop tardive.
+  const EMPREINTE_ATTENDUE = "100-70f6d99874a7ffc2";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1088,7 +1096,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(98);
+    ).toBe(100);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1387,6 +1395,28 @@ const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
     "2025-10-01 (décret n° 2025-355 du 18 avril 2025). Contraste à garder en " +
     "tête, exactement comme en électricité : l'autorisation de conduite " +
     "elle-même n'a AUCUNE durée écrite, et elle est passée à `autre`.",
+
+  // Les deux dérogations relevées à la revue du 2026-08-31. Elles ne s'ajoutent
+  // pas aux plafonds ci-dessus : elles les CORRIGENT pour deux populations que
+  // le premier passage rangeait à tort sous le régime général.
+  "sante-travail-salarie-vip-adaptee":
+    "R. 4624-17 porte le chiffre : le travailleur dont l'état de santé, l'âge, " +
+    "les conditions de travail ou les risques le nécessitent — « notamment les " +
+    "travailleurs handicapés, les travailleurs qui déclarent être titulaires " +
+    "d'une pension d'invalidité et les travailleurs de nuit mentionnés à " +
+    "l'article L. 3122-5 » — bénéficie de modalités adaptées « selon une " +
+    "périodicité **qui n'excède pas une durée de trois ans** ». Relu à la " +
+    "source le 2026-08-31, version en vigueur du 2017-01-01. PLAFOND, comme le " +
+    "reste du suivi médical — mais un plafond à TROIS ans, là où " +
+    "`sante-travail-salarie-vip` en annonce cinq.",
+  "sante-travail-salarie-sir-categorie-a":
+    "R. 4451-82 porte le chiffre, et c'est une périodicité FERME : « Pour un " +
+    "travailleur classé en catégorie A, la visite médicale mentionnée à " +
+    "l'article R. 4624-28 **est renouvelée chaque année**. La visite " +
+    "intermédiaire mentionnée au même article n'est pas requise. » Relu à la " +
+    "source le 2026-08-31, version en vigueur du 2018-07-01 (décret " +
+    "n° 2018-437 du 4 juin 2018). Ni « au plus », ni « qui ne peut excéder » : " +
+    "c'est un rythme, pas une borne.",
 };
 
 describe("référentiel conformité — d'où vient le chiffre", () => {

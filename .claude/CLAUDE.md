@@ -80,10 +80,10 @@ Sources primaires libres d'accès uniquement :
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **98 obligations sur 13 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **100 obligations sur 13 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
 **82 d'entre elles sont déclenchées par un équipement déclaré, sept sont portées par
-l'établissement, neuf par un salarié.**
+l'établissement, onze par un salarié.**
 
 Les sept obligations d'établissement s'appliquent **même si aucun équipement n'est
 déclaré**, et produisent **une seule ligne** chacune, jamais une par installation
@@ -111,7 +111,7 @@ installations ou des personnes. Une obligation y naît de cinq déclencheurs pos
 
 1. **Équipement déclaré** — 82 obligations livrées
 2. **Statut d'employeur** — dès un salarié : formation à la sécurité, affichages SST,
-   suivi médical. **13 obligations livrées au lot 7** (2026-08-31) : formation à la
+   suivi médical. **15 obligations livrées au lot 7** (2026-08-31) : formation à la
    sécurité, information et accès au DUERP, VIP, suivi individuel renforcé et sa visite
    intermédiaire, liste des postes à risques, matériel et organisation des premiers
    secours, secouriste, conduite d'équipements. Restent non couverts les affichages
@@ -138,13 +138,22 @@ sont **pas dérivées** par le moteur. Rien ne dit qu'une personne opère sur de
 électriques — ce serait le cinquième déclencheur, non implémenté —, donc l'employeur déclare
 qui détient quel titre (`Salarie`, `TitreSalarie`), et le référentiel fournit le catalogue.
 
-**Neuf obligations salarié sont livrées** depuis le lot 7 (2026-08-31) — le catalogue n'en
+**Onze obligations salarié sont livrées** depuis le lot 7 (2026-08-31) — le catalogue n'en
 comptait qu'une jusque-là, l'attestation médicale quinquennale de `R. 4544-11-1` :
 formation à la sécurité reçue (`R. 4141-20`, due à TOUS les salariés), formation à la
 conduite et autorisation de conduite (`R. 4323-55`, `R. 4323-56`), attestation médicale de
 conduite (`R. 4323-56`, quinquennale), secouriste SST (`R. 4224-15`), VIP (`R. 4624-16`,
 quinquennale), suivi individuel renforcé (`R. 4624-28`, quadriennale) et sa visite
 intermédiaire (biennale).
+
+**Deux dérogations de périodicité, à ne pas oublier en étendant le suivi médical** : la VIP
+tombe à **trois ans au plus** pour le travailleur handicapé, celui qui déclare une pension
+d'invalidité et le travailleur de nuit (`R. 4624-17`), et le suivi renforcé passe à **un an
+ferme sans visite intermédiaire** pour le travailleur exposé aux rayonnements ionisants
+classé en catégorie A (`R. 4451-82`). Chacune a sa ligne de catalogue. Les textes propres
+aux quatre autres expositions du `R. 4624-23 I` — CMR, agents biologiques 3 et 4,
+hyperbare, échafaudages — **n'ont pas été ouverts** ; ne pas conclure de ce silence qu'ils
+ne dérogent pas.
 
 Les corpus `R. 4141-*` (26 articles, intégral), `R. 4624-*` (6 articles cités),
 `R. 4224-14` à `-16` (intégral) et `R. 4323-55` à `-57` (intégral) sont dépouillés.

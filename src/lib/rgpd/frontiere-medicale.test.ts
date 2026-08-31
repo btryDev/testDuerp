@@ -320,13 +320,13 @@ describe("frontière médicale — le drapeau est une décision, pas un défaut"
       .map((o) => `${o.id} → pieceMedicale: ${o.pieceMedicale}`)
       .sort();
 
-    // Neuf depuis le lot 7 (2026-08-31), contre une seule auparavant. C'est
+    // Onze depuis le lot 7 et sa revue (2026-08-31), contre une seule auparavant. C'est
     // précisément le moment que le commentaire ci-dessus annonçait — « quand
     // les dix-huit autres arriveront, c'est ici qu'on verra d'un coup d'œil
     // qui a été qualifié de médical et qui non ». Le voici, et la liste se lit
     // en deux blocs nets :
     //
-    //  * `true` (5) — les quatre visites et attestations du suivi médical, plus
+    //  * `true` (7) — les six visites et attestations du suivi médical, plus
     //    l'attestation d'habilitation électrique. Toutes délivrées par un
     //    médecin du travail ou un professionnel de santé au travail. L'outil
     //    n'en détient que l'existence, la date et l'échéance (docs/rgpd.md
@@ -346,8 +346,10 @@ describe("frontière médicale — le drapeau est une décision, pas un défaut"
       "elec-salarie-attestation-medicale-voisinage → pieceMedicale: true",
       "formation-securite-salarie-accueil → pieceMedicale: false",
       "sante-travail-salarie-sir → pieceMedicale: true",
+      "sante-travail-salarie-sir-categorie-a → pieceMedicale: true",
       "sante-travail-salarie-sir-visite-intermediaire → pieceMedicale: true",
       "sante-travail-salarie-vip → pieceMedicale: true",
+      "sante-travail-salarie-vip-adaptee → pieceMedicale: true",
       "secours-salarie-secouriste → pieceMedicale: false",
     ]);
   });
