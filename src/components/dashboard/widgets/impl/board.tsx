@@ -560,11 +560,18 @@ export function BlocParOuCommencer({ bundle }: { bundle: DashboardBundle }) {
   const { etablissementId, aujourdhui, dashboard, echeances } = bundle;
   const { recommandations } = dashboard;
 
-  const reelles = recommandations.filter((r) => r.priorite <= 5);
-  const file = (reelles.length > 0 ? reelles : recommandations).slice(0, 2);
+  // Le moteur trie déjà par priorité, puis par date (`recommandations.ts`).
+  // Il n'y a donc rien à ordonner ici — et surtout rien à retirer : cette
+  // ligne partitionnait sur `priorite <= 5` et ne gardait le reste que si
+  // la première moitié était VIDE. « Derrière les amorçages », que l'ADR-024
+  // écrit noir sur blanc pour les transmissions, était rendu par « seulement
+  // si rien d'autre ». Sur un dossier à 27 retards, la seule famille de
+  // recommandations qui ne soit pas fondée sur une date n'apparaissait donc
+  // jamais. Constaté à l'écran, pas au diff.
+  const file = recommandations.slice(0, 2);
 
   const totalUrgent = echeances.retards.total;
-  const extrait = reelles.length > 0 && totalUrgent > file.length;
+  const extrait = totalUrgent > file.length;
 
   // « Autre » au sens strict : les vérifications proches déjà en carte ne
   // sont pas recomptées dans le solde.
@@ -1240,10 +1247,11 @@ export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
   const { etablissementId, aujourdhui, dashboard, echeances } = bundle;
   const { recommandations } = dashboard;
 
-  // Même partition que le brief : les urgences réelles d'abord
-  // (priorités 1-5) ; sur un dossier en mise en place, les amorces.
-  const reelles = recommandations.filter((r) => r.priorite <= 5);
-  const file = (reelles.length > 0 ? reelles : recommandations).slice(0, 5);
+  // Comme le brief : le moteur a trié, on ne retire rien. Cf. le commentaire
+  // de `BlocParOuCommencer` — la partition qui vivait ici faisait sortir de
+  // la file tout ce qui n'était pas une urgence réelle, au lieu de le mettre
+  // derrière.
+  const file = recommandations.slice(0, 5);
 
   // Le solde ne recompte pas les vérifications proches déjà listées.
   const prochesAffichees = file.filter(
