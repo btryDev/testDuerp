@@ -68,6 +68,14 @@ même critère).
 
 ## A. Déclencheur : statut d'employeur
 
+> **A15 corrigée le 2026-08-31** (lot `fix/faux-negatifs-ancrage`). Elle annonçait
+> une obligation de « registre unique de sécurité » qui n'existe pas : le texte
+> donne une faculté de regroupement. C'est exactement le risque que la mise en
+> garde ci-dessus signale — une référence présumée, recopiée d'une revue
+> documentaire, qui a ensuite été relayée telle quelle dans un brief de lot.
+> Elle avait déjà envoyé quelqu'un chercher une obligation à rebrancher.
+
+
 S'applique dès qu'il y a au moins un salarié, quels que soient le NAF, l'effectif et les équipements.
 
 | # | Obligation | Porteur | Nature | Référence présumée | Statut |
@@ -84,14 +92,14 @@ S'applique dès qu'il y a au moins un salarié, quels que soient le NAF, l'effec
 | A10 | **SIR** — suivi individuel renforcé, postes à risques (≤ 4 ans + visite intermédiaire) | SAL | RÉC | CT R.4624-22 et s. | ❌ |
 | A11 | Matériel de premiers secours + personnel formé au secourisme (**SST**) | ÉTS + SAL | PERM + RÉC | CT R.4224-14 à R.4224-16 | ❌ |
 | A12 | Consignes de premiers secours affichées | ÉTS | PERM | CT R.4224-16 | ❌ |
-| A13 | Consignes de sécurité incendie établies et affichées | ÉTS | PERM | CT R.4227-37 et s. | ⚠️ `incendie-consigne-securite`, ancrée équipement |
+| A13 | Consignes de sécurité incendie établies et affichées | ÉTS | PERM | CT R.4227-37, R.4227-38 (verbatim relevé le 2026-08-31) | ✅ **rebranchée le 2026-08-31** — `incendie-travail-consigne-affichee`, porteur établissement. (L'id donné ici, `incendie-consigne-securite`, n'a jamais existé.) |
 | A14 | Affichages SST : inspection du travail, médecine du travail, secours | ÉTS | PERM | CT D.4711-1 | ❌ |
-| A15 | Registre unique de sécurité (regroupement des registres) | ÉTS | PERM | CT D.4711-1 à D.4711-3 | ⚠️ partiel |
+| A15 | ~~Registre unique de sécurité~~ — **il n'y en a pas** : `L. 4711-5` dispose que « l'employeur **est autorisé à** réunir ces informations dans un registre unique ». C'est une **faculté**, pas une obligation. Ce qui oblige réellement, c'est `L. 4711-1`, `L. 4711-2`, `D. 4711-2` et `D. 4711-3` — mentions obligatoires, datation, identité du vérificateur, conservation cinq ans — désormais portés par `incendie-registre-securite`. À ne pas confondre avec `D. 4711-1`, qui est un **affichage** (cf. A14), pas un registre. | ÉTS | PERM | CT L.4711-1, L.4711-2, D.4711-2, D.4711-3 (verbatim relevés le 2026-08-31) | ✅ requalifiée |
 | A16 | Registre des accidents bénins | ÉTS | PERM | CSS L.441-4, D.441-1 | ❌ — listé hors périmètre dans CLAUDE.md |
 | A17 | Déclaration d'accident du travail (48 h) | ÉTS | ÉVÈN | CSS L.441-2 | ❌ — listé hors périmètre dans CLAUDE.md |
 | A18 | Vestiaires, sanitaires, lavabos conformes | ÉTS | PERM | CT R.4228-1 et s. | ❌ |
 | A19 | Eau potable à disposition | ÉTS | PERM | CT R.4225-2/3 | ❌ |
-| A20 | FDS accessibles + notice de poste (agents chimiques) | ÉTS | PERM | CT R.4412-38 et s. | ❌ |
+| A20 | FDS accessibles + notice de poste (agents chimiques) | ÉTS | PERM | CT R.4412-38 (FDS, relu le 2026-08-31), R.4412-39 (notice de poste) | ⚠️ scindée : les FDS existent (`stockage-dangereux-fiches-donnees`), ancrées `STOCKAGE_MATIERE_DANGEREUSE`. **Examiné et laissé tel quel le 2026-08-31** : R. 4412-38 se déclenche sur la PRÉSENCE d'agents chimiques — déclencheur E, non implémenté —, pas sur le statut d'employeur. Le porteur établissement sur-appliquerait à tout le parc. La **notice de poste de R. 4412-39 n'est encodée nulle part** : obligation absente, pas ancrage à corriger. |
 
 ## B. Déclencheur : effectif
 
@@ -108,10 +116,10 @@ S'applique dès qu'il y a au moins un salarié, quels que soient le NAF, l'effec
 
 | # | Obligation | Porteur | Nature | Référence présumée | Statut |
 |---|---|---|---|---|---|
-| C1 | **Registre de sécurité ERP** | ÉTS | PERM | CCH R.143-44 (réécrit au 01/07/2026) | ⚠️ **faux négatif documenté** — ancré `EXTINCTEUR`/`ALARME_INCENDIE` |
-| C2 | Visites périodiques de la commission de sécurité | ÉTS | **pas de périodicité en 5ᵉ catégorie** | CCH **R. 143-41** (fonde les visites, ne fixe aucun rythme) — corrigé par l'audit (4bdb1f8), R. 143-34 était cité à tort | ⚠️ existe ; la quinquennale affichée n'était fondée sur aucun texte |
+| C1 | **Registre de sécurité ERP** | ÉTS | PERM | CCH R.143-44 (version au 01/07/2026, verbatim relevé le 2026-08-31) + CT L.4711-1, L.4711-2, D.4711-2, D.4711-3 | ✅ **faux négatif corrigé le 2026-08-31** — `incendie-registre-securite`, porteur établissement. La branche `travail: true` reposait sur `L. 4711-5`, une **faculté** : les quatre articles qui l'obligent réellement ont été ajoutés et dépouillés au corpus. |
+| C2 | Visites périodiques de la commission de sécurité | ÉTS | quinquennale en locaux à sommeil (PE 37), **aucun rythme écrit sinon** | CCH **R. 143-41** (fonde les visites, ne fixe aucun rythme) + arrêté 25/06/1980 **PE 37** (verbatim relevés le 2026-08-31) | ⚠️ **examiné le 2026-08-31, délibérément NON rebranché.** Le faux négatif est réel (R. 143-41 ne cite aucun équipement), mais PE 37 — seul article du Livre III à organiser une visite périodique en 5ᵉ catégorie — ne vise que les établissements « comportant, pour le public, des locaux à sommeil ». Cette restriction décide de l'**existence** de la visite, pas de son rythme : la retirer ferait naître une échéance chez chaque boutique. Elle est portée par une caractéristique de l'ALARME_INCENDIE, et un porteur établissement n'accepte pas de `conditions`. **Dette nommée : il faut un attribut d'établissement « locaux à sommeil ouverts au public » — donc une donnée à collecter, écartée par le cadrage V1 au même titre que le DTA et le radon.** |
 | C3 | Registre public d'accessibilité | ÉTS | PERM | Décret 2017-431 | ✅ `RegistreAccessibilite` |
-| C4 | **Exercices d'évacuation** (semestriels) | ÉTS | RÉC | CT R.4227-39 (seuil de personnes) + arrêté 25/06/1980 | ⚠️ **faux négatif documenté** — ancré `ALARME_INCENDIE` |
+| C4 | **Exercices d'évacuation** (semestriels) | ÉTS | RÉC | CT R.4227-39, champ de R.4227-34 (verbatim relevés le 2026-08-31) | ✅ **faux négatif corrigé le 2026-08-31** — `incendie-travail-exercice-semestriel`, porteur établissement. R. 4227-34 **impose** l'alarme aux établissements de son champ : l'alarme y était le contenu d'une obligation, jamais la condition d'une autre. |
 | C5 | Service de sécurité incendie / **SSIAP** selon type et catégorie | SAL | RÉC | Arrêté 25/06/1980, MS 46 et s. | ❌ |
 | C6 | **Guide-file / serre-file** | SAL | RÉC | (AOCR — base à vérifier) | ❌ |
 | C7 | Plan d'évacuation affiché | ÉTS | PERM | CT R.4227-37 | ❌ |
@@ -146,7 +154,7 @@ C'est la couche qui manquait à l'analyse initiale : ni statut, ni équipement, 
 | E4 | Travail en hauteur, utilisation d'EPI antichute | SAL | RÉC | CT R.4323-104 et s. | ❌ |
 | E5 | Formation à la manutention manuelle (gestes et postures) | SAL | RÉC | CT R.4541-8 | ❌ |
 | E6 | Formation « travail sur écran » | SAL | PONC | CT R.4542-16 | ❌ (pertinent tertiaire) |
-| E7 | Agents chimiques dangereux / CMR — formation, notice de poste | SAL | RÉC | CT R.4412-38, R.4412-87 | ⚠️ 1 entrée, ancrée équipement |
+| E7 | Agents chimiques dangereux / CMR — formation, notice de poste | SAL | RÉC | CT R.4412-38 (relu le 2026-08-31), R.4412-87 | ⚠️ 2 entrées, ancrées `STOCKAGE_MATIERE_DANGEREUSE`. **Examiné et laissé tel quel le 2026-08-31** — cf. A20 : le déclencheur du texte est la présence d'agents chimiques, c'est-à-dire ce déclencheur E, non implémenté. L'ancrage équipement est un proxy imparfait mais qui sous-applique ; le porteur établissement sur-appliquerait. |
 | E8 | Amiante sous-section 4 | SAL | RÉC (3 ans) | CT R.4412-117 et s. | ❌ |
 | E9 | Bruit — évaluation, EPI, examen audiométrique | SAL + ÉTS | RÉC | CT R.4431-1 et s. | ❌ (AOCR : 3 lignes) |
 | E10 | ATEX — formation + DRPCE | SAL + ÉTS | PERM + RÉC | CT R.4227-49 et s. | ⛔ hors périmètre (CLAUDE.md) |
@@ -166,8 +174,8 @@ C'est la couche qui manquait à l'analyse initiale : ni statut, ni équipement, 
 | | Nombre |
 |---|---|
 | Lignes recensées hors équipement | **62** |
-| ✅ couvertes | 5 |
-| ⚠️ existantes mais mal ancrées (faux négatifs possibles) | 6 |
+| ✅ couvertes | 5 → **8** au 2026-08-31 (A13, C1, C4 rebranchées ; A15 requalifiée — il n'y avait pas d'obligation) |
+| ⚠️ existantes mais mal ancrées (faux négatifs possibles) | 6 → **3** au 2026-08-31 |
 | 🚫 inencodables en l'état du modèle | 3 |
 | ❌ absentes | 48 |
 | dont **formations réglementaires** | 13 |

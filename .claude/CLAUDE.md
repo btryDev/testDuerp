@@ -99,7 +99,7 @@ Rojer couvre les obligations de **santé-sécurité au travail et de sécurité 
 — Code du travail, CCH, et Code de l'environnement quand il porte sur la sécurité des
 installations ou des personnes. Une obligation y naît de cinq déclencheurs possibles :
 
-1. **Équipement déclaré** — 82 obligations livrées
+1. **Équipement déclaré** — 80 obligations livrées
 2. **Statut d'employeur** — dès un salarié : formation à la sécurité, affichages SST, suivi médical
 3. **Effectif** — seuils 11, 25, 50
 4. **Typologie et caractéristiques du bâtiment** — ERP, locaux à sommeil, année du permis
@@ -116,6 +116,13 @@ chantier *datent* une obligation, ils ne la font pas naître — et les seules l
 réellement événementielles recensées sont hors périmètre (déclaration d'AT, registre des
 accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
 l'ADR-022, sans mécanisme.
+
+Répartition au 2026-08-31 : **80 équipement, 5 établissement, 1 salarié** (total 85).
+Les cinq obligations portées par l'établissement sont l'entretien triennal de `PE 4 § 2`,
+le contrôle des installations d'aération de `R. 4222-20`, et — depuis le lot
+`fix/faux-negatifs-ancrage` — la tenue du registre de sécurité, la consigne de sécurité
+incendie et les exercices semestriels, qui étaient accrochés à un extincteur ou une alarme
+déclarés alors qu'aucun texte ne les y subordonne. Voir `docs/revues/rapport-palier1.md`.
 
 **Les trois porteurs sont implémentés** : équipement et établissement (ADR-022), salarié
 (ADR-023). Le porteur salarié se distingue des deux autres sur un point : ses instances ne

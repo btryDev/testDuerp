@@ -1021,6 +1021,23 @@ describe("moteur matching — cartographie des catégories sans obligation", () 
         // inventée : un employeur non-ERP qui déclare un RIA n'obtient
         // aucune échéance, et l'écran le dit.
         "RIA",
+        // ALARME_INCENDIE, ajoutée le 2026-08-31 (lot « faux négatifs
+        // d'ancrage »). Les trois obligations qui la citaient en DÉCLENCHEUR
+        // chez un employeur non-ERP — consigne affichée, exercices
+        // semestriels, tenue du registre — sont passées au porteur
+        // établissement : R. 4227-34 dispose que les établissements de son
+        // champ « sont équipés d'un système d'alarme sonore », de sorte que
+        // l'alarme y est le contenu d'une obligation et jamais la condition
+        // d'une autre.
+        //
+        // Ce n'est donc PAS un trou de couverture qui s'ouvre — les trois
+        // obligations s'appliquent désormais PLUS largement, y compris à qui
+        // n'a rien déclaré. C'est la conséquence d'écran : un employeur
+        // non-ERP qui déclare son alarme voit un appareil « aucune échéance
+        // calculée », alors que ses échéances existent, ailleurs, portées par
+        // l'établissement. La catégorie reste citée par les trois obligations
+        // en `equipementsEnContexte`, à titre indicatif.
+        "ALARME_INCENDIE",
         // BAES : question ouverte. Les deux obligations de l'arrêté du
         // 14 décembre 2011 (essai mensuel, autonomie semestrielle) portent
         // `erp: false` et ne visent donc pas non plus l'ERP. Chez un

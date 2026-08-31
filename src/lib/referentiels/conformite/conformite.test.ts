@@ -962,7 +962,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // 84 depuis le 2026-08-27 : 85 au départ, +2 obligations portées par
   // l'établissement (PE 4 § 2, R. 4222-20), −3 fragments de ces mêmes
   // articles qu'elles absorbent (ADR-022).
-  const EMPREINTE_ATTENDUE = "85-23798b9c81f3ce74";
+  const EMPREINTE_ATTENDUE = "85-a1ecbc416487d453";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(

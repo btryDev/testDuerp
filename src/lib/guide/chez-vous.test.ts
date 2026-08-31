@@ -142,10 +142,20 @@ describe("construireChezVous — trous honnêtes", () => {
     // Le domaine apparaît, et il apparaît SANS équipement rattaché : c'est
     // ce couple qui distingue « vous n'avez rien déclaré » de « rien ne vous
     // incombe ».
-    expect(r.domaines.map((d) => d.domaine)).toEqual(["aeration"]);
-    expect(r.domaines[0].equipements).toEqual([]);
-    expect(r.domaines[0].raisons.join(" ")).toContain(
-      "porte sur l'établissement",
-    );
+    //
+    // `incendie` a rejoint `aeration` le 2026-08-31, lot « faux négatifs
+    // d'ancrage » : la tenue du registre de sécurité était accrochée à un
+    // EXTINCTEUR ou une ALARME_INCENDIE déclarés, alors que L. 4711-1 et
+    // L. 4711-2 l'imposent à tout employeur et R. 143-44 à tout ERP, sans
+    // condition d'équipement. Ce test disait donc encore, pour l'incendie,
+    // exactement ce que son propre commentaire reproche : « rien ne vous
+    // incombe » à quelqu'un à qui quelque chose incombe.
+    expect(r.domaines.map((d) => d.domaine)).toEqual(["incendie", "aeration"]);
+    for (const d of r.domaines) {
+      expect(d.equipements, d.domaine).toEqual([]);
+      expect(d.raisons.join(" "), d.domaine).toContain(
+        "porte sur l'établissement",
+      );
+    }
   });
 });
