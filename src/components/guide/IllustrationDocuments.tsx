@@ -1,4 +1,21 @@
 // Illustration SVG du hero — empile 3 documents de conformité
+//
+// ⚠ AUCUNE VALEUR CHIFFRÉE ICI, ET C'EST UNE RÈGLE, PAS UN OUBLI.
+// Cette illustration a porté « v3 · 04/26 » sur le tampon et « 22 juin » sur
+// le post-it. Décoratives dans l'intention, elles se lisaient comme des
+// données : sur un dossier créé depuis dix minutes, l'en-tête du guide
+// affichait une version validée et une échéance datée que le dossier n'avait
+// pas — et la section suivante promet « calculé depuis votre dossier ».
+//
+// `aria-hidden` protège les lecteurs d'écran, pas les yeux. Un dirigeant ne
+// distingue pas un chiffre dessiné d'un chiffre calculé, et c'est la famille de
+// défaut que ce dépôt refuse le plus fermement — la même que l'extrait
+// réglementaire fabriqué retiré la semaine dernière.
+//
+// La règle : soit une valeur se calcule depuis le dossier, soit elle
+// n'apparaît pas. Les libellés génériques restent — « VALIDÉ », « ÉCHÉANCE »
+// nomment une nature de document, ils n'affirment rien sur celui du lecteur.
+// Les traits qui remplacent la date jouent le rôle graphique qu'elle tenait.
 // (Plan d'actions derrière, Registre au milieu, DUERP devant) sur un
 // fond radial vert pâle avec grille fine. Badge Code du travail,
 // post-it échéance, trombone. Décorative — aria-hidden.
@@ -183,18 +200,18 @@ export function IllustrationDocuments() {
             >
               VALIDÉ
             </text>
-            <text
-              x="0"
-              y="8"
-              textAnchor="middle"
-              fontFamily="var(--font-mono)"
-              fontSize="5"
-              fill="var(--board-green-ink)"
-              letterSpacing="0.8"
-              opacity="0.8"
-            >
-              v3 · 04/26
-            </text>
+            {/* Ici vivait « v3 · 04/26 » — une version et une date que le
+                dossier du lecteur n'a pas. Un trait tient la place. */}
+            <line
+              x1="-9"
+              y1="7"
+              x2="9"
+              y2="7"
+              stroke="var(--board-green-ink)"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              opacity="0.55"
+            />
           </g>
         </g>
 
@@ -230,16 +247,28 @@ export function IllustrationDocuments() {
           >
             ÉCHÉANCE
           </text>
-          <text
-            x="12"
-            y="48"
-            fontFamily="var(--font-serif)"
-            fontSize="20"
-            fill="var(--board-ink)"
-            fontStyle="italic"
-          >
-            22 juin
-          </text>
+          {/* Ici vivait « 22 juin » — une échéance datée que le dossier du
+              lecteur n'a pas. Deux traits manuscrits tiennent la place. */}
+          <line
+            x1="12"
+            y1="42"
+            x2="62"
+            y2="42"
+            stroke="var(--board-ink)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            opacity="0.5"
+          />
+          <line
+            x1="12"
+            y1="50"
+            x2="44"
+            y2="50"
+            stroke="var(--board-ink)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            opacity="0.32"
+          />
           <text
             x="12"
             y="62"

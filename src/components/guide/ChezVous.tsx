@@ -91,14 +91,43 @@ export function ChezVous({
         </div>
       </div>
 
-      {/* Vérifications : résumé par domaine */}
+      {/* Vérifications : résumé par domaine.
+
+          ⚠ CE BLOC A AFFIRMÉ LE CONTRAIRE DE CE QUE FAIT LE PRODUIT.
+          « Aucun équipement déclaré » et la liste des domaines étaient deux
+          BRANCHES d'une alternative : déclarer zéro équipement effaçait la
+          liste et affichait « la plateforme ne peut donc calculer aucune
+          vérification périodique ».
+
+          C'était vrai tant que toute obligation naissait d'un équipement. Ce
+          n'est plus le cas : un établissement sans le moindre appareil reçoit
+          les obligations portées par l'établissement et par les salariés —
+          formation à la sécurité, information sur l'accès au DUERP, premiers
+          secours, suivi médical. Le paragraphe écrit pour ne pas faire croire
+          à une absence d'obligations en produisait une lui-même, sur la page
+          qui explique.
+
+          Les deux ne s'excluent donc plus : l'absence d'équipement est une
+          REMARQUE, la liste des domaines se montre dans tous les cas où elle
+          n'est pas vide. */}
       {data.aucunEquipement ? (
         <div className="carte-board px-7 py-6 sm:px-8 mt-4 px-6 py-5 sm:px-8">
           <p className="max-w-3xl text-[0.95rem] leading-relaxed">
             <strong>Aucun équipement déclaré pour l&apos;instant</strong> —
-            la plateforme ne peut donc calculer aucune vérification
-            périodique. Ce silence ne signifie pas qu&apos;aucune obligation
-            ne vous concerne : il signifie que rien n&apos;est déclaré.
+            les vérifications qui naissent d&apos;un appareil ne peuvent donc
+            pas être calculées.{" "}
+            {data.domaines.length > 0 ? (
+              <>
+                Ce qui suit ne dépend d&apos;aucun équipement : ce sont les
+                obligations qui vous incombent comme employeur, dès le premier
+                salarié.
+              </>
+            ) : (
+              <>
+                Ce silence ne signifie pas qu&apos;aucune obligation ne vous
+                concerne : il signifie que rien n&apos;est déclaré.
+              </>
+            )}
           </p>
           <Link
             href={`${base}/equipements`}
@@ -107,7 +136,8 @@ export function ChezVous({
             Déclarer mes équipements →
           </Link>
         </div>
-      ) : (
+      ) : null}
+      {data.domaines.length > 0 ? (
         <>
           <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {data.domaines.map((d) => (
@@ -159,7 +189,7 @@ export function ChezVous({
             .
           </p>
         </>
-      )}
+      ) : null}
 
       {/* Trous honnêtes */}
       {data.categoriesSansObligation.length > 0 && (

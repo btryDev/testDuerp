@@ -320,12 +320,36 @@ export function genererRecommandations(
   //       quelqu'un ». Le dirigeant a très probablement le prestataire et ne
   //       l'a pas saisi — c'est même le cas le plus probable, et la formule
   //       doit le permettre.
+  //       « INTERVENANT » ET NON « PRESTATAIRE », depuis le 2026-08-31.
+  //
+  //       Cette règle a servi dix domaines techniques, où « prestataire » allait
+  //       de soi : on choisit un organisme agréé, on le paie, on peut en
+  //       changer. Le domaine « santé au travail » l'a fait sortir de son
+  //       assiette. L'écran affichait « Aucun prestataire déclaré en santé au
+  //       travail » là où l'obligation visée est l'ADHÉSION À UN SERVICE DE
+  //       PRÉVENTION ET DE SANTÉ AU TRAVAIL — laquelle n'est pas un
+  //       fournisseur qu'on retient, mais une obligation légale de l'employeur
+  //       (`L. 4622-1`). Un dirigeant ne reconnaît pas son obligation sous ce
+  //       mot-là.
+  //
+  //       Une seule phrase porte les deux cas, et c'est délibéré plutôt que
+  //       faute de mieux : ce que la règle constate est identique dans les deux
+  //       situations — une obligation suppose un tiers, l'annuaire n'en déclare
+  //       aucun pour ce domaine. « Intervenant » dit cela sans rien présumer du
+  //       lien : il vaut pour l'organisme agréé qui vient vérifier comme pour le
+  //       service de santé auquel on adhère, et il n'implique ni choix, ni
+  //       contrat, ni facture.
+  //
+  //       Ce que la phrase continue de NE PAS dire, et qui vaut pour les deux :
+  //       que le dirigeant est en faute. La règle ne sait pas distinguer « il en
+  //       a un et ne l'a pas saisi » — le cas le plus probable — de « il n'en a
+  //       pas ». Le lien mène toujours à l'annuaire, dont c'est le nom.
   for (const d of e.transmissions.domainesSansPrestataire) {
     acc.push({
       kind: "transmission_prestataire",
-      titre: `Aucun prestataire déclaré en ${d.libelle.toLowerCase()}`,
+      titre: `Aucun intervenant déclaré en ${d.libelle.toLowerCase()}`,
       sousTitre:
-        "Une de vos obligations suppose l'intervention d'un tiers qualifié",
+        "Une de vos obligations suppose un tiers qualifié — s'il intervient déjà chez vous, il reste à l'inscrire",
       href: `/etablissements/${etab}/prestataires`,
       priorite: 9,
     });
