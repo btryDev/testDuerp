@@ -296,6 +296,16 @@ describe("règles 9-10 : une transmission ne passe jamais devant une urgence", (
     expect(reco, "La règle du tiers obligatoire ne se déclenche plus").toBeDefined();
     // Ce qui est dû, nommé et sourcé…
     expect(reco!.sousTitre).toContain("L. 4622-1");
+    // …les DEUX branches, et laquelle est la sienne. « Organiser » est le verbe
+    // du texte et il est gardé — mais un employeur de six personnes n'organise
+    // pas un service, il adhère à un service interentreprises. Sans cette
+    // moitié, sa phrase se lit « montez un service », ce qui décourage là où
+    // il faut orienter. Les deux branches viennent de D. 4622-1, dépouillé au
+    // corpus : la phrase ne les fait pas dire à L. 4622-1, qui tient en une
+    // ligne.
+    expect(reco!.sousTitre).toContain("service autonome");
+    expect(reco!.sousTitre).toContain("interentreprises");
+    expect(reco!.sousTitre).toContain("D. 4622-1");
     // …et l'issue la plus probable, qui retire le ton de reproche. Sans elle,
     // la phrase accuse un dirigeant qui a très probablement un service.
     expect(reco!.sousTitre).toContain("il reste à l'inscrire");

@@ -224,11 +224,35 @@ export const TIERS_LUI_MEME_OBLIGATOIRE: Partial<
 > = {
   sante_travail: {
     titre: "Aucun service de prévention et de santé au travail déclaré",
-    // Les deux moitiés comptent : ce qui est dû, puis l'issue la plus probable.
-    // Sans la seconde, la phrase accuse ; sans la première, elle ramène une
-    // obligation légale à un oubli de saisie.
+    // Trois choses, et chacune répare un défaut constaté à l'écran.
+    //
+    // 1. CE QUI EST DÛ, avec son article. Sans cela, la phrase ramène une
+    //    obligation légale à un oubli de saisie — c'est ce que faisait la
+    //    formule unique « aucun intervenant déclaré ».
+    //
+    // 2. LES DEUX BRANCHES, et laquelle est la sienne. « Organiser » est le
+    //    verbe de `L. 4622-1` et il est gardé pour cette raison — mais un
+    //    employeur de six personnes n'organise pas un service, il adhère à un
+    //    service interentreprises. La phrase précédente laissait « adhérer »
+    //    dans la seule clause conditionnelle, celle qui s'adresse à ceux qui
+    //    l'ont déjà fait : son destinataire réel pouvait donc y lire « montez
+    //    un service », ce qui décourage là où il faut orienter.
+    //
+    //    Les deux branches viennent de `D. 4622-1` (service autonome ou
+    //    interentreprises) et le choix de `D. 4622-2` — les deux dépouillés au
+    //    corpus par le lot 8, et cités par l'obligation
+    //    `sante-travail-etablissement-adhesion-spst`. Ce n'est donc pas une
+    //    reformulation : c'est l'alignement sur ce que le référentiel a établi
+    //    en lisant les textes d'application. Ne pas faire dire à `L. 4622-1`,
+    //    qui tient en une phrase, ce que disent les articles D.
+    //
+    //    « En pratique » et non une prescription : le Code laisse le choix à
+    //    l'employeur, ce n'est pas lui qui range les TPE d'un côté.
+    //
+    // 3. L'ISSUE LA PLUS PROBABLE. Sans elle, la phrase accuse un dirigeant
+    //    qui a très probablement déjà un service.
     sousTitre:
-      "Tout employeur doit en organiser un (L. 4622-1) — si vous adhérez déjà à un service, il reste à l'inscrire",
+      "Tout employeur doit en organiser un (L. 4622-1) : service autonome, ou adhésion à un service interentreprises (D. 4622-1) — en pratique la voie des petites structures. Si vous y adhérez déjà, il reste à l'inscrire",
   },
 };
 

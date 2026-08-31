@@ -1,7 +1,7 @@
 # Rapport — les écrans d'un dossier neuf
 
 **Branche** `fix/ecrans-dossier-neuf`, depuis `origin/integration/2026-08-31` ·
-neuf corrections · **1787 tests verts**, `tsc` propre, un avertissement eslint
+neuf corrections · **1788 tests verts**, `tsc` propre, un avertissement eslint
 préexistant (`normaliserFormData`).
 
 Neuf défauts trouvés en ouvrant les écrans d'un dossier réel — six personnes,
@@ -207,14 +207,36 @@ constate une **saisie manquante** ; la santé au travail constate une
 vocabulaire, et c'est ce que je n'avais pas vu en raisonnant.
 
 **Ce qu'il voit après.** « Aucun service de prévention et de santé au travail
-déclaré — Tout employeur doit en organiser un (L. 4622-1), si vous adhérez déjà
-à un service il reste à l'inscrire. » Les deux moitiés comptent : sans la
-seconde la phrase accuse, sans la première elle ramène une obligation légale à
-un oubli de saisie.
+déclaré — Tout employeur doit en organiser un (L. 4622-1) : service autonome, ou
+adhésion à un service interentreprises (D. 4622-1), en pratique la voie des
+petites structures. Si vous y adhérez déjà, il reste à l'inscrire. »
 
-**Gardé par un test ?** Oui, des deux côtés — et la contre-épreuve importe
-autant : faire basculer tous les domaines sur la formulation « obligation due »
-accuserait un restaurateur de ne pas avoir d'électricien.
+**Trois moitiés, et la deuxième a été ajoutée après un second jugement de
+lecteur.** Le fond était juste — un dirigeant qui n'a adhéré à rien comprenait
+que c'était dû — mais **l'action restait implicite**. Le verbe affirmatif était
+« organiser », celui du texte, et un employeur de six personnes n'organise pas
+un service : il adhère. « Adhérer » ne vivait que dans la clause conditionnelle,
+celle qui s'adresse à ceux qui l'ont déjà fait. Son destinataire réel pouvait y
+lire « montez un service » — ce qui décourage là où il faut orienter.
+
+Les deux branches ne viennent pas de `L. 4622-1`, qui tient en une ligne, mais
+de `D. 4622-1` (autonome ou interentreprises) et `D. 4622-2` (le choix appartient
+à l'employeur) — dépouillés au corpus par le lot 8. Ce n'était donc pas une
+reformulation : la recommandation s'aligne sur ce que le référentiel avait déjà
+établi en lisant les textes d'application.
+
+**Gardé par un test ?** Oui, des trois côtés — ce qui est dû, les deux branches,
+l'issue probable — et la contre-épreuve importe autant : faire basculer tous les
+domaines sur la formulation « obligation due » accuserait un restaurateur de ne
+pas avoir d'électricien.
+
+**Et une garde de plus, sur le risque que cette correction a créé.** Une phrase
+d'interface peut désormais citer un article ; la règle du dépôt — on ne cite pas
+un texte que personne n'a lu — vaut pour elle comme pour une obligation, mais le
+cliquet de `corpus.test.ts` ne garde que les obligations et n'aurait rien vu. Un
+test vérifie que tout article cité dans ces phrases est dépouillé au corpus.
+Éprouvé en citant `D. 4622-14`, qui règle l'adhésion elle-même et que personne
+n'a ouvert.
 
 ## 9. Une notation de développeur dans le texte utilisateur
 
