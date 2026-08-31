@@ -79,6 +79,30 @@ export type Recommandation = {
     | "amorce_rapport"
     | "transmission_prestataire"
     | "transmission_salarie";
+  /**
+   * L'identité de la recommandation — sa clé de rendu, et rien d'autre.
+   *
+   * Le tableau de bord employait `href` comme clé React. C'était juste tant
+   * qu'une destination désignait une recommandation ; ça a cessé de l'être dès
+   * que deux d'entre elles ont pu mener au même écran, ce qui est le cas
+   * ordinaire des transmissions : TOUTES celles de domaine pointent l'annuaire
+   * des prestataires, toutes celles de salarié pointent l'écran Équipe.
+   *
+   * React l'écrivait deux fois par chargement — « Encountered two children
+   * with the same key » — sur un dossier qui comptait deux domaines sans
+   * intervenant ; un autre en comptait quatre.
+   *
+   * ⚠ Ce n'est pas de la même nature qu'une clé absente. Une clé absente n'a
+   * pas d'effet ; une clé en double en a un, et React le dit : des enfants
+   * « dupliqués et/ou omis ». La liste est statique aujourd'hui et rien ne se
+   * voit. Le jour où elle se réordonne, une des deux recommandations peut
+   * disparaître SANS TRACE — un faux négatif muet, ce que l'ADR-022 existe
+   * pour supprimer.
+   *
+   * `href` est une destination, pas une identité : plusieurs recommandations
+   * mènent légitimement au même écran, et c'est même le but.
+   */
+  cle: string;
   titre: string;
   sousTitre?: string;
   href: string;
@@ -188,6 +212,7 @@ export function genererRecommandations(
     const jamaisPlanifiee = v.statut === "a_planifier";
     acc.push({
       kind: "verif_depassee",
+      cle: `verif-depassee:${v.id}`,
       titre: v.libelleObligation,
       sousTitre: jamaisPlanifiee
         ? `${v.equipementLibelle} — aucune vérification enregistrée`
@@ -203,6 +228,7 @@ export function genererRecommandations(
     if (!estActionEnRetard(a, now)) continue;
     acc.push({
       kind: "action_en_retard",
+      cle: `action-en-retard:${a.id}`,
       titre: a.libelle,
       sousTitre: "Action corrective en retard",
       href: `/etablissements/${etab}/actions/${a.id}`,
@@ -216,6 +242,7 @@ export function genererRecommandations(
     if (!estVerificationAVenir(v, now, JOURS_VERIF_PROCHE)) continue;
     acc.push({
       kind: "verif_proche",
+      cle: `verif-proche:${v.id}`,
       titre: v.libelleObligation,
       sousTitre: `${v.equipementLibelle} — dans les ${JOURS_VERIF_PROCHE} jours`,
       href: `/etablissements/${etab}/verifications/${v.id}`,
@@ -232,6 +259,7 @@ export function genererRecommandations(
     if (!estDansLesProchainsJours(a.echeance, now, JOURS_ACTION_PROCHE)) continue;
     acc.push({
       kind: "action_proche",
+      cle: `action-proche:${a.id}`,
       titre: a.libelle,
       sousTitre: `Action à réaliser sous ${JOURS_ACTION_PROCHE} jours`,
       href: `/etablissements/${etab}/actions/${a.id}`,
@@ -249,6 +277,7 @@ export function genererRecommandations(
     if (duerp.jamaisValide) {
       acc.push({
         kind: "duerp_a_jour",
+        cle: "duerp:jamais-valide",
         titre: "Validez la première version de votre DUERP",
         sousTitre: "Aucune version n'a encore été figée",
         href,
@@ -257,6 +286,7 @@ export function genererRecommandations(
     } else if (duerp.majEchue) {
       acc.push({
         kind: "duerp_a_jour",
+        cle: "duerp:maj-echue",
         titre: "DUERP à mettre à jour",
         sousTitre: `Dernière version il y a ${ageEnMois(duerp.ageJours ?? 0)} mois`,
         href,
@@ -266,6 +296,7 @@ export function genererRecommandations(
     } else if (duerp.rappelMajProche) {
       acc.push({
         kind: "duerp_a_jour",
+        cle: "duerp:rappel-maj",
         titre: "DUERP à mettre à jour",
         sousTitre: "Mise à jour annuelle à prévoir",
         href,
@@ -279,6 +310,7 @@ export function genererRecommandations(
   if (e.nbEquipements === 0) {
     acc.push({
       kind: "amorce_equipements",
+      cle: "amorce:equipements",
       titre: "Déclarez vos équipements",
       sousTitre:
         "Le point de départ : ils déterminent vos vérifications obligatoires",
@@ -289,6 +321,7 @@ export function genererRecommandations(
   if (e.nbEquipements > 0 && !e.duerpSecteurChoisi) {
     acc.push({
       kind: "amorce_duerp",
+      cle: "amorce:duerp",
       titre: "Ouvrez votre DUERP",
       sousTitre: "L'évaluation des risques, guidée unité par unité",
       href: `/etablissements/${etab}/duerp`,
@@ -298,6 +331,7 @@ export function genererRecommandations(
   if (e.verifications.length > 0 && e.nbRapports === 0) {
     acc.push({
       kind: "amorce_rapport",
+      cle: "amorce:rapport",
       titre: "Déposez votre premier rapport",
       sousTitre: "Chaque rapport reçu rejoint votre registre de sécurité",
       href: `/etablissements/${etab}/calendrier`,
@@ -347,6 +381,7 @@ export function genererRecommandations(
   for (const d of e.transmissions.domainesSansPrestataire) {
     acc.push({
       kind: "transmission_prestataire",
+      cle: `transmission-domaine:${d.domaine}`,
       titre: `Aucun intervenant déclaré en ${d.libelle.toLowerCase()}`,
       sousTitre:
         "Une de vos obligations suppose un tiers qualifié — s'il intervient déjà chez vous, il reste à l'inscrire",
@@ -357,6 +392,7 @@ export function genererRecommandations(
   for (const o of e.transmissions.obligationsSupposantUnePersonne) {
     acc.push({
       kind: "transmission_salarie",
+      cle: `transmission-salarie:${o.id}`,
       titre: o.libelle,
       // « suppose » et pas « exige » : l'outil ne sait pas qui, dans
       // l'effectif, opère sur quoi — le dériver serait un faux positif de

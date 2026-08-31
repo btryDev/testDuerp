@@ -591,7 +591,7 @@ export function BlocParOuCommencer({ bundle }: { bundle: DashboardBundle }) {
         <ol className="m-0 flex list-none flex-col gap-3 p-0">
           {file.map((r, i) => (
             <CarteTache
-              key={r.href}
+              key={r.cle}
               numero={i + 1}
               reco={r}
               aujourdhui={aujourdhui}
@@ -1319,7 +1319,7 @@ export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
               : (r.sousTitre ?? "");
             return (
               <li
-                key={r.href}
+                key={r.cle}
                 className={
                   i === 0
                     ? ""

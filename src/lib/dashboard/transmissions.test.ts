@@ -268,6 +268,51 @@ describe("règles 9-10 : une transmission ne passe jamais devant une urgence", (
     expect(sousTitre).toContain("titre nominatif");
   });
 
+  it("chaque recommandation a une clé qui lui est propre", () => {
+    // Le défaut, et il est né de la correction qui a rendu les transmissions
+    // visibles ensemble : `board.tsx` employait `href` comme clé React, ce qui
+    // était juste tant qu'une destination désignait une recommandation. Toutes
+    // les transmissions de domaine mènent à l'annuaire des prestataires,
+    // toutes celles de salarié à l'écran Équipe — React écrivait donc
+    // « Encountered two children with the same key » deux fois par chargement.
+    //
+    // Une clé absente n'a pas d'effet ; une clé EN DOUBLE en a un. La liste est
+    // statique aujourd'hui, mais le jour où elle se réordonne, une des deux
+    // recommandations peut disparaître sans trace.
+    //
+    // Deux domaines et deux obligations salarié, donc quatre lignes qui
+    // partagent deux destinations : c'est exactement la forme qui cassait.
+    const e = base();
+    e.transmissions = {
+      domainesSansPrestataire: [
+        { domaine: "electricite", libelle: "Électricité" },
+        { domaine: "sante_travail", libelle: "Santé au travail" },
+      ],
+      obligationsSupposantUnePersonne: [
+        { id: "habilitation", libelle: "Habilitation électrique" },
+        { id: "formation-securite-etablissement-organisation", libelle: "Formation" },
+      ],
+    };
+    const recs = genererRecommandations(e, { now: NOW });
+    const cles = recs.map((r) => r.cle);
+
+    expect(
+      new Set(cles).size,
+      `Deux recommandations partagent une clé : ${cles.join(", ")}`,
+    ).toBe(cles.length);
+
+    // Contre-épreuve : sans elle, une implémentation qui rendrait `cle` égale à
+    // un compteur d'index passerait le test ci-dessus tout en réintroduisant le
+    // défaut au premier réordonnancement. La clé doit être STABLE, donc dérivée
+    // de ce que la recommandation désigne.
+    const memeEntree = genererRecommandations(e, { now: NOW }).map((r) => r.cle);
+    expect(memeEntree).toEqual(cles);
+    expect(cles).toContain("transmission-domaine:sante_travail");
+    expect(cles).toContain(
+      "transmission-salarie:formation-securite-etablissement-organisation",
+    );
+  });
+
   it("les liens pointent là où le geste se fait", () => {
     const recs = genererRecommandations(base(), { now: NOW });
     expect(recs.find((r) => r.kind === "transmission_prestataire")?.href).toBe(

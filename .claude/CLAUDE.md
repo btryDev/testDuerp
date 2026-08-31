@@ -172,12 +172,14 @@ réellement événementielles recensées sont hors périmètre (déclaration d'A
 accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
 l'ADR-022, sans mécanisme.
 
-Répartition au 2026-08-31 : **80 équipement, 5 établissement, 1 salarié** (total 85).
-Les cinq obligations portées par l'établissement sont l'entretien triennal de `PE 4 § 2`,
-le contrôle des installations d'aération de `R. 4222-20`, et — depuis le lot
+Répartition au 2026-08-31, après les trois lots : **79 équipement, 24 établissement,
+13 salarié** (total 116).
+Les cinq premières obligations portées par l'établissement étaient l'entretien triennal de
+`PE 4 § 2`, le contrôle des installations d'aération de `R. 4222-20`, et — depuis le lot
 `fix/faux-negatifs-ancrage` — la tenue du registre de sécurité, la consigne de sécurité
 incendie et les exercices semestriels, qui étaient accrochés à un extincteur ou une alarme
 déclarés alors qu'aucun texte ne les y subordonne. Voir `docs/revues/rapport-palier1.md`.
+Les lots 7 et 8 en ont ajouté dix-neuf.
 
 **Les trois porteurs sont implémentés** : équipement et établissement (ADR-022), salarié
 (ADR-023). Le porteur salarié se distingue des deux autres sur un point : ses instances ne
