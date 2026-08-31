@@ -21,7 +21,8 @@ C'est la mesure qui compte, et elle est nette. Un bureau de six personnes
 **sans le moindre équipement déclaré** voyait, dans le guide « chez vous », **un
 seul domaine** : le contrôle de ses installations d'aération. Il en voit
 maintenant **quatre**, et doit **sept obligations** dont aucune ne dépend d'un
-appareil :
+appareil (chiffres mesurés sur cette branche seule ; l'assemblage avec le
+palier 1 les portera plus haut) :
 
 | Ce qu'il doit, dès son premier salarié | Article |
 |---|---|
@@ -36,6 +37,14 @@ formation à la sécurité due à *tous* les salariés, la formation à la condu
 l'autorisation de conduite, l'attestation médicale de conduite, le SST, la VIP
 et le suivi renforcé. `chez-vous.test.ts` fige ce passage de 1 à 4 domaines ;
 c'est le test qui mesure le lot.
+
+> ⚠ **À l'intégration, ce test est un conflit.** Le palier 1 a réécrit la même
+> assertion, en écrivant lui aussi qu'elle « mesure exactement ce que ce lot a
+> livré » : j'y annonçais quatre domaines, lui deux, et la réponse une fois les
+> deux branches réunies est **cinq**. Le test qui existe pour attraper ce défaut
+> se l'est appliqué à lui-même. Il est laissé en l'état des deux côtés, la
+> session d'intégration tranchant — de même que `REFERENTIEL_VERSION`, à laquelle
+> trois lots ont posé la même valeur.
 
 ---
 
@@ -123,12 +132,16 @@ Le brief prescrivait « dépouillement seul ». **La propriétaire a tranché en
 de lot : le suivi médical s'encode.** Ce qui suit est donc encodé, avec la
 doctrine `docs/rgpd.md` § 2.3 intacte.
 
-**6 articles lus.** Corpus : `code-travail-sante-travail.ts`,
-`etendue: "articles_cites"` — la section 2 court de `R. 4624-10` à `R. 4624-45-9`,
-une quarantaine d'articles ; six seulement sont lus, et le corpus ne prétend pas
-au reste.
+**9 articles lus** — six au premier passage, trois ajoutés en revue. Corpus :
+`code-travail-sante-travail.ts`, `etendue: "articles_cites"` — la section 2 court
+de `R. 4624-10` à `R. 4624-45-9`, une quarantaine d'articles ; neuf seulement sont
+lus, et le corpus ne prétend pas au reste.
 
-### Ce qui est encodé — 4 obligations
+### Ce qui est encodé — 6 obligations
+
+Les deux dernières viennent de la revue, et corrigent une affirmation fausse
+plutôt qu'elles n'étendent la couverture : voir « Ce que la revue a corrigé »,
+§ 3 et 4.
 
 | Obligation | Porteur | Périodicité | Nature du chiffre |
 |---|---|---|---|
@@ -136,8 +149,10 @@ au reste.
 | `sante-travail-salarie-sir` | salarié | `quadriennale` | **plafond** (`R. 4624-28`) |
 | `sante-travail-salarie-sir-visite-intermediaire` | salarié | `biennale` | **plafond** (`R. 4624-28`) |
 | `sante-travail-etablissement-liste-postes-risques` | établissement | `annuelle` | **ferme** (`R. 4624-23 III`) |
+| `sante-travail-salarie-vip-adaptee` | salarié | `triennale` | **plafond** (`R. 4624-17`) |
+| `sante-travail-salarie-sir-categorie-a` | salarié | `annuelle` | **ferme** (`R. 4451-82`) |
 
-Les trois obligations salarié portent `pieceMedicale: true`.
+Les cinq obligations salarié portent `pieceMedicale: true`.
 
 ### Ce que le texte impose, à qui, à quel rythme
 
