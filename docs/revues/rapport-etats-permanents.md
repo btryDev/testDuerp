@@ -353,3 +353,64 @@ bouton sortent maintenant entiers de `phrases.ts`.
 tomber la garde avec le fichier et la ligne (`LigneEtat.tsx:54`).
 
 **1824 tests verts** après correction.
+
+---
+
+## 11. Second passage du contrôle — la forme disait « encore un domaine »
+
+Le contrôle garde la section : *« on ne peut plus atteindre le bouton sans avoir
+l'explication au-dessus des yeux, et la ligne n'a plus de voisine "Déclarer en
+place" à côté d'elle. »* C'est l'adossement de l'explication à la ligne, et c'est
+ce que le repli — assumer que la distinction ne sert qu'au compteur — aurait fait
+perdre.
+
+**Ce qui n'allait pas était la forme du sur-titre, pas le regroupement.**
+Je l'avais composé exactement comme un nom de domaine : mêmes petites capitales,
+même graisse, même gris, même place en tête de carte. À l'œil qui parcourt,
+« CE QUI REVIENT, SANS RYTHME ÉCRIT » occupait la place où l'on attend « PREMIERS
+SECOURS ». Les mots différaient, la forme non — donc le groupe se lisait comme un
+dixième domaine et non comme une autre nature de chose.
+
+La correction vient du barème de la charte (§ 3), qui distingue deux **rôles** :
+
+| Rôle | Motif |
+|---|---|
+| Sur-titre de section | `board-eyebrow text-[10.5px] tracking-[0.18em]` |
+| Titre de section / carte | `board-titre m-0 text-[22px]` |
+
+Un domaine porte un **sur-titre**, la section porte un **titre**. Ce n'est pas
+une décoration mais une place dans la hiérarchie, et l'interdit 11 est respecté —
+jamais deux niveaux de titrage dans une carte : la section porte un titre et
+aucun sur-titre, les cartes de domaine l'inverse.
+
+**Et c'est ce qui tient quand la section portera cinq lignes.** L'avertissement du
+contrôle est juste : ce qui rend la section visible aujourd'hui est un
+déséquilibre — trois lignes d'explication pour une ligne d'obligation — et il
+disparaîtra tout seul dès qu'un dossier en portera quatre. Un titre reste un
+titre quel que soit le nombre de lignes en dessous ; un sur-titre identique à
+celui d'à côté ne l'aurait jamais été.
+
+**Deux sur-titres étaient par ailleurs au mauvais barème** — 10 px / 0.16em,
+c'est-à-dire le motif « sur-titre de LIGNE » employé pour coiffer des cartes.
+Corrigés.
+
+### Ce que la section ne fait pas, et qui est écrit dans le code
+
+Elle **ne sauve pas des sept secondes** : celui qui déroule en cliquant cliquera
+« Marquer comme fait » aussi vite qu'il cliquait « Déclarer en place ». Ce qu'elle
+change, c'est qu'on ne peut plus atteindre ce bouton sans avoir l'explication
+au-dessus des yeux, et que les deux verbes ne se touchent plus. **Elle aide celui
+qui s'arrête** ; la version d'avant n'aidait personne. C'est un progrès réel et
+incomplet — le dire vaut mieux que de laisser croire la distinction résolue. La
+phrase est aussi dans l'en-tête de `page.tsx`, là où le prochain lecteur du code
+la trouvera.
+
+### Ce que je n'ai pas gardé sous test, et pourquoi
+
+La distinction des deux rôles typographiques **n'a pas de garde automatique**.
+J'ai envisagé un test comparant les chaînes de classes des deux titres — il
+attraperait une réunification future —, et je l'ai écarté : un test qui compare
+du CSS casse pour de mauvaises raisons à chaque refonte et finit par être
+neutralisé plutôt que lu. L'autorité ici est le barème de `docs/charte-board.md`,
+et le commentaire du composant cite le défaut qu'il corrige. C'est moins solide
+qu'un test, et c'est dit plutôt que masqué.
