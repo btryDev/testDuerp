@@ -978,7 +978,16 @@ describe("référentiel conformité — version et empreinte", () => {
   // catégorie A des rayonnements ionisants, et y supprime la visite
   // intermédiaire. Deux populations pour lesquelles le référentiel annonçait
   // une échéance trop tardive.
-  const EMPREINTE_ATTENDUE = "100-70f6d99874a7ffc2";
+  // L'empreinte bouge sans que le compte change : le libellé de
+  // `sante-travail-etablissement-liste-postes-risques` porte désormais le
+  // conditionnel du III de R. 4624-23 (« s'il le juge nécessaire »). Le libellé
+  // entre dans l'empreinte parce qu'il s'affiche au calendrier — c'est
+  // exactement ce qu'on veut voir bouger.
+  //
+  // `REFERENTIEL_VERSION` n'est délibérément pas incrémentée ici : le lot 7, le
+  // palier 1 et le lot 8 ont posé la même valeur chacun de leur côté, et c'est
+  // la session d'intégration qui la tranche pour les trois.
+  const EMPREINTE_ATTENDUE = "100-ea718b9391d464eb";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(

@@ -36,10 +36,16 @@ export const CODE_TRAVAIL_FORMATION_SECURITE: Corpus = {
   id: "code-travail-formation-securite",
   intitule:
     "Code du travail — obligation générale d'information et de formation à la sécurité",
+  // Le corpus couvre DEUX chapitres — un par partie du Code —, et une seule
+  // URL ne peut pas les désigner tous les deux. Celle-ci pointe le chapitre
+  // législatif (L. 4141-1 à L. 4141-5) ; le chapitre réglementaire
+  // (R. 4141-1 à R. 4141-20) est à `LEGISCTA000018488274`, cité dans `portee`.
+  // La première rédaction n'annonçait que celle-ci en se déclarant `integral`
+  // sur 26 articles : le lecteur qui l'ouvrait en trouvait cinq.
   url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000006178070/",
   etendue: "integral",
   portee:
-    "Chapitre Ier du titre IV du livre Ier de la quatrième partie, dans ses deux versants : L. 4141-1 à L. 4141-5 (obligation d'information, obligation de formation, étendue, financement, passeport de prévention) et R. 4141-1 à R. 4141-20 (objet et organisation, conditions de circulation, conditions d'exécution du travail, conduite à tenir en cas d'accident ou de sinistre). ATTENTION : L. 4141-5 a été réécrit au 27 juin 2026 par la loi n° 2026-534 du 25 juin 2026, art. 70 — le passeport de prévention est le seul article du chapitre modifié depuis 2013.",
+    "Chapitre Ier du titre IV du livre Ier de la quatrième partie, dans ses deux versants — partie législative (https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000006178070/) et partie réglementaire (https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018488274/) : L. 4141-1 à L. 4141-5 (obligation d'information, obligation de formation, étendue, financement, passeport de prévention) et R. 4141-1 à R. 4141-20 (objet et organisation, conditions de circulation, conditions d'exécution du travail, conduite à tenir en cas d'accident ou de sinistre). ATTENTION : L. 4141-5 a été réécrit au 27 juin 2026 par la loi n° 2026-534 du 25 juin 2026, art. 70 — le passeport de prévention est le seul article du chapitre modifié depuis 2013.",
   articles: [
     // -------------------------------------------------------------------------
     // Partie législative — L. 4141-1 à L. 4141-5

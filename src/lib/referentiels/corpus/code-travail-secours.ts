@@ -32,7 +32,7 @@ export const CODE_TRAVAIL_SECOURS: Corpus = {
   url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489002/",
   etendue: "integral",
   portee:
-    "Section 3 « Matériel de premier secours et secouriste » du chapitre IV (sécurité des lieux de travail) : le matériel (R. 4224-14), le membre du personnel formé au secourisme (R. 4224-15), et les mesures d'organisation des premiers secours consignées dans un document tenu à disposition de l'inspection du travail (R. 4224-16). S'applique à tout employeur, sans condition d'effectif — les conditions de R. 4224-15 portent sur la nature des travaux, pas sur la taille de l'entreprise.",
+    "Section 3 « Matériel de premier secours et secouriste » du chapitre IV (sécurité des lieux de travail) : le matériel (R. 4224-14), le membre du personnel formé au secourisme (R. 4224-15), et les mesures d'organisation des premiers secours consignées dans un document tenu à disposition de l'inspection du travail (R. 4224-16). R. 4224-14 et R. 4224-16 s'appliquent à tout employeur sans condition d'effectif. R. 4224-15 est le seul des trois à en porter une, et la première rédaction de cette portée l'a niée à tort : son 1° vise « chaque atelier où sont accomplis des travaux dangereux », sans seuil, mais son 2° vise « chaque chantier employant VINGT TRAVAILLEURS AU MOINS pendant plus de quinze jours ». Deux conditions distinctes dans le même article, dont une d'effectif.",
   articles: [
     {
       ref: "R. 4224-14",

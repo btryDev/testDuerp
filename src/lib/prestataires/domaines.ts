@@ -137,11 +137,12 @@ export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
   // deux ferait dire « le texte n'attend personne » là où il attend quelqu'un.
   // `domaines.test.ts` fige cet état pour qu'il ne se perde pas.
   formation_securite: ["organisme_formation"],
-  // L'adhésion à un service de prévention et de santé au travail est
-  // elle-même une obligation de l'employeur (`L. 4622-7` pour un service
-  // interentreprises ; `L. 4622-1` pose l'obligation d'organiser, sans dire
-  // comment). Le jour où elle sera encodée, c'est par ce domaine qu'un
-  // dirigeant qui n'a déclaré aucun service s'en verra averti.
+  // La VIP et le suivi individuel renforcé sont réalisés par les professionnels
+  // de santé du service de prévention et de santé au travail (`R. 4624-10`,
+  // `R. 4624-28`). Le jour où l'adhésion à un tel service sera elle-même
+  // encodée, c'est par ce domaine qu'un dirigeant qui n'en a déclaré aucun s'en
+  // verra averti — le titre II du livre VI (`L. 4622-*`) n'est dépouillé par
+  // aucun corpus, donc rien ne s'y appuie encore.
   sante_travail: ["service_sante_travail"],
   // Le Code ne dit pas qui délivre la formation de secouriste de `R. 4224-15`.
   // Le domaine de prestataire attendu est donc l'organisme de formation, sans

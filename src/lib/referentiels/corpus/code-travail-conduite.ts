@@ -12,8 +12,8 @@
 //
 // LE DÉCRET DU 18 AVRIL 2025 EST LE MÊME QU'EN ÉLECTRICITÉ. `R. 4323-56` a été
 // réécrit au 1er octobre 2025 par le décret n° 2025-355 — celui-là même qui a
-// créé `R. 4544-11-1`, l'attestation médicale de l'habilitation électrique,
-// aujourd'hui la seule obligation salarié du référentiel. Les deux articles se
+// créé `R. 4544-11-1`, l'attestation médicale de l'habilitation électrique, qui
+// était alors la seule obligation salarié du référentiel. Les deux articles se
 // lisent presque mot pour mot : même durée de cinq ans, même délivrance par le
 // médecin du travail, même conservation d'une copie par l'employeur. Ce n'est
 // pas une coïncidence, c'est une réforme unique du suivi médical des travailleurs
@@ -76,7 +76,7 @@ export const CODE_TRAVAIL_CONDUITE: Corpus = {
         "conduite-salarie-attestation-medicale",
       ],
       reserve:
-        "Deux alinéas de l'article ne sont pas encodés. Le premier prévoit que l'attestation « est conforme à un modèle fixé par arrêté du ministre chargé du travail et du ministre chargé de l'agriculture » — l'arrêté n'est pas dépouillé, donc pas cité. Le second ouvre au salarié comme à l'employeur une contestation du refus de délivrance devant le conseil de prud'hommes selon la procédure accélérée au fond : c'est une voie de recours, pas une échéance, et le produit n'a rien à en faire.",
+        "TROIS alinéas de l'article ne sont pas encodés — la première rédaction de cette réserve en comptait deux, et celui qu'elle oubliait est celui qui compte le plus. (1) « L'autorisation de conduite et une copie de l'attestation sont tenues à la disposition de l'inspection du travail et des agents du service de prévention des organismes de sécurité sociale » : c'est une obligation de tenue à disposition, du même genre que le document de R. 4224-16, et le produit n'offre qu'un dépôt de fichier là où le texte attend une pièce présentable. (2) L'attestation « est conforme à un modèle fixé par arrêté du ministre chargé du travail et du ministre chargé de l'agriculture » — l'arrêté n'est pas dépouillé, donc pas cité. (3) La contestation d'un refus de délivrance devant le conseil de prud'hommes selon la procédure accélérée au fond : voie de recours, pas échéance.",
     },
     {
       ref: "R. 4323-57",

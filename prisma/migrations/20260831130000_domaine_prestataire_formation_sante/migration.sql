@@ -16,11 +16,17 @@
 --     formation de secouriste (`R. 4224-15`) et la formation à la conduite
 --     (`R. 4323-55`) sont dispensées par un organisme de formation quand elles
 --     ne le sont pas en interne ;
---   * `service_sante_travail` — la VIP et le SIR sont réalisés par le service
---     de prévention et de santé au travail, auquel l'adhésion est elle-même une
---     obligation de l'employeur (`L. 4622-1`). Un dirigeant qui n'en a déclaré
---     aucun n'a pas seulement un trou de vigilance : il a probablement un
---     manquement.
+--   * `service_sante_travail` — la visite d'information et de prévention et le
+--     suivi individuel renforcé sont réalisés par les professionnels de santé du
+--     service de prévention et de santé au travail (`R. 4624-10`, `R. 4624-28`,
+--     lus à la source le 2026-08-31).
+--
+-- Une première rédaction ajoutait ici que « l'adhésion à un service est
+-- elle-même une obligation de l'employeur (L. 4622-1) ». La citation est
+-- retirée : ni `L. 4622-1` ni `L. 4622-7` n'ont été ouverts, et le titre II du
+-- livre VI n'est dépouillé par aucun corpus. L'affirmation est probablement
+-- juste — elle n'est pas vérifiée, et une référence non lue n'a rien à faire
+-- dans ce dépôt, fût-ce en commentaire de migration.
 --
 -- Additif et rétrocompatible, même régime que la migration `..._froid`.
 

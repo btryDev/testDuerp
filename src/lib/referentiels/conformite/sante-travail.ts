@@ -159,8 +159,16 @@ export const obligationsSanteTravail: Obligation[] = [
   {
     id: "sante-travail-etablissement-liste-postes-risques",
     domaine: "sante_travail",
+    // Le libellé porte le conditionnel que la description portait déjà, et il
+    // le doit : le III de R. 4624-23 s'ouvre sur « S'il le juge nécessaire,
+    // l'employeur complète la liste… ». C'est l'établissement de la liste qui
+    // est facultatif ; sa mise à jour annuelle ne l'est plus une fois qu'elle
+    // existe. Un libellé impératif au calendrier — « Tenir à jour la liste » —
+    // annonçait donc une obligation à des dirigeants qui n'en ont aucune,
+    // faute d'avoir jugé nécessaire d'établir une liste. La périodicité reste
+    // annuelle et ferme (ADR-022 § 7) ; c'est le libellé qui mentait, pas elle.
     libelle:
-      "Tenir à jour la liste des postes à risques particuliers",
+      "Liste des postes à risques particuliers : la mettre à jour, si vous en tenez une",
     description:
       "Lorsqu'il le juge nécessaire, l'employeur complète la liste légale des postes à risques particuliers par des postes propres à son établissement. Cette liste est établie après avis du médecin et du comité social et économique s'il existe, en cohérence avec l'évaluation des risques et la fiche d'entreprise ; chaque inscription est motivée par écrit. Elle est transmise au service de prévention et de santé au travail, tenue à disposition de l'administration et des services de prévention de la sécurité sociale, et mise à jour tous les ans.",
     referencesLegales: [
