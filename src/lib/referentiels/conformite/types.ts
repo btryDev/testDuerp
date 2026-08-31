@@ -336,6 +336,75 @@ export type ConditionApplication =
     };
 
 /**
+ * Le régime temporel que le texte impose : à quel titre l'acte est-il dû ?
+ * (ADR-026)
+ *
+ * L'ADR-022 § 8 nommait ces quatre natures et annonçait qu'elles vivaient
+ * « dans le référentiel TypeScript ». Elles n'y étaient pas : aucun champ ne
+ * les portait, et `Periodicite.autre` servait de tenant-lieu. Or `autre` ne dit
+ * qu'une chose — **le texte n'écrit pas de rythme** — et cette phrase est vraie
+ * d'au moins trois régimes différents. L'audit du 2026-08-31
+ * (`docs/revues/rapport-audit-sans-surface.md`) l'a établi sur trois cas :
+ * `stockage-dangereux-declaration-icpe` est une qualification faite une fois,
+ * `froid-controle-etancheite-apres-modification` se redéclenche à chaque
+ * modification du circuit, et `incendie-erp-5-visite-commission` est une visite
+ * quinquennale. Les trois portaient la même valeur.
+ *
+ * C'est la nature, et elle seule, qui dit si **une déclaration unique suffit** :
+ * elle suffit pour un état permanent et pour une obligation ponctuelle, elle ne
+ * suffit ni pour une échéance récurrente ni pour une obligation événementielle,
+ * qui reviennent. Un écran bâti sur `periodicite === "autre"` mélangerait les
+ * quatre.
+ *
+ * **La nature est une propriété du TEXTE, jamais de ce que le produit sait en
+ * faire.** Une échéance récurrente dont l'article n'écrit pas le rythme reste
+ * récurrente — elle porte alors `periodicite: "autre"`, et ce couple se lit
+ * « elle revient, on ne sait pas à quel rythme ». C'est un état légitime, et le
+ * plus fréquent des quarante-trois.
+ */
+export const NATURES_OBLIGATION = [
+  /**
+   * L'acte est dû, puis redû, à intervalle. Le rythme peut être écrit dans le
+   * texte (`periodicite` chiffrée) ou renvoyé à un règlement qui ne l'a pas
+   * fixé, à un accord collectif, ou au seul mot « régulièrement »
+   * (`periodicite: "autre"`).
+   */
+  "echeance_recurrente",
+  /**
+   * Un état à constituer puis à maintenir. Il n'y a pas d'acte à refaire à
+   * date : soit l'état est là, soit il ne l'est pas. De l'eau potable à
+   * disposition, un registre tenu, un salarié désigné.
+   */
+  "etat_permanent",
+  /**
+   * L'acte est dû **une fois**, à un moment déterminé de la vie de l'objet ou
+   * de la personne : la mise en service d'un appareil, l'affectation d'un
+   * travailleur à son poste. Une fois fait, il ne se refait pas.
+   */
+  "ponctuelle",
+  /**
+   * L'acte est dû **à chaque survenance d'un fait** — une modification, une
+   * réparation, un changement de poste, l'arrivée d'un nouveau transporteur.
+   * Le produit n'observe aucun de ces faits : il ne peut donc ni dater
+   * l'échéance, ni la tenir pour soldée.
+   */
+  "evenementielle",
+] as const;
+
+export type NatureObligation = (typeof NATURES_OBLIGATION)[number];
+
+/**
+ * Ce qu'on écrit quand on montre une nature à quelqu'un. `Record` exhaustif :
+ * ajouter une nature sans lui donner de nom ne compile pas.
+ */
+export const LIBELLE_NATURE: Record<NatureObligation, string> = {
+  echeance_recurrente: "échéance récurrente",
+  etat_permanent: "état permanent",
+  ponctuelle: "obligation ponctuelle",
+  evenementielle: "obligation événementielle",
+};
+
+/**
  * Sur quoi porte l'échéance que l'obligation engendre (ADR-022).
  *
  * - `equipement` : une ligne par équipement déclaré qui la déclenche.
@@ -462,6 +531,58 @@ type ObligationCommune = {
    */
   referencesLegales: [ReferenceLegale, ...ReferenceLegale[]];
   periodicite: Periodicite;
+  /**
+   * Le régime temporel que le texte impose (ADR-026). **Requis, et c'est le
+   * point** — même raisonnement que `transmet` et `pieceMedicale` : optionnel,
+   * le champ se serait tu, et l'oubli aurait été la faute naturelle.
+   *
+   * Il ne se déduit pas de `periodicite`, et c'est toute sa raison d'être :
+   * `autre` recouvre au moins trois natures, et `mise_en_service_uniquement`
+   * en recouvre deux. Voir `NatureObligation`.
+   *
+   * **Règle de résolution quand un article porte plusieurs titres.** Certains
+   * en portent deux — « à la mise en service **ou après modification** », « à
+   * l'embauche **et chaque fois que nécessaire** ». On encode alors celui qui
+   * **oblige à refaire l'acte**, dans cet ordre : `echeance_recurrente`, puis
+   * `evenementielle`, puis `ponctuelle`, puis `etat_permanent`. Le motif est
+   * dans la conséquence : une obligation qui revient ne se solde pas par une
+   * déclaration unique, et c'est la question à laquelle ce champ sert à
+   * répondre. Chaque ligne concernée le dit dans ses `notesInternes`.
+   *
+   * **N'entre pas dans `empreinteReferentiel()`.** La nature ne décide ni de
+   * l'existence d'une ligne de `Verification`, ni de sa date : c'est
+   * `periodicite` et `porteur` qui le font. L'y faire entrer réconcilierait
+   * tout le parc pour un résultat identique.
+   */
+  nature: NatureObligation;
+  /**
+   * Le nom que le texte donne à l'**écrit dont l'existence est elle-même
+   * l'obligation** — registre, carnet, dossier, contrat, consigne, protocole,
+   * liste, fiche, autorisation. `null` quand l'obligation porte sur un **acte**
+   * (une vérification, une formation, une visite) ou sur un **état matériel**
+   * (de l'eau potable, un extincteur accessible).
+   *
+   * La distinction est fine et elle décide d'un comportement d'écran. Une
+   * vérification annuelle produit un rapport, mais le rapport est la *trace* de
+   * l'acte, pas l'obligation : `pieceAttendue` reste `null`. `R. 4226-19`, lui,
+   * n'impose pas de vérifier, il impose de **consigner sur un registre** — et
+   * là l'écrit est l'obligation.
+   *
+   * **Pourquoi ce champ existe.** Un écran de déclaration d'états permanents
+   * (brief `docs/revues/brief-ecran-etats-permanents.md`) pose que le dirigeant
+   * coche, sans pièce. C'est juste pour une affiche au mur ou de l'eau
+   * potable ; c'en est une pour un registre de sécurité, où une case cochée
+   * sans rien derrière serait exactement la déclaration-qui-ressemble-à-une-
+   * preuve que le même brief interdit. Le champ nomme les seize lignes où la
+   * case seule ne suffit pas.
+   *
+   * Requis pour la même raison que `nature` : `null` est une réponse, un champ
+   * absent n'en est pas une.
+   *
+   * **N'entre pas dans `empreinteReferentiel()`** : il ne change ni le nombre
+   * de lignes ni leurs dates.
+   */
+  pieceAttendue: string | null;
   /** Réalisateurs acceptés. Au moins un. En général 1, parfois 2 (ex. "personne qualifiée OU organisme agréé"). */
   realisateurs: [Realisateur, ...Realisateur[]];
   /** 1 = informatif, 5 = vital (mise en danger directe si manquement). */

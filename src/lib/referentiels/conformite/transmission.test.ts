@@ -71,6 +71,8 @@ describe("transmissions (ADR-024)", () => {
       libelle: "Obligation témoin",
       referencesLegales: [{ source: "CODE_TRAVAIL", reference: "R. 0000-0" }],
       periodicite: "autre",
+      nature: "etat_permanent",
+      pieceAttendue: null,
       realisateurs: ["exploitant"],
       criticite: 3,
       transmet: [
@@ -133,6 +135,8 @@ describe("transmissions (ADR-024)", () => {
       realisateurs: ["exploitant"],
       criticite: 3,
       transmet: [],
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
       typologies: { erp: true },
       categoriesEquipement: ["ALARME_INCENDIE"],
     };
@@ -165,6 +169,8 @@ describe("transmissions (ADR-024)", () => {
       realisateurs: ["exploitant"],
       criticite: 3,
       transmet: [],
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
       typologies: { erp: true },
       categoriesEquipement: ["ALARME_INCENDIE"],
     };

@@ -81,6 +81,40 @@ export const AUCUNE_TRANSMISSION: Transmissions = {
  * nommer le titre à la transmission plutôt que de laisser `null` — c'est-à-dire
  * de résoudre la cause, le `titre: null` lui-même, plutôt que d'affiner encore
  * le repli.
+ *
+ * ## Le grain de ce signal a été resserré deux fois, et il reste un cran
+ *
+ * Ce n'est pas une suite de bugs, c'est **un même défaut de modèle** qui
+ * réapparaît un cran plus bas à chaque correction — et qui n'était visible, à
+ * chaque fois, qu'une fois le précédent corrigé. À écrire ici pour que le
+ * prochain ne croie pas repartir de zéro :
+ *
+ *  1. **N'importe quel titre.** Le signal se taisait dès qu'un titre, quel
+ *     qu'il soit, était déclaré. Juste tant que le catalogue tenait en une
+ *     ligne ; faux dès qu'il en a compté onze.
+ *  2. **Un titre du même domaine.** L'état ci-dessus. Il tombera le jour où
+ *     deux titres coexisteront dans un domaine — le paragraphe précédent le
+ *     dit et le date.
+ *  3. **Il ignore les personnes**, et c'est le cran qui reste. `titresDeclares`
+ *     est un ensemble d'**identifiants d'obligation** : il dit *qu'un* titre
+ *     existe, jamais *combien de personnes* le détiennent ni *lesquelles*. Un
+ *     restaurateur qui déclare la formation à la sécurité de sa plongeuse
+ *     éteint le signal pour les cinq personnes embauchées après elle — alors
+ *     que `R. 4141-20` fixe pour chacune un délai chiffré, « dans le mois qui
+ *     suit l'affectation du travailleur à son emploi ».
+ *
+ * **Le troisième cran ne se corrige pas en affinant celui-ci.** Les deux
+ * premiers étaient des questions de granularité — quel ensemble consulter. Le
+ * troisième est une question de **modèle** : que veut dire « déclaré » quand
+ * l'obligation est due par personne ? Trois réponses possibles, et le choix
+ * n'est pas fait — chaque salarié actif doit détenir le titre ; chaque salarié
+ * entré depuis moins d'un mois ; ou seulement ceux dont le poste l'appelle, ce
+ * que le produit ne sait pas déduire et refuse de deviner (ADR-023).
+ *
+ * La brique du deuxième cas existe et ne sert à rien : `Salarie.entreLe`, dont
+ * le schéma écrit qu'il est le « point de départ des obligations à
+ * l'embauche », a quatre usages — saisie, affichage, export RGPD. Aucun calcul.
+ * Voir `docs/revues/rapport-surface-des-quatorze.md` § 4.1.
  */
 export function rapprocher(
   applicables: readonly Obligation[],
