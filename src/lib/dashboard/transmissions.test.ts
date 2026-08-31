@@ -294,21 +294,27 @@ describe("règles 9-10 : une transmission ne passe jamais devant une urgence", (
       (r) => r.kind === "transmission_tiers_obligatoire",
     );
     expect(reco, "La règle du tiers obligatoire ne se déclenche plus").toBeDefined();
-    // Ce qui est dû, nommé et sourcé…
-    expect(reco!.sousTitre).toContain("L. 4622-1");
-    // …les DEUX branches, et laquelle est la sienne. « Organiser » est le verbe
-    // du texte et il est gardé — mais un employeur de six personnes n'organise
-    // pas un service, il adhère à un service interentreprises. Sans cette
-    // moitié, sa phrase se lit « montez un service », ce qui décourage là où
-    // il faut orienter. Les deux branches viennent de D. 4622-1, dépouillé au
-    // corpus : la phrase ne les fait pas dire à L. 4622-1, qui tient en une
-    // ligne.
-    expect(reco!.sousTitre).toContain("service autonome");
-    expect(reco!.sousTitre).toContain("interentreprises");
-    expect(reco!.sousTitre).toContain("D. 4622-1");
+    // Ce qui est dû…
+    expect(reco!.sousTitre).toContain("doit en avoir un");
+    // …l'action du destinataire EN PREMIER et à l'affirmative. Un employeur de
+    // six personnes n'organise pas un service, il adhère. Reléguer « adhérer »
+    // dans la clause conditionnelle — celle qui s'adresse à ceux qui l'ont déjà
+    // fait — laissait sa phrase se lire « montez un service ».
+    const i = reco!.sousTitre!.indexOf("adhésion");
+    const j = reco!.sousTitre!.indexOf("service autonome");
+    expect(i, "l'adhésion n'est plus nommée").toBeGreaterThan(-1);
+    expect(j, "la seconde branche n'est plus nommée").toBeGreaterThan(-1);
+    expect(i, "le service autonome passe devant l'adhésion").toBeLessThan(j);
     // …et l'issue la plus probable, qui retire le ton de reproche. Sans elle,
-    // la phrase accuse un dirigeant qui a très probablement un service.
+    // la phrase accuse un dirigeant qui a très probablement un service. C'est
+    // la clause que la troncature coupait en premier.
     expect(reco!.sousTitre).toContain("il reste à l'inscrire");
+    // AUCUNE RÉFÉRENCE D'ARTICLE ICI, et c'est délibéré. Une phrase qui en
+    // citait deux dépassait la largeur de la carte et s'affichait « (D. 46… » —
+    // une référence tronquée n'est pas une référence abrégée, c'est un article
+    // fabriqué par la mise en page. Le fondement vit sur l'obligation, qui le
+    // porte avec ses URL et ses versions constatées ; la carte oriente.
+    expect(reco!.sousTitre).not.toMatch(/\b[LRD]\.\s?\d/);
     // Le titre ne se lit plus comme une case vide d'annuaire.
     expect(reco!.titre).not.toContain("intervenant");
   });

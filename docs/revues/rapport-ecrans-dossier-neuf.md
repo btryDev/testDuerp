@@ -1,7 +1,7 @@
 # Rapport — les écrans d'un dossier neuf
 
 **Branche** `fix/ecrans-dossier-neuf`, depuis `origin/integration/2026-08-31` ·
-neuf corrections · **1788 tests verts**, `tsc` propre, un avertissement eslint
+dix corrections · **1790 tests verts**, `tsc` propre, un avertissement eslint
 préexistant (`normaliserFormData`).
 
 Neuf défauts trouvés en ouvrant les écrans d'un dossier réel — six personnes,
@@ -285,3 +285,64 @@ Les trois autres gardes lisent du texte source. C'est un procédé modeste et
 sans finesse, mais c'est exactement ce que fait `chiffres-publics.test.ts`
 depuis qu'un chiffre faux est resté des semaines sur la page publique — et c'est
 la seule chose qui attrape une phrase.
+
+---
+
+## 10. Une phrase juste que le rendu défaisait
+
+Le seul défaut du lot qui ne soit pas une phrase périmée : **une phrase juste,
+écrite le jour même, que la mise en page rendait fausse.**
+
+**Ce que voyait le dirigeant.** Mesuré dans le DOM par le contrôle visuel : un
+sous-titre de **213 signes**, demandant **1 115 px** pour **638 px** disponibles,
+sous `white-space: nowrap` et `text-overflow: ellipsis`. **Tronqué à 57 %.** À
+l'écran :
+
+> Tout employeur doit en organiser un (L. 4622-1) : service autonome, ou adhésion à un service interentreprises (D. 46**…**
+
+**Deux dégâts, et le second est de la famille que ce dépôt refuse le plus
+fermement.** D'abord, tout ce que la correction du tour précédent avait ajouté
+était dans la partie coupée — à commencer par « il reste à l'inscrire », la
+clause qui empêche le message de reprocher quelque chose à quelqu'un qui a déjà
+fait le nécessaire. Ensuite, la coupe tombait au milieu d'une référence :
+`D. 46…` **n'est pas un article**, c'est une référence fabriquée par la mise en
+page — sur un produit dont la règle est de ne jamais citer un texte que personne
+n'a dépouillé.
+
+**Ce qui a été sacrifié, et pourquoi celui-là.** Les références d'articles
+sortent du sous-titre. La raison suffisante est la seconde ci-dessus ; s'y ajoute
+que le fondement a déjà sa surface — l'obligation porte `L. 4622-1`, `D. 4622-1`
+et `D. 4622-2` avec leurs URL et leurs versions constatées. Le tableau de bord
+oriente, il ne plaide pas.
+
+**Ce qu'il voit après**, en 138 signes : « Tout employeur doit en avoir un :
+adhésion à un service interentreprises, ou service autonome. Si vous adhérez
+déjà, il reste à l'inscrire. » L'action du destinataire passe en tête, ce qui
+fait en dix-sept signes de moins le travail de « en pratique la voie des petites
+structures ».
+
+**Ce n'était pas ma phrase qui était trop longue, c'était la carte qui tronquait
+en silence.** Le témoin le montre : le sous-titre de l'aération occupait
+**exactement 638 px** — n'importe quel allongement d'un libellé existant l'aurait
+coupé sans que rien ne le dise. La carte passe donc à deux lignes
+(`line-clamp-2`), ce qui double la place et borne toujours la hauteur.
+
+**Gardé par un test ?** Oui, et **il faut lire ce qu'il ne fait pas.** Il compte
+des **caractères, pas des pixels** : rien ici ne rend la page, et « il » et
+« MM » n'ont pas la même largeur. C'est un garde-fou par approximation, calibré
+sur la mesure du contrôle visuel — 104 signes ≈ 638 px ≈ une ligne, donc deux
+lignes ≈ 208, budget fixé à 170 pour la marge et pour la date que la carte
+ajoute au sous-titre.
+
+Ce qu'il attrape : une phrase qui double de longueur, la forme qu'a prise le
+défaut. Ce qu'il laisserait passer : un dépassement de quelques signes en
+typographie large. **Le dire plutôt que de le simuler** — une garde qui promet
+une mesure qu'elle ne fait pas serait elle-même une phrase fausse.
+
+Éprouvé en réinjectant la phrase de 213 signes.
+
+**Une note de méthode.** Le cliquet posé au tour précédent — tout article cité
+dans ces phrases doit être dépouillé — exigeait aussi qu'une phrase cite au moins
+un article. Bonne intention, démentie par l'écran : c'est cette exigence qui
+avait mis deux références dans une phrase qui n'avait la place d'aucune. Elle est
+retirée ; la moitié qui compte reste, et elle est la bonne moitié.

@@ -358,8 +358,27 @@ function CarteTache({
         <p className="m-0 truncate text-[15px] font-semibold tracking-[-0.015em] text-[color:var(--board-ink)]">
           {reco.titre}
         </p>
+        {/* Deux lignes, pas une.
+
+            `truncate` coupait à la première : sur une carte de 638 px, un
+            sous-titre au-delà d'une centaine de signes disparaissait dans une
+            ellipse, EN SILENCE. Ce n'était pas un cas limite — le sous-titre de
+            l'aération mesurait pile 638 px, si bien que n'importe quel
+            allongement d'un libellé existant l'aurait tronqué sans que rien ne
+            le dise.
+
+            Et la coupe tombait où elle tombait : une phrase qui citait
+            « (D. 4622-1) » s'affichait « (D. 46… ». Sur un produit dont la
+            règle est de ne jamais citer un texte que personne n'a dépouillé,
+            `D. 46…` n'est pas un article — c'est une référence fabriquée par la
+            mise en page.
+
+            `line-clamp-2` double la place et garde la carte bornée. Il déplace
+            la falaise, il ne la supprime pas : c'est `recommandations.test.ts`
+            qui la garde désormais, en refusant à l'écriture un sous-titre plus
+            long que ce que deux lignes tiennent. */}
         {meta ? (
-          <p className="m-0 mt-0.5 truncate text-[12.5px] text-[color:var(--board-slate-mid)]">
+          <p className="m-0 mt-0.5 line-clamp-2 text-[12.5px] text-[color:var(--board-slate-mid)]">
             {meta}
           </p>
         ) : null}

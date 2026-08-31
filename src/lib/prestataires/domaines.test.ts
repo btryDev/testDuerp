@@ -227,11 +227,17 @@ describe("les articles que ces phrases citent à l'écran", () => {
       const cites = [...texte.matchAll(/\b([LRD])\.\s?(\d+-\d+(?:-\d+)*)/g)].map(
         (m) => `${m[1]}. ${m[2]}`,
       );
-      expect(
-        cites.length,
-        `${domaine} : la phrase ne cite aucun article. Ce qui est dû doit être ` +
-          `sourcé, sinon elle affirme sans montrer.`,
-      ).toBeGreaterThan(0);
+      // Ce test n'EXIGE PAS qu'une phrase cite un article, et ne le peut plus.
+      // La première rédaction le faisait — « ce qui est dû doit être sourcé » —
+      // et c'était une bonne intention démentie par l'écran : la phrase de la
+      // santé au travail citait deux articles, dépassait la largeur de la carte
+      // et s'affichait « (D. 46… ». Une référence tronquée n'est pas une
+      // référence abrégée, c'est un article fabriqué par la mise en page.
+      //
+      // Les références sont donc sorties du sous-titre, où elles ne tenaient
+      // pas, et vivent sur l'obligation, qui les porte avec leurs URL et leurs
+      // versions constatées. Ce qui reste gardé ici est la seule moitié qui
+      // compte : SI une phrase cite un article, il doit avoir été lu.
       for (const a of cites) {
         if (!lues.has(a)) manquants.push(`${domaine} → ${a}`);
       }

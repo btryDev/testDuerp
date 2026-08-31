@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { ajouterJours, instantCivil } from "@/lib/dates";
 import { evaluerEtatDuerp } from "./duerp";
 import {
@@ -513,5 +515,77 @@ describe("genererRecommandations — href", () => {
     };
     const recs = genererRecommandations(e, { now: NOW });
     expect(recs[0].href).toBe("/etablissements/etab-x/verifications/v-123");
+  });
+});
+
+describe("ce que la carte peut afficher sans le couper", () => {
+  /**
+   * Une garantie sur un plan que les tests de contenu ne voient pas : la place.
+   *
+   * Le défaut qui l'a fait écrire : un sous-titre de 213 signes, juste au mot
+   * près, mesuré dans le DOM à 1 115 px pour 638 px disponibles — **tronqué à
+   * 57 %**. Tout ce qu'une correction venait d'ajouter était dans la partie
+   * coupée, à commencer par la clause qui retire le ton de reproche. Et la
+   * coupe tombait au milieu d'une référence d'article : « (D. 46… ».
+   *
+   * ⚠ CE QUE CE TEST NE FAIT PAS, et il faut le lire avant de s'y fier : il
+   * compte des CARACTÈRES, pas des pixels. Un caractère n'a pas de largeur
+   * fixe, « il » et « MM » ne mesurent pas la même chose, et rien ici ne rend
+   * la page. C'est un garde-fou par approximation, pas une mesure.
+   *
+   * Il vaut quand même mieux que rien, et voici sur quoi il est calibré : le
+   * contrôle visuel a mesuré un sous-titre de 104 signes occupant exactement
+   * 638 px, soit la largeur disponible. Une ligne ≈ 104 signes, deux lignes
+   * (`line-clamp-2`) ≈ 208. Le budget est fixé à 170 pour garder de la marge —
+   * les glyphes larges, et la date que `CarteTache` ajoute au sous-titre sur
+   * les recommandations datées.
+   *
+   * Ce qu'il attrape réellement : une phrase qui DOUBLE de longueur, ce qui est
+   * la forme qu'a prise le défaut. Ce qu'il laisserait passer : un
+   * dépassement de quelques signes en typographie large. Le dire plutôt que de
+   * le simuler.
+   */
+  const BUDGET = 170;
+
+  /** Les sous-titres écrits en dur, quelle que soit la branche qui les produit. */
+  function sousTitresLitteraux(): { fichier: string; texte: string }[] {
+    const fichiers = [
+      "src/lib/dashboard/recommandations.ts",
+      "src/lib/prestataires/domaines.ts",
+    ];
+    const out: { fichier: string; texte: string }[] = [];
+    for (const f of fichiers) {
+      const src = readFileSync(join(process.cwd(), f), "utf8");
+      for (const m of src.matchAll(/sousTitre:\s*\n?\s*"((?:[^"\\]|\\.)*)"/g)) {
+        out.push({ fichier: f, texte: m[1] });
+      }
+    }
+    return out;
+  }
+
+  it("aucun sous-titre ne dépasse ce que deux lignes tiennent", () => {
+    const trop = sousTitresLitteraux()
+      .filter((s) => s.texte.length > BUDGET)
+      .map((s) => `${s.fichier} → ${s.texte.length} signes : ${s.texte.slice(0, 60)}…`);
+
+    expect(
+      trop,
+      `Ces sous-titres dépassent ${BUDGET} signes et seront tronqués à ` +
+        `l'écran, en silence. Raccourcir, ou déplacer ce qui ne tient pas vers ` +
+        `une surface qui a la place — l'obligation porte ses références, la ` +
+        `carte oriente.`,
+    ).toEqual([]);
+  });
+
+  it("le budget garde quelque chose : des sous-titres existent, et ils sont longs", () => {
+    // Contre-épreuve. Sans elle, une expression régulière qui cesserait de
+    // trouver les sous-titres rendrait ce test vert et vide — le mode d'échec
+    // le plus courant d'une garde qui lit du source.
+    const tous = sousTitresLitteraux();
+    expect(tous.length, "Plus aucun sous-titre trouvé : la garde ne garde rien").toBeGreaterThan(5);
+    expect(
+      Math.max(...tous.map((s) => s.texte.length)),
+      "Tous les sous-titres sont courts : le budget ne contraint plus rien",
+    ).toBeGreaterThan(80);
   });
 });

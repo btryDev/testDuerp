@@ -224,35 +224,45 @@ export const TIERS_LUI_MEME_OBLIGATOIRE: Partial<
 > = {
   sante_travail: {
     titre: "Aucun service de prévention et de santé au travail déclaré",
-    // Trois choses, et chacune répare un défaut constaté à l'écran.
+    // ⚠ LA LONGUEUR EST UNE CONTRAINTE DE FOND ICI, PAS UNE COQUETTERIE.
     //
-    // 1. CE QUI EST DÛ, avec son article. Sans cela, la phrase ramène une
-    //    obligation légale à un oubli de saisie — c'est ce que faisait la
-    //    formule unique « aucun intervenant déclaré ».
+    // La rédaction précédente disait tout ce qu'il fallait — ce qui est dû avec
+    // son article, les deux branches avec le leur, et l'issue probable — en
+    // 213 signes. Mesurée dans le DOM : 1 115 px pour 638 px disponibles,
+    // **tronquée à 57 %**. Le dirigeant lisait « … ou adhésion à un service
+    // interentreprises (D. 46… » et rien de plus.
     //
-    // 2. LES DEUX BRANCHES, et laquelle est la sienne. « Organiser » est le
-    //    verbe de `L. 4622-1` et il est gardé pour cette raison — mais un
-    //    employeur de six personnes n'organise pas un service, il adhère à un
-    //    service interentreprises. La phrase précédente laissait « adhérer »
-    //    dans la seule clause conditionnelle, celle qui s'adresse à ceux qui
-    //    l'ont déjà fait : son destinataire réel pouvait donc y lire « montez
-    //    un service », ce qui décourage là où il faut orienter.
+    // Tout ce que la correction avait ajouté était dans la partie coupée, à
+    // commencer par « il reste à l'inscrire » — la clause qui empêche le
+    // message de reprocher quelque chose à quelqu'un qui a déjà fait le
+    // nécessaire. La phrase était juste et l'écran la défaisait ; seul l'écran
+    // est lu.
     //
-    //    Les deux branches viennent de `D. 4622-1` (service autonome ou
-    //    interentreprises) et le choix de `D. 4622-2` — les deux dépouillés au
-    //    corpus par le lot 8, et cités par l'obligation
-    //    `sante-travail-etablissement-adhesion-spst`. Ce n'est donc pas une
-    //    reformulation : c'est l'alignement sur ce que le référentiel a établi
-    //    en lisant les textes d'application. Ne pas faire dire à `L. 4622-1`,
-    //    qui tient en une phrase, ce que disent les articles D.
+    // CE QUI A ÉTÉ SACRIFIÉ, ET POURQUOI CELUI-LÀ. Les références d'articles
+    // sortent du sous-titre. Deux raisons, et la première suffit : une
+    // référence tronquée n'est pas une référence abrégée, c'est un article qui
+    // n'existe pas, fabriqué par la mise en page. La seconde est que le
+    // fondement a déjà sa place — l'obligation
+    // `sante-travail-etablissement-adhesion-spst` porte `L. 4622-1`,
+    // `D. 4622-1` et `D. 4622-2` avec leurs URL et leurs versions constatées.
+    // Le tableau de bord oriente, il ne plaide pas.
     //
-    //    « En pratique » et non une prescription : le Code laisse le choix à
-    //    l'employeur, ce n'est pas lui qui range les TPE d'un côté.
+    // CE QUI EST GARDÉ, dans l'ordre où un dirigeant en a besoin :
+    //  * que c'est dû — « tout employeur doit en avoir un » ;
+    //  * SON action en premier, à l'affirmative : l'adhésion. C'était le point
+    //    du tour précédent, et le mettre en tête fait le travail que faisait
+    //    « en pratique la voie des petites structures », en dix-sept signes de
+    //    moins ;
+    //  * l'autre branche, pour ne pas resserrer le texte sur une seule ;
+    //  * et l'issue la plus probable, qui retire le ton de reproche.
     //
-    // 3. L'ISSUE LA PLUS PROBABLE. Sans elle, la phrase accuse un dirigeant
-    //    qui a très probablement déjà un service.
+    // « Doit en avoir un » plutôt que « doit en organiser un » : le verbe du
+    // Code est « organisent », mais il se lit « montez-en un » quand il précède
+    // les deux branches, et c'est exactement le contresens que le tour
+    // précédent a corrigé. La formulation exacte du texte vit au libellé de
+    // l'obligation, qui est la surface faite pour ça.
     sousTitre:
-      "Tout employeur doit en organiser un (L. 4622-1) : service autonome, ou adhésion à un service interentreprises (D. 4622-1) — en pratique la voie des petites structures. Si vous y adhérez déjà, il reste à l'inscrire",
+      "Tout employeur doit en avoir un : adhésion à un service interentreprises, ou service autonome. Si vous adhérez déjà, il reste à l'inscrire",
   },
 };
 
