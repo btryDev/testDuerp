@@ -356,19 +356,37 @@ trop large ferait échouer la suite.
 Défaut réinjecté — ancrage d'origine remis, porteur retiré —, suite complète
 relancée, puis réparé. **Les tests nommés tombent, et eux seuls.**
 
-| Défaut réinjecté | Tests qui tombent |
-|---|---|
-| `incendie-registre-securite` | les 2 tests « registre » + les 2 tests de mesure, **nommément** |
-| `incendie-travail-exercice-semestriel` | les 2 tests « exercices » + les tests de mesure, **nommément** |
-| `incendie-travail-consigne-affichee` | les 2 tests « consigne » + les tests de mesure, **nommément** |
+Témoin, état réparé : **194 passés, 0 échec** sur les quatre fichiers concernés.
 
-S'y ajoutent, dans les trois cas, deux **sentinelles structurelles** qui doivent
-réagir à toute modification du contenu du référentiel, et dont le
-déclenchement confirme qu'elles fonctionnent :
+**`incendie-registre-securite` — 7 échecs**
 
-- l'empreinte de `conformite.test.ts` ;
-- la cartographie des catégories sans obligation de `engine.test.ts`, et le
-  guide « chez vous », qui figent l'un et l'autre l'état de couverture.
+- `faux négatif — tenue du registre de sécurité > un ERP de 5ᵉ catégorie qui n'a rien déclaré reçoit le registre`
+- `faux négatif — tenue du registre de sécurité > un employeur non-ERP qui n'a rien déclaré reçoit le registre`
+- `la mesure du lot > un ERP de 5ᵉ catégorie sans aucun équipement déclaré`
+- `la mesure du lot > un employeur non-ERP du champ de R. 4227-34, sans aucun équipement`
+- *(sentinelles)* l'empreinte du référentiel ; la cartographie des catégories
+  sans obligation de `engine.test.ts` ; le guide « chez vous ». Ces trois-là
+  figent l'état de couverture et **doivent** réagir : c'est le registre qui
+  décide de ce qu'un établissement nu reçoit dans les deux typologies.
+
+**`incendie-travail-exercice-semestriel` — 4 échecs**
+
+- `faux négatif — exercices et essais semestriels > un établissement de plus de 50 personnes sans alarme déclarée reçoit l'exercice`
+- `faux négatif — exercices et essais semestriels > un établissement manipulant des matières R. 4227-22 le reçoit, quel que soit l'effectif`
+- `la mesure du lot > un employeur non-ERP du champ de R. 4227-34, sans aucun équipement`
+- *(sentinelle)* l'empreinte du référentiel.
+
+**`incendie-travail-consigne-affichee` — 3 échecs**
+
+- `faux négatif — consigne de sécurité incendie affichée > un établissement du champ de R. 4227-34 sans équipement reçoit la consigne`
+- `la mesure du lot > un employeur non-ERP du champ de R. 4227-34, sans aucun équipement`
+- *(sentinelle)* l'empreinte du référentiel.
+
+**Chaque défaut fait tomber les tests qui le nomment, et pas les autres.** Un
+défaut sur la consigne ne fait pas tomber un test d'exercice ; un défaut sur
+l'exercice ne fait pas tomber un test de registre. Les garde-fous symétriques —
+« et elle n'apparaît pas ailleurs » — restent verts dans les trois cas, ce qui
+confirme qu'ils ne mesurent pas la même chose que les assertions positives.
 
 Une garantie qu'on n'a pas cassée est une décoration. Celle-ci a été cassée
 trois fois.
