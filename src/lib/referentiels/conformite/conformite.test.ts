@@ -1228,6 +1228,8 @@ describe("référentiel conformité — version et empreinte", () => {
     realisateurs: ["exploitant"],
     criticite: 3,
     transmet: [],
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
     typologies: { erp: true },
     categoriesEquipement: ["ALARME_INCENDIE"],
   };
