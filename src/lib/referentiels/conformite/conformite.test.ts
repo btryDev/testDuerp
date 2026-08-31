@@ -987,7 +987,11 @@ describe("référentiel conformité — version et empreinte", () => {
   // `REFERENTIEL_VERSION` n'est délibérément pas incrémentée ici : le lot 7, le
   // palier 1 et le lot 8 ont posé la même valeur chacun de leur côté, et c'est
   // la session d'intégration qui la tranche pour les trois.
-  const EMPREINTE_ATTENDUE = "100-ea718b9391d464eb";
+  // Troisième déplacement du 2026-08-31, et le seul qui touche une obligation
+  // ANTÉRIEURE au lot : `elec-salarie-attestation-medicale-voisinage` passe de
+  // `realisateurs: ["exploitant"]` à `["medecin_travail"]`. Le réalisateur
+  // entre dans l'empreinte, le compte ne bouge pas.
+  const EMPREINTE_ATTENDUE = "100-32a2f742135e2f24";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(

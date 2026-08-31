@@ -203,7 +203,30 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "quinquennale",
-    realisateurs: ["exploitant"],
+    // `medecin_travail` depuis le 2026-08-31, et `exploitant` était une
+    // contre-vérité que la note ci-dessous relevait elle-même : le verbatim dit
+    // « est délivrée PAR LE MÉDECIN DU TRAVAIL à l'issue d'un examen médical
+    // qu'il réalise ». L'écran annonçait donc à un dirigeant qu'il délivre
+    // lui-même une attestation médicale — un acte qu'il lui est interdit de
+    // réaliser.
+    //
+    // La valeur n'existait pas quand cette obligation a été écrite ; elle a été
+    // ajoutée avec le suivi médical, et son jumeau `R. 4323-56` — issu du MÊME
+    // décret n° 2025-355 — la porte. Le référentiel se contredisait sur deux
+    // obligations nées le même jour du même texte.
+    //
+    // Pourquoi maintenant, alors que la correction avait été écartée : l'argument
+    // qui la retenait était qu'elle déplace l'empreinte d'une obligation publiée
+    // sur des dossiers vivants. Il valait tant que le lot n'était qu'un ajout ;
+    // l'intégration en cours déplace l'empreinte massivement de toute façon.
+    // Laisser une contre-vérité pour éviter un déplacement qui a lieu quand même,
+    // c'est en payer le coût sans en acheter le bénéfice.
+    //
+    // Le DOMAINE reste `electricite`, délibérément : c'est l'habilitation
+    // électrique que cette attestation conditionne, et le déplacer changerait
+    // son rangement au calendrier sans rien corriger. Un seul déplacement
+    // d'empreinte, pas deux.
+    realisateurs: ["medecin_travail"],
     criticite: 4,
     transmet: [],
     typologies: { travail: true },
