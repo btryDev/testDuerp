@@ -131,9 +131,11 @@ sources dans `docs/carto-obligations-hors-equipement.md`.
 
 **Ce que le chantier laisse ouvert est écrit** : `docs/dette-chantier-porteur-echeance.md`.
 Limites connues, promesses non tenues et décisions repoussées, chacune avec sa raison — dont
-une à lire avant de s'y fier : `docs/rgpd.md` § 5.1 promet au présent un export JSON complet
-du titulaire du compte **qui n'existe pas**. À consulter avant d'ouvrir un lot sur ce
-périmètre, pour ne pas redécouvrir une limite déjà tranchée.
+une à lire avant de s'y fier : l'export JSON du titulaire du compte et la suppression de
+compte **n'existent pas**. `docs/rgpd.md` § 5.1 le dit désormais et renvoie à une demande
+manuelle ; la **règle 9 de ce fichier continue de les annoncer au présent**, et c'est le
+manque qui reste ouvert (`docs/dette-chantier-porteur-echeance.md` § 1.1). À consulter avant
+d'ouvrir un lot sur ce périmètre, pour ne pas redécouvrir une limite déjà tranchée.
 
 **Données de salariés** : `docs/rgpd.md` est le document qui fait foi. Base légale RGPD 6.1.c,
 jamais le consentement. L'outil ne stocke d'une pièce médicale que son existence, sa date et

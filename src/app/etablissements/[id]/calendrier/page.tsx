@@ -221,7 +221,7 @@ export default async function CalendrierPage({
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
-  // Ce que l'outil ne couvre pas, sur les cinq axes. Lu ici, une fois : le
+  // Ce que l'outil ne couvre pas, sur les quatre axes. Lu ici, une fois : le
   // bandeau se rend loin plus bas, et une collecte au point de rendu se
   // referait à chaque variante de la page.
   const couverture = await couvertureDuDossier(id);

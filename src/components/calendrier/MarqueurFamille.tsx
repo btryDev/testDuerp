@@ -6,7 +6,7 @@
 //   marteau         corrections (actions correctives, signalements)
 //   casque          opérations encadrées (permis de feu, plan de prévention)
 //   document        documents (DUERP, attestations prestataires)
-//   personnes       personnel (titres détenus par les salariés)
+//   carte           personnel (titres détenus par les salariés)
 // La couleur vient de `currentColor` : l'appelant pose la taille et la
 // couleur de texte, le marqueur ne décide que du pictogramme.
 
@@ -79,7 +79,12 @@ const ICONE: Record<FamilleEcheance, typeof ClipboardCheck> = {
   // catégorie, pour que la pastille du calendrier renvoie à l'écran.
   operations: HardHat,
   papiers: FileText,
-  personnel: Users,
+  // `IdCard`, l'icône de « Équipe » dans le rail — et pas `Users`, qui
+  // désigne déjà les prestataires et le type `attestation` (cf. `ICONE_TYPE`
+  // plus bas) : la même icône ne peut pas nommer deux objets. La famille ne
+  // contient qu'un type, `titre-salarie` ; les deux niveaux portent donc le
+  // même pictogramme, ce qui est le même objet vu de deux distances.
+  personnel: IdCard,
 };
 
 

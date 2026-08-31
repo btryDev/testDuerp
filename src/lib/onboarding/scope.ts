@@ -12,7 +12,7 @@
  * « le DUERP produit ne serait pas fiable ».
  *
  * Le raisonnement mélangeait deux choses que le produit sépare partout
- * ailleurs. Le référentiel de **conformité** — 84 obligations opposables,
+ * ailleurs. Le référentiel de **conformité** — 85 obligations opposables,
  * échéances, registre de sécurité — ne lit **jamais** le code NAF : il se
  * déclenche sur les équipements déclarés et sur la typologie
  * (`lib/matching/engine.ts`). Un hôtelier qui voulait seulement tenir son

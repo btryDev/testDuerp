@@ -338,7 +338,7 @@ toujours porter.
 ## 6. La question ouverte, pour le point à venir
 
 Ce document dit ce que le produit ne couvre pas. Il ne dit pas ce qu'il couvre,
-et cette mesure manque toujours : **« 84 obligations » dit ce que le référentiel
+et cette mesure manque toujours : **« 85 obligations » dit ce que le référentiel
 porte, pas ce qu'un établissement donné déclenche.** Personne ne sait combien
 d'obligations sont atteignables par un profil type — un restaurant de 6
 personnes, un commerce de 3, un bureau de 12.
