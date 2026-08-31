@@ -449,17 +449,47 @@ affichée sur deux ? C'est une question de produit.
 
 Captures : `p13-parou.png`, `p14-01-vide-tdb.png`.
 
-### a-quater. Un avertissement React sur le calendrier d'un dossier sans échéance
+### a-quater. Un avertissement React sur le calendrier — non résolu
 
-Console, sur `/etablissements/<dossier sans vérification>/calendrier` :
+Console, sur `/etablissements/<id>/calendrier` :
 
 > `Each child in a list should have a unique "key" prop.`
 > `Check the render method of` **`BarreAnnee`**`. It was passed a child from` **`CalendrierPage`**`.`
 
-Reproduit à chaque chargement. Absent du calendrier du dossier chargé — il ne se
-déclenche que quand la barre d'années n'a rien à rendre. Sans effet visible
-aujourd'hui ; c'est le genre d'avertissement qui devient un bug de
-réconciliation le jour où la liste devient dynamique.
+**Correction d'une affirmation antérieure de ce rapport.** Je l'avais d'abord
+donné comme propre au dossier sans vérification, en écrivant qu'il était
+« absent du calendrier du dossier chargé ». **C'est faux.** En le reprenant sur
+quatre chargements neufs du dossier chargé, il apparaît à chaque fois :
+
+| Écran | Total affiché | Avertissement |
+|---|---|---|
+| Calendrier, sans filtre | 29 échéances | oui |
+| Calendrier, `?famille=personnel` | 1 échéance | oui |
+| Calendrier, `?famille=verification` | 29 échéances | oui |
+| Calendrier, `?urgent=1` | 26 échéances | oui |
+
+La première observation portait sur une seule paire de chargements dans une
+session de navigation déjà chargée ; React déduplique ces avertissements, et j'en
+ai tiré une conclusion que l'échantillon ne portait pas. L'avertissement est
+**général au calendrier**, indépendant du dossier, du filtre et du volume.
+
+**Ce que j'ai pu établir, et où je m'arrête.** La pile JavaScript ne contient que
+des trames internes de React — la réconciliation se produit hors de l'appel de
+rendu, il n'y a donc aucune trame applicative à lire. Le message désigne
+`BarreAnnee` comme le composant qui rend une liste, et `CalendrierPage` comme
+celui qui a créé les enfants. Le seul enfant que le second passe au premier est
+`commandes` (`calendrier/page.tsx:1007`), et c'est bien **un `<div>` unique**,
+pas un tableau — la lecture de la session principale est exacte sur ce point.
+`BarreAnnee` (`AnneeCalendrier.tsx:363`) ne rend par ailleurs que des frères
+statiques : un `<h2>`, un bloc conditionnel, `{commandes}`.
+
+Je n'ai donc pas trouvé la ligne fautive, et je ne la devine pas. Ce qui est
+acquis : **la condition de reproduction est bien plus large qu'annoncé au
+premier passage**, ce qui écarte toute piste liée aux données. Sans effet visible
+aujourd'hui — c'est un avertissement de développement — mais c'est le genre qui
+devient un bug de réconciliation le jour où la liste concernée devient dynamique.
+
+**Non résolu, et ne bloque pas la PR.**
 
 ### b. Le message de validation d'e-mail de Supabase remonte brut, en anglais
 
@@ -487,36 +517,35 @@ En 2024 sous « Titres du personnel », basculer sur « Vérifications périodiq
 ramène l'écran à 2026 sans le dire. L'année choisie est perdue au changement de
 famille.
 
-### e. « Préparer un contrôle » : trois signaux, trois axes, aucune légende
+### e. « Préparer un contrôle » : trois signaux sans légende — corrigé (`8aee065`)
 
-Sur l'écran qu'on ouvre devant un inspecteur, chaque pièce du dossier porte
-**trois indications qui ne disent pas la même chose**, et rien n'explique la
-troisième.
+Sur l'écran qu'on ouvre devant un inspecteur, chaque pièce portait **trois
+indications qui ne disent pas la même chose**, dont une sans aucune explication :
 
 | # | Pièce | Badge | Colonne de droite |
 |---|---|---|---|
 | 01 | Dossier de conformité consolidé | `À jour` (vert) | **✓** |
-| 02 | DUERP versionné — « Aucune version figée » | `À planifier` (gris) | **○** |
+| 02 | DUERP versionné — « Aucune version figée » | `À planifier` | **○** |
 | 03 | Registre de sécurité — « **0 rapport de vérification archivé** » | `En retard` (rouge) | **✓** |
-| 04 | Plan d'actions correctives | `À jour` (vert) | **✓** |
-| 05 | Registre d'accessibilité ERP — « Registre non publié » | `À planifier` (gris) | **○** |
 | 06 | Attestations prestataires — « 2 attestations expirées » | `En retard` (rouge) | **✓** |
 
-L'anneau, lui, annonce **33 % prêt** — soit les deux seules pièces « À jour » sur
-six.
+L'anneau annonçait par ailleurs **33 % prêt** — les deux seules pièces « À jour »
+sur six. La colonne comptait donc un troisième axe, sans en-tête, sans légende et
+sans `aria-label` : à l'œil, un ✓ à droite d'un badge rouge « En retard ».
 
-La colonne de droite compte donc autre chose que le badge : très probablement
-« cette pièce part dans le ZIP », ce qui explique qu'une pièce en retard mais
-existante soit cochée. C'est défendable. Mais **cette colonne n'a ni en-tête, ni
-légende, ni `aria-label`** — je n'ai pu en déduire le sens que par recoupement.
-Résultat à l'œil, sur la ligne 03 : un **✓** vert-noir à droite d'un badge rouge
-« En retard » et de la phrase « 0 rapport de vérification archivé ».
+**Vérifié après correction, sur le dossier chargé :**
 
-Sur cet écran-là, où l'on cherche à savoir si l'on peut ouvrir le dossier devant
-un tiers, un ✓ non légendé en face d'un « En retard » est le signal qu'il ne
-faudrait pas envoyer.
+- une ligne de légende s'est posée sous la description de la section :
+  `PASTILLE = ÉTAT DE VOS DONNÉES · ✓ À DROITE = PIÈCE INCLUSE DANS LE ZIP` ;
+- elle n'écrase pas la hiérarchie — sur-titre, titre, description, légende se
+  lisent dans cet ordre, la légende en petites capitales grises ;
+- la coche garde son alignement à droite, identique sur les six lignes malgré
+  l'imbrication de `span` ajoutée ;
+- le sens est désormais porté en toutes lettres pour les lecteurs d'écran —
+  « Incluse dans le ZIP » / « Absente du ZIP » — là où la coche était
+  `aria-hidden` et ne laissait rien de la colonne.
 
-Capture : `x-controle-haut.png`.
+Capture : `x2-controle.png` (après correction), `x-controle-haut.png` (avant).
 
 ### f. Les autres écrans non listés : rien à signaler
 
