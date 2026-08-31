@@ -345,6 +345,10 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
 23. **023** — Le salarié porte ses titres, et l'outil n'en garde que l'échéance
 24. **024** — Une obligation déclare ce qu'elle implique ailleurs : le
     produit nomme la transmission, il ne la dérive jamais
+25. **025** — Ce que Rojer sert et ce qu'il refuse (**proposé, non tranché** :
+    sept questions ouvertes, dont trois contredisent des ADR en vigueur)
+26. **026** — La nature d'une obligation est un champ, pas une déduction :
+    récurrente, état permanent, ponctuelle, événementielle
 
 La puce reprend le numéro de l'ADR et non son rang dans la liste, pour que les
 branches puissent atterrir dans n'importe quel ordre sans se contredire.
