@@ -30,10 +30,10 @@ UUID (`UPDATE 1`). Le second dossier, `e9492ba5-…`, est resté intact et ignor
 | 4 | Aucun référentiel privé présenté comme du droit | **conforme** |
 | 5 | Carnet sanitaire et sa citation | **conforme** |
 | 6 | Carte de couverture disparue du tableau de bord | **conforme** |
-| 7 | Bandeau de couverture du calendrier | **non vérifié** — aucun axe déclenché |
-| 8 | Deux nouvelles recommandations | **non vérifié** — et une observation gênante |
+| 7 | Bandeau de couverture du calendrier | **conforme** |
+| 8 | Deux nouvelles recommandations | **défaut** — la seconde est inatteignable |
 | 9 | Écrans Équipe | **conforme** |
-| 10 | Nom de l'opérateur sur le carnet sanitaire | **non vérifié** — données absentes |
+| 10 | Nom de l'opérateur sur le carnet sanitaire | **conforme** |
 | 11 | Onboarding hors des trois secteurs | **partiellement vérifié** |
 
 ---
@@ -168,13 +168,9 @@ désalignée.
 
 Capture : `p6-tdb.png`.
 
-## 7. Le bandeau de couverture du calendrier — non vérifié
+## 7. Le bandeau de couverture du calendrier — conforme
 
-**Aucun bandeau de couverture ne se rend sur le calendrier de cet
-établissement.** Recherche sur le texte rendu : « IGH », « secteur », « domaine »,
-« couvre », « couverture », « hors » — aucune occurrence.
-
-C'est très probablement le résultat juste, et la fiche le prévoit : cet
+**Première lecture — rien ne se rend**, et c'était le résultat juste : cet
 établissement ne déclenche aucun des quatre axes.
 
 | Axe | Valeur | Déclenche ? |
@@ -184,32 +180,70 @@ C'est très probablement le résultat juste, et la fiche le prévoit : cet
 | Secteur du DUERP | NAF `56.10A` — restauration, secteur couvert | non |
 | Domaine d'équipement | 9 catégories, toutes dans les 10 domaines livrés | non |
 
-**Mais je n'ai donc jamais vu ce bandeau rendu.** Sa lisibilité et sa justesse
-restent invérifiées : il faudrait un établissement qui déclenche au moins un axe
-— un NAF hors des trois secteurs, ou un équipement d'un domaine non couvert.
+**Seconde lecture — l'axe forcé.** Pour voir le bandeau rendu, `estIGH` a été
+passé à `true` (classe `GHW`) **sur la copie locale uniquement**, le temps d'une
+capture, puis remis à `false` / `null`. Le bandeau apparaît, et il est bon :
 
-## 8. Les deux nouvelles recommandations — non vérifié, et une observation
+> ⚠ **Cet établissement est déclaré immeuble de grande hauteur (IGH).**
+> Le règlement de sécurité des IGH impose un service de sécurité permanent et des
+> vérifications que cet outil ne connaît pas. Ce que vous lisez ici ne couvre pas
+> votre régime.
+> → *Vérifier le régime de l'établissement*
 
-**Aucune des deux ne s'affiche.** Recherche sur le texte rendu du tableau de
-bord : « titre nominatif », « Suppose », « prestataire », « recommand » — aucune
-occurrence. Le mot « prestataire » n'apparaît nulle part sur cet écran.
+Carte à liseré rouge, en tête de page, avant les filtres. Texte lisible, sans
+jargon, qui dit ce qui n'est pas couvert sans prétendre couvrir autre chose, et
+qui offre une sortie — le lien vers la fiche établissement, au cas où le régime
+aurait été mal déclaré. Il n'annonce aucun manque qui n'existe pas.
 
-Pour la première (« suppose un titre nominatif — aucun n'est déclaré »),
-**l'absence est juste** : les trois salariés ont chacun un titre déclaré, la
-condition n'est pas réunie.
+Capture : `p7-bandeau-igh.png`.
 
-Pour la seconde, **la condition semble réunie et le message manque**. Les deux
-prestataires de l'annuaire couvrent `incendie`, `entretien_general`,
-`electricite` et `bureau_controle`. Les équipements déclarés relèvent en plus de
-l'aération/ventilation (VMC), de la cuisson (hotte professionnelle, appareil de
-cuisson ERP), des portes et portails automatiques, et du froid (installation
-frigorifique) — **quatre domaines d'obligation sans prestataire correspondant**.
+## 8. Les deux nouvelles recommandations — défaut sur la seconde
 
-Je ne le qualifie pas de défaut, pour une raison précise : le tableau de bord est
-un board personnalisable, et je ne peux pas distinguer « le message est absent
-alors qu'il devrait être là » de « le widget qui le porte n'est pas dans le
-layout par défaut ». **À trancher côté conception**, avec le jeu de données de ce
-dump qui remplit la condition.
+**La première est juste dans son absence.** « Suppose un titre nominatif — aucun
+n'est déclaré » ne se déclenche pas ici : les trois salariés ont chacun un titre
+déclaré, la condition n'est pas réunie.
+
+**La seconde ne peut pas s'afficher sur ce dossier, ni sur aucun dossier réel.**
+
+La condition est réunie : les deux prestataires de l'annuaire couvrent
+`incendie`, `entretien_general`, `electricite` et `bureau_controle`, tandis que
+les équipements déclarés relèvent en plus de l'aération/ventilation, de la
+cuisson, des portes et portails automatiques et du froid — **quatre domaines
+d'obligation sans prestataire correspondant**. La règle existe et sait les
+nommer (`recommandations.ts:323`, `kind: "transmission_prestataire"`,
+« Aucun prestataire déclaré en … »).
+
+Le message n'apparaît nulle part. J'ai d'abord soupçonné un problème de layout,
+puis je l'ai écarté à l'écran : passage en mode personnalisation, ajout du widget
+**« Par où commencer »** depuis le tiroir — celui qui rend la file du moteur.
+Le widget s'affiche, annonce **« PAR OÙ COMMENCER — 2 SUR 27 »**, et liste deux
+urgences. Aucune transmission. Le seul endroit où le mot « prestataire » figure
+sur le tableau de bord est la matrice des modules.
+
+La cause est dans les deux widgets qui rendent la file
+(`impl/board.tsx:563` et `:1245`), qui portent la même ligne :
+
+```js
+const reelles = recommandations.filter((r) => r.priorite <= 5);
+const file = (reelles.length > 0 ? reelles : recommandations).slice(0, 2);
+```
+
+Les transmissions sont en **priorité 9 et 10**. Dès qu'il existe **une seule**
+recommandation de priorité ≤ 5, elles ne sont pas reléguées en fin de file :
+elles sont **retirées de la file**. Ce dossier en a 27.
+
+L'intention écrite dans le moteur est pourtant explicite —
+« Priorités 9 et 10, donc DERRIÈRE les amorçages » — et la fiche de contrôle
+demandait qu'elles passent « après les messages d'amorçage, pas avant ».
+« Après » a été rendu par « seulement si rien d'autre ». Conséquence : la famille
+de recommandations qui vient d'être ajoutée n'est visible que sur un dossier sans
+aucune urgence — c'est-à-dire à peu près jamais.
+
+Je ne propose pas de correction, ce n'est pas mon rôle ici. Je signale seulement
+que le partitionnement et le `slice` se cumulent, et que corriger l'un sans
+l'autre ne suffira pas.
+
+Capture : `p8-02-par-ou-commencer.png`.
 
 ## 9. Les écrans Équipe — conforme
 
@@ -227,15 +261,27 @@ Aucun des deux n'a l'air d'appartenir à une autre application.
 
 Captures : `p9-01-equipe.png`, `p9-02-fiche-salarie.png`.
 
-## 10. Le nom de l'opérateur sur le carnet sanitaire — non vérifié
+## 10. Le nom de l'opérateur sur le carnet sanitaire — conforme
 
-**Impossible à atteindre : le dump ne contient aucun point de relevé.**
-`select count(*) from "PointReleve"` → `0`. L'écran affiche « Aucun point de
-relevé configuré ». Il n'y a donc aucune fiche de point de relevé à ouvrir, et
-donc aucun nom d'opérateur à lire.
+Le dump ne portait aucun point de relevé (`select count(*) from "PointReleve"`
+→ `0`). Le parcours a donc été fait par l'interface, comme un utilisateur :
+création d'un point (« Douche vestiaire — point le plus éloigné », ECS, seuil
+50 °C, bâtiment principal), puis saisie d'un relevé du 28 août 2026 à 54 °C,
+opérateur « Samir [démo] Benali ».
 
-Pour y arriver il faudrait un dump contenant au moins un `PointReleve` et un
-`ReleveTemperature` avec son champ `operateur` renseigné. Je n'en ai pas fabriqué.
+Le champ de saisie est libellé **« Opérateur (facultatif) »**. Après
+enregistrement, la fiche du point affiche :
+
+> **Dernier relevé le 28 août 2026 · par Samir [démo] Benali**
+
+Le « par » fait le travail : le nom est rattaché à ce qu'il désigne — qui a
+relevé — et non posé comme une étiquette technique. La valeur « Dans la plage »
+et la courbe d'évolution s'affichent à côté.
+
+*Données locales seulement : ce point de relevé et ce relevé n'existent que sur
+la copie restaurée, ils ne sont dans aucun dump.*
+
+Capture : `p10-02-releve.png`.
 
 ## 11. L'onboarding s'ouvre hors des trois secteurs — partiellement vérifié
 
@@ -277,35 +323,41 @@ Capture : `p11-02-rempli.png`.
 
 ## Ce qui m'a paru faux sans être dans la liste
 
-### a. Un titre en retard depuis 2024 est invisible dans le calendrier, et les compteurs ne s'accordent pas
+### a. « En retard » se juge par rapport à aujourd'hui, sauf dans le calendrier
 
 **C'est le constat le plus sérieux du rapport.** Trois écrans disent trois choses
 différentes du même fait.
 
-Léa Fontaine a une attestation médicale dépassée depuis le **20 novembre 2024**
-(`statut = depassee`).
+Léa Fontaine a une attestation médicale dépassée depuis le **20 novembre 2024**.
 
 | Où | Ce qui est affiché |
 |---|---|
-| Tableau de bord, bandeau brief | « **27 échéances** à traiter cette semaine », « **27 dépassées** » |
+| Tableau de bord, bandeau brief | « **27 échéances** à traiter cette semaine », « 27 dépassées » |
+| Tableau de bord, widget « Par où commencer » | **n° 1 sur 27** : « Attestation médicale … — Léa Fontaine — **échéance dépassée depuis 649 j** » |
 | Tableau de bord, widget calendrier | « 25 vérifications · 1 opération · **1 titre de salarié** » · « 27 en retard » |
-| Calendrier, année 2026, sans filtre | « 29 échéances », « **26 en retard** » |
-| Calendrier, année 2026, filtre « Titres du personnel » | « **De août à décembre — aucune échéance** », 0 en retard |
+| Calendrier, 2026, sans filtre | « 29 échéances », « **26 en retard** » |
+| Calendrier, 2026, filtre « Titres du personnel » | « **De août à décembre — aucune échéance** » |
+| Calendrier, **2024**, filtre « Titres du personnel » | « 1 échéance », barre rouge en novembre, « 1 en retard » |
 
 Vérité SQL pour 2026 : **25 vérifications, 0 titre**. Les trois titres sont datés
 2024, 2029 et 2030.
 
-Le widget du tableau de bord remonte donc le titre dépassé de 2024 dans la vue de
-l'année en cours et le compte comme retard ; le calendrier, lui, filtre
-strictement sur l'année de `datePrevue` et le laisse en 2024. Les deux lectures
-se défendent séparément. Ensemble, elles produisent le résultat qu'il ne faut
-pas : **un dirigeant qui clique sur « Titres du personnel » — le filtre fait
-exactement pour ça — lit qu'il n'a aucune échéance de titre, alors que le
-bandeau, deux écrans plus haut, en compte une en retard.** Pour la voir, il faut
-reculer de deux années à la main.
+**La ligne n'est donc pas perdue** — elle est rangée sur l'onglet de son année, et
+le calendrier 2024 l'affiche correctement. Le défaut est plus précis que
+« elle disparaît » : **« en retard » est un état relatif à aujourd'hui, pas à
+l'année consultée**, et la vue par défaut du calendrier — l'année en cours — ne
+le montre pas, pendant que le tableau de bord le compte et le place en tête de
+ce qu'il faut traiter.
 
-Reproduction : `/etablissements/<id>` puis `/etablissements/<id>/calendrier`,
-filtre « Titres du personnel », année 2026.
+Le résultat pour le dirigeant : le tableau de bord lui désigne cette attestation
+comme **la première chose à faire**, dépassée depuis 649 jours ; le filtre
+« Titres du personnel » du calendrier — celui fait exactement pour ça — lui
+répond « aucune échéance ». Pour la voir, il faut reculer de deux années à la
+main, sans qu'aucun élément d'écran ne l'y invite. Deux compteurs voisins qui se
+contredisent, ce que l'ADR-015 existe pour empêcher.
+
+Reproduction : `/etablissements/<id>` (widget « Par où commencer »), puis
+`/etablissements/<id>/calendrier`, filtre « Titres du personnel », année 2026.
 
 ### b. Le message de validation d'e-mail de Supabase remonte brut, en anglais
 
@@ -316,12 +368,16 @@ tel quel, au milieu d'une page entièrement en français :
 
 C'est ce que voit un dirigeant qui se trompe de domaine à l'inscription.
 
-### c. La landing annonce « 64 obligations · 9 domaines »
+### c. La landing annonçait « 64 obligations · 9 domaines » — corrigé depuis
 
 Sur la page d'accueil publique, la carte « Le calendrier des vérifications »
-affiche « 64 obligations · 9 domaines ». Le `CLAUDE.md` de cette branche en
-annonce **85 sur 10 domaines**. Un des deux chiffres est périmé, et c'est le seul
-qui soit public.
+affichait « 64 obligations · 9 domaines » quand le référentiel en porte **85 sur
+10**. `/` étant une route publique, le chiffre était montré à des prospects et
+sous-vendait le produit de vingt et une obligations.
+
+Corrigé en `ee7c204` après signalement, avec un test qui lit le texte rendu et le
+confronte au référentiel — le commentaire qui promettait de recompter n'avait
+jamais recompté.
 
 ### d. Changer de filtre de type ramène le calendrier à l'année en cours
 
@@ -348,12 +404,18 @@ famille.
 
 ## Ce que je n'ai pas pu atteindre, et ce qu'il aurait fallu
 
-| Point | Ce qui manquait | Ce qu'il faudrait |
+| Point | Ce qui manquait | Statut après seconde passe |
 |---|---|---|
-| 7 — bandeau de couverture | Un établissement déclenchant au moins un des quatre axes | Un dossier au NAF hors des trois secteurs, ou avec un équipement d'un domaine non couvert |
-| 8 — recommandations | Impossible de distinguer « message absent » de « widget hors layout par défaut » | Savoir quel widget les porte, et s'il est épinglé par défaut |
-| 10 — opérateur du carnet sanitaire | `PointReleve` = 0 dans le dump | Un dump avec au moins un point de relevé et un relevé de température dont `operateur` est renseigné |
-| 11 — fin du parcours d'onboarding | `Entreprise.userId` est `@unique` : le compte possède déjà un dossier | Un second compte Supabase vierge |
+| 7 — bandeau de couverture | Un établissement déclenchant un axe | **Levé** — `estIGH` forcé localement puis remis, bandeau vu et capturé |
+| 8 — recommandations | Distinguer « message absent » de « widget hors layout » | **Levé** — widget ajouté depuis le tiroir, message toujours absent : c'est un défaut, cf. §8 |
+| 10 — opérateur du carnet sanitaire | `PointReleve` = 0 dans le dump | **Levé** — point et relevé créés par l'interface |
+| 11 — fin du parcours d'onboarding | `Entreprise.userId` est `@unique` : le compte possède déjà un dossier | **Ouvert** — il faut un second compte Supabase vierge ; la fenêtre « Confirm email » a été refermée et ne sera pas rouverte pour ça |
+
+**Modifications faites sur la copie locale, et sur elle seule** : `estIGH` passé à
+`true` puis remis à `false` / `null` ; un `PointReleve` et un
+`ReleveTemperature` créés par l'interface ; le widget « Par où commencer » ajouté
+au layout (stocké en `localStorage`, propre à ce navigateur). Rien de tout cela
+n'existe dans un dump ni dans le dépôt.
 
 Trois remarques de mise en route, pour la prochaine fois :
 
@@ -368,6 +430,8 @@ Trois remarques de mise en route, pour la prochaine fois :
 
 ## Ce que je n'ai pas fait
 
-Aucune correction de code, aucun `push` sur `main`, aucune donnée fabriquée pour
-combler une vérification manquante. Playwright a été installé **hors du dépôt**
+Aucune correction de code, aucun `push` sur `main`. Aucune vérification n'a été
+cochée sans avoir été faite : les quatre points d'abord annoncés « non vérifié »
+l'étaient réellement, et trois ont été levés dans une seconde passe décrite
+ci-dessus. Playwright a été installé **hors du dépôt**
 (`/tmp/controle-pr10`) : ni `package.json` ni le lockfile n'ont été touchés.
