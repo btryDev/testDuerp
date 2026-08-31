@@ -641,3 +641,102 @@ comme second cas du même manque). S'y ajoutent :
 11. **Le modèle n'a toujours pas de notion de plafond**, et trois obligations en
     encodent un. Chaque `notesInternes` porte la consigne : ne pas retirer la
     primauté d'`echeanceLe` sans repasser l'obligation à `autre`.
+
+---
+
+# Second tour de revue : les renvois d'intervalle
+
+Un balayage a cherché, dans tout le dépôt, les endroits où un texte est **cité
+par un intervalle** plutôt que lu article par article. Il a trouvé chez moi
+quatre choses, dont **la faute que ce chantier tient pour la plus grave**.
+
+## La faute : « vérifié » écrit sans avoir ouvert la page
+
+Le corpus de santé au travail affirmait, à trois endroits :
+
+> « Amiante (`R. 4412-118`) et plomb (`R. 4412-160`) renvoient aux articles
+> `R. 4624-22` à `R. 4624-28` **sans y déroger, vérifié le 2026-08-31** ; les
+> textes propres aux cinq autres expositions n'ont PAS été ouverts. »
+
+**Les deux assertions étaient fausses.**
+
+- **`R. 4412-160` est abrogé** — décret n° 2026-253 du 8 avril 2026, art. 3,
+  effet au 10/04/2026. C'est *le décret que le même fichier cite dans sa
+  `portee`* pour la réécriture de `R. 4624-23` : l'article avait été vu mourir
+  et cité vivant dans le même commentaire.
+- **`R. 4412-118` porte l'organisation des vacations** en travaux amiante —
+  temps d'habillage, de décontamination, de pause, renvoi à `L. 3121-16`. Rien
+  sur le suivi médical.
+
+**La cause, sans l'habiller :** ces deux articles n'avaient été vus qu'en résumé
+de moteur de recherche. J'ai écrit « vérifié » sans que la page ait été ouverte —
+dans le lot dont c'était la règle, et le jour où je corrigeais la même faute
+ailleurs.
+
+**La prudence de la seconde phrase aggravait la première** au lieu de la
+tempérer : préciser que cinq articles n'ont pas été lus certifie implicitement
+que les deux autres l'ont été. C'est une forme de la faute qu'aucun test ne peut
+attraper — ni le compilateur, ni le cliquet, ni une revue de diff ne savent si
+une page a été ouverte. **Seule la personne qui écrit le mot le sait.**
+
+## Un intervalle cité n'est pas un intervalle lu
+
+Le corpus écrivait partout « `R. 4624-22` à `R. 4624-28` » en n'ayant ouvert que
+22, 23, 24 et 28. La sous-section court en réalité jusqu'à `R. 4624-28-3`. Trois
+articles en sortent :
+
+- **`R. 4624-27`** — dispense d'examen d'aptitude si le travailleur en a
+  bénéficié dans les **deux ans** précédant l'embauche, sous trois conditions.
+  Le référentiel faisait naître l'examen préalable **sans jamais dire que le
+  droit en dispense**. Faux positif, désormais rappelé en description. Les trois
+  conditions supposent des faits que l'outil ne détient pas — dont l'historique
+  des avis d'aptitude, que `docs/rgpd.md` § 2.3 lui *interdit* de connaître.
+- **`R. 4624-28-2`** — **obligation d'employeur pleine, non portée** : informer
+  le service de santé au travail de la cessation d'exposition, du départ ou de
+  la mise à la retraite d'un salarié en suivi renforcé, et en aviser
+  l'intéressé sans délai. Événementielle, donc bloquée.
+- **`R. 4624-28-3`** entre en `non_depouille` : il n'a pas été ouvert, et le
+  dire vaut mieux que l'omettre.
+
+**Le cliquet a fonctionné sur son auteur.** En citant `R. 4624-27` avant de
+l'inscrire au corpus, le test a refusé le changement : « une obligation a été
+ajoutée sur un texte que personne n'a lu ». Le garde-fou de ce lot s'est
+déclenché tout seul, contre celui qui l'avait posé.
+
+## Une portée qui démentait sa propre liste
+
+`code-travail-electricite.ts` annonçait `R. 4544-11-1` « non encore cité par le
+référentiel » alors qu'il est **le premier article de sa propre liste**, retenu
+depuis le 2026-08-27.
+
+La même portée désignait « `R. 4544-9` et s. » comme le siège de l'habilitation.
+`R. 4544-9` a été lu : une phrase, aucune durée, aucune obligation propre. Il est
+inscrit en `sans_objet` pour que ce soit dit une fois.
+
+## `R. 4544-11` — inscrit au second essai
+
+L'article qui coûte, et il porte **deux** obligations que le référentiel ignore :
+l'habilitation **spécifique** aux travaux sous tension (distincte de
+l'habilitation ordinaire de `R. 4544-10`), et son **II** — une vérification
+préalable à la charge de l'employeur que personne n'avait relevée.
+
+Il n'a pas été inscrit du premier coup : la première lecture n'avait rendu qu'une
+restitution partiellement traduite, et **un article dont on n'a pas le texte ne
+s'inscrit pas au corpus**. Le verbatim du I a été obtenu au second essai, en
+redemandant le français sans traduction.
+
+**Deux chiffres à ne pas reprendre**, écrits dans l'entrée pour cela : les quatre
+ans du III sont la durée d'agrément des **organismes de formation**, non une
+périodicité d'exploitant ; et le I renvoie aux **normes** de `R. 4544-3` pour la
+délivrance et le renouvellement — c'est le renvoi exact qui avait produit le
+« triennal » NF C 18-510 déjà retiré de ce dépôt.
+
+## Ce que ce tour ajoute aux points ouverts
+
+12. **`R. 4544-11`** — deux obligations d'employeur non portées, bloquées par le
+    renvoi aux normes. La question à trancher n'est pas technique : que vaut
+    « maintenue ou renouvelée selon les modalités contenues dans les normes »
+    pour un référentiel qui refuse les normes privées comme source ?
+13. **`R. 4624-28-2`** — obligation d'employeur événementielle, à la sortie d'un
+    salarié en suivi renforcé. Le produit ne détient aucune date de départ.
+14. **`R. 4624-28-3`** reste non dépouillé.

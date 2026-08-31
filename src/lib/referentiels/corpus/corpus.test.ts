@@ -260,6 +260,21 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // de l'ADR-023 la rend encodable, et elle l'est —
       // `elec-salarie-attestation-medicale-voisinage`. Troisième sortie par
       // livraison plutôt que par requalification, après PE 4 et R. 4222-20.
+      // R. 4544-11 : l'habilitation SPÉCIFIQUE aux travaux sous tension, et le
+      // II — une vérification préalable à la charge de l'employeur que personne
+      // n'avait relevée. Distinctes toutes deux de l'habilitation ordinaire de
+      // R. 4544-10, que le référentiel porte.
+      //
+      // Inscrite au second essai : la première lecture n'avait rendu qu'une
+      // restitution partiellement traduite, et un article dont on n'a pas le
+      // texte ne s'inscrit pas ici. Le verbatim du I a été obtenu en redemandant
+      // le français sans traduction.
+      //
+      // Bloquée par le renvoi du I aux normes de R. 4544-3 pour la délivrance et
+      // le renouvellement : c'est le renvoi qui avait produit le « triennal »
+      // NF C 18-510 déjà retiré de ce dépôt. Encoder supposerait de trancher ce
+      // qu'il vaut, et ce n'est pas un choix technique.
+      "R. 4544-11",
       "Arrêté 23-02-2018 art. 26 § 3",
       // Les trois suivantes entrent avec le lot 7, et la liste s'allonge pour
       // la raison qu'elle s'allonge toujours ici : on a lu quatre textes de
