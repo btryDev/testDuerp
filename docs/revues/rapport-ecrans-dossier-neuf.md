@@ -1,7 +1,7 @@
 # Rapport — les écrans d'un dossier neuf
 
 **Branche** `fix/ecrans-dossier-neuf`, depuis `origin/integration/2026-08-31` ·
-dix corrections · **1790 tests verts**, `tsc` propre, un avertissement eslint
+dix corrections · **1792 tests verts**, `tsc` propre, un avertissement eslint
 préexistant (`normaliserFormData`).
 
 Neuf défauts trouvés en ouvrant les écrans d'un dossier réel — six personnes,
@@ -346,3 +346,52 @@ dans ces phrases doit être dépouillé — exigeait aussi qu'une phrase cite au
 un article. Bonne intention, démentie par l'écran : c'est cette exigence qui
 avait mis deux références dans une phrase qui n'avait la place d'aucune. Elle est
 retirée ; la moitié qui compte reste, et elle est la bonne moitié.
+
+### 10 bis. La correction n'était allée que dans le widget que personne ne voit
+
+**Ce que voyait le dirigeant.** La même phrase, toujours coupée. `line-clamp-2`
+avait été posé sur `CarteTache` (« Par où commencer ») ; `BlocAFaire` (« À
+faire ») gardait son `truncate`. Or **sur un dossier neuf, c'est « À faire » qui
+s'affiche** — « Par où commencer » doit être ajouté à la main depuis le tiroir.
+La correction était dans le widget caché, le défaut dans celui qui se voit, et
+le dossier neuf est précisément la population de ce lot. Mesuré : 138 signes,
+719 px pour 638 disponibles.
+
+**Le vrai défaut n'est pas l'oubli.** C'est le **troisième** en une journée à se
+loger dans ces deux mêmes fonctions : la file amputée par `priorite <= 5` (les
+deux, et il a fallu signaler le second), la clé React en double (les deux), la
+troncature (un seul). Trois fois, c'est une donnée.
+
+**Ce que j'ai fusionné, et ce que je n'ai pas fusionné.** Les deux mises en page
+diffèrent légitimement — pastille numérotée et bouton « Ouvrir » d'un côté,
+ligne cliquable et badge d'écart de l'autre. Ce n'est pas la duplication à
+supprimer, et les fondre en un composant aurait produit un objet à paramètres
+qui n'aurait servi ni l'un ni l'autre.
+
+Ce qui n'a **aucune raison** de diverger, c'est la politique de troncature : ce
+qu'on s'autorise à couper d'une phrase écrite pour être lue ne dépend pas du
+widget. Un composant `MetaRecommandation` la tient, les deux l'appellent, et une
+correction future y atterrit une seule fois.
+
+**Gardé par un test ?** Oui, deux, et le second est le plus utile : le premier
+vérifie qu'aucun `{meta}` n'est rendu dans un paragraphe écrit à la main — c'est
+exactement ce qu'était le `truncate` oublié ; le second, que le composant clampe
+bien à deux lignes.
+
+### Et mon garde-fou de longueur était faux, pour une autre raison que celle que j'avais annoncée
+
+J'avais écrit dans ce test qu'il comptait des caractères et non des pixels, et
+que c'était son approximation. C'était honnête — **et ce n'était pas sa limite.**
+
+Le seuil de 170 valait deux lignes, alors que **le widget réellement affiché
+n'en avait qu'une**, donc ~104. Entre 104 et 170, l'écran refusait ce que le test
+acceptait : une phrase de 138 signes est passée ici avant d'être coupée là-bas.
+
+Une approximation déclarée reste une approximation ; un seuil calibré sur le
+mauvais rendu est simplement faux. Ce qui rend le budget juste aujourd'hui n'est
+pas le test de longueur lui-même mais celui qui garde que **les deux** widgets
+clampent à deux lignes. Si l'un revenait à une ligne, le budget redeviendrait
+faux pour lui seul — et c'est l'autre test qui le dirait.
+
+**La phrase n'a pas été touchée.** Le défaut était dans le rendu ; la
+raccourcir aurait armé le piège pour la suivante.

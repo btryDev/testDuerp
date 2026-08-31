@@ -540,6 +540,20 @@ describe("ce que la carte peut afficher sans le couper", () => {
    * les glyphes larges, et la date que `CarteTache` ajoute au sous-titre sur
    * les recommandations datées.
    *
+   * ⚠ CE SEUIL A ÉTÉ FAUX PENDANT UN TOUR, et pas pour la raison annoncée.
+   * Sa première rédaction disait déjà « je compte des caractères, pas des
+   * pixels » — c'était honnête, et ce n'était pas la limite. Le vrai défaut
+   * était ailleurs : le seuil valait deux lignes alors que le widget RÉELLEMENT
+   * AFFICHÉ n'en avait qu'une. Entre 104 et 170 signes, l'écran refusait ce
+   * que ce test acceptait, et une phrase de 138 signes est passée ici avant
+   * d'être coupée là-bas.
+   *
+   * Une approximation déclarée reste une approximation ; un seuil calibré sur
+   * le mauvais rendu est simplement faux. Ce qui le rend juste aujourd'hui
+   * n'est pas ce fichier mais `board-meta.test.ts`, qui garde que les DEUX
+   * widgets clampent à deux lignes. Si l'un revenait à une ligne, ce budget
+   * redeviendrait faux pour lui seul — et c'est ce test-là qui le dirait.
+   *
    * Ce qu'il attrape réellement : une phrase qui DOUBLE de longueur, ce qui est
    * la forme qu'a prise le défaut. Ce qu'il laisserait passer : un
    * dépassement de quelques signes en typographie large. Le dire plutôt que de
