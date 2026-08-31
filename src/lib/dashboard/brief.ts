@@ -130,6 +130,10 @@ const VERBE: Record<RecoBrief["kind"], string> = {
   amorce_equipements: "Déclarer",
   amorce_duerp: "Ouvrir",
   amorce_rapport: "Déposer",
+  // Un verbe qui invite, pas qui somme : ces deux-là nomment un écart, pas
+  // une échéance (ADR-024).
+  transmission_prestataire: "Compléter l'annuaire",
+  transmission_salarie: "Voir l'équipe",
 };
 
 /**
@@ -182,7 +186,10 @@ const NOM_RETARD: Record<FamilleEcheance, [string, string]> = {
   travaux: ["correction en retard", "corrections en retard"],
   operations: ["opération en retard", "opérations en retard"],
   papiers: ["document à renouveler", "documents à renouveler"],
-  personnel: ["échéance personnel", "échéances personnel"],
+  // La famille ne portait aucune ligne quand ces mots ont été écrits : ils
+  // n'étaient jamais lus. Elle en porte depuis l'ADR-023 — les titres des
+  // salariés — et la phrase doit se tenir.
+  personnel: ["titre de salarié dépassé", "titres de salariés dépassés"],
 };
 
 /** Ordre de lecture du paragraphe — celui du calendrier. */

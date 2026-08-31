@@ -53,9 +53,9 @@ export default async function ImportDuerpPage({
           <div className="mt-3">
             <LegalBadge
               charte="board"
-              reference="Art. R4121-1 CT"
-              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530833"
-              extrait="L'employeur transcrit et met à jour dans un document unique les résultats de l'évaluation des risques pour la santé et la sécurité des travailleurs à laquelle il procède."
+              reference="Art. R. 4121-1 CT"
+              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000023795562"
+              extrait="L'employeur transcrit et met à jour dans un document unique les résultats de l'évaluation des risques pour la santé et la sécurité des travailleurs à laquelle il procède en application de l'article L. 4121-3."
             >
               Le Code du travail impose <strong>un</strong> DUERP tenu à jour —
               il ne prescrit pas de format imposé.

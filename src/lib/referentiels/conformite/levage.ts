@@ -67,6 +67,7 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
   },
@@ -98,6 +99,7 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     notesInternes:
@@ -128,6 +130,7 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     conditions: [
@@ -183,6 +186,7 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "semestrielle",
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     conditions: [
@@ -225,6 +229,7 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "trimestrielle",
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     conditions: [
@@ -268,6 +273,7 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "semestrielle",
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     conditions: [
@@ -315,6 +321,7 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     conditions: [
@@ -352,6 +359,7 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     notesInternes:
@@ -382,6 +390,7 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     notesInternes:
@@ -422,6 +431,7 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
   },

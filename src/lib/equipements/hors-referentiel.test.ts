@@ -19,6 +19,8 @@ const etablissement = (
   typeErp: null,
   categorieErp: null,
   classeIgh: null,
+  personnesPresentesHabituellement: null,
+  manipuleMatieresR422722: null,
   ...o,
 });
 
@@ -43,6 +45,7 @@ const obligation = (
   periodicite: "annuelle",
   realisateurs: ["organisme_agree"],
   criticite: 3,
+  transmet: [],
   typologies: { travail: true },
   categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
   ...o,

@@ -116,6 +116,20 @@ vérification ». Le nom du technicien n'y est pas par accident.
 L'utilisateur reste responsable de ce qu'il dépose : un rapport peut contenir
 davantage (signature scannée, numéro d'habilitation d'un tiers).
 
+**La portée de `D. 4711-2` s'arrête ici.** L'article vise les vérifications et
+contrôles mis à la charge de l'employeur « au titre de la santé et de la
+sécurité **au travail** ». Il ne couvre donc ni `Action.responsable` — la
+personne à qui l'employeur confie une action corrective n'est pas un
+vérificateur — ni `ReleveTemperature.operateur` : un relevé d'eau chaude
+sanitaire relève du carnet sanitaire (arrêté du 1er février 2010,
+`R. 1321-23` CSP), dont l'article 3 demande de consigner « les modalités et
+les résultats » de la surveillance, et non l'identité de qui relève.
+
+Le maintien de `responsable` dans les documents remis est donc un fondement
+**produit**, pas légal : un plan d'actions sans porteur nommé perd sa
+fonction. Ce qu'aucun texte n'impose, aucune formulation de ce document ne
+doit le faire croire.
+
 ### 2.5 Autres personnes physiques déjà en base
 
 Pour que l'inventaire soit complet, et parce que l'ancienne version de ce
@@ -129,6 +143,99 @@ document les passait sous silence :
 | `PermisFeu.prestataireContact`, `donneurOrdreNom` | instantané d'une opération datée |
 | `PlanPrevention.efChefNom`, `euChefNom` | instantané d'une inspection commune |
 | `Action.responsable` | texte libre saisi par l'utilisateur |
+| `ReleveTemperature.operateur` | texte libre : qui a fait le relevé — lu sur l'écran du carnet sanitaire, jamais exporté |
+
+`operateur` manquait à ce tableau, qui se présente pourtant comme
+l'inventaire complet. Le champ existait depuis le carnet sanitaire.
+
+**Où ces deux champs sortent, et où ils ne sortent pas.** Un inventaire qui ne
+distingue pas les destinataires ne dit pas grand-chose : les deux champs sont
+du texte libre nominatif, et la décision du 2026-08-28 ne les traite pas
+pareil.
+
+| Champ | Sort | Ne sort pas | Pourquoi |
+|---|---|---|---|
+| `Action.responsable` | PDF du plan d'actions, dossier de conformité, DUERP — et le snapshot conservé 40 ans, qui conserve ce qui a été remis | serveur MCP (`src/lib/mcp/`) | L'employeur remet ces documents lui-même, en connaissance de cause. Le MCP alimente l'assistant qu'il branche : un nom lu là part vers un LLM tiers par défaut, contre le principe « zéro IA sur le contenu utilisateur ». |
+| `ReleveTemperature.operateur` | rien | export ZIP de contrôle (`app/api/`) | Le ZIP est remis « à un inspecteur, un assureur, un bailleur ou un acquéreur ». Le fichier sanitaire, lui, est tenu à disposition de l'ARS — et n'exige pas ce nom. |
+
+**Où `operateur` est lu, et pourquoi il l'est.** Sur l'écran du carnet
+sanitaire (`app/etablissements/[id]/carnet-sanitaire/page.tsx`), sur la carte
+de chaque point de relevé : « Dernier relevé le 12/08/2026 · par … ».
+L'exploitant sait à qui demander quand une mesure surprend, ce qui est
+l'usage pour lequel le formulaire demande ce nom. Le champ ne sort pas de
+l'établissement, déjà responsable de traitement des personnes qu'il emploie.
+
+Cette finalité a été rendue au champ le 2026-08-28, après qu'il l'eut perdue
+le même jour. Le retrait du ZIP était juste — aucun texte n'exige ce nom, et
+le ZIP part vers un tiers — mais il laissait un champ que le formulaire
+demande, que le schéma valide, que la base conserve, et que plus rien ne
+lisait. Une donnée collectée sans finalité tient plus mal sous le principe de
+minimisation que la même donnée employée à quelque chose : la corriger
+demandait de lui rendre un usage interne, pas de la ressortir.
+
+Une rédaction antérieure de ce paragraphe affirmait déjà que le champ « reste
+en base et à l'écran ». Elle était fausse au moment où elle a été écrite —
+aucun écran ne le rendait. Une affirmation invérifiable inscrite dans le
+registre RGPD lui-même est exactement la classe de défaut que ce lot corrige
+ailleurs ; elle a été relevée en revue, et non par celui qui l'avait écrite.
+
+Les deux retenues sont posées dans la **requête** et non dans le formateur :
+une colonne ajoutée plus tard au formateur ne peut pas faire ressortir ce que
+la requête ne charge pas. Elles sont tenues par
+`src/lib/rgpd/frontiere-medicale.test.ts`, éprouvé en réinjectant chaque
+défaut plutôt qu'en le décrivant.
+
+**Ce que la garde tient, et ce qu'elle ne tient pas.** Sur `src/lib/mcp/`,
+elle tient les deux bouts : les six formes sous lesquelles on lit un champ
+nommément, et la **forme des requêtes**. Ce second volet est indispensable —
+une requête sans `select` rend tous les scalaires du modèle sans qu'aucun nom
+de champ n'apparaisse dans le source. C'est ainsi que `DuerpVersion.snapshot`,
+qui porte le `responsable` de chaque mesure, revenait dans le serveur MCP :
+vu par un relecteur, pas par la garde.
+
+La règle de forme exige un `select` **à chaque niveau**, et non un `select`
+quelque part dans la requête. La nuance n'est pas théorique : une première
+rédaction se contentait du second, et une relation imbriquée sans `select`
+propre la satisfaisait tout en ramenant la ligne entière — le défaut d'origine
+se réécrivait à l'identique sous garde verte, sous la graphie la plus naturelle
+pour qui vient de lire « pas d'`include`, mets un `select` ».
+
+**La règle échoue fermée.** Une deuxième rédaction listait les relations, lues
+dans `prisma/schema.prisma`, et refusait `X: true` quand `X` en était une.
+Cette polarité-là échoue **ouverte** : toute lacune d'analyse retire un nom de
+la liste, et le `X: true` correspondant passe au vert. Une revue l'a montré en
+indentant `model Prestataire {` d'un espace — schéma toujours valide pour
+`prisma validate`, garde toujours verte, `select: { prestataires: true }`
+devenu acceptable.
+
+La polarité est donc inversée : `X: true` n'est accepté que si `X` est un
+scalaire **reconnu** — type primitif Prisma ou énumération déclarée, et jamais
+déclaré autrement ailleurs. Cette dernière condition n'est pas théorique : la
+garde lit du texte et ne sait pas de quel modèle part une requête, donc son
+inventaire est indexé par nom de champ. Deux noms du schéma sont portés à la
+fois par un scalaire et par une relation — `risque` et `commentaires` — et
+`Action.risque` est une relation que le serveur MCP interroge. Sans la
+disqualification, l'homonyme scalaire aurait fait accepter `risque: true`. Tout ce
+que l'analyse ne comprend pas est refusé : une relation, une variable, une
+diffusion, une clé entre guillemets ou calculée, un ternaire, un nom que la
+lecture du schéma n'a pas vu. Chacun de ces cas peut cacher une relation
+entière, et chacun produit désormais un rouge bruyant plutôt qu'un vert muet.
+C'est la dissymétrie tenue partout ailleurs ici : le pire échec possible doit
+être le faux rouge.
+
+Un cliquet sur le nombre de relations aurait fermé la moitié du trou — il
+aurait vu le modèle indenté, dont le compte baisse, mais pas une relation
+**ajoutée** dans une graphie non reconnue, dont le compte ne bouge pas. Et son
+plancher se relève à la main au moment précis où l'on ajoute des relations,
+c'est-à-dire au seul moment où une relation invisible est indiscernable.
+
+Sur `app/api/`, elle ne tient que les lectures nommées d'`operateur`. La règle
+de forme n'y est **pas** appliquée : elle obligerait des dizaines de routes
+internes à énumérer leurs colonnes sans rien protéger, et une règle qu'on
+excepte partout finit par ne plus être lue. Une route qui ferait un
+`findMany` sans `select` sur `ReleveTemperature` chargerait donc `operateur`
+en silence. Elle ne l'écrirait nulle part — le second volet de la garde reste
+absent, il est écrit ici pour ne pas passer pour acquis.
 
 ### 2.6 Risques et mesures du DUERP
 
@@ -228,12 +335,34 @@ Deux catégories de personnes, deux chemins.
 
 ### 5.1 Le titulaire du compte (le dirigeant)
 
-1. **Accès et portabilité** (art. 15 et 20) — export JSON complet.
+Les quatre droits sont dus et exercés. Ce qui change d'une ligne à l'autre,
+c'est **par quel chemin** : **un seul** passe par l'application — la
+rectification, par les formulaires d'édition. Les **trois autres** s'exercent
+par demande à `contact@btry.fr`, traitée à la main. Chaque point ci-dessous dit
+lequel, et ne promet pas d'écran là où il n'y en a pas.
+
+1. **Accès et portabilité** (art. 15 et 20) — **par demande à
+   `contact@btry.fr`**, traitée manuellement dans le délai d'un mois de
+   l'article 12.3. *L'export JSON en libre-service n'existe pas* : aucune
+   route, aucune action serveur. Il est dû au produit, il n'est pas rendu —
+   cf. `docs/dette-chantier-porteur-echeance.md` § 1.1. À ne pas confondre
+   avec l'extraction **par salarié** du § 5.2, qui, elle, est livrée.
 2. **Rectification** (art. 16) — les formulaires d'édition.
-3. **Effacement** (art. 17) — suppression du compte, hors ce qui est soumis à
-   obligation légale (`DuerpVersion`).
+3. **Effacement** (art. 17) — **par demande à `contact@btry.fr`**, même délai.
+   *La suppression de compte en libre-service n'existe pas non plus.* L'effacement
+   ne peut de toute façon pas être total : les versions de DUERP sont conservées
+   au titre d'une obligation légale (§ 4.2) et ne s'effacent pas à la demande,
+   exception de l'article 17.3.b. Ce que la suppression emporte et ce qu'elle
+   laisse est une décision produit qui reste à prendre — cf. dette § 1.1.
 4. **Opposition et limitation** (art. 18 et 21) — par courriel, traitement
    manuel.
+
+*Rédaction corrigée le 2026-08-28.* Les points 1 et 3 annonçaient
+« export JSON complet » et « suppression du compte » **au présent**, comme des
+fonctionnalités. Ni l'une ni l'autre n'existe. Le § 5.3 démentait l'export
+34 lignes plus bas ; la suppression n'était démentie nulle part. Le droit,
+lui, n'a jamais cessé d'exister — il est servi hors de l'outil, et c'est ce
+que ces lignes disent désormais.
 
 ### 5.2 Le salarié suivi — il n'est pas l'utilisateur, et ses droits existent quand même
 
@@ -272,11 +401,15 @@ précisément ce qui rend possible de saisir un salarié réel :
   décrirait un autre traitement. L'outil le fournit ; il n'informe pas à la
   place de l'employeur, qui reste le responsable de traitement.
 
-**Non livré, et à ne pas confondre avec ce qui précède** : l'export complet du
-titulaire du compte annoncé au 5.1 (art. 15 et 20, « export JSON complet »)
-**n'existe pas**. Aucune route, aucune action. La phrase du 5.1 décrit une
-intention, pas une fonctionnalité — elle est due, elle n'est pas rendue, et
-c'est un manque distinct de celui que l'écran Équipe vient de combler.
+**Non livré, et à ne pas confondre avec ce qui précède** : les deux
+libres-services du titulaire du compte (§ 5.1, points 1 et 3) — **l'export
+complet** et **la suppression de compte**. Aucune route, aucune action, ni pour
+l'un ni pour l'autre. Les deux droits sont servis à la main, sur demande ; ce
+qui manque est l'outil, pas le droit. Manques distincts de celui que l'écran
+Équipe vient de combler, et recensés en dette § 1.1.
+
+*Jusqu'au 2026-08-28, ce paragraphe ne visait que l'export : la suppression
+était promise au présent au § 5.1 et démentie nulle part.*
 
 ---
 
@@ -315,13 +448,135 @@ retirer les lignes à porteur salarié plutôt que les anonymiser ? Voir
 
 - HTTPS exclusivement en production.
 - Authentification déléguée à Supabase (mots de passe hachés côté fournisseur).
-- Cloisonnement par établissement : chaque lecture porte le prédicat
-  d'appartenance. Prisma opère en rôle `postgres` et contourne donc RLS
-  (ADR-005) — l'isolation est une **convention applicative**, ce qui la rend
-  d'autant plus critique à respecter dans toute nouvelle requête. Une lecture
-  de données de salariés qui omettrait le scope serait une fuite.
+- Cloisonnement par établissement : **toute lecture établit son
+  appartenance**, sous l'une des trois formes ci-dessous. Prisma opère en rôle
+  `postgres` et contourne donc RLS (ADR-005) — l'isolation est une **convention
+  applicative**, ce qui la rend d'autant plus critique à respecter dans toute
+  nouvelle requête. Une lecture de données de salariés qui omettrait le scope
+  serait une fuite.
 - Fichiers : validation MIME et taille (20 Mo), pas d'archives, refus des
   chemins remontants (`LocalFileStorage`).
+
+### 7.1 Les trois formes de portée, et pourquoi il y en a trois
+
+La phrase précédente disait « chaque lecture porte le prédicat », ce qui
+laissait croire à une forme unique : le relecteur suivant prenait la forme B
+pour un défaut, et refaisait l'analyse. Les trois sont légitimes ; ce qui ne
+l'est pas, c'est une quatrième.
+
+**Méthode, pour que ce relevé soit refaisable plutôt que cru sur parole.**
+Énumérer les appels, puis classer **chaque appel**, pas chaque fichier :
+
+```
+grep -nE 'prisma[A-Za-z]*\.[a-zA-Z]+\.(findMany|findFirst|findUnique|count|groupBy|aggregate)' \
+  src/lib/*/queries.ts
+```
+
+**76 lignes au 2026-08-28**, dont une qui n'est pas un appel mais une expression
+de type (`actions/queries.ts:23`, `Parameters<typeof prisma.action.findMany>`) :
+**75 appels**. Le nombre n'est là que pour qu'un relecteur sache s'il regarde le
+même ensemble ; s'il en trouve un autre, c'est le relevé qui est périmé, pas lui.
+
+Deux avertissements sur cette commande, pour qu'elle ne trompe pas à son tour.
+Elle ne couvre que les 21 `queries.ts` : les `actions.ts` et les modules qui
+ouvrent la base ailleurs (`etablissements/modules.ts`, `equipements/fiche.ts`,
+`versions/snapshot-builder.ts`, `pdf/builders.ts`…) ne sont pas dans ce relevé.
+Et elle liste des **appels**, pas des portées : un appel qui reprend le `where`
+construit plus haut (`actions/queries.ts:48`) ou une variable de portée
+(`salaries`, via `portee()`) paraît nu au grep sans l'être. Il faut ouvrir.
+
+*Pourquoi ce paragraphe existe.* La première rédaction annonçait un relevé « sur
+les 21 fichiers » sans donner la méthode, et elle en avait manqué trois — dont
+deux dans `batiments`, le module qu'elle citait en exemple. La deuxième donnait
+la méthode mais un total (« 56 ») que cette commande ne rend pas : un relecteur
+l'aurait tenu pour périmé et aurait tout refait, soit la dépense que ce
+paragraphe prétend éviter. Un inventaire qui se dit exhaustif sans qu'on puisse
+le refaire à l'identique est plus dangereux qu'une absence d'inventaire.
+
+**La forme se choisit par lecture, pas par module** — plusieurs fichiers en
+mêlent deux, et c'est normal : une fonction qui reçoit un `etablissementId`
+et une fonction qui reçoit l'identifiant d'un objet déjà chargé n'ont pas le
+même problème.
+
+**A — le prédicat est porté dans le `where`.** `requireUser()`, puis
+`etablissement: { entreprise: { userId: user.id } }` dans la clause. C'est la
+forme par défaut, et la seule qui vaille quand l'identifiant du `where` vient
+de l'appelant. Sa raison est écrite dans `src/lib/batiments/queries.ts` : le
+prédicat est porté **même si l'appelant vient de le vérifier**, parce qu'une
+lecture qui ne le porte pas devient une fuite au premier appelant qui ne
+vérifiera pas. *Intégralement en A* : batiments, calendrier, actions,
+dashboard, duerps, entreprises, equipements, etablissements, prescriptions,
+rapports, registre, risques, salaries, versions.
+
+⚠️ *Attention au cas de `batiments`* : ce module **porte** la doctrine (le
+commentaire de `listerBatimentsAvecCharge`) et l'enfreignait tout de même sur
+deux lectures — `batimentParDefaut` et `resoudreBatimentOptionnel`, corrigées
+le 2026-08-28. Une doctrine écrite dans un fichier ne s'applique pas d'elle-même
+au reste du fichier.
+
+**B — la fonction établit l'appartenance elle-même**, via
+`requireEtablissement()` (`src/lib/auth/scope.ts`), puis n'utilise dans le
+`where` que l'identifiant **rendu par la garde** — jamais celui reçu en
+paramètre. Garantie équivalente à A : l'identifiant filtré ne vient pas de
+l'appelant, il sort d'une lecture déjà scopée qui a fait 404 sinon. *Lectures
+en B* : accessibilite (`getRegistreAccessibilite`), carnet-sanitaire
+(`getCarnetSanitaire`), permis-feu et plan-prevention (leurs `list*` et
+`get*`), prestataires — ce dernier **intégralement** en B.
+
+Trois modules mêlent B et A, et ce sont ceux dont une fonction reçoit un
+identifiant nu plutôt qu'un identifiant sorti d'une garde : carnet-sanitaire
+(`dernierRelevesParPoint`), permis-feu (`nextNumeroPermisFeu`) et
+plan-prevention (`nextNumeroPlan`) portent donc le prédicat.
+
+**C — pas de portée, et la raison est écrite dans le fichier.** Trois cas,
+tous délibérés :
+- `accessibilite/queries.ts` — `getRegistrePublicParSlug` sert la page
+  publique du registre d'accessibilité, que le public consulte sans compte.
+  Elle ne rend rien tant que `publie` est faux, et seulement les champs
+  publiables.
+- `signatures/queries.ts` — la clé `(objetType, objetId)` n'est pas un secret,
+  et `getSignature` sert la page publique `/verifier/[signatureId]` qu'un tiers
+  consulte sans compte. En contrepartie, l'identifiant est un UUID non
+  énumérable et la projection est limitée à ce qui fait preuve.
+- `mcp/queries.ts` — hors du runtime Next, il n'y a ni requête ni cookies, donc
+  pas de session à lire : la portée vient de l'`etablissementId` reçu au
+  démarrage du serveur, et **chaque `where` le porte**, relations comprises.
+
+**La quatrième forme n'existe pas** : une lecture sans garde et sans raison
+écrite est un défaut, pas un quatrième idiome. Il y en avait **onze** au
+2026-08-28, toutes passées en A depuis :
+
+- les quatre lectures de `salaries` ;
+- `prescriptions/chargerPagePrescriptions` — la plus exposée en volume rendu ;
+- `carnet-sanitaire/dernierRelevesParPoint` ;
+- `permis-feu/nextNumeroPermisFeu`, `plan-prevention/nextNumeroPlan` ;
+- `batiments/batimentParDefaut`, `batiments/resoudreBatimentOptionnel` ;
+- la lecture des `pointReleve` dans `dashboard/getModulesMatrice`.
+
+**Aucune ne fuyait** : leurs appelants vérifiaient tous en amont, vérification
+faite appelant par appelant. C'est la convention qui était rompue, pas encore le
+cloisonnement — mais `navigation/sidebar-counts.ts` appelait déjà
+`compterTitresEnRetard` avec un identifiant nu, et `resoudreBatimentOptionnel`
+est ce qui **valide** un `batimentId` avant écriture : un appelant non gardé lui
+ferait confirmer le bâtiment d'un autre compte.
+
+**Ce qui est éprouvé, et ce qui ne l'est pas.** `salaries/isolation.test.ts` et
+`batiments/isolation.test.ts` cassent la garantie pour la vérifier — deux
+entreprises, l'une lit l'identifiant de l'autre, la lecture doit rendre vide —
+et les deux ont été éprouvés par réinjection du défaut. Les six autres
+corrections ne sont **pas** couvertes : leur module n'a pas de harnais et en
+construire un (neuf modèles simulés pour `getModulesMatrice`) coûterait plus
+que la garantie ne vaut, ces lectures recevant déjà un identifiant scopé. Le
+`where` y est du renfort, pas la seule barrière. Écrit ici plutôt que taire :
+une correction non testable se signale.
+
+Deux limites de ce qui est éprouvé, pour ne pas surestimer le filet. Le faux
+Prisma de ces deux fichiers n'implémente que les formes de `where` que les
+fonctions testées émettent — il **lève** sur les autres, donc il ne couvre
+jamais une clause en silence, mais il ne dit rien d'une requête réécrite tant
+que le faux n'a pas suivi. Et le magasin simulé de `dashboard/queries.test.ts`
+**ignore délibérément** les clés de portée : ce fichier teste des filtres
+métier, pas le cloisonnement.
 
 **Habilitations d'accès internes** : le multi-utilisateur par entreprise n'est
 pas implémenté. Il n'y a donc aujourd'hui qu'un seul accès par entreprise,

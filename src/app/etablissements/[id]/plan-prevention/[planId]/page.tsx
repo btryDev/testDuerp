@@ -302,7 +302,7 @@ export default async function PlanPreventionDetailPage({
       <div className="pt-2">
         <LegalBadge
           charte="board"
-          reference="Art. R4512-6 à R4512-12 CT · décret 92-158"
+          reference="Art. R. 4512-6 à R. 4512-12 CT"
           href="https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018529787/"
           defaultOpen
         >

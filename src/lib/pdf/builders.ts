@@ -30,6 +30,7 @@ import {
 } from "@/lib/registre/completude";
 import { afficherValeur } from "@/lib/registre/valeur";
 import type { DossierData } from "./DossierConformiteDocument";
+import { couvertureDuDossier } from "@/lib/perimetre/faits";
 
 /**
  * Builders qui lisent la DB et construisent les données sérialisables
@@ -372,12 +373,18 @@ export async function construireDossierConformiteData(
   // décrire le même ensemble. Avant, le compteur venait d'un agrégat SQL et
   // la liste d'un filtre TypeScript portant sur d'autres statuts — le PDF
   // annonçait « 5 vérifications en retard » puis en détaillait 3.
-  const [compteursActions, plan, rapports, verifs] = await Promise.all([
-    compterActions(etablissementId),
-    construirePlanActionsData(etablissementId),
-    listerRapportsDeLEtablissement(etablissementId),
-    listerVerifications(etablissementId),
-  ]);
+  const [compteursActions, plan, rapports, verifs, couverture] =
+    await Promise.all([
+      compterActions(etablissementId),
+      construirePlanActionsData(etablissementId),
+      listerRapportsDeLEtablissement(etablissementId),
+      listerVerifications(etablissementId),
+      // Ce que le référentiel ne traite pas pour cet établissement. Lu par la
+      // même entrée que le tableau de bord et les bandeaux : deux lectures
+      // finiraient par dire deux choses, et c'est le document remis à
+      // l'inspecteur qui porterait la version périmée.
+      couvertureDuDossier(etablissementId),
+    ]);
 
   const now = new Date();
   const etatVerifs = repartirVerifications(verifs, now);
@@ -447,6 +454,7 @@ export async function construireDossierConformiteData(
     codeNaf: etab.codeNaf ?? etab.entreprise.codeNaf,
     regimesTexte: regimesTexte(etab),
     genereLe: now,
+    couverture,
     score,
     duerp:
       duerp === null

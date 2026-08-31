@@ -122,14 +122,33 @@ export async function getEtatDuerp(
 ): Promise<EtatDuerpLu> {
   const duerp = await prismaMcp.duerp.findFirst({
     where: { etablissementId },
-    include: {
-      versions: { orderBy: { numero: "desc" }, take: 1 },
+    // `select` de bout en bout, et jamais `include`. `include` rend TOUS les
+    // scalaires du modèle qu'il ouvre : ici il ramenait la colonne
+    // `DuerpVersion.snapshot`, un JSON qui porte le `responsable` de chaque
+    // mesure (`versions/snapshot-builder.ts`). Le formateur n'en lisait que
+    // `numero` et `createdAt`, donc rien ne partait vers l'assistant — mais la
+    // règle de ce module est que la retenue vit dans la REQUÊTE, pas dans le
+    // formateur, et elle vivait dans le formateur.
+    //
+    // Un blob JSON ne porte aucun jeton `.responsable` dans le source : la
+    // garde de `frontiere-medicale.test.ts` ne pouvait pas le voir. C'est
+    // pourquoi elle interdit désormais `include` tout court dans `lib/mcp/` —
+    // une règle sur la FORME de la requête attrape ce qu'une règle sur les
+    // noms de champs ne peut pas atteindre.
+    select: {
+      versions: {
+        orderBy: { numero: "desc" },
+        take: 1,
+        select: { numero: true, createdAt: true },
+      },
       etablissement: {
         select: { entreprise: { select: { effectif: true } } },
       },
       unites: {
         orderBy: { nom: "asc" },
-        include: {
+        select: {
+          nom: true,
+          estTransverse: true,
           risques: {
             orderBy: { criticite: "desc" },
             select: {
@@ -204,7 +223,6 @@ export type ActionLue = {
   type: string;
   criticite: number | null;
   echeance: Date | null;
-  responsable: string | null;
   origine: OrigineActionLue;
   /** Ce qui a motivé l'action : libellé du risque ou de la vérification. */
   origineLibelle: string | null;
@@ -222,6 +240,19 @@ export type FiltresActionsMcp = {
 
 /**
  * Plan d'actions de l'établissement.
+ *
+ * `Action.responsable` n'est PAS sélectionné, et c'est délibéré. C'est un
+ * champ de texte libre où l'employeur écrit le nom de la personne qui pilote
+ * l'action. Le MCP alimente l'assistant que l'utilisateur branche : un nom
+ * lu ici part vers un LLM tiers par défaut, sans que personne l'ait demandé —
+ * contre le principe fondateur « zéro IA sur le contenu utilisateur ».
+ *
+ * La retenue est posée dans la REQUÊTE, pas dans le formateur : ce qui n'est
+ * pas lu ne peut pas fuir par une sortie qu'on ajouterait plus tard. Aucun
+ * texte n'impose ce nom ; `D. 4711-2`, qui exige l'identité du vérificateur,
+ * ne vise que les rapports de vérification (docs/rgpd.md § 2.4). Le champ
+ * reste rendu dans les documents que l'employeur remet lui-même — PDF du plan
+ * d'actions, dossier de conformité, DUERP — où il est l'information.
  *
  * Le retard n'est pas retranscrit en SQL : il est évalué par
  * `estActionEnRetard` (`@/lib/dates/retard`), le prédicat partagé du produit
@@ -250,7 +281,6 @@ export async function listerActions(
       type: true,
       criticite: true,
       echeance: true,
-      responsable: true,
       risqueId: true,
       verificationId: true,
       risque: { select: { libelle: true } },
@@ -265,7 +295,6 @@ export async function listerActions(
     type: a.type,
     criticite: a.criticite,
     echeance: a.echeance,
-    responsable: a.responsable,
     origine: a.risqueId ? "duerp" : a.verificationId ? "verification" : "libre",
     origineLibelle:
       a.risque?.libelle ?? a.verification?.libelleObligation ?? null,

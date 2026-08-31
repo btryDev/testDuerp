@@ -35,12 +35,13 @@ export const obligationsPortesPortails: Obligation[] = [
         reference: "R. 4224-13",
         article: "R. 4224-13",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532211/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532209/",
       },
     ],
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["PORTE_AUTO", "PORTAIL_AUTO"],
   },
@@ -62,6 +63,7 @@ export const obligationsPortesPortails: Obligation[] = [
     periodicite: "semestrielle",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["PORTE_AUTO", "PORTAIL_AUTO"],
     notesInternes:
@@ -92,6 +94,7 @@ export const obligationsPortesPortails: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["PORTE_AUTO", "PORTAIL_AUTO"],
     notesInternes:
@@ -109,7 +112,7 @@ export const obligationsPortesPortails: Obligation[] = [
         reference: "R. 4224-12 et R. 4224-13",
         article: "R. 4224-13",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532211/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532209/",
       },
       {
         source: "CODE_TRAVAIL",
@@ -122,6 +125,7 @@ export const obligationsPortesPortails: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["PORTE_AUTO", "PORTAIL_AUTO"],
     notesInternes:
@@ -145,6 +149,7 @@ export const obligationsPortesPortails: Obligation[] = [
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["PORTAIL_AUTO"],
     notesInternes:

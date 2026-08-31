@@ -222,6 +222,8 @@ export async function equipementsSansEcheance(
       typeErp: etab.typeErp,
       categorieErp: etab.categorieErp,
       classeIgh: etab.classeIgh,
+      personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
+      manipuleMatieresR422722: etab.manipuleMatieresR422722,
     },
     etab.equipements.map((eq) => ({
       id: eq.id,

@@ -157,14 +157,44 @@ vit dans le SQL — donc elle est testée là où les autres le sont.
 `porteurDe(o)` reste le seul lecteur autorisé, et les deux points de bascule
 cessent d'être des ternaires :
 
-- `engine.ts` construit un `switch` sur le porteur, dont chaque branche pose sa
-  propre valeur. Aucune branche ne conclut par défaut.
-- `generateur.ts` fait de même pour choisir ce sur quoi il boucle : un
-  équipement, un salarié, ou rien.
+- `engine.ts` teste le porteur **cas par cas, en retours anticipés**, et non
+  par un `switch` : `porteur === "salarie"` rend `null`, `porteur ===
+  "etablissement"` a son bloc, et le cas équipement qui reste est gardé par
+  `estPorteeParEquipement(o)`. C'est cette garde qui tient lieu d'analyse de
+  cas : une quatrième valeur de porteur y rendrait `false` et l'obligation
+  serait **écartée bruyamment**, jamais requalifiée en silence dans le cas
+  précédent.
+- `generateur.ts` porte le `switch`, pour choisir ce sur quoi il boucle : un
+  équipement, un salarié, ou rien. Il **a** une branche par défaut, et c'est sa
+  valeur : elle affecte `oa.porteur` à un `never` — donc la disparition d'un
+  `case` cesse de compiler — puis lève en nommant l'obligation et la valeur
+  fautive. Le défaut ne conclut pas à la place d'un cas manquant, il refuse.
+
+*(Rédaction corrigée le 2026-08-28 : ce paragraphe attribuait le `switch` à
+`engine.ts` et affirmait qu'aucune branche ne concluait par défaut. Les deux
+étaient faux — le `switch` est dans `generateur.ts` et son `default` est
+délibéré. Le principe, lui, tient : le porteur se lit par analyse de cas, et
+jamais par négation.)*
 
 Ce n'est pas du style. Une négation (`!estPorteeParEquipement`) est une porte
 qui s'ouvre à tout ce qu'on ajoutera ensuite, et qui l'attribue au cas précédent
 sans le dire. C'est précisément ce qui aurait cassé ici.
+
+**Le motif s'est rejoué le 2026-08-28, sur le même sujet et dans le même
+sens.** `typeDeVerification()` — le lecteur qui déduit la nature d'une ligne de
+son porteur (§ 7, amendement) — a d'abord été écrit
+`salarieId === null ? "verification" : "titre-salarie"`. Une négation, encore :
+tout ce qui n'est **pas** exactement `null` conclut au titre. Un objet dont le
+`select` omet `salarieId` porte `undefined`, et rangeait donc **toutes** les
+vérifications d'équipement en famille « Personnel » — sans erreur de
+compilation, la signature promettant `string | null`. Le défaut a été trouvé
+par un test existant, pas par relecture.
+
+La règle se formule donc plus largement que « pas de ternaire » : **le test
+porte sur le cas qu'on affirme, pas sur son complément.** Il faut un
+identifiant pour conclure au porteur salarié ; son absence, sous quelque forme
+qu'elle se présente, vaut « pas de porteur salarié ». Une nullité écrite en
+négation n'est pas une analyse de cas, c'est la même porte, plus étroite.
 
 ### 5. `porteUnePreuve` accueille l'attestation nominative dans le même commit
 
@@ -254,6 +284,52 @@ Reste que `controle` porte le badge « Contrôles matériel », qui « nomme ce 
 un calendrier réglementaire d'équipement » : une attestation médicale n'en est
 pas un. C'est le vrai motif de rattacher un jour la famille `personnel`, et il
 est consigné au registre de la dette.
+
+**Amendement du 2026-08-28 — la dette est levée, et les deux changements sont
+partis ensemble.** Ce qui précède décrit l'état antérieur ; il reste écrit
+parce qu'il énonce le piège. Ce qui a changé :
+
+- `FAMILLE_DE_TYPE` rattache un type nouveau, `titre-salarie`, à `personnel`.
+  Il se déduit du porteur écrit sur la ligne (`Verification.salarieId`), par
+  `typeDeVerification()` — jamais du référentiel : une obligation retirée
+  rendrait la nature indéterminable sur une ligne pourtant bien là.
+- `FAMILLES_FILTRABLES` prend `personnel` et **quitte la page** pour
+  `calendrier/echeances.ts`, à côté de `FAMILLE_DE_TYPE`. Les deux listes se
+  sont contredites sans que rien ne le dise ; un test tient désormais
+  l'invariant — aucune famille produite par un type n'est absente du filtre.
+- **Un troisième point, que ni l'audit ni cet ADR n'avaient vu** :
+  `repartirRetards` posait `parFamille.controle = verifsEnRetard` en bloc.
+  Sans le scinder, le compteur aurait attribué à « Contrôles » des lignes
+  devenues « Personnel ». Il prend maintenant une ventilation par nature, et
+  `compterEtatCalendrier` la produit d'une seule lecture.
+
+Ce que l'utilisateur voit : la pilule « Titres du personnel » apparaît et
+filtre ; la ventilation du board et la phrase du brief nomment les titres au
+lieu de les fondre dans les vérifications ; la fiche d'une ligne de titre cesse
+d'afficher le pictogramme des contrôles. Le compteur de retards du rail garde
+sa valeur — il est de toute façon annoncé toutes familles confondues.
+
+**Ce que l'utilisateur ne voit PAS, et qu'une première rédaction de cet
+amendement annonçait à tort** : le badge « Contrôles matériel » ne cesse rien,
+parce qu'**il n'existe plus**. L'ADR-015 l'a retiré du rail, qui ne porte
+qu'`enRetardTotal` ; la chaîne ne figure plus dans aucun texte rendu, seulement
+dans des commentaires et des noms de tests. Et `RetardsParFamille.verifications`,
+le champ qu'il lisait, **n'a plus aucun lecteur** hors tests : sa correction est
+juste et sans effet visible.
+
+La leçon vaut d'être gardée : le commentaire de `retards.ts` décrivait ce badge
+au présent bien avant ce lot. Un commentaire périmé qui dort est une dette ; le
+promouvoir en effet utilisateur constaté, sans vérifier que la chaîne existe
+encore à l'écran, en fait une affirmation fausse dans un document de décision.
+La règle du dépôt — ouvrir le fichier avant de qualifier ce qu'il contient —
+vaut aussi pour ce qu'on hérite d'un commentaire.
+
+`REFERENTIEL_VERSION` **n'a pas bougé** : `empreinteReferentiel()` ne hache que
+l'identifiant, la périodicité, le libellé, les réalisateurs, les typologies,
+les conditions, les catégories d'équipement, le porteur et
+`equipementsEnContexte`. Ce lot ne touche aucun de ces champs — la nature est
+déduite à la lecture, rien n'est écrit en base — donc aucune réconciliation de
+parc n'est déclenchée.
 
 ## Ce que cet ADR ne décide pas
 

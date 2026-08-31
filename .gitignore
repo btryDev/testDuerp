@@ -59,3 +59,10 @@ next-env.d.ts
 
 # Worktrees Claude Code (dépôts imbriqués, hors dépôt principal)
 .claude/worktrees/
+
+# Surcharges Compose locales — ports d'une machine, jamais du dépôt.
+# Un port hôte est propre au poste : sur une machine où 5433 est déjà pris,
+# on le déplace ici plutôt que d'arrêter le conteneur d'un autre projet.
+# Attention au tag `!override` sur `ports` : sans lui, Compose AJOUTE le port
+# à la liste du fichier de base au lieu de la remplacer, et le conflit revient.
+docker-compose.override.yml

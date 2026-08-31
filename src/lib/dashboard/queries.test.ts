@@ -152,6 +152,16 @@ vi.mock("@/lib/prisma", () => ({ prisma: h.prisma }));
 vi.mock("@/lib/auth/require-user", () => ({
   requireUser: async () => ({ id: "user-1" }),
 }));
+// Le rapprochement des transmissions (ADR-024) est testé chez lui, sur sa
+// partie pure. Ici on ne veut que les agrégats du tableau de bord : le
+// simuler évite de modéliser trois modèles Prisma de plus dans un faux qui
+// n'a rien à en dire. Même raison que `compterActions` juste en dessous.
+vi.mock("./transmissions", () => ({
+  chargerTransmissions: async () => ({
+    domainesSansPrestataire: [],
+    obligationsSupposantUnePersonne: [],
+  }),
+}));
 // `compterActions` est testé chez lui ; ici on ne veut que ses agrégats.
 vi.mock("@/lib/actions/queries", () => ({
   compterActions: async () => ({

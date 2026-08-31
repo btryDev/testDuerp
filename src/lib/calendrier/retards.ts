@@ -19,8 +19,17 @@
 // (ADR-015).
 
 import { compterEtatCalendrier } from "./queries";
-import { filtrerParBatiment, listerAutresEcheances } from "./echeances";
-import type { EcheanceCalendrier, FamilleEcheance } from "./echeances";
+import {
+  FAMILLE_DE_TYPE,
+  TYPES_VERIFICATION,
+  filtrerParBatiment,
+  listerAutresEcheances,
+} from "./echeances";
+import type {
+  EcheanceCalendrier,
+  FamilleEcheance,
+  TypeVerification,
+} from "./echeances";
 import { JOURS_HORIZON_PROCHE } from "@/lib/dates";
 import { estDansLesProchainsJours } from "@/lib/dates/retard";
 
@@ -38,11 +47,33 @@ export type RetardsParFamille = VentilationEcheances & {
    * `parFamille.controle`, qui porte en plus les analyses légionelles
    * (rangées dans la famille `controle` par le registre).
    *
-   * C'est ce nombre que porte le badge « Contrôles matériel » : il nomme
-   * ce qui a un calendrier réglementaire d'équipement. Cf. ADR-015.
+   * **Ce champ n'a aujourd'hui aucun lecteur**, et cette phrase disait le
+   * contraire : « c'est ce nombre que porte le badge "Contrôles matériel" ».
+   * Ce badge a été retiré du rail par l'ADR-015 — la sidebar n'annonce plus
+   * qu'`enRetardTotal`, toutes familles confondues — et la chaîne ne figure
+   * dans aucun texte rendu. Constaté le 2026-08-28, par grep sur `src/app` et
+   * `src/components`.
+   *
+   * Il reste néanmoins **juste** : les lignes à porteur salarié en sortent
+   * depuis qu'elles ont leur famille (ADR-023 § 7), une attestation médicale
+   * n'ayant pas de calendrier réglementaire d'équipement. Un champ mort qui
+   * ment est pire qu'un champ mort ; le retirer est un geste distinct, qui
+   * n'appartient pas au lot de la famille `personnel`.
    */
   verifications: number;
 };
+
+/**
+ * Ce que le flux des vérifications apporte, ventilé par nature.
+ *
+ * Un seul nombre suffisait tant que la table `Verification` ne portait
+ * qu'une nature. Elle en porte deux depuis l'ADR-023, et le versement en
+ * bloc (`parFamille.controle = verifsEnRetard`) attribuait à « Contrôles »
+ * les titres devenus « Personnel ». Le paramètre est un enregistrement
+ * exhaustif, pas un nombre plus un optionnel : une troisième nature ne
+ * compilera pas tant qu'elle n'aura pas dit où elle tombe.
+ */
+export type VerifsParType = Record<TypeVerification, number>;
 
 /**
  * L'état des échéances d'un établissement, en deux ventilations de même
@@ -98,16 +129,23 @@ function totaliser(
  */
 export function repartirRetards(
   autres: EcheanceCalendrier[],
-  verifsEnRetard: number,
+  verifsEnRetard: VerifsParType,
 ): RetardsParFamille {
   const parFamille = ventilationVide();
 
-  parFamille.controle = verifsEnRetard;
+  // `+=` et non `=` : deux natures peuvent tomber dans la même famille, et
+  // le registre y verse ensuite les siennes. L'affectation en bloc écrasait.
+  for (const t of TYPES_VERIFICATION) {
+    parFamille[FAMILLE_DE_TYPE[t]] += verifsEnRetard[t];
+  }
   for (const e of autres) {
     if (e.tone === "alerte") parFamille[e.famille] += 1;
   }
 
-  return { ...totaliser(parFamille), verifications: verifsEnRetard };
+  return {
+    ...totaliser(parFamille),
+    verifications: verifsEnRetard.verification,
+  };
 }
 
 /**
@@ -121,12 +159,14 @@ export function repartirRetards(
  */
 export function repartirSous30j(
   autres: EcheanceCalendrier[],
-  verifsAVenir: number,
+  verifsAVenir: VerifsParType,
   now: Date,
 ): VentilationEcheances {
   const parFamille = ventilationVide();
 
-  parFamille.controle = verifsAVenir;
+  for (const t of TYPES_VERIFICATION) {
+    parFamille[FAMILLE_DE_TYPE[t]] += verifsAVenir[t];
+  }
   for (const e of autres) {
     if (e.tone === "alerte") continue;
     if (estDansLesProchainsJours(e.date, now, JOURS_HORIZON_PROCHE)) {
@@ -163,8 +203,8 @@ export async function compterEtatEcheances(
   const autres = filtrerParBatiment(autresTous, filtres.batimentId);
 
   return {
-    retards: repartirRetards(autres, etat.enRetard),
-    sous30j: repartirSous30j(autres, etat.aVenir, now),
+    retards: repartirRetards(autres, etat.enRetardParType),
+    sous30j: repartirSous30j(autres, etat.aVenirParType, now),
     verifsAPlanifier: etat.aPlanifier,
   };
 }

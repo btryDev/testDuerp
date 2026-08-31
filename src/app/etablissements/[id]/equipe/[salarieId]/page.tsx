@@ -154,13 +154,29 @@ export default async function SalarieDetailPage({
                           </p>
                         )}
                         <div className="mt-2 flex flex-wrap items-center gap-3">
-                          {t.referencesLegales.slice(0, 1).map((r) => (
-                            <LegalBadge
-                              key={r.article ?? r.reference}
-                              reference={r.reference}
-                              href={r.url}
-                            />
-                          ))}
+                          {/* `ReferenceLegale.url` est optionnel : une
+                              référence sans URL rendait une pastille muette —
+                              l'apparence d'un lien, rien dessous. Le type de
+                              `LegalBadge` l'interdit désormais. Sans URL, la
+                              référence s'écrit donc en texte : elle dit d'où
+                              vient la contrainte sans promettre de l'ouvrir. */}
+                          {t.referencesLegales.slice(0, 1).map((r) =>
+                            r.url ? (
+                              <LegalBadge
+                                key={r.article ?? r.reference}
+                                charte="board"
+                                reference={r.reference}
+                                href={r.url}
+                              />
+                            ) : (
+                              <span
+                                key={r.article ?? r.reference}
+                                className="font-mono text-[10.5px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-soft)]"
+                              >
+                                § {r.reference}
+                              </span>
+                            ),
+                          )}
                           <RetirerTitreButton
                             etablissementId={id}
                             salarieId={s.id}

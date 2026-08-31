@@ -250,6 +250,85 @@ export type ConditionApplication =
  */
 export type PorteurObligation = "equipement" | "etablissement" | "salarie";
 
+/**
+ * Ce qu'une obligation implique **ailleurs que sur elle-même** (ADR-024).
+ *
+ * Le produit sait très bien faire naître une obligation — moteur de matching,
+ * trois porteurs, générateur idempotent. Il ne savait pas dire ce qu'elle
+ * exige d'autre. Une électricienne déclarée à l'effectif, un tableau
+ * électrique déclaré au parc, et rien nulle part ne disait qu'une habilitation
+ * était peut-être due.
+ *
+ * Ce type est le troisième terme entre **dériver** — refusé, et à raison :
+ * rien ne dit qui opère sur quoi, appliquer l'habilitation à tout l'effectif
+ * parce qu'un tableau existe serait un faux positif de masse (ADR-023) — et
+ * **se taire**, qui était l'état précédent. Il **nomme le trou sans le
+ * combler**, exactement comme `equipements/hors-referentiel.ts` (« le silence
+ * ne doit jamais ressembler à une réponse ») et `duerps/couverture.ts` (« ce
+ * module ne comble pas le trou : il le nomme »).
+ *
+ * Une transmission ne crée aucune ligne de calendrier, ne coche rien, ne
+ * préremplit rien. Elle pose une question dont la réponse appartient au
+ * dirigeant.
+ *
+ * **Ce qui se dérive n'est pas ici.** Qu'une obligation exigeant un
+ * `organisme_agree` en électricité suppose un prestataire d'électricité se
+ * calcule depuis `domaine` et `realisateurs`, qui existent déjà : la
+ * correspondance vit une fois dans `domaines.ts`, pas 85 fois dans le
+ * référentiel. `Transmission` ne porte que l'indérivable.
+ */
+export type Transmission =
+  | {
+      /**
+       * L'obligation suppose une **personne nommée**, et le produit ne peut
+       * pas deviner laquelle.
+       */
+      vers: "salarie_designe";
+      /**
+       * L'identifiant de l'obligation salarié correspondante au catalogue —
+       * ou `null` quand le référentiel ne sait pas encore l'encoder.
+       *
+       * `null` est une **réponse déclarée**, pas un oubli : c'est le cas de
+       * l'habilitation électrique elle-même, que R. 4544-10 délivre « à un
+       * travailleur désigné » mais qu'aucune ligne de catalogue ne porte
+       * encore. Le champ est nullable et requis pour cette raison précise :
+       * optionnel, l'absence aurait été muette.
+       */
+      titre: string | null;
+      /** Ce que le texte dit, qui fonde la transmission. Une phrase. */
+      motif: string;
+    }
+  | {
+      /**
+       * L'obligation produit une échéance que **rien ne peut solder
+       * correctement** : le modèle qui la recevrait n'existe pas.
+       *
+       * Le cas type est `R. 4227-39`, qui impose que la date et les
+       * observations des exercices soient « consignées sur un registre ». Le
+       * produit n'offre qu'un dépôt de fichier là où le texte attend un
+       * formulaire.
+       */
+      vers: "modele_absent";
+      /** Le nom du modèle manquant, tel que `docs/registre-securite-ecart.md` le nomme. */
+      modele: string;
+      motif: string;
+    }
+  | {
+      /**
+       * Il manque un **attribut** pour trancher l'applicabilité, et personne
+       * ne peut le renseigner parce que le champ n'existe pas.
+       *
+       * Nommer l'attribut ne rouvre aucun ADR : le bâtiment reste un lieu qui
+       * ne porte aucune échéance (ADR-019). Dire « il manque l'année du permis
+       * de construire » n'est pas lui donner un régime.
+       */
+      vers: "attribut_absent";
+      sujet: "etablissement" | "batiment";
+      /** Le nom de l'attribut, tel qu'il s'appellerait au schéma. */
+      attribut: string;
+      motif: string;
+    };
+
 /** Champs communs à toutes les obligations, quel que soit leur porteur. */
 type ObligationCommune = {
   /** Identifiant stable, versionné avec le code. Jamais réutilisé. */
@@ -279,6 +358,23 @@ type ObligationCommune = {
   typologies: TypologieApplication;
   /** Note de contexte interne (ex. précisions de portée) — non affichée par défaut. */
   notesInternes?: string;
+  /**
+   * Ce que cette obligation implique ailleurs (ADR-024). **Requis, et c'est
+   * le point** : un tableau vide est une réponse, un champ absent n'en est
+   * pas une.
+   *
+   * Même raisonnement que `pieceMedicale`, mot pour mot : optionnel, le champ
+   * se serait tu, et l'oubli aurait été la faute naturelle — celle qui a fait
+   * découvrir treize implications non écrites, une par une, en revue. Requis,
+   * l'oubli ne compile pas.
+   *
+   * **N'entre pas dans `empreinteReferentiel()`**, délibérément. L'empreinte
+   * détecte qu'une obligation productrice d'échéances a changé, et force la
+   * réconciliation de tous les calendriers. Une transmission ne produit
+   * aucune échéance ; l'y faire entrer réconcilierait tous les dossiers à
+   * chaque annotation de relecture, pour un résultat identique.
+   */
+  transmet: Transmission[];
   /**
    * Rendez-vous de relecture annoncé par le texte lui-même. Un test échoue
    * quand la date est passée : une note qui ne réveille personne n'est pas un

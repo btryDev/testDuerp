@@ -8,7 +8,7 @@ export const CODE_TRAVAIL_RISQUE_CHIMIQUE: Corpus = {
   id: "code-travail-risque-chimique",
   intitule:
     "Code du travail — agents chimiques dangereux et équipements de travail",
-  url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018530931/",
+  url: "https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018530931/",
   etendue: "articles_cites",
   portee:
     "Prévention du risque chimique (R. 4412-11 et s.), information et formation (R. 4412-38, R. 4412-87), aération (R. 4222-20), et formation à l'utilisation des équipements de travail (R. 4323-1 et s.).",

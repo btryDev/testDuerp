@@ -86,16 +86,20 @@ export const onboardingSchema = z
     ),
   })
   .superRefine((val, ctx) => {
-    // Filtrage du périmètre V2 (lib/onboarding/scope.ts) : le code NAF
-    // doit correspondre à un des 3 secteurs couverts (restauration,
-    // commerce, tertiaire). Refuser sinon : le DUERP produit ne serait
-    // pas fiable.
-    const scope = evaluerScopeSecteur(val.codeNaf);
-    if (scope.status === "hors_perimetre") {
+    // Le code NAF ne conditionne plus la création (lib/onboarding/scope.ts).
+    // Seul son FORMAT est exigé : un code illisible n'est rattachable à rien,
+    // ni référentiel sectoriel ni écran, et c'est une erreur de saisie.
+    //
+    // L'absence de référentiel pour un code bien formé n'est pas une erreur
+    // de formulaire : c'est un fait du produit, dit à l'écran puis porté en
+    // permanence par `perimetre/couverture.ts`. Le refuser ici bloquait
+    // l'accès au référentiel de conformité — qui ne lit jamais le NAF — pour
+    // une cotation de risques que l'utilisateur n'avait pas demandée.
+    if (evaluerScopeSecteur(val.codeNaf).status === "format_invalide") {
       ctx.addIssue({
         code: "custom",
         path: ["codeNaf"],
-        message: scope.raison,
+        message: "Le code NAF doit ressembler à 56.10A.",
       });
     }
 

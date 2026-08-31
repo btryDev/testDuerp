@@ -59,6 +59,26 @@ afterEach(() => {
 const dernierWhere = () =>
   prismaMock.verification.findMany.mock.calls.at(-1)![0].where;
 
+/**
+ * Les conditions du dernier `where`, à plat.
+ *
+ * Depuis que les conditions indépendantes sont composées par
+ * `toutesLesConditions` (et non diffusées dans un littéral, où deux `OR`
+ * s'écrasaient), une clause peut vivre à la racine ou dans le `AND`. On la
+ * cherche donc dans les deux — sans **fusionner** les membres, ce qui
+ * recréerait dans le test l'écrasement même que le composeur supprime.
+ */
+const clausesDe = (where: Record<string, unknown>): Record<string, unknown>[] => {
+  const { AND, ...racine } = where as { AND?: Record<string, unknown>[] };
+  return [racine, ...(AND ?? [])].filter((c) => Object.keys(c).length > 0);
+};
+
+/** La première condition du dernier `where` qui porte cette clé. */
+const clause = (cle: string) =>
+  clausesDe(dernierWhere()).find((c) => cle in c) as
+    | Record<string, never>
+    | undefined;
+
 describe("listerVerifications — lecture documentaire par défaut", () => {
   it("ne pose aucune borne : les PDF ont besoin de tout l'historique", async () => {
     await listerVerifications("etab-1");
@@ -71,7 +91,7 @@ describe("listerVerifications — lecture documentaire par défaut", () => {
 
   it("scope toujours la lecture sur l'entreprise du user", async () => {
     await listerVerifications("etab-1", { urgentsSeulement: true });
-    expect(dernierWhere().etablissement).toEqual({
+    expect(clause("etablissement")?.etablissement).toEqual({
       entreprise: { userId: "user-1" },
     });
   });
@@ -80,10 +100,10 @@ describe("listerVerifications — lecture documentaire par défaut", () => {
 describe("listerVerifications — filtre « urgents »", () => {
   it("retient le retard réel, pas le statut", async () => {
     await listerVerifications("etab-1", { urgentsSeulement: true });
-    const where = dernierWhere();
+    const urgence = clause("dateRealisee")!;
     // Une occurrence réalisée n'est jamais urgente, quel que soit son statut.
-    expect(where.dateRealisee).toBeNull();
-    expect(where.OR).toEqual([
+    expect(urgence.dateRealisee).toBeNull();
+    expect(urgence.OR).toEqual([
       { statut: "depassee" },
       {
         statut: { in: ["planifiee", "a_planifier"] },
@@ -92,9 +112,46 @@ describe("listerVerifications — filtre « urgents »", () => {
     ]);
   });
 
+  /**
+   * Le défaut que ce test verrouille était invisible aux trois au-dessus,
+   * et c'est ce qui le rend intéressant : chacun d'eux vérifiait **une**
+   * clause, jamais deux ensemble. Or la portée par bâtiment et l'urgence
+   * posent toutes deux la clé `OR` ; diffusées dans le même littéral, la
+   * seconde écrasait la première, et le filtre par bâtiment disparaissait
+   * du `where` sous « en retard seulement ».
+   *
+   * À l'écran : l'en-tête comptait sur le bâtiment — `compterEtatCalendrier`
+   * n'a pas de condition d'urgence, donc pas de collision — pendant que la
+   * liste dessous montrait l'établissement entier. Deux nombres qui se
+   * contredisent, aucun signalé comme faux.
+   */
+  it("garde le filtre par bâtiment quand « urgents » est actif", async () => {
+    await listerVerifications("etab-1", {
+      urgentsSeulement: true,
+      batimentId: "bat-1",
+    });
+
+    const portee = clausesDe(dernierWhere()).find((c) =>
+      JSON.stringify(c).includes("batimentId"),
+    );
+    expect(
+      portee,
+      "Le filtre par bâtiment a disparu du `where` : une condition indépendante en a écrasé une autre (cf. `toutesLesConditions`).",
+    ).toBeDefined();
+    // Et il porte bien la forme qui laisse passer les échéances sans lieu.
+    expect(portee!.OR).toEqual([
+      { equipementId: null },
+      { equipement: { batimentId: "bat-1" } },
+    ]);
+
+    // L'urgence est toujours là : on ne troque pas un écrasement contre l'autre.
+    expect(clause("dateRealisee")).toBeDefined();
+  });
+
   it("borne le retard au début du jour civil, pas à l'heure courante", async () => {
     await listerVerifications("etab-1", { urgentsSeulement: true });
-    const borne = dernierWhere().OR[1].datePrevue.lt as Date;
+    const borne = (clause("dateRealisee")!.OR as { datePrevue: { lt: Date } }[])[1]
+      .datePrevue.lt;
     // Une occurrence datée d'aujourd'hui (stockée à 00:00 UTC, soit 02:00
     // à Paris) est postérieure à cette borne : elle n'est pas urgente.
     expect(jour("2026-08-10").getTime()).toBeGreaterThan(borne.getTime());
@@ -107,10 +164,13 @@ describe("compterEtatCalendrier", () => {
     statut: string,
     datePrevue: string,
     dateRealisee: string | null = null,
+    /** Le porteur (ADR-023) : `null` = équipement ou établissement. */
+    salarieId: string | null = null,
   ) => ({
     statut,
     datePrevue: jour(datePrevue),
     dateRealisee: dateRealisee ? jour(dateRealisee) : null,
+    salarieId,
   });
 
   it("partitionne en quatre ensembles disjoints", async () => {
@@ -137,6 +197,34 @@ describe("compterEtatCalendrier", () => {
       aPlanifier: 1,
       aVenir: 2,
       realisees12m: 1,
+      enRetardParType: { verification: 3, "titre-salarie": 0 },
+      aVenirParType: { verification: 2, "titre-salarie": 0 },
+      toutesParType: { verification: 9, "titre-salarie": 0 },
+    });
+  });
+
+  it("ventile les mêmes lignes par nature, selon leur porteur", async () => {
+    // Le total ne bouge pas, sa ventilation si — c'est toute la promesse
+    // du rattachement de la famille « personnel » (ADR-016, ADR-023).
+    prismaMock.verification.findMany.mockResolvedValue([
+      verif("depassee", "2026-06-01"),
+      verif("depassee", "2026-06-01", null, "sal-1"),
+      verif("planifiee", "2026-08-10", null, "sal-2"),
+    ]);
+
+    const etat = await compterEtatCalendrier("etab-1", NOW);
+    expect(etat.enRetard).toBe(2);
+    expect(etat.enRetardParType).toEqual({
+      verification: 1,
+      "titre-salarie": 1,
+    });
+    expect(etat.aVenirParType).toEqual({
+      verification: 0,
+      "titre-salarie": 1,
+    });
+    expect(etat.toutesParType).toEqual({
+      verification: 1,
+      "titre-salarie": 2,
     });
   });
 

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { AideEcran } from "@/components/ui-kit/AideEcran";
 import { BandeauCouverture } from "@/components/perimetre/BandeauCouverture";
-import { couvertureDeLEtablissement } from "@/lib/perimetre/couverture";
+import { couvertureDuDossier } from "@/lib/perimetre/faits";
 import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
@@ -20,8 +20,12 @@ import {
   listerVerifications,
 } from "@/lib/calendrier/queries";
 import {
+  FAMILLE_DE_TYPE,
+  FAMILLES_FILTRABLES,
+  famillesAvecEcheances,
   filtrerParBatiment,
   listerAutresEcheances,
+  typeDeVerification,
   type EcheanceCalendrier,
   type FamilleEcheance,
   type TypeEcheance,
@@ -84,14 +88,6 @@ const DOMAINES_P1: DomaineObligation[] = [
   "electricite",
   "incendie",
   "aeration",
-];
-
-/** Familles filtrables — « personnel » attendra ses modules. */
-const FAMILLES_FILTRABLES: FamilleEcheance[] = [
-  "controle",
-  "travaux",
-  "operations",
-  "papiers",
 ];
 
 // Fuseau épinglé : sans lui, le numéro de jour et le mois d'une date
@@ -225,6 +221,11 @@ export default async function CalendrierPage({
   const etab = await getEtablissement(id);
   if (!etab) notFound();
 
+  // Ce que l'outil ne couvre pas, sur les quatre axes. Lu ici, une fois : le
+  // bandeau se rend loin plus bas, et une collecte au point de rendu se
+  // referait à chaque variante de la page.
+  const couverture = await couvertureDuDossier(id);
+
   // Le filtre bâtiment n'existe qu'à partir de deux bâtiments (ADR-019) ;
   // un id inconnu vaut « tout l'établissement ».
   const batiments = await listerBatimentsDeLEtablissement(id);
@@ -339,8 +340,15 @@ export default async function CalendrierPage({
 
   // Cohabitation des familles : le filtre famille partitionne, le
   // domaine implique « contrôles », l'urgence garde le dépassé partout.
-  const verifsVisibles =
-    !filtreFamille || filtreFamille === "controle" ? verifsBruts : [];
+  //
+  // Le flux des vérifications porte DEUX familles (ADR-016, ADR-023) : le
+  // filtre s'y lit ligne par ligne, sur la famille déduite du porteur, et
+  // non en gardant ou jetant le flux entier.
+  const verifsVisibles = filtreFamille
+    ? verifsBruts.filter(
+        (v) => FAMILLE_DE_TYPE[typeDeVerification(v)] === filtreFamille,
+      )
+    : verifsBruts;
   // Les échéances du registre suivent le filtre famille — y compris la
   // famille « controle » (analyses légionelles). Seul le filtre domaine
   // les écarte : il qualifie le référentiel d'équipements, rien d'autre.
@@ -828,9 +836,18 @@ export default async function CalendrierPage({
   // Elles se lisent sur les échéances **du bâtiment filtré**, sinon la pilule
   // « Opérations » restait proposée sous un bâtiment où le seul permis de feu
   // n'est pas : la choisir menait à « Rien ne correspond à ces filtres ».
+  //
+  // Les familles du flux des vérifications se lisent sur `etat`, qui compte
+  // TOUTES les lignes du lieu — pas sur `verifsBruts`, déjà réduit par le
+  // domaine et l'urgence : une pilule qui s'efface sous « En retard
+  // seulement » ne se retrouve plus, et c'est le sort qu'elle a déjà évité
+  // pour « Opérations ».
+  //
+  // La règle elle-même vit dans `calendrier/echeances.ts`, où elle est testée.
   const echeancesDuLieu = filtrerParBatiment(autresEcheances, filtreBatiment);
-  const famillesPresentes = FAMILLES_FILTRABLES.filter(
-    (f) => f === "controle" || echeancesDuLieu.some((e) => e.famille === f),
+  const famillesPresentes = famillesAvecEcheances(
+    etat.toutesParType,
+    echeancesDuLieu,
   );
 
   const baseHref = `/etablissements/${id}/calendrier`;
@@ -1030,14 +1047,13 @@ export default async function CalendrierPage({
             complète qui ignore tout le livre II du règlement de sécurité
             (PE 1 § 1) : c'est le seul écran où le taire serait grave, parce
             que c'est celui qu'on suit pour savoir quoi faire. */}
-        <BandeauCouverture
-          couverture={couvertureDeLEtablissement({
-            estERP: etab.estERP,
-            estIGH: etab.estIGH,
-            categorieErp: etab.categorieErp,
-          })}
-          hrefEtablissement={`/etablissements/${id}/modifier`}
-        />
+        {couverture && (
+          <BandeauCouverture
+            couverture={couverture}
+            hrefEtablissement={`/etablissements/${id}/modifier`}
+            hrefEquipements={`/etablissements/${id}/equipements`}
+          />
+        )}
 
         {lignes.length === 0 ? (
           <div>
@@ -1193,7 +1209,7 @@ export default async function CalendrierPage({
                               date={
                                 v.statut === "a_planifier" ? null : ligne.date
                               }
-                              type="verification"
+                              type={typeDeVerification(v)}
                               titre={v.libelleObligation}
                               meta={
                                 // Sans équipement, l'échéance porte sur

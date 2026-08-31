@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { listSignatures } from "@/lib/signatures/queries";
 
@@ -25,11 +26,20 @@ export async function getPlanPrevention(
   return { ...plan, signatures };
 }
 
+/**
+ * Le numéro suivant de la série de l'établissement. Même raison que
+ * `nextNumeroPermisFeu` : un entier reste une lecture, et une lecture porte
+ * sa portée (ADR-005).
+ */
 export async function nextNumeroPlan(
   etablissementId: string,
 ): Promise<number> {
+  const user = await requireUser();
   const last = await prisma.planPrevention.findFirst({
-    where: { etablissementId },
+    where: {
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
     orderBy: { numero: "desc" },
     select: { numero: true },
   });

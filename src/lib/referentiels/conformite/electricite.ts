@@ -48,6 +48,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["organisme_accredite"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
   },
@@ -77,6 +78,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["organisme_accredite", "personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
   },
@@ -105,6 +107,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 3,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
   },
@@ -120,7 +123,7 @@ export const obligationsElectricite: Obligation[] = [
         reference: "R. 4544-9 à R. 4544-11",
         article: "R. 4544-10",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022849102/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051500368",
       },
       {
         source: "INRS",
@@ -151,6 +154,22 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "autre",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [
+      {
+        vers: "salarie_designe",
+        // `null`, et c'est une réponse, pas un oubli. R. 4544-10 délivre
+        // l'habilitation « à un travailleur désigné » : l'obligation est donc
+        // nominative par nature. Mais le catalogue des titres ne porte pas
+        // l'habilitation elle-même — seulement l'attestation médicale qui la
+        // conditionne, qui est une autre obligation avec sa propre ligne.
+        // Pointer vers elle dirait quelque chose de faux ; c'est bien
+        // l'habilitation qui manque au catalogue, et le dépouillement des
+        // normes qu'elle appelle n'est pas fait.
+        titre: null,
+        motif:
+          "R. 4544-10 fait délivrer l'habilitation à un travailleur désigné : l'obligation suppose une personne nommée. Le produit ne peut pas deviner qui opère sur ou à proximité des installations — ce serait le cinquième déclencheur, non implémenté (ADR-023) — mais il peut dire qu'aucune personne n'est déclarée.",
+      },
+    ],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
@@ -186,6 +205,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "quinquennale",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     porteur: "salarie",
     pieceMedicale: true,
@@ -221,6 +241,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
@@ -244,6 +265,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: {
       erp: { categories: ["N1", "N2", "N3", "N4"] },
     },
@@ -290,6 +312,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "bimensuelle",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
@@ -320,6 +343,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "mensuelle",
     realisateurs: ["exploitant", "personne_qualifiee", "organisme_agree"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     conditions: [
@@ -355,6 +379,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { igh: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
@@ -392,6 +417,7 @@ export const obligationsElectricite: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { erp: { categories: ["N5"], types: ["O"] } },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
@@ -419,12 +445,13 @@ export const obligationsElectricite: Obligation[] = [
         reference: "R. 4226-16 (vérification périodique annuelle)",
         article: "R. 4226-16",
         url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018490547/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070/",
       },
     ],
     periodicite: "quadriennale",
     realisateurs: ["organisme_accredite", "personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:

@@ -18,6 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { compterActions } from "@/lib/actions/queries";
 import { computeVigilance } from "@/lib/prestataires/vigilance";
+import { chargerTransmissions } from "./transmissions";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 import {
@@ -31,12 +32,19 @@ import {
 } from "@/lib/dates";
 import { estActionEnRetard } from "@/lib/dates/retard";
 import { TON_REGISTRE, lecturesCalendrier } from "@/lib/calendrier/etats";
-import type { BatimentEcheance } from "@/lib/calendrier/echeances";
+import {
+  typeDeVerification,
+  type BatimentEcheance,
+  type TypeVerification,
+} from "@/lib/calendrier/echeances";
 import { repartirVerifications } from "@/lib/pdf/etat-verifications";
 import type { ModulesMatrice } from "./obligations";
 import { evaluerEtatDuerp, type EtatDuerp } from "./duerp";
 import { calculerScoreDepuisEtat, type Score } from "./score";
-import { porteeBatiment } from "@/lib/calendrier/portee";
+import {
+  porteeBatiment,
+  toutesLesConditions,
+} from "@/lib/calendrier/portee";
 import { libellePorteur } from "@/lib/calendrier/labels";
 import {
   genererRecommandations,
@@ -95,6 +103,11 @@ export type EvenementFenetre = {
   libelle: string;
   date: Date;
   tone: "alerte" | "warn" | "ok";
+  /** Ce que la ligne **est** (ADR-016), et donc la famille qui s'en déduit.
+   *  Ce flux en porte deux depuis l'ADR-023 : la vérification d'un
+   *  équipement et l'échéance du titre d'une personne. Requis — l'oublier
+   *  rangerait de nouveau une attestation médicale dans « Contrôles ». */
+  type: TypeVerification;
   /** L'appareil, ou « Tout l'établissement » (ADR-022). */
   equipement: string;
   /** Le bâtiment de l'équipement (ADR-019). `null` quand l'échéance porte sur
@@ -140,15 +153,21 @@ export async function listerEvenementsFenetre(
   const fin = ajouterJours(debutDuJour(now), joursHorizon);
 
   const verifs = await prisma.verification.findMany({
-    where: {
-      etablissementId,
-      etablissement: { entreprise: { userId: user.id } },
-      datePrevue: { lte: fin },
-      ...porteeBatiment(filtres?.batimentId),
-      ...(filtres?.urgentsSeulement
+    // Composées et non diffusées, comme `listerVerifications` : la portée par
+    // bâtiment pose un `OR`, et ce site n'échappait à l'écrasement que parce
+    // que sa condition d'urgence porte `statut` et non `OR` — un accident, pas
+    // une garantie (cf. `toutesLesConditions`).
+    where: toutesLesConditions(
+      {
+        etablissementId,
+        etablissement: { entreprise: { userId: user.id } },
+        datePrevue: { lte: fin },
+      },
+      porteeBatiment(filtres?.batimentId),
+      filtres?.urgentsSeulement
         ? { statut: { in: ["a_planifier", "depassee"] } }
-        : {}),
-    },
+        : {},
+    ),
     include: {
       equipement: {
         select: {
@@ -182,6 +201,7 @@ export async function listerEvenementsFenetre(
         libelle: libelleCourt(v.libelleObligation),
         date: lec.date,
         tone: TON_REGISTRE[lec.registre],
+        type: typeDeVerification(v),
         equipement: libellePorteur(v),
         // Pas d'équipement, pas de bâtiment : la ligne reste visible sous
         // tous les filtres par bâtiment (ADR-010, ADR-019).
@@ -454,7 +474,15 @@ export async function getModulesMatrice(
   let nbPoints = 0;
   if (carnet) {
     const points = await prisma.pointReleve.findMany({
-      where: { carnetId: carnet.id, actif: true },
+      // `carnet.id` sort du `findFirst` scopé ci-dessus, donc la portée est
+      // déjà établie — le prédicat est porté quand même, pour que cette
+      // lecture ne dépende pas de la provenance de son argument (cf.
+      // `docs/rgpd.md` § 7.1, forme A).
+      where: {
+        carnetId: carnet.id,
+        actif: true,
+        carnet: { etablissement: { entreprise: { userId: user.id } } },
+      },
       select: {
         id: true,
         releves: {
@@ -582,6 +610,7 @@ export const getDashboardData = cache(async function getDashboardData(
     actionsTotal,
     duerp,
     nbEquipements,
+    transmissions,
     nbRapports,
   ] = await Promise.all([
     // Un seul passage sur les vérifications qui comptent : les occurrences
@@ -644,6 +673,11 @@ export const getDashboardData = cache(async function getDashboardData(
       },
     }),
     prisma.equipement.count({ where: scope }),
+    // Dans le `Promise.all` et non derrière lui : le rapprochement ne dépend
+    // que de `etablissementId` et `user.id`, tous deux disponibles avant.
+    // Placé après, il ajoutait trois requêtes sérialisées derrière tout le
+    // reste du tableau de bord (ADR-024).
+    chargerTransmissions(etablissementId, user.id),
     prisma.rapportVerification.count({
       where: { verification: scope },
     }),
@@ -678,6 +712,7 @@ export const getDashboardData = cache(async function getDashboardData(
   const recommandations = genererRecommandations(
     {
       etablissementId,
+      transmissions,
       // Ordre d'urgence réelle : les retards d'abord (échéance croissante,
       // la plus ancienne en tête), puis ce qui arrive, puis les occurrences
       // sans date arrêtée — dont aucune règle ne tire de proposition, mais

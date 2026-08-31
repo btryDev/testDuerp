@@ -12,7 +12,11 @@ import {
   finaliserOnboarding,
   type OnboardingActionState,
 } from "@/lib/onboarding/actions";
-import { evaluerScopeSecteur } from "@/lib/onboarding/scope";
+import {
+  validerIdentite,
+  validerResume,
+  validerTypologie,
+} from "./validation";
 import {
   VALEURS_INITIALES,
   type OnboardingState,
@@ -35,26 +39,7 @@ const ETAPES: Etape[] = [
     titre: "Identité & lieu",
     sousTitre: "SIRET, adresse, effectif",
     Component: StepIdentite,
-    valide: (s) => {
-      if (s.raisonSociale.trim().length === 0)
-        return "Indiquez la raison sociale pour continuer.";
-      if (s.adresseRue.trim().length < 3)
-        return "Indiquez le numéro et la rue.";
-      if (!/^\d{5}$/.test(s.adresseCodePostal.trim()))
-        return "Le code postal doit faire 5 chiffres.";
-      if (s.adresseVille.trim().length < 2) return "Indiquez la ville.";
-      if (s.codeNaf.trim().length === 0) return "Indiquez le code NAF.";
-      if (!/^\d{2}\.?\d{2}[A-Z]?$/i.test(s.codeNaf.trim()))
-        return "Le code NAF doit ressembler à 56.10A.";
-      const scope = evaluerScopeSecteur(s.codeNaf);
-      if (scope.status === "hors_perimetre") {
-        return `Secteur non couvert. ${scope.raison}`;
-      }
-      const n = Number(s.effectifSurSite);
-      if (!Number.isInteger(n) || n < 1)
-        return "Indiquez un effectif (au moins 1).";
-      return null;
-    },
+    valide: validerIdentite,
   },
   {
     id: "typologie",
@@ -62,20 +47,7 @@ const ETAPES: Etape[] = [
     titre: "Typologie",
     sousTitre: "Régimes ERP/IGH/Travail",
     Component: StepTypologie,
-    valide: (s) => {
-      if (
-        !s.estEtablissementTravail &&
-        !s.estERP &&
-        !s.estIGH &&
-        !s.estHabitation
-      )
-        return "Cochez au moins un régime (travail, ERP, IGH ou habitation).";
-      if (s.estERP && !s.typeErp) return "Précisez votre activité ERP.";
-      if (s.estERP && !s.categorieErp)
-        return "Précisez votre capacité d'accueil.";
-      if (s.estIGH && !s.classeIgh) return "Précisez la classe IGH.";
-      return null;
-    },
+    valide: validerTypologie,
   },
   {
     id: "resume",
@@ -83,7 +55,7 @@ const ETAPES: Etape[] = [
     titre: "Résumé",
     sousTitre: "Vérifier et créer",
     Component: StepResume,
-    valide: () => null,
+    valide: validerResume,
   },
 ];
 

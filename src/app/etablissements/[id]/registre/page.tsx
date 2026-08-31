@@ -22,7 +22,7 @@ import {
   completudeDeLaFiche,
 } from "@/lib/registre/completude";
 import { BandeauCouverture } from "@/components/perimetre/BandeauCouverture";
-import { couvertureDeLEtablissement } from "@/lib/perimetre/couverture";
+import { couvertureDuDossier } from "@/lib/perimetre/faits";
 import { listerRapportsDeLEtablissement } from "@/lib/rapports/queries";
 import {
   LABEL_DOMAINE,
@@ -68,11 +68,7 @@ export default async function RegistrePage({
   // Ce que l'outil couvre, et ce qu'il ne couvre pas. Se lit AVANT le
   // registre : un dirigeant hors périmètre doit savoir que ce qui suit est
   // incomplet avant de le lire, pas après.
-  const couverture = couvertureDeLEtablissement({
-    estERP: etab.estERP,
-    estIGH: etab.estIGH,
-    categorieErp: etab.categorieErp,
-  });
+  const couverture = await couvertureDuDossier(id);
 
   // La complétude se lit fiche par fiche, jamais partie par partie : une même
   // partie mêle des fiches que l'outil recueille et d'autres non. Le
@@ -225,10 +221,13 @@ export default async function RegistrePage({
       </div>
 
       <div className="flex flex-col gap-7 px-[var(--board-gutter)] pt-7">
-        <BandeauCouverture
-          couverture={couverture}
-          hrefEtablissement={`${base}/modifier`}
-        />
+        {couverture && (
+          <BandeauCouverture
+            couverture={couverture}
+            hrefEtablissement={`${base}/modifier`}
+            hrefEquipements={`${base}/equipements`}
+          />
+        )}
 
         {registre && registre.parties.length > 0 && (
           <>

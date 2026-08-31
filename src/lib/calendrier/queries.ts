@@ -12,7 +12,12 @@ import { cleJourCivil, debutDuJour } from "@/lib/dates";
 // lui pour que l'en-tête de la page, le tableau de bord et le dossier de
 // conformité annoncent nécessairement les mêmes nombres.
 import { repartirVerifications } from "@/lib/pdf/etat-verifications";
-import { porteeBatiment } from "./portee";
+import { porteeBatiment, toutesLesConditions, urgenceSeule } from "./portee";
+import {
+  TYPES_VERIFICATION,
+  typeDeVerification,
+  type TypeVerification,
+} from "./echeances";
 
 /**
  * Lectures du calendrier des vérifications périodiques.
@@ -56,23 +61,17 @@ export async function listerVerifications(
   const debut = debutDuJour(now);
 
   const verifs = await prisma.verification.findMany({
-    where: {
-      etablissementId,
-      etablissement: { entreprise: { userId: user.id } },
-      ...porteeBatiment(filtres.batimentId),
-      ...(filtres.urgentsSeulement
-        ? {
-            dateRealisee: null,
-            OR: [
-              { statut: "depassee" as const },
-              {
-                statut: { in: ["planifiee" as const, "a_planifier" as const] },
-                datePrevue: { lt: debut },
-              },
-            ],
-          }
-        : {}),
-    },
+    // Trois conditions indépendantes, composées et non diffusées : la portée
+    // par bâtiment et l'urgence posent toutes deux un `OR`, et la diffusion
+    // faisait disparaître la première (cf. `toutesLesConditions`).
+    where: toutesLesConditions(
+      {
+        etablissementId,
+        etablissement: { entreprise: { userId: user.id } },
+      },
+      porteeBatiment(filtres.batimentId),
+      filtres.urgentsSeulement ? urgenceSeule(debut) : {},
+    ),
     include: {
       equipement: {
         include: { batiment: { select: { id: true, nom: true } } },
@@ -153,11 +152,13 @@ export async function compterEtatCalendrier(
 ) {
   const user = await requireUser();
   const verifs = await prisma.verification.findMany({
-    where: {
-      etablissementId,
-      etablissement: { entreprise: { userId: user.id } },
-      ...porteeBatiment(filtres.batimentId),
-    },
+    where: toutesLesConditions(
+      {
+        etablissementId,
+        etablissement: { entreprise: { userId: user.id } },
+      },
+      porteeBatiment(filtres.batimentId),
+    ),
     // `libelleObligation` porte le marqueur d'archivage (ADR-012) :
     // `repartirVerifications` en a besoin pour ne pas compter en retard une
     // ligne dont l'obligation ne s'applique plus.
@@ -166,6 +167,9 @@ export async function compterEtatCalendrier(
       datePrevue: true,
       dateRealisee: true,
       libelleObligation: true,
+      // Le porteur, pour ventiler par famille (ADR-016) : une ligne à
+      // porteur salarié est un titre, pas un contrôle d'appareil.
+      salarieId: true,
     },
   });
 
@@ -175,7 +179,34 @@ export async function compterEtatCalendrier(
     aPlanifier: etat.aPlanifier.length,
     aVenir: etat.aVenir.length,
     realisees12m: etat.realisees12m.length,
+    /**
+     * Les deux mêmes ensembles, ventilés par nature — c'est ce que
+     * `repartirRetards` verse dans les familles. Un total et sa ventilation
+     * sortent d'**une seule** lecture : deux requêtes voisines finissent par
+     * se contredire (ADR-015), et c'est ce que ce fichier existe pour
+     * empêcher.
+     */
+    enRetardParType: ventilerParType(etat.enRetard),
+    aVenirParType: ventilerParType(etat.aVenir),
+    /**
+     * Toutes les lignes lues, quel que soit leur état — ce qui répond à
+     * « cette famille existe-t-elle ici ? », et non « a-t-elle du retard ? ».
+     * C'est ce que la rangée de pilules du calendrier demande : une pilule
+     * qui disparaît sous « En retard seulement » ne se retrouve plus.
+     */
+    toutesParType: ventilerParType(verifs),
   };
+}
+
+/** Compte une liste de lignes par la nature que leur porteur détermine. */
+function ventilerParType(
+  verifs: readonly { salarieId: string | null }[],
+): Record<TypeVerification, number> {
+  const out = Object.fromEntries(
+    TYPES_VERIFICATION.map((t) => [t, 0]),
+  ) as Record<TypeVerification, number>;
+  for (const v of verifs) out[typeDeVerification(v)] += 1;
+  return out;
 }
 
 /**

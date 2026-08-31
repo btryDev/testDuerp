@@ -11,7 +11,7 @@ const SOURCES: Source[] = [
   {
     titre: "Légifrance · Code du travail",
     sousTitre: "Partie santé-sécurité, articles L. 4121 à L. 4641",
-    url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000006160964/",
+    url: "https://www.legifrance.gouv.fr/codes/id/LEGISCTA000006132338",
     hote: "legifrance.gouv.fr",
   },
   {
@@ -22,8 +22,12 @@ const SOURCES: Source[] = [
   },
   {
     titre: "Ministère du travail",
-    sousTitre: "Fiches « Prévention des risques pour la santé au travail »",
-    url: "https://travail-emploi.gouv.fr/sante-au-travail/prevention-des-risques-pour-la-sante-au-travail",
+    // Seule URL de ce bloc qu'aucun outil ne peut vérifier : le site sert un
+    // CAPTCHA à tout ce qui n'est pas un navigateur, sur la racine comme sur
+    // un chemin profond. Celle-ci a été ouverte dans un navigateur humain le
+    // 2026-08-28, et le sous-titre décrit ce qui s'y trouvait alors.
+    sousTitre: "Fiches par risque : DUERP, chutes de hauteur, bruit, TMS, RPS",
+    url: "https://travail-emploi.gouv.fr/prevention-des-risques",
     hote: "travail-emploi.gouv.fr",
   },
 ];

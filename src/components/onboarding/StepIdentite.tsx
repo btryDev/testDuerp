@@ -176,10 +176,12 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                     update({ codeNaf: e.target.value.toUpperCase() })
                   }
                   placeholder="56.10A"
-                  aria-invalid={
-                    Boolean(errors?.codeNaf) ||
-                    scope?.status === "hors_perimetre"
-                  }
+                  // `aria-invalid` ne signale plus l'absence de référentiel :
+                  // le champ est correctement rempli, c'est le produit qui
+                  // n'a pas de secteur pour ce code. Le marquer invalide
+                  // faisait dire à la technologie d'assistance qu'il y avait
+                  // une saisie à corriger, alors qu'il n'y a rien à corriger.
+                  aria-invalid={Boolean(errors?.codeNaf)}
                   // Les trois messages de ce champ lui sont chaînés, et non
                   // le seul premier : le panneau « secteur non couvert »
                   // annonce que l'inscription ne peut pas aboutir. Le champ
@@ -190,8 +192,8 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                       scope?.status === "ok" && !errors?.codeNaf
                         ? "codeNaf-secteur"
                         : null,
-                      scope?.status === "hors_perimetre" && !errors?.codeNaf
-                        ? "codeNaf-hors-perimetre"
+                      scope?.status === "sans_referentiel" && !errors?.codeNaf
+                        ? "codeNaf-sans-referentiel"
                         : null,
                     ]
                       .filter(Boolean)
@@ -219,17 +221,26 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                     Secteur reconnu : {scope.secteurNom}
                   </p>
                 ) : null}
-                {scope?.status === "hors_perimetre" && !errors?.codeNaf ? (
+                {/* Ambre, et non plus l'encre signal : rien n'est en faute
+                    et rien ne bloque. Le rouge disait « corrigez ce champ »
+                    et fermait la porte ; l'ambre dit « sachez ceci », comme
+                    le bandeau de couverture le fait pour une question
+                    ouverte. `role="status"` et non `role="alert"`, pour la
+                    même raison — ce n'est pas une erreur à annoncer, c'est un
+                    fait à lire. */}
+                {scope?.status === "sans_referentiel" && !errors?.codeNaf ? (
                   <div
-                    id="codeNaf-hors-perimetre"
-                    role="alert"
-                    className="mt-2 rounded-[18px] bg-[color:var(--board-signal-wash)] px-3.5 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-signal-ink)] shadow-[inset_0_0_0_1px_var(--board-signal-line)]"
+                    id="codeNaf-sans-referentiel"
+                    role="status"
+                    className="mt-2 rounded-[18px] bg-[color:var(--board-amber-wash)] px-3.5 py-3 text-[12.5px] leading-[1.5] text-[color:var(--board-amber-ink)] shadow-[inset_0_0_0_1px_var(--board-amber)]"
                   >
                     <p className="m-0 font-semibold">
-                      Secteur non couvert par la V2
+                      Pas de référentiel de risques types pour ce secteur
                     </p>
-                    <p className="m-0 mt-1">{scope.raison}</p>
-                    <p className="m-0 mt-2">{scope.exemple}</p>
+                    <p className="m-0 mt-1">{scope.constat}</p>
+                    <p className="m-0 mt-2 text-[color:var(--board-slate-ink)]">
+                      {scope.consequence}
+                    </p>
                   </div>
                 ) : null}
                 <div className="mt-2 flex flex-wrap gap-1.5">

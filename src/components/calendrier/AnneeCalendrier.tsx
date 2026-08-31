@@ -109,6 +109,11 @@ export function AnneeCalendrier({
   // mais pas déroulés d'office. Les autres années se montrent entières :
   // on y est venu exprès. Si le mois servi à l'arrivée vit dans le pli,
   // le pli naît ouvert.
+  // Les années révolues restent pliées à l'arrivée : leur couture porte le
+  // compte de retards, ce qui suffit à ne rien taire, et les déplier
+  // d'office repousserait l'année en cours sous une dette ancienne.
+  const [voirAnterieurs, setVoirAnterieurs] = useState(false);
+
   const [voirPasses, setVoirPasses] = useState(
     () =>
       moisInitial !== null &&
@@ -135,6 +140,40 @@ export function AnneeCalendrier({
     : regle.mois;
   const elementsPasses = elementsDuSegment(moisPasses, sectionsParCle);
   const elementsAffiches = elementsDuSegment(moisAffiches, sectionsParCle);
+
+  // ── Les retards des années précédentes ──────────────────────────────
+  //
+  // Une échéance dépassée en 2024 est en retard AUJOURD'HUI : « en retard »
+  // est un état relatif au présent, pas à l'année où la ligne est rangée.
+  // La liste, elle, ne montre qu'une année — et une dette d'une année
+  // révolue ne se voyait donc nulle part sur la page ouverte à l'arrivée,
+  // pendant que le tableau de bord la comptait. Deux compteurs voisins qui
+  // se contredisent, ce que l'ADR-015 existe pour empêcher.
+  //
+  // On ne déplace pas la ligne dans l'année courante : sa date est sa date,
+  // et la porter à un autre mois ferait mentir le calendrier dans l'autre
+  // sens. On applique la règle que la couture des mois passés applique déjà
+  // un cran plus bas — **plier n'est pas cacher, à condition que le pli
+  // porte son compte de retards**. Une seconde couture, au-dessus de la
+  // première, ouvre sur les mois des années révolues qui ont du retard.
+  //
+  // Seuls les mois EN RETARD y entrent : une échéance faite en 2024 est
+  // rangée, elle n'a rien à faire en tête de 2026.
+  const moisAnterieursEnRetard = surAnneeCourante
+    ? moisEnRetardAvant(anneesRegle, annee)
+    : [];
+  const elementsAnterieurs = elementsDuSegment(
+    moisAnterieursEnRetard,
+    sectionsParCle,
+  );
+  const nbCartesAnterieures = elementsAnterieurs.reduce(
+    (n, e) => n + (e.type === "carte" ? 1 : 0),
+    0,
+  );
+  const nbRetardsAnterieurs = moisAnterieursEnRetard.reduce(
+    (n, m) => n + m.enRetard,
+    0,
+  );
   const nbCartesPassees = elementsPasses.reduce(
     (n, e) => n + (e.type === "carte" ? 1 : 0),
     0,
@@ -238,6 +277,31 @@ export function AnneeCalendrier({
           onChoisirMois={viser}
           sansDate={sansDate}
         />
+
+        {/* Les années révolues d'abord : une dette de 2024 se lit avant les
+            mois de l'année en cours, parce qu'elle est plus en retard
+            qu'eux. Fermée d'office comme la couture des mois passés, mais
+            son compte de retards est visible fermé — c'est ce qui empêche
+            le pli d'enterrer la dette. */}
+        {nbCartesAnterieures > 0 ? (
+          <CoutureMois
+            ouvert={voirAnterieurs}
+            onToggle={() => setVoirAnterieurs((v) => !v)}
+            libelle={
+              voirAnterieurs
+                ? "Replier les années précédentes"
+                : "Voir les retards des années précédentes"
+            }
+            nbEnRetard={voirAnterieurs ? 0 : nbRetardsAnterieurs}
+          />
+        ) : null}
+        {voirAnterieurs && nbCartesAnterieures > 0 ? (
+          <ElementsMois
+            elements={elementsAnterieurs}
+            ouvert={ouvert}
+            onToggle={setOuvert}
+          />
+        ) : null}
 
         {/* La couture des mois passés vit AU-DESSUS de son contenu : elle
             marque l'endroit où la liste a été pliée, et son compte de
@@ -404,6 +468,37 @@ function FlecheAnnee({
 type ElementMois =
   | { type: "carte"; section: SectionMoisData }
   | { type: "creux"; cle: string; de: string; a: string };
+
+/**
+ * Les mois des années **révolues** qui portent encore du retard.
+ *
+ * Extraite du composant pour être testable : la règle qu'elle porte est
+ * une règle de vérité, pas de mise en page. « En retard » se dit du
+ * présent — une échéance dépassée en 2024 l'est toujours aujourd'hui —,
+ * alors que la liste ne montre qu'une année à la fois. Sans cette
+ * remontée, une dette d'une année révolue n'apparaît nulle part sur la
+ * page ouverte à l'arrivée, pendant que le tableau de bord la compte.
+ *
+ * Deux exclusions, et ce sont elles qui font la règle :
+ *
+ *   - **les années futures** n'entrent jamais : une échéance de 2029 n'est
+ *     pas en retard, quoi qu'en dise un compteur mal calculé ;
+ *   - **les mois sans retard** non plus : une vérification faite en 2024
+ *     est rangée, elle n'a rien à faire en tête de l'année en cours.
+ *
+ * Rendre les mois plutôt qu'un simple compte permet de les déplier avec
+ * leurs cartes, donc de montrer chaque ligne à SA date — on remonte
+ * l'information, jamais la date.
+ */
+export function moisEnRetardAvant(
+  anneesRegle: AnneeRegle[],
+  annee: number,
+): MoisRegle[] {
+  return anneesRegle
+    .filter((a) => a.annee < annee)
+    .flatMap((a) => a.mois)
+    .filter((m) => m.enRetard > 0);
+}
 
 /**
  * Mêle cartes et creux dans l'ordre des mois. Les mois vides consécutifs

@@ -157,12 +157,25 @@ export default async function PrestatairesPage({
             distingue.
           </p>
           <div className="mt-4">
+            {/* L'URL pointait sur LEGIARTI000037389145, qui rend 404, et
+                l'extrait attribué à « L. 8222-1 · D. 8222-5 » n'était le texte
+                ni de l'un ni de l'autre : il fondait ensemble le seuil de
+                R. 8222-1 et le rythme de D. 8222-5. Trois articles relus à la
+                source le 2026-08-28 ; la pastille cite celui qui impose la
+                vérification, le complément dit d'où viennent le montant et le
+                rythme. */}
             <LegalBadge
               charte="board"
-              reference="Art. L. 8222-1 · D. 8222-5 CT"
-              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037389145"
-              extrait="Toute personne qui conclut un contrat dont l'objet porte sur une obligation d'un montant minimum de 5 000 euros hors taxes est tenue, lors de la conclusion et tous les six mois jusqu'à la fin de son exécution, de se faire remettre par son cocontractant les documents attestant qu'il a fait l'objet des vérifications et déclarations."
-            />
+              reference="Art. L. 8222-1 CT"
+              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024197683"
+              extrait="Toute personne vérifie lors de la conclusion d'un contrat dont l'objet porte sur une obligation d'un montant minimum en vue de l'exécution d'un travail, de la fourniture d'une prestation de services ou de l'accomplissement d'un acte de commerce, et périodiquement jusqu'à la fin de l'exécution du contrat, que son cocontractant s'acquitte : 1° des formalités mentionnées aux articles L. 8221-3 et L. 8221-5 […]"
+            >
+              <p>
+                Le seuil de <strong>5 000 € HT</strong> est fixé par
+                R. 8222-1 ; le rythme <strong>semestriel</strong> et la liste
+                des pièces à se faire remettre, par D. 8222-5.
+              </p>
+            </LegalBadge>
           </div>
         </section>
       </div>

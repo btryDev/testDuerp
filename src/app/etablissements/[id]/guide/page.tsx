@@ -36,8 +36,14 @@ export default async function GuidePage({
   if (!etab) notFound();
 
   // Section personnalisée « Chez vous » : résolution déterministe des
-  // obligations sur les déclarations réelles (même projection que le
-  // générateur de calendrier).
+  // obligations sur les déclarations réelles, avec la MÊME projection que le
+  // générateur de calendrier — onze champs, pas neuf.
+  //
+  // La phrase était déjà écrite ici, et elle était fausse : les deux derniers
+  // champs manquaient. Un établissement manipulant des matières R. 4227-22
+  // voyait donc son calendrier engendrer trois obligations incendie quand
+  // cette page n'en annonçait qu'une. Les champs sont désormais requis au type
+  // (`matching/types.ts`), l'omission ne compile plus.
   const equipements = await listerEquipementsDeLEtablissement(id);
   const chezVous = construireChezVous(
     {
@@ -50,6 +56,8 @@ export default async function GuidePage({
       typeErp: etab.typeErp,
       categorieErp: etab.categorieErp,
       classeIgh: etab.classeIgh,
+      personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
+      manipuleMatieresR422722: etab.manipuleMatieresR422722,
     },
     equipements.map((eq) => ({
       id: eq.id,

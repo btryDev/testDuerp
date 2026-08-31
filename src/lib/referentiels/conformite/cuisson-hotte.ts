@@ -44,6 +44,7 @@ export const obligationsCuissonHotte: Obligation[] = [
     periodicite: "hebdomadaire",
     realisateurs: ["exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["HOTTE_PRO"],
     notesInternes:
@@ -84,6 +85,7 @@ export const obligationsCuissonHotte: Obligation[] = [
     periodicite: "mise_en_service_uniquement",
     realisateurs: ["organisme_agree"],
     criticite: 5,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
     notesInternes:
@@ -107,6 +109,7 @@ export const obligationsCuissonHotte: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
     notesInternes:
@@ -149,6 +152,7 @@ export const obligationsCuissonHotte: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["organisme_agree", "personne_competente"],
     criticite: 5,
+    transmet: [],
     typologies: { erp: { categories: ["N1", "N2", "N3", "N4"] } },
     categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
     notesInternes:
@@ -172,6 +176,7 @@ export const obligationsCuissonHotte: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee", "exploitant"],
     criticite: 4,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["HOTTE_PRO"],
     notesInternes:
@@ -215,6 +220,7 @@ export const obligationsCuissonHotte: Obligation[] = [
     periodicite: "annuelle",
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
+    transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["APPAREIL_CUISSON_ERP"],
     conditions: [

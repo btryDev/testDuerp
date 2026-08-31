@@ -1,6 +1,26 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import { classerDate, type RegistreLigne } from "@/lib/calendrier/etats";
 import { titreParId } from "./catalogue";
+
+/**
+ * Le prédicat d'appartenance des lectures de ce module (ADR-005).
+ *
+ * Il est porté **même quand l'appelant vient de le vérifier**. Sans RLS —
+ * Prisma opère en rôle `postgres` — l'isolation est une convention
+ * applicative, et une lecture qui ne la porte pas devient une fuite le jour
+ * où un appelant nouveau ne vérifie pas. `navigation/sidebar-counts.ts:33`
+ * appelle déjà `compterTitresEnRetard` avec un `etablissementId` nu : la
+ * garde ne vit que dans les deux layouts qui l'appellent, pas ici.
+ *
+ * Ce module porte des données de personnes ; c'est la surface où la
+ * convention coûte le plus cher à rompre. Éprouvé dans `isolation.test.ts`,
+ * qui lit le dossier voisin et exige une réponse vide.
+ */
+async function portee() {
+  const user = await requireUser();
+  return { entreprise: { userId: user.id } } as const;
+}
 
 /**
  * L'état d'un titre, tel que l'écran l'affiche.
@@ -30,8 +50,9 @@ const SELECTION_TITRE = {
 } as const;
 
 export async function listerEquipe(etablissementId: string, now: Date) {
+  const etablissement = await portee();
   const salaries = await prisma.salarie.findMany({
-    where: { etablissementId },
+    where: { etablissementId, etablissement },
     // Les personnes sorties de l'effectif en dernier, mais toujours là : leur
     // titre prouve qu'elles étaient habilitées AU MOMENT où elles ont opéré,
     // et cette preuve couvre l'employeur sur une période passée
@@ -64,11 +85,14 @@ export async function getSalarie(
   salarieId: string,
   now: Date,
 ) {
+  const etablissement = await portee();
   const s = await prisma.salarie.findFirst({
     // `etablissementId` dans le `where`, jamais seulement l'id : c'est la
     // portée de tenancy (ADR-005). Un identifiant deviné ne doit pas ouvrir
-    // la fiche d'une personne d'un autre dossier.
-    where: { id: salarieId, etablissementId },
+    // la fiche d'une personne d'un autre dossier. Et l'établissement lui-même
+    // doit appartenir au lecteur, sans quoi la portée n'est qu'un cloisonnement
+    // entre dossiers d'un même compte — cf. `portee` ci-dessus.
+    where: { id: salarieId, etablissementId, etablissement },
     select: {
       id: true,
       nom: true,
@@ -109,8 +133,12 @@ export async function compterTitresEnRetard(
   etablissementId: string,
   now: Date,
 ): Promise<number> {
+  const etablissement = await portee();
   const titres = await prisma.titreSalarie.findMany({
-    where: { salarie: { etablissementId, actif: true }, echeanceLe: { not: null } },
+    where: {
+      salarie: { etablissementId, actif: true, etablissement },
+      echeanceLe: { not: null },
+    },
     select: { echeanceLe: true },
   });
   return titres.filter(
@@ -141,9 +169,10 @@ export async function libellesTitresDeclares(
   // Le traitement se poursuit après le départ d'une personne (art. 17.3.b), et
   // le texte d'information doit décrire le traitement réel, pas seulement sa
   // part en cours.
+  const etablissement = await portee();
   const lignes = await prisma.titreSalarie.groupBy({
     by: ["obligationId"],
-    where: { salarie: { etablissementId } },
+    where: { salarie: { etablissementId, etablissement } },
   });
   // `?? l.obligationId` et non un filtre : un titre dont l'identifiant ne
   // résout plus au référentiel disparaîtrait sinon en silence du texte

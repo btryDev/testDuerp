@@ -2,7 +2,10 @@
  * Référentiel des mesures préventives applicables à un permis de feu.
  *
  * Sourcé sur INRS ED 6030 « Le permis de feu » (guide de bonnes pratiques)
- * + APSAD R43 (règle de prévention incendie lors de travaux par point chaud).
+ * et sur la règle APSAD R43 — référentiel de la profession de l'assurance,
+ * opposable par un contrat et non par le droit. Aucune des deux n'est un
+ * texte réglementaire : ce module produit une check-list, jamais une
+ * obligation datée du référentiel de conformité (cf. `conformite/types.ts`).
  * Chaque mesure est rattachée à un groupe (avant / pendant / après) qui
  * structure la check-list présentée dans le wizard.
  */

@@ -25,8 +25,27 @@ function verif(
     libelle: `Vérification ${id}`,
     date: jour(j),
     tone,
+    type: "verification",
     equipement: "Tableau électrique",
     batiment,
+  };
+}
+
+/** Une ligne du même flux, mais portée par une personne (ADR-023). Elle
+ *  n'a pas de bâtiment : une échéance de salarié n'a pas de lieu (§ 7). */
+function titre(
+  id: string,
+  j: number,
+  tone: EvenementFenetre["tone"] = "ok",
+): EvenementFenetre {
+  return {
+    id,
+    libelle: `Attestation ${id}`,
+    date: jour(j),
+    tone,
+    type: "titre-salarie",
+    equipement: "Camille Roy",
+    batiment: null,
   };
 }
 
@@ -121,6 +140,37 @@ describe("fusionnerEvenements — filtres", () => {
       { famille: "controle" },
     );
     expect(out.map((e) => e.id)).toEqual(["legionelles-analyse", "v1"]);
+  });
+
+  it("donne au titre d'un salarié la famille personnel, pas contrôle", () => {
+    const [e] = fusion([titre("t1", 20)], []);
+    expect(e.type).toBe("titre-salarie");
+    expect(e.famille).toBe("personnel");
+    expect(e.href).toBe(`/etablissements/${ETAB}/verifications/t1`);
+  });
+
+  it("« Personnel » retient les titres — le flux des vérifications n'est plus jeté en bloc", () => {
+    // Le défaut d'origine : `famille !== "controle" ? [] : …` écartait tout
+    // le flux. Un titre de salarié était donc visible sous « Tout »,
+    // introuvable sous « Personnel », et compté dans « Vérifications ».
+    const out = fusion(
+      [verif("v1", 20), titre("t1", 21)],
+      [autre("a1", 7, "travaux")],
+      { famille: "personnel" },
+    );
+    expect(out.map((e) => e.id)).toEqual(["t1"]);
+  });
+
+  it("« Vérifications » n'attrape plus les titres de salariés", () => {
+    const out = fusion([verif("v1", 20), titre("t1", 21)], [], {
+      famille: "controle",
+    });
+    expect(out.map((e) => e.id)).toEqual(["v1"]);
+  });
+
+  it("sans filtre de famille, les deux natures du flux restent", () => {
+    const out = fusion([verif("v1", 20), titre("t1", 21)], []);
+    expect(out.map((e) => e.id)).toEqual(["v1", "t1"]);
   });
 
   it("un domaine ne qualifie que les contrôles : le registre sort", () => {

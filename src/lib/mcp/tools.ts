@@ -216,7 +216,6 @@ function formaterActions(actions: ActionLue[]): string {
         ? `échéance ${formaterDateFr(a.echeance)}${a.enRetard ? " — en retard" : ""}`
         : "sans échéance",
       `origine ${LIBELLE_ORIGINE[a.origine]}${a.origineLibelle ? ` : ${a.origineLibelle}` : ""}`,
-      a.responsable ? `responsable ${a.responsable}` : null,
     ]
       .filter(Boolean)
       .join(", ");
@@ -288,7 +287,11 @@ const outilActions: OutilMcp<typeof schemaActions> = {
   nom: "plan_actions",
   titre: "Plan d'actions",
   description:
-    "Actions correctives de l'établissement, qu'elles viennent du DUERP, d'un rapport de vérification ou d'une saisie libre : libellé, statut, criticité, échéance, retard éventuel et responsable. Filtrable par statut, criticité, actions en cours ou en retard. " +
+    // La description ANNONÇAIT le responsable. Une description d'outil est lue
+    // par le modèle avant tout appel : annoncer un nom de personne, c'est en
+    // promettre un. Le champ n'est plus lu (cf. `listerActions`), la promesse
+    // part avec lui.
+    "Actions correctives de l'établissement, qu'elles viennent du DUERP, d'un rapport de vérification ou d'une saisie libre : libellé, statut, criticité, échéance et retard éventuel. Filtrable par statut, criticité, actions en cours ou en retard. " +
     "Attention : les échéances rendues ici sont des échéances de **traitement**, que l'établissement se fixe. Elles sont distinctes des échéances réglementaires des vérifications périodiques, rendues par l'outil `verifications`. Avant de conclure qu'une date n'existe pas dans le dossier, interroger les deux.",
   schema: schemaActions,
   executer: async (ctx, args) => {

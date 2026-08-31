@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import { cleJourCivil } from "@/lib/dates";
 import {
   appliquerPrescriptions,
@@ -56,8 +57,17 @@ export async function chargerPagePrescriptions(
   etablissementId: string,
   now: Date = new Date(),
 ): Promise<DonneesPagePrescriptions> {
-  const etab = await prisma.etablissement.findUnique({
-    where: { id: etablissementId },
+  // `findFirst` scopé, et non `findUnique` sur l'id seul (ADR-005). Cette
+  // lecture rend tout le parc en service et toutes les prescriptions
+  // particulières du dossier ; sans RLS pour la rattraper, un identifiant
+  // venu de l'URL suffisait à ouvrir celui d'un autre compte. `null` en
+  // sortie se lit « pas votre dossier » exactement comme « dossier vide » —
+  // la page rend une liste vide dans les deux cas, ce qui est le
+  // comportement voulu : on ne dit pas à un visiteur que l'identifiant
+  // existe.
+  const user = await requireUser();
+  const etab = await prisma.etablissement.findFirst({
+    where: { id: etablissementId, entreprise: { userId: user.id } },
     include: {
       equipements: { where: { actif: true } },
       prescriptionsParticulieres: {

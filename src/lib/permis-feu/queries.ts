@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { listSignatures } from "@/lib/signatures/queries";
 
@@ -23,11 +24,23 @@ export async function getPermisFeu(
   return { ...permis, signatures };
 }
 
+/**
+ * Le numéro suivant de la série de l'établissement.
+ *
+ * Le prédicat d'appartenance est porté bien que la fonction ne rende qu'un
+ * entier : sans lui, le nombre de permis d'un dossier tiers se lisait depuis
+ * un identifiant deviné. Sans RLS (ADR-005), aucune lecture n'est trop petite
+ * pour porter sa portée.
+ */
 export async function nextNumeroPermisFeu(
   etablissementId: string,
 ): Promise<number> {
+  const user = await requireUser();
   const last = await prisma.permisFeu.findFirst({
-    where: { etablissementId },
+    where: {
+      etablissementId,
+      etablissement: { entreprise: { userId: user.id } },
+    },
     orderBy: { numero: "desc" },
     select: { numero: true },
   });

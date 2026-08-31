@@ -6,7 +6,7 @@
 //   marteau         corrections (actions correctives, signalements)
 //   casque          opérations encadrées (permis de feu, plan de prévention)
 //   document        documents (DUERP, attestations prestataires)
-//   personnes       personnel (réservé aux modules à venir)
+//   carte           personnel (titres détenus par les salariés)
 // La couleur vient de `currentColor` : l'appelant pose la taille et la
 // couleur de texte, le marqueur ne décide que du pictogramme.
 
@@ -19,6 +19,7 @@ import {
   Hammer,
   HandshakeIcon,
   HardHat,
+  IdCard,
   ListChecks,
   Users,
 } from "lucide-react";
@@ -50,7 +51,12 @@ export const DESCRIPTION_FAMILLE: Record<FamilleEcheance, string> = {
     "Suivez les chantiers encadrés : travaux par point chaud et venue d'une entreprise extérieure.",
   papiers:
     "Suivez le renouvellement de vos documents : mise à jour du DUERP et attestations de prestataires.",
-  personnel: "Suivez le dossier de vos salariés.",
+  // Ce que l'outil suit vraiment, et pas un mot de plus : les titres que
+  // l'employeur a déclarés, quand le texte leur donne un terme (ADR-023).
+  // « Suivez le dossier de vos salariés » promettait un dossier du personnel,
+  // que ce produit n'est pas et ne veut pas être (docs/rgpd.md § 2.3).
+  personnel:
+    "Suivez l'échéance des titres que détiennent vos salariés — ceux auxquels un texte donne un terme.",
 };
 
 /** Libellés longs, pour le panneau de filtres — explicites sans contexte. */
@@ -59,7 +65,9 @@ export const LABEL_FAMILLE_LONG: Record<FamilleEcheance, string> = {
   travaux: "Corrections & réparations",
   operations: "Opérations encadrées",
   papiers: "Documents à renouveler",
-  personnel: "Personnel",
+  // « Personnel » nu laissait attendre un onglet du personnel entier. Le
+  // libellé long nomme ce que la famille contient : des titres.
+  personnel: "Titres du personnel",
 };
 
 const ICONE: Record<FamilleEcheance, typeof ClipboardCheck> = {
@@ -71,8 +79,15 @@ const ICONE: Record<FamilleEcheance, typeof ClipboardCheck> = {
   // catégorie, pour que la pastille du calendrier renvoie à l'écran.
   operations: HardHat,
   papiers: FileText,
-  personnel: Users,
+  // `IdCard`, l'icône de « Équipe » dans le rail — et pas `Users`, qui
+  // désigne déjà les prestataires et le type `attestation` (cf. `ICONE_TYPE`
+  // plus bas) : la même icône ne peut pas nommer deux objets. La famille ne
+  // contient qu'un type, `titre-salarie` ; les deux niveaux portent donc le
+  // même pictogramme, ce qui est le même objet vu de deux distances.
+  personnel: IdCard,
 };
+
+
 
 // ---------------------------------------------------------------------------
 // Le niveau fin : le type (ADR-016).
@@ -93,6 +108,10 @@ const ICONE: Record<FamilleEcheance, typeof ClipboardCheck> = {
  */
 export const LABEL_TYPE: Record<TypeEcheance, string> = {
   verification: "Vérification",
+  // « Titre » et non « Attestation » : le mot est déjà pris par la pièce de
+  // vigilance d'un prestataire, et le titre d'un salarié couvre aussi
+  // l'habilitation et le CACES (ADR-023 § 1).
+  "titre-salarie": "Titre salarié",
   "action-duerp": "Action DUERP",
   "action-verification": "Action vérification",
   "permis-feu": "Permis de feu",
@@ -109,6 +128,10 @@ export const LABEL_TYPE: Record<TypeEcheance, string> = {
  */
 const ICONE_TYPE: Record<TypeEcheance, typeof ClipboardCheck> = {
   verification: ClipboardCheck,
+  // `IdCard`, l'icône de « Équipe » dans le rail — et pas `Users`, qui
+  // désigne déjà les prestataires et le type `attestation` : la même icône
+  // ne peut pas nommer deux objets (ADR-023, conséquences).
+  "titre-salarie": IdCard,
   "action-duerp": FileCheck2,
   "action-verification": ListChecks,
   "permis-feu": Flame,

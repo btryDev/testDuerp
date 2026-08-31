@@ -68,16 +68,33 @@ export default async function CarnetSanitairePage({
           tonalite="info"
         >
           <div className="mt-3 flex flex-wrap gap-2">
+            {/* L'extrait affiché ici était FABRIQUÉ : ni « bonne
+                surveillance », ni « carnet sanitaire », ni « toutes les
+                opérations réalisées » ne figurent dans l'arrêté. Il
+                reformulait le texte avec le vocabulaire du produit, entre
+                guillemets, sous une prop documentée « cité textuellement ».
+                Personne ne pouvait le voir : l'URL d'à côté ne rendait aucun
+                contenu, donc la citation ne pouvait être confrontée à rien.
+                C'est en réparant le lien que le faux est apparu.
+                Verbatim de l'article 3, version en vigueur au 2023-01-01,
+                relevé le 2026-08-28. */}
             <LegalBadge
               charte="board"
-              reference="Arrêté du 1er février 2010"
-              href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000021790390/"
-              extrait="Le responsable des installations de production, de stockage et de distribution d'eau chaude sanitaire s'assure de la bonne surveillance des installations notamment par un carnet sanitaire dans lequel sont consignées toutes les opérations réalisées."
-            />
+              reference="Arrêté du 1er février 2010, art. 3"
+              href="https://www.legifrance.gouv.fr/loda/id/JORFTEXT000021795143/"
+              extrait="Le responsable des installations assure la traçabilité de cette surveillance. Il consigne les modalités et les résultats de cette surveillance avec les éléments descriptifs des réseaux d'eau chaude sanitaire et ceux relatifs à leur maintenance dans un fichier sanitaire des installations, qui est tenu à disposition du directeur général de l'agence régionale de santé."
+            >
+              <p>
+                Le texte dit <strong>« fichier sanitaire des installations »</strong>.
+                « Carnet sanitaire » est le nom que cet outil donne à son
+                module, pas celui de l&apos;arrêté — et le destinataire du
+                fichier est l&apos;ARS.
+              </p>
+            </LegalBadge>
             <LegalBadge
               charte="board"
-              reference="Art. R1321-23 CSP"
-              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006908173"
+              reference="Art. R. 1321-23 CSP"
+              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006909518"
             />
           </div>
         </WhyCard>
@@ -137,9 +154,9 @@ export default async function CarnetSanitairePage({
           ) : (
             <ul className="m-0 flex list-none flex-col gap-5 p-0">
               {carnet.pointsReleve.map((p) => {
-                const tempActuelle =
-                  p.releves[0]?.temperatureCelsius ?? null;
-                const dansLaPlage = p.releves[0]?.conforme ?? null;
+                const dernier = p.releves[0] ?? null;
+                const tempActuelle = dernier?.temperatureCelsius ?? null;
+                const dansLaPlage = dernier?.conforme ?? null;
                 return (
                   <li key={p.id} className="carte-board">
                     <div className="flex flex-wrap items-start justify-between gap-3 px-7 pb-3 pt-6 sm:px-8">
@@ -154,6 +171,24 @@ export default async function CarnetSanitairePage({
                           {p.typeReseau === "EFS" ? "max" : "min"}{" "}
                           {p.seuilMinCelsius}°C
                         </p>
+                        {/* Qui a relevé, et quand. Le formulaire demande ce
+                            nom depuis toujours ; jusqu'au 2026-08-28 son seul
+                            lecteur était l'export ZIP remis à un tiers — d'où
+                            il a été retiré, aucun texte ne l'exigeant. Le
+                            champ s'est alors retrouvé collecté sans finalité,
+                            ce qui tient plus mal sous la minimisation que
+                            l'usage interne auquel il était destiné. Il le
+                            retrouve ici : l'exploitant sait à qui demander
+                            quand une mesure surprend. Le nom ne ressort
+                            toujours pas de l'établissement. */}
+                        {dernier && (
+                          <p className="m-0 mt-1.5 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+                            Dernier relevé le {formatDate(dernier.dateReleve)}
+                            {dernier.operateur
+                              ? ` · par ${dernier.operateur}`
+                              : ""}
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-3">
                         {tempActuelle !== null && (
