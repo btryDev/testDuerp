@@ -6,13 +6,14 @@ préexistant (`normaliserFormData`).
 
 Neuf défauts trouvés en ouvrant les écrans d'un dossier réel — six personnes,
 zéro équipement. Six au premier passage, trois au second, après qu'un salarié
-et un titre ont été ajoutés. **Aucun n'était visible autrement** : cinq vivaient dans du JSX
-ou dans un SVG, un dans une chaîne de caractères. Aucun test ne les voyait, et
-aucun n'aurait pu : ce qu'ils affirment n'était appelable de nulle part.
+et un titre ont été ajoutés. **Aucun n'était visible autrement** : la plupart
+vivaient dans du JSX ou dans un SVG, un ne se voyait que dans la console. Aucun
+test ne les voyait, et aucun n'aurait pu : ce qu'ils affirment n'était appelable
+de nulle part.
 
-Un fil les relie tous les six : **une phrase écrite quand elle était vraie, et
-jamais relue après que la règle sous elle a bougé.** Deux d'entre elles ont été
-rendues fausses par des corrections livrées le matin même — dont une de moi.
+Un fil les relie : **une phrase écrite quand elle était vraie, et jamais relue
+après que la règle sous elle a bougé.** Trois ont été rendues fausses par des
+corrections livrées le matin même — dont deux par les miennes.
 
 ---
 
@@ -126,16 +127,15 @@ fournisseur qu'on retient. La règle avait servi dix domaines techniques où
 vos obligations suppose un tiers qualifié, s'il intervient déjà chez vous il
 reste à l'inscrire. »
 
-**Une phrase ou deux règles ?** Une seule, et délibérément. Ce que la règle
-constate est identique dans les deux situations : une obligation suppose un
-tiers, l'annuaire n'en déclare aucun pour ce domaine. « Intervenant » le dit sans
-présumer d'un choix, d'un contrat ni d'une facture — il vaut pour l'organisme
-agréé qui vient vérifier comme pour le service auquel on adhère. Ce que la phrase
-continue de ne pas dire, et qui vaut pour les deux : que le dirigeant est en
-faute. La règle ne sait pas distinguer « il en a un et ne l'a pas saisi » — le
-cas le plus probable — de « il n'en a pas ».
+**Une phrase ou deux règles ?** J'ai d'abord soutenu qu'une seule suffisait, en
+raisonnant que le constat était identique des deux côtés. **C'était insuffisant,
+et le § 8 raconte pourquoi** : le jugement rendu à l'écran a montré que la phrase
+règle le cas fréquent et rate celui qui compte. Ce paragraphe est conservé tel
+qu'il a été écrit, et corrigé par le § 8 plutôt que réécrit — sans quoi ce
+rapport ferait exactement ce qu'il reproche aux six premiers défauts : laisser
+en place une affirmation devenue fausse.
 
-**Gardé par un test ?** Oui, sur le mot lui-même.
+**Gardé par un test ?** Oui — voir § 8, qui garde les deux règles.
 
 ## 6. « Aucun n'est déclaré » dans un dossier où il y en avait un
 
