@@ -1,11 +1,12 @@
 # Rapport — les écrans d'un dossier neuf
 
 **Branche** `fix/ecrans-dossier-neuf`, depuis `origin/integration/2026-08-31` ·
-six corrections · **1781 tests verts**, `tsc` propre, un avertissement eslint
+neuf corrections · **1787 tests verts**, `tsc` propre, un avertissement eslint
 préexistant (`normaliserFormData`).
 
-Six défauts trouvés en ouvrant les écrans d'un dossier réel — six personnes,
-zéro équipement. **Aucun n'était visible autrement** : cinq vivaient dans du JSX
+Neuf défauts trouvés en ouvrant les écrans d'un dossier réel — six personnes,
+zéro équipement. Six au premier passage, trois au second, après qu'un salarié
+et un titre ont été ajoutés. **Aucun n'était visible autrement** : cinq vivaient dans du JSX
 ou dans un SVG, un dans une chaîne de caractères. Aucun test ne les voyait, et
 aucun n'aurait pu : ce qu'ils affirment n'était appelable de nulle part.
 
@@ -164,17 +165,92 @@ sans quoi une reformulation qui nommerait un titre précis passerait.
 
 ---
 
+## 7. Deux enfants React avec la même clé
+
+**Ce que voyait le dirigeant.** Rien — et c'est le point. La console écrivait
+deux fois par chargement « Encountered two children with the same key ».
+
+**La cause.** Le tableau de bord employait `href` comme clé React. Juste tant
+qu'une destination désignait une recommandation ; toutes les transmissions de
+domaine mènent à l'annuaire des prestataires. **C'est ma correction du matin,
+qui les a rendues visibles ensemble, qui a rendu la collision atteignable.**
+
+Le défaut s'est révélé plus large que rapporté : les transmissions de **salarié**
+partagent de la même façon l'écran Équipe. La mutation le montre — cinq
+recommandations s'effondrent sur trois clés.
+
+**Ce qu'il voit après.** Toujours rien, et c'est l'objectif. Une clé absente n'a
+pas d'effet ; une clé **en double** en a un, et React le dit : des enfants
+« dupliqués et/ou omis ». La liste est statique aujourd'hui. Le jour où elle se
+réordonne, une recommandation peut disparaître **sans trace** — un faux négatif
+muet, ce que l'ADR-022 existe pour supprimer.
+
+**Gardé par un test ?** Oui, avec une contre-épreuve qui compte : la clé doit
+être **stable**, pas seulement unique. Un compteur d'index passerait le test
+d'unicité en réintroduisant le défaut au premier réordonnancement.
+
+## 8. « Prestataire » : deux règles, finalement
+
+**Ce que j'avais soutenu.** Qu'une seule phrase suffisait, parce que ce que la
+règle constate me semblait identique dans les deux cas.
+
+**Ce que le jugement à l'écran a tranché, et il a raison.** « S'il intervient
+déjà chez vous, il reste à l'inscrire » règle le cas fréquent — mais la phrase
+est écrite **pour celui qui a déjà un intervenant**. Pour celui qui n'a pas
+adhéré, c'est-à-dire le seul cas où le produit pourrait éviter un manquement
+réel, « aucun intervenant déclaré » se lit comme un trou de saisie.
+
+Organiser un service de prévention et de santé au travail n'est pas une relation
+qu'on peut ne pas avoir : elle est due (`L. 4622-1`). Le domaine technique
+constate une **saisie manquante** ; la santé au travail constate une
+**obligation peut-être non remplie**. Ce n'est pas une différence de
+vocabulaire, et c'est ce que je n'avais pas vu en raisonnant.
+
+**Ce qu'il voit après.** « Aucun service de prévention et de santé au travail
+déclaré — Tout employeur doit en organiser un (L. 4622-1), si vous adhérez déjà
+à un service il reste à l'inscrire. » Les deux moitiés comptent : sans la
+seconde la phrase accuse, sans la première elle ramène une obligation légale à
+un oubli de saisie.
+
+**Gardé par un test ?** Oui, des deux côtés — et la contre-épreuve importe
+autant : faire basculer tous les domaines sur la formulation « obligation due »
+accuserait un restaurateur de ne pas avoir d'électricien.
+
+## 9. Une notation de développeur dans le texte utilisateur
+
+**Ce que voyait le dirigeant.** Sous « pourquoi chez vous » : « effectif sur
+site 6 **dans la plage [— ; 49]** ». Notation d'intervalle, tiret cadratin
+compris pour dire « pas de borne ».
+
+**Ce qu'il voit après.** Trois formes selon les bornes déclarées : « jusqu'à 49
+salariés », « à partir de 11 salariés », « de 11 à 49 salariés ». Une seule
+tournure aurait forcé à nommer une borne absente.
+
+**Gardé par un test ?** Oui, trois cas, dont une contre-épreuve : une
+implémentation qui n'écrirait qu'une des deux bornes passerait les deux autres.
+
+---
+
 ## Ce que je n'ai pas touché
 
 **Les seize obligations d'état permanent que le produit n'affiche nulle part.**
 Décision produit en cours d'arbitrage, exclue du lot.
 
+**Le guide ne nomme pas les obligations qu'il compte.** Il leur donne désormais
+une première surface — neuf domaines, avec rythme, réalisateur et « pourquoi
+chez vous » — mais il écrit « Locaux sociaux — 3 obligations » sans dire
+lesquelles. **Le trou n'est donc pas comblé** : les seize restent nommées au
+seul endroit du menu déroulant de prescription. L'écran des états permanents est
+écrit pour ça ; ce lot ne s'en occupe pas, et il ne faudrait pas lire la nouvelle
+surface comme si c'était fait.
+
 ## Ce que ce lot suggère pour la suite
 
-Les six défauts sont de la même famille, et elle a une signature reconnaissable :
+Les neuf défauts sont de la même famille, et elle a une signature
+reconnaissable :
 **une phrase juste au moment où elle a été écrite, laissée en place après que ce
-qu'elle décrit a changé.** Deux ont été rendues fausses le jour même par des
-corrections justes.
+qu'elle décrit a changé.** Trois ont été rendues fausses le jour même par des corrections justes — dont
+deux par les miennes, le point 6 et le point 7.
 
 Ce qui les a rendues invisibles est plus intéressant que les phrases elles-mêmes.
 Une règle enfermée dans du JSX n'est appelable par aucun test : ce n'est pas
