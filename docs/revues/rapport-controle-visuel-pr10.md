@@ -25,7 +25,7 @@ UUID (`UPDATE 1`). Le second dossier, `e9492ba5-…`, est resté intact et ignor
 | # | Point | Verdict |
 |---|---|---|
 | 1 | Filtre par bâtiment sous « en retard seulement » | **conforme** |
-| 2 | Pilule « Titres du personnel » | **conforme** (une réserve, cf. §2) |
+| 2 | Pilule « Titres du personnel » | **conforme** — réserve levée par `d3e51e7`, cf. §a-bis |
 | 3 | Pastilles réglementaires cliquables | **conforme** (deux nuances) |
 | 4 | Aucun référentiel privé présenté comme du droit | **conforme** |
 | 5 | Carnet sanitaire et sa citation | **conforme** |
@@ -358,6 +358,53 @@ contredisent, ce que l'ADR-015 existe pour empêcher.
 
 Reproduction : `/etablissements/<id>` (widget « Par où commencer »), puis
 `/etablissements/<id>/calendrier`, filtre « Titres du personnel », année 2026.
+
+### a-bis. Vérification du correctif (`d3e51e7`) — réglé, avec un pli de trop
+
+Le correctif pose une **seconde couture** en tête de l'année en cours, au-dessus
+de celle des mois passés. La ligne n'a pas été déplacée : sa date reste sa date.
+
+| Contrôle | Attendu | Observé |
+|---|---|---|
+| Couture visible **sans rien ouvrir**, filtre « Titres du personnel », 2026 | oui, avec le compte | « Voir les retards des années précédentes · **1 en retard** » ✔ |
+| Même chose **sans filtre** | oui, en tête de 2026 | présente, avant « Août 2026 » ✔ |
+| Ouverture | carte novembre 2024, ligne à sa date réelle | « Novembre 2024 · 1 ce mois-ci · 1 en retard » ✔ |
+| Libellé après ouverture | « Replier les années précédentes » | ✔ |
+| Contre-épreuve : année **2024** | pas de couture | absente ✔ |
+| Contre-épreuve : échéances **futures** (2029, 2030) | jamais remontées | aucune ✔ |
+
+Une fois les deux plis ouverts, la ligne s'affiche bien à sa date :
+
+> **20 NOV.** — Attestation médicale d'absence de contre-indication au travail
+> sous tension — *Titre salarié · Léa [démo] Fontaine · tous les 5 ans ·
+> Électricité* — **En retard**
+
+**Les comptes concordent désormais** — c'était la contradiction d'origine :
+
+| | |
+|---|---|
+| Calendrier 2026, compteur d'année | 26 en retard |
+| Couture « années précédentes » | 1 en retard |
+| **Total** | **27** |
+| Tableau de bord, brief | 27 échéances à traiter · **27 dépassées** |
+| Tableau de bord, widget calendrier | **27 en retard** |
+
+27 = 26 + 1. L'écart 27/26 est levé, et il l'est par addition visible à l'écran,
+pas par un recalage silencieux d'un des deux compteurs.
+
+**Une réserve, mineure et non bloquante : il faut deux clics, pas un.** La
+couture s'ouvre sur une carte « Novembre 2024 » qui arrive elle-même **repliée** —
+elle annonce « 1 ce mois-ci · 1 en retard » sans montrer de ligne. Il faut
+cliquer son chevron pour voir *quoi* est en retard. Le compte fermé sur la
+couture fait son travail : la dette n'est plus enterrée. Mais entre « il y a
+1 retard » et « c'est l'attestation médicale de Léa Fontaine », il reste un pli
+que rien n'annonce.
+
+Détail d'usage rencontré au passage : le panneau « Filtres », qui est `sticky`,
+recouvre la couture et intercepte le clic tant qu'il est ouvert. Il faut le
+refermer d'abord.
+
+Captures : `p12-02-repliee.png`, `p12-03-ouverte.png`, `p12-04-depliee.png`.
 
 ### b. Le message de validation d'e-mail de Supabase remonte brut, en anglais
 
