@@ -114,12 +114,34 @@ export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
   // travail. `autre` aurait compilé et aurait été le mot vide que le
   // commentaire ci-dessus interdit — le tiers a un nom réel dans les deux cas,
   // et il fallait le donner à l'enum plutôt que le taire.
+  //
+  // ⚠ AUCUNE DES TROIS ENTRÉES N'EST ATTEINTE AUJOURD'HUI, et il faut le lire
+  // avant de s'y fier. La première rédaction affirmait ici que le rapprochement
+  // « sert justement à faire voir » qu'un dirigeant n'a déclaré aucun service de
+  // santé au travail. C'est faux, deux fois :
+  //
+  //  1. les onze obligations salarié de ces domaines n'entrent jamais dans les
+  //     applicables — `matching/engine.ts` rend `null` pour tout porteur
+  //     salarié, délibérément (ADR-023 : rien ne dit qui opère sur quoi) ;
+  //  2. les sept obligations d'établissement de ces domaines portent toutes
+  //     `realisateurs: ["exploitant"]`, donc `supposeUnTiers()` est faux — le
+  //     Code confie ces actes à l'employeur, et c'est juste.
+  //
+  // Ces entrées existent donc pour satisfaire le `Record` exhaustif et pour
+  // être prêtes le jour où une obligation de ces domaines appellera vraiment un
+  // tiers — la fiche d'entreprise de `R. 4624-46`, réalisée par le médecin du
+  // travail ou l'équipe pluridisciplinaire, en est le cas type.
+  //
+  // Elles ne sont PAS `aucun_tiers_attendu` : le tiers existe et a un nom, il
+  // n'est simplement pas encore appelé par une obligation livrée. Confondre les
+  // deux ferait dire « le texte n'attend personne » là où il attend quelqu'un.
+  // `domaines.test.ts` fige cet état pour qu'il ne se perde pas.
   formation_securite: ["organisme_formation"],
   // L'adhésion à un service de prévention et de santé au travail est
-  // elle-même une obligation de l'employeur (`L. 4622-1`). Un dirigeant qui
-  // n'en a déclaré aucun à l'annuaire n'a pas seulement un trou de vigilance :
-  // il a probablement un manquement, et c'est justement ce que le rapprochement
-  // sert à faire voir.
+  // elle-même une obligation de l'employeur (`L. 4622-7` pour un service
+  // interentreprises ; `L. 4622-1` pose l'obligation d'organiser, sans dire
+  // comment). Le jour où elle sera encodée, c'est par ce domaine qu'un
+  // dirigeant qui n'a déclaré aucun service s'en verra averti.
   sante_travail: ["service_sante_travail"],
   // Le Code ne dit pas qui délivre la formation de secouriste de `R. 4224-15`.
   // Le domaine de prestataire attendu est donc l'organisme de formation, sans

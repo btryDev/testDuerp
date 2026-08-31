@@ -8,6 +8,7 @@ import {
   type PrestatairesAttendus,
 } from "./domaines";
 import { LABEL_DOMAINE as LABEL_PRESTATAIRE } from "./schema";
+import { porteurDe } from "@/lib/referentiels/conformite/types";
 import type {
   DomaineObligation,
   Obligation,
@@ -134,5 +135,58 @@ describe("correspondance domaine d'obligation → domaine de prestataire", () =>
     expect(DOMAINES_PRESTATAIRE_ATTENDUS.froid).not.toContain(
       "entretien_general",
     );
+  });
+});
+
+describe("les domaines dont la contrepartie n'est pas encore atteinte", () => {
+  it("dit lesquels, plutôt que de laisser croire que le rapprochement les couvre", () => {
+    // Ce test est un REGISTRE, pas une garde : il ne défend rien, il empêche
+    // une affirmation de vieillir en silence.
+    //
+    // Le commentaire de `DOMAINES_PRESTATAIRE_ATTENDUS` a affirmé qu'un
+    // dirigeant sans service de santé au travail déclaré « s'en verrait
+    // averti », et que c'était « justement ce que le rapprochement sert à faire
+    // voir ». C'était faux : aucune obligation de ces domaines n'atteint la
+    // règle, pour deux raisons cumulées et toutes deux délibérées — le moteur
+    // écarte les porteurs salarié (ADR-023), et les obligations
+    // d'établissement de ces domaines sont réalisées par l'exploitant.
+    //
+    // Une entrée inatteignable n'est pas un défaut : elle est prête pour le
+    // jour où une obligation appellera vraiment ce tiers. Ce qui était un
+    // défaut, c'est de l'écrire comme si elle servait déjà.
+    //
+    // Quand ce test tombe, c'est qu'un domaine a basculé. Mettez la liste à
+    // jour ET le commentaire qui l'explique — c'est leur divergence qui a
+    // produit la fausse affirmation.
+    // DEUX conditions, et la seconde est facile à oublier — la première
+    // rédaction de ce test l'a oubliée, et il a classé `sante_travail` parmi
+    // les domaines atteints alors qu'il ne l'est pas. `supposeUnTiers()` seul
+    // se lit sur le référentiel entier ; or une obligation à porteur salarié
+    // n'entre JAMAIS dans les applicables (`matching/engine.ts` rend `null`),
+    // donc elle ne peut pas déclencher la règle, quels que soient ses
+    // réalisateurs. C'est le cas de la VIP et du suivi renforcé, réalisés par
+    // un professionnel de santé : des tiers bien réels, que le rapprochement
+    // ne verra pourtant jamais.
+    const atteignables = new Set(
+      obligationsConformite
+        .filter((o) => porteurDe(o) !== "salarie")
+        .filter(supposeUnTiers)
+        .map((o) => o.domaine),
+    );
+    const inatteignables = (
+      Object.keys(DOMAINES_PRESTATAIRE_ATTENDUS) as DomaineObligation[]
+    )
+      .filter((d) => DOMAINES_PRESTATAIRE_ATTENDUS[d] !== AUCUN_TIERS_ATTENDU)
+      .filter((d) => !atteignables.has(d))
+      .sort();
+
+    expect(
+      inatteignables,
+      "La liste des domaines dont la contrepartie de prestataire ne peut être " +
+        "atteinte par aucune obligation livrée a changé. Ce n'est pas une " +
+        "erreur en soi — mettez la liste à jour, et vérifiez que le commentaire " +
+        "de `DOMAINES_PRESTATAIRE_ATTENDUS` dit toujours la vérité sur ce que " +
+        "le rapprochement fait et ne fait pas.",
+    ).toEqual(["formation_securite", "sante_travail", "secours"]);
   });
 });
