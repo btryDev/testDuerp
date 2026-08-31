@@ -192,3 +192,68 @@ Les douze déclarations du contre-test sont **conservées** sur Atelier Vermeil
 (« 12 sur 12 ») : elles montrent l'écran dans son second état. Dites-le si vous
 voulez la base revenue à zéro déclaration, c'est une suppression de lignes dans
 la table neuve, sans effet sur le reste.
+
+
+---
+
+# Seconde passe — la section séparée, jugée sur deux dossiers
+
+## Les deux corrections mineures : conformes
+
+**Les fautes de texte sont réparées.** Le chapô dit « ce qui restera **décoché
+dira** ce qu'il vous reste à faire ». Le collage `n'entrepas` a disparu — et la
+locution ne se coupe plus, ce qui est le vrai correctif : une phrase qui
+n'existe nulle part en entier n'est relue par personne.
+
+**Le tableau de bord ne partage plus le verbe.** Il dit maintenant « Aucun
+service de prévention et de santé au travail **à votre annuaire** ». Les deux
+constats coexistent sans se contredire : la case dit « déclaré en place le
+31/08/2026 » — un état —, la recommandation dit qu'il manque à l'annuaire — une
+saisie. Objets différents, verbes différents. Vérifié avec ma déclaration en
+place : plus aucune contradiction lisible.
+
+**Et le pied de page n'a rien perdu.** Sa meilleure phrase est conditionnelle et
+je l'avais crue disparue : elle ne s'affichait pas sur Atelier Vermeil parce que
+les douze lignes y étaient cochées. Sur le Bistrot, à « 0 sur 19 », elle est bien
+là : « **19 lignes restent à passer en revue. Une ligne non cochée n'est pas un
+manquement constaté : c'est une question à laquelle vous n'avez pas encore
+répondu.** » Ce qui est parti du pied, c'est le paragraphe sur le second verbe —
+et il est parti à l'endroit où il sert, contre la ligne qu'il explique.
+
+## La section « Ce qui revient, sans rythme écrit » — mon avis
+
+**Elle éclaire plus qu'elle n'alourdit. Je la garderais.** Mais pas telle quelle,
+et la raison n'est pas celle qu'on attendait.
+
+**Ce qui marche.** L'explication est adossée à la ligne : on ne peut plus
+atteindre le bouton sans avoir le paragraphe au-dessus des yeux. Et la ligne n'a
+plus de voisine « Déclarer en place » à côté d'elle — les deux verbes ne se
+touchent plus, ce qui était le défaut d'origine.
+
+**Ce qui ne marche pas encore.** Le sur-titre de la section est composé
+**exactement comme un titre de domaine** : mêmes petites capitales, même graisse,
+même gris, même position en tête de carte que `PREMIERS SECOURS` ou `SANTÉ AU
+TRAVAIL`. À l'œil qui parcourt, `CE QUI REVIENT, SANS RYTHME ÉCRIT` occupe la
+place où l'on attend un nom de domaine — et se lit donc comme **un dixième
+domaine**, pas comme une autre nature de chose. Les mots diffèrent, la forme
+non. Pour une distinction qui doit se voir sans se lire, c'est là qu'elle
+échoue encore.
+
+**Ce qui la rend visible aujourd'hui est une anomalie, pas un dessin.** Trois
+lignes d'explication pour une ligne d'obligation : le rapport est inversé, et
+c'est cette bizarrerie qui accroche l'œil. Sur un dossier à quatre lignes de ce
+type le rapport se normalisera et la section se lira bien ; ici, elle se lit
+comme une note de bas de page promue en carte. Le signal vient du déséquilibre,
+et le déséquilibre disparaîtra.
+
+**Et elle ne sauve pas l'utilisateur de sept secondes.** Celui qui déroule en
+cliquant les pastilles cliquera « Marquer comme fait » aussi vite que les autres.
+La section aide celui qui s'arrête. Mais la version précédente n'aidait personne :
+c'est un progrès réel, pas un progrès complet.
+
+**Ma recommandation, plus petite que le repli proposé** : garder la section, et
+donner à son sur-titre une forme qui ne soit pas celle d'un domaine. Retirer la
+section ferait perdre l'adossement de l'explication à la ligne, qui est ce que
+cette passe a gagné de plus solide.
+
+Capture : `captures-etats-permanents/91-section.png`.
