@@ -12,7 +12,7 @@ import { cleJourCivil, debutDuJour } from "@/lib/dates";
 // lui pour que l'en-tête de la page, le tableau de bord et le dossier de
 // conformité annoncent nécessairement les mêmes nombres.
 import { repartirVerifications } from "@/lib/pdf/etat-verifications";
-import { porteeBatiment } from "./portee";
+import { porteeBatiment, toutesLesConditions, urgenceSeule } from "./portee";
 import {
   TYPES_VERIFICATION,
   typeDeVerification,
@@ -61,23 +61,17 @@ export async function listerVerifications(
   const debut = debutDuJour(now);
 
   const verifs = await prisma.verification.findMany({
-    where: {
-      etablissementId,
-      etablissement: { entreprise: { userId: user.id } },
-      ...porteeBatiment(filtres.batimentId),
-      ...(filtres.urgentsSeulement
-        ? {
-            dateRealisee: null,
-            OR: [
-              { statut: "depassee" as const },
-              {
-                statut: { in: ["planifiee" as const, "a_planifier" as const] },
-                datePrevue: { lt: debut },
-              },
-            ],
-          }
-        : {}),
-    },
+    // Trois conditions indépendantes, composées et non diffusées : la portée
+    // par bâtiment et l'urgence posent toutes deux un `OR`, et la diffusion
+    // faisait disparaître la première (cf. `toutesLesConditions`).
+    where: toutesLesConditions(
+      {
+        etablissementId,
+        etablissement: { entreprise: { userId: user.id } },
+      },
+      porteeBatiment(filtres.batimentId),
+      filtres.urgentsSeulement ? urgenceSeule(debut) : {},
+    ),
     include: {
       equipement: {
         include: { batiment: { select: { id: true, nom: true } } },
@@ -158,11 +152,13 @@ export async function compterEtatCalendrier(
 ) {
   const user = await requireUser();
   const verifs = await prisma.verification.findMany({
-    where: {
-      etablissementId,
-      etablissement: { entreprise: { userId: user.id } },
-      ...porteeBatiment(filtres.batimentId),
-    },
+    where: toutesLesConditions(
+      {
+        etablissementId,
+        etablissement: { entreprise: { userId: user.id } },
+      },
+      porteeBatiment(filtres.batimentId),
+    ),
     // `libelleObligation` porte le marqueur d'archivage (ADR-012) :
     // `repartirVerifications` en a besoin pour ne pas compter en retard une
     // ligne dont l'obligation ne s'applique plus.

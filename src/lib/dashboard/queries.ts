@@ -41,7 +41,10 @@ import { repartirVerifications } from "@/lib/pdf/etat-verifications";
 import type { ModulesMatrice } from "./obligations";
 import { evaluerEtatDuerp, type EtatDuerp } from "./duerp";
 import { calculerScoreDepuisEtat, type Score } from "./score";
-import { porteeBatiment } from "@/lib/calendrier/portee";
+import {
+  porteeBatiment,
+  toutesLesConditions,
+} from "@/lib/calendrier/portee";
 import { libellePorteur } from "@/lib/calendrier/labels";
 import {
   genererRecommandations,
@@ -150,15 +153,21 @@ export async function listerEvenementsFenetre(
   const fin = ajouterJours(debutDuJour(now), joursHorizon);
 
   const verifs = await prisma.verification.findMany({
-    where: {
-      etablissementId,
-      etablissement: { entreprise: { userId: user.id } },
-      datePrevue: { lte: fin },
-      ...porteeBatiment(filtres?.batimentId),
-      ...(filtres?.urgentsSeulement
+    // Composées et non diffusées, comme `listerVerifications` : la portée par
+    // bâtiment pose un `OR`, et ce site n'échappait à l'écrasement que parce
+    // que sa condition d'urgence porte `statut` et non `OR` — un accident, pas
+    // une garantie (cf. `toutesLesConditions`).
+    where: toutesLesConditions(
+      {
+        etablissementId,
+        etablissement: { entreprise: { userId: user.id } },
+        datePrevue: { lte: fin },
+      },
+      porteeBatiment(filtres?.batimentId),
+      filtres?.urgentsSeulement
         ? { statut: { in: ["a_planifier", "depassee"] } }
-        : {}),
-    },
+        : {},
+    ),
     include: {
       equipement: {
         select: {

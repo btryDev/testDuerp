@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { porteeBatiment } from "./portee";
+import { porteeBatiment, toutesLesConditions, urgenceSeule } from "./portee";
 
 /**
  * Le défaut que ce fichier verrouille ne casse rien, et c'est ce qui le rend
@@ -95,5 +95,90 @@ describe("portée d'une échéance sans équipement (ADR-022)", () => {
       expect(() => statSync(join(RACINE, "src", fichier)), fichier).not.toThrow();
       expect(raison.length, fichier).toBeGreaterThan(80);
     }
+  });
+});
+
+/**
+ * Le second défaut de ce module ne vit pas dans une condition, mais dans leur
+ * **composition** — et c'est pourquoi le balayage de forme ci-dessus ne
+ * pouvait pas le voir. `porteeBatiment` était correcte, la condition d'urgence
+ * était correcte, et les diffuser dans le même littéral en faisait disparaître
+ * une : les deux posent la clé `OR`, la dernière écrasait la première.
+ *
+ * L'effet à l'écran était le motif que tout ce module existe pour supprimer.
+ * Sous « Bâtiment A » + « en retard seulement », l'en-tête comptait sur le
+ * bâtiment (`compterEtatCalendrier` n'a pas de condition d'urgence, donc pas
+ * de collision) pendant que la liste dessous listait l'établissement entier.
+ * Deux nombres contradictoires sur un même écran, aucun marqué faux.
+ *
+ * On vérifie donc l'objet composé, pas le texte du source.
+ */
+describe("toutesLesConditions", () => {
+  const DEBUT = new Date("2026-08-31T00:00:00.000Z");
+
+  it("garde la portée par bâtiment quand l'urgence pose elle aussi un `OR`", () => {
+    const where = toutesLesConditions(
+      { etablissementId: "e1" },
+      porteeBatiment("b1"),
+      urgenceSeule(DEBUT),
+    );
+
+    // La condition de bâtiment doit être **retrouvable** dans le résultat.
+    // C'est l'assertion qui tombe quand on revient à la diffusion : la clé
+    // `OR` de `urgenceSeule` remplace alors celle de `porteeBatiment`, et
+    // `batimentId` disparaît entièrement de l'objet transmis à Prisma.
+    expect(JSON.stringify(where)).toContain("batimentId");
+
+    // Et l'urgence est là aussi : le correctif ne doit pas troquer un
+    // écrasement contre l'autre.
+    expect(JSON.stringify(where)).toContain("depassee");
+  });
+
+  it("ne perd aucune clé, quelle que soit la condition qui la porte", () => {
+    // La garantie énoncée en général, pour qu'une quatrième condition ajoutée
+    // demain soit couverte sans qu'on y pense.
+    const conditions = [
+      { etablissementId: "e1" },
+      porteeBatiment("b1"),
+      urgenceSeule(DEBUT),
+      { datePrevue: { lte: DEBUT } },
+    ];
+    const rendu = JSON.stringify(toutesLesConditions(...conditions));
+
+    for (const c of conditions) {
+      const morceau = JSON.stringify(c);
+      expect(rendu, `perdue : ${morceau}`).toContain(morceau.slice(1, -1));
+    }
+  });
+
+  it("reste lisible : une condition seule n'est pas emballée dans un `AND`", () => {
+    expect(toutesLesConditions({ etablissementId: "e1" })).toEqual({
+      etablissementId: "e1",
+    });
+    // Les conditions vides s'effacent — `porteeBatiment(undefined)` rend `{}`.
+    expect(
+      toutesLesConditions({ etablissementId: "e1" }, porteeBatiment(undefined)),
+    ).toEqual({ etablissementId: "e1" });
+    expect(toutesLesConditions()).toEqual({});
+  });
+
+  it("aucun appelant ne diffuse `porteeBatiment` dans un littéral", () => {
+    // La garantie structurelle : tant que la portée passe par le composeur,
+    // la collision de clés ne peut pas revenir — y compris sur les sites qui
+    // n'y échappaient que par accident, parce que leur condition d'urgence
+    // portait `statut` et non `OR`.
+    const fautifs: string[] = [];
+    for (const chemin of fichiersSource(join(RACINE, "src"))) {
+      const rel = relative(RACINE, chemin).replace(/^src\//, "");
+      if (rel.startsWith("lib/calendrier/portee")) continue;
+      if (/\.\.\.\s*porteeBatiment\s*\(/.test(readFileSync(chemin, "utf8"))) {
+        fautifs.push(rel);
+      }
+    }
+
+    expect(
+      fautifs,
+      "`porteeBatiment` pose une clé `OR`. La diffuser dans un littéral qui en porte une autre l'écrase en silence. Composez avec `toutesLesConditions(...)`.",
+    ).toEqual([]);
   });
 });

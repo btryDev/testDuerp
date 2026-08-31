@@ -24,7 +24,10 @@ import { statsActionsEnRetard } from "@/lib/actions/queries";
 import { prisma } from "@/lib/prisma";
 import { composantesCiviles, joursCivilsEntre } from "@/lib/dates";
 import { libellePorteur } from "@/lib/calendrier/labels";
-import { porteeBatiment } from "@/lib/calendrier/portee";
+import {
+  porteeBatiment,
+  toutesLesConditions,
+} from "@/lib/calendrier/portee";
 
 export default async function EtablissementPage({
   params,
@@ -92,11 +95,13 @@ export default async function EtablissementPage({
     prisma.verification.count({ where: { etablissementId: id } }),
     prisma.rapportVerification.count({ where: { etablissementId: id } }),
     prisma.verification.findMany({
-      where: {
-        etablissementId: id,
-        statut: { in: ["a_planifier", "planifiee", "depassee"] },
-        ...porteeBatiment(batimentFiltre),
-      },
+      where: toutesLesConditions(
+        {
+          etablissementId: id,
+          statut: { in: ["a_planifier", "planifiee", "depassee"] },
+        },
+        porteeBatiment(batimentFiltre),
+      ),
       include: { equipement: true, salarie: true },
       orderBy: { datePrevue: "asc" },
       take: 5,
