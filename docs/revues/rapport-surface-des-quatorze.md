@@ -222,6 +222,22 @@ Trois phrases, à verser telles quelles :
   si un transporteur a sa place à l'annuaire de vigilance est une question
   produit que je n'ouvre pas : `R. 4515-11` en fait un **co-signataire**, pas un
   prestataire de l'employeur, et la note de l'obligation le dit déjà.
-- **Le grain de la transmission du § 4.1 n'est pas corrigé.** Je l'ai établi par
-  lecture de `rapprocher` ; le corriger suppose de décider ce que « déclaré pour
-  qui » veut dire, et cela déborde ce lot.
+- **Le grain de la transmission du § 4.1 n'est pas corrigé**, et c'est une
+  question de modèle, pas d'affinage. Les trois crans sont désormais écrits dans
+  la docstring de `rapprocher` (`dashboard/transmissions.ts`), là où les deux
+  premiers étaient déjà racontés :
+
+  1. **n'importe quel titre** — juste tant que le catalogue tenait en une ligne ;
+  2. **un titre du même domaine** — l'état actuel, qui tombera dès que deux
+     titres coexisteront dans un domaine ;
+  3. **il ignore les personnes** — `titresDeclares` est un ensemble
+     d'identifiants d'obligation : il dit *qu'un* titre existe, jamais combien
+     de personnes le détiennent.
+
+  Les deux premiers étaient des questions de granularité — quel ensemble
+  consulter. Le troisième demande de trancher ce que « déclaré » veut dire quand
+  l'obligation est due **par personne**, et il y a trois réponses possibles :
+  chaque salarié actif, chaque salarié entré depuis moins d'un mois
+  (`R. 4141-20`), ou seulement ceux dont le poste l'appelle — ce que le produit
+  refuse de déduire (ADR-023). Le choix n'est pas fait, et le faire n'est pas de
+  l'affinage.
