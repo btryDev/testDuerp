@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { determineObligationsApplicables } from "./index";
 import type { EtablissementMatching } from "./index";
+import { porteurDe } from "@/lib/referentiels/conformite/types";
 
 /**
  * Le lot « faux négatifs d'ancrage » — la garantie que le rebranchement tient.
@@ -238,30 +239,84 @@ describe("visite de commission — faux négatif connu, délibérément non corr
 
 describe("la mesure du lot — ce que reçoit un établissement sans équipement", () => {
   /**
-   * Le chiffre qui dit si le lot a servi à quelque chose.
+   * Ici vivaient deux `toEqual([...])` énumérant à la main tout ce qu'un
+   * établissement nu reçoit. Ils ont tenu une demi-journée : l'assemblage avec
+   * le lot 7, le jour même, y a ajouté cinq lignes.
    *
-   * Ces nombres sont figés volontairement. Ils bougeront au prochain lot de
-   * couverture, et c'est très bien : leur rôle est d'obliger à constater le
-   * mouvement, pas de l'interdire.
+   * Le défaut n'était pas d'avoir mal écrit la liste, il était de mettre une
+   * MESURE dans un test. Une mesure se date et se publie — elle est au
+   * `docs/revues/rapport-palier1.md`, avec les chiffres du 2026-08-31 et ce
+   * qu'ils valaient avant. Un test, lui, énonce ce qui doit rester vrai. Une
+   * liste exhaustive écrite à la main ne reste vraie qu'entre deux lots, et sa
+   * réparation consiste à recopier ce que le code rend — c'est-à-dire à cesser
+   * de vérifier quoi que ce soit.
+   *
+   * Ce qui suit énonce les deux bornes, sans nommer une seule ligne de plus
+   * que celles dont ce lot répond.
    */
-  it("un ERP de 5ᵉ catégorie sans aucun équipement déclaré", () => {
-    expect(idsSansAucunEquipement(restoErpCat5SansRien()).sort()).toEqual([
-      "aeration-controle-installations-r4222-20",
-      "incendie-erp-pe4-entretien-installations-techniques",
+
+  /**
+   * Borne basse — les trois obligations de ce lot sont là, chez qui n'a rien.
+   * C'est la garantie, et elle ne se périme pas : un lot qui ajoute de la
+   * couverture ne la met jamais en défaut, un rebranchement à l'envers si.
+   */
+  it("les trois obligations rebranchées sont rendues à un établissement nu", () => {
+    expect(idsSansAucunEquipement(restoErpCat5SansRien())).toContain(
       "incendie-registre-securite",
-    ]);
+    );
+    const duChampR422734 = idsSansAucunEquipement(
+      bureauSansRien({ personnesPresentesHabituellement: 60 }),
+    );
+    expect(duChampR422734).toContain("incendie-registre-securite");
+    expect(duChampR422734).toContain("incendie-travail-consigne-affichee");
+    expect(duChampR422734).toContain("incendie-travail-exercice-semestriel");
   });
 
-  it("un employeur non-ERP du champ de R. 4227-34, sans aucun équipement", () => {
+  /**
+   * Borne haute — rien de ce qui s'affiche ne dépend d'un équipement.
+   *
+   * C'est l'autre moitié de ce que la liste exhaustive surveillait, et elle se
+   * dit sans liste : chez un établissement qui n'a rien déclaré, toute
+   * obligation rendue doit être portée par l'établissement. Une obligation
+   * d'équipement qui apparaîtrait ici serait un faux positif — l'erreur
+   * symétrique de celle que ce lot corrige.
+   */
+  it("tout ce qui est rendu à un établissement nu est porté par l'établissement", () => {
+    for (const etab of [
+      restoErpCat5SansRien(),
+      bureauSansRien(),
+      bureauSansRien({ personnesPresentesHabituellement: 60 }),
+      bureauSansRien({ effectifSurSite: 3, manipuleMatieresR422722: true }),
+    ]) {
+      for (const a of determineObligationsApplicables(etab, [])) {
+        expect(
+          porteurDe(a.obligation),
+          `${a.obligation.id} est rendue à un établissement qui n'a rien ` +
+            "déclaré : elle doit donc être portée par l'établissement",
+        ).toBe("etablissement");
+      }
+    }
+  });
+
+  /**
+   * Le nombre ne descend pas.
+   *
+   * Un cliquet, comme celui de la dette de lecture du corpus : il dit que ce
+   * lot a fait apparaître quelque chose et que personne ne le refera
+   * disparaître par accident. Il monte quand un lot livre de la couverture —
+   * et on l'ajuste alors DÉLIBÉRÉMENT, en constatant ce qui est arrivé.
+   * Contrairement à une liste exhaustive, il ne se répare pas en recopiant.
+   */
+  it("un établissement nu ne reçoit pas moins qu'au sortir de ce lot", () => {
+    expect(
+      idsSansAucunEquipement(restoErpCat5SansRien()).length,
+      "ERP de 5ᵉ catégorie : 1 avant ce lot, 2 après",
+    ).toBeGreaterThanOrEqual(2);
     expect(
       idsSansAucunEquipement(
         bureauSansRien({ personnesPresentesHabituellement: 60 }),
-      ).sort(),
-    ).toEqual([
-      "aeration-controle-installations-r4222-20",
-      "incendie-registre-securite",
-      "incendie-travail-consigne-affichee",
-      "incendie-travail-exercice-semestriel",
-    ]);
+      ).length,
+      "employeur du champ de R. 4227-34 : 1 avant ce lot, 4 après",
+    ).toBeGreaterThanOrEqual(4);
   });
 });
