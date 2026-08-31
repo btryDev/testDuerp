@@ -325,3 +325,65 @@ Capture : `captures-pr10c/53-carte.png`.
 **Rien d'autre à signaler sur cette passe** : console propre sur trois
 chargements, cinq recommandations, ordre inchangé, et les trois autres
 sous-titres tiennent dans la largeur.
+
+
+---
+
+# Quatrième passe — `ad3b20d` : la phrase est raccourcie, l'écran la coupe encore ★
+
+La phrase fait maintenant **138 signes** au lieu de 213, les références d'articles
+sont sorties du sous-titre, et l'adhésion est passée en tête et à l'affirmative :
+
+> *Tout employeur doit en avoir un : adhésion à un service interentreprises, ou
+> service autonome. Si vous adhérez déjà, il reste à l'inscrire*
+
+**Sur le fond, elle tient son travail, et mieux qu'avant.** Un dirigeant de six
+personnes qui n'a rien fait lit « adhésion à un service interentreprises » en
+premier, à l'affirmative : il sait quoi faire, et l'ordre des deux branches fait
+en dix-sept signes de moins ce que « en pratique la voie des petites structures »
+faisait en une proposition. C'est plus court **et** plus clair.
+
+**Mais elle est toujours coupée.** Mesuré dans le DOM, sur le tableau de bord du
+dossier neuf :
+
+| Sous-titre | Signes | Nécessaire / disponible | |
+|---|---|---|---|
+| Déclarez vos équipements | 67 | 638 / 638 px | ✓ |
+| Déposez votre premier rapport | 54 | 638 / 638 px | ✓ |
+| **Service de prévention et de santé au travail** | **138** | **719 / 638 px** | **✗ tronqué** |
+| Aucun intervenant déclaré en aération | 104 | 638 / 638 px | ✓ |
+| Organiser la formation à la sécurité | 66 | 638 / 638 px | ✓ |
+
+L'élément porte encore `class="… truncate …"` — soit `white-space: nowrap`,
+`overflow: hidden`, `text-overflow: ellipsis` — pour une hauteur de **18 px**,
+une seule ligne. Il manque 81 px, la fin de la phrase tombe.
+
+**La cause est que la correction n'a été appliquée qu'à l'un des deux widgets.**
+`impl/board.tsx` porte deux rendus de la file :
+
+| Ligne | Composant | Widget | Classe du sous-titre |
+|---|---|---|---|
+| **381** | `CarteTache` | « Par où commencer » | **`line-clamp-2`** ✔ |
+| **1356** | liste | **« À faire »** | **`truncate`** ✘ |
+
+Le commentaire posé en 363-376 raisonne juste, et cite la mesure des 638 px —
+mais il est au-dessus de la ligne 381, pas de la 1356.
+
+**Et c'est le widget non corrigé qui est dans le layout par défaut.** Sur un
+dossier neuf, le tableau de bord affiche « À faire ». « Par où commencer » doit
+être ajouté à la main depuis le tiroir. Autrement dit : **la correction est dans
+le widget que personne ne voit, et le défaut dans celui que tout le monde voit.**
+
+C'est le troisième défaut de la journée qui vit dans ces deux mêmes rendus. Le
+premier — la file amputée par `priorite <= 5` — était aux lignes 563 et 1245, et
+il avait fallu les deux. Celui-ci n'en a eu qu'une.
+
+**Rien d'autre n'a bougé** : les quatre autres sous-titres tiennent exactement
+leur largeur, la hauteur des lignes de la file est identique (60-61 px), console
+propre sur trois chargements.
+
+**Sur la garantie posée** — un test qui refuse un sous-titre de plus de 170
+signes — elle est honnête sur ce qu'elle mesure, et elle n'aurait pas attrapé
+ceci : **138 signes passent le seuil, et sont pourtant coupés à 638 px.** Le
+seuil est calibré sur 104 signes ≈ 638 px ; entre 104 et 170, il existe une plage
+où la phrase est refusée par l'écran et acceptée par le test. Celle-ci est dedans.
