@@ -421,13 +421,19 @@ lot ont été mises en échec exprès, puis rétablies :
    mois de `R. 4624-10`, et le point de départ de la visite intermédiaire (la
    visite du médecin, non la précédente intermédiaire). Tous rappelés en
    description. Les exposer supposerait une date d'affectation sur `Salarie`.
-3. **Divergence assumée avec le précédent électrique.**
-   `elec-salarie-attestation-medicale-voisinage` porte le domaine `electricite`
-   et le réalisateur `exploitant` — ce dernier annonçant au dirigeant qu'il
-   délivre lui-même une attestation médicale. Son jumeau de ce lot porte
-   `sante_travail` et `medecin_travail`. **Je ne l'ai pas corrigée** : changer le
-   domaine et le réalisateur d'une obligation publiée déplace son empreinte et
-   son affichage sur des dossiers vivants. À trancher séparément.
+3. ~~**Divergence assumée avec le précédent électrique.**~~ **Corrigée en fin de
+   revue.** `elec-salarie-attestation-medicale-voisinage` portait
+   `realisateurs: ["exploitant"]`, annonçant au dirigeant qu'il délivre lui-même
+   une attestation médicale — quand sa propre note relève que l'attestation
+   « est délivrée par le médecin du travail ». Elle porte désormais
+   `medecin_travail`, comme son jumeau issu du même décret.
+
+   L'argument qui la retenait — « déplacer l'empreinte d'une obligation publiée
+   sur des dossiers vivants » — valait tant que ce lot n'était qu'un ajout.
+   L'intégration déplace l'empreinte massivement de toute façon : payer le coût
+   sans acheter le bénéfice n'avait plus de sens. **Le domaine reste
+   `electricite`**, délibérément — c'est l'habilitation que l'attestation
+   conditionne, et un seul déplacement d'empreinte plutôt que deux.
 4. **`R. 4224-16` attend un modèle, et je n'en ai pas inventé le nom.** L'article
    exige un *document* ; le produit n'offre qu'un dépôt de fichier — même
    configuration que `R. 4227-39`. Aucune transmission `modele_absent` n'est
@@ -518,8 +524,20 @@ Les deux plus graves du lot, et les deux que je signale à la propriétaire :
   rayonnements ionisants comme population couverte par ses quatre ans. Quatre ans
   au lieu d'un, **et une échéance que le droit exclut**.
 
-Chacune a reçu sa ligne de catalogue. Ce que le produit ne fera pas : deviner qui
-est concerné. Le questionnaire DUERP pose bien `q-travail-nuit`, mais elle porte
+Chacune a reçu sa ligne de catalogue.
+
+**La première des deux n'est pas nette, et le rapport le disait moins que le
+code.** `R. 4624-17` ne vise **pas** les moins de dix-huit ans ; seul
+`R. 4624-18` le fait, et pour la visite d'entrée, pas pour un rythme. Un
+apprenti qui n'est pas par ailleurs travailleur de nuit relève donc du rythme
+général de **cinq** ans, tout en ayant une visite d'entrée anticipée. Les deux
+articles ne se superposent qu'en partie, et l'obligation les porte tous les
+deux : `notesInternes` l'appelle **« le cas le moins net du lot »**, faute d'un
+modèle qui distingue un délai d'entrée d'une périodicité. La sur-application va
+dans le sens sûr, et la description sépare explicitement les deux populations
+pour que le dirigeant ne déclare pas trois ans là où le texte en admet cinq.
+
+Ce que le produit ne fera pas : deviner qui est concerné. Le questionnaire DUERP pose bien `q-travail-nuit`, mais elle porte
 sur l'organisation de l'établissement, pas sur des personnes — s'en servir pour
 désigner des salariés transformerait une réponse d'établissement en donnée
 sensible individuelle.
@@ -559,6 +577,16 @@ formation à la conduite — alors que le fait déclencheur était déjà décla
 transmissions posées, sur les deux obligations portant des machines qu'on
 *conduit* : dix signaux identiques auraient été du bruit, et le bruit fait
 ignorer le signal.
+
+**Ce que cet arbitrage laisse dehors, et que ce rapport taisait.** `R. 4323-55`
+vise « les équipements de travail servant au levage » **sans distinguer** : les
+dix obligations pourraient donc porter la transmission. Concrètement, un
+équipement pour lequel le dirigeant a répondu **non aux deux questions** —
+`sertAuLevageDePersonnes` et `estChariotOuGerbeur` — ne tombe plus que sur la
+VGP annuelle, qui ne transmet rien. **Un palan motorisé déclaré ainsi ne reçoit
+aucune transmission**, alors que son conducteur doit une formation comme les
+autres. Le trou est assumé pour ne pas noyer le signal ; le combler suppose de
+savoir quels équipements de levage se conduisent, ce que le parc ne dit pas.
 
 ## 7. Les textes remis aux personnes ne parlaient que d'« attestation »
 
