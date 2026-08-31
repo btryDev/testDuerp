@@ -44,8 +44,16 @@ Neuf domaines. À date : **≥ 60 obligations** (test de cohérence en place).
 - **Ascenseurs** — CCH art. R. 134-1 à R. 134-31, arrêté du 18 novembre
   2004 (entretien), arrêté du 13 août 2008 (contrôle technique
   quinquennal).
-- **Portes et portails automatiques** — Code du travail R. 4224-15,
+- **Portes et portails automatiques** — Code du travail R. 4224-12 et
+  R. 4224-13 (portes et portails), R. 4224-17 (maintenance et dossier),
   arrêté du 21 décembre 1993 (vérifications périodiques).
+  *Corrigé le 2026-08-31.* Cette ligne citait `R. 4224-15`, qui traite de
+  la formation de secouriste et n'a rien à voir avec les portes. Le code
+  portait la même erreur et l'avait corrigée à l'audit d'août 2026
+  (`portes-portails.ts`, `notesInternes`) ; le document, lui, continuait
+  de l'annoncer — un document qui affirme ce que le code ne fait pas.
+  `R. 4224-15` est désormais dépouillé et encodé pour ce qu'il est, sous
+  le domaine « premiers secours ».
 
 ### P3 — selon équipements déclarés (étape 11)
 

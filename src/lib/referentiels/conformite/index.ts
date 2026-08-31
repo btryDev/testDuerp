@@ -25,6 +25,9 @@ import { obligationsEquipementSousPression } from "./equipement-sous-pression";
 import { obligationsStockageDangereux } from "./stockage-dangereux";
 import { obligationsLevage } from "./levage";
 import { obligationsFroid } from "./froid";
+import { obligationsFormationSecurite } from "./formation-securite";
+import { obligationsSanteTravail } from "./sante-travail";
+import { obligationsSecours } from "./secours";
 
 export {
   obligationsElectricite,
@@ -37,6 +40,9 @@ export {
   obligationsStockageDangereux,
   obligationsLevage,
   obligationsFroid,
+  obligationsFormationSecurite,
+  obligationsSanteTravail,
+  obligationsSecours,
 };
 export * from "./types";
 export * from "./veille-textes";
@@ -52,6 +58,10 @@ export const obligationsConformite: Obligation[] = [
   ...obligationsStockageDangereux,
   ...obligationsLevage,
   ...obligationsFroid,
+  // Lot 7 — les trois domaines qui ne naissent d'aucun équipement.
+  ...obligationsFormationSecurite,
+  ...obligationsSanteTravail,
+  ...obligationsSecours,
 ];
 
 /**
@@ -73,7 +83,7 @@ export const obligationsConformite: Obligation[] = [
  * `conformite.test.ts` compare une empreinte du contenu à celle enregistrée :
  * l'oubli fait échouer la suite.
  */
-export const REFERENTIEL_VERSION = "2026-08-27.6";
+export const REFERENTIEL_VERSION = "2026-08-31.1";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.

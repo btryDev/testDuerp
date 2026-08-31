@@ -28,6 +28,53 @@ export const DOMAINES_OBLIGATION = [
   "stockage_dangereux",
   "levage",
   "froid",
+  // Les trois domaines qui suivent sont entrés avec le lot 7, et ils ont un
+  // point commun qu'aucun des dix précédents n'a : ils ne naissent pas d'un
+  // équipement. Un tableau électrique, un ascenseur, une hotte se déclarent au
+  // parc ; une formation à la sécurité, une visite d'information et de
+  // prévention, un secouriste ne se déclarent nulle part dans le parc parce
+  // qu'ils n'y sont pas.
+  //
+  // C'est pourquoi aucun domaine existant ne pouvait les accueillir. Ranger la
+  // formation à la sécurité sous `incendie` parce qu'elle parle d'évacuation,
+  // ou le secourisme sous `incendie` parce que les deux relèvent de l'urgence,
+  // aurait été le rabattage que ce référentiel refuse ailleurs : le domaine
+  // sert à grouper ce qu'un dirigeant lit dans son calendrier, et « Incendie /
+  // sécurité » ne décrit pas une visite médicale.
+
+  /**
+   * Formation à la sécurité — `L. 4141-1` et s., `R. 4141-1` et s.
+   *
+   * L'obligation la plus universelle du Code du travail : elle s'impose dès le
+   * premier salarié, sans condition d'équipement, de secteur ni d'effectif.
+   * Porte aussi la formation à la conduite et l'autorisation de conduite
+   * (`R. 4323-55` et s.), qui sont des formations avant d'être des questions
+   * d'équipement.
+   */
+  "formation_securite",
+
+  /**
+   * Suivi individuel de l'état de santé — `R. 4624-10` et s.
+   *
+   * Visite d'information et de prévention, suivi individuel renforcé, et la
+   * liste des postes à risques particuliers que l'employeur tient à jour.
+   *
+   * Ce domaine est le seul dont toutes les obligations salarié portent
+   * `pieceMedicale: true`. Ce que l'outil en détient est strictement borné par
+   * `docs/rgpd.md` § 2.3 : existence, date, échéance. Jamais l'avis, jamais le
+   * motif, jamais la pièce.
+   */
+  "sante_travail",
+
+  /**
+   * Premiers secours — `R. 4224-14` à `R. 4224-16`.
+   *
+   * Le matériel, le secouriste et les mesures d'organisation. Trois articles
+   * voisins, trois obligations, deux porteurs : c'est le cas d'école de
+   * l'ADR-022, et le fondre en une seule ligne aurait reproduit exactement le
+   * défaut qu'elle a corrigé.
+   */
+  "secours",
 ] as const;
 
 export type DomaineObligation = (typeof DOMAINES_OBLIGATION)[number];

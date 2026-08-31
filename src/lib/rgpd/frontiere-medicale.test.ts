@@ -320,8 +320,35 @@ describe("frontière médicale — le drapeau est une décision, pas un défaut"
       .map((o) => `${o.id} → pieceMedicale: ${o.pieceMedicale}`)
       .sort();
 
+    // Neuf depuis le lot 7 (2026-08-31), contre une seule auparavant. C'est
+    // précisément le moment que le commentaire ci-dessus annonçait — « quand
+    // les dix-huit autres arriveront, c'est ici qu'on verra d'un coup d'œil
+    // qui a été qualifié de médical et qui non ». Le voici, et la liste se lit
+    // en deux blocs nets :
+    //
+    //  * `true` (5) — les quatre visites et attestations du suivi médical, plus
+    //    l'attestation d'habilitation électrique. Toutes délivrées par un
+    //    médecin du travail ou un professionnel de santé au travail. L'outil
+    //    n'en détient que l'existence, la date et l'échéance (docs/rgpd.md
+    //    § 2.3), et le drapeau interdit à l'interface de proposer le
+    //    téléversement de la pièce.
+    //  * `false` (4) — les titres de COMPÉTENCE : formation à la sécurité,
+    //    formation à la conduite, autorisation de conduite, certificat de
+    //    sauveteur secouriste du travail. Aucun n'atteste d'un état de santé.
+    //
+    // La frontière n'est ni devinée ni déduite d'un libellé : elle est tranchée
+    // obligation par obligation, et `pieceMedicale` étant requis sur la variante
+    // salarié, l'oubli ne compile pas.
     expect(decisions).toEqual([
+      "conduite-salarie-attestation-medicale → pieceMedicale: true",
+      "conduite-salarie-autorisation → pieceMedicale: false",
+      "conduite-salarie-formation → pieceMedicale: false",
       "elec-salarie-attestation-medicale-voisinage → pieceMedicale: true",
+      "formation-securite-salarie-accueil → pieceMedicale: false",
+      "sante-travail-salarie-sir → pieceMedicale: true",
+      "sante-travail-salarie-sir-visite-intermediaire → pieceMedicale: true",
+      "sante-travail-salarie-vip → pieceMedicale: true",
+      "secours-salarie-secouriste → pieceMedicale: false",
     ]);
   });
 

@@ -31,8 +31,19 @@ existe.
 |---|---|---|
 | `R. 4141-*` — formation à la sécurité | **0** | **0** |
 | `R. 4624-*` — suivi médical | **0** | **0** |
-| `R. 4224-14` à `-16` — secours | 1 fichier | 2 |
-| `R. 4323-55` — conduite, CACES | **0** | 1 |
+| `R. 4224-14` à `-16` — secours | **0** | **0** |
+| `R. 4323-55` à `-57` — conduite | **0** | **0** |
+
+*Deux lignes corrigées le 2026-08-31, au début du lot.* Ce tableau annonçait
+« 1 fichier / 2 cités » pour la section secours et « 1 cité » pour la conduite.
+C'était faux, et faux **dans le sens rassurant** : le référentiel ne citait aucun
+de ces articles. Les occurrences comptées étaient des `notesInternes` racontant
+que `R. 4224-15` et `R. 4323-55 à 57` avaient été cités **par erreur** — pour le
+dossier d'entretien des portes automatiques et pour les équipements sous pression
+— puis corrigés à l'audit d'août 2026. Le compte prenait donc des traces de
+correction pour des citations valides. Le fichier de corpus qui existait bien,
+`code-travail-portes.ts`, porte `R. 4224-13` et `R. 4224-17`, pas la section
+secours.
 
 ---
 
@@ -136,8 +147,23 @@ texte impose ; l'arbitrage suivra.
 `R. 4224-15` porte le **personnel formé** (SST) → porteur `salarie`.
 
 **Écris-en deux, jamais une.** Les fondre reproduirait exactement le défaut que
-l'ADR-022 a corrigé. Un fichier de corpus existe déjà pour ce texte : complète-le
-plutôt que d'en créer un second.
+l'ADR-022 a corrigé.
+
+*Corrigé le 2026-08-31.* Ce paragraphe disait « un fichier de corpus existe déjà
+pour ce texte : complète-le plutôt que d'en créer un second ». Il n'en existait
+pas. `code-travail-portes.ts` couvre les sections 2 et 4 du chapitre IV — portes
+et portails, maintenance — et non la section 3, secours ; il se déclare comme
+tel, et y ranger les articles de secours aurait fait de sa `portee` un mensonge.
+C3 a donc reçu son propre fichier, `code-travail-secours.ts`. Même chose pour C4,
+dont la section 7 est distincte de la section 4 que couvre
+`code-travail-levage.ts`.
+
+**Il y en a finalement trois, et non deux.** `R. 4224-16` porte les mesures
+d'organisation des premiers secours, prises après avis du médecin du travail et
+« consignées dans un document tenu à la disposition de l'agent de contrôle de
+l'inspection du travail ». C'est une obligation d'établissement, distincte du
+matériel comme du secouriste — et celle qui concerne le plus sûrement une TPE,
+puisque sa condition d'application est l'absence d'infirmiers.
 
 ### C4 — conduite et CACES (`R. 4323-55` et s.)
 

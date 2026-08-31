@@ -61,6 +61,8 @@ const LABEL_REALISATEUR: Record<Realisateur, string> = {
   exploitant: "Exploitant (vous-même)",
   fabricant: "Fabricant / installateur",
   bureau_controle: "Bureau de contrôle",
+  medecin_travail: "Médecin du travail",
+  professionnel_sante_travail: "Professionnel de santé au travail",
 };
 
 /** Un choix de case ou de bouton radio, dans la voix du board. */

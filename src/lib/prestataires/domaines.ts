@@ -66,6 +66,24 @@ export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
   stockage_dangereux: ["stockage_dangereux"],
   levage: ["levage", "bureau_controle"],
   froid: ["froid"],
+  // Les trois domaines du lot 7. Aucun d'eux n'appelle un vérificateur
+  // d'équipement : ils appellent un formateur ou un service de santé au
+  // travail. `autre` aurait compilé et aurait été le mot vide que le
+  // commentaire ci-dessus interdit — le tiers a un nom réel dans les deux cas,
+  // et il fallait le donner à l'enum plutôt que le taire.
+  formation_securite: ["organisme_formation"],
+  // L'adhésion à un service de prévention et de santé au travail est
+  // elle-même une obligation de l'employeur (`L. 4622-1`). Un dirigeant qui
+  // n'en a déclaré aucun à l'annuaire n'a pas seulement un trou de vigilance :
+  // il a probablement un manquement, et c'est justement ce que le rapprochement
+  // sert à faire voir.
+  sante_travail: ["service_sante_travail"],
+  // Le Code ne dit pas qui délivre la formation de secouriste de `R. 4224-15`.
+  // Le domaine de prestataire attendu est donc l'organisme de formation, sans
+  // qualification supplémentaire : l'habilitation INRS/CNAM du formateur SST
+  // est un dispositif conventionnel, pas une exigence du Code, et l'écrire ici
+  // ferait passer une pratique pour du droit.
+  secours: ["organisme_formation"],
 };
 
 /**
@@ -85,6 +103,15 @@ const REALISATEURS_TIERS: ReadonlySet<Realisateur> = new Set<Realisateur>([
   "personne_qualifiee",
   "personne_competente",
   "bureau_controle",
+  // Les deux réalisateurs de santé au travail, ajoutés avec le lot 7. Ce sont
+  // des tiers au sens plein : l'employeur ne peut PAS réaliser lui-même une
+  // visite d'information et de prévention ni délivrer une attestation médicale,
+  // et l'adhésion à un service de prévention et de santé au travail est
+  // elle-même une obligation (`L. 4622-1`). Les omettre aurait fait de
+  // `DOMAINES_PRESTATAIRE_ATTENDUS.sante_travail` une entrée morte — présente
+  // pour satisfaire le `Record` exhaustif, consultée jamais.
+  "medecin_travail",
+  "professionnel_sante_travail",
 ]);
 
 /**

@@ -139,13 +139,35 @@ describe("construireChezVous — trous honnêtes", () => {
     expect(r.aucunEquipement).toBe(true);
     expect(r.categoriesSansObligation).toEqual([]);
 
-    // Le domaine apparaît, et il apparaît SANS équipement rattaché : c'est
-    // ce couple qui distingue « vous n'avez rien déclaré » de « rien ne vous
-    // incombe ».
-    expect(r.domaines.map((d) => d.domaine)).toEqual(["aeration"]);
-    expect(r.domaines[0].equipements).toEqual([]);
-    expect(r.domaines[0].raisons.join(" ")).toContain(
-      "porte sur l'établissement",
-    );
+    // Les domaines apparaissent, et ils apparaissent SANS équipement
+    // rattaché : c'est ce couple qui distingue « vous n'avez rien déclaré » de
+    // « rien ne vous incombe ».
+    //
+    // Quatre domaines depuis le lot 7 (2026-08-31), contre un seul auparavant,
+    // et l'écart mesure exactement ce que ce lot a livré. Un bureau sans le
+    // moindre appareil déclaré ne devait rien d'autre, dans ce guide, que le
+    // contrôle de ses installations d'aération. Il doit en réalité, dès son
+    // premier salarié et sans posséder quoi que ce soit : organiser la
+    // formation à la sécurité, informer ses salariés de l'accès au DUERP,
+    // équiper les lieux d'un matériel de premiers secours, organiser par écrit
+    // les premiers secours, et tenir à jour la liste des postes à risques
+    // particuliers. Aucune de ces obligations ne dépend d'un équipement, et
+    // aucune n'était visible avant.
+    //
+    // Ce test figeait donc, une deuxième fois, un faux négatif — plus large que
+    // celui corrigé le 2026-08-27, et de même nature : une liste courte qu'on
+    // avait prise pour la liste complète.
+    expect(r.domaines.map((d) => d.domaine).sort()).toEqual([
+      "aeration",
+      "formation_securite",
+      "sante_travail",
+      "secours",
+    ]);
+    for (const d of r.domaines) {
+      expect(d.equipements, d.domaine).toEqual([]);
+      expect(d.raisons.join(" "), d.domaine).toContain(
+        "porte sur l'établissement",
+      );
+    }
   });
 });
