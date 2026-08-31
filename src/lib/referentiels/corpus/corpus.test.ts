@@ -242,11 +242,17 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     // L'ordre suit la déclaration des corpus, pas l'alphabet.
     expect(refs).toEqual([
       "PE 27",
-      // PE 37 : SEUL article du Livre III fixant une périodicité de visite de
-      // commission — cinq ans. Ajouté le 2026-08-26 en rectification d'une
-      // affirmation contraire portée le matin même. Fondé, mais sans attribut
-      // « locaux à sommeil » pour le déclencher sans sur-appliquer.
-      "PE 37",
+      // PE 37 a quitté cette liste le 2026-08-31 au soir : sa quinquennale est
+      // désormais portée par `incendie-erp-5-visite-commission`, et l'article
+      // passe à `retenu` avec une `reserve` qui dit ce qui reste — l'ancrage
+      // sur une alarme déclarée, et le « pour le public » que
+      // `dessertLocauxSommeil` ne distingue pas. QUATRIÈME sortie par
+      // livraison plutôt que par requalification, après PE 4, R. 4222-20 et
+      // R. 4544-11-1. Il y était entré le 2026-08-26, en rectification d'une
+      // affirmation contraire portée le matin même ; il en sort parce que le
+      // motif qui l'y retenait — « aucun attribut pour le déclencher sans
+      // sur-appliquer » — décrivait une sur-application MUETTE, que la
+      // périodicité rend visible et corrigeable par une réponse « non ».
       "PO 1 § 3 — contrôle biennal des installations techniques",
       "PO 7",
       // PO 12 réimporte PO 7 dans le régime des établissements EXISTANTS

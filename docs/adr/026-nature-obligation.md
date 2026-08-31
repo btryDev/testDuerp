@@ -79,17 +79,26 @@ délègue seulement le rythme — à un règlement qui ne l'a pas fixé. `R. 441
 
 Le couple `nature: "echeance_recurrente"` + `periodicite: "autre"` est donc un
 état légitime, et il se lit **« elle revient, on ne sait pas à quel rythme »**.
-Quatre obligations le portent aujourd'hui.
+Quatre obligations le portaient au jour de cet ADR ; trois depuis l'amendement
+du soir, ci-dessous.
 
 Réciproquement, la nature ne se déduit pas de la périodicité, et le croisement le
 montre :
 
 | | rythme chiffré | `mise_en_service_uniquement` | `autre` |
 |---|---|---|---|
-| échéance récurrente | 61 | — | 4 |
+| échéance récurrente | 62 | — | 3 |
 | état permanent | — | 1 | 29 |
 | obligation ponctuelle | — | 6 | 3 |
 | obligation événementielle | — | 5 | 7 |
+
+> **Amendement 2026-08-31, soir.** Une case a bougé : `incendie-erp-5-visite-commission`
+> est passée de `autre` à `quinquennale`, la relecture de `PE 37` ayant confirmé le
+> rythme que cet ADR signalait comme écrit mais non posé (§ *Ce que cet ADR ne
+> décide pas*). Récurrentes à rythme chiffré : 61 → 62 ; récurrentes sans rythme
+> écrit : 4 → 3. **La démonstration ne bouge pas** — `autre` recouvre toujours
+> quatre natures, et c'est le champ `nature` qui a nommé le désaccord jusqu'à ce
+> qu'il soit tranché.
 
 Les deux valeurs sans rythme recouvrent chacune trois natures. Un seul sens de
 déduction tient, et il est verrouillé par un test : **un rythme chiffré impose

@@ -140,16 +140,22 @@ describe("la frontière avec le calendrier", () => {
       orphelines.push(`${o.id} (${o.nature})`);
     }
 
-    // La seule exception, et elle est déclarée : la visite périodique de la
-    // commission de sécurité. Elle est bien invisible sur cet écran, et c'est
-    // voulu — l'administration la déclenche, l'employeur ne la « fait » pas, et
-    // le registre de sécurité trace la visite quand elle a eu lieu. Elle est
-    // nommée ici plutôt que filtrée en amont pour que la liste reste un
-    // constat : le jour où une seconde exception apparaît, ce test la montre.
+    // La liste est VIDE, et elle ne l'a pas toujours été. Elle portait
+    // `incendie-erp-5-visite-commission` — invisible sur cet écran à dessein,
+    // l'administration la déclenchant. La relecture de PE 37 du 2026-08-31 au
+    // soir lui a donné sa quinquennale : elle a un rendez-vous, elle passe au
+    // calendrier, et elle sort de ce complémentaire par la porte d'à côté.
+    //
+    // L'exception reste déclarée dans `EXCLUES_DU_FAIT_DATE` et n'est plus
+    // atteinte par le référentiel livré — c'est un garde-fou dormant, gardé
+    // exprès : une périodicité peut se retirer comme elle s'est posée, et le
+    // jour où elle le serait, l'obligation retomberait ici sans que personne
+    // ait à s'en souvenir. Le test du second verbe l'éprouve sur un cas
+    // fabriqué, pour ne pas passer au vert pour la mauvaise raison.
     expect(
       orphelines,
       "sans rendez-vous, sans mode de déclaration, sans autre surface : invisible",
-    ).toEqual(["incendie-erp-5-visite-commission (echeance_recurrente)"]);
+    ).toEqual([]);
   });
 });
 
@@ -166,13 +172,37 @@ describe("le second verbe", () => {
     // « En place » lui ment — elle reviendra ; « fait le » aussi — ce n'est pas
     // l'employeur qui la fait. Le registre de sécurité trace déjà la visite
     // quand elle a eu lieu.
+    //
+    // ⚠ CE TEST A FAILLI PASSER AU VERT POUR LA MAUVAISE RAISON. Depuis que
+    // PE 37 a donné sa quinquennale à cette obligation (2026-08-31, soir), elle
+    // n'est plus « sans rendez-vous » : `estFaitADater` la rejette sur la
+    // périodicité, avant même de consulter `EXCLUES_DU_FAIT_DATE`. Écrit sur
+    // l'obligation livrée, il n'éprouverait donc plus l'exclusion — il
+    // constaterait une périodicité.
+    //
+    // On l'éprouve sur un cas FABRIQUÉ : la même obligation ramenée à
+    // `periodicite: "autre"`, c'est-à-dire l'état d'avant. Retirer l'entrée de
+    // `EXCLUES_DU_FAIT_DATE` fait échouer ce test ; la retirer ne faisait rien
+    // à la version précédente.
     const visite = obligationsConformite.find(
       (o) => o.id === "incendie-erp-5-visite-commission",
     );
     expect(visite, "l'exception a disparu du référentiel : retirer la garde").toBeDefined();
     if (!visite) return;
+
+    // L'état livré : elle a un rendez-vous, donc elle n'est ni sur l'écran ni
+    // dans le second verbe.
+    expect(visite.periodicite).toBe("quinquennale");
     expect(estFaitADater(visite)).toBe(false);
     expect(modeDeclaration(visite)).toBeNull();
+
+    // Le garde-fou lui-même, sur le cas qu'il existe pour couvrir.
+    const sansRythme = { ...visite, periodicite: "autre" } as Obligation;
+    expect(
+      estFaitADater(sansRythme),
+      "l'exclusion ne joue plus : la visite reviendrait sur l'écran sous « fait le »",
+    ).toBe(false);
+    expect(modeDeclaration(sansRythme)).toBeNull();
   });
 
   it("n'entre jamais dans le compteur d'en-tête", () => {

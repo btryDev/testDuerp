@@ -108,6 +108,19 @@ export function estFaitADater(
  * reviendra ; « fait le » aussi — ce n'est pas l'employeur qui la fait. Ce qui
  * se trace est la visite quand elle a eu lieu, et le registre de sécurité le
  * fait déjà. Deux surfaces pour un même acte, c'est ce qu'on évite.
+ *
+ * **Cette entrée est DORMANTE depuis le 2026-08-31 au soir, et elle reste.** La
+ * relecture de `PE 37` a donné sa quinquennale à cette obligation : elle a
+ * désormais un rendez-vous, donc `estSansRendezVous` la rejette avant même que
+ * ce `Set` soit consulté. Le garde ne sert plus — aujourd'hui.
+ *
+ * Le retirer coûterait le jour où une périodicité serait retirée, ce qui est
+ * arrivé à cette obligation même, deux fois en une semaine : `quinquennale` →
+ * `autre` le 2026-08-26, puis retour le 2026-08-31. Un garde qu'on enlève parce
+ * que les données du moment le rendent inatteignable est un garde qu'on perd.
+ * Le test qui l'éprouve le fait donc sur un cas **fabriqué** — la même
+ * obligation ramenée à `periodicite: "autre"` — plutôt que sur l'obligation
+ * livrée, sans quoi il passerait au vert pour la mauvaise raison.
  */
 const EXCLUES_DU_FAIT_DATE: ReadonlySet<string> = new Set([
   "incendie-erp-5-visite-commission",

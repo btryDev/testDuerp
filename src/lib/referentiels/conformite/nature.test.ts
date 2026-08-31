@@ -72,10 +72,19 @@ describe("nature d'obligation (ADR-026)", () => {
     // n'est pas une liste à recopier, c'est une discrimination. Les trois
     // portaient la même `periodicite: "autre"` avant ce lot, et c'est cette
     // confusion-là qui rendait l'écran des états permanents inécrivable.
+    //
+    // Le troisième cas a changé le 2026-08-31 au soir, et le motif vaut d'être
+    // gardé : c'était `incendie-erp-5-visite-commission`, dont l'ADR-026 disait
+    // que sa `periodicite: "autre"` était un manque et non une description.
+    // La relecture de PE 37 l'a confirmé et la quinquennale a été posée — elle
+    // n'est donc plus un cas de cette famille, et la remplacer par une autre
+    // récurrente sans rythme écrit garde au test sa discrimination. Le champ
+    // `nature` a fait ce qu'il devait : nommer un désaccord jusqu'à ce qu'il
+    // soit tranché.
     const cas = {
       "stockage-dangereux-declaration-icpe": "ponctuelle",
       "froid-controle-etancheite-apres-modification": "evenementielle",
-      "incendie-erp-5-visite-commission": "echeance_recurrente",
+      "stockage-dangereux-verification-etancheite": "echeance_recurrente",
     } as const;
 
     for (const [id, attendue] of Object.entries(cas)) {

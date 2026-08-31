@@ -1025,7 +1025,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // Réalisateur et libellé entrent tous deux dans l'empreinte parce qu'ils
   // s'affichent au calendrier et décident de ce que le dirigeant croit devoir
   // faire — c'est exactement ce qu'on veut voir bouger.
-  const EMPREINTE_ATTENDUE = "116-20e1e54e2ac0867a";
+  const EMPREINTE_ATTENDUE = "116-97f9faa35169ab0b";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
