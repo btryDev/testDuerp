@@ -43,6 +43,20 @@ export const metadata = {
  * contrôle, ni un indicateur au vert, ni une entrée du ZIP. Aucune surface de
  * dépôt n'est ouverte ici.
  *
+ * **Ce que la séparation des deux verbes fait, et ne fait pas.** Les lignes
+ * « fait le » ont leur propre section depuis le contrôle visuel du 2026-08-31 :
+ * elles cohabitaient avec les états dans les mêmes cartes, sous deux pastilles
+ * strictement identiques, et personne ne les distinguait — un relecteur a coché
+ * douze lignes en sept secondes sans en lire une seule.
+ *
+ * La section **ne sauve pas ce lecteur-là** : celui qui déroule en cliquant
+ * cliquera « Marquer comme fait » aussi vite qu'il cliquait « Déclarer en
+ * place ». Ce qu'elle change, c'est qu'on ne peut plus atteindre ce bouton sans
+ * avoir l'explication au-dessus des yeux, et que les deux verbes ne se touchent
+ * plus. **Elle aide celui qui s'arrête** ; la version d'avant n'aidait
+ * personne. C'est un progrès réel et incomplet, et il vaut mieux l'écrire que
+ * de laisser croire la question réglée.
+ *
  * **Et ce n'est pas un relevé de manquements.** Douze lignes non cochées chez
  * quelqu'un qui vient de créer son dossier, c'est une liste de ce qu'il a à
  * mettre en place — et une bonne partie décrit des choses qu'il fait déjà sans
@@ -144,7 +158,11 @@ export default async function EtatsPermanentsPage({
           <>
             {groupes.map((g) => (
               <section key={g.domaine} className="carte-board px-7 py-6 sm:px-8">
-                <h2 className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+                {/* Barème « sur-titre de section » (10.5 px / 0.18em,
+                    `docs/charte-board.md` § 3). La première rédaction employait
+                    le barème de LIGNE — 10 px / 0.16em — qui n'est pas le bon
+                    rôle : un nom de domaine coiffe une carte, pas une ligne. */}
+                <h2 className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
                   {g.libelle}
                 </h2>
                 <ul className="m-0 mt-3 list-none p-0">
@@ -184,7 +202,29 @@ export default async function EtatsPermanentsPage({
             */}
             {faits.length > 0 && (
               <section className="carte-board px-7 py-6 sm:px-8">
-                <h2 className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+                {/* UN TITRE DE SECTION, PAS UN SUR-TITRE — et c'est la
+                    correction du 2026-08-31.
+
+                    La première rédaction composait ce libellé EXACTEMENT comme
+                    un nom de domaine : mêmes petites capitales, même graisse,
+                    même gris, même place en tête de carte. Le regroupement était
+                    juste, sa forme disait « encore un domaine ». À l'œil qui
+                    parcourt, « CE QUI REVIENT » occupait la place où l'on attend
+                    « PREMIERS SECOURS ».
+
+                    Le barème (§ 3) distingue les deux rôles : un domaine porte
+                    un SUR-TITRE, une section porte un TITRE. Ce n'est pas une
+                    décoration mais une place dans la hiérarchie — et elle tient
+                    quand la section portera cinq lignes au lieu d'une, ce que le
+                    contraste actuel ne ferait pas : aujourd'hui c'est le
+                    déséquilibre (trois lignes d'explication pour une
+                    d'obligation) qui accroche l'œil, et il disparaîtra tout
+                    seul.
+
+                    Interdit 11 respecté — jamais deux niveaux de titrage dans
+                    une carte : celle-ci porte un titre et aucun sur-titre, les
+                    cartes de domaine l'inverse. */}
+                <h2 className="board-titre m-0 text-[22px]">
                   Ce qui revient, sans rythme écrit
                 </h2>
                 {texteFaits && (
@@ -221,7 +261,7 @@ export default async function EtatsPermanentsPage({
               plus haut.
             */}
             <section className="carte-board px-7 py-6 sm:px-8">
-              <h2 className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)]">
+              <h2 className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
                 Ce que cette page fait, et ne fait pas
               </h2>
               <div className="mt-3 flex max-w-[72ch] flex-col gap-2.5 text-[13px] leading-[1.6] text-[color:var(--board-slate-mid)]">
