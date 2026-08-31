@@ -80,10 +80,10 @@ Sources primaires libres d'accès uniquement :
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **115 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **116 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
 **82 d'entre elles sont déclenchées par un équipement déclaré, vingt et une sont portées
-par l'établissement, douze par un salarié.**
+par l'établissement, treize par un salarié.**
 
 Les obligations d'établissement s'appliquent **même si aucun équipement n'est
 déclaré**, et produisent **une seule ligne** chacune, jamais une par installation
@@ -104,10 +104,16 @@ quatre lignes qui dépendent d'un seuil d'effectif — CSE à 11 (`L. 2311-2`), 
 intérieur à 50 (`L. 1321-1`), et les deux régimes exclusifs de restauration qui se
 partagent le seuil de 50 (`R. 4228-22` et `R. 4228-23`).
 
-**Aucune de ces quatorze n'a de périodicité** : les quatorze portent `autre`. C'est le
-résultat du dépouillement, pas une commodité — aucun des textes lus n'écrit de durée.
-Les seuls chiffres qu'ils portent sont des seuils d'effectif, des délais d'entrée en
-obligation (douze mois) et des durées de stage.
+**Aucune de ces quatorze n'a de périodicité** : les quatorze portent `autre`, et c'est le
+résultat du dépouillement, pas une commodité. Les chiffres que leurs textes portent sont
+des seuils d'effectif, des délais d'entrée en obligation (douze mois) et des durées de
+stage — aucun n'est un rythme. **Une seule des seize obligations du lot 8 est chiffrée**,
+et elle est portée par un salarié : la formation santé-sécurité du membre du CSE, que
+`L. 2315-17` renouvelle « lorsque les représentants ont exercé leur mandat pendant quatre
+ans, consécutifs ou non ». Ce n'est ni un rythme ni un plafond mais une **borne
+intérieure** — un troisième cas de figure après ceux du lot 7 —, et le produit ne
+modélisant aucun mandat, l'échéance calculée arrive en avance pour un mandat interrompu.
+Le sens d'erreur est délibéré.
 
 **Les sept derniers domaines ne naissent d'aucun équipement**, et c'est ce qui les
 distingue des dix premiers : leur déclencheur est le statut d'employeur, l'effectif ou
@@ -167,19 +173,24 @@ sont **pas dérivées** par le moteur. Rien ne dit qu'une personne opère sur de
 électriques — ce serait le cinquième déclencheur, non implémenté —, donc l'employeur déclare
 qui détient quel titre (`Salarie`, `TitreSalarie`), et le référentiel fournit le catalogue.
 
-**Douze obligations salarié sont livrées** depuis les lots 7 et 8 (2026-08-31) — le catalogue n'en
+**Treize obligations salarié sont livrées** depuis les lots 7 et 8 (2026-08-31) — le catalogue n'en
 comptait qu'une jusque-là, l'attestation médicale quinquennale de `R. 4544-11-1` :
 formation à la sécurité reçue (`R. 4141-20`, due à TOUS les salariés), formation à la
 conduite et autorisation de conduite (`R. 4323-55`, `R. 4323-56`), attestation médicale de
 conduite (`R. 4323-56`, quinquennale), secouriste SST (`R. 4224-15`), VIP (`R. 4624-16`,
 quinquennale), suivi individuel renforcé (`R. 4624-28`, quadriennale) et sa visite
-intermédiaire (biennale) ; le lot 8 y ajoute la formation en santé, sécurité et
-conditions de travail des membres du CSE et du salarié désigné compétent (`L. 2315-18`,
-sans périodicité — cinq et trois jours sont des durées de stage, et le rythme suit un
-mandat que le produit ne modélise pas).
+intermédiaire (biennale) ; le lot 8 y ajoute **deux** titres, et le fait qu'ils soient
+deux est le point le plus fin de ce lot. La formation santé-sécurité du **membre du CSE**
+(`L. 2315-18`, `quadriennale` par `L. 2315-17`) et la formation en santé au travail du
+**salarié désigné compétent** (`L. 4644-1` I al. 2, `autre`) relèvent du même régime et ne
+sont pas le même acte : `L. 4644-1` renvoie « dans les CONDITIONS prévues » aux articles
+`L. 2315-16` à `L. 2315-18`, et le renouvellement de `L. 2315-17` est écrit pour des
+« représentants » ayant « exercé leur mandat » — ce qu'un salarié désigné, désigné et non
+élu (`R. 4644-1`), n'est ni ne fait. Le même renvoi produit donc deux périodicités.
+La première est due dès onze salariés, la seconde dès le premier.
 
 Le lot 8 ajoute six corpus, tous `articles_cites` et tous disant dans leur `portee` ce
-qu'ils laissent non lu : `code-travail-organisation-prevention` (5 articles),
+qu'ils laissent non lu : `code-travail-organisation-prevention` (8 articles),
 `code-travail-information-travailleurs` (2), `code-travail-locaux-sociaux` (5),
 `code-travail-co-activite` (9, dont un non dépouillé), `code-travail-service-prevention-sante`
 (4) et `code-travail-manutention-ecran` (2). Il complète aussi `code-travail-sante-travail`

@@ -318,12 +318,20 @@ export const obligationsFormationSecurite: Obligation[] = [
   // ---------------------------------------------------------------------------
   // Formations liées à une activité ou à un mandat (lot 8)
   //
-  // Trois lignes, deux porteurs, et le partage n'est pas arbitraire : deux
+  // Quatre lignes, deux porteurs, et le partage n'est pas arbitraire : deux
   // d'entre elles sont des obligations d'ORGANISER que rien ne rattache à une
-  // personne identifiable, la troisième est un titre qu'une personne nommée
-  // détient. Le critère appliqué est celui du lot 7 : une formation devient un
-  // titre de salarié quand le texte la date par personne ou lui fait produire
-  // une pièce nominative. Le développer ligne par ligne en `notesInternes`.
+  // personne identifiable, les deux autres sont des titres qu'une personne
+  // nommée détient. Le critère qui tranche n'est pas tout à fait celui du
+  // lot 7 : au « le texte date-t-il par personne, produit-il une pièce
+  // nominative » s'ajoute une condition qui s'est révélée décisive — LE PRODUIT
+  // SAIT-IL À QUI ATTRIBUER LE TITRE. Un titre que personne ne sait attribuer
+  // produit zéro ligne (ADR-023), donc porteur établissement. Le développer
+  // ligne par ligne en `notesInternes`.
+  //
+  // Les deux titres partagent le régime de `L. 2315-16` à `L. 2315-18` et NE
+  // PARTAGENT PAS leur périodicité : `L. 2315-17` renouvelle la formation « au
+  // bout de quatre ans de mandat exercé », condition écrite pour des
+  // représentants élus et inapplicable à un salarié désigné.
   // ---------------------------------------------------------------------------
   {
     id: "formation-securite-etablissement-manutention",
@@ -381,9 +389,9 @@ export const obligationsFormationSecurite: Obligation[] = [
     id: "formation-securite-salarie-cse-sst",
     domaine: "formation_securite",
     libelle:
-      "Formation en santé, sécurité et conditions de travail (membre du CSE, salarié désigné)",
+      "Formation en santé, sécurité et conditions de travail (membre du CSE)",
     description:
-      "Les membres de la délégation du personnel du comité social et économique et le référent en matière de lutte contre le harcèlement sexuel bénéficient de la formation nécessaire à l'exercice de leurs missions en matière de santé, de sécurité et de conditions de travail. Cette formation dure au minimum cinq jours lors du premier mandat, et trois jours pour chaque membre en cas de renouvellement. Son financement est pris en charge par l'employeur. Le même régime de formation s'applique, par renvoi de L. 4644-1, au salarié désigné compétent en protection et prévention.",
+      "Les membres de la délégation du personnel du comité social et économique et le référent en matière de lutte contre le harcèlement sexuel bénéficient de la formation nécessaire à l'exercice de leurs missions en matière de santé, de sécurité et de conditions de travail. Cette formation dure au minimum cinq jours lors du premier mandat, et trois jours pour chaque membre en cas de renouvellement. Son financement est pris en charge par l'employeur, et le temps de formation est pris sur le temps de travail. Elle est renouvelée lorsque le représentant a exercé son mandat pendant quatre ans, consécutifs ou non.",
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
@@ -396,14 +404,21 @@ export const obligationsFormationSecurite: Obligation[] = [
       {
         source: "CODE_TRAVAIL",
         reference:
-          "L. 4644-1 I alinéa 2 (le salarié désigné compétent bénéficie d'une formation dans les conditions prévues aux articles L. 2315-16 à L. 2315-18)",
-        article: "L. 4644-1",
-        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043893856",
-        versionConstatee: "2022-03-31",
-        note: "Référence de contexte : elle étend le même régime de formation au salarié désigné, sans en créer un second.",
+          "L. 2315-17 (les formations sont renouvelées lorsque les représentants ont exercé leur mandat pendant quatre ans, consécutifs ou non)",
+        article: "L. 2315-17",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000035621181",
+        versionConstatee: "2026-05-28",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "L. 2315-16 (le temps de formation est pris sur le temps de travail et rémunéré comme tel)",
+        article: "L. 2315-16",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000035621179",
+        versionConstatee: "2018-01-01",
       },
     ],
-    periodicite: "autre",
+    periodicite: "quadriennale",
     realisateurs: ["exploitant"],
     criticite: 3,
     typologies: { travail: true, effectifMin: 11 },
@@ -411,6 +426,59 @@ export const obligationsFormationSecurite: Obligation[] = [
     pieceMedicale: false,
     transmet: [],
     notesInternes:
-      "PORTEUR SALARIÉ, ET C'EST LE CAS OÙ LES DEUX CRITÈRES DU LOT 7 SONT REMPLIS. Le texte date la formation PAR PERSONNE — « cinq jours lors du PREMIER MANDAT des membres de la délégation du personnel », « trois jours POUR CHAQUE MEMBRE » en cas de renouvellement — et il la rattache à un mandat individuel, nominatif par construction : un membre du CSE est élu, il a un nom. C'est la différence avec la manutention et l'écran, où le texte vise « les travailleurs dont l'activité comporte », une catégorie que personne ne sait nommer. Ici, le dirigeant sait exactement qui a été élu.\n\nUNE SEULE LIGNE POUR DEUX POPULATIONS, ET C'EST LE TEXTE QUI L'IMPOSE. L. 4644-1 renvoie la formation du salarié désigné compétent « aux conditions prévues aux articles L. 2315-16 à L. 2315-18 » : même régime, même contenu, mêmes durées. En écrire une seconde obligation aurait posé DEUX lignes sur le même article fondateur L. 2315-18 — ce que le test anti-doublon de `conformite.test.ts` attrape, et à raison. La ligne de catalogue est donc unique, son libellé nomme les deux qualités, et `prevention-etablissement-salarie-designe` y renvoie par une `Transmission`, comme `prevention-etablissement-cse`.\n\nUNE SEULE OBLIGATION ET NON DEUX AU TITRE DU FINANCEMENT. L. 2315-18 dernier alinéa met le financement à la charge de l'employeur. Ce n'est pas un second livrable : c'est une règle de prise en charge d'un acte unique. En faire une obligation d'établissement distincte aurait produit deux lignes que le dirigeant solde du même geste — la fragmentation que l'ADR-022 a corrigée.\n\nCINQ JOURS ET TROIS JOURS SONT DES DURÉES DE STAGE, PAS DES PÉRIODICITÉS. C'est le piège de cette ligne, et il est facile à manquer : le texte porte des chiffres, mais ils comptent des jours de formation, pas des années entre deux formations. Le rythme réel suit le mandat, qui dure quatre ans par défaut (L. 2314-33) mais qu'un accord peut ramener à deux — et que le produit ne connaît pas, faute d'un modèle de mandat CSE. Encoder `quadriennale` aurait inventé une échéance à partir d'une durée par défaut : exactement le « triennal » d'origine NF que ce dépôt a déjà eu à retirer. `periodicite: \"autre\"`, et `TitreSalarie.echeanceLe` reste nullable — l'employeur qui connaît la fin du mandat la saisit.\n\n`effectifMin: 11` PARCE QU'UN CSE N'EXISTE PAS EN DEÇÀ. L. 2311-2 le met en place « dans les entreprises d'au moins onze salariés ». Sans ce seuil, le catalogue aurait proposé à un dirigeant de trois personnes un titre que personne chez lui ne peut détenir. Le seuil restreint le catalogue, il n'engendre aucune ligne par lui-même : les instances d'une obligation salarié naissent d'un `TitreSalarie` déclaré, jamais du moteur.\n\nCE SEUIL A UN EFFET DE BORD À CONNAÎTRE. Le salarié désigné compétent de L. 4644-1, lui, est dû DÈS LE PREMIER SALARIÉ. Un employeur de six personnes doit donc désigner quelqu'un (`prevention-etablissement-salarie-designe`, sans seuil) et lui donner une formation dont la ligne de catalogue est, elle, filtrée à onze. C'est une incohérence réelle du référentiel, pas du droit. Deux façons d'en sortir : retirer le seuil, au prix d'un titre CSE proposé à des entreprises sans CSE ; ou scinder en deux lignes, au prix du doublon sur L. 2315-18. J'ai retenu le seuil et je signale le trou plutôt que de le combler par une ligne fausse. Porté au rapport du lot 8.\n\n`pieceMedicale: false` — une formation en santé, sécurité et conditions de travail atteste d'une compétence, pas d'un état de santé. Le mot « santé » dans l'intitulé de la formation ne la rend pas médicale, et c'est précisément le genre d'inférence par mot-clé que ce référentiel refuse : quelqu'un tranche, et sa décision est écrite.\n\nLE RÉFÉRENT HARCÈLEMENT EST DANS LE TEXTE ET N'EST PAS ENCODÉ À PART. L. 2315-18 vise aussi « le référent prévu au dernier alinéa de l'article L. 2314-1 ». Il bénéficie de la même formation, sur le même fondement : il partage la ligne. Sa désignation, elle, relève de L. 2314-1, qui n'a pas été dépouillé dans ce lot et sur lequel aucune obligation ne s'appuie.",
+      "PORTEUR SALARIÉ, ET C'EST LE CAS OÙ LE CRITÈRE EST NETTEMENT REMPLI. Le texte date la formation PAR PERSONNE — « cinq jours lors du PREMIER MANDAT », « trois jours POUR CHAQUE MEMBRE » au renouvellement — et il la rattache à un mandat individuel : un membre du CSE est élu, il a un nom. C'est la différence avec la manutention et l'écran, où le texte vise « les travailleurs dont l'activité comporte », une catégorie que personne ne sait nommer.\n\nQUADRIENNALE, ET C'EST UNE CORRECTION APRÈS RELECTURE. Cette ligne a d'abord porté `autre`, au motif que L. 2315-18 ne chiffrait qu'une durée de stage. C'était faux, et le défaut venait d'un dépouillement incomplet : L. 4644-1 renvoie aux articles L. 2315-16 À L. 2315-18, et je n'avais ouvert que le dernier. `L. 2315-17`, ouvert le 2026-08-31, écrit : « Ces formations sont renouvelées lorsque les représentants ont exercé leur mandat pendant quatre ans, consécutifs ou non. » Le chiffre est dans le Code, il porte bien sur le RENOUVELLEMENT de la formation, et le taire aurait été l'erreur symétrique de celle que ce dépôt combat — non pas inventer une échéance, mais en effacer une qui existe.\n\nCE QUE `quadriennale` DIT DE TROP, ET POURQUOI C'EST LE BON SENS DE L'ERREUR. Les quatre ans ne comptent pas du temps calendaire depuis la formation : ils comptent du MANDAT EXERCÉ, « consécutifs ou non ». Un élu qui siège deux ans, s'interrompt trois, puis siège deux ans encore atteint ses quatre ans de mandat au bout de sept années civiles. Le produit ne modélise aucun mandat — il n'a ni date d'élection, ni durée, ni interruption —, donc les deux ne coïncident que pour un mandat continu, qui est le cas ordinaire. L'échéance calculée arrive donc à la bonne date pour la quasi-totalité des dossiers, et EN AVANCE pour les mandats interrompus. C'est le sens d'erreur que ce dépôt préfère explicitement : une sur-application visible et corrigeable vaut mieux qu'un faux négatif muet. `TitreSalarie.echeanceLe`, déclaré par l'employeur, prime de toute façon sur le calcul.\n\nÀ NE PAS CONFONDRE AVEC LES PLAFONDS DU LOT 7. `R. 4624-16` écrit « qui ne peut excéder cinq ans » : le chiffre y est une BORNE EXTÉRIEURE, et l'échéance encodée est la date au-delà de laquelle l'employeur est nécessairement en défaut. Ici c'est l'inverse : quatre ans de mandat est le SEUIL À PARTIR DUQUEL le renouvellement est dû, donc une borne intérieure. Les deux se ressemblent et ne se comportent pas pareil — le premier peut annoncer « à jour » à tort, le second « en retard » à tort.\n\nVERSION RÉCENTE À SURVEILLER : `L. 2315-17` est en vigueur depuis le 2026-05-28, soit trois mois avant ce lot. C'est le texte le plus fraîchement modifié du référentiel après `R. 4225-2`.\n\nCINQ JOURS ET TROIS JOURS RESTENT DES DURÉES DE STAGE, pas des périodicités : ils disent combien de temps dure la formation, pas quand la refaire. C'est `L. 2315-17` qui dit quand.\n\n`effectifMin: 11` PARCE QU'UN CSE N'EXISTE PAS EN DEÇÀ (L. 2311-2). Sans ce seuil, le catalogue aurait proposé à un dirigeant de trois personnes un titre que personne chez lui ne peut détenir. Le seuil restreint le catalogue, il n'engendre aucune ligne par lui-même : les instances d'une obligation salarié naissent d'un `TitreSalarie` déclaré, jamais du moteur.\n\nLE SALARIÉ DÉSIGNÉ COMPÉTENT A SA PROPRE LIGNE, ET IL N'EST PLUS ICI. La première rédaction de ce lot faisait porter à cette obligation les deux populations, au motif que L. 4644-1 renvoie « aux conditions prévues aux articles L. 2315-16 à L. 2315-18 ». La relecture des trois articles du renvoi a montré que ce sont DEUX ACTES sous un même régime : voir `formation-securite-salarie-designe-competent`, dont les notes portent l'argument. Le discriminant décisif est dans L. 2315-17 lui-même — son renouvellement est écrit en termes de « représentants » ayant « exercé leur mandat », vocabulaire qui ne peut pas s'appliquer à un salarié DÉSIGNÉ, qui ne détient aucun mandat.\n\n`pieceMedicale: false` — une formation en santé, sécurité et conditions de travail atteste d'une compétence, pas d'un état de santé. Le mot « santé » dans l'intitulé ne la rend pas médicale, et c'est exactement l'inférence par mot-clé que ce référentiel refuse partout ailleurs.\n\nLE RÉFÉRENT HARCÈLEMENT PARTAGE CETTE LIGNE. L. 2315-18 vise aussi « le référent prévu au dernier alinéa de l'article L. 2314-1 » : même formation, même fondement. Sa désignation relève de L. 2314-1, non dépouillé, et n'est portée par aucune obligation.",
+  },
+
+  {
+    id: "formation-securite-salarie-designe-competent",
+    domaine: "formation_securite",
+    libelle:
+      "Formation en santé au travail du salarié désigné compétent",
+    description:
+      "Le ou les salariés désignés par l'employeur pour s'occuper des activités de protection et de prévention des risques professionnels bénéficient d'une formation en matière de santé au travail, dans les conditions prévues pour la formation des membres du comité social et économique : temps pris sur le temps de travail et rémunéré, organisme enregistré auprès de l'autorité administrative, durée minimale de cinq jours, financement à la charge de l'employeur. Elle est due dès le premier salarié désigné, sans condition d'effectif. Le Code ne lui fixe aucune durée de validité.",
+    referencesLegales: [
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "L. 4644-1 I alinéa 2 (le ou les salariés désignés bénéficient d'une formation en matière de santé au travail dans les conditions prévues aux articles L. 2315-16 à L. 2315-18)",
+        article: "L. 4644-1",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043893856",
+        versionConstatee: "2022-03-31",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "L. 2315-18 (durée minimale de cinq jours au premier mandat, trois jours au renouvellement ; financement par l'employeur)",
+        article: "L. 2315-18",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036761949",
+        versionConstatee: "2022-03-31",
+        note: "Référence de contexte : elle fournit les conditions, pas l'obligation.",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "L. 2315-17 (organisme enregistré ; renouvellement après quatre ans de MANDAT exercé — condition inapplicable à un salarié désigné, qui n'en détient aucun)",
+        article: "L. 2315-17",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000035621181",
+        versionConstatee: "2026-05-28",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "R. 4644-1 (désignation après avis du comité social et économique s'il existe ; temps et moyens nécessaires ; absence de discrimination)",
+        article: "R. 4644-1",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483822",
+        versionConstatee: "2018-01-01",
+      },
+    ],
+    periodicite: "autre",
+    realisateurs: ["exploitant"],
+    criticite: 3,
+    typologies: { travail: true },
+    porteur: "salarie",
+    pieceMedicale: false,
+    transmet: [],
+    notesInternes:
+      "DEUX ACTES SOUS UN MÊME RÉGIME, ET NON UN SEUL. C'est la question que ce lot a rouverte après coup, et la réponse vient de la lecture des trois articles du renvoi — dont deux n'avaient pas été ouverts la première fois. Quatre indices, dans l'ordre de leur force :\\n\\n1. LE VOCABULAIRE DU RENVOI. L. 4644-1 écrit « bénéficient d'une formation en matière de santé au travail DANS LES CONDITIONS PRÉVUES aux articles L. 2315-16 à L. 2315-18 ». « Dans les conditions prévues » renvoie à des MODALITÉS. Si le législateur avait voulu la même formation, il aurait écrit « bénéficient de la formation prévue à l'article L. 2315-18 » — la tournure existe et il ne l'a pas employée.\\n\\n2. L'OBJET DIFFÈRE. L. 2315-18 vise « la formation nécessaire à l'exercice de LEURS MISSIONS en matière de santé, de sécurité et de conditions de travail PRÉVUES AU CHAPITRE II DU PRÉSENT TITRE » — c'est-à-dire les attributions du CSE. Un salarié désigné n'a aucune de ces attributions : il s'occupe « des activités de protection et de prévention des risques professionnels de l'entreprise » (L. 4644-1). L'objet de la formation est défini par référence à des missions qu'il n'exerce pas.\\n\\n3. L'INDICE DÉCISIF EST DANS L. 2315-17. Son renouvellement est écrit ainsi : « Ces formations sont renouvelées lorsque LES REPRÉSENTANTS ont exercé LEUR MANDAT pendant quatre ans, consécutifs ou non. » Un salarié désigné n'est pas un représentant et ne détient aucun mandat : R. 4644-1 le fait DÉSIGNER par l'employeur après avis du CSE, il n'est pas élu. Si le renvoi valait identité d'acte, cette condition de renouvellement serait inapplicable à la moitié de ses destinataires — ce qui n'a pas de sens. Elle est cohérente seulement si le renvoi porte sur des conditions dont chacune s'applique là où elle peut.\\n\\n4. LA CONSÉQUENCE PRATIQUE CONFIRME. Le seuil de onze salariés de la ligne CSE vient de L. 2311-2, qui ne s'applique qu'au CSE. Le salarié désigné est dû DÈS LE PREMIER SALARIÉ. Une ligne unique aurait obligé à choisir entre proposer un titre CSE à une entreprise de trois personnes, ou priver un employeur de six personnes de la formation de son désigné. Les deux étaient faux.\\n\\nPÉRIODICITÉ `autre`, ET C'EST LE POINT LE PLUS FIN DE CE LOT. La ligne CSE porte `quadriennale` parce que L. 2315-17 chiffre son renouvellement. Celle-ci porte `autre` parce que le même article chiffre ce renouvellement EN ANNÉES DE MANDAT EXERCÉ, et qu'un salarié désigné n'exerce aucun mandat. Le même renvoi produit donc deux périodicités différentes, et ce n'est pas une incohérence : c'est le texte lu de près. Encoder `quadriennale` ici aurait fabriqué une échéance en appliquant à quelqu'un une condition écrite pour un autre.\\n\\nCE QUE JE NE PEUX PAS AFFIRMER, ET QUI SE DIT. Aucun texte lu ne donne de durée de validité à la formation du salarié désigné. Cela ne veut pas dire qu'elle est acquise à vie : cela veut dire que le Code ne le dit pas. `TitreSalarie.echeanceLe` reste nullable — l'employeur qui connaît l'échéance de son attestation la saisit, l'outil ne l'invente pas. Même régime que l'habilitation électrique et que la formation à la sécurité de R. 4141-20.\\n\\nPORTEUR SALARIÉ. Le titre est nominatif : R. 4644-1 fait désigner UNE OU PLUSIEURS PERSONNES, après avis du CSE, et l'employeur sait qui il a désigné. C'est le critère qui manquait à la manutention et à l'écran — le produit sait ici à qui attribuer le titre. `prevention-etablissement-salarie-designe` porte l'acte de désigner, celle-ci porte la formation de la personne désignée.\\n\\nMÊME ARTICLE FONDATEUR QUE `prevention-etablissement-salarie-designe`, ET C'EST DÉCLARÉ. Les deux se fondent sur L. 4644-1 : le I alinéa 1 pour la désignation, le I alinéa 2 pour la formation. Le test anti-doublon ne compare que l'article et ne sait pas distinguer deux alinéas ; la paire est donc inscrite dans `PAIRES_DECLAREES` avec sa raison, comme la paire R. 4222-20 avant elle.\\n\\n`pieceMedicale: false` — une attestation de formation en santé au travail atteste d'une compétence, pas d'un état de santé.\\n\\nCriticité 3, la même que la désignation qu'elle prolonge : le manquement est réel et sanctionnable, sans exposition corporelle directe.",
   },
 ];

@@ -3,9 +3,17 @@
 Branche `feat/socle-employeur`, rebasée sur `feat/depouillement-salarie` (lot 7).
 Dépouillement du 2026-08-31, toutes lectures sur Légifrance, `lecture: "agent_verbatim"`.
 
-**Quinze obligations encodées, 28 articles consignés au corpus — plus quatre lus
-sans être encodés —, six corpus créés, quatre domaines ajoutés.** Une ligne du brief n'est pas encodée et la raison est
-au § 5. Une autre a été retirée en cours de route, le lot 7 l'ayant livrée.
+**Seize obligations encodées, 31 articles consignés au corpus — plus quatre lus
+sans être encodés —, six corpus créés, quatre domaines ajoutés.** Une ligne du
+brief n'est pas encodée et la raison est au § 5. Une autre a été retirée en cours
+de route, le lot 7 l'ayant livrée.
+
+> **Ce rapport a été corrigé après une relecture.** Sa première version annonçait
+> quinze obligations et **quinze périodicités `autre` sur quinze**, en affirmant
+> qu'aucun texte lu n'écrivait de durée. C'était faux, et le § 6 bis dit
+> pourquoi : `L. 4644-1` renvoie aux articles `L. 2315-16` **à** `L. 2315-18`, et
+> seul le dernier avait été ouvert. La lecture des deux autres a changé une
+> périodicité et le découpage d'une obligation.
 
 ---
 
@@ -39,11 +47,13 @@ restauration **remplace** l'emplacement à 55 — jamais les deux, jamais aucun.
 
 ## 2. Ce qui a été encodé, article par article
 
-Toutes les périodicités sont `autre`, sans exception. Ce n'est pas une
-commodité : **aucun des textes lus n'écrit de durée**. Les seuls chiffres qu'ils
-portent sont des seuils d'effectif (11, 50), des délais d'entrée en obligation
-(douze mois) et des durées de stage (cinq jours, trois jours). Le § 4 détaille
-les quatre endroits où un chiffre aurait pu être pris pour un rythme.
+**Quinze périodicités `autre` sur seize.** La seule chiffrée est la formation
+santé-sécurité du membre du CSE, `quadriennale` par `L. 2315-17`. Les autres
+chiffres des textes lus sont des seuils d'effectif (11, 50), des délais d'entrée
+en obligation (douze mois) et des durées de stage (cinq jours, trois jours) —
+aucun n'est un rythme. Le § 4 détaille les quatre endroits où un chiffre aurait
+pu être pris pour un rythme, et le § 6 bis celui où j'avais d'abord pris un
+rythme pour rien.
 
 ### Domaine `organisation_prevention` — 3 obligations
 
@@ -113,6 +123,14 @@ Criticité 4 — la seule du lot au-dessus de 3.
 | `formation-securite-etablissement-manutention` | `formation_securite` | `R. 4541-8` | 2008-05-01 | établissement |
 | `formation-securite-etablissement-travail-sur-ecran` | `formation_securite` | `R. 4542-16` | 2008-05-01 | établissement |
 | `formation-securite-salarie-cse-sst` | `formation_securite` | `L. 2315-18` | 2022-03-31 | **salarié** |
+| `formation-securite-salarie-designe-competent` | `formation_securite` | `L. 4644-1` I al. 2 | 2022-03-31 | **salarié** |
+
+`formation-securite-salarie-cse-sst` est la **seule obligation chiffrée du lot** :
+`quadriennale`, fondée sur `L. 2315-17` (version du **2026-05-28**) — « Ces
+formations sont renouvelées lorsque les représentants ont exercé leur mandat
+pendant quatre ans, consécutifs ou non. » Elle porte `effectifMin: 11`.
+`formation-securite-salarie-designe-competent` cite le même article et porte
+`autre` : voir § 6 bis.
 
 ---
 
@@ -177,15 +195,25 @@ sait à qui l'attribuer.
 | Travail sur écran (`R. 4542-16`) | établissement | Daté par personne, mais aucune pièce, et même impossibilité de nommer qui |
 | Fiche d'entreprise (`R. 4624-46`) | établissement | Réalisée par un tiers, due par l'employeur — le régime des vérifications par organisme agréé |
 
-**Le cas qui aurait pu faire deux obligations et n'en fait qu'une.**
-`L. 4644-1` renvoie la formation du salarié désigné « aux conditions prévues aux
-articles L. 2315-16 à L. 2315-18 » : même régime, même contenu, mêmes durées que
-la formation des membres du CSE. Écrire deux lignes aurait posé **deux
-obligations sur le même article fondateur `L. 2315-18`**, ce que le test
-anti-doublon attrape à juste titre. Il y a donc une seule ligne de catalogue, dont
-le libellé nomme les deux qualités, et les deux obligations d'établissement
-(`salarie-designe`, `cse`) y renvoient par une `Transmission` — l'usage prévu par
-l'ADR-024 : nommer ce que l'obligation implique ailleurs sans le dériver.
+**Le cas qui fait bien deux obligations, après m'être trompé une fois.**
+J'ai d'abord écrit une seule ligne de catalogue pour la formation du membre du CSE
+et celle du salarié désigné, au motif que `L. 4644-1` renvoie « aux conditions
+prévues aux articles L. 2315-16 à L. 2315-18 ». La relecture des **trois** articles
+du renvoi — je n'avais ouvert que le dernier — a montré que ce sont **deux actes
+sous un même régime**. L'argument complet est au § 6 bis ; son indice décisif est
+que `L. 2315-17` écrit son renouvellement en termes de « représentants » ayant
+« exercé leur mandat », ce qu'un salarié **désigné** n'est ni ne fait.
+
+Les deux lignes ont donc des articles fondateurs différents — `L. 2315-18` pour le
+CSE, `L. 4644-1` I alinéa 2 pour le désigné — et il n'y a pas de doublon entre
+elles. Il y en a un, en revanche, entre `prevention-etablissement-salarie-designe`
+et `formation-securite-salarie-designe-competent`, qui partagent `L. 4644-1` : le
+test ne sait pas distinguer deux alinéas, et la paire est déclarée dans
+`PAIRES_DECLAREES` avec sa raison, comme la paire `R. 4222-20` avant elle.
+
+Les deux obligations d'établissement (`salarie-designe`, `cse`) renvoient chacune
+au titre qui la prolonge par une `Transmission` — l'usage prévu par l'ADR-024 :
+nommer ce que l'obligation implique ailleurs sans le dériver.
 
 **Le cas qui fait bien deux obligations.** `R. 4228-22` et `R. 4228-23` ne sont
 pas une règle et son exception : ce sont deux régimes qui se partagent tout
@@ -238,6 +266,15 @@ présenté.
 La formation à la manutention rejoint la liste par la bande : le « recyclage
 gestes et postures tous les deux ans » qu'on lit partout n'est nulle part dans
 `R. 4541-8`.
+
+**Et le cinquième, celui qui existe vraiment.** `L. 2315-17` écrit « Ces formations
+sont renouvelées lorsque les représentants ont exercé leur mandat pendant quatre
+ans, consécutifs ou non ». Ce chiffre-là est dans le Code, il porte sur le
+renouvellement de la formation, et la première version de ce lot l'a **tu** faute
+d'avoir ouvert l'article. C'est l'erreur symétrique de celles qu'on surveille ici :
+non pas afficher une échéance que le droit ne donne pas, mais effacer une échéance
+qu'il donne. Une échéance absente est moins visible qu'une échéance fausse, et pas
+moins fautive. Voir § 6 bis.
 
 ---
 
@@ -363,6 +400,102 @@ refasse pas le détour.
 
 ---
 
+## 6 bis. Ce que ce lot s'est corrigé à lui-même
+
+La session de coordination m'a renvoyé une question de lecture : la formation du
+salarié désigné compétent et celle du membre du CSE sont-elles **le même acte**,
+ou seulement le même **régime** ? Y répondre a demandé d'ouvrir deux articles que
+je n'avais pas ouverts, et les deux ont corrigé le lot.
+
+### Le défaut de méthode : un renvoi ne se lit pas par son dernier terme
+
+`L. 4644-1` renvoie « dans les conditions prévues aux articles **L. 2315-16 à
+L. 2315-18** ». J'avais lu `L. 2315-18` et considéré le renvoi épuisé. Il ne
+l'était pas. C'est une variante du défaut que ce dépôt combat partout : une
+référence prise sur résumé plutôt que lue en entier — sauf qu'ici le résumé était
+le mien.
+
+### Première conséquence : une périodicité existait et je l'avais tue
+
+`L. 2315-17`, version en vigueur depuis le **2026-05-28** :
+
+> « Les formations sont dispensées soit par un organisme enregistré auprès de
+> l'autorité administrative dans les conditions prévues aux articles L. 6351-1 à
+> L. 6351-8, soit par un des organismes mentionnés à l'article L. 2145-5. **Ces
+> formations sont renouvelées lorsque les représentants ont exercé leur mandat
+> pendant quatre ans, consécutifs ou non.** »
+
+Le rapport annonçait « quinze périodicités `autre` sur quinze » et « aucun des
+textes lus n'écrit de durée ». Les deux étaient faux. `formation-securite-salarie-cse-sst`
+passe de `autre` à **`quadriennale`**.
+
+**C'est un troisième cas de figure, après les deux du lot 7.** Le lot 7 avait des
+*plafonds* — « qui ne peut excéder cinq ans » —, où le chiffre est une borne
+**extérieure** : l'échéance encodée est la date au-delà de laquelle l'employeur est
+nécessairement en défaut, et le risque est d'annoncer « à jour » à tort. Ici,
+quatre ans de mandat exercé est une borne **intérieure** : c'est le seuil à partir
+duquel le renouvellement devient dû. Et les quatre ans comptent du **mandat
+exercé**, « consécutifs ou non », non du temps calendaire — un élu qui siège deux
+ans, s'interrompt trois, puis siège deux ans encore les atteint au bout de sept
+années civiles.
+
+Le produit ne modélise aucun mandat : il n'a ni date d'élection, ni durée, ni
+interruption. L'échéance calculée est donc **juste pour un mandat continu — le cas
+ordinaire — et en avance pour un mandat interrompu**. J'ai retenu ce sens d'erreur
+parce que c'est celui que le dépôt préfère explicitement : une sur-application
+visible et corrigeable vaut mieux qu'un faux négatif muet. `TitreSalarie.echeanceLe`,
+déclaré par l'employeur, prime de toute façon sur le calcul. Tout cela est écrit
+dans `PERIODICITE_SUR_CODE_JUSTIFIEE` avec le verbatim.
+
+**Le test l'a attrapé tout seul, et c'est à signaler.** Je ne connaissais pas
+`toute périodicité chiffrée s'appuie sur un texte qui porte un chiffre`. Il a
+échoué à la seconde où j'ai posé `quadriennale`, en exigeant soit le texte qui
+porte le chiffre, soit le retour à `autre`. C'est une garantie qui a fonctionné
+sans que personne ait eu à la déclencher exprès.
+
+### Seconde conséquence : deux actes, donc deux obligations
+
+La réponse à la question posée est : **deux actes sous un même régime.** Quatre
+indices, dans l'ordre de leur force.
+
+1. **Le vocabulaire du renvoi.** « Bénéficient d'une formation en matière de santé
+   au travail **dans les conditions prévues** aux articles L. 2315-16 à
+   L. 2315-18. » « Dans les conditions prévues » renvoie à des modalités. La
+   tournure d'identité existe — « bénéficient de la formation prévue à l'article
+   L. 2315-18 » — et le législateur ne l'a pas employée.
+
+2. **L'objet diffère.** `L. 2315-18` vise « la formation nécessaire à l'exercice
+   de **leurs missions** en matière de santé, de sécurité et de conditions de
+   travail **prévues au chapitre II du présent titre** » — les attributions du
+   CSE. Un salarié désigné n'en exerce aucune : il s'occupe « des activités de
+   protection et de prévention des risques professionnels de l'entreprise ».
+
+3. **L'indice décisif, dans `L. 2315-17`.** Son renouvellement est écrit ainsi :
+   « lorsque **les représentants** ont exercé **leur mandat** pendant quatre ans ».
+   Un salarié désigné n'est pas un représentant et ne détient aucun mandat :
+   `R. 4644-1` (lu le 2026-08-31) le fait **désigner** par l'employeur après avis
+   du CSE, il n'est pas élu. Si le renvoi valait identité d'acte, cette condition
+   serait inapplicable à la moitié de ses destinataires. Elle n'est cohérente que
+   si le renvoi porte sur des conditions dont chacune s'applique là où elle peut.
+
+4. **La conséquence pratique confirme.** Le seuil de onze salariés vient de
+   `L. 2311-2`, qui ne vise que le CSE. Le salarié désigné est dû **dès le premier
+   salarié**. Une ligne unique obligeait à choisir entre proposer un titre CSE à
+   une entreprise de trois personnes, ou priver un employeur de six personnes de
+   la formation de son désigné.
+
+**La proposition de la coordination — renommer le titre pour lever le seuil — ne
+marche donc pas.** Elle supposait un acte unique ; il y en a deux. Le trou signalé
+au § 7 de la première version de ce rapport est en revanche **comblé** : le
+désigné a sa ligne, sans condition d'effectif, et le CSE garde légitimement son
+seuil de onze.
+
+Le même renvoi produit ainsi **deux périodicités différentes** — `quadriennale`
+pour le CSE, `autre` pour le désigné — et ce n'est pas une incohérence : c'est le
+texte lu de près.
+
+---
+
 ## 7. Un écart de modèle, signalé et non comblé
 
 **Le réalisateur de la fiche d'entreprise n'a pas de valeur juste.**
@@ -383,19 +516,13 @@ non l'exploitant. **C'est la cible du produit qui est concernée** : une TPE adh
 à un service interentreprises, donc c'est l'équipe et non le médecin seul qui
 établit sa fiche.
 
-**Une incohérence de seuil, assumée et signalée.**
-`formation-securite-salarie-cse-sst` porte `effectifMin: 11`, parce qu'un CSE
-n'existe pas en deçà et qu'un catalogue proposant un titre CSE à une entreprise
-de trois personnes serait faux. Mais le **salarié désigné compétent** de
-`L. 4644-1` est dû dès le premier salarié, et sa formation relève de la même
-ligne. Un employeur de six personnes doit donc désigner quelqu'un sans que la
-ligne de catalogue de sa formation lui soit proposée.
-
-Deux façons d'en sortir : retirer le seuil, au prix d'un titre CSE proposé à des
-entreprises sans CSE ; ou scinder en deux lignes, au prix d'un doublon sur
-`L. 2315-18`. J'ai retenu le seuil et **je signale le trou plutôt que de le
-combler par une ligne fausse**. C'est un arbitrage à reprendre, pas une décision
-définitive.
+**L'incohérence de seuil est comblée, et non plus seulement signalée.**
+La première version de ce rapport laissait ouvert le fait qu'un employeur de six
+personnes doive désigner un salarié compétent sans que la ligne de catalogue de sa
+formation lui soit proposée — `formation-securite-salarie-cse-sst` portant
+`effectifMin: 11`. Le § 6 bis l'a résolu par la lecture : ce sont deux actes, donc
+deux lignes, et celle du désigné n'a pas de seuil. Le CSE garde le sien à bon
+droit.
 
 **Un écart déjà connu, que ce lot rencontre à son tour.** Le protocole de
 sécurité attend un écrit daté et signé à deux parties, tenu à disposition de
@@ -415,7 +542,7 @@ non lu. Un septième complété.
 
 | Corpus | Articles | Dont non dépouillés |
 |---|---|---|
-| `code-travail-organisation-prevention` | 5 | 0 |
+| `code-travail-organisation-prevention` | 8 | 0 (1 `sans_objet`) |
 | `code-travail-information-travailleurs` | 2 | 0 |
 | `code-travail-locaux-sociaux` | 5 | 0 (1 `obligation_manquante`) |
 | `code-travail-co-activite` | 9 | 1 (`R. 4515-8`) |
@@ -441,6 +568,12 @@ Un test qui n'a jamais échoué ne prouve rien. Trois ont été cassés puis res
 | Le cliquet du corpus | l'obligation de co-activité cite `R. 4515-8`, non dépouillé | **tombe deux fois** — lien bidirectionnel rompu, et plafond 0 dépassé |
 | L'anti-doublon | `R. 4228-23` posé en fondateur des deux obligations de restauration | **tombe** — `conformite.test.ts` |
 
+Une quatrième s'est déclenchée **sans qu'on la provoque**, et c'est la meilleure
+preuve des quatre : `toute périodicité chiffrée s'appuie sur un texte qui porte un
+chiffre` a échoué à la seconde où `quadriennale` a été posée, en exigeant soit le
+texte porteur du chiffre, soit le retour à `autre`. Je ne connaissais pas ce test
+avant qu'il tombe.
+
 ---
 
 ## 10. Vérification
@@ -452,7 +585,7 @@ npx eslint src    → 1 avertissement, préexistant (normaliserFormData)
 ```
 
 `REFERENTIEL_VERSION` passe à `2026-08-31.2`, `EMPREINTE_ATTENDUE` à
-`113-8ac86f99169f49a5`.
+`114-acd8a26c69bb3f6c`.
 
 ---
 
@@ -464,12 +597,12 @@ n'annonce un total** : chacun dit ce que ce lot ajoute, et rien de plus.
 
 | Fichier | Ce que ce lot y écrit |
 |---|---|
-| `conformite.test.ts` | +15 obligations, détaillées par domaine ; compte porté à 113, empreinte recalculée |
+| `conformite.test.ts` | +16 obligations, détaillées par domaine ; compte porté à 114, empreinte recalculée ; une paire déclarée (`L. 4644-1`) et une périodicité justifiée (`L. 2315-17`) |
 | `chez-vous.test.ts` | +4 domaines dans la liste exhaustive (`co_activite`, `information_travailleurs`, `locaux_sociaux`, `organisation_prevention`) |
-| `frontiere-medicale.test.ts` | +1 ligne (`formation-securite-salarie-cse-sst → pieceMedicale: false`) |
+| `frontiere-medicale.test.ts` | +2 lignes (les deux titres de formation, `pieceMedicale: false`) |
 | `corpus.test.ts` | +1 obligation manquante (`R. 4225-3`) |
 | `.claude/CLAUDE.md` | comptes, porteurs, corpus, et les deux corrections de référence |
-| `Cadran.tsx`, `Etapes.tsx` | 113 obligations · 17 domaines |
+| `Cadran.tsx`, `Etapes.tsx` | 114 obligations · 17 domaines |
 | `REFERENTIEL_VERSION` | `2026-08-31.2` — à trancher à l'intégration, deux autres lots posent la leur |
 
 `docs/carto-obligations-hors-equipement.md` est corrigé sur seize lignes : A2, A6,

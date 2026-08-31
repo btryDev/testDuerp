@@ -1,8 +1,8 @@
 // Corpus : code du travail — organisation de la prévention dans l'entreprise.
 //
-// Étendue « articles_cites » : cinq articles, ceux sur lesquels s'appuient les
-// obligations du domaine `organisation_prevention` et la formation santé-
-// sécurité du domaine `formation_securite`. Ils viennent de trois livres
+// Étendue « articles_cites » : huit articles, ceux sur lesquels s'appuient les
+// obligations du domaine `organisation_prevention` et les deux formations
+// santé-sécurité du domaine `formation_securite`. Ils viennent de trois livres
 // différents — la quatrième partie pour le salarié désigné, la deuxième pour le
 // CSE, la première pour le règlement intérieur — et aucun de ces trois
 // ensembles n'est dépouillé de bout en bout.
@@ -17,17 +17,23 @@
 //     C'est `L. 1321-1` 1° qui fait entrer le règlement intérieur dans le
 //     périmètre santé-sécurité de Rojer. Le fondateur a été déplacé.
 //
-//   * `L. 2315-18` était présenté comme une obligation à part, portée par le
-//     salarié. Elle l'est — mais `L. 4644-1` y renvoie expressément pour la
-//     formation du salarié désigné compétent. Une seule ligne de catalogue
-//     porte donc les deux populations ; en écrire deux aurait posé deux
-//     obligations sur le même article fondateur.
+//   * `L. 2315-18` était présenté comme portant, seul, la formation du membre
+//     du CSE ET celle du salarié désigné, `L. 4644-1` y renvoyant. Ce sont deux
+//     actes sous un même régime : voir la réserve de `L. 4644-1` et celle de
+//     `L. 2315-17`, qui porte l'indice décisif.
 //
-// AUCUN DES CINQ ARTICLES N'ÉCRIT DE PÉRIODICITÉ. Les seuls chiffres qu'ils
-// portent sont des seuils d'effectif (onze, cinquante), des délais d'entrée en
-// obligation (douze mois) et des durées de stage (cinq jours, trois jours).
-// Aucun n'est un rythme. Les cinq obligations qui s'y appuient portent
-// `periodicite: "autre"`.
+// CE QUE CE CORPUS A CORRIGÉ DANS LE LOT LUI-MÊME, APRÈS COUP. Sa première
+// version ne comptait que cinq articles et affirmait qu'aucun n'écrivait de
+// périodicité. C'était faux : `L. 4644-1` renvoie aux articles `L. 2315-16` À
+// `L. 2315-18`, et seul le dernier avait été ouvert. `L. 2315-17`, lu depuis,
+// écrit un renouvellement au bout de quatre ans de mandat exercé — et il change
+// à la fois la périodicité de la formation du CSE et le découpage des deux
+// obligations. Un renvoi ne se lit pas par son dernier terme.
+//
+// UN SEUL DES HUIT ARTICLES ÉCRIT UNE DURÉE DE RENOUVELLEMENT, `L. 2315-17`.
+// Les autres chiffres du corpus sont des seuils d'effectif (onze, cinquante),
+// des délais d'entrée en obligation (douze mois) et des durées de stage (cinq
+// jours, trois jours) — aucun n'est un rythme.
 
 import type { Corpus } from "./types";
 
@@ -38,7 +44,7 @@ export const CODE_TRAVAIL_ORGANISATION_PREVENTION: Corpus = {
   url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000024391542/",
   etendue: "articles_cites",
   portee:
-    "Ce qui organise la prévention avant qu'il soit question d'un équipement : la désignation d'un salarié compétent (L. 4644-1), la mise en place du CSE au seuil de onze salariés (L. 2311-2) et la formation santé-sécurité de ses membres (L. 2315-18), l'obligation d'un règlement intérieur au seuil de cinquante (L. 1311-2) et son volet santé-sécurité (L. 1321-1). Ni le livre VI de la quatrième partie, ni le titre Ier du livre III de la deuxième partie, ni le titre II du livre III de la première partie ne sont dépouillés en entier.",
+    "Ce qui organise la prévention avant qu'il soit question d'un équipement : la désignation d'un salarié compétent et sa formation (L. 4644-1, R. 4644-1), la mise en place du CSE au seuil de onze salariés (L. 2311-2), le régime de la formation santé-sécurité — temps de travail, organisme, renouvellement, durée, financement (L. 2315-16 à L. 2315-18) —, et l'obligation d'un règlement intérieur au seuil de cinquante (L. 1311-2) avec son volet santé-sécurité (L. 1321-1). Ni le livre VI de la quatrième partie, ni le titre Ier du livre III de la deuxième partie, ni le titre II du livre III de la première partie ne sont dépouillés en entier.",
   articles: [
     {
       ref: "L. 4644-1",
@@ -55,10 +61,10 @@ export const CODE_TRAVAIL_ORGANISATION_PREVENTION: Corpus = {
       statut: "retenu",
       obligations: [
         "prevention-etablissement-salarie-designe",
-        "formation-securite-salarie-cse-sst",
+        "formation-securite-salarie-designe-competent",
       ],
       reserve:
-        "Le recours aux intervenants extérieurs (IPRP, service de prévention de la caisse, OPPBTP, ANACT) des alinéas 3 à 5 n'est porté par aucune obligation : c'est une faculté conditionnée à l'absence de compétences internes, pas un acte dû. Aucun texte ne fixe de délai à la désignation elle-même.",
+        "DEUX ALINÉAS, DEUX OBLIGATIONS. Le I alinéa 1 impose de désigner (porteur établissement), le I alinéa 2 fait bénéficier le désigné d'une formation (porteur salarié). La première rédaction de ce corpus rattachait la seconde à la ligne de catalogue du CSE, par lecture du renvoi « dans les conditions prévues aux articles L. 2315-16 à L. 2315-18 » ; l'ouverture des trois articles du renvoi a montré que le renvoi porte sur les CONDITIONS et non sur l'acte. Le recours aux intervenants extérieurs des alinéas 3 à 5 n'est porté par aucune obligation : c'est une faculté conditionnée à l'absence de compétences internes, pas un acte dû. Aucun texte ne fixe de délai à la désignation elle-même.",
     },
     {
       ref: "L. 2311-2",
@@ -91,7 +97,62 @@ export const CODE_TRAVAIL_ORGANISATION_PREVENTION: Corpus = {
       statut: "retenu",
       obligations: ["formation-securite-salarie-cse-sst"],
       reserve:
-        "Cinq jours et trois jours sont des DURÉES DE STAGE, pas des périodicités : le rythme suit le mandat, que le produit ne modélise pas. Le 2° (cinq jours pour la CSSCT à partir de trois cents salariés) est hors cible et n'est pas encodé. La prise en charge du financement par l'employeur n'est pas une obligation distincte : c'est une règle de financement d'un acte unique.",
+        "Cinq jours et trois jours sont des DURÉES DE STAGE, pas des périodicités — c'est L. 2315-17 qui porte le renouvellement. Le 2° (cinq jours pour la CSSCT à partir de trois cents salariés) est hors cible et n'est pas encodé. La prise en charge du financement par l'employeur n'est pas une obligation distincte : c'est une règle de financement d'un acte unique. L'article est cité en CONTEXTE par `formation-securite-salarie-designe-competent`, dont il fournit les conditions sans en être le fondateur.",
+    },
+    {
+      ref: "L. 2315-17",
+      intitule:
+        "Organismes habilités à dispenser la formation et renouvellement après quatre ans de mandat",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000035621181",
+      versionEnVigueur: "2026-05-28",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Les formations sont dispensées par un organisme enregistré auprès de l'autorité administrative ou par un organisme de formation syndicale, et sont renouvelées lorsque les représentants ont exercé leur mandat pendant quatre ans, consécutifs ou non.",
+      citationCle:
+        "Ces formations sont renouvelées lorsque les représentants ont exercé leur mandat pendant quatre ans, consécutifs ou non.",
+      statut: "retenu",
+      obligations: [
+        "formation-securite-salarie-cse-sst",
+        "formation-securite-salarie-designe-competent",
+      ],
+      reserve:
+        "C'EST L'ARTICLE QUI A CORRIGÉ CE LOT APRÈS COUP, et il n'avait pas été ouvert au premier passage — L. 4644-1 renvoie aux articles L. 2315-16 À L. 2315-18, et seul le dernier avait été lu. Le rapport du lot annonçait « aucun des textes lus n'écrit de durée » : c'était faux, celui-ci en écrit une. La ligne CSE passe de `autre` à `quadriennale`.\n\nDEUX RÉSERVES SUR CE CHIFFRE. D'abord, les quatre ans comptent du MANDAT EXERCÉ, « consécutifs ou non », et non du temps calendaire : le produit ne modélisant aucun mandat, l'échéance calculée est juste pour un mandat continu et arrive en avance pour un mandat interrompu. Ensuite, cette condition est écrite en termes de « représentants » ayant « exercé leur mandat » — elle est donc INAPPLICABLE au salarié désigné compétent, qui est désigné et non élu (R. 4644-1). C'est pourquoi `formation-securite-salarie-designe-competent` cite cet article tout en portant `autre` : le même renvoi produit deux périodicités, parce que le texte le dit ainsi.\n\nVersion en vigueur depuis le 2026-05-28, soit trois mois avant ce lot : à surveiller de près.",
+    },
+    {
+      ref: "L. 2315-16",
+      intitule: "Temps de formation pris sur le temps de travail",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000035621179",
+      versionEnVigueur: "2018-01-01",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Le temps consacré aux formations du chapitre est pris sur le temps de travail, rémunéré comme tel, et n'est pas déduit des heures de délégation.",
+      citationCle:
+        "Le temps consacré aux formations prévues au présent chapitre est pris sur le temps de travail et est rémunéré comme tel. Il n'est pas déduit des heures de délégation.",
+      statut: "sans_objet",
+      motif:
+        "Règle de rémunération du temps de formation, non un acte à porter au calendrier. Lu et consigné parce qu'il fait partie du renvoi de L. 4644-1 et qu'il fallait vérifier ce que ce renvoi emportait exactement : la réponse est qu'il emporte des conditions, pas un acte.",
+    },
+    {
+      ref: "R. 4644-1",
+      intitule:
+        "Modalités de désignation du salarié compétent et moyens dont il dispose",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483822",
+      versionEnVigueur: "2018-01-01",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Les salariés désignés le sont après avis du comité social et économique s'il existe, disposent du temps nécessaire et des moyens requis pour exercer leurs missions, et ne peuvent subir de discrimination en raison de leurs activités de prévention.",
+      citationCle:
+        "Les personnes mentionnées au premier alinéa de l'article L. 4644-1 sont désignées après avis du comité social et économique s'il existe.",
+      statut: "retenu",
+      obligations: [
+        "prevention-etablissement-salarie-designe",
+        "formation-securite-salarie-designe-competent",
+      ],
+      reserve:
+        "C'est cet article qui établit que le salarié compétent est DÉSIGNÉ et non élu — le point qui rend la condition de renouvellement de L. 2315-17, écrite pour des « représentants » exerçant un « mandat », inapplicable à lui. Le temps et les moyens dont il doit disposer, comme la protection contre la discrimination, ne sont portés par aucune obligation : ce sont des conditions d'exercice que l'outil ne trace pas, au même titre que « après avis du médecin du travail » ailleurs.",
     },
     {
       ref: "L. 1321-1",

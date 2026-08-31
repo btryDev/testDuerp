@@ -351,6 +351,7 @@ describe("frontière médicale — le drapeau est une décision, pas un défaut"
       // pas d'un état de santé. C'est exactement le cas que `pieceMedicale`
       // existe pour faire trancher par quelqu'un plutôt que par un mot-clé.
       "formation-securite-salarie-cse-sst → pieceMedicale: false",
+      "formation-securite-salarie-designe-competent → pieceMedicale: false",
       "sante-travail-salarie-sir → pieceMedicale: true",
       "sante-travail-salarie-sir-categorie-a → pieceMedicale: true",
       "sante-travail-salarie-sir-visite-intermediaire → pieceMedicale: true",
