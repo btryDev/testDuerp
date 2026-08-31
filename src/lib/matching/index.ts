@@ -13,6 +13,10 @@ export {
   prescriptionEnVigueur,
   type ResultatPrescriptions,
 } from "./prescriptions";
+export {
+  projeterEtablissement,
+  type SourceEtablissement,
+} from "./projection";
 export type {
   EquipementMatching,
   EtablissementMatching,

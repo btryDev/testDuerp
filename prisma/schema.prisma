@@ -113,6 +113,7 @@ model Etablissement {
   prescriptionsParticulieres PrescriptionParticuliere[]
   fichesRegistre             FicheRegistre[]
   salaries                   Salarie[]
+  etatsDeclares              DeclarationEtatPermanent[]
 
   /**
    * Version du référentiel de conformité avec laquelle le calendrier de cet
@@ -399,7 +400,7 @@ model Verification {
   // La sémantique n'est donc plus binaire mais ternaire, et c'est pour cela
   // qu'une colonne était nécessaire — on ne pouvait pas surcharger le `null`
   // d'`equipementId`, qui signifiait déjà « établissement ».
-  salarieId       String?
+  salarieId String?
   // `Restrict`, PAS `Cascade` (ADR-023, corrigé en relecture).
   //
   // En cascade, supprimer un salarié détruisait ses échéances — y compris
@@ -412,7 +413,7 @@ model Verification {
   // base refuse, et le produit offre la sortie prévue — un salarié qui part est
   // DÉSACTIVÉ (`actif: false`), pas supprimé. Ses titres restent le temps de
   // leur conservation (docs/rgpd.md § 4.3), puis il devient supprimable.
-  salarie         Salarie?      @relation(fields: [salarieId], references: [id], onDelete: Restrict)
+  salarie   Salarie? @relation(fields: [salarieId], references: [id], onDelete: Restrict)
 
   obligationId      String
   libelleObligation String
@@ -1459,4 +1460,69 @@ model TitreSalarie {
   // mise à jour — c'est le motif exact de la migration `index_redondant`,
   // écrite la veille pour en retirer un.
   @@unique([salarieId, obligationId])
+}
+
+/// Ce que l'employeur déclare avoir mis en place, quand aucune date n'est due.
+///
+/// L'ADR-022 nomme quatre natures d'obligation ; seule la première — l'échéance
+/// récurrente — a un support de persistance, `Verification`. Les états
+/// permanents n'en avaient aucun : trois lots ont dépouillé des textes et
+/// encodé trente obligations que le générateur écarte à raison — sans
+/// périodicité, pas de rendez-vous — et qu'aucun écran ne montrait.
+///
+/// POURQUOI PAS UNE `Verification` SANS DATE. C'est précisément ce que le
+/// générateur refuse (`generateur.ts`, `estSansRendezVous`), et pour une bonne
+/// raison : une `Verification` porte une échéance, donc une affirmation
+/// datée. C'est ce qui l'oblige, quand son obligation quitte le référentiel, à
+/// tout l'appareil `aArchiver` / `marquerNonApplicable` de la boucle finale du
+/// générateur — une ligne orpheline qui porte une date ment. Une déclaration ne
+/// porte aucune échéance : il n'y a rien à barrer.
+///
+/// CE MODÈLE N'EST PAS UNE PREUVE, ET LE PRODUIT NE DOIT PAS LES CONFONDRE
+/// (ADR-027). Une ligne d'ici est une déclaration de l'employeur : ni un
+/// rapport de vérification, ni une pièce, ni un constat du produit. Elle
+/// n'allume rien ailleurs — ni le « % prêt » de Préparer un contrôle, ni un
+/// indicateur au vert, ni une entrée du ZIP de contrôle.
+model DeclarationEtatPermanent {
+  id              String        @id @default(cuid())
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+
+  /// L'identifiant de l'obligation du référentiel (ADR-003) que l'employeur
+  /// déclare en place. Pas de clé étrangère : le référentiel vit en
+  /// TypeScript, comme pour `TitreSalarie.obligationId`.
+  ///
+  /// Une déclaration dont l'obligation a quitté le référentiel n'est PAS
+  /// supprimée : l'écran liste les obligations que le moteur rend et y joint
+  /// les déclarations, jamais l'inverse — elle cesse donc simplement de
+  /// s'afficher. La garder coûte une ligne et rend la déclaration si
+  /// l'obligation revient.
+  obligationId String
+
+  /// Date de la DÉCLARATION, pas du fait déclaré. L'employeur affirme
+  /// aujourd'hui que l'état est là ; le produit ne sait pas depuis quand, et
+  /// ne le demande pas.
+  ///
+  /// Aucune relance n'en découle, sous aucune forme — pas même un badge « à
+  /// revoir ». Aucun des textes concernés n'écrit de rythme : en poser un
+  /// serait une périodicité inventée, ce que ce dépôt a déjà eu à retirer
+  /// ailleurs. La date s'affiche, et le dirigeant juge lui-même.
+  declareLe DateTime @default(now())
+
+  /// Note libre de l'employeur — où l'affiche est posée, quel service a été
+  /// choisi. Jamais un justificatif : cet écran n'ouvre aucune surface de
+  /// dépôt (ADR-027).
+  note String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Un établissement ne déclare qu'une fois le même état. Décocher supprime
+  /// la ligne, recocher en crée une neuve — l'historique des déclarations
+  /// n'est pas tenu, et ne doit pas l'être : ce serait une trace qui
+  /// ressemblerait à une preuve.
+  ///
+  /// Pas d'`@@index([etablissementId])` : c'est la colonne de TÊTE de l'index
+  /// unique ci-dessus, qui sert donc déjà `WHERE etablissementId = ?`.
+  @@unique([etablissementId, obligationId])
 }

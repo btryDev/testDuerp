@@ -349,6 +349,9 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
     sept questions ouvertes, dont trois contredisent des ADR en vigueur)
 26. **026** — La nature d'une obligation est un champ, pas une déduction :
     récurrente, état permanent, ponctuelle, événementielle
+27. **027** — Une déclaration n'est pas une preuve : les états permanents ont
+    leur écran et leur support (`DeclarationEtatPermanent`), et ce que
+    l'employeur y coche n'allume rien ailleurs
 
 La puce reprend le numéro de l'ADR et non son rang dans la liste, pour que les
 branches puissent atterrir dans n'importe quel ordre sans se contredire.
@@ -378,7 +381,7 @@ Une entrée de rail = une **page d'entrée** + un **panneau** : cliquer navigue
 et ouvre le panneau (ADR-015).
 
 - **La marque « Rojer »**, en tête de rail : le retour au **tableau de bord**, qui n'a pas d'entrée de navigation — un résumé n'est pas une des questions du dirigeant, il y répond toutes (ADR-015, seconde révision)
-- **À faire** (→ le calendrier, toutes familles) : Calendrier · Plan d'actions · Préparer un contrôle — que des **activités**, jamais l'état filtré d'une autre entrée ; un filtre vit dans l'écran
+- **À faire** (→ le calendrier, toutes familles) : Calendrier · Plan d'actions · **Ce qui doit être en place** · Préparer un contrôle — que des **activités**, jamais l'état filtré d'une autre entrée ; un filtre vit dans l'écran. Le troisième item sert la **deuxième nature** d'obligation de l'ADR-022 — les états permanents, que le générateur écarte faute de rendez-vous et qui n'avaient donc aucune surface (ADR-027). Ce n'est pas un filtre du calendrier : `estSansRendezVous` fait que ces lignes ne peuvent pas y exister
 - **Opérations** (→ Permis de feu) : Permis de feu · Plans de prévention — le
   **ponctuel encadré**, qui naît d'un chantier daté et meurt clos ; ce n'est
   ni une correction ni un registre tenu en continu (ADR-017)

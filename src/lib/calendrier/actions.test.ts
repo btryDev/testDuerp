@@ -124,6 +124,11 @@ vi.mock("@/lib/matching", async () => {
     determineObligationsApplicables: () => h.db.obligations,
     // Le module des prescriptions est pur et testé à part : on garde le vrai.
     appliquerPrescriptions: reel.appliquerPrescriptions,
+    // La projection aussi : c'est une recopie de champs, pure et sans effet.
+    // La remplacer par un bouchon ferait passer un test là où le vrai code
+    // omettrait un critère — c'est exactement le défaut que la projection
+    // partagée existe pour empêcher (`matching/projection.ts`).
+    projeterEtablissement: reel.projeterEtablissement,
   };
 });
 

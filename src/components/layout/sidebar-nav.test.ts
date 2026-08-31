@@ -105,9 +105,15 @@ describe("construireSections — structure", () => {
 
   it("ne porte dans « À faire » que des activités, jamais un filtre", () => {
     const aFaire = sections()[0];
+    // `etats-permanents` entre ici et non au rail : l'ADR-022 nomme quatre
+    // natures d'obligation, la première a le calendrier, la deuxième n'avait
+    // aucune surface. Mettre en place EST une activité, et ce n'est pas l'état
+    // filtré du calendrier — `estSansRendezVous` fait que ces lignes ne peuvent
+    // pas y exister. Un filtre suppose que l'objet soit là.
     expect(aFaire.items.map((i) => i.id)).toEqual([
       "calendrier",
       "actions",
+      "etats-permanents",
       "controle",
     ]);
     // Aucune destination du panneau ne porte de query : un filtre est un

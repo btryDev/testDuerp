@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
+import { MOTIF_DEPOT } from "./surfaces-depot";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { obligationsConformite } from "@/lib/referentiels/conformite";
@@ -40,19 +41,13 @@ const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 /**
  * Les composants par lesquels un fichier peut atterrir en base.
  *
- * La liste est explicite plutôt que devinée : un dépôt s'ajoute rarement et
- * doit être une décision. `type="file"` complète le filet pour un champ écrit
- * à la main sans passer par ces composants.
+ * La liste vit dans `surfaces-depot.ts` depuis le 2026-08-31 : un second test
+ * la garde désormais, pour une autre raison — l'écran des états permanents
+ * n'ouvre aucune surface de dépôt parce qu'une déclaration n'est pas une preuve
+ * (ADR-027), et non parce qu'une pièce y serait médicale. Recopiée des deux
+ * côtés, elle aurait vieilli d'un seul le jour où une quatrième primitive
+ * arrive.
  */
-const SURFACES_DE_DEPOT = [
-  "UploadRapportForm",
-  "EvidenceDropzone",
-  "ImportDuerpWizard",
-] as const;
-
-const MOTIF_DEPOT = new RegExp(
-  `<(${SURFACES_DE_DEPOT.join("|")})\\b|type=["']file["']`,
-);
 
 /**
  * Ce qui rattache un fichier au monde des échéances — donc au monde où une

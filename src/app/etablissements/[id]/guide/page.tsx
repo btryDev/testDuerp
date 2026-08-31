@@ -15,6 +15,7 @@ import { PrintButton } from "@/components/guide/PrintButton";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 import { construireChezVous } from "@/lib/guide/chez-vous";
+import { projeterEtablissement } from "@/lib/matching";
 import { METIERS } from "@/lib/guide/metiers";
 
 export const metadata = {
@@ -46,19 +47,7 @@ export default async function GuidePage({
   // (`matching/types.ts`), l'omission ne compile plus.
   const equipements = await listerEquipementsDeLEtablissement(id);
   const chezVous = construireChezVous(
-    {
-      id: etab.id,
-      effectifSurSite: etab.effectifSurSite,
-      estEtablissementTravail: etab.estEtablissementTravail,
-      estERP: etab.estERP,
-      estIGH: etab.estIGH,
-      estHabitation: etab.estHabitation,
-      typeErp: etab.typeErp,
-      categorieErp: etab.categorieErp,
-      classeIgh: etab.classeIgh,
-      personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
-      manipuleMatieresR422722: etab.manipuleMatieresR422722,
-    },
+    projeterEtablissement(etab),
     equipements.map((eq) => ({
       id: eq.id,
       libelle: eq.libelle,

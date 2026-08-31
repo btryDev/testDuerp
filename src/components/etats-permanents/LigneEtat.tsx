@@ -1,0 +1,101 @@
+"use client";
+
+import { useTransition } from "react";
+import { Check, FileText } from "lucide-react";
+import { declarerEnPlace, retirerDeclaration } from "@/lib/etats-permanents/actions";
+import { formaterDateFr } from "@/lib/dates";
+
+/**
+ * Une ligne de l'écran « Ce qui doit être en place ».
+ *
+ * **Un bouton, pas une case à cocher**, et la nuance n'est pas cosmétique : une
+ * case suggère un formulaire qu'on remplit puis qu'on valide, alors que le
+ * geste ici est immédiat et réversible. Le bouton porte son état dans son
+ * libellé plutôt que dans une couleur seule — la charte l'impose (« un champ,
+ * une encre, jamais l'un sans l'autre ») et un lecteur d'écran n'a pas de
+ * couleur.
+ *
+ * **Le verbe vient du serveur**, il n'est pas décidé ici. « Déclaré en place »
+ * pour un état, « Fait le » pour ce qui revient sans rythme écrit : c'est
+ * `etats-permanents/regle.ts` qui tranche, à partir de la nature de
+ * l'obligation. Le composant ne connaît pas la règle, il rend ce qu'on lui
+ * donne — c'est la seconde moitié de « partage la règle, pas la mise en page ».
+ */
+export function LigneEtat({
+  etablissementId,
+  obligationId,
+  libelle,
+  mode,
+  pieceAttendue,
+  declareLe,
+}: {
+  etablissementId: string;
+  obligationId: string;
+  libelle: string;
+  mode: "etat" | "fait";
+  pieceAttendue: string | null;
+  declareLe: string | null;
+}) {
+  const [pending, startTransition] = useTransition();
+  const declare = declareLe !== null;
+
+  const verbe = mode === "etat" ? "Déclaré en place le" : "Fait le";
+  const geste = mode === "etat" ? "Déclarer en place" : "Marquer comme fait";
+
+  return (
+    <li className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2 border-t border-[color:var(--board-slate-line)] py-3.5 first:border-t-0">
+      <div className="min-w-0 flex-1 basis-[22rem]">
+        <p className="m-0 text-[13.5px] leading-[1.45] text-[color:var(--board-ink)]">
+          {libelle}
+        </p>
+
+        {/* L'écrit que le texte attend, quand il en attend un.
+            L'écran ne le collecte pas — aucune surface de dépôt ici (ADR-027) —
+            mais le taire ferait cocher « en place » un registre de sécurité
+            sans que rien ne rappelle ce qu'on affirme détenir. Nommer n'est pas
+            demander. */}
+        {pieceAttendue && (
+          <p className="m-0 mt-1 inline-flex items-center gap-1.5 text-[12px] leading-[1.4] text-[color:var(--board-slate-soft)]">
+            <FileText className="size-3 shrink-0" aria-hidden />
+            Le texte attend un écrit : {pieceAttendue}
+          </p>
+        )}
+
+        {declare && (
+          <p className="m-0 mt-1 text-[12px] leading-[1.4] text-[color:var(--board-slate-mid)]">
+            {verbe} {formaterDateFr(new Date(declareLe))}
+          </p>
+        )}
+      </div>
+
+      <button
+        type="button"
+        disabled={pending}
+        aria-pressed={declare}
+        onClick={() =>
+          startTransition(async () => {
+            if (declare) await retirerDeclaration(etablissementId, obligationId);
+            else await declarerEnPlace(etablissementId, obligationId);
+          })
+        }
+        className="inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-[7px] text-[12.5px] transition-colors disabled:opacity-60"
+        style={
+          declare
+            ? {
+                borderColor: "var(--board-slate-line)",
+                background: "var(--board-slate-pale)",
+                color: "var(--board-slate-mid)",
+              }
+            : {
+                borderColor: "var(--board-blue-soft)",
+                background: "var(--board-blue-pale)",
+                color: "var(--board-blue-ink)",
+              }
+        }
+      >
+        {declare && <Check className="size-3.5" aria-hidden />}
+        {pending ? "…" : declare ? "Revenir dessus" : geste}
+      </button>
+    </li>
+  );
+}
