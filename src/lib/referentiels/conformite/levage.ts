@@ -186,7 +186,14 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "semestrielle",
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 5,
-    transmet: [],
+    transmet: [
+      {
+        vers: "salarie_designe",
+        titre: "conduite-salarie-formation",
+        motif:
+          "R. 4323-55 : « La conduite des équipements de travail mobiles automoteurs et des équipements de travail servant au levage est réservée aux travailleurs qui ont reçu une formation adéquate. » L'équipement est déclaré, la vérification est suivie — mais rien ne disait que la personne qui le conduit doit être formée. Selon la catégorie d'équipement, une autorisation de conduite délivrée par l'employeur peut s'y ajouter (R. 4323-56) ; le référentiel ne peut pas dire laquelle, la liste étant fixée par arrêté et non par le Code.",
+      },
+    ],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     conditions: [
@@ -273,7 +280,14 @@ export const obligationsLevage: Obligation[] = [
     periodicite: "semestrielle",
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 5,
-    transmet: [],
+    transmet: [
+      {
+        vers: "salarie_designe",
+        titre: "conduite-salarie-formation",
+        motif:
+          "R. 4323-55 : « La conduite des équipements de travail mobiles automoteurs et des équipements de travail servant au levage est réservée aux travailleurs qui ont reçu une formation adéquate. » L'équipement est déclaré, la vérification est suivie — mais rien ne disait que la personne qui le conduit doit être formée. Selon la catégorie d'équipement, une autorisation de conduite délivrée par l'employeur peut s'y ajouter (R. 4323-56) ; le référentiel ne peut pas dire laquelle, la liste étant fixée par arrêté et non par le Code.",
+      },
+    ],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     conditions: [
@@ -294,7 +308,7 @@ export const obligationsLevage: Obligation[] = [
       },
     ],
     notesInternes:
-      "EQUIPEMENT_LEVAGE est une catégorie fourre-tout : sans condition, un simple transpalette héritait d'une VGP semestrielle « levage de personnes » juridiquement inapplicable. Forme `non_infirmee` (criticité 5). Corrigé à l'audit 2026-08 : l'ancienne version attribuait la périodicité de 6 mois à « l'arrêté du 2 mars 2004 », qui ne traite que du carnet de maintenance ; elle est à l'art. 23 de l'arrêté du 1er mars 2004.",
+      "EQUIPEMENT_LEVAGE est une catégorie fourre-tout : sans condition, un simple transpalette héritait d'une VGP semestrielle « levage de personnes » juridiquement inapplicable. Forme `non_infirmee` (criticité 5). Corrigé à l'audit 2026-08 : l'ancienne version attribuait la périodicité de 6 mois à « l'arrêté du 2 mars 2004 », qui ne traite que du carnet de maintenance ; elle est à l'art. 23 de l'arrêté du 1er mars 2004.\n\nTRANSMISSION AJOUTÉE LE 2026-08-31, avec celle de la VGP chariot/gerbeur, et sur ces deux obligations SEULEMENT parmi les dix du domaine. R. 4323-55 vise « les équipements de travail servant au levage » sans distinguer, donc les dix pourraient la porter — mais dix signaux identiques sur un même parc seraient du bruit, et le bruit fait ignorer le signal. Ces deux-ci portent sur des machines qu'on CONDUIT, au sens ordinaire du mot : un chariot, un gerbeur, une plateforme élévatrice de personnes. Un dirigeant y reconnaît son cariste. Sur un palan ou un accessoire d'élingage, la même phrase l'aurait laissé perplexe.",
   },
   {
     id: "levage-vgp-accessoires-annuelle",

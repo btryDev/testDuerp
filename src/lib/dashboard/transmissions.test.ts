@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { rapprocher } from "./transmissions";
+import { obligationsConformite } from "@/lib/referentiels/conformite";
 import { supposeUnTiers } from "@/lib/prestataires/domaines";
 import { genererRecommandations, type EntreeRecos } from "./recommandations";
 import type { Obligation } from "@/lib/referentiels/conformite/types";
@@ -243,5 +244,42 @@ describe("règles 9-10 : une transmission ne passe jamais devant une urgence", (
     expect(recs.find((r) => r.kind === "transmission_salarie")?.href).toBe(
       "/etablissements/etab-x/equipe",
     );
+  });
+});
+
+describe("le parc de levage nomme la conduite (revue du lot 7)", () => {
+  it("un chariot déclaré fait dire que quelqu'un doit être formé à le conduire", () => {
+    // Le trou que ce test ferme, et il était béant : un commerce déclarait un
+    // gerbeur, recevait sa vérification semestrielle, et n'apprenait JAMAIS que
+    // la personne qui le conduit doit avoir reçu une formation adéquate
+    // (R. 4323-55). Le fait déclencheur était pourtant déjà déclaré — la
+    // propriété `estChariotOuGerbeur` de l'équipement.
+    //
+    // C'est très exactement le « troisième terme » de l'ADR-024 : ni dériver
+    // qui conduit — le produit ne le sait pas —, ni se taire. Nommer.
+    //
+    // L'obligation est prise au référentiel réel : une copie de test aurait
+    // passé le jour où quelqu'un retirerait la transmission.
+    const vgp = obligationsConformite.find(
+      (o) => o.id === "levage-vgp-semestrielle-chariot-gerbeur",
+    )!;
+    expect(
+      rapprocher([vgp], [], new Set()).obligationsSupposantUnePersonne.map(
+        (o) => o.id,
+      ),
+    ).toContain("levage-vgp-semestrielle-chariot-gerbeur");
+  });
+
+  it("se tait une fois la formation à la conduite déclarée", () => {
+    // La transmission NOMME le titre attendu, donc elle se tait sur ce
+    // titre-là précisément — pas sur « un titre quelconque », ni même sur
+    // « un titre du même domaine ».
+    const vgp = obligationsConformite.find(
+      (o) => o.id === "levage-vgp-semestrielle-chariot-gerbeur",
+    )!;
+    expect(
+      rapprocher([vgp], [], new Set(["conduite-salarie-formation"]))
+        .obligationsSupposantUnePersonne,
+    ).toEqual([]);
   });
 });
