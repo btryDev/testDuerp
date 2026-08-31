@@ -156,3 +156,40 @@ export function libellePorteurSansNom(v: {
   if (v.salarieId !== null) return LABEL_PORTEUR_SALARIE_ANONYME;
   return LABEL_TOUT_ETABLISSEMENT;
 }
+
+/**
+ * Ce que la pastille d'année annonce, en un mot : combien d'échéances, et de
+ * quelle nature.
+ *
+ * Extrait de `AnneeCalendrier` pour être éprouvable. La règle vivait en JSX,
+ * inline, et **elle mentait** : elle ne lisait que `total`, le compte des
+ * échéances DATÉES, et ignorait les occurrences « à planifier ».
+ *
+ * Ces dernières sont hors des barres par construction — leur `datePrevue` est
+ * une date de génération, pas un rendez-vous, et les poser sur un mois
+ * donnerait à lire un engagement qui n'existe pas. Cette exclusion-là est
+ * juste, et elle n'est pas remise en cause ici. Ce qui ne l'était pas, c'est
+ * d'écrire « aucune échéance » quand le seul état peuplé est celui qu'on
+ * exclut.
+ *
+ * Sur un dossier neuf, l'écran affichait « 2026 · AUCUNE ÉCHÉANCE » au-dessus
+ * d'un chip « 2 à planifier » et d'une carte de mois qui les listait. Avec un
+ * titre daté en plus : « 1 ÉCHÉANCE » au-dessus de trois lignes.
+ *
+ * ⚠ **L'écart s'aggrave tout seul.** Tant que « à planifier » reste hors du
+ * total, chaque obligation d'état permanent ajoutée au référentiel creuse la
+ * distance entre ce que l'en-tête annonce et ce que la liste montre. Ce n'est
+ * pas un défaut qui se stabilise — raison pour laquelle il est corrigé dans le
+ * libellé plutôt que laissé à un arbitrage ultérieur.
+ */
+export function libelleTotalAnnee(total: number, sansDate: number): string {
+  const s = (n: number) => (n > 1 ? "s" : "");
+  if (total === 0) {
+    return sansDate > 0
+      ? `aucune datée · ${sansDate} à planifier`
+      : "aucune échéance";
+  }
+  return sansDate > 0
+    ? `${total} datée${s(total)} · ${sansDate} à planifier`
+    : `${total} échéance${s(total)}`;
+}

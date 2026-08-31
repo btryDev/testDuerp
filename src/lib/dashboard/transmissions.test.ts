@@ -236,6 +236,38 @@ describe("règles 9-10 : une transmission ne passe jamais devant une urgence", (
     expect(kinds).not.toContain("transmission_salarie");
   });
 
+  it("ne dit pas « aucun n'est déclaré » — la règle a changé sous cette phrase", () => {
+    // Le défaut, et il est né d'une correction juste.
+    //
+    // La phrase disait « Suppose un titre nominatif — aucun n'est déclaré ».
+    // Elle était vraie par construction : `rapprocher()` ne signalait une
+    // transmission `titre: null` que si le dossier ne portait AUCUN titre.
+    //
+    // Le 2026-08-31, cette règle est passée au domaine — un certificat de
+    // secourisme ne fait plus taire le signal d'électricité. Le contrôle
+    // visuel a alors montré, dans un dossier où une salariée détenait un titre
+    // SST déclaré et visible sur sa fiche, le tableau de bord affichant
+    // « aucun n'est déclaré » pour une autre obligation.
+    //
+    // La phrase voulait dire « aucun DE CE TYPE » ; elle disait « aucun ».
+    const sousTitre = genererRecommandations(base(), { now: NOW }).find(
+      (r) => r.kind === "transmission_salarie",
+    )?.sousTitre;
+
+    expect(
+      sousTitre,
+      "Le sous-titre affirme qu'aucun titre n'est déclaré. C'est faux dès " +
+        "qu'un titre d'un autre domaine existe — et depuis que le silence est " +
+        "indexé sur le domaine, c'est un état atteignable.",
+    ).not.toContain("aucun n'est déclaré");
+
+    // Et il ne peut pas non plus nommer le titre attendu : la transmission ne
+    // le sait pas — c'est tout l'objet du `titre: null`, et l'ADR-024 pose que
+    // le produit nomme le trou sans le dériver. La formulation doit rester
+    // générique SANS être fausse.
+    expect(sousTitre).toContain("titre nominatif");
+  });
+
   it("les liens pointent là où le geste se fait", () => {
     const recs = genererRecommandations(base(), { now: NOW });
     expect(recs.find((r) => r.kind === "transmission_prestataire")?.href).toBe(

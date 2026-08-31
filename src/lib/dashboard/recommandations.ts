@@ -338,11 +338,33 @@ export function genererRecommandations(
       // l'effectif, opère sur quoi — le dériver serait un faux positif de
       // masse (ADR-023).
       //
-      // Et « aucun titre » et non « aucune personne » : ce qui manque est la
+      // « un titre » et non « une personne » : ce qui manque est la
       // déclaration d'un TITRE, pas celle d'un salarié. Un employeur qui a
       // saisi douze personnes et zéro titre lisait « aucune n'est déclarée »
       // et pouvait comprendre que sa saisie n'avait pas été prise.
-      sousTitre: "Suppose un titre nominatif — aucun n'est déclaré",
+      //
+      // ⚠ « AUCUN N'EST DÉCLARÉ » A ÉTÉ RETIRÉ, et l'histoire mérite d'être
+      // gardée. La phrase était vraie par construction : `rapprocher()` ne
+      // signalait une transmission `titre: null` que si le dossier ne portait
+      // AUCUN titre. Le 2026-08-31, cette règle est passée au domaine — un
+      // titre d'électricité fait taire le signal d'électricité, un certificat
+      // de secourisme ne le fait plus. Correction juste, et le contrôle visuel
+      // l'a confirmée en marche.
+      //
+      // Mais le libellé n'a pas suivi la règle qui venait de bouger sous lui :
+      // dans un dossier où une salariée détenait un certificat SST déclaré et
+      // visible, le tableau de bord affichait « aucun n'est déclaré » pour une
+      // autre obligation. La phrase voulait dire « aucun DE CE TYPE » ; elle
+      // disait « aucun ».
+      //
+      // Ce qu'elle ne peut PAS dire non plus : quel titre est attendu. C'est
+      // tout l'objet du `titre: null` — la transmission ne sait pas le nommer,
+      // et l'ADR-024 pose que le produit nomme le trou sans le dériver. La
+      // formulation doit donc rester générique SANS être fausse, ce qui est
+      // plus étroit qu'il n'y paraît : « rien de ce qui est déclaré n'y
+      // répond » est vrai que le dossier porte zéro titre ou douze.
+      sousTitre:
+        "Suppose un titre nominatif — rien de ce qui est déclaré n'y répond",
       href: `/etablissements/${etab}/equipe`,
       priorite: 10,
     });
