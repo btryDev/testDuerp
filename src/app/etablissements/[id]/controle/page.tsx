@@ -14,6 +14,18 @@ export const metadata = {
 type ElementDossier = {
   titre: string;
   description: string;
+  /**
+   * La pièce part-elle dans le ZIP ?
+   *
+   * **Ce n'est pas un état de conformité**, et les deux se lisent sur la
+   * même ligne : le registre de sécurité part dans le dossier même sans
+   * aucun rapport archivé, et il est alors `present: true` ET
+   * `etat: "en_retard"`. Une coche verte à droite d'une pastille rouge est
+   * juste — à condition que la colonne dise ce qu'elle compte. Elle ne le
+   * disait pas : ni en-tête, ni légende, ni nom pour un lecteur d'écran.
+   * Sur l'écran qu'on ouvre devant un inspecteur, c'était le signal à ne
+   * pas envoyer.
+   */
   present: boolean;
   etat?: "a_jour" | "a_planifier" | "en_retard" | "non_conforme" | "non_applicable";
   reference?: string;
@@ -233,6 +245,15 @@ export default async function ControlePage({
               Chaque pièce est vérifiée avant d&apos;être mise au ZIP. Statut des
               données à l&apos;instant de la génération.
             </p>
+            {/* Les deux signaux d'une ligne ne disent pas la même chose, et
+                rien ne l'annonçait : la pastille dit l'état de vos données,
+                la coche dit seulement que la pièce part dans le dossier. Un
+                registre sans rapport part quand même — coche verte, pastille
+                rouge. Juste, mais illisible sans cette phrase. */}
+            <p className="mt-2 font-mono text-[0.66rem] uppercase leading-[1.7] tracking-[0.12em] text-[color:var(--board-slate-soft)]">
+              Pastille = état de vos données · ✓ à droite = pièce incluse dans
+              le ZIP
+            </p>
           </header>
 
           <ol className="space-y-3">
@@ -262,14 +283,25 @@ export default async function ControlePage({
                     </p>
                   )}
                 </div>
+                {/* `aria-hidden` privait un lecteur d'écran de la seule
+                    information de cette colonne. Elle est nommée
+                    maintenant — et nommée par ce qu'elle veut dire, pas par
+                    son dessin. */}
                 <span
-                  aria-hidden
+                  title={
+                    el.present
+                      ? "Incluse dans le ZIP"
+                      : "Absente du ZIP"
+                  }
                   className={
                     "shrink-0 font-mono text-[1.1rem] " +
                     (el.present ? "text-[color:var(--board-green-ink)]" : "text-[color:var(--board-slate-soft)]")
                   }
                 >
-                  {el.present ? "✓" : "○"}
+                  <span aria-hidden>{el.present ? "✓" : "○"}</span>
+                  <span className="sr-only">
+                    {el.present ? "Incluse dans le ZIP" : "Absente du ZIP"}
+                  </span>
                 </span>
               </li>
             ))}
