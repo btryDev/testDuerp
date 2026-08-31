@@ -218,6 +218,7 @@ export default async function SalarieDetailPage({
                     libelle: o.libelle,
                     description: o.description,
                     pieceMedicale: o.pieceMedicale,
+                    periodicite: o.periodicite,
                   }))}
                   action={action}
                   dejaDeclares={s.titres.map((t) => t.obligationId)}
