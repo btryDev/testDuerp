@@ -314,6 +314,70 @@ const KINDS_ALERTE: ReadonlySet<Recommandation["kind"]> = new Set([
   "action_en_retard",
 ]);
 
+/**
+ * La ligne de méta d'une recommandation — et surtout, la politique de
+ * troncature qui va avec, tenue à UN SEUL ENDROIT.
+ *
+ * ## Pourquoi ce composant existe
+ *
+ * Deux widgets rendent une recommandation : `CarteTache` (« Par où
+ * commencer ») et `BlocAFaire` (« À faire »). Leurs mises en page diffèrent
+ * légitimement — pastille numérotée et bouton « Ouvrir » d'un côté, ligne
+ * cliquable et badge d'écart de l'autre. Ce n'est pas la duplication à
+ * supprimer.
+ *
+ * Ce qui diverge à chaque correction, en revanche, ce sont les RÈGLES. Trois
+ * défauts en une journée se sont logés dans ces deux fonctions :
+ *
+ *  1. la file amputée par `priorite <= 5` — présente aux deux endroits, il a
+ *     fallu qu'on signale le second ;
+ *  2. la clé React en double — aux deux endroits ;
+ *  3. la troncature du sous-titre — corrigée d'un seul côté, et c'était **le
+ *     côté que personne ne voit** : sur un dossier neuf, le tableau de bord
+ *     montre « À faire », et « Par où commencer » doit être ajouté à la main
+ *     depuis le tiroir. La correction est allée dans le widget caché, le
+ *     défaut est resté dans celui qui s'affiche.
+ *
+ * Trois fois en un jour, c'est une donnée et non un hasard. La troncature n'a
+ * aucune raison de dépendre du widget : c'est une décision sur ce qu'on
+ * s'autorise à couper d'une phrase écrite pour être lue. Elle vit donc ici, et
+ * les deux widgets l'appellent.
+ *
+ * ## Deux lignes, et le même nombre des deux côtés
+ *
+ * `line-clamp-2` plutôt que `truncate`. Une seule ligne coupait à ~104 signes
+ * sur une carte de 638 px — mesuré — et coupait en silence : ni le rendu ni le
+ * type ne disent qu'une phrase a été amputée. Deux lignes doublent la place et
+ * bornent toujours la hauteur.
+ *
+ * Le même nombre des deux côtés est ce qui rend le garde-fou de longueur
+ * calculable : `recommandations.test.ts` refuse un sous-titre plus long que ce
+ * que deux lignes tiennent. Si un widget revenait à une ligne, ce seuil
+ * deviendrait faux **pour lui seul**, et c'est exactement l'erreur que ce test
+ * a commise à sa première rédaction — il était calibré sur deux lignes quand
+ * le widget affiché n'en avait qu'une, si bien qu'il acceptait 138 signes que
+ * l'écran coupait.
+ */
+function MetaRecommandation({
+  children,
+  taille,
+}: {
+  children: React.ReactNode;
+  /** La seule chose qui diffère entre les deux widgets : la graisse du texte. */
+  taille: "12" | "12.5";
+}) {
+  return (
+    <p
+      className={
+        "m-0 mt-0.5 line-clamp-2 text-[color:var(--board-slate-mid)] " +
+        (taille === "12" ? "text-[12px]" : "text-[12.5px]")
+      }
+    >
+      {children}
+    </p>
+  );
+}
+
 function CarteTache({
   numero,
   reco,
@@ -359,9 +423,7 @@ function CarteTache({
           {reco.titre}
         </p>
         {meta ? (
-          <p className="m-0 mt-0.5 truncate text-[12.5px] text-[color:var(--board-slate-mid)]">
-            {meta}
-          </p>
+          <MetaRecommandation taille="12.5">{meta}</MetaRecommandation>
         ) : null}
       </div>
       <LienProvenance
@@ -591,7 +653,7 @@ export function BlocParOuCommencer({ bundle }: { bundle: DashboardBundle }) {
         <ol className="m-0 flex list-none flex-col gap-3 p-0">
           {file.map((r, i) => (
             <CarteTache
-              key={r.href}
+              key={r.cle}
               numero={i + 1}
               reco={r}
               aujourdhui={aujourdhui}
@@ -1319,7 +1381,7 @@ export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
               : (r.sousTitre ?? "");
             return (
               <li
-                key={r.href}
+                key={r.cle}
                 className={
                   i === 0
                     ? ""
@@ -1334,9 +1396,9 @@ export function BlocAFaire({ bundle }: { bundle: DashboardBundle }) {
                     <p className="m-0 truncate text-[14px] font-semibold leading-[1.3] tracking-[-0.015em] text-[color:var(--board-ink)]">
                       {r.titre}
                     </p>
-                    <p className="m-0 mt-0.5 truncate text-[12px] text-[color:var(--board-slate-mid)]">
+                    <MetaRecommandation taille="12">
                       {meta}
-                    </p>
+                    </MetaRecommandation>
                   </div>
                   {badge ? (
                     <Pastille ton={alerte ? "alerte" : "neutre"}>

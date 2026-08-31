@@ -24,6 +24,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { RegleAnnuelle, totalDuMois, type MoisRegle } from "./RegleAnnuelle";
+import { libelleTotalAnnee } from "@/lib/calendrier/labels";
 import { SectionMois } from "./SectionMois";
 import { ecrireLecture, lectureDesParams } from "./SelecteurLecture";
 
@@ -240,6 +241,7 @@ export function AnneeCalendrier({
           titreId={titreId}
           annee={regle.annee}
           total={regle.mois.reduce((n, m) => n + totalDuMois(m), 0)}
+          sansDate={sansDate}
           collee={collee}
           /* Le cadran n'a de prise que sur la liste mensuelle : la lecture
              par équipement montre chaque appareil sur toutes ses années à
@@ -363,6 +365,7 @@ export function AnneeCalendrier({
 function BarreAnnee({
   annee,
   total,
+  sansDate,
   collee,
   montrerCadran,
   onAnneePrecedente,
@@ -371,9 +374,24 @@ function BarreAnnee({
   titreId,
 }: {
   annee: number;
-  /** Échéances de l'année affichée — sans lui, une année déserte
+  /** Échéances DATÉES de l'année affichée — sans lui, une année déserte
    *  ressemblerait à un bug. */
   total: number;
+  /**
+   * Occurrences « à planifier », hors des barres par construction : leur
+   * `datePrevue` est une date de génération, pas un rendez-vous.
+   *
+   * La pastille en a besoin pour ne pas mentir. Elle disait « aucune
+   * échéance » dès que `total` valait zéro — ce qui était exact tant que
+   * « à planifier » restait marginal. Sur un dossier neuf, c'est le SEUL
+   * état peuplé : l'écran annonçait « 2026 · AUCUNE ÉCHÉANCE » au-dessus
+   * d'un chip « 2 à planifier » et d'une carte de mois qui les listait.
+   *
+   * Les lignes ne rejoignent pas les barres pour autant — la raison de les
+   * en écarter tient. C'est le TOTAL qui doit dire « aucune datée », pas
+   * « aucune ».
+   */
+  sansDate: number;
   /** Vrai quand la barre a atteint le haut : elle passe en verre pour que
    *  la liste se devine dessous au lieu de disparaître sèchement. */
   collee: boolean;
@@ -398,8 +416,11 @@ function BarreAnnee({
           se présente seul — sa clé de lecture (hauteur = volume, couleur =
           état) vit dans l'aide d'écran, avec le reste des explications. */}
       <h2 id={titreId} className="sr-only">
-        L&apos;année d&apos;un bloc — {total} échéance{total > 1 ? "s" : ""} en{" "}
-        {annee}
+        L&apos;année d&apos;un bloc — {total} échéance{total > 1 ? "s" : ""}{" "}
+        datée{total > 1 ? "s" : ""} en {annee}
+        {sansDate > 0
+          ? `, et ${sansDate} à planifier, sans date arrêtée`
+          : ""}
       </h2>
       {montrerCadran ? (
         <div className="flex flex-none items-center gap-2">
@@ -417,9 +438,7 @@ function BarreAnnee({
               {annee}
             </span>
             <span className="font-mono text-[10px] font-semibold uppercase leading-none tracking-[0.1em] text-[color:var(--board-blue-ink)]">
-              {total === 0
-                ? "aucune échéance"
-                : `${total} échéance${total > 1 ? "s" : ""}`}
+              {libelleTotalAnnee(total, sansDate)}
             </span>
           </p>
           <FlecheAnnee

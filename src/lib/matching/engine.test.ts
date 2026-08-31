@@ -1707,3 +1707,48 @@ describe("moteur matching — champ disjonctif de R. 4227-34 (personnes présent
     expect(idsObligations(res)).toContain(EXERCICE);
   });
 });
+
+describe("les raisons se lisent, elles ne se décodent pas", () => {
+  // Ces raisons sont AFFICHÉES AU DIRIGEANT, sous « pourquoi chez vous » dans
+  // le guide « Comprendre ». L'effectif s'y écrivait en notation d'intervalle
+  // — « effectif sur site 6 dans la plage [— ; 49] » —, avec un tiret cadratin
+  // pour dire « pas de borne ». Personne hors de ce dépôt ne lit ça.
+  const raisonsPour = (
+    typologies: Obligation["typologies"],
+    effectifSurSite: number,
+  ) => {
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-raison-effectif",
+      typologies,
+    };
+    const res = determineObligationsApplicables(
+      etabBureau({ effectifSurSite }),
+      [elec()],
+      { obligations: [synthetique] },
+    );
+    expect(res, "l'obligation synthétique ne matche plus").toHaveLength(1);
+    return res.flatMap((r) => r.raisons).join(" | ");
+  };
+
+  it("n'écrit plus de notation d'intervalle", () => {
+    const r = raisonsPour({ travail: true, effectifMax: 49 }, 6);
+    expect(r).not.toContain("plage");
+    expect(r).not.toContain("[");
+    expect(r).toContain("jusqu'à 49 salariés");
+  });
+
+  it("nomme le seuil bas quand c'est lui qui déclenche", () => {
+    expect(raisonsPour({ travail: true, effectifMin: 11 }, 12)).toContain(
+      "à partir de 11 salariés",
+    );
+  });
+
+  it("nomme les deux bornes quand les deux sont déclarées", () => {
+    // Contre-épreuve des deux précédents : une implémentation qui n'écrirait
+    // qu'une seule des deux bornes les passerait tous les deux.
+    expect(
+      raisonsPour({ travail: true, effectifMin: 11, effectifMax: 49 }, 20),
+    ).toContain("de 11 à 49 salariés");
+  });
+});

@@ -236,6 +236,150 @@ describe("règles 9-10 : une transmission ne passe jamais devant une urgence", (
     expect(kinds).not.toContain("transmission_salarie");
   });
 
+  it("ne dit pas « aucun n'est déclaré » — la règle a changé sous cette phrase", () => {
+    // Le défaut, et il est né d'une correction juste.
+    //
+    // La phrase disait « Suppose un titre nominatif — aucun n'est déclaré ».
+    // Elle était vraie par construction : `rapprocher()` ne signalait une
+    // transmission `titre: null` que si le dossier ne portait AUCUN titre.
+    //
+    // Le 2026-08-31, cette règle est passée au domaine — un certificat de
+    // secourisme ne fait plus taire le signal d'électricité. Le contrôle
+    // visuel a alors montré, dans un dossier où une salariée détenait un titre
+    // SST déclaré et visible sur sa fiche, le tableau de bord affichant
+    // « aucun n'est déclaré » pour une autre obligation.
+    //
+    // La phrase voulait dire « aucun DE CE TYPE » ; elle disait « aucun ».
+    const sousTitre = genererRecommandations(base(), { now: NOW }).find(
+      (r) => r.kind === "transmission_salarie",
+    )?.sousTitre;
+
+    expect(
+      sousTitre,
+      "Le sous-titre affirme qu'aucun titre n'est déclaré. C'est faux dès " +
+        "qu'un titre d'un autre domaine existe — et depuis que le silence est " +
+        "indexé sur le domaine, c'est un état atteignable.",
+    ).not.toContain("aucun n'est déclaré");
+
+    // Et il ne peut pas non plus nommer le titre attendu : la transmission ne
+    // le sait pas — c'est tout l'objet du `titre: null`, et l'ADR-024 pose que
+    // le produit nomme le trou sans le dériver. La formulation doit rester
+    // générique SANS être fausse.
+    expect(sousTitre).toContain("titre nominatif");
+  });
+
+  it("la santé au travail ne se lit pas comme un trou de saisie", () => {
+    // Une seule règle servait les onze domaines : « aucun intervenant déclaré
+    // en X — s'il intervient déjà chez vous, il reste à l'inscrire ». Juste
+    // pour dix domaines techniques, où l'on choisit un organisme et où le cas
+    // probable est bien une saisie manquante.
+    //
+    // Pour la santé au travail, elle ratait sa cible : organiser un service de
+    // prévention et de santé au travail n'est pas une relation qu'on peut ne
+    // pas avoir, elle est due (L. 4622-1). La phrase était écrite pour celui
+    // qui a déjà un service ; pour celui qui n'a pas adhéré — le seul cas où
+    // le produit pourrait éviter un manquement réel — elle se lisait comme un
+    // trou de saisie.
+    //
+    // Les deux règles ne constatent pas la même chose : l'une une saisie
+    // manquante, l'autre une obligation peut-être non remplie.
+    const e = base();
+    e.transmissions = {
+      domainesSansPrestataire: [
+        { domaine: "sante_travail", libelle: "Santé au travail" },
+      ],
+      obligationsSupposantUnePersonne: [],
+    };
+    const reco = genererRecommandations(e, { now: NOW }).find(
+      (r) => r.kind === "transmission_tiers_obligatoire",
+    );
+    expect(reco, "La règle du tiers obligatoire ne se déclenche plus").toBeDefined();
+    // Ce qui est dû…
+    expect(reco!.sousTitre).toContain("doit en avoir un");
+    // …l'action du destinataire EN PREMIER et à l'affirmative. Un employeur de
+    // six personnes n'organise pas un service, il adhère. Reléguer « adhérer »
+    // dans la clause conditionnelle — celle qui s'adresse à ceux qui l'ont déjà
+    // fait — laissait sa phrase se lire « montez un service ».
+    const i = reco!.sousTitre!.indexOf("adhésion");
+    const j = reco!.sousTitre!.indexOf("service autonome");
+    expect(i, "l'adhésion n'est plus nommée").toBeGreaterThan(-1);
+    expect(j, "la seconde branche n'est plus nommée").toBeGreaterThan(-1);
+    expect(i, "le service autonome passe devant l'adhésion").toBeLessThan(j);
+    // …et l'issue la plus probable, qui retire le ton de reproche. Sans elle,
+    // la phrase accuse un dirigeant qui a très probablement un service. C'est
+    // la clause que la troncature coupait en premier.
+    expect(reco!.sousTitre).toContain("il reste à l'inscrire");
+    // AUCUNE RÉFÉRENCE D'ARTICLE ICI, et c'est délibéré. Une phrase qui en
+    // citait deux dépassait la largeur de la carte et s'affichait « (D. 46… » —
+    // une référence tronquée n'est pas une référence abrégée, c'est un article
+    // fabriqué par la mise en page. Le fondement vit sur l'obligation, qui le
+    // porte avec ses URL et ses versions constatées ; la carte oriente.
+    expect(reco!.sousTitre).not.toMatch(/\b[LRD]\.\s?\d/);
+    // Le titre ne se lit plus comme une case vide d'annuaire.
+    expect(reco!.titre).not.toContain("intervenant");
+  });
+
+  it("un domaine technique garde la règle de la saisie manquante", () => {
+    // Contre-épreuve : sans elle, faire basculer TOUS les domaines sur la
+    // formulation « obligation due » passerait le test précédent — et
+    // accuserait un restaurateur de ne pas avoir d'électricien.
+    const e = base();
+    e.transmissions = {
+      domainesSansPrestataire: [
+        { domaine: "electricite", libelle: "Électricité" },
+      ],
+      obligationsSupposantUnePersonne: [],
+    };
+    const kinds = genererRecommandations(e, { now: NOW }).map((r) => r.kind);
+    expect(kinds).toContain("transmission_prestataire");
+    expect(kinds).not.toContain("transmission_tiers_obligatoire");
+  });
+
+  it("chaque recommandation a une clé qui lui est propre", () => {
+    // Le défaut, et il est né de la correction qui a rendu les transmissions
+    // visibles ensemble : `board.tsx` employait `href` comme clé React, ce qui
+    // était juste tant qu'une destination désignait une recommandation. Toutes
+    // les transmissions de domaine mènent à l'annuaire des prestataires,
+    // toutes celles de salarié à l'écran Équipe — React écrivait donc
+    // « Encountered two children with the same key » deux fois par chargement.
+    //
+    // Une clé absente n'a pas d'effet ; une clé EN DOUBLE en a un. La liste est
+    // statique aujourd'hui, mais le jour où elle se réordonne, une des deux
+    // recommandations peut disparaître sans trace.
+    //
+    // Deux domaines et deux obligations salarié, donc quatre lignes qui
+    // partagent deux destinations : c'est exactement la forme qui cassait.
+    const e = base();
+    e.transmissions = {
+      domainesSansPrestataire: [
+        { domaine: "electricite", libelle: "Électricité" },
+        { domaine: "sante_travail", libelle: "Santé au travail" },
+      ],
+      obligationsSupposantUnePersonne: [
+        { id: "habilitation", libelle: "Habilitation électrique" },
+        { id: "formation-securite-etablissement-organisation", libelle: "Formation" },
+      ],
+    };
+    const recs = genererRecommandations(e, { now: NOW });
+    const cles = recs.map((r) => r.cle);
+
+    expect(
+      new Set(cles).size,
+      `Deux recommandations partagent une clé : ${cles.join(", ")}`,
+    ).toBe(cles.length);
+
+    // Contre-épreuve : sans elle, une implémentation qui rendrait `cle` égale à
+    // un compteur d'index passerait le test ci-dessus tout en réintroduisant le
+    // défaut au premier réordonnancement. La clé doit être STABLE, donc dérivée
+    // de ce que la recommandation désigne.
+    const memeEntree = genererRecommandations(e, { now: NOW }).map((r) => r.cle);
+    expect(memeEntree).toEqual(cles);
+    expect(cles).toContain("transmission-domaine:sante_travail");
+    expect(cles).toContain(
+      "transmission-salarie:formation-securite-etablissement-organisation",
+    );
+  });
+
   it("les liens pointent là où le geste se fait", () => {
     const recs = genererRecommandations(base(), { now: NOW });
     expect(recs.find((r) => r.kind === "transmission_prestataire")?.href).toBe(

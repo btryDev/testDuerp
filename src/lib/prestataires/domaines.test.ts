@@ -3,11 +3,13 @@ import { obligationsConformite } from "@/lib/referentiels/conformite";
 import {
   AUCUN_TIERS_ATTENDU,
   DOMAINES_PRESTATAIRE_ATTENDUS,
+  TIERS_LUI_MEME_OBLIGATOIRE,
   domainesSansPrestataire,
   supposeUnTiers,
   type PrestatairesAttendus,
 } from "./domaines";
 import { LABEL_DOMAINE as LABEL_PRESTATAIRE } from "./schema";
+import { referencesDepouillees } from "@/lib/referentiels/corpus";
 import { porteurDe } from "@/lib/referentiels/conformite/types";
 import type {
   DomaineObligation,
@@ -197,5 +199,54 @@ describe("les domaines dont la contrepartie n'est pas encore atteinte", () => {
         "de `DOMAINES_PRESTATAIRE_ATTENDUS` dit toujours la vérité sur ce que " +
         "le rapprochement fait et ne fait pas.",
     ).toEqual(["formation_securite", "secours"]);
+  });
+});
+
+describe("les articles que ces phrases citent à l'écran", () => {
+  it("sont tous dépouillés au corpus", () => {
+    // La règle du dépôt vaut aussi pour une phrase d'interface : on ne cite pas
+    // un texte que personne n'a lu. Le cliquet de `corpus.test.ts` ne garde que
+    // les obligations — il n'aurait rien vu ici.
+    //
+    // Le risque est réel et il a failli se produire : la phrase du tiers
+    // obligatoire nomme les deux formes de service, et ces deux branches ne
+    // viennent PAS de `L. 4622-1`, qui tient en une ligne, mais de `D. 4622-1`
+    // et `D. 4622-2`. Les citer sans les avoir ouverts aurait fait dire à
+    // l'article fondateur ce qu'il ne dit pas — l'erreur exacte qui a coûté
+    // deux tours de revue sur `L. 4622-7`.
+    //
+    // Ici ils sont dépouillés, par le lot 8. Ce test existe pour la prochaine
+    // entrée, écrite par quelqu'un qui n'aura pas cette histoire en tête.
+    const lues = referencesDepouillees();
+    const manquants: string[] = [];
+
+    for (const [domaine, phrase] of Object.entries(TIERS_LUI_MEME_OBLIGATOIRE)) {
+      if (!phrase) continue;
+      const texte = `${phrase.titre} ${phrase.sousTitre}`;
+      // « L. 4622-1 », « D. 4622-2 », « R. 4624-10 »…
+      const cites = [...texte.matchAll(/\b([LRD])\.\s?(\d+-\d+(?:-\d+)*)/g)].map(
+        (m) => `${m[1]}. ${m[2]}`,
+      );
+      // Ce test n'EXIGE PAS qu'une phrase cite un article, et ne le peut plus.
+      // La première rédaction le faisait — « ce qui est dû doit être sourcé » —
+      // et c'était une bonne intention démentie par l'écran : la phrase de la
+      // santé au travail citait deux articles, dépassait la largeur de la carte
+      // et s'affichait « (D. 46… ». Une référence tronquée n'est pas une
+      // référence abrégée, c'est un article fabriqué par la mise en page.
+      //
+      // Les références sont donc sorties du sous-titre, où elles ne tenaient
+      // pas, et vivent sur l'obligation, qui les porte avec leurs URL et leurs
+      // versions constatées. Ce qui reste gardé ici est la seule moitié qui
+      // compte : SI une phrase cite un article, il doit avoir été lu.
+      for (const a of cites) {
+        if (!lues.has(a)) manquants.push(`${domaine} → ${a}`);
+      }
+    }
+
+    expect(
+      manquants,
+      "Ces articles sont cités dans une phrase affichée au dirigeant sans " +
+        "qu'aucun corpus ne déclare les avoir lus. Dépouiller avant de citer.",
+    ).toEqual([]);
   });
 });

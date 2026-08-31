@@ -59,6 +59,8 @@ import {
   estVerificationEnRetard,
 } from "@/lib/dates/retard";
 import { ageEnMois, type EtatDuerp } from "./duerp";
+import { TIERS_LUI_MEME_OBLIGATOIRE } from "@/lib/prestataires/domaines";
+import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 
 /** Fenêtre « ça arrive » pour une vérification déjà planifiée. Plus courte
  *  que l'horizon proche du produit (30 j) : la file de travail du board dit
@@ -78,7 +80,32 @@ export type Recommandation = {
     | "amorce_duerp"
     | "amorce_rapport"
     | "transmission_prestataire"
+    | "transmission_tiers_obligatoire"
     | "transmission_salarie";
+  /**
+   * L'identité de la recommandation — sa clé de rendu, et rien d'autre.
+   *
+   * Le tableau de bord employait `href` comme clé React. C'était juste tant
+   * qu'une destination désignait une recommandation ; ça a cessé de l'être dès
+   * que deux d'entre elles ont pu mener au même écran, ce qui est le cas
+   * ordinaire des transmissions : TOUTES celles de domaine pointent l'annuaire
+   * des prestataires, toutes celles de salarié pointent l'écran Équipe.
+   *
+   * React l'écrivait deux fois par chargement — « Encountered two children
+   * with the same key » — sur un dossier qui comptait deux domaines sans
+   * intervenant ; un autre en comptait quatre.
+   *
+   * ⚠ Ce n'est pas de la même nature qu'une clé absente. Une clé absente n'a
+   * pas d'effet ; une clé en double en a un, et React le dit : des enfants
+   * « dupliqués et/ou omis ». La liste est statique aujourd'hui et rien ne se
+   * voit. Le jour où elle se réordonne, une des deux recommandations peut
+   * disparaître SANS TRACE — un faux négatif muet, ce que l'ADR-022 existe
+   * pour supprimer.
+   *
+   * `href` est une destination, pas une identité : plusieurs recommandations
+   * mènent légitimement au même écran, et c'est même le but.
+   */
+  cle: string;
   titre: string;
   sousTitre?: string;
   href: string;
@@ -188,6 +215,7 @@ export function genererRecommandations(
     const jamaisPlanifiee = v.statut === "a_planifier";
     acc.push({
       kind: "verif_depassee",
+      cle: `verif-depassee:${v.id}`,
       titre: v.libelleObligation,
       sousTitre: jamaisPlanifiee
         ? `${v.equipementLibelle} — aucune vérification enregistrée`
@@ -203,6 +231,7 @@ export function genererRecommandations(
     if (!estActionEnRetard(a, now)) continue;
     acc.push({
       kind: "action_en_retard",
+      cle: `action-en-retard:${a.id}`,
       titre: a.libelle,
       sousTitre: "Action corrective en retard",
       href: `/etablissements/${etab}/actions/${a.id}`,
@@ -216,6 +245,7 @@ export function genererRecommandations(
     if (!estVerificationAVenir(v, now, JOURS_VERIF_PROCHE)) continue;
     acc.push({
       kind: "verif_proche",
+      cle: `verif-proche:${v.id}`,
       titre: v.libelleObligation,
       sousTitre: `${v.equipementLibelle} — dans les ${JOURS_VERIF_PROCHE} jours`,
       href: `/etablissements/${etab}/verifications/${v.id}`,
@@ -232,6 +262,7 @@ export function genererRecommandations(
     if (!estDansLesProchainsJours(a.echeance, now, JOURS_ACTION_PROCHE)) continue;
     acc.push({
       kind: "action_proche",
+      cle: `action-proche:${a.id}`,
       titre: a.libelle,
       sousTitre: `Action à réaliser sous ${JOURS_ACTION_PROCHE} jours`,
       href: `/etablissements/${etab}/actions/${a.id}`,
@@ -249,6 +280,7 @@ export function genererRecommandations(
     if (duerp.jamaisValide) {
       acc.push({
         kind: "duerp_a_jour",
+        cle: "duerp:jamais-valide",
         titre: "Validez la première version de votre DUERP",
         sousTitre: "Aucune version n'a encore été figée",
         href,
@@ -257,6 +289,7 @@ export function genererRecommandations(
     } else if (duerp.majEchue) {
       acc.push({
         kind: "duerp_a_jour",
+        cle: "duerp:maj-echue",
         titre: "DUERP à mettre à jour",
         sousTitre: `Dernière version il y a ${ageEnMois(duerp.ageJours ?? 0)} mois`,
         href,
@@ -266,6 +299,7 @@ export function genererRecommandations(
     } else if (duerp.rappelMajProche) {
       acc.push({
         kind: "duerp_a_jour",
+        cle: "duerp:rappel-maj",
         titre: "DUERP à mettre à jour",
         sousTitre: "Mise à jour annuelle à prévoir",
         href,
@@ -279,6 +313,7 @@ export function genererRecommandations(
   if (e.nbEquipements === 0) {
     acc.push({
       kind: "amorce_equipements",
+      cle: "amorce:equipements",
       titre: "Déclarez vos équipements",
       sousTitre:
         "Le point de départ : ils déterminent vos vérifications obligatoires",
@@ -289,6 +324,7 @@ export function genererRecommandations(
   if (e.nbEquipements > 0 && !e.duerpSecteurChoisi) {
     acc.push({
       kind: "amorce_duerp",
+      cle: "amorce:duerp",
       titre: "Ouvrez votre DUERP",
       sousTitre: "L'évaluation des risques, guidée unité par unité",
       href: `/etablissements/${etab}/duerp`,
@@ -298,6 +334,7 @@ export function genererRecommandations(
   if (e.verifications.length > 0 && e.nbRapports === 0) {
     acc.push({
       kind: "amorce_rapport",
+      cle: "amorce:rapport",
       titre: "Déposez votre premier rapport",
       sousTitre: "Chaque rapport reçu rejoint votre registre de sécurité",
       href: `/etablissements/${etab}/calendrier`,
@@ -320,29 +357,93 @@ export function genererRecommandations(
   //       quelqu'un ». Le dirigeant a très probablement le prestataire et ne
   //       l'a pas saisi — c'est même le cas le plus probable, et la formule
   //       doit le permettre.
+  //       « INTERVENANT » ET NON « PRESTATAIRE », depuis le 2026-08-31.
+  //
+  //       Cette règle a servi dix domaines techniques, où « prestataire » allait
+  //       de soi : on choisit un organisme agréé, on le paie, on peut en
+  //       changer. Le domaine « santé au travail » l'a fait sortir de son
+  //       assiette. L'écran affichait « Aucun prestataire déclaré en santé au
+  //       travail » là où l'obligation visée est l'ADHÉSION À UN SERVICE DE
+  //       PRÉVENTION ET DE SANTÉ AU TRAVAIL — laquelle n'est pas un
+  //       fournisseur qu'on retient, mais une obligation légale de l'employeur
+  //       (`L. 4622-1`). Un dirigeant ne reconnaît pas son obligation sous ce
+  //       mot-là.
+  //
+  //       Une seule phrase porte les deux cas, et c'est délibéré plutôt que
+  //       faute de mieux : ce que la règle constate est identique dans les deux
+  //       situations — une obligation suppose un tiers, l'annuaire n'en déclare
+  //       aucun pour ce domaine. « Intervenant » dit cela sans rien présumer du
+  //       lien : il vaut pour l'organisme agréé qui vient vérifier comme pour le
+  //       service de santé auquel on adhère, et il n'implique ni choix, ni
+  //       contrat, ni facture.
+  //
+  //       Ce que la phrase continue de NE PAS dire, et qui vaut pour les deux :
+  //       que le dirigeant est en faute. La règle ne sait pas distinguer « il en
+  //       a un et ne l'a pas saisi » — le cas le plus probable — de « il n'en a
+  //       pas ». Le lien mène toujours à l'annuaire, dont c'est le nom.
   for (const d of e.transmissions.domainesSansPrestataire) {
-    acc.push({
-      kind: "transmission_prestataire",
-      titre: `Aucun prestataire déclaré en ${d.libelle.toLowerCase()}`,
-      sousTitre:
-        "Une de vos obligations suppose l'intervention d'un tiers qualifié",
-      href: `/etablissements/${etab}/prestataires`,
-      priorite: 9,
-    });
+    const du = TIERS_LUI_MEME_OBLIGATOIRE[d.domaine as DomaineObligation];
+    acc.push(
+      du
+        ? {
+            kind: "transmission_tiers_obligatoire",
+            cle: `transmission-domaine:${d.domaine}`,
+            titre: du.titre,
+            sousTitre: du.sousTitre,
+            href: `/etablissements/${etab}/prestataires`,
+            // Un cran devant la transmission ordinaire : celle-ci peut
+            // signaler une obligation non remplie, l'autre une saisie
+            // manquante. Toujours derrière les retards constatés, qui sont
+            // des faits.
+            priorite: 8.5,
+          }
+        : {
+            kind: "transmission_prestataire",
+            cle: `transmission-domaine:${d.domaine}`,
+            titre: `Aucun intervenant déclaré en ${d.libelle.toLowerCase()}`,
+            sousTitre:
+              "Une de vos obligations suppose un tiers qualifié — s'il intervient déjà chez vous, il reste à l'inscrire",
+            href: `/etablissements/${etab}/prestataires`,
+            priorite: 9,
+          },
+    );
   }
   for (const o of e.transmissions.obligationsSupposantUnePersonne) {
     acc.push({
       kind: "transmission_salarie",
+      cle: `transmission-salarie:${o.id}`,
       titre: o.libelle,
       // « suppose » et pas « exige » : l'outil ne sait pas qui, dans
       // l'effectif, opère sur quoi — le dériver serait un faux positif de
       // masse (ADR-023).
       //
-      // Et « aucun titre » et non « aucune personne » : ce qui manque est la
+      // « un titre » et non « une personne » : ce qui manque est la
       // déclaration d'un TITRE, pas celle d'un salarié. Un employeur qui a
       // saisi douze personnes et zéro titre lisait « aucune n'est déclarée »
       // et pouvait comprendre que sa saisie n'avait pas été prise.
-      sousTitre: "Suppose un titre nominatif — aucun n'est déclaré",
+      //
+      // ⚠ « AUCUN N'EST DÉCLARÉ » A ÉTÉ RETIRÉ, et l'histoire mérite d'être
+      // gardée. La phrase était vraie par construction : `rapprocher()` ne
+      // signalait une transmission `titre: null` que si le dossier ne portait
+      // AUCUN titre. Le 2026-08-31, cette règle est passée au domaine — un
+      // titre d'électricité fait taire le signal d'électricité, un certificat
+      // de secourisme ne le fait plus. Correction juste, et le contrôle visuel
+      // l'a confirmée en marche.
+      //
+      // Mais le libellé n'a pas suivi la règle qui venait de bouger sous lui :
+      // dans un dossier où une salariée détenait un certificat SST déclaré et
+      // visible, le tableau de bord affichait « aucun n'est déclaré » pour une
+      // autre obligation. La phrase voulait dire « aucun DE CE TYPE » ; elle
+      // disait « aucun ».
+      //
+      // Ce qu'elle ne peut PAS dire non plus : quel titre est attendu. C'est
+      // tout l'objet du `titre: null` — la transmission ne sait pas le nommer,
+      // et l'ADR-024 pose que le produit nomme le trou sans le dériver. La
+      // formulation doit donc rester générique SANS être fausse, ce qui est
+      // plus étroit qu'il n'y paraît : « rien de ce qui est déclaré n'y
+      // répond » est vrai que le dossier porte zéro titre ou douze.
+      sousTitre:
+        "Suppose un titre nominatif — rien de ce qui est déclaré n'y répond",
       href: `/etablissements/${etab}/equipe`,
       priorite: 10,
     });
