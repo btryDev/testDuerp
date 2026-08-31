@@ -31,6 +31,7 @@ export const LABEL_REALISATEUR: Record<Realisateur, string> = {
   bureau_controle: "Bureau de contrôle",
   medecin_travail: "Médecin du travail",
   professionnel_sante_travail: "Professionnel de santé au travail",
+  equipe_pluridisciplinaire: "Équipe pluridisciplinaire (service de santé au travail)",
 };
 
 export const LABEL_DOMAINE: Record<DomaineObligation, string> = {

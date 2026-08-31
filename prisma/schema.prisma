@@ -592,6 +592,11 @@ enum Realisateur {
   // le renouvellement du SIR exige le médecin. Les confondre resserrerait la
   // VIP au-delà de ce que le Code impose (lot 7).
   professionnel_sante_travail
+  // L'équipe pluridisciplinaire d'un service de prévention et de santé au
+  // travail interentreprises. `R. 4624-46` la distingue du médecin du travail,
+  // et c'est le cas ordinaire de la cible du produit : une TPE adhère à un
+  // service interentreprises, elle ne salarie pas de médecin (lot 8).
+  equipe_pluridisciplinaire
 }
 
 model RapportVerification {

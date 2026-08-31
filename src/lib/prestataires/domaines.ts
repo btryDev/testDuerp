@@ -155,6 +155,13 @@ const REALISATEURS_TIERS: ReadonlySet<Realisateur> = new Set<Realisateur>([
   // pour satisfaire le `Record` exhaustif, consultée jamais.
   "medecin_travail",
   "professionnel_sante_travail",
+  // Même raison, et la règle de cet ensemble tient : « les réalisateurs qui
+  // supposent un tiers déclaré à l'annuaire ». Une équipe pluridisciplinaire
+  // est un tiers qualifié qu'on choisit et qu'on inscrit — c'est même le tiers
+  // que la cible du produit a réellement, puisqu'une TPE adhère à un service
+  // interentreprises plutôt que de salarier un médecin. Sa contrepartie est
+  // `service_sante_travail`, déjà déclarée.
+  "equipe_pluridisciplinaire",
 ]);
 
 /**
