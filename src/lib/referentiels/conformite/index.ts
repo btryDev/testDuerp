@@ -25,6 +25,9 @@ import { obligationsEquipementSousPression } from "./equipement-sous-pression";
 import { obligationsStockageDangereux } from "./stockage-dangereux";
 import { obligationsLevage } from "./levage";
 import { obligationsFroid } from "./froid";
+import { obligationsFormationSecurite } from "./formation-securite";
+import { obligationsSanteTravail } from "./sante-travail";
+import { obligationsSecours } from "./secours";
 
 export {
   obligationsElectricite,
@@ -37,6 +40,9 @@ export {
   obligationsStockageDangereux,
   obligationsLevage,
   obligationsFroid,
+  obligationsFormationSecurite,
+  obligationsSanteTravail,
+  obligationsSecours,
 };
 export * from "./types";
 export * from "./veille-textes";
@@ -52,6 +58,10 @@ export const obligationsConformite: Obligation[] = [
   ...obligationsStockageDangereux,
   ...obligationsLevage,
   ...obligationsFroid,
+  // Lot 7 — les trois domaines qui ne naissent d'aucun équipement.
+  ...obligationsFormationSecurite,
+  ...obligationsSanteTravail,
+  ...obligationsSecours,
 ];
 
 /**

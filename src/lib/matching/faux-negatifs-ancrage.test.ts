@@ -243,12 +243,23 @@ describe("la mesure du lot — ce que reçoit un établissement sans équipement
    * Ces nombres sont figés volontairement. Ils bougeront au prochain lot de
    * couverture, et c'est très bien : leur rôle est d'obliger à constater le
    * mouvement, pas de l'interdire.
+   *
+   * Ils ont bougé une première fois à l'assemblage avec le lot 7, le jour même,
+   * et le mécanisme a fonctionné : les cinq lignes ajoutées ci-dessous ont dû
+   * être constatées une par une au lieu de passer inaperçues. Les tests
+   * `toContain` du reste du fichier, eux, sont restés verts — les
+   * rebranchements de ce lot tiennent en présence du lot 7.
    */
   it("un ERP de 5ᵉ catégorie sans aucun équipement déclaré", () => {
     expect(idsSansAucunEquipement(restoErpCat5SansRien()).sort()).toEqual([
       "aeration-controle-installations-r4222-20",
+      "formation-securite-etablissement-information",
+      "formation-securite-etablissement-organisation",
       "incendie-erp-pe4-entretien-installations-techniques",
       "incendie-registre-securite",
+      "sante-travail-etablissement-liste-postes-risques",
+      "secours-etablissement-materiel",
+      "secours-etablissement-mesures",
     ]);
   });
 
@@ -259,9 +270,14 @@ describe("la mesure du lot — ce que reçoit un établissement sans équipement
       ).sort(),
     ).toEqual([
       "aeration-controle-installations-r4222-20",
+      "formation-securite-etablissement-information",
+      "formation-securite-etablissement-organisation",
       "incendie-registre-securite",
       "incendie-travail-consigne-affichee",
       "incendie-travail-exercice-semestriel",
+      "sante-travail-etablissement-liste-postes-risques",
+      "secours-etablissement-materiel",
+      "secours-etablissement-mesures",
     ]);
   });
 });

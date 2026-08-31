@@ -962,7 +962,21 @@ describe("référentiel conformité — version et empreinte", () => {
   // 84 depuis le 2026-08-27 : 85 au départ, +2 obligations portées par
   // l'établissement (PE 4 § 2, R. 4222-20), −3 fragments de ces mêmes
   // articles qu'elles absorbent (ADR-022).
-  const EMPREINTE_ATTENDUE = "85-a1ecbc416487d453";
+  // 98 depuis le 2026-08-31 : +13 au lot 7, les trois premiers domaines qui ne
+  // naissent d'aucun équipement. Formation à la sécurité (3, dont la première
+  // ligne de catalogue due à TOUS les salariés), conduite d'équipements (2),
+  // santé au travail (5, dont VIP et SIR), premiers secours (3). Le compte
+  // saute de treize d'un coup parce que le dépouillement de quatre textes a été
+  // livré en un lot, pas parce qu'un article a été découpé en morceaux : chaque
+  // obligation cite un article distinct ou un alinéa distinct, et le corpus le
+  // montre article par article.
+  //
+  // L'empreinte ci-dessous n'est celle d'AUCUN des deux lots pris seul. Le lot
+  // « faux négatifs d'ancrage » a fait passer trois obligations du porteur
+  // équipement au porteur établissement, et `porteurDe(o)` entre dans
+  // l'empreinte : elle bouge donc sans que le COMPTE bouge. 98 est bien
+  // 85 + 13 ; le hachage, lui, porte les deux lots.
+  const EMPREINTE_ATTENDUE = "98-1b84fc5dd1d94f1";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1080,7 +1094,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(85);
+    ).toBe(98);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1322,6 +1336,63 @@ const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
     "Contraste à garder en tête : l'habilitation elle-même n'a AUCUN chiffre " +
     "— R. 4544-10 renvoie aux modalités des normes, que R. 4544-3 qualifie de " +
     "recommandées — et c'est pourquoi elle est passée à `autre` (ADR-023 § 6).",
+
+  // ---------------------------------------------------------------------------
+  // Lot 7 — les cinq périodicités chiffrées du dépouillement du 2026-08-31.
+  //
+  // Treize obligations sont entrées, cinq seulement portent un chiffre. Les
+  // huit autres sont à `autre`, et c'est le résultat du dépouillement, pas une
+  // paresse : le chapitre R. 4141-* ne chiffre RIEN, R. 4323-55 dit
+  // « réactualisée chaque fois que nécessaire », et aucun des trois articles de
+  // la section secours ne porte de durée. Le « recyclage SST tous les
+  // vingt-quatre mois » vient du dispositif INRS/CNAM et le « recyclage CACES à
+  // cinq ans » des recommandations de l'assurance maladie — ni l'un ni l'autre
+  // n'est du droit, et ni l'un ni l'autre n'est encodé.
+  //
+  // ⚠ TROIS DES CINQ SONT DES PLAFONDS, PAS DES RYTHMES, et c'est la nuance à
+  // ne pas perdre. R. 4624-16 et R. 4624-28 écrivent « qui ne peut excéder » et
+  // « qui ne peut être supérieure à » : le médecin du travail fixe le délai
+  // réel, plus court. Le chiffre encodé est la borne extérieure — la date
+  // au-delà de laquelle l'employeur est nécessairement en défaut. Ce n'est
+  // défendable que parce que `TitreSalarie.echeanceLe`, déclaré par
+  // l'employeur, prime sur tout calcul : un dirigeant dont le médecin a fixé
+  // trois ans saisit trois ans. Sans cette échappatoire, il aurait fallu
+  // passer à `autre` et ne rien dire du tout.
+  // ---------------------------------------------------------------------------
+  "sante-travail-salarie-vip":
+    "R. 4624-16 porte le chiffre : « Le travailleur bénéficie d'un " +
+    "renouvellement de la visite d'information et de prévention initiale […] " +
+    "selon une périodicité **qui ne peut excéder cinq ans**. » Relu à la " +
+    "source le 2026-08-31, version en vigueur du 2017-01-01. PLAFOND : la " +
+    "phrase suivante ajoute que « ce délai […] est fixé par le médecin du " +
+    "travail dans le cadre du protocole mentionné à l'article L. 4624-1 ».",
+  "sante-travail-salarie-sir":
+    "R. 4624-28 porte le chiffre : renouvellement « effectuée par le médecin " +
+    "du travail selon une périodicité qu'il détermine et **qui ne peut être " +
+    "supérieure à quatre ans** ». Relu à la source le 2026-08-31, version en " +
+    "vigueur du 2017-01-01. PLAFOND, comme la VIP.",
+  "sante-travail-salarie-sir-visite-intermediaire":
+    "R. 4624-28, seconde phrase : « Une visite intermédiaire est effectuée " +
+    "par un professionnel de santé mentionné au premier alinéa de l'article " +
+    "L. 4624-1 **au plus tard deux ans** après la visite avec le médecin du " +
+    "travail. » Relu à la source le 2026-08-31. PLAFOND, et son point de " +
+    "départ est la visite du MÉDECIN, non la précédente visite intermédiaire " +
+    "— nuance que `Periodicite` n'exprime pas.",
+  "sante-travail-etablissement-liste-postes-risques":
+    "R. 4624-23, III porte le chiffre, et c'est la seule périodicité FERME du " +
+    "lot 7 : la liste des postes à risques particuliers « est transmise au " +
+    "service de prévention et de santé au travail, tenue à disposition […] et " +
+    "**mise à jour tous les ans** ». Relu à la source le 2026-08-31, version " +
+    "en vigueur du 2026-04-10 (décret n° 2026-253 du 8 avril 2026) — l'article " +
+    "le plus récemment modifié de tout le référentiel.",
+  "conduite-salarie-attestation-medicale":
+    "R. 4323-56 porte le chiffre, dans les mêmes termes que R. 4544-11-1 et " +
+    "par le même décret : « Cette attestation, **d'une validité de cinq ans**, " +
+    "est délivrée par le médecin du travail à l'issue d'un examen médical " +
+    "qu'il réalise. » Relu à la source le 2026-08-31, version en vigueur du " +
+    "2025-10-01 (décret n° 2025-355 du 18 avril 2025). Contraste à garder en " +
+    "tête, exactement comme en électricité : l'autorisation de conduite " +
+    "elle-même n'a AUCUNE durée écrite, et elle est passée à `autre`.",
 };
 
 describe("référentiel conformité — d'où vient le chiffre", () => {

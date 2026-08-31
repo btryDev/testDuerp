@@ -579,6 +579,19 @@ enum Realisateur {
   exploitant
   fabricant
   bureau_controle
+  // Le médecin du travail. `R. 4624-28` lui réserve le renouvellement du suivi
+  // individuel renforcé, et `R. 4323-56` la délivrance de l'attestation
+  // d'absence de contre-indication à la conduite. Aucune valeur ne le disait :
+  // le repli était `exploitant`, qui annonce au dirigeant qu'il réalise
+  // lui-même un acte qu'il lui est interdit de réaliser (lot 7).
+  medecin_travail
+  // « L'un des professionnels de santé mentionnés au premier alinéa de
+  // l'article L. 4624-1 » — médecin du travail, collaborateur médecin, interne,
+  // infirmier de santé au travail. C'est la formule de `R. 4624-10` (visite
+  // d'information et de prévention) et de la visite intermédiaire du SIR, là où
+  // le renouvellement du SIR exige le médecin. Les confondre resserrerait la
+  // VIP au-delà de ce que le Code impose (lot 7).
+  professionnel_sante_travail
 }
 
 model RapportVerification {
@@ -771,6 +784,14 @@ enum DomainePrestataire {
   entretien_general
   travaux_btp
   nettoyage
+  // Les deux domaines de prestataire du lot 7. Les trois domaines d'obligation
+  // qu'il ajoute — formation à la sécurité, santé au travail, premiers secours
+  // — n'appellent aucun vérificateur d'équipement, et `DOMAINES_PRESTATAIRE_ATTENDUS`
+  // exige une contrepartie NON VIDE pour chaque domaine d'obligation. `autre`
+  // aurait compilé, et aurait rétabli le silence que ce Record existe pour
+  // corriger (cf. le précédent `froid`).
+  organisme_formation
+  service_sante_travail
   autre
 }
 

@@ -139,18 +139,41 @@ describe("construireChezVous — trous honnêtes", () => {
     expect(r.aucunEquipement).toBe(true);
     expect(r.categoriesSansObligation).toEqual([]);
 
-    // Le domaine apparaît, et il apparaît SANS équipement rattaché : c'est
-    // ce couple qui distingue « vous n'avez rien déclaré » de « rien ne vous
-    // incombe ».
+    // Les domaines apparaissent, et ils apparaissent SANS équipement
+    // rattaché : c'est ce couple qui distingue « vous n'avez rien déclaré » de
+    // « rien ne vous incombe ».
     //
-    // `incendie` a rejoint `aeration` le 2026-08-31, lot « faux négatifs
-    // d'ancrage » : la tenue du registre de sécurité était accrochée à un
-    // EXTINCTEUR ou une ALARME_INCENDIE déclarés, alors que L. 4711-1 et
-    // L. 4711-2 l'imposent à tout employeur et R. 143-44 à tout ERP, sans
-    // condition d'équipement. Ce test disait donc encore, pour l'incendie,
-    // exactement ce que son propre commentaire reproche : « rien ne vous
-    // incombe » à quelqu'un à qui quelque chose incombe.
-    expect(r.domaines.map((d) => d.domaine)).toEqual(["incendie", "aeration"]);
+    // CINQ domaines, et le chiffre est le produit de DEUX lots du 2026-08-31
+    // qui se sont ignorés jusqu'à leur assemblage. Chacun avait écrit, dans ce
+    // test, que l'écart « mesure exactement ce que ce lot a livré » — et
+    // chacun avait tort de la même façon, en prenant sa propre liste pour la
+    // liste complète. C'est le défaut que ce test existe pour attraper, et il
+    // se l'est appliqué à lui-même deux fois.
+    //
+    // Ce qu'un bureau sans le moindre appareil déclaré doit réellement :
+    //
+    //  - `aeration` — contrôle des installations d'aération (R. 4222-20),
+    //    depuis le 2026-08-27 ;
+    //  - `incendie` — tenue du registre de sécurité, lot « faux négatifs
+    //    d'ancrage » : elle était accrochée à un EXTINCTEUR ou une
+    //    ALARME_INCENDIE déclarés, alors que L. 4711-1 et L. 4711-2 l'imposent
+    //    à tout employeur et R. 143-44 à tout ERP, sans condition
+    //    d'équipement ;
+    //  - `formation_securite`, `sante_travail`, `secours` — lot 7 : formation
+    //    à la sécurité, information sur l'accès au DUERP, matériel et
+    //    organisation des premiers secours, liste des postes à risques.
+    //
+    // Aucune de ces obligations ne dépend d'un équipement, et aucune n'était
+    // visible avant. Le test figeait un faux négatif, puis un deuxième plus
+    // large ; la leçon commune est qu'une liste courte se prend facilement
+    // pour une liste complète.
+    expect(r.domaines.map((d) => d.domaine).sort()).toEqual([
+      "aeration",
+      "formation_securite",
+      "incendie",
+      "sante_travail",
+      "secours",
+    ]);
     for (const d of r.domaines) {
       expect(d.equipements, d.domaine).toEqual([]);
       expect(d.raisons.join(" "), d.domaine).toContain(

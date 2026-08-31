@@ -32,6 +32,8 @@ export const DOMAINES_PRESTATAIRE = [
   "entretien_general",
   "travaux_btp",
   "nettoyage",
+  "organisme_formation",
+  "service_sante_travail",
   "autre",
 ] as const satisfies readonly DomainePrestataire[];
 
@@ -51,6 +53,8 @@ export const LABEL_DOMAINE: Record<DomainePrestataire, string> = {
   entretien_general: "Entretien général",
   travaux_btp: "Travaux BTP",
   nettoyage: "Nettoyage",
+  organisme_formation: "Organisme de formation",
+  service_sante_travail: "Service de prévention et de santé au travail",
   autre: "Autre",
 };
 
