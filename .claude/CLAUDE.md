@@ -82,8 +82,13 @@ Sources primaires libres d'accès uniquement :
 ### Référentiel de conformité (vérifications)
 Livré : **116 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
-**82 d'entre elles sont déclenchées par un équipement déclaré, vingt et une sont portées
-par l'établissement, treize par un salarié.**
+**79 d'entre elles sont déclenchées par un équipement déclaré, vingt-quatre sont portées
+par l'établissement, treize par un salarié.** La répartition a changé deux fois le
+2026-08-31 : les trois lots ont ajouté trente et une obligations, et le lot « faux
+négatifs d'ancrage » a fait passer trois obligations existantes de l'équipement à
+l'établissement — le registre de sécurité, les exercices d'évacuation et les consignes
+incendie étaient accrochés à un extincteur ou une alarme déclarés, alors qu'aucun texte
+ne les y conditionne.
 
 Les obligations d'établissement s'appliquent **même si aucun équipement n'est
 déclaré**, et produisent **une seule ligne** chacune, jamais une par installation
@@ -133,7 +138,7 @@ Rojer couvre les obligations de **santé-sécurité au travail et de sécurité 
 — Code du travail, CCH, et Code de l'environnement quand il porte sur la sécurité des
 installations ou des personnes. Une obligation y naît de cinq déclencheurs possibles :
 
-1. **Équipement déclaré** — 82 obligations livrées
+1. **Équipement déclaré** — 79 obligations livrées
 2. **Statut d'employeur** — dès un salarié. **15 obligations livrées au lot 7**
    (2026-08-31) : formation à la sécurité, information et accès au DUERP, VIP, suivi
    individuel renforcé et sa visite intermédiaire, liste des postes à risques, matériel
