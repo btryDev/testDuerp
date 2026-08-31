@@ -387,6 +387,14 @@ describe("référentiel conformité — anti-doublon", () => {
     // ── Vraies distinctions que le test ne sait pas voir ────────────────
     {
       paire: [
+        "prevention-etablissement-salarie-designe",
+        "formation-securite-salarie-designe-competent",
+      ],
+      raison:
+        "Instruit le 2026-08-31, ce n'est PAS un doublon. `L. 4644-1` I porte deux actes dans deux alinéas successifs : l'alinéa 1 impose de DÉSIGNER un ou plusieurs salariés compétents — acte de l'employeur, porteur établissement, dû même sans aucun équipement déclaré —, l'alinéa 2 fait bénéficier la personne ainsi désignée d'une FORMATION en matière de santé au travail — titre nominatif, porteur salarié, qui n'existe qu'une fois quelqu'un déclaré. Un employeur peut avoir désigné sans avoir formé, et c'est le cas ordinaire ; les fondre aurait laissé cocher « fait » pour une désignation sur un papier. Le test ne compare que la clé d'article et ne sait pas distinguer deux alinéas.",
+    },
+    {
+      paire: [
         "aeration-controle-installations-r4222-20",
         "stockage-dangereux-ventilation-locaux",
       ],
@@ -987,11 +995,37 @@ describe("référentiel conformité — version et empreinte", () => {
   // `REFERENTIEL_VERSION` n'est délibérément pas incrémentée ici : le lot 7, le
   // palier 1 et le lot 8 ont posé la même valeur chacun de leur côté, et c'est
   // la session d'intégration qui la tranche pour les trois.
-  // Troisième déplacement du 2026-08-31, et le seul qui touche une obligation
-  // ANTÉRIEURE au lot : `elec-salarie-attestation-medicale-voisinage` passe de
-  // `realisateurs: ["exploitant"]` à `["medecin_travail"]`. Le réalisateur
-  // entre dans l'empreinte, le compte ne bouge pas.
-  const EMPREINTE_ATTENDUE = "100-32a2f742135e2f24";
+  
+  // +16 au lot 8 (2026-08-31), qui n'annonce PAS le total : deux autres lots
+  // touchent ce compte le même jour, et chacun ne connaît que son propre
+  // apport. Ce que celui-ci ajoute, et rien d'autre : organisation de la
+  // prévention (3 — salarié désigné, CSE, règlement intérieur), information
+  // des travailleurs (2 — affichages de D. 4711-1, avis d'accès au DUERP),
+  // locaux sociaux (4 — sanitaires, eau potable, et les deux régimes de
+  // restauration qui se partagent le seuil de cinquante), co-activité (1 —
+  // protocole de sécurité de chargement), santé au travail (2 — adhésion au
+  // service, fiche d'entreprise) et formation à la sécurité (3 — manutention,
+  // travail sur écran, formation santé-sécurité du CSE, et formation en santé
+  // au travail du salarié désigné compétent). Quatre domaines entrent avec lui.
+  // La seizième est arrivée après coup : la relecture des trois articles du
+  // renvoi de L. 4644-1 a montré que la formation du salarié désigné et celle
+  // du membre du CSE sont deux actes sous un même régime, et non un seul.
+  // L'empreinte bouge deux fois sans que le compte change, et les deux fois
+  // parce qu'une contre-vérification a corrigé une ligne de ce lot :
+  //
+  //  1. le réalisateur de `sante-travail-etablissement-fiche-entreprise` passe
+  //     de `professionnel_sante_travail` à `equipe_pluridisciplinaire`, la
+  //     valeur que le lot 7 a ajoutée à l'enum après que ce lot eut signalé
+  //     qu'aucune valeur existante ne disait ce que R. 4624-46 confie à
+  //     l'équipe ;
+  //  2. le libellé de `sante-travail-etablissement-adhesion-spst` cessait de
+  //     dire « adhésion » là où L. 4622-1 écrit « organisent » — l'adhésion à un
+  //     service interentreprises est une modalité, pas l'obligation.
+  //
+  // Réalisateur et libellé entrent tous deux dans l'empreinte parce qu'ils
+  // s'affichent au calendrier et décident de ce que le dirigeant croit devoir
+  // faire — c'est exactement ce qu'on veut voir bouger.
+  const EMPREINTE_ATTENDUE = "116-d041e452c8f2e49a";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1109,7 +1143,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(100);
+    ).toBe(116);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1430,6 +1464,42 @@ const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
     "source le 2026-08-31, version en vigueur du 2018-07-01 (décret " +
     "n° 2018-437 du 4 juin 2018). Ni « au plus », ni « qui ne peut excéder » : " +
     "c'est un rythme, pas une borne.",
+  // ---------------------------------------------------------------------------
+  // Lot 8 — une seule périodicité chiffrée sur seize obligations.
+  //
+  // Et elle a failli ne pas y être. Le premier passage de ce lot a rendu quinze
+  // obligations toutes à `autre`, en affirmant qu'aucun des textes lus n'écrivait
+  // de durée. C'était faux, et le défaut venait d'un dépouillement incomplet :
+  // `L. 4644-1` renvoie aux articles `L. 2315-16` À `L. 2315-18`, et seul le
+  // dernier avait été ouvert. `L. 2315-17` porte le renouvellement.
+  //
+  // L'erreur inverse de celle que ce fichier surveille d'habitude : non pas
+  // afficher un chiffre que le droit ne donne pas, mais taire un chiffre que le
+  // droit donne. Une échéance absente est moins visible qu'une échéance fausse,
+  // et pas moins fautive.
+  // ---------------------------------------------------------------------------
+  "formation-securite-salarie-cse-sst":
+    "L. 2315-17 porte le chiffre : « Ces formations sont renouvelées lorsque " +
+    "les représentants ont exercé leur mandat pendant **quatre ans**, " +
+    "consécutifs ou non. » Relu à la source le 2026-08-31, version en vigueur " +
+    "du 2026-05-28 — le deuxième texte le plus récent du référentiel après " +
+    "R. 4225-2. " +
+    "⚠ CE N'EST NI UN RYTHME NI UN PLAFOND, mais une BORNE INTÉRIEURE, et " +
+    "c'est un troisième cas de figure après les deux du lot 7 : les quatre ans " +
+    "comptent du MANDAT EXERCÉ, « consécutifs ou non », et non du temps " +
+    "calendaire depuis la formation. Un élu qui siège deux ans, s'interrompt " +
+    "trois, puis siège deux ans encore les atteint au bout de sept années " +
+    "civiles. Le produit ne modélise aucun mandat : l'échéance calculée est " +
+    "juste pour un mandat continu — le cas ordinaire — et arrive EN AVANCE " +
+    "pour un mandat interrompu. C'est le sens d'erreur que ce dépôt préfère " +
+    "explicitement, une sur-application visible et corrigeable valant mieux " +
+    "qu'un faux négatif muet ; les plafonds du lot 7 se trompent dans l'autre " +
+    "sens et peuvent annoncer « à jour » à tort. `TitreSalarie.echeanceLe`, " +
+    "déclaré par l'employeur, prime de toute façon sur le calcul. " +
+    "Contraste à garder en tête : `formation-securite-salarie-designe-competent` " +
+    "cite le MÊME article et porte `autre`, parce que la condition est écrite " +
+    "pour des « représentants » exerçant un « mandat » — ce qu'un salarié " +
+    "DÉSIGNÉ (R. 4644-1) n'est ni ne fait.",
 };
 
 describe("référentiel conformité — d'où vient le chiffre", () => {

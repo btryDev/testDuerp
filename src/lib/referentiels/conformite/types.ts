@@ -75,6 +75,71 @@ export const DOMAINES_OBLIGATION = [
    * défaut qu'elle a corrigé.
    */
   "secours",
+
+  // Les quatre domaines qui suivent sont entrés avec le lot 8. Ils partagent le
+  // déclencheur des trois précédents — le statut d'employeur, pas un équipement
+  // — mais ils s'en distinguent sur un point : aucun d'eux n'appelle de tiers.
+  // Une formation se commande à un organisme, une visite médicale à un service ;
+  // un affichage, un règlement intérieur, un lavabo se font seul. C'est pourquoi
+  // ils sont les premiers à porter `aucun_tiers_attendu` dans
+  // `DOMAINES_PRESTATAIRE_ATTENDUS`.
+
+  /**
+   * Organisation de la prévention — `L. 4644-1`, `L. 2311-2`, `L. 1321-1`.
+   *
+   * Qui s'occupe de la prévention, et sous quelles instances. Le salarié
+   * désigné compétent, le comité social et économique, le règlement intérieur.
+   *
+   * Ce n'est pas de la formation : c'est l'organisation qui la précède. Ranger
+   * le salarié désigné sous `formation_securite` parce que le texte lui promet
+   * une formation aurait pris la conséquence pour l'obligation — `L. 4644-1`
+   * impose de DÉSIGNER quelqu'un, et il l'impose même à l'employeur dont le
+   * désigné est déjà formé.
+   */
+  "organisation_prevention",
+
+  /**
+   * Information des travailleurs — `D. 4711-1`, `R. 4121-4`.
+   *
+   * Ce que l'employeur doit porter à la connaissance de ses salariés, sous une
+   * forme que l'inspection peut constater sur place : les affichages
+   * obligatoires et l'avis sur les modalités d'accès au document unique.
+   *
+   * Distinct de `formation_securite`, où vit l'information ORALE et
+   * individuelle due à chaque salarié (`L. 4141-1`, `R. 4141-3-1`, encodée au
+   * lot 7). La différence n'est pas de nuance : l'une se prouve par un support
+   * affiché, l'autre par un entretien. Un employeur peut avoir fait la seconde
+   * sans la première, et c'est le cas ordinaire.
+   */
+  "information_travailleurs",
+
+  /**
+   * Locaux sociaux — `R. 4225-2`, `R. 4228-1` et s.
+   *
+   * Les installations que le Code impose au bénéfice des personnes plutôt
+   * qu'au titre d'une machine : vestiaires, lavabos, cabinets d'aisance, eau
+   * potable, local ou emplacement de restauration.
+   *
+   * Aucune ne naît d'un équipement déclaré, et aucune n'est un état de
+   * l'équipement : un lavabo n'est pas vérifié périodiquement, il est mis à
+   * disposition et maintenu. D'où un domaine à elles, et non un rangement sous
+   * `aeration` ou `incendie` au motif que ce sont « des locaux ».
+   */
+  "locaux_sociaux",
+
+  /**
+   * Co-activité — `R. 4515-1` et s.
+   *
+   * Ce qu'impose la présence d'une entreprise extérieure dans l'enceinte de
+   * l'établissement. Le protocole de sécurité de chargement ou de déchargement
+   * en est la seule entrée à ce jour.
+   *
+   * Le module `PlanPrevention` sert l'autre versant de la co-activité
+   * (`R. 4512-6` et s.) et n'est pas dans le référentiel d'obligations.
+   * `R. 4515-1` écarte expressément le plan de prévention pour les opérations
+   * de chargement : les deux ne se recouvrent pas, ils s'excluent.
+   */
+  "co_activite",
 ] as const;
 
 export type DomaineObligation = (typeof DOMAINES_OBLIGATION)[number];

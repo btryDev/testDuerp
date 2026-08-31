@@ -80,24 +80,48 @@ Sources primaires libres d'accès uniquement :
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **100 obligations sur 13 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **116 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
-**82 d'entre elles sont déclenchées par un équipement déclaré, sept sont portées par
-l'établissement, onze par un salarié.**
+**82 d'entre elles sont déclenchées par un équipement déclaré, vingt et une sont portées
+par l'établissement, treize par un salarié.**
 
-Les sept obligations d'établissement s'appliquent **même si aucun équipement n'est
+Les obligations d'établissement s'appliquent **même si aucun équipement n'est
 déclaré**, et produisent **une seule ligne** chacune, jamais une par installation
 (ADR-022) : `PE 4 § 2` (entretien triennal des installations techniques en ERP de
-5ᵉ catégorie), `R. 4222-20` (contrôle annuel des installations d'aération), et les cinq
+5ᵉ catégorie), `R. 4222-20` (contrôle annuel des installations d'aération), les cinq
 entrées du lot 7 — organiser la formation à la sécurité (`L. 4141-2`), informer les
 salariés et leur donner accès au DUERP (`R. 4141-3-1`), tenir à jour la liste des postes
 à risques particuliers (`R. 4624-23 III`, annuelle), équiper les lieux d'un matériel de
 premiers secours (`R. 4224-14`) et organiser par écrit les premiers secours
-(`R. 4224-16`).
+(`R. 4224-16`) — et les quatorze du lot 8 : désigner un salarié compétent
+(`L. 4644-1`), adhérer à un service de prévention et de santé au travail (`L. 4622-1`),
+recevoir la fiche d'entreprise (`R. 4624-46`), afficher les coordonnées du service de
+santé, des secours et de l'inspection (`D. 4711-1`), afficher l'avis d'accès au DUERP
+(`R. 4121-4`), mettre à disposition sanitaires (`R. 4228-1`) et eau potable
+(`R. 4225-2`), établir un protocole de sécurité de chargement (`R. 4515-4`), organiser
+la formation à la manutention (`R. 4541-8`) et au travail sur écran (`R. 4542-16`), plus
+quatre lignes qui dépendent d'un seuil d'effectif — CSE à 11 (`L. 2311-2`), règlement
+intérieur à 50 (`L. 1321-1`), et les deux régimes exclusifs de restauration qui se
+partagent le seuil de 50 (`R. 4228-22` et `R. 4228-23`).
 
-**Les trois derniers domaines ne naissent d'aucun équipement**, et c'est ce qui les
-distingue des dix premiers : leur déclencheur est le statut d'employeur. Un bureau sans
-le moindre appareil déclaré doit désormais sept obligations, contre une seule auparavant.
+**Aucune de ces quatorze n'a de périodicité** : les quatorze portent `autre`, et c'est le
+résultat du dépouillement, pas une commodité. Les chiffres que leurs textes portent sont
+des seuils d'effectif, des délais d'entrée en obligation (douze mois) et des durées de
+stage — aucun n'est un rythme. **Une seule des seize obligations du lot 8 est chiffrée**,
+et elle est portée par un salarié : la formation santé-sécurité du membre du CSE, que
+`L. 2315-17` renouvelle « lorsque les représentants ont exercé leur mandat pendant quatre
+ans, consécutifs ou non ». Ce n'est ni un rythme ni un plafond mais une **borne
+intérieure** — un troisième cas de figure après ceux du lot 7 —, et le produit ne
+modélisant aucun mandat, l'échéance calculée arrive en avance pour un mandat interrompu.
+Le sens d'erreur est délibéré.
+
+**Les sept derniers domaines ne naissent d'aucun équipement**, et c'est ce qui les
+distingue des dix premiers : leur déclencheur est le statut d'employeur, l'effectif ou
+la co-activité. Un bureau de six personnes sans le moindre appareil déclaré doit
+désormais **dix-sept obligations** — une seule avant le 2026-08-31, six après le lot 7,
+dix-sept après le lot 8. À douze salariés il en doit dix-huit (le CSE s'ajoute), à
+cinquante-cinq dix-neuf (le règlement intérieur s'ajoute, et le local de restauration
+remplace l'emplacement).
 
 Le type `Obligation` est une union discriminée sur `porteur` : catégorie d'équipement
 requise et non vide d'un côté, interdite de l'autre. Le compte faisant foi est le préfixe
@@ -110,13 +134,24 @@ Rojer couvre les obligations de **santé-sécurité au travail et de sécurité 
 installations ou des personnes. Une obligation y naît de cinq déclencheurs possibles :
 
 1. **Équipement déclaré** — 82 obligations livrées
-2. **Statut d'employeur** — dès un salarié : formation à la sécurité, affichages SST,
-   suivi médical. **15 obligations livrées au lot 7** (2026-08-31) : formation à la
-   sécurité, information et accès au DUERP, VIP, suivi individuel renforcé et sa visite
-   intermédiaire, liste des postes à risques, matériel et organisation des premiers
-   secours, secouriste, conduite d'équipements. Restent non couverts les affichages
-   obligatoires (`D. 4711-1`) et la fiche d'entreprise (`R. 4624-46`)
-3. **Effectif** — seuils 11, 25, 50
+2. **Statut d'employeur** — dès un salarié. **15 obligations livrées au lot 7**
+   (2026-08-31) : formation à la sécurité, information et accès au DUERP, VIP, suivi
+   individuel renforcé et sa visite intermédiaire, liste des postes à risques, matériel
+   et organisation des premiers secours, secouriste, conduite d'équipements. **11 de
+   plus au lot 8** le même jour : salarié désigné compétent, adhésion au service de
+   prévention et de santé au travail, fiche d'entreprise, affichages obligatoires
+   (`D. 4711-1`), avis d'accès au DUERP (`R. 4121-4`), sanitaires, eau potable,
+   protocole de sécurité de chargement, formation à la manutention, formation au travail
+   sur écran, et l'emplacement de restauration
+3. **Effectif** — seuils 11, 25, 50. **4 obligations livrées au lot 8** (2026-08-31),
+   les premières à s'appuyer sur `TypologieApplication.effectifMin` hors du domaine
+   incendie : CSE à 11, règlement intérieur à 50, et les deux régimes de restauration.
+   Le mécanisme existait depuis l'ADR-004 ; il n'a pas fallu de déclencheur
+   « événement » pour l'employer. Ce que le produit ne sait pas faire, et qui est écrit
+   dans chaque `notesInternes` : `L. 2311-2` et `L. 1311-2` datent l'obligation par une
+   durée de douze mois à compter du franchissement, et le modèle n'historise pas
+   l'effectif. La ligne apparaît au franchissement constaté — en avance sur l'échéance
+   légale, jamais en retard
 4. **Typologie et caractéristiques du bâtiment** — ERP, locaux à sommeil, année du permis
 5. **Activité réellement exercée** — un fait de tâche, ni statut ni équipement : habilitation électrique, conduite d'engins, travail en hauteur
 
@@ -145,13 +180,32 @@ sont **pas dérivées** par le moteur. Rien ne dit qu'une personne opère sur de
 électriques — ce serait le cinquième déclencheur, non implémenté —, donc l'employeur déclare
 qui détient quel titre (`Salarie`, `TitreSalarie`), et le référentiel fournit le catalogue.
 
-**Onze obligations salarié sont livrées** depuis le lot 7 (2026-08-31) — le catalogue n'en
+**Treize obligations salarié sont livrées** depuis les lots 7 et 8 (2026-08-31) — le catalogue n'en
 comptait qu'une jusque-là, l'attestation médicale quinquennale de `R. 4544-11-1` :
 formation à la sécurité reçue (`R. 4141-20`, due à TOUS les salariés), formation à la
 conduite et autorisation de conduite (`R. 4323-55`, `R. 4323-56`), attestation médicale de
 conduite (`R. 4323-56`, quinquennale), secouriste SST (`R. 4224-15`), VIP (`R. 4624-16`,
 quinquennale), suivi individuel renforcé (`R. 4624-28`, quadriennale) et sa visite
-intermédiaire (biennale).
+intermédiaire (biennale) ; le lot 8 y ajoute **deux** titres, et le fait qu'ils soient
+deux est le point le plus fin de ce lot. La formation santé-sécurité du **membre du CSE**
+(`L. 2315-18`, `quadriennale` par `L. 2315-17`) et la formation en santé au travail du
+**salarié désigné compétent** (`L. 4644-1` I al. 2, `autre`) relèvent du même régime et ne
+sont pas le même acte : `L. 4644-1` renvoie « dans les CONDITIONS prévues » aux articles
+`L. 2315-16` à `L. 2315-18`, et le renouvellement de `L. 2315-17` est écrit pour des
+« représentants » ayant « exercé leur mandat » — ce qu'un salarié désigné, désigné et non
+élu (`R. 4644-1`), n'est ni ne fait. Le même renvoi produit donc deux périodicités.
+La première est due dès onze salariés, la seconde dès le premier.
+
+Le lot 8 ajoute six corpus, tous `articles_cites` et tous disant dans leur `portee` ce
+qu'ils laissent non lu : `code-travail-organisation-prevention` (8 articles),
+`code-travail-information-travailleurs` (2), `code-travail-locaux-sociaux` (5),
+`code-travail-co-activite` (9, dont un non dépouillé), `code-travail-service-prevention-sante`
+(4) et `code-travail-manutention-ecran` (2). Il complète aussi `code-travail-sante-travail`
+avec `R. 4624-46` et `-47` (fiche d'entreprise). **Deux références du brief se sont
+révélées fausses à la lecture** et sont corrigées : le protocole de sécurité de
+chargement ne se fonde pas sur l'arrêté du 26 avril 1996 mais sur `R. 4515-4` et
+suivants, qui l'ont codifié en 2008 ; et le règlement intérieur n'entre dans le périmètre
+santé-sécurité que par `L. 1321-1` 1°, `L. 1311-2` ne portant que le seuil.
 
 **Deux dérogations de périodicité, à ne pas oublier en étendant le suivi médical** : la VIP
 tombe à **trois ans au plus** pour le travailleur handicapé, celui qui déclare une pension

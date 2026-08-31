@@ -28,6 +28,10 @@ import { obligationsFroid } from "./froid";
 import { obligationsFormationSecurite } from "./formation-securite";
 import { obligationsSanteTravail } from "./sante-travail";
 import { obligationsSecours } from "./secours";
+import { obligationsOrganisationPrevention } from "./organisation-prevention";
+import { obligationsInformationTravailleurs } from "./information-travailleurs";
+import { obligationsLocauxSociaux } from "./locaux-sociaux";
+import { obligationsCoActivite } from "./co-activite";
 
 export {
   obligationsElectricite,
@@ -43,6 +47,10 @@ export {
   obligationsFormationSecurite,
   obligationsSanteTravail,
   obligationsSecours,
+  obligationsOrganisationPrevention,
+  obligationsInformationTravailleurs,
+  obligationsLocauxSociaux,
+  obligationsCoActivite,
 };
 export * from "./types";
 export * from "./veille-textes";
@@ -62,6 +70,12 @@ export const obligationsConformite: Obligation[] = [
   ...obligationsFormationSecurite,
   ...obligationsSanteTravail,
   ...obligationsSecours,
+  // Lot 8 — le socle de l'employeur : ce qui est dû dès le premier salarié,
+  // sans équipement, et ce que l'effectif ajoute aux seuils 11 et 50.
+  ...obligationsOrganisationPrevention,
+  ...obligationsInformationTravailleurs,
+  ...obligationsLocauxSociaux,
+  ...obligationsCoActivite,
 ];
 
 /**
@@ -83,7 +97,7 @@ export const obligationsConformite: Obligation[] = [
  * `conformite.test.ts` compare une empreinte du contenu à celle enregistrée :
  * l'oubli fait échouer la suite.
  */
-export const REFERENTIEL_VERSION = "2026-08-31.1";
+export const REFERENTIEL_VERSION = "2026-08-31.2";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.

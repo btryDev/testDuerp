@@ -56,6 +56,23 @@ export type StatutArticle =
    * renvoi, règle ponctuelle sans récurrence. À distinguer absolument de
    * `hors_perimetre` — celui-ci dit « ça nous concerne mais il n'y a rien à
    * inscrire au calendrier », l'autre dit « ça ne nous concerne pas ».
+   *
+   * **Une référence écartée après lecture se consigne, au même titre qu'une
+   * référence retenue.** C'est l'usage le moins évident de ce statut et le plus
+   * utile : quand on ouvre un article réputé fonder une obligation et qu'on
+   * constate qu'il dit autre chose, l'entrée `sans_objet` qui le note est ce
+   * qui empêche le prochain lecteur de refaire le détour.
+   *
+   * Le cas qui l'établit, du 2026-08-31. `L. 4622-7` est couramment cité comme
+   * l'article de l'adhésion à un service de prévention et de santé au travail ;
+   * ouvert, il traite de la responsabilité des dirigeants du service. Le lot 8
+   * l'a consigné ici plutôt que de simplement ne pas le citer. Le même jour, un
+   * relecteur a soutenu l'inverse, la session de coordination l'a relayé sans
+   * ouvrir l'article, et le lot 7 a retiré une citation juste sur cette base :
+   * **trois sessions ont refait le détour que cette entrée existait pour
+   * épargner**, et c'est elle qui a permis de le rattraper. Une référence
+   * écartée sans trace se réexamine indéfiniment ; six lignes suffisent à
+   * clore la question.
    */
   | { statut: "sans_objet"; motif: string }
   /**

@@ -115,39 +115,50 @@ export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
   // commentaire ci-dessus interdit — le tiers a un nom réel dans les deux cas,
   // et il fallait le donner à l'enum plutôt que le taire.
   //
-  // ⚠ AUCUNE DES TROIS ENTRÉES N'EST ATTEINTE AUJOURD'HUI, et il faut le lire
+  // ⚠ DEUX DES TROIS ENTRÉES NE SONT PAS ENCORE ATTEINTES, et il faut le lire
   // avant de s'y fier. La première rédaction affirmait ici que le rapprochement
   // « sert justement à faire voir » qu'un dirigeant n'a déclaré aucun service de
-  // santé au travail. C'est faux, deux fois :
+  // santé au travail. C'était faux au lot 7, deux fois :
   //
-  //  1. les onze obligations salarié de ces domaines n'entrent jamais dans les
+  //  1. les obligations salarié de ces domaines n'entrent jamais dans les
   //     applicables — `matching/engine.ts` rend `null` pour tout porteur
   //     salarié, délibérément (ADR-023 : rien ne dit qui opère sur quoi) ;
-  //  2. les sept obligations d'établissement de ces domaines portent toutes
-  //     `realisateurs: ["exploitant"]`, donc `supposeUnTiers()` est faux — le
+  //  2. leurs obligations d'établissement portaient toutes
+  //     `realisateurs: ["exploitant"]`, donc `supposeUnTiers()` était faux — le
   //     Code confie ces actes à l'employeur, et c'est juste.
   //
-  // Ces entrées existent donc pour satisfaire le `Record` exhaustif et pour
-  // être prêtes le jour où une obligation de ces domaines appellera vraiment un
-  // tiers — la fiche d'entreprise de `R. 4624-46`, réalisée par le médecin du
-  // travail ou l'équipe pluridisciplinaire, en est le cas type.
+  // ⚠ `sante_travail` EST ATTEINT DEPUIS LE LOT 8, et c'est exactement le cas
+  // que la rédaction précédente annonçait comme futur : « la fiche d'entreprise
+  // de R. 4624-46, réalisée par le médecin du travail ou l'équipe
+  // pluridisciplinaire, en est le cas type ». Elle est encodée
+  // (`sante-travail-etablissement-fiche-entreprise`), portée par
+  // l'établissement, et ses réalisateurs sont tous des tiers — donc
+  // `supposeUnTiers()` est vrai et la règle se déclenche. L'affirmation qui
+  // était fausse est devenue vraie, et c'est le seul cas où il fallait la
+  // réécrire plutôt que la corriger.
   //
-  // Elles ne sont PAS `aucun_tiers_attendu` : le tiers existe et a un nom, il
-  // n'est simplement pas encore appelé par une obligation livrée. Confondre les
-  // deux ferait dire « le texte n'attend personne » là où il attend quelqu'un.
-  // `domaines.test.ts` fige cet état pour qu'il ne se perde pas.
+  // `formation_securite` et `secours` restent inatteints : leurs obligations
+  // d'établissement sont réalisées par l'exploitant, et leurs titres de salarié
+  // ne franchissent pas le moteur.
+  //
+  // Ces deux entrées ne sont PAS `aucun_tiers_attendu` : le tiers existe et a un
+  // nom, il n'est simplement pas encore appelé par une obligation livrée.
+  // Confondre les deux ferait dire « le texte n'attend personne » là où il
+  // attend quelqu'un. `domaines.test.ts` fige cet état pour qu'il ne se perde
+  // pas.
   formation_securite: ["organisme_formation"],
   // La VIP et le suivi individuel renforcé sont réalisés par les professionnels
   // de santé du service de prévention et de santé au travail (`R. 4624-10`,
-  // `R. 4624-28`).
-  //
-  // Et le service lui-même n'est pas facultatif : `L. 4622-1` — « Les employeurs
-  // relevant du présent titre ORGANISENT des services de prévention et de santé
-  // au travail » — met l'organisation d'un tel service à la charge de
-  // l'employeur. « Organisent », et non « adhèrent » : l'adhésion à un service
-  // interentreprises en est une modalité, régie par des textes que personne
-  // n'a dépouillés ici. L'obligation elle-même reste non encodée
-  // (`obligation_manquante` au corpus).
+  // `R. 4624-28`), mais ce sont des titres de salarié : ils ne franchissent pas
+  // le moteur. C'est la FICHE D'ENTREPRISE du lot 8 qui rend cette entrée
+  // vivante — portée par l'établissement, réalisée par le médecin du travail ou
+  // l'équipe pluridisciplinaire, donc par un tiers. Un dirigeant qui n'a déclaré
+  // aucun service de santé au travail à l'annuaire s'en voit désormais averti,
+  // et ce n'est pas qu'un trou de vigilance : `L. 4622-1` — « les employeurs ORGANISENT des
+  // services » — met cette organisation à la charge de l'employeur, encodée
+  // elle aussi au lot 8
+  // (`sante-travail-etablissement-adhesion-spst`). Le titre II du livre VI est
+  // dépouillé depuis, dans `code-travail-service-prevention-sante`.
   sante_travail: ["service_sante_travail"],
   // Le Code ne dit pas qui délivre la formation de secouriste de `R. 4224-15`.
   // Le domaine de prestataire attendu est donc l'organisme de formation, sans
@@ -155,6 +166,22 @@ export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
   // est un dispositif conventionnel, pas une exigence du Code, et l'écrire ici
   // ferait passer une pratique pour du droit.
   secours: ["organisme_formation"],
+  // Les quatre domaines du lot 8, et les quatre premiers à porter le marqueur.
+  // Ce n'est pas un défaut de vocabulaire : le Code confie chacune de ces
+  // obligations à l'employeur seul. Personne ne vend l'affichage de l'adresse
+  // de son inspecteur du travail, ni la désignation de son salarié compétent —
+  // `L. 4644-1` prévoit bien un recours extérieur, mais « à défaut », comme
+  // second choix, et l'obligation reste de désigner.
+  organisation_prevention: AUCUN_TIERS_ATTENDU,
+  information_travailleurs: AUCUN_TIERS_ATTENDU,
+  locaux_sociaux: AUCUN_TIERS_ATTENDU,
+  // Le protocole de sécurité a bien une seconde partie — le transporteur — mais
+  // ce n'est pas un prestataire de l'employeur d'accueil : `R. 4515-11` fait
+  // tenir un exemplaire du protocole aux chefs d'établissement « des entreprises
+  // d'accueil ET de transport », c'est-à-dire à deux co-signataires. Il n'entre
+  // donc pas à l'annuaire de vigilance, et le texte n'attend personne de ce
+  // côté-ci de l'échange.
+  co_activite: AUCUN_TIERS_ATTENDU,
 };
 
 /**

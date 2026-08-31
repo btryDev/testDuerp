@@ -148,12 +148,15 @@ describe("construireChezVous — trous honnêtes", () => {
     // que rien ne lui incombe. Cette phrase-là ne se périme pas.
     //
     // L'assertion précédente était une LISTE EXHAUSTIVE écrite à la main. Elle
-    // a cassé à chaque lot de couverture, et deux lots du 2026-08-31 l'ont
-    // réécrite chacun de son côté en affirmant, tous les deux, que l'écart
-    // « mesure exactement ce que ce lot a livré » : l'un annonçait quatre
-    // domaines, l'autre deux, la réponse était cinq. Un test dont la
-    // réparation consiste à recopier ce que le code rend cesse de mesurer
-    // quoi que ce soit — et celui-ci se réparait ainsi.
+    // a cassé à chaque lot de couverture, et les trois lots du 2026-08-31 l'ont
+    // réécrite chacun de son côté : deux d'entre eux ont affirmé, tous les
+    // deux, que l'écart « mesure exactement ce que ce lot a livré » — l'un
+    // annonçait quatre domaines, l'autre deux, la réponse était cinq. Le
+    // troisième, prévenu, a écrit ce que lui seul ajoutait et laissé le total
+    // à l'intégration. Un test dont la réparation consiste à recopier ce que
+    // le code rend cesse de mesurer quoi que ce soit — et celui-ci se réparait
+    // ainsi. Il ne nomme donc plus aucun domaine : ce que la liste garantissait
+    // vraiment est repris par les trois assertions qui suivent.
     expect(r.domaines.length).toBeGreaterThan(0);
 
     // Et il apparaît SANS équipement rattaché : c'est ce couple qui distingue
