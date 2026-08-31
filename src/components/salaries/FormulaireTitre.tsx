@@ -149,11 +149,11 @@ export function FormulaireTitre({
           />
           <p className="m-0 text-[12.5px] leading-[1.55] text-[color:var(--board-blue-ink)]">
             <strong>Ne déposez pas le document.</strong> Rojer enregistre
-            qu&apos;une attestation existe, sa date et son échéance —
-            rien d&apos;autre. Le motif médical, l&apos;avis du médecin et la
-            pièce elle-même ne vous sont pas destinés et n&apos;ont pas à
-            transiter ici. Vous conservez l&apos;original de votre côté,
-            comme aujourd&apos;hui.
+            qu&apos;une attestation ou une visite a eu lieu, sa date et son
+            échéance — rien d&apos;autre. Le motif médical, l&apos;avis
+            d&apos;aptitude et la pièce elle-même ne vous sont pas destinés et
+            n&apos;ont pas à transiter ici. Vous conservez l&apos;original de
+            votre côté, comme aujourd&apos;hui.
           </p>
         </div>
       )}
