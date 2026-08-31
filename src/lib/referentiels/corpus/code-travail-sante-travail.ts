@@ -41,8 +41,17 @@
 //
 // Les deux sont désormais encodés, chacun par sa propre ligne de catalogue.
 //
+// ⚠ ET LE I N'EST PAS UNE LISTE FERMÉE — le `II`, en vigueur depuis le
+// 10/04/2026, ajoute « tout poste pour lequel l'affectation sur celui-ci est
+// conditionnée à un examen d'aptitude spécifique prévu par le présent code ».
+// Les « sept expositions » ci-dessous désignent donc les sept alinéas du I, et
+// non l'assiette du suivi renforcé, qui est ouverte. Le paragraphe a été relevé
+// à la source le 2026-08-31 ; il figurait déjà dans la `reserve` de l'article,
+// et manquait à son `prescrit` — c'est-à-dire au champ qu'on lit pour savoir ce
+// que l'article dit.
+//
 // ⚠ AUCUN des textes propres aux sept expositions du `R. 4624-23 I` n'a été
-// ouvert. Une rédaction antérieure affirmait ici qu'« amiante (R. 4412-118) et
+// ouvert par CE corpus. Une rédaction antérieure affirmait ici qu'« amiante (R. 4412-118) et
 // plomb (R. 4412-160) renvoient aux articles R. 4624-22 à R. 4624-28 sans y
 // déroger », en se protégeant sur les cinq autres. Les deux assertions étaient
 // FAUSSES, et leur prudence de façade les rendait pires : elle donnait à croire
@@ -195,13 +204,13 @@ export const CODE_TRAVAIL_SANTE_TRAVAIL: Corpus = {
       luLe: "2026-08-31",
       lecture: "agent_verbatim",
       prescrit:
-        "Le I fixe la liste des expositions ouvrant un suivi individuel renforcé ; le III met à la charge de l'employeur une liste complémentaire de postes, motivée par écrit, transmise au service de prévention et de santé au travail et mise à jour tous les ans.",
+        "Le I fixe une liste de sept expositions ouvrant un suivi individuel renforcé. Le II ÉLARGIT cette assiette sans énumérer : « Présente également des risques particuliers tout poste pour lequel l'affectation sur celui-ci est conditionnée à un examen d'aptitude spécifique prévu par le présent code. » Le III met à la charge de l'employeur une liste complémentaire de postes, motivée par écrit, transmise au service de prévention et de santé au travail et mise à jour tous les ans. Le IV fait consulter le Conseil d'orientation des conditions de travail tous les trois ans sur la mise à jour de la liste du I — il ne s'adresse pas à l'employeur.",
       citationCle:
         "S'il le juge nécessaire, l'employeur complète la liste des postes entrant dans les catégories mentionnées au I. par des postes présentant des risques particuliers […] après avis du ou des médecins concernés et du comité social et économique s'il existe, en cohérence avec l'évaluation des risques prévue à l'article L. 4121-3 et, le cas échéant, la fiche d'entreprise prévue à l'article R. 4624-46. Cette liste est transmise au service de prévention et de santé au travail, tenue à disposition du directeur régional des entreprises, de la concurrence, de la consommation, du travail et de l'emploi et des services de prévention des organismes de sécurité sociale et mise à jour tous les ans. L'employeur motive par écrit l'inscription de tout poste sur cette liste.",
       statut: "retenu",
       obligations: ["sante-travail-etablissement-liste-postes-risques"],
       reserve:
-        "Le I — amiante, plomb, agents CMR, agents biologiques des groupes 3 et 4, rayonnements ionisants, risque hyperbare, chute de hauteur au montage d'échafaudages — n'est pas encodé comme déclencheur, et ne peut pas l'être : rien dans le modèle ne dit à quoi un salarié est exposé, et le déduire serait le cinquième déclencheur (activité réellement exercée), non implémenté. Le II — tout poste dont l'affectation est conditionnée à un examen d'aptitude spécifique prévu par le Code — reste également hors du calcul. Le IV, qui fait consulter le Conseil d'orientation des conditions de travail tous les trois ans sur la mise à jour de la liste du I, ne concerne pas l'employeur.",
+        "Le I — amiante, plomb, agents CMR, agents biologiques des groupes 3 et 4, rayonnements ionisants, risque hyperbare, chute de hauteur au montage d'échafaudages — n'est pas encodé comme déclencheur, et ne peut pas l'être : rien dans le modèle ne dit à quoi un salarié est exposé, et le déduire serait le cinquième déclencheur (activité réellement exercée), non implémenté. Le II — tout poste dont l'affectation est conditionnée à un examen d'aptitude spécifique prévu par le Code — reste également hors du calcul. Le IV, qui fait consulter le Conseil d'orientation des conditions de travail tous les trois ans sur la mise à jour de la liste du I, ne concerne pas l'employeur.\n\nAMENDEMENT 2026-08-31, SOIR — LE II EST DÉSORMAIS DANS `prescrit`, ET IL N'Y ÉTAIT PAS. La description disait « le I fixe la liste […] ; le III met à la charge de l'employeur », en sautant un paragraphe sur quatre de l'article qu'elle prétend décrire. La réserve ci-dessus le mentionnait — donc l'article avait bien été lu en entier — mais un lecteur qui s'arrête à `prescrit`, c'est-à-dire au champ fait pour ça, en repartait avec une liste fermée. Verbatim du II relevé une seconde fois à la source ce jour, version en vigueur au 10/04/2026, identique au premier relevé.\n\nPOURQUOI CE N'EST PAS UNE `obligation_manquante`, et c'est l'arbitrage que ce paragraphe demandait. Le II ne crée aucune obligation d'employeur : il dit ce qui compte comme poste à risques particuliers, donc il élargit l'ASSIETTE d'une liste que le III fait déjà tenir — et cette obligation-là est encodée (`sante-travail-etablissement-liste-postes-risques`). Le classer manquant ferait croire à un acte non porté alors que l'acte est porté et que c'est son périmètre qui bouge. Le comportement du produit ne change pas non plus : il ne dérive jamais qui relève du suivi renforcé, il demande à l'employeur de tenir la liste — le II lui donne une raison de plus d'y inscrire un poste, pas un geste de plus à faire.\n\nCE QUE LE II CHANGE MALGRÉ TOUT, et qui est la vraie raison de l'écrire : le déclencheur du I n'est PAS une liste fermée. Toute règle du Code qui subordonne une affectation à un examen d'aptitude spécifique verse le poste au suivi renforcé, sans figurer aux sept alinéas. Une lecture qui s'arrêterait au I conclurait à tort qu'un poste hors des sept est hors du suivi.",
     },
     {
       ref: "R. 4624-24",

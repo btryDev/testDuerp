@@ -343,6 +343,48 @@ Ce paragraphe n'a donc plus de point ouvert.
 
 ---
 
+## 7 bis. Dette de veille — le décret n° 2026-253 n'a jamais été dépouillé
+
+*Ajouté le 2026-08-31 au soir. Numéroté « 7 bis » plutôt qu'inséré en renumérotant :
+les renvois à ce document désignent des sections par leur numéro.*
+
+**Le décret n° 2026-253 du 8 avril 2026 a touché au moins deux articles du
+référentiel, et personne n'a lu la liste de ce qu'il modifie.**
+
+Les deux occurrences connues, l'une et l'autre découvertes **séparément et par
+accident**, à deux moments différents du 2026-08-31 :
+
+| Article | Ce que le décret en a fait | Comment on l'a su |
+|---|---|---|
+| `R. 4624-23` | **réécrit**, version en vigueur au 10/04/2026 — c'est cette réécriture qui porte le `II` élargissant l'assiette du suivi renforcé | en relisant l'article pour encoder la liste des postes à risques |
+| `R. 4412-160` | **abrogé** (art. 3), effet au 10/04/2026 | en vérifiant une affirmation du corpus santé-travail qui le citait vivant |
+
+Le second cas est le plus parlant : le même commentaire de
+`corpus/code-travail-sante-travail.ts` **citait le décret** pour la réécriture de
+`R. 4624-23` et **citait `R. 4412-160` comme en vigueur**. L'article avait été vu
+mourir et cité vivant dans le même paragraphe, parce que personne n'avait fait le
+lien entre les deux mentions du même texte.
+
+**Ce qui n'est pas su.** Le décret n'a pas été ouvert article par article, et sa
+notice n'a pas été lue. S'il a modifié ou abrogé d'autres articles que le
+référentiel cite, rien ne le signale aujourd'hui — ni la veille
+(`veille-textes.ts` ne porte que des textes à application **différée**, celui-ci
+est en vigueur depuis avril), ni le corpus, qui contrôle la version d'un article
+lu mais ne remonte pas d'un texte modificateur vers les articles qu'il touche.
+
+**Ce que ce serait de le solder** : ouvrir le décret, relever sa liste de
+modifications, et croiser avec les `article` du référentiel. C'est un lot de
+veille, pas un effet de bord d'un lot d'encodage — ce qui est précisément
+pourquoi il est écrit ici plutôt que fait en passant.
+
+**Et la question qui le dépasse** : ce décret n'est probablement pas le seul.
+Le mécanisme qui manque est le sens inverse de `versionConstatee` — celui-ci
+détecte qu'un article qu'on cite a bougé, il ne détecte pas qu'un texte qu'on ne
+cite pas a bougé nos articles. Les deux occurrences ci-dessus ont été trouvées à
+la main.
+
+---
+
 ## 8. Ce qui n'est PAS de la dette
 
 Pour que la liste ci-dessus garde son sens, il faut dire ce qui n'y est pas.
