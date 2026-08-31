@@ -296,6 +296,18 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // la journée à corriger ailleurs. Ce qu'il en a coûté de ne pas l'ouvrir :
       // deux tours de revue et une correction proposée qui était fausse.
       "L. 4622-1",
+      // R. 4624-28-2 : l'employeur informe son service de santé au travail de
+      // la cessation d'exposition, du départ ou de la mise à la retraite d'un
+      // salarié en suivi individuel renforcé, et en avise l'intéressé sans
+      // délai. Obligation d'employeur pleine, non portée — événementielle, et
+      // le produit ne détient aucune date de sortie.
+      //
+      // Trouvée par un balayage des renvois d'intervalle : le corpus écrivait
+      // « R. 4624-22 à R. 4624-28 » en n'ayant ouvert que 22, 23, 24 et 28,
+      // alors que la sous-section court jusqu'à R. 4624-28-3. Un intervalle
+      // cité n'est pas un intervalle lu — c'est le même défaut que la phrase
+      // sur l'amiante et le plomb, corrigée le même jour.
+      "R. 4624-28-2",
     ]);
   });
 

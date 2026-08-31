@@ -40,12 +40,26 @@
 //    lieu d'un, et une échéance intermédiaire que le droit exclut.
 //
 // Les deux sont désormais encodés, chacun par sa propre ligne de catalogue.
-// Restent NON OUVERTS les textes propres aux cinq autres expositions du
-// `R. 4624-23 I` — agents CMR, agents biologiques des groupes 3 et 4, risque
-// hyperbare, chute de hauteur au montage d'échafaudages, et le radon au-delà de
-// ce que R. 4451-82 en dit. Amiante (`R. 4412-118`) et plomb (`R. 4412-160`)
-// renvoient aux articles R. 4624-22 à R. 4624-28 sans y déroger. Ne pas
-// conclure des cinq autres qu'ils ne dérogent pas : personne ne les a lus.
+//
+// ⚠ AUCUN des textes propres aux sept expositions du `R. 4624-23 I` n'a été
+// ouvert. Une rédaction antérieure affirmait ici qu'« amiante (R. 4412-118) et
+// plomb (R. 4412-160) renvoient aux articles R. 4624-22 à R. 4624-28 sans y
+// déroger », en se protégeant sur les cinq autres. Les deux assertions étaient
+// FAUSSES, et leur prudence de façade les rendait pires : elle donnait à croire
+// que ces deux-là avaient été lus.
+//
+//  * `R. 4412-160` est ABROGÉ — par le décret n° 2026-253 du 8 avril 2026,
+//    art. 3, avec effet au 10/04/2026. C'est le décret que ce fichier cite
+//    lui-même dans sa `portee` pour la réécriture de `R. 4624-23` : l'article
+//    avait été vu mourir et cité vivant dans le même commentaire ;
+//  * `R. 4412-118` porte l'ORGANISATION DES VACATIONS en travaux amiante —
+//    temps d'habillage, de décontamination, de pause, avec renvoi à
+//    `L. 3121-16` et `L. 3121-17`. Rien sur le suivi individuel renforcé.
+//
+// Les deux ont été relevés à la source le 2026-08-31, après coup. La faute
+// d'origine est nommée parce qu'elle se reproduit facilement : ces deux
+// articles n'avaient été vus qu'en résumé de moteur de recherche, et « vérifié »
+// avait été écrit sans que la page ait été ouverte.
 //
 // Lecture : `agent_verbatim`, relevés sur Légifrance le 2026-08-31.
 
@@ -58,7 +72,7 @@ export const CODE_TRAVAIL_SANTE_TRAVAIL: Corpus = {
   url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018493140/",
   etendue: "articles_cites",
   portee:
-    "Un article du titre II du livre VI — `L. 4622-1`, qui met à la charge de l'employeur l'organisation d'un service de prévention et de santé au travail, socle de tout ce qui suit et seul article de ce titre à avoir été lu. Puis des extraits de la section 2 du chapitre IV : visite d'information et de prévention, sa périodicité et ses modalités adaptées (R. 4624-10, R. 4624-16 à R. 4624-18), suivi individuel renforcé — champ, liste des postes à risques particuliers, examen d'aptitude et périodicité (R. 4624-22 à R. 4624-24, R. 4624-28). S'y ajoute R. 4451-82, hors de cette section : il déroge à la périodicité du suivi renforcé pour les travailleurs exposés aux rayonnements ionisants classés en catégorie A, et il n'a de sens que lu avec R. 4624-28. ATTENTION : R. 4624-23 a été réécrit au 10 avril 2026 par le décret n° 2026-253 du 8 avril 2026 — c'est l'article le plus récemment modifié de tout le référentiel.",
+    "Un article du titre II du livre VI — `L. 4622-1`, qui met à la charge de l'employeur l'organisation d'un service de prévention et de santé au travail, socle de tout ce qui suit et seul article de ce titre à avoir été lu. Puis des extraits de la section 2 du chapitre IV : visite d'information et de prévention, sa périodicité et ses modalités adaptées (R. 4624-10, R. 4624-16 à R. 4624-18), suivi individuel renforcé — champ, liste des postes à risques particuliers, examen d'aptitude et périodicité (R. 4624-22 à R. 4624-24, R. 4624-27, R. 4624-28), et les trois articles de la surveillance post-exposition qui prolongent la sous-section jusqu'à R. 4624-28-3. S'y ajoute R. 4451-82, hors de cette section : il déroge à la périodicité du suivi renforcé pour les travailleurs exposés aux rayonnements ionisants classés en catégorie A, et il n'a de sens que lu avec R. 4624-28. ATTENTION : R. 4624-23 a été réécrit au 10 avril 2026 par le décret n° 2026-253 du 8 avril 2026 — c'est l'article le plus récemment modifié de tout le référentiel.",
   articles: [
     {
       ref: "L. 4622-1",
@@ -204,6 +218,61 @@ export const CODE_TRAVAIL_SANTE_TRAVAIL: Corpus = {
       obligations: ["sante-travail-salarie-sir"],
       reserve:
         "Les cinq finalités énumérées par l'article — vérifier l'aptitude au poste, rechercher une affection dangereuse pour les autres, proposer des adaptations, informer et sensibiliser le travailleur — décrivent le contenu médical de l'examen. Rien n'en est encodé, et rien ne doit l'être : c'est exactement ce que `docs/rgpd.md` § 2.3 exclut du produit. Le référentiel retient de cet article qu'un examen est dû avant l'affectation, et qu'il se substitue à la VIP.",
+    },
+    {
+      ref: "R. 4624-27",
+      intitule:
+        "Dispense d'examen d'aptitude — visite dans les deux ans précédant l'embauche",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033769096",
+      versionEnVigueur: "2017-01-01",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "L'examen d'aptitude préalable n'est pas requis lorsque le travailleur en a bénéficié dans les deux ans précédant son embauche, sous trois conditions cumulatives : emploi identique présentant des risques d'exposition équivalents, dernier avis d'aptitude en possession du médecin du travail, et aucune mesure de L. 4624-3 ni avis d'inaptitude de L. 4624-4 dans les deux ans.",
+      citationCle:
+        "Lorsque le travailleur a bénéficié d'une visite médicale d'aptitude dans les deux ans précédant son embauche, l'organisation d'un nouvel examen médical d'aptitude n'est pas requise dès lors que l'ensemble des conditions suivantes sont réunies",
+      statut: "retenu",
+      obligations: ["sante-travail-salarie-sir"],
+      reserve:
+        "La dispense n'est pas calculée, et c'est un FAUX POSITIF assumé : l'obligation fait naître l'examen préalable sans jamais dire que le droit en dispense sous condition. Les trois conditions supposent des faits que l'outil ne détient pas — la nature de l'emploi précédent, ce que le médecin du travail a en sa possession, et l'historique des avis d'aptitude, qui est précisément ce que `docs/rgpd.md` § 2.3 lui interdit de connaître. La dispense est rappelée dans la description de l'obligation ; elle ne s'applique jamais toute seule.\n\nCet article a été trouvé par un balayage des renvois d'intervalle : le corpus écrivait « R. 4624-22 à R. 4624-28 » en n'ayant ouvert que 22, 23, 24 et 28. Un intervalle cité n'est pas un intervalle lu.",
+    },
+    {
+      ref: "R. 4624-28-1",
+      intitule:
+        "Visite de fin de carrière — catégories de travailleurs concernées",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043927893",
+      versionEnVigueur: "2022-03-31",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "La visite médicale de L. 4624-2-1 est organisée pour les travailleurs bénéficiant ou ayant bénéficié d'un suivi individuel renforcé, et pour ceux qui ont été exposés aux risques du I de R. 4624-23 avant la mise en œuvre de ce dispositif.",
+      citationCle:
+        "La visite médicale prévue à l'article L. 4624-2-1 est organisée pour les catégories de travailleurs suivantes : 1° Les travailleurs bénéficiant ou ayant bénéficié d'un suivi individuel renforcé de leur état de santé prévu à l'article L. 4624-2 ; 2° Les travailleurs ayant été exposés à un ou plusieurs des risques mentionnés au I de l'article R. 4624-23 antérieurement à la mise en œuvre du dispositif de suivi individuel renforcé.",
+      statut: "sans_objet",
+      motif:
+        "L'article désigne les bénéficiaires d'une visite que le service de prévention et de santé au travail organise ; il ne met aucun acte à la charge de l'employeur, dont l'obligation est portée par R. 4624-28-2. Il se lit comme la définition du champ de cette obligation-là, et non comme une obligation propre.",
+    },
+    {
+      ref: "R. 4624-28-2",
+      intitule:
+        "Information du service de santé au travail à la cessation d'exposition ou au départ",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043927913",
+      versionEnVigueur: "2022-04-28",
+      luLe: "2026-08-31",
+      lecture: "agent_verbatim",
+      prescrit:
+        "L'employeur informe son service de prévention et de santé au travail, dès qu'il en a connaissance, de la cessation d'exposition d'un travailleur à des risques particuliers, de son départ ou de sa mise à la retraite ; il en avise le travailleur sans délai.",
+      citationCle:
+        "Pour l'organisation de la visite prévue à l'article L. 4624-2-1, l'employeur informe son service de prévention et de santé au travail, dès qu'il en a connaissance, de la cessation de l'exposition d'un des travailleurs de l'entreprise à des risques particuliers pour sa santé ou sa sécurité justifiant un suivi individuel renforcé, de son départ ou de sa mise à la retraite. Il avise sans délai le travailleur concerné de la transmission de cette information.",
+      statut: "obligation_manquante",
+      motif:
+        "Obligation d'employeur pleine et entière, et le référentiel ne la porte pas : informer le service de santé au travail à la cessation d'exposition, au départ ou à la mise à la retraite d'un salarié en suivi individuel renforcé, puis en aviser sans délai l'intéressé. Elle prolonge exactement les obligations que ce lot encode — elle vise les mêmes salariés, ceux du SIR — et elle intervient au moment où l'outil cesse de les suivre.",
+      bloquePar:
+        "Obligation ÉVÉNEMENTIELLE : son fait générateur est un départ, une mise à la retraite ou une fin d'exposition. Le modèle n'a pas de déclencheur « événement » (ADR-022, axe nommé sans mécanisme), et le produit ne détient aucune date de sortie — `Salarie` porte un drapeau `actif`, pas un motif ni une date de départ. Le second alinéa ouvre en outre au travailleur un délai de six mois après la cessation d'exposition pour demander la visite lui-même, délai que rien ne pourrait décompter ici.",
+    },
+    {
+      ref: "R. 4624-28-3",
+      statut: "non_depouille",
     },
     {
       ref: "R. 4624-28",
