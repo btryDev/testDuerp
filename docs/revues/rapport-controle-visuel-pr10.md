@@ -406,6 +406,61 @@ refermer d'abord.
 
 Captures : `p12-02-repliee.png`, `p12-03-ouverte.png`, `p12-04-depliee.png`.
 
+### a-ter. Vérification du correctif du point 8 (`62086bf`) — il produit bien quelque chose
+
+Le correctif retire le partitionnement `priorite <= 5` des deux widgets. Vérifié
+des deux côtés, parce qu'aucun des deux ne suffit seul.
+
+**Sur le dossier chargé — aucune régression.** La carte « Par où commencer »
+affiche toujours **« PAR OÙ COMMENCER — 2 SUR 27 »**, les deux mêmes urgences
+dans le même ordre (l'attestation de Léa Fontaine en 1, la vérification
+électrique annuelle en 2), et le même pied « 2 autres échéances sous 30 jours ».
+L'eyebrow, qui dépend de `extrait`, est intact. Aucune transmission — attendu :
+le `slice(0, 2)` demeure.
+
+**Sur le dossier sans vérification (`e9492ba5-…`) — les transmissions
+apparaissent.** C'est le seul contexte où le correctif est observable, et il
+donne le résultat visé. Le widget « À faire » (*« Les cinq plus urgentes —
+vérifications et actions mêlées »*) liste, **dans cet ordre** :
+
+1. « Ouvrez votre DUERP » — *L'évaluation des risques, guidée unité par unité*
+2. « **Aucun prestataire déclaré en aération / ventilation** »
+3. « **Aucun prestataire déclaré en cuisson et hotte** »
+4. « **Aucun prestataire déclaré en froid / fluides frigorigènes** »
+5. « **Aucun prestataire déclaré en portes et portails** »
+
+Chacune sous-titrée : *« Une de vos obligations suppose l'intervention d'un tiers
+qualifié »*. L'amorce passe devant, les transmissions suivent — c'est l'ordre
+annoncé. Et les quatre domaines nommés sont exactement ceux que le SQL désignait
+sur l'autre dossier : la règle voit juste.
+
+La formule tient le registre voulu : elle nomme un écart, elle ne juge pas. Ni
+« vous êtes en faute », ni « vous devez signer avec quelqu'un ».
+
+*Manipulation : `Entreprise.userId` a été basculé sur le second dossier le temps
+de la lecture (la contrainte `@unique` interdit de posséder les deux), puis les
+deux valeurs ont été remises à l'identique — vérifié en base.*
+
+**Reste l'arbitrage, qui n'est pas un défaut** : sur un dossier à 27 retards, une
+transmission est désormais *dans* la file, à sa place, et reste invisible parce
+que la carte n'en montre que deux. Ordonner ne rend pas visible. Faut-il réserver
+une place à une transmission quand il en existe une, au prix d'une urgence
+affichée sur deux ? C'est une question de produit.
+
+Captures : `p13-parou.png`, `p14-01-vide-tdb.png`.
+
+### a-quater. Un avertissement React sur le calendrier d'un dossier sans échéance
+
+Console, sur `/etablissements/<dossier sans vérification>/calendrier` :
+
+> `Each child in a list should have a unique "key" prop.`
+> `Check the render method of` **`BarreAnnee`**`. It was passed a child from` **`CalendrierPage`**`.`
+
+Reproduit à chaque chargement. Absent du calendrier du dossier chargé — il ne se
+déclenche que quand la barre d'années n'a rien à rendre. Sans effet visible
+aujourd'hui ; c'est le genre d'avertissement qui devient un bug de
+réconciliation le jour où la liste devient dynamique.
+
 ### b. Le message de validation d'e-mail de Supabase remonte brut, en anglais
 
 Sur `/signup`, une adresse refusée par Supabase affiche le message du fournisseur
@@ -431,6 +486,56 @@ jamais recompté.
 En 2024 sous « Titres du personnel », basculer sur « Vérifications périodiques »
 ramène l'écran à 2026 sans le dire. L'année choisie est perdue au changement de
 famille.
+
+### e. « Préparer un contrôle » : trois signaux, trois axes, aucune légende
+
+Sur l'écran qu'on ouvre devant un inspecteur, chaque pièce du dossier porte
+**trois indications qui ne disent pas la même chose**, et rien n'explique la
+troisième.
+
+| # | Pièce | Badge | Colonne de droite |
+|---|---|---|---|
+| 01 | Dossier de conformité consolidé | `À jour` (vert) | **✓** |
+| 02 | DUERP versionné — « Aucune version figée » | `À planifier` (gris) | **○** |
+| 03 | Registre de sécurité — « **0 rapport de vérification archivé** » | `En retard` (rouge) | **✓** |
+| 04 | Plan d'actions correctives | `À jour` (vert) | **✓** |
+| 05 | Registre d'accessibilité ERP — « Registre non publié » | `À planifier` (gris) | **○** |
+| 06 | Attestations prestataires — « 2 attestations expirées » | `En retard` (rouge) | **✓** |
+
+L'anneau, lui, annonce **33 % prêt** — soit les deux seules pièces « À jour » sur
+six.
+
+La colonne de droite compte donc autre chose que le badge : très probablement
+« cette pièce part dans le ZIP », ce qui explique qu'une pièce en retard mais
+existante soit cochée. C'est défendable. Mais **cette colonne n'a ni en-tête, ni
+légende, ni `aria-label`** — je n'ai pu en déduire le sens que par recoupement.
+Résultat à l'œil, sur la ligne 03 : un **✓** vert-noir à droite d'un badge rouge
+« En retard » et de la phrase « 0 rapport de vérification archivé ».
+
+Sur cet écran-là, où l'on cherche à savoir si l'on peut ouvrir le dossier devant
+un tiers, un ✓ non légendé en face d'un « En retard » est le signal qu'il ne
+faudrait pas envoyer.
+
+Capture : `x-controle-haut.png`.
+
+### f. Les autres écrans non listés : rien à signaler
+
+Six écrans que la fiche ne demandait pas ont été ouverts sur le dossier chargé —
+**Préparer un contrôle**, **guide « Comprendre »**, **DUERP**, **plan
+d'actions**, **prescriptions**, **fiche d'un équipement** — et les quatorze
+écrans du dossier sans vérification. Tous répondent 200, aucun écran cassé,
+aucune erreur console hormis celle du §a-quater, et les neuf pastilles
+réglementaires de ces écrans s'ouvrent sur du contenu.
+
+Deux points relevés à la lecture, tous deux **justes** :
+
+- La pastille `§ ART. R. 4323-25 CT` cite « … consigné sur le ou les registres de
+  sécurité mentionnés à l'article **L. 4711-5** ». C'est le texte réel de
+  R. 4323-25, et non une reprise de la thèse écartée par le projet selon laquelle
+  L. 4711-5 fonderait le registre : l'article cité y renvoie, c'est tout.
+- Sous la citation de L. 8222-1, une ligne distingue ce que l'article dit de ce
+  qu'il ne dit pas : « Le montant plancher — 5 000 € HT — et le rythme semestriel
+  ne sont pas dans cet article : ils viennent de R. 8222-1 et D. 8222-5. »
 
 ### Et ce qui m'a paru juste
 
