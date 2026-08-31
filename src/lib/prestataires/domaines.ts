@@ -185,6 +185,54 @@ export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
 };
 
 /**
+ * Les domaines où l'existence même du tiers est une obligation, et ce qu'il
+ * faut alors dire au dirigeant.
+ *
+ * ## Pourquoi cette table existe
+ *
+ * Une seule règle a longtemps servi tous les domaines : « aucun intervenant
+ * déclaré en X — une de vos obligations suppose un tiers qualifié ». Elle allait
+ * de soi sur dix domaines techniques, où l'on CHOISIT un organisme, où l'on peut
+ * en changer, et où le message dit en substance « inscrivez celui que vous
+ * avez ». Le cas le plus probable y est d'ailleurs une saisie manquante, jamais
+ * un manquement.
+ *
+ * `sante_travail` l'a fait sortir de son assiette. L'organisation d'un service
+ * de prévention et de santé au travail n'est pas une relation qu'on peut ne pas
+ * avoir : elle est due (`L. 4622-1` — « Les employeurs relevant du présent titre
+ * organisent des services de prévention et de santé au travail »).
+ *
+ * Le jugement rendu à l'écran, et qu'un raisonnement n'avait pas suffi à
+ * établir : la phrase unique règle le cas fréquent — celui qui a déjà un service
+ * et ne l'a pas saisi — mais elle est écrite POUR LUI. Pour celui qui n'a pas
+ * adhéré, c'est-à-dire le seul cas où le produit pourrait éviter un manquement
+ * réel, « aucun intervenant déclaré » se lit comme un trou de saisie.
+ *
+ * Les deux règles ne constatent donc pas la même chose : le domaine technique
+ * constate une **saisie manquante**, celui-ci constate une **obligation
+ * peut-être non remplie**. Ce n'est pas une différence de vocabulaire.
+ *
+ * ## Pourquoi une table plutôt qu'un drapeau
+ *
+ * La phrase doit nommer ce qui est dû, et cela ne se dérive d'aucun champ : un
+ * booléen aurait obligé à fabriquer un libellé générique — « le tiers de ce
+ * domaine est obligatoire » — que personne n'écrirait à un dirigeant. Une entrée
+ * aujourd'hui ; chacune est écrite par quelqu'un qui a lu le texte qu'elle cite.
+ */
+export const TIERS_LUI_MEME_OBLIGATOIRE: Partial<
+  Record<DomaineObligation, { titre: string; sousTitre: string }>
+> = {
+  sante_travail: {
+    titre: "Aucun service de prévention et de santé au travail déclaré",
+    // Les deux moitiés comptent : ce qui est dû, puis l'issue la plus probable.
+    // Sans la seconde, la phrase accuse ; sans la première, elle ramène une
+    // obligation légale à un oubli de saisie.
+    sousTitre:
+      "Tout employeur doit en organiser un (L. 4622-1) — si vous adhérez déjà à un service, il reste à l'inscrire",
+  },
+};
+
+/**
  * Les réalisateurs qui supposent un tiers déclaré à l'annuaire.
  *
  * `exploitant` en est exclu, et c'est le point : une obligation que

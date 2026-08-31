@@ -227,11 +227,23 @@ export function matchTypologie(
     return { ok: false };
   }
   if (t.effectifMin !== undefined || t.effectifMax !== undefined) {
-    raisons.push(
-      `effectif sur site ${etab.effectifSurSite} dans la plage [${
-        t.effectifMin ?? "—"
-      } ; ${t.effectifMax ?? "—"}]`,
-    );
+    // Cette raison est LUE PAR UN DIRIGEANT : le guide « Comprendre » l'affiche
+    // sous « pourquoi chez vous ». Elle s'écrivait en notation d'intervalle —
+    // « effectif sur site 6 dans la plage [— ; 49] » —, une notation de
+    // développeur, avec un tiret cadratin pour dire « pas de borne ». Personne
+    // hors de ce dépôt ne lit ça.
+    //
+    // Trois formes plutôt qu'une, parce que le seuil qui compte n'est pas le
+    // même selon les bornes déclarées, et qu'une seule tournure aurait forcé à
+    // nommer une borne absente.
+    const n = etab.effectifSurSite;
+    const seuil =
+      t.effectifMin !== undefined && t.effectifMax !== undefined
+        ? `de ${t.effectifMin} à ${t.effectifMax} salariés`
+        : t.effectifMin !== undefined
+          ? `à partir de ${t.effectifMin} salarié${t.effectifMin > 1 ? "s" : ""}`
+          : `jusqu'à ${t.effectifMax} salariés`;
+    raisons.push(`effectif sur site ${n} — obligation applicable ${seuil}`);
   }
 
   // 3 bis. Personnes présentes (salariés + public) et champ R. 4227-34.

@@ -59,6 +59,8 @@ import {
   estVerificationEnRetard,
 } from "@/lib/dates/retard";
 import { ageEnMois, type EtatDuerp } from "./duerp";
+import { TIERS_LUI_MEME_OBLIGATOIRE } from "@/lib/prestataires/domaines";
+import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 
 /** Fenêtre « ça arrive » pour une vérification déjà planifiée. Plus courte
  *  que l'horizon proche du produit (30 j) : la file de travail du board dit
@@ -78,6 +80,7 @@ export type Recommandation = {
     | "amorce_duerp"
     | "amorce_rapport"
     | "transmission_prestataire"
+    | "transmission_tiers_obligatoire"
     | "transmission_salarie";
   /**
    * L'identité de la recommandation — sa clé de rendu, et rien d'autre.
@@ -379,15 +382,31 @@ export function genererRecommandations(
   //       a un et ne l'a pas saisi » — le cas le plus probable — de « il n'en a
   //       pas ». Le lien mène toujours à l'annuaire, dont c'est le nom.
   for (const d of e.transmissions.domainesSansPrestataire) {
-    acc.push({
-      kind: "transmission_prestataire",
-      cle: `transmission-domaine:${d.domaine}`,
-      titre: `Aucun intervenant déclaré en ${d.libelle.toLowerCase()}`,
-      sousTitre:
-        "Une de vos obligations suppose un tiers qualifié — s'il intervient déjà chez vous, il reste à l'inscrire",
-      href: `/etablissements/${etab}/prestataires`,
-      priorite: 9,
-    });
+    const du = TIERS_LUI_MEME_OBLIGATOIRE[d.domaine as DomaineObligation];
+    acc.push(
+      du
+        ? {
+            kind: "transmission_tiers_obligatoire",
+            cle: `transmission-domaine:${d.domaine}`,
+            titre: du.titre,
+            sousTitre: du.sousTitre,
+            href: `/etablissements/${etab}/prestataires`,
+            // Un cran devant la transmission ordinaire : celle-ci peut
+            // signaler une obligation non remplie, l'autre une saisie
+            // manquante. Toujours derrière les retards constatés, qui sont
+            // des faits.
+            priorite: 8.5,
+          }
+        : {
+            kind: "transmission_prestataire",
+            cle: `transmission-domaine:${d.domaine}`,
+            titre: `Aucun intervenant déclaré en ${d.libelle.toLowerCase()}`,
+            sousTitre:
+              "Une de vos obligations suppose un tiers qualifié — s'il intervient déjà chez vous, il reste à l'inscrire",
+            href: `/etablissements/${etab}/prestataires`,
+            priorite: 9,
+          },
+    );
   }
   for (const o of e.transmissions.obligationsSupposantUnePersonne) {
     acc.push({

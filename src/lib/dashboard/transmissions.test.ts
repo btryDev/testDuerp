@@ -268,6 +268,57 @@ describe("règles 9-10 : une transmission ne passe jamais devant une urgence", (
     expect(sousTitre).toContain("titre nominatif");
   });
 
+  it("la santé au travail ne se lit pas comme un trou de saisie", () => {
+    // Une seule règle servait les onze domaines : « aucun intervenant déclaré
+    // en X — s'il intervient déjà chez vous, il reste à l'inscrire ». Juste
+    // pour dix domaines techniques, où l'on choisit un organisme et où le cas
+    // probable est bien une saisie manquante.
+    //
+    // Pour la santé au travail, elle ratait sa cible : organiser un service de
+    // prévention et de santé au travail n'est pas une relation qu'on peut ne
+    // pas avoir, elle est due (L. 4622-1). La phrase était écrite pour celui
+    // qui a déjà un service ; pour celui qui n'a pas adhéré — le seul cas où
+    // le produit pourrait éviter un manquement réel — elle se lisait comme un
+    // trou de saisie.
+    //
+    // Les deux règles ne constatent pas la même chose : l'une une saisie
+    // manquante, l'autre une obligation peut-être non remplie.
+    const e = base();
+    e.transmissions = {
+      domainesSansPrestataire: [
+        { domaine: "sante_travail", libelle: "Santé au travail" },
+      ],
+      obligationsSupposantUnePersonne: [],
+    };
+    const reco = genererRecommandations(e, { now: NOW }).find(
+      (r) => r.kind === "transmission_tiers_obligatoire",
+    );
+    expect(reco, "La règle du tiers obligatoire ne se déclenche plus").toBeDefined();
+    // Ce qui est dû, nommé et sourcé…
+    expect(reco!.sousTitre).toContain("L. 4622-1");
+    // …et l'issue la plus probable, qui retire le ton de reproche. Sans elle,
+    // la phrase accuse un dirigeant qui a très probablement un service.
+    expect(reco!.sousTitre).toContain("il reste à l'inscrire");
+    // Le titre ne se lit plus comme une case vide d'annuaire.
+    expect(reco!.titre).not.toContain("intervenant");
+  });
+
+  it("un domaine technique garde la règle de la saisie manquante", () => {
+    // Contre-épreuve : sans elle, faire basculer TOUS les domaines sur la
+    // formulation « obligation due » passerait le test précédent — et
+    // accuserait un restaurateur de ne pas avoir d'électricien.
+    const e = base();
+    e.transmissions = {
+      domainesSansPrestataire: [
+        { domaine: "electricite", libelle: "Électricité" },
+      ],
+      obligationsSupposantUnePersonne: [],
+    };
+    const kinds = genererRecommandations(e, { now: NOW }).map((r) => r.kind);
+    expect(kinds).toContain("transmission_prestataire");
+    expect(kinds).not.toContain("transmission_tiers_obligatoire");
+  });
+
   it("chaque recommandation a une clé qui lui est propre", () => {
     // Le défaut, et il est né de la correction qui a rendu les transmissions
     // visibles ensemble : `board.tsx` employait `href` comme clé React, ce qui
