@@ -93,7 +93,7 @@ export const obligationsSecours: Obligation[] = [
         reference:
           "R. 4224-16 (mesures prises après avis du médecin du travail, consignées dans un document tenu à disposition de l'inspection du travail)",
         article: "R. 4224-16",
-        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532201",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043128580",
         versionConstatee: "2021-02-13",
       },
     ],

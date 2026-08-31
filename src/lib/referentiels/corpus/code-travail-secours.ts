@@ -69,7 +69,7 @@ export const CODE_TRAVAIL_SECOURS: Corpus = {
     {
       ref: "R. 4224-16",
       intitule: "Mesures d'organisation des premiers secours",
-      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532201",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043128580",
       versionEnVigueur: "2021-02-13",
       luLe: "2026-08-31",
       lecture: "agent_verbatim",

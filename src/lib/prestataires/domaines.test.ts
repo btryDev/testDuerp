@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { obligationsConformite } from "@/lib/referentiels/conformite";
 import {
+  AUCUN_TIERS_ATTENDU,
   DOMAINES_PRESTATAIRE_ATTENDUS,
   domainesSansPrestataire,
   supposeUnTiers,
+  type PrestatairesAttendus,
 } from "./domaines";
 import { LABEL_DOMAINE as LABEL_PRESTATAIRE } from "./schema";
-import type { Obligation } from "@/lib/referentiels/conformite/types";
+import type {
+  DomaineObligation,
+  Obligation,
+} from "@/lib/referentiels/conformite/types";
 
 const obligation = (o: Partial<Obligation> = {}): Obligation =>
   ({
@@ -31,7 +36,13 @@ describe("correspondance domaine d'obligation → domaine de prestataire", () =>
     // référentiel sans contrepartie et personne ne l'a vu pendant des mois.
     for (const [domaine, attendus] of Object.entries(
       DOMAINES_PRESTATAIRE_ATTENDUS,
-    )) {
+    ) as [DomaineObligation, PrestatairesAttendus][]) {
+      // Le marqueur est une réponse, pas une absence de réponse : il dit que
+      // le texte ne renvoie à aucun tiers. Il n'a donc pas de libellé
+      // d'annuaire à vérifier — mais il reste soumis à la même exigence que
+      // le reste, ci-dessous : personne ne peut l'employer pour se dispenser
+      // de nommer un tiers qui existe.
+      if (attendus === AUCUN_TIERS_ATTENDU) continue;
       expect(attendus.length, domaine).toBeGreaterThan(0);
       for (const d of attendus) {
         expect(LABEL_PRESTATAIRE[d], `${domaine} → ${d}`).toBeTruthy();
@@ -48,6 +59,36 @@ describe("correspondance domaine d'obligation → domaine de prestataire", () =>
         `${o.id} (${o.domaine})`,
       ).toBeDefined();
     }
+  });
+
+  it("`aucun_tiers_attendu` ne couvre jamais une obligation qui appelle un tiers", () => {
+    // LA garde du marqueur, et sans elle il ne vaudrait rien.
+    //
+    // `aucun_tiers_attendu` dit « le texte ne renvoie à personne ». Employé sur
+    // un domaine dont une obligation exige en réalité un organisme agréé, il
+    // rétablirait exactement le silence de `froid: []` — en plus poli, donc en
+    // plus difficile à repérer : un tableau vide se remarque, un marqueur
+    // explicite a l'air d'une décision.
+    //
+    // L'invariant se lit sur le référentiel livré, pas sur des cas construits :
+    // un domaine marqué ne doit contenir AUCUNE obligation pour laquelle
+    // `supposeUnTiers()` est vrai. Le jour où quelqu'un ajoute au lot 8 une
+    // obligation à réalisateur tiers dans `information_travailleurs`, ce test
+    // tombe et le marqueur doit céder la place à une vraie valeur d'enum — au
+    // besoin nouvelle, avec sa migration.
+    const abus = obligationsConformite
+      .filter((o) => DOMAINES_PRESTATAIRE_ATTENDUS[o.domaine] === AUCUN_TIERS_ATTENDU)
+      .filter((o) => supposeUnTiers(o))
+      .map((o) => `${o.id} (${o.domaine}) → ${o.realisateurs.join(", ")}`);
+
+    expect(
+      abus,
+      "Ces obligations vivent dans un domaine déclaré `aucun_tiers_attendu` " +
+        "alors que tous leurs réalisateurs sont des tiers. Le marqueur affirme " +
+        "que le texte n'attend personne ; ici il attend quelqu'un. Donnez au " +
+        "domaine une vraie valeur `DomainePrestataire` — au besoin une nouvelle, " +
+        "avec sa migration — au lieu de masquer le manque.",
+    ).toEqual([]);
   });
 
   it("une obligation réalisée par l'exploitant n'appelle aucun prestataire", () => {
