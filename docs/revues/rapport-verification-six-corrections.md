@@ -11,7 +11,7 @@ rapport précédent : 3 `Verification`, 1 salarié, 1 titre.
 | 2 | Filtre par domaine figé sur trois valeurs | **corrigé** |
 | 3 | Le guide contredisait le produit | **corrigé, et au-delà** |
 | 4 | Valeurs d'illustration présentées comme réelles | **corrigé** |
-| 5 | « prestataire » pour une adhésion obligatoire | **amélioré — la moitié du cas reste** |
+| 5 | « prestataire » pour une adhésion obligatoire | **corrigé au second tour** (`68a92d7`) — cf. §B |
 | 6 | « aucun n'est déclaré » dans un dossier qui en porte un | **corrigé** |
 
 Et **un défaut neuf**, ouvert par la correction de ce matin : §A.
@@ -194,3 +194,79 @@ L'avertissement de clé manquante dans `BarreAnnee`, noté non résolu au rappor
 précédent, **n'apparaît plus** sur ce dossier. Je ne l'attribue à aucune
 correction : sa cause n'avait pas été trouvée, et son absence ici ne prouve pas
 sa disparition.
+
+
+---
+
+# Seconde passe — `68a92d7`
+
+Vérifiée sur le même dossier gelé.
+
+## A-bis. La collision de clés est levée, et elle était plus large
+
+**Console propre sur trois chargements du tableau de bord** : plus aucune erreur,
+ni la collision de clés, ni autre chose.
+
+La session principale signale que le défaut portait aussi sur les transmissions
+de **salarié**, qui pointaient toutes l'écran Équipe — cinq recommandations
+s'effondrant sur trois clés, là où j'en avais vu deux sur une. **Je n'en avais vu
+que la moitié**, et pour une raison qui vaut d'être notée : ce dossier ne porte
+qu'une seule obligation supposant un titre. La collision côté salarié n'était pas
+observable ici. Un défaut ne se voit que sur un dossier qui l'exerce.
+
+**La file n'a ni perdu ni gagné d'entrée** : cinq recommandations avant, cinq
+après. Quatre sont identiques, au mot près et dans le même ordre relatif. La
+cinquième — celle du service de santé au travail — a changé de libellé et est
+remontée d'un rang, ce qui est la conséquence voulue du §B : elle est devenue une
+règle distincte, avec sa propre priorité.
+
+## B. Deux règles au lieu d'une — le cas difficile est traité
+
+**Le domaine technique garde ce qu'il avait gagné :**
+
+> **Aucun intervenant déclaré en aération / ventilation**
+> *Une de vos obligations suppose un tiers qualifié — s'il intervient déjà chez
+> vous, il reste à l'inscrire*
+
+**Et la santé au travail a sa propre phrase :**
+
+> **Aucun service de prévention et de santé au travail déclaré**
+> *Tout employeur doit en organiser un (**L. 4622-1**) — si vous adhérez déjà à
+> un service, il reste à l'inscrire*
+
+**Jugé pour le cas qui compte** — un dirigeant de six personnes qui n'a adhéré à
+aucun service : **oui, il comprend que c'est dû.** « Tout employeur doit en
+organiser un » est une phrase d'obligation, pas de saisie ; l'article la fonde
+sans encombrer ; et la seconde moitié continue de servir celui qui a déjà un
+service sans l'avoir inscrit. Une phrase, deux situations, sans que l'une écrase
+l'autre. C'est ce que la formule unique ne parvenait pas à faire.
+
+**Une réserve de vocabulaire, mineure et à trancher côté produit.** Le verbe
+retenu est celui du texte — L. 4622-1 fait *organiser* un service — mais un
+employeur de six personnes n'organise pas un service : il **adhère** à un service
+interentreprises. Or « adhérer » n'apparaît que dans la clause conditionnelle,
+celle qui s'adresse à ceux qui l'ont déjà fait. Pour celui qui ne l'a pas fait —
+le destinataire du message —, le seul verbe affirmatif est « organiser », qui
+peut se lire comme « monter un service » et décourager là où il faudrait
+orienter. Le fond est juste, c'est l'action à entreprendre qui reste implicite.
+
+## C. La notation d'intervalle est corrigée
+
+`effectif sur site 6 dans la plage [— ; 49]` est devenu :
+
+> « effectif sur site 6 — **obligation applicable jusqu'à 49 salariés** »
+
+Borne haute seule, en français, sans notation mathématique. C'est la forme
+attendue pour ce dossier.
+
+## D. Ce qui reste ouvert, et qu'il ne faut pas croire réglé
+
+Le guide continue de compter les obligations par domaine **sans les nommer** —
+neuf domaines, 18 au total, toujours aucun libellé individuel. Vérifié à nouveau
+sur cette branche : `Vestiaires`, `Eau potable`, `Salarié désigné compétent` sont
+absents de la page.
+
+**La nouvelle surface du guide n'est pas le trou comblé.** Les seize obligations
+sans date restent nommées à un seul endroit du produit : le menu déroulant du
+formulaire de déclaration de prescription. C'est l'écran de checklist annoncé qui
+répondra à ce constat, pas celui-ci.
