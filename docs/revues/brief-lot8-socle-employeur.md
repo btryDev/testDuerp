@@ -36,8 +36,22 @@ inspecteur regarde en premier.
 | A3 | Fiche d'entreprise établie par le service | `R. 4624-46` |
 | A4 | Affichages obligatoires — inspection du travail, médecine du travail, secours | `D. 4711-1` |
 | A5 | Modalités d'accès au DUERP portées à la connaissance des salariés | `R. 4121-4` |
-| A6 | Consignes de premiers secours affichées | `R. 4224-16` |
+| A6 | Mesures d'organisation des premiers secours, **consignées dans un document** | `R. 4224-16` |
 | A7 | Vestiaires, sanitaires, lavabos ; eau potable à disposition | `R. 4228-1` et s., `R. 4225-2/3` |
+
+> **RECTIFIÉ le 2026-08-31.** Ce brief annonçait A6 comme « consignes de
+> premiers secours **affichées** ». Le texte n'écrit ni « consignes » ni
+> « affiche » : l'employeur *prend des mesures* après avis du médecin du
+> travail, et « ces mesures sont **consignées dans un document** tenu à la
+> disposition de l'agent de contrôle de l'inspection du travail ».
+>
+> C'est un document écrit, pas une affiche. L'affichage des secours existe, mais
+> il est dans `D. 4711-1` 2° — donc dans A4, où il est déjà couvert. Encodé
+> comme un affichage, A6 aurait fait **deux fois l'affichage et zéro fois le
+> document** : un faux positif et un faux négatif dans la même ligne.
+>
+> L'erreur vient de la carto (ligne A12), recopiée sans être recoupée sur le
+> texte. L'agent a ouvert Légifrance et l'a signalée avant d'encoder.
 
 ### B — L'activité et l'effectif (8)
 

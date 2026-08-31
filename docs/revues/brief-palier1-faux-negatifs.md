@@ -32,21 +32,25 @@ Tu es ce lot suivant.
 Si c'était trois champs à changer, il serait déjà fait. **Le vrai contenu est une
 relecture réglementaire**, et le rebranchement en est la conséquence.
 
-`R. 143-44` — l'article qui fonde le registre de sécurité en ERP — a été
-**réécrit au 1er juillet 2026** par le décret n° 2025-1100. La même note du code
-recense trois points non traités :
-
-1. la description encodée reprend la **version antérieure** et ignore le 5°
-   (dates des exercices de sécurité incendie) ainsi que le renvoi à `R. 141-10`
-   et `R. 141-11` ;
-2. `typologies` devrait gagner `erp: true` — `R. 143-44` fonde le registre en ERP
-   **par lui-même**, indépendamment de la qualité d'employeur ;
-3. `R. 146-35` (IGH) reste cité sans `igh: true` parce que l'IGH est hors
-   périmètre, non parce que la référence serait décorative.
-
-Rebrancher l'ancrage sans relire figerait une description périmée sur une
-obligation qu'on vient justement de rendre visible à beaucoup plus de monde.
-**Relire d'abord, rebrancher ensuite.**
+> **RECTIFIÉ le 2026-08-31, après vérification par l'agent qui a exécuté ce lot.**
+>
+> Ce paragraphe annonçait que la description de `R. 143-44` était périmée et
+> qu'il fallait la relire. **C'était faux.** La description porte déjà le 5° et
+> le renvoi à `R. 141-10`/`R. 141-11`, et la référence porte
+> `versionConstatee: "2026-07-01"`. Les points (1) et (2) avaient été réparés
+> avant ce lot ; c'est la **note** d'`incendie.ts` qui était restée périmée, pas
+> le contenu — et j'ai lu la note comme si elle décrivait le code.
+>
+> Seul le point (3) tenait : `R. 146-35` reste cité sans `igh: true`, l'IGH étant
+> hors périmètre.
+>
+> Ce que ça ne change pas : la relecture au verbatim reste le premier geste du
+> lot, et elle a servi — elle a confirmé « dans les établissements soumis aux
+> prescriptions du présent chapitre », c'est-à-dire tous les ERP, aucun
+> équipement nommé. C'est ce qui fonde le rebranchement.
+>
+> **Ce que ça enseigne** : une note qui annonce un travail à faire ne dit pas
+> qu'il reste à faire. Ouvrir le fichier, pas la note.
 
 ---
 
@@ -57,14 +61,19 @@ Vérifie chacune sur pièce : cette liste vient d'un document de travail
 lecture des textes. **Deux d'entre elles sont confirmées** par la note de
 `incendie.ts` ; les quatre autres sont à établir.
 
-| # | Obligation | Ancrage actuel présumé | Devrait être |
-|---|---|---|---|
-| 1 | Tenue du registre de sécurité | `EXTINCTEUR` / `ALARME_INCENDIE` | établissement, sans condition d'équipement |
-| 2 | Exercices d'évacuation semestriels | `ALARME_INCENDIE` | établissement |
-| 3 | Consignes de sécurité incendie | équipement | établissement |
-| 4 | Visites de la commission de sécurité | équipement | établissement, sous régime ERP |
-| 5 | Registre unique de sécurité | partiel | établissement |
-| 6 | Agents chimiques — notice de poste | équipement | à établir |
+| # | Obligation | Ancrage actuel présumé | Devrait être | Issue |
+|---|---|---|---|---|
+| 1 | Tenue du registre de sécurité | `EXTINCTEUR` / `ALARME_INCENDIE` | établissement, sans condition d'équipement | **rebranchée** |
+| 2 | Exercices d'évacuation semestriels | `ALARME_INCENDIE` | établissement | **rebranchée** |
+| 3 | Consignes de sécurité incendie | équipement | établissement | **rebranchée** |
+| 4 | Visites de la commission de sécurité | équipement | établissement, sous régime ERP | **refusée** — `PE 37` ne vise que les établissements comportant des locaux à sommeil pour le public. Rebrancher ferait naître une échéance chez chaque boutique de 5ᵉ catégorie. Demande un attribut d'établissement qu'on ne collecte pas |
+| 5 | Registre unique de sécurité | partiel | établissement | **refusée** — `L. 4711-5` dit « l'employeur **est autorisé à** réunir ces informations ». C'est une **faculté**, pas une obligation. La carto la qualifiait mal, ce brief l'a recopiée |
+| 6 | Agents chimiques — notice de poste | équipement | à établir | **refusée** — `R. 4412-38` se déclenche sur la présence d'agents chimiques : le cinquième déclencheur, non implémenté. Rebrancher imposerait la formation au risque chimique à un cabinet |
+
+*Colonne « issue » remplie le 2026-08-31, après exécution. Trois des six lignes de
+ce brief ne tenaient pas à la vérification — elles venaient d'un document de
+travail que je n'avais pas recoupé. L'agent a eu raison de les refuser, et c'est
+ce que le brief lui demandait de faire.*
 
 **Si une ligne ne tient pas à la vérification, dis-le et n'y touche pas.** Un
 rebranchement injustifié ferait naître des échéances qui ne sont pas dues —

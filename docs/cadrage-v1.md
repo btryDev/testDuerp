@@ -132,13 +132,33 @@ règlement intérieur à 50 (`L. 1311-2`).
 
 | Palier | Lignes | Nature du travail |
 |---|---|---|
-| 1 — faux négatifs | 6 | rebranchement + une relecture réglementaire |
-| 2 — socle employeur | 12 (dont 4 en cours) | dépouillement puis encodage |
+| 1 — faux négatifs | **3** (sur 6 annoncées) | rebranchement, fait |
+| 2 — socle employeur | 11 (dont 4 au lot 7, 7 au lot 8) | dépouillement puis encodage |
 | 3 — activité et effectif | 8 | dépouillement puis encodage |
 
-**Une V1 complète sur son socle, c'est donc de l'ordre de vingt-cinq obligations
+**Une V1 complète sur son socle, c'est donc vingt-deux obligations
 supplémentaires** — pas quarante-huit. Le reste est soit hors cible, soit
 subordonné à une donnée que le produit ne collecte pas.
+
+> **Révisé le 2026-08-31, après exécution du palier 1.** Ce document annonçait
+> vingt-cinq. Trois des six « faux négatifs » n'en étaient pas, et l'agent qui a
+> exécuté le lot les a refusés à raison :
+>
+> - le **registre unique de sécurité** n'est pas une obligation. `L. 4711-5` dit
+>   « l'employeur **est autorisé à** réunir ces informations » — une faculté. La
+>   carto la qualifiait mal (ligne A15) et ce document l'a recopiée ;
+> - les **agents chimiques** se déclenchent sur la présence de produits, c'est-à-dire
+>   le cinquième déclencheur, non implémenté. Les rebrancher imposerait la
+>   formation au risque chimique à un cabinet ;
+> - les **visites de commission** demandent un attribut « locaux à sommeil pour le
+>   public » que le produit ne collecte pas — donc hors V1 par le critère de ce
+>   document même, celui qui a fait tomber le DTA amiante.
+>
+> **Le compte n'est pas la leçon.** Trois lignes sur six ne tenaient pas à la
+> vérification parce que ce document les avait reprises d'un tableau de travail
+> sans les recouper sur les textes. La carto le dit d'elle-même en tête : « les
+> références ci-dessous sont présumées ». Elles le restent tant qu'un
+> dépouillement ne les a pas ouvertes.
 
 Et le compte ne serait pas la bonne mesure de toute façon. Ce qui distingue ce
 produit n'est pas d'en porter 110 plutôt que 85 : c'est de **nommer ce qu'il ne
