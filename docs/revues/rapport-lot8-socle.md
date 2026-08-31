@@ -412,6 +412,12 @@ qui a permis de rattraper l'aller-retour. Une vérification négative ne coûte
 qu'une entrée de corpus et elle vaut exactement ce que vaut le détour qu'elle
 épargne.
 
+**La règle est désormais écrite là où on la lira.** Pas dans ce rapport, pas dans
+un `notesInternes` : dans la documentation du statut `sans_objet`, en
+`corpus/types.ts`, au point où un agent qui hésite entre « je consigne » et « je
+laisse tomber » ouvre le type pour voir ce qu'il a le droit d'écrire. Le statut
+existait et était peu employé ; ce cas montre pour quoi il sert.
+
 ### Le libellé disait « adhésion » là où le texte dit « organisent »
 
 Corrigé après la même contre-vérification. `L. 4622-1` écrit « Les employeurs
