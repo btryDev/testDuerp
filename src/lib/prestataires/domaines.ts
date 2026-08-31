@@ -170,12 +170,19 @@ const REALISATEURS_TIERS: ReadonlySet<Realisateur> = new Set<Realisateur>([
   "personne_competente",
   "bureau_controle",
   // Les deux réalisateurs de santé au travail, ajoutés avec le lot 7. Ce sont
-  // des tiers au sens plein : l'employeur ne peut PAS réaliser lui-même une
-  // visite d'information et de prévention ni délivrer une attestation médicale,
-  // et l'adhésion à un service de prévention et de santé au travail est
-  // elle-même une obligation (`L. 4622-1`). Les omettre aurait fait de
-  // `DOMAINES_PRESTATAIRE_ATTENDUS.sante_travail` une entrée morte — présente
-  // pour satisfaire le `Record` exhaustif, consultée jamais.
+  // des tiers au sens plein, et c'est la seule raison qui compte : l'employeur
+  // ne peut PAS réaliser lui-même une visite d'information et de prévention ni
+  // délivrer une attestation médicale. `R. 4624-10` la réserve à « l'un des
+  // professionnels de santé mentionnés au premier alinéa de l'article
+  // L. 4624-1 », `R. 4624-28` au médecin du travail.
+  //
+  // Une première rédaction ajoutait qu'à défaut,
+  // `DOMAINES_PRESTATAIRE_ATTENDUS.sante_travail` serait « une entrée morte,
+  // consultée jamais ». L'argument se réfute trente lignes plus haut : cette
+  // entrée est inatteignable de toute façon, puisque les obligations salarié
+  // n'entrent pas dans les applicables. Les inclure ne ressuscite rien — ils
+  // sont ici parce qu'ils sont des tiers, pas pour éviter une mort déjà
+  // survenue.
   "medecin_travail",
   "professionnel_sante_travail",
   // Même raison, et la règle de cet ensemble tient : « les réalisateurs qui
