@@ -1010,7 +1010,22 @@ describe("référentiel conformité — version et empreinte", () => {
   // La seizième est arrivée après coup : la relecture des trois articles du
   // renvoi de L. 4644-1 a montré que la formation du salarié désigné et celle
   // du membre du CSE sont deux actes sous un même régime, et non un seul.
-  const EMPREINTE_ATTENDUE = "116-a7dd7bbf82a2dd55";
+  // L'empreinte bouge deux fois sans que le compte change, et les deux fois
+  // parce qu'une contre-vérification a corrigé une ligne de ce lot :
+  //
+  //  1. le réalisateur de `sante-travail-etablissement-fiche-entreprise` passe
+  //     de `professionnel_sante_travail` à `equipe_pluridisciplinaire`, la
+  //     valeur que le lot 7 a ajoutée à l'enum après que ce lot eut signalé
+  //     qu'aucune valeur existante ne disait ce que R. 4624-46 confie à
+  //     l'équipe ;
+  //  2. le libellé de `sante-travail-etablissement-adhesion-spst` cessait de
+  //     dire « adhésion » là où L. 4622-1 écrit « organisent » — l'adhésion à un
+  //     service interentreprises est une modalité, pas l'obligation.
+  //
+  // Réalisateur et libellé entrent tous deux dans l'empreinte parce qu'ils
+  // s'affichent au calendrier et décident de ce que le dirigeant croit devoir
+  // faire — c'est exactement ce qu'on veut voir bouger.
+  const EMPREINTE_ATTENDUE = "116-d041e452c8f2e49a";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(

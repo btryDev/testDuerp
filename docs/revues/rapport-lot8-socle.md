@@ -1,6 +1,7 @@
 # Rapport — lot 8, le socle de l'employeur, l'activité et l'effectif
 
-Branche `feat/socle-employeur`, rebasée sur `feat/depouillement-salarie` (lot 7).
+Branche `feat/socle-employeur`, rebasée sur `feat/depouillement-salarie` (lot 7),
+corrections comprises (`17aa358`).
 Dépouillement du 2026-08-31, toutes lectures sur Légifrance, `lecture: "agent_verbatim"`.
 
 **Seize obligations encodées, 31 articles consignés au corpus — plus quatre lus
@@ -28,6 +29,11 @@ travail, non-ERP, **sans aucun équipement déclaré**.
 | 6 salariés | 6 | **17** | +11 |
 | 12 salariés | 6 | **18** | +12 |
 | 55 salariés | 6 | **19** | +13 |
+
+Chiffres **revérifiés après le rebasage sur les corrections du lot 7** (`17aa358`,
+qui porte sa base de 98 à 100 obligations). Ils n'ont pas bougé : les deux
+obligations que le lot 7 a ajoutées sont portées par un salarié, et le porteur
+salarié ne franchit pas le moteur de matching (ADR-023).
 
 Le « avant » est calculé par soustraction des identifiants de ce lot du relevé
 après : ajouter des obligations au référentiel ne peut pas en retirer aux
@@ -388,7 +394,7 @@ Rojer, c'est `L. 1321-1` **1°**. La convention d'ordre de `referencesLegales` v
 que l'index 0 soit l'article qu'on citerait seul devant un inspecteur : c'est
 `L. 1321-1`, et `L. 1311-2` suit en contexte parce qu'il porte le seuil.
 
-### Une quatrième référence, vérifiée et écartée
+### Une quatrième référence, vérifiée et écartée — et la vérification a resservi
 
 `L. 4622-7` est couramment cité comme l'article de l'adhésion à un service de
 prévention et de santé au travail. Ouvert, il traite de la **responsabilité des
@@ -397,6 +403,29 @@ l'employeur. Le fondateur reste `L. 4622-1`, complété par `D. 4622-1` et
 `D. 4622-2` qui donnent au verbe « organisent » son contenu. L'article est
 consigné au corpus en `sans_objet`, précisément pour que le prochain lecteur ne
 refasse pas le détour.
+
+**Il a resservi le jour même.** Un relecteur a signalé à la session de
+coordination l'inverse de ce constat, la coordination l'a relayé sans ouvrir
+l'article, et le lot 7 a retiré une citation juste sur cette base. C'est
+l'entrée `sans_objet` — celle qui écrit ce qui **n'est pas** la bonne référence —
+qui a permis de rattraper l'aller-retour. Une vérification négative ne coûte
+qu'une entrée de corpus et elle vaut exactement ce que vaut le détour qu'elle
+épargne.
+
+### Le libellé disait « adhésion » là où le texte dit « organisent »
+
+Corrigé après la même contre-vérification. `L. 4622-1` écrit « Les employeurs
+**organisent** des services de prévention et de santé au travail ». L'adhésion à
+un service interentreprises est **une modalité** de cette organisation — l'autre
+étant le service autonome (`D. 4622-1`), le choix appartenant à l'employeur
+(`D. 4622-2`) — et les articles qui règlent l'adhésion elle-même, `D. 4622-14` et
+suivants, ne sont dépouillés par personne.
+
+Le libellé affiché au calendrier devient donc « Service de prévention et de santé
+au travail — adhésion ou service autonome ». Écrire « adhésion » seul aurait
+resserré le texte sur une de ses deux branches et fait passer une pratique — la
+bonne, pour une TPE — pour une prescription. L'identifiant garde
+`adhesion-spst` : c'est une clé stable, pas une affirmation.
 
 ---
 
@@ -498,23 +527,40 @@ texte lu de près.
 
 ## 7. Un écart de modèle, signalé et non comblé
 
-**Le réalisateur de la fiche d'entreprise n'a pas de valeur juste.**
+**Le réalisateur de la fiche d'entreprise : signalé, puis corrigé par le lot 7.**
 `R. 4624-46` confie la fiche « au médecin du travail **ou**, dans les services de
 prévention et de santé au travail interentreprises, à l'**équipe
-pluridisciplinaire** ». Or l'équipe pluridisciplinaire de `L. 4622-8` est plus
-large que les professionnels de santé : elle comprend les intervenants en
-prévention des risques professionnels, qui ne sont pas des soignants. La valeur
-`professionnel_sante_travail` ajoutée par le lot 7 — définie comme « l'un des
-professionnels de santé mentionnés au premier alinéa de `L. 4624-1` » — les
-exclut.
+pluridisciplinaire** ». Aucune valeur de l'enum `Realisateur` ne disait cela :
+`professionnel_sante_travail` désigne « l'un des professionnels de santé
+mentionnés au premier alinéa de `L. 4624-1` », alors que l'équipe
+pluridisciplinaire de `L. 4622-8` comprend aussi les intervenants en prévention
+des risques professionnels, qui ne sont pas des soignants. Et c'est **le cas
+ordinaire de la cible** : une TPE adhère à un service interentreprises, donc
+c'est l'équipe et non le médecin seul qui établit sa fiche.
 
-La valeur juste serait `equipe_pluridisciplinaire`, qui n'existe pas. L'ajouter
-suppose une migration Prisma sur l'enum `Realisateur`, qui relève du lot 7 et non
-de celui-ci. Le repli retenu est `["medecin_travail", "professionnel_sante_travail"]`
-— le moins faux des deux disponibles, et il désigne bien un tiers du service et
-non l'exploitant. **C'est la cible du produit qui est concernée** : une TPE adhère
-à un service interentreprises, donc c'est l'équipe et non le médecin seul qui
-établit sa fiche.
+La ligne a d'abord porté `["medecin_travail", "professionnel_sante_travail"]`,
+le moins faux des deux replis disponibles, avec l'écart écrit en `notesInternes`.
+Le lot 7 a depuis ajouté `equipe_pluridisciplinaire` à l'enum, et la ligne porte
+maintenant `["medecin_travail", "equipe_pluridisciplinaire"]`. L'écart est clos ;
+il est raconté ici parce que c'est le seul point du lot où j'ai sciemment encodé
+une valeur que je savais imprécise plutôt que d'élargir un périmètre qui n'était
+pas le mien.
+
+**Et cette obligation a un effet de bord qu'aucun de nous n'avait prévu.** Elle
+est la première du référentiel à être portée par l'**établissement** — donc à
+franchir le moteur de matching — tout en ayant des réalisateurs **tous tiers**.
+Elle rend donc `supposeUnTiers()` vrai pour le domaine `sante_travail`, et fait
+tomber le test qui fige la liste des domaines dont la contrepartie de prestataire
+n'est atteinte par aucune obligation livrée. `sante_travail` quitte cette liste.
+
+Ce n'est pas un défaut : c'est très exactement ce que le commentaire du lot 7
+annonçait comme futur — « la fiche d'entreprise de `R. 4624-46`, réalisée par le
+médecin du travail ou l'équipe pluridisciplinaire, en est le cas type ». Une
+affirmation que le lot 7 avait dû corriger parce qu'elle était fausse chez lui
+devient vraie ici. La liste **et** le commentaire ont été mis à jour ensemble,
+comme la consigne du test l'exige : un dirigeant qui n'a déclaré aucun service de
+santé au travail à l'annuaire s'en voit désormais averti, et `L. 4622-1` fait de
+cette adhésion une obligation encodée elle aussi par ce lot.
 
 **L'incohérence de seuil est comblée, et non plus seulement signalée.**
 La première version de ce rapport laissait ouvert le fait qu'un employeur de six
@@ -584,8 +630,9 @@ npx tsc --noEmit  → propre
 npx eslint src    → 1 avertissement, préexistant (normaliserFormData)
 ```
 
-`REFERENTIEL_VERSION` passe à `2026-08-31.2`, `EMPREINTE_ATTENDUE` à
-`114-acd8a26c69bb3f6c`.
+`EMPREINTE_ATTENDUE` passe à `116-2d5f0304f88695bc` — 100 obligations à la base
+du lot 7 corrigé, plus les seize de ce lot. `REFERENTIEL_VERSION` reste à
+trancher par la session d'intégration : trois lots ont posé la même valeur.
 
 ---
 
@@ -597,12 +644,13 @@ n'annonce un total** : chacun dit ce que ce lot ajoute, et rien de plus.
 
 | Fichier | Ce que ce lot y écrit |
 |---|---|
-| `conformite.test.ts` | +16 obligations, détaillées par domaine ; compte porté à 114, empreinte recalculée ; une paire déclarée (`L. 4644-1`) et une périodicité justifiée (`L. 2315-17`) |
+| `conformite.test.ts` | +16 obligations, détaillées par domaine ; compte porté à 116, empreinte recalculée ; une paire déclarée (`L. 4644-1`) et une périodicité justifiée (`L. 2315-17`) |
 | `chez-vous.test.ts` | +4 domaines dans la liste exhaustive (`co_activite`, `information_travailleurs`, `locaux_sociaux`, `organisation_prevention`) |
 | `frontiere-medicale.test.ts` | +2 lignes (les deux titres de formation, `pieceMedicale: false`) |
 | `corpus.test.ts` | +1 obligation manquante (`R. 4225-3`) |
 | `.claude/CLAUDE.md` | comptes, porteurs, corpus, et les deux corrections de référence |
-| `Cadran.tsx`, `Etapes.tsx` | 114 obligations · 17 domaines |
+| `Cadran.tsx`, `Etapes.tsx` | 116 obligations · 17 domaines |
+| `domaines.ts`, `domaines.test.ts` | `sante_travail` quitte la liste des domaines inatteignables — voir § 7 |
 | `REFERENTIEL_VERSION` | `2026-08-31.2` — à trancher à l'intégration, deux autres lots posent la leur |
 
 `docs/carto-obligations-hors-equipement.md` est corrigé sur seize lignes : A2, A6,
