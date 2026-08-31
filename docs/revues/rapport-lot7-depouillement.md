@@ -1,10 +1,17 @@
 # Rapport — lot 7, dépouillement des textes qui portent les obligations de salarié
 
 **Branche** `feat/depouillement-salarie` · **dépouillement du 2026-08-31** ·
-38 articles lus sur Légifrance, 13 obligations encodées, 4 corpus créés.
+42 articles lus sur Légifrance, 15 obligations encodées, 4 corpus créés.
 
-Le référentiel passe de **85 obligations sur 10 domaines** à **98 sur 13**.
-Le catalogue des titres de salarié passe de **1 ligne à 9**.
+Le référentiel passe de **85 obligations sur 10 domaines** à **100 sur 13**.
+Le catalogue des titres de salarié passe de **1 ligne à 11**.
+
+> **Ce rapport a été amendé après revue.** Quatre relecteurs ont passé le lot au
+> crible : le dépouillement tient — aucune URL fausse, aucune citation
+> fabriquée, le découpage confirmé — mais ils ont trouvé huit défauts dans les
+> **conséquences** du lot, dont deux régressions que je livrais sans le voir.
+> La section « Ce que la revue a corrigé », en fin de document, les reprend une
+> par une. Les chiffres ci-dessus sont ceux d'après revue.
 
 ---
 
@@ -446,3 +453,148 @@ lot ont été mises en échec exprès, puis rétablies :
 
 C'est la même famille de défaut que ce chantier passe sa journée à retirer : un
 document qui affirme ce que le code ne fait pas.
+
+---
+
+# Ce que la revue a corrigé
+
+Huit défauts, aucun dans la lecture des textes, tous dans ce que le lot
+**produit**. Deux étaient des régressions que je livrais sans les voir. Les
+quatre premiers ont été vérifiés dans le code ou à la source avant d'être
+corrigés — deux revendications se sont d'ailleurs révélées plus graves que
+l'énoncé du relecteur, et une de mes propres corrections s'est trompée avant
+d'être reprise.
+
+## 1. Le lot éteignait le signal qu'il devait compléter — *régression*
+
+`rapprocher()` faisait taire une transmission `titre: null` « dès qu'un titre
+quelconque est déclaré ». Juste avec un catalogue d'une ligne : « un titre
+quelconque » et « un titre d'électricité » désignaient alors la même chose.
+
+Avec onze lignes, le scénario devient : un restaurateur déclare une installation
+électrique, voit « une habilitation est peut-être due », saisit la formation à
+la sécurité de sa plongeuse — **le premier geste que ce lot l'invite à faire** —
+et le signal disparaît définitivement. Le silence est désormais indexé sur le
+**domaine** du titre déclaré. Ce qui reste imparfait est écrit sur place.
+
+## 2. L'écran promettait ce que le générateur ne tenait pas — *régression*
+
+« Rojer n'inventera pas d'échéance », sous le champ « Valable jusqu'au ». Vrai
+par coïncidence : le seul titre existant portait `autre`, pour laquelle
+`prochaineDate` rend `null`. Mes six titres à durée chiffrée l'ont rendue
+fausse — **et la date inventée est le plafond**, donc la plus permissive.
+
+C'est surtout ce qui ruinait le garde-fou que j'invoquais pour encoder ces
+plafonds : `echeanceLe` ne prime que si le dirigeant saisit la date, et l'aide du
+champ l'en dissuadait. Le garde-fou et l'écran se contredisaient.
+
+## 3 et 4. Deux populations pour lesquelles le suivi médical était faux
+
+Les deux plus graves du lot, et les deux que je signale à la propriétaire :
+
+- **`R. 4624-17`** — pour le travailleur handicapé, celui qui déclare une pension
+  d'invalidité et le travailleur de nuit, la VIP suit « une périodicité qui
+  n'excède pas une durée de trois ans ». Ma note affirmait que cinq ans est « la
+  borne au-delà de laquelle l'employeur est nécessairement en défaut ». Faux de
+  deux ans, dans le sens permissif.
+- **`R. 4451-82`** — pour le travailleur exposé aux rayonnements ionisants classé
+  en **catégorie A**, la visite « est renouvelée chaque année » et « la visite
+  intermédiaire n'est pas requise ». Ma note du SIR citait pourtant les
+  rayonnements ionisants comme population couverte par ses quatre ans. Quatre ans
+  au lieu d'un, **et une échéance que le droit exclut**.
+
+Chacune a reçu sa ligne de catalogue. Ce que le produit ne fera pas : deviner qui
+est concerné. Le questionnaire DUERP pose bien `q-travail-nuit`, mais elle porte
+sur l'organisation de l'établissement, pas sur des personnes — s'en servir pour
+désigner des salariés transformerait une réponse d'établissement en donnée
+sensible individuelle.
+
+**Ce qui reste ouvert ici** : les textes propres à quatre des sept expositions du
+`R. 4624-23 I` — CMR, agents biologiques 3 et 4, hyperbare, échafaudages — n'ont
+pas été ouverts. Amiante et plomb renvoient à R. 4624-22 à -28 sans y déroger,
+vérifié. **Ne pas conclure du silence des quatre autres qu'ils ne dérogent pas** :
+c'est l'erreur exacte que ces deux corrections viennent de réparer.
+
+## 5. Quatre textes affirmaient l'état d'avant
+
+Dont un qui se contredisait à l'écran : `equipe/page.tsx` imprimait la liste
+réelle du catalogue, puis énumérait en dur « SST, CACES, autorisation de
+conduite, formations à la sécurité » comme non encodés — trois figuraient dans la
+liste deux lignes plus haut.
+
+Le quatrième cas méritait d'être gardé mais retourné : **le CACES n'est pas « pas
+encore encodé », il ne le sera jamais.** L'écran le dit désormais, parce que
+c'est là qu'on le cherche.
+
+S'y ajoutait le pire des quatre, parce qu'il portait sur mon propre travail :
+`prestataires/domaines.ts` affirmait que le rapprochement « sert justement à
+faire voir » qu'un dirigeant n'a déclaré aucun service de santé au travail. **La
+chaîne ne tourne jamais** — le moteur écarte les porteurs salarié (ADR-023) et
+mes obligations d'établissement sont réalisées par l'exploitant. Les entrées sont
+prêtes, pas atteintes ; un registre le fige.
+
+*Ma première correction de ce point s'est trompée elle-même* : le test que
+j'écrivais pour figer l'état oubliait l'exclusion des porteurs salarié et classait
+`sante_travail` parmi les domaines atteints. L'oubli est écrit sur place.
+
+## 6. Le parc de levage ne nommait pas la conduite
+
+Un commerce déclarait un gerbeur et n'apprenait jamais que son cariste doit une
+formation à la conduite — alors que le fait déclencheur était déjà déclaré. Deux
+transmissions posées, sur les deux obligations portant des machines qu'on
+*conduit* : dix signaux identiques auraient été du bruit, et le bruit fait
+ignorer le signal.
+
+## 7. Les textes remis aux personnes ne parlaient que d'« attestation »
+
+Un salarié en suivi renforcé lisait « examen par le médecin du travail », puis
+une clause de réassurance qui ne couvrait que les attestations. La protection
+s'appliquait — le drapeau la porte — mais rien ne le lui disait, et c'est à lui
+que ce texte s'adresse.
+
+`docs/rgpd.md` § 2.3 ne citait qu'un cas de copie légalement détenue ; le décret
+n° 2025-355 en a créé deux le même jour.
+
+## 8. Quatre imprécisions de corpus
+
+Un corpus dit ce qu'on a lu ; ses imprécisions se lisent comme des lectures. URL
+ne couvrant que le chapitre législatif d'un corpus déclaré intégral sur deux
+chapitres ; « deux alinéas non encodés » là où il y en a trois, l'oublié étant la
+tenue à disposition de l'inspection ; « sans condition d'effectif » démenti par
+le 2° de `R. 4224-15` ; et une migration fondée sur `L. 4622-1`.
+
+**Sur ce dernier point je n'ai pas suivi la correction proposée.** Le relecteur
+donnait `L. 4622-7`. Je n'ai ouvert ni l'un ni l'autre, et le titre II du livre VI
+n'est dépouillé par aucun corpus : trancher entre deux articles non lus aurait
+été refaire l'erreur en la déplaçant. La citation est **retirée**, le domaine se
+fondant désormais sur `R. 4624-10` et `R. 4624-28`, lus à la source.
+
+---
+
+## Ajouté hors revue
+
+**`equipe_pluridisciplinaire`**, demandé par le lot 8 pour la fiche d'entreprise
+et vérifié à la source avant d'être posé : `R. 4624-46` écrit « le médecin du
+travail **ou**, dans les services de prévention et de santé au travail
+interentreprises, l'équipe pluridisciplinaire ». C'est le cas ordinaire de la
+cible — une TPE adhère à un service interentreprises. Troisième migration
+additive, écrite et non appliquée.
+
+## Ce qui reste ouvert après revue
+
+Les huit points de la première version tiennent, moins le n° 4 (`R. 4224-16`
+attend toujours un modèle, mais la tenue à disposition de `R. 4323-56` s'y ajoute
+comme second cas du même manque). S'y ajoutent :
+
+9. **Les intitulés médicaux sortent en clair du serveur MCP.** Ce n'est pas une
+   violation du § 2.3 — un intitulé d'obligation n'est pas une donnée de santé —
+   et `docs/rgpd.md` § 6 posait déjà la question. Mais on passe d'**un** intitulé
+   médical à **cinq**, et un assistant branché en lecture seule sur le dossier
+   restitue désormais « suivi individuel renforcé » pour une personne nommée.
+   Signalé à la propriétaire, **non modifié**.
+10. **Quatre des sept expositions du `R. 4624-23 I` n'ont pas été ouvertes** (voir
+    § 3 et 4 ci-dessus). C'est le point le plus susceptible de cacher une
+    troisième dérogation.
+11. **Le modèle n'a toujours pas de notion de plafond**, et trois obligations en
+    encodent un. Chaque `notesInternes` porte la consigne : ne pas retirer la
+    primauté d'`echeanceLe` sans repasser l'obligation à `autre`.
