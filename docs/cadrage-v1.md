@@ -103,7 +103,7 @@ Deux déclencheurs que le produit sait déjà lire.
 | Protocole de sécurité chargement / déchargement | arrêté du 26/04/1996 | **dès qu'un camion livre** — donc tout commerce, toute restauration |
 | Formation à la manutention manuelle | `R. 4541-8` | universel en restauration et commerce |
 | Formation « travail sur écran » | `R. 4542-16` | le troisième secteur cible |
-| Travail en hauteur, EPI antichute | `R. 4323-104` et s. | fréquent, souvent ignoré |
+| ~~Travail en hauteur, EPI antichute~~ | ~~`R. 4323-104`~~ | **retiré le 2026-08-31** — les EPI sont hors périmètre déclaré, et ces articles ne parlent pas de hauteur |
 
 **Ce qui naît d'un seuil d'effectif** — la donnée existe déjà en base :
 
@@ -112,6 +112,22 @@ CSE à 11 salariés (`L. 2311-2`), formation santé-sécurité des élus
 règlement intérieur à 50 (`L. 1311-2`).
 
 ---
+
+> **Ce document se contredisait sur B4.** `R. 4323-104` à `-106` portent
+> l'information et la formation aux **EPI en général** — aucun des trois ne parle
+> de travail en hauteur ni d'antichute. Et les EPI sont listés **hors périmètre**
+> dans `.claude/CLAUDE.md`, que ce cadrage invoque par ailleurs comme référence.
+> Il proposait donc d'encoder ce que le périmètre déclaré exclut.
+>
+> Le **travail en hauteur** proprement dit (`R. 4323-58` et suivants) est autre
+> chose, et il n'est pas exclu. Personne ne l'a ouvert : c'est une ligne de
+> dette, pas un manque à combler. Le périmètre ne bouge pas sans décision.
+>
+> Troisième référence de mes briefs corrigée par l'agent qui l'exécutait, après
+> `R. 4224-16` — un document consigné, pas un affichage — et l'arrêté du
+> 26 avril 1996, fondé sur une numérotation d'avant la recodification de 2008.
+> Les trois viennent de la même cause : un tableau de travail recopié sans être
+> recoupé sur les textes.
 
 ## Ce qui n'entre pas en V1, et pourquoi
 
