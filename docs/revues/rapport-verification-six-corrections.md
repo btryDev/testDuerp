@@ -387,3 +387,68 @@ signes — elle est honnête sur ce qu'elle mesure, et elle n'aurait pas attrap�
 ceci : **138 signes passent le seuil, et sont pourtant coupés à 638 px.** Le
 seuil est calibré sur 104 signes ≈ 638 px ; entre 104 et 170, il existe une plage
 où la phrase est refusée par l'écran et acceptée par le test. Celle-ci est dedans.
+
+
+---
+
+# Cinquième passe — `4bb7ded` : la phrase s'affiche en entier
+
+Mesuré dans le DOM, sur le tableau de bord du dossier neuf, layout par défaut :
+
+| Sous-titre | Signes | scrollW / clientW | Hauteur | clamp | |
+|---|---|---|---|---|---|
+| Déclarez vos équipements | 67 | 638 / 638 | 18 px | 2 | ✓ |
+| Déposez votre premier rapport | 54 | 638 / 638 | 18 px | 2 | ✓ |
+| **Service de prévention et de santé au travail** | **138** | **638 / 638** | **36 px** | **2** | **✓ entier** |
+| Aucun intervenant déclaré en aération | 104 | 638 / 638 | 18 px | 2 | ✓ |
+| Organiser la formation à la sécurité | 66 | 638 / 638 | 18 px | 2 | ✓ |
+
+`scrollWidth == clientWidth` sur les cinq : **plus rien n'est coupé**, ni en
+largeur ni en hauteur. La phrase du service de santé au travail occupe ses deux
+lignes et se lit jusqu'au bout, « Si vous adhérez déjà, il reste à l'inscrire »
+compris — la clause qui évite le reproche est enfin visible.
+
+**Le passage à deux lignes n'a rien cassé.** Les quatre autres sous-titres
+gardent leur hauteur d'origine (18 px, une ligne) : `line-clamp-2` autorise la
+seconde ligne sans l'imposer. Seule la ligne concernée grandit — 79 px contre 61
+pour les autres —, les séparateurs restent alignés, le pied « 1 autre échéance
+sous 30 jours » est en place, et la colonne voisine n'a pas bougé. Console
+propre.
+
+**Les deux widgets portent la même politique.** « Par où commencer », ajouté
+depuis le tiroir, affiche `line-clamp-2` sur ses sous-titres comme « À faire ».
+Je n'ai pas pu confronter *la même phrase* dans les deux — « Par où commencer »
+ne montre que deux entrées et la recommandation du service de santé au travail
+est en troisième position — mais la classe est identique de part et d'autre, et
+c'est ce qui divergeait.
+
+Capture : `captures-pr10c/70-final.png`.
+
+---
+
+## Ce que ce lot laisse comme leçon
+
+Onze défauts trouvés à l'écran sur ce dossier neuf, dont **deux nés de
+corrections justes du même jour** et **un né d'une garde** posée pour prévenir un
+autre défaut.
+
+Le motif est constant : **des phrases justes à l'écriture, laissées debout après
+que ce qu'elles décrivaient a bougé.** Aucune n'était fausse quand elle a été
+écrite ; toutes l'étaient devenues. Et aucune n'était atteignable par un test,
+une revue de diff ou une relecture — elles vivaient dans le rendu, à l'endroit
+exact où rien d'automatique ne va.
+
+Deux corollaires, tirés de ce lot :
+
+- **Une garde peut produire le défaut qu'elle prévient.** Le cliquet qui exigeait
+  qu'une phrase d'interface cite au moins un article a fait mettre deux
+  références dans une phrase qui n'avait la place d'aucune.
+- **Déclarer l'approximation d'une garde ne dispense pas de vérifier qu'elle
+  mesure la bonne chose.** Le seuil de 170 signes n'était pas approximatif, il
+  était faux : calibré sur deux lignes quand le widget affiché n'en avait qu'une.
+  Le défaut s'est produit deux fois dans la plage que le test laissait passer.
+
+Et une limite de méthode, qui vaut pour tout ce rapport : **je ne trouve que ce
+que le dossier sous les yeux exerce.** La collision de clés côté salarié
+existait ; ce dossier ne la déclenchait pas, et je ne l'ai pas vue. Le prochain
+contrôle passera sur deux dossiers.
