@@ -288,6 +288,42 @@ de trois à un — et il grandira à chaque obligation sans date.
 Captures : `captures-pr10b/20-titre.png`, `21-tdb-apres-titre.png`,
 `22-calendrier-titre.png`.
 
+## L'état de référence, et sa date de péremption
+
+Ce dossier sert de base de comparaison pour la revue des corrections. Il est
+**gelé** : Atelier Vermeil, Nadia Kerbrat, son titre SST — rien ne doit y être
+touché, sans quoi l'avant/après ne vaut plus rien.
+
+**Il porte une sensibilité au calendrier qu'il faut connaître avant de relire les
+chiffres.** Le titre SST est valable jusqu'au **10 septembre 2026**. Relevé le
+31 août, il compte pour « sous 30 jours ». À partir du 10 septembre il bascule en
+retard, **sans qu'aucune correction n'y soit pour rien** :
+
+| | au 31 août 2026 | à partir du 10 septembre |
+|---|---|---|
+| Compteurs d'état | 0 en retard · **1 sous 30 jours** | **1 en retard** · 0 sous 30 jours |
+| Pilule d'année | 2026 · 1 ÉCHÉANCE | 2026 · 1 ÉCHÉANCE |
+| Chip isolé | 2 à planifier | 2 à planifier |
+| Lignes réellement listées | trois | trois |
+
+**Ce qui se mesure ne bouge pas** : l'écart entre un total d'année à 1 et trois
+lignes listées ne dépend pas de la date. Seuls les deux compteurs d'état
+glissent. Si la revue tombe après le 10, ce glissement ne doit pas être lu comme
+un effet d'une correction — et une base neuve vaudra mieux qu'une base ambiguë.
+
+**Les cinq compteurs à confronter**, pour la revue du §2. L'écran en porte cinq,
+et un seul est un fait :
+
+1. la pilule d'année ;
+2. les quatre compteurs d'état ;
+3. le chip isolé « à planifier » ;
+4. les « N ce mois-ci » de chaque carte de mois ;
+5. **le nombre de lignes réellement listées** — le seul qui ne soit pas un
+   compteur, et donc celui contre lequel les quatre autres se mesurent.
+
+Une correction qui en accorde deux sur cinq déplace la contradiction au lieu de
+la retirer. Les lignes se comptent à la main.
+
 ## Ce que je n'ai pas regardé
 
 - Les obligations conditionnées par les réponses d'onboarding — exercices
