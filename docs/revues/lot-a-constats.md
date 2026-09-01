@@ -132,15 +132,15 @@ Relevé de sortie, pas annonce.
 
 | Injection | Résultat |
 |---|---|
-| A — l'exclusion VIP/SIR retirée du référentiel | `5 failed | 11 passed (16)` |
-| B — la fermeture par symétrie supprimée | `7 failed | 9 passed (16)` |
-| C — le refus retiré de `declarerTitre`, référentiel intact (**le défaut d'origine, à l'identique**) | `3 failed | 13 passed (16)` |
-| D — un cumul que le droit IMPOSE déclaré exclusif (`-sir` ⟂ visite intermédiaire) | `3 failed | 13 passed (16)` |
+| A — l'exclusion VIP/SIR retirée du référentiel | `5 failed` / `11 passed` (16) |
+| B — la fermeture par symétrie supprimée | `7 failed` / `9 passed` (16) |
+| C — le refus retiré de `declarerTitre`, référentiel intact (**le défaut d'origine, à l'identique**) | `3 failed` / `13 passed` (16) |
+| D — un cumul que le droit IMPOSE déclaré exclusif (`-sir` ⟂ visite intermédiaire) | `3 failed` / `13 passed` (16) |
 
 D est la contre-épreuve qui compte autant que les trois autres : elle vérifie
 que le mécanisme mord aussi quand il **excède**. Un dispositif qui n'attrape
 que la sous-application finirait par retirer du calendrier des rendez-vous
 réels.
 
-Suite complète : `135 passed | 1858 passed` — 1836 de référence + 22.
+Suite complète : `135 passed` (fichiers), `1858 passed` (tests) — 1836 de référence + 22.
 `tsc --noEmit` propre, `eslint src` avec le seul avertissement préexistant.
