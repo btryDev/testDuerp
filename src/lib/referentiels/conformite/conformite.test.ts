@@ -426,6 +426,15 @@ describe("référentiel conformité — anti-doublon", () => {
       raison:
         "CELLE-CI EN EST PEUT-ÊTRE UNE, ET LA QUESTION EST OUVERTE. Elle n'apparaît que depuis le 2026-09-01 : `levage-examen-adequation-mise-en-service` se fondait sur l'article 5, qui DÉFINIT l'examen d'adéquation sans l'imposer, et le lot A l'a recalée sur l'article 14, seul article qui l'exige. Or c'est déjà le fondement de `levage-epreuve-initiale-fonctionnement`, dont la description reprend les quatre actes du I — examen d'adéquation a), examen de montage b), épreuve statique c), épreuve dynamique d). L'examen d'adéquation est donc décrit deux fois, une fois seul et une fois dans l'énumération. LA QUESTION QUI TRANCHE : l'article 14 fonde-t-il UNE vérification à quatre volets — auquel cas la ligne d'adéquation est un fragment à fondre — ou quatre actes séparables, sachant que le d) porte une exception qui ne vaut que pour lui (épreuve dynamique non exigée pour les appareils mus par la force humaine) et que les trois autres n'en ont pas ? Le fondre est un retrait de ligne : décision de la propriétaire, hors mandat du lot A. Le défaut de fondement, lui, était réel et est corrigé ; la déclaration ne le masque pas, elle rend visible ce qu'il découvre.",
     },
+    // ── Apparue le 2026-09-01 avec le lot C ────────────────────────────
+    {
+      paire: [
+        "elec-travail-habilitation-personnel",
+        "elec-travail-carnet-prescriptions",
+      ],
+      raison:
+        "Instruit le 2026-09-01, ce n'est PAS un doublon, et c'est exactement le motif de la paire `R. 4412-38` juste en dessous : un même article met plusieurs actes à la charge de l'employeur, et ce test ne compare que la clé d'article. R. 4544-10 en met QUATRE — délivrer l'habilitation en spécifiant les opérations autorisées, s'assurer au préalable de la formation, remettre à chaque travailleur un carnet de prescriptions (quatrième alinéa), et subordonner la validité au voisinage à une attestation médicale. L'habilitation est une DÉCISION de l'employeur ; le carnet est une PIÈCE qu'il remet, et l'un peut exister sans l'autre — un employeur qui a habilité sans remettre est le manquement ordinaire, pas un cas d'école. Les deux se prouvent différemment : `pieceAttendue` est nulle sur l'habilitation, nommée sur le carnet. Article rouvert à la source avant l'encodage, version en vigueur du 2025-10-01.",
+    },
     {
       paire: [
         "stockage-dangereux-fiches-donnees",
@@ -1053,7 +1062,21 @@ describe("référentiel conformité — version et empreinte", () => {
   // Faire entrer `referencesLegales` dans l'empreinte déclencherait une
   // réconciliation à chaque correction de citation — un choix de conception,
   // qui n'appartient pas à un lot de correction.
-  const EMPREINTE_ATTENDUE = "116-97f9faa35169ab0b";
+  //
+  // +4 au lot C (2026-09-01) — les obligations qui existent en droit et
+  // manquaient au référentiel, section C du cadrage du même jour. Ce que ce
+  // lot ajoute, et rien d'autre : la révision décennale des extincteurs
+  // (`MS 38 § 4`, second rythme d'une phrase qui en porte deux), le rapport
+  // annuel d'activité de l'ascensoriste (`CCH R. 134-7 III`), la présence
+  // physique d'une personne qualifiée en ERP de 1ʳᵉ et 2ᵉ catégorie
+  // (`EL 18 § 2`) et le carnet de prescriptions remis à chaque travailleur
+  // habilité (`R. 4544-10`, quatrième alinéa).
+  //
+  // LA VALEUR CI-DESSOUS NE SE RECOPIE PAS D'UNE BRANCHE À L'AUTRE. Trois
+  // branches touchent le compte le 2026-09-01 et chacune ne connaît que son
+  // apport ; deux merges du même jour ont failli graver une valeur fausse en
+  // reprenant celle d'à côté. Au merge, la lancer et coller la sortie.
+  const EMPREINTE_ATTENDUE = "120-7b3bbb1950f8347d";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1171,7 +1194,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(116);
+    ).toBe(120);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {

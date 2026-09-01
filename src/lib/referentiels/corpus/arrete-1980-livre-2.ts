@@ -187,9 +187,15 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       citationCle:
         "§ 1. Les installations doivent être entretenues et maintenues en bon état de fonctionnement. Les défectuosités et les défauts d'isolement doivent être réparés dès leur constatation. § 2. Dans tout établissement de 1re ou 2e catégorie, la présence physique d'une personne qualifiée est requise pendant la présence du public pour, conformément aux consignes données, assurer l'exploitation et l'entretien quotidien. Une telle mesure peut être imposée après avis de la commission de sécurité dans les établissements de 3e et de 4e catégorie si l'importance ou l'état des installations électriques le justifie.",
       statut: "retenu",
-      obligations: ["elec-erp-groupe-electrogene-annuel"],
+      obligations: [
+        "elec-erp-groupe-electrogene-annuel",
+        "elec-erp-groupe-electrogene-quinzaine",
+        // Ajoutée le 2026-09-01 (lot C). La réserve inscrite le matin même
+        // disait « LE § 2 N'EST ENCODÉ NULLE PART » ; il l'est.
+        "elec-erp-presence-personne-qualifiee",
+      ],
       reserve:
-        "LE § 2 N'EST ENCODÉ NULLE PART, relevé le 2026-09-01. C'est une obligation d'employeur, nominative, permanente et conditionnée à la catégorie de l'établissement : « la présence physique d'une personne qualifiée est requise pendant la présence du public ». Aucune obligation du référentiel ne la porte, et le corpus ne la comptait pas comme manquante puisque l'article était déjà classé « retenu » au titre du seul § 4. Non corrigé : le lot ne crée pas d'obligation.",
+        "LE § 2 EST ENCODÉ DEPUIS LE 2026-09-01 (lot C) : `elec-erp-presence-personne-qualifiee`, état permanent, porteur établissement, restreinte aux 1ʳᵉ et 2ᵉ catégories comme l'écrit la première phrase. La réserve du matin disait « aucune obligation du référentiel ne la porte, et le corpus ne la comptait pas comme manquante puisque l'article était déjà classé retenu au titre du seul § 4 » — c'est le cas d'école du manque qu'un statut « retenu » cache, et il est levé.\n\nCE QUI RESTE HORS RÉFÉRENTIEL, sur cet article. La SECONDE PHRASE du § 2 — la même mesure imposable aux 3ᵉ et 4ᵉ catégories « après avis de la commission de sécurité » — n'est pas encodée : c'est un acte administratif individuel, donc une prescription particulière (ADR-014), et l'inscrire au référentiel la donnerait à tous les ERP de 3ᵉ et 4ᵉ catégorie. Le § 1 (entretien et réparation des défectuosités dès leur constatation) et le § 3 (renvoi de l'éclairage de sécurité à EC 13 et EC 14) restent sans ligne propre : le premier est une obligation de moyens sans acte datable, le second est un renvoi dont la destination est encodée.",
     },
     {
       ref: "MS 38",

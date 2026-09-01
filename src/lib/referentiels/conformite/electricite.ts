@@ -193,6 +193,47 @@ export const obligationsElectricite: Obligation[] = [
       "Périodicité passée de `triennale` à `autre` le 2026-08-27 (ADR-023 § 6) : voir le commentaire au-dessus du champ. Le précédent est celui du Kbis d'un prestataire, suivi sans statut d'expiration au motif que « le texte n'assortit pas la pièce d'une périodicité citable […] le produit informe, il ne décrète pas ».\n\nCe que l'utilisateur perd : une ligne d'échéance à trois ans. Ce qu'il gagne : une échéance réelle à sa place — l'attestation médicale — et un état permanent qui dit ce que le droit dit.\n\nLimite connue, non corrigée ici : la clé d'article est `R. 4544-10` alors que la citation couvre R. 4544-9 à R. 4544-11. Les deux bornes ne sont donc ni déclarées lues, ni surveillées par la veille. R. 4544-9 et R. 4544-11 n'ont d'ailleurs aucune entrée de corpus.\n\nAmendement 2026-08-26 : L. 4711-5 était en refs[0], c'est-à-dire présenté comme l'article FONDATEUR (convention ADR-003). Or il n'institue aucun registre — il autorise à en réunir plusieurs en un seul, ce que le CLAUDE.md du dépôt écrit noir sur blanc. La contradiction était interne. R. 4226-19 passe en premier : c'est lui qui impose la consignation des résultats de vérification. Ce n'est pas cosmétique : le test anti-doublon compare les obligations sur leur article fondateur, donc un refs[0] faux le rend aveugle — le mécanisme même qui masquait le doublon des portails.\n\nNATURE : ÉTAT PERMANENT (ADR-026). La description le dit déjà — « un état à maintenir en permanence, pas un rendez-vous » — et le champ le porte désormais. C'est la ligne qui a fait passer la périodicité de `triennale` à `autre` le 2026-08-27 ; le couple nature + périodicité dit maintenant pourquoi, sans qu'on ait à lire la note.",
   },
 
+  {
+    id: "elec-travail-carnet-prescriptions",
+    domaine: "electricite",
+    libelle:
+      "Remise d'un carnet de prescriptions à chaque travailleur habilité",
+    description:
+      "L'employeur remet à chaque travailleur habilité un carnet de prescriptions, établi sur la base des prescriptions pertinentes des normes auxquelles renvoie l'article R. 4544-3 et complété, le cas échéant, par les instructions de sécurité particulières au travail effectué. C'est une pièce à remettre et à tenir à jour, pas un rendez-vous : le Code ne l'assortit d'aucune durée de validité ni d'aucun renouvellement daté.",
+    referencesLegales: [
+      {
+        source: "CODE_TRAVAIL",
+        reference:
+          "R. 4544-10, quatrième alinéa (carnet de prescriptions remis à chaque travailleur)",
+        article: "R. 4544-10",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051500368",
+        note: "« L'employeur remet à chaque travailleur un carnet de prescriptions établi sur la base des prescriptions pertinentes de ces normes, complété, le cas échéant, par des instructions de sécurité particulières au travail effectué. » Article rouvert à la source le 2026-09-01 avant l'encodage, version en vigueur du 01/10/2025. Chemin : Quatrième partie > Livre V > Titre IV > Chapitre IV « Opérations sur les installations électriques » > SECTION 4 « Travailleurs autorisés à effectuer des opérations » — c'est le chemin qui dit qui est « chaque travailleur » : celui que l'employeur habilite, pas tout l'effectif.",
+        versionConstatee: "2025-10-01",
+      },
+    ],
+    periodicite: "autre",
+    nature: "etat_permanent",
+    pieceAttendue: "carnet de prescriptions",
+    realisateurs: ["exploitant"],
+    criticite: 3,
+    transmet: [
+      {
+        vers: "salarie_designe",
+        // `null`, pour la même raison que l'habilitation qu'il accompagne :
+        // le catalogue des titres ne porte pas l'habilitation électrique, et
+        // pointer vers l'attestation médicale — le seul titre électrique du
+        // catalogue — dirait que le carnet la suppose, ce qui est faux.
+        titre: null,
+        motif:
+          "Le carnet se remet « à chaque travailleur » habilité : la pièce est nominative, il y en a autant que de personnes habilitées. Le produit ne peut pas deviner qui opère sur les installations — ce serait le cinquième déclencheur, non implémenté (ADR-023) — mais il peut dire qu'aucune personne n'est déclarée.",
+      },
+    ],
+    typologies: { travail: true },
+    categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes:
+      "AJOUTÉE LE 2026-09-01 (lot C). Le corpus le déclarait en réserve sur R. 4544-10 depuis le relevé du matin : « Le carnet de prescriptions du quatrième alinéa, remis à CHAQUE travailleur, n'est encodé nulle part. » L'article met QUATRE actes à la charge de l'employeur — délivrer l'habilitation, s'assurer de la formation préalable, remettre le carnet, subordonner la validité à l'attestation médicale pour le voisinage — et le référentiel en portait trois.\n\nCE QUI LA DISTINGUE DE `elec-travail-habilitation-personnel`, avec laquelle elle partage l'article fondateur. L'habilitation est une DÉCISION de l'employeur — il autorise, dans les limites d'attributions qu'il fixe ; le carnet est une PIÈCE qu'il remet, et qui existe indépendamment : un employeur peut avoir habilité sans avoir remis, et c'est le manquement ordinaire. Elles ne se cochent pas de la même façon et ne se prouvent pas par la même chose — `pieceAttendue` est nulle sur l'une, nommée sur l'autre. Le couple est déclaré dans `PAIRES_DECLAREES` du test anti-doublon, qui ne compare que la clé d'article et ne sait pas distinguer deux alinéas ; c'est le même motif que `R. 4412-38` (fiches de données de sécurité contre formation).\n\n« CHAQUE TRAVAILLEUR » N'EST PAS TOUT L'EFFECTIF, et le chemin de l'article le dit : section 4, « Travailleurs autorisés à effectuer des opérations ». Le carnet est dû à qui est habilité. Le produit ne sait pas qui l'est — le déclencheur reste donc l'installation électrique déclarée, comme pour l'habilitation elle-même, et `transmet` nomme le trou plutôt que de le combler.\n\nAUCUNE PÉRIODICITÉ, ET C'EST UNE LECTURE. R. 4544-10 ne porte aucune durée : ni pour l'habilitation, ni pour le carnet. Le renouvellement est renvoyé aux « modalités contenues dans les normes mentionnées à l'article R. 4544-3 » — la NF C 18-510, que R. 4544-3 qualifie lui-même de recommandée et que ce dépôt n'accepte pas comme source opposable. Le carnet suit donc l'habilitation : `etat_permanent`, pas d'échéance inventée.\n\nCRITICITÉ 3 : l'absence de carnet ne met personne sous tension, elle prive d'un support de prescriptions. Ce qui protège est l'habilitation, qui porte la criticité 4.",
+  },
   // ---------------------------------------------------------------------------
   // Porteur : le salarié (ADR-023)
   // ---------------------------------------------------------------------------
@@ -379,6 +420,52 @@ export const obligationsElectricite: Obligation[] = [
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
       "Créée le 2026-08-26. EL 18 § 4 fixe DEUX périodicités minimales, et le référentiel n'en portait qu'une : l'obligation unique était encodée « mensuelle », si bien que la vérification des niveaux tous les quinze jours ne produisait aucune échéance. Elle ne vivait que dans la prose d'une description — sur un matériel dont le seul rôle est de démarrer quand tout le reste a lâché.\n\nLa valeur `bimensuelle` a été ajoutée à l'énumération et à la base pour cela : le choix se réduisait auparavant à `hebdomadaire`, qui double la charge réelle, ou `mensuelle`, qui tait l'obligation. Conversion à quatorze jours et non quinze — un multiple de sept fait retomber l'échéance le même jour de la semaine.\n\nSur-application assumée en 5ᵉ catégorie, comme les autres obligations de ce fichier fondées sur le Livre II : EL 18 relève du Livre II, écarté par PE 1 § 1, et ce qui traite du même objet en N5 est PE 4 § 2. La ligne est maintenue pour ne pas créer un faux négatif muet.",
+  },
+  {
+    id: "elec-erp-presence-personne-qualifiee",
+    domaine: "electricite",
+    libelle:
+      "Présence d'une personne qualifiée pendant l'ouverture au public (ERP 1ʳᵉ et 2ᵉ catégorie)",
+    description:
+      "Dans un établissement de 1ʳᵉ ou de 2ᵉ catégorie, la présence physique d'une personne qualifiée est requise pendant toute la présence du public, pour assurer, conformément aux consignes données, l'exploitation et l'entretien quotidien des installations électriques. Ce n'est pas une vérification à date : c'est un état à tenir chaque jour d'ouverture.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 25 juin 1980, art. EL 18 § 2 (présence physique d'une personne qualifiée)",
+        article: "EL 18",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038485456/",
+        note: "« Dans tout établissement de 1re ou 2e catégorie, la présence physique d'une personne qualifiée est requise pendant la présence du public pour, conformément aux consignes données, assurer l'exploitation et l'entretien quotidien. Une telle mesure peut être imposée après avis de la commission de sécurité dans les établissements de 3e et de 4e catégorie si l'importance ou l'état des installations électriques le justifie. » Article rouvert à la source le 2026-09-01 avant l'encodage, version en vigueur du 01/07/2019. La seconde phrase n'est PAS encodée : elle décrit une mesure qu'une commission peut imposer sur un dossier donné — une prescription particulière (ADR-014), pas une règle générale.",
+        versionConstatee: "2019-07-01",
+      },
+    ],
+    periodicite: "autre",
+    nature: "etat_permanent",
+    pieceAttendue: null,
+    realisateurs: ["exploitant"],
+    criticite: 4,
+    transmet: [
+      {
+        vers: "salarie_designe",
+        // `null` : le catalogue des titres ne porte pas la « personne
+        // qualifiée » d'EL 18 § 2. Le texte ne renvoie à aucune formation ni
+        // à aucun titre nommé — il exige une qualification, sans la définir.
+        // Pointer vers l'habilitation électrique dirait quelque chose que
+        // l'article n'écrit pas.
+        titre: null,
+        motif:
+          "EL 18 § 2 exige la présence physique d'UNE PERSONNE qualifiée pendant toute la présence du public : l'obligation suppose quelqu'un de nommé, et le produit ne peut pas deviner qui. Il peut en revanche dire qu'aucune personne n'est déclarée pour ce rôle.",
+      },
+    ],
+    porteur: "etablissement",
+    // 1ʳᵉ et 2ᵉ catégorie, et rien d'autre : c'est le champ que la première
+    // phrase de l'article écrit. Les 3ᵉ et 4ᵉ n'y entrent que par décision de
+    // la commission de sécurité, dossier par dossier.
+    typologies: { erp: { categories: ["N1", "N2"] } },
+    equipementsEnContexte: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes:
+      "AJOUTÉE LE 2026-09-01 (lot C). Le corpus la déclarait en réserve sur EL 18 depuis le relevé du matin — « LE § 2 N'EST ENCODÉ NULLE PART […] et le corpus ne la comptait pas comme manquante puisque l'article était déjà classé retenu au titre du seul § 4 ». C'est le cas d'école du manque qu'un statut « retenu » cache : un article de quatre paragraphes dont un seul est porté.\n\nPORTEUR ÉTABLISSEMENT, ET C'EST LE POINT (ADR-022). L'exigence ne naît d'aucun équipement déclaré : elle naît de la CATÉGORIE de l'établissement. L'accrocher à `INSTALLATION_ELECTRIQUE` en ferait un faux négatif chez tout ERP de 1ʳᵉ ou 2ᵉ catégorie n'ayant pas déclaré son tableau — c'est-à-dire chez celui qui a le moins renseigné, exactement le défaut que le palier 1 a corrigé sur trois autres lignes le 2026-08-31. `equipementsEnContexte` garde le lien, sans en faire une condition.\n\nÉTAT PERMANENT, PAS ÉCHÉANCE (ADR-026). « Pendant la présence du public » n'est pas un rythme : il n'y a pas d'acte à refaire à date, il y a quelqu'un qui est là ou qui ne l'est pas. Aucune périodicité n'est donc posée, et `autre` se lit ici avec la nature, pas seule.\n\nCE QUE LE PRODUIT NE SAIT PAS FAIRE, et qu'il ne feint pas : vérifier qu'une personne est effectivement présente aux heures d'ouverture. Il pose l'exigence et nomme le trou par `transmet` ; la déclaration appartient au dirigeant.\n\nCE QUI N'EST PAS ENCODÉ, et pourquoi. La seconde phrase du § 2 étend la mesure aux 3ᵉ et 4ᵉ catégories « après avis de la commission de sécurité ». Ce n'est pas une règle générale mais un acte administratif individuel : il relève des prescriptions particulières (ADR-014), qui surchargent un dossier donné, et l'encoder au référentiel donnerait à tous les ERP de 3ᵉ et 4ᵉ catégorie une obligation que la plupart n'ont pas reçue.\n\nSUR-APPLICATION EN 5ᵉ CATÉGORIE : AUCUNE, et c'est l'exception dans ce fichier. EL 18 relève du Livre II, écarté en N5 par PE 1 § 1 — mais la restriction `{ categories: [\"N1\", \"N2\"] }` est écrite dans l'article lui-même, si bien que la question ne se pose pas : un ERP de 5ᵉ catégorie ne reçoit pas cette ligne.",
   },
   {
     id: "elec-erp-groupe-electrogene-annuel",
