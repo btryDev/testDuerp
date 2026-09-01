@@ -588,6 +588,18 @@ describe("référentiel conformité — non-régression des obligations critique
     // condition `infirmee` sur la même propriété.
     "levage-vgp-trimestrielle-force-humaine",
     "aeration-travail-locaux-pollution-specifique",
+    // Obligation neuve du 2026-09-01 (arrêté du 8 octobre 1987, art. 4 b) :
+    // aucun équipement déjà en base ne peut la perdre, et
+    // `aeration-travail-locaux-pollution-specifique` reste due tant que la
+    // question sur le recyclage n'a pas reçu « oui » — répondre ne fait
+    // qu'AJOUTER le semestriel, jamais retirer l'annuel.
+    //
+    // Le trois-états aurait été le réflexe, et il aurait été faux ici : il
+    // afficherait un semestriel à tout propriétaire de VMC tant qu'il n'a pas
+    // répondu non, soit un faux positif de masse sur une ligne qui revient
+    // deux fois par an. La règle du dépôt vise les obligations DÉJÀ PUBLIÉES
+    // qui s'éteindraient au silence ; celle-ci naît d'une réponse.
+    "aeration-travail-recyclage-semestriel",
     "aeration-erp-ps-surveillance-qualite-air-sup-250",
     "levage-vgp-semestrielle-chariot-gerbeur",
     // Les cinq paliers non nominaux du contrôle d'étanchéité des fluides
@@ -1025,7 +1037,14 @@ describe("référentiel conformité — version et empreinte", () => {
   // Réalisateur et libellé entrent tous deux dans l'empreinte parce qu'ils
   // s'affichent au calendrier et décident de ce que le dirigeant croit devoir
   // faire — c'est exactement ce qu'on veut voir bouger.
-  const EMPREINTE_ATTENDUE = "116-97f9faa35169ab0b";
+  // ⚠ CETTE VALEUR EST PROVISOIRE À L'INTÉGRATION. Elle est calculée sur
+  // `origin/main` (840abe2) plus la seule obligation de recyclage. Un autre lot
+  // en vol — l'habilitation électrique de `R. 4544-10`, porteur salarié —
+  // ajoute lui aussi une obligation depuis la même base, et verra donc lui
+  // aussi 117. À l'intégration des deux, le compte sera 118 et l'empreinte
+  // n'aura été calculée par aucune des deux branches : elle se REMESURE en
+  // lançant le test, elle ne se recopie pas d'une branche.
+  const EMPREINTE_ATTENDUE = "117-b9e9281e4fcb63da";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1143,7 +1162,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(116);
+    ).toBe(117);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {

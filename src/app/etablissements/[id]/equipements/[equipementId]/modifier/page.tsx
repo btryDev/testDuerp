@@ -25,6 +25,7 @@ type Caracteristiques = Partial<
     | "nombre"
     | "aGroupeElectrogene"
     | "estLocalPollutionSpecifique"
+    | "aSystemeDeRecyclage"
     | "nbVehiculesParkingCouvert"
     | "familleEsp"
     | "pressionMaxAdmissibleBar"
@@ -132,6 +133,7 @@ export default async function ModifierEquipementPage({
               nombre: caracs.nombre ?? null,
               aGroupeElectrogene: caracs.aGroupeElectrogene,
               estLocalPollutionSpecifique: caracs.estLocalPollutionSpecifique,
+              aSystemeDeRecyclage: caracs.aSystemeDeRecyclage,
               nbVehiculesParkingCouvert:
                 caracs.nbVehiculesParkingCouvert ?? null,
               familleEsp: caracs.familleEsp ?? null,
