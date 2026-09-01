@@ -167,6 +167,25 @@ describe("corpus — forme des dépouillements", () => {
     // Sans ce contrôle, un corpus pourrait s'attribuer une couverture qu'aucune
     // obligation ne confirme, et la dette descendrait sans que rien
     // ne s'améliore.
+    //
+    // « LES DEUX SENS » N'EN COUVRE QU'UN, mesuré le 2026-09-01 par le lot A en
+    // réinjectant les défauts qu'il venait de corriger. `liensRetenusRompus()`
+    // part du CORPUS : un article « retenu » qui nomme une obligation qui ne le
+    // cite pas est une rupture. L'autre sens ne l'est pas — une obligation peut
+    // citer un article dont l'entrée de corpus ne la nomme plus, et rien ne
+    // rougit ; c'est seulement l'alerte `CORPUS_NE_RENVOIE_PAS` de
+    // `pnpm relecture`, qui n'échoue pas. Vérifié en remettant `GC 22` en
+    // fondement de `cuisson-erp-extinction-automatique-annuelle` après l'avoir
+    // ôté de la liste de GC 22 : 1907 tests au vert.
+    //
+    // Ce qui EST gardé, en revanche : changer la clé `article` d'un fondement
+    // pour un article que le corpus rattache encore à l'obligation d'origine
+    // rompt le lien dans le sens couvert. Quatre des cinq recalages de clé du
+    // lot A rougissent à la réinjection par ce chemin.
+    //
+    // Fermer l'autre sens ferait échouer les onze `CORPUS_NE_RENVOIE_PAS`
+    // existants d'un coup — ils sont la matière du lot D. À reprendre APRÈS
+    // lui, pas ici : un test qui naît rouge se désarme.
     expect(liensRetenusRompus()).toEqual([]);
   });
 
