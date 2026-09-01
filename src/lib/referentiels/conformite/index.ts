@@ -97,7 +97,7 @@ export const obligationsConformite: Obligation[] = [
  * `conformite.test.ts` compare une empreinte du contenu à celle enregistrée :
  * l'oubli fait échouer la suite.
  */
-export const REFERENTIEL_VERSION = "2026-09-01.1";
+export const REFERENTIEL_VERSION = "2026-09-01.2";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.
