@@ -423,7 +423,16 @@ describe("référentiel conformité — anti-doublon", () => {
         "stockage-dangereux-verification-etancheite",
       ],
       raison:
-        "Instruit le 2026-08-27, ce n'est PAS un doublon. `R. 4412-11` fonde deux actes que les citations elles-mêmes distinguent : « procédures de stockage sûres des agents chimiques dangereux » (la rétention) et « entretien régulier des équipements de stockage » (l'étanchéité). Objets différents, gestes différents ; seul l'article est commun.",
+        "Ce n'est pas un doublon, mais la raison qui le disait était fausse et a été réécrite le 2026-09-01 (lot A). Elle affirmait que R. 4412-11 fonde « entretien régulier des équipements de stockage » : l'article, lu en entier à la source, ne l'écrit pas. Ce qui distingue vraiment les deux lignes est leur NATURE, et elle est déclarée : `stockage-dangereux-retention` est un `etat_permanent` — la rétention est en place ou elle ne l'est pas — et `stockage-dangereux-verification-etancheite` une `echeance_recurrente` — l'acte revient, sans rythme connu. Un état et un acte ne se cochent pas de la même façon et ne se prouvent pas par la même chose. Le 7° de l'article fonde le premier (procédures de stockage sûres), le 2° le second (procédures d'entretien régulières) ; seul l'article est commun, et aucune des deux n'a pour l'instant de texte qui DATE l'acte — voir les notes internes de la seconde.",
+    },
+    // ── Apparue le 2026-09-01 avec le recalage des fondements (lot A) ──
+    {
+      paire: [
+        "levage-examen-adequation-mise-en-service",
+        "levage-epreuve-initiale-fonctionnement",
+      ],
+      raison:
+        "CELLE-CI EN EST PEUT-ÊTRE UNE, ET LA QUESTION EST OUVERTE. Elle n'apparaît que depuis le 2026-09-01 : `levage-examen-adequation-mise-en-service` se fondait sur l'article 5, qui DÉFINIT l'examen d'adéquation sans l'imposer, et le lot A l'a recalée sur l'article 14, seul article qui l'exige. Or c'est déjà le fondement de `levage-epreuve-initiale-fonctionnement`, dont la description reprend les quatre actes du I — examen d'adéquation a), examen de montage b), épreuve statique c), épreuve dynamique d). L'examen d'adéquation est donc décrit deux fois, une fois seul et une fois dans l'énumération. LA QUESTION QUI TRANCHE : l'article 14 fonde-t-il UNE vérification à quatre volets — auquel cas la ligne d'adéquation est un fragment à fondre — ou quatre actes séparables, sachant que le d) porte une exception qui ne vaut que pour lui (épreuve dynamique non exigée pour les appareils mus par la force humaine) et que les trois autres n'en ont pas ? Le fondre est un retrait de ligne : décision de la propriétaire, hors mandat du lot A. Le défaut de fondement, lui, était réel et est corrigé ; la déclaration ne le masque pas, elle rend visible ce qu'il découvre.",
     },
     {
       paire: [
@@ -1047,41 +1056,35 @@ describe("référentiel conformité — version et empreinte", () => {
   // s'affichent au calendrier et décident de ce que le dirigeant croit devoir
   // faire — c'est exactement ce qu'on veut voir bouger.
   //
-  // 2026-09-01, 116 → 118 en quatre mouvements venus de deux branches écrites
-  // en parallèle : `elec-salarie-habilitation` entre au catalogue des titres
-  // (`R. 4544-10`), le contrôle semestriel des gaines de recyclage entre par
-  // l'arrêté du 8 octobre 1987 art. 4 b), `esp-inspection-periodique` passe de
-  // trois à quatre ans — la borne du texte —, et son plafond de premier cycle
-  // trouve enfin sa place dans `premierDelai`.
   //
-  // L'empreinte a été REMESURÉE ici à chaque intégration, jamais recopiée
-  // d'une branche : chacune a vu 117 depuis `840abe2`, puis deux corrections
-  // sont arrivées après le premier merge. Se recopier l'une l'autre aurait
-  // donné une valeur fausse que le test aurait acceptée sur une moitié du
-  // référentiel.
+  // 2026-09-01 : 116 → 121, depuis QUATRE branches écrites en parallèle, et
+  // c'est la cinquième remesure de la journée. Sont entrés :
+  // `elec-salarie-habilitation` au catalogue des titres (`R. 4544-10`), le
+  // contrôle semestriel des gaines de recyclage (arrêté du 8 octobre 1987
+  // art. 4 b), les trois obligations de l'arrêté du 31 janvier 1986
+  // (habitation), et l'inspection ESP portée de trois à quatre ans avec son
+  // plafond de premier cycle dans `premierDelai`. La campagne de traçabilité
+  // du même jour a recalé sept fondements et rattaché des dizaines
+  // d'articles : elle ne déplace PAS l'empreinte, et le point suivant dit
+  // pourquoi.
   //
+  // L'EMPREINTE A ÉTÉ REMESURÉE À CHAQUE INTÉGRATION, jamais recopiée d'une
+  // branche. Trois branches l'ont vue à 117, chacune juste chez elle et fausse
+  // une fois réunies. Les commentaires que chacune portait sont ce qui a
+  // empêché de prendre l'une pour l'autre.
   //
-  // 2026-09-01, 116 → 121, en deux temps et depuis trois branches parallèles.
-  // D'abord quatre mouvements : `elec-salarie-habilitation` au catalogue des
-  // titres, le semestriel des gaines de recyclage, l'inspection ESP portée à
-  // quatre ans, et son plafond de premier cycle dans `premierDelai`. Puis le
-  // dépouillement de l'arrêté du 31 janvier 1986, qui en ajoute trois —
-  // vérification annuelle des installations de sécurité, registre, consignes
-  // et plans d'intervention, toutes portées par l'établissement.
+  // CE QU'ELLE NE COUVRE PAS, et qu'il faut savoir avant de s'y fier :
+  // `empreinteReferentiel()` exclut `referencesLegales`, `description` et
+  // `notesInternes`. Le fondement légal de tout le référentiel peut être
+  // réécrit sans qu'elle bouge d'un chiffre — c'est exactement ce qu'a fait la
+  // campagne de traçabilité, légitimement. Une empreinte stable n'est donc PAS
+  // une preuve que rien n'a changé.
   //
-  // L'empreinte est REMESURÉE à chaque intégration, jamais recopiée d'une
-  // branche. Trois branches l'ont vue à trois valeurs différentes, chacune
-  // juste chez elle et fausse une fois réunies ; les commentaires que chacune
-  // portait sont ce qui a empêché de prendre l'une pour l'autre.
-  //
-  // Le quatrième mouvement mérite d'être connu : `premierDelai` a d'abord été
-  // INVISIBLE à l'empreinte. Le champ posé, sa valeur écrite, la suite passait
-  // au vert — alors qu'il déplace la date de première occurrence d'un
-  // équipement neuf, donc ce que le générateur produit. Une garde qui ne
-  // mesure pas ce qu'elle prétend couvrir rassure d'autant mieux. Tout champ
-  // qui influence une échéance entre dans `empreinteReferentiel()`, et la
-  // preuve se fait en changeant sa valeur : si l'empreinte ne bouge pas, il
-  // manque au hachage.
+  // Et ce qu'elle couvre depuis aujourd'hui seulement : `premierDelai` en a
+  // d'abord été absent. Le champ posé, sa valeur écrite, la suite passait au
+  // vert — alors qu'il déplace la date de première occurrence d'un équipement
+  // neuf. Tout champ qui influence une échéance entre au hachage, et la preuve
+  // se fait en changeant sa valeur : si l'empreinte ne bouge pas, il y manque.
   const EMPREINTE_ATTENDUE = "121-f50e590a2f78fc94";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {

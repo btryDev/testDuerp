@@ -18,17 +18,29 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
   articles: [
     {
       ref: "CH 57",
+      intitule: "Entretien",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
       versionEnVigueur: "1980-08-15",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Article d'ENTRETIEN, non de vérification : entretien régulier et maintien en bon état, plus une seule périodicité chiffrée — le ramonage et le nettoyage annuels des conduits de fumée, des cheminées et de TOUS les appareils. La vérification technique annuelle, elle, est à CH 58.",
+      citationCle:
+        "Les installations doivent être entretenues régulièrement et maintenues en bon état de fonctionnement. En particulier, les conduits de fumée, les cheminées et tous les appareils doivent être ramonés et nettoyés une fois par an.",
       statut: "retenu",
       obligations: ["aeration-erp-chauffage-ventilation-annuelle"],
+      reserve:
+        "DEUX ACTES DISTINCTS SOUS UNE SEULE LIGNE, relevé le 2026-09-01. `aeration-erp-chauffage-ventilation-annuelle` s'intitule « Vérification annuelle des installations techniques de chauffage-ventilation » et cite CH 57 et CH 58 ensemble. Mais le ramonage annuel de CH 57 et la vérification technique annuelle de CH 58 sont deux obligations différentes : elles n'ont ni le même objet, ni le même réalisateur — CH 58 § 1 renvoie à la section II du chapitre Ier, donc à un organisme agréé ou un technicien compétent au sens de GE 6, là où le ramonage n'appelle personne en particulier. Un exploitant qui coche la ligne après une visite de maintenance aura l'air d'avoir ramoné.\n\nSCISSION PROPOSÉE ET NON FAITE PAR LE LOT A, le 2026-09-01. L'argument complet — deux objets, deux réalisateurs, ce que la confusion coûte, ce que la scission coûte — est écrit dans les `notesInternes` de l'obligation, à l'endroit où la décision se prendra. Ce que le lot a fait ici : la `note` de la référence CH 57 dit désormais en toutes lettres que le ramonage n'est PAS l'acte que la ligne planifie, de sorte que le manque est lisible sur la fiche et pas seulement au corpus. Une scission créerait une obligation, ce que le mandat du lot A exclut ; elle appartient à la propriétaire.",
     },
     {
       ref: "CH 58",
+      intitule: "Vérifications techniques",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
       versionEnVigueur: "2025-09-10",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      citationCle:
+        "§ 2. Les vérifications périodiques doivent avoir lieu tous les ans et concernent : - les installations de production de chaleur ou de froid visées aux sections II, V et VI du présent chapitre ; - le stockage des combustibles visé à la section III ; - les installations de traitement d'air et de ventilation visées à la section VII ; - les appareils de production-émission de chaleur à combustion et les systèmes thermodynamiques visés à la section VIII. […] Les systèmes thermodynamiques visés à l'article CH 35 font l'objet d'un contrôle d'étanchéité qui fait mention des résultats des détections de fuites directes ou indirectes. De plus, les dispositifs de sécurité et les asservissements liés, visés à l'article CH 35 §3, doivent être vérifiés dans leur totalité tous les 3 ans.",
       statut: "retenu",
       obligations: ["aeration-erp-chauffage-ventilation-annuelle"],
       prescrit:
@@ -79,48 +91,121 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
     },
     {
       ref: "GC 22",
+      intitule: "Vérifications techniques",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
       versionEnVigueur: "1980-08-15",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Deux paragraphes. Le § 1 renvoie le régime de la vérification à la section II du chapitre Ier — donc à GE 6 et suivants, personne ou organisme agréé. Le § 2 fixe l'annuelle, en énumérant limitativement ce qu'elle couvre (grandes cuisines, offices de remise en température, îlots de cuisson, autres appareils à poste fixe) et ce qu'elle a pour objet, en quatre points.",
+      citationCle:
+        "§ 2. Les vérifications périodiques doivent avoir lieu tous les ans et concernent : - les grandes cuisines isolées ou non des locaux accessibles au public visées à la section II ; - les offices de remise en température visés à la section III ; - les îlots de cuisson visés à la section IV ; - les autres appareils à poste fixe visés à la section VI. Elles ont pour objet de s'assurer : - de l'état d'entretien et de maintenance des installations et appareils ; - des conditions de ventilation des locaux contenant des appareils de cuisson ou de remise en température : conditions d'évacuation de l'air vicié, des buées et des graisses, fonctionnement de l'installation d'extraction des fumées ; - de la signalisation des dispositifs de sécurité ; - de la manœuvre des dispositifs d'arrêt d'urgence.",
       statut: "retenu",
       obligations: [
         "cuisson-erp-appareils-annuelle",
-        "cuisson-erp-extinction-automatique-annuelle",
         "cuisson-erp-verification-initiale",
       ],
+      reserve:
+        "DEUX CHOSES RELEVÉES LE 2026-09-01, ARTICLE LU EN ENTIER.\n\n(1) L'EXTINCTION AUTOMATIQUE N'EST PAS DANS GC 22 — CORRIGÉ LE 2026-09-01 (lot A). L'objet de la vérification annuelle y est énuméré en quatre points, et aucun ne vise un système d'extinction automatique : entretien et maintenance, ventilation et évacuation des buées et graisses, signalisation des dispositifs de sécurité, manœuvre des arrêts d'urgence. `cuisson-erp-extinction-automatique-annuelle` citait l'article pour une chose qu'il ne dit pas ; la référence est retirée, et le fondement est MS 73 § 2 — déjà cité par elle, comme GC 8 (existence du dispositif). Aucun texte ajouté : deux références de contexte déjà là, dont l'une remonte en fondement.\n\n(2) LE RAMONAGE ANNUEL ET LE NETTOYAGE HEBDOMADAIRE DES FILTRES SONT À GC 21, NON ICI, et GC 21 § 3 impose en outre un livret d'entretien annexé au registre de sécurité. GC 21 est au corpus avec son verbatim ; le rappeler ici évite de croire que GC 22 porte tout le chapitre.",
+    },
+    {
+      ref: "GZ 13",
+      intitule: "Conformité de l'installation et mise en service",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051268454/",
+      versionEnVigueur: "2026-01-01",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
+      prescrit:
+        "Quatre paragraphes, dont un seul vise l'exploitant. §§ 1 à 3 : c'est l'INSTALLATEUR qui vérifie la résistance mécanique et l'étanchéité de ce qu'il réalise ou modifie, et qui établit un certificat de conformité par intervention créant ou modifiant des canalisations fixes — un certificat par installateur quand ils sont plusieurs, les dispenses étant renvoyées aux guides de GZ 3. § 4 : L'UTILISATION DU GAZ NE PEUT COMMENCER QU'APRÈS VÉRIFICATION DE L'INSTALLATION par une personne ou un organisme AGRÉÉ, avec rapport de vérification technique conforme à GE 9 et visa apposé sur l'exemplaire du certificat de conformité joint au registre de sécurité. C'est un préalable à la mise en service, pas une périodicité.",
+      citationCle:
+        "§ 4. L'utilisation du gaz ne peut intervenir qu'après vérification de l'installation, par une personne ou un organisme agréé. Cette vérification doit faire l'objet d'un rapport de vérification technique conforme aux dispositions de l'article GE 9. Un visa apposé par cette personne ou cet organisme sur l'exemplaire du certificat de conformité joint au registre de sécurité atteste que l'installation satisfait aux exigences règlementaires.",
+      statut: "obligation_manquante",
+      motif:
+        "Le § 4 impose à l'exploitant une vérification de l'installation de gaz par une personne ou un organisme agréé AVANT toute utilisation du gaz, avec une pièce à joindre au registre de sécurité — rapport de vérification technique conforme à GE 9, et visa sur le certificat de conformité. Le référentiel ne porte rien de tel : `cuisson-gaz-installations-annuelle` porte la seule périodique de GZ 15, et `cuisson-erp-verification-initiale` porte la mise en service des appareils de cuisson, pas celle de l'installation de gaz. Signalé sans être encodé : l'ajout d'obligation ne relève pas du lot de traçabilité du 2026-09-01.",
+      bloquePar:
+        "Aucune catégorie d'équipement « installation de gaz ». Le rythme est encodable — `mise_en_service_uniquement` existe —, mais l'accrocher à `APPAREIL_CUISSON_ERP` sous-appliquerait : une installation de gaz alimente aussi un chauffage ou une production d'eau chaude, et GZ 13 vise l'installation, pas l'appareil. Même blocage que l'arrêté du 23 février 2018, art. 26 § 3.",
+    },
+    {
+      ref: "GZ 14",
+      intitule: "Entretien des installations",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051268450/",
+      versionEnVigueur: "2026-01-01",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
+      prescrit:
+        "§ 1 : le maintien en l'état et l'entretien des installations de gaz, des appareils à gaz et de leurs systèmes d'évacuation des produits de combustion INCOMBENT À L'EXPLOITANT ; le distributeur, lui, entretient l'organe de coupure de branchement. § 2 : sur le domaine public, le maire maintient l'ACCÈS à l'organe de coupure et l'exploitant sa SIGNALISATION ; sur le domaine privé, l'exploitant maintient les deux et avertit sans délai le distributeur en cas de difficulté. Aucune périodicité : ce sont des états à tenir.",
+      citationCle:
+        "§ 1. Le maintien en l'état et l'entretien des installations de gaz, des appareils à gaz et de leurs systèmes d'évacuation des produits de combustion incombent à l'exploitant. Le distributeur assure l'entretien de l'organe de coupure de branchement.",
+      statut: "obligation_manquante",
+      motif:
+        "Deux obligations d'exploitant, aucune portée. (1) L'entretien et le maintien en l'état des installations de gaz, des appareils et de leurs systèmes d'évacuation — un état permanent, du même genre que le « maintenus en bon état de fonctionnement » de R. 4227-29, que le référentiel porte pour les extincteurs et pas ici. La vérification annuelle de GZ 15 CONSTATE cet entretien, elle ne le remplace pas : `cuisson-gaz-installations-annuelle` est la seule ligne du domaine et elle porte la vérification, pas l'entretien. (2) Le maintien en l'état de la signalisation de l'organe de coupure de branchement, et de son accès lorsqu'il est sur le domaine privé. Signalé sans être encodé, comme GZ 13.",
+      bloquePar:
+        "Même blocage que GZ 13 : aucune catégorie d'équipement « installation de gaz ». S'y ajoute, pour le § 2, que le référentiel ne connaît pas l'organe de coupure de branchement ni sa localisation — domaine public ou privé —, dont dépend le partage entre le maire et l'exploitant.",
     },
     {
       ref: "GZ 15",
+      intitule: "Vérifications techniques périodiques",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304213/",
       versionEnVigueur: "2026-01-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Fixe l'objet et le rythme ANNUEL des vérifications techniques des installations de gaz, en huit points — dont l'étanchéité des installations et le réglage des détendeurs —, et renvoie leur régime à la section II du chapitre Ier, c'est-à-dire à GE 6 et suivants.",
+      citationCle:
+        "Elles ont pour objet de s'assurer : - de l'état d'entretien et de maintenance des installations et appareils à gaz ; - des conditions de ventilation des locaux contenant des appareils alimentés en gaz ; - des conditions d'évacuation des produits de combustion ; - de la signalisation des dispositifs de sécurité ; - de la manœuvre des organes de coupure du gaz ; - du fonctionnement des dispositifs asservissant l'alimentation en gaz à un système de sécurité ; - du réglage des détendeurs ; - de l'étanchéité des installations de gaz. Elles sont réalisées annuellement conformément à la section II, chapitre premier du présent titre.",
       statut: "retenu",
       obligations: ["cuisson-gaz-installations-annuelle"],
+      reserve:
+        "NUMÉROTATION REFAITE, ET L'ARTICLE S'OUVRE SUR UN PRONOM. Relevé le 2026-09-01 : le chapitre VI a été récrit par l'arrêté du 23 février 2025, en vigueur au 1er janvier 2026, et il s'arrête désormais à GZ 15 — l'ancienne numérotation allait jusqu'à GZ 30, et c'est GZ 30 que la littérature professionnelle cite encore pour l'annuelle. Toute référence à « GZ 30 » rencontrée ailleurs vise ce texte-ci.\n\nLe texte de GZ 15 commence par « Elles ont pour objet de s'assurer » sans antécédent dans l'article.\n\nOÙ EST L'ANTÉCÉDENT, VÉRIFIÉ LE 2026-09-01. Le relevé du matin renvoyait à GZ 13 et GZ 14 ; les deux articles ont été ouverts depuis, et ILS NE LE PORTENT PAS. GZ 13 parle d'une « vérification » au singulier, faite par l'installateur puis par un organisme agréé avant la mise en service ; GZ 14 parle d'entretien. Aucun des deux n'introduit « les vérifications techniques périodiques » au pluriel. Le seul antécédent de « Elles » est l'INTITULÉ de GZ 15 lui-même — « Vérifications techniques périodiques » —, ce qui reste un défaut de rédaction du texte officiel, mais pas celui qu'on croyait. GZ 13 et GZ 14 sont entrés au corpus le même jour, tous deux en `obligation_manquante` : GZ 13 § 4 porte une vérification avant mise en service du gaz, GZ 14 § 1 l'entretien à la charge de l'exploitant, et le référentiel ne porte ni l'une ni l'autre. Signalés, non encodés.",
     },
     {
       ref: "GE 6",
+      intitule: "Vérifications techniques — généralités",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303884/",
       versionEnVigueur: "2007-11-19",
       versionFuture: "2027-06-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Article de RÉGIME, pas d'échéance : il dit QUI vérifie — organisme agréé par le ministre de l'intérieur, ou technicien compétent —, et réserve l'organisme agréé aux cas où la suite du règlement le prévoit. Aucun acte, aucun rythme. C'est lui que visent tous les renvois « dans les conditions prévues à la section II du chapitre Ier » (CH 58, GC 22, GZ 15, EL 19).",
+      citationCle:
+        "§ 1. Les vérifications techniques prévues par l'article R. 123-43 du code de la construction et de l'habitation doivent être effectuées soit par des organismes agréés par le ministre de l'intérieur, soit par des techniciens compétents. § 2. Les vérifications techniques doivent être effectuées par des organismes agréés lorsque la suite du présent règlement le prévoit.",
       statut: "retenu",
       obligations: ["elec-erp-mise-en-service"],
+      reserve:
+        "RENVOI VERS UNE NUMÉROTATION ABROGÉE, à ne pas recopier. LE RENVOI MORT EST DANS LE TEXTE OFFICIEL, pas dans le référentiel : c'est GE 6 lui-même, tel que Légifrance le publie aujourd'hui, qui fonde tout le régime sur « les vérifications techniques prévues par l'article R. 123-43 du code de la construction et de l'habitation » — numéro disparu à la recodification du CCH par le décret n° 2021-872 du 30 juin 2021. Relevé le 2026-09-01, verbatim relu à la source. Il n'y a rien à corriger dans le corpus : le corriger consisterait à réécrire l'arrêté.\n\nAUCUNE CORRESPONDANCE N'EST POSÉE ICI, et c'est délibéré. La piste la plus proche est le CCH R. 143-34, ouvert le 2026-09-01 : « Les constructeurs, installateurs et exploitants sont tenus [...] de s'assurer que les installations ou équipements sont établis, maintenus et entretenus en conformité [...] A cet effet, ils font respectivement procéder pendant la construction et périodiquement en cours d'exploitation aux vérifications nécessaires par les organismes ou personnes agréés dans les conditions fixées par les articles R. 141-15, R. * 141-16 et R. 141-17. » Le contenu concorde, mais AUCUNE source lue n'établit la concordance de numérotation : ni la page de R. 143-34, qui ne mentionne aucun ancien numéro, ni une table de concordance. C'est donc une piste, pas un constat, et elle ne se recopie pas comme si elle en était un. L'article n'a pas été rafraîchi depuis, et une version future est programmée au 1er juin 2027 : c'est là qu'il faudra vérifier si le renvoi est corrigé. Depuis le 2026-09-01, ce rendez-vous n'est plus une phrase : `elec-erp-mise-en-service` porte une `relectureDue` au 2027-06-01, et un test échouera ce jour-là.\n\nCE QUE L'ARTICLE NE DIT PAS. `elec-erp-mise-en-service` le cite avec un réalisateur « organisme agréé », ce qui n'est vrai que par le § 2 — donc seulement quand un autre article l'impose ; GE 6 pris seul admet aussi le technicien compétent. Le caractère agréé vient de GE 7 et GE 8, cités dans la même `reference` mais absents du corpus.",
     },
     {
       ref: "EL 18",
+      intitule: "Maintenance, exploitation",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020314182/",
       versionEnVigueur: "2019-07-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Quatre paragraphes, dont trois que le référentiel ne porte pas. § 1 : entretien et réparation des défectuosités dès leur constatation. § 2 : PRÉSENCE PHYSIQUE d'une personne qualifiée pendant la présence du public en 1re et 2e catégorie, imposable en 3e et 4e après avis de la commission de sécurité. § 3 : renvoi de l'éclairage de sécurité à EC 13 et EC 14. § 4 : entretien et essais des groupes électrogènes de sécurité, quinzaine et mois, consignés dans un registre d'entretien.",
+      citationCle:
+        "§ 1. Les installations doivent être entretenues et maintenues en bon état de fonctionnement. Les défectuosités et les défauts d'isolement doivent être réparés dès leur constatation. § 2. Dans tout établissement de 1re ou 2e catégorie, la présence physique d'une personne qualifiée est requise pendant la présence du public pour, conformément aux consignes données, assurer l'exploitation et l'entretien quotidien. Une telle mesure peut être imposée après avis de la commission de sécurité dans les établissements de 3e et de 4e catégorie si l'importance ou l'état des installations électriques le justifie.",
       statut: "retenu",
       obligations: ["elec-erp-groupe-electrogene-annuel"],
+      reserve:
+        "LE § 2 N'EST ENCODÉ NULLE PART, relevé le 2026-09-01. C'est une obligation d'employeur, nominative, permanente et conditionnée à la catégorie de l'établissement : « la présence physique d'une personne qualifiée est requise pendant la présence du public ». Aucune obligation du référentiel ne la porte, et le corpus ne la comptait pas comme manquante puisque l'article était déjà classé « retenu » au titre du seul § 4. Non corrigé : le lot ne crée pas d'obligation.",
     },
     {
       ref: "MS 38",
+      intitule: "Appareils mobiles — caractéristiques et vérification des extincteurs",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000020303557/LEGISCTA000020317639/",
+      prescrit:
+        "§ 4 : un extincteur fait l'objet d'une vérification ANNUELLE et d'une révision TOUS LES DIX ANS par une personne ou un organisme compétent, avec étiquette d'identification portant les années et les mois des vérifications ; le plan d'implantation et le relevé des vérifications sont portés au registre de sécurité. Les § 1 à § 3 portent la dotation, le marquage et les caractéristiques de l'appareil, pas sa vérification. Chemin : Livre II > Titre Ier > Chapitre XI > Section 2 > Sous-section 9 — donc écarté en 5ᵉ catégorie par PE 1 § 1.",
+      citationCle:
+        "Un extincteur doit faire l'objet d'une vérification annuelle et d'une révision tous les dix ans par une personne ou un organisme compétent. Il doit être marqué d'une étiquette clairement identifiable apposée par la personne ou l'organisme ayant réalisé cette dernière. Les années et les mois des vérifications doivent apparaître sur l'étiquette. Un plan d'implantation des extincteurs et un relevé des vérifications doivent être portés au registre de sécurité.",
       versionEnVigueur: "2008-10-08",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
-      obligations: ["incendie-erp-extincteurs-annuelle"],
+      obligations: ["incendie-erp-extincteurs-annuelle"],      reserve:
+        "La RÉVISION DÉCENNALE du § 4 — « une révision tous les dix ans par une personne ou un organisme compétent » — n'est portée par aucune obligation du référentiel. `incendie-erp-extincteurs-annuelle` porte l'annuelle du même paragraphe et rien d'autre. Relevé le 2026-09-01, non corrigé : ce lot est un relevé.",
+
     },
     {
       ref: "MS 73",
@@ -140,28 +225,53 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
     },
     {
       ref: "EC 14",
+      intitule: "Exploitation de l'éclairage de sécurité (ERP)",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000020303557/LEGISCTA000020317456/",
+      prescrit:
+        "§ 3 : l'exploitant s'assure lui-même, une fois par mois, du passage en position de fonctionnement et de l'allumage de toutes les lampes, et de l'efficacité de la commande de mise en repos à distance et de la remise automatique en veille ; une fois tous les six mois, de l'autonomie d'au moins 1 heure. Ces opérations peuvent être automatiques avec des blocs SATI. Elles et leurs résultats sont consignés au registre de sécurité. Les § 1 et § 2 portent les états de veille, de repos et d'arrêt, sans périodicité.",
+      citationCle:
+        "L'exploitant s'assure périodiquement : - une fois par mois : - du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et à la vérification de l'allumage de toutes les lampes (le fonctionnement doit être strictement limité au temps nécessaire au contrôle visuel) ; - de l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. - une fois tous les six mois, de l'autonomie d'au moins 1 heure. Ces opérations peuvent être effectuées automatiquement par l'utilisation de blocs autonomes comportant un système automatique de test intégré (SATI) conforme à la norme NF C 71-820 (mai 1999). Dans les établissements comportant des périodes de fermeture, ces opérations sont effectuées de telle manière qu'au début de chaque période d'ouverture au public l'installation d'éclairage ait retrouvé l'autonomie prescrite. Les opérations ci-dessus et leurs résultats doivent être consignés dans le registre de sécurité.",
       versionEnVigueur: "2010-05-16",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: [
         "incendie-erp-eclairage-securite-autonomie-semestrielle",
         "incendie-erp-eclairage-securite-essai-mensuel",
-      ],
+      ],      reserve:
+        "La NF C 71-820 (mai 1999) visée par le § 3 est une norme privée : elle ne fonde rien, c'est EC 14 qui autorise l'automatisation par SATI. L'exception SATI n'est encodée dans aucune condition du référentiel, pas plus côté ERP que côté lieu de travail.",
+
     },
     {
       ref: "EC 15",
+      intitule: "Vérifications des installations d'éclairage (ERP)",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000020303557/LEGISCTA000020317456/",
+      prescrit:
+        "Rien par lui-même : article de RENVOI d'une phrase. Il soumet les installations d'éclairage aux conditions de EL 19, qui porte seul la périodicité annuelle. Citer EC 15 sans EL 19 ne fonde aucune fréquence.",
+      citationCle:
+        "Les installations d'éclairage doivent être vérifiées dans les conditions de l'article EL 19.",
       versionEnVigueur: "1980-08-15",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: ["incendie-erp-baes-annuelle"],
     },
     {
       ref: "EL 19",
+      intitule: "Vérifications techniques des installations électriques et d'éclairage (ERP)",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000020303557/LEGISCTA000020314182/",
+      prescrit:
+        "TROIS PARAGRAPHES, ET ILS NE DISENT PAS LA MÊME CHOSE. § 1 : renvoi de régime à la section II du chapitre Ier (GE 6 et s.). § 2 : conformité des installations NEUVES OU AYANT FAIT L'OBJET DE TRAVAUX, vérifiée dans les conditions de GE 7 et GE 8 § 1. § 3 : c'est LUI qui porte l'annuelle, pour les installations NON MODIFIÉES, dans les conditions de GE 10 — avec une liste close d'articles couverts dont EC 13 et EC 14 § 3, ce qui rattache l'éclairage de sécurité à cette annuelle. Chemin : Livre II > Titre Ier > Chapitre VII > Section 4 — donc écarté en 5ᵉ catégorie par PE 1 § 1.",
+      citationCle:
+        "§ 3. Les vérifications périodiques des installations non modifiées doivent être effectuées annuellement dans les conditions prévues à l'article GE 10. Elles concernent les articles suivants à condition qu'ils soient applicables à l'établissement : ― EL 4 (§ 4) ; EL 5 (§ 1, 4 et 5) ; EL 8 (§ 3) ; EL 10 (§ 4) ; EL 11 (§ 3, 4 et 7) ; EL 15 (§ 3) ; EL 17 et EL 18 ; ― EC 5 (§ 5) ; EC 6 (§ 5 et 6) ; EC 7 ; EC 9 (§ 1) ; EC 13 et EC 14 (§ 3). Elles ont pour objet de s'assurer : de l'absence de modifications depuis la dernière vérification ; de l'état d'entretien et de maintenance des installations ; de l'existence d'un relevé des essais ; du maintien en l'état des installations d'éclairage ; du bon état apparent des éventuelles installations extérieures de protection contre la foudre.",
       versionEnVigueur: "2010-01-23",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      // LU DEUX FOIS LE MÊME JOUR par deux lots qui s'ignoraient. Les deux
+      // relevés concordent sur le fond — le § 3 porte l'annuelle — et chacun
+      // a rapporté ce que l'autre n'avait pas : la liste close d'articles d'un
+      // côté, la structure des trois paragraphes de l'autre, et une réserve
+      // différente chacun. Les deux réserves sont conservées ci-dessous.
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: [
         "elec-erp-cat1-4-annuelle",
@@ -169,22 +279,40 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
         "elec-erp-mise-en-service",
         "incendie-erp-baes-annuelle",
       ],
+      reserve:
+        "PARAGRAPHE MAL DÉSIGNÉ — CORRIGÉ LE 2026-09-01 (lot A). `elec-erp-cat1-4-annuelle` citait « EL 19 § 1 et § 2 » pour fonder une vérification ANNUELLE. Le § 1 n'est qu'un renvoi de régime et le § 2 vise les installations neuves ou modifiées — donc exactement l'objet de `elec-erp-mise-en-service`, l'autre ligne : les deux citaient le même paragraphe pour deux actes opposés, et celle qui l'avait juste était l'autre. L'annuelle est recalée sur le § 3, qui vise « les installations NON MODIFIÉES » et renvoie à GE 10. Les quatre obligations rattachées à cet article désignent désormais chacune leur paragraphe dans leur `reference` — la clé, elle, reste « EL 19 » pour toutes : le corpus ne descend pas au paragraphe.\n\nLA LISTE CLOSE DU § 3 N'EST PAS MODÉLISÉE. Le paragraphe énumère limitativement les articles couverts par l'annuelle, et c'est par EC 13 et EC 14 § 3 que l'éclairage de sécurité y entre — ce qui fonde `incendie-erp-baes-annuelle`. Le référentiel ne sait pas porter une liste d'articles couverts ; relevé, non encodé.\n\nDeux articles de régime cités par EL 19 manquent au corpus : GE 10 (conditions des vérifications périodiques) et GE 7 / GE 8 (organismes agréés, installations neuves).\n\nET LE DERNIER ALINÉA RENVOIE À UN TEXTE ABROGÉ : « Il conviendra d'adjoindre à ce document le rapport de vérification périodique effectuée au titre du décret n° 88-1056 du 14 novembre 1988. » Ce décret a été abrogé et recodifié aux articles R. 4226-* du Code du travail. Le renvoi est dans le texte officiel, ce n'est pas une erreur du référentiel — relevé, non recopié comme vivant.",
     },
     {
       ref: "DF 10",
+      intitule: "Vérifications techniques des installations de désenfumage (ERP)",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000020303557/LEGISCTA000020304211/",
+      prescrit:
+        "§ 2 : la périodicité des vérifications de désenfumage est de UN AN, sur six points énumérés (commandes manuelles et automatiques, volets/exutoires/ouvrants, fermeture des éléments mobiles de compartimentage, arrêt de la ventilation de confort, ventilateurs de désenfumage, mesures de pression, débit et vitesse en désenfumage mécanique). § 3 : lorsque coexistent un désenfumage MÉCANIQUE et un SSI de catégorie A ou B, les vérifications sont faites TOUS LES TROIS ANS par un organisme agréé.",
+      citationCle:
+        "§ 2. La périodicité des vérifications est de un an. Elles concernent : le fonctionnement des commandes manuelles et automatiques ; le fonctionnement des volets, exutoires et ouvrants de désenfumage ; la fermeture des éléments mobiles de compartimentage participant à la fonction désenfumage ; l'arrêt de la ventilation de confort mentionné à l'article DF 3, § 5 ; le fonctionnement des ventilateurs de désenfumage ; les mesures de pression, de débit et de vitesse, dans le cas du désenfumage mécanique. § 3. Lorsque existent une installation de désenfumage mécanique et un système de sécurité incendie de catégorie A ou B, les vérifications sont effectuées tous les trois ans par un organisme agréé.",
       versionEnVigueur: "2007-10-28",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
-      obligations: ["incendie-erp-desenfumage-annuelle"],
+      obligations: ["incendie-erp-desenfumage-annuelle"],      reserve:
+        "Le § 3 — triennale par organisme agréé quand désenfumage mécanique ET SSI de catégorie A ou B — n'est porté par aucune obligation : `incendie-erp-desenfumage-annuelle` porte l'annuelle du § 2 et rien d'autre. La cause est connue et inchangée : la condition croise deux catégories d'équipement, que le modèle ne sait pas exprimer. Reconstaté à la source le 2026-09-01.",
+
     },
     {
       ref: "GE 4",
+      intitule: "Visites périodiques des établissements des quatre premières catégories",
+      url: "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000029642660/",
+      prescrit:
+        "§ 1 : les établissements des 1re, 2e, 3e et 4e catégories sont visités périodiquement par les commissions de sécurité selon un TABLEAU croisant le type (J, L, M, N, O, P, R avec ou sans hébergement, S, T, U, V, W, X, Y) et la catégorie, qui donne trois ans ou cinq ans. Ce n'est donc pas une périodicité unique. Aucune ligne de 5ᵉ catégorie : l'article relève du Livre II, écarté en 5ᵉ par PE 1 § 1.",
+      citationCle:
+        "Les établissements des 1re, 2e, 3e et 4e catégories doivent être visités périodiquement par les commissions de sécurité selon la fréquence fixée au tableau suivant en fonction de leur type et de leur catégorie",
       versionEnVigueur: "2015-01-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
-      obligations: ["incendie-erp-5-visite-commission"],
+      obligations: ["incendie-erp-5-visite-commission"],      reserve:
+        "(1) LA FIN DE VIGUEUR AU 1ER JUIN 2027 RELEVÉE ICI LE 2026-09-01 EST FAUSSE, et `versionFuture` est retirée le même jour. Trois lectures à la source, le 2026-09-01 : la page de section du chapitre Ier (LEGISCTA000020303872) affiche « Version en vigueur depuis le 01/01/2015 » pour GE 4, sans terme ; la page d'article (LEGIARTI000029642660) ne porte ni version future ni abrogation programmée ; et l'arrêté du 19 février 2026, ouvert au JO, ne modifie dans la série GE que GE 2, GE 6 et GE 7. Les deux articles de cette section qui portent bien « du ... au 01/06/2027 » sont GE 2 et GE 6 — GE 6 est au corpus et sa `versionFuture` est exacte. Le relevé du matin a donc étendu à GE 4 un terme lu sur ses voisins. Conséquence : aucune `relectureDue` n'est due sur `incendie-erp-5-visite-commission` de ce chef ; le rendez-vous du 1er juin 2027 est posé sur `elec-erp-mise-en-service`, seule obligation à citer GE 6. (2) Le § 3 est un PLAFOND, pas un rythme : quand un établissement sans hébergement enchaîne deux visites périodiques favorables, « le délai fixé pour sa prochaine visite par le tableau ci-dessus peut être prolongé dans la limite de cinq ans ». « Dans la limite de cinq ans » n'est pas « tous les cinq ans », et le § 4 permet en outre au maire ou au préfet de modifier la fréquence.",
+
     },
   ],
 };

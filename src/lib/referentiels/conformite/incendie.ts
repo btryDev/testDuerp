@@ -128,6 +128,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "R. 4227-28",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532081/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -135,6 +136,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "R. 4227-29",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489127/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "autre",
@@ -162,11 +164,20 @@ export const obligationsIncendie: Obligation[] = [
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
-        reference: "R. 4227-37 et R. 4227-38",
+        reference: "R. 4227-37",
         article: "R. 4227-37",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769379/",
         note: "« Dans les établissements mentionnés à l'article R. 4227-34, une consigne de sécurité incendie est établie et affichée de manière très apparente [...] » Verbatim relevé le 2026-08-31. L'article ne subordonne la consigne à AUCUN équipement : il ne nomme ni extincteur ni alarme. Son seul critère est le champ de R. 4227-34.",
+        versionConstatee: "2011-11-10",
+      },
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4227-38",
+        article: "R. 4227-38",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769384/",
+        note: "« La consigne de sécurité incendie indique : 1° Le matériel d'extinction et de secours qui se trouve dans le local ou à ses abords ; [...] 8° Le devoir, pour toute personne apercevant un début d'incendie, de donner l'alarme et de mettre en œuvre les moyens de premier secours, sans attendre l'arrivée des travailleurs spécialement désignés. » Verbatim relevé le 2026-09-01. C'est de cet article que la description tient ses huit points ; il n'ajoute ni champ ni périodicité, il donne le contenu de l'écrit que R. 4227-37 fait établir.",
         versionConstatee: "2011-11-10",
       },
     ],
@@ -180,7 +191,7 @@ export const obligationsIncendie: Obligation[] = [
     typologies: { travail: true, personnesPresentesMin: 51, champR422734: true },
     equipementsEnContexte: ["EXTINCTEUR", "ALARME_INCENDIE"],
     notesInternes:
-      "Amendement 2026-08-25 (relecture Légifrance R. 4227-34, -37, -38) : la consigne affichée n'est due que dans les établissements de R. 4227-34, par renvoi exprès de R. 4227-37 ; hors de ce champ le texte ne demande que des « instructions » d'évacuation. L'obligation était encodée sans seuil (sur-application à tout employeur) et sa description exigeait une « mise à jour à chaque changement notable » qui ne figure dans aucun des deux articles — retirée. La périodicité annuelle est une convention de rappel, aucun texte ne fixe de périodicité à la consigne. R. 4227-37 porte une version future au 01/01/2027 : à relire à cette date.\n\nAMENDEMENT 2026-08-27, même audit. L'obligation affichait une échéance ANNUELLE en ne citant que R. 4227-37, qui ne porte aucune périodicité — vérifié sur toute la section. Aucun texte n'impose de réafficher ou de réviser la consigne chaque année.\n\n`periodicite` passe à `autre`. L'affichage de la consigne est une obligation PERMANENTE, pas une échéance : elle est due tant que l'établissement entre dans le champ de R. 4227-34, et elle se met à jour quand l'organisation change — pas à date fixe. Ce qui est bien périodique, dans la même sous-section, ce sont les exercices et essais semestriels de R. 4227-39, portés par `incendie-travail-exercice-semestriel`.\n\nAMENDEMENT 2026-08-31, lot « faux négatifs d'ancrage ». `categoriesEquipement: [EXTINCTEUR, ALARME_INCENDIE]` est retiré au profit du porteur établissement (ADR-022). R. 4227-37 relu au verbatim ce jour : il ne mentionne aucun équipement. Le champ de l'obligation est celui de R. 4227-34, et il est DÉJÀ encodé — `personnesPresentesMin: 51` et `champR422734`. La liste d'équipements ne restreignait donc rien de ce que le texte restreint : elle ajoutait une condition que le texte n'écrit pas, et qui produisait un faux négatif chez tout établissement du champ de R. 4227-34 n'ayant déclaré ni extincteur ni alarme. Les deux catégories passent en `equipementsEnContexte`, à titre indicatif — c'est bien le matériel que la consigne doit désigner (R. 4227-38 1°), mais le désigner n'est pas en avoir déclaré un dans l'outil.\n\nNATURE : ÉTAT PERMANENT, `pieceAttendue: \"consigne de sécurité incendie\"` (ADR-026). R. 4227-37 fait ÉTABLIR la consigne avant de la faire afficher : c'est un écrit, et son contenu est fixé par R. 4227-38. Deux affichages voisins n'en sont pas — l'affichage des coordonnées (D. 4711-1) et l'avis d'accès au DUERP (R. 4121-4) portent `pieceAttendue: null`, parce que ce que le texte exige y est l'affichage lui-même, pas la détention d'une pièce.",
+      "Amendement 2026-08-25 (relecture Légifrance R. 4227-34, -37, -38) : la consigne affichée n'est due que dans les établissements de R. 4227-34, par renvoi exprès de R. 4227-37 ; hors de ce champ le texte ne demande que des « instructions » d'évacuation. L'obligation était encodée sans seuil (sur-application à tout employeur) et sa description exigeait une « mise à jour à chaque changement notable » qui ne figure dans aucun des deux articles — retirée. La périodicité annuelle est une convention de rappel, aucun texte ne fixe de périodicité à la consigne. R. 4227-37 porte une version future au 01/01/2027 : à relire à cette date.\n\nAMENDEMENT 2026-08-27, même audit. L'obligation affichait une échéance ANNUELLE en ne citant que R. 4227-37, qui ne porte aucune périodicité — vérifié sur toute la section. Aucun texte n'impose de réafficher ou de réviser la consigne chaque année.\n\n`periodicite` passe à `autre`. L'affichage de la consigne est une obligation PERMANENTE, pas une échéance : elle est due tant que l'établissement entre dans le champ de R. 4227-34, et elle se met à jour quand l'organisation change — pas à date fixe. Ce qui est bien périodique, dans la même sous-section, ce sont les exercices et essais semestriels de R. 4227-39, portés par `incendie-travail-exercice-semestriel`.\n\nAMENDEMENT 2026-08-31, lot « faux négatifs d'ancrage ». `categoriesEquipement: [EXTINCTEUR, ALARME_INCENDIE]` est retiré au profit du porteur établissement (ADR-022). R. 4227-37 relu au verbatim ce jour : il ne mentionne aucun équipement. Le champ de l'obligation est celui de R. 4227-34, et il est DÉJÀ encodé — `personnesPresentesMin: 51` et `champR422734`. La liste d'équipements ne restreignait donc rien de ce que le texte restreint : elle ajoutait une condition que le texte n'écrit pas, et qui produisait un faux négatif chez tout établissement du champ de R. 4227-34 n'ayant déclaré ni extincteur ni alarme. Les deux catégories passent en `equipementsEnContexte`, à titre indicatif — c'est bien le matériel que la consigne doit désigner (R. 4227-38 1°), mais le désigner n'est pas en avoir déclaré un dans l'outil.\n\nNATURE : ÉTAT PERMANENT, `pieceAttendue: \"consigne de sécurité incendie\"` (ADR-026). R. 4227-37 fait ÉTABLIR la consigne avant de la faire afficher : c'est un écrit, et son contenu est fixé par R. 4227-38. Deux affichages voisins n'en sont pas — l'affichage des coordonnées (D. 4711-1) et l'avis d'accès au DUERP (R. 4121-4) portent `pieceAttendue: null`, parce que ce que le texte exige y est l'affichage lui-même, pas la détention d'une pièce.\n\nAMENDEMENT 2026-09-01, lot « traçabilité ». `R. 4227-38` était nommé dans la prose de `reference` (« R. 4227-37 et R. 4227-38 ») et dans la description, mais la clé `article` ne désignait que le 37 : l'article était donc irrattachable au corpus, où il n'existait pas. Ouvert à la source ce jour (LEGIARTI000024769384, version en vigueur depuis le 10 novembre 2011, sans terme programmé — contrairement à R. 4227-37 qui, lui, s'arrête au 1er janvier 2027). Il entre au corpus avec son verbatim intégral et devient une `ReferenceLegale` à part entière ; `reference` se réduit à « R. 4227-37 » pour le premier élément, qui reste l'article fondateur. Aucun champ d'empreinte n'est touché : `referencesLegales` en est hors, et R. 4227-38 ne porte ni champ d'application ni périodicité propres.",
   },
   {
     id: "incendie-travail-exercice-semestriel",
@@ -246,6 +257,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769386",
         note: "Consignation sur registre des essais et exercices périodiques, avec leur date et les observations auxquelles ils ont donné lieu.",
+        versionConstatee: "2011-11-10",
       },
       {
         source: "CODE_TRAVAIL",
@@ -279,9 +291,9 @@ export const obligationsIncendie: Obligation[] = [
         reference: "D. 4711-3 — conservation cinq ans",
         article: "D. 4711-3",
         url:
-          "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018493740/",
-        note: "« L'employeur conserve les documents [...] des cinq dernières années et, en tout état de cause, ceux des deux derniers contrôles ou vérifications. » Verbatim relevé le 2026-08-31. Cette durée n'est portée par aucun champ du référentiel — voir la réserve inscrite sur cet article au corpus.",
-        versionConstatee: "2008-05-01",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020398142/",
+        note: "« Sauf dispositions particulières, l'employeur conserve les documents concernant les observations et mises en demeure de l'inspection du travail ainsi que ceux concernant les vérifications et contrôles [...] des cinq dernières années et, en tout état de cause, ceux des deux derniers contrôles ou vérifications. Il conserve, pendant la même durée, les copies des déclarations d'accidents du travail déclarés à la caisse primaire d'assurance maladie. » Verbatim intégral relevé le 2026-09-01, en remplacement d'un relevé du 2026-08-31 qui amputait l'ouverture et le second alinéa, et qui datait l'article de 2008-05-01 au lieu du 16/03/2009. Cette durée n'est portée par aucun champ du référentiel — voir la réserve inscrite sur cet article au corpus.",
+        versionConstatee: "2009-03-16",
       },
       {
         source: "CODE_TRAVAIL",
@@ -367,6 +379,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072657",
         note: "« Dans le cadre de la maintenance prescrite à l'article R. 4226-7 du code du travail, l'employeur procède aux vérifications de fonctionnement périodiques suivantes : Une fois par mois : a) Du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et de l'allumage de toutes les lampes […] ; b) De l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. »",
+        versionConstatee: "2011-12-31",
       },
       {
         source: "CODE_TRAVAIL",
@@ -375,6 +388,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022764985",
         note: "Fonde l'obligation d'éclairage de sécurité en lieu de travail et renvoie à un arrêté le soin de fixer « les conditions d'exploitation et de maintenance de cet éclairage ». Ne fixe lui-même aucune périodicité : c'est l'arrêté du 14 décembre 2011 qui la pose.",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -382,7 +396,8 @@ export const obligationsIncendie: Obligation[] = [
         article: "R. 4226-19",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
-        note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
+        note: "Support de consignation, pas fondement de la périodicité — et la distinction a été instruite. R. 4226-19 institue le registre des SEULES vérifications électriques de R. 4226-14 et R. 4226-16 : il ne fonde rien en éclairage de sécurité. Mais l'article 11 de l'arrêté le désigne nommément pour y porter ce résultat-ci — « Le résultat des opérations précédentes doit être mentionné sur le registre prévu à l'article R. 4226-19 du code du travail. » —, cohérent avec sa première phrase qui place ces vérifications « dans le cadre de la maintenance prescrite à l'article R. 4226-7 ». Le relevé du 2026-09-01 avait conclu que la citation était fautive en lisant R. 4226-19 sans remonter qui le cite ; vérifié à la source le même jour, elle ne l'est pas.",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",
@@ -391,6 +406,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072663",
         note: "Fonde le `erp: false` : « Dans les établissements recevant du public, pour les locaux dont la fonction essentielle est de recevoir du public et pour les dégagements accessibles au public, les dispositions du règlement de sécurité relatif à de tels établissements sont seules applicables à l'éclairage de sécurité de ces locaux ou dégagements. » Texte relu le 23 août 2026.",
+        versionConstatee: "2011-12-31",
       },
     ],
     periodicite: "mensuelle",
@@ -418,6 +434,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072657",
         note: "« Une fois tous les six mois, de l'autonomie d'au moins une heure. Dans les établissements comportant des périodes de fermeture, ces opérations doivent être effectuées de telle manière qu'au début de chaque période d'ouverture l'installation d'éclairage ait retrouvé l'autonomie prescrite. »",
+        versionConstatee: "2011-12-31",
       },
       {
         source: "CODE_TRAVAIL",
@@ -426,6 +443,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022764985",
         note: "Fonde l'obligation d'éclairage de sécurité en lieu de travail et renvoie à un arrêté le soin de fixer « les conditions d'exploitation et de maintenance de cet éclairage ». Ne fixe lui-même aucune périodicité : c'est l'arrêté du 14 décembre 2011 qui la pose.",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -433,7 +451,8 @@ export const obligationsIncendie: Obligation[] = [
         article: "R. 4226-19",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
-        note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
+        note: "Support de consignation, pas fondement de la périodicité — et la distinction a été instruite. R. 4226-19 institue le registre des SEULES vérifications électriques de R. 4226-14 et R. 4226-16 : il ne fonde rien en éclairage de sécurité. Mais l'article 11 de l'arrêté le désigne nommément pour y porter ce résultat-ci — « Le résultat des opérations précédentes doit être mentionné sur le registre prévu à l'article R. 4226-19 du code du travail. » —, cohérent avec sa première phrase qui place ces vérifications « dans le cadre de la maintenance prescrite à l'article R. 4226-7 ». Le relevé du 2026-09-01 avait conclu que la citation était fautive en lisant R. 4226-19 sans remonter qui le cite ; vérifié à la source le même jour, elle ne l'est pas.",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",
@@ -442,6 +461,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072663",
         note: "Fonde le `erp: false` : « Dans les établissements recevant du public, pour les locaux dont la fonction essentielle est de recevoir du public et pour les dégagements accessibles au public, les dispositions du règlement de sécurité relatif à de tels établissements sont seules applicables à l'éclairage de sécurité de ces locaux ou dégagements. » Texte relu le 23 août 2026.",
+        versionConstatee: "2011-12-31",
       },
     ],
     periodicite: "semestrielle",
@@ -490,6 +510,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021838315",
         note: "« L'exploitant s'assure périodiquement : — une fois par mois : — du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et à la vérification de l'allumage de toutes les lampes (le fonctionnement doit être strictement limité au temps nécessaire au contrôle visuel) ; — de l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. — une fois tous les six mois, de l'autonomie d'au moins 1 heure. » Version en vigueur depuis le 16 mai 2010, modifiée par l'arrêté du 11 décembre 2009. Texte relu le 23 août 2026.",
+        versionConstatee: "2010-05-16",
       },
     ],
     periodicite: "mensuelle",
@@ -517,6 +538,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021838315",
         note: "« L'exploitant s'assure périodiquement : — une fois par mois : — du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et à la vérification de l'allumage de toutes les lampes (le fonctionnement doit être strictement limité au temps nécessaire au contrôle visuel) ; — de l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. — une fois tous les six mois, de l'autonomie d'au moins 1 heure. » Version en vigueur depuis le 16 mai 2010, modifiée par l'arrêté du 11 décembre 2009. Texte relu le 23 août 2026.",
+        versionConstatee: "2010-05-16",
       },
     ],
     periodicite: "semestrielle",
@@ -556,6 +578,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "annuelle",
@@ -582,6 +605,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "annuelle",
@@ -608,6 +632,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "triennale",
@@ -635,6 +660,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000020317463",
         note: "« Vérifications. — Les installations d'éclairage doivent être vérifiées dans les conditions de l'article EL 19. » Version en vigueur depuis le 15 août 1980. EC 15 ne fixe donc aucune périodicité : il renvoie, et c'est EL 19 qui porte les conditions. Texte relu le 23 août 2026.",
+        versionConstatee: "1980-08-15",
       },
       {
         source: "ARRETE",
@@ -643,6 +669,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068",
         note: "Article de destination du renvoi d'EC 15 : c'est lui qui pose les vérifications techniques des installations d'éclairage, dont la périodicité annuelle. **Texte non encore relu au mot près** — Légifrance ne sert pas le corps des articles de cet arrêté à un client automatisé. À confronter avant toute évolution de cette obligation.",
+        versionConstatee: "2010-01-23",
       },
     ],
     periodicite: "annuelle",
@@ -669,6 +696,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "DF 10",
         url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+        versionConstatee: "2007-10-28",
       },
     ],
     periodicite: "annuelle",
@@ -695,6 +723,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "annuelle",
@@ -779,6 +808,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "GH 5",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025169258",
+        versionConstatee: "2026-01-01",
       },
     ],
     periodicite: "annuelle",

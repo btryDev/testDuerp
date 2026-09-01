@@ -29,6 +29,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "Arrêté 1993-12-21 art. 2",
         url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006082855",
+        versionConstatee: "1994-07-13",
       },
       {
         source: "CODE_TRAVAIL",
@@ -36,6 +37,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "R. 4224-13",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532209/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -46,7 +48,8 @@ export const obligationsPortesPortails: Obligation[] = [
     transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["PORTE_AUTO", "PORTAIL_AUTO"],
-    notesInternes: "NATURE : ÉVÉNEMENTIELLE (ADR-026). La description porte les deux titres — « À la mise en service OU APRÈS MODIFICATION » —, et c'est le second qui oblige à refaire l'acte. Le produit ne connaît que la date de mise en service.",
+    notesInternes:
+      "NATURE : ÉVÉNEMENTIELLE (ADR-026). La description porte les deux titres — « À la mise en service OU APRÈS MODIFICATION » —, et c'est le second qui oblige à refaire l'acte. Le produit ne connaît que la date de mise en service.\n\nAUCUN TEXTE PORTEUR TROUVÉ — DÉCISION EN ATTENTE, CRITICITÉ 5. Le lot A du 2026-09-01 avait mandat de recaler le fondement de cette ligne. Il ne l'a pas trouvé, et il ne retire pas la ligne : ce serait une décision de la propriétaire, pas la sienne. Voici ce qui a été cherché, pour que le prochain ne le refasse pas.\n\n(1) L'ARRÊTÉ DU 21 DÉCEMBRE 1993, LES ONZE ARTICLES. Le relevé du même jour en avait ouvert cinq (2, 3, 4, 8, 9) ; les six autres ont été ouverts ici. Art. 1er : définitions. Art. 2 : caractéristiques des installations NOUVELLES pour véhicules. Art. 3 : présomption de conformité aux normes. Art. 4 : mêmes exigences pour les portes de piétons. Art. 5, 6, 7 : installations EXISTANTES, modification, mise en conformité — des états à atteindre, aucun acte de contrôle. Art. 8 : dossier de maintenance, dû par le MAÎTRE D'OUVRAGE. Art. 9 : entretien et vérification au minimum semestriels. Art. 10 et 11 : entrée en vigueur, exécution. Nulle part un examen daté par la mise en service.\n\n(2) LE CODE DU TRAVAIL, SECTION 2 « PORTES ET PORTAILS ». R. 4224-9 à R. 4224-11 : caractéristiques (transparence, matériaux de sécurité, anti-déraillement). R. 4224-12 : « Les portes et portails sont entretenus et contrôlés régulièrement » — récurrent, sans première fois. R. 4224-13 : obligation de résultat (« fonctionnent sans risque d'accident ») et renvoi à l'arrêté. Aucun ne date un acte par la mise en service.\n\n(3) R. 4224-17, l'article général du bâti technique : « entretenus et vérifiés suivant une périodicité appropriée » — un rythme, pas une première fois.\n\n(4) LE DÉCRET N° 92-332 DU 31 MARS 1992, cité au cadrage comme piste. Il s'adresse aux MAÎTRES D'OUVRAGE lors de la construction ou de la transformation des lieux de travail, et c'est lui qui a créé les R. 235-* recodifiés en R. 4211-* — dont le dossier de maintenance que `porte-auto-dossier-maintenance` porte déjà. Il n'institue aucun examen à la charge de l'exploitant.\n\nCE QUE CELA LAISSE. L'obligation décrit un « examen de sécurité par organisme agréé à la mise en service », et rien dans le droit lu ne l'impose. Ce que les textes imposent est un ÉTAT de l'installation, dû dès l'origine — c'est l'objet de `porte-auto-portail-piete-coulissant` et de `porte-auto-maintien-en-etat` — et une vérification RÉCURRENTE au minimum semestrielle, portée par `porte-auto-verification-semestrielle`. Les deux questions à trancher, dans cet ordre : la ligne fait-elle double emploi avec ces trois-là, et si oui, le premier contrôle semestriel suffit-il à couvrir la mise en service ? Le retrait d'une ligne de criticité 5 appelle en outre la vérification prévue par l'ADR-012 : combien de `Verification` la portent, avec quelles preuves.",
   },
   {
     id: "porte-auto-verification-semestrielle",
@@ -61,6 +64,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "Arrêté 1993-12-21 art. 9",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006679563",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "semestrielle",
@@ -87,6 +91,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "Arrêté 1993-12-21 art. 9",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006679563",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -94,6 +99,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "R. 4224-17",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532197/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "autre",
@@ -120,6 +126,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "R. 4224-13",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532209/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -127,6 +134,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "R. 4224-17",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532197/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "autre",
@@ -153,6 +161,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "Arrêté 1993-12-21 art. 2",
         url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006082855",
+        versionConstatee: "1994-07-13",
       },
     ],
     periodicite: "mise_en_service_uniquement",

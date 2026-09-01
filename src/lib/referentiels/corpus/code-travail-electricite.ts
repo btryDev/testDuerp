@@ -82,37 +82,64 @@ export const CODE_TRAVAIL_ELECTRICITE: Corpus = {
     },
     {
       ref: "R. 4226-14",
+      intitule: "Vérification initiale des installations électriques",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765072",
       versionEnVigueur: "2011-07-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "L'employeur fait procéder à une vérification initiale des installations électriques à DEUX occasions : la mise en service, et toute modification de structure. R. 4226-15 réserve cette vérification initiale à un organisme accrédité.",
+      citationCle:
+        "L'employeur fait procéder à la vérification initiale des installations électriques lors de leur mise en service et après qu'elles ont subi une modification de structure, en vue de s'assurer qu'elles sont conformes aux prescriptions de sécurité prévues au présent chapitre.",
       statut: "retenu",
       obligations: ["elec-travail-mise-en-service"],
     },
     {
       ref: "R. 4226-16",
+      intitule: "Vérification périodique des installations électriques",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070",
       versionEnVigueur: "2011-07-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "L'employeur procède ou fait procéder périodiquement à la vérification des installations électriques. L'article ne porte AUCUNE périodicité : R. 4226-18 la renvoie à un arrêté, et c'est l'article 3 de l'arrêté du 26 décembre 2011 qui fixe l'an. R. 4226-17 ouvre la vérification périodique — à la différence de la vérification initiale — à une personne qualifiée de l'entreprise.",
+      citationCle:
+        "L'employeur procède ou fait procéder, périodiquement, à la vérification des installations électriques afin de s'assurer qu'elles sont maintenues en conformité avec les règles de santé et de sécurité qui leur sont applicables.",
       statut: "retenu",
       obligations: ["elec-travail-periodique-annuelle"],
     },
     {
       ref: "R. 4226-19",
+      intitule:
+        "Consignation au registre des résultats des vérifications électriques",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064",
       versionEnVigueur: "2011-07-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Les résultats des SEULES vérifications de R. 4226-14 (initiale) et R. 4226-16 (périodique), et les justifications des travaux correctifs, sont consignés sur un registre ; les rapports d'organisme accrédité y sont annexés.",
+      citationCle:
+        "Les résultats des vérifications prévues aux articles R. 4226-14 et R. 4226-16 ainsi que les justifications des travaux et modifications effectués pour porter remède aux défectuosités constatées sont consignés sur un registre. Lorsque les vérifications sont effectuées par un organisme accrédité, les rapports établis à la suite de ces vérifications sont annexés à ce registre.",
       statut: "retenu",
       obligations: [
         "elec-travail-consignation-registre",
         "incendie-travail-eclairage-securite-autonomie-semestrielle",
         "incendie-travail-eclairage-securite-essai-mensuel",
       ],
+      reserve:
+        "L'ARTICLE NE FONDE RIEN EN ÉCLAIRAGE DE SÉCURITÉ — vrai. IL EN EST POURTANT LE REGISTRE — et c'est ce que le relevé du 2026-09-01 avait manqué.\n\nCe qui reste vrai : sa portée de FONDEMENT est close par sa propre lettre — il renvoie nommément à R. 4226-14 et R. 4226-16, et à rien d'autre —, et le chemin le confirme : Livre II, Titre II, Chapitre VI « Installations électriques », Section 5 « Vérification des installations électriques ». Les périodicités mensuelle et semestrielle de l'éclairage de sécurité viennent de l'article 11 de l'arrêté du 14 décembre 2011, pas d'ici.\n\nCE QUI ÉTAIT FAUX, corrigé le 2026-09-01 par le lot A : la conclusion « les deux obligations `incendie-travail-eclairage-securite-*` le citent donc à tort ». Elles ne le citent PAS en fondement — leur `referencesLegales[0]` est l'article 11 de l'arrêté — et l'article 11 désigne nommément ce registre-ci pour y porter le résultat : « Le résultat des opérations précédentes doit être mentionné sur le registre prévu à l'article R. 4226-19 du code du travail. » Le renvoi est dans le texte de l'arrêté, relu à la source le 2026-09-01. Il est cohérent avec sa première phrase, qui place ces vérifications « dans le cadre de la maintenance prescrite à l'article R. 4226-7 » — soit à l'intérieur du même chapitre. La citation est donc juste, et sa `note` disait déjà exactement ce qu'elle est : « support de consignation, pas fondement de la périodicité ».\n\nCE QUE CE CAS ENSEIGNE. La question avait été ouverte quatre fois depuis le 2026-08-27, et le 2026-09-01 deux lots l'ont lue séparément, ont concordé au mot près, et ont conclu la même chose — dans le même dépôt, à un fichier de distance, où l'article 11 était déjà relevé en première main avec la phrase qui tranchait dans sa `citationCle`. Une corroboration indépendante confirme une LECTURE ; elle ne valide pas la CONCLUSION qu'on en tire, et deux lecteurs qui remontent le même article s'arrêtent au même endroit. Ce qui manquait n'était pas une lecture de plus : c'était de remonter le renvoi dans l'autre sens — non « que dit l'article cité ? », mais « qui le cite, et pour quoi ? ».",
     },
     {
       ref: "R. 4544-10",
+      intitule: "Habilitation délivrée par l'employeur",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051500368",
       versionEnVigueur: "2025-10-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Met QUATRE actes à la charge de l'employeur : délivrer l'habilitation en spécifiant la nature des opérations autorisées ; s'assurer AVANT de la délivrer que le travailleur a reçu la formation théorique et pratique ; remettre à chaque travailleur un carnet de prescriptions ; et, pour les opérations au voisinage de pièces nues sous tension, subordonner la validité à une attestation d'absence de contre-indication médicale. AUCUNE durée de validité, AUCUNE périodicité : la délivrance, le maintien et le renouvellement sont renvoyés aux normes de R. 4544-3.",
+      citationCle:
+        "Un travailleur est habilité dans les limites des attributions qui lui sont confiées. L'habilitation, délivrée par l'employeur, spécifie la nature des opérations qu'il est autorisé à effectuer. Avant de délivrer l'habilitation, l'employeur s'assure que le travailleur a reçu la formation théorique et pratique qui lui confère la connaissance des risques liés à l'électricité et des mesures à prendre pour intervenir en sécurité lors de l'exécution des opérations qui lui sont confiées. L'employeur délivre, maintient ou renouvelle l'habilitation selon les modalités contenues dans les normes mentionnées à l'article R. 4544-3. L'employeur remet à chaque travailleur un carnet de prescriptions établi sur la base des prescriptions pertinentes de ces normes, complété, le cas échéant, par des instructions de sécurité particulières au travail effectué.",
       statut: "retenu",
       // Deux obligations, et non une : l'article en fonde une côté
       // établissement — l'employeur s'assure que ses travailleurs sont
@@ -125,17 +152,27 @@ export const CODE_TRAVAIL_ELECTRICITE: Corpus = {
         "elec-travail-habilitation-personnel",
         "elec-salarie-habilitation",
       ],
+      reserve:
+        "LE TRIENNAL NE VIENT PAS D'ICI, et l'article le prouve en creux : relu le 2026-09-01, il ne porte aucune durée. « L'employeur délivre, maintient ou renouvelle l'habilitation selon les modalités contenues dans les normes mentionnées à l'article R. 4544-3 » — soit la NF C 18-510, que R. 4544-3 qualifie lui-même de recommandation et que ce dépôt n'accepte pas comme source opposable. Le carnet de prescriptions du quatrième alinéa, remis à CHAQUE travailleur, n'est encodé nulle part. Non corrigé.",
     },
     {
       ref: "L. 4711-5",
+      intitule: "Faculté de réunir les registres en un registre unique",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389",
       versionEnVigueur: "2008-05-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Rien. L'article AUTORISE, il n'impose pas : il permet de réunir en un registre unique des informations que d'autres textes font figurer dans des registres distincts.",
+      citationCle:
+        "Lorsqu'il est prévu que les informations énumérées aux articles L. 4711-1 et L. 4711-2 figurent dans des registres distincts, l'employeur est autorisé à réunir ces informations dans un registre unique dès lors que cette mesure est de nature à faciliter la conservation et la consultation de ces informations.",
       statut: "retenu",
       obligations: [
         "elec-travail-consignation-registre",
         "incendie-registre-securite",
       ],
+      reserve:
+        "MÊME CONSTAT QUE SUR L'ENTRÉE JUMELLE du corpus incendie, refait ici le 2026-09-01 pour que la branche électricité ne se lise pas seule : le verbe est « est autorisé à », c'est une FACULTÉ. `elec-travail-consignation-registre` a heureusement un vrai fondement — R. 4226-19, qui impose la consignation —, de sorte que L. 4711-5 n'y ajoute que la forme permise. La question a été ouverte quatre fois en onze jours ; l'entrée existe pour qu'elle ne le soit pas une cinquième.",
     },
   ],
 };

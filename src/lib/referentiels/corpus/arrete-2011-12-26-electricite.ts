@@ -15,21 +15,33 @@ export const ARRETE_2011_12_26_ELECTRICITE: Corpus = {
   articles: [
     {
       ref: "Arrêté 2011-12-26 art. 2",
+      intitule: "Conditions de la vérification initiale",
+      url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025046978/",
       versionEnVigueur: "2011-12-30",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Règle la vérification initiale de R. 4226-14 : méthodes et étendue renvoyées à l'annexe I, contenu du rapport à l'annexe II, DÉLAI DE CINQ SEMAINES pour transmettre le rapport au chef d'établissement, et — c'est ce qui manquait au référentiel — la définition en quatre points de la « modification de structure » qui déclenche une nouvelle vérification initiale.",
+      citationCle:
+        "Le délai de transmission du rapport au chef d'établissement ne doit pas excéder cinq semaines à compter de la date d'achèvement de la vérification. Les modifications de structure mentionnées à l'article R. 4226-14 du code du travail comprennent : ― la modification du schéma des liaisons à la terre ; ― la modification de la puissance de court-circuit de la source ; ― la modification ou l'adjonction de circuits de distribution ; ― la création ou le réaménagement d'une partie d'installation.",
       statut: "retenu",
       obligations: ["elec-travail-mise-en-service"],
+      reserve:
+        "DEUX ÉCARTS RELEVÉS LE 2026-09-01.\n\n(1) LE SECOND DÉCLENCHEUR EST MAINTENANT DÉFINISSABLE. La `notesInternes` d'`elec-travail-mise-en-service` porte que « toute modification de structure » est un titre que le produit n'observe pas ; l'article 2 en donne pourtant les quatre cas exacts, et ce sont des faits qu'un exploitant peut reconnaître — changement de schéma des liaisons à la terre, de puissance de court-circuit, adjonction de circuits de distribution, réaménagement d'une partie d'installation. Le manque n'est donc pas l'imprécision du texte, c'est l'absence de question posée à l'exploitant.\n\n(2) LES CINQ SEMAINES NE SONT PAS LE DÉLAI QUE LA DESCRIPTION ANNONCE. L'obligation écrit « Le rapport doit être transmis à l'inspection du travail sur demande ». Le délai de l'article 2 vise la transmission par le VÉRIFICATEUR au CHEF D'ÉTABLISSEMENT — ce n'est ni le même expéditeur, ni le même destinataire, ni le même fait générateur. Non corrigé.",
     },
     {
       ref: "Arrêté 2011-12-26 art. 3",
+      intitule: "Périodicité de la vérification périodique",
+      url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000025046978/",
       versionEnVigueur: "2011-12-30",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
       statut: "retenu",
       obligations: ["elec-travail-periodique-annuelle"],
+      citationCle:
+        "La périodicité des vérifications est fixée à un an, le point de départ de cette périodicité étant la date de la vérification initiale.",
       prescrit:
-        "SECOND RÉGIME NON PORTÉ, relevé le 2026-08-27. « Le délai entre deux vérifications peut être porté à deux ans par le chef d'établissement si le rapport précédent ne présente aucune observation ou si, avant l'échéance, le chef d'établissement a fait réaliser les travaux de mise en conformité. » Ce n'est ni automatique ni de droit acquis : il faut informer l'inspecteur du travail par lettre recommandée avec accusé de réception, pièces à l'appui. Sans doute à NE PAS encoder comme une périodicité — afficher deux ans sans trace de l'envoi afficherait une échéance qui n'existe pas.",
+        "L'AN EST ICI, ET NULLE PART AILLEURS — R. 4226-16 ne chiffre rien. Le point de départ est la date de la vérification initiale, non la date de mise en service ni un millésime. Verbatim relevé le 2026-09-01.\n\nSECOND RÉGIME NON PORTÉ, relevé le 2026-08-27. « Le délai entre deux vérifications peut être porté à deux ans par le chef d'établissement si le rapport précédent ne présente aucune observation ou si, avant l'échéance, le chef d'établissement a fait réaliser les travaux de mise en conformité. » Ce n'est ni automatique ni de droit acquis : il faut informer l'inspecteur du travail par lettre recommandée avec accusé de réception, pièces à l'appui. Sans doute à NE PAS encoder comme une périodicité — afficher deux ans sans trace de l'envoi afficherait une échéance qui n'existe pas.",
     },
     {
       ref: "Arrêté 2011-12-26 annexe II",

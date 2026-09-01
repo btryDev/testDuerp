@@ -199,6 +199,24 @@ export type ReferenceLegale = {
   /**
    * Référence littérale telle qu'on la citerait dans un document officiel.
    * Ex. : "R. 4226-16", "Arrêté du 25 juin 1980, art. EL 19".
+   *
+   * **AUCUN TEST NE LA GARDE, et c'est elle qui s'imprime.** Mesuré le
+   * 2026-09-01 par le lot A, en remettant « EL 19 § 1 et § 2 » là où il venait
+   * d'écrire « EL 19 § 3 » : 1907 tests au vert. La clé `article` est
+   * rapprochée d'un corpus, la `versionConstatee` est comparée à celle de
+   * l'article lu, l'`url` est contrôlée présente — cette chaîne-ci n'est
+   * confrontée à rien. Or c'est le paragraphe qu'elle nomme qui décide de ce
+   * qu'un dirigeant lit sous une échéance, et deux obligations rattachées au
+   * même article ne se distinguent que par elle.
+   *
+   * Deux défauts du 2026-09-01 vivaient entièrement ici, sous une clé juste :
+   * `elec-erp-cat1-4-annuelle` citait le paragraphe de l'acte inverse, et
+   * `stockage-dangereux-verification-etancheite` annonçait un « entretien
+   * régulier des équipements de stockage » que R. 4412-11 n'écrit pas.
+   * Règle de rédaction, faute de garde : **descendre au paragraphe, et n'y
+   * écrire que ce que le paragraphe dit.** Un intervalle — « art. 12 à 15 »,
+   * « R. 134-1 à R. 134-5 » — noie l'article porteur et a produit deux des
+   * onze défauts du même jour.
    */
   reference: string;
   /**

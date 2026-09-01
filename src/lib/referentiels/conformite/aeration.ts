@@ -3,7 +3,9 @@
  *
  * Sources primaires :
  *   - Code du travail, articles R. 4222-1 à R. 4222-26 (aération des lieux de
- *     travail), notamment R. 4222-20 (entretien) et R. 4222-21 (contrôle).
+ *     travail), notamment R. 4222-20 — maintien en bon état et contrôle
+ *     régulier. R. 4222-21 n'y figure plus : il n'impose qu'une consigne
+ *     d'utilisation écrite, aucun contrôle (relevé du 2026-09-01).
  *   - Arrêté du 8 octobre 1987 relatif au contrôle périodique des installations
  *     d'aération et d'assainissement des locaux de travail.
  *   - Arrêté du 25 juin 1980 modifié (règlement ERP) — article CH 58
@@ -84,28 +86,35 @@ export const obligationsAeration: Obligation[] = [
     domaine: "aeration",
     libelle: "Contrôle initial des installations d'aération à la mise en service",
     description:
-      "L'employeur fait procéder, au plus tard un mois après la mise en service, aux mesures et contrôles permettant de vérifier la conformité des installations d'aération et d'assainissement de l'air aux prescriptions du Code du travail. Les résultats sont consignés dans le dossier d'installation.",
+      "Pour toute installation nouvelle ou ayant fait l'objet de modifications notables, l'employeur fait procéder aux mesures qui établissent le dossier de valeurs de référence — débit global minimal d'air neuf, pressions ou vitesses aux points caractéristiques, caractéristiques des filtres — au plus tard un mois après la première mise en service. Ce dossier est joint à la notice d'instruction et tenu à jour.",
     referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 8 octobre 1987, art. 2 a) (dossier de valeurs de référence, un mois après la première mise en service)",
+        article: "Arrêté 1987-10-08 art. 2",
+        url:
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000863044/",
+        note: "« Ce dossier doit être établi, au plus tard, un mois après la première mise en service des installations. » C'est le SEUL texte de la chaîne qui date un acte par la mise en service ; il vise les installations nouvelles et celles ayant fait l'objet de modifications notables.",
+        versionConstatee: "1988-04-01",
+      },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 8 octobre 1987, art. 3-1 (contenu du dossier de valeurs de référence, locaux à pollution non spécifique)",
+        article: "Arrêté 1987-10-08 art. 3",
+        url:
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000863044/",
+        note: "Cité pour le contenu — ce que les mesures initiales doivent porter. Son 2, en revanche, porte l'annuelle, et c'est `aeration-controle-installations-r4222-20` qui l'encode.",
+        versionConstatee: "1988-04-01",
+      },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4222-20",
         article: "R. 4222-20",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
-      },
-      {
-        source: "CODE_TRAVAIL",
-        reference: "R. 4222-21",
-        article: "R. 4222-21",
-        url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483604/",
-      },
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 8 octobre 1987, art. 2, 3 et 4",
-        article: "Arrêté 1987-10-08 art. 3",
-        url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000863044/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -116,7 +125,8 @@ export const obligationsAeration: Obligation[] = [
     transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["VMC", "CTA"],
-    notesInternes: "NATURE : PONCTUELLE (ADR-026). « Au plus tard un mois après la mise en service » : un seul titre, un seul acte, daté par un fait que le produit connaît. À distinguer des deux mises en service électriques, dont l'article vise aussi les modifications ultérieures.",
+    notesInternes:
+      "NATURE : PONCTUELLE (ADR-026). « Au plus tard un mois après la mise en service » : un seul titre, un seul acte, daté par un fait que le produit connaît. À distinguer des deux mises en service électriques, dont l'article vise aussi les modifications ultérieures.\n\nFONDEMENT RECALÉ LE 2026-09-01 (lot A). Deux défauts, tous deux relevés au corpus le même jour et corrigés ici.\n\n(1) R. 4222-21 était cité pour un contrôle : il n'en impose aucun. Son seul objet est une consigne d'utilisation écrite, soumise à l'avis du médecin du travail et du CSE. Ni « vérification », ni « contrôle », ni « mise en service » n'y figurent. La référence est retirée ; l'article passe `obligation_manquante` au corpus, la consigne n'étant portée nulle part.\n\n(2) L'ancre `article` pointait l'article 3 de l'arrêté du 8 octobre 1987 alors que le délai d'un mois est à l'article 2 a) — et il court non sur un contrôle mais sur l'établissement du DOSSIER DE VALEURS DE RÉFÉRENCE. La description a été recalée sur ce que le texte dit ; l'article 2 est entré au corpus à cette occasion.",
   },
   // `aeration-travail-entretien-annuel` a été RETIRÉ le 2026-08-27 (ADR-022).
   //
@@ -148,6 +158,7 @@ export const obligationsAeration: Obligation[] = [
         article: "Arrêté 1987-10-08 art. 4",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678611",
+        versionConstatee: "1988-04-01",
       },
     ],
     periodicite: "annuelle",
@@ -261,10 +272,13 @@ export const obligationsAeration: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. CH 58 (vérification dans les conditions de la section II du chapitre Ier)",
+        reference:
+          "Arrêté du 25 juin 1980, art. CH 58 § 2 (vérifications périodiques annuelles), son § 1 renvoyant le régime à la section II du chapitre Ier",
         article: "CH 58",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
+        note: "« § 2. Les vérifications périodiques doivent avoir lieu tous les ans et concernent : - les installations de production de chaleur ou de froid visées aux sections II, V et VI du présent chapitre ; - le stockage des combustibles visé à la section III ; - les installations de traitement d'air et de ventilation visées à la section VII ; - les appareils de production-émission de chaleur à combustion et les systèmes thermodynamiques visés à la section VIII. » C'est le § 2 qui porte le rythme ; le § 1 ne fait que renvoyer le régime à GE 6 et suivants — donc à un organisme agréé ou un technicien compétent.",
+        versionConstatee: "2025-09-10",
       },
       {
         source: "ARRETE",
@@ -272,6 +286,8 @@ export const obligationsAeration: Obligation[] = [
         article: "CH 57",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
+        note: "« Les installations doivent être entretenues régulièrement et maintenues en bon état de fonctionnement. En particulier, les conduits de fumée, les cheminées et tous les appareils doivent être ramonés et nettoyés une fois par an. » ARTICLE D'ENTRETIEN, non de vérification : le ramonage qu'il impose n'est PAS l'acte que cette obligation planifie, et il n'a pas de ligne à lui. Voir les notes internes — une scission est proposée, elle n'est pas faite.",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "annuelle",
@@ -282,6 +298,8 @@ export const obligationsAeration: Obligation[] = [
     transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["VMC", "CTA"],
+    notesInternes:
+      "FONDEMENT PRÉCISÉ LE 2026-09-01 (lot A) : la `reference` désignait le § 1 de CH 58 — le renvoi de régime — alors que le rythme annuel est au § 2. Même motif que `elec-erp-cat1-4-annuelle` sur EL 19, et la clé `article` était juste dans les deux cas ; c'est la citation lue par un humain qui pointait à côté.\n\nSCISSION PROPOSÉE, NON FAITE — DÉCISION DE DÉCOUPAGE. Cette ligne confond DEUX ACTES sous un seul libellé, et le corpus l'établit article par article. L'argument, pour que la décision se prenne sur pièces :\n\n(1) DEUX OBJETS. CH 57 impose le RAMONAGE et le nettoyage annuels des conduits de fumée, des cheminées et de tous les appareils. CH 58 § 2 impose une VÉRIFICATION TECHNIQUE annuelle dont l'objet est autre : production de chaleur ou de froid, stockage des combustibles, traitement d'air et ventilation, appareils de production-émission. Ramoner un conduit et vérifier une centrale de traitement d'air ne sont pas le même geste.\n\n(2) DEUX RÉALISATEURS. CH 58 § 1 renvoie le régime à la section II du chapitre Ier, donc à un organisme agréé ou un technicien compétent au sens de GE 6. CH 57 n'appelle personne en particulier : un ramoneur suffit, et il n'est pas un technicien compétent au sens de GE 6.\n\n(3) CE QUE LA CONFUSION COÛTE, et c'est le point qui décide. Un exploitant qui coche cette ligne après une visite de maintenance de sa CTA aura l'air d'avoir ramoné. Le défaut est du côté où l'erreur est invisible pour celui qui la subit : il produira un dossier qui atteste un acte qui n'a pas eu lieu, et c'est précisément ce qu'un dossier de conformité existe pour empêcher.\n\n(4) CE QUE LA SCISSION COÛTE. Une obligation de plus (117), une réconciliation, et un id neuf pour le ramonage. Les lignes déjà cochées resteraient sur celle-ci — donc sur la vérification technique —, et l'exploitant verrait apparaître une échéance « à planifier » pour un ramonage qu'il a peut-être fait. C'est le comportement connu de la réconciliation, sans `absorbePar` possible ici : il n'y a pas d'absorbant, il y a un dédoublement.\n\nLe lot A ne crée pas d'obligation : la scission appartient à la propriétaire. En attendant, la `note` de CH 57 dit ce que cette ligne ne couvre pas.",
   },
   {
     id: "aeration-erp-ps-surveillance-qualite-air-inf-250",
@@ -296,6 +314,7 @@ export const obligationsAeration: Obligation[] = [
         article: "PS 32",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000024812448/",
+        versionConstatee: "2006-07-09",
       },
     ],
     periodicite: "biennale",
@@ -331,6 +350,7 @@ export const obligationsAeration: Obligation[] = [
         article: "PS 32",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000024812448/",
+        versionConstatee: "2006-07-09",
       },
     ],
     periodicite: "annuelle",

@@ -41,6 +41,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "C. env. L. 512-1",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000006159273/",
+        versionConstatee: "2017-03-01",
       },
     ],
     periodicite: "autre",
@@ -67,6 +68,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-11",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530929/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "ARRETE",
@@ -74,6 +76,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "Arrêté 2015-06-01 art. 22",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044166790",
+        versionConstatee: "2022-01-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -106,10 +109,13 @@ export const obligationsStockageDangereux: Obligation[] = [
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
-        reference: "R. 4412-11 (entretien régulier des équipements de stockage)",
+        reference:
+          "R. 4412-11, 2° (procédures d'entretien régulières du matériel de stockage)",
         article: "R. 4412-11",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530929/",
+        note: "« L'employeur définit et applique les mesures de prévention visant à supprimer ou à réduire au minimum le risque d'exposition à des agents chimiques dangereux : […] 2° En prévoyant un matériel adéquat ainsi que des procédures d'entretien régulières qui protègent la santé et la sécurité des travailleurs […] » Article lu en entier à la source le 2026-09-01, ses sept alinéas relevés. CE QU'IL NE DIT PAS, et que la citation lui faisait dire jusqu'à cette date : ni « rétention », ni « étanchéité », ni aucun acte de vérification daté. Il impose des PROCÉDURES d'entretien régulières, pas un contrôle à échéance.",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -118,7 +124,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-17",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530917",
-        note: "« A cet effet, l'employeur prend les mesures appropriées pour empêcher : […] 2° Les risques de débordement ou d'éclaboussures, ainsi que de déversement par rupture des parois des cuves, bassins, réservoirs et récipients de toute nature contenant des produits susceptibles de provoquer des brûlures d'origine thermique ou chimique. » Verbatim relevé en première main le 2026-08-27. C'est le seul article du Code du travail qui vise la rupture de parois d'un récipient de stockage ; le mot « rétention » n'y figure pas, ni nulle part ailleurs dans le chapitre.",
+        note: "« A cet effet, l'employeur prend les mesures appropriées pour empêcher : […] 2° Les risques de débordement ou d'éclaboussures, ainsi que de déversement par rupture des parois des cuves, bassins, réservoirs et récipients de toute nature contenant des produits susceptibles de provoquer des brûlures d'origine thermique ou chimique. » Verbatim relevé en première main le 2026-08-27, confirmé à la source le 2026-09-01. C'est le seul article du Code du travail qui vise la rupture de parois d'un récipient de stockage ; le mot « rétention » n'y figure pas, ni nulle part ailleurs dans le chapitre. Obligation de RÉSULTAT sur les contenants : aucun acte daté n'en découle.",
         versionConstatee: "2008-05-01",
       },
     ],
@@ -131,7 +137,7 @@ export const obligationsStockageDangereux: Obligation[] = [
     typologies: { travail: true },
     categoriesEquipement: ["STOCKAGE_MATIERE_DANGEREUSE"],
     notesInternes:
-      "Corrigé à l'audit 2026-08 : la périodicité mensuelle était attribuée à l'arrêté du 3 octobre 2010 (ICPE autorisation), inapplicable ici. Aucune source opposable ne fixant de fréquence, l'obligation passe en « autre » et n'est plus planifiée au calendrier.\n\nNATURE : ÉCHÉANCE RÉCURRENTE (ADR-026), ET C'EST LE CAS D'ÉCOLE DU CHAMP. R. 4412-11 écrit que l'exploitant vérifie « RÉGULIÈREMENT » : l'acte revient, seul son rythme manque. Rangée en `periodicite: autre` — ce qui reste juste — elle se lisait comme un état permanent, et un écran de déclaration lui aurait proposé une case à cocher à vie. Le couple nature + périodicité dit maintenant la vérité entière : elle revient, on ne sait pas à quel rythme.",
+      "Corrigé à l'audit 2026-08 : la périodicité mensuelle était attribuée à l'arrêté du 3 octobre 2010 (ICPE autorisation), inapplicable ici. Aucune source opposable ne fixant de fréquence, l'obligation passe en « autre » et n'est plus planifiée au calendrier.\n\nNATURE : ÉCHÉANCE RÉCURRENTE (ADR-026). Rangée en `periodicite: autre` — ce qui reste juste — elle se lisait comme un état permanent, et un écran de déclaration lui aurait proposé une case à cocher à vie. Le couple nature + périodicité dit la vérité entière : elle revient, on ne sait pas à quel rythme.\n\nCITATION CORRIGÉE LE 2026-09-01 (lot A). La note ci-dessus affirmait jusqu'ici que « R. 4412-11 écrit que l'exploitant vérifie RÉGULIÈREMENT », et la `reference` annonçait « entretien régulier des équipements de stockage ». L'article, lu en entier à la source, n'écrit ni l'un ni l'autre : son 2° impose « des procédures d'entretien régulières », ce qui est un dispositif d'organisation, non un acte de vérification. Les deux formulations sont recalées sur le verbatim.\n\nAUCUN TEXTE PORTEUR TROUVÉ POUR L'ACTE LUI-MÊME — DÉCISION EN ATTENTE. La ligne décrit une vérification récurrente de l'état du stockage. Voici ce qui a été cherché le 2026-09-01, pour que le prochain ne le refasse pas. (1) La sous-section 3 « Mesures et moyens de prévention » du chapitre risque chimique, R. 4412-11 à R. 4412-22 : aucun acte daté, aucune vérification périodique ; R. 4412-17 est ce qui existe de plus proche et c'est une obligation de résultat. (2) L'arrêté du 1er juin 2015, art. 22, qui porte les valeurs de rétention : régime ICPE, opposable aux seuls établissements classés — il est déjà cité par `stockage-dangereux-retention` sous cette réserve. (3) R. 4224-17, « les installations et dispositifs techniques et de sécurité des lieux de travail sont entretenus et vérifiés suivant une périodicité appropriée » : c'est le SEUL candidat qui porte à la fois un acte de vérification et une récurrence sans rythme chiffré, ce qui correspond exactement à `periodicite: autre`. Il n'a PAS été ajouté, et c'est délibéré : son sujet est le bâti technique du lieu de travail, et étendre « dispositif technique et de sécurité » à un bac de rétention est une interprétation, pas une lecture. La proposer est le travail du lot ; la retenir est une décision de la propriétaire. LA LIGNE EST MAINTENUE en l'état.",
   },
   {
     id: "stockage-dangereux-ventilation-locaux",
@@ -146,6 +152,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4222-20",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "ARRETE",
@@ -153,6 +160,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "Arrêté 1987-10-08 art. 4",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678611",
+        versionConstatee: "1988-04-01",
       },
     ],
     periodicite: "annuelle",
@@ -179,6 +187,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-38",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483735/",
+        versionConstatee: "2018-01-01",
       },
     ],
     periodicite: "autre",
@@ -204,6 +213,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-38",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483735/",
+        versionConstatee: "2018-01-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -211,6 +221,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-87",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483731/",
+        versionConstatee: "2018-01-01",
       },
     ],
     periodicite: "autre",

@@ -36,6 +36,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-14",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765072/",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",
@@ -43,6 +44,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "Arrêté 2011-12-26 art. 2",
         url:
           "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000025046978",
+        versionConstatee: "2011-12-30",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -68,6 +70,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-16",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070/",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",
@@ -76,6 +79,7 @@ export const obligationsElectricite: Obligation[] = [
         note: "L'article 3 fixe la périodicité à un an, puis ouvre une faculté que le référentiel ne portait pas : « Toutefois, le délai entre deux vérifications peut être porté à deux ans par le chef d'établissement si le rapport précédent ne présente aucune observation ou si, avant l'échéance, le chef d'établissement a fait réaliser les travaux de mise en conformité de nature à répondre aux observations contenues dans le rapport de vérification. » Le texte ne la subordonne pas à une autorisation : « Le chef d'établissement informe l'inspecteur du travail par lettre recommandée avec accusé de réception, accompagnée des éléments prouvant qu'il n'y a pas de non-conformité ou que les non-conformités ont été levées. Cet envoi doit comprendre, le cas échéant, l'avis des membres du CHSCT ou des délégués du personnel. » Constaté le 2026-08-26.",
         url:
           "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000025046978",
+        versionConstatee: "2011-12-30",
       },
     ],
     periodicite: "annuelle",
@@ -100,6 +104,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-19",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -107,6 +112,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "L. 4711-5",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "autre",
@@ -132,6 +138,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4544-10",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051500368",
+        versionConstatee: "2025-10-01",
       },
       {
         source: "INRS",
@@ -292,6 +299,11 @@ export const obligationsElectricite: Obligation[] = [
   // ---------------------------------------------------------------------------
   {
     id: "elec-erp-mise-en-service",
+    relectureDue: {
+      le: "2027-06-01",
+      motif:
+        "GE 6, cité en premier par cette obligation, affiche « Version en vigueur du 19/11/2007 au 01/06/2027 » : l'arrêté du 19 février 2026 le réécrit à cette date, en même temps que GE 2 et GE 7 (JORFTEXT000053525217, lu au JO le 2026-09-01). GE 6 est l'article de RÉGIME — il dit qui vérifie, organisme agréé ou technicien compétent — et c'est de lui que le réalisateur `organisme_agree` de cette ligne est tiré, par son § 2. Relire GE 6 dans sa version au 1er juin 2027, et avec lui GE 7 et GE 8, cités dans la même `reference` et absents du corpus. Vérifier au passage si le renvoi du § 1 vers « l'article R. 123-43 du code de la construction et de l'habitation » — numérotation disparue à la recodification de 2021 — est enfin corrigé. Le texte modificateur ne s'appliquant qu'aux demandes d'autorisation de travaux déposées à compter de cette date, regarder aussi ce qu'il advient du parc existant.",
+    },
     domaine: "electricite",
     libelle: "Vérification électrique à la mise en service ou après travaux (ERP)",
     description:
@@ -303,6 +315,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "GE 6",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303884/",
+        versionConstatee: "2007-11-19",
       },
       {
         source: "ARRETE",
@@ -310,6 +323,8 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
+        note: "« § 2. Les installations neuves ou ayant fait l'objet de travaux doivent être vérifiées dans les conditions prévues aux articles GE 7 et GE 8 (§ 1). » Le § 2 est bien le paragraphe de cet acte-ci : c'est `elec-erp-cat1-4-annuelle` qui le citait à tort, et elle a été recalée sur le § 3 le 2026-09-01.",
+        versionConstatee: "2010-01-23",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -332,10 +347,13 @@ export const obligationsElectricite: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. EL 19 § 1 et § 2",
+        reference:
+          "Arrêté du 25 juin 1980, art. EL 19 § 3 (vérifications périodiques des installations non modifiées)",
         article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
+        note: "« § 3. Les vérifications périodiques des installations non modifiées doivent être effectuées annuellement dans les conditions prévues à l'article GE 10. » Verbatim relevé en première main le 2026-09-01. Le § 1 n'est qu'un renvoi de régime à la section II du chapitre Ier, et le § 2 vise les installations neuves ou ayant fait l'objet de travaux — c'est l'objet de `elec-erp-mise-en-service`, l'acte inverse.",
+        versionConstatee: "2010-01-23",
       },
     ],
     periodicite: "annuelle",
@@ -348,6 +366,8 @@ export const obligationsElectricite: Obligation[] = [
       erp: { categories: ["N1", "N2", "N3", "N4"] },
     },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes:
+      "FONDEMENT RECALÉ LE 2026-09-01 (lot A). L'obligation citait « EL 19 § 1 et § 2 » pour fonder une ANNUELLE. Aucun des deux ne la porte : le § 1 renvoie le régime à la section II du chapitre Ier (GE 6 et suivants), et le § 2 vise les installations neuves ou ayant fait l'objet de travaux — donc exactement l'objet de `elec-erp-mise-en-service`. Les deux lignes citaient le même paragraphe pour deux actes opposés, et celle qui l'avait juste était l'autre. L'annuelle est au § 3, qui vise « les installations NON MODIFIÉES » et renvoie à GE 10.\n\nCE QUE LE § 3 AJOUTE ET QUI N'EST PAS ENCODÉ : il énumère une liste CLOSE des articles couverts par l'annuelle — EL 4 § 4, EL 5 § 1, 4 et 5, EL 8 § 3, EL 10 § 4, EL 11 § 3, 4 et 7, EL 15 § 3, EL 17 et EL 18, puis EC 5 § 5, EC 6 § 5 et 6, EC 7, EC 9 § 1, EC 13 et EC 14 § 3 —, et c'est par EC 13 et EC 14 § 3 que l'éclairage de sécurité entre dans cette annuelle (`incendie-erp-baes-annuelle`). Relevé, non modélisé : le référentiel ne sait pas porter une liste d'articles couverts.\n\nSur-application assumée en 5ᵉ catégorie, comme `elec-erp-mise-en-service` : voir ses notes internes. Le § 3 relève du même Livre II, écarté par PE 1 § 1. La typologie restreint déjà aux catégories N1 à N4, ce qui borne le cas ici.",
   },
   // `elec-erp-cat5-quinquennale` a été RETIRÉ le 2026-08-27 (ADR-022).
   //
@@ -411,6 +431,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 18",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038485456/",
+        versionConstatee: "2019-07-01",
       },
       {
         source: "ARRETE",
@@ -418,6 +439,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
+        versionConstatee: "2010-01-23",
       },
     ],
     periodicite: "mensuelle",
@@ -532,6 +554,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-16",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070/",
+        versionConstatee: "2011-07-01",
       },
     ],
     periodicite: "quadriennale",

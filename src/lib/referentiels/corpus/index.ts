@@ -20,6 +20,7 @@ import { CCH_ASCENSEURS } from "./cch-ascenseurs";
 import { CODE_TRAVAIL_PORTES } from "./code-travail-portes";
 import { CODE_TRAVAIL_ELECTRICITE } from "./code-travail-electricite";
 import { CODE_TRAVAIL_RISQUE_CHIMIQUE } from "./code-travail-risque-chimique";
+import { CODE_TRAVAIL_EQUIPEMENTS_INFORMATION } from "./code-travail-equipements-information";
 import { ESP_SUIVI_EN_SERVICE } from "./esp-suivi-en-service";
 import { ICPE_STOCKAGE } from "./icpe-stockage";
 import { INRS_DOCUMENTAIRE } from "./inrs-documentaire";
@@ -64,6 +65,9 @@ export const CORPUS: readonly Corpus[] = [
   CODE_TRAVAIL_ELECTRICITE,
   ARRETE_2011_12_26_ELECTRICITE,
   CODE_TRAVAIL_RISQUE_CHIMIQUE,
+  // Section 1 du chapitre III (équipements de travail) : `R. 4323-1` y a été
+  // déplacé le 2026-09-01, il était rangé au risque chimique.
+  CODE_TRAVAIL_EQUIPEMENTS_INFORMATION,
   ESP_SUIVI_EN_SERVICE,
   ICPE_STOCKAGE,
   ARRETE_1987_10_08_AERATION,

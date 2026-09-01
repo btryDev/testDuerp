@@ -169,6 +169,25 @@ describe("corpus — forme des dépouillements", () => {
     // Sans ce contrôle, un corpus pourrait s'attribuer une couverture qu'aucune
     // obligation ne confirme, et la dette descendrait sans que rien
     // ne s'améliore.
+    //
+    // « LES DEUX SENS » N'EN COUVRE QU'UN, mesuré le 2026-09-01 par le lot A en
+    // réinjectant les défauts qu'il venait de corriger. `liensRetenusRompus()`
+    // part du CORPUS : un article « retenu » qui nomme une obligation qui ne le
+    // cite pas est une rupture. L'autre sens ne l'est pas — une obligation peut
+    // citer un article dont l'entrée de corpus ne la nomme plus, et rien ne
+    // rougit ; c'est seulement l'alerte `CORPUS_NE_RENVOIE_PAS` de
+    // `pnpm relecture`, qui n'échoue pas. Vérifié en remettant `GC 22` en
+    // fondement de `cuisson-erp-extinction-automatique-annuelle` après l'avoir
+    // ôté de la liste de GC 22 : 1907 tests au vert.
+    //
+    // Ce qui EST gardé, en revanche : changer la clé `article` d'un fondement
+    // pour un article que le corpus rattache encore à l'obligation d'origine
+    // rompt le lien dans le sens couvert. Quatre des cinq recalages de clé du
+    // lot A rougissent à la réinjection par ce chemin.
+    //
+    // Fermer l'autre sens ferait échouer les onze `CORPUS_NE_RENVOIE_PAS`
+    // existants d'un coup — ils sont la matière du lot D. À reprendre APRÈS
+    // lui, pas ici : un test qui naît rouge se désarme.
     expect(liensRetenusRompus()).toEqual([]);
   });
 
@@ -265,7 +284,28 @@ describe("corpus — la dette de lecture, mesurée et décroissante", () => {
  * Légifrance article par article, et une valeur devinée y serait pire que le
  * vide. Un index partiel attrape quand même le prochain décret.
  */
-const REGLE_MODIFICATEUR_DEPUIS = "2026-09-01";
+/*
+ * PALLIATIF DATÉ, ET IL EST NOMMÉ POUR ÊTRE RETIRÉ.
+ *
+ * La règle est née le 2026-09-01. Le même jour, et sur une branche parallèle,
+ * une campagne de traçabilité a relu **quarante-neuf articles en première
+ * main** — sans porter `modifiePar`, qui n'existait pas encore quand elle a
+ * commencé. Les deux lots avaient raison séparément ; leur fusion rend la
+ * garde rouge.
+ *
+ * Trois issues, et deux sont fausses. Écrire `modifiePar: null` sur les
+ * quarante-neuf affirmerait « regardé, pas de texte modificateur » alors que
+ * personne ne l'a regardé : c'est exactement l'affirmation sans lecture que ce
+ * champ existe pour empêcher. Tenir une liste d'articles dispensés se
+ * réparerait en y ajoutant le suivant, donc cesserait de vérifier.
+ *
+ * Reste le décalage d'un jour. Il ne corrige rien — il nomme une dette et la
+ * borne : les quarante-neuf articles relus le 2026-09-01 doivent recevoir leur
+ * `modifiePar`, et **ce palliatif se retire le jour où c'est fait**, en
+ * ramenant la date au 2026-09-01. Tant qu'il est là, la règle ne mord que sur
+ * les lectures postérieures.
+ */
+const REGLE_MODIFICATEUR_DEPUIS = "2026-09-02";
 
 /**
  * Les lectures de première main postérieures à la règle qui ne disent pas par
@@ -483,6 +523,30 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // ces périodicités — PO 8 § 1 fait de même pour PO 1 § 3. Même blocage
       // que PO 7 : aucun équipement porteur.
       "PO 12",
+      // ── Lot D (traçabilité), 2026-09-01 : GZ 13 et GZ 14, entrés au corpus
+      // parce que GZ 15 s'ouvre sur « Elles » et qu'on est allé chercher
+      // l'antécédent. Il n'était pas là — voir la réserve de GZ 15 —, mais les
+      // deux articles qu'on a ouverts pour le trouver portent chacun une
+      // obligation d'exploitant que le référentiel ne porte pas. Ce ne sont
+      // donc pas deux défauts d'encodage : ce sont deux textes lus de plus,
+      // même motif que les entrées du lot 7 et du lot D1.
+      //
+      // GZ 13 § 4 : « L'utilisation du gaz ne peut intervenir qu'après
+      // vérification de l'installation, par une personne ou un organisme
+      // agréé », avec rapport conforme à GE 9 et visa au registre de sécurité.
+      // Préalable à la mise en service, pas une périodicité.
+      "GZ 13",
+      // GZ 14 § 1 : l'entretien et le maintien en l'état des installations de
+      // gaz « incombent à l'exploitant ». État permanent, du même genre que le
+      // « maintenus en bon état » de R. 4227-29 — que le référentiel porte
+      // pour les extincteurs et pas ici.
+      //
+      // Les deux sont bloquées par la même chose : aucune catégorie
+      // d'équipement « installation de gaz ». Les accrocher à
+      // `APPAREIL_CUISSON_ERP` sous-appliquerait, une installation de gaz
+      // alimentant aussi un chauffage ou une production d'eau chaude. C'est le
+      // blocage déjà nommé pour l'arrêté du 23 février 2018, art. 26 § 3.
+      "GZ 14",
       // `R. 4544-11-1` a quitté cette liste le 2026-08-27 : le porteur salarié
       // de l'ADR-023 la rend encodable, et elle l'est —
       // `elec-salarie-attestation-medicale-voisinage`. Troisième sortie par
@@ -502,6 +566,18 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // NF C 18-510 déjà retiré de ce dépôt. Encoder supposerait de trancher ce
       // qu'il vaut, et ce n'est pas un choix technique.
       "R. 4544-11",
+      // R. 4222-21 entre le 2026-09-01 avec le recalage des fondements (lot A),
+      // et il y entre par le chemin inverse de tous les autres : non parce
+      // qu'on a lu un texte de plus, mais parce qu'on a RETIRÉ la seule
+      // obligation qui s'y adossait. `aeration-travail-mise-en-service` le
+      // citait pour fonder un contrôle à la mise en service ; l'article
+      // n'impose qu'une consigne d'utilisation écrite — dispositions prises
+      // pour la ventilation, mesures en cas de panne, avis du médecin du
+      // travail et du CSE —, et cette consigne n'est portée par aucune
+      // obligation. Elle est nommée par trois textes (celui-ci, l'article 2 b)
+      // de l'arrêté du 8 octobre 1987, R. 4224-17) et demandée par aucun. Le
+      // lot A ne crée pas d'obligation : le manque est nommé, pas comblé.
+      "R. 4222-21",
       "Arrêté 23-02-2018 art. 26 § 3",
       // Les trois suivantes entrent avec le lot 7, et la liste s'allonge pour
       // la raison qu'elle s'allonge toujours ici : on a lu quatre textes de
