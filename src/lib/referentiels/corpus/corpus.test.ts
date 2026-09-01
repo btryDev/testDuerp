@@ -19,6 +19,74 @@ describe("corpus — forme des dépouillements", () => {
     }
   });
 
+  it("un même article ne reçoit pas deux statuts opposés selon le corpus", () => {
+    // LE TEST CI-DESSUS NE REGARDE QU'À L'INTÉRIEUR D'UN CORPUS, et c'est par
+    // ce trou que `L. 4622-1` a vécu trois jours en deux exemplaires :
+    // `obligation_manquante` dans `code-travail-sante-travail`, `retenu` dans
+    // `code-travail-service-prevention-sante`, même url, même version, même
+    // verbatim, même `luLe`. Le registre qui dit ce qui MANQUE au référentiel
+    // déclarait donc manquante une obligation livrée la veille.
+    //
+    // L'invariant est celui du test précédent, à la bonne échelle : un corpus
+    // ne peut pas dire deux choses d'un article, et le registre non plus. Le
+    // `statut` décrit ce que l'article FAIT — il fonde, il est sans objet, il
+    // impose ce qu'on ne porte pas —, ce qui est une propriété de l'article et
+    // non du corpus qui le lit. Deux lecteurs peuvent donc le lire deux fois,
+    // jamais en désaccord.
+    //
+    // POURQUOI LE STATUT SEUL, ET RIEN D'AUTRE. La duplication inter-corpus est
+    // légitime et il y en a deux — `R. 4226-19` et `L. 4711-5`, lus par
+    // `code-travail-incendie` et `code-travail-electricite`. Ce sont elles qui
+    // calibrent la garde, et elles interdisent d'aller plus loin que le statut :
+    // les deux entrées de `L. 4711-5` diffèrent par leur `luLe` (2026-08-26 et
+    // 2026-08-31), par leurs `obligations`, et l'une porte `intitule`,
+    // `prescrit`, `citationCle` et `reserve` quand l'autre n'en a aucun ; les
+    // deux entrées de `R. 4226-19` diffèrent par leurs `obligations`, la version
+    // électricité y ajoutant `elec-travail-consignation-registre`. Comparer les
+    // obligations nommées, les dates ou la prose ferait donc crier la garde sur
+    // les DEUX duplications saines. Mesuré sur 33 corpus et 237 articles :
+    // 3 refs dupliquées, 1 divergence, 0 faux positif.
+    //
+    // CE QU'ON A ÉCARTÉ, ET POURQUOI. L'autre remède mesuré était « un article
+    // `obligation_manquante` qu'une obligation encodée cite » : recompté ici, il
+    // lève le même unique drapeau sur 12 obligations manquantes, et attrape en
+    // plus la classe entière — y compris une entrée périmée SANS jumelle. Il
+    // n'est pas retenu parce que ce n'est pas un invariant mais une inférence :
+    // `ReferenceLegale` n'a aucun champ séparant une citation FONDATRICE d'une
+    // citation de CONTEXTE, et le dépôt en contient déjà — les notes de
+    // `sante-travail-etablissement-adhesion-spst` disent de `D. 4622-1` et
+    // `D. 4622-2` qu'ils sont « en contexte, pas en fondateur ». Le jour où un
+    // article sera cité pour le contexte tout en imposant encore quelque chose
+    // qu'on ne porte pas, cette garde criera faux — et le moyen le moins cher de
+    // la faire taire sera de dégrader l'entrée du corpus en `sans_objet`,
+    // c'est-à-dire de mentir pour réparer un test. C'est le motif de la liste
+    // exhaustive dans un habit neuf, en pire : elle ne se répare plus en
+    // recopiant mais en effaçant une lecture juste.
+    //
+    // CE QUE CETTE GARDE NE VOIT PAS, puisqu'il faut le dire : une entrée
+    // `obligation_manquante` restée seule, périmée par un encodage fait sans
+    // toucher au corpus. Aucun invariant ne l'attrape sans le champ qui manque
+    // ci-dessus. Consigné plutôt que couvert par une inférence.
+    const parRef = new Map<string, { corpus: string; statut: string }[]>();
+    for (const c of CORPUS) {
+      for (const a of c.articles) {
+        parRef.set(a.ref, [
+          ...(parRef.get(a.ref) ?? []),
+          { corpus: c.id, statut: a.statut },
+        ]);
+      }
+    }
+    for (const [ref, entrees] of parRef) {
+      const statuts = [...new Set(entrees.map((e) => e.statut))];
+      expect(
+        statuts,
+        `${ref} : ${entrees
+          .map((e) => `${e.corpus} le dit « ${e.statut} »`)
+          .join(", ")}`,
+      ).toHaveLength(1);
+    }
+  });
+
   it("un article retenu désigne des obligations qui existent", () => {
     const connues = new Set(obligationsConformite.map((o) => o.id));
     for (const c of CORPUS) {
@@ -305,18 +373,24 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // ne connaîtrait pas l'accident qui déclenche l'obligation.
       "R. 4141-8",
       "R. 4141-12",
-      // L. 4622-1 : « Les employeurs relevant du présent titre organisent des
-      // services de prévention et de santé au travail. » Une phrase, et le
-      // socle de tout le corpus de santé au travail — sans service, ni VIP ni
-      // suivi renforcé ne peuvent avoir lieu.
+      // L. 4622-1 a quitté cette liste le 2026-09-01, et CE TEST EST LA RAISON
+      // POUR LAQUELLE IL Y ÉTAIT RESTÉ. L'article était encodé depuis le
+      // 2026-08-31 — `sante-travail-etablissement-adhesion-spst` — sans que
+      // l'entrée `obligation_manquante` d'origine soit retirée du corpus
+      // `code-travail-sante-travail`. Retirer cette entrée périmée fait
+      // `1 failed | 1835 passed`, et le SEUL test à protester est celui-ci :
+      // il exigeait `L. 4622-1` parmi les manquantes, donc il était VERT SUR
+      // L'ÉTAT FAUX ET ROUGE SUR L'ÉTAT JUSTE, réparable en supprimant une
+      // ligne. Une liste écrite à la main ne détecte pas qu'une affirmation a
+      // cessé d'être vraie : elle la certifie, et se répare en recopiant.
+      // Sixième sortie de cette liste, et la première qui ne doive rien à une
+      // livraison ni à une requalification — seulement au fait que personne
+      // n'avait fait pour cet article ce que la sortie de PE 37 avait fait la
+      // veille au soir pour le sien.
       //
-      // Elle entre ici parce qu'un commentaire de `prestataires/domaines.ts` la
-      // citait sans qu'aucun corpus ne l'ait lue. Ce n'était pas une infraction
-      // au cliquet — il ne garde que les obligations, pas les commentaires —
-      // mais citer un texte que personne n'a ouvert est ce que ce dépôt a passé
-      // la journée à corriger ailleurs. Ce qu'il en a coûté de ne pas l'ouvrir :
-      // deux tours de revue et une correction proposée qui était fausse.
-      "L. 4622-1",
+      // Ce que le défaut a coûté à voir : rien ne le signalait. La garde de
+      // cohérence inter-corpus en tête de ce fichier est écrite pour ça, et
+      // c'est un invariant — pas un décompte de plus.
       // R. 4624-28-2 : l'employeur informe son service de santé au travail de
       // la cessation d'exposition, du départ ou de la mise à la retraite d'un
       // salarié en suivi individuel renforcé, et en avise l'intéressé sans

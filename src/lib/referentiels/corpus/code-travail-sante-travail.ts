@@ -70,6 +70,29 @@
 // articles n'avaient été vus qu'en résumé de moteur de recherche, et « vérifié »
 // avait été écrit sans que la page ait été ouverte.
 //
+// `L. 4622-1` A QUITTÉ CE CORPUS le 2026-09-01, et il faut dire pourquoi plutôt
+// que de le laisser disparaître. Il y était entré en `obligation_manquante` :
+// le socle de tout le suivi individuel, lu, et que le référentiel ne portait
+// pas. Le lot 8 l'a encodé le 2026-08-31 —
+// `sante-travail-etablissement-adhesion-spst` — dans un corpus neuf,
+// `code-travail-service-prevention-sante`, qui dépouille les quatre articles du
+// titre II ; il n'a pas retiré l'entrée d'origine. Le même article s'est donc
+// trouvé porté DEUX FOIS, `obligation_manquante` ici et `retenu` là-bas, même
+// url, même version, même verbatim, même `luLe`. Pendant trois jours le
+// registre qui dit ce qui MANQUE au référentiel a déclaré manquante une
+// obligation livrée.
+//
+// L'entrée est supprimée plutôt que requalifiée : l'article relève du titre II,
+// pas de la section 2 du chapitre IV que ce corpus dépouille, et le laisser en
+// `retenu` aurait maintenu le double compte de `couvertureParCorpus()` en
+// échangeant seulement un mensonge contre une redondance. Il reste déclaré lu —
+// `referencesDepouillees()` le tient de l'autre corpus, qui l'a ouvert.
+//
+// Ce que ce défaut a coûté à mesurer : rien ne l'a signalé. Le test d'unicité
+// ne regardait qu'à l'intérieur d'un corpus, et la garde qui aurait dû crier
+// exigeait au contraire `L. 4622-1` parmi les manquantes. Voir la garde de
+// cohérence inter-corpus de `corpus.test.ts`, écrite avec cette correction.
+//
 // Lecture : `agent_verbatim`, relevés sur Légifrance le 2026-08-31.
 
 import type { Corpus } from "./types";
@@ -81,26 +104,8 @@ export const CODE_TRAVAIL_SANTE_TRAVAIL: Corpus = {
   url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018493140/",
   etendue: "articles_cites",
   portee:
-    "Un article du titre II du livre VI — `L. 4622-1`, qui met à la charge de l'employeur l'organisation d'un service de prévention et de santé au travail, socle de tout ce qui suit et seul article de ce titre à avoir été lu. Puis des extraits de la section 2 du chapitre IV : visite d'information et de prévention, sa périodicité et ses modalités adaptées (R. 4624-10, R. 4624-16 à R. 4624-18), suivi individuel renforcé — champ, liste des postes à risques particuliers, examen d'aptitude et périodicité (R. 4624-22 à R. 4624-24, R. 4624-27, R. 4624-28), et les trois articles de la surveillance post-exposition qui prolongent la sous-section jusqu'à R. 4624-28-3. S'y ajoute R. 4451-82, hors de cette section : il déroge à la périodicité du suivi renforcé pour les travailleurs exposés aux rayonnements ionisants classés en catégorie A, et il n'a de sens que lu avec R. 4624-28. ATTENTION : R. 4624-23 a été réécrit au 10 avril 2026 par le décret n° 2026-253 du 8 avril 2026 — c'est l'article le plus récemment modifié de tout le référentiel.",
+    "Des extraits de la section 2 du chapitre IV : visite d'information et de prévention, sa périodicité et ses modalités adaptées (R. 4624-10, R. 4624-16 à R. 4624-18), suivi individuel renforcé — champ, liste des postes à risques particuliers, examen d'aptitude et périodicité (R. 4624-22 à R. 4624-24, R. 4624-27, R. 4624-28), et les trois articles de la surveillance post-exposition qui prolongent la sous-section jusqu'à R. 4624-28-3. S'y ajoute R. 4451-82, hors de cette section : il déroge à la périodicité du suivi renforcé pour les travailleurs exposés aux rayonnements ionisants classés en catégorie A, et il n'a de sens que lu avec R. 4624-28. Le préalable de tout ce corpus — `L. 4622-1`, l'organisation d'un service de prévention et de santé au travail — n'est PAS lu ici : il relève du titre II du livre VI, que dépouille `code-travail-service-prevention-sante`. ATTENTION : R. 4624-23 a été réécrit au 10 avril 2026 par le décret n° 2026-253 du 8 avril 2026 — c'est l'article le plus récemment modifié de tout le référentiel.",
   articles: [
-    {
-      ref: "L. 4622-1",
-      intitule:
-        "Obligation pour l'employeur d'organiser un service de prévention et de santé au travail",
-      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043893834",
-      versionEnVigueur: "2022-03-31",
-      luLe: "2026-08-31",
-      lecture: "agent_verbatim",
-      prescrit:
-        "L'employeur organise un service de prévention et de santé au travail.",
-      citationCle:
-        "Les employeurs relevant du présent titre organisent des services de prévention et de santé au travail.",
-      statut: "obligation_manquante",
-      motif:
-        "Une phrase, et c'est le socle de tout ce corpus : sans service de prévention et de santé au travail, ni la visite d'information et de prévention ni le suivi individuel renforcé ne peuvent avoir lieu. Le référentiel porte les visites et ne porte pas le service qui les rend possibles.\n\nATTENTION AU VERBE. Le texte dit « ORGANISENT », pas « adhèrent ». L'adhésion à un service interentreprises est une modalité de cette obligation — celle que retiennent la quasi-totalité des TPE — et non l'obligation elle-même : un employeur peut aussi organiser un service autonome. Écrire « l'adhésion est une obligation » resserrerait le texte, et c'est l'erreur qu'une première rédaction du commentaire de `prestataires/domaines.ts` a commise.",
-      bloquePar:
-        "L'obligation est un état permanent sans échéance ni pièce datable : le modèle la porterait (porteur établissement, périodicité `autre`), mais rien dans le produit ne permettrait de la solder — l'annuaire des prestataires dit qu'un service est déclaré, pas qu'il en existe un. Surtout, le titre II du livre VI n'est dépouillé par aucun corpus : cet article est le SEUL qui en ait été lu, et encoder une obligation sur un titre dont on n'a lu qu'une phrase reviendrait à faire ce que le cliquet de `corpus.test.ts` interdit, à l'échelle du texte plutôt que de l'article.",
-    },
     {
       ref: "R. 4624-10",
       intitule: "Visite d'information et de prévention initiale",
