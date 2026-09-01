@@ -39,11 +39,14 @@ export const obligationsPortesPortails: Obligation[] = [
       },
     ],
     periodicite: "mise_en_service_uniquement",
+    nature: "evenementielle",
+    pieceAttendue: null,
     realisateurs: ["personne_qualifiee", "organisme_agree"],
     criticite: 5,
     transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["PORTE_AUTO", "PORTAIL_AUTO"],
+    notesInternes: "NATURE : ÉVÉNEMENTIELLE (ADR-026). La description porte les deux titres — « À la mise en service OU APRÈS MODIFICATION » —, et c'est le second qui oblige à refaire l'acte. Le produit ne connaît que la date de mise en service.",
   },
   {
     id: "porte-auto-verification-semestrielle",
@@ -61,6 +64,8 @@ export const obligationsPortesPortails: Obligation[] = [
       },
     ],
     periodicite: "semestrielle",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
     transmet: [],
@@ -92,13 +97,15 @@ export const obligationsPortesPortails: Obligation[] = [
       },
     ],
     periodicite: "autre",
+    nature: "etat_permanent",
+    pieceAttendue: "dossier de maintenance",
     realisateurs: ["exploitant"],
     criticite: 3,
     transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["PORTE_AUTO", "PORTAIL_AUTO"],
     notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version citait R. 4224-15, qui traite de la formation de secouriste. Le dossier d'entretien est celui de R. 4224-17.",
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait R. 4224-15, qui traite de la formation de secouriste. Le dossier d'entretien est celui de R. 4224-17.\n\nNATURE : ÉTAT PERMANENT, `pieceAttendue: \"dossier de maintenance\"` (ADR-026). Le dossier est constitué, tenu à jour et conservé pendant toute la durée d'exploitation : c'est lui l'obligation.",
   },
   {
     id: "porte-auto-maintien-en-etat",
@@ -123,13 +130,15 @@ export const obligationsPortesPortails: Obligation[] = [
       },
     ],
     periodicite: "autre",
+    nature: "etat_permanent",
+    pieceAttendue: null,
     realisateurs: ["exploitant"],
     criticite: 5,
     transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["PORTE_AUTO", "PORTAIL_AUTO"],
     notesInternes:
-      "Obligation de moyens permanente, sans échéance fixe. Corrigé à l'audit 2026-08 : R. 4224-15 (secouriste) remplacé par R. 4224-12/13 (portes et portails) et R. 4224-17 (maintenance).",
+      "Obligation de moyens permanente, sans échéance fixe. Corrigé à l'audit 2026-08 : R. 4224-15 (secouriste) remplacé par R. 4224-12/13 (portes et portails) et R. 4224-17 (maintenance).\n\nNATURE : ÉTAT PERMANENT (ADR-026). « Maintenus en bon état de fonctionnement », et toute défectuosité « éliminée le plus rapidement possible » : un état, pas une échéance. Le dossier où se consignent les interventions est porté par `porte-auto-dossier-maintenance`, ligne distincte.",
   },
   {
     id: "porte-auto-portail-piete-coulissant",
@@ -147,12 +156,14 @@ export const obligationsPortesPortails: Obligation[] = [
       },
     ],
     periodicite: "mise_en_service_uniquement",
+    nature: "etat_permanent",
+    pieceAttendue: null,
     realisateurs: ["personne_qualifiee"],
     criticite: 4,
     transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["PORTAIL_AUTO"],
     notesInternes:
-      "DÉFAUT CONSTATÉ LE 2026-08-26, non corrigé ici parce qu'il appelle une décision. Cette obligation porte une périodicité semestrielle alors que ses deux références — les articles 2 et 5 de l'arrêté du 21 décembre 1993 — n'en fixent AUCUNE : ce sont des prescriptions techniques d'installation. La périodicité vient de l'article 9, qui n'est pas cité. Or l'ajouter fait échouer le test anti-doublon : l'obligation partagerait catégorie, périodicité et article fondateur avec `porte-auto-verification-semestrielle`, qui couvre déjà PORTAIL_AUTO au même rythme. Les deux font double emploi, et la référence manquante est ce qui le masquait. Trancher suppose de choisir : fusionner, ou restreindre celle-ci à ce que les articles 2 et 5 prescrivent vraiment — des caractéristiques d'installation, sans échéance. Troisième défaut : l'identifiant dit « piete » alors que l'article 2 vise le passage de VÉHICULES.\n\nRÉSOLU LE 2026-08-26, en suivant le texte plutôt qu'en fusionnant les deux obligations. Les articles 2 et 5 sont des PRESCRIPTIONS TECHNIQUES D'INSTALLATION : ils exigent un dispositif à sécurité positive et des détections de présence et de contact, sans fixer aucune périodicité. `periodicite` passe à `mise_en_service_uniquement` — l'exigence est due à l'installation et après modification, le contrôle périodique de son bon fonctionnement relevant de l'article 9. Le doublon d'échéance avec `porte-auto-verification-semestrielle` disparaît sans qu'aucune exigence ne soit perdue.\n\nDeux corrections de rédaction : le libellé restreignait aux portails COULISSANTS alors que l'article 2 vise toute installation destinée au passage de véhicules, sans distinguer coulissant, battant ou basculant. Et « dispositif d'arrêt d'urgence » n'est pas le vocabulaire du texte, qui dit « dispositif à sécurité positive ».\n\nL'identifiant conserve « piete » alors que l'article vise le passage de VÉHICULES : il est stocké en base sous contrainte d'unicité."
+      "DÉFAUT CONSTATÉ LE 2026-08-26, non corrigé ici parce qu'il appelle une décision. Cette obligation porte une périodicité semestrielle alors que ses deux références — les articles 2 et 5 de l'arrêté du 21 décembre 1993 — n'en fixent AUCUNE : ce sont des prescriptions techniques d'installation. La périodicité vient de l'article 9, qui n'est pas cité. Or l'ajouter fait échouer le test anti-doublon : l'obligation partagerait catégorie, périodicité et article fondateur avec `porte-auto-verification-semestrielle`, qui couvre déjà PORTAIL_AUTO au même rythme. Les deux font double emploi, et la référence manquante est ce qui le masquait. Trancher suppose de choisir : fusionner, ou restreindre celle-ci à ce que les articles 2 et 5 prescrivent vraiment — des caractéristiques d'installation, sans échéance. Troisième défaut : l'identifiant dit « piete » alors que l'article 2 vise le passage de VÉHICULES.\n\nRÉSOLU LE 2026-08-26, en suivant le texte plutôt qu'en fusionnant les deux obligations. Les articles 2 et 5 sont des PRESCRIPTIONS TECHNIQUES D'INSTALLATION : ils exigent un dispositif à sécurité positive et des détections de présence et de contact, sans fixer aucune périodicité. `periodicite` passe à `mise_en_service_uniquement` — l'exigence est due à l'installation et après modification, le contrôle périodique de son bon fonctionnement relevant de l'article 9. Le doublon d'échéance avec `porte-auto-verification-semestrielle` disparaît sans qu'aucune exigence ne soit perdue.\n\nDeux corrections de rédaction : le libellé restreignait aux portails COULISSANTS alors que l'article 2 vise toute installation destinée au passage de véhicules, sans distinguer coulissant, battant ou basculant. Et « dispositif d'arrêt d'urgence » n'est pas le vocabulaire du texte, qui dit « dispositif à sécurité positive ».\n\nL'identifiant conserve « piete » alors que l'article vise le passage de VÉHICULES : il est stocké en base sous contrainte d'unicité.\n\nNATURE : ÉTAT PERMANENT, ALORS QUE LA PÉRIODICITÉ EST `mise_en_service_uniquement` (ADR-026). La description ci-dessus l'écrit déjà : « C'est une exigence d'installation, non une échéance. » Le dispositif à sécurité positive doit ÊTRE là et le rester ; il n'y a pas d'acte à faire à la mise en service. La périodicité `mise_en_service_uniquement` a été retenue faute de mieux — elle produit une ligne datable, ce que `autre` n'aurait pas fait — et le prix est une ligne qui se solde une fois pour une exigence qui ne cesse jamais. Signalé, non corrigé : changer la périodicité déplacerait des lignes chez tous les utilisateurs équipés d'un portail, et cela se décide pour soi-même."
   },
 ];

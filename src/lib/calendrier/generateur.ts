@@ -53,6 +53,7 @@ import type {
   ObligationSurMesureApplicable,
 } from "@/lib/matching";
 import { PREFIXE_PRESCRIPTION } from "@/lib/matching/prescriptions";
+import { estSansRendezVous } from "@/lib/etats-permanents/regle";
 import {
   estPorteeParSalarie,
   type Obligation,
@@ -291,8 +292,21 @@ export function genererProchainesVerifications(
       const prescriptionId = surcharge?.prescriptionId ?? null;
       const raisons = surcharge ? [...oa.raisons, surcharge.raison] : oa.raisons;
 
-      // Périodicité `autre` → pas d'échéance (obligations permanentes).
-      if (periodicite === "autre") continue;
+      // Pas de rendez-vous → pas de ligne de calendrier.
+      //
+      // La règle vit dans `etats-permanents/regle.ts` et non ici, parce que
+      // l'écran « Ce qui doit être en place » a besoin exactement du
+      // complémentaire : ce que cette boucle saute est ce qu'il montre. Écrite
+      // des deux côtés, elle aurait fini par diverger — et le jour où elle
+      // diverge, une obligation apparaît aux deux endroits ou à aucun. C'est le
+      // défaut que la journée du 2026-08-31 a passé à retirer sur deux widgets
+      // jumeaux, et la ligne tracée est « partage la règle, pas la mise en
+      // page ».
+      //
+      // La périodicité passée est l'EFFECTIVE, surcharge de prescription
+      // comprise : un arrêté préfectoral qui donne un rythme à une obligation
+      // qui n'en avait pas la fait passer de l'écran au calendrier.
+      if (estSansRendezVous(periodicite)) continue;
 
       const cleUnique = cleDeLigne(o.id, {
         equipementId: eq.id,

@@ -68,6 +68,7 @@ import {
   Warehouse,
   HardHat,
   Archive,
+  CircleCheck,
 } from "lucide-react";
 
 /** Ids historiques — conservés tels quels pour la prop `active`. */
@@ -83,6 +84,7 @@ export type SidebarActive =
   | "plan-prevention"
   | "carnet-sanitaire"
   | "controle"
+  | "etats-permanents"
   | "duerp"
   | "guide"
   | "connecter";
@@ -103,6 +105,11 @@ export const LABEL_ITEM: Record<SidebarItemId, string> = {
   calendrier: "Calendrier",
   actions: "Plan d'actions",
   controle: "Préparer un contrôle",
+  // « Ce qui doit être en place » et non « États permanents » : le second est
+  // le vocabulaire de l'ADR-022, pas celui d'un dirigeant. L'identifiant et la
+  // route gardent le terme technique — c'est le rôle de cette table que de les
+  // découpler.
+  "etats-permanents": "Ce qui doit être en place",
   guide: "Comprendre",
   // L'identifiant et la route restent `connecter` : renommer une URL casse
   // les liens déjà partagés et les provenances enregistrées, pour un gain
@@ -219,6 +226,7 @@ export function deduireActif(
   if (pathname.startsWith(`${base}/permis-feu`)) return "permis-feu";
   if (pathname.startsWith(`${base}/plan-prevention`)) return "plan-prevention";
   if (pathname.startsWith(`${base}/carnet-sanitaire`)) return "carnet-sanitaire";
+  if (pathname.startsWith(`${base}/etats-permanents`)) return "etats-permanents";
   if (pathname.startsWith(`${base}/controle`)) return "controle";
   if (pathname.startsWith(`${base}/duerp`)) return "duerp";
   if (pathname.startsWith(`${base}/guide`)) return "guide";
@@ -253,6 +261,27 @@ export function construireSections({
       href: href("/actions"),
       Icon: ListChecks,
       count: counts?.actions,
+    },
+    // Quatrième activité du panneau, et non une entrée de rail.
+    //
+    // L'ADR-022 nomme quatre natures d'obligation ; la première — l'échéance
+    // récurrente — a le calendrier, la deuxième n'avait aucune surface. Elle se
+    // range ici parce que les deux répondent à la même question du dirigeant :
+    // « qu'est-ce que j'ai à faire ». La décision 4 de l'ADR-015 pose que ce
+    // panneau ne porte que des ACTIVITÉS et qu'aucune entrée n'est l'état
+    // filtré d'une autre ; mettre en place est une activité, et ce n'est pas un
+    // filtre du calendrier — `estSansRendezVous` fait que ces lignes ne peuvent
+    // pas y exister.
+    //
+    // PAS DE `count`, délibérément. Le badge du Calendrier compte des retards ;
+    // ici rien n'est en retard, puisque rien n'a d'échéance. Un compteur voisin
+    // portant un autre périmètre est exactement ce que la décision 5 du même
+    // ADR interdit — « un seul compteur de retard, un seul périmètre ».
+    {
+      id: "etats-permanents",
+      label: LABEL_ITEM["etats-permanents"],
+      href: href("/etats-permanents"),
+      Icon: CircleCheck,
     },
     {
       id: "controle",

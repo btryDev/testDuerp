@@ -123,7 +123,9 @@ export default async function SalarieDetailPage({
                 <p className="m-0 max-w-[64ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                   Rien de déclaré pour l&apos;instant. Rojer ne peut pas le
                   deviner : rien dans un intitulé de poste ne dit qu&apos;une
-                  personne travaille au voisinage de pièces sous tension.
+                  personne conduit un chariot, travaille au voisinage de pièces
+                  sous tension, est formée au secourisme ou relève d&apos;un
+                  suivi médical renforcé.
                 </p>
               ) : (
                 <ul className="m-0 flex list-none flex-col gap-2 p-0">
@@ -218,6 +220,7 @@ export default async function SalarieDetailPage({
                     libelle: o.libelle,
                     description: o.description,
                     pieceMedicale: o.pieceMedicale,
+                    periodicite: o.periodicite,
                   }))}
                   action={action}
                   dejaDeclares={s.titres.map((t) => t.obligationId)}

@@ -415,10 +415,10 @@ export const CORPUS_PE: Corpus = {
       versionEnVigueur: "2004-11-24",
       luLe: "2026-08-26",
       lecture: "premiere_main",
-      statut: "obligation_manquante",
-      motif:
-        "« Ces établissements doivent être visités tous les cinq ans par la commission de sécurité compétente ; la fréquence de ces visites peut être augmentée, s\'il est jugé nécessaire, par arrêté du maire ou du préfet, après avis de la commission. » C\'est le SEUL article du Livre III qui fixe une périodicité de visite de commission, et il infirme l\'affirmation contraire portée quelques heures plus tôt sur `incendie-erp-5-visite-commission`. Il ne vise cependant que les établissements comportant, pour le public, des locaux à sommeil — distinction qu\'aucun attribut d\'établissement ne porte aujourd\'hui : ni colonne en base, ni question d\'onboarding. Poser la quinquennale sur tous les ERP de 5ᵉ catégorie sur-appliquerait à la boutique et au bureau. L\'obligation existe donc, elle est fondée, et il manque l\'attribut qui la déclencherait.",
-      bloquePar: "attribut-locaux-a-sommeil",
+      statut: "retenu",
+      obligations: ["incendie-erp-5-visite-commission"],
+      reserve:
+        "AMENDEMENT 2026-08-31, SOIR. Cet article était classé `obligation_manquante`, `bloquePar: \"attribut-locaux-a-sommeil\"`, au motif que « poser la quinquennale sur tous les ERP de 5ᵉ catégorie sur-appliquerait à la boutique et au bureau ». Le statut était devenu faux : le référentiel PORTE l\'obligation — `incendie-erp-5-visite-commission` — et elle porte désormais la quinquennale que cet article écrit. Le verbatim reste celui relevé ici le 2026-08-26 : « Ces établissements doivent être visités tous les cinq ans par la commission de sécurité compétente ; la fréquence de ces visites peut être augmentée, s\'il est jugé nécessaire, par arrêté du maire ou du préfet, après avis de la commission. » C\'est un rythme, pas un plafond, et le SEUL du Livre III pour une visite de commission.\n\nCE QUI RESTE DÛ ET QUE LE RÉFÉRENTIEL NE PORTE PAS, en deux points distincts.\n\n(1) L\'ANCRAGE. L\'obligation se déclenche sur une ALARME_INCENDIE déclarée ; PE 37, lui, vise l\'établissement. Un hôtel sans alarme déclarée ne reçoit rien. Le déblocage reste un attribut d\'établissement — `comporteLocauxSommeilPublic` —, donc une migration.\n\n(2) « POUR LE PUBLIC ». L\'article vise les locaux à sommeil réservés AU PUBLIC ; la caractéristique `dessertLocauxSommeil` ne distingue pas le sommeil du public de celui du personnel. Un logement de fonction occupé par un salarié n\'est pas un local à sommeil pour le public : la condition est plus large que l\'article, indépendamment de (1). Non corrigé — le resserrer suppose de reposer la question à des utilisateurs qui y ont déjà répondu.",
     },
     {
       ref: "PO 1",

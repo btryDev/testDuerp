@@ -62,7 +62,7 @@ export async function exporterDonneesSalarie(
       baseLegale:
         "Article 6.1.c du RGPD — obligation légale de l'employeur (suivi des titres et habilitations exigés par le Code du travail). Le consentement n'est pas la base légale retenue : il ne serait pas libre en situation de subordination.",
       cequiNestPasIci:
-        "Rojer ne détient aucune donnée de santé. Sur une attestation médicale, il n'enregistre que son existence et ses dates — ni motif, ni avis, ni document. Le dossier médical en santé au travail appartient au service de prévention et n'est pas accessible à l'employeur (L. 4624-8, R. 4624-55).",
+        "Rojer ne détient aucune donnée de santé. Sur une attestation ou une visite médicale — visite d'information et de prévention, suivi individuel renforcé, visite intermédiaire, attestation d'absence de contre-indication —, il n'enregistre que son existence et ses dates : ni motif, ni avis d'aptitude, ni restriction, ni document. Le dossier médical en santé au travail appartient au service de prévention et n'est pas accessible à l'employeur (L. 4624-8, R. 4624-55).",
     },
     identite: {
       nom: s.nom,
@@ -132,11 +132,14 @@ ${liste}
 
 CE QUI N'EST PAS ENREGISTRÉ
 
-Aucune donnée de santé. Si l'un de vos titres est une attestation médicale,
-seule son existence et ses dates sont enregistrées — jamais son motif, jamais
-l'avis du médecin, jamais le document lui-même. Votre dossier médical en santé
-au travail appartient au service de prévention et n'est pas accessible à votre
-employeur (art. L. 4624-8 et R. 4624-55 du Code du travail).
+Aucune donnée de santé. Si l'un de vos titres est une attestation médicale ou
+une visite auprès du service de santé au travail — visite d'information et de
+prévention, suivi individuel renforcé, visite intermédiaire —, seules son
+existence et ses dates sont enregistrées : jamais son motif, jamais l'avis
+d'aptitude ou d'inaptitude, jamais une restriction, jamais le document
+lui-même. Votre dossier médical en santé au travail appartient au service de
+prévention et n'est pas accessible à votre employeur (art. L. 4624-8 et
+R. 4624-55 du Code du travail).
 
 POURQUOI
 

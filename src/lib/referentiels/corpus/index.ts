@@ -24,6 +24,16 @@ import { ICPE_STOCKAGE } from "./icpe-stockage";
 import { INRS_DOCUMENTAIRE } from "./inrs-documentaire";
 import { CODE_TRAVAIL_LEVAGE } from "./code-travail-levage";
 import { FROID_FLUIDES } from "./froid-fluides";
+import { CODE_TRAVAIL_FORMATION_SECURITE } from "./code-travail-formation-securite";
+import { CODE_TRAVAIL_SANTE_TRAVAIL } from "./code-travail-sante-travail";
+import { CODE_TRAVAIL_SECOURS } from "./code-travail-secours";
+import { CODE_TRAVAIL_CONDUITE } from "./code-travail-conduite";
+import { CODE_TRAVAIL_ORGANISATION_PREVENTION } from "./code-travail-organisation-prevention";
+import { CODE_TRAVAIL_INFORMATION_TRAVAILLEURS } from "./code-travail-information-travailleurs";
+import { CODE_TRAVAIL_LOCAUX_SOCIAUX } from "./code-travail-locaux-sociaux";
+import { CODE_TRAVAIL_CO_ACTIVITE } from "./code-travail-co-activite";
+import { CODE_TRAVAIL_SERVICE_PREVENTION_SANTE } from "./code-travail-service-prevention-sante";
+import { CODE_TRAVAIL_MANUTENTION_ECRAN } from "./code-travail-manutention-ecran";
 import { couverture, type Corpus, type CouvertureCorpus } from "./types";
 
 export * from "./types";
@@ -60,6 +70,20 @@ export const CORPUS: readonly Corpus[] = [
   ARRETE_2018_02_23_GAZ_HABITATION,
   INRS_DOCUMENTAIRE,
   ARRETES_MODIFICATIFS_ERP,
+  // Lot 7 — les textes qui portent les obligations de salarié.
+  CODE_TRAVAIL_FORMATION_SECURITE,
+  CODE_TRAVAIL_SANTE_TRAVAIL,
+  CODE_TRAVAIL_SECOURS,
+  CODE_TRAVAIL_CONDUITE,
+  // Lot 8 — les textes du socle de l'employeur, de l'effectif et de la
+  // co-activité. Aucun n'est intégral : chacun dit, dans sa `portee`, ce qu'il
+  // laisse non lu du chapitre dont il est tiré.
+  CODE_TRAVAIL_ORGANISATION_PREVENTION,
+  CODE_TRAVAIL_INFORMATION_TRAVAILLEURS,
+  CODE_TRAVAIL_LOCAUX_SOCIAUX,
+  CODE_TRAVAIL_CO_ACTIVITE,
+  CODE_TRAVAIL_SERVICE_PREVENTION_SANTE,
+  CODE_TRAVAIL_MANUTENTION_ECRAN,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {

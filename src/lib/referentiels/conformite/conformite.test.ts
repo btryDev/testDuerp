@@ -387,6 +387,14 @@ describe("référentiel conformité — anti-doublon", () => {
     // ── Vraies distinctions que le test ne sait pas voir ────────────────
     {
       paire: [
+        "prevention-etablissement-salarie-designe",
+        "formation-securite-salarie-designe-competent",
+      ],
+      raison:
+        "Instruit le 2026-08-31, ce n'est PAS un doublon. `L. 4644-1` I porte deux actes dans deux alinéas successifs : l'alinéa 1 impose de DÉSIGNER un ou plusieurs salariés compétents — acte de l'employeur, porteur établissement, dû même sans aucun équipement déclaré —, l'alinéa 2 fait bénéficier la personne ainsi désignée d'une FORMATION en matière de santé au travail — titre nominatif, porteur salarié, qui n'existe qu'une fois quelqu'un déclaré. Un employeur peut avoir désigné sans avoir formé, et c'est le cas ordinaire ; les fondre aurait laissé cocher « fait » pour une désignation sur un papier. Le test ne compare que la clé d'article et ne sait pas distinguer deux alinéas.",
+    },
+    {
+      paire: [
         "aeration-controle-installations-r4222-20",
         "stockage-dangereux-ventilation-locaux",
       ],
@@ -962,7 +970,62 @@ describe("référentiel conformité — version et empreinte", () => {
   // 84 depuis le 2026-08-27 : 85 au départ, +2 obligations portées par
   // l'établissement (PE 4 § 2, R. 4222-20), −3 fragments de ces mêmes
   // articles qu'elles absorbent (ADR-022).
-  const EMPREINTE_ATTENDUE = "85-23798b9c81f3ce74";
+  // 98 depuis le 2026-08-31 : +13 au lot 7, les trois premiers domaines qui ne
+  // naissent d'aucun équipement. Formation à la sécurité (3, dont la première
+  // ligne de catalogue due à TOUS les salariés), conduite d'équipements (2),
+  // santé au travail (5, dont VIP et SIR), premiers secours (3). Le compte
+  // saute de treize d'un coup parce que le dépouillement de quatre textes a été
+  // livré en un lot, pas parce qu'un article a été découpé en morceaux : chaque
+  // obligation cite un article distinct ou un alinéa distinct, et le corpus le
+  // montre article par article.
+  // 100 depuis la revue du 2026-08-31 : +2 dérogations de périodicité que le
+  // premier passage avait manquées, et dont les `notesInternes` affirmaient le
+  // contraire. `R. 4624-17` ramène la VIP à trois ans au plus pour les
+  // travailleurs handicapés, les titulaires d'une pension d'invalidité et les
+  // travailleurs de nuit ; `R. 4451-82` porte le suivi renforcé à un an pour la
+  // catégorie A des rayonnements ionisants, et y supprime la visite
+  // intermédiaire. Deux populations pour lesquelles le référentiel annonçait
+  // une échéance trop tardive.
+  // L'empreinte bouge sans que le compte change : le libellé de
+  // `sante-travail-etablissement-liste-postes-risques` porte désormais le
+  // conditionnel du III de R. 4624-23 (« s'il le juge nécessaire »). Le libellé
+  // entre dans l'empreinte parce qu'il s'affiche au calendrier — c'est
+  // exactement ce qu'on veut voir bouger.
+  //
+  // `REFERENTIEL_VERSION` n'est délibérément pas incrémentée ici : le lot 7, le
+  // palier 1 et le lot 8 ont posé la même valeur chacun de leur côté, et c'est
+  // la session d'intégration qui la tranche pour les trois.
+  
+  // +16 au lot 8 (2026-08-31), qui n'annonce PAS le total : deux autres lots
+  // touchent ce compte le même jour, et chacun ne connaît que son propre
+  // apport. Ce que celui-ci ajoute, et rien d'autre : organisation de la
+  // prévention (3 — salarié désigné, CSE, règlement intérieur), information
+  // des travailleurs (2 — affichages de D. 4711-1, avis d'accès au DUERP),
+  // locaux sociaux (4 — sanitaires, eau potable, et les deux régimes de
+  // restauration qui se partagent le seuil de cinquante), co-activité (1 —
+  // protocole de sécurité de chargement), santé au travail (2 — adhésion au
+  // service, fiche d'entreprise) et formation à la sécurité (3 — manutention,
+  // travail sur écran, formation santé-sécurité du CSE, et formation en santé
+  // au travail du salarié désigné compétent). Quatre domaines entrent avec lui.
+  // La seizième est arrivée après coup : la relecture des trois articles du
+  // renvoi de L. 4644-1 a montré que la formation du salarié désigné et celle
+  // du membre du CSE sont deux actes sous un même régime, et non un seul.
+  // L'empreinte bouge deux fois sans que le compte change, et les deux fois
+  // parce qu'une contre-vérification a corrigé une ligne de ce lot :
+  //
+  //  1. le réalisateur de `sante-travail-etablissement-fiche-entreprise` passe
+  //     de `professionnel_sante_travail` à `equipe_pluridisciplinaire`, la
+  //     valeur que le lot 7 a ajoutée à l'enum après que ce lot eut signalé
+  //     qu'aucune valeur existante ne disait ce que R. 4624-46 confie à
+  //     l'équipe ;
+  //  2. le libellé de `sante-travail-etablissement-adhesion-spst` cessait de
+  //     dire « adhésion » là où L. 4622-1 écrit « organisent » — l'adhésion à un
+  //     service interentreprises est une modalité, pas l'obligation.
+  //
+  // Réalisateur et libellé entrent tous deux dans l'empreinte parce qu'ils
+  // s'affichent au calendrier et décident de ce que le dirigeant croit devoir
+  // faire — c'est exactement ce qu'on veut voir bouger.
+  const EMPREINTE_ATTENDUE = "116-97f9faa35169ab0b";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1080,7 +1143,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(85);
+    ).toBe(116);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1165,6 +1228,8 @@ describe("référentiel conformité — version et empreinte", () => {
     realisateurs: ["exploitant"],
     criticite: 3,
     transmet: [],
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
     typologies: { erp: true },
     categoriesEquipement: ["ALARME_INCENDIE"],
   };
@@ -1322,6 +1387,121 @@ const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
     "Contraste à garder en tête : l'habilitation elle-même n'a AUCUN chiffre " +
     "— R. 4544-10 renvoie aux modalités des normes, que R. 4544-3 qualifie de " +
     "recommandées — et c'est pourquoi elle est passée à `autre` (ADR-023 § 6).",
+
+  // ---------------------------------------------------------------------------
+  // Lot 7 — les cinq périodicités chiffrées du dépouillement du 2026-08-31.
+  //
+  // Treize obligations sont entrées, cinq seulement portent un chiffre. Les
+  // huit autres sont à `autre`, et c'est le résultat du dépouillement, pas une
+  // paresse : le chapitre R. 4141-* ne chiffre RIEN, R. 4323-55 dit
+  // « réactualisée chaque fois que nécessaire », et aucun des trois articles de
+  // la section secours ne porte de durée. Le « recyclage SST tous les
+  // vingt-quatre mois » vient du dispositif INRS/CNAM et le « recyclage CACES à
+  // cinq ans » des recommandations de l'assurance maladie — ni l'un ni l'autre
+  // n'est du droit, et ni l'un ni l'autre n'est encodé.
+  //
+  // ⚠ TROIS DES CINQ SONT DES PLAFONDS, PAS DES RYTHMES, et c'est la nuance à
+  // ne pas perdre. R. 4624-16 et R. 4624-28 écrivent « qui ne peut excéder » et
+  // « qui ne peut être supérieure à » : le médecin du travail fixe le délai
+  // réel, plus court. Le chiffre encodé est la borne extérieure — la date
+  // au-delà de laquelle l'employeur est nécessairement en défaut. Ce n'est
+  // défendable que parce que `TitreSalarie.echeanceLe`, déclaré par
+  // l'employeur, prime sur tout calcul : un dirigeant dont le médecin a fixé
+  // trois ans saisit trois ans. Sans cette échappatoire, il aurait fallu
+  // passer à `autre` et ne rien dire du tout.
+  // ---------------------------------------------------------------------------
+  "sante-travail-salarie-vip":
+    "R. 4624-16 porte le chiffre : « Le travailleur bénéficie d'un " +
+    "renouvellement de la visite d'information et de prévention initiale […] " +
+    "selon une périodicité **qui ne peut excéder cinq ans**. » Relu à la " +
+    "source le 2026-08-31, version en vigueur du 2017-01-01. PLAFOND : la " +
+    "phrase suivante ajoute que « ce délai […] est fixé par le médecin du " +
+    "travail dans le cadre du protocole mentionné à l'article L. 4624-1 ».",
+  "sante-travail-salarie-sir":
+    "R. 4624-28 porte le chiffre : renouvellement « effectuée par le médecin " +
+    "du travail selon une périodicité qu'il détermine et **qui ne peut être " +
+    "supérieure à quatre ans** ». Relu à la source le 2026-08-31, version en " +
+    "vigueur du 2017-01-01. PLAFOND, comme la VIP.",
+  "sante-travail-salarie-sir-visite-intermediaire":
+    "R. 4624-28, seconde phrase : « Une visite intermédiaire est effectuée " +
+    "par un professionnel de santé mentionné au premier alinéa de l'article " +
+    "L. 4624-1 **au plus tard deux ans** après la visite avec le médecin du " +
+    "travail. » Relu à la source le 2026-08-31. PLAFOND, et son point de " +
+    "départ est la visite du MÉDECIN, non la précédente visite intermédiaire " +
+    "— nuance que `Periodicite` n'exprime pas.",
+  "sante-travail-etablissement-liste-postes-risques":
+    "R. 4624-23, III porte le chiffre, et c'est la seule périodicité FERME du " +
+    "lot 7 : la liste des postes à risques particuliers « est transmise au " +
+    "service de prévention et de santé au travail, tenue à disposition […] et " +
+    "**mise à jour tous les ans** ». Relu à la source le 2026-08-31, version " +
+    "en vigueur du 2026-04-10 (décret n° 2026-253 du 8 avril 2026) — l'article " +
+    "le plus récemment modifié de tout le référentiel.",
+  "conduite-salarie-attestation-medicale":
+    "R. 4323-56 porte le chiffre, dans les mêmes termes que R. 4544-11-1 et " +
+    "par le même décret : « Cette attestation, **d'une validité de cinq ans**, " +
+    "est délivrée par le médecin du travail à l'issue d'un examen médical " +
+    "qu'il réalise. » Relu à la source le 2026-08-31, version en vigueur du " +
+    "2025-10-01 (décret n° 2025-355 du 18 avril 2025). Contraste à garder en " +
+    "tête, exactement comme en électricité : l'autorisation de conduite " +
+    "elle-même n'a AUCUNE durée écrite, et elle est passée à `autre`.",
+
+  // Les deux dérogations relevées à la revue du 2026-08-31. Elles ne s'ajoutent
+  // pas aux plafonds ci-dessus : elles les CORRIGENT pour deux populations que
+  // le premier passage rangeait à tort sous le régime général.
+  "sante-travail-salarie-vip-adaptee":
+    "R. 4624-17 porte le chiffre : le travailleur dont l'état de santé, l'âge, " +
+    "les conditions de travail ou les risques le nécessitent — « notamment les " +
+    "travailleurs handicapés, les travailleurs qui déclarent être titulaires " +
+    "d'une pension d'invalidité et les travailleurs de nuit mentionnés à " +
+    "l'article L. 3122-5 » — bénéficie de modalités adaptées « selon une " +
+    "périodicité **qui n'excède pas une durée de trois ans** ». Relu à la " +
+    "source le 2026-08-31, version en vigueur du 2017-01-01. PLAFOND, comme le " +
+    "reste du suivi médical — mais un plafond à TROIS ans, là où " +
+    "`sante-travail-salarie-vip` en annonce cinq.",
+  "sante-travail-salarie-sir-categorie-a":
+    "R. 4451-82 porte le chiffre, et c'est une périodicité FERME : « Pour un " +
+    "travailleur classé en catégorie A, la visite médicale mentionnée à " +
+    "l'article R. 4624-28 **est renouvelée chaque année**. La visite " +
+    "intermédiaire mentionnée au même article n'est pas requise. » Relu à la " +
+    "source le 2026-08-31, version en vigueur du 2018-07-01 (décret " +
+    "n° 2018-437 du 4 juin 2018). Ni « au plus », ni « qui ne peut excéder » : " +
+    "c'est un rythme, pas une borne.",
+  // ---------------------------------------------------------------------------
+  // Lot 8 — une seule périodicité chiffrée sur seize obligations.
+  //
+  // Et elle a failli ne pas y être. Le premier passage de ce lot a rendu quinze
+  // obligations toutes à `autre`, en affirmant qu'aucun des textes lus n'écrivait
+  // de durée. C'était faux, et le défaut venait d'un dépouillement incomplet :
+  // `L. 4644-1` renvoie aux articles `L. 2315-16` À `L. 2315-18`, et seul le
+  // dernier avait été ouvert. `L. 2315-17` porte le renouvellement.
+  //
+  // L'erreur inverse de celle que ce fichier surveille d'habitude : non pas
+  // afficher un chiffre que le droit ne donne pas, mais taire un chiffre que le
+  // droit donne. Une échéance absente est moins visible qu'une échéance fausse,
+  // et pas moins fautive.
+  // ---------------------------------------------------------------------------
+  "formation-securite-salarie-cse-sst":
+    "L. 2315-17 porte le chiffre : « Ces formations sont renouvelées lorsque " +
+    "les représentants ont exercé leur mandat pendant **quatre ans**, " +
+    "consécutifs ou non. » Relu à la source le 2026-08-31, version en vigueur " +
+    "du 2026-05-28 — le deuxième texte le plus récent du référentiel après " +
+    "R. 4225-2. " +
+    "⚠ CE N'EST NI UN RYTHME NI UN PLAFOND, mais une BORNE INTÉRIEURE, et " +
+    "c'est un troisième cas de figure après les deux du lot 7 : les quatre ans " +
+    "comptent du MANDAT EXERCÉ, « consécutifs ou non », et non du temps " +
+    "calendaire depuis la formation. Un élu qui siège deux ans, s'interrompt " +
+    "trois, puis siège deux ans encore les atteint au bout de sept années " +
+    "civiles. Le produit ne modélise aucun mandat : l'échéance calculée est " +
+    "juste pour un mandat continu — le cas ordinaire — et arrive EN AVANCE " +
+    "pour un mandat interrompu. C'est le sens d'erreur que ce dépôt préfère " +
+    "explicitement, une sur-application visible et corrigeable valant mieux " +
+    "qu'un faux négatif muet ; les plafonds du lot 7 se trompent dans l'autre " +
+    "sens et peuvent annoncer « à jour » à tort. `TitreSalarie.echeanceLe`, " +
+    "déclaré par l'employeur, prime de toute façon sur le calcul. " +
+    "Contraste à garder en tête : `formation-securite-salarie-designe-competent` " +
+    "cite le MÊME article et porte `autre`, parce que la condition est écrite " +
+    "pour des « représentants » exerçant un « mandat » — ce qu'un salarié " +
+    "DÉSIGNÉ (R. 4644-1) n'est ni ne fait.",
 };
 
 describe("référentiel conformité — d'où vient le chiffre", () => {

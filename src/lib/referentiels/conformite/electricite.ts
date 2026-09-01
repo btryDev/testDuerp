@@ -46,11 +46,14 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "mise_en_service_uniquement",
+    nature: "evenementielle",
+    pieceAttendue: null,
     realisateurs: ["organisme_accredite"],
     criticite: 4,
     transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes: "NATURE : ÉVÉNEMENTIELLE (ADR-026). R. 4226-14 porte deux titres : la mise en service, que le produit date, et « toute modification de structure », qu'il n'observe pas. La règle de résolution retient le second. Conséquence à ne pas manquer : la ligne se solde au premier contrôle, alors que l'obligation, elle, redevient due à chaque modification — et rien dans le produit ne le dira.",
   },
   {
     id: "elec-travail-periodique-annuelle",
@@ -76,6 +79,8 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "annuelle",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
     realisateurs: ["organisme_accredite", "personne_qualifiee"],
     criticite: 5,
     transmet: [],
@@ -105,11 +110,14 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "autre",
+    nature: "etat_permanent",
+    pieceAttendue: "registre de sécurité",
     realisateurs: ["exploitant"],
     criticite: 3,
     transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes: "NATURE : ÉTAT PERMANENT, `pieceAttendue` NON NULLE (ADR-026). R. 4226-19 n'impose pas de vérifier — d'autres lignes le font — il impose que les résultats soient CONSIGNÉS SUR UN REGISTRE. L'écrit est ici l'obligation, pas la trace d'un acte : c'est la distinction que porte `pieceAttendue`, et elle décide qu'une case à cocher seule ne suffit pas sur cette ligne.",
   },
   {
     id: "elec-travail-habilitation-personnel",
@@ -152,6 +160,8 @@ export const obligationsElectricite: Obligation[] = [
     // maintenir —, et ce qu'il DATE est l'attestation médicale quinquennale
     // de R. 4544-11-1, dont les cinq ans sont écrits noir sur blanc.
     periodicite: "autre",
+    nature: "etat_permanent",
+    pieceAttendue: null,
     realisateurs: ["exploitant"],
     criticite: 4,
     transmet: [
@@ -173,7 +183,7 @@ export const obligationsElectricite: Obligation[] = [
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
-      "Périodicité passée de `triennale` à `autre` le 2026-08-27 (ADR-023 § 6) : voir le commentaire au-dessus du champ. Le précédent est celui du Kbis d'un prestataire, suivi sans statut d'expiration au motif que « le texte n'assortit pas la pièce d'une périodicité citable […] le produit informe, il ne décrète pas ».\n\nCe que l'utilisateur perd : une ligne d'échéance à trois ans. Ce qu'il gagne : une échéance réelle à sa place — l'attestation médicale — et un état permanent qui dit ce que le droit dit.\n\nLimite connue, non corrigée ici : la clé d'article est `R. 4544-10` alors que la citation couvre R. 4544-9 à R. 4544-11. Les deux bornes ne sont donc ni déclarées lues, ni surveillées par la veille. R. 4544-9 et R. 4544-11 n'ont d'ailleurs aucune entrée de corpus.\n\nAmendement 2026-08-26 : L. 4711-5 était en refs[0], c'est-à-dire présenté comme l'article FONDATEUR (convention ADR-003). Or il n'institue aucun registre — il autorise à en réunir plusieurs en un seul, ce que le CLAUDE.md du dépôt écrit noir sur blanc. La contradiction était interne. R. 4226-19 passe en premier : c'est lui qui impose la consignation des résultats de vérification. Ce n'est pas cosmétique : le test anti-doublon compare les obligations sur leur article fondateur, donc un refs[0] faux le rend aveugle — le mécanisme même qui masquait le doublon des portails.",
+      "Périodicité passée de `triennale` à `autre` le 2026-08-27 (ADR-023 § 6) : voir le commentaire au-dessus du champ. Le précédent est celui du Kbis d'un prestataire, suivi sans statut d'expiration au motif que « le texte n'assortit pas la pièce d'une périodicité citable […] le produit informe, il ne décrète pas ».\n\nCe que l'utilisateur perd : une ligne d'échéance à trois ans. Ce qu'il gagne : une échéance réelle à sa place — l'attestation médicale — et un état permanent qui dit ce que le droit dit.\n\nLimite connue, non corrigée ici : la clé d'article est `R. 4544-10` alors que la citation couvre R. 4544-9 à R. 4544-11. Les deux bornes ne sont donc ni déclarées lues, ni surveillées par la veille. R. 4544-9 et R. 4544-11 n'ont d'ailleurs aucune entrée de corpus.\n\nAmendement 2026-08-26 : L. 4711-5 était en refs[0], c'est-à-dire présenté comme l'article FONDATEUR (convention ADR-003). Or il n'institue aucun registre — il autorise à en réunir plusieurs en un seul, ce que le CLAUDE.md du dépôt écrit noir sur blanc. La contradiction était interne. R. 4226-19 passe en premier : c'est lui qui impose la consignation des résultats de vérification. Ce n'est pas cosmétique : le test anti-doublon compare les obligations sur leur article fondateur, donc un refs[0] faux le rend aveugle — le mécanisme même qui masquait le doublon des portails.\n\nNATURE : ÉTAT PERMANENT (ADR-026). La description le dit déjà — « un état à maintenir en permanence, pas un rendez-vous » — et le champ le porte désormais. C'est la ligne qui a fait passer la périodicité de `triennale` à `autre` le 2026-08-27 ; le couple nature + périodicité dit maintenant pourquoi, sans qu'on ait à lire la note.",
   },
 
   // ---------------------------------------------------------------------------
@@ -203,7 +213,32 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "quinquennale",
-    realisateurs: ["exploitant"],
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
+    // `medecin_travail` depuis le 2026-08-31, et `exploitant` était une
+    // contre-vérité que la note ci-dessous relevait elle-même : le verbatim dit
+    // « est délivrée PAR LE MÉDECIN DU TRAVAIL à l'issue d'un examen médical
+    // qu'il réalise ». L'écran annonçait donc à un dirigeant qu'il délivre
+    // lui-même une attestation médicale — un acte qu'il lui est interdit de
+    // réaliser.
+    //
+    // La valeur n'existait pas quand cette obligation a été écrite ; elle a été
+    // ajoutée avec le suivi médical, et son jumeau `R. 4323-56` — issu du MÊME
+    // décret n° 2025-355 — la porte. Le référentiel se contredisait sur deux
+    // obligations nées le même jour du même texte.
+    //
+    // Pourquoi maintenant, alors que la correction avait été écartée : l'argument
+    // qui la retenait était qu'elle déplace l'empreinte d'une obligation publiée
+    // sur des dossiers vivants. Il valait tant que le lot n'était qu'un ajout ;
+    // l'intégration en cours déplace l'empreinte massivement de toute façon.
+    // Laisser une contre-vérité pour éviter un déplacement qui a lieu quand même,
+    // c'est en payer le coût sans en acheter le bénéfice.
+    //
+    // Le DOMAINE reste `electricite`, délibérément : c'est l'habilitation
+    // électrique que cette attestation conditionne, et le déplacer changerait
+    // son rangement au calendrier sans rien corriger. Un seul déplacement
+    // d'empreinte, pas deux.
+    realisateurs: ["medecin_travail"],
     criticite: 4,
     transmet: [],
     typologies: { travail: true },
@@ -239,13 +274,15 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "mise_en_service_uniquement",
+    nature: "evenementielle",
+    pieceAttendue: null,
     realisateurs: ["organisme_agree"],
     criticite: 5,
     transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version citait EL 5, qui définit les locaux de service électrique. La vérification avant ouverture et après travaux relève des articles GE 6 à GE 8 (rapport RVRAT), auxquels EL 19 § 2 renvoie.\n\nSur-application assumée en 5ᵉ catégorie (constatée 2026-08-26). L'article cité relève du Livre II du règlement de sécurité, écarté en 5ᵉ catégorie par PE 1 § 1 ; le dépouillement intégral du Livre III a établi qu'il n'en rouvre que MS 39 et MS 70. GE 7 § 1 le confirme en propre : il ne vise que les établissements des 1ʳᵉ à 4ᵉ catégories. Ce qui traite le même objet en N5 est PE 4 § 1, plus étroit — vérification à la construction et avant ouverture par personnes ou organismes agréés, et seulement « dans les établissements avec locaux à sommeil ». La ligne est MAINTENUE : la retirer créerait un faux négatif muet chez 100 % des utilisateurs, alors qu'une sur-application visible reste corrigeable. À reprendre quand le référentiel saura porter l'attribut « locaux à sommeil ».",
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait EL 5, qui définit les locaux de service électrique. La vérification avant ouverture et après travaux relève des articles GE 6 à GE 8 (rapport RVRAT), auxquels EL 19 § 2 renvoie.\n\nSur-application assumée en 5ᵉ catégorie (constatée 2026-08-26). L'article cité relève du Livre II du règlement de sécurité, écarté en 5ᵉ catégorie par PE 1 § 1 ; le dépouillement intégral du Livre III a établi qu'il n'en rouvre que MS 39 et MS 70. GE 7 § 1 le confirme en propre : il ne vise que les établissements des 1ʳᵉ à 4ᵉ catégories. Ce qui traite le même objet en N5 est PE 4 § 1, plus étroit — vérification à la construction et avant ouverture par personnes ou organismes agréés, et seulement « dans les établissements avec locaux à sommeil ». La ligne est MAINTENUE : la retirer créerait un faux négatif muet chez 100 % des utilisateurs, alors qu'une sur-application visible reste corrigeable. À reprendre quand le référentiel saura porter l'attribut « locaux à sommeil ».\n\nNATURE : ÉVÉNEMENTIELLE (ADR-026). Même configuration que `elec-travail-mise-en-service` : EL 19 § 2 vise les installations « neuves OU MODIFIÉES ». Le second titre commande, et le produit n'observe pas les travaux.",
   },
   {
     id: "elec-erp-cat1-4-annuelle",
@@ -263,6 +300,8 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "annuelle",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
     realisateurs: ["organisme_agree"],
     criticite: 5,
     transmet: [],
@@ -310,6 +349,8 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "bimensuelle",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
     realisateurs: ["exploitant"],
     criticite: 4,
     transmet: [],
@@ -341,6 +382,8 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "mensuelle",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
     realisateurs: ["exploitant", "personne_qualifiee", "organisme_agree"],
     criticite: 4,
     transmet: [],
@@ -377,6 +420,8 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "annuelle",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
     realisateurs: ["organisme_agree"],
     criticite: 5,
     transmet: [],
@@ -415,6 +460,8 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "annuelle",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
     realisateurs: ["personne_qualifiee"],
     criticite: 5,
     transmet: [],
@@ -449,6 +496,8 @@ export const obligationsElectricite: Obligation[] = [
       },
     ],
     periodicite: "quadriennale",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
     realisateurs: ["organisme_accredite", "personne_qualifiee"],
     criticite: 4,
     transmet: [],

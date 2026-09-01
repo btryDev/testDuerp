@@ -83,12 +83,11 @@ import {
 } from "@/lib/dates";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
+import {
+  domainesPresents,
+  estDomaineConnu,
+} from "@/lib/calendrier/domaines-presents";
 
-const DOMAINES_P1: DomaineObligation[] = [
-  "electricite",
-  "incendie",
-  "aeration",
-];
 
 // Fuseau épinglé : sans lui, le numéro de jour et le mois d'une date
 // stockée à minuit UTC reculaient d'une case sur un serveur en UTC.
@@ -239,7 +238,7 @@ export default async function CalendrierPage({
   // eux (filtre famille « Tout » ou « Contrôles »).
   const filtreDomaine =
     (!filtreFamille || filtreFamille === "controle") &&
-    DOMAINES_P1.includes(domaine as DomaineObligation)
+    estDomaineConnu(domaine)
       ? (domaine as DomaineObligation)
       : undefined;
   const filtreUrgent = urgent === "1";
@@ -297,8 +296,14 @@ export default async function CalendrierPage({
     regenere = true;
   }
 
-  const [verifsBruts, etat, autresEcheances, equipementsTous, motifsSansEcheance] =
-    await Promise.all([
+  const [
+    verifsBruts,
+    etat,
+    autresEcheances,
+    equipementsTous,
+    motifsSansEcheance,
+    verifsDuLieu,
+  ] = await Promise.all([
       listerVerifications(id, {
         domaine: filtreDomaine,
         urgentsSeulement: filtreUrgent,
@@ -324,6 +329,12 @@ export default async function CalendrierPage({
       // trait pour trait sur cet écran : un calendrier qui n'affiche rien
       // pour un équipement déclaré doit pouvoir l'expliquer.
       equipementsSansEcheance(id),
+      // Les lignes du lieu SANS filtre de domaine ni d'urgence : elles ne
+      // servent qu'à savoir quels domaines proposer au filtre. Les lire sur
+      // `verifsBruts` ferait disparaître de la liste des choix tous les
+      // domaines sauf celui qu'on vient de choisir. Dans le même
+      // `Promise.all`, donc sans allonger le rendu.
+      listerVerifications(id, { batimentId: filtreBatiment }),
     ]);
   const aujourdhui = new Date();
   // La lecture par équipement suit le même bâtiment que le reste.
@@ -1020,7 +1031,10 @@ export default async function CalendrierPage({
       <FiltresCalendrier
         baseHref={baseHref}
         famillesDisponibles={famillesPresentes}
-        domaines={DOMAINES_P1.map((d) => ({ id: d, label: LABEL_DOMAINE[d] }))}
+        domaines={domainesPresents(verifsDuLieu).map((d) => ({
+          id: d,
+          label: LABEL_DOMAINE[d],
+        }))}
         batiments={batiments}
         filtres={{
           famille: filtreFamille,
@@ -1080,7 +1094,9 @@ export default async function CalendrierPage({
                     déclarés :{" "}
                     {equipements.length > 0 &&
                     horsReferentiel === equipements.length
-                      ? `aucun des ${equipements.length} déclarés n'en produit.`
+                      ? equipements.length === 1
+                        ? "le seul que vous ayez déclaré n'en produit."
+                        : `aucun des ${equipements.length} déclarés n'en produit.`
                       : "il n'y en a pas encore."}
                   </p>
                   {/* Un parc déclaré et un calendrier vide, ce n'est pas la

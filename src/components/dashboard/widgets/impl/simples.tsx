@@ -256,7 +256,7 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
             ? ` · ${groupes.length} type${groupes.length > 1 ? "s" : ""}`
             : "") +
           (!vueTypes && !deplie && nbReplies > 0
-            ? ` · ${nbReplies} repliés`
+            ? ` · ${nbReplies} replié${nbReplies > 1 ? "s" : ""}`
             : "")
         }
         actions={

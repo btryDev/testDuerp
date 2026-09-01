@@ -24,7 +24,11 @@ import { prisma } from "@/lib/prisma";
 import { determineObligationsApplicables } from "@/lib/matching";
 import { LABEL_DOMAINE as LABEL_DOMAINE_OBLIGATION } from "@/lib/calendrier/labels";
 import { domainesSansPrestataire } from "@/lib/prestataires/domaines";
-import type { Obligation } from "@/lib/referentiels/conformite/types";
+import { obligationsConformite } from "@/lib/referentiels/conformite";
+import type {
+  DomaineObligation,
+  Obligation,
+} from "@/lib/referentiels/conformite/types";
 
 export type Transmissions = {
   domainesSansPrestataire: Array<{ domaine: string; libelle: string }>;
@@ -48,11 +52,69 @@ export const AUCUNE_TRANSMISSION: Transmissions = {
  *    attestation SST — un faux négatif muet, la famille de défauts que
  *    l'ADR-022 existe pour supprimer ;
  *  - une transmission qui ne peut pas le nommer (`titre: null`, faute de
- *    catalogue) retombe sur le seul seuil disponible : dès qu'un titre
- *    quelconque est déclaré, on cesse de signaler. Au-delà, l'outil ne
- *    distingue plus « il n'a pas fini de saisir » de « il a saisi ce qui
- *    existe », et insister reviendrait à réclamer un titre qu'on ne sait pas
- *    dire dû.
+ *    catalogue) se tait dès qu'un titre **du même domaine** est déclaré.
+ *
+ * ## Pourquoi le domaine, et non « n'importe quel titre »
+ *
+ * Cette seconde règle disait « dès qu'un titre QUELCONQUE est déclaré ». Elle
+ * était juste tant que le catalogue tenait en une ligne : le seul titre
+ * déclarable étant l'attestation médicale d'habilitation électrique, « un titre
+ * quelconque » et « un titre d'électricité » désignaient la même chose.
+ *
+ * Le lot 7 a porté le catalogue à neuf lignes, et cette équivalence est tombée
+ * — en éteignant le signal qu'elle devait porter. Un restaurateur qui déclare
+ * une installation électrique voit « une habilitation est peut-être due,
+ * personne n'est déclaré ». Il saisit alors la formation à la sécurité de sa
+ * plongeuse — **le premier geste que le catalogue élargi l'invite à faire** —
+ * et le signal disparaît définitivement, alors que rien n'a été dit de
+ * l'habilitation. Le lot qui devait compléter le mécanisme l'aurait éteint.
+ *
+ * Le domaine est le bon grain parce que c'est celui de la question posée :
+ * `elec-travail-habilitation-personnel` demande « quelqu'un est-il habilité en
+ * ÉLECTRICITÉ ? ». Un titre de secourisme n'y répond pas ; un titre
+ * d'électricité, oui — et il n'y en a qu'un au catalogue, donc le déclarer
+ * signifie bien qu'on a saisi ce qu'on savait saisir dans ce domaine.
+ *
+ * Ce n'est pas parfait, et il faut le dire : le jour où deux titres
+ * d'électricité coexisteront au catalogue, déclarer le premier fera taire une
+ * transmission qui visait peut-être le second. Ce sera le moment de faire
+ * nommer le titre à la transmission plutôt que de laisser `null` — c'est-à-dire
+ * de résoudre la cause, le `titre: null` lui-même, plutôt que d'affiner encore
+ * le repli.
+ *
+ * ## Le grain de ce signal a été resserré deux fois, et il reste un cran
+ *
+ * Ce n'est pas une suite de bugs, c'est **un même défaut de modèle** qui
+ * réapparaît un cran plus bas à chaque correction — et qui n'était visible, à
+ * chaque fois, qu'une fois le précédent corrigé. À écrire ici pour que le
+ * prochain ne croie pas repartir de zéro :
+ *
+ *  1. **N'importe quel titre.** Le signal se taisait dès qu'un titre, quel
+ *     qu'il soit, était déclaré. Juste tant que le catalogue tenait en une
+ *     ligne ; faux dès qu'il en a compté onze.
+ *  2. **Un titre du même domaine.** L'état ci-dessus. Il tombera le jour où
+ *     deux titres coexisteront dans un domaine — le paragraphe précédent le
+ *     dit et le date.
+ *  3. **Il ignore les personnes**, et c'est le cran qui reste. `titresDeclares`
+ *     est un ensemble d'**identifiants d'obligation** : il dit *qu'un* titre
+ *     existe, jamais *combien de personnes* le détiennent ni *lesquelles*. Un
+ *     restaurateur qui déclare la formation à la sécurité de sa plongeuse
+ *     éteint le signal pour les cinq personnes embauchées après elle — alors
+ *     que `R. 4141-20` fixe pour chacune un délai chiffré, « dans le mois qui
+ *     suit l'affectation du travailleur à son emploi ».
+ *
+ * **Le troisième cran ne se corrige pas en affinant celui-ci.** Les deux
+ * premiers étaient des questions de granularité — quel ensemble consulter. Le
+ * troisième est une question de **modèle** : que veut dire « déclaré » quand
+ * l'obligation est due par personne ? Trois réponses possibles, et le choix
+ * n'est pas fait — chaque salarié actif doit détenir le titre ; chaque salarié
+ * entré depuis moins d'un mois ; ou seulement ceux dont le poste l'appelle, ce
+ * que le produit ne sait pas déduire et refuse de deviner (ADR-023).
+ *
+ * La brique du deuxième cas existe et ne sert à rien : `Salarie.entreLe`, dont
+ * le schéma écrit qu'il est le « point de départ des obligations à
+ * l'embauche », a quatre usages — saisie, affichage, export RGPD. Aucun calcul.
+ * Voir `docs/revues/rapport-surface-des-quatorze.md` § 4.1.
  */
 export function rapprocher(
   applicables: readonly Obligation[],
@@ -67,13 +129,20 @@ export function rapprocher(
     libelle: LABEL_DOMAINE_OBLIGATION[d],
   }));
 
+  // Les domaines dans lesquels au moins un titre est déclaré. Construit une
+  // fois : `rapprocher` est appelée par le tableau de bord à chaque rendu.
+  const domainesDesTitresDeclares = new Set<DomaineObligation>();
+  for (const o of obligationsConformite) {
+    if (titresDeclares.has(o.id)) domainesDesTitresDeclares.add(o.domaine);
+  }
+
   const personnes = applicables
     .filter((o) =>
       o.transmet.some(
         (t) =>
           t.vers === "salarie_designe" &&
           (t.titre === null
-            ? titresDeclares.size === 0
+            ? !domainesDesTitresDeclares.has(o.domaine)
             : !titresDeclares.has(t.titre)),
       ),
     )

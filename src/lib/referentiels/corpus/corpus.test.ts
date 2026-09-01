@@ -242,11 +242,17 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
     // L'ordre suit la déclaration des corpus, pas l'alphabet.
     expect(refs).toEqual([
       "PE 27",
-      // PE 37 : SEUL article du Livre III fixant une périodicité de visite de
-      // commission — cinq ans. Ajouté le 2026-08-26 en rectification d'une
-      // affirmation contraire portée le matin même. Fondé, mais sans attribut
-      // « locaux à sommeil » pour le déclencher sans sur-appliquer.
-      "PE 37",
+      // PE 37 a quitté cette liste le 2026-08-31 au soir : sa quinquennale est
+      // désormais portée par `incendie-erp-5-visite-commission`, et l'article
+      // passe à `retenu` avec une `reserve` qui dit ce qui reste — l'ancrage
+      // sur une alarme déclarée, et le « pour le public » que
+      // `dessertLocauxSommeil` ne distingue pas. QUATRIÈME sortie par
+      // livraison plutôt que par requalification, après PE 4, R. 4222-20 et
+      // R. 4544-11-1. Il y était entré le 2026-08-26, en rectification d'une
+      // affirmation contraire portée le matin même ; il en sort parce que le
+      // motif qui l'y retenait — « aucun attribut pour le déclencher sans
+      // sur-appliquer » — décrivait une sur-application MUETTE, que la
+      // périodicité rend visible et corrigeable par une réponse « non ».
       "PO 1 § 3 — contrôle biennal des installations techniques",
       "PO 7",
       // PO 12 réimporte PO 7 dans le régime des établissements EXISTANTS
@@ -260,7 +266,79 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // de l'ADR-023 la rend encodable, et elle l'est —
       // `elec-salarie-attestation-medicale-voisinage`. Troisième sortie par
       // livraison plutôt que par requalification, après PE 4 et R. 4222-20.
+      // R. 4544-11 : l'habilitation SPÉCIFIQUE aux travaux sous tension, et le
+      // II — une vérification préalable à la charge de l'employeur que personne
+      // n'avait relevée. Distinctes toutes deux de l'habilitation ordinaire de
+      // R. 4544-10, que le référentiel porte.
+      //
+      // Inscrite au second essai : la première lecture n'avait rendu qu'une
+      // restitution partiellement traduite, et un article dont on n'a pas le
+      // texte ne s'inscrit pas ici. Le verbatim du I a été obtenu en redemandant
+      // le français sans traduction.
+      //
+      // Bloquée par le renvoi du I aux normes de R. 4544-3 pour la délivrance et
+      // le renouvellement : c'est le renvoi qui avait produit le « triennal »
+      // NF C 18-510 déjà retiré de ce dépôt. Encoder supposerait de trancher ce
+      // qu'il vaut, et ce n'est pas un choix technique.
+      "R. 4544-11",
       "Arrêté 23-02-2018 art. 26 § 3",
+      // Les trois suivantes entrent avec le lot 7, et la liste s'allonge pour
+      // la raison qu'elle s'allonge toujours ici : on a lu quatre textes de
+      // plus. Aucune n'est un défaut d'encodage, chacune dit ce qui la bloque.
+      //
+      // L. 4141-5 : le passeport de prévention, en vigueur depuis le
+      // 2026-06-27 (loi n° 2026-534 du 25 juin 2026, art. 70). L'employeur
+      // doit le renseigner pour les formations qu'il dispense — mais le
+      // passeport est intégré au système d'information du compte personnel de
+      // formation et géré par la Caisse des dépôts. Rien de ce que l'outil
+      // détiendrait ne pourrait solder une obligation qui se remplit chez un
+      // tiers, et le V de l'article renvoie encore ses modalités au comité
+      // national de prévention et de santé au travail.
+      "L. 4141-5",
+      // R. 4141-8 et R. 4141-12 : formation à la sécurité après un accident
+      // grave (ou des accidents répétés au même poste), et après modification
+      // des conditions de circulation ou d'exploitation. Toutes deux réelles,
+      // toutes deux ÉVÉNEMENTIELLES — et il n'y a pas de déclencheur
+      // « événement » dans le modèle : l'ADR-022 nomme l'axe et s'arrête là.
+      // S'y ajoute, pour R. 4141-8, que le registre des accidents du travail
+      // et la déclaration d'AT sont déclarés hors périmètre produit : l'outil
+      // ne connaîtrait pas l'accident qui déclenche l'obligation.
+      "R. 4141-8",
+      "R. 4141-12",
+      // L. 4622-1 : « Les employeurs relevant du présent titre organisent des
+      // services de prévention et de santé au travail. » Une phrase, et le
+      // socle de tout le corpus de santé au travail — sans service, ni VIP ni
+      // suivi renforcé ne peuvent avoir lieu.
+      //
+      // Elle entre ici parce qu'un commentaire de `prestataires/domaines.ts` la
+      // citait sans qu'aucun corpus ne l'ait lue. Ce n'était pas une infraction
+      // au cliquet — il ne garde que les obligations, pas les commentaires —
+      // mais citer un texte que personne n'a ouvert est ce que ce dépôt a passé
+      // la journée à corriger ailleurs. Ce qu'il en a coûté de ne pas l'ouvrir :
+      // deux tours de revue et une correction proposée qui était fausse.
+      "L. 4622-1",
+      // R. 4624-28-2 : l'employeur informe son service de santé au travail de
+      // la cessation d'exposition, du départ ou de la mise à la retraite d'un
+      // salarié en suivi individuel renforcé, et en avise l'intéressé sans
+      // délai. Obligation d'employeur pleine, non portée — événementielle, et
+      // le produit ne détient aucune date de sortie.
+      //
+      // Trouvée par un balayage des renvois d'intervalle : le corpus écrivait
+      // « R. 4624-22 à R. 4624-28 » en n'ayant ouvert que 22, 23, 24 et 28,
+      // alors que la sous-section court jusqu'à R. 4624-28-3. Un intervalle
+      // cité n'est pas un intervalle lu — c'est le même défaut que la phrase
+      // sur l'amiante et le plomb, corrigée le même jour.
+      "R. 4624-28-2",
+      // R. 4225-3 entre avec le lot 8, et pour la même raison que les
+      // précédentes : un texte lu de plus, pas un défaut d'encodage. La
+      // boisson non alcoolisée gratuite est due « lorsque des conditions
+      // particulières de travail conduisent les travailleurs à se désaltérer
+      // fréquemment » — une qualification que ni le parc d'équipements ni le
+      // code NAF ne donnent, et que le déduire ferait relever du cinquième
+      // déclencheur, non implémenté. La liste des postes concernés, que
+      // l'employeur tient après avis du médecin du travail et du CSE, est
+      // bloquée par le même manque.
+      "R. 4225-3",
     ]);
   });
 

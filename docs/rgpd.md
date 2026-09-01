@@ -88,7 +88,34 @@ l'ignorer :
 - les propositions d'aménagement de poste et les restrictions ;
 - la **copie de l'attestation d'absence de contre-indication médicale** au
   travail sous tension, que l'employeur « conserve pendant toute sa durée de
-  validité » (`R. 4544-11-1`, en vigueur depuis le 01/10/2025).
+  validité » (`R. 4544-11-1`, en vigueur depuis le 01/10/2025) ;
+- la **copie de l'attestation d'absence de contre-indication médicale à la
+  conduite**, dans les mêmes termes et par le même décret : `R. 4323-56`,
+  réécrit au 01/10/2025 par le décret n° 2025-355 du 18 avril 2025, prévoit que
+  l'attestation « est présentée par le travailleur à l'employeur, qui en
+  conserve une copie pendant toute sa durée de validité ». Ajouté le 2026-08-31 :
+  ce paragraphe n'en citait qu'un cas alors que la même réforme en a créé deux,
+  et l'outil porte désormais les deux obligations.
+
+**Le produit ne conserve aucune de ces copies**, et c'est le choix assumé
+rappelé au § suivant. Les énumérer ici sert à ne pas prétendre que le droit
+l'interdit : il l'autorise, et c'est nous qui nous l'interdisons.
+
+**Ce que l'outil détient depuis le lot 7** — la liste s'est allongée, et la
+règle n'a pas bougé d'un cran. Aux attestations d'habilitation et de conduite
+s'ajoutent quatre **visites** : visite d'information et de prévention
+(`R. 4624-16`), ses modalités adaptées (`R. 4624-17`), suivi individuel renforcé
+(`R. 4624-28`), visite intermédiaire, et le cas de la catégorie A des
+rayonnements ionisants (`R. 4451-82`). De chacune, l'outil ne détient que
+**l'existence, la date et l'échéance**. Jamais l'avis d'aptitude ou
+d'inaptitude, jamais une restriction, jamais un motif, jamais la pièce.
+
+Le passage d'« une attestation liée à l'habilitation électrique » au « suivi
+médical de tous les salariés » élargit sensiblement ce que le produit détient
+sur des personnes. C'est la doctrine ci-dessus qui rend cet élargissement
+acceptable, et c'est pourquoi elle ne se négocie pas au cas par cas : toutes ces
+obligations portent `pieceMedicale: true`, ce qui interdit à l'interface de
+proposer le moindre téléversement.
 
 **Ce que l'outil choisit de stocker — moins que ce que le droit permet.**
 Pour toute pièce médicale, l'outil enregistre trois choses : qu'elle existe, sa

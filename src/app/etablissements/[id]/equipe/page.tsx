@@ -127,11 +127,18 @@ export default async function EquipePage({
           </div>
         )}
 
-        {/* Ce que l'écran ne couvre pas, dit par l'écran lui-même. Un
-            catalogue d'un seul titre laisserait croire qu'il n'y a qu'une
-            obligation nominative en droit ; il y en a vingt recensées, dont
-            dix-neuf ne sont pas encore dépouillées au corpus. Taire l'écart
-            tromperait l'utilisateur sur sa propre couverture. */}
+        {/* Ce que l'écran ne couvre pas, dit par l'écran lui-même. Taire
+            l'écart tromperait l'utilisateur sur sa propre couverture.
+
+            ⚠ Ce bloc a menti pendant une journée, et la leçon vaut d'être
+            gardée : il énumérait en dur « SST, CACES, autorisation de conduite,
+            formations à la sécurité » comme non encodés, alors que le lot 7
+            venait d'en encoder trois — et la liste réelle du catalogue
+            s'affichait DEUX LIGNES PLUS HAUT, dérivée du référentiel. Un
+            paragraphe écrit à la main sous une liste qui se calcule vieillit
+            tout seul, et il vieillit en affirmant le contraire de ce qu'on lit
+            juste au-dessus. Ce qui reste ci-dessous est donc formulé sans
+            énumération figée. */}
         <section className="carte-board px-7 py-6 sm:px-8">
           <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
             Ce que couvre cet écran
@@ -142,13 +149,25 @@ export default async function EquipePage({
               : `${catalogue.length} titres au catalogue`}
           </h2>
           <p className="m-0 mt-3 max-w-[68ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
-            Rojer ne propose que les titres dont il a lu le texte fondateur en
-            première main. Aujourd&apos;hui :{" "}
-            {catalogue.map((o) => o.libelle).join(", ")}. Les autres —
-            SST, CACES, autorisation de conduite, formations à la sécurité —
-            existent en droit et vous concernent peut-être, mais ils ne sont
-            pas encore encodés ici. <strong>Continuez à les suivre par vos
-            moyens habituels</strong> tant qu&apos;ils n&apos;y sont pas.
+            Rojer ne propose que les titres dont il a lu le texte fondateur à
+            la source. Aujourd&apos;hui :{" "}
+            {catalogue.map((o) => o.libelle).join(", ")}.
+          </p>
+          <p className="m-0 mt-3 max-w-[68ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+            Cette liste n&apos;est pas tout ce qui existe en droit. D&apos;autres
+            titres et suivis nominatifs peuvent vous concerner sans figurer ici,
+            parce que le texte qui les porte n&apos;a pas encore été dépouillé.{" "}
+            <strong>Continuez à suivre par vos moyens habituels ce que vous ne
+            retrouvez pas dans cette liste.</strong>
+          </p>
+          <p className="m-0 mt-3 max-w-[68ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+            Un cas mérite d&apos;être dit, parce qu&apos;on le cherche souvent
+            ici : le <strong>CACES</strong> n&apos;y figure pas et n&apos;y
+            figurera pas. Il ne relève pas du Code du travail — c&apos;est un
+            dispositif conventionnel de l&apos;assurance maladie. Ce que le Code
+            impose, lui, est dans la liste : une formation adéquate à la
+            conduite et une autorisation de conduite délivrée par
+            l&apos;employeur.
           </p>
           <p className="m-0 mt-3 max-w-[68ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
             Un titre est nominatif : le Code fait délivrer l&apos;habilitation à

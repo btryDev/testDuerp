@@ -43,6 +43,8 @@ const obligation = (
   libelle: "Vérification de test",
   referencesLegales: [{ source: "CODE_TRAVAIL", reference: "R. 4226-16" }],
   periodicite: "annuelle",
+  nature: "echeance_recurrente",
+  pieceAttendue: null,
   realisateurs: ["organisme_agree"],
   criticite: 3,
   transmet: [],

@@ -28,6 +28,118 @@ export const DOMAINES_OBLIGATION = [
   "stockage_dangereux",
   "levage",
   "froid",
+  // Les trois domaines qui suivent sont entrés avec le lot 7, et ils ont un
+  // point commun qu'aucun des dix précédents n'a : ils ne naissent pas d'un
+  // équipement. Un tableau électrique, un ascenseur, une hotte se déclarent au
+  // parc ; une formation à la sécurité, une visite d'information et de
+  // prévention, un secouriste ne se déclarent nulle part dans le parc parce
+  // qu'ils n'y sont pas.
+  //
+  // C'est pourquoi aucun domaine existant ne pouvait les accueillir. Ranger la
+  // formation à la sécurité sous `incendie` parce qu'elle parle d'évacuation,
+  // ou le secourisme sous `incendie` parce que les deux relèvent de l'urgence,
+  // aurait été le rabattage que ce référentiel refuse ailleurs : le domaine
+  // sert à grouper ce qu'un dirigeant lit dans son calendrier, et « Incendie /
+  // sécurité » ne décrit pas une visite médicale.
+
+  /**
+   * Formation à la sécurité — `L. 4141-1` et s., `R. 4141-1` et s.
+   *
+   * L'obligation la plus universelle du Code du travail : elle s'impose dès le
+   * premier salarié, sans condition d'équipement, de secteur ni d'effectif.
+   * Porte aussi la formation à la conduite et l'autorisation de conduite
+   * (`R. 4323-55` et s.), qui sont des formations avant d'être des questions
+   * d'équipement.
+   */
+  "formation_securite",
+
+  /**
+   * Suivi individuel de l'état de santé — `R. 4624-10` et s.
+   *
+   * Visite d'information et de prévention, suivi individuel renforcé, et la
+   * liste des postes à risques particuliers que l'employeur tient à jour.
+   *
+   * Ce domaine est le seul dont toutes les obligations salarié portent
+   * `pieceMedicale: true`. Ce que l'outil en détient est strictement borné par
+   * `docs/rgpd.md` § 2.3 : existence, date, échéance. Jamais l'avis, jamais le
+   * motif, jamais la pièce.
+   */
+  "sante_travail",
+
+  /**
+   * Premiers secours — `R. 4224-14` à `R. 4224-16`.
+   *
+   * Le matériel, le secouriste et les mesures d'organisation. Trois articles
+   * voisins, trois obligations, deux porteurs : c'est le cas d'école de
+   * l'ADR-022, et le fondre en une seule ligne aurait reproduit exactement le
+   * défaut qu'elle a corrigé.
+   */
+  "secours",
+
+  // Les quatre domaines qui suivent sont entrés avec le lot 8. Ils partagent le
+  // déclencheur des trois précédents — le statut d'employeur, pas un équipement
+  // — mais ils s'en distinguent sur un point : aucun d'eux n'appelle de tiers.
+  // Une formation se commande à un organisme, une visite médicale à un service ;
+  // un affichage, un règlement intérieur, un lavabo se font seul. C'est pourquoi
+  // ils sont les premiers à porter `aucun_tiers_attendu` dans
+  // `DOMAINES_PRESTATAIRE_ATTENDUS`.
+
+  /**
+   * Organisation de la prévention — `L. 4644-1`, `L. 2311-2`, `L. 1321-1`.
+   *
+   * Qui s'occupe de la prévention, et sous quelles instances. Le salarié
+   * désigné compétent, le comité social et économique, le règlement intérieur.
+   *
+   * Ce n'est pas de la formation : c'est l'organisation qui la précède. Ranger
+   * le salarié désigné sous `formation_securite` parce que le texte lui promet
+   * une formation aurait pris la conséquence pour l'obligation — `L. 4644-1`
+   * impose de DÉSIGNER quelqu'un, et il l'impose même à l'employeur dont le
+   * désigné est déjà formé.
+   */
+  "organisation_prevention",
+
+  /**
+   * Information des travailleurs — `D. 4711-1`, `R. 4121-4`.
+   *
+   * Ce que l'employeur doit porter à la connaissance de ses salariés, sous une
+   * forme que l'inspection peut constater sur place : les affichages
+   * obligatoires et l'avis sur les modalités d'accès au document unique.
+   *
+   * Distinct de `formation_securite`, où vit l'information ORALE et
+   * individuelle due à chaque salarié (`L. 4141-1`, `R. 4141-3-1`, encodée au
+   * lot 7). La différence n'est pas de nuance : l'une se prouve par un support
+   * affiché, l'autre par un entretien. Un employeur peut avoir fait la seconde
+   * sans la première, et c'est le cas ordinaire.
+   */
+  "information_travailleurs",
+
+  /**
+   * Locaux sociaux — `R. 4225-2`, `R. 4228-1` et s.
+   *
+   * Les installations que le Code impose au bénéfice des personnes plutôt
+   * qu'au titre d'une machine : vestiaires, lavabos, cabinets d'aisance, eau
+   * potable, local ou emplacement de restauration.
+   *
+   * Aucune ne naît d'un équipement déclaré, et aucune n'est un état de
+   * l'équipement : un lavabo n'est pas vérifié périodiquement, il est mis à
+   * disposition et maintenu. D'où un domaine à elles, et non un rangement sous
+   * `aeration` ou `incendie` au motif que ce sont « des locaux ».
+   */
+  "locaux_sociaux",
+
+  /**
+   * Co-activité — `R. 4515-1` et s.
+   *
+   * Ce qu'impose la présence d'une entreprise extérieure dans l'enceinte de
+   * l'établissement. Le protocole de sécurité de chargement ou de déchargement
+   * en est la seule entrée à ce jour.
+   *
+   * Le module `PlanPrevention` sert l'autre versant de la co-activité
+   * (`R. 4512-6` et s.) et n'est pas dans le référentiel d'obligations.
+   * `R. 4515-1` écarte expressément le plan de prévention pour les opérations
+   * de chargement : les deux ne se recouvrent pas, ils s'excluent.
+   */
+  "co_activite",
 ] as const;
 
 export type DomaineObligation = (typeof DOMAINES_OBLIGATION)[number];
@@ -224,6 +336,75 @@ export type ConditionApplication =
     };
 
 /**
+ * Le régime temporel que le texte impose : à quel titre l'acte est-il dû ?
+ * (ADR-026)
+ *
+ * L'ADR-022 § 8 nommait ces quatre natures et annonçait qu'elles vivaient
+ * « dans le référentiel TypeScript ». Elles n'y étaient pas : aucun champ ne
+ * les portait, et `Periodicite.autre` servait de tenant-lieu. Or `autre` ne dit
+ * qu'une chose — **le texte n'écrit pas de rythme** — et cette phrase est vraie
+ * d'au moins trois régimes différents. L'audit du 2026-08-31
+ * (`docs/revues/rapport-audit-sans-surface.md`) l'a établi sur trois cas :
+ * `stockage-dangereux-declaration-icpe` est une qualification faite une fois,
+ * `froid-controle-etancheite-apres-modification` se redéclenche à chaque
+ * modification du circuit, et `incendie-erp-5-visite-commission` est une visite
+ * quinquennale. Les trois portaient la même valeur.
+ *
+ * C'est la nature, et elle seule, qui dit si **une déclaration unique suffit** :
+ * elle suffit pour un état permanent et pour une obligation ponctuelle, elle ne
+ * suffit ni pour une échéance récurrente ni pour une obligation événementielle,
+ * qui reviennent. Un écran bâti sur `periodicite === "autre"` mélangerait les
+ * quatre.
+ *
+ * **La nature est une propriété du TEXTE, jamais de ce que le produit sait en
+ * faire.** Une échéance récurrente dont l'article n'écrit pas le rythme reste
+ * récurrente — elle porte alors `periodicite: "autre"`, et ce couple se lit
+ * « elle revient, on ne sait pas à quel rythme ». C'est un état légitime, et le
+ * plus fréquent des quarante-trois.
+ */
+export const NATURES_OBLIGATION = [
+  /**
+   * L'acte est dû, puis redû, à intervalle. Le rythme peut être écrit dans le
+   * texte (`periodicite` chiffrée) ou renvoyé à un règlement qui ne l'a pas
+   * fixé, à un accord collectif, ou au seul mot « régulièrement »
+   * (`periodicite: "autre"`).
+   */
+  "echeance_recurrente",
+  /**
+   * Un état à constituer puis à maintenir. Il n'y a pas d'acte à refaire à
+   * date : soit l'état est là, soit il ne l'est pas. De l'eau potable à
+   * disposition, un registre tenu, un salarié désigné.
+   */
+  "etat_permanent",
+  /**
+   * L'acte est dû **une fois**, à un moment déterminé de la vie de l'objet ou
+   * de la personne : la mise en service d'un appareil, l'affectation d'un
+   * travailleur à son poste. Une fois fait, il ne se refait pas.
+   */
+  "ponctuelle",
+  /**
+   * L'acte est dû **à chaque survenance d'un fait** — une modification, une
+   * réparation, un changement de poste, l'arrivée d'un nouveau transporteur.
+   * Le produit n'observe aucun de ces faits : il ne peut donc ni dater
+   * l'échéance, ni la tenir pour soldée.
+   */
+  "evenementielle",
+] as const;
+
+export type NatureObligation = (typeof NATURES_OBLIGATION)[number];
+
+/**
+ * Ce qu'on écrit quand on montre une nature à quelqu'un. `Record` exhaustif :
+ * ajouter une nature sans lui donner de nom ne compile pas.
+ */
+export const LIBELLE_NATURE: Record<NatureObligation, string> = {
+  echeance_recurrente: "échéance récurrente",
+  etat_permanent: "état permanent",
+  ponctuelle: "obligation ponctuelle",
+  evenementielle: "obligation événementielle",
+};
+
+/**
  * Sur quoi porte l'échéance que l'obligation engendre (ADR-022).
  *
  * - `equipement` : une ligne par équipement déclaré qui la déclenche.
@@ -350,6 +531,58 @@ type ObligationCommune = {
    */
   referencesLegales: [ReferenceLegale, ...ReferenceLegale[]];
   periodicite: Periodicite;
+  /**
+   * Le régime temporel que le texte impose (ADR-026). **Requis, et c'est le
+   * point** — même raisonnement que `transmet` et `pieceMedicale` : optionnel,
+   * le champ se serait tu, et l'oubli aurait été la faute naturelle.
+   *
+   * Il ne se déduit pas de `periodicite`, et c'est toute sa raison d'être :
+   * `autre` recouvre au moins trois natures, et `mise_en_service_uniquement`
+   * en recouvre deux. Voir `NatureObligation`.
+   *
+   * **Règle de résolution quand un article porte plusieurs titres.** Certains
+   * en portent deux — « à la mise en service **ou après modification** », « à
+   * l'embauche **et chaque fois que nécessaire** ». On encode alors celui qui
+   * **oblige à refaire l'acte**, dans cet ordre : `echeance_recurrente`, puis
+   * `evenementielle`, puis `ponctuelle`, puis `etat_permanent`. Le motif est
+   * dans la conséquence : une obligation qui revient ne se solde pas par une
+   * déclaration unique, et c'est la question à laquelle ce champ sert à
+   * répondre. Chaque ligne concernée le dit dans ses `notesInternes`.
+   *
+   * **N'entre pas dans `empreinteReferentiel()`.** La nature ne décide ni de
+   * l'existence d'une ligne de `Verification`, ni de sa date : c'est
+   * `periodicite` et `porteur` qui le font. L'y faire entrer réconcilierait
+   * tout le parc pour un résultat identique.
+   */
+  nature: NatureObligation;
+  /**
+   * Le nom que le texte donne à l'**écrit dont l'existence est elle-même
+   * l'obligation** — registre, carnet, dossier, contrat, consigne, protocole,
+   * liste, fiche, autorisation. `null` quand l'obligation porte sur un **acte**
+   * (une vérification, une formation, une visite) ou sur un **état matériel**
+   * (de l'eau potable, un extincteur accessible).
+   *
+   * La distinction est fine et elle décide d'un comportement d'écran. Une
+   * vérification annuelle produit un rapport, mais le rapport est la *trace* de
+   * l'acte, pas l'obligation : `pieceAttendue` reste `null`. `R. 4226-19`, lui,
+   * n'impose pas de vérifier, il impose de **consigner sur un registre** — et
+   * là l'écrit est l'obligation.
+   *
+   * **Pourquoi ce champ existe.** Un écran de déclaration d'états permanents
+   * (brief `docs/revues/brief-ecran-etats-permanents.md`) pose que le dirigeant
+   * coche, sans pièce. C'est juste pour une affiche au mur ou de l'eau
+   * potable ; c'en est une pour un registre de sécurité, où une case cochée
+   * sans rien derrière serait exactement la déclaration-qui-ressemble-à-une-
+   * preuve que le même brief interdit. Le champ nomme les seize lignes où la
+   * case seule ne suffit pas.
+   *
+   * Requis pour la même raison que `nature` : `null` est une réponse, un champ
+   * absent n'en est pas une.
+   *
+   * **N'entre pas dans `empreinteReferentiel()`** : il ne change ni le nombre
+   * de lignes ni leurs dates.
+   */
+  pieceAttendue: string | null;
   /** Réalisateurs acceptés. Au moins un. En général 1, parfois 2 (ex. "personne qualifiée OU organisme agréé"). */
   realisateurs: [Realisateur, ...Realisateur[]];
   /** 1 = informatif, 5 = vital (mise en danger directe si manquement). */

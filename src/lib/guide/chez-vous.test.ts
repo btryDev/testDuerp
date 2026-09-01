@@ -3,6 +3,8 @@ import type {
   EquipementMatching,
   EtablissementMatching,
 } from "@/lib/matching";
+import { determineObligationsApplicables } from "@/lib/matching";
+import { porteurDe } from "@/lib/referentiels/conformite/types";
 import { construireChezVous, SEUIL_MAJ_ANNUELLE_DUERP } from "./chez-vous";
 
 function etabBureau(
@@ -139,13 +141,91 @@ describe("construireChezVous — trous honnêtes", () => {
     expect(r.aucunEquipement).toBe(true);
     expect(r.categoriesSansObligation).toEqual([]);
 
-    // Le domaine apparaît, et il apparaît SANS équipement rattaché : c'est
-    // ce couple qui distingue « vous n'avez rien déclaré » de « rien ne vous
-    // incombe ».
-    expect(r.domaines.map((d) => d.domaine)).toEqual(["aeration"]);
-    expect(r.domaines[0].equipements).toEqual([]);
-    expect(r.domaines[0].raisons.join(" ")).toContain(
-      "porte sur l'établissement",
-    );
+    // LA GARANTIE, et elle ne nomme aucun domaine.
+    //
+    // Ce que ce test existe pour interdire, c'est la page vide : un employeur
+    // qui n'a rien déclaré lisant, dans un guide qui s'intitule « chez vous »,
+    // que rien ne lui incombe. Cette phrase-là ne se périme pas.
+    //
+    // L'assertion précédente était une LISTE EXHAUSTIVE écrite à la main. Elle
+    // a cassé à chaque lot de couverture, et les trois lots du 2026-08-31 l'ont
+    // réécrite chacun de son côté : deux d'entre eux ont affirmé, tous les
+    // deux, que l'écart « mesure exactement ce que ce lot a livré » — l'un
+    // annonçait quatre domaines, l'autre deux, la réponse était cinq. Le
+    // troisième, prévenu, a écrit ce que lui seul ajoutait et laissé le total
+    // à l'intégration. Un test dont la réparation consiste à recopier ce que
+    // le code rend cesse de mesurer quoi que ce soit — et celui-ci se réparait
+    // ainsi. Il ne nomme donc plus aucun domaine : ce que la liste garantissait
+    // vraiment est repris par les trois assertions qui suivent.
+    expect(r.domaines.length).toBeGreaterThan(0);
+
+    // Et il apparaît SANS équipement rattaché : c'est ce couple qui distingue
+    // « vous n'avez rien déclaré » de « rien ne vous incombe ».
+    for (const d of r.domaines) {
+      expect(d.equipements, d.domaine).toEqual([]);
+      expect(d.raisons.join(" "), d.domaine).toContain(
+        "porte sur l'établissement",
+      );
+    }
+  });
+
+  /**
+   * La borne haute, sans liste non plus.
+   *
+   * `toEqual([...])` faisait deux métiers à la fois : garantir qu'il y a
+   * quelque chose, et surveiller qu'il n'y a rien de trop. Le second est réel
+   * — une obligation d'équipement qui apparaîtrait sans équipement déclaré
+   * serait un faux positif — mais il n'a pas besoin d'une liste pour être
+   * vérifié : il se dit en une phrase que le référentiel rend vraie ou fausse.
+   */
+  it("sans équipement déclaré, tout ce qui s'affiche est porté par l'établissement", () => {
+    for (const etab of [
+      etabBureau(),
+      etabBureau({ effectifSurSite: 3 }),
+      etabBureau({ estEtablissementTravail: false, estERP: true, typeErp: "N", categorieErp: "N5" }),
+    ]) {
+      for (const a of determineObligationsApplicables(etab, [])) {
+        expect(
+          porteurDe(a.obligation),
+          `${a.obligation.id} s'affiche chez un établissement qui n'a rien ` +
+            "déclaré : elle doit donc être portée par l'établissement",
+        ).toBe("etablissement");
+      }
+    }
+  });
+
+  /**
+   * Le guide ne perd ni n'invente rien par rapport au moteur.
+   *
+   * C'est l'assertion qui remplace vraiment la liste, et elle n'est pas une
+   * tautologie : `construireChezVous` est une COUCHE au-dessus de
+   * `determineObligationsApplicables` — elle regroupe par domaine, déduplique
+   * les raisons, trie les périodicités. Un domaine peut s'y perdre sans que le
+   * moteur ait tort, et c'est précisément le genre de faux négatif que ce
+   * fichier traque.
+   *
+   * Elle ne demandera jamais de mise à jour à la main : quand un lot ajoute
+   * une obligation portée par l'établissement, les deux côtés bougent
+   * ensemble. Elle ne tombe que si le guide diverge du moteur — ce qui est le
+   * seul défaut qu'elle puisse constater.
+   */
+  it("le guide montre exactement les domaines que le moteur retient", () => {
+    for (const etab of [
+      etabBureau(),
+      etabBureau({ effectifSurSite: 60, personnesPresentesHabituellement: 60 }),
+      etabBureau({ estEtablissementTravail: false, estERP: true, typeErp: "N", categorieErp: "N5" }),
+    ]) {
+      const duMoteur = [
+        ...new Set(
+          determineObligationsApplicables(etab, []).map(
+            (a) => a.obligation.domaine,
+          ),
+        ),
+      ].sort();
+      const duGuide = construireChezVous(etab, [])
+        .domaines.map((d) => d.domaine)
+        .sort();
+      expect(duGuide).toEqual(duMoteur);
+    }
   });
 });

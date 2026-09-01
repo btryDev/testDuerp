@@ -1021,6 +1021,23 @@ describe("moteur matching — cartographie des catégories sans obligation", () 
         // inventée : un employeur non-ERP qui déclare un RIA n'obtient
         // aucune échéance, et l'écran le dit.
         "RIA",
+        // ALARME_INCENDIE, ajoutée le 2026-08-31 (lot « faux négatifs
+        // d'ancrage »). Les trois obligations qui la citaient en DÉCLENCHEUR
+        // chez un employeur non-ERP — consigne affichée, exercices
+        // semestriels, tenue du registre — sont passées au porteur
+        // établissement : R. 4227-34 dispose que les établissements de son
+        // champ « sont équipés d'un système d'alarme sonore », de sorte que
+        // l'alarme y est le contenu d'une obligation et jamais la condition
+        // d'une autre.
+        //
+        // Ce n'est donc PAS un trou de couverture qui s'ouvre — les trois
+        // obligations s'appliquent désormais PLUS largement, y compris à qui
+        // n'a rien déclaré. C'est la conséquence d'écran : un employeur
+        // non-ERP qui déclare son alarme voit un appareil « aucune échéance
+        // calculée », alors que ses échéances existent, ailleurs, portées par
+        // l'établissement. La catégorie reste citée par les trois obligations
+        // en `equipementsEnContexte`, à titre indicatif.
+        "ALARME_INCENDIE",
         // BAES : question ouverte. Les deux obligations de l'arrêté du
         // 14 décembre 2011 (essai mensuel, autonomie semestrielle) portent
         // `erp: false` et ne visent donc pas non plus l'ERP. Chez un
@@ -1688,5 +1705,50 @@ describe("moteur matching — champ disjonctif de R. 4227-34 (personnes présent
       [alarme()],
     );
     expect(idsObligations(res)).toContain(EXERCICE);
+  });
+});
+
+describe("les raisons se lisent, elles ne se décodent pas", () => {
+  // Ces raisons sont AFFICHÉES AU DIRIGEANT, sous « pourquoi chez vous » dans
+  // le guide « Comprendre ». L'effectif s'y écrivait en notation d'intervalle
+  // — « effectif sur site 6 dans la plage [— ; 49] » —, avec un tiret cadratin
+  // pour dire « pas de borne ». Personne hors de ce dépôt ne lit ça.
+  const raisonsPour = (
+    typologies: Obligation["typologies"],
+    effectifSurSite: number,
+  ) => {
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-raison-effectif",
+      typologies,
+    };
+    const res = determineObligationsApplicables(
+      etabBureau({ effectifSurSite }),
+      [elec()],
+      { obligations: [synthetique] },
+    );
+    expect(res, "l'obligation synthétique ne matche plus").toHaveLength(1);
+    return res.flatMap((r) => r.raisons).join(" | ");
+  };
+
+  it("n'écrit plus de notation d'intervalle", () => {
+    const r = raisonsPour({ travail: true, effectifMax: 49 }, 6);
+    expect(r).not.toContain("plage");
+    expect(r).not.toContain("[");
+    expect(r).toContain("jusqu'à 49 salariés");
+  });
+
+  it("nomme le seuil bas quand c'est lui qui déclenche", () => {
+    expect(raisonsPour({ travail: true, effectifMin: 11 }, 12)).toContain(
+      "à partir de 11 salariés",
+    );
+  });
+
+  it("nomme les deux bornes quand les deux sont déclarées", () => {
+    // Contre-épreuve des deux précédents : une implémentation qui n'écrirait
+    // qu'une seule des deux bornes les passerait tous les deux.
+    expect(
+      raisonsPour({ travail: true, effectifMin: 11, effectifMax: 49 }, 20),
+    ).toContain("de 11 à 49 salariés");
   });
 });

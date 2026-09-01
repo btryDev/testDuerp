@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
+import { MOTIF_DEPOT } from "./surfaces-depot";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { obligationsConformite } from "@/lib/referentiels/conformite";
@@ -40,19 +41,13 @@ const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 /**
  * Les composants par lesquels un fichier peut atterrir en base.
  *
- * La liste est explicite plutôt que devinée : un dépôt s'ajoute rarement et
- * doit être une décision. `type="file"` complète le filet pour un champ écrit
- * à la main sans passer par ces composants.
+ * La liste vit dans `surfaces-depot.ts` depuis le 2026-08-31 : un second test
+ * la garde désormais, pour une autre raison — l'écran des états permanents
+ * n'ouvre aucune surface de dépôt parce qu'une déclaration n'est pas une preuve
+ * (ADR-027), et non parce qu'une pièce y serait médicale. Recopiée des deux
+ * côtés, elle aurait vieilli d'un seul le jour où une quatrième primitive
+ * arrive.
  */
-const SURFACES_DE_DEPOT = [
-  "UploadRapportForm",
-  "EvidenceDropzone",
-  "ImportDuerpWizard",
-] as const;
-
-const MOTIF_DEPOT = new RegExp(
-  `<(${SURFACES_DE_DEPOT.join("|")})\\b|type=["']file["']`,
-);
 
 /**
  * Ce qui rattache un fichier au monde des échéances — donc au monde où une
@@ -320,8 +315,44 @@ describe("frontière médicale — le drapeau est une décision, pas un défaut"
       .map((o) => `${o.id} → pieceMedicale: ${o.pieceMedicale}`)
       .sort();
 
+    // Onze depuis le lot 7 et sa revue (2026-08-31), contre une seule auparavant. C'est
+    // précisément le moment que le commentaire ci-dessus annonçait — « quand
+    // les dix-huit autres arriveront, c'est ici qu'on verra d'un coup d'œil
+    // qui a été qualifié de médical et qui non ». Le voici, et la liste se lit
+    // en deux blocs nets :
+    //
+    //  * `true` (7) — les six visites et attestations du suivi médical, plus
+    //    l'attestation d'habilitation électrique. Toutes délivrées par un
+    //    médecin du travail ou un professionnel de santé au travail. L'outil
+    //    n'en détient que l'existence, la date et l'échéance (docs/rgpd.md
+    //    § 2.3), et le drapeau interdit à l'interface de proposer le
+    //    téléversement de la pièce.
+    //  * `false` (4) — les titres de COMPÉTENCE : formation à la sécurité,
+    //    formation à la conduite, autorisation de conduite, certificat de
+    //    sauveteur secouriste du travail. Aucun n'atteste d'un état de santé.
+    //
+    // La frontière n'est ni devinée ni déduite d'un libellé : elle est tranchée
+    // obligation par obligation, et `pieceMedicale` étant requis sur la variante
+    // salarié, l'oubli ne compile pas.
     expect(decisions).toEqual([
+      "conduite-salarie-attestation-medicale → pieceMedicale: true",
+      "conduite-salarie-autorisation → pieceMedicale: false",
+      "conduite-salarie-formation → pieceMedicale: false",
       "elec-salarie-attestation-medicale-voisinage → pieceMedicale: true",
+      "formation-securite-salarie-accueil → pieceMedicale: false",
+      // Lot 8. Le mot « santé » est dans l'intitulé de la formation
+      // (« santé, sécurité et conditions de travail ») et la pièce n'est pas
+      // médicale pour autant : elle atteste d'une compétence acquise en stage,
+      // pas d'un état de santé. C'est exactement le cas que `pieceMedicale`
+      // existe pour faire trancher par quelqu'un plutôt que par un mot-clé.
+      "formation-securite-salarie-cse-sst → pieceMedicale: false",
+      "formation-securite-salarie-designe-competent → pieceMedicale: false",
+      "sante-travail-salarie-sir → pieceMedicale: true",
+      "sante-travail-salarie-sir-categorie-a → pieceMedicale: true",
+      "sante-travail-salarie-sir-visite-intermediaire → pieceMedicale: true",
+      "sante-travail-salarie-vip → pieceMedicale: true",
+      "sante-travail-salarie-vip-adaptee → pieceMedicale: true",
+      "secours-salarie-secouriste → pieceMedicale: false",
     ]);
   });
 
