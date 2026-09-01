@@ -99,6 +99,7 @@ export const obligationsAeration: Obligation[] = [
         article: "R. 4222-21",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483604/",
+        versionConstatee: "2018-01-01",
       },
       {
         source: "ARRETE",
