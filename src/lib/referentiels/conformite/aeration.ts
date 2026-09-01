@@ -179,7 +179,74 @@ export const obligationsAeration: Obligation[] = [
       },
     ],
     notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version imposait un contrôle SEMESTRIEL à tout local à pollution spécifique en citant « art. 3 § II ». L'art. 3 vise les locaux à pollution NON spécifique ; l'art. 4 (pollution spécifique) prévoit un contrôle annuel, le semestriel ne concernant que les installations avec recyclage de l'air. Le formulaire n'a pas de propriété « recyclage » : le contrôle semestriel est mentionné dans la description mais pas planifié.",
+      "Corrigé à l'audit 2026-08 : l'ancienne version imposait un contrôle SEMESTRIEL à tout local à pollution spécifique en citant « art. 3 § II ». L'art. 3 vise les locaux à pollution NON spécifique ; l'art. 4 (pollution spécifique) prévoit un contrôle annuel, le semestriel ne concernant que les installations avec recyclage de l'air. Le formulaire n'avait pas de propriété « recyclage » : le contrôle semestriel était mentionné dans la description mais pas planifié.\n\nRÉSOLU LE 2026-09-01 : `aSystemeDeRecyclage` existe, et `aeration-travail-recyclage-semestriel` porte le contrôle du b). La description ci-dessus garde sa dernière phrase — elle dit au dirigeant que le semestriel existe même s'il n'a pas encore répondu à la question.",
+  },
+
+  {
+    id: "aeration-travail-recyclage-semestriel",
+    domaine: "aeration",
+    libelle:
+      "Contrôle semestriel des gaines de recyclage (locaux à pollution spécifique)",
+    description:
+      "Lorsque l'installation d'un local à pollution spécifique recycle l'air, l'employeur fait contrôler au moins tous les six mois la concentration en poussières ou en autres polluants dans les gaines de recyclage, ainsi que le bon fonctionnement de tous les systèmes de surveillance. Ce contrôle s'ajoute au contrôle annuel : il ne le remplace pas, et il ne porte pas sur les mêmes objets.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 8 octobre 1987, art. 4 b) (contrôle semestriel en cas de recyclage)",
+        article: "Arrêté 1987-10-08 art. 4",
+        url: "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678611",
+        versionConstatee: "1988-04-01",
+      },
+    ],
+    periodicite: "semestrielle",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
+    realisateurs: ["personne_qualifiee"],
+    criticite: 4,
+    transmet: [],
+    typologies: { travail: true },
+    categoriesEquipement: ["VMC", "CTA", "HOTTE_PRO"],
+    conditions: [
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "VMC",
+        propriete: "estLocalPollutionSpecifique",
+        valeur: true,
+      },
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "VMC",
+        propriete: "aSystemeDeRecyclage",
+        valeur: true,
+      },
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "CTA",
+        propriete: "estLocalPollutionSpecifique",
+        valeur: true,
+      },
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "CTA",
+        propriete: "aSystemeDeRecyclage",
+        valeur: true,
+      },
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "HOTTE_PRO",
+        propriete: "estLocalPollutionSpecifique",
+        valeur: true,
+      },
+      {
+        type: "equipement_propriete_booleenne",
+        categorie: "HOTTE_PRO",
+        propriete: "aSystemeDeRecyclage",
+        valeur: true,
+      },
+    ],
+    notesInternes:
+      "LE TEXTE ÉTAIT LU DEPUIS LE 2026-08-27, ET LA LIGNE MANQUAIT QUAND MÊME. Le corpus portait le verbatim et le constat : « RYTHME NON PORTÉ. Le b) impose au minimum tous les six mois lorsqu'il existe un système de recyclage le contrôle de la concentration en poussières ou autres polluants dans les gaines de recyclage, et de tous les systèmes de surveillance. Non encodé : la présence d'un système de recyclage est un attribut d'équipement que le modèle n'a pas. » Le manque n'était donc pas un défaut de dépouillement mais de MODÈLE, et il a tenu jusqu'à ce qu'un guide professionnel extérieur le remette sous les yeux — le dépôt savait, et son savoir ne remontait à personne.\n\nLE SENS DE L'ERREUR EST CELUI QUI COMPTE. Le produit annonçait douze mois là où le texte en impose six, c'est-à-dire dans le sens qui met un exploitant en défaut sans qu'il le sache. C'est le seul endroit du référentiel, à la comparaison du 2026-09-01, où nous étions moins-disants sur un texte que nous avions lu.\n\nDEUX CONDITIONS ET NON UNE, cumulées par catégorie (`every` dans `matchEquipements`). L'article 4 régit les locaux à pollution SPÉCIFIQUE ; son b) y ajoute le semestriel quand l'air est recyclé. Exiger le seul recyclage ferait naître la ligne dans un local à pollution non spécifique, que l'article 3 régit autrement.\n\nCASE À COCHER ET NON TROIS ÉTATS, contrairement aux treize propriétés d'opt-out. Le recyclage est un opt-in : l'obligation naît d'une réponse positive, elle ne s'éteint pas d'une réponse négative. Un trois-états afficherait un semestriel à tout propriétaire de VMC tant qu'il n'a pas répondu non — un faux positif de masse sur une ligne qui revient deux fois par an. C'est le même raisonnement que pour `estLocalPollutionSpecifique`, son voisin immédiat, sur le même article.\n\nCE QUE ÇA NE RÈGLE PAS : un dirigeant qui a un recyclage et ne coche pas la case ne voit toujours rien. La description de l'obligation annuelle mentionne le semestriel pour cette raison — elle est lue par quelqu'un qui n'a pas encore répondu à la question.",
   },
 
   // ---------------------------------------------------------------------------

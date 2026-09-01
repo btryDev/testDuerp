@@ -80,9 +80,9 @@ Sources primaires libres d'accès uniquement :
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **117 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **118 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
-**79 d'entre elles sont déclenchées par un équipement déclaré, vingt-quatre sont portées
+**80 d'entre elles sont déclenchées par un équipement déclaré, vingt-quatre sont portées
 par l'établissement, quatorze par un salarié.** La répartition a changé deux fois le
 2026-08-31 : les trois lots ont ajouté trente et une obligations, et le lot « faux
 négatifs d'ancrage » a fait passer trois obligations existantes de l'équipement à
@@ -179,8 +179,8 @@ réellement événementielles recensées sont hors périmètre (déclaration d'A
 accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
 l'ADR-022, sans mécanisme.
 
-Répartition au 2026-09-01 : **79 équipement, 24 établissement, 14 salarié**
-(total 117) — mesurée en appelant, pas au grep. Le quatorzième titre est
+Répartition au 2026-09-01 : **80 équipement, 24 établissement, 14 salarié**
+(total 118) — mesurée en appelant, pas au grep. Le quatorzième titre est
 l'habilitation électrique (`elec-salarie-habilitation`, `R. 4544-10`) ; elle
 n'ajoute **aucune** ligne au moteur, un porteur salarié ne dérivant rien : un
 établissement de travail sans équipement en doit toujours dix-huit à six

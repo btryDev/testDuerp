@@ -15,6 +15,8 @@ import { FAMILLES_ESP } from "./esp";
  * (cf. `src/lib/referentiels/conformite/`) sont :
  *   - `aGroupeElectrogene`          → ERP, art. EL 20
  *   - `estLocalPollutionSpecifique` → travail, arrêté 08-10-1987 art. 4 § 2
+ *   - `aSystemeDeRecyclage`         → travail, arrêté 08-10-1987 art. 4 b)
+ *     (contrôle semestriel des gaines de recyclage, en SUS de l'annuel)
  *   - `nbVehiculesParkingCouvert`   → ERP, art. PS 32 (biennale ou annuelle)
  *   - `estVmcGaz`                   → habitation, arrêté 25-04-1985
  *   - `aRobinetsIncendieArmes`      → ERP, vérification annuelle des RIA
@@ -241,6 +243,7 @@ export const equipementSchema = z
     // Cases à cocher (deux états).
     aGroupeElectrogene: z.coerce.boolean().optional(),
     estLocalPollutionSpecifique: z.coerce.boolean().optional(),
+    aSystemeDeRecyclage: z.coerce.boolean().optional(),
     nbVehiculesParkingCouvert: z.preprocess(
       (v) => (v === "" || v === null || v === undefined ? undefined : v),
       z.coerce.number().int().min(0).max(99999).optional(),
@@ -311,6 +314,14 @@ export const equipementSchema = z
       });
     }
 
+    if (val.aSystemeDeRecyclage && !categoriesPollutionOk.includes(val.categorie)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["aSystemeDeRecyclage"],
+        message: "Spécifique aux équipements d'aération",
+      });
+    }
+
     if (
       val.nbVehiculesParkingCouvert !== undefined &&
       val.categorie !== "VMC"
@@ -361,6 +372,7 @@ export function normaliserFormDataEquipement(
     nombre: raw.nombre,
     aGroupeElectrogene: caseCochee("aGroupeElectrogene"),
     estLocalPollutionSpecifique: caseCochee("estLocalPollutionSpecifique"),
+    aSystemeDeRecyclage: caseCochee("aSystemeDeRecyclage"),
     nbVehiculesParkingCouvert: raw.nbVehiculesParkingCouvert,
     // Plaque constructeur d'un équipement sous pression (cf. `esp.ts`).
     familleEsp: raw.familleEsp,
@@ -389,6 +401,8 @@ export function serialiserCaracteristiques(
     out.aGroupeElectrogene = val.aGroupeElectrogene;
   if (val.estLocalPollutionSpecifique !== undefined)
     out.estLocalPollutionSpecifique = val.estLocalPollutionSpecifique;
+  if (val.aSystemeDeRecyclage !== undefined)
+    out.aSystemeDeRecyclage = val.aSystemeDeRecyclage;
   if (val.nbVehiculesParkingCouvert !== undefined)
     out.nbVehiculesParkingCouvert = val.nbVehiculesParkingCouvert;
   if (val.familleEsp !== undefined) out.familleEsp = val.familleEsp;

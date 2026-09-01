@@ -65,6 +65,7 @@ type Valeurs = {
   volumeLitres?: number | null;
   aGroupeElectrogene?: boolean;
   estLocalPollutionSpecifique?: boolean;
+  aSystemeDeRecyclage?: boolean;
   nbVehiculesParkingCouvert?: number | null;
   notes?: string | null;
 } & Partial<Record<ChampTriEtat, boolean | null>>;
@@ -368,6 +369,29 @@ export function EquipementForm({
                     l&apos;installation (arrêté du 8 octobre 1987, art. 4 § 2
                     a). Un contrôle semestriel s&apos;y ajoute lorsqu&apos;il
                     existe un système de recyclage (art. 4 § 2 b).
+                  </p>
+                </div>
+              </label>
+            )}
+
+            {estAeration && (
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  name="aSystemeDeRecyclage"
+                  defaultChecked={valeursInitiales?.aSystemeDeRecyclage ?? false}
+                  className={CASE_A_COCHER}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="m-0 text-[14px] font-semibold leading-[1.35] text-[color:var(--board-ink)]">
+                    L&apos;installation recycle l&apos;air
+                  </p>
+                  <p className="m-0 mt-1 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                    Une partie de l&apos;air extrait est réintroduite dans le
+                    local. S&apos;ajoute alors au contrôle annuel un contrôle
+                    tous les six mois de la concentration en poussières dans les
+                    gaines de recyclage et des systèmes de surveillance
+                    (arrêté du 8 octobre 1987, art. 4 b).
                   </p>
                 </div>
               </label>

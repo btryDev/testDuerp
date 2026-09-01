@@ -596,6 +596,18 @@ describe("référentiel conformité — non-régression des obligations critique
     // condition `infirmee` sur la même propriété.
     "levage-vgp-trimestrielle-force-humaine",
     "aeration-travail-locaux-pollution-specifique",
+    // Obligation neuve du 2026-09-01 (arrêté du 8 octobre 1987, art. 4 b) :
+    // aucun équipement déjà en base ne peut la perdre, et
+    // `aeration-travail-locaux-pollution-specifique` reste due tant que la
+    // question sur le recyclage n'a pas reçu « oui » — répondre ne fait
+    // qu'AJOUTER le semestriel, jamais retirer l'annuel.
+    //
+    // Le trois-états aurait été le réflexe, et il aurait été faux ici : il
+    // afficherait un semestriel à tout propriétaire de VMC tant qu'il n'a pas
+    // répondu non, soit un faux positif de masse sur une ligne qui revient
+    // deux fois par an. La règle du dépôt vise les obligations DÉJÀ PUBLIÉES
+    // qui s'éteindraient au silence ; celle-ci naît d'une réponse.
+    "aeration-travail-recyclage-semestriel",
     "aeration-erp-ps-surveillance-qualite-air-sup-250",
     "levage-vgp-semestrielle-chariot-gerbeur",
     // Les cinq paliers non nominaux du contrôle d'étanchéité des fluides
@@ -1035,17 +1047,24 @@ describe("référentiel conformité — version et empreinte", () => {
   // s'affichent au calendrier et décident de ce que le dirigeant croit devoir
   // faire — c'est exactement ce qu'on veut voir bouger.
   //
-  // 2026-09-01, 116 → 117 : `elec-salarie-habilitation` entre au catalogue des
-  // titres. C'est un AJOUT PUR — aucune ligne existante ne change de
-  // périodicité, de porteur ni de libellé —, donc aucun calendrier généré ne
-  // perd de ligne à la réconciliation. Le porteur salarié ne dérive rien : le
-  // titre ne produit d'échéance que si un employeur le déclare sur une
-  // personne, et sa périodicité `autre` fait que le générateur n'en calcule
-  // aucune même alors. Le déplacement d'empreinte force donc une
-  // réconciliation qui, sur les dossiers existants, ne changera rien — et
-  // c'est le comportement voulu : l'empreinte dit que le référentiel a bougé,
-  // pas qu'un calendrier est faux.
-  const EMPREINTE_ATTENDUE = "117-f3e28b9866830b26";
+  // 2026-09-01, 116 → 118 : deux lots écrits en parallèle ajoutent chacun une
+  // obligation, et chacun a vu 117 depuis sa propre base. `elec-salarie-habilitation`
+  // entre au catalogue des titres (`R. 4544-10`) ; le contrôle semestriel des
+  // gaines de recyclage entre par l'arrêté du 8 octobre 1987 art. 4 b).
+  // L'empreinte ci-dessous n'a été calculée par aucune des deux branches :
+  // elle a été REMESURÉE ici, à l'intégration. C'est la règle, et les deux
+  // branches l'avaient chacune écrite dans leur commentaire — se recopier
+  // l'une l'autre aurait donné une valeur fausse que le test aurait acceptée
+  // sur l'une des deux moitiés.
+  //
+  // Les deux sont des AJOUTS PURS : aucune ligne existante ne change de
+  // périodicité, de porteur ni de libellé, donc aucun calendrier généré ne
+  // perd de ligne à la réconciliation. Le porteur salarié ne dérive rien, et
+  // le semestriel de recyclage ne naît que sur un équipement déclaré avec
+  // l'attribut. Le déplacement d'empreinte force une réconciliation qui, sur
+  // les dossiers existants, ne changera rien — et c'est le comportement voulu :
+  // l'empreinte dit que le référentiel a bougé, pas qu'un calendrier est faux.
+  const EMPREINTE_ATTENDUE = "118-b64e08697152821d";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1163,7 +1182,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(117);
+    ).toBe(118);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {

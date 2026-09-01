@@ -341,6 +341,7 @@ describe("cohérence schéma ↔ référentiel d'obligations", () => {
       ...CHAMPS_TRI_ETAT,
       "aGroupeElectrogene",
       "estLocalPollutionSpecifique",
+      "aSystemeDeRecyclage",
       "nbVehiculesParkingCouvert",
     ]);
     for (const o of obligationsConformite) {

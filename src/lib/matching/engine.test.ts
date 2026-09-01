@@ -532,7 +532,7 @@ describe("moteur matching — conditions booléennes (groupe électrogène)", ()
 });
 
 describe("moteur matching — conditions booléennes (local pollution spécifique)", () => {
-  it("travail avec VMC pollution spécifique → contrôle semestriel applicable", () => {
+  it("travail avec VMC pollution spécifique → contrôle annuel applicable", () => {
     const res = determineObligationsApplicables(etabBureau(), [
       vmc({ caracteristiques: { estLocalPollutionSpecifique: true } }),
     ]);
@@ -541,14 +541,68 @@ describe("moteur matching — conditions booléennes (local pollution spécifiqu
     );
   });
 
-  it("travail avec VMC SANS pollution spécifique → contrôle semestriel non applicable", () => {
+  it("travail avec VMC SANS pollution spécifique → contrôle annuel non applicable", () => {
     const res = determineObligationsApplicables(etabBureau(), [vmc()]);
     expect(idsObligations(res)).not.toContain(
       "aeration-travail-locaux-pollution-specifique",
     );
   });
 
-  it("travail avec hotte pollution spécifique → contrôle semestriel applicable (VMC/CTA/HOTTE_PRO)", () => {
+  // ── Le semestriel des gaines de recyclage (arrêté 08-10-1987, art. 4 b) ──
+  //
+  // Deux conditions cumulées sur la même catégorie, donc quatre cas à couvrir.
+  // Le cas qui compte est le troisième : le recyclage seul ne suffit pas, parce
+  // que l'article 4 ne régit que les locaux à pollution SPÉCIFIQUE — l'article 3
+  // traite les autres, et autrement.
+
+  it("pollution spécifique + recyclage → le semestriel s'ajoute à l'annuel", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [
+        vmc({
+          caracteristiques: {
+            estLocalPollutionSpecifique: true,
+            aSystemeDeRecyclage: true,
+          },
+        }),
+      ]),
+    );
+    expect(ids).toContain("aeration-travail-recyclage-semestriel");
+    // L'annuel reste dû : le b) AJOUTE un contrôle, il n'en remplace aucun.
+    expect(ids).toContain("aeration-travail-locaux-pollution-specifique");
+  });
+
+  it("pollution spécifique sans recyclage → l'annuel seul", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [
+        vmc({ caracteristiques: { estLocalPollutionSpecifique: true } }),
+      ]),
+    );
+    expect(ids).toContain("aeration-travail-locaux-pollution-specifique");
+    expect(ids).not.toContain("aeration-travail-recyclage-semestriel");
+  });
+
+  it("recyclage sans pollution spécifique → ni l'un ni l'autre", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [
+        vmc({ caracteristiques: { aSystemeDeRecyclage: true } }),
+      ]),
+    );
+    expect(ids).not.toContain("aeration-travail-recyclage-semestriel");
+    expect(ids).not.toContain("aeration-travail-locaux-pollution-specifique");
+  });
+
+  it("silence sur le recyclage → l'annuel reste dû, le semestriel n'apparaît pas", () => {
+    // La forme opt-in choisie ici ne peut RIEN éteindre : c'est ce qui la rend
+    // acceptable sur une obligation de criticité 4 (cf. la liste blanche).
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [
+        vmc({ caracteristiques: { estLocalPollutionSpecifique: true } }),
+      ]),
+    );
+    expect(ids).toContain("aeration-travail-locaux-pollution-specifique");
+  });
+
+  it("travail avec hotte pollution spécifique → contrôle annuel applicable (VMC/CTA/HOTTE_PRO)", () => {
     const res = determineObligationsApplicables(etabBureau(), [
       { ...hotte(), caracteristiques: { estLocalPollutionSpecifique: true } },
     ]);
@@ -1174,6 +1228,10 @@ describe("moteur matching — aucun établissement existant ne perd une obligati
     expect(strictes).toEqual([
       "aeration-erp-ps-surveillance-qualite-air-sup-250",
       "aeration-travail-locaux-pollution-specifique",
+      // Obligation neuve du 2026-09-01 : le semestriel des gaines de recyclage
+      // S'AJOUTE à cet annuel, qui reste dû tant que la question n'a pas reçu
+      // « oui ». Aucun équipement en base ne peut donc rien perdre.
+      "aeration-travail-recyclage-semestriel",
       "elec-erp-groupe-electrogene-annuel",
       // Cinq paliers non nominaux du contrôle d'étanchéité : obligations
       // neuves, et `froid-controle-etancheite-annuel` couvre l'installation
