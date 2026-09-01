@@ -205,10 +205,12 @@ export const obligationsAeration: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. CH 58 (vérification dans les conditions de la section II du chapitre Ier)",
+        reference:
+          "Arrêté du 25 juin 1980, art. CH 58 § 2 (vérifications périodiques annuelles), son § 1 renvoyant le régime à la section II du chapitre Ier",
         article: "CH 58",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
+        note: "« § 2. Les vérifications périodiques doivent avoir lieu tous les ans et concernent : - les installations de production de chaleur ou de froid visées aux sections II, V et VI du présent chapitre ; - le stockage des combustibles visé à la section III ; - les installations de traitement d'air et de ventilation visées à la section VII ; - les appareils de production-émission de chaleur à combustion et les systèmes thermodynamiques visés à la section VIII. » C'est le § 2 qui porte le rythme ; le § 1 ne fait que renvoyer le régime à GE 6 et suivants — donc à un organisme agréé ou un technicien compétent.",
         versionConstatee: "2025-09-10",
       },
       {
@@ -217,6 +219,7 @@ export const obligationsAeration: Obligation[] = [
         article: "CH 57",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
+        note: "« Les installations doivent être entretenues régulièrement et maintenues en bon état de fonctionnement. En particulier, les conduits de fumée, les cheminées et tous les appareils doivent être ramonés et nettoyés une fois par an. » ARTICLE D'ENTRETIEN, non de vérification : le ramonage qu'il impose n'est PAS l'acte que cette obligation planifie, et il n'a pas de ligne à lui. Voir les notes internes — une scission est proposée, elle n'est pas faite.",
         versionConstatee: "1980-08-15",
       },
     ],
@@ -228,6 +231,8 @@ export const obligationsAeration: Obligation[] = [
     transmet: [],
     typologies: { erp: true },
     categoriesEquipement: ["VMC", "CTA"],
+    notesInternes:
+      "FONDEMENT PRÉCISÉ LE 2026-09-01 (lot A) : la `reference` désignait le § 1 de CH 58 — le renvoi de régime — alors que le rythme annuel est au § 2. Même motif que `elec-erp-cat1-4-annuelle` sur EL 19, et la clé `article` était juste dans les deux cas ; c'est la citation lue par un humain qui pointait à côté.\n\nSCISSION PROPOSÉE, NON FAITE — DÉCISION DE DÉCOUPAGE. Cette ligne confond DEUX ACTES sous un seul libellé, et le corpus l'établit article par article. L'argument, pour que la décision se prenne sur pièces :\n\n(1) DEUX OBJETS. CH 57 impose le RAMONAGE et le nettoyage annuels des conduits de fumée, des cheminées et de tous les appareils. CH 58 § 2 impose une VÉRIFICATION TECHNIQUE annuelle dont l'objet est autre : production de chaleur ou de froid, stockage des combustibles, traitement d'air et ventilation, appareils de production-émission. Ramoner un conduit et vérifier une centrale de traitement d'air ne sont pas le même geste.\n\n(2) DEUX RÉALISATEURS. CH 58 § 1 renvoie le régime à la section II du chapitre Ier, donc à un organisme agréé ou un technicien compétent au sens de GE 6. CH 57 n'appelle personne en particulier : un ramoneur suffit, et il n'est pas un technicien compétent au sens de GE 6.\n\n(3) CE QUE LA CONFUSION COÛTE, et c'est le point qui décide. Un exploitant qui coche cette ligne après une visite de maintenance de sa CTA aura l'air d'avoir ramoné. Le défaut est du côté où l'erreur est invisible pour celui qui la subit : il produira un dossier qui atteste un acte qui n'a pas eu lieu, et c'est précisément ce qu'un dossier de conformité existe pour empêcher.\n\n(4) CE QUE LA SCISSION COÛTE. Une obligation de plus (117), une réconciliation, et un id neuf pour le ramonage. Les lignes déjà cochées resteraient sur celle-ci — donc sur la vérification technique —, et l'exploitant verrait apparaître une échéance « à planifier » pour un ramonage qu'il a peut-être fait. C'est le comportement connu de la réconciliation, sans `absorbePar` possible ici : il n'y a pas d'absorbant, il y a un dédoublement.\n\nLe lot A ne crée pas d'obligation : la scission appartient à la propriétaire. En attendant, la `note` de CH 57 dit ce que cette ligne ne couvre pas.",
   },
   {
     id: "aeration-erp-ps-surveillance-qualite-air-inf-250",

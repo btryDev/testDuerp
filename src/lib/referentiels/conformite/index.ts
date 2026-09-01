@@ -96,8 +96,24 @@ export const obligationsConformite: Obligation[] = [
  * **À incrémenter à CHAQUE modification du référentiel.** Le test
  * `conformite.test.ts` compare une empreinte du contenu à celle enregistrée :
  * l'oubli fait échouer la suite.
+ *
+ * SAUF QUAND IL NE LE FAIT PAS, et le lot A du 2026-09-01 l'a établi en
+ * corrigeant onze fondements sans que l'empreinte bouge d'un chiffre. C'est
+ * `empreinteReferentiel` qui décide, et elle exclut délibérément
+ * `referencesLegales`, `description` et `notesInternes` — au motif, juste,
+ * qu'aucun n'est recopié sur la `Verification` et qu'aucun ne décide de son
+ * existence. Le motif tient pour la RÉCONCILIATION ; il ne tient pas comme
+ * garde de version. Un référentiel peut voir tout son fondement légal réécrit
+ * — l'article cité sous une obligation de criticité 5, celui qui s'imprime au
+ * dossier remis à une commission de sécurité — et l'empreinte ne bougera pas.
+ * Ce n'est pas une défaillance du test, c'est son périmètre : il garde ce qui
+ * engendre des lignes de calendrier, pas ce qui les justifie.
+ *
+ * Conséquence pratique, et c'est pourquoi cette constante se lit à la main :
+ * la bonne question n'est pas « l'empreinte a-t-elle bougé ? » mais « le
+ * référentiel a-t-il changé ? ». Ici, oui.
  */
-export const REFERENTIEL_VERSION = "2026-08-31.4";
+export const REFERENTIEL_VERSION = "2026-09-01.1";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.

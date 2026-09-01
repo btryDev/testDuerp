@@ -415,7 +415,7 @@ describe("référentiel conformité — anti-doublon", () => {
         "stockage-dangereux-verification-etancheite",
       ],
       raison:
-        "Instruit le 2026-08-27, ce n'est PAS un doublon. `R. 4412-11` fonde deux actes que les citations elles-mêmes distinguent : « procédures de stockage sûres des agents chimiques dangereux » (la rétention) et « entretien régulier des équipements de stockage » (l'étanchéité). Objets différents, gestes différents ; seul l'article est commun.",
+        "Ce n'est pas un doublon, mais la raison qui le disait était fausse et a été réécrite le 2026-09-01 (lot A). Elle affirmait que R. 4412-11 fonde « entretien régulier des équipements de stockage » : l'article, lu en entier à la source, ne l'écrit pas. Ce qui distingue vraiment les deux lignes est leur NATURE, et elle est déclarée : `stockage-dangereux-retention` est un `etat_permanent` — la rétention est en place ou elle ne l'est pas — et `stockage-dangereux-verification-etancheite` une `echeance_recurrente` — l'acte revient, sans rythme connu. Un état et un acte ne se cochent pas de la même façon et ne se prouvent pas par la même chose. Le 7° de l'article fonde le premier (procédures de stockage sûres), le 2° le second (procédures d'entretien régulières) ; seul l'article est commun, et aucune des deux n'a pour l'instant de texte qui DATE l'acte — voir les notes internes de la seconde.",
     },
     // ── Apparue le 2026-09-01 avec le recalage des fondements (lot A) ──
     {
@@ -1034,6 +1034,25 @@ describe("référentiel conformité — version et empreinte", () => {
   // Réalisateur et libellé entrent tous deux dans l'empreinte parce qu'ils
   // s'affichent au calendrier et décident de ce que le dirigeant croit devoir
   // faire — c'est exactement ce qu'on veut voir bouger.
+  //
+  // ET VOICI CE QU'ELLE NE VOIT PAS, constaté le 2026-09-01 par le lot A.
+  // Onze fondements recalés — l'article cité sous une obligation de criticité
+  // 5 changé, une référence retirée parce que l'article ne dit pas ce qu'on
+  // lui faisait dire, une description réécrite sur le verbatim — et cette
+  // valeur n'a pas bougé d'un chiffre. C'est voulu : `empreinteReferentiel`
+  // exclut `referencesLegales`, `description` et `notesInternes`, au motif
+  // qu'aucun n'est recopié sur la `Verification`. Le motif est juste pour la
+  // RÉCONCILIATION, qui est ce que l'empreinte sert. Il ne l'est pas comme
+  // preuve qu'un lot a travaillé : le fondement légal d'un référentiel peut
+  // être entièrement réécrit sous une empreinte immobile.
+  //
+  // Le lot A avait pour consigne « si `EMPREINTE_ATTENDUE` n'a pas besoin
+  // d'être mise à jour, c'est que tu n'as rien corrigé ». La consigne est
+  // fausse, et c'est le constat qui compte : la trace d'un recalage de
+  // fondement est dans le diff et dans `REFERENTIEL_VERSION`, jamais ici.
+  // Faire entrer `referencesLegales` dans l'empreinte déclencherait une
+  // réconciliation à chaque correction de citation — un choix de conception,
+  // qui n'appartient pas à un lot de correction.
   const EMPREINTE_ATTENDUE = "116-97f9faa35169ab0b";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
