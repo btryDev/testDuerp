@@ -233,10 +233,21 @@ export const obligationsAscenseurs: Obligation[] = [
     referencesLegales: [
       {
         source: "CCH",
-        reference: "CCH, art. R. 134-7 et R. 134-10 (carnet d'entretien)",
+        reference: "CCH, art. R. 134-7 III (carnet d'entretien — régime du contrat)",
+        article: "CCH R. 134-7",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053629120",
+        note: "« Les visites, opérations et interventions effectuées en exécution du contrat d'entretien font l'objet de comptes rendus dans un carnet d'entretien tenu à jour, établi sous forme d'un registre physique ou électronique suivant le choix du propriétaire. En outre, l'entreprise remet au propriétaire un rapport annuel d'activité auquel est annexé le contenu du carnet d'entretien lorsque celui-ci est établi sous forme électronique. » Version réécrite par le décret n° 2026-166 du 4 mars 2026, en vigueur au 1er avril 2026. C'est le CAS ORDINAIRE : l'entretien confié à une entreprise.",
+        versionConstatee: "2026-04-01",
+      },
+      {
+        source: "CCH",
+        reference:
+          "CCH, art. R. 134-10 (carnet d'entretien — propriétaire assurant l'entretien par ses propres moyens)",
         article: "CCH R. 134-10",
         url:
           "https://www.legifrance.gouv.fr/codes/id/LEGISCTA000043818735/",
+        note: "Cité pour le cas PARTICULIER, et pour lui seul : « Lorsque le propriétaire ne recourt pas à un prestataire de services mais décide d'assurer par ses propres moyens l'entretien de l'ascenseur […] Il tient à jour le carnet d'entretien et établit un rapport annuel d'activité dans les conditions fixées au III de l'article R. 134-7. »",
         versionConstatee: "2021-07-01",
       },
     ],
@@ -248,7 +259,8 @@ export const obligationsAscenseurs: Obligation[] = [
     transmet: [],
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
-    notesInternes: "NATURE : ÉTAT PERMANENT, `pieceAttendue: \"carnet d'entretien\"` (ADR-026). R. 134-7 III et R. 134-10 imposent la tenue du carnet lui-même, conservé toute la vie de l'appareil.",
+    notesInternes:
+      "NATURE : ÉTAT PERMANENT, `pieceAttendue: \"carnet d'entretien\"` (ADR-026). R. 134-7 III et R. 134-10 imposent la tenue du carnet lui-même, conservé toute la vie de l'appareil.\n\nFONDEMENT RECALÉ LE 2026-09-01 (lot A). La `reference` citait bien « R. 134-7 et R. 134-10 », mais la clé `article` — la seule que le corpus et la veille savent lire — pointait R. 134-10, qui ne régit QUE le propriétaire assurant l'entretien par ses propres moyens. Le cas ordinaire, l'entretien confié à une entreprise, est à R. 134-7 III, et il n'était rattaché à aucun texte lu. Les deux sont désormais cités séparément, chacun pour son régime, et R. 134-7 est entré au corpus.\n\nCE QUI RESTE NON PORTÉ : le RAPPORT ANNUEL D'ACTIVITÉ que l'entreprise remet au propriétaire (R. 134-7 III, et R. 134-10 pour la régie). La description le nomme, aucune échéance ne le planifie — il est annuel, il a un réalisateur, il n'a pas de ligne. Recensé en section C du cadrage du 2026-09-01 ; le lot A ne crée pas d'obligation.",
   },
   {
     id: "ascenseur-telealarme-liaison",
@@ -259,10 +271,22 @@ export const obligationsAscenseurs: Obligation[] = [
     referencesLegales: [
       {
         source: "CCH",
-        reference: "CCH, art. R. 134-1 à R. 134-5 (dispositifs de sécurité, dont demande de secours)",
+        reference:
+          "CCH, art. R. 134-2, 6° (objectif de sécurité : moyens d'alerte et de communication avec un service d'intervention)",
+        article: "CCH R. 134-2",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818727",
+        note: "« La sécurité d'un ascenseur consiste à assurer : […] 6° La mise à la disposition des utilisateurs de moyens d'alerte et de communication avec un service d'intervention […] » Verbatim lu sur Légifrance le 2026-09-01.",
+        versionConstatee: "2021-07-01",
+      },
+      {
+        source: "CCH",
+        reference:
+          "CCH, art. R. 134-1 (champ d'application de la section : ce qu'est un ascenseur)",
         article: "CCH R. 134-1",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000043818721/",
+        note: "Article de champ, cité pour lui seul : il définit l'ascenseur au sens de la section et en écarte les appareils dont la vitesse n'excède pas 0,15 m/s. Il ne dit rien des moyens d'alerte.",
         versionConstatee: "2021-07-01",
       },
     ],
@@ -275,6 +299,6 @@ export const obligationsAscenseurs: Obligation[] = [
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
     notesInternes:
-      "Obligation permanente de moyens (contrat d'astreinte), non planifiée dans le calendrier.\n\nAmendement 2026-08-25 : R. 134-6 (version au 01/04/2026, décret 2026-166) impose la vérification des moyens d'alerte et de communication à chaque visite (six semaines) et un volet sur l'obsolescence des réseaux RTC/3G ; R. 134-11 a) vise la compatibilité de ces moyens avec les autres réseaux. Non modélisé comme échéance propre : couvert par le contrat d'entretien.\n\nNATURE : ÉTAT PERMANENT (ADR-026). Un dispositif d'alerte disponible 24 h/24 : l'état est l'obligation, il n'y a aucun acte à refaire à date. `pieceAttendue` est nulle — le texte exige un dispositif, pas un écrit.",
+      "Obligation permanente de moyens (contrat d'astreinte), non planifiée dans le calendrier.\n\nFONDEMENT RECALÉ LE 2026-09-01 (lot A). La clé `article` pointait R. 134-1, qui est un article de CHAMP : il dit ce qu'est un ascenseur au sens de la section et n'écrit rien des moyens d'alerte. L'objectif de sécurité est au 6° de R. 134-2, entré au corpus à cette occasion. La `reference` annonçait « R. 134-1 à R. 134-5 » — un intervalle qui contenait bien le bon article sans le désigner, et c'est le terme cité qui décidait de l'ancre.\n\nAmendement 2026-08-25 : R. 134-6 (version au 01/04/2026, décret 2026-166) impose la vérification des moyens d'alerte et de communication à chaque visite (six semaines) et un volet sur l'obsolescence des réseaux RTC/3G ; R. 134-11 a) vise la compatibilité de ces moyens avec les autres réseaux. Non modélisé comme échéance propre : couvert par le contrat d'entretien.\n\nNATURE : ÉTAT PERMANENT (ADR-026). Un dispositif d'alerte disponible 24 h/24 : l'état est l'obligation, il n'y a aucun acte à refaire à date. `pieceAttendue` est nulle — le texte exige un dispositif, pas un écrit.",
   },
 ];

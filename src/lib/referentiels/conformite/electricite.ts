@@ -280,6 +280,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
+        note: "« § 2. Les installations neuves ou ayant fait l'objet de travaux doivent être vérifiées dans les conditions prévues aux articles GE 7 et GE 8 (§ 1). » Le § 2 est bien le paragraphe de cet acte-ci : c'est `elec-erp-cat1-4-annuelle` qui le citait à tort, et elle a été recalée sur le § 3 le 2026-09-01.",
         versionConstatee: "2010-01-23",
       },
     ],
@@ -303,10 +304,12 @@ export const obligationsElectricite: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. EL 19 § 1 et § 2",
+        reference:
+          "Arrêté du 25 juin 1980, art. EL 19 § 3 (vérifications périodiques des installations non modifiées)",
         article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
+        note: "« § 3. Les vérifications périodiques des installations non modifiées doivent être effectuées annuellement dans les conditions prévues à l'article GE 10. » Verbatim relevé en première main le 2026-09-01. Le § 1 n'est qu'un renvoi de régime à la section II du chapitre Ier, et le § 2 vise les installations neuves ou ayant fait l'objet de travaux — c'est l'objet de `elec-erp-mise-en-service`, l'acte inverse.",
         versionConstatee: "2010-01-23",
       },
     ],
@@ -320,6 +323,8 @@ export const obligationsElectricite: Obligation[] = [
       erp: { categories: ["N1", "N2", "N3", "N4"] },
     },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    notesInternes:
+      "FONDEMENT RECALÉ LE 2026-09-01 (lot A). L'obligation citait « EL 19 § 1 et § 2 » pour fonder une ANNUELLE. Aucun des deux ne la porte : le § 1 renvoie le régime à la section II du chapitre Ier (GE 6 et suivants), et le § 2 vise les installations neuves ou ayant fait l'objet de travaux — donc exactement l'objet de `elec-erp-mise-en-service`. Les deux lignes citaient le même paragraphe pour deux actes opposés, et celle qui l'avait juste était l'autre. L'annuelle est au § 3, qui vise « les installations NON MODIFIÉES » et renvoie à GE 10.\n\nCE QUE LE § 3 AJOUTE ET QUI N'EST PAS ENCODÉ : il énumère une liste CLOSE des articles couverts par l'annuelle — EL 4 § 4, EL 5 § 1, 4 et 5, EL 8 § 3, EL 10 § 4, EL 11 § 3, 4 et 7, EL 15 § 3, EL 17 et EL 18, puis EC 5 § 5, EC 6 § 5 et 6, EC 7, EC 9 § 1, EC 13 et EC 14 § 3 —, et c'est par EC 13 et EC 14 § 3 que l'éclairage de sécurité entre dans cette annuelle (`incendie-erp-baes-annuelle`). Relevé, non modélisé : le référentiel ne sait pas porter une liste d'articles couverts.\n\nSur-application assumée en 5ᵉ catégorie, comme `elec-erp-mise-en-service` : voir ses notes internes. Le § 3 relève du même Livre II, écarté par PE 1 § 1. La typologie restreint déjà aux catégories N1 à N4, ce qui borne le cas ici.",
   },
   // `elec-erp-cat5-quinquennale` a été RETIRÉ le 2026-08-27 (ADR-022).
   //

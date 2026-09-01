@@ -19,10 +19,29 @@ export const CCH_ASCENSEURS: Corpus = {
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
-      obligations: ["ascenseur-telealarme-liaison"],      prescrit:
+      obligations: ["ascenseur-telealarme-liaison"],
+      reserve:
+        "CORRIGÉ LE 2026-09-01 (lot A). L'article était le FONDEMENT de `ascenseur-telealarme-liaison` alors qu'il ne dit rien des moyens d'alerte. Le fondement est désormais R. 134-2, 6°, entré au corpus le même jour. L'article reste cité, en contexte, pour ce qu'il fait seul : borner le champ de la section, exclusion des 0,15 m/s comprise.",
+      prescrit:
         "Article de CHAMP, pas de prescription : il définit ce qu'est un ascenseur au sens de la section — appareil desservant de manière permanente les niveaux d'un bâtiment par une cabine se déplaçant le long de guides rigides inclinés de plus de 15 degrés, pour le transport de personnes, de personnes et d'objets, ou d'objets seuls dès lors que la cabine est accessible sans difficulté et équipée de commandes à portée. Y sont assimilés les appareils à course fixée dans l'espace même sans guides rigides (ascenseurs à ciseaux). EXCLUSION : les appareils dont la vitesse n'excède pas 0,15 m/s — la même borne que celle par laquelle l'annexe de l'arrêté du 1er mars 2004 les écarte du levage ; les deux corpus se recoupent exactement sur ce point. L'article ne dit RIEN des moyens d'alerte ni de la liaison avec un service d'intervention : cet objectif de sécurité est à R. 134-2, et son entretien à R. 134-6. Le référentiel rattache pourtant `ascenseur-telealarme-liaison` à la clé « CCH R. 134-1 » ; non corrigé ici, hors mandat de relevé.",
       citationCle:
         "Les ascenseurs auxquels s'appliquent les dispositions de la présente section sont les appareils qui desservent de manière permanente les niveaux de bâtiments et de constructions à l'aide d'une cabine qui se déplace le long de guides rigides dont l'inclinaison sur l'horizontale est supérieure à 15 degrés […]. La présente section ne s'applique pas aux appareils dont la vitesse n'excède pas 0,15 m/s.",
+    },
+    {
+      ref: "CCH R. 134-2",
+      intitule: "Objectifs de sécurité d'un ascenseur",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818727",
+      versionEnVigueur: "2021-07-01",
+      luLe: "2026-09-01",
+      lecture: "agent_verbatim",
+      statut: "retenu",
+      obligations: ["ascenseur-telealarme-liaison"],
+      prescrit:
+        "L'article des NEUF OBJECTIFS de sécurité, et le pivot de toute la section : R. 134-6 définit l'entretien comme ce qui « maintient le niveau de sécurité défini à l'article R. 134-2 », et R. 134-11 a) fait du contrôle quinquennal la vérification que les dispositifs permettant de les atteindre existent et sont en bon état. Le 6° est celui qui porte la téléalarme — « la mise à la disposition des utilisateurs de moyens d'alerte et de communication avec un service d'intervention ». Chemin : Livre Ier > Titre III > Chapitre IV > Section 1 > Sous-section 1 « Mise en sécurité des ascenseurs ». Entré au corpus le 2026-09-01 : `ascenseur-telealarme-liaison` s'ancrait sur R. 134-1, article de champ.",
+      citationCle:
+        "La sécurité d'un ascenseur consiste à assurer : 1° La fermeture des portes palières ; 2° L'accès sans danger des personnes à la cabine ; 3° La protection des utilisateurs contre les chocs provoqués par la fermeture des portes ; 4° La prévention des risques de chute et d'écrasement de la cabine ; 5° La protection contre les dérèglements de la vitesse de la cabine ; 6° La mise à la disposition des utilisateurs de moyens d'alerte et de communication avec un service d'intervention ; 7° La protection des circuits électriques de l'installation ; 8° L'accès sans danger des personnels d'intervention aux locaux des machines, aux équipements associés et aux espaces parcourus par la cabine ; 9° L'impossibilité pour toute personne autre que les personnels d'intervention d'accéder aux locaux des machines, aux équipements associés et aux espaces parcourus par la cabine.",
+      reserve:
+        "HUIT OBJECTIFS SUR NEUF N'ONT PAS DE LIGNE EN PROPRE, et c'est normal : ce sont des états de l'installation, vérifiés à chaque visite d'entretien (R. 134-6) et au contrôle quinquennal (R. 134-11). Seul le 6° est encodé, parce qu'il suppose en outre un tiers disponible en permanence — un contrat d'astreinte, que l'exploitant peut ne pas avoir alors que l'appareil est conforme. La distinction est celle qui fait qu'une ligne existe ou non ; elle est notée ici pour que personne ne conclue à huit manques.",
     },
     {
       ref: "CCH R. 134-6",
@@ -40,13 +59,32 @@ export const CCH_ASCENSEURS: Corpus = {
         "L'entretien d'un ascenseur a pour objet d'assurer son bon fonctionnement et de maintenir le niveau de sécurité défini à l'article R. 134-2. […] le propriétaire d'une installation d'ascenseur prend les dispositions minimales suivantes : 1° Opérations et vérifications périodiques : a) Une visite toutes les six semaines […] b) La vérification toutes les six semaines de l'efficacité des serrures […] c) L'examen semestriel des câbles et la vérification annuelle des parachutes […] f) La vérification toutes les six semaines du bon fonctionnement des moyens d'alerte […]",
     },
     {
+      ref: "CCH R. 134-7",
+      intitule:
+        "Contrat d'entretien, carnet d'entretien et rapport annuel d'activité",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053629120",
+      versionEnVigueur: "2026-04-01",
+      luLe: "2026-09-01",
+      lecture: "agent_verbatim",
+      statut: "retenu",
+      obligations: ["ascenseur-carnet-entretien"],
+      prescrit:
+        "Version réécrite par le décret n° 2026-166 du 4 mars 2026, en vigueur au 1er avril 2026. Trois paragraphes. Le I impose le CONTRAT d'entretien écrit avec une entreprise dont le personnel a reçu une formation appropriée, et en fixe dix clauses minimales — dont une durée d'au moins un an, la disponibilité des pièces, le carnet d'entretien, les assurances, les pénalités, le sort des sous-traitants. Le II énumère les travaux importants qui échappent au contrat. Le III porte le CARNET D'ENTRETIEN — registre physique ou électronique, au choix du propriétaire — et le RAPPORT ANNUEL D'ACTIVITÉ que l'entreprise remet au propriétaire. C'est le régime ORDINAIRE ; R. 134-10 ne régit que le propriétaire qui entretient par ses propres moyens. Entré au corpus le 2026-09-01 : `ascenseur-carnet-entretien` le nommait dans sa `reference` mais s'ancrait sur R. 134-10.",
+      citationCle:
+        "III. - Les visites, opérations et interventions effectuées en exécution du contrat d'entretien font l'objet de comptes rendus dans un carnet d'entretien tenu à jour, établi sous forme d'un registre physique ou électronique suivant le choix du propriétaire. En outre, l'entreprise remet au propriétaire un rapport annuel d'activité auquel est annexé le contenu du carnet d'entretien lorsque celui-ci est établi sous forme électronique.",
+      reserve:
+        "UN DOUZIÈME CAS DU MÊME MOTIF, RELEVÉ ET NON CORRIGÉ. `ascenseur-entretien-contrat` cite « CCH, art. R. 134-6 et R. 134-7 » et s'ancre sur R. 134-6 — or le CONTRAT d'entretien écrit et ses dix clauses minimales sont au I de cet article-ci ; R. 134-6 porte les opérations d'entretien, pas le contrat qui les commande. Exactement le motif des onze du lot A — le terme cité d'un intervalle décide de l'ancre, et il tombe à côté —, mais l'obligation n'était pas dans la liste des onze : signalée pour la passe suivante plutôt que corrigée hors mandat. Elle n'est donc pas rattachée ici, sans quoi le lien serait rompu dans l'autre sens.\n\nLE RAPPORT ANNUEL D'ACTIVITÉ N'A PAS DE LIGNE. Il est annuel, il a un réalisateur nommé — l'entreprise d'entretien —, il produit une pièce, et rien ne le planifie : `ascenseur-carnet-entretien` le NOMME dans sa description mais porte un état permanent, sans échéance. Recensé en section C du cadrage du 2026-09-01 ; le lot A ne crée pas d'obligation. Voir aussi R. 134-10, qui le rend dû du propriétaire en régie.",
+    },
+    {
       ref: "CCH R. 134-10",
       versionEnVigueur: "2021-07-01",
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
       obligations: ["ascenseur-carnet-entretien"],      prescrit:
-        "PORTÉE PLUS ÉTROITE QUE L'USAGE QUI EN EST FAIT. L'article ne fonde pas le carnet d'entretien en général : il régit le seul cas où le propriétaire N'A PAS de prestataire et assure l'entretien PAR SES PROPRES MOYENS. Dans ce cas il reste tenu des prescriptions de R. 134-6, tient à jour le carnet d'entretien, établit un rapport annuel d'activité dans les conditions du III de R. 134-7, et le personnel qu'il emploie doit avoir reçu une formation appropriée au sens de l'article 9 du décret n° 95-826 du 30 juin 1995. Le carnet d'entretien du cas ordinaire — entretien confié à une entreprise — est porté par R. 134-7. Le référentiel rattache `ascenseur-carnet-entretien` à la clé « CCH R. 134-10 » alors que sa `reference` cite bien « R. 134-7 et R. 134-10 » : la clé désigne le cas particulier. Non corrigé ici, hors mandat de relevé. À noter aussi une exigence non portée : le rapport annuel d'activité et la formation du personnel en régie.",
+        "PORTÉE PLUS ÉTROITE QUE L'USAGE QUI EN EST FAIT. L'article ne fonde pas le carnet d'entretien en général : il régit le seul cas où le propriétaire N'A PAS de prestataire et assure l'entretien PAR SES PROPRES MOYENS. Dans ce cas il reste tenu des prescriptions de R. 134-6, tient à jour le carnet d'entretien, établit un rapport annuel d'activité dans les conditions du III de R. 134-7, et le personnel qu'il emploie doit avoir reçu une formation appropriée au sens de l'article 9 du décret n° 95-826 du 30 juin 1995. Le carnet d'entretien du cas ordinaire — entretien confié à une entreprise — est porté par R. 134-7.",
+      reserve:
+        "CORRIGÉ LE 2026-09-01 (lot A). L'article était la clé `article` de `ascenseur-carnet-entretien` alors que sa `reference` citait bien « R. 134-7 et R. 134-10 » : la clé désignait le cas particulier, et le cas ordinaire n'était rattaché à aucun texte lu. R. 134-7 est entré au corpus et porte le fondement ; celui-ci reste cité, pour le régime de la régie et pour lui seul.\n\nDEUX EXIGENCES RESTENT NON PORTÉES, et elles ne le sont que pour la régie : le RAPPORT ANNUEL D'ACTIVITÉ que le propriétaire établit lui-même « dans les conditions fixées au III de l'article R. 134-7 », et la FORMATION APPROPRIÉE du personnel qu'il emploie, au sens de l'article 9 du décret n° 95-826 du 30 juin 1995. Toutes deux recensées en section C du cadrage du 2026-09-01 ; le lot A ne crée pas d'obligation.",
       citationCle:
         "Lorsque le propriétaire ne recourt pas à un prestataire de services mais décide d'assurer par ses propres moyens l'entretien de l'ascenseur, il est tenu au respect des prescriptions de l'article R. 134-6. Il tient à jour le carnet d'entretien et établit un rapport annuel d'activité dans les conditions fixées au III de l'article R. 134-7. Le personnel qu'il emploie pour l'exercice de cette mission doit avoir reçu une formation appropriée dans les conditions prévues à l'article 9 du décret n° 95-826 du 30 juin 1995 […]",
     },
