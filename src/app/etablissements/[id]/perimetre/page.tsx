@@ -233,7 +233,7 @@ export default async function PerimetrePage({
           Les documents que vous devez tenir, y compris ceux que Rojer ne
           produit pas, se lisent sur la page{" "}
           <Link
-            href={`${base}/guide#documents-obligatoires`}
+            href={`${base}/documents`}
             className="font-semibold text-[color:var(--board-blue-ink)] hover:text-[color:var(--board-ink)]"
           >
             Comprendre vos obligations

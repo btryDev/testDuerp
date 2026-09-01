@@ -63,6 +63,8 @@ import {
   type EtatCellule,
 } from "@/lib/dashboard/obligations";
 import type { DashboardBundle } from "../types";
+import { estEcheanceContractuelle } from "@/lib/prescriptions/sources";
+import { MentionContractuelle } from "@/components/prescriptions/MentionContractuelle";
 
 /* ─── Primitives partagées ──────────────────────────────────── */
 
@@ -1492,10 +1494,13 @@ export function BlocProchaineEcheance({ bundle }: { bundle: DashboardBundle }) {
         >
           {v.libelleObligation}
         </LienProvenance>
-        <span className="mt-2.5 inline-block">
+        <span className="mt-2.5 inline-flex flex-wrap items-center gap-2">
           <Pastille ton={enRetard ? "alerte" : "neutre"}>
             {libelleDateCourte(v.datePrevue)} · {v.equipement.libelle}
           </Pastille>
+          {/* La ligne la plus mise en avant du board ne peut pas être celle
+              qui tait ce qu'elle est (ADR-032). */}
+          {estEcheanceContractuelle(v) ? <MentionContractuelle /> : null}
         </span>
       </div>
       {/* Le compte à rebours est la seule surface claire de la carte :

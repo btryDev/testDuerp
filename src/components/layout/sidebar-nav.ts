@@ -70,6 +70,7 @@ import {
   Archive,
   CircleCheck,
   BookMarked,
+  Plug,
   CircleSlash,
   Compass,
 } from "lucide-react";
@@ -242,6 +243,8 @@ export function deduireActif(
   if (pathname.startsWith(`${base}/controle`)) return "controle";
   if (pathname.startsWith(`${base}/duerp`)) return "duerp";
   if (pathname.startsWith(`${base}/guide`)) return "guide";
+  if (pathname.startsWith(`${base}/documents`)) return "documents";
+  if (pathname.startsWith(`${base}/perimetre`)) return "perimetre";
   if (pathname.startsWith(`${base}/connecter`)) return "connecter";
   return "tableau";
 }
@@ -479,11 +482,34 @@ export function construireSections({
   // déplaçant une entrée, pas en rouvrant la découpe.
   equipementBatiment.push(...registres);
 
+  // ─── Paramètres ────────────────────────────────────────────────────────
+  //
+  // Le réglage du dossier, et non une de ses matières : d'où la césure du
+  // rail. Deux items seulement, et le second est la raison d'être de cette
+  // section — « Connecter » n'était listé nulle part depuis que la fiche
+  // établissement est devenue la page d'entrée de « Paramètres », donc
+  // atteignable seulement en tapant son URL.
+  const parametres: NavItem[] = [
+    {
+      id: "fiche",
+      label: LABEL_ITEM.fiche,
+      href: href("/modifier"),
+      Icon: Settings,
+    },
+    {
+      id: "connecter",
+      label: LABEL_ITEM.connecter,
+      href: href("/connecter"),
+      Icon: Plug,
+    },
+  ];
+
   return [
     { title: "À faire", items: aFaire },
     { title: "Santé-sécurité", items: santeSecurite },
     { title: "Équipement et bâtiment", items: equipementBatiment },
     { title: "Documentation", items: documentation },
+    { title: "Paramètres", items: parametres },
   ];
 }
 
@@ -606,7 +632,7 @@ export function construireRail(params: {
 }): RailCategorie[] {
   // On dérive du même arbre que le rail simple : mêmes items, mêmes badges —
   // seule la présentation change.
-  const [aFaire, santeSecurite, equipementBatiment, documentation] =
+  const [aFaire, santeSecurite, equipementBatiment, documentation, parametres] =
     construireSections(params);
   const base = `/etablissements/${params.etablissementId}`;
   const alerte = (items: NavItem[]) => items.some((it) => it.alert);
@@ -655,15 +681,18 @@ export function construireRail(params: {
       alert: alerte(documentation.items),
     },
     {
-      // Une entrée de premier niveau sans panneau : régler le dossier et y
-      // brancher un tiers. La fiche établissement l'a rejointe — c'est là
-      // qu'on renseigne ce que le dossier déclare, et les deux questions de
-      // paramétrage (assureur, EPI) y trouveront leur place.
+      // Régler le dossier, et y brancher un tiers. Elle a gagné un panneau le
+      // 2026-09-01, et c'est une correction plus qu'un enrichissement : en
+      // devenant la page d'entrée de « Paramètres », la fiche établissement a
+      // pris la place qu'occupait « Connecter », qui n'était plus listé nulle
+      // part — un écran atteignable seulement en tapant son URL. Une entrée de
+      // rail qui déplace une page sans lui en rendre une autre la supprime.
       id: "parametres",
       label: "Paramètres",
       labelCourt: "Paramètres",
       Icon: Settings,
       href: `${base}/modifier`,
+      items: parametres.items,
       separateurAvant: true,
     },
   ];

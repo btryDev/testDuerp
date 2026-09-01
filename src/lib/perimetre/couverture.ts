@@ -15,7 +15,7 @@
 // paraissent complets alors qu'ils ignorent la moitié du règlement sont pires
 // qu'un refus : le dirigeant s'y fierait devant une commission.
 //
-// ## Cinq axes, une seule adresse
+// ## Sept axes, une seule adresse
 //
 // Le régime ERP n'est pas le seul bord du produit, et il n'a jamais été le
 // seul. Trois autres mécanismes disaient déjà, chacun dans son coin, une
@@ -100,7 +100,7 @@ import type {
 export const CATEGORIES_COUVERTES: readonly CategorieErp[] = ["N5"];
 
 /**
- * De quoi le manque parle. Cinq axes qui ne se confondent ni ne
+ * De quoi le manque parle. Sept axes qui ne se confondent ni ne
  * s'additionnent — chacun a sa source, et chacun se répare par un geste
  * différent.
  */

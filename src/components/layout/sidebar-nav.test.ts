@@ -103,12 +103,13 @@ describe("deduireActif", () => {
 describe("construireSections — structure", () => {
   // L'ordre porte la découpe de l'ADR-030 : l'activité d'abord — ce qui
   // revient tout seul —, puis les trois axes thématiques.
-  it("expose l'activité puis les trois axes", () => {
+  it("expose l'activité, les trois axes, puis le réglage", () => {
     expect(sections().map((s) => s.title)).toEqual([
       "À faire",
       "Santé-sécurité",
       "Équipement et bâtiment",
       "Documentation",
+      "Paramètres",
     ]);
   });
 
@@ -263,16 +264,17 @@ describe("construireRail — rail à deux niveaux", () => {
     expect(idsVisibles()).not.toContain("tableau");
   });
 
-  it("fait de « Paramètres » un lien direct, hors des panneaux", () => {
+  it("donne à « Paramètres » un panneau, pour que rien n'y devienne inatteignable", () => {
     const parametres = rail().find((c) => c.id === "parametres");
-    expect(parametres?.items).toBeUndefined();
-    // La fiche établissement est devenue sa page d'entrée : c'est là qu'on
-    // renseigne ce que le dossier déclare (ADR-030).
+    // Le panneau est né d'une régression : en devenant la page d'entrée de
+    // « Paramètres », la fiche établissement avait pris la place de
+    // « Connecter », qui n'était plus listé nulle part — atteignable
+    // seulement en tapant son URL. Une entrée de rail qui déplace une page
+    // sans lui en rendre une autre la supprime.
+    expect(parametres?.items?.map((i) => i.id)).toEqual(["fiche", "connecter"]);
     expect(parametres?.href).toBe(`/etablissements/${ID}/modifier`);
-    // Ce n'est ni une tâche ni un registre : il n'a pas à apparaître dans
-    // les sections, sous peine de se retrouver dans deux endroits du rail.
-    expect(idsVisibles()).not.toContain("connecter");
-    expect(idsVisibles()).not.toContain("fiche");
+    expect(idsVisibles()).toContain("connecter");
+    expect(idsVisibles()).toContain("fiche");
     // La césure entre le dossier et son réglage est portée par la donnée,
     // pas devinée au rendu.
     expect(parametres?.separateurAvant).toBe(true);

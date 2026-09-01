@@ -236,7 +236,9 @@ function TimelineEcheances({
                 className="invisible absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-ink px-2 py-0.5 font-mono text-[10px] text-paper-elevated group-hover:visible"
                 role="tooltip"
               >
-                {v.libelleObligation} · {c.libelleDate}
+                {v.libelleObligation}
+                {estEcheanceContractuelle(v) ? " (assurance)" : ""} ·{" "}
+                {c.libelleDate}
               </span>
             </div>
           );
@@ -265,6 +267,7 @@ function TimelineEcheances({
                   style={{ background: dotColor }}
                 />
                 <span className="flex-1 truncate">{v.libelleObligation}</span>
+                {estEcheanceContractuelle(v) ? <MentionContractuelle /> : null}
                 <span className="font-mono text-[0.76rem] text-[color:var(--board-slate-mid)]">
                   {c.libelleDate}
                 </span>

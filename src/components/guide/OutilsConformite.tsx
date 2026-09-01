@@ -96,7 +96,7 @@ export function OutilsConformite() {
           avant qu&apos;elles ne passent. Chaque outil ci-dessous
           correspond à une obligation précise. Les documents que vous devez
           tenir <strong>et que la plateforme ne produit pas</strong> sont
-          nommés plus bas, avec le texte qui les fonde et l&apos;endroit où
+          nommés sur la page « Documents obligatoires », avec le texte qui les fonde et l&apos;endroit où
           ils se tiennent.
         </p>
       </header>

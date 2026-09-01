@@ -6,13 +6,12 @@ import { chargerPagePrescriptions } from "@/lib/prescriptions/queries";
 import { creerPrescription } from "@/lib/prescriptions/actions";
 import {
   LABEL_SOURCE_PRESCRIPTION,
-  MARQUAGE_CONTRACTUEL,
-  PASTILLE_CONTRACTUELLE,
   SOURCES_PRESCRIPTION,
   estSourceContractuelle,
   type SourcePrescription,
 } from "@/lib/prescriptions/schema";
 import { PrescriptionForm } from "@/components/prescriptions/PrescriptionForm";
+import { MentionContractuelle } from "@/components/prescriptions/MentionContractuelle";
 import { PrescriptionActions } from "@/components/prescriptions/PrescriptionActions";
 
 /**
@@ -65,10 +64,20 @@ function champEtat(etat: string): string {
 
 export default async function PrescriptionsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ source?: string }>;
 }) {
   const { id } = await params;
+  // La checklist du tableau de bord renvoie ici avec `?source=demande_assureur`
+  // quand le dirigeant a répondu que son assureur lui impose des
+  // vérifications. Sans cette lecture, le lien existait et n'aboutissait à
+  // rien : le formulaire s'ouvrait sur « arrêté préfectoral », et il fallait
+  // retrouver la bonne source à la main — c'est-à-dire faire exactement ce
+  // que le renvoi promettait d'éviter.
+  const { source: sourceBrute } = await searchParams;
+  const sourceInitiale = sourceDemandee(sourceBrute);
   const { etablissement } = await requireEtablissement(id);
   const { prescriptions, obligations, equipements } =
     await chargerPagePrescriptions(id);
@@ -125,6 +134,15 @@ export default async function PrescriptionsPage({
                       {p.reference}
                       {p.autorite ? ` — ${p.autorite}` : ""}
                     </p>
+                    {/* Cette liste est la première surface où une échéance
+                        d'assurance pourrait se lire comme du droit : c'est
+                        ici qu'on déclare l'acte, à côté d'arrêtés
+                        préfectoraux et de PV de commission. Le marquage y est
+                        donc plus nécessaire qu'ailleurs, pas moins
+                        (ADR-032). */}
+                    {estSourceContractuelle(p.source) ? (
+                      <MentionContractuelle />
+                    ) : null}
                     <span
                       className={`pastille-board ${champEtat(p.etat.etat)}`}
                     >
@@ -171,6 +189,7 @@ export default async function PrescriptionsPage({
             action={action}
             obligations={obligations}
             equipements={equipements}
+            sourceInitiale={sourceInitiale}
           />
         </section>
       </div>

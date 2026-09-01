@@ -176,7 +176,7 @@ export function StepTypologie({ state, update, errors }: StepProps) {
 
             {state.estIGH && (
               <div className="flex flex-col gap-4">
-                <SousQuestion question="Quelle est la nature du bâtiment ?" />
+                <SousQuestion question="Quelle est la nature de l'immeuble ?" />
                 <div
                   role="radiogroup"
                   aria-label="Classe IGH"
