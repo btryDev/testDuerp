@@ -50,6 +50,7 @@
  * effective en paramètre plutôt que de la lire sur l'obligation.
  */
 
+import type { ObligationApplicable } from "@/lib/matching";
 import type { Obligation } from "../referentiels/conformite";
 import type { Periodicite } from "../referentiels/types-communs";
 
@@ -159,6 +160,44 @@ export function modeDeclaration(
     return { mode: "fait", compteDansLEnTete: false };
   }
   return null;
+}
+
+/**
+ * Le mode de déclaration d'une obligation **telle qu'elle s'applique à CE
+ * dossier** — surcharge de prescription comprise.
+ *
+ * ## Pourquoi cette fonction existe, et pourquoi elle est ici
+ *
+ * `modeDeclaration` prend une périodicité en second argument et retombe sur
+ * celle du référentiel quand on ne lui en donne pas. C'est commode, et c'est
+ * un piège : l'écran calculait la périodicité effective avant d'appeler, la
+ * garde de l'action ne le faisait pas. Deux lectures de la même règle, dont une
+ * fausse.
+ *
+ * Le scénario, sans franchissement de compte : une prescription particulière
+ * donne un rythme à une obligation `etat_permanent` restée en `autre`. Elle
+ * quitte cet écran pour le calendrier — c'est ce que ce module documente. Mais
+ * un POST forgé `declarerEnPlace(monEtabId, cetteObligationId)` passait la
+ * garde et écrivait **une ligne que l'écran n'affichera jamais**. C'est la
+ * double surface que le commentaire de l'action prétend empêcher, atteignable
+ * par requête directe.
+ *
+ * La surcharge n'est pas un détail d'implémentation qu'on peut oublier : elle
+ * fait partie de la règle. Elle est donc DANS la règle, et l'appelant ne peut
+ * plus l'omettre par distraction — il n'a plus de second argument à ne pas
+ * passer.
+ */
+export function modeDeclarationApplique(
+  app: ObligationApplicable,
+): ModeDeclaration | null {
+  const o = app.obligation;
+  // `surcharges` est indexé par équipement ; une obligation portée par
+  // l'établissement n'en reçoit jamais, et la recherche rend alors `undefined`
+  // — donc la périodicité du référentiel, ce qui est juste.
+  const surcharge = app.equipementsConcernes
+    .map((eq) => app.surcharges?.[eq.id])
+    .find((s) => s !== undefined);
+  return modeDeclaration(o, surcharge?.periodicite ?? o.periodicite);
 }
 
 /**
