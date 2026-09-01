@@ -1065,7 +1065,22 @@ describe("référentiel conformité — version et empreinte", () => {
   // d'un an à la réconciliation. C'est le but. Trois ans inventaient une
   // échéance plus tôt que le droit, et l'outil déclarait en retard un
   // exploitant qui ne l'était pas.
-  const EMPREINTE_ATTENDUE = "118-ce7825323b3b5122";
+  //
+  // LOT B2, 2026-09-01 — dépouillement de l'arrêté du 31 janvier 1986
+  // (habitation). Trois obligations ajoutées, toutes portées par
+  // l'établissement : la vérification annuelle des installations de sécurité
+  // (art. 101), le registre de sécurité de l'immeuble (art. 101, 103 et 104)
+  // et l'affichage des consignes et plans d'intervention (art. 100). Aucune
+  // ligne existante ne change de porteur, de périodicité ni de typologie — les
+  // neuf obligations qui portaient déjà `habitation` n'ont reçu que des
+  // `notesInternes`, qui n'entrent pas dans l'empreinte.
+  //
+  // REMESURÉE EN APPELANT, pas recopiée. Une session parallèle travaille sur ce
+  // même fichier (périodicité ESP, champ « premier délai ») : au merge, le
+  // compte et l'empreinte se remesurent des DEUX côtés réunis. Recopier l'une
+  // de ces deux valeurs depuis une branche donnerait un chiffre juste sur une
+  // moitié du référentiel, et le test l'accepterait.
+  const EMPREINTE_ATTENDUE = "121-cefef92e48c14fdc";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1183,7 +1198,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(118);
+    ).toBe(121);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {

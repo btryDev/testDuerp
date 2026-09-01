@@ -12,6 +12,7 @@ import { ARRETE_2011_12_26_ELECTRICITE } from "./arrete-2011-12-26-electricite";
 import { ARRETE_1980_LIVRE_4_PARCS } from "./arrete-1980-livre-4-parcs";
 import { ARRETE_1987_10_08_AERATION } from "./arrete-1987-10-08-aeration";
 import { ARRETE_1993_12_21_PORTES } from "./arrete-1993-12-21-portes";
+import { ARRETE_1986_HABITATION } from "./arrete-1986-habitation";
 import { ARRETE_2018_02_23_GAZ_HABITATION } from "./arrete-2018-02-23-gaz-habitation";
 import { ARRETES_ASCENSEURS } from "./arretes-ascenseurs";
 import { ARRETES_MODIFICATIFS_ERP } from "./arretes-modificatifs-erp";
@@ -95,6 +96,11 @@ export const CORPUS: readonly Corpus[] = [
   // domaine, dont aucune ne figure dans le Code.
   CODE_TRAVAIL_TRAVAIL_EN_HAUTEUR,
   ARRETE_2004_12_21_ECHAFAUDAGES,
+  // Lot B2 — l'arrêté qui DÉFINIT les familles d'habitation, et que ce dépôt
+  // n'avait jamais ouvert : zéro occurrence avant le 2026-09-01, alors que
+  // l'enum `FamilleHabitation` en était tirée et que neuf obligations
+  // portaient déjà la typologie `habitation`.
+  ARRETE_1986_HABITATION,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {

@@ -624,6 +624,19 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // existe, le porteur équipement est le mieux servi des trois. Il ne
       // manque que la catégorie d'équipement.
       "Arrêté 21-12-2004 art. 6",
+      // Arrêté du 31 janvier 1986 art. 102, entré le 2026-09-01 avec le
+      // dépouillement du texte qui définit les familles d'habitation. Deux
+      // obligations permanentes du propriétaire dans un seul article, bloquées
+      // pour deux raisons distinctes. (1) S'assurer que les transformations
+      // apportées à l'immeuble ne dégradent pas la réaction et la résistance
+      // au feu : c'est une vigilance que des TRAVAUX déclenchent, et il n'y a
+      // pas de déclencheur « événement » au modèle — l'encoder en état
+      // permanent la ferait apparaître au calendrier d'un propriétaire qui n'a
+      // rien transformé. (2) Identifier les places de stationnement occupées
+      // moins de 30 jours par des non-résidents, qui décide si le parc reste
+      // sous cet arrêté : il n'existe aucun attribut de parc de stationnement
+      // annexe côté établissement.
+      "Arrêté 1986-01-31 art. 102",
     ]);
   });
 
