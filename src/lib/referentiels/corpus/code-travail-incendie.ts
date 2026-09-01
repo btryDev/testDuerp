@@ -83,7 +83,7 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
         "incendie-travail-eclairage-securite-essai-mensuel",
       ],
       reserve:
-        "RÉFÉRENCE À TORT, constat du 2026-09-01, article ouvert à la source. R. 4226-19 se borne aux vérifications électriques de R. 4226-14 et R. 4226-16, et son chemin le confirme : Chapitre VI « Installations électriques », Section 5 « Vérification des installations électriques ». Il ne fonde ni l'essai mensuel ni l'autonomie semestrielle de l'éclairage de sécurité, qui relèvent de R. 4227-14 et de l'arrêté du 14 décembre 2011. La question avait été ouverte quatre fois depuis le 2026-08-27, une fois dans chaque sens ; elle est tranchée. Retirer la référence des deux obligations n'était pas dans le lot de relevé.",
+        "« RÉFÉRENCE À TORT » : LA CONCLUSION ÉTAIT FAUSSE, la lecture juste. Rectifié le 2026-09-01 par le lot A ; voir la réserve du même article dans `code-travail-electricite`, qui porte le raisonnement complet.\n\nCe qui reste : R. 4226-19 se borne, comme FONDEMENT, aux vérifications électriques de R. 4226-14 et R. 4226-16, et son chemin le confirme — Chapitre VI « Installations électriques », Section 5. Il ne fonde ni l'essai mensuel ni l'autonomie semestrielle de l'éclairage de sécurité.\n\nCe qui était faux : les deux obligations ne le citent pas en fondement — c'est l'article 11 de l'arrêté du 14 décembre 2011 qui l'est — et cet article 11 désigne nommément ce registre-ci : « Le résultat des opérations précédentes doit être mentionné sur le registre prévu à l'article R. 4226-19 du code du travail. » La référence est un support de consignation, sa `note` le disait déjà, et elle reste.",
     },
     {
       ref: "R. 4227-39",

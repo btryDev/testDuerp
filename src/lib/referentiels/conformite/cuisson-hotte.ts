@@ -205,14 +205,6 @@ export const obligationsCuissonHotte: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. GC 22 (vérifications techniques annuelles)",
-        article: "GC 22",
-        url:
-          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
-        versionConstatee: "1980-08-15",
-      },
-      {
-        source: "ARRETE",
         reference:
           "Arrêté du 25 juin 1980, art. MS 73 § 2 (vérification annuelle des moyens de secours)",
         article: "MS 73",
@@ -248,6 +240,6 @@ export const obligationsCuissonHotte: Obligation[] = [
       },
     ],
     notesInternes:
-      "La portée est dans le texte de l'obligation elle-même (« lorsque l'établissement est équipé d'un système d'extinction automatique ») : elle est désormais portée par une condition déclarative, plus par un commentaire. Forme `non_infirmee` obligatoire (criticité 5) — les appareils de cuisson déjà déclarés conservent l'obligation tant que le dirigeant n'a pas répondu « non ».",
+      "La portée est dans le texte de l'obligation elle-même (« lorsque l'établissement est équipé d'un système d'extinction automatique ») : elle est désormais portée par une condition déclarative, plus par un commentaire. Forme `non_infirmee` obligatoire (criticité 5) — les appareils de cuisson déjà déclarés conservent l'obligation tant que le dirigeant n'a pas répondu « non ».\n\nFONDEMENT RECALÉ LE 2026-09-01 (lot A). GC 22 était le fondement, et son § 2 énumère limitativement l'objet de l'annuelle en QUATRE points, dont aucun ne vise un système d'extinction automatique : état d'entretien et de maintenance, conditions de ventilation et d'évacuation des buées et graisses, signalisation des dispositifs de sécurité, manœuvre des arrêts d'urgence. Article ouvert en entier le 2026-09-01. La référence est retirée. Ce qui porte l'obligation était DÉJÀ CITÉ par elle, en contexte : MS 73 § 2 pour la vérification annuelle des moyens de secours par technicien compétent, GC 8 pour l'existence du dispositif. Le recalage consiste ici à ne plus faire dire à un article ce qu'il ne dit pas, et à promouvoir MS 73 en fondement — il n'ajoute aucun texte.\n\nCE QUE GC 22 PORTE VRAIMENT et qui reste encodé ailleurs : l'annuelle des appareils de cuisson eux-mêmes, `cuisson-erp-appareils-annuelle`, et la vérification initiale. Le ramonage annuel et le nettoyage hebdomadaire des filtres sont à GC 21, non à GC 22.",
   },
 ];

@@ -387,7 +387,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "R. 4226-19",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
-        note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
+        note: "Support de consignation, pas fondement de la périodicité — et la distinction a été instruite. R. 4226-19 institue le registre des SEULES vérifications électriques de R. 4226-14 et R. 4226-16 : il ne fonde rien en éclairage de sécurité. Mais l'article 11 de l'arrêté le désigne nommément pour y porter ce résultat-ci — « Le résultat des opérations précédentes doit être mentionné sur le registre prévu à l'article R. 4226-19 du code du travail. » —, cohérent avec sa première phrase qui place ces vérifications « dans le cadre de la maintenance prescrite à l'article R. 4226-7 ». Le relevé du 2026-09-01 avait conclu que la citation était fautive en lisant R. 4226-19 sans remonter qui le cite ; vérifié à la source le même jour, elle ne l'est pas.",
         versionConstatee: "2011-07-01",
       },
       {
@@ -442,7 +442,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "R. 4226-19",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
-        note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
+        note: "Support de consignation, pas fondement de la périodicité — et la distinction a été instruite. R. 4226-19 institue le registre des SEULES vérifications électriques de R. 4226-14 et R. 4226-16 : il ne fonde rien en éclairage de sécurité. Mais l'article 11 de l'arrêté le désigne nommément pour y porter ce résultat-ci — « Le résultat des opérations précédentes doit être mentionné sur le registre prévu à l'article R. 4226-19 du code du travail. » —, cohérent avec sa première phrase qui place ces vérifications « dans le cadre de la maintenance prescrite à l'article R. 4226-7 ». Le relevé du 2026-09-01 avait conclu que la citation était fautive en lisant R. 4226-19 sans remonter qui le cite ; vérifié à la source le même jour, elle ne l'est pas.",
         versionConstatee: "2011-07-01",
       },
       {
