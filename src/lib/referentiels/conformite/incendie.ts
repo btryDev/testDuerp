@@ -569,6 +569,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "annuelle",
@@ -595,6 +596,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "annuelle",
@@ -621,6 +623,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "triennale",
@@ -711,6 +714,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "MS 73",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317755/",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "annuelle",
@@ -795,6 +799,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "GH 5",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025169258",
+        versionConstatee: "2026-01-01",
       },
     ],
     periodicite: "annuelle",
