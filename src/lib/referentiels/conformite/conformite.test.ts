@@ -1047,25 +1047,28 @@ describe("référentiel conformité — version et empreinte", () => {
   // s'affichent au calendrier et décident de ce que le dirigeant croit devoir
   // faire — c'est exactement ce qu'on veut voir bouger.
   //
-  // 2026-09-01, 116 → 118, en trois mouvements venus de deux branches écrites
+  // 2026-09-01, 116 → 118 en quatre mouvements venus de deux branches écrites
   // en parallèle : `elec-salarie-habilitation` entre au catalogue des titres
   // (`R. 4544-10`), le contrôle semestriel des gaines de recyclage entre par
-  // l'arrêté du 8 octobre 1987 art. 4 b), et `esp-inspection-periodique` passe
-  // de trois à quatre ans — la borne que le texte donne.
+  // l'arrêté du 8 octobre 1987 art. 4 b), `esp-inspection-periodique` passe de
+  // trois à quatre ans — la borne du texte —, et son plafond de premier cycle
+  // trouve enfin sa place dans `premierDelai`.
   //
-  // L'empreinte n'a été calculée par AUCUNE des branches, et deux fois plutôt
-  // qu'une : chacune a vu 117 depuis `840abe2`, puis la correction ESP est
-  // arrivée après un premier merge. Elle a été REMESURÉE ici à chaque fois.
-  // Se recopier d'une branche aurait donné une valeur fausse que le test
-  // aurait acceptée sur une moitié du référentiel.
+  // L'empreinte a été REMESURÉE ici à chaque intégration, jamais recopiée
+  // d'une branche : chacune a vu 117 depuis `840abe2`, puis deux corrections
+  // sont arrivées après le premier merge. Se recopier l'une l'autre aurait
+  // donné une valeur fausse que le test aurait acceptée sur une moitié du
+  // référentiel.
   //
-  // Les deux ajouts sont PURS — aucune ligne existante ne change de porteur ni
-  // de libellé —, mais la correction ESP, elle, change une périodicité : les
-  // calendriers qui portent une inspection ESP verront leur échéance reculer
-  // d'un an à la réconciliation. C'est le but. Trois ans inventaient une
-  // échéance plus tôt que le droit, et l'outil déclarait en retard un
-  // exploitant qui ne l'était pas.
-  const EMPREINTE_ATTENDUE = "118-ce7825323b3b5122";
+  // Le quatrième mouvement mérite d'être connu : `premierDelai` a d'abord été
+  // INVISIBLE à l'empreinte. Le champ posé, sa valeur écrite, la suite passait
+  // au vert — alors qu'il déplace la date de première occurrence d'un
+  // équipement neuf, donc ce que le générateur produit. Une garde qui ne
+  // mesure pas ce qu'elle prétend couvrir rassure d'autant mieux. Tout champ
+  // qui influence une échéance entre dans `empreinteReferentiel()`, et la
+  // preuve se fait en changeant sa valeur : si l'empreinte ne bouge pas, il
+  // manque au hachage.
+  const EMPREINTE_ATTENDUE = "118-af74ff58f44aad38";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
