@@ -140,6 +140,16 @@ que la cuisine de restaurant en est le cas d'école.
   « Rythme : permanente » pour 12 obligations **événementielles**, 9 **ponctuelles**
   et 3 récurrentes sans rythme. L'ADR-026 a défait ce mélange au référentiel
   sans le défaire dans la table de libellés.
+
+  **Un axe de la revue avait ouvert ce fichier et l'avait jugé sain.** Il
+  cherchait les accords et les pluriels, pas la vérité sémantique d'une
+  étiquette. La question qu'un balayage pose détermine ce qu'il peut voir :
+  deux balayages sur le même fichier ne se remplacent pas, et « déjà revu »
+  n'est pas « couvert ».
+
+  Ampleur réelle : `LABEL_PERIODICITE` est rendu à **neuf endroits**, et un
+  seul filtre `autre` avant l'affichage. Corriger la table seule ne suffira
+  peut-être pas.
 - `conformite/formation-securite.ts:25-26` : « **Aucune obligation de ce fichier
   ne porte de périodicité chiffrée** » — or ligne 435,
   `formation-securite-salarie-cse-sst` porte `quadriennale` sur `L. 2315-17`, et
@@ -233,3 +243,27 @@ Tirées de cette semaine, chacune payée par un défaut réel.
   en vigueur depuis plusieurs revues.
 - **pnpm, jamais npm.** Un worktree par lot, avec son propre `node_modules`.
 - Partir de `origin/main`. Ne bouger aucune ref existante.
+
+
+---
+
+# Addendum — où est vraiment la famille du lot E
+
+Relevé après le dispatch, et il déplace le centre de gravité de la recherche
+systématique : **la famille n'est pas dans les phrases, elle est dans les tables
+recopiées qui les alimentent.**
+
+- `PrescriptionForm.tsx:36` déclare **sa propre** `LABEL_PERIODICITE` — un
+  troisième exemplaire écrit à la main de la table de `calendrier/labels.ts`.
+- `FormulaireTitre.tsx:65` écrit à la main
+  `new Set<Periodicite>(["autre", "mise_en_service_uniquement"])` là où
+  `salaries/echeance-promise.test.ts` (l. 41-45) **dérive** le même ensemble de
+  `PERIODICITE_EN_JOURS`. Les deux coïncident aujourd'hui ; rien ne les lie. Le
+  jour où une troisième périodicité passe à `null`, l'écran promettra une
+  échéance calculée pour un titre qui n'en produit aucune.
+- Et le test censé garder ce lien fait `expect(source).toContain("SANS_DUREE")`
+  — un grep sur un nom d'identifiant, qui restera vert quoi qu'il arrive. Il
+  garde le nom, pas la règle.
+
+**Une phrase fausse se corrige une fois ; une table recopiée refabrique des
+phrases fausses indéfiniment.**
