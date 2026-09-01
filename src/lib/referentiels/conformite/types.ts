@@ -595,6 +595,33 @@ type ObligationCommune = {
   referencesLegales: [ReferenceLegale, ...ReferenceLegale[]];
   periodicite: Periodicite;
   /**
+   * Le plafond du PREMIER cycle, quand le texte en fixe un distinct du rythme.
+   *
+   * Absent presque partout, et c'est la vérité commune : un extincteur installé
+   * en mars se vérifie en mars suivant, puis chaque mars. Le champ ne sert que
+   * là où le texte dit autre chose — « la première inspection a lieu dans les
+   * trois ans suivant la mise en service, puis tous les quatre ans ».
+   *
+   * **Il n'est lu que par la branche sans historique du générateur**, et cette
+   * portée est délibérée : une vérification réalisée fait repartir le RYTHME,
+   * pas le premier délai. Élargir sa lecture au calcul d'après rapport
+   * rejouerait indéfiniment le premier cycle.
+   *
+   * POURQUOI IL EXISTE. `esp-inspection-periodique` a porté `triennale`
+   * pendant des mois : c'était le plafond du premier cycle de l'arrêté du
+   * 20 novembre 2017, pris pour la récurrence. Le corriger en `quadriennale` a
+   * rendu la récurrence juste et laissé le premier cycle un an en retard —
+   * échangeant une sur-application visible contre une sous-application que
+   * personne ne peut voir, sur une ligne de criticité 5. Le modèle n'avait
+   * simplement pas de place pour les deux valeurs.
+   *
+   * **Ce n'est pas une exception ESP.** `PE 4` porte aussi un premier délai
+   * distinct de son rythme, et le règlement des chaufferies un troisième.
+   * Encoder le premier délai à la place du rythme est une faute qui se
+   * reproduira partout où le modèle n'a pas de place pour lui.
+   */
+  premierDelai?: Periodicite;
+  /**
    * Le régime temporel que le texte impose (ADR-026). **Requis, et c'est le
    * point** — même raisonnement que `transmet` et `pieceMedicale` : optionnel,
    * le champ se serait tu, et l'oubli aurait été la faute naturelle.

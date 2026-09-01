@@ -1363,3 +1363,63 @@ describe("réconciliation — la date d'un titre est un fait, pas un calcul", ()
     );
   });
 });
+
+describe("générateur — le plafond du premier cycle (`premierDelai`)", () => {
+  // Le champ existe parce que `esp-inspection-periodique` portait le plafond du
+  // PREMIER cycle (trois ans, arrêté du 20 novembre 2017 art. 15) en guise de
+  // rythme. Le corriger en quatre ans a rendu la récurrence juste ET repoussé
+  // la première inspection d'un an — une sous-application que personne ne peut
+  // voir, sur une ligne de criticité 5. Ces trois cas tiennent la portée.
+  const NOW_PD = new Date("2026-01-15T00:00:00Z");
+  const avecDelai = () =>
+    fakeObligation({
+      id: "o-premier-delai",
+      periodicite: "quadriennale",
+      premierDelai: "triennale",
+    });
+
+  it("sans historique, la première échéance suit `premierDelai`, pas le rythme", () => {
+    const res = genererProchainesVerifications(
+      [applique(avecDelai(), [fakeEquipement()])],
+      new Map(),
+      {
+        now: NOW_PD,
+        misesEnService: new Map([["eq-1", new Date("2025-12-01T00:00:00Z")]]),
+      },
+    );
+    // L'année suffit et c'est délibéré : elle distingue 2028 (premier délai)
+    // de 2029 (rythme), ce que le test doit prouver. La date exacte dérive
+    // d'un jour — les périodicités sont comptées en jours, 2028 est bissextile
+    // — et figer ce décalage ici asserterait une arithmétique qui n'est pas le
+    // sujet, en la rendant difficile à corriger le jour où on la voudra juste.
+    expect(res[0].datePrevue?.getUTCFullYear()).toBe(2028);
+  });
+
+  it("une vérification connue fait repartir le RYTHME, jamais le premier délai", () => {
+    // La portée à ne pas élargir : sans cette garde, le premier cycle se
+    // rejouerait après chaque rapport déposé.
+    const res = genererProchainesVerifications(
+      [applique(avecDelai(), [fakeEquipement()])],
+      new Map([["o-premier-delai::eq-1", new Date("2025-12-01T00:00:00Z")]]),
+      { now: NOW_PD },
+    );
+    expect(res[0].datePrevue?.getUTCFullYear()).toBe(2029);
+  });
+
+  it("sans `premierDelai`, le rythme s'applique dès le premier cycle", () => {
+    const res = genererProchainesVerifications(
+      [
+        applique(
+          fakeObligation({ id: "o-sans-delai", periodicite: "quadriennale" }),
+          [fakeEquipement()],
+        ),
+      ],
+      new Map(),
+      {
+        now: NOW_PD,
+        misesEnService: new Map([["eq-1", new Date("2025-12-01T00:00:00Z")]]),
+      },
+    );
+    expect(res[0].datePrevue?.getUTCFullYear()).toBe(2029);
+  });
+});

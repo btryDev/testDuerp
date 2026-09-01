@@ -385,8 +385,12 @@ export function genererProchainesVerifications(
         // et un retard calculé sur ce silence serait une invention.
         const miseEnService =
           eq.id === null ? undefined : options.misesEnService?.get(eq.id);
+        // `premierDelai` quand le texte fixe un plafond de premier cycle
+        // distinct du rythme — et ICI SEULEMENT. Une vérification réalisée
+        // fait repartir la récurrence, pas le premier délai : la branche
+        // au-dessus, qui part du dernier rapport, ne le lit pas.
         const premiere = miseEnService
-          ? prochaineDate(miseEnService, o.periodicite)
+          ? prochaineDate(miseEnService, o.premierDelai ?? o.periodicite)
           : null;
         const premiereEncoreAVenir =
           premiere !== null && premiere.getTime() >= now.getTime();

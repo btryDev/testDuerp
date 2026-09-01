@@ -1044,7 +1044,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // aussi 117. À l'intégration des deux, le compte sera 118 et l'empreinte
   // n'aura été calculée par aucune des deux branches : elle se REMESURE en
   // lançant le test, elle ne se recopie pas d'une branche.
-  const EMPREINTE_ATTENDUE = "117-1bdef3a716f9e469";
+  const EMPREINTE_ATTENDUE = "117-3f4cbcad93db0bab";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(

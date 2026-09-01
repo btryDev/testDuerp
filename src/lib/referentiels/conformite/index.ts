@@ -97,7 +97,7 @@ export const obligationsConformite: Obligation[] = [
  * `conformite.test.ts` compare une empreinte du contenu à celle enregistrée :
  * l'oubli fait échouer la suite.
  */
-export const REFERENTIEL_VERSION = "2026-09-01.2";
+export const REFERENTIEL_VERSION = "2026-09-01.3";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.
@@ -220,6 +220,12 @@ export function empreinteReferentiel(
       [
         o.id,
         o.periodicite,
+        // Le plafond du premier cycle change la DATE de la première occurrence
+        // d'un équipement sans historique (`generateur.ts`, branche sans
+        // rapport). L'omettre laisserait ce champ modifier un calendrier
+        // sans que la réconciliation le sache : ajouté à l'empreinte le
+        // 2026-09-01, en même temps que le champ.
+        o.premierDelai ?? "",
         o.libelle,
         [...o.realisateurs].sort().join("+"),
         canonique(o.typologies),
