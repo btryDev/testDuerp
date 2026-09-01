@@ -15,6 +15,37 @@
 // ce qu'on a lu. L'une suppose l'autre, et l'ordre avait été pris à l'envers.
 //
 // Module **pur** : ni Prisma, ni React.
+//
+// ---------------------------------------------------------------------------
+// RÈGLE DE LECTURE : UN ARTICLE MODIFIÉ SE LIT AVEC LE TEXTE QUI L'A MODIFIÉ
+// ---------------------------------------------------------------------------
+//
+// **Quand un article que vous ouvrez porte un texte modificateur récent,
+// ouvrez ce texte EN ENTIER et listez ce qu'il touche d'autre.** Puis
+// consignez ici ce que vous en avez tiré — les articles retenus comme ceux
+// écartés, `sans_objet` étant fait pour ça.
+//
+// Le décret n° 2025-482 du 27 mai 2025 est entré dans ce dépôt par la porte de
+// `R. 4225-2` — « eau potable ET FRAÎCHE », rédaction que le décret venait
+// d'introduire — et la porte s'est refermée derrière lui. Personne n'a ouvert
+// le décret. Son chapitre principal traite de la CHALEUR, et mord directement
+// sur la cuisine de restaurant, l'un des trois secteurs cibles. Ce n'est pas
+// un oubli d'attention : rien, dans la méthode, ne faisait remonter d'un
+// article modifié au texte qui le modifie. **Le dépôt lisait des articles, pas
+// des textes.**
+//
+// Le champ `ArticleDepouille.modifiePar` NE PRÉVIENT RIEN TOUT SEUL, et c'est
+// le point à comprendre avant de s'y fier. Il enregistre une réponse ; c'est
+// la règle ci-dessus qui la produit. Un dépouilleur qui remplit le champ sans
+// avoir ouvert le texte a écrit une donnée juste et raté le décret quand même.
+// Le champ sert au coup d'APRÈS : il rend interrogeable, sur l'ensemble du
+// corpus, « quels textes ce dépôt a-t-il croisés sans les lire ».
+//
+// Trois autres familles ont été manquées le 2026-08-31 par des causes de la
+// même espèce, et la règle ne les couvre pas : un article d'habilitation lu
+// sans énumérer les arrêtés qu'il habilite (`R. 4323-23`), et un article
+// classé une fois puis jamais relu alors que sa version a changé depuis. Voir
+// `docs/revues/lot-d3-recoupement-droit.md`.
 
 import type { MotifExclusion } from "./perimetre";
 
@@ -145,6 +176,43 @@ export type ArticleDepouille = {
   url?: string;
   /** Date de la version lue, en clé de jour civil. */
   versionEnVigueur?: string;
+  /**
+   * **Par quel texte** la version en vigueur l'est devenue.
+   *
+   * L'INCIDENT QUI FAIT CE CHAMP. `versionEnVigueur` et `luLe` disaient
+   * quelle version avait été lue et quand ; jamais par quel texte. Le décret
+   * n° 2025-482 du 27 mai 2025 est donc entré dans le dépôt par la porte de
+   * `R. 4225-2` — « eau potable ET FRAÎCHE », rédaction que ce décret venait
+   * d'introduire — et la porte s'est refermée derrière lui. Son chapitre
+   * principal traite de la CHALEUR et mord directement sur la cuisine de
+   * restaurant. Le dépôt lisait des articles, pas des textes ; l'information
+   * qui manquait, et qui aurait fait remonter de l'article au décret, est
+   * exactement celle-ci.
+   *
+   * `null` est une **réponse déclarée**, comme partout ailleurs dans ce
+   * dépôt : « j'ai regardé, cet article n'a pas de texte modificateur à
+   * signaler ». Absent veut dire autre chose — la question n'a pas été
+   * posée — et les deux ne doivent pas se confondre, sans quoi le champ
+   * mesurerait le zèle du dépouilleur au lieu de l'état du texte.
+   *
+   * **LE VIDE N'EST PAS UN OUBLI, ET IL EST MASSIF.** Les 276 articles déjà
+   * dépouillés ne sont PAS repris rétroactivement. Le faire supposerait de
+   * rouvrir Légifrance article par article, et une valeur devinée y serait
+   * pire que le vide : elle donnerait à un texte non ouvert l'apparence d'un
+   * texte contrôlé. Un index partiel attrape quand même le prochain décret,
+   * ce qui est tout ce qu'on lui demande. Ne comptez donc rien sur ce champ,
+   * et ne concluez pas d'un `undefined` qu'un article n'a pas été modifié.
+   *
+   * **Le champ ne prévient rien tout seul** — voir la règle de lecture en tête
+   * de fichier, qui est la moitié qui travaille. Celle-ci n'en est que la
+   * trace.
+   *
+   * Une seule valeur est écrite à l'ouverture du champ : celle de `R. 4225-2`,
+   * l'article de l'incident, dont le texte modificateur était déjà relevé en
+   * prose dans sa `reserve`. Ce n'est pas une reprise rétroactive — c'est le
+   * cas d'école, déplacé de la prose vers un champ interrogeable.
+   */
+  modifiePar?: { texte: string; url?: string } | null;
   /** Terme ou version future programmée, s'il y en a une. */
   versionFuture?: string;
   /** Ce que l'article impose, et à qui. Une phrase. */

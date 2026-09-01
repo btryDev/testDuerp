@@ -54,6 +54,25 @@ export const CODE_TRAVAIL_LOCAUX_SOCIAUX: Corpus = {
       intitule: "Mise à disposition d'eau potable et fraîche",
       url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051679293",
       versionEnVigueur: "2025-06-02",
+      // La seule valeur écrite à l'ouverture du champ, et c'est l'article de
+      // l'incident : ce décret est entré dans le dépôt par cette porte-ci, la
+      // porte s'est refermée, et son chapitre chaleur — qui mord sur la
+      // cuisine de restaurant — n'a jamais été ouvert. Le fait était déjà
+      // relevé en prose dans la `reserve` ci-dessous ; il devient
+      // interrogeable. Ce n'est pas une reprise rétroactive du corpus (voir
+      // `types.ts`), c'est le cas d'école qui montre à quoi le champ sert.
+      //
+      // CE QUE CETTE VALEUR NE DIT PAS : que le décret ait été lu. Il ne l'est
+      // toujours pas. Le champ enregistre le renvoi, la règle de lecture en
+      // tête de `types.ts` est ce qui obligera à le suivre.
+      //
+      // PAS D'`url`, ET C'EST DÉLIBÉRÉ. Aucune source du dépôt ne porte le
+      // lien Légifrance de ce décret — vérifié —, et une URL fabriquée à
+      // partir d'un identifiant plausible est une référence inventée : elle a
+      // l'apparence d'un lien vérifié, elle ouvre autre chose ou rien.
+      // `url` est optionnel exactement pour ce cas. Le prochain qui ouvrira
+      // le décret la posera.
+      modifiePar: { texte: "Décret n° 2025-482 du 27 mai 2025" },
       luLe: "2026-08-31",
       lecture: "agent_verbatim",
       prescrit:
