@@ -792,4 +792,153 @@ export const obligationsIncendie: Obligation[] = [
     notesInternes:
       "Corrigé à l'audit 2026-08 : l'ancienne version citait « GH 60 à GH 63 ». GH 60 traite de la surveillance, des exercices et de l'information des locataires. Les vérifications techniques périodiques sont à l'article GH 5.",
   },
+
+  // ---------------------------------------------------------------------------
+  // Habitation — arrêté du 31 janvier 1986 (titre VIII, obligations des
+  // propriétaires)
+  //
+  // Le texte qui définit les familles d'habitation, dépouillé le 2026-09-01 —
+  // il n'avait jamais été ouvert dans ce dépôt. Voir
+  // `corpus/arrete-1986-habitation.ts` pour le détail article par article, et
+  // notamment pour ce que la lecture N'A PAS établi : aucune des trois
+  // obligations ci-dessous ne porte de restriction de famille, parce que
+  // l'arrêté n'en pose aucune sur ce qu'il demande à l'exploitant. Les
+  // familles y gouvernent la construction, pas l'entretien.
+  //
+  // Les trois lignes vivent en domaine `incendie` — c'est l'objet de l'arrêté
+  // — et sont portées par l'ÉTABLISSEMENT : l'article 101 vise « le
+  // propriétaire » sans subordonner quoi que ce soit à un équipement déclaré.
+  // Les y accrocher reproduirait le faux négatif d'ancrage corrigé le
+  // 2026-08-31 sur le registre de sécurité et la consigne incendie.
+  // ---------------------------------------------------------------------------
+  {
+    id: "habitation-verification-annuelle-installations-securite",
+    domaine: "incendie",
+    libelle:
+      "Vérification annuelle des installations de sécurité (immeuble d'habitation)",
+    description:
+      "Au moins une fois par an, le propriétaire de l'immeuble d'habitation — ou la personne responsable qu'il désigne — fait effectuer la vérification des installations de détection, de désenfumage et de ventilation, de toutes les installations fonctionnant automatiquement et des colonnes sèches. Il s'assure en particulier du bon fonctionnement des portes coupe-feu, des ferme-portes et des dispositifs de manœuvre des ouvertures en partie haute des escaliers. Les vérifications sont effectuées par des organismes ou techniciens compétents, qu'il choisit.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 31 janvier 1986, art. 101 (vérifications annuelles à la charge du propriétaire)",
+        article: "Arrêté 1986-01-31 art. 101",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006828539",
+        note: "« Le propriétaire ou, le cas échéant, la personne responsable désignée par ses soins, est tenu de faire effectuer, AU MOINS UNE FOIS PAR AN, les vérifications des installations de détection, de désenfumage, de ventilation, ainsi que de toutes les installations fonctionnant automatiquement et des colonnes sèches. Il doit s'assurer, en particulier, du bon fonctionnement des portes coupe-feu, des ferme-portes ainsi que des dispositifs de manoeuvre des ouvertures en partie haute des escaliers. » Relevé sur Légifrance le 2026-09-01, puis relu sur une seconde URL distincte : les deux relevés sont identiques mot pour mot. Version en vigueur depuis le 5 mars 1986, aucun texte modificateur.",
+        versionConstatee: "1986-03-05",
+      },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 31 janvier 1986, art. 103 (qualité du vérificateur)",
+        article: "Arrêté 1986-01-31 art. 103",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006828541",
+        note: "« Les vérifications visées à l'article 101 ci-avant doivent être effectuées par des organismes ou techniciens COMPÉTENTS, choisis par le propriétaire. » Relevé le 2026-09-01. C'est cet article qui fixe `realisateurs` — et il n'exige ni agrément, ni accréditation, ni certification.",
+        versionConstatee: "2015-10-01",
+      },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 31 janvier 1986, art. 1er (champ d'application : habitations dont le plancher bas du logement le plus haut est à 50 m au plus)",
+        article: "Arrêté 1986-01-31 art. 1",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000042744547",
+        note: "Contexte, pas fondement : cet article borne le champ des quatre familles. Au-delà de 50 mètres, l'immeuble relève du régime IGH et non de cet arrêté.",
+        versionConstatee: "2020-12-25",
+      },
+    ],
+    periodicite: "annuelle",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
+    realisateurs: ["personne_qualifiee"],
+    criticite: 5,
+    transmet: [],
+    porteur: "etablissement",
+    typologies: { habitation: true },
+    equipementsEnContexte: ["DESENFUMAGE", "VMC", "ALARME_INCENDIE"],
+    notesInternes:
+      "Créée le 2026-09-01, au dépouillement de l'arrêté du 31 janvier 1986. C'est l'unique obligation périodique du texte, et le référentiel ne la portait pas : neuf obligations déclaraient la typologie `habitation` — sept d'ascenseur, deux de VMC-gaz — mais aucune ne venait de l'arrêté qui régit la sécurité incendie des immeubles d'habitation.\n\nPAS DE RESTRICTION DE FAMILLE, ET C'EST LE RÉSULTAT PRINCIPAL DU LOT. L'article 101 ne mentionne aucune famille, ni directement ni par renvoi : il vise « le propriétaire » de tout bâtiment entrant dans le champ de l'article 1er, c'est-à-dire les quatre familles. La tentation était de poser `familles: [\"TROISIEME_B\", \"QUATRIEME\"]` puisque les colonnes sèches, l'un des objets de la vérification, n'existent que là (art. 98). Ce serait une erreur de lecture : l'article 98 dispense en outre les 3ᵉ famille B d'au plus sept étages desservies par une voie échelles, si bien que la famille ne détermine même pas la présence de la colonne sèche. Et surtout, une telle condition ferait disparaître la ligne chez un propriétaire de 1ʳᵉ ou 2ᵉ famille à qui l'article impose bel et bien de vérifier SES installations de ventilation et ses ferme-portes. La famille décide de ce que le bâtiment contient ; l'article fait vérifier ce qui est là.\n\nRÉALISATEUR. `personne_qualifiee` seul, sur le verbatim de l'article 103 : « organismes ou techniciens compétents, choisis par le propriétaire ». Ni `organisme_agree` ni `organisme_accredite` ni `bureau_controle` — aucun agrément n'est requis, à la différence du contrôle technique quinquennal des ascenseurs (R. 134-12 CCH). Ajouter l'une de ces valeurs inventerait une exigence de qualification que le texte ne pose pas, et pousserait un propriétaire vers une prestation plus coûteuse que celle qu'on lui doit.\n\nPORTEUR ÉTABLISSEMENT, `equipementsEnContexte` non limitatif. L'article énumère détection, désenfumage, ventilation, « toutes les installations fonctionnant automatiquement » et colonnes sèches. Les trois catégories affichées sont celles que le modèle connaît ; « toutes les installations fonctionnant automatiquement » n'a pas d'équivalent au parc, et le dispositif d'appel prioritaire des pompiers de la 4ᵉ famille (art. 97) en est un exemple qu'aucune catégorie ne porte.\n\nCE QUE LA LIGNE NE COUVRE PAS, dit ici plutôt que passé sous silence : l'article 101 impose aussi d'« assurer l'entretien de toutes les installations concourant à la sécurité », sans rythme. Cet entretien n'est pas encodé — il n'a pas de périodicité propre et se confondrait avec les contrats d'entretien que d'autres lignes portent déjà (VMC-gaz, ascenseur). Le registre, lui, a sa ligne : `habitation-registre-securite`.\n\nNATURE : ÉCHÉANCE RÉCURRENTE (ADR-026). Un acte à refaire chaque année.",
+  },
+  {
+    id: "habitation-registre-securite",
+    domaine: "incendie",
+    libelle: "Tenue du registre de sécurité (immeuble d'habitation)",
+    description:
+      "Le propriétaire assure l'entretien de toutes les installations concourant à la sécurité de l'immeuble et doit pouvoir le justifier par la tenue d'un registre de sécurité. Ce registre comprend au minimum les rapports des vérifications annuelles exigées par l'article 101, les rapports d'intervention d'entretien et les opérations de maintenance. Le propriétaire présente toutes les justifications utiles concernant l'entretien et la vérification des installations sur demande des agents assermentés et commissionnés à cet effet.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 31 janvier 1986, art. 103 (contenu minimal du registre)",
+        article: "Arrêté 1986-01-31 art. 103",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006828541",
+        note: "« Le registre défini à l'article R. 111-13 du code de la construction et de l'habitation comprend a minima : - les rapports des vérifications exigées à l'article 101 du présent arrêté ; - les rapports d'intervention d'entretien ; - les opérations de maintenance. » Relevé le 2026-09-01. La liste vient de l'arrêté du 19 juin 2015 et ne s'impose, aux termes de son article d'application, qu'aux bâtiments dont le permis de construire a été déposé après le 1er octobre 2015 ; l'existence du registre, elle, est d'origine (art. 101).",
+        versionConstatee: "2015-10-01",
+      },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 31 janvier 1986, art. 101 in fine (le registre justifie l'entretien)",
+        article: "Arrêté 1986-01-31 art. 101",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006828539",
+        note: "« Il doit également assurer l'entretien de toutes les installations concourant à la sécurité et doit pouvoir le justifier par la TENUE D'UN REGISTRE DE SÉCURITÉ. » Relevé le 2026-09-01, relu sur une seconde URL distincte. C'est l'article qui crée le registre ; l'article 103 en fixe le contenu.",
+        versionConstatee: "1986-03-05",
+      },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 31 janvier 1986, art. 104 (présentation aux agents assermentés)",
+        article: "Arrêté 1986-01-31 art. 104",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006828542",
+        note: "« Le propriétaire est tenu de présenter toutes les justifications utiles concernant l'entretien et la vérification des installations sur demande des agents assermentés et commissionnés à cet effet. » Relevé le 2026-09-01. C'est ce qui rend le registre opposable.",
+        versionConstatee: "1986-03-05",
+      },
+    ],
+    periodicite: "autre",
+    nature: "etat_permanent",
+    pieceAttendue: "registre de sécurité",
+    realisateurs: ["exploitant"],
+    criticite: 3,
+    transmet: [],
+    porteur: "etablissement",
+    typologies: { habitation: true },
+    notesInternes:
+      "Créée le 2026-09-01. DISTINCTE DE `incendie-registre-securite`, et il faut dire pourquoi plutôt que de laisser croire à un doublon. Celle-là est fondée sur R. 143-44 CCH et L. 4711-1 CT, et vise `{ travail: true, erp: true }` : le registre de l'employeur et celui de l'exploitant d'ERP. Celle-ci est fondée sur l'arrêté du 31 janvier 1986 et vise l'habitation. Les contenus imposés diffèrent — l'article 103 énumère les rapports de vérification, les rapports d'intervention d'entretien et les opérations de maintenance, là où R. 143-44 énumère les travaux d'aménagement, l'état nominatif du service de sécurité, les consignes et les dates d'exercices. Un immeuble d'habitation sans salarié et sans ERP ne recevait donc aucune ligne « registre », alors que l'article 101 lui en impose un. Ajouter `habitation: true` à l'obligation existante aurait fusionné deux registres au contenu différent sous un libellé et une description qui ne parlent que d'ERP et de Code du travail.\n\nUn même établissement peut recevoir les deux lignes — un immeuble d'habitation dont le rez-de-chaussée est un ERP, ou qui emploie un gardien. Ce n'est pas un défaut : ce sont deux registres que deux textes imposent, et les fondre reviendrait à décider à la place du propriétaire qu'un seul document satisfait les deux, ce qu'aucun des deux textes ne dit.\n\nPAS DE RESTRICTION DE FAMILLE : ni l'article 101, ni l'article 103, ni l'article 104 n'en mentionnent une.\n\nRENVOI NON VÉRIFIÉ, ET DÉCLARÉ COMME TEL. L'article 103 nomme « le registre défini à l'article R. 111-13 du code de la construction et de l'habitation ». Cet article du CCH N'A PAS ÉTÉ OUVERT dans ce lot. La recodification du CCH de 2021 a déplacé la numérotation R. 111-*, et ce renvoi peut désigner aujourd'hui un autre article que celui que le rédacteur de 2015 visait. L'obligation ne repose pas dessus — elle repose sur les articles 101, 103 et 104 relevés au verbatim — mais la description reprend le contenu que l'article 103 attache à ce renvoi. À rouvrir : si R. 111-13 impose davantage, la description est incomplète.\n\nNATURE : ÉTAT PERMANENT, `pieceAttendue: \"registre de sécurité\"` (ADR-026). Un registre tenu, pas un acte à refaire à date.",
+  },
+  {
+    id: "habitation-consignes-plans-intervention",
+    domaine: "incendie",
+    libelle:
+      "Affichage des consignes d'incendie et des plans d'intervention (immeuble d'habitation)",
+    description:
+      "Le propriétaire — ou la personne responsable qu'il désigne — affiche dans les halls d'entrée, près des accès aux escaliers et aux ascenseurs, les consignes à respecter en cas d'incendie ainsi que les plans des sous-sols et du rez-de-chaussée. Les consignes particulières à l'immeuble sont également affichées dans les parcs de stationnement, s'il en existe, à proximité des accès aux escaliers et aux ascenseurs. Les plans d'intervention portent au minimum l'emplacement des cloisonnements principaux et des cheminements des sous-sols, les dégagements et voies permettant d'atteindre l'extérieur, l'emplacement des ascenseurs et monte-charge avec leurs accès, celui des locaux poubelles et réceptacles de vide-ordures, et celui des moyens de secours — notamment les prises de colonnes sèches et les commandes de désenfumage.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 31 janvier 1986, art. 100 (affichage des consignes et des plans d'intervention)",
+        article: "Arrêté 1986-01-31 art. 100",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006828538",
+        note: "« Le propriétaire ou, le cas échéant, la personne responsable désignée par ses soins, est tenu d'afficher dans les halls d'entrée, près des accès aux escaliers et aux ascenseurs : les consignes à respecter en cas d'incendie ; les plans de sous-sols et du rez-de-chaussée. » Relevé sur Légifrance le 2026-09-01. Version en vigueur depuis le 1er octobre 2015, arrêté du 19 juin 2015 - art. 9.",
+        versionConstatee: "2015-10-01",
+      },
+    ],
+    periodicite: "autre",
+    nature: "etat_permanent",
+    pieceAttendue: "consignes d'incendie et plans d'intervention affichés",
+    realisateurs: ["exploitant"],
+    criticite: 4,
+    transmet: [],
+    porteur: "etablissement",
+    typologies: { habitation: true },
+    notesInternes:
+      "Créée le 2026-09-01. À ne pas confondre avec `incendie-travail-consigne-affichee`, fondée sur R. 4227-37 et s. du Code du travail et due à l'employeur : celle-ci est due au propriétaire d'un immeuble d'habitation, y compris sans aucun salarié, et son contenu est différent — le Code du travail ne demande pas de plan des sous-sols ni l'emplacement des prises de colonnes sèches.\n\nPAS DE RESTRICTION DE FAMILLE : l'article 100 n'en mentionne aucune. Une maison individuelle de 1ʳᵉ famille n'a ni hall d'entrée ni accès commun aux escaliers, si bien que l'affichage y est matériellement sans objet — mais c'est une conséquence de fait, pas une dispense écrite, et l'encoder en `familles` ferait dire au texte ce qu'il ne dit pas. Le moteur retenant l'obligation lorsque la famille n'est pas renseignée, un propriétaire de maison individuelle peut voir la ligne : elle est visible, donc corrigible en renseignant la famille, ce qui est le sens qui a été donné à cette dissymétrie.\n\nDEUX RÉGIMES DANS UN SEUL ARTICLE, et l'obligation ne les sépare pas. L'affichage des consignes est d'origine (1986). La liste des cinq éléments du plan d'intervention a été ajoutée par l'arrêté du 19 juin 2015, dont l'article d'application la réserve aux bâtiments dont le permis de construire a été déposé après le 1er octobre 2015. Le modèle porte bien une année de permis de construire côté établissement, mais `TypologieApplication` ne sait pas conditionner sur elle. La ligne est donc écrite au régime le plus complet : un propriétaire d'immeuble antérieur à 2015 se verra demander un plan d'intervention que l'arrêté ne lui impose pas dans cette forme. Sur-application assumée et bornée — le contenu du plan, pas l'affichage lui-même — plutôt que de taire la liste, auquel cas les immeubles postérieurs à 2015 ne sauraient pas ce qu'on attend d'eux.\n\nNATURE : ÉTAT PERMANENT, `pieceAttendue` non nulle (ADR-026). Ce qui est dû est un écrit affiché : une case cochée sans consigne au mur serait la déclaration-qui-ressemble-à-une-preuve que l'écran d'états permanents interdit.",
+  },
 ];

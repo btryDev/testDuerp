@@ -1060,6 +1060,20 @@ describe("référentiel conformité — version et empreinte", () => {
   // donné une valeur fausse que le test aurait acceptée sur une moitié du
   // référentiel.
   //
+  //
+  // 2026-09-01, 116 → 121, en deux temps et depuis trois branches parallèles.
+  // D'abord quatre mouvements : `elec-salarie-habilitation` au catalogue des
+  // titres, le semestriel des gaines de recyclage, l'inspection ESP portée à
+  // quatre ans, et son plafond de premier cycle dans `premierDelai`. Puis le
+  // dépouillement de l'arrêté du 31 janvier 1986, qui en ajoute trois —
+  // vérification annuelle des installations de sécurité, registre, consignes
+  // et plans d'intervention, toutes portées par l'établissement.
+  //
+  // L'empreinte est REMESURÉE à chaque intégration, jamais recopiée d'une
+  // branche. Trois branches l'ont vue à trois valeurs différentes, chacune
+  // juste chez elle et fausse une fois réunies ; les commentaires que chacune
+  // portait sont ce qui a empêché de prendre l'une pour l'autre.
+  //
   // Le quatrième mouvement mérite d'être connu : `premierDelai` a d'abord été
   // INVISIBLE à l'empreinte. Le champ posé, sa valeur écrite, la suite passait
   // au vert — alors qu'il déplace la date de première occurrence d'un
@@ -1068,7 +1082,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // qui influence une échéance entre dans `empreinteReferentiel()`, et la
   // preuve se fait en changeant sa valeur : si l'empreinte ne bouge pas, il
   // manque au hachage.
-  const EMPREINTE_ATTENDUE = "118-af74ff58f44aad38";
+  const EMPREINTE_ATTENDUE = "121-f50e590a2f78fc94";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1186,7 +1200,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(118);
+    ).toBe(121);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
