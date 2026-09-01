@@ -620,6 +620,35 @@ export const obligationsIncendie: Obligation[] = [
       "Corrigé à l'audit 2026-08 : l'ancienne version citait un « arrêté du 2 mai 2005 (SSI) » ; ce texte régit le personnel SSIAP, pas les systèmes de sécurité incendie. Référence retirée.\n\nSur-application assumée en 5ᵉ catégorie (constatée 2026-08-26, dépouillement du Livre III). L'article cité relève du Livre II du règlement de sécurité — « Dispositions applicables aux établissements des quatre premières catégories » — et PE 1 § 1 dispose que « les dispositions du livre II ne sont pas applicables sauf celles relevant d'articles expressément mentionnés dans la suite du présent livre ». Le Livre III a été dépouillé article par article : PE 26 n'ouvre le Livre II que sur MS 39, PE 27 que sur MS 70, ni l'un ni l'autre n'étant un article de vérification. L'article cité ne fonde donc PAS cette obligation en N5. Ce qui la fonde en N5 est PE 4 § 2 — « tous les trois ans au plus », par techniciens compétents — et, chez un employeur, le Code du travail, qui s'applique indépendamment du classement ERP. La ligne est MAINTENUE volontairement : la retirer créerait un faux négatif muet chez 100 % des utilisateurs, alors qu'une sur-application visible et documentée reste corrigeable. À reprendre lorsque le référentiel saura porter PE 4 § 2, dont le porteur est l'établissement et non un équipement.\n\nÉtat au 2026-08-27 (ADR-022) : le référentiel sait désormais le porter — `incendie-erp-pe4-entretien-installations-techniques` existe, portée par l'établissement, triennale, et elle atteint tous les ERP y compris ceux qui n'ont rien déclaré. La condition annoncée ci-dessus est donc à moitié levée, et à moitié seulement. Ce qui manque est un point de DROIT, pas de modèle : cette ligne-ci n'est pas seulement fondée sur le Livre II, sa note dit qu'elle l'est aussi, chez un employeur, sur le Code du travail — lequel s'applique indépendamment du classement ERP. Tant que cela n'a pas été vérifié article par article sur Légifrance, retirer la ligne supprimerait chez l'utilisateur une échéance dont on n'a PAS établi qu'elle n'est pas due, et le ferait en silence : sans rapport ni action attachés, la réconciliation la supprime physiquement (ADR-012). La relecture réglementaire de ces six lignes est un chantier distinct, à mener avec la skill de veille ; ce n'est pas un effet de bord du chantier du porteur.",
   },
   {
+    id: "incendie-erp-extincteurs-revision-decennale",
+    domaine: "incendie",
+    libelle: "Révision décennale des extincteurs (ERP)",
+    description:
+      "Outre sa vérification annuelle, un extincteur fait l'objet d'une révision tous les dix ans par une personne ou un organisme compétent. L'appareil porte une étiquette clairement identifiable apposée par celui qui a réalisé cette révision, et les années et les mois des vérifications doivent apparaître sur l'étiquette.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 25 juin 1980, art. MS 38 § 4 (révision décennale)",
+        article: "MS 38",
+        url:
+          "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000020303557/LEGISCTA000020317639/",
+        note: "« Un extincteur doit faire l'objet d'une vérification annuelle et d'une révision tous les dix ans par une personne ou un organisme compétent. Il doit être marqué d'une étiquette clairement identifiable apposée par la personne ou l'organisme ayant réalisé CETTE DERNIÈRE. » Article rouvert à la source le 2026-09-01 avant l'encodage, version en vigueur du 08/10/2008 : le § 4 porte DEUX rythmes dans une seule phrase, et l'étiquette se rattache grammaticalement à la révision — « cette dernière » —, pas à la vérification annuelle.",
+        versionConstatee: "2008-10-08",
+      },
+    ],
+    periodicite: "decennale",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
+    realisateurs: ["personne_qualifiee", "organisme_agree"],
+    criticite: 4,
+    transmet: [],
+    typologies: { erp: true },
+    categoriesEquipement: ["EXTINCTEUR"],
+    notesInternes:
+      "AJOUTÉE LE 2026-09-01 (lot C). Le § 4 de MS 38 porte deux rythmes — « une vérification annuelle ET une révision tous les dix ans » — et le référentiel n'en portait qu'un : `incendie-erp-extincteurs-annuelle` prend l'annuelle, sa description NOMMAIT la décennale, et aucune échéance ne la datait. Le corpus le déclarait en réserve depuis le relevé du même jour.\n\nPOURQUOI UNE LIGNE À PART ET NON UN CHAMP SUR L'AUTRE. Ce sont deux actes, à deux dates, avec deux preuves : la vérification annuelle laisse une ligne sur l'étiquette, la révision décennale est un démontage de l'appareil, et un extincteur qui l'a subie porte une étiquette apposée par celui qui l'a faite. Le modèle n'a d'ailleurs aucun moyen de porter deux rythmes sur une obligation — c'est la limite que le cadrage du 2026-09-01 nomme en section B, et elle vaut ici aussi ; la différence est qu'ici les deux rythmes portent sur deux actes distincts, ce qui rend la scission juste plutôt que palliative.\n\nCRITICITÉ 4 ET NON 5, à la différence de l'annuelle : un extincteur non révisé depuis onze ans reste un extincteur vérifié il y a moins d'un an. Le risque immédiat est celui que porte l'annuelle.\n\nSUR-APPLICATION EN 5ᵉ CATÉGORIE, la même que l'annuelle et pour la même raison — MS 38 relève du Livre II, écarté par PE 1 § 1, et le Livre III n'y renvoie pas. Elle est héritée telle quelle et non aggravée : la ligne suit exactement le périmètre de `incendie-erp-extincteurs-annuelle`, dont les notes portent l'analyse complète. Si cette dernière est un jour restreinte, celle-ci doit l'être du même mouvement.\n\nCE QUE LE DIRIGEANT VERRA : rien avant dix ans après la première révision déclarée, et une échéance « à planifier » tant qu'aucune date n'est connue. C'est le comportement ordinaire d'une périodicité longue, pas un défaut.",
+  },
+  {
     id: "incendie-erp-ssi-triennale",
     domaine: "incendie",
     libelle: "Vérification triennale approfondie des SSI de catégorie A ou B (ERP)",

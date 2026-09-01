@@ -203,9 +203,16 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
-      obligations: ["incendie-erp-extincteurs-annuelle"],      reserve:
-        "La RÉVISION DÉCENNALE du § 4 — « une révision tous les dix ans par une personne ou un organisme compétent » — n'est portée par aucune obligation du référentiel. `incendie-erp-extincteurs-annuelle` porte l'annuelle du même paragraphe et rien d'autre. Relevé le 2026-09-01, non corrigé : ce lot est un relevé.",
-
+      obligations: [
+        "incendie-erp-extincteurs-annuelle",
+        // Ajoutée le 2026-09-01 (lot C). La réserve inscrite le matin même
+        // disait « la RÉVISION DÉCENNALE du § 4 n'est portée par aucune
+        // obligation du référentiel » ; elle l'est désormais, par une ligne
+        // distincte. Article rouvert à la source avant l'encodage.
+        "incendie-erp-extincteurs-revision-decennale",
+      ],
+      reserve:
+        "LA SUR-APPLICATION EN 5ᵉ CATÉGORIE RESTE, et elle vaut pour les deux lignes. Le chemin le dit — Livre II > Titre Ier > Chapitre XI > Section 2 > Sous-section 9 —, et PE 1 § 1 écarte le Livre II en 5ᵉ catégorie sans que le Livre III rouvre MS 38. Les deux obligations sont maintenues au même périmètre, sur l'analyse portée par les `notesInternes` de `incendie-erp-extincteurs-annuelle` ; restreindre l'une sans l'autre serait incohérent.",
     },
     {
       ref: "MS 73",

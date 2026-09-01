@@ -1415,6 +1415,20 @@ const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
     "Contraste à garder en tête : l'habilitation elle-même n'a AUCUN chiffre " +
     "— R. 4544-10 renvoie aux modalités des normes, que R. 4544-3 qualifie de " +
     "recommandées — et c'est pourquoi elle est passée à `autre` (ADR-023 § 6).",
+  "ascenseur-rapport-annuel-activite":
+    "Le CCH porte l'adjectif lui-même, au III de R. 134-7 : « En outre, " +
+    "l'entreprise remet au propriétaire un RAPPORT ANNUEL D'ACTIVITÉ auquel " +
+    "est annexé le contenu du carnet d'entretien lorsque celui-ci est établi " +
+    "sous forme électronique. » Article rouvert à la source le 2026-09-01, " +
+    "version en vigueur du 2026-04-01 (décret n° 2026-166 du 4 mars 2026). " +
+    "Ce n'est ni un plafond ni un renvoi : le texte ne dit pas « au moins une " +
+    "fois par an » et ne laisse à aucun tiers le soin de fixer le délai — " +
+    "c'est la différence avec les quatre cas de la section B du cadrage du " +
+    "2026-09-01. R. 134-10 le redit à l'identique pour le propriétaire qui " +
+    "entretient par ses propres moyens, « dans les conditions fixées au III " +
+    "de l'article R. 134-7 ». L'arrêté du 18 novembre 2004, qui porte les " +
+    "autres rythmes de l'entretien d'ascenseur, ne connaît pas ce rapport : " +
+    "son annexe ne cadence que des opérations techniques.",
 
   // ---------------------------------------------------------------------------
   // Lot 7 — les cinq périodicités chiffrées du dépouillement du 2026-08-31.
