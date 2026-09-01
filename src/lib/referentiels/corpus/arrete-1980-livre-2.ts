@@ -110,6 +110,40 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
         "DEUX CHOSES RELEVÉES LE 2026-09-01, ARTICLE LU EN ENTIER.\n\n(1) L'EXTINCTION AUTOMATIQUE N'EST PAS DANS GC 22. L'objet de la vérification annuelle y est énuméré en quatre points, et aucun ne vise un système d'extinction automatique : entretien et maintenance, ventilation et évacuation des buées et graisses, signalisation des dispositifs de sécurité, manœuvre des arrêts d'urgence. `cuisson-erp-extinction-automatique-annuelle` cite l'article pour une chose qu'il ne dit pas ; ce qui la porte est GC 8 (moyens d'extinction) et MS 73, tous deux déjà au corpus et déjà cités par elle.\n\n(2) LE RAMONAGE ANNUEL ET LE NETTOYAGE HEBDOMADAIRE DES FILTRES SONT À GC 21, NON ICI, et GC 21 § 3 impose en outre un livret d'entretien annexé au registre de sécurité. GC 21 est au corpus avec son verbatim ; le rappeler ici évite de croire que GC 22 porte tout le chapitre.",
     },
     {
+      ref: "GZ 13",
+      intitule: "Conformité de l'installation et mise en service",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051268454/",
+      versionEnVigueur: "2026-01-01",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
+      prescrit:
+        "Quatre paragraphes, dont un seul vise l'exploitant. §§ 1 à 3 : c'est l'INSTALLATEUR qui vérifie la résistance mécanique et l'étanchéité de ce qu'il réalise ou modifie, et qui établit un certificat de conformité par intervention créant ou modifiant des canalisations fixes — un certificat par installateur quand ils sont plusieurs, les dispenses étant renvoyées aux guides de GZ 3. § 4 : L'UTILISATION DU GAZ NE PEUT COMMENCER QU'APRÈS VÉRIFICATION DE L'INSTALLATION par une personne ou un organisme AGRÉÉ, avec rapport de vérification technique conforme à GE 9 et visa apposé sur l'exemplaire du certificat de conformité joint au registre de sécurité. C'est un préalable à la mise en service, pas une périodicité.",
+      citationCle:
+        "§ 4. L'utilisation du gaz ne peut intervenir qu'après vérification de l'installation, par une personne ou un organisme agréé. Cette vérification doit faire l'objet d'un rapport de vérification technique conforme aux dispositions de l'article GE 9. Un visa apposé par cette personne ou cet organisme sur l'exemplaire du certificat de conformité joint au registre de sécurité atteste que l'installation satisfait aux exigences règlementaires.",
+      statut: "obligation_manquante",
+      motif:
+        "Le § 4 impose à l'exploitant une vérification de l'installation de gaz par une personne ou un organisme agréé AVANT toute utilisation du gaz, avec une pièce à joindre au registre de sécurité — rapport de vérification technique conforme à GE 9, et visa sur le certificat de conformité. Le référentiel ne porte rien de tel : `cuisson-gaz-installations-annuelle` porte la seule périodique de GZ 15, et `cuisson-erp-verification-initiale` porte la mise en service des appareils de cuisson, pas celle de l'installation de gaz. Signalé sans être encodé : l'ajout d'obligation ne relève pas du lot de traçabilité du 2026-09-01.",
+      bloquePar:
+        "Aucune catégorie d'équipement « installation de gaz ». Le rythme est encodable — `mise_en_service_uniquement` existe —, mais l'accrocher à `APPAREIL_CUISSON_ERP` sous-appliquerait : une installation de gaz alimente aussi un chauffage ou une production d'eau chaude, et GZ 13 vise l'installation, pas l'appareil. Même blocage que l'arrêté du 23 février 2018, art. 26 § 3.",
+    },
+    {
+      ref: "GZ 14",
+      intitule: "Entretien des installations",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051268450/",
+      versionEnVigueur: "2026-01-01",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
+      prescrit:
+        "§ 1 : le maintien en l'état et l'entretien des installations de gaz, des appareils à gaz et de leurs systèmes d'évacuation des produits de combustion INCOMBENT À L'EXPLOITANT ; le distributeur, lui, entretient l'organe de coupure de branchement. § 2 : sur le domaine public, le maire maintient l'ACCÈS à l'organe de coupure et l'exploitant sa SIGNALISATION ; sur le domaine privé, l'exploitant maintient les deux et avertit sans délai le distributeur en cas de difficulté. Aucune périodicité : ce sont des états à tenir.",
+      citationCle:
+        "§ 1. Le maintien en l'état et l'entretien des installations de gaz, des appareils à gaz et de leurs systèmes d'évacuation des produits de combustion incombent à l'exploitant. Le distributeur assure l'entretien de l'organe de coupure de branchement.",
+      statut: "obligation_manquante",
+      motif:
+        "Deux obligations d'exploitant, aucune portée. (1) L'entretien et le maintien en l'état des installations de gaz, des appareils et de leurs systèmes d'évacuation — un état permanent, du même genre que le « maintenus en bon état de fonctionnement » de R. 4227-29, que le référentiel porte pour les extincteurs et pas ici. La vérification annuelle de GZ 15 CONSTATE cet entretien, elle ne le remplace pas : `cuisson-gaz-installations-annuelle` est la seule ligne du domaine et elle porte la vérification, pas l'entretien. (2) Le maintien en l'état de la signalisation de l'organe de coupure de branchement, et de son accès lorsqu'il est sur le domaine privé. Signalé sans être encodé, comme GZ 13.",
+      bloquePar:
+        "Même blocage que GZ 13 : aucune catégorie d'équipement « installation de gaz ». S'y ajoute, pour le § 2, que le référentiel ne connaît pas l'organe de coupure de branchement ni sa localisation — domaine public ou privé —, dont dépend le partage entre le maire et l'exploitant.",
+    },
+    {
       ref: "GZ 15",
       intitule: "Vérifications techniques périodiques",
       url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304213/",
@@ -123,7 +157,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       statut: "retenu",
       obligations: ["cuisson-gaz-installations-annuelle"],
       reserve:
-        "NUMÉROTATION REFAITE, ET L'ARTICLE S'OUVRE SUR UN PRONOM. Relevé le 2026-09-01 : le chapitre VI a été récrit par l'arrêté du 23 février 2025, en vigueur au 1er janvier 2026, et il s'arrête désormais à GZ 15 — l'ancienne numérotation allait jusqu'à GZ 30, et c'est GZ 30 que la littérature professionnelle cite encore pour l'annuelle. Toute référence à « GZ 30 » rencontrée ailleurs vise ce texte-ci.\n\nLe texte de GZ 15 commence par « Elles ont pour objet de s'assurer » sans antécédent dans l'article : il faut remonter à GZ 13 (conformité et mise en service, certificat de conformité de l'installateur et vérification préalable par une personne ou un organisme agréé) et GZ 14 (entretien, à la charge de l'exploitant) pour savoir de quoi il parle. Ces deux articles ne sont ni cités ni au corpus, alors que GZ 13 § 4 porte une vérification avant mise en service du gaz que le référentiel n'encode pas. Non corrigé : le lot n'ajoute pas de référence.",
+        "NUMÉROTATION REFAITE, ET L'ARTICLE S'OUVRE SUR UN PRONOM. Relevé le 2026-09-01 : le chapitre VI a été récrit par l'arrêté du 23 février 2025, en vigueur au 1er janvier 2026, et il s'arrête désormais à GZ 15 — l'ancienne numérotation allait jusqu'à GZ 30, et c'est GZ 30 que la littérature professionnelle cite encore pour l'annuelle. Toute référence à « GZ 30 » rencontrée ailleurs vise ce texte-ci.\n\nLe texte de GZ 15 commence par « Elles ont pour objet de s'assurer » sans antécédent dans l'article.\n\nOÙ EST L'ANTÉCÉDENT, VÉRIFIÉ LE 2026-09-01. Le relevé du matin renvoyait à GZ 13 et GZ 14 ; les deux articles ont été ouverts depuis, et ILS NE LE PORTENT PAS. GZ 13 parle d'une « vérification » au singulier, faite par l'installateur puis par un organisme agréé avant la mise en service ; GZ 14 parle d'entretien. Aucun des deux n'introduit « les vérifications techniques périodiques » au pluriel. Le seul antécédent de « Elles » est l'INTITULÉ de GZ 15 lui-même — « Vérifications techniques périodiques » —, ce qui reste un défaut de rédaction du texte officiel, mais pas celui qu'on croyait. GZ 13 et GZ 14 sont entrés au corpus le même jour, tous deux en `obligation_manquante` : GZ 13 § 4 porte une vérification avant mise en service du gaz, GZ 14 § 1 l'entretien à la charge de l'exploitant, et le référentiel ne porte ni l'une ni l'autre. Signalés, non encodés.",
     },
     {
       ref: "GE 6",
@@ -140,7 +174,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       statut: "retenu",
       obligations: ["elec-erp-mise-en-service"],
       reserve:
-        "RENVOI VERS UNE NUMÉROTATION ABROGÉE, à ne pas recopier : le § 1 fonde tout le régime sur « l'article R. 123-43 du code de la construction et de l'habitation », numéro disparu à la recodification du CCH de 2021. Relevé le 2026-09-01. L'article n'a pas été rafraîchi depuis, et une version future est programmée au 1er juin 2027 : c'est là qu'il faudra vérifier si le renvoi est corrigé.\n\nCE QUE L'ARTICLE NE DIT PAS. `elec-erp-mise-en-service` le cite avec un réalisateur « organisme agréé », ce qui n'est vrai que par le § 2 — donc seulement quand un autre article l'impose ; GE 6 pris seul admet aussi le technicien compétent. Le caractère agréé vient de GE 7 et GE 8, cités dans la même `reference` mais absents du corpus.",
+        "RENVOI VERS UNE NUMÉROTATION ABROGÉE, à ne pas recopier : le § 1 fonde tout le régime sur « l'article R. 123-43 du code de la construction et de l'habitation », numéro disparu à la recodification du CCH de 2021. Relevé le 2026-09-01. L'article n'a pas été rafraîchi depuis, et une version future est programmée au 1er juin 2027 : c'est là qu'il faudra vérifier si le renvoi est corrigé. Depuis le 2026-09-01, ce rendez-vous n'est plus une phrase : `elec-erp-mise-en-service` porte une `relectureDue` au 2027-06-01, et un test échouera ce jour-là.\n\nCE QUE L'ARTICLE NE DIT PAS. `elec-erp-mise-en-service` le cite avec un réalisateur « organisme agréé », ce qui n'est vrai que par le § 2 — donc seulement quand un autre article l'impose ; GE 6 pris seul admet aussi le technicien compétent. Le caractère agréé vient de GE 7 et GE 8, cités dans la même `reference` mais absents du corpus.",
     },
     {
       ref: "EL 18",
@@ -268,8 +302,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
     {
       ref: "GE 4",
       intitule: "Visites périodiques des établissements des quatre premières catégories",
-      url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000020303557/LEGISCTA000020303874/",
-      versionFuture: "2027-06-01",
+      url: "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000029642660/",
       prescrit:
         "§ 1 : les établissements des 1re, 2e, 3e et 4e catégories sont visités périodiquement par les commissions de sécurité selon un TABLEAU croisant le type (J, L, M, N, O, P, R avec ou sans hébergement, S, T, U, V, W, X, Y) et la catégorie, qui donne trois ans ou cinq ans. Ce n'est donc pas une périodicité unique. Aucune ligne de 5ᵉ catégorie : l'article relève du Livre II, écarté en 5ᵉ par PE 1 § 1.",
       citationCle:
@@ -279,7 +312,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       lecture: "premiere_main",
       statut: "retenu",
       obligations: ["incendie-erp-5-visite-commission"],      reserve:
-        "Deux relevés du 2026-09-01. (1) Légifrance affiche une FIN DE VIGUEUR au 1er juin 2027 pour cet article : `versionFuture` est posée ici, mais aucune `relectureDue` n'a été ajoutée sur `incendie-erp-5-visite-commission`, qui le cite — ce lot est un relevé. (2) Le § 3 est un PLAFOND, pas un rythme : quand un établissement sans hébergement enchaîne deux visites périodiques favorables, « le délai fixé pour sa prochaine visite par le tableau ci-dessus peut être prolongé dans la limite de cinq ans ». « Dans la limite de cinq ans » n'est pas « tous les cinq ans », et le § 4 permet en outre au maire ou au préfet de modifier la fréquence.",
+        "(1) LA FIN DE VIGUEUR AU 1ER JUIN 2027 RELEVÉE ICI LE 2026-09-01 EST FAUSSE, et `versionFuture` est retirée le même jour. Trois lectures à la source, le 2026-09-01 : la page de section du chapitre Ier (LEGISCTA000020303872) affiche « Version en vigueur depuis le 01/01/2015 » pour GE 4, sans terme ; la page d'article (LEGIARTI000029642660) ne porte ni version future ni abrogation programmée ; et l'arrêté du 19 février 2026, ouvert au JO, ne modifie dans la série GE que GE 2, GE 6 et GE 7. Les deux articles de cette section qui portent bien « du ... au 01/06/2027 » sont GE 2 et GE 6 — GE 6 est au corpus et sa `versionFuture` est exacte. Le relevé du matin a donc étendu à GE 4 un terme lu sur ses voisins. Conséquence : aucune `relectureDue` n'est due sur `incendie-erp-5-visite-commission` de ce chef ; le rendez-vous du 1er juin 2027 est posé sur `elec-erp-mise-en-service`, seule obligation à citer GE 6. (2) Le § 3 est un PLAFOND, pas un rythme : quand un établissement sans hébergement enchaîne deux visites périodiques favorables, « le délai fixé pour sa prochaine visite par le tableau ci-dessus peut être prolongé dans la limite de cinq ans ». « Dans la limite de cinq ans » n'est pas « tous les cinq ans », et le § 4 permet en outre au maire ou au préfet de modifier la fréquence.",
 
     },
   ],
