@@ -82,31 +82,52 @@ export const CODE_TRAVAIL_ELECTRICITE: Corpus = {
     },
     {
       ref: "R. 4226-14",
+      intitule: "Vérification initiale des installations électriques",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765072",
       versionEnVigueur: "2011-07-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "L'employeur fait procéder à une vérification initiale des installations électriques à DEUX occasions : la mise en service, et toute modification de structure. R. 4226-15 réserve cette vérification initiale à un organisme accrédité.",
+      citationCle:
+        "L'employeur fait procéder à la vérification initiale des installations électriques lors de leur mise en service et après qu'elles ont subi une modification de structure, en vue de s'assurer qu'elles sont conformes aux prescriptions de sécurité prévues au présent chapitre.",
       statut: "retenu",
       obligations: ["elec-travail-mise-en-service"],
     },
     {
       ref: "R. 4226-16",
+      intitule: "Vérification périodique des installations électriques",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070",
       versionEnVigueur: "2011-07-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "L'employeur procède ou fait procéder périodiquement à la vérification des installations électriques. L'article ne porte AUCUNE périodicité : R. 4226-18 la renvoie à un arrêté, et c'est l'article 3 de l'arrêté du 26 décembre 2011 qui fixe l'an. R. 4226-17 ouvre la vérification périodique — à la différence de la vérification initiale — à une personne qualifiée de l'entreprise.",
+      citationCle:
+        "L'employeur procède ou fait procéder, périodiquement, à la vérification des installations électriques afin de s'assurer qu'elles sont maintenues en conformité avec les règles de santé et de sécurité qui leur sont applicables.",
       statut: "retenu",
       obligations: ["elec-travail-periodique-annuelle"],
     },
     {
       ref: "R. 4226-19",
+      intitule:
+        "Consignation au registre des résultats des vérifications électriques",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064",
       versionEnVigueur: "2011-07-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Les résultats des SEULES vérifications de R. 4226-14 (initiale) et R. 4226-16 (périodique), et les justifications des travaux correctifs, sont consignés sur un registre ; les rapports d'organisme accrédité y sont annexés.",
+      citationCle:
+        "Les résultats des vérifications prévues aux articles R. 4226-14 et R. 4226-16 ainsi que les justifications des travaux et modifications effectués pour porter remède aux défectuosités constatées sont consignés sur un registre. Lorsque les vérifications sont effectuées par un organisme accrédité, les rapports établis à la suite de ces vérifications sont annexés à ce registre.",
       statut: "retenu",
       obligations: [
         "elec-travail-consignation-registre",
         "incendie-travail-eclairage-securite-autonomie-semestrielle",
         "incendie-travail-eclairage-securite-essai-mensuel",
       ],
+      reserve:
+        "L'ARTICLE NE FONDE RIEN EN ÉCLAIRAGE DE SÉCURITÉ, constat du 2026-09-01, lu à la source. Sa portée est close par sa propre lettre : il renvoie nommément à R. 4226-14 et R. 4226-16, et à rien d'autre. Le chemin le confirme — Livre II, Titre II, Chapitre VI « Installations électriques », Section 5 « Vérification des installations électriques ». L'éclairage de sécurité relève de R. 4227-14 et de l'arrêté du 14 décembre 2011, ailleurs dans le code. Les deux obligations `incendie-travail-eclairage-securite-*` le citent donc à tort ; la question avait été ouverte quatre fois depuis le 2026-08-27 sans que l'article soit ouvert. Non corrigé ici : le lot n'autorise pas à retirer une référence.",
     },
     {
       ref: "R. 4544-10",

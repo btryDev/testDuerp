@@ -44,14 +44,23 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
     },
     {
       ref: "R. 4226-19",
+      intitule:
+        "Consignation au registre des résultats des vérifications électriques",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064",
       versionEnVigueur: "2011-07-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Les résultats des SEULES vérifications de R. 4226-14 (initiale) et R. 4226-16 (périodique) sont consignés sur un registre. Rien sur l'éclairage de sécurité.",
+      citationCle:
+        "Les résultats des vérifications prévues aux articles R. 4226-14 et R. 4226-16 ainsi que les justifications des travaux et modifications effectués pour porter remède aux défectuosités constatées sont consignés sur un registre. Lorsque les vérifications sont effectuées par un organisme accrédité, les rapports établis à la suite de ces vérifications sont annexés à ce registre.",
       statut: "retenu",
       obligations: [
         "incendie-travail-eclairage-securite-autonomie-semestrielle",
         "incendie-travail-eclairage-securite-essai-mensuel",
       ],
+      reserve:
+        "RÉFÉRENCE À TORT, constat du 2026-09-01, article ouvert à la source. R. 4226-19 se borne aux vérifications électriques de R. 4226-14 et R. 4226-16, et son chemin le confirme : Chapitre VI « Installations électriques », Section 5 « Vérification des installations électriques ». Il ne fonde ni l'essai mensuel ni l'autonomie semestrielle de l'éclairage de sécurité, qui relèvent de R. 4227-14 et de l'arrêté du 14 décembre 2011. La question avait été ouverte quatre fois depuis le 2026-08-27, une fois dans chaque sens ; elle est tranchée. Retirer la référence des deux obligations n'était pas dans le lot de relevé.",
     },
     {
       ref: "R. 4227-39",

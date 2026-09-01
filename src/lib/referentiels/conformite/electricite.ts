@@ -36,6 +36,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-14",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765072/",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",
@@ -68,6 +69,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-16",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070/",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",
@@ -100,6 +102,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-19",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -494,6 +497,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-16",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070/",
+        versionConstatee: "2011-07-01",
       },
     ],
     periodicite: "quadriennale",

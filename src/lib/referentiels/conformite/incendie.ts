@@ -383,6 +383,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",
@@ -434,6 +435,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",

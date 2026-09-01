@@ -67,6 +67,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-11",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530929/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "ARRETE",
@@ -110,6 +111,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-11",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530929/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",

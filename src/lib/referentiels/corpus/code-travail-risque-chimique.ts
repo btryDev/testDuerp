@@ -23,14 +23,23 @@ export const CODE_TRAVAIL_RISQUE_CHIMIQUE: Corpus = {
     },
     {
       ref: "R. 4412-11",
+      intitule:
+        "Mesures de prévention du risque d'exposition aux agents chimiques dangereux",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530929",
       versionEnVigueur: "2008-05-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Liste en sept points les mesures d'organisation par lesquelles l'employeur supprime ou réduit au minimum le risque d'exposition. Aucun contrôle daté, aucune périodicité, aucun dispositif matériel nommé : le 7° est le seul point à toucher au stockage, et il vise des « procédures de travail adéquates ».",
+      citationCle:
+        "L'employeur définit et applique les mesures de prévention visant à supprimer ou à réduire au minimum le risque d'exposition à des agents chimiques dangereux : […] 7° En concevant des procédures de travail adéquates, notamment des dispositions assurant la sécurité lors de la manutention, du stockage et du transport sur le lieu de travail des agents chimiques dangereux et des déchets contenant de tels agents.",
       statut: "retenu",
       obligations: [
         "stockage-dangereux-retention",
         "stockage-dangereux-verification-etancheite",
       ],
+      reserve:
+        "NI « RÉTENTION » NI « ÉTANCHÉITÉ » N'Y FIGURENT — constat du 2026-09-01, article lu en entier à la source, les sept alinéas relevés. Le rapport du 2026-08-27 le soutenait ; il est confirmé. Ce que le chapitre porte de plus proche est R. 4412-17, qui vise « les risques de débordement ou d'éclaboussures, ainsi que de déversement par rupture des parois des cuves, bassins, réservoirs et récipients de toute nature » : c'est une exigence de résultat sur les contenants, sans acte de contrôle daté ni mot de rétention. La rétention d'un volume est prescrite ailleurs — art. 22 de l'arrêté ministériel du 1er juin 2015, hors code du travail. `stockage-dangereux-verification-etancheite` se réclame donc d'un article qui ne dit pas ce qu'elle avance, et sa périodicité n'a aucun porteur ici. Non corrigé : hors du lot de relevé.",
     },
     {
       ref: "R. 4412-38",
