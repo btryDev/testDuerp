@@ -34,6 +34,10 @@ import { CODE_TRAVAIL_LOCAUX_SOCIAUX } from "./code-travail-locaux-sociaux";
 import { CODE_TRAVAIL_CO_ACTIVITE } from "./code-travail-co-activite";
 import { CODE_TRAVAIL_SERVICE_PREVENTION_SANTE } from "./code-travail-service-prevention-sante";
 import { CODE_TRAVAIL_MANUTENTION_ECRAN } from "./code-travail-manutention-ecran";
+import {
+  ARRETE_2004_12_21_ECHAFAUDAGES,
+  CODE_TRAVAIL_TRAVAIL_EN_HAUTEUR,
+} from "./code-travail-travail-en-hauteur";
 import { couverture, type Corpus, type CouvertureCorpus } from "./types";
 
 export * from "./types";
@@ -84,6 +88,13 @@ export const CORPUS: readonly Corpus[] = [
   CODE_TRAVAIL_CO_ACTIVITE,
   CODE_TRAVAIL_SERVICE_PREVENTION_SANTE,
   CODE_TRAVAIL_MANUTENTION_ECRAN,
+  // Lot D1 — le travail en hauteur, qui n'avait aucune entrée de corpus ni
+  // aucune citation au référentiel avant le 2026-09-01. Le premier corpus est
+  // le seul du dépôt à couvrir une SECTION entière de code : ses 33 articles
+  // sur 33. Le second porte les trois seules périodicités opposables du
+  // domaine, dont aucune ne figure dans le Code.
+  CODE_TRAVAIL_TRAVAIL_EN_HAUTEUR,
+  ARRETE_2004_12_21_ECHAFAUDAGES,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {

@@ -1434,8 +1434,11 @@ const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
     "lot 7 : la liste des postes à risques particuliers « est transmise au " +
     "service de prévention et de santé au travail, tenue à disposition […] et " +
     "**mise à jour tous les ans** ». Relu à la source le 2026-08-31, version " +
-    "en vigueur du 2026-04-10 (décret n° 2026-253 du 8 avril 2026) — l'article " +
-    "le plus récemment modifié de tout le référentiel.",
+    "en vigueur du 2026-04-10 (décret n° 2026-253 du 8 avril 2026). Ce décret " +
+    "a été dépouillé le 2026-09-01 : il ne touche PAS le III, il supprime sept " +
+    "mots au 2° du I. Cette entrée classait l'article en tête du référentiel " +
+    "par sa fraîcheur ; le rang n'y est plus écrit, et la date en vigueur " +
+    "ci-dessus dit tout ce qu'il disait d'utile.",
   "conduite-salarie-attestation-medicale":
     "R. 4323-56 porte le chiffre, dans les mêmes termes que R. 4544-11-1 et " +
     "par le même décret : « Cette attestation, **d'une validité de cinq ans**, " +
@@ -1484,8 +1487,7 @@ const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
     "L. 2315-17 porte le chiffre : « Ces formations sont renouvelées lorsque " +
     "les représentants ont exercé leur mandat pendant **quatre ans**, " +
     "consécutifs ou non. » Relu à la source le 2026-08-31, version en vigueur " +
-    "du 2026-05-28 — le deuxième texte le plus récent du référentiel après " +
-    "R. 4225-2. " +
+    "du 2026-05-28, trois mois avant ce lot. " +
     "⚠ CE N'EST NI UN RYTHME NI UN PLAFOND, mais une BORNE INTÉRIEURE, et " +
     "c'est un troisième cas de figure après les deux du lot 7 : les quatre ans " +
     "comptent du MANDAT EXERCÉ, « consécutifs ou non », et non du temps " +

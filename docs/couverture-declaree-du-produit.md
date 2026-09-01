@@ -91,10 +91,20 @@ sixième `??` recopié.
 C'est la limite la plus importante de ce document, et la raison directe du
 retrait de la carte.
 
-Les 27 articles ci-dessous sont ceux que le dépouillement a lus, qui imposent
+Les 28 articles ci-dessous sont ceux que le dépouillement a lus, qui imposent
 quelque chose à un exploitant, et que le référentiel ne porte pas. **Rien ne les
 restreint aux établissements que leur chapitre vise.** Un bureau tertiaire les
 voyait tous, y compris les onze articles propres aux hôtels.
+
+**Le 28ᵉ, entré le 2026-09-01, n'est pas de la même espèce que les 27 autres, et
+c'est ce qui le rend gênant.** Les 27 premiers visent des établissements que le
+produit ne sert pas — hôtels, locaux à sommeil, établissements de soins,
+équipements sportifs : le manque de rattachement les affiche trop largement,
+mais aucun ne concerne réellement un restaurant, un commerce ou un bureau.
+`R. 4323-63` en concerne un sur deux. C'est le premier article de cette liste
+dont le manque touche les secteurs cibles eux-mêmes, et le rattachement par
+`Etablissement.typeErp` réclamé ci-dessus ne le résoudrait pas : il n'y a pas de
+type d'ERP à qui ne pas le montrer.
 
 Le rattachement manque côté corpus, pas côté base : `Etablissement.typeErp`
 existe depuis l'ADR-004 et porte déjà `O` pour un hôtel, `U` pour un
@@ -124,9 +134,9 @@ couverture.
 
 ---
 
-## 3. Les 27 articles lus et non portés
+## 3. Les 28 articles lus et non portés
 
-Cinq familles. Les motifs sont ceux du corpus, cités et non réécrits : ils ont
+Six familles. Les motifs sont ceux du corpus, cités et non réécrits : ils ont
 été rédigés par la personne qui a lu l'article, et une reformulation ici
 vieillirait à part de la source.
 
@@ -204,6 +214,35 @@ obligation qu'aucun équipement ne déclenche.
 > composant. Le modèle ne porte ni l'un ni l'autre. Ces règles pèsent sur le
 > distributeur et le propriétaire d'immeuble collectif, à la marge du périmètre.
 
+### Travail en hauteur, tous secteurs confondus — 1 article
+
+`R. 4323-63`
+
+> L'ARTICLE DE LA SECTION QUI TOUCHE LE PLUS LES TROIS SECTEURS CIBLES, et le
+> produit n'en dit rien. Un restaurant, un commerce et un bureau n'érigent
+> pratiquement jamais d'échafaudage ni ne travaillent sur cordes ; tous les trois
+> utilisent un escabeau, toutes les semaines — réassort d'un rayon haut,
+> nettoyage d'une hotte, changement d'un tube, décoration de vitrine. C'est là
+> que le risque de chute de hauteur se réalise dans ces secteurs, et c'est
+> l'article qui l'encadre.
+>
+> Ce qu'il exige vraiment n'est PAS « l'escabeau est interdit ». C'est que
+> l'usage comme POSTE DE TRAVAIL est interdit par principe, et que la dérogation
+> est conditionnée — soit impossibilité technique, soit un risque évalué comme
+> faible ET des travaux de courte durée ET non répétitifs, les trois conditions
+> du second cas étant cumulatives. Un réassort quotidien en haut d'un escabeau
+> est répétitif : il ne remplit pas la dérogation.
+>
+> Ce que le produit devrait en faire relève du DUERP — le risque « chute de
+> hauteur depuis un escabeau » et sa mesure de maîtrise — et non du calendrier
+> de conformité : il n'y a pas de rendez-vous à inscrire, il y a un risque à
+> évaluer et une dérogation à justifier.
+
+**Cet article-ci n'a jamais eu l'adresse visible dont parle le § 3 bis.** Il est
+entré au corpus le 2026-09-01, plus de trois jours après le retrait de la carte,
+et il n'a donc jamais été annoncé à personne. Les « 27 » du § 3 bis restent 27 :
+ils comptent une histoire, pas un état.
+
 ---
 
 ## 3 bis. Ces 27 articles ont eu une adresse visible. Elle a été retirée.
@@ -241,6 +280,17 @@ Deux conséquences à ne pas perdre :
   un document de travail n'annonce rien à un exploitant, et le chiffre les
   tenait pourtant pour déclarés. Le compte n'a pas augmenté de deux — c'est la
   mesure qui a cessé de se tromper de deux.
+
+  **Puis 28, le 2026-09-01**, et pour une troisième raison encore, qu'il faut
+  distinguer des deux précédentes. Ni régression, ni correction de la mesure :
+  le dépouillement du travail en hauteur a lu un texte que personne n'avait
+  ouvert et y a trouvé un manque réel de plus, `R. 4323-63`. Le cliquet a
+  fonctionné exactement comme son commentaire l'annonçait — « un 28ᵉ article
+  `non_couvert` ajouté sans adresse le fait passer à 28 et le test tombe ». Le
+  chiffre monte donc parce qu'on a lu, pas parce qu'on a cassé quelque chose, et
+  c'est le seul cas où le laisser monter est juste. Il redescendra par les deux
+  mêmes voies que les 27 autres, et par aucune troisième : couvrir, ou rendre
+  une adresse visible par l'exploitant.
 - **Le mécanisme, lui, est intact.** Les quatre autres axes tournent, les
   bandeaux et le PDF les portent. Réactiver `famille_obligation` est un ajout
   de quelques lignes le jour où la question sera tranchée — de préférence

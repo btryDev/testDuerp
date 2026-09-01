@@ -6,6 +6,7 @@ import { libellePorteurSansNom } from "@/lib/calendrier/labels";
 import { listerRapportsDeLEtablissement } from "@/lib/rapports/queries";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import { calculerScoreDepuisEtat } from "@/lib/dashboard/score";
+import { etatsPermanentsDuDossier } from "@/lib/etats-permanents/queries";
 import { evaluerEtatDuerp } from "@/lib/dashboard/duerp";
 import { repartirVerifications } from "./etat-verifications";
 import type { LignePlanActions, PlanActionsData } from "./PlanActionsDocument";
@@ -31,6 +32,7 @@ import {
 import { afficherValeur } from "@/lib/registre/valeur";
 import type { DossierData } from "./DossierConformiteDocument";
 import { couvertureDuDossier } from "@/lib/perimetre/faits";
+import { blocEtatsPermanents } from "./mentions-etats-permanents";
 
 /**
  * Builders qui lisent la DB et construisent les données sérialisables
@@ -373,7 +375,7 @@ export async function construireDossierConformiteData(
   // décrire le même ensemble. Avant, le compteur venait d'un agrégat SQL et
   // la liste d'un filtre TypeScript portant sur d'autres statuts — le PDF
   // annonçait « 5 vérifications en retard » puis en détaillait 3.
-  const [compteursActions, plan, rapports, verifs, couverture] =
+  const [compteursActions, plan, rapports, verifs, couverture, etatsPermanents] =
     await Promise.all([
       compterActions(etablissementId),
       construirePlanActionsData(etablissementId),
@@ -384,6 +386,18 @@ export async function construireDossierConformiteData(
       // finiraient par dire deux choses, et c'est le document remis à
       // l'inspecteur qui porterait la version périmée.
       couvertureDuDossier(etablissementId),
+      // Même raison que la ligne au-dessus, et même précédent : le tableau de
+      // bord et ce document ont déjà sorti deux scores différents à la même
+      // seconde parce que chacun composait son dénominateur. Le champ est
+      // requis dans `EntreeScoreConformite` pour que l'oubli ne compile pas.
+      //
+      // **Un seul passage, pour le score ET pour le tableau imprimé.** Le
+      // score n'a besoin que des deux compteurs, le tableau a besoin des
+      // lignes ; les lire deux fois aurait mis, dans un même document, une
+      // note calculée sur un ensemble et un détail décrivant l'autre. C'est
+      // mot pour mot le défaut raconté six lignes plus haut, celui des « 5
+      // vérifications en retard » suivies de 3 lignes.
+      etatsPermanentsDuDossier(etablissementId, user.id),
     ]);
 
   const now = new Date();
@@ -420,6 +434,10 @@ export async function construireDossierConformiteData(
       enRetard: compteursActions.enRetard,
     },
     duerp: etatDuerp.ouvert ? etatDuerp : null,
+    etatsPermanents: {
+      total: etatsPermanents.total,
+      enPlace: etatsPermanents.enPlace,
+    },
   });
 
   const criticiteMax =
@@ -456,6 +474,13 @@ export async function construireDossierConformiteData(
     genereLe: now,
     couverture,
     score,
+    // Les trente obligations sans échéance ne vivaient que sur un écran : un
+    // dirigeant qui avait passé ses états en revue ne pouvait le montrer à
+    // personne, et c'est ce document qu'on présente à un inspecteur. Les
+    // phrases viennent de `mentions-etats-permanents.ts`, qui les rend
+    // testables ; ce builder ne décide de rien, et n'écrit surtout pas la
+    // deuxième rédaction d'un compteur qui existe déjà.
+    etatsPermanents: blocEtatsPermanents(etatsPermanents),
     duerp:
       duerp === null
         ? null

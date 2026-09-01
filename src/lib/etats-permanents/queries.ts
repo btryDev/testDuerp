@@ -189,3 +189,99 @@ export async function listerEtatsPermanents(
 
   return { groupes, faits, enPlace, total, faitsDates, faitsDatesRenseignes };
 }
+
+/**
+ * Les états permanents d'un dossier, chargés depuis son seul identifiant.
+ *
+ * **Une seule porte pour tout ce qui n'est pas l'écran.** `listerEtatsPermanents`
+ * réclame un établissement déjà projeté et son parc : c'est ce que la page a
+ * sous la main, et ce que ni le tableau de bord ni un générateur de document
+ * n'ont. Chacun aurait donc refait le chargement à sa façon — c'est exactement
+ * ainsi que le score du tableau de bord et celui du dossier PDF ont fini par
+ * sortir deux valeurs différentes au même instant, chacun composant son
+ * dénominateur.
+ *
+ * **Elle ne recompte rien.** `total`, `enPlace` et les lignes viennent du même
+ * passage que l'écran. Un appelant qui n'a besoin que des deux entiers en
+ * prend deux (`compterEtatsPermanents`, juste en dessous) ; celui qui imprime
+ * les lignes prend les mêmes lignes que celles qui s'affichent. Aucun des deux
+ * ne peut décrire un ensemble que l'autre ne décrit pas.
+ *
+ * **`userId` en paramètre**, sur le modèle de `dashboard/transmissions.ts` :
+ * les appelants viennent tous d'un contexte déjà authentifié. La garantie ne
+ * s'en remet pas pour autant à l'appelant — le prédicat d'appartenance est
+ * porté par la requête ci-dessous, et c'est `etab.id` qui est propagé ensuite,
+ * jamais l'identifiant reçu.
+ *
+ * ⚠ CE PARAMÈTRE N'ÉVITE AUCUNE LECTURE DE SESSION, contrairement à ce que
+ * cette note a affirmé le 2026-09-01. `listerEtatsPermanents`, appelée juste
+ * en dessous, fait son propre `requireUser()` — c'est elle qui porte le
+ * prédicat sur les déclarations, et elle a raison de le faire : sa signature
+ * accepte n'importe quel `EtablissementMatching`. La session est donc lue de
+ * toute façon, à chaque affichage du tableau de bord comme avant. Constaté en
+ * exécutant la fonction hors requête HTTP : elle lève « `cookies` was called
+ * outside a request scope », depuis `require-user.ts` via `listerEtatsPermanents`.
+ *
+ * Ce qu'il faut en retenir pour un appelant futur : l'établissement est borné
+ * par le `userId` REÇU, les déclarations par l'utilisateur de la SESSION. Les
+ * deux coïncident chez les trois appelants d'aujourd'hui. Passer l'identifiant
+ * d'un autre utilisateur ne ferait fuir aucune donnée — la seconde portée est
+ * la plus étroite — mais produirait un dossier trouvé et vide, ce qui est un
+ * document faux. La correction, si un tel appelant apparaît, est de faire de
+ * cette fonction la seule à établir la portée, pas d'ajouter un garde ici.
+ */
+export async function etatsPermanentsDuDossier(
+  etablissementId: string,
+  userId: string,
+): Promise<EtatsPermanentsDuDossier> {
+  const etab = await prisma.etablissement.findFirst({
+    where: { id: etablissementId, entreprise: { userId } },
+    include: { equipements: { where: { actif: true } } },
+  });
+  // Un dossier qui n'est pas celui de l'utilisateur n'a rien à montrer, et
+  // zéro sur zéro ne produit aucune indétermination : le score reste ce qu'il
+  // aurait été sans ce terme, et le document n'imprime aucun tableau.
+  if (!etab) {
+    return {
+      groupes: [],
+      faits: [],
+      enPlace: 0,
+      total: 0,
+      faitsDates: 0,
+      faitsDatesRenseignes: 0,
+    };
+  }
+
+  return listerEtatsPermanents(
+    etab,
+    etab.equipements.map((eq) => ({
+      id: eq.id,
+      libelle: eq.libelle,
+      categorie: eq.categorie,
+      caracteristiques: (eq.caracteristiques ?? null) as Record<
+        string,
+        unknown
+      > | null,
+    })),
+  );
+}
+
+/**
+ * Les deux compteurs du score, et rien d'autre.
+ *
+ * **Pourquoi une entrée séparée plutôt que la précédente rendue telle quelle.**
+ * Le tableau de bord n'a besoin que de deux entiers ; lui faire transiter les
+ * groupes, les libellés et les dates le rendrait dépendant de la forme
+ * d'affichage d'un écran, qui bouge. Le calcul, lui, est le même —
+ * l'énumération ci-dessus — et c'est la seule chose qui compte.
+ */
+export async function compterEtatsPermanents(
+  etablissementId: string,
+  userId: string,
+): Promise<{ total: number; enPlace: number }> {
+  const { total, enPlace } = await etatsPermanentsDuDossier(
+    etablissementId,
+    userId,
+  );
+  return { total, enPlace };
+}

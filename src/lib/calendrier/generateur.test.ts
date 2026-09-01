@@ -67,6 +67,7 @@ function fakeObligationSalarie(
     ] as ObligationPorteeParSalarie["realisateurs"],
     criticite: 4,
     transmet: [],
+    exclut: [],
     nature: "echeance_recurrente",
     pieceAttendue: null,
     typologies: { travail: true },

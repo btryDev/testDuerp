@@ -41,9 +41,14 @@
 //
 // Les deux sont désormais encodés, chacun par sa propre ligne de catalogue.
 //
-// ⚠ ET LE I N'EST PAS UNE LISTE FERMÉE — le `II`, en vigueur depuis le
-// 10/04/2026, ajoute « tout poste pour lequel l'affectation sur celui-ci est
-// conditionnée à un examen d'aptitude spécifique prévu par le présent code ».
+// ⚠ ET LE I N'EST PAS UNE LISTE FERMÉE — le `II` ajoute « tout poste pour
+// lequel l'affectation sur celui-ci est conditionnée à un examen d'aptitude
+// spécifique prévu par le présent code ». Il est en vigueur depuis le
+// 28/04/2022 (décret n° 2022-679 du 26 avril 2022, art. 2), et NON depuis le
+// 10/04/2026 comme l'affirmait ce commentaire : la date de 2026 est celle de la
+// version courante de l'article, pas celle du paragraphe. Relevé à la source le
+// 2026-09-01 sur la version antérieure de l'article (en vigueur du 28/04/2022
+// au 10/04/2026), qui porte déjà ce II mot pour mot.
 // Les « sept expositions » ci-dessous désignent donc les sept alinéas du I, et
 // non l'assiette du suivi renforcé, qui est ouverte. Le paragraphe a été relevé
 // à la source le 2026-08-31 ; il figurait déjà dans la `reserve` de l'article,
@@ -58,9 +63,9 @@
 // que ces deux-là avaient été lus.
 //
 //  * `R. 4412-160` est ABROGÉ — par le décret n° 2026-253 du 8 avril 2026,
-//    art. 3, avec effet au 10/04/2026. C'est le décret que ce fichier cite
-//    lui-même dans sa `portee` pour la réécriture de `R. 4624-23` : l'article
-//    avait été vu mourir et cité vivant dans le même commentaire ;
+//    art. 3, 1°, avec effet au 10/04/2026. C'est le décret que ce fichier cite
+//    lui-même dans sa `portee` à propos de `R. 4624-23` : l'article avait été vu
+//    mourir et cité vivant dans le même commentaire ;
 //  * `R. 4412-118` porte l'ORGANISATION DES VACATIONS en travaux amiante —
 //    temps d'habillage, de décontamination, de pause, avec renvoi à
 //    `L. 3121-16` et `L. 3121-17`. Rien sur le suivi individuel renforcé.
@@ -70,7 +75,66 @@
 // articles n'avaient été vus qu'en résumé de moteur de recherche, et « vérifié »
 // avait été écrit sans que la page ait été ouverte.
 //
-// Lecture : `agent_verbatim`, relevés sur Légifrance le 2026-08-31.
+// `L. 4622-1` A QUITTÉ CE CORPUS le 2026-09-01, et il faut dire pourquoi plutôt
+// que de le laisser disparaître. Il y était entré en `obligation_manquante` :
+// le socle de tout le suivi individuel, lu, et que le référentiel ne portait
+// pas. Le lot 8 l'a encodé le 2026-08-31 —
+// `sante-travail-etablissement-adhesion-spst` — dans un corpus neuf,
+// `code-travail-service-prevention-sante`, qui dépouille les quatre articles du
+// titre II ; il n'a pas retiré l'entrée d'origine. Le même article s'est donc
+// trouvé porté DEUX FOIS, `obligation_manquante` ici et `retenu` là-bas, même
+// url, même version, même verbatim, même `luLe`. Pendant trois jours le
+// registre qui dit ce qui MANQUE au référentiel a déclaré manquante une
+// obligation livrée.
+//
+// L'entrée est supprimée plutôt que requalifiée : l'article relève du titre II,
+// pas de la section 2 du chapitre IV que ce corpus dépouille, et le laisser en
+// `retenu` aurait maintenu le double compte de `couvertureParCorpus()` en
+// échangeant seulement un mensonge contre une redondance. Il reste déclaré lu —
+// `referencesDepouillees()` le tient de l'autre corpus, qui l'a ouvert.
+//
+// Ce que ce défaut a coûté à mesurer : rien ne l'a signalé. Le test d'unicité
+// ne regardait qu'à l'intérieur d'un corpus, et la garde qui aurait dû crier
+// exigeait au contraire `L. 4622-1` parmi les manquantes. Voir la garde de
+// cohérence inter-corpus de `corpus.test.ts`, écrite avec cette correction.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// DÉCRET N° 2026-253 DU 8 AVRIL 2026 — DÉPOUILLÉ ARTICLE PAR ARTICLE LE
+// 2026-09-01. Il ne restait plus rien à en craindre pour ce corpus, mais il
+// fallait l'ouvrir pour le savoir : il avait été rencontré deux fois par
+// accident, jamais lu.
+//
+// Objet réel du décret : VLEP plomb, diisocyanates et émissions diesel
+// (transposition de la directive (UE) 2024/869). Sept articles, treize articles
+// de code touchés — R. 4412-149, R. 4412-152, R. 4412-160, R. 4624-23,
+// R. 4721-6 à R. 4721-10, R. 4724-14, R. 4724-14-1, R. 4724-14-2 et R. 717-16
+// du code rural. UN SEUL est cité par le référentiel : `R. 4624-23`.
+//
+// ⚠ CE QU'IL A FAIT À `R. 4624-23`, ET CE N'EST PAS UNE RÉÉCRITURE. Verbatim de
+// l'art. 3 relevé le 2026-09-01 : « 1° L'article R. 4412-160 est abrogé ;
+// 2° Au 2° du I de l'article R. 4624-23, les mots : "dans les conditions
+// prévues à l'article R. 4412-160" sont supprimés. » Sept mots retirés d'un
+// alinéa, rien d'autre. Légifrance affiche « Modifié par », non « Remplacé ».
+// Les III et IV — dont le III qui fonde
+// `sante-travail-etablissement-liste-postes-risques` — sont inchangés.
+//
+// ET C'EST UN ÉLARGISSEMENT, qui n'était consigné nulle part. Avant le
+// 10/04/2026 le I 2° lisait « Au plomb dans les conditions prévues à l'article
+// R. 4412-160 », et cet article — relevé à la source le 2026-09-01 dans sa
+// dernière version, en vigueur du 01/01/2017 au 10/04/2026 — subordonnait le
+// suivi renforcé à des SEUILS : « 1° Soit si l'exposition à une concentration
+// de plomb dans l'air est supérieure à 0,05 mg/m³ […] ; 2° Soit si une
+// plombémie supérieure à 200 µg/l de sang pour les hommes ou 100 µg/l de sang
+// pour les femmes est mesurée chez un travailleur. » Le I 2° lit désormais
+// « Au plomb ; » — sans seuil. L'assiette du suivi renforcé s'est donc ÉLARGIE
+// pour le plomb. Sans effet sur ce que le produit calcule, puisqu'il ne dérive
+// jamais qui relève du suivi renforcé et s'en remet à la liste que le III fait
+// tenir à l'employeur ; écrit ici parce que c'est le seul effet de droit réel
+// du décret sur ce corpus, et qu'il avait été pris pour autre chose.
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Lecture : `agent_verbatim`, relevés sur Légifrance le 2026-08-31, complétés
+// le 2026-09-01 pour le décret n° 2026-253.
 
 import type { Corpus } from "./types";
 
@@ -81,26 +145,8 @@ export const CODE_TRAVAIL_SANTE_TRAVAIL: Corpus = {
   url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018493140/",
   etendue: "articles_cites",
   portee:
-    "Un article du titre II du livre VI — `L. 4622-1`, qui met à la charge de l'employeur l'organisation d'un service de prévention et de santé au travail, socle de tout ce qui suit et seul article de ce titre à avoir été lu. Puis des extraits de la section 2 du chapitre IV : visite d'information et de prévention, sa périodicité et ses modalités adaptées (R. 4624-10, R. 4624-16 à R. 4624-18), suivi individuel renforcé — champ, liste des postes à risques particuliers, examen d'aptitude et périodicité (R. 4624-22 à R. 4624-24, R. 4624-27, R. 4624-28), et les trois articles de la surveillance post-exposition qui prolongent la sous-section jusqu'à R. 4624-28-3. S'y ajoute R. 4451-82, hors de cette section : il déroge à la périodicité du suivi renforcé pour les travailleurs exposés aux rayonnements ionisants classés en catégorie A, et il n'a de sens que lu avec R. 4624-28. ATTENTION : R. 4624-23 a été réécrit au 10 avril 2026 par le décret n° 2026-253 du 8 avril 2026 — c'est l'article le plus récemment modifié de tout le référentiel.",
+    "Des extraits de la section 2 du chapitre IV : visite d'information et de prévention, sa périodicité et ses modalités adaptées (R. 4624-10, R. 4624-16 à R. 4624-18), suivi individuel renforcé — champ, liste des postes à risques particuliers, examen d'aptitude et périodicité (R. 4624-22 à R. 4624-24, R. 4624-27, R. 4624-28), et les trois articles de la surveillance post-exposition qui prolongent la sous-section jusqu'à R. 4624-28-3. S'y ajoute R. 4451-82, hors de cette section : il déroge à la périodicité du suivi renforcé pour les travailleurs exposés aux rayonnements ionisants classés en catégorie A, et il n'a de sens que lu avec R. 4624-28. Le préalable de tout ce corpus — `L. 4622-1`, l'organisation d'un service de prévention et de santé au travail — n'est PAS lu ici : il relève du titre II du livre VI, que dépouille `code-travail-service-prevention-sante`. ATTENTION : R. 4624-23 a été MODIFIÉ au 10 avril 2026 par le décret n° 2026-253 du 8 avril 2026, art. 3, 2° — modification et non réécriture : sept mots supprimés au 2° de son I, qui subordonnait le suivi renforcé du plomb aux seuils de R. 4412-160, abrogé le même jour. Les III et IV, seuls encodés, sont inchangés. Cette portée classait par ailleurs l'article en tête du référentiel par sa fraîcheur ; le rang n'y est plus écrit, la date en vigueur ci-dessus dit ce qu'il disait d'utile.",
   articles: [
-    {
-      ref: "L. 4622-1",
-      intitule:
-        "Obligation pour l'employeur d'organiser un service de prévention et de santé au travail",
-      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043893834",
-      versionEnVigueur: "2022-03-31",
-      luLe: "2026-08-31",
-      lecture: "agent_verbatim",
-      prescrit:
-        "L'employeur organise un service de prévention et de santé au travail.",
-      citationCle:
-        "Les employeurs relevant du présent titre organisent des services de prévention et de santé au travail.",
-      statut: "obligation_manquante",
-      motif:
-        "Une phrase, et c'est le socle de tout ce corpus : sans service de prévention et de santé au travail, ni la visite d'information et de prévention ni le suivi individuel renforcé ne peuvent avoir lieu. Le référentiel porte les visites et ne porte pas le service qui les rend possibles.\n\nATTENTION AU VERBE. Le texte dit « ORGANISENT », pas « adhèrent ». L'adhésion à un service interentreprises est une modalité de cette obligation — celle que retiennent la quasi-totalité des TPE — et non l'obligation elle-même : un employeur peut aussi organiser un service autonome. Écrire « l'adhésion est une obligation » resserrerait le texte, et c'est l'erreur qu'une première rédaction du commentaire de `prestataires/domaines.ts` a commise.",
-      bloquePar:
-        "L'obligation est un état permanent sans échéance ni pièce datable : le modèle la porterait (porteur établissement, périodicité `autre`), mais rien dans le produit ne permettrait de la solder — l'annuaire des prestataires dit qu'un service est déclaré, pas qu'il en existe un. Surtout, le titre II du livre VI n'est dépouillé par aucun corpus : cet article est le SEUL qui en ait été lu, et encoder une obligation sur un titre dont on n'a lu qu'une phrase reviendrait à faire ce que le cliquet de `corpus.test.ts` interdit, à l'échelle du texte plutôt que de l'article.",
-    },
     {
       ref: "R. 4624-10",
       intitule: "Visite d'information et de prévention initiale",

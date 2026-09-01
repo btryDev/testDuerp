@@ -21,6 +21,17 @@
  *   - 50-79 : "à surveiller"
  *   - < 50 : "rattrapage nécessaire"
  *
+ * **Ce que le score mesure, et ce qu'il ne mesure pas.** Les trois termes
+ * ci-dessus se datent tous : une échéance, une action, une version de DUERP.
+ * Les états permanents, eux, n'ont pas de date — ils sont en place ou ils ne
+ * le sont pas, et seul le dirigeant peut le dire. Ils n'entrent donc pas dans
+ * la formule ; ils empêchent seulement le score de conclure « satisfaisante »
+ * tant qu'ils restent sans réponse (`qualifier`, plus bas, porte l'argument).
+ *
+ * Le score a longtemps ignoré leur existence, et il annonçait « 100 —
+ * Situation satisfaisante » à un bureau de six personnes qui n'avait rien
+ * renseigné du tout. C'est le défaut que cette version corrige.
+ *
  * **Une seule porte d'entrée** : `calculerScoreDepuisEtat`. Le tableau de
  * bord et le dossier de conformité PDF affichaient des scores différents au
  * même instant parce que chacun composait son propre dénominateur (l'un
@@ -34,8 +45,23 @@ import type { EtatDuerp } from "./duerp";
 
 export type Score = {
   valeur: number; // 0..100 arrondi à l'entier
-  niveau: "satisfaisante" | "a_surveiller" | "rattrapage";
+  niveau: "satisfaisante" | "a_surveiller" | "rattrapage" | "indetermine";
   libelle: string;
+  /**
+   * Combien d'états permanents applicables au dossier ne sont pas déclarés
+   * en place.
+   *
+   * **Ce n'est pas un compte de manquements.** Un état non déclaré n'est pas
+   * un état absent : c'est un état sur lequel l'outil n'a pas de réponse. La
+   * distinction est celle que `perimetre/couverture.ts` porte déjà — une
+   * indétermination énonce ce que l'outil ne sait pas dire, sans qualifier la
+   * situation de l'établissement au regard du droit.
+   *
+   * Il est rendu à part de `valeur` pour que l'interface puisse le dire
+   * quel que soit le niveau : un dossier en rattrapage a lui aussi le droit
+   * de savoir ce qui reste non renseigné.
+   */
+  indetermines: number;
 };
 
 export const SEUIL_SATISFAISANT = 80;
@@ -65,6 +91,20 @@ export type EntreeScoreConformite = {
    *  n'est pas noté sur ce point — c'est l'amorçage qui le porte, pas le
    *  score. */
   duerp: EtatDuerp | null;
+  /**
+   * Les états permanents applicables, et ceux que le dirigeant a déclarés
+   * en place. **Requis, et c'est le point.**
+   *
+   * Un champ optionnel serait resté vide : le tableau de bord et le dossier
+   * PDF composaient déjà chacun son dénominateur, et ils ont affiché deux
+   * scores différents au même instant jusqu'à ce que cette fonction devienne
+   * leur porte unique. Le rendre obligatoire garantit qu'aucun appelant ne
+   * peut noter un dossier en ignorant la moitié de ce que le produit sait.
+   *
+   * Ils n'entrent ni au dénominateur ni à la pénalité, et c'est délibéré —
+   * voir `calculerScoreDepuisEtat`.
+   */
+  etatsPermanents: { total: number; enPlace: number };
 };
 
 function niveauDepuisValeur(v: number): Score["niveau"] {
@@ -77,6 +117,9 @@ const LIBELLE_NIVEAU: Record<Score["niveau"], string> = {
   satisfaisante: "Situation satisfaisante",
   a_surveiller: "À surveiller",
   rattrapage: "Rattrapage nécessaire",
+  // Nomme le geste qui lève le doute, pas un état de l'établissement.
+  // « Incomplet » aurait qualifié le dossier ; c'est le score qui l'est.
+  indetermine: "Reste à renseigner",
 };
 
 /**
@@ -100,29 +143,70 @@ function penaliteDuerp(d: EtatDuerp | null): number {
   return d.estAJour ? 0 : POIDS_DUERP_NON_A_JOUR;
 }
 
+/**
+ * Le niveau annoncé, une fois l'indétermination prise en compte.
+ *
+ * **Pourquoi les états permanents ne pénalisent pas.** Les compter comme des
+ * retards affirmerait un manquement que l'outil n'établit pas : un extincteur
+ * signalé l'est peut-être depuis dix ans, sans que personne ait coché la
+ * ligne. Ce serait aussi refaire, dans le score, la confusion que l'ADR-026
+ * vient de défaire au référentiel — `periodicite: "autre"` y servait de
+ * tenant-lieu à trois natures d'obligation distinctes, et le produit a payé
+ * cher de les avoir mêlées.
+ *
+ * **Pourquoi les ignorer ne marche pas non plus.** C'est l'état d'avant, et il
+ * ment dans l'autre sens : un bureau de six personnes sans équipement sortait
+ * à 100, « Situation satisfaisante », avec treize états permanents non
+ * déclarés à côté. `.claude/CLAUDE.md` promet que « l'outil ne ment pas sur
+ * son niveau de conformité ».
+ *
+ * Le troisième terme est celui que ce dépôt applique partout ailleurs :
+ * **nommer le trou sans le combler**. Le score reste ce qu'il a toujours été,
+ * une mesure de ce qui se date ; il cesse seulement de conclure « satisfaisante »
+ * quand une part du périmètre n'a pas de réponse.
+ *
+ * L'indétermination ne dégrade que ce seul niveau. « À surveiller » et
+ * « Rattrapage nécessaire » sont des conclusions que des retards réels
+ * soutiennent : les remplacer priverait le dirigeant de l'information la plus
+ * urgente pour lui en substituer une moins pressante.
+ */
+function qualifier(valeur: number, indetermines: number): Score["niveau"] {
+  const niveau = niveauDepuisValeur(valeur);
+  if (niveau === "satisfaisante" && indetermines > 0) return "indetermine";
+  return niveau;
+}
+
 export function calculerScoreDepuisEtat(e: EntreeScoreConformite): Score {
+  // `max(0, …)` plutôt qu'une soustraction nue : `enPlace` et `total` sont
+  // mesurés par le même passage, mais un appelant qui les composerait à la
+  // main ne doit pas pouvoir rendre une indétermination négative.
+  const indetermines = Math.max(
+    0,
+    e.etatsPermanents.total - e.etatsPermanents.enPlace,
+  );
+
   const denominateur =
     e.verifs.total +
     e.actions.ouvertesTotal +
     (e.duerp !== null && e.duerp.ouvert ? 1 : 0);
 
+  let valeur: number;
   if (denominateur === 0) {
-    // Aucun engagement à suivre → score neutre haut
-    return {
-      valeur: 100,
-      niveau: "satisfaisante",
-      libelle: LIBELLE_NIVEAU.satisfaisante,
-    };
+    // Aucune échéance à suivre → rien à reprocher sur ce qui se date. Le
+    // dossier peut malgré tout n'avoir rien renseigné : c'est `qualifier`
+    // qui le dira, et c'est exactement le cas que ce retour rendait muet.
+    valeur = 100;
+  } else {
+    const penalite =
+      e.verifs.enRetard * POIDS_VERIF_EN_RETARD +
+      e.actions.enRetard * POIDS_ACTION_EN_RETARD +
+      penaliteDuerp(e.duerp);
+
+    valeur = Math.round(
+      100 * Math.max(0, 1 - penalite / (denominateur * POIDS_VERIF_EN_RETARD)),
+    );
   }
 
-  const penalite =
-    e.verifs.enRetard * POIDS_VERIF_EN_RETARD +
-    e.actions.enRetard * POIDS_ACTION_EN_RETARD +
-    penaliteDuerp(e.duerp);
-
-  const brut =
-    100 * Math.max(0, 1 - penalite / (denominateur * POIDS_VERIF_EN_RETARD));
-  const valeur = Math.round(brut);
-  const niveau = niveauDepuisValeur(valeur);
-  return { valeur, niveau, libelle: LIBELLE_NIVEAU[niveau] };
+  const niveau = qualifier(valeur, indetermines);
+  return { valeur, niveau, libelle: LIBELLE_NIVEAU[niveau], indetermines };
 }

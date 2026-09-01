@@ -41,6 +41,7 @@ import { repartirVerifications } from "@/lib/pdf/etat-verifications";
 import type { ModulesMatrice } from "./obligations";
 import { evaluerEtatDuerp, type EtatDuerp } from "./duerp";
 import { calculerScoreDepuisEtat, type Score } from "./score";
+import { compterEtatsPermanents } from "@/lib/etats-permanents/queries";
 import {
   porteeBatiment,
   toutesLesConditions,
@@ -612,6 +613,7 @@ export const getDashboardData = cache(async function getDashboardData(
     nbEquipements,
     transmissions,
     nbRapports,
+    etatsPermanents,
   ] = await Promise.all([
     // Un seul passage sur les vérifications qui comptent : les occurrences
     // ouvertes (toutes, sans plafond — leur nombre est borné par le
@@ -681,6 +683,12 @@ export const getDashboardData = cache(async function getDashboardData(
     prisma.rapportVerification.count({
       where: { verification: scope },
     }),
+    // Le score ne peut pas conclure « satisfaisante » en ignorant ce que
+    // l'écran « Ce qui doit être en place » affiche : un bureau de six
+    // personnes sortait à 100 avec treize états non renseignés. Lu par la même
+    // entrée que cet écran — deux comptes finiraient par diverger, et c'est le
+    // chiffre du tableau de bord qui porterait la version fausse.
+    compterEtatsPermanents(etablissementId, user.id),
   ]);
 
   // Répartition unique, partagée avec les documents générés : quatre
@@ -707,6 +715,7 @@ export const getDashboardData = cache(async function getDashboardData(
       enRetard: actionsEnRetard,
     },
     duerp: etatDuerp.ouvert ? etatDuerp : null,
+    etatsPermanents,
   });
 
   const recommandations = genererRecommandations(

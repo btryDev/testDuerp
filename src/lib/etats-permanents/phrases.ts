@@ -16,6 +16,15 @@
  * Ici chaque fonction rend **une phrase complète**. Elle se lit dans le source,
  * elle se teste, et toutes ses branches s'exercent — y compris celles qu'un
  * dossier ne montre jamais.
+ *
+ * **Deux d'entre elles ne sont plus seulement celles de l'écran.**
+ * `phraseDeclaration` et `phraseFaitsDates` sont reprises telles quelles par le
+ * dossier de conformité PDF (`pdf/mentions-etats-permanents.ts`) : c'est le
+ * même verbe pour la même déclaration des deux côtés, et deux rédactions d'une
+ * même chose auraient divergé à la première correction. Aucune des deux ne
+ * s'adresse à un lecteur en particulier, et c'est ce qui le permet —
+ * `phraseCompteur`, qui dit « par vous », reste propre à l'écran et le document
+ * en a une autre.
  */
 
 /** Ce qu'il reste à passer en revue, ou rien. */

@@ -44,6 +44,15 @@ function lienDeLAxe(
         href: hrefs.etablissement,
         libelle: "Vérifier le régime de l'établissement",
       };
+    // Même destination que le régime, libellé différent — et la différence
+    // n'est pas cosmétique. Le régime est là et se vérifie ; le public reçu
+    // n'a jamais été donné et se renseigne. « Vérifier » enverrait relire un
+    // champ vide.
+    case "public_recu":
+      return {
+        href: hrefs.etablissement,
+        libelle: "Renseigner la fiche de l'établissement",
+      };
     case "secteur_duerp":
       return hrefs.duerp
         ? { href: hrefs.duerp, libelle: "Ouvrir le document unique" }

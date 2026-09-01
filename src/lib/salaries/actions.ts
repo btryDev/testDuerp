@@ -6,7 +6,7 @@ import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import { genererCalendrier } from "@/lib/calendrier/actions";
 import { marquerCalendrierPerime } from "@/lib/calendrier/reconciliation";
 import { salarieSchema, titreSchema } from "./schema";
-import { titreParId } from "./catalogue";
+import { exclusionsDuTitre, titreParId } from "./catalogue";
 
 export type SalarieActionState =
   | { status: "idle" }
@@ -204,10 +204,43 @@ export async function declarerTitre(
 
   const salarie = await prisma.salarie.findFirst({
     where: { id: salarieId, etablissementId },
-    select: { id: true },
+    // Les titres déjà portés sont lus ici, dans la requête qui vérifie
+    // l'appartenance, plutôt que par un second aller-retour : c'est la même
+    // ligne, et le refus qui suit en dépend.
+    select: { id: true, titres: { select: { obligationId: true } } },
   });
   if (!salarie) {
     return { status: "error", message: "Cette personne est introuvable" };
+  }
+
+  // Le droit exclut certains cumuls, et le référentiel le dit maintenant
+  // (`ExclusionMutuelle`). Sans ce refus, l'employeur cochait les deux titres
+  // et le générateur inscrivait au calendrier une échéance que le texte écarte
+  // expressément — une échéance inventée, qui se présente à un contrôle.
+  //
+  // ON REFUSE, ON NE SIGNALE PAS, et c'est le seul endroit du produit qui le
+  // fasse à propos du référentiel. Ailleurs, le dépôt préfère nommer le trou
+  // plutôt que de trancher à la place du dirigeant (ADR-024). Ici le texte a
+  // déjà tranché : `R. 4624-24` écrit « se substitue à », `R. 4451-82` écrit
+  // « n'est pas requise ». Il n'y a pas de doute à lui laisser porter, et la
+  // conséquence d'un silence — une ligne de calendrier fausse — n'est visible
+  // par personne, alors qu'un refus est visible par celui qui vient de
+  // cliquer. C'est le critère de l'erreur visible par qui la subit.
+  //
+  // Et le refus n'est pas un mur : il nomme le titre en conflit, cite le texte
+  // et dit le geste qui débloque.
+  const dejaDeclares = salarie.titres.map((t) => t.obligationId);
+  const conflit = exclusionsDuTitre(parsed.data.obligationId).find((x) =>
+    dejaDeclares.includes(x.titre.id),
+  );
+  if (conflit) {
+    return {
+      status: "error",
+      message: `Le droit exclut ce cumul. Cette personne porte déjà « ${conflit.titre.libelle} ». ${conflit.motif} Retirez d'abord le titre qui ne s'applique pas.`,
+      fieldErrors: {
+        obligationId: [`Incompatible avec « ${conflit.titre.libelle} »`],
+      },
+    };
   }
 
   // `upsert` sur `(salarieId, obligationId)` : redéclarer le même titre est
