@@ -59,6 +59,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
         article: "Arrêté 2017-11-20 art. 7-11",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
+        versionConstatee: "2018-01-01",
       },
       {
         source: "CODE_ENVIRONNEMENT",
@@ -66,6 +67,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
         article: "C. env. R. 557-14-1",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000030833481/",
+        versionConstatee: "2016-12-31",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -119,6 +121,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
         article: "Arrêté 2017-11-20 art. 18-19",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
+        versionConstatee: "2018-01-01",
       },
     ],
     periodicite: "decennale",
@@ -144,6 +147,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
         article: "Arrêté 2017-11-20 art. 6",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
+        versionConstatee: "2018-01-01",
       },
     ],
     periodicite: "autre",
@@ -170,6 +174,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
         article: "Arrêté 2017-11-20 art. 26-28",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
+        versionConstatee: "2025-09-08",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -197,6 +202,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
         article: "R. 4323-1",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489707/",
+        versionConstatee: "2009-12-29",
       },
     ],
     periodicite: "autre",

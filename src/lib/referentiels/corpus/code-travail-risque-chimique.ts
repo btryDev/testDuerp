@@ -92,10 +92,13 @@ export const CODE_TRAVAIL_RISQUE_CHIMIQUE: Corpus = {
     {
       ref: "R. 4323-1",
       versionEnVigueur: "2009-12-29",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
-      obligations: ["esp-personnel-formation"],
+      obligations: ["esp-personnel-formation"],      prescrit:
+        "Impose à l'employeur d'informer de manière appropriée les travailleurs chargés de l'utilisation ou de la maintenance des équipements de travail sur quatre points : conditions d'utilisation ou de maintenance, instructions et consignes dont celles de la notice du fabricant, conduite à tenir face aux situations anormales prévisibles, conclusions tirées de l'expérience acquise. Obligation d'INFORMATION, permanente, sans périodicité écrite ; la formation proprement dite et son renouvellement relèvent des articles suivants de la même section 1 (R. 4323-3 en particulier). Champ : tout équipement de travail et tout employeur — l'article n'est pas propre aux équipements sous pression, et le référentiel ne le cite que pour eux.",
+      citationCle:
+        "L'employeur informe de manière appropriée les travailleurs chargés de l'utilisation ou de la maintenance des équipements de travail : 1° De leurs conditions d'utilisation ou de maintenance ; 2° Des instructions ou consignes les concernant notamment celles contenues dans la notice d'instructions du fabricant ; 3° De la conduite à tenir face aux situations anormales prévisibles ; 4° Des conclusions tirées de l'expérience acquise permettant de supprimer certains risques.",
     },
     {
       ref: "R. 4412-17",
