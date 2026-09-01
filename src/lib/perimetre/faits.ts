@@ -20,6 +20,10 @@ import {
   compterSansObligation,
   reperterSansEcheance,
 } from "@/lib/equipements/hors-referentiel";
+import {
+  obligationsSuspenduesAuPublicRecu,
+  projeterEtablissement,
+} from "@/lib/matching";
 import { correspondanceSecteur } from "./secteur";
 import {
   couvertureDeLEtablissement,
@@ -72,28 +76,28 @@ export async function faitsDeCouverture(
     > | null,
   }));
 
-  const sansEcheance = reperterSansEcheance(
-    {
-      id: etab.id,
-      effectifSurSite: etab.effectifSurSite,
-      estEtablissementTravail: etab.estEtablissementTravail,
-      estERP: etab.estERP,
-      estIGH: etab.estIGH,
-      estHabitation: etab.estHabitation,
-      typeErp: etab.typeErp,
-      categorieErp: etab.categorieErp,
-      classeIgh: etab.classeIgh,
-      // Cinquième projection du dépôt, et elle a été trouvée AU MERGE : la
-      // branche qui a rendu ces deux champs requis et celle qui a écrit ce
-      // module travaillaient en parallèle, chacune ignorant l'autre. Trois
-      // projections sur cinq les omettaient, et l'omission compilait tant
-      // qu'ils étaient optionnels. C'est le type qui a attrapé celle-ci,
-      // aucun test ne la couvrait.
-      personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
-      manipuleMatieresR422722: etab.manipuleMatieresR422722,
-    },
-    equipementsMatching,
-  );
+  // Une seule projection pour les deux lectures qui suivent. Les recopier
+  // ferait de ce fichier la sixième et la septième du dépôt — or c'est
+  // exactement ce qui a coûté un défaut : cette projection-ci a été trouvée AU
+  // MERGE, la branche qui a rendu les deux derniers champs requis et celle qui
+  // a écrit ce module travaillant en parallèle. Trois projections sur cinq les
+  // omettaient, et l'omission compilait tant qu'ils étaient optionnels. C'est
+  // le type qui a attrapé celle-là, aucun test ne la couvrait.
+  const etabMatching = projeterEtablissement({
+    id: etab.id,
+    effectifSurSite: etab.effectifSurSite,
+    estEtablissementTravail: etab.estEtablissementTravail,
+    estERP: etab.estERP,
+    estIGH: etab.estIGH,
+    estHabitation: etab.estHabitation,
+    typeErp: etab.typeErp,
+    categorieErp: etab.categorieErp,
+    classeIgh: etab.classeIgh,
+    personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
+    manipuleMatieresR422722: etab.manipuleMatieresR422722,
+  });
+
+  const sansEcheance = reperterSansEcheance(etabMatching, equipementsMatching);
 
   const duerp = etab.duerps[0] ?? null;
   // Le tri « déclarée / écartée / sans réponse » et les cinq états viennent
@@ -140,6 +144,16 @@ export async function faitsDeCouverture(
     equipements: {
       nbSansObligation: compterSansObligation(sansEcheance),
       nbEquipements: etab.equipements.length,
+    },
+    // Ce que le repli du moteur écarte faute du public reçu. Le tri est fait
+    // par `matching/public-recu.ts`, sur le verdict du moteur lui-même : rien
+    // n'est recalculé ici, et aucun seuil n'est écrit.
+    publicRecu: {
+      effectifRetenu: etab.effectifSurSite,
+      suspendues: obligationsSuspenduesAuPublicRecu(
+        etabMatching,
+        equipementsMatching,
+      ),
     },
   };
 }

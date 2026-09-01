@@ -17,6 +17,10 @@ export {
   projeterEtablissement,
   type SourceEtablissement,
 } from "./projection";
+export {
+  obligationsSuspenduesAuPublicRecu,
+  type ObligationSuspendueAuPublic,
+} from "./public-recu";
 export type {
   EquipementMatching,
   EtablissementMatching,

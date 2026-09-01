@@ -15,7 +15,7 @@
 // paraissent complets alors qu'ils ignorent la moitié du règlement sont pires
 // qu'un refus : le dirigeant s'y fierait devant une commission.
 //
-// ## Quatre axes, une seule adresse
+// ## Cinq axes, une seule adresse
 //
 // Le régime ERP n'est pas le seul bord du produit, et il n'a jamais été le
 // seul. Trois autres mécanismes disaient déjà, chacun dans son coin, une
@@ -28,6 +28,17 @@
 //  - `lib/referentiels/corpus/` — les articles lus dont le produit ne porte
 //    pas l'obligation (`non_couvert`), avec `declareA` qui dit **où** le
 //    manque est annoncé.
+//
+// Un cinquième s'y est ajouté, `public_recu`, et il vient d'ailleurs : ce
+// n'est pas un bord du référentiel, c'est une **donnée du dossier qui manque**.
+// `matching/engine.ts` retombe sur l'effectif salarié quand le nombre de
+// personnes habituellement présentes n'est pas déclaré — une entorse à
+// l'ADR-022 § 7, recensée là-bas et dans
+// `docs/dette-chantier-porteur-echeance.md` § 4. L'ADR concluait que « le canal
+// d'affichage manque », `EcheanceCalendrier.tone` étant binaire. Il cherchait
+// une couleur d'échéance ; ce qu'il fallait était une phrase, et c'est
+// exactement ce que ce module rend. La projection vit dans
+// `matching/public-recu.ts` : ici comme ailleurs, on ne recalcule rien.
 //
 // Un cinquième axe, `famille_obligation`, a projeté ce dernier pendant une
 // journée : il nommait à chaque dirigeant les vingt-sept articles que le
@@ -86,7 +97,7 @@ import type { CategorieErp } from "@/lib/referentiels/types-communs";
 export const CATEGORIES_COUVERTES: readonly CategorieErp[] = ["N5"];
 
 /**
- * De quoi le manque parle. Quatre axes qui ne se confondent ni ne
+ * De quoi le manque parle. Cinq axes qui ne se confondent ni ne
  * s'additionnent — chacun a sa source, et chacun se répare par un geste
  * différent.
  */
@@ -99,7 +110,10 @@ export type AxeCouverture =
   | "secteur_duerp"
   /** Des appareils du parc ne portent aucune échéance — rappel de
    *  `equipements/hors-referentiel.ts`. */
-  | "domaine_equipement";
+  | "domaine_equipement"
+  /** Le public reçu n'est pas déclaré, et le repli du moteur écarte des
+   *  obligations — projection de `matching/public-recu.ts`. */
+  | "public_recu";
 
 /**
  * Un fait établi : l'outil ne sait pas dire quelque chose, et on sait quoi.
@@ -205,12 +219,35 @@ export type FaitEquipements = {
   nbEquipements: number;
 };
 
+/**
+ * Ce que le repli de `matching/engine.ts` écarte faute du public reçu.
+ *
+ * `suspendues` est **calculé**, jamais écrit : `obligationsSuspenduesAuPublicRecu`
+ * rejoue le verdict du moteur avec et sans le chiffre manquant, et ne rend que
+ * les obligations dont la présence dépend réellement de lui. Le seuil vient de
+ * l'obligation elle-même — aucun nombre n'est déclaré ici, sans quoi cet axe
+ * serait la troisième déclaration que l'en-tête de ce module interdit.
+ */
+export type FaitPublicRecu = {
+  /**
+   * L'effectif salarié, c'est-à-dire ce que le moteur a retenu à la place du
+   * chiffre manquant. Il n'est pas là pour décider — il est là pour que la
+   * phrase dise au dirigeant sur quoi son calendrier a été calculé.
+   */
+  effectifRetenu: number;
+  /** Ce que ce dossier verrait si le chiffre manquant atteignait leur seuil. */
+  suspendues: readonly { libelle: string; seuil: number }[];
+};
+
 export type FaitsCouverture = {
   regime: RegimeEtablissement;
   /** `null` quand le dossier n'a pas de DUERP : l'axe se tait alors, il ne
    *  conclut pas. Un DUERP absent est un autre sujet que mal couvert. */
   duerp: FaitDuerp | null;
   equipements: FaitEquipements;
+  /** `null` quand les faits n'ont pas été collectés — écrans qui n'ont que le
+   *  régime sous la main. L'axe se tait alors ; il ne conclut pas « renseigné ». */
+  publicRecu: FaitPublicRecu | null;
 };
 
 /* ─── Les axes ────────────────────────────────────────────────────────── */
@@ -474,6 +511,49 @@ function axeEquipements(
   });
 }
 
+/**
+ * Le public reçu n'est pas déclaré, et des obligations s'en trouvent écartées.
+ *
+ * Une **indétermination**, jamais un manque : le fait n'est pas que le
+ * référentiel ignore quelque chose — il le sait très bien —, c'est que la
+ * donnée qui décide n'a pas été donnée. La réponse appartient au dirigeant, et
+ * `quoiFaire` nomme le geste. C'est exactement le cas que le type décrit :
+ * « ne jamais traiter ce cas comme couvert ».
+ *
+ * L'axe se tait quand `suspendues` est vide, et ce vide couvre trois
+ * situations, toutes sans doute à lever : le chiffre est déclaré ; l'effectif
+ * salarié atteint déjà le seuil, si bien que le repli donne la même réponse ;
+ * ou l'obligation tombe pour un motif que le public reçu ne changerait pas.
+ * Le tri se fait dans `matching/public-recu.ts`, sur le verdict du moteur —
+ * pas ici, sur une liste de cas.
+ *
+ * Chaque obligation porte son propre seuil dans la phrase. Deux obligations
+ * partagent aujourd'hui le même (51), et une tournure unique se lirait mieux —
+ * mais elle supposerait un seuil commun que rien ne garantit, et le jour où
+ * elle serait fausse personne ne le verrait.
+ */
+function axePublicRecu(
+  fait: FaitPublicRecu | null,
+  indeterminations: IndeterminationCouverture[],
+): void {
+  if (fait === null || fait.suspendues.length === 0) return;
+
+  const n = fait.suspendues.length;
+  const liste = fait.suspendues
+    .map((o) => `« ${o.libelle} » (à partir de ${o.seuil} personnes présentes)`)
+    .join(", ");
+
+  indeterminations.push({
+    axe: "public_recu",
+    motif:
+      "Le nombre de personnes habituellement présentes dans cet établissement — salariés, clients, élèves, patients ou visiteurs réunis — n'est pas renseigné.",
+    quoiFaire:
+      `Faute de ce chiffre, le calcul a retenu vos ${fait.effectifRetenu} salariés. ` +
+      `${n} obligation${n > 1 ? "s" : ""} ne figure${n > 1 ? "nt" : ""} donc ni à votre calendrier ni à votre registre de sécurité : ${liste}. ` +
+      "Le nombre se renseigne sur la fiche de l'établissement ; il compte le public que vous recevez, pas seulement vos salariés.",
+  });
+}
+
 /* ─── L'entrée ────────────────────────────────────────────────────────── */
 
 /**
@@ -496,6 +576,7 @@ export function couvertureDeLEtablissement(
   axeDuerp(faits.duerp, manques, indeterminations);
   axeSecteurParDefaut(faits.duerp, manques);
   axeEquipements(faits.equipements, manques);
+  axePublicRecu(faits.publicRecu, indeterminations);
 
   return { manques, indeterminations };
 }
@@ -515,5 +596,6 @@ export function couvertureDuRegime(
     regime,
     duerp: null,
     equipements: { nbSansObligation: 0, nbEquipements: 0 },
+    publicRecu: null,
   });
 }
