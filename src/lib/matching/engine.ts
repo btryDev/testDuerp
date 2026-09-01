@@ -311,6 +311,22 @@ function lireProprieteBooleenne(
 }
 
 /**
+ * Une valeur d'énumération est lue comme une chaîne. La chaîne VIDE est
+ * traitée comme une absence : `serialiserCaracteristiques` n'écrit pas la clé
+ * quand le champ n'est pas renseigné, mais une reprise de données ou un
+ * `<select>` non touché peuvent poser `""`, et « pas encore répondu » ne doit
+ * pas se mettre à valoir « une famille qui n'est aucune des connues ».
+ */
+function lireProprieteEnum(
+  eq: EquipementMatching,
+  propriete: string,
+): string | undefined {
+  const v = eq.caracteristiques?.[propriete];
+  if (typeof v !== "string") return undefined;
+  return v === "" ? undefined : v;
+}
+
+/**
  * Évaluation d'une condition pour un équipement donné.
  *
  * Le point sensible est le traitement de la propriété **non renseignée** :
@@ -327,6 +343,18 @@ function lireProprieteBooleenne(
  *     générale d'un couple d'obligations qui s'excluent, l'obligation
  *     spécifique portant l'opt-in correspondant. Tant que la question n'a pas
  *     été posée, c'est la règle générale qui s'applique — jamais aucune.
+ *   - `enum_egale` : non renseignée ⇒ NON satisfaite (opt-in). L'égalité sur
+ *     une valeur d'énumération, pour la ligne SPÉCIFIQUE d'un couple.
+ *   - `enum_differente` : non renseignée ⇒ SATISFAITE. La différence, pour la
+ *     ligne GÉNÉRALE du même couple. Le silence ne l'éteint pas : un
+ *     équipement dont la famille n'a jamais été saisie garde le régime
+ *     général, il ne tombe pas hors des deux.
+ *
+ * Le motif est le même dans les quatre derniers cas, et c'est le point à ne pas
+ * perdre : la forme qui porte la règle générale est TOUJOURS celle qui survit à
+ * l'absence de réponse. Une paire dont les deux membres s'éteignent au silence
+ * fabrique un faux négatif muet ; une paire dont les deux membres y survivent
+ * fabrique un doublon.
  */
 function conditionSatisfaite(
   cond: ConditionApplication,
@@ -358,6 +386,18 @@ function conditionSatisfaite(
     const v = lireProprieteBooleenne(eq, cond.propriete);
     if (v === undefined) return false;
     return v === cond.valeur;
+  }
+  if (cond.type === "equipement_propriete_enum_egale") {
+    const v = lireProprieteEnum(eq, cond.propriete);
+    if (v === undefined) return false;
+    return v === cond.valeur;
+  }
+  if (cond.type === "equipement_propriete_enum_differente") {
+    const v = lireProprieteEnum(eq, cond.propriete);
+    // Non renseignée ⇒ SATISFAITE. C'est ce `undefined` qui garde la ligne
+    // générale sur un équipement dont la famille n'a jamais été saisie.
+    if (v === undefined) return true;
+    return v !== cond.valeur;
   }
   return false;
 }
