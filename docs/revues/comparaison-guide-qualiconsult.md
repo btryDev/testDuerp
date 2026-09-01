@@ -17,10 +17,10 @@ et portails (p. 19-22), énergie thermique (p. 29), hygiène-santé-environnemen
 — ambiance de travail, risques professionnels, risques eau, substances
 dangereuses (p. 31-34).
 
-**Non lu, et dans le périmètre du produit** : la suite de la sécurité incendie
-(p. 14-16) et le détail des équipements sous pression (p. 24-28). Ces deux
-sections peuvent contenir des divergences ou des pistes que ce document ne
-porte pas.
+**Lues en second temps, le 2026-09-01** : la suite de la sécurité incendie
+(p. 14-16) et le détail des équipements sous pression et frigorifiques
+(p. 25-28). Leurs résultats sont en fin de document. **Toutes les sections du
+périmètre sont donc confrontées.**
 
 **Non lu, et hors périmètre déclaré** : ICPE (p. 39-41), aires de jeux et
 équipements sportifs (p. 42), rayonnements ionisants et environnement
@@ -172,3 +172,78 @@ sécurité — et une confirmation détaillée du trou des machines.
 
 Aucune ne s'encode sur la foi de ce document. Chacune se dépouille à la source,
 selon la règle maison, avant d'exister.
+
+---
+
+# Second temps — les deux sections manquantes
+
+Lues le 2026-09-01, après que la propriétaire a relevé que la comparaison se
+présentait comme complète alors qu'elle ne l'était pas.
+
+## Sécurité incendie, suite (p. 14-16) — rien de neuf dans le périmètre
+
+Les types spéciaux qu'elle détaille sont tous hors périmètre : refuges de
+montagne (REF), établissements flottants (EF), IGH, GHU. Restent les parcs de
+stationnement (PS), marginaux pour la cible.
+
+Sur l'électricité, une ligne mérite d'être lue deux fois : « ERP **5ᵉ catégorie
+si CdT applicable : 1 an** ». C'est le cas d'un ERP de 5ᵉ catégorie qui est
+aussi un lieu de travail — donc la quasi-totalité de la cible. Nous le
+couvrons par `elec-travail-periodique-annuelle`, annuelle, sur `R. 4226-16`.
+**Concordant.**
+
+La « protection contre la foudre — 1 an » que le guide isole en ligne propre
+relève du même `EL 19` annuel que nous portons déjà : c'est un objet de la
+vérification, pas une vérification de plus. **Pas un manque.**
+
+## Équipements sous pression (p. 25-26) — une divergence, et elle est instructive
+
+Le guide donne **2 ans** pour l'inspection périodique ; nous portons
+`triennale`. Même arrêté du 20 novembre 2017.
+
+**Aucun des deux ne se trompe** — ils ne parlent pas du même équipement. Notre
+propre description le dit déjà : « 4 ans pour la généralité des équipements,
+**2 ans pour les générateurs de vapeur et les équipements à couvercle amovible
+à fermeture rapide**, 1 an pour certains récipients mobiles ». Le guide détaille
+le cas court (ACAFR, générateurs de vapeur), nous encodons le cas général.
+
+Deux constats en découlent, et ils comptent plus que la divergence.
+
+**Le cas des deux ans est décrit et non encodé** — exactement le motif du
+recyclage d'aération : le texte est lu, la ligne est écrite en prose, et rien ne
+la planifie. La différence est qu'ici les équipements visés (autoclaves,
+stérilisateurs, générateurs de vapeur) sont improbables dans un restaurant ou un
+commerce. À consigner, pas à traiter en urgence.
+
+**Et la justification de notre `triennale` est périmée.** La note dit :
+« Périodicité modélisée triennale (**l'enum n'a pas de « quadriennale »**) :
+proxy conservateur des 4 ans réglementaires ». Or `quadriennale` **existe** dans
+l'énumération — `types-communs.ts:33`, `schema.prisma:568` — et
+`elec-travail-rapport-quadriennal` s'en sert.
+
+La raison écrite n'existe plus. Reste la question de fond, qui est une décision
+produit et non une correction : le dépôt encode partout les **plafonds** comme
+« la date au-delà de laquelle l'exploitant est nécessairement en défaut ». Par
+cette doctrine, quatre ans est la valeur juste et trois invente une échéance
+plus tôt que le droit. Être plus strict que la loi se défend pour un outil de
+conformité — mais alors il faut le dire, et ne pas l'appuyer sur une limite
+technique qui n'existe plus.
+
+## Équipements frigorifiques sous pression (p. 26) — hors périmètre, et c'est cohérent
+
+Le guide détaille inspections (2 à 4 ans) et requalifications (6 ou 12 ans) du
+**régime de pression** des installations frigorifiques. Nos huit lignes `froid`
+portent toutes sur l'**étanchéité** des fluides frigorigènes (règlement UE
+2024/573) — un autre sujet, un autre texte.
+
+Les « équipements frigorifiques sous pression » sont explicitement exclus du
+périmètre au 2026-09-01. **Pas un manque : un refus assumé.**
+
+## Énergie thermique (p. 28) — correction d'une piste que j'avais signalée
+
+J'avais relevé « installations consommant de l'énergie thermique » comme une
+famille absente du dépôt. La lecture de la section la **retire** : elle vise les
+chaufferies de **400 kW à 20 MW**. Un restaurant, un commerce ou un bureau n'en
+approche pas.
+
+C'est hors cible, et je l'avais signalé sans avoir lu la page.
