@@ -413,6 +413,64 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // l'employeur tient après avis du médecin du travail et du CSE, est
       // bloquée par le même manque.
       "R. 4225-3",
+      // ── Lot D1, 2026-09-01 : le travail en hauteur. Bloc contigu, ajouté en
+      // fin de liste À DESSEIN — le lot B est en train de supprimer cette
+      // liste exhaustive, et un bloc d'un seul tenant se retire d'un coup
+      // sans démêler les entrées des autres lots. C'est le seul endroit de
+      // `corpus.test.ts` que le lot D1 modifie, avec `MUETS` ci-dessous.
+      //
+      // Ces huit entrées ne sont pas huit défauts d'encodage : ce sont huit
+      // obligations réelles trouvées dans deux textes que le référentiel
+      // n'avait jamais ouverts — zéro entrée de corpus, zéro citation avant ce
+      // jour. Elles se répartissent en deux blocages, et deux seulement :
+      // aucune catégorie d'équipement « échafaudage », et aucun attribut
+      // d'établissement pour le cinquième déclencheur de l'ADR-022
+      // (« activité réellement exercée »). Chaque entrée dit lequel des deux
+      // la retient.
+      //
+      // R. 4323-61 : la notice des points d'ancrage, que l'employeur rédige et
+      // détient. Seul élément documentaire de la sous-section 1.
+      "R. 4323-61",
+      // R. 4323-69 : formation au montage, démontage et modification des
+      // échafaudages, nominative, porteur salarié. Périodicité `autre`, et
+      // c'est une conclusion : R. 4323-3 dit « aussi souvent que nécessaire ».
+      // Les « cinq ans » que l'on rencontre partout viennent de la
+      // recommandation R 408 de la CNAM, qui n'est pas une source opposable.
+      "R. 4323-69",
+      // R. 4323-70 : notice, note de calcul et plan de montage « conservés sur
+      // le lieu de travail ». Obligation documentaire opposable, porteur
+      // équipement.
+      "R. 4323-70",
+      // R. 4323-72 : vérification du bon état de conservation des éléments
+      // avant toute opération de montage. Seule vérification de la section 8 —
+      // toutes les autres du domaine viennent de l'arrêté de 2004.
+      "R. 4323-72",
+      // R. 4323-89 : deux obligations dans un article — la formation aux
+      // techniques sur cordes ET aux procédures de sauvetage (porteur
+      // salarié), et la note de calcul des points d'ancrage (document).
+      "R. 4323-89",
+      // Les trois vérifications d'échafaudage de l'arrêté du 21 décembre 2004,
+      // pris sur le fondement des articles alors numérotés R. 233-11 et
+      // suivants, devenus R. 4323-22 à R. 4323-24. AUCUNE des trois n'est dans
+      // le Code, et la section 8 n'en porte aucune : un dépouillement arrêté à
+      // « R. 4323-58 et suivants » aurait conclu que le domaine ne porte pas
+      // de périodicité, et se serait trompé de trois.
+      //
+      // Art. 4 : avant mise ou remise en service, cinq circonstances.
+      // Événementielle ; le « d'au moins un mois » du cinquième cas est une
+      // durée d'interruption qui déclenche, pas un intervalle qui revient.
+      "Arrêté 21-12-2004 art. 4",
+      // Art. 5 : examen quotidien de l'état de conservation. LE SEUL CAS DU
+      // RÉFÉRENTIEL où le texte chiffre un rythme que `Periodicite` ne peut
+      // pas écrire — l'énumération n'a pas de valeur journalière, et
+      // `hebdomadaire` diviserait la charge réelle par sept.
+      "Arrêté 21-12-2004 art. 5",
+      // Art. 6 : examen approfondi, « depuis moins de trois mois ». La seule
+      // périodicité chiffrée ET encodable de tout le domaine, et celle qui est
+      // le plus près d'être livrable : `trimestrielle` existe, la nature
+      // existe, le porteur équipement est le mieux servi des trois. Il ne
+      // manque que la catégorie d'équipement.
+      "Arrêté 21-12-2004 art. 6",
     ]);
   });
 
@@ -502,7 +560,34 @@ describe("corpus — ce qu'on ne couvre pas, et où on le dit", () => {
     // et il vérifie qu'un `declareA` est PRÉSENT, jamais que l'adresse citée
     // existe. Un meilleur invariant serait « tout article `non_couvert` a une
     // adresse, et cette adresse mène quelque part ».
-    const MUETS = 27;
+    // ⚠ **28 depuis le 2026-09-01**, et la cause n'est aucune des deux
+    // précédentes. Le lot D1 a dépouillé le travail en hauteur — un domaine
+    // qui n'avait jusque-là aucune entrée de corpus ni aucune citation — et y
+    // a trouvé un 28ᵉ manque réel : `R. 4323-63`, l'interdiction d'utiliser
+    // une échelle ou un escabeau comme poste de travail.
+    //
+    // Le cliquet a fait EXACTEMENT ce que le paragraphe ci-dessus annonçait
+    // qu'il ferait, mot pour mot : « un 28ᵉ article `non_couvert` ajouté sans
+    // adresse le fait passer à 28 et le test tombe ». Il n'a pas été desserré
+    // pour faire passer autre chose — il a été relevé d'un cran parce que la
+    // dette a réellement grandi d'un, et le nombre reste vrai.
+    //
+    // CE QUI SERAIT UNE RUSTINE ET NE L'EST PAS : reclasser `R. 4323-63` en
+    // `sans_objet` aurait gardé le plafond à 27 sans rien corriger, en niant
+    // une obligation qui existe. Lui donner un `declareA` pointant vers
+    // `docs/` ne l'aurait pas fait descendre non plus, le prédicat comptant
+    // déjà les notes internes comme muettes — c'est précisément pour empêcher
+    // ce geste-là qu'il les compte.
+    //
+    // ⚠ ET IL N'EST PLUS DE MÊME NATURE QUE LES 27 AUTRES. Ceux-là visent des
+    // établissements que le produit ne sert pas ; le rattachement
+    // `Etablissement.typeErp` réclamé par `docs/couverture-declaree-du-produit.md`
+    // les ferait disparaître de l'écran d'un restaurant. Celui-ci concerne un
+    // restaurant sur deux, et aucun rattachement par type d'ERP ne le rendra
+    // silencieux : il n'y a pas de type à qui ne pas le montrer. Le faire
+    // redescendre à 27 suppose donc de le COUVRIR, par le DUERP et non par le
+    // calendrier de conformité.
+    const MUETS = 28;
     // Une note interne n'est pas une annonce à l'exploitant. `declareA`
     // mélange aujourd'hui les deux natures — une adresse produit et un
     // document de travail — et cette distinction reste à trancher (lot 3) ;
