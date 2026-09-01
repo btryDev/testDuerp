@@ -34,12 +34,12 @@ Pas de LLM pour traiter les réponses, pas de reformulation automatique, pas de 
 
 ### Socle historique (les 4 blocs d'origine)
 
-1. **Évaluation des risques professionnels (DUERP)** — art. R. 4121-1 à R. 4121-4 et L. 4121-2 CT. Inventaire des risques par unité de travail, cotation, mesures de prévention, versioning obligatoire (mise à jour annuelle minimum, conservation 40 ans). Import XLSX/CSV d'un DUERP existant (parser déterministe, gabarit téléchargeable).
+1. **Évaluation des risques professionnels (DUERP)** — art. R. 4121-1 à R. 4121-4 et L. 4121-2 CT. Inventaire des risques par unité de travail — **cinq unités au plus, hors « Risques transverses »** (ADR-033) —, cotation, mesures de prévention, versioning obligatoire (mise à jour annuelle minimum, conservation 40 ans). Import XLSX/CSV d'un DUERP existant (parser déterministe, gabarit téléchargeable).
 2. **Vérifications périodiques réglementaires** — art. R. 4323-22 et s. CT, règlement ERP (arrêté du 25 juin 1980), CCH. Calendrier généré automatiquement selon équipements et typologie ; périodicités hebdo → quinquennale ; réalisateur requis.
 3. **Registre de sécurité numérique** — art. R. 4323-25 CT (consignation des vérifications), R. 4323-26 (annexion des rapports d'un tiers) et R. 4323-27 (tenue sur tout support, via L. 8113-6 — c'est lui qui rend le registre numérique légal). L. 4711-5 n'institue rien : il autorise seulement à réunir plusieurs registres en un seul. Centralisation horodatée des rapports, liaison aux occurrences de vérification, export consolidé (ZIP + index PDF).
 4. **Plan d'actions de conformité** — art. L. 4121-2 CT. Actions correctives unifiées (issues du DUERP ou d'un rapport de vérification), hiérarchie des mesures, suivi jusqu'à la levée.
 
-### Registres complémentaires (section « Mes registres » de la sidebar)
+### Registres complémentaires (axe « Équipement et bâtiment » de la sidebar)
 
 5. **Registre public d'accessibilité ERP** — page publique par slug, prestations, attestation, Ad'AP, formation du personnel d'accueil, affiche QR code téléchargeable.
 6. **Permis de feu** — travaux par point chaud (réf. INRS ED 6030), référentiel de mesures de prévention, cycle de vie du permis.
@@ -73,6 +73,20 @@ Sources primaires libres d'accès uniquement :
 ### Utilisateurs cibles
 - Dirigeants de TPE/PME (1 à 50 salariés), non-experts en prévention
 - Secteurs à faible complexité technique
+
+### Ce qui est refusé à la création — deux cas, et deux seulement (ADR-031)
+1. **Plus de cinquante travailleurs.** La borne compte les salariés, jamais le
+   public reçu : un restaurant de huit salariés qui sert trois cents couverts
+   relève de la 3ᵉ catégorie d'ERP et reste dans la cible. Elle vaut à la
+   création ; un dossier existant qui franchit le seuil garde son dossier et
+   porte un manque de couverture.
+2. **Un ERP situé dans un immeuble de grande hauteur.** L'IGH SEUL n'est pas
+   refusé — un employeur locataire d'une tour relève du Code du travail, que le
+   produit sert entièrement.
+
+**Tout le reste se déclare et ne se refuse pas** (ADR-020, ADR-031) : ICPE,
+expositions spécialisées, types d'ERP non instruits, catégories d'ERP 1 à 4.
+On refuse ce qu'on ne peut pas servir, pas ce qu'on ne couvre pas entièrement.
 
 ### Secteurs couverts (DUERP)
 1. **Restauration** (NAF 56.xx)
@@ -145,7 +159,7 @@ Rojer couvre les obligations de **santé-sécurité au travail et de sécurité 
 — Code du travail, CCH, et Code de l'environnement quand il porte sur la sécurité des
 installations ou des personnes. Une obligation y naît de cinq déclencheurs possibles :
 
-1. **Équipement déclaré** — 79 obligations livrées
+1. **Équipement déclaré** — 80 obligations livrées
 2. **Statut d'employeur** — dès un salarié. **15 obligations livrées au lot 7**
    (2026-08-31) : formation à la sécurité, information et accès au DUERP, VIP, suivi
    individuel renforcé et sa visite intermédiaire, liste des postes à risques, matériel
@@ -155,7 +169,9 @@ installations ou des personnes. Une obligation y naît de cinq déclencheurs pos
    (`D. 4711-1`), avis d'accès au DUERP (`R. 4121-4`), sanitaires, eau potable,
    protocole de sécurité de chargement, formation à la manutention, formation au travail
    sur écran, et l'emplacement de restauration
-3. **Effectif** — seuils 11, 25, 50. **4 obligations livrées au lot 8** (2026-08-31),
+3. **Effectif** — seuils 11 et 50, plus un plafond à 49 (`effectifMax`). Le
+   seuil de 25 qui figurait ici ne correspond à aucune obligation encodée :
+   vérifié en appelant le référentiel le 2026-09-01. **4 obligations livrées au lot 8** (2026-08-31),
    les premières à s'appuyer sur `TypologieApplication.effectifMin` hors du domaine
    incendie : CSE à 11, règlement intérieur à 50, et les deux régimes de restauration.
    Le mécanisme existait depuis l'ADR-004 ; il n'a pas fallu de déclencheur
@@ -295,13 +311,19 @@ nature réglementaire et de surface de risque ; la valeur ajoutée d'en garder l
 est nulle, la conservation reste à la charge de l'employeur hors de l'outil.
 
 ### Hors périmètre (à ce jour)
-- IGH, sites industriels ; ATEX, rayonnements ionisants ; équipements sportifs, piscines
+- **ERP situé en IGH** (refusé à la création, ADR-031) ; sites industriels ;
+  équipements sportifs, piscines. L'**IGH seul est servi** : neuf obligations
+  portent la typologie `igh`, et les obligations du règlement IGH pèsent sur
+  l'exploitant de l'immeuble, pas sur l'employeur qui y loue des bureaux
+- **ATEX, rayonnements ionisants, amiante, plomb, radon, CMR** : non couverts,
+  mais **déclarés** et non refusés — le dossier se crée et la page
+  « Ce que Rojer ne couvre pas » le dit en permanence
 - **ICPE** — les seuils ne sont pratiquement jamais atteints dans les 3 secteurs cibles (rubrique 2925 à 600 kW, 1510 à 5 000 m³), et encoder la nomenclature serait un produit en soi. Une question fermée à l'onboarding bascule le dossier en couverture partielle. Les déchets suivent la même règle ; les fluides frigorigènes restent dedans, ils y sont par la sécurité des équipements
 - **Obligations d'exploitation non-SST** : affichages commerciaux (prix, allergènes, origine des viandes, licence), HACCP / PMS / agrément sanitaire, débit de boissons, métrologie des instruments de pesage, SACEM, décret tertiaire / OPERAT, vidéosurveillance, assurances
 - **RH non-SST** : DPAE, registre unique du personnel, BDESE, index égapro, DOETH
 - Dépôt du DUERP sur le portail national dématérialisé
 - Signature électronique **qualifiée** (la signature simple existe)
-- Multi-utilisateurs internes par entreprise (rôles, permissions fines) — l'accès externe prestataire par token existe, lui
+- Multi-utilisateurs internes par entreprise (rôles, permissions fines) — l'accès externe prestataire par token existe, lui. **À ne pas confondre avec le multi-établissements, qui est entré au périmètre le 2026-09-01** (ADR-028) : un compte reste une entreprise et un utilisateur, mais cette entreprise porte autant d'établissements qu'elle en a
 - Notifications de relance (email/push/SMS) — seuls les emails transactionnels existent (OTP, liens d'accès)
 - Paiement / abonnement / gestion commerciale
 - Intégration SIRENE pour auto-complétion SIRET
@@ -327,7 +349,7 @@ Le stockage des fichiers uploadés passe par une **abstraction** (`src/lib/stora
 
 ### Modèle de données (prisma/schema.prisma)
 
-Cœur : `Entreprise` → `Etablissement` (régimes cumulables travail/ERP/IGH/habitation, ADR-001/004) → `UniteTravail`, `Equipement`, `Duerp`/`DuerpVersion`, `Risque`, `Verification`, `RapportVerification`, `Action` (unifiée, XOR risque/vérification — ADR-002 ; `Mesure` a été supprimée).
+Cœur : `Entreprise` → `Etablissement` (régimes cumulables travail/ERP/IGH/habitation, ADR-001/004 ; la **famille d'habitation** — `FamilleHabitation`, obligatoire à la création si `estHabitation` — précise le régime habitation comme la catégorie précise l'ERP) → `UniteTravail`, `Equipement`, `Duerp`/`DuerpVersion`, `Risque`, `Verification`, `RapportVerification`, `Action` (unifiée, XOR risque/vérification — ADR-002 ; `Mesure` a été supprimée).
 
 Modules complémentaires : `Prestataire`, `AccessToken`, `Signature`, `RegistreAccessibilite`, `PermisFeu`, `PlanPrevention`/`LignePlanPrevention`, `CarnetSanitaire`/`PointReleve`/`ReleveTemperature`/`AnalyseLegionelle`.
 
@@ -364,13 +386,32 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
 23. **023** — Le salarié porte ses titres, et l'outil n'en garde que l'échéance
 24. **024** — Une obligation déclare ce qu'elle implique ailleurs : le
     produit nomme la transmission, il ne la dérive jamais
-25. **025** — Ce que Rojer sert et ce qu'il refuse (**proposé, non tranché** :
-    sept questions ouvertes, dont trois contredisent des ADR en vigueur)
+25. **025** — Ce que Rojer sert et ce qu'il refuse (**tranchée en réunion le
+    2026-09-01** : deux refus seulement, tout le reste se déclare)
 26. **026** — La nature d'une obligation est un champ, pas une déduction :
     récurrente, état permanent, ponctuelle, événementielle
 27. **027** — Une déclaration n'est pas une preuve : les états permanents ont
     leur écran et leur support (`DeclarationEtatPermanent`), et ce que
     l'employeur y coche n'améliore aucune valeur — depuis le 2026-09-01 une déclaration lève une indétermination du score sans faire monter la note, et rien n'y est jamais présenté comme vérifié
+28. **028** — Un utilisateur tient plusieurs établissements : `Entreprise.userId`
+    reste unique, `Etablissement.entrepriseId` ne l'est plus. Sélecteur en barre
+    haute, cookie `etablissement-actif` revalidé par le scoping à chaque lecture
+29. **029** — La zone remplace le bâtiment, et il n'y en a jamais plus de trois.
+    Le modèle `Batiment` reste en base sous ce nom ; l'invariant de l'ADR-019 —
+    un lieu ne porte aucun régime — est conservé mot pour mot
+30. **030** — Trois axes thématiques, deux entrées fonctionnelles : À faire ·
+    Santé-sécurité · Équipement et bâtiment · Documentation · Paramètres
+31. **031** — Refuser à l'entrée ce qu'on ne sait pas servir *du tout*, et
+    déclarer tout le reste. Amende l'ADR-020 sans la renverser
+32. **032** — Une demande d'assureur entre par les prescriptions, et ne devient
+    jamais du droit : marquage obligatoire sur les neuf surfaces qui l'affichent
+33. **033** — Le DUERP est borné à cinq unités de travail, hors « Risques
+    transverses »
+
+**Six ADR ont été déplacées le 2026-09-01**, chacune portant en tête le renvoi
+vers celle qui la remplace ou l'amende : **001** redevient effective (028) ·
+**013** amendée (028) · **014**-prescriptions amendée (032) · **015** remplacée
+(030) · **017** amendée (030) · **019** remplacée (029) · **020** amendée (031).
 
 La puce reprend le numéro de l'ADR et non son rang dans la liste, pour que les
 branches puissent atterrir dans n'importe quel ordre sans se contredire.
@@ -397,31 +438,50 @@ régulièrement un écran hors charte.
 ### Navigation (double sidebar : rail + panneau)
 
 Une entrée de rail = une **page d'entrée** + un **panneau** : cliquer navigue
-et ouvre le panneau (ADR-015).
+et ouvre le panneau (ADR-015, conservé par l'ADR-030).
+
+Le rail porte **trois axes thématiques** — de quoi s'agit-il — et **deux
+entrées fonctionnelles** — qu'est-ce que je fais maintenant, où je règle. Cinq
+entrées pour trois axes, et c'est assumé : le calendrier est l'écran le plus
+consulté du produit, le ranger sous un axe le mettrait à deux clics de son
+usage quotidien (ADR-030).
 
 - **La marque « Rojer »**, en tête de rail : le retour au **tableau de bord**, qui n'a pas d'entrée de navigation — un résumé n'est pas une des questions du dirigeant, il y répond toutes (ADR-015, seconde révision)
-- **À faire** (→ le calendrier, toutes familles) : Calendrier · Plan d'actions · **Ce qui doit être en place** · Préparer un contrôle — que des **activités**, jamais l'état filtré d'une autre entrée ; un filtre vit dans l'écran. Le troisième item sert la **deuxième nature** d'obligation de l'ADR-022 — les états permanents, que le générateur écarte faute de rendez-vous et qui n'avaient donc aucune surface (ADR-027). Ce n'est pas un filtre du calendrier : `estSansRendezVous` fait que ces lignes ne peuvent pas y exister
-- **Opérations** (→ Permis de feu) : Permis de feu · Plans de prévention — le
-  **ponctuel encadré**, qui naît d'un chantier daté et meurt clos ; ce n'est
-  ni une correction ni un registre tenu en continu (ADR-017)
-- **Mon établissement** (→ Équipements) : Équipements · Prestataires · Fiche établissement · Équipe
-- **Mes registres** (→ DUERP, à plat) : DUERP · Registre de sécurité · Accessibilité · Carnet sanitaire — ce qui se tient en continu
-- **Paramètres** (→ Connecter) : entrée sans panneau — régler le dossier et y
-  brancher un assistant en lecture seule (serveur MCP local — spike, cf.
-  `scripts/mcp-server.ts`)
+- **À faire** (→ Calendrier) : Calendrier · Plan d'actions · **Ce qui doit être en place** — que des **activités**, jamais l'état filtré d'une autre entrée ; un filtre vit dans l'écran. Le troisième item sert la **deuxième nature** d'obligation de l'ADR-022 — les états permanents, que le générateur écarte faute de rendez-vous et qui n'avaient donc aucune surface (ADR-027). Ce n'est pas un filtre du calendrier : `estSansRendezVous` fait que ces lignes ne peuvent pas y exister
+- **Santé-sécurité** (→ DUERP) : DUERP · Équipe · Prescriptions · Permis de feu · Plans de prévention · **Ce que Rojer ne couvre pas** — les personnes et les actes de prévention. Les deux opérations ponctuelles y sont rangées et non avec le lieu : un permis de feu naît d'un chantier daté et meurt clos (ADR-017), c'est un acte de prévention, pas une propriété du bâtiment
+- **Équipement et bâtiment** (→ Équipements) : Équipements · Zones · Prestataires · Registre de sécurité · Accessibilité · Carnet sanitaire — le lieu et ce qu'il contient. Le registre de sécurité y est parce que son contenu est celui du parc ; l'ADR-030 dit que c'est son choix le plus fragile, et qu'il se corrige en déplaçant une entrée, pas en rouvrant la découpe
+- **Documentation** (→ Documents obligatoires) : Documents obligatoires · Préparer un contrôle · Comprendre — ce qui parle du dossier plutôt que du lieu. « Préparer un contrôle » y est rangé **une seule fois** : sa sortie est un jeu de documents, et une entrée présente deux fois laisse chercher laquelle est la bonne
+- **Paramètres** (→ Fiche établissement) : Fiche établissement · Connecter un assistant — le réglage du dossier, d'où la césure du rail. Le panneau est né d'une régression : la fiche ayant pris la place d'entrée, « Connecter » n'était plus listé nulle part et n'était atteignable qu'en tapant son URL
 
-Le **compte** a quitté le pied de rail pour la barre haute (`BarreCompte`) :
-la sidebar porte la hiérarchie du produit, la barre haute les utilitaires de
-session. Le **guide « Comprendre »** n'a plus d'entrée de rail ; sa page vit
-toujours et se rejoint depuis « Préparer un contrôle », « Connecter » et la
-fiche d'un équipement. Aucune tuile ne s'allume dessus — une entrée de rail
-désigne une page, pas une approximation.
+Le **compte** a quitté le pied de rail pour la barre haute (`BarreCompte`), qui
+porte aussi le **sélecteur d'établissement** depuis l'ADR-028. La sidebar porte
+la hiérarchie du produit, la barre haute les utilitaires de session — et
+commuter d'établissement répond à « où je travaille », qui est un repère de
+session au même titre que « qui je suis ».
+
+Le **guide « Comprendre »** a **retrouvé une entrée**, sous « Documentation ».
+Il l'avait perdue en août faute d'endroit juste — une lecture n'est pas une des
+questions du dirigeant, et le rang de rail la mettait au niveau d'un registre
+tenu. Sous cet axe, il est un document parmi ceux qui expliquent le dossier, et
+la tuile s'allume dessus.
 
 ### Tableau de bord
 Le tableau de bord est un **board personnalisable de widgets** (`src/components/dashboard/widgets/`) : un registre central de widgets avec variants de visualisation, un layout par défaut éditorial, un tiroir « Ajouter un widget », drag-and-drop, persistance versionnée en localStorage (`useLayoutPerso`). Le widget Équipements est épinglé (obligatoire). Un bandeau « brief » en tête liste les éléments à traiter.
 
 ### Onboarding
-Compte → entreprise → établissement (SIRET, régimes, catégorie ERP déduite) → déclaration guidée des équipements → génération automatique des obligations applicables et du calendrier.
+Compte → entreprise → **premier** établissement → déclaration guidée des équipements → génération automatique des obligations applicables et du calendrier.
+
+Le parcours **ne déduit plus rien** depuis le 2026-09-01 : le type et la
+catégorie d'ERP sont **déclarés** par le dirigeant — son classement figure sur
+son arrêté d'ouverture ou au PV de la commission de sécurité — et la **famille
+d'habitation** est exigée si le régime habitation est coché. Les vingt et un
+types sont proposés, pas huit. Deux réponses arrêtent la création : plus de
+cinquante travailleurs, et un ERP situé en IGH (ADR-031).
+
+Les établissements **suivants** ne passent pas par là : ils s'ouvrent depuis le
+sélecteur de la barre haute (`/etablissements/nouveau`), et c'est cette
+porte-là qui porte les mêmes règles de périmètre — une règle posée sur un
+parcours se contourne en changeant de parcours.
 
 ### Garde-fous (jamais bloquants, toujours informatifs)
 - Hiérarchie des mesures de prévention (L. 4121-2) : alerte si seulement EPI/formation
