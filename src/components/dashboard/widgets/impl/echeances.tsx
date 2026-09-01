@@ -11,6 +11,8 @@ import { BentoCell } from "@/components/dashboard/BentoCell";
 import { formaterDateCourteFr } from "@/lib/dates";
 import { estVerificationEnRetard } from "@/lib/dates/retard";
 import { libelleEcart } from "../temps";
+import { estEcheanceContractuelle } from "@/lib/prescriptions/sources";
+import { MentionContractuelle } from "@/components/prescriptions/MentionContractuelle";
 import type { DashboardBundle } from "../types";
 
 // Toutes les fonctions temporelles reçoivent la date de référence du
@@ -133,8 +135,16 @@ export function WidgetProchainesEcheances({
                 className="grid grid-cols-[1fr_auto] items-start gap-3 rounded-md py-3 transition-colors hover:bg-[color:var(--board-slate-pale)]"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-[13.5px] font-medium tracking-[-0.005em]">
-                    {v.libelleObligation}
+                  {/* Le marquage est une pastille à côté du libellé, jamais
+                      un morceau du libellé : celui-ci est tronqué, et un
+                      marquage tronqué disparaît précisément sur les lignes
+                      longues — c'est-à-dire sur celles qu'un assureur
+                      impose (ADR-032). */}
+                  <p className="flex items-center gap-1.5 truncate text-[13.5px] font-medium tracking-[-0.005em]">
+                    <span className="truncate">{v.libelleObligation}</span>
+                    {estEcheanceContractuelle(v) ? (
+                      <MentionContractuelle />
+                    ) : null}
                   </p>
                   <p className="mt-[3px] truncate font-mono text-[11px] tracking-[0.04em] text-[color:var(--board-slate-mid)]">
                     {v.equipement.libelle}

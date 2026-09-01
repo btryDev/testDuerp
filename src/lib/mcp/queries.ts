@@ -32,6 +32,7 @@ import {
 } from "@/lib/dates/retard";
 import { JOURS_HORIZON_PROCHE } from "@/lib/dates";
 import { prismaMcp } from "./prisma";
+import { estEcheanceContractuelle } from "@/lib/prescriptions/sources";
 import { libellePorteurSansNom } from "@/lib/calendrier/labels";
 
 // ---------------------------------------------------------------------
@@ -401,6 +402,21 @@ export type VerificationLue = {
   statut: string;
   etat: EtatVerification;
   joursRetard: number;
+  /**
+   * `true` quand la ligne naît d'un engagement contractuel — une demande
+   * d'assureur — et non d'un texte (ADR-032).
+   *
+   * Elle sort du produit vers un assistant, qui ne peut pas deviner la
+   * différence : sans ce drapeau, une vérification imposée par un contrat se
+   * présente exactement comme une obligation réglementaire, et l'assistant la
+   * restituerait comme telle. Le serveur a pour consigne de ne jamais
+   * qualifier juridiquement un état ; encore faut-il qu'il lui donne de quoi
+   * distinguer.
+   *
+   * Ce n'est pas une donnée personnelle : c'est la nature d'une échéance.
+   * Elle n'élargit pas le `select` minimal au sens RGPD.
+   */
+  contractuelle: boolean;
 };
 
 export type FiltresVerificationsMcp = {
@@ -435,6 +451,9 @@ export async function listerVerifications(
       dateRealisee: true,
       statut: true,
       equipement: { select: { libelle: true, categorie: true } },
+      // La source de la prescription, et rien d'autre d'elle : de quoi dire
+      // qu'une ligne est contractuelle sans faire sortir l'acte lui-même.
+      prescription: { select: { source: true } },
       // `salarieId` seul, jamais le nom : cette requête alimente un
       // assistant hors du produit (cf. `libellePorteurSansNom`).
       salarieId: true,
@@ -455,6 +474,7 @@ export async function listerVerifications(
     statut: v.statut,
     etat: etatDe(v, now),
     joursRetard: v.dateRealisee ? 0 : joursDeRetard(v.datePrevue, now),
+    contractuelle: estEcheanceContractuelle(v),
   }));
 
   if (filtres.recherche) {

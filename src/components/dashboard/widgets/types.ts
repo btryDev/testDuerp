@@ -105,6 +105,13 @@ type VerificationLite = {
   datePrevue: Date;
   statut: string;
   equipement: { libelle: string };
+  /**
+   * La source de la prescription dont la ligne est née, quand elle en a une.
+   * Le board s'en sert pour marquer les échéances contractuelles (ADR-032) —
+   * une demande d'assureur n'est pas une obligation légale, et l'écran le plus
+   * lu du produit ne peut pas la présenter comme les autres.
+   */
+  prescription?: { source: string } | null;
 };
 
 type RapportLite = {

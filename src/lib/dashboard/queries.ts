@@ -634,6 +634,11 @@ export const getDashboardData = cache(async function getDashboardData(
         datePrevue: true,
         dateRealisee: true,
         libelleObligation: true,
+        // La source de la prescription, pour que le board dise ce qu'une
+        // ligne contractuelle est (ADR-032). Le tableau de bord est l'écran
+        // le plus lu du produit : une échéance d'assureur qui s'y présente
+        // comme les autres est présentée comme du droit.
+        prescription: { select: { source: true } },
         equipement: { select: { libelle: true } },
         salarie: { select: { nom: true, prenom: true } },
       },

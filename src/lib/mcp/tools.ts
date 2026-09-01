@@ -397,6 +397,14 @@ function formaterVerifications(verifs: VerificationLue[]): string {
         : `échéance ${formaterDateFr(v.datePrevue)}`,
       LIBELLE_ETAT[v.etat],
       v.joursRetard > 0 ? `${v.joursRetard} jour(s) de retard` : null,
+      // Dit en toutes lettres, et non par une pastille : le destinataire est
+      // un assistant, qui restituerait sinon un engagement d'assurance comme
+      // une obligation légale (ADR-032). Le serveur a pour consigne de ne
+      // jamais qualifier juridiquement un état — il lui faut donc de quoi
+      // distinguer, et le mot doit voyager avec la ligne.
+      v.contractuelle
+        ? "engagement d'assurance, pas une obligation légale"
+        : null,
     ]
       .filter(Boolean)
       .join(", ");
