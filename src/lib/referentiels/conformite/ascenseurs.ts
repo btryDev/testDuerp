@@ -59,6 +59,7 @@ export const obligationsAscenseurs: Obligation[] = [
         article: "CCH R. 134-6",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818737/",
+        versionConstatee: "2026-04-01",
       },
       {
         source: "ARRETE",
@@ -95,6 +96,7 @@ export const obligationsAscenseurs: Obligation[] = [
         article: "CCH R. 134-6",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818737/",
+        versionConstatee: "2026-04-01",
       },
       {
         source: "ARRETE",
@@ -129,6 +131,7 @@ export const obligationsAscenseurs: Obligation[] = [
         article: "CCH R. 134-6",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818737/",
+        versionConstatee: "2026-04-01",
       },
       {
         source: "ARRETE",
@@ -171,6 +174,7 @@ export const obligationsAscenseurs: Obligation[] = [
         article: "CCH R. 134-6",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818737/",
+        versionConstatee: "2026-04-01",
       },
     ],
     periodicite: "annuelle",
@@ -198,6 +202,7 @@ export const obligationsAscenseurs: Obligation[] = [
         article: "CCH R. 134-11",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043818747/",
+        versionConstatee: "2026-05-15",
       },
       {
         source: "ARRETE",
@@ -205,6 +210,7 @@ export const obligationsAscenseurs: Obligation[] = [
         article: "Arrêté 2012-08-07",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000026286347",
+        versionConstatee: "2026-05-15",
       },
     ],
     periodicite: "quinquennale",
@@ -231,6 +237,7 @@ export const obligationsAscenseurs: Obligation[] = [
         article: "CCH R. 134-10",
         url:
           "https://www.legifrance.gouv.fr/codes/id/LEGISCTA000043818735/",
+        versionConstatee: "2021-07-01",
       },
     ],
     periodicite: "autre",
@@ -256,6 +263,7 @@ export const obligationsAscenseurs: Obligation[] = [
         article: "CCH R. 134-1",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000043818721/",
+        versionConstatee: "2021-07-01",
       },
     ],
     periodicite: "autre",
