@@ -3,12 +3,12 @@ import type { ReactNode } from "react";
 import { LABEL_TOUT_ETABLISSEMENT } from "@/lib/calendrier/labels";
 
 /**
- * Rangée de chips « Tout l'établissement · Bâtiment A · Bâtiment B ».
+ * Rangée de chips « Tout l'établissement · Zone A · Zone B ».
  *
  * Un filtre d'écran vit dans l'URL (ADR-015) : chaque chip est un lien
  * vers la même page avec `?batiment=`. Le composant est serveur, sans état
  * — la page relit le paramètre et filtre. Il n'est rendu qu'à partir de
- * deux bâtiments (ADR-019) : l'appelant le garantit, lui ne fait que
+ * deux zones (ADR-029) : l'appelant le garantit, lui ne fait que
  * dessiner.
  *
  * Deux tons, parce que le produit a deux grammaires visuelles et qu'un
@@ -41,7 +41,7 @@ export function SelecteurBatiment({
 }: {
   baseHref: string;
   batiments: { id: string; nom: string }[];
-  /** Id du bâtiment filtré — `undefined` = tout l'établissement. */
+  /** Id de la zone filtrée — `undefined` = tout l'établissement. */
   actif: string | undefined;
   /** Nombre affiché à droite du nom (équipements, échéances…). */
   compteurs?: Map<string, number>;
@@ -52,9 +52,9 @@ export function SelecteurBatiment({
   ton?: TonSelecteurBatiment;
 }) {
   return (
-    <nav aria-label="Filtrer par bâtiment" className="space-y-2">
+    <nav aria-label="Filtrer par zone" className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
-        <span className={CLASSES_ETIQUETTE[ton]}>Bâtiment</span>
+        <span className={CLASSES_ETIQUETTE[ton]}>Zone</span>
         <Chip href={baseHref} actif={!actif} ton={ton}>
           {LABEL_TOUT_ETABLISSEMENT}
         </Chip>

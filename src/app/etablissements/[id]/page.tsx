@@ -284,7 +284,7 @@ export default async function EtablissementPage({
             actif={batimentFiltre}
             legende={
               batimentFiltre
-                ? "Les échéances, équipements et opérations affichés sont ceux de ce bâtiment, plus ce qui concerne tout l'établissement. Le bandeau du haut, le score et l'état des documents portent toujours sur l'établissement entier."
+                ? "Les échéances, équipements et opérations affichés sont ceux de cette zone, plus ce qui concerne tout l'établissement. Le bandeau du haut, le score et l'état des documents portent toujours sur l'établissement entier."
                 : undefined
             }
           />

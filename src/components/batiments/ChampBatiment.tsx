@@ -2,11 +2,11 @@ import { Label } from "@/components/ui/label";
 import type { Charte } from "@/components/ui-kit";
 
 /**
- * Le champ « Bâtiment » des formulaires à rattachement optionnel — permis
- * de feu, plan de prévention, point de relevé (ADR-019).
+ * Le champ « Zone » des formulaires à rattachement optionnel — permis de
+ * feu, plan de prévention, point de relevé (ADR-029).
  *
- * Rien n'est rendu en mono-bâtiment : le formulaire ne change pas tant que
- * la question n'a pas de sens. À partir de deux, un select avec « Tout
+ * Rien n'est rendu sous une seule zone : le formulaire ne change pas tant
+ * que la question n'a pas de sens. À partir de deux, un select avec « Tout
  * l'établissement » en première option, qui vaut « non précisé ».
  *
  * Ce champ a reçu une prop de charte parce qu'il était appelé des deux côtés
@@ -39,10 +39,10 @@ export function ChampBatiment({
     <div className={board ? undefined : "space-y-1.5"}>
       {board ? (
         <label className="label-board" htmlFor="batimentId">
-          Bâtiment
+          Zone
         </label>
       ) : (
-        <Label htmlFor="batimentId">Bâtiment</Label>
+        <Label htmlFor="batimentId">Zone</Label>
       )}
       <select
         id="batimentId"

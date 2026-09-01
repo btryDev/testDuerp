@@ -319,9 +319,18 @@ model Risque {
 // ADR-019 : le bâtiment est un **lieu**, jamais un régime. Les flags ERP/IGH
 // et la catégorie restent sur `Etablissement` — le classement ERP s'attache à
 // un ensemble de bâtiments non isolés, pas à chaque corps ; le poser ici
-// sous-catégoriserait un ERP contigu. Tout établissement en a au moins un
-// (« Bâtiment principal », ordre 0), créé par la migration puis à la création
-// d'établissement ; l'interface reste muette tant qu'il est seul.
+// sous-catégoriserait un ERP contigu. Tout établissement en a au moins un,
+// ordre 0, créé par la migration puis à la création d'établissement ;
+// l'interface reste muette tant qu'il est seul.
+//
+// ADR-029 : ce modèle s'appelle « zone » à l'écran, et il n'y en a plus que
+// trois au plus. La table garde son nom parce que la zone *est* ce bâtiment —
+// la renommer n'aurait produit qu'une migration et quatre clés étrangères à
+// déplacer. Le plafond vit dans `creerBatiment`, pas ici : une contrainte de
+// base aurait rendu immodifiables les dossiers qui portent déjà davantage de
+// lieux. Le nom semé est passé de « Bâtiment principal » à « Zone
+// principale » ; les lignes existantes gardent le leur, aucune migration ne
+// les touche.
 model Batiment {
   id              String        @id @default(cuid())
   etablissementId String

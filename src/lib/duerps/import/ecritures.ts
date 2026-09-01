@@ -15,8 +15,15 @@
 // autre, et le tout part en un lot.
 
 import type { PlanImport } from "./parser";
+import { verifierPlafondImport } from "../plafond-unites";
 
-export type UniteExistante = { id: string; nom: string };
+export type UniteExistante = {
+  id: string;
+  nom: string;
+  /** L'unité « Risques transverses » ne compte pas dans le plafond, et ne
+   *  sert jamais de point de rattachement à une unité importée (ADR-033). */
+  estTransverse: boolean;
+};
 
 export type EcrituresImport = {
   unitesACreer: Array<{ id: string; duerpId: string; nom: string }>;
@@ -59,6 +66,17 @@ export function criticiteImportee(
   return Math.max(1, Math.min(16, Math.round((gravite * probabilite) / maitrise)));
 }
 
+/**
+ * Ce que rend la construction : les écritures, ou un refus motivé.
+ *
+ * Un type somme et non une exception, pour que l'appelant **doive** traiter le
+ * refus : `commitImport` doit le rendre à l'écran, pas le laisser remonter en
+ * erreur 500 sur un dirigeant qui vient de déposer son document.
+ */
+export type ResultatEcritures =
+  | { ok: true; ecritures: EcrituresImport }
+  | { ok: false; message: string };
+
 export function construireEcrituresImport({
   plan,
   unitesExistantes,
@@ -75,13 +93,29 @@ export function construireEcrituresImport({
   /** Injecté pour que les tests soient déterministes. */
   genererId: (prefixe: string) => string;
   maintenant: Date;
-}): EcrituresImport {
+}): ResultatEcritures {
   // Réutilisation par nom exact, comme le faisait le `findFirst` d'origine.
   // Première occurrence gagnante si le DUERP porte déjà deux unités homonymes.
+  //
+  // L'unité transverse est écartée de la table de rattachement : un fichier
+  // qui porterait une unité nommée « Risques transverses » y verserait ses
+  // risques, et l'écran des unités la masque — ils y deviendraient invisibles.
   const parNom = new Map<string, string>();
   for (const u of unitesExistantes) {
+    if (u.estTransverse) continue;
     if (!parNom.has(u.nom)) parNom.set(u.nom, u.id);
   }
+
+  // Le plafond se vérifie avant d'assembler quoi que ce soit (ADR-033).
+  // L'import est le point d'entrée qui peut faire entrer douze unités d'un
+  // coup, et c'est celui où l'on refuse en bloc : tronquer un document que le
+  // dirigeant a apporté lui ferait perdre des risques déjà évalués sans qu'il
+  // le sache.
+  const borne = verifierPlafondImport(
+    unitesExistantes,
+    plan.unites.map((u) => u.nom),
+  );
+  if (!borne.ok) return { ok: false, message: borne.message };
 
   const ecritures: EcrituresImport = {
     unitesACreer: [],
@@ -132,5 +166,5 @@ export function construireEcrituresImport({
     }
   }
 
-  return ecritures;
+  return { ok: true, ecritures };
 }

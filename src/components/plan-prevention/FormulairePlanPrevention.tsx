@@ -313,7 +313,7 @@ export function FormulairePlanPrevention({
           charte="board"
           batiments={batiments}
           erreur={err("batimentId")}
-          aide="Le bâtiment principal de l'opération ; détaillez les lieux ci-dessous si elle en traverse plusieurs."
+          aide="La zone principale de l'opération ; détaillez les lieux ci-dessous si elle en traverse plusieurs."
         />
 
         <ChampBoard
@@ -322,7 +322,7 @@ export function FormulairePlanPrevention({
           label="Lieux d'intervention"
           requis
           maxLength={1000}
-          placeholder="Ex : toiture bâtiment A, local technique sous-sol, chaufferie"
+          placeholder="Ex : toiture, local technique sous-sol, chaufferie"
           erreur={err("lieux")}
         />
 

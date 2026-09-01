@@ -1,8 +1,8 @@
-// Les mutations de bâtiment (ADR-019) — base simulée.
+// Les mutations de zone (ADR-029, qui remplace l'ADR-019) — base simulée.
 //
 // Ce fichier n'existait pas, et les invariants centraux de l'ADR ne tenaient
-// qu'à la relecture : qu'aucun bâtiment d'un autre établissement ne serve de
-// destination, que le dernier bâtiment ne se supprime pas, et que **tout** le
+// qu'à la relecture : qu'aucune zone d'un autre établissement ne serve de
+// destination, que la dernière zone ne se supprime pas, et que **tout** le
 // contenu soit déplacé avant la suppression — équipements retirés du parc
 // compris, points de relevé, permis, plans. Le dernier point est le plus
 // coûteux à rattraper : un `SetNull` silencieux perd une information que
@@ -24,6 +24,8 @@ const h = vi.hoisted(() => {
     destination: null as { id: string } | null,
     appels: [] as Appel[],
     ordreMax: 2 as number | null,
+    /** Le nombre de zones déjà posées — ce que le plafond regarde. */
+    nbZones: 3 as number,
   };
 
   const deplacement = (table: string) => ({
@@ -50,7 +52,7 @@ const h = vi.hoisted(() => {
     $transaction: async (fn: (t: typeof tx) => Promise<unknown>) => fn(tx),
     batiment: {
       findFirst: vi.fn(async () => db.destination),
-      aggregate: async () => ({ _max: { ordre: db.ordreMax } }),
+      aggregate: async () => ({ _max: { ordre: db.ordreMax }, _count: db.nbZones }),
       create: vi.fn(async ({ data }: { data: { ordre: number } }) => {
         db.appels.push({ table: "batiment.create", args: data });
         return { id: "b-neuf" };
@@ -74,7 +76,9 @@ vi.mock("@/lib/auth/scope", () => ({
   assertEtablissementOwnership: h.assertEtablissementOwnership,
 }));
 
-const { creerBatiment, supprimerBatiment } = await import("./actions");
+const { creerBatiment, modifierBatiment, supprimerBatiment } = await import(
+  "./actions"
+);
 
 const ETAB = "etab-1";
 const B = { id: "b-reserve", etablissementId: ETAB, ordre: 1 };
@@ -84,10 +88,12 @@ beforeEach(() => {
   h.db.destination = { id: "b-principal" };
   h.db.appels = [];
   h.db.ordreMax = 2;
+  h.db.nbZones = 0;
   h.prisma.batiment.findFirst.mockClear();
   h.prisma.batiment.create.mockClear();
+  h.prisma.batiment.update.mockClear();
   // `trouverBatimentDuUser` et la recherche de destination passent tous deux
-  // par `findFirst` : le premier appel rend le bâtiment, le second la cible.
+  // par `findFirst` : le premier appel rend la zone, le second la cible.
   h.prisma.batiment.findFirst
     .mockImplementationOnce(async () => h.db.batiment)
     .mockImplementation(async () => h.db.destination);
@@ -109,7 +115,7 @@ describe("supprimerBatiment — le contenu part avant le lieu", () => {
 
   it("déplace sans filtrer sur `actif` : un appareil retiré garde son lieu", () => {
     // Le filet du filet : un `where` qui ne verrait que les équipements en
-    // service laisserait les retirés pointer vers un bâtiment supprimé — et
+    // service laisserait les retirés pointer vers une zone supprimée — et
     // ils portent des rapports (ADR-012).
     return supprimerBatiment(B.id, "b-principal").then(() => {
       const eq = h.db.appels.find((a) => a.table === "equipement");
@@ -120,14 +126,14 @@ describe("supprimerBatiment — le contenu part avant le lieu", () => {
     });
   });
 
-  it("refuse un bâtiment hors périmètre, sans rien écrire", async () => {
+  it("refuse une zone hors périmètre, sans rien écrire", async () => {
     h.db.batiment = null;
     h.prisma.batiment.findFirst.mockReset();
     h.prisma.batiment.findFirst.mockImplementation(async () => null);
 
     const res = await supprimerBatiment(B.id, "b-principal");
 
-    expect(res).toEqual({ status: "error", message: "Bâtiment introuvable" });
+    expect(res).toEqual({ status: "error", message: "Zone introuvable" });
     expect(h.db.appels).toEqual([]);
   });
 
@@ -142,14 +148,14 @@ describe("supprimerBatiment — le contenu part avant le lieu", () => {
     expect(h.db.appels).toEqual([]);
   });
 
-  it("refuse le dernier bâtiment, faute de destination possible", async () => {
+  it("refuse la dernière zone, faute de destination possible", async () => {
     h.db.destination = null;
 
     const res = await supprimerBatiment(B.id, B.id);
 
     expect(res.status).toBe("error");
     if (res.status === "error") {
-      expect(res.message).toContain("autre bâtiment");
+      expect(res.message).toContain("autre zone");
     }
     expect(h.db.appels).toEqual([]);
   });
@@ -170,7 +176,7 @@ describe("supprimerBatiment — le contenu part avant le lieu", () => {
 });
 
 describe("creerBatiment — l'ordre", () => {
-  it("place le nouveau bâtiment après le dernier", async () => {
+  it("place la nouvelle zone après la dernière", async () => {
     const fd = new FormData();
     fd.set("nom", "Annexe");
 
@@ -181,7 +187,7 @@ describe("creerBatiment — l'ordre", () => {
     expect((cree?.args as { ordre: number }).ordre).toBe(3);
   });
 
-  it("part de zéro quand l'établissement n'a encore aucun bâtiment", async () => {
+  it("part de zéro quand l'établissement n'a encore aucune zone", async () => {
     h.db.ordreMax = null;
     const fd = new FormData();
     fd.set("nom", "Bâtiment principal");
@@ -209,5 +215,101 @@ describe("creerBatiment — l'ordre", () => {
     await creerBatiment(ETAB, { status: "idle" }, fd);
 
     expect(h.assertEtablissementOwnership).toHaveBeenCalledWith(ETAB);
+  });
+});
+
+describe("creerBatiment — le plafond de trois zones (ADR-029)", () => {
+  const ajouter = async (nom: string) => {
+    const fd = new FormData();
+    fd.set("nom", nom);
+    return creerBatiment(ETAB, { status: "idle" }, fd);
+  };
+
+  it("laisse passer les trois premières", async () => {
+    for (const dejaPosees of [0, 1, 2]) {
+      h.db.nbZones = dejaPosees;
+      expect((await ajouter(`Zone ${dejaPosees}`)).status).toBe("success");
+    }
+    expect(h.prisma.batiment.create).toHaveBeenCalledTimes(3);
+  });
+
+  it("refuse la quatrième, et le message nomme la limite", async () => {
+    h.db.nbZones = 3;
+
+    const res = await ajouter("Annexe");
+
+    expect(res.status).toBe("error");
+    // Le nombre est dans la phrase : « ce n'est pas possible » laisserait
+    // l'utilisateur réessayer sans savoir ce qu'il doit défaire d'abord.
+    if (res.status === "error") expect(res.message).toContain("3 zones");
+    expect(h.prisma.batiment.create).not.toHaveBeenCalled();
+  });
+
+  it("refuse avant d'écrire, pas après", async () => {
+    h.db.nbZones = 3;
+
+    await ajouter("Annexe");
+
+    expect(h.db.appels).toEqual([]);
+  });
+
+  it("porte l'erreur sur le champ « nom », que le formulaire affiche", async () => {
+    // Sans `fieldErrors.nom`, `BatimentsManager` range le message dans la
+    // branche « autres » et l'utilisateur le lit loin du champ qu'il vient
+    // de remplir.
+    h.db.nbZones = 3;
+
+    const res = await ajouter("Annexe");
+
+    // Le `status` s'affirme avant le `fieldErrors` : sous un simple
+    // `if (res.status === "error")`, retirer le plafond aurait rendu ce
+    // test vert en n'exécutant plus aucune assertion.
+    expect(res.status).toBe("error");
+    if (res.status === "error") {
+      expect(res.fieldErrors?.nom?.[0]).toBe(res.message);
+    }
+  });
+});
+
+describe("un dossier ancien qui porte déjà quatre lieux (ADR-029)", () => {
+  // Le plafond vaut à l'ajout. Un dossier antérieur à la règle ne perd rien
+  // et reste manœuvrable : c'est la moitié de la décision, et c'est celle
+  // qu'une contrainte de base aurait cassée.
+  beforeEach(() => {
+    h.db.nbZones = 4;
+  });
+
+  it("ne peut plus en ajouter", async () => {
+    const fd = new FormData();
+    fd.set("nom", "Cinquième");
+
+    expect((await creerBatiment(ETAB, { status: "idle" }, fd)).status).toBe(
+      "error",
+    );
+  });
+
+  it("garde ses quatre zones : rien n'est fusionné ni supprimé", async () => {
+    const fd = new FormData();
+    fd.set("nom", "Cinquième");
+
+    await creerBatiment(ETAB, { status: "idle" }, fd);
+
+    expect(h.db.appels).toEqual([]);
+  });
+
+  it("renomme encore une zone au-dessus du plafond", async () => {
+    const fd = new FormData();
+    fd.set("nom", "Réserve nord");
+
+    const res = await modifierBatiment(B.id, { status: "idle" }, fd);
+
+    expect(res.status).toBe("success");
+    expect(h.prisma.batiment.update).toHaveBeenCalled();
+  });
+
+  it("en supprime encore une, et redescend ainsi sous le plafond", async () => {
+    const res = await supprimerBatiment(B.id, "b-principal");
+
+    expect(res.status).toBe("success");
   });
 });

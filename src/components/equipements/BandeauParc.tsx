@@ -80,8 +80,8 @@ export function BandeauParc({
   /** Ce que le référentiel propose encore de déclarer, et où le lire. */
   suggestions?: { nombre: number; href: string } | null;
   /**
-   * Le filtre par bâtiment (ADR-019). Absent tant que l'établissement n'a
-   * qu'un bâtiment : le mono-bâtiment ne paie pas la complexité du multi.
+   * Le filtre par zone (ADR-029). Absent tant que l'établissement n'a
+   * qu'une zone : le mono-zone ne paie pas la complexité du multi.
    * Il vit dans le bandeau, et pas au-dessus des cartes, parce qu'il règle
    * aussi les trois chiffres ci-contre.
    */
@@ -174,7 +174,7 @@ export function BandeauParc({
                 // Un compteur doit dire sur quoi il compte, surtout quand
                 // le périmètre est réglable d'un clic juste à côté.
                 filtreBatiment.actif
-                  ? "Les chiffres ci-dessus et les familles ci-dessous ne portent que sur ce bâtiment."
+                  ? "Les chiffres ci-dessus et les familles ci-dessous ne portent que sur cette zone."
                   : "Les chiffres ci-dessus et les familles ci-dessous portent sur tout l'établissement."
               }
             />

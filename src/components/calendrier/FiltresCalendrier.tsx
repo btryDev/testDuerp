@@ -28,7 +28,7 @@ export type FiltresActifs = {
   famille?: FamilleEcheance;
   domaine?: string;
   urgent: boolean;
-  /** Un bâtiment (ADR-019) — n'existe qu'à partir de deux. */
+  /** Une zone (ADR-029) — n'existe qu'à partir de deux. */
   batiment?: string;
 };
 
@@ -177,7 +177,7 @@ export function FiltresCalendrier({
   /** Familles ayant au moins une échéance — les seules proposées. */
   famillesDisponibles: FamilleEcheance[];
   domaines: { id: string; label: string }[];
-  /** Le groupe « Bâtiment » n'apparaît qu'à partir de deux (ADR-019). */
+  /** Le groupe « Zone » n'apparaît qu'à partir de deux (ADR-029). */
   batiments?: { id: string; nom: string }[];
   filtres: FiltresActifs;
 }) {
@@ -354,7 +354,7 @@ export function FiltresCalendrier({
               <>
                 <div className="mx-2.5 mt-2 border-t border-[color:rgba(10,10,10,.08)]" />
                 <fieldset className="m-0 border-0 p-0">
-                  <TitreGroupe>Bâtiment</TitreGroupe>
+                  <TitreGroupe>Zone</TitreGroupe>
                   <Option
                     forme="radio"
                     name="filtre-batiment"

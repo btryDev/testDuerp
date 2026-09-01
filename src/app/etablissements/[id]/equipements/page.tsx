@@ -246,8 +246,8 @@ export default async function EquipementsPage({
              pas la page d'accueil du parc, seulement une phrase — et le
              sélecteur, juste au-dessus, reste la sortie. */
           <p className="carte-board px-7 py-5 text-[14px] leading-[1.6] text-[color:var(--board-slate-mid)] sm:px-8">
-            Aucun équipement déclaré dans ce bâtiment. Un appareil se déplace
-            depuis sa fiche, en changeant son bâtiment.
+            Aucun équipement déclaré dans cette zone. Un appareil se déplace
+            depuis sa fiche, en changeant sa zone.
           </p>
         ) : (
           sections.map((s) => (

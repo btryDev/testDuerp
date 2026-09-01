@@ -5,13 +5,16 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
-import { batimentSchema } from "./schema";
+import { batimentSchema, MAX_ZONES } from "./schema";
 
 /**
- * Mutations des bâtiments (ADR-019). Un bâtiment est un lieu : on le nomme,
- * on le renomme, on le supprime après avoir déplacé ce qu'il contient. Rien
- * ici ne touche au matching ni au calendrier — le bâtiment ne porte aucun
- * régime, le déplacer ne change aucune obligation.
+ * Mutations des zones (ADR-029, qui remplace l'ADR-019). Une zone est un
+ * lieu : on la nomme, on la renomme, on la supprime après avoir déplacé ce
+ * qu'elle contient. Rien ici ne touche au matching ni au calendrier — la
+ * zone ne porte aucun régime, la déplacer ne change aucune obligation.
+ *
+ * Le modèle reste `Batiment` en base : la zone est exactement le bâtiment de
+ * l'ADR-019, seul le vocabulaire d'écran change.
  */
 
 export type BatimentActionState =
@@ -20,10 +23,10 @@ export type BatimentActionState =
   | { status: "success"; id: string };
 
 function revalider(etablissementId: string) {
-  // Tous les écrans qui nomment un bâtiment, pas seulement ceux qui les
+  // Tous les écrans qui nomment une zone, pas seulement ceux qui les
   // listent : le calendrier porte le lieu sur chaque ligne et son sélecteur,
   // et les trois formulaires d'opérations et de relevés proposent le champ
-  // « bâtiment ». Renommer « Réserve » en « Annexe » y laissait l'ancien nom.
+  // « zone ». Renommer « Réserve » en « Annexe » y laissait l'ancien nom.
   const base = `/etablissements/${etablissementId}`;
   for (const chemin of [
     "",
@@ -38,7 +41,7 @@ function revalider(etablissementId: string) {
   }
 }
 
-/** Scope d'un bâtiment : il appartient au user via son établissement. */
+/** Scope d'une zone : elle appartient au user via son établissement. */
 async function trouverBatimentDuUser(id: string) {
   const user = await requireUser();
   return prisma.batiment.findFirst({
@@ -68,10 +71,21 @@ export async function creerBatiment(
     };
   }
 
-  const dernier = await prisma.batiment.aggregate({
+  // Le rang du prochain et le compte se lisent d'un seul passage : ils
+  // portent sur le même ensemble, et deux requêtes en donneraient deux
+  // photos décalées.
+  const existant = await prisma.batiment.aggregate({
     where: { etablissementId },
     _max: { ordre: true },
+    _count: true,
   });
+
+  // Le plafond vaut à l'ajout, jamais à la lecture (ADR-029) : un dossier
+  // qui porte déjà quatre lieux n'en perd aucun, il n'en gagne plus.
+  if (existant._count >= MAX_ZONES) {
+    const message = `Un établissement compte ${MAX_ZONES} zones au plus. Renommez ou regroupez une zone existante avant d'en ajouter une autre.`;
+    return { status: "error", message, fieldErrors: { nom: [message] } };
+  }
 
   try {
     const b = await prisma.batiment.create({
@@ -79,7 +93,7 @@ export async function creerBatiment(
         etablissementId,
         nom: parsed.data.nom,
         complementAdresse: parsed.data.complementAdresse ?? null,
-        ordre: (dernier._max.ordre ?? -1) + 1,
+        ordre: (existant._max.ordre ?? -1) + 1,
       },
       select: { id: true },
     });
@@ -89,8 +103,8 @@ export async function creerBatiment(
     if (estDoublonDeNom(e)) {
       return {
         status: "error",
-        message: "Un bâtiment porte déjà ce nom",
-        fieldErrors: { nom: ["Un bâtiment porte déjà ce nom"] },
+        message: "Une zone porte déjà ce nom",
+        fieldErrors: { nom: ["Une zone porte déjà ce nom"] },
       };
     }
     throw e;
@@ -103,7 +117,7 @@ export async function modifierBatiment(
   formData: FormData,
 ): Promise<BatimentActionState> {
   const b = await trouverBatimentDuUser(id);
-  if (!b) return { status: "error", message: "Bâtiment introuvable" };
+  if (!b) return { status: "error", message: "Zone introuvable" };
 
   const parsed = batimentSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
@@ -126,8 +140,8 @@ export async function modifierBatiment(
     if (estDoublonDeNom(e)) {
       return {
         status: "error",
-        message: "Un bâtiment porte déjà ce nom",
-        fieldErrors: { nom: ["Un bâtiment porte déjà ce nom"] },
+        message: "Une zone porte déjà ce nom",
+        fieldErrors: { nom: ["Une zone porte déjà ce nom"] },
       };
     }
     throw e;
@@ -137,23 +151,23 @@ export async function modifierBatiment(
 }
 
 /**
- * Supprime un bâtiment après avoir déplacé **tout** son contenu vers
+ * Supprime une zone après avoir déplacé **tout** son contenu vers
  * `versBatimentId` — équipements (actifs ou retirés du parc : les seconds
  * gardent leur historique, ADR-012), points de relevé, permis, plans.
  *
- * La destination est toujours exigée, même pour un bâtiment qui paraît vide :
+ * La destination est toujours exigée, même pour une zone qui paraît vide :
  * l'interface compte les équipements actifs, la base en connaît peut-être de
  * désactivés, et les rattachements optionnels retomberaient à `null` par
  * `SetNull` — une information donnée par l'utilisateur, perdue en silence.
  *
- * Le dernier bâtiment d'un établissement ne se supprime pas (ADR-019).
+ * La dernière zone d'un établissement ne se supprime pas (ADR-029).
  */
 export async function supprimerBatiment(
   id: string,
   versBatimentId: string,
 ): Promise<BatimentActionState> {
   const b = await trouverBatimentDuUser(id);
-  if (!b) return { status: "error", message: "Bâtiment introuvable" };
+  if (!b) return { status: "error", message: "Zone introuvable" };
 
   const destination = await prisma.batiment.findFirst({
     where: {
@@ -164,16 +178,16 @@ export async function supprimerBatiment(
     select: { id: true },
   });
   if (!destination) {
-    // Couvre aussi le dernier bâtiment : il n'a aucune destination possible.
+    // Couvre aussi la dernière zone : elle n'a aucune destination possible.
     return {
       status: "error",
       message:
-        "Choisissez un autre bâtiment de l'établissement où déplacer le contenu",
+        "Choisissez une autre zone de l'établissement où déplacer le contenu",
     };
   }
 
   // TOCTOU : entre le déplacement et le `delete`, une création concurrente
-  // peut viser le bâtiment en cours de suppression. La FK refuse alors — et
+  // peut viser la zone en cours de suppression. La FK refuse alors — et
   // c'est ce qu'on veut, rien ne doit rester orphelin —, mais l'erreur
   // remontait brute depuis la server action. On la traduit.
   try {
@@ -196,7 +210,7 @@ export async function supprimerBatiment(
       return {
         status: "error",
         message:
-          "Ce bâtiment a reçu du contenu pendant la suppression. Réessayez.",
+          "Cette zone a reçu du contenu pendant la suppression. Réessayez.",
       };
     }
     throw e;

@@ -64,8 +64,8 @@ export async function creerPointReleve(
   if (!batiment.ok) {
     return {
       status: "error",
-      message: "Bâtiment introuvable",
-      fieldErrors: { batimentId: ["Bâtiment introuvable"] },
+      message: "Zone introuvable",
+      fieldErrors: { batimentId: ["Zone introuvable"] },
     };
   }
   const carnet = await obtenirOuCreerCarnet(etablissementId);

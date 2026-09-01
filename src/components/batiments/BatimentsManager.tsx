@@ -12,12 +12,13 @@ import {
 import type { BatimentListe } from "@/lib/batiments/queries";
 
 /**
- * Les bâtiments d'un établissement : une liste courte, éditable sur place.
+ * Les zones d'un établissement : une liste courte — trois au plus
+ * (ADR-029) —, éditable sur place.
  *
- * Un bâtiment est un lieu, rien d'autre (ADR-019) : on le nomme, on le
- * renomme, on le supprime après avoir dit où vont ses équipements. Aucun
- * régime ici — un bâtiment n'est pas « ERP » ou « non ERP », c'est
- * l'établissement qui l'est, pour tous ses bâtiments.
+ * Une zone est un lieu, rien d'autre : on la nomme, on la renomme, on la
+ * supprime après avoir dit où vont ses équipements. Aucun régime ici — une
+ * zone n'est pas « ERP » ou « non ERP », c'est l'établissement qui l'est,
+ * pour toutes ses zones.
  */
 
 const ETAT_INITIAL: BatimentActionState = { status: "idle" };
@@ -163,7 +164,7 @@ function FormulaireAjout({ etablissementId }: { etablissementId: string }) {
       className="carte-board flex flex-col gap-5 px-7 py-6 sm:px-8"
     >
       <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
-        Ajouter un bâtiment
+        Ajouter une zone
       </p>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
@@ -185,7 +186,7 @@ function FormulaireAjout({ etablissementId }: { etablissementId: string }) {
           name="complementAdresse"
           label="Complément d'adresse"
           maxLength={200}
-          placeholder="Facultatif — si le bâtiment a sa propre entrée"
+          placeholder="Facultatif — si la zone a sa propre entrée"
         />
       </div>
       {state.status === "error" && !state.fieldErrors?.nom && (
@@ -284,13 +285,13 @@ function FormulaireSuppression({
               ? "un équipement"
               : `${batiment.nbEquipements} équipements`}
             . Ils seront déplacés — avec leurs vérifications et leurs rapports —
-            vers le bâtiment que vous choisissez. Rien n&apos;est supprimé.
+            vers la zone que vous choisissez. Rien n&apos;est supprimé.
           </>
         ) : (
           <>
             Supprimer <strong>{batiment.nom}</strong> ? Ce qui pourrait encore
             s&apos;y rattacher (équipement retiré du parc, point de relevé,
-            permis, plan de prévention) sera déplacé vers le bâtiment que vous
+            permis, plan de prévention) sera déplacé vers la zone que vous
             choisissez.
           </>
         )}
