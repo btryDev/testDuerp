@@ -62,6 +62,7 @@ export const obligationsLevage: Obligation[] = [
         article: "R. 4323-22",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531483/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -97,6 +98,7 @@ export const obligationsLevage: Obligation[] = [
         article: "R. 4323-22",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531483/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -123,6 +125,7 @@ export const obligationsLevage: Obligation[] = [
         article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "ARRETE",
@@ -172,6 +175,7 @@ export const obligationsLevage: Obligation[] = [
         article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "ARRETE",
@@ -240,6 +244,7 @@ export const obligationsLevage: Obligation[] = [
         article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "trimestrielle",
@@ -286,6 +291,7 @@ export const obligationsLevage: Obligation[] = [
         article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "semestrielle",
@@ -343,6 +349,7 @@ export const obligationsLevage: Obligation[] = [
         article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "annuelle",
@@ -383,6 +390,7 @@ export const obligationsLevage: Obligation[] = [
         article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "annuelle",
@@ -409,6 +417,7 @@ export const obligationsLevage: Obligation[] = [
         article: "R. 4323-28",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531467/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "ARRETE",
@@ -443,6 +452,7 @@ export const obligationsLevage: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531475",
         note: "Fonde la consignation : « Le résultat des vérifications générales périodiques est consigné sur le ou les registres de sécurité mentionnés à l'article L. 4711-5. »",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -451,6 +461,7 @@ export const obligationsLevage: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531473",
         note: "Annexion au registre des rapports établis par un vérificateur extérieur à l'établissement.",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -459,6 +470,7 @@ export const obligationsLevage: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531471",
         note: "Autorise la tenue et la conservation du registre sur tout support, dans les conditions de l'article L. 8113-6 — c'est cet article qui fonde le registre numérique, et non L. 4711-5.",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "autre",
