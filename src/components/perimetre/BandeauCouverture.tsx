@@ -44,6 +44,15 @@ function lienDeLAxe(
         href: hrefs.etablissement,
         libelle: "Vérifier le régime de l'établissement",
       };
+    // Même destination encore, et un troisième libellé : l'effectif est
+    // renseigné, il ne se « renseigne » donc pas, et ce n'est pas le régime
+    // qu'on va relire. « Vérifier le régime » enverrait chercher au mauvais
+    // endroit d'un formulaire long.
+    case "effectif":
+      return {
+        href: hrefs.etablissement,
+        libelle: "Vérifier l'effectif déclaré",
+      };
     // Même destination que le régime, libellé différent — et la différence
     // n'est pas cosmétique. Le régime est là et se vérifie ; le public reçu
     // n'a jamais été donné et se renseigne. « Vérifier » enverrait relire un

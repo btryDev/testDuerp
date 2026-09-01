@@ -119,7 +119,10 @@ export type AxeCouverture =
   | "public_recu"
   /** L'immeuble d'habitation n'a pas de famille : les obligations de
    *  l'arrêté du 31 janvier 1986 lui sont servies sans distinction. */
-  | "famille_habitation";
+  | "famille_habitation"
+  /** L'effectif dépasse la taille que la porte de création accepte, et le
+   *  dossier vit quand même — projection de l'ADR-031 § 1 bis. */
+  | "effectif";
 
 /**
  * Un fait établi : l'outil ne sait pas dire quelque chose, et on sait quoi.
@@ -247,6 +250,24 @@ export type FaitPublicRecu = {
   suspendues: readonly { libelle: string; seuil: number }[];
 };
 
+/**
+ * L'effectif du dossier, et la taille que la porte de création accepte.
+ *
+ * Les DEUX sont des faits reçus, et le second en particulier. Le seuil vit
+ * dans `etablissements/schema.ts` (`EFFECTIF_MAX`), qui le fait respecter à
+ * la création ; le réécrire ici en ferait une seconde déclaration de ce que
+ * le produit sait servir — et deux constantes dans deux modules ne peuvent
+ * même pas se contredire par un test, elles divergent en silence. Il vient
+ * donc de `faits.ts`, qui a le droit d'importer du code au runtime là où ce
+ * module ne l'a pas.
+ */
+export type FaitEffectif = {
+  /** L'effectif salarié déclaré sur le site. */
+  surSite: number;
+  /** Au-delà duquel la création d'un dossier est refusée (ADR-031). */
+  seuilServi: number;
+};
+
 export type FaitsCouverture = {
   regime: RegimeEtablissement;
   /** `null` quand le dossier n'a pas de DUERP : l'axe se tait alors, il ne
@@ -256,6 +277,9 @@ export type FaitsCouverture = {
   /** `null` quand les faits n'ont pas été collectés — écrans qui n'ont que le
    *  régime sous la main. L'axe se tait alors ; il ne conclut pas « renseigné ». */
   publicRecu: FaitPublicRecu | null;
+  /** `null` quand l'effectif n'a pas été collecté. L'axe se tait alors ; il ne
+   *  conclut pas « dans la cible ». */
+  effectif: FaitEffectif | null;
 };
 
 /* ─── Les axes ────────────────────────────────────────────────────────── */
@@ -588,6 +612,37 @@ function axePublicRecu(
   });
 }
 
+/**
+ * L'effectif dépasse ce que la porte de création accepte (ADR-031 § 1 bis).
+ *
+ * Un **manque**, jamais un refus : la borne d'effectif ne vaut qu'à la
+ * création. Un client qui passe de quarante-cinq à soixante salariés reste
+ * servi — lui fermer son dossier parce qu'il a embauché serait absurde. Mais
+ * la promesse implicite doit rester explicite, et c'est ici qu'elle le
+ * devient : « le même traitement d'honnêteté que les ERP de 1ʳᵉ à 4ᵉ
+ * catégorie », dit l'ADR, et c'est le même axe qui le porte.
+ *
+ * Sans cette ligne, le dossier au-dessus du seuil ne lisait rien de son
+ * dépassement, et la page des éléments exclus lui aurait présenté « plus de
+ * cinquante travailleurs » sous les refus à l'entrée — un cas qui n'est pas le
+ * sien, puisque son dossier existe.
+ *
+ * Aucun seuil écrit ici : `seuilServi` est reçu. Voir `FaitEffectif`.
+ */
+function axeEffectif(
+  fait: FaitEffectif | null,
+  manques: ManqueCouverture[],
+): void {
+  if (fait === null || fait.surSite <= fait.seuilServi) return;
+
+  manques.push({
+    axe: "effectif",
+    motif: `Cet établissement déclare ${fait.surSite} salariés, au-delà des ${fait.seuilServi} pour lesquels Rojer est construit.`,
+    consequence:
+      "Au-delà de cinquante salariés, des obligations que cet outil ne porte pas s'ajoutent — le programme annuel de prévention des risques et le règlement intérieur, notamment. Votre dossier reste ouvert et ce qu'il contient reste juste ; il est incomplet sur ce qui vient avec la taille, et le restera.",
+  });
+}
+
 /* ─── L'entrée ────────────────────────────────────────────────────────── */
 
 /**
@@ -607,6 +662,9 @@ export function couvertureDeLEtablissement(
   const indeterminations: IndeterminationCouverture[] = [];
 
   axeRegime(faits.regime, manques, indeterminations);
+  // Juste après le régime, et pour la même raison : la taille de la structure
+  // qualifie tout le reste de ce que le dossier contient.
+  axeEffectif(faits.effectif, manques);
   axeDuerp(faits.duerp, manques, indeterminations);
   axeSecteurParDefaut(faits.duerp, manques);
   axeFamilleHabitation(faits.regime, indeterminations);
@@ -632,5 +690,6 @@ export function couvertureDuRegime(
     duerp: null,
     equipements: { nbSansObligation: 0, nbEquipements: 0 },
     publicRecu: null,
+    effectif: null,
   });
 }

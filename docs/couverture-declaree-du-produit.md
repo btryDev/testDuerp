@@ -16,11 +16,16 @@ qui part.
 
 ---
 
-## 1. Cinq axes, et ce que chacun établit vraiment
+## 1. Sept axes, et ce que chacun établit vraiment
 
-Quatre axes sont actifs. Le cinquième, `famille_obligation`, a existé une
+Six axes sont actifs. Le septième, `famille_obligation`, a existé une
 journée et a été retiré — le § 3 bis dit pourquoi, et il est décrit ici parce
 que le comprendre est nécessaire pour lire le § 3.
+
+*(Relevé au 2026-09-01. Ce tableau a retardé sur le code une première fois : il
+en annonçait quatre alors que `public_recu` et `famille_habitation` tournaient
+déjà. Un document de référence qui retarde envoie chercher un axe là où il n'y
+en a plus — ou fait croire qu'un manque n'est annoncé à personne.)*
 
 `src/lib/perimetre/couverture.ts` rend deux listes — des **manques** (faits
 établis) et des **indéterminations** (questions ouvertes dont la réponse
@@ -40,6 +45,9 @@ ce que le dépôt s'interdit.
 | `categorie_erp` | L'ERP relève d'une catégorie 1 à 4, donc le livre II s'applique en entier (PE 1 § 1) | L'ampleur du manque. On sait qu'il existe, pas de combien | `CATEGORIES_COUVERTES` |
 | `secteur_duerp` | Ce que le DUERP déclare ne pas couvrir, et si son référentiel est celui du code NAF | Que le reste du DUERP soit complet — « aucun manque identifié » n'est pas « complet » | ADR-020 (`duerps/couverture.ts`) + `perimetre/secteur.ts` |
 | `domaine_equipement` | Des appareils du parc ne déclenchent aucune obligation du référentiel | Qu'aucune vérification ne leur soit due. C'est un fait sur l'outil, pas sur le droit | `equipements/hors-referentiel.ts` |
+| `public_recu` | Le nombre de personnes habituellement présentes manque, et le repli du moteur écarte des obligations qui en dépendent | Que ces obligations soient dues : on ne le sait pas, faute du chiffre. **Indétermination**, jamais un manque | `matching/public-recu.ts` |
+| `famille_habitation` | L'immeuble d'habitation n'a pas de famille renseignée, et les obligations lui sont donc toutes servies | Que l'outil ne couvre pas le régime — il le couvre, et sert large en attendant. **Indétermination** | `Etablissement.familleHabitation` |
+| `effectif` | L'effectif dépasse la borne au-delà de laquelle la création d'un dossier est refusée (ADR-031 § 1 bis) | Que le dossier soit fermé : la borne ne vaut qu'à la création, un client qui embauche reste servi | `EFFECTIF_MAX` (`etablissements/schema.ts`), passé en fait par `faits.ts` |
 | ~~`famille_obligation`~~ **(retiré, § 3 bis)** | Des articles lus imposent quelque chose que le produit ne porte pas | **Qu'ils visent cet établissement-là.** Voir § 2 | statut `non_couvert` du corpus |
 
 Deux garanties de construction méritent d'être connues avant de toucher au
@@ -376,6 +384,20 @@ La carte du tableau de bord est retirée. Ce qui reste :
   dépouillement rédigés pour un relecteur interne feraient passer une note de
   travail pour une pièce du dossier. Le décompte y est.
 - **Tout le socle `perimetre/`**, inchangé.
+- **La page des éléments exclus** (`etablissements/[id]/perimetre`), ouverte le
+  2026-09-01 par l'ADR-025 § 8. Elle rend trois choses distinctes, et
+  séparément : les manques et indéterminations de ce dossier (le bandeau, tel
+  quel), les deux régimes que la création refuse (`perimetre/exclusions.ts`, qui
+  interroge le schéma au lieu de le décrire), et les articles `hors_perimetre`
+  du corpus, groupés par motif d'exclusion.
+
+  **Elle ne donne PAS d'adresse aux 28 articles `non_couvert`**, et un test le
+  verrouille. La tentation était forte — la page ressemble à l'endroit où les
+  mettre — mais ce serait exactement la confusion que `corpus/perimetre.ts`
+  interdit en tête de fichier : ranger un manque parmi les exclusions le fait
+  disparaître du décompte, il cesse d'être une dette pour devenir une
+  non-question. Le cliquet `MUETS` reste donc à 28, et il redescendra par les
+  deux mêmes voies que le § 3 bis nomme, par aucune troisième.
 
 Aucune de ces surfaces ne qualifie la situation au regard du droit : ni
 « conforme », ni « non conforme », ni « incomplet ». Elles décrivent ce que
