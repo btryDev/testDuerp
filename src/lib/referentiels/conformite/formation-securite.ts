@@ -201,6 +201,7 @@ export const obligationsFormationSecurite: Obligation[] = [
     criticite: 4,
     typologies: { travail: true },
     porteur: "salarie",
+    exclut: [],
     pieceMedicale: false,
     transmet: [],
     notesInternes:
@@ -275,6 +276,7 @@ export const obligationsFormationSecurite: Obligation[] = [
     criticite: 5,
     typologies: { travail: true },
     porteur: "salarie",
+    exclut: [],
     pieceMedicale: false,
     transmet: [],
     notesInternes:
@@ -312,6 +314,7 @@ export const obligationsFormationSecurite: Obligation[] = [
     criticite: 5,
     typologies: { travail: true },
     porteur: "salarie",
+    exclut: [],
     pieceMedicale: false,
     transmet: [
       {
@@ -439,6 +442,7 @@ export const obligationsFormationSecurite: Obligation[] = [
     criticite: 3,
     typologies: { travail: true, effectifMin: 11 },
     porteur: "salarie",
+    exclut: [],
     pieceMedicale: false,
     transmet: [],
     notesInternes:
@@ -494,6 +498,7 @@ export const obligationsFormationSecurite: Obligation[] = [
     criticite: 3,
     typologies: { travail: true },
     porteur: "salarie",
+    exclut: [],
     pieceMedicale: false,
     transmet: [],
     notesInternes:
