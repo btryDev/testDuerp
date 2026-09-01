@@ -70,6 +70,12 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
         "levage-vgp-annuelle-charges",
         "levage-vgp-semestrielle-chariot-gerbeur",
         "levage-vgp-semestrielle-personnes",
+        // Ajoutée le 2026-09-01 : l'article la portait, la liste l'oubliait.
+        // Le b) est explicite — « Trois mois pour les appareils de levage, mus
+        // par la force humaine employée directement, utilisés pour déplacer en
+        // élévation un poste de travail. » — et c'est mot pour mot le champ de
+        // l'obligation. Article rouvert à la source ce jour avant l'ajout.
+        "levage-vgp-trimestrielle-force-humaine",
       ],      prescrit:
         "Fixe la PÉRIODICITÉ de la vérification générale périodique des appareils soumis à l'article 22 : douze mois en principe. Deux dérogations, en échéance fixe et non en plafond : six mois pour les appareils listés aux II et III de l'article 20 et pour ceux, mus par une énergie autre que la force humaine directe, servant au transport de personnes ou à déplacer en élévation un poste de travail ; trois mois pour les appareils mus par la force humaine employée directement servant à déplacer en élévation un poste de travail. L'article écrit « doit avoir lieu tous les douze mois » et « cette périodicité est de » — c'est bien un rythme, pas un maximum, à la différence de l'arrêté ESP du 20 novembre 2017.",
       citationCle:

@@ -34,6 +34,14 @@ export const CCH_ASCENSEURS: Corpus = {
         "ascenseur-entretien-contrat",
         "ascenseur-examen-annuel-securite",
         "ascenseur-examen-semestriel-secours",
+        // Ajoutée le 2026-09-01. Le `prescrit` ci-dessous annonçait déjà
+        // « quatre obligations du référentiel à partir d'une seule clé de
+        // corpus » et n'en nommait que trois. La quatrième est le 1° a),
+        // « Une visite toutes les six semaines en vue de surveiller le
+        // fonctionnement » — le fondement même de la visite. Article rouvert à
+        // la source ce jour (version du 01/04/2026, décret n° 2026-166 du
+        // 4 mars 2026) avant l'ajout.
+        "ascenseur-visite-six-semaines",
       ],      prescrit:
         "Version réécrite par le décret n° 2026-166 du 4 mars 2026, en vigueur au 1er avril 2026. Définit l'objet de l'entretien — assurer le bon fonctionnement et maintenir le niveau de sécurité de R. 134-2 — puis énumère les DISPOSITIONS MINIMALES que prend le propriétaire, en deux blocs. 1° Opérations et vérifications PÉRIODIQUES : visite toutes les six semaines ; vérification toutes les six semaines de l'efficacité des serrures ; examen SEMESTRIEL des câbles et vérification ANNUELLE des parachutes ; nettoyage annuel de la cuvette, du toit de cabine et du local des machines ; lubrification et nettoyage des pièces ; vérification toutes les six semaines du bon fonctionnement des moyens d'alerte. 2° Opérations OCCASIONNELLES : réparation ou remplacement des petites pièces usées ; mesures d'entretien destinées à supprimer les défauts ; en cas d'incident, intervention pour dégager les personnes bloquées ; remplacement des moyens d'alerte quand il est nécessaire. Trois rythmes distincts dans un seul article, tous en fréquence minimale — c'est ce qui fonde quatre obligations du référentiel à partir d'une seule clé de corpus.",
       citationCle:
