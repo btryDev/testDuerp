@@ -85,7 +85,7 @@ beforeEach(() => {
   prismaMock.duerp.findFirst.mockReset().mockResolvedValue(null);
   prismaMock.action.findMany.mockReset().mockResolvedValue([]);
   verifierMock.mockReset().mockResolvedValue({ sub: SUB });
-  chercherMock.mockReset().mockResolvedValue(ETAB);
+  chercherMock.mockReset().mockResolvedValue([{ id: ETAB, nom: "Café du Port" }]);
 });
 
 describe("refus — la forme qui déclenche le flux OAuth", () => {
@@ -112,7 +112,7 @@ describe("refus — la forme qui déclenche le flux OAuth", () => {
   it("refuse un porteur sans établissement, sans distinguer le motif", async () => {
     // Compte créé mais onboarding non terminé : c'est un refus, et il doit
     // être indiscernable d'un jeton invalide.
-    chercherMock.mockResolvedValue(null);
+    chercherMock.mockResolvedValue([]);
     const sansEtab = await POST(requete(initialize, avecJeton()));
 
     verifierMock.mockResolvedValue(null);
@@ -151,6 +151,45 @@ describe("gardes de transport", () => {
       }),
     );
     expect(res.status).toBe(403);
+  });
+});
+
+/**
+ * La désambiguïsation, branchée (ADR-028).
+ *
+ * `acces-oauth.test.ts` couvre la décision. Ici on vérifie qu'elle atteint bien
+ * le client — et surtout qu'elle ne se déguise pas en refus d'authentification
+ * en chemin : c'est le seul endroit où l'on voit le statut HTTP réellement
+ * rendu, et le `401` de la route serait ici une boucle infinie côté connecteur.
+ */
+describe("porteur de plusieurs établissements", () => {
+  const DEUX = [
+    { id: ETAB, nom: "Café du Port" },
+    { id: "etab_2", nom: "Café de la Gare" },
+  ];
+
+  it("répond 400 en listant, et ne construit aucun serveur", async () => {
+    chercherMock.mockResolvedValue(DEUX);
+    const res = await POST(requete(initialize, avecJeton()));
+
+    expect(res.status).toBe(400);
+    const corps = await res.json();
+    expect(corps.etablissements).toEqual(DEUX);
+    // Aucune lecture de dossier : on n'a pas ouvert « par défaut » celui du
+    // haut de la liste avant de se raviser.
+    expect(prismaMock.etablissement.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("sert celui que l'URL désigne", async () => {
+    chercherMock.mockResolvedValue(DEUX);
+    const res = await POST(
+      requete(
+        initialize,
+        avecJeton(),
+        "https://rojer.test/api/mcp?etablissement=etab_2",
+      ),
+    );
+    expect(res.status).toBe(200);
   });
 });
 

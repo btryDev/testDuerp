@@ -32,8 +32,11 @@ export default async function Home({
   // Quand l'utilisateur n'est pas connecté, le CTA principal l'envoie sur
   // /signup : la création d'un dossier nécessite un compte (ADR-005), le
   // middleware redirigerait de toute façon /onboarding vers /login.
-  // 1 user = 1 dossier : quand il existe déjà, on pointe direct dessus ;
-  // sinon, on aiguille vers /onboarding.
+  // Un compte peut porter plusieurs dossiers depuis l'ADR-028 : ce n'est plus
+  // « son » établissement qu'on pointe, mais l'ACTIF — le dernier commuté, à
+  // défaut le plus ancien. La page d'accueil n'a pas à choisir : c'est
+  // `getOptionalUserEtablissement` qui porte le défaut, une fois pour tout le
+  // produit. Sans aucun dossier, on aiguille vers /onboarding.
   const ctaHref = !user
     ? "/signup"
     : etab

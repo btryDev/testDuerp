@@ -8,6 +8,7 @@
 //     doit lire une explication, pas une erreur Prisma.
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NOM_BATIMENT_PRINCIPAL } from "@/lib/batiments/schema";
 
 const h = vi.hoisted(() => {
   const db = {
@@ -31,6 +32,9 @@ const h = vi.hoisted(() => {
     },
     nbVersionsDuerp: 0,
     supprimes: [] as string[],
+    crees: [] as Record<string, unknown>[],
+    // Ce que le cookie d'établissement actif a reçu (ADR-028).
+    cookiePose: null as { nom: string; valeur: string } | null,
   };
 
   const prisma = {
@@ -43,7 +47,10 @@ const h = vi.hoisted(() => {
         Object.assign(db.etablissement, data);
         return db.etablissement;
       },
-      create: async () => db.etablissement,
+      create: async ({ data }: { data: Record<string, unknown> }) => {
+        db.crees.push(data);
+        return { ...db.etablissement, id: `etab-${db.crees.length}` };
+      },
       delete: async ({ where }: { where: { id: string } }) => {
         db.supprimes.push(where.id);
         return db.etablissement;
@@ -64,6 +71,14 @@ const h = vi.hoisted(() => {
 
 vi.mock("@/lib/prisma", () => ({ prisma: h.prisma }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("next/headers", () => ({
+  cookies: async () => ({
+    set: (nom: string, valeur: string) => {
+      h.db.cookiePose = { nom, valeur };
+    },
+    get: () => undefined,
+  }),
+}));
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(() => {
     throw new Error("NEXT_REDIRECT");
@@ -72,6 +87,9 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/lib/auth/scope", () => ({
   assertEtablissementOwnership: vi.fn(async () => ({ id: "user-1" })),
   assertEntrepriseOwnership: vi.fn(async () => ({ id: "user-1" })),
+  // Le nom du cookie voyage avec les gardes : il est défini là où il est LU
+  // (`scope.ts`), pour qu'écriture et lecture ne puissent pas diverger.
+  COOKIE_ETABLISSEMENT_ACTIF: "etablissement-actif",
 }));
 vi.mock("@/lib/calendrier/actions", () => ({
   genererCalendrier: h.genererCalendrier,
@@ -80,9 +98,8 @@ vi.mock("@/lib/calendrier/reconciliation", () => ({
   marquerCalendrierPerime: h.marquerCalendrierPerime,
 }));
 
-const { modifierEtablissement, supprimerEtablissement } = await import(
-  "./actions"
-);
+const { creerEtablissement, modifierEtablissement, supprimerEtablissement } =
+  await import("./actions");
 
 /** Le formulaire poste toutes ses cases : les non cochées sont absentes. */
 function formulaire(over: Record<string, string> = {}): FormData {
@@ -106,7 +123,69 @@ beforeEach(() => {
   h.db.etablissement.effectifSurSite = 5;
   h.db.nbVersionsDuerp = 0;
   h.db.supprimes = [];
+  h.db.crees = [];
+  h.db.cookiePose = null;
   h.genererCalendrier.mockClear();
+});
+
+describe("creerEtablissement — le second dossier d'un compte (ADR-028)", () => {
+  /**
+   * Le verrou retiré ici ne refusait pas : il REDIRIGEAIT vers l'établissement
+   * existant. Un dirigeant qui remplissait le formulaire pour son deuxième
+   * commerce se retrouvait sur la fiche du premier, sans un mot — sa saisie
+   * était perdue et rien ne disait pourquoi.
+   *
+   * Vérifié en le cassant : en remettant le `findFirst` + `redirect`, ces deux
+   * tests tombent, et eux seuls.
+   */
+  it("crée, au lieu de renvoyer vers l'établissement existant", async () => {
+    // Le faux Prisma rend TOUJOURS un établissement sur `findFirst` : c'est
+    // exactement l'état qui déclenchait l'ancien renvoi.
+    await expect(
+      creerEtablissement("ent-1", { status: "idle" }, formulaire()),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(h.db.crees).toHaveLength(1);
+    expect(h.db.crees[0]).toMatchObject({ entrepriseId: "ent-1" });
+  });
+
+  it("ouvre le bâtiment principal du nouveau site (ADR-019)", async () => {
+    // Tout établissement naît avec le sien : sans lui, les équipements du
+    // second site n'auraient nulle part où être rangés.
+    await expect(
+      creerEtablissement("ent-1", { status: "idle" }, formulaire()),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(h.db.crees[0].batiments).toEqual({
+      create: { nom: NOM_BATIMENT_PRINCIPAL, ordre: 0 },
+    });
+  });
+
+  it("bascule l'établissement actif sur celui qu'on vient de créer", async () => {
+    // Sans ce trait, l'accueil renverrait au premier site juste après la
+    // création du second : on aurait rempli un formulaire pour atterrir
+    // ailleurs.
+    await expect(
+      creerEtablissement("ent-1", { status: "idle" }, formulaire()),
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(h.db.cookiePose).toEqual({
+      nom: "etablissement-actif",
+      valeur: "etab-1",
+    });
+  });
+
+  it("refuse un formulaire invalide sans rien créer", async () => {
+    // La borne basse : lever le verrou n'a pas levé la validation.
+    const res = await creerEtablissement(
+      "ent-1",
+      { status: "idle" },
+      formulaire({ raisonDisplay: "" }),
+    );
+
+    expect(res.status).toBe("error");
+    expect(h.db.crees).toHaveLength(0);
+  });
 });
 
 describe("modifierEtablissement — recalcul des obligations", () => {

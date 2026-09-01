@@ -43,17 +43,27 @@ model Entreprise {
 // ADR-001 : Etablissement est l'ancrage des obligations réglementaires.
 // ADR-004 : régimes cumulables (travail / ERP / IGH / habitation) via flags.
 //
-// Invariant produit « 1 entreprise = 1 établissement », désormais porté par la
-// base (@unique sur entrepriseId). La relation inverse `Entreprise.etablissements`
-// reste volontairement typée en liste : côté client Prisma la cardinalité est
-// déterminée par le type du champ inverse, pas par la contrainte. On garde donc
-// l'API existante (`entreprise.etablissements`) tout en garantissant en base
-// qu'elle ne contiendra jamais plus d'un élément. Le jour où le multi-site
-// entrera au périmètre, il suffira de retirer le @unique — sans réécrire le code
-// appelant.
+// ADR-028 (2026-09-01) : une entreprise porte autant d'établissements qu'elle
+// en a. Le @unique qui tenait ici l'invariant « 1 entreprise = 1 établissement »
+// est retiré par la migration `20260901130000_multi_etablissements`, qui repose
+// l'index simple à sa place. La marche de sortie annoncée à cet endroit a tenu
+// mot pour mot : aucun helper de `src/lib/auth/scope.ts` n'a eu à être réécrit,
+// parce qu'ils bornent tous par `entreprise.userId` en prenant un identifiant
+// explicite. La relation inverse était déjà typée en liste, elle porte
+// désormais ce qu'elle annonçait.
+//
+// Ce qui ne bouge pas : `Entreprise.userId` reste @unique. Un compte reste une
+// entreprise — racine de tenancy de l'ADR-005 —, et le multi-utilisateur reste
+// hors roadmap.
+//
+// Ce que le retrait déplace, en revanche : « l'établissement du compte » cesse
+// d'être une notion définie. Partout où le code en désignait un sans avoir à le
+// nommer, il désigne maintenant l'établissement ACTIF — cookie
+// `etablissement-actif`, cf. `getOptionalUserEtablissement` —, et le serveur MCP
+// ne choisit plus à la place du porteur (cf. `src/lib/mcp/acces-oauth.ts`).
 model Etablissement {
   id           String     @id @default(cuid())
-  entrepriseId String     @unique
+  entrepriseId String
   entreprise   Entreprise @relation(fields: [entrepriseId], references: [id], onDelete: Cascade)
 
   raisonDisplay   String
@@ -130,6 +140,11 @@ model Etablissement {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // L'index que l'unicité avait remplacé, et qu'elle rend en partant : lister
+  // les établissements d'un compte est désormais une lecture de chaque rendu du
+  // sélecteur, pas une curiosité (ADR-028).
+  @@index([entrepriseId])
 }
 
 enum TypeErp {

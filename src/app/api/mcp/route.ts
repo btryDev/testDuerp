@@ -19,6 +19,7 @@
 import {
   lireConfigOauthMcp,
   reponseAuthentificationRequise,
+  reponseChoixEtablissementRequis,
   resoudreScopeDepuisJeton,
 } from "@/lib/mcp/acces-oauth";
 import {
@@ -43,12 +44,27 @@ const handler = creerHandlerMcpHttp({
   resoudreScope: async (request) => {
     // Sans configuration ni vérificateur, aucune requête n'est servie : on
     // ne devine pas une identité, on refuse.
-    if (!config || !verifier) return null;
+    if (!config || !verifier) return { statut: "refus" };
 
-    return resoudreScopeDepuisJeton(request, {
+    const resolution = await resoudreScopeDepuisJeton(request, {
       verifier,
       chercherEtablissement: chercherEtablissementDeUtilisateur,
     });
+
+    // Le porteur a plusieurs établissements et n'en a désigné aucun (ADR-028).
+    // La liste part ici et nulle part ailleurs : elle ne sort qu'une fois le
+    // jeton vérifié, et ne contient que ce que son porteur possède déjà.
+    if (resolution.statut === "choix_requis") {
+      return {
+        statut: "reponse",
+        reponse: reponseChoixEtablissementRequis(
+          request,
+          resolution.etablissements,
+        ),
+      };
+    }
+
+    return resolution;
   },
 });
 

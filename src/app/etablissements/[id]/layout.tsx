@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { BarreCompte } from "@/components/layout/BarreCompte";
 import { chargerSidebarCounts } from "@/lib/navigation/sidebar-counts";
 import { getEtatModules } from "@/lib/etablissements/modules";
+import { listerEtablissementsDeLEntreprise } from "@/lib/etablissements/queries";
 
 /**
  * Layout imbriqué pour toutes les pages d'un établissement.
@@ -44,9 +45,14 @@ export default async function EtablissementLayout({
 
   // Pastilles de la sidebar : même chargement que le shell DUERP, pour
   // que les deux annoncent les mêmes nombres (ADR-015).
-  const [counts, modules] = await Promise.all([
+  //
+  // La fratrie vient avec, pour le sélecteur de la barre haute (ADR-028). Elle
+  // est lue ici et non dans `BarreCompte` : le composant est client, et la
+  // charger depuis le layout la met dans le même aller-retour que le reste.
+  const [counts, modules, fratrie] = await Promise.all([
     chargerSidebarCounts(id),
     getEtatModules(id, etab.estERP),
+    listerEtablissementsDeLEntreprise(etab.entrepriseId),
   ]);
 
   return (
@@ -64,6 +70,10 @@ export default async function EtablissementLayout({
         <BarreCompte
           etablissementId={etab.id}
           email={user.email ?? null}
+          etablissements={fratrie.map((e) => ({
+            id: e.id,
+            raisonDisplay: e.raisonDisplay,
+          }))}
         />
         {children}
       </div>

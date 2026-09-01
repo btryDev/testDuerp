@@ -242,6 +242,107 @@ describe("contraintes SQL non représentables dans schema.prisma", () => {
   });
 });
 
+/**
+ * Le test inverse (ADR-028).
+ *
+ * Il n'y en avait pas à retourner : l'unicité de `Etablissement.entrepriseId`
+ * n'a jamais été gardée ici, alors même qu'elle est de la même famille que ce
+ * que ce fichier surveille — un invariant de base dont dépendait du code
+ * applicatif, et qu'un `db push` aurait pu perdre en silence. Elle a vécu trois
+ * semaines sans filet.
+ *
+ * Ce qu'on garde maintenant est la décision inverse, et elle a besoin d'un
+ * filet pour la même raison exactement : le retour du `@unique` ne serait pas
+ * bruyant. Prisma le régénère au premier `prisma migrate dev` lancé sur un
+ * schéma où quelqu'un l'aurait remis « pour faire propre » — l'attribut a l'air
+ * anodin sur une relation 1-1 apparente —, et le symptôme ne serait pas une
+ * erreur mais un dirigeant à deux commerces qui ne peut plus créer le second,
+ * avec un message Prisma parlant de contrainte unique.
+ *
+ * Le couple des deux assertions dit la décision entière, et c'est ce qui rend
+ * le test lisible : `Etablissement.entrepriseId` NON, `Entreprise.userId` OUI.
+ * Retirer la seconde par symétrie ferait tomber la racine de tenancy de
+ * l'ADR-005.
+ */
+describe("plusieurs établissements par entreprise (ADR-028)", () => {
+  const migrations = lireMigrations();
+  const schema = readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8");
+
+  function corpsDuModele(nom: string): string {
+    const m = schema.match(new RegExp(`\\bmodel\\s+${nom}\\s*\\{([\\s\\S]*?)\\n\\}`));
+    expect(m, `modèle ${nom} introuvable dans schema.prisma`).not.toBeNull();
+    return m![1];
+  }
+
+  it("la migration qui lève l'unicité existe, et repose l'index simple", () => {
+    // Reposer l'index n'est pas cosmétique : lister les établissements d'un
+    // compte devient une lecture de chaque rendu du sélecteur.
+    const migration = migrations.find((m) =>
+      m.nom.endsWith("_multi_etablissements"),
+    );
+    expect(migration, "la migration de l'ADR-028 est absente").toBeDefined();
+
+    const sql = normaliser(migration!.sql);
+    expect(sql).toMatch(
+      /DROP\s+INDEX\s+(IF\s+EXISTS\s+)?"Etablissement_entrepriseId_key"/i,
+    );
+    expect(sql).toMatch(
+      /CREATE INDEX (IF NOT EXISTS )?"Etablissement_entrepriseId_idx" ON "Etablissement"\("entrepriseId"\)/i,
+    );
+  });
+
+  it("aucune migration ne repose l'unicité sur Etablissement.entrepriseId", () => {
+    // L'historique cumulé ne peut pas servir : la migration d'août POSE cette
+    // unicité, légitimement. Seul ce qui vient APRÈS le retrait compte.
+    const retrait = migrations.find((m) => m.nom.endsWith("_multi_etablissements"));
+    const fautives = migrations.filter(
+      (m) =>
+        retrait !== undefined &&
+        m.nom > retrait.nom &&
+        /(CREATE UNIQUE INDEX|ADD CONSTRAINT)\s+(IF NOT EXISTS\s+)?"Etablissement_entrepriseId[^"]*"/i.test(
+          normaliser(m.sql),
+        ),
+    );
+
+    expect(
+      fautives.map((m) => m.nom),
+      "Une migration rétablit l'unicité de `Etablissement.entrepriseId`. Elle " +
+        "interdirait le second établissement d'un compte — et le symptôme " +
+        "serait une erreur de contrainte unique au moment de la création, pas " +
+        "une régression visible en revue (ADR-028).",
+    ).toEqual([]);
+  });
+
+  it("Etablissement.entrepriseId n'est plus @unique au schéma", () => {
+    const corps = corpsDuModele("Etablissement");
+    const ligne = corps.match(/^\s*entrepriseId\s+String.*$/m);
+
+    expect(ligne, "champ `entrepriseId` introuvable").not.toBeNull();
+    expect(
+      ligne![0],
+      "Le `@unique` est revenu sur `Etablissement.entrepriseId`. Une " +
+        "entreprise porte autant d'établissements qu'elle en a (ADR-028).",
+    ).not.toContain("@unique");
+  });
+
+  it("Entreprise.userId reste @unique — la racine de tenancy ne bouge pas", () => {
+    // La moitié qu'on n'a PAS décidée. Un compte reste une entreprise : c'est
+    // ce qui permet aux dix helpers de `auth/scope.ts` de borner par
+    // `entreprise.userId`, et au serveur MCP de résoudre `jeton.sub` sans
+    // ambiguïté sur le premier maillon.
+    const corps = corpsDuModele("Entreprise");
+    const ligne = corps.match(/^\s*userId\s+String.*$/m);
+
+    expect(ligne, "champ `userId` introuvable").not.toBeNull();
+    expect(
+      ligne![0],
+      "`Entreprise.userId` a perdu son `@unique`. L'ADR-028 ne décide PAS le " +
+        "multi-utilisateur : sans cette unicité, `jeton.sub → Entreprise` " +
+        "cesse d'être univoque et tout le cloisonnement applicatif avec lui.",
+    ).toContain("@unique");
+  });
+});
+
 describe("conservation 40 ans du DUERP (art. R. 4121-4 CT)", () => {
   /**
    * Une DuerpVersion figée ne peut pas être détruite avant 40 ans. Le garde-fou

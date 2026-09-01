@@ -32,7 +32,14 @@ const handler = creerHandlerMcpHttp({
     const segments = new URL(request.url).pathname.split("/").filter(Boolean);
     const i = segments.indexOf("mcp");
     const cle = i >= 0 ? segments[i + 1] : undefined;
-    return resoudreScopeDepuisCle(cle ? decodeURIComponent(cle) : undefined, config);
+    // Ici la portée est figée dans l'environnement du déploiement : il n'y a
+    // rien à désambiguïser, et donc jamais de troisième issue (cf. ADR-028 et
+    // `ResolutionPortee`). Le secret ouvre un établissement, ou rien.
+    const scope = resoudreScopeDepuisCle(
+      cle ? decodeURIComponent(cle) : undefined,
+      config,
+    );
+    return scope ? { statut: "ok" as const, scope } : { statut: "refus" as const };
   },
 });
 
