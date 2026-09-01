@@ -18,6 +18,18 @@ import { evaluerScopeSecteur } from "./scope";
  * ici depuis `etablissements/schema.ts` — pas de duplication.
  */
 
+/**
+ * La borne du produit (ADR-025 § 1). Elle porte sur les **travailleurs**, et
+ * sur eux seuls : le public reçu ne la déclenche jamais. Un restaurant de huit
+ * salariés qui sert trois cents couverts relève de la 3ᵉ catégorie d'ERP et
+ * reste dans la cible — la catégorie mesure le public, pas l'effectif.
+ *
+ * Exportée parce que la validation client (`components/onboarding/validation`)
+ * doit poser la même borne : un refus qui n'apparaît qu'au submit fait
+ * ressaisir tout le formulaire.
+ */
+export const EFFECTIF_MAX = 50;
+
 const siretRegex = /^\d{14}$/;
 const nafRegex = /^\d{2}\.?\d{2}[A-Z]?$/;
 // Adresse recomposée côté client : "12 rue des Halles, 44000 Nantes".
@@ -57,16 +69,10 @@ export const onboardingSchema = z
       .number()
       .int("Effectif entier")
       .min(1, "Au moins 1 salarié")
-      .max(9999),
-    // Champ de R. 4227-34 CT — optionnels, vide = non renseigné.
-    personnesPresentesHabituellement: z.preprocess(
-      (v) => (v === "" || v === null || v === undefined ? null : v),
-      z.coerce.number().int("Nombre entier").min(0).max(99999).nullable(),
-    ),
-    manipuleMatieresR422722: z.preprocess(
-      (v) => (v === "oui" ? true : v === "non" ? false : null),
-      z.boolean().nullable(),
-    ),
+      .max(
+        EFFECTIF_MAX,
+        `Rojer prend en charge les structures jusqu'à ${EFFECTIF_MAX} salariés.`,
+      ),
 
     // ─── Étape 3 — Typologie (ADR-004, flags cumulables) ────
     estEtablissementTravail: z.coerce.boolean().default(true),
@@ -141,6 +147,20 @@ export const onboardingSchema = z
       }
     }
 
+    // Le seul cumul refusé (ADR-025 § 1) : un ERP en IGH relève du règlement
+    // de sécurité des IGH, jamais dépouillé. L'IGH seul reste servi — un
+    // employeur locataire d'une tour de bureaux relève du Code du travail, que
+    // le produit sert entièrement, et les obligations du règlement IGH pèsent
+    // sur l'exploitant de l'immeuble, pas sur lui.
+    if (val.estERP && val.estIGH) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["estIGH"],
+        message:
+          "Un établissement recevant du public situé dans un immeuble de grande hauteur relève du règlement de sécurité des IGH, que Rojer ne couvre pas.",
+      });
+    }
+
     if (val.estIGH) {
       if (!val.classeIgh) {
         ctx.addIssue({
@@ -204,8 +224,6 @@ export const onboardingValeursInitiales = {
   adresse: "",
   codeNaf: "",
   effectifSurSite: "" as string | number,
-  personnesPresentesHabituellement: "" as string | number,
-  manipuleMatieresR422722: "" as string,
   estEtablissementTravail: true,
   estERP: false,
   estIGH: false,

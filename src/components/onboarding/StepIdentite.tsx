@@ -264,78 +264,15 @@ export function StepIdentite({ state, update, errors }: StepProps) {
               <ChampBoard
                 id="effectifSurSite"
                 name="effectifSurSite"
-                label="Effectif sur site"
+                label="Effectif travailleur"
                 requis
                 inputMode="numeric"
                 value={state.effectifSurSite}
                 onChange={(e) => update({ effectifSurSite: e.target.value })}
                 placeholder="8"
-                aide="Salariés + apprentis présents régulièrement"
+                aide="Salariés + apprentis présents régulièrement. Rojer s'arrête à 50 : au-delà, les obligations changent de nature (CSSCT dédiée, programme annuel de prévention) et l'outil ne les porte pas."
                 erreur={errors?.effectifSurSite}
               />
-
-              <ChampBoard
-                id="personnesPresentesHabituellement"
-                name="personnesPresentesHabituellement"
-                label="Personnes habituellement présentes"
-                inputMode="numeric"
-                value={state.personnesPresentesHabituellement}
-                onChange={(e) =>
-                  update({ personnesPresentesHabituellement: e.target.value })
-                }
-                placeholder="60"
-                aide="Salariés + clients, élèves, patients, visiteurs réguliers, en même temps. Au-delà de 50 : alarme sonore, consigne affichée et exercices semestriels (R. 4227-34, -37, -39). Vide = l'effectif salarié est utilisé."
-                erreur={errors?.personnesPresentesHabituellement}
-              />
-
-              <div>
-                <label
-                  className="label-board"
-                  htmlFor="manipuleMatieresR422722"
-                >
-                  Produits explosifs, comburants ou extrêmement inflammables
-                </label>
-                <select
-                  id="manipuleMatieresR422722"
-                  name="manipuleMatieresR422722"
-                  value={state.manipuleMatieresR422722}
-                  onChange={(e) =>
-                    update({
-                      manipuleMatieresR422722: e.target.value as
-                        | ""
-                        | "oui"
-                        | "non",
-                    })
-                  }
-                  aria-describedby={
-                    errors?.manipuleMatieresR422722
-                      ? "manipuleMatieresR422722-aide manipuleMatieresR422722-erreur"
-                      : "manipuleMatieresR422722-aide"
-                  }
-                  className="champ-board"
-                >
-                  <option value="">Je ne sais pas encore</option>
-                  <option value="oui">Oui</option>
-                  <option value="non">Non</option>
-                </select>
-                <p
-                  id="manipuleMatieresR422722-aide"
-                  className="m-0 mt-1.5 text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]"
-                >
-                  Manipulés ou mis en œuvre dans vos locaux — pas seulement
-                  stockés (R. 4227-22). Si oui, l&apos;alarme, la consigne et
-                  les exercices s&apos;appliquent quel que soit
-                  l&apos;effectif.
-                </p>
-                {errors?.manipuleMatieresR422722 && (
-                  <p
-                    id="manipuleMatieresR422722-erreur"
-                    className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]"
-                  >
-                    {errors.manipuleMatieresR422722}
-                  </p>
-                )}
-              </div>
             </div>
 
             {/* Rappel de seuil : un repère de lecture, pas un état. Le creux
@@ -370,16 +307,20 @@ function hintPourEffectif(
         "Seuil CSSCT (11+) non atteint — certaines obligations sont allégées (élections, consultation CSE).",
     };
   }
-  if (n < 50) {
+  if (n <= 50) {
     return {
       titre: `${n} salariés`,
       corps:
-        "Seuil CSSCT atteint — mise à jour annuelle du DUERP obligatoire, élection d'un CSE sous 12 mois.",
+        "Seuil CSE atteint — mise à jour annuelle du DUERP obligatoire, élection d'un CSE sous 12 mois.",
     };
   }
+  // Au-delà de 50, ce n'est plus un repère de lecture mais un refus : le
+  // dire ici, sous le champ, plutôt que d'attendre le bouton « Continuer ».
+  // Un refus qui n'arrive qu'au moment de valider fait ressaisir tout le
+  // formulaire pour rien.
   return {
-    titre: `${n} salariés`,
+    titre: `${n} salariés — au-delà de ce que Rojer prend en charge`,
     corps:
-      "Seuil 50+ — CSSCT dédiée, programme annuel de prévention à présenter au CSE, bilan HSCT.",
+      "Rojer est construit pour les structures jusqu'à 50 salariés. Au-delà, les obligations changent de nature — CSSCT dédiée, programme annuel de prévention présenté au CSE, bilan annuel — et l'outil ne les porte pas. Mieux vaut vous le dire ici que vous laisser tenir un dossier incomplet.",
   };
 }

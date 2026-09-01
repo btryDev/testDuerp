@@ -51,8 +51,6 @@ export async function finaliserOnboarding(
     adresse: raw.adresse,
     codeNaf: raw.codeNaf,
     effectifSurSite: raw.effectifSurSite,
-    personnesPresentesHabituellement: raw.personnesPresentesHabituellement,
-    manipuleMatieresR422722: raw.manipuleMatieresR422722,
     estEtablissementTravail: raw.estEtablissementTravail === "true",
     estERP: raw.estERP === "true",
     estIGH: raw.estIGH === "true",
@@ -97,8 +95,14 @@ export async function finaliserOnboarding(
         adresse: d.adresse,
         codeNaf: d.codeNaf,
         effectifSurSite: d.effectifSurSite,
-        personnesPresentesHabituellement: d.personnesPresentesHabituellement,
-        manipuleMatieresR422722: d.manipuleMatieresR422722,
+        // `personnesPresentesHabituellement` et `manipuleMatieresR422722` ne
+        // sont plus demandés à l'onboarding (2026-09-01) : deux questions de
+        // technicien au tout début d'un parcours, à qui n'a encore rien vu du
+        // produit. Les colonnes restent, la fiche établissement les porte, et
+        // l'axe `public_recu` de la couverture dit en permanence quelles
+        // obligations restent suspendues tant qu'elles sont vides. Ne pas les
+        // écrire ici les laisse à `null`, ce qui est leur valeur juste : on ne
+        // sait pas encore.
         estEtablissementTravail: d.estEtablissementTravail,
         estERP: d.estERP,
         estIGH: d.estIGH,

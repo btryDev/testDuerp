@@ -14,6 +14,7 @@
 // Module **pur** : ni Prisma, ni React.
 
 import { evaluerScopeSecteur } from "@/lib/onboarding/scope";
+import { EFFECTIF_MAX } from "@/lib/onboarding/schema";
 import type { OnboardingState } from "./types";
 
 /**
@@ -45,6 +46,12 @@ export function validerIdentite(s: OnboardingState): string | null {
   const n = Number(s.effectifSurSite);
   if (!Number.isInteger(n) || n < 1)
     return "Indiquez un effectif (au moins 1).";
+  // La borne du produit (ADR-025 § 1, ADR-031). Elle porte sur les
+  // TRAVAILLEURS et sur eux seuls : le public reçu ne la déclenche jamais —
+  // un restaurant de huit salariés qui sert trois cents couverts est dans la
+  // cible, et sa catégorie d'ERP ne dit rien de son effectif.
+  if (n > EFFECTIF_MAX)
+    return `Rojer prend en charge les structures jusqu'à ${EFFECTIF_MAX} salariés. Au-delà, les obligations changent de nature et l'outil ne les porte pas.`;
   return null;
 }
 
@@ -52,6 +59,16 @@ export function validerIdentite(s: OnboardingState): string | null {
 export function validerTypologie(s: OnboardingState): string | null {
   if (!s.estEtablissementTravail && !s.estERP && !s.estIGH && !s.estHabitation)
     return "Cochez au moins un régime (travail, ERP, IGH ou habitation).";
+  // Le seul cumul refusé (ADR-025 § 1). Un ERP situé dans un immeuble de
+  // grande hauteur relève du règlement de sécurité des IGH, que le référentiel
+  // ne connaît pas du tout.
+  //
+  // L'IGH SEUL n'est pas refusé, et la nuance a été tranchée en séance le
+  // 2026-09-01 : un employeur locataire de bureaux dans une tour relève du
+  // Code du travail, que le produit sert entièrement. Les obligations du
+  // règlement IGH pèsent sur l'exploitant de l'immeuble, pas sur lui.
+  if (s.estERP && s.estIGH)
+    return "Un établissement recevant du public situé dans un immeuble de grande hauteur relève du règlement de sécurité des IGH, que Rojer ne couvre pas.";
   if (s.estERP && !s.typeErp) return "Précisez votre activité ERP.";
   if (s.estERP && !s.categorieErp) return "Précisez votre capacité d'accueil.";
   if (s.estIGH && !s.classeIgh) return "Précisez la classe IGH.";

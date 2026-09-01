@@ -18,19 +18,6 @@ export type OnboardingState = {
   codeNaf: string;
   effectifSurSite: string; // saisie texte, convertie en number au submit
 
-  // Champ de R. 4227-34 CT (alarme sonore → consigne → exercices) : personnes
-  // habituellement présentes, salariés + public ; matières R. 4227-22.
-  // Saisie texte ; "" = non renseigné, jamais un défaut.
-  personnesPresentesHabituellement: string;
-  manipuleMatieresR422722: "" | "oui" | "non";
-
-  // Effectif du public déclaré pour la catégorie ERP (R. 143-19) : total et,
-  // si le seuil du type en dépend, sous-sol et étages. Client seulement :
-  // sert à la déduction, la catégorie retenue est `categorieErp`.
-  effectifPublicTotal: string;
-  effectifPublicSousSol: string;
-  effectifPublicEtages: string;
-
   estEtablissementTravail: boolean;
   estERP: boolean;
   estIGH: boolean;
@@ -51,11 +38,6 @@ export const VALEURS_INITIALES: OnboardingState = {
   adresseVille: "",
   codeNaf: "",
   effectifSurSite: "",
-  personnesPresentesHabituellement: "",
-  manipuleMatieresR422722: "",
-  effectifPublicTotal: "",
-  effectifPublicSousSol: "",
-  effectifPublicEtages: "",
   estEtablissementTravail: true,
   estERP: false,
   estIGH: false,

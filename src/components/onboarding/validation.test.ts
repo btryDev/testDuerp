@@ -115,4 +115,44 @@ describe("étape 2 — les régimes (ADR-004)", () => {
       validerTypologie({ ...complet, estIGH: true, classeIgh: "" }),
     ).toBe("Précisez la classe IGH.");
   });
+
+  // Le seul cumul refusé (ADR-025 § 1). Les deux moitiés comptent : sans la
+  // seconde, la règle se réparerait en refusant l'IGH tout court, ce qui
+  // fermerait la porte à un employeur locataire d'une tour de bureaux — qui
+  // relève du Code du travail et que le produit sert entièrement.
+  it("refuse un ERP situé dans un IGH", () => {
+    expect(
+      validerTypologie({ ...erp, estIGH: true, classeIgh: "GHW" }),
+    ).toContain("immeuble de grande hauteur");
+  });
+
+  it("accepte un IGH qui n'est pas un ERP", () => {
+    expect(
+      validerTypologie({ ...complet, estIGH: true, classeIgh: "GHW" }),
+    ).toBeNull();
+  });
+});
+
+describe("étape 1 — la borne d'effectif (ADR-031)", () => {
+  // Elle porte sur les TRAVAILLEURS. Le refus vit ici autant que dans le
+  // schéma Zod : un dirigeant bloqué à l'étape 1 n'atteint jamais la server
+  // action, et un refus qui n'arriverait qu'au submit ferait ressaisir tout
+  // le formulaire.
+  it("accepte 50 salariés", () => {
+    expect(validerIdentite({ ...complet, effectifSurSite: "50" })).toBeNull();
+  });
+
+  it("refuse 51 salariés en nommant la limite", () => {
+    const message = validerIdentite({ ...complet, effectifSurSite: "51" });
+    expect(message).toContain("50");
+  });
+
+  it("ne regarde pas le public reçu", () => {
+    // Un ERP de 1ʳᵉ catégorie — plus de 1500 personnes admises — avec quatre
+    // salariés passe. Confondre les deux chiffres reviendrait à refuser la
+    // cible du produit.
+    expect(
+      validerIdentite({ ...complet, estERP: true, categorieErp: "N1" }),
+    ).toBeNull();
+  });
 });

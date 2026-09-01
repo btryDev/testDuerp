@@ -150,7 +150,11 @@ describe("onboardingSchema", () => {
     expect(res.success).toBe(false);
   });
 
-  it("accepte le cumul ERP + IGH", () => {
+  // Ce test disait l'inverse jusqu'au 2026-09-01 : le cumul ERP + IGH était
+  // accepté. Il est désormais le SEUL cumul de régimes refusé (ADR-025 § 1) —
+  // un ERP situé dans un immeuble de grande hauteur relève du règlement de
+  // sécurité des IGH, que le référentiel ne connaît pas.
+  it("refuse le cumul ERP + IGH", () => {
     const res = onboardingSchema.safeParse({
       ...base,
       estERP: true,
@@ -158,6 +162,48 @@ describe("onboardingSchema", () => {
       categorieErp: "N1",
       estIGH: true,
       classeIgh: "GHW",
+    });
+    expect(res.success).toBe(false);
+  });
+
+  // La moitié qu'on oublierait volontiers, et sans laquelle le test ci-dessus
+  // se réparerait en refusant l'IGH tout court. Un employeur locataire d'une
+  // tour de bureaux relève du Code du travail, que le produit sert en entier ;
+  // les obligations du règlement IGH pèsent sur l'exploitant de l'immeuble.
+  it("accepte l'IGH seul", () => {
+    const res = onboardingSchema.safeParse({
+      ...base,
+      estIGH: true,
+      classeIgh: "GHW",
+    });
+    expect(res.success).toBe(true);
+  });
+
+  // La borne du produit porte sur les TRAVAILLEURS. Le public reçu ne la
+  // déclenche jamais : c'est ce qui permet de servir un restaurant de huit
+  // salariés classé en 3ᵉ catégorie parce qu'il sert trois cents couverts.
+  it("accepte 50 salariés", () => {
+    const res = onboardingSchema.safeParse({ ...base, effectifSurSite: 50 });
+    expect(res.success).toBe(true);
+  });
+
+  it("refuse 51 salariés", () => {
+    const res = onboardingSchema.safeParse({ ...base, effectifSurSite: 51 });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.flatten().fieldErrors.effectifSurSite).toBeDefined();
+    }
+  });
+
+  it("ne borne pas un ERP de 1ʳᵉ catégorie à petit effectif", () => {
+    // Le cas qui a tranché le périmètre : la catégorie mesure le public, la
+    // borne mesure les salariés. Les confondre reviendrait à refuser la cible.
+    const res = onboardingSchema.safeParse({
+      ...base,
+      effectifSurSite: 8,
+      estERP: true,
+      typeErp: "N",
+      categorieErp: "N1",
     });
     expect(res.success).toBe(true);
   });

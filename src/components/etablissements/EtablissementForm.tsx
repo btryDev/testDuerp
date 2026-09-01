@@ -9,40 +9,13 @@ import {
   CLASSES_IGH,
   TYPE_ERP,
 } from "@/lib/etablissements/schema";
+import {
+  LABEL_CATEGORIE_ERP,
+  LABEL_TYPE_ERP,
+} from "@/lib/etablissements/labels";
 import { CHOIX_FAMILLES_HABITATION } from "@/lib/onboarding/deduction-erp";
 import type { EtablissementActionState } from "@/lib/etablissements/actions";
 
-const LABEL_TYPE_ERP: Record<(typeof TYPE_ERP)[number], string> = {
-  M: "M · Magasin de vente, centre commercial",
-  N: "N · Restaurant, débit de boissons",
-  O: "O · Hôtel, pension de famille",
-  L: "L · Salle de spectacle, conférence",
-  P: "P · Salle de danse, salle de jeux",
-  R: "R · Établissement d'enseignement, colonies",
-  S: "S · Bibliothèque, centre de documentation",
-  T: "T · Salle d'exposition",
-  U: "U · Établissement de soins",
-  V: "V · Établissement de culte",
-  W: "W · Administration, banque, bureau",
-  X: "X · Établissement sportif couvert",
-  Y: "Y · Musée",
-  PA: "PA · Établissement de plein air",
-  CTS: "CTS · Chapiteau, tente, structure",
-  SG: "SG · Structure gonflable",
-  PS: "PS · Parc de stationnement couvert",
-  REF: "REF · Refuge de montagne",
-  GA: "GA · Gare accessible au public",
-  OA: "OA · Hôtel-restaurant d'altitude",
-  EF: "EF · Établissement flottant",
-};
-
-const LABEL_CATEGORIE_ERP: Record<(typeof CATEGORIES_ERP)[number], string> = {
-  N1: "1ʳᵉ catégorie (> 1500 personnes)",
-  N2: "2ᵉ catégorie (701 à 1500)",
-  N3: "3ᵉ catégorie (301 à 700)",
-  N4: "4ᵉ catégorie (jusqu'à 300, seuil du type)",
-  N5: "5ᵉ catégorie (petits établissements, règles PE)",
-};
 
 const LABEL_CLASSE_IGH: Record<(typeof CLASSES_IGH)[number], string> = {
   GHA: "GHA · Habitation",

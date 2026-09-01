@@ -1,58 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import { InfoTooltip } from "@/components/ui/info-tooltip";
+import { CATEGORIES_ERP, TYPE_ERP } from "@/lib/etablissements/schema";
 import {
-  CATEGORIES_ERP,
-  CLASSES_IGH,
-  TYPE_ERP,
-} from "@/lib/etablissements/schema";
+  LABEL_CATEGORIE_ERP,
+  LABEL_TYPE_ERP,
+} from "@/lib/etablissements/labels";
 import {
-  CHOIX_ACTIVITE_ERP,
   CHOIX_CLASSES_IGH,
   CHOIX_FAMILLES_HABITATION,
-  type ChoixActiviteId,
-  typeErpDepuisChoix,
 } from "@/lib/onboarding/deduction-erp";
 import { CarteChoix } from "./CarteChoix";
-import { CapaciteErp } from "./CapaciteErp";
 import type { StepProps } from "./types";
 
 /**
- * Étape 2 sur 3 — Assistant pour déterminer la typologie d'établissement
- * (ERP / IGH / habitation). Trois questions avec grille visuelle pour le
- * type d'activité et la classe IGH.
+ * Étape 2 sur 3 — la typologie de l'établissement (ERP / IGH / habitation).
  *
- * Un mode avancé permet aux utilisateurs qui connaissent déjà leur
- * catégorie ERP et leur classe IGH de les saisir directement via des
- * dropdowns.
+ * **Le parcours ne devine plus, il fait déclarer** (décision du 2026-09-01).
+ * Il proposait auparavant huit cartes d'activité — huit types sur vingt et un
+ * — puis déduisait la catégorie d'un effectif de public saisi, table de seuils
+ * à l'appui. Deux défauts, et le second est le vrai : la liste tronquée ne
+ * laissait aucune place à qui n'y figurait pas, et la catégorie *déduite*
+ * s'inscrivait au dossier comme si elle avait été constatée, alors qu'elle
+ * était calculée à partir d'un chiffre approximatif. Un dirigeant connaît son
+ * classement — il est sur son arrêté d'ouverture ou au procès-verbal de la
+ * commission de sécurité — et il vaut mieux le lui demander que le recalculer
+ * moins bien que lui.
  *
- * Les questions ne sont plus numérotées : elles sont posées toutes les
- * trois en même temps et se répondent dans n'importe quel ordre — le
- * numéro n'y portait aucune information, contrairement aux étapes du
- * wizard. Le compteur d'étape reste, lui, dans l'enveloppe.
+ * Il n'y a donc plus de mode guidé ni de mode avancé : le mode avancé
+ * n'existait que pour échapper à la déduction.
+ *
+ * Les questions ne sont pas numérotées : elles sont posées toutes les trois en
+ * même temps et se répondent dans n'importe quel ordre.
  */
 export function StepTypologie({ state, update, errors }: StepProps) {
-  const [modeAvance, setModeAvance] = useState(false);
-
-  // Reverse lookup pour pré-sélectionner les cartes en mode basique
-  const activiteSelectionnee: ChoixActiviteId | undefined =
-    CHOIX_ACTIVITE_ERP.find((c) => c.typeErp === state.typeErp)?.id;
-
-  const selectActivite = (id: ChoixActiviteId) => {
-    const typeErp = typeErpDepuisChoix(id);
-    update({
-      estERP: true,
-      typeErp,
-      // Changer d'activité change le seuil de 5ᵉ catégorie (`SEUILS_5E_CATEGORIE`,
-      // art. « 1 » des dispositions particulières) : la catégorie retenue pour
-      // le type précédent ne vaut plus. La garder afficherait une proposition
-      // et une catégorie enregistrée qui se contredisent — et l'assistant
-      // laisserait passer la contradiction, `categorieErp` étant renseignée.
-      ...(typeErp !== state.typeErp ? { categorieErp: "" } : {}),
-    });
-  };
-
 
   return (
     <div className="flex flex-col gap-[22px]">
@@ -64,18 +44,14 @@ export function StepTypologie({ state, update, errors }: StepProps) {
           Quelques questions pour cadrer les obligations applicables.
         </h2>
         <p className="m-0 mt-2.5 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
-          Pas de jargon : on vous guide pour déterminer votre régime
-          réglementaire. Aucun champ n&apos;est bloquant — en cas de doute,
-          cochez le choix le plus proche, vous pourrez ajuster plus tard.
+          Trois questions, et deux précisions si vous y répondez oui. Votre
+          classement figure sur votre arrêté d&apos;ouverture ou au
+          procès-verbal de la commission de sécurité — nous ne le devinons
+          pas à votre place.
         </p>
       </div>
 
-      {/* Mode avancé (dropdown direct) */}
-      {modeAvance ? (
-        <ModeAvance state={state} update={update} errors={errors} />
-      ) : (
-        <>
-          {/* ─── Accueil du public (ERP) ──────────────────────── */}
+      {/* ─── Accueil du public (ERP) ──────────────────────── */}
           <section className="carte-board flex flex-col gap-6 px-7 py-6 sm:px-8">
             <div>
               <h3 className="board-titre m-0 text-[22px]">
@@ -109,41 +85,64 @@ export function StepTypologie({ state, update, errors }: StepProps) {
               />
             </div>
 
-            {/* Sub-question activité ERP */}
             {state.estERP && (
-              <div className="flex flex-col gap-4">
-                <SousQuestion
-                  question="Quelle est votre activité principale ?"
-                  aide="Choisissez la catégorie la plus proche."
-                />
-                <div
-                  role="radiogroup"
-                  aria-label="Activité principale"
-                  className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
-                >
-                  {CHOIX_ACTIVITE_ERP.map((c) => (
-                    <CarteChoix
-                      key={c.id}
-                      id={c.id}
-                      label={c.label}
-                      description={c.description}
-                      badge={`Type ${c.typeErp}`}
-                      actif={activiteSelectionnee === c.id}
-                      onClick={() => selectActivite(c.id)}
-                    />
-                  ))}
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-3">
+                  <SousQuestion
+                    question="Quel est votre type d'établissement ?"
+                    aide="Les vingt et un types du règlement de sécurité. Le vôtre y figure."
+                  />
+                  <select
+                    id="typeErp"
+                    aria-label="Type d'ERP"
+                    value={state.typeErp}
+                    onChange={(e) => update({ typeErp: e.currentTarget.value })}
+                    className="champ-board max-w-md"
+                    aria-invalid={Boolean(errors?.typeErp)}
+                  >
+                    <option value="">— Sélectionner —</option>
+                    {TYPE_ERP.map((t) => (
+                      <option key={t} value={t}>
+                        {LABEL_TYPE_ERP[t]}
+                      </option>
+                    ))}
+                  </select>
+                  {errors?.typeErp && (
+                    <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                      {errors.typeErp}
+                    </p>
+                  )}
                 </div>
-                {errors?.typeErp && (
-                  <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
-                    {errors.typeErp}
-                  </p>
-                )}
-              </div>
-            )}
 
-            {/* Sub-question capacité → catégorie */}
-            {state.estERP && state.typeErp && (
-              <CapaciteErp state={state} update={update} errors={errors} />
+                <div className="flex flex-col gap-3">
+                  <SousQuestion
+                    question="Quelle est votre catégorie ?"
+                    aide="Elle compte le public admis, pas vos salariés — un petit restaurant qui sert trois cents couverts est en 3ᵉ catégorie."
+                  />
+                  <select
+                    id="categorieErp"
+                    aria-label="Catégorie d'ERP"
+                    value={state.categorieErp}
+                    onChange={(e) =>
+                      update({ categorieErp: e.currentTarget.value })
+                    }
+                    className="champ-board max-w-md"
+                    aria-invalid={Boolean(errors?.categorieErp)}
+                  >
+                    <option value="">— Sélectionner —</option>
+                    {CATEGORIES_ERP.map((c) => (
+                      <option key={c} value={c}>
+                        {LABEL_CATEGORIE_ERP[c]}
+                      </option>
+                    ))}
+                  </select>
+                  {errors?.categorieErp && (
+                    <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                      {errors.categorieErp}
+                    </p>
+                  )}
+                </div>
+              </div>
             )}
           </section>
 
@@ -261,21 +260,6 @@ export function StepTypologie({ state, update, errors }: StepProps) {
               </div>
             )}
           </section>
-        </>
-      )}
-
-      {/* Toggle mode avancé */}
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={() => setModeAvance((v) => !v)}
-          className="board-eyebrow m-0 text-[10px] tracking-[0.16em] text-[color:var(--board-slate-soft)] underline decoration-[color:var(--board-slate)] decoration-dotted underline-offset-4 transition-colors hover:text-[color:var(--board-ink)]"
-        >
-          {modeAvance
-            ? "← Revenir au mode guidé"
-            : "Je connais déjà ma catégorie ERP →"}
-        </button>
-      </div>
     </div>
   );
 }
@@ -329,213 +313,5 @@ function BoutonOuiNon({
     >
       {label}
     </button>
-  );
-}
-
-function ModeAvance({ state, update, errors }: StepProps) {
-  return (
-    <section className="carte-board flex flex-col gap-6 px-7 py-6 sm:px-8">
-      <div>
-        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
-          Mode avancé
-        </p>
-        <p className="m-0 mt-2 max-w-[62ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
-          Cochez les régimes qui s&apos;appliquent puis précisez les
-          catégories. Les invariants ERP ↔ catégorie et IGH ↔ classe sont
-          vérifiés à la validation.
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-4">
-        <label className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            checked={state.estEtablissementTravail}
-            onChange={(e) =>
-              update({ estEtablissementTravail: e.currentTarget.checked })
-            }
-            className="mt-1 size-4 rounded border-[color:var(--board-slate)] accent-[color:var(--board-ink)]"
-          />
-          <div className="min-w-0">
-            <p className="m-0 text-[13.5px] font-semibold text-[color:var(--board-ink)]">
-              Établissement de travail
-            </p>
-            <p className="m-0 mt-1 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
-              Coché par défaut — désactivez uniquement en cas d&apos;immeuble
-              sans salarié.
-            </p>
-          </div>
-        </label>
-
-        <label className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            checked={state.estERP}
-            onChange={(e) =>
-              update({
-                estERP: e.currentTarget.checked,
-                typeErp: e.currentTarget.checked ? state.typeErp : "",
-                categorieErp: e.currentTarget.checked ? state.categorieErp : "",
-              })
-            }
-            className="mt-1 size-4 rounded border-[color:var(--board-slate)] accent-[color:var(--board-ink)]"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="m-0 text-[13.5px] font-semibold text-[color:var(--board-ink)]">
-              Établissement Recevant du Public
-            </p>
-            {state.estERP && (
-              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="label-board" htmlFor="typeErp">
-                    Type ERP *
-                  </label>
-                  <select
-                    id="typeErp"
-                    value={state.typeErp}
-                    onChange={(e) => update({ typeErp: e.currentTarget.value })}
-                    className="champ-board"
-                  >
-                    <option value="">— Sélectionner —</option>
-                    {TYPE_ERP.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                  {errors?.typeErp && (
-                    <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
-                      {errors.typeErp}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="label-board" htmlFor="categorieErp">
-                    Catégorie *
-                    <InfoTooltip>
-                      La catégorie dépend de la capacité d&apos;accueil :
-                      1ʳᵉ (&gt;1500) · 2ᵉ (701-1500) · 3ᵉ (301-700) ·
-                      4ᵉ/5ᵉ (≤300).
-                    </InfoTooltip>
-                  </label>
-                  <select
-                    id="categorieErp"
-                    value={state.categorieErp}
-                    onChange={(e) =>
-                      update({ categorieErp: e.currentTarget.value })
-                    }
-                    className="champ-board"
-                  >
-                    <option value="">— Sélectionner —</option>
-                    {CATEGORIES_ERP.map((c) => (
-                      <option key={c} value={c}>
-                        {c.slice(1)}ᵉ catégorie
-                      </option>
-                    ))}
-                  </select>
-                  {errors?.categorieErp && (
-                    <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
-                      {errors.categorieErp}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </label>
-
-        <label className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            checked={state.estIGH}
-            onChange={(e) =>
-              update({
-                estIGH: e.currentTarget.checked,
-                classeIgh: e.currentTarget.checked ? state.classeIgh : "",
-              })
-            }
-            className="mt-1 size-4 rounded border-[color:var(--board-slate)] accent-[color:var(--board-ink)]"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="m-0 text-[13.5px] font-semibold text-[color:var(--board-ink)]">
-              Immeuble de Grande Hauteur
-            </p>
-            {state.estIGH && (
-              <div className="mt-3">
-                <label className="label-board" htmlFor="classeIgh">
-                  Classe *
-                </label>
-                <select
-                  id="classeIgh"
-                  value={state.classeIgh}
-                  onChange={(e) => update({ classeIgh: e.currentTarget.value })}
-                  className="champ-board"
-                >
-                  <option value="">— Sélectionner —</option>
-                  {CLASSES_IGH.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-                {errors?.classeIgh && (
-                  <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
-                    {errors.classeIgh}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        </label>
-
-        <label className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            checked={state.estHabitation}
-            onChange={(e) =>
-              update({
-                estHabitation: e.currentTarget.checked,
-                familleHabitation: e.currentTarget.checked
-                  ? state.familleHabitation
-                  : "",
-              })
-            }
-            className="mt-1 size-4 rounded border-[color:var(--board-slate)] accent-[color:var(--board-ink)]"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="m-0 text-[13.5px] font-semibold text-[color:var(--board-ink)]">
-              Immeuble d&apos;habitation
-            </p>
-            {state.estHabitation && (
-              <div className="mt-3">
-                <label className="label-board" htmlFor="familleHabitation">
-                  Famille *
-                </label>
-                <select
-                  id="familleHabitation"
-                  value={state.familleHabitation}
-                  onChange={(e) =>
-                    update({ familleHabitation: e.currentTarget.value })
-                  }
-                  className="champ-board"
-                >
-                  <option value="">— Sélectionner —</option>
-                  {CHOIX_FAMILLES_HABITATION.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.label}
-                    </option>
-                  ))}
-                </select>
-                {errors?.familleHabitation && (
-                  <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
-                    {errors.familleHabitation}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        </label>
-      </div>
-    </section>
   );
 }

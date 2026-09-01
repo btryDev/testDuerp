@@ -29,9 +29,26 @@ affaires cessantes.
 
 **Servi** : Code du travail, ERP, habitation.
 
-**Refusé à la création d'un dossier** : IGH, ICPE, gares, chapiteaux et tentes
-(CTS), établissements pénitentiaires, équipements sportifs, ATEX, DRPCE, CEM,
-CMR, amiante, plomb, radon, rayonnements ionisants.
+**Refusé à la création d'un dossier — deux cas, et deux seulement** (arbitré en
+séance le 2026-09-01, après un premier jet beaucoup plus large) :
+
+1. **plus de cinquante travailleurs** — au-delà, les obligations changent de
+   nature (CSSCT dédiée, programme annuel présenté au CSE) et le produit ne les
+   porte pas ;
+2. **un ERP situé dans un immeuble de grande hauteur** — il relève du règlement
+   de sécurité des IGH, jamais dépouillé.
+
+**L'IGH seul n'est pas refusé.** Un employeur locataire de bureaux dans une tour
+relève du Code du travail, que le produit sert entièrement ; les obligations du
+règlement IGH pèsent sur l'exploitant de l'immeuble, pas sur lui.
+
+**Tout le reste se déclare et ne se refuse pas** : ICPE, expositions spécialisées
+(ATEX, DRPCE, CEM, CMR, amiante, plomb, radon, rayonnements ionisants), types
+d'ERP non instruits (CTS, GA, PS, SG, REF, EF, OA, PA, X). Le critère qui a
+prévalu : **on refuse ce qu'on ne peut pas servir, pas ce qu'on ne couvre pas
+entièrement.** Une TPE qui manipule un agent CMR reste un employeur ordinaire
+pour tout le reste, et lui fermer la porte lui retirerait tout au motif qu'on ne
+lui donnerait pas tout.
 
 **Refusé au niveau de l'équipement, sans refuser le dossier** : équipements sous
 pression particuliers et équipements frigorifiques sous pression. Les ESP et les
@@ -55,12 +72,10 @@ même quelque chose et qu'il est prévenu de ce qui manque.
 
 ### Deux frictions connues, non résolues par cette décision
 
-- **Neuf obligations portent la typologie `igh`** alors que l'IGH est refusé.
-  Leur retrait effectif est différé : le refus à l'entrée suffit
-  fonctionnellement, et le retrait toucherait une vingtaine de fichiers pour un
-  gain nul tant qu'aucun dossier IGH n'existe. Une seule est `igh`-only
-  (`incendie.ts:790`) ; les sept lignes d'ascenseur sont multi-régime et
-  survivraient au retrait du flag.
+- **Les neuf obligations qui portent la typologie `igh` restent, et servent.**
+  Elles auraient été des lignes mortes si l'IGH avait été refusé en bloc ; le
+  refus ne portant que sur le cumul ERP + IGH, elles s'appliquent à l'IGH non-ERP.
+  La question de leur retrait est close.
 - **Le CMR est partiellement encodé.** `stockage-dangereux.ts` cite `R. 4412-87`.
   Refuser le régime CMR suppose de décider ce que devient cette ligne — à
   trancher après relecture de l'article en première main, pas avant.

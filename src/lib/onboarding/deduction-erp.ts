@@ -47,64 +47,24 @@ import type {
  * comportement antérieur demeure : la catégorie est **demandée**, la 4ᵉ
  * figure explicitement dans les choix, et toute déduction reste une
  * proposition modifiable.
+ *
+ * ── Retiré du parcours de création le 2026-09-01 ─────────────────────────
+ *
+ * L'onboarding ne déduit plus rien : il fait **déclarer** le type et la
+ * catégorie (ADR-025 § 2). Les huit cartes d'activité et leur mappage sont
+ * partis avec le mode guidé — elles ne servaient qu'à lui, et ne couvraient
+ * que huit types sur vingt et un.
+ *
+ * Ce qui reste ci-dessous n'est **appelé par aucun écran** aujourd'hui, et
+ * c'est délibéré : la table des seuils a été relue article par article sur
+ * Légifrance le 2026-08-25, chaque entrée porte sa version et son URL. La
+ * jeter reviendrait à refaire ce dépouillement le jour où le produit voudra
+ * signaler une incohérence — « vous avez déclaré la 5ᵉ catégorie et quatre
+ * cents personnes admises » —, ce que la fiche établissement permet déjà de
+ * poser puisqu'elle porte `effectifPublicAdmis` en regard de la catégorie.
+ * Ne pas rebrancher ces fonctions sur une déduction : la décision de séance
+ * est de ne pas deviner.
  */
-
-/**
- * Grille des choix d'activité proposés au dirigeant. L'ordre compte pour
- * l'affichage : le plus fréquent en TPE d'abord.
- */
-export const CHOIX_ACTIVITE_ERP = [
-  {
-    id: "resto",
-    label: "Restaurant, bar, café",
-    description: "Restauration, débit de boissons, brasserie.",
-    typeErp: "N" as TypeErp,
-  },
-  {
-    id: "commerce",
-    label: "Commerce, boutique",
-    description: "Magasin, supermarché, centre commercial.",
-    typeErp: "M" as TypeErp,
-  },
-  {
-    id: "bureau",
-    label: "Bureau recevant du public",
-    description: "Banque, agence, administration ouverte au public.",
-    typeErp: "W" as TypeErp,
-  },
-  {
-    id: "hotel",
-    label: "Hôtel, hébergement",
-    description: "Hôtel, pension, gîte ouvert au public.",
-    typeErp: "O" as TypeErp,
-  },
-  {
-    id: "soins",
-    label: "Soins, santé",
-    description: "Cabinet médical, clinique, institut.",
-    typeErp: "U" as TypeErp,
-  },
-  {
-    id: "enseignement",
-    label: "Enseignement",
-    description: "École, centre de formation, crèche.",
-    typeErp: "R" as TypeErp,
-  },
-  {
-    id: "spectacle",
-    label: "Salle, spectacle, culte",
-    description: "Salle de réunion, cinéma, théâtre, lieu de culte.",
-    typeErp: "L" as TypeErp,
-  },
-  {
-    id: "exposition",
-    label: "Musée, exposition",
-    description: "Galerie, salon, espace d'exposition.",
-    typeErp: "T" as TypeErp,
-  },
-] as const;
-
-export type ChoixActiviteId = (typeof CHOIX_ACTIVITE_ERP)[number]["id"];
 
 /**
  * Bornes du premier groupe, telles qu'écrites à l'article R. 143-19 du CCH.
@@ -222,15 +182,6 @@ export function deduireCategorieErpDepuisEffectif(
 ): CategorieErp | null {
   const d = deduireCategorieErp(effectifPublic);
   return d.statut === "proposee" ? d.categorieErp : null;
-}
-
-/**
- * Résout un ID d'activité en type ERP.
- */
-export function typeErpDepuisChoix(id: ChoixActiviteId): TypeErp {
-  const c = CHOIX_ACTIVITE_ERP.find((x) => x.id === id);
-  if (!c) throw new Error(`Activité inconnue : ${id}`);
-  return c.typeErp;
 }
 
 /**

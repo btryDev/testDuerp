@@ -32,9 +32,25 @@ Le critère est la nature du manque, pas sa taille.
 
 | | Refus à l'entrée | Déclaration continue |
 |---|---|---|
-| **Ce qui le déclenche** | Un régime dont le produit n'a lu aucun règlement, ou une exposition qu'il ne sait pas détecter | Un régime servi, dont une partie manque |
-| **Exemples** | IGH, ICPE, gares, CTS, pénitentiaires, équipements sportifs, ATEX, DRPCE, CEM, CMR, amiante, plomb, radon, rayonnements ionisants ; effectif au-delà de cinquante | ERP de 1re à 4e catégorie, secteur de DUERP non instruit, équipement hors référentiel, obligations suspendues au public reçu |
+| **Ce qui le déclenche** | Ce que le produit ne peut pas servir **du tout** : la structure sort de sa taille, ou son régime rouvre un règlement entier jamais dépouillé | Tout le reste — un régime servi dont une partie manque |
+| **Ce qui refuse, au 2026-09-01** | **Deux cas, et deux seulement** : plus de cinquante travailleurs ; un ERP situé dans un immeuble de grande hauteur | ERP de 1ʳᵉ à 4ᵉ catégorie, IGH seul, ICPE, tout type d'ERP non instruit, secteur de DUERP non instruit, équipement hors référentiel, obligations suspendues au public reçu, expositions spécialisées (ATEX, amiante, plomb, radon, CMR, rayonnements ionisants) |
 | **Ce que voit le dirigeant** | La création s'arrête et dit pourquoi | Le dossier vit et le prévient en permanence |
+
+**La liste des refus est courte, et elle a été raccourcie en séance.** Un premier
+jet refusait une douzaine de régimes. La propriétaire l'a ramenée à deux cas le
+2026-09-01, et son critère est meilleur que celui qui présidait : **on refuse ce
+qu'on ne peut pas servir, pas ce qu'on ne couvre pas entièrement.** Une TPE qui
+manipule un agent CMR reste un employeur ordinaire pour tout le reste — sanitaires,
+électricité, incendie, DUERP — et lui fermer la porte lui retirerait tout au motif
+qu'on ne lui donnerait pas tout. Le mécanisme de déclaration existe précisément
+pour ce cas.
+
+**Le cumul ERP + IGH, et lui seul.** Un ERP dans un immeuble de grande hauteur
+relève du règlement de sécurité des IGH, jamais dépouillé. **L'IGH seul n'est pas
+refusé** : un employeur locataire de bureaux dans une tour relève du Code du
+travail, que le produit sert entièrement, et les obligations du règlement IGH
+pèsent sur l'exploitant de l'immeuble, pas sur lui. Conséquence utile : les neuf
+obligations `igh` du référentiel cessent d'être des lignes mortes.
 
 **L'ADR-020 n'est pas renversée.** Son mécanisme — ce qu'un DUERP ne couvre pas
 se déclare et se grave avec la version — reste entier, et le module de couverture
@@ -43,7 +59,13 @@ une classe de cas traitée **en amont**, avant que le dossier n'existe.
 
 Trois précisions, parce que chacune a failli être prise à l'envers.
 
-**1. La borne d'effectif vaut à la création, pas en édition.** Un client qui
+**1. La borne d'effectif porte sur les travailleurs, et sur eux seuls.** Le
+public reçu ne la déclenche jamais. Un restaurant de huit salariés qui sert trois
+cents couverts est classé en 3ᵉ catégorie d'ERP : la catégorie mesure le public,
+la borne mesure les salariés, et les confondre reviendrait à refuser la cible du
+produit. Un test le verrouille.
+
+**1 bis. Elle vaut à la création, pas en édition.** Un client qui
 passe de quarante-cinq à soixante salariés reste servi : lui fermer son dossier
 parce qu'il a embauché serait absurde. Mais la promesse implicite doit rester
 explicite — au-delà de cinquante, son dossier porte un manque de couverture qui

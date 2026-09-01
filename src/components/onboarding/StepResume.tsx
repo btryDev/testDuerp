@@ -3,10 +3,11 @@
 import { PastilleFiche } from "@/components/ui-kit/fiche";
 import type { StepProps } from "./types";
 import {
-  CHOIX_ACTIVITE_ERP,
   CHOIX_CLASSES_IGH,
   CHOIX_FAMILLES_HABITATION,
 } from "@/lib/onboarding/deduction-erp";
+import { LABEL_TYPE_ERP } from "@/lib/etablissements/labels";
+import type { TYPE_ERP } from "@/lib/etablissements/schema";
 
 /**
  * Étape 3 sur 3 — Résumé.
@@ -17,7 +18,7 @@ import {
  */
 export function StepResume({ state }: StepProps) {
   const typeErpLabel =
-    CHOIX_ACTIVITE_ERP.find((c) => c.typeErp === state.typeErp)?.label ??
+    LABEL_TYPE_ERP[state.typeErp as (typeof TYPE_ERP)[number]] ??
     state.typeErp;
   const classeIghLabel =
     CHOIX_CLASSES_IGH.find((c) => c.id === state.classeIgh)?.label ??
@@ -92,14 +93,6 @@ export function StepResume({ state }: StepProps) {
               state.effectifSurSite
                 ? `${state.effectifSurSite} salarié${Number(state.effectifSurSite) > 1 ? "s" : ""}`
                 : "—"
-            }
-          />
-          <SumLigne
-            label="Personnes présentes"
-            valeur={
-              state.personnesPresentesHabituellement
-                ? `${state.personnesPresentesHabituellement} (salariés + public)`
-                : "— (effectif salarié utilisé)"
             }
           />
           <SumLignePills
