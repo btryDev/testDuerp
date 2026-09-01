@@ -38,7 +38,12 @@ import {
   ARRETE_2004_12_21_ECHAFAUDAGES,
   CODE_TRAVAIL_TRAVAIL_EN_HAUTEUR,
 } from "./code-travail-travail-en-hauteur";
-import { couverture, type Corpus, type CouvertureCorpus } from "./types";
+import {
+  couverture,
+  type ArticleDepouille,
+  type Corpus,
+  type CouvertureCorpus,
+} from "./types";
 
 export * from "./types";
 export * from "./perimetre";
@@ -99,6 +104,35 @@ export const CORPUS: readonly Corpus[] = [
 
 export function couvertureParCorpus(): CouvertureCorpus[] {
   return CORPUS.map(couverture);
+}
+
+/**
+ * Le corpus indexé par clé canonique d'article, tous corpus confondus.
+ *
+ * La règle de départage est la partie qui ne doit exister qu'à un seul
+ * endroit : un même article peut figurer dans deux corpus — un texte
+ * modificatif reprend l'article qu'il modifie, et `R. 4226-19` comme
+ * `L. 4711-5` sont déclarés deux fois. Le premier DÉPOUILLÉ gagne : une entrée
+ * `non_depouille` ne doit jamais masquer une lecture réelle.
+ *
+ * `scripts/export-relecture.ts` portait cette règle en propre ; la mesure de
+ * vérification en avait besoin à l'identique, et deux copies d'une règle de
+ * départage divergent en silence — le symptôme étant un article compté lu d'un
+ * côté et non lu de l'autre, sans qu'aucun des deux comptes n'ait l'air faux.
+ */
+export function indexArticlesParRef(): Map<
+  string,
+  { corpusId: string; article: ArticleDepouille }
+> {
+  const index = new Map<string, { corpusId: string; article: ArticleDepouille }>();
+  for (const c of CORPUS) {
+    for (const a of c.articles) {
+      const existante = index.get(a.ref);
+      if (existante && existante.article.statut !== "non_depouille") continue;
+      index.set(a.ref, { corpusId: c.id, article: a });
+    }
+  }
+  return index;
 }
 
 /** Toutes les références d'articles déclarées dépouillées, tous corpus confondus. */
