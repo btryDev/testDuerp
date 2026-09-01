@@ -854,3 +854,131 @@ constat ». Ce qui est un défaut est de l'oublier : c'est exactement le
 mécanisme qui a produit les deux références fausses, dont un article abrogé
 depuis quatre mois, qui ont motivé l'invention du champ `lecture`.
 L'interdiction du niveau `indirect` est, elle, **tenue** : zéro entrée.
+
+---
+
+## Partie 3 — Pour que ce document ne se périme pas
+
+Un journal qu'il faut reconstituer à la main est un journal qui mourra une
+seconde fois. Celui-ci a été reconstitué en une session, et il ne faut pas
+recommencer.
+
+### Ce qui a tué les documents précédents
+
+**Trois documents de ce dépôt sont morts de la même façon**, et le mécanisme
+est chaque fois identique : *le document a raison le jour où il est écrit, le
+code bouge, le document ne bouge pas, et quelqu'un s'y fie.*
+
+1. **`docs/relecture-source-2026-08-26.md`** — il annonce « rien n'est
+   appliqué » ; six jours plus tard, deux de ses cinq rattachements sont
+   corrigés, sa section URL est soldée, et quatre de ses constats visaient déjà
+   un état révolu. Le document, lui, dit toujours la même chose. C'est celui
+   qui a coûté la journée du 1er septembre.
+2. **`docs/carto-obligations-hors-equipement.md`** — honnête sur elle-même
+   (« ⚠️ Les références ci-dessous sont présumées […] pas d'une lecture de
+   Légifrance »), et pourtant recopiée sans recoupement dans deux briefs du
+   31 août : `a2186cf` en tire le constat que « les deux erreurs ont la même
+   cause : la carto et une note recopiées sans être recoupées ». Aujourd'hui
+   son premier paragraphe est faux — il fonde tout le document sur le fait que
+   « `Obligation.categoriesEquipement` est obligatoire et non vide
+   (`types.ts:168`) », que l'ADR-022 a levé, et la ligne citée désigne
+   désormais autre chose.
+3. **Une `notesInternes` de `incendie.ts`** — pas un document, et c'est le plus
+   inquiétant : le code lui-même a menti. La note annonçait trois corrections
+   « non réparées » ; deux l'étaient. Le brief du palier 1 l'a lue et l'a prise
+   pour l'état du code. Le lot a fini par écrire la leçon dans le fichier :
+   **« une note qui décrit un état révolu finit par faire refaire le travail »**
+   — et `a2186cf`, plus court : **« Une note qui dit "à faire" ne dit pas que ça
+   reste à faire. »**
+
+**Le contre-exemple existe, et il est dans le dépôt.**
+`docs/couverture-declaree-du-produit.md` a remplacé une carte vivante par une
+liste figée — la mort programmée — et n'est pas mort, parce que `7d71b72` lui a
+adossé `src/lib/referentiels/corpus/doc-couverture.test.ts` : le test lit le
+`.md`, le compare au corpus **dans les deux sens**, et le message d'échec dit
+quoi écrire et où. Il a attrapé un écart dès sa première exécution.
+
+C'est le patron à reprendre. Il tient en une phrase : **un document qui affirme
+quelque chose du code doit échouer quand le code le dément.**
+
+### Les quatre gestes, et qui les porte
+
+**Geste 1 — au moment de la lecture, par la session qui lit.**
+*Règle : un commit qui pose ou modifie un `luLe` au corpus touche ce fichier.*
+Cinq lignes en partie 1 : date, sha, périmètre chiffré, provenance de lecture
+(`première main` / `agent` / `indirect`), et — la seule qui compte — **ce qui a
+été appliqué et ce qui ne l'a pas été**. La chronologie s'écrit au fil de
+l'eau ou elle ne s'écrit pas : elle a coûté une session à reconstituer sur
+douze jours, elle coûtera une heure à reconstituer sur trois mois.
+
+Cette règle est mécaniquement vérifiable en CI sur un diff (`git diff` touche
+`corpus/` avec un `luLe:` ajouté **et** ne touche pas
+`docs/journal-des-verifications.md` → échec). **Ne l'automatisez pas tout de
+suite** : commencez par la règle de revue, et n'ajoutez la garde que si elle
+est enfreinte. Une garde posée avant que le défaut existe est une garde qu'on
+apprend à contourner.
+
+**Geste 2 — dans le dépôt, une fois, par la prochaine session qui touche au
+référentiel.**
+Un test du genre de `doc-couverture.test.ts`, sur ce fichier, qui porte
+**deux** garanties et pas une de plus :
+
+- *(a)* tout identifiant d'obligation cité entre accents graves dans ce journal
+  existe encore au référentiel, ou figure dans `OBLIGATIONS_RETIREES`. Sans
+  cela, le journal parlera un jour d'une ligne qui n'existe plus, et personne
+  ne le saura.
+- *(b)* **le sens qui compte** : chaque constat marqué `NON CORRIGÉ` sur
+  l'ABSENCE d'un article — `R. 4224-12`, `R. 4226-21`, `C. env. L. 512-8`,
+  `CCH R. 134-2`, `Arrêté 2017-11-20 art. 18` — **fait rougir la suite le jour
+  où l'article entre au référentiel**, avec pour message : *« cet article est
+  désormais cité ; le constat de la partie 2 est peut-être corrigé — relisez-le
+  et changez son état. »*
+
+C'est (b) qui a manqué en août. Un constat qui devient faux doit se signaler
+lui-même ; sinon il reste ouvert dans un document pendant qu'il est clos dans
+le code, ce qui est exactement l'état trouvé le 1er septembre.
+
+> **La liste de (b) n'est pas une liste exhaustive du référentiel**, et c'est
+> ce qui la rend légitime : elle énumère les constats OUVERTS de ce journal,
+> et sa réparation — retirer une ligne parce que son constat a été tranché —
+> **est le geste qu'on veut**. Une liste qu'on répare en recopiant cesse de
+> vérifier ; celle-ci, on la répare en décidant.
+
+**Geste 3 — à chaque intégration, par la session qui assemble.**
+Rejouer `pnpm relecture` et **recoller les compteurs** des tableaux de la
+partie 2.B depuis la sortie, sans les retaper. Six chiffres, trente secondes.
+Ils sont l'unique mesure de progrès du dossier : la nuit du 26 août a fait lire
+123 articles sans faire baisser `SANS_VERBATIM`, et seul ce compteur pouvait le
+dire.
+
+**Geste 4 — celui qui aurait évité la journée du 1er septembre, et il est
+gratuit.**
+Mettre ce journal **sur le chemin de celui qui va lire un texte**. Concrètement :
+`AGENTS.md` et `.claude/CLAUDE.md` doivent porter la consigne *« avant d'ouvrir
+un texte de droit, lis `docs/journal-des-verifications.md` § 2 — il a peut-être
+déjà été lu, et le constat qui te concerne y est peut-être déjà tranché »*, et
+la compétence `veille-reglementaire` doit renvoyer ici avant sa première étape.
+Un document que personne n'ouvre au bon moment est mort quel que soit son
+contenu.
+
+### Ce qu'il faut faire des documents morts, maintenant
+
+Ne pas les supprimer : ils portent des verbatims et des raisonnements qu'on ne
+refera pas. **Les dater et les renvoyer ici.** Un bandeau de trois lignes en
+tête suffit, et il est posé sur `docs/relecture-source-2026-08-26.md` par le
+même commit que ce journal.
+
+Restent à traiter, et ce n'est pas le périmètre de ce travail :
+`docs/carto-obligations-hors-equipement.md`, dont le premier paragraphe fonde
+tout le document sur une contrainte que l'ADR-022 a levée.
+
+### Ce que ce journal ne doit jamais devenir
+
+Il ne doit **pas** recopier le registre qui vit dans le code. Les 19
+`obligation_manquante`, les 42 réserves de lecture, les 28 articles écartés se
+mesurent par `pnpm relecture` et se périment à la seconde où on les recopie
+ici. La partie 2.B en donne les **compteurs**, pas les listes, et c'est
+délibéré.
+
+Ce journal porte ce que le code ne sait pas dire : **qui a lu quoi, quand,
+comment — et ce qu'on en a fait.**

@@ -1,5 +1,13 @@
 # Relecture à la source — nuit du 26 au 27 août 2026
 
+> **⚠️ CE DOCUMENT EST DATÉ. Il décrit l'état du référentiel au 2026-08-26 à
+> 23:09, et il n'a jamais été mis à jour depuis.** Une partie de ses constats a
+> été appliquée dans les jours qui ont suivi ; quatre d'entre eux visaient déjà
+> un état révolu au moment où ils ont été écrits. **N'agissez sur aucun constat
+> de ce document sans avoir lu son état courant dans
+> `docs/journal-des-verifications.md` § 2.A**, qui les reprend un par un avec la
+> preuve de leur état dans le code d'aujourd'hui.
+
 Six agents ont relu 123 articles sur Légifrance, chacun chargé de rapporter du
 verbatim et un verdict sur ce que le corpus affirme. Ce document trie leurs
 retours. **Rien ici n'a été appliqué au code** hors ce qui est marqué APPLIQUÉ.
