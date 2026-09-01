@@ -37,10 +37,15 @@ export const CORPUS_PE: Corpus = {
     },
     {
       ref: "PE 2",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374770/",
+      prescrit:
+        "Définit qui est assujetti au Livre III et allège le régime des plus petits. § 3 : les ERP de 5e catégorie SANS locaux à sommeil et les locaux professionnels recevant du public situés dans un bâtiment d'habitation ou un immeuble de bureaux, s'ils reçoivent au plus 19 personnes de public, ne sont assujettis qu'aux articles PE 4, PE 10 B, PE 24 § 1, PE 26 § 1 et PE 27. PE 4 y figure : aucune TPE n'échappe au triennal des installations techniques. Aucune obligation propre, aucune périodicité.",
+      citationCle:
+        "Sont assujettis aux seules dispositions des articles PE 4, PE 10 B, PE 24 § 1, PE 26 § 1 et PE 27, s'ils reçoivent au plus 19 personnes constituant le public : - les établissements recevant du public de 5e catégorie sans locaux à sommeil ; - les locaux professionnels recevant du public situés dans les bâtiments d'habitation ou dans les immeubles de bureaux.",
       intitule: "Etablissements assujettis",
       versionEnVigueur: "2026-01-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "sans_objet",
       motif:
         "Définit les seuils d'assujettissement et réduit, au § 3, le régime des établissements sans locaux à sommeil recevant au plus 19 personnes aux seuls PE 4, PE 10 B, PE 24 § 1, PE 26 § 1 et PE 27. Aucune obligation propre, mais PE 4 y figure : aucune TPE n'échappe au triennal.",
@@ -412,9 +417,14 @@ export const CORPUS_PE: Corpus = {
       ref: "PE 37",
       intitule:
         "Contrôle des établissements de 5ᵉ catégorie comportant des locaux à sommeil",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374774/",
       versionEnVigueur: "2004-11-24",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "premiere_main",
+      prescrit:
+        "Rend applicables aux établissements de 5e catégorie comportant, POUR LE PUBLIC, des locaux à sommeil : GE 2 § 1 et le premier alinéa de GE 2 § 2, GE 3, GE 5 et GE 6 ; et impose une visite de la commission de sécurité TOUS LES CINQ ANS, fréquence que le maire ou le préfet peut augmenter après avis de la commission. C'est un rythme, pas un plafond, et le seul du Livre III pour une visite de commission.",
+      citationCle:
+        "Le premier paragraphe et le premier alinéa du deuxième paragraphe de l'article GE 2 du règlement de sécurité, ainsi que ses articles GE 3, GE 5 et GE 6 sont applicables aux établissements comportant, pour le public, des locaux à sommeil. Ces établissements doivent être visités tous les cinq ans par la commission de sécurité compétente ; la fréquence de ces visites peut être augmentée, s'il est jugé nécessaire, par arrêté du maire ou du préfet, après avis de la commission.",
       statut: "retenu",
       obligations: ["incendie-erp-5-visite-commission"],
       reserve:

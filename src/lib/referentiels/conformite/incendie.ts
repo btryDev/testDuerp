@@ -501,6 +501,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021838315",
         note: "« L'exploitant s'assure périodiquement : — une fois par mois : — du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et à la vérification de l'allumage de toutes les lampes (le fonctionnement doit être strictement limité au temps nécessaire au contrôle visuel) ; — de l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. — une fois tous les six mois, de l'autonomie d'au moins 1 heure. » Version en vigueur depuis le 16 mai 2010, modifiée par l'arrêté du 11 décembre 2009. Texte relu le 23 août 2026.",
+        versionConstatee: "2010-05-16",
       },
     ],
     periodicite: "mensuelle",
@@ -528,6 +529,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021838315",
         note: "« L'exploitant s'assure périodiquement : — une fois par mois : — du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et à la vérification de l'allumage de toutes les lampes (le fonctionnement doit être strictement limité au temps nécessaire au contrôle visuel) ; — de l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. — une fois tous les six mois, de l'autonomie d'au moins 1 heure. » Version en vigueur depuis le 16 mai 2010, modifiée par l'arrêté du 11 décembre 2009. Texte relu le 23 août 2026.",
+        versionConstatee: "2010-05-16",
       },
     ],
     periodicite: "semestrielle",
@@ -646,6 +648,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000020317463",
         note: "« Vérifications. — Les installations d'éclairage doivent être vérifiées dans les conditions de l'article EL 19. » Version en vigueur depuis le 15 août 1980. EC 15 ne fixe donc aucune périodicité : il renvoie, et c'est EL 19 qui porte les conditions. Texte relu le 23 août 2026.",
+        versionConstatee: "1980-08-15",
       },
       {
         source: "ARRETE",
@@ -654,6 +657,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068",
         note: "Article de destination du renvoi d'EC 15 : c'est lui qui pose les vérifications techniques des installations d'éclairage, dont la périodicité annuelle. **Texte non encore relu au mot près** — Légifrance ne sert pas le corps des articles de cet arrêté à un client automatisé. À confronter avant toute évolution de cette obligation.",
+        versionConstatee: "2010-01-23",
       },
     ],
     periodicite: "annuelle",
@@ -680,6 +684,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "DF 10",
         url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
+        versionConstatee: "2007-10-28",
       },
     ],
     periodicite: "annuelle",
