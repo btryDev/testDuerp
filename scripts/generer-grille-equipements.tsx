@@ -1,10 +1,25 @@
 #!/usr/bin/env tsx
 //
-// Grille des équipements déclarables dans Rojer, et — pour chacun — le
-// sous-tableau des obligations du référentiel qui le citent : périodicité,
-// réalisateur, régime d'application, condition éventuelle et **article
-// fondateur**. Document de relecture, pas un document remis à un tiers :
-// il décrit ce que l'outil calcule, à une version donnée du référentiel.
+// Grille de RELECTURE du référentiel : les 116 obligations, sans exception,
+// rangées par ce qui les déclenche.
+//
+// Trois parties, une par porteur (ADR-022, ADR-023) :
+//   1. par catégorie d'équipement — ce qu'un appareil déclaré fait naître ;
+//   2. par domaine, pour les obligations portées par l'ÉTABLISSEMENT — elles
+//      ne naissent d'aucun appareil, c'est le statut d'employeur, l'effectif
+//      ou la typologie qui les déclenche ;
+//   3. par domaine, pour les obligations portées par un SALARIÉ — l'employeur
+//      les déclare, le produit ne les dérive jamais.
+//
+// La première partie existait seule jusqu'au 2026-09-01, et elle laissait
+// **37 obligations sur 116 hors du document** — précisément les plus récentes,
+// donc les moins éprouvées, donc celles qu'un relecteur a le plus de raisons
+// de lire. Une grille organisée par appareil n'a aucune colonne où ranger une
+// obligation qui ne naît d'aucun appareil : le silence était structurel, pas
+// accidentel.
+//
+// Document de relecture, pas un document remis à un tiers : il décrit ce que
+// l'outil calcule, à une version donnée du référentiel.
 //
 //   npx tsx scripts/generer-grille-equipements.tsx [chemin.pdf]
 
@@ -17,9 +32,12 @@ import {
 } from "@/lib/referentiels/conformite";
 import {
   estPorteeParEquipement,
+  estPorteeParSalarie,
+  LIBELLE_NATURE,
   type ConditionApplication,
   type Obligation,
 } from "@/lib/referentiels/conformite/types";
+import { CORPUS } from "@/lib/referentiels/corpus";
 import {
   CATEGORIES_EQUIPEMENT,
   PERIODICITE_EN_JOURS,
@@ -60,6 +78,13 @@ const LABEL_SOURCE: Record<string, string> = {
  * plate, qui se lit, plutôt qu'une forme savante qui ne s'imprime pas.
  */
 const SUBSTITUTIONS: [RegExp, string][] = [
+  // Helvetica, dans l'encodage WinAnsi que react-pdf utilise, ne porte ni `≥`
+  // ni `≤` : ils sortaient remplacés par un glyphe faux, sans erreur. Le
+  // document destiné à un relecteur affichait « e 51 personnes présentes ».
+  // Les seuils s'écrivent donc en toutes lettres à la source ; ces deux lignes
+  // sont le filet pour les occurrences qui échapperaient.
+  [/≥\s*/g, "au moins "],
+  [/≤\s*/g, "au plus "],
   [/ʳᵉ/g, "re"],
   [/ᵉʳ/g, "er"],
   [/ᵉ/g, "e"],
@@ -101,10 +126,10 @@ function texteTypologie(t: TypologieApplication): string {
   else if (t.igh && typeof t.igh === "object")
     bouts.push(`IGH (${t.igh.classes.join(", ")})`);
   if (t.habitation === true) bouts.push("Habitation");
-  if (t.effectifMin !== undefined) bouts.push(`effectif ≥ ${t.effectifMin}`);
-  if (t.effectifMax !== undefined) bouts.push(`effectif ≤ ${t.effectifMax}`);
+  if (t.effectifMin !== undefined) bouts.push(`effectif d'au moins ${t.effectifMin}`);
+  if (t.effectifMax !== undefined) bouts.push(`effectif d'au plus ${t.effectifMax}`);
   if (t.personnesPresentesMin !== undefined)
-    bouts.push(`≥ ${t.personnesPresentesMin} personnes présentes`);
+    bouts.push(`au moins ${t.personnesPresentesMin} personnes présentes`);
   if (t.champR422734) bouts.push("ou matières R. 4227-22");
   return bouts.length ? bouts.join(" · ") : "Tous régimes";
 }
@@ -168,6 +193,65 @@ function obligationsDe(c: CategorieEquipement): Obligation[] {
     );
 }
 
+/**
+ * Les obligations portées par l'établissement, groupées par domaine.
+ *
+ * Elles ne naissent d'aucun appareil : c'est le statut d'employeur, l'effectif
+ * ou la typologie du bâtiment qui les déclenche. Le domaine est donc le seul
+ * regroupement qui ait un sens ici — il n'y a pas d'objet à ranger dessous.
+ */
+function parDomaine(obligations: Obligation[]): Map<string, Obligation[]> {
+  const m = new Map<string, Obligation[]>();
+  for (const o of obligations) {
+    const l = m.get(o.domaine) ?? [];
+    l.push(o);
+    m.set(o.domaine, l);
+  }
+  for (const [, l] of m) {
+    l.sort(
+      (a, b) =>
+        b.criticite - a.criticite ||
+        (PERIODICITE_EN_JOURS[a.periodicite] ?? 1e9) -
+          (PERIODICITE_EN_JOURS[b.periodicite] ?? 1e9),
+    );
+  }
+  return m;
+}
+
+/**
+ * Ce que le corpus a relevé, par clé d'article.
+ *
+ * **Le verbatim ne vit pas sur l'obligation.** `ReferenceLegale` porte la
+ * référence, l'URL et la version constatée ; c'est `ArticleDepouille`, dans le
+ * corpus, qui porte le texte relevé — `prescrit` (ce que l'article impose, en
+ * une phrase) et `citationCle` (l'extrait qui le prouve). Un dossier de
+ * relecture qui n'irait pas les chercher demanderait au relecteur de croire
+ * l'encodage sur parole.
+ *
+ * Toutes les références n'ont pas de correspondance : un article cité que
+ * personne n'a dépouillé n'a rien à montrer, et l'absence est dite plutôt que
+ * masquée.
+ */
+const RELEVE_PAR_ARTICLE = new Map<
+  string,
+  { prescrit?: string; citationCle?: string; version?: string; statut: string }
+>();
+for (const corpus of CORPUS) {
+  for (const a of corpus.articles) {
+    RELEVE_PAR_ARTICLE.set(a.ref, {
+      prescrit: a.prescrit,
+      citationCle: a.citationCle,
+      version: a.versionEnVigueur,
+      statut: a.statut,
+    });
+  }
+}
+
+const OBLIGATIONS_ETABLISSEMENT = obligationsConformite.filter(
+  (o) => !estPorteeParEquipement(o) && !estPorteeParSalarie(o),
+);
+const OBLIGATIONS_SALARIE = obligationsConformite.filter(estPorteeParSalarie);
+
 // ── Mise en page ───────────────────────────────────────────────────────────
 
 const C = {
@@ -214,7 +298,8 @@ function LigneObligation({ o }: { o: Obligation }) {
       <View style={[cell, { width: C.obligation }]}>
         <Text style={s.td}>{t(o.libelle)}</Text>
         <Text style={[s.small, { marginTop: 1 }]}>
-          criticité {o.criticite}/5 · {LABEL_DOMAINE[o.domaine]}
+          criticité {o.criticite}/5 · {LABEL_DOMAINE[o.domaine]} ·{" "}
+          {LIBELLE_NATURE[o.nature]}
         </Text>
       </View>
       <Text style={[s.td, cell, { width: C.periodicite }]}>
@@ -247,13 +332,13 @@ function LigneObligation({ o }: { o: Obligation }) {
   );
 }
 
-function PiedDePage() {
+function PiedDePage({ document }: { document?: string }) {
   return (
     <Text
       style={s.footer}
       fixed
       render={({ pageNumber, totalPages }) =>
-        `Rojer — grille des équipements · référentiel ${REFERENTIEL_VERSION} · page ${pageNumber}/${totalPages}`
+        `Rojer — ${document ?? "grille de relecture du référentiel"} ${REFERENTIEL_VERSION} · page ${pageNumber}/${totalPages}`
       }
     />
   );
@@ -268,7 +353,7 @@ function GrilleDocument({ genereLe }: { genereLe: string }) {
 
   return (
     <Document
-      title="Rojer — grille des équipements déclarables"
+      title="Rojer — grille de relecture du référentiel"
       author="Rojer"
     >
       {/* Récapitulatif */}
@@ -277,11 +362,11 @@ function GrilleDocument({ genereLe }: { genereLe: string }) {
           Rojer — référentiel de conformité {REFERENTIEL_VERSION}
         </Text>
         <Text style={[s.h1, { marginTop: 4 }]}>
-          Grille des équipements déclarables
+          Grille de relecture du référentiel
         </Text>
         <Text style={{ fontSize: 10, color: BOARD.ardoiseMoyenne }}>
-          {CATEGORIES_EQUIPEMENT.length} catégories · {total} obligations au
-          référentiel · document généré le {genereLe}
+          {total} obligations · {CATEGORIES_EQUIPEMENT.length} catégories
+          d&apos;équipement · document généré le {genereLe}
         </Text>
 
         <View style={s.mentionsLegalesBloc}>
@@ -297,9 +382,56 @@ function GrilleDocument({ genereLe }: { genereLe: string }) {
             l&apos;absence d&apos;une obligation n&apos;emporte aucune
             conclusion. Rojer calcule, il n&apos;avise pas.
           </Text>
+          <Text style={{ marginTop: 6 }}>
+            Le document couvre les {total} obligations, rangées par ce qui les
+            déclenche : un équipement déclaré, le statut de
+            l&apos;établissement, ou un titre que l&apos;employeur déclare pour
+            une personne. Une obligation sans échéance chiffrée n&apos;est pas
+            un manque de dépouillement — la colonne « nature », sous chaque
+            libellé, dit si le texte impose un rythme, un état à maintenir, un
+            acte ponctuel ou une obligation qui renaît à chaque événement.
+          </Text>
         </View>
 
-        <Text style={s.h2}>Récapitulatif par catégorie</Text>
+        <Text style={s.h2}>Récapitulatif par porteur</Text>
+        <View style={s.thead}>
+          <Text style={[s.th, cell, { width: "22%" }]}>Porteur</Text>
+          <Text style={[s.th, cell, { width: "8%" }]}>Obligations</Text>
+          <Text style={[s.th, cell, { width: "70%" }]}>
+            Ce qui la fait naître
+          </Text>
+        </View>
+        {(
+          [
+            [
+              "Équipement",
+              obligationsConformite.filter(estPorteeParEquipement).length,
+              "Un appareil déclaré au parc. L'instance est dérivée par le moteur : une obligation par appareil concerné.",
+            ],
+            [
+              "Établissement",
+              OBLIGATIONS_ETABLISSEMENT.length,
+              "Le statut d'employeur, l'effectif, la typologie du bâtiment ou la co-activité. Aucun appareil n'est requis : un bureau sans matériel en reçoit.",
+            ],
+            [
+              "Salarié",
+              OBLIGATIONS_SALARIE.length,
+              "Un titre que l'employeur déclare pour une personne nommée. Le produit ne dérive JAMAIS qui est concerné (ADR-023) : sans déclaration, aucune échéance.",
+            ],
+          ] as [string, number, string][]
+        ).map(([nom, n, quoi]) => (
+          <View key={nom} style={s.row} wrap={false}>
+            <Text
+              style={[s.td, cell, { width: "22%", fontFamily: "Helvetica-Bold" }]}
+            >
+              {nom}
+            </Text>
+            <Text style={[s.td, cell, { width: "8%" }]}>{n}</Text>
+            <Text style={[s.small, cell, { width: "70%" }]}>{t(quoi)}</Text>
+          </View>
+        ))}
+
+        <Text style={s.h2}>Récapitulatif par catégorie d&apos;équipement</Text>
         <View style={s.thead}>
           <Text style={[s.th, cell, { width: "22%" }]}>Catégorie</Text>
           <Text style={[s.th, cell, { width: "30%" }]}>Ce qu&apos;elle couvre</Text>
@@ -384,20 +516,226 @@ function GrilleDocument({ genereLe }: { genereLe: string }) {
           <PiedDePage />
         </Page>
       ))}
+
+      {/* Portées par l'établissement — une page par domaine */}
+      {[...parDomaine(OBLIGATIONS_ETABLISSEMENT)].map(([domaine, liste]) => (
+        <Page
+          key={`etab-${domaine}`}
+          size="A4"
+          orientation="landscape"
+          style={stylePage}
+        >
+          <Text style={{ fontSize: 9, color: BOARD.ardoiseMoyenne }}>
+            Portée par l&apos;établissement · aucun équipement requis
+          </Text>
+          <Text style={[s.h1, { fontSize: 16, marginTop: 2, marginBottom: 4 }]}>
+            {LABEL_DOMAINE[domaine as keyof typeof LABEL_DOMAINE]}
+          </Text>
+          <Text style={s.small}>
+            {t(
+              "Ces obligations ne naissent d'aucun appareil déclaré : elles sont dues au titre du statut d'employeur, de l'effectif, de la typologie du bâtiment ou de la co-activité. Un établissement sans le moindre équipement en reçoit.",
+            )}
+          </Text>
+          <EnTeteTableau />
+          {liste.map((o) => (
+            <LigneObligation key={o.id} o={o} />
+          ))}
+          <PiedDePage />
+        </Page>
+      ))}
+
+      {/* Portées par un salarié — une page par domaine */}
+      {[...parDomaine(OBLIGATIONS_SALARIE)].map(([domaine, liste]) => (
+        <Page
+          key={`sal-${domaine}`}
+          size="A4"
+          orientation="landscape"
+          style={stylePage}
+        >
+          <Text style={{ fontSize: 9, color: BOARD.ardoiseMoyenne }}>
+            Portée par un salarié · déclarée par l&apos;employeur
+          </Text>
+          <Text style={[s.h1, { fontSize: 16, marginTop: 2, marginBottom: 4 }]}>
+            {LABEL_DOMAINE[domaine as keyof typeof LABEL_DOMAINE]}
+          </Text>
+          <Text style={s.small}>
+            {t(
+              "Le produit ne dérive jamais qui est concerné : rien, dans le dossier, ne dit quelle personne opère sur quoi (ADR-023). C'est l'employeur qui déclare le titre pour une personne nommée, et l'échéance qu'il saisit prime sur tout calcul. Sans déclaration, aucune ligne n'est produite — et ce silence est un constat juste, pas un défaut.",
+            )}
+          </Text>
+          <EnTeteTableau />
+          {liste.map((o) => (
+            <LigneObligation key={o.id} o={o} />
+          ))}
+          <PiedDePage />
+        </Page>
+      ))}
     </Document>
   );
 }
 
+/**
+ * Le dossier détaillé : une entrée par obligation, avec ce qui la fonde.
+ *
+ * La grille dit CE QUE l'outil calcule ; ce document dit SUR QUOI. Un relecteur
+ * qui veut contester une périodicité a besoin des trois choses que la grille ne
+ * porte pas — le texte relevé à la source, la version constatée, et
+ * l'argumentation qui a conduit à encoder ainsi plutôt qu'autrement.
+ *
+ * Les notes internes y figurent telles quelles. Elles sont écrites pour la
+ * personne suivante qui touchera la ligne, pas pour un lecteur extérieur, et
+ * leur ton s'en ressent — elles disent « ne retirez pas ceci », elles nomment
+ * des erreurs passées, elles se contredisent parfois d'une version à l'autre.
+ * **C'est précisément ce qui en fait le meilleur support de relecture** : un
+ * défaut d'encodage se voit dans le raisonnement bien avant de se voir dans le
+ * tableau.
+ */
+function DossierDetaille({ genereLe }: { genereLe: string }) {
+  const parPorteur: [string, string, Obligation[]][] = [
+    [
+      "Portées par un équipement",
+      "Elles naissent d'un appareil déclaré au parc.",
+      obligationsConformite.filter(estPorteeParEquipement),
+    ],
+    [
+      "Portées par l'établissement",
+      "Elles naissent du statut d'employeur, de l'effectif ou de la typologie. Aucun appareil n'est requis.",
+      OBLIGATIONS_ETABLISSEMENT,
+    ],
+    [
+      "Portées par un salarié",
+      "L'employeur les déclare pour une personne nommée. Le produit ne dérive jamais qui est concerné.",
+      OBLIGATIONS_SALARIE,
+    ],
+  ];
+
+  return (
+    <Document title="Rojer — dossier de relecture détaillé" author="Rojer">
+      <Page size="A4" style={stylePage}>
+        <Text style={{ fontSize: 10, color: BOARD.ardoiseMoyenne }}>
+          Rojer — référentiel de conformité {REFERENTIEL_VERSION}
+        </Text>
+        <Text style={[s.h1, { marginTop: 4 }]}>Dossier de relecture détaillé</Text>
+        <Text style={{ fontSize: 10, color: BOARD.ardoiseMoyenne }}>
+          {obligationsConformite.length} obligations · document généré le{" "}
+          {genereLe}
+        </Text>
+        <View style={s.mentionsLegalesBloc}>
+          <Text>
+            {t(
+              "Une entrée par obligation. Pour chacune : ce que le dirigeant lit, les textes cités avec ce que le corpus en a relevé à la source, et l'argumentation d'encodage telle qu'elle a été écrite.",
+            )}
+          </Text>
+          <Text style={{ marginTop: 6 }}>
+            {t(
+              "Les notes d'encodage sont internes : elles s'adressent à la personne suivante qui touchera la ligne, elles nomment des erreurs passées et des réserves non levées. Elles sont reproduites sans retouche — un défaut se lit dans le raisonnement avant de se lire dans le tableau. Le référentiel n'est pas le droit : l'absence d'une obligation n'emporte aucune conclusion.",
+            )}
+          </Text>
+          <Text style={{ marginTop: 6 }}>
+            {t(
+              "Sous chaque référence, deux mentions reviennent souvent et il faut les lire pour ce qu'elles sont. « Dépouillé, aucun extrait relevé » : quelqu'un a ouvert l'article et l'a classé, sans en recopier le texte — le relecteur doit donc l'ouvrir lui-même, et c'est le cas le plus fréquent du référentiel. « Aucune version constatée » : la date de la version lue n'a pas été notée, donc rien ne dit que l'article n'a pas changé depuis. Ces deux silences sont affichés plutôt que masqués : ils bornent ce que cette relecture peut établir.",
+            )}
+          </Text>
+        </View>
+        <PiedDePage document="dossier de relecture détaillé ·" />
+      </Page>
+
+      {parPorteur.map(([titre, sous, liste]) => (
+        <Page key={titre} size="A4" style={stylePage}>
+          <Text style={[s.h1, { fontSize: 18 }]}>{titre}</Text>
+          <Text style={[s.small, { marginTop: 2 }]}>
+            {t(sous)} — {liste.length} obligations.
+          </Text>
+          {liste.map((o) => (
+            <View key={o.id} style={{ marginTop: 14 }} wrap>
+              <Text
+                style={{ fontSize: 11, fontFamily: "Helvetica-Bold" }}
+              >
+                {t(o.libelle)}
+              </Text>
+              <Text style={[s.small, { marginTop: 1 }]}>
+                {o.id} · {LABEL_DOMAINE[o.domaine]} · {LIBELLE_NATURE[o.nature]}{" "}
+                · {LABEL_PERIODICITE[o.periodicite]} · criticité {o.criticite}/5
+                · par {o.realisateurs.map((r) => LABEL_REALISATEUR[r]).join(" ou ")}
+              </Text>
+              <Text style={[s.small, { marginTop: 1 }]}>
+                Régime : {texteTypologie(o.typologies)} · Condition :{" "}
+                {conditionsTexte(o)}
+              </Text>
+              {o.description && (
+                <Text style={[s.td, { marginTop: 4 }]}>{t(o.description)}</Text>
+              )}
+              {o.referencesLegales.map((r, i) => {
+                const releve = r.article
+                  ? RELEVE_PAR_ARTICLE.get(r.article)
+                  : undefined;
+                return (
+                  <View key={i} style={{ marginTop: 4 }}>
+                    <Text style={[s.small, { fontFamily: "Helvetica-Bold" }]}>
+                      {t(r.reference)}
+                      {r.versionConstatee
+                        ? ` — version constatée ${r.versionConstatee}`
+                        : " — aucune version constatée"}
+                    </Text>
+                    {releve?.prescrit && (
+                      <Text style={s.small}>{t(releve.prescrit)}</Text>
+                    )}
+                    {releve?.citationCle && (
+                      <Text style={[s.small, { fontFamily: "Helvetica-Oblique" }]}>
+                        « {t(releve.citationCle)} »
+                      </Text>
+                    )}
+                    {!releve && (
+                      <Text style={s.small}>
+                        {t("Absent du corpus — jamais dépouillé.")}
+                      </Text>
+                    )}
+                    {releve && !releve.prescrit && !releve.citationCle && (
+                      <Text style={s.small}>
+                        {t("Dépouillé, aucun extrait relevé — texte à ouvrir.")}
+                      </Text>
+                    )}
+                  </View>
+                );
+              })}
+              {o.notesInternes && (
+                <Text style={[s.small, { marginTop: 4 }]}>
+                  {t(o.notesInternes)}
+                </Text>
+              )}
+            </View>
+          ))}
+          <PiedDePage document="dossier de relecture détaillé ·" />
+        </Page>
+      ))}
+    </Document>
+  );
+}
+
+const detaille = process.argv.includes("--detail");
+const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+
 const sortie =
-  process.argv[2] ??
-  path.resolve(process.cwd(), "..", "Rojer-grille-equipements.pdf");
+  args[0] ??
+  path.resolve(
+    process.cwd(),
+    "..",
+    detaille ? "Rojer-dossier-relecture.pdf" : "Rojer-grille-equipements.pdf",
+  );
 
 const genereLe = new Intl.DateTimeFormat("fr-FR", {
   dateStyle: "long",
   timeZone: "Europe/Paris",
 }).format(new Date());
 
-renderToFile(<GrilleDocument genereLe={genereLe} />, sortie).then(
+renderToFile(
+  detaille ? (
+    <DossierDetaille genereLe={genereLe} />
+  ) : (
+    <GrilleDocument genereLe={genereLe} />
+  ),
+  sortie,
+).then(
   () => console.log(`PDF écrit : ${sortie}`),
   (e) => {
     console.error(e);
