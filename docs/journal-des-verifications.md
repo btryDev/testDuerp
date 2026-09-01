@@ -33,8 +33,334 @@ les commandes citées. Aucun n'est repris d'un rapport.
 
 ## Partie 1 — Chronologie des campagnes
 
-*(en cours de rédaction — voir la partie 2, écrite en premier parce qu'elle
-porte la conséquence immédiate)*
+Ne sont retenues ici que les campagnes qui **ouvrent un texte de droit**. Les
+revues d'écran, les contrôles visuels et les audits de surface produit n'y
+figurent que lorsqu'ils ont produit un constat réglementaire.
+
+Pour chacune : **quand · par quoi · sur quoi · comment lu · ce qui en sort · ce
+qui a été appliqué.** La dernière colonne est celle qui manquait.
+
+Trois provenances de lecture sont distinguées partout, selon le vocabulaire que
+le code s'est donné (`SourceLecture`, `corpus/types.ts`) : **première main**
+(la personne qui encode a ouvert Légifrance et relevé le verbatim), **agent**
+(un agent a ouvert Légifrance et rapporté le verbatim — « vaut constat, pas
+garantie »), **indirect** (source secondaire — interdit de fonder une entrée).
+
+---
+
+### C1 · 2026-08-20 → 08-21 — Recalages ponctuels, sans aucun dispositif
+
+**Périmètre** — deux obligations, prises isolément.
+**Méthode** — lecture ciblée d'un article, sans trace structurée : à cette date
+le corpus n'existe pas, aucun champ ne porte la version lue ni la provenance.
+
+- `648969f` (08-20 22:25) *Le registre s'appuie sur l'article qui l'autorise,
+  pas sur celui qui le range* — **première mise en cause de `L. 4711-5`**.
+- `23ac89b` (08-21 11:20) — l'éclairage de sécurité en lieu de travail est
+  rattaché à `R. 4227-14` et à l'article 11 de l'arrêté du 14 décembre 2011.
+  Deux obligations créées. Point de départ du sur-appel documenté en 2.A #1.
+
+**Appliqué** : oui, intégralement — mais rien ne le mesure, et rien ne
+l'indexe. C'est le régime dont tout ce qui suit cherche à sortir.
+
+---
+
+### C2 · 2026-08-23 — Le froid, et la citation approximative
+
+**Périmètre** — le domaine froid (`R. 543-79` c. env., règlement UE 517/2014),
+plus quatre obligations ERP.
+**Méthode** — **première main**, version datée relevée (« Texte relu sur
+Légifrance le 23 août 2026, version en vigueur au 1ᵉʳ janvier 2025 »).
+
+- `4c7cbd6` *Une paraphrase entre guillemets escamotait le maillon décisif* —
+  une citation entre guillemets **n'était pas le texte** : elle laissait tomber
+  « dans les conditions définies par arrêté », c'est-à-dire le maillon qui
+  explique la chaîne des périodicités. « Sur un document opposable, une
+  citation approximative vaut une référence inventée. »
+- `609efd8` *EC 15 ne vérifie rien, il renvoie* · `32a53d3` *Le relais annoncé
+  remplaçait quatorze actes par an par un seul* · `415b30f`.
+
+**Sortie** — 4 constats. **Appliqué** : les quatre, le jour même.
+**Ce qui reste** : le sort de `EC 15` sera repris par la nuit du 26 (§ 5 #4),
+signe que le constat de C2 n'a pas été enregistré là où on le retrouverait.
+
+---
+
+### C3 · 2026-08-25 — « Sources relues sur Légifrance », premier audit large
+
+`2d341ac` (16:25), avec ses reliquats `802232d`, `ab0b85b`, `6c52292`.
+
+**Périmètre** — six limites du dossier de relecture : frontière 4ᵉ/5ᵉ catégorie
+ERP (10 articles de seuils), champ de `R. 4227-34`/`-39`, ascenseurs (`L. 134-1`,
+`L. 134-3`, `R. 134-11`), RIA, ESP, prescriptions particulières. Plus « l'audit
+des références du référentiel mené en parallèle » — URL, périodicités.
+**Méthode** — **première main** revendiquée : « Chaque encodage s'appuie sur un
+texte relu le 2026-08-25, cité avec son article, sa version et son URL dans le
+code. »
+**Appliqué** — oui, et c'est la campagne qui installe l'habitude de citer la
+version.
+
+**Mais.** Le lendemain, `7736869` établit que cet audit a manqué `R. 143-44`,
+réécrit deux mois plus tôt : *« la description encodée reprenait la version
+antérieure — deux mois de retard, alors que l'audit du 25 août était
+sérieux. »* La cause est nommée, et c'est une leçon de méthode : la référence
+était rangée en « citée pour information », et *« un audit relit ce dont le
+moteur se sert ; ce que le code a déclaré décoratif, personne ne le rouvre. »*
+
+---
+
+### C4 · 2026-08-26, journée — Le jour où le dépôt s'est donné des instruments
+
+C'est la journée pivot. Elle commence par deux erreurs constatées et finit par
+un corpus.
+
+**Les deux erreurs qui déclenchent tout** (16:11–16:12) :
+
+- `7736869` — `R. 143-44` CCH cité dans sa version périmée depuis deux mois.
+- `dbf511f` — *Deux PDF présentés à une commission citaient un article
+  abrogé.* `R. 146-21` CCH, **abrogé par le décret n° 2025-1100**, et qui
+  n'avait jamais traité du registre. Le référentiel avait été corrigé à l'audit
+  d'août ; *« la correction n'était jamais descendue dans les documents. C'est
+  pourtant le document qu'on tend à l'inspection, pas le référentiel. »* Même
+  commit : le badge `L. 4711-5` annonçait « c'est le fondement du registre
+  unique » — deuxième passage sur cet article.
+
+**Les instruments, dans l'ordre où ils naissent** :
+
+| Heure | Commit | Ce qui est créé |
+|---|---|---|
+| 16:36 | `ca7d448` | `ReferenceLegale.versionConstatee` et `Obligation.relectureDue`, **et un test qui rougit quand une relecture est due**. Mesure d'entrée : sur 78 obligations, 56 portaient des notes, 33 citaient une année, **3 seulement un vrai rendez-vous — dont deux échus depuis des semaines**. |
+| 16:44 | `22a62aa` | `TEXTES_A_VENIR` — les textes à application différée qui ne visent aucune ligne existante. |
+| 17:21 | `12480ee` | **Le premier corpus lu de bout en bout** : 58 articles du Livre III (PE, PO, PU, PX). Crée le statut `obligation_manquante`, parce qu'« un article lu, dans le périmètre, qui impose quelque chose que le référentiel ne porte pas n'avait aucune case ». Résultat : **un seul** article y crée une obligation périodique hors hôtels, `PE 4`. |
+| 17:46 → 19:04 | `e26dc32`, `8631d15` | La **clé d'article** : les 138 références du référentiel portent chacune la leur, ce qui rend le rapprochement corpus ↔ référentiel mécanique. |
+| 19:19 | `5c6f96f` | **Les dix domaines dépouillés** : 23 corpus, 142 articles, chacun avec sa version constatée et la provenance de sa lecture. **La dette « obligation appuyée sur un texte non lu » passe de 78 à 1.** |
+| 19:49 | `1e01484` | `referencesLegales[0]` devient le fondement déclaré (ADR-003) — le test anti-doublon s'en sert. |
+
+**Ce que le dépouillement trouve, et qui est appliqué le soir même** —
+`GZ 30` abrogé et son URL en 404 · `R. 134-13` « dans le mois » ≠ « trente
+jours » · deux affirmations retirées faute d'article qui les porte ·
+`R. 4222-20` porté en fragments (`b91fcda`) · `EL 18 § 4` à deux rythmes
+(`08e2e2e`) · le doublon des portails (`59fdc3f`) · la contradiction interne
+des ascenseurs (`1089e4a`, `5bf3210`) · `PE 37` (`99d0f87`, qui corrige un
+commit du matin) · `GC 1` (`9814bb3`) · le rapport quadriennal ignoré
+(`beef8e0`) · `PO 8 § 1` et `PO 12` (`9f13f91`).
+
+**Et une contre-vérification indépendante** — `3c14fcf` (20:09) : un agent sans
+les rapports d'origine ni le raisonnement, « avec pour consigne que trouver une
+erreur était le résultat le plus utile ». **5 corrections sur 6 confirmées, une
+infirmée** (`EL 18 § 4` : l'énumération `Periodicite` n'a pas de valeur
+quinzomadaire), plus deux défauts non vus. C'est le premier dispositif de
+recoupement du dépôt, et il fonctionne.
+
+---
+
+### C5 · Nuit du 26 au 27 août — Six agents, 123 articles
+
+`618a91a` (23:09) dépose `docs/relecture-source-2026-08-26.md` ; `6dfbc85`
+(23:12) y ajoute le sixième rapport.
+
+**Périmètre** — « les 123 articles que le corpus portait en `agent_verbatim` »,
+c'est-à-dire tout ce qui, à 19:19, était déclaré lu par un agent et non recoupé.
+Six rapports : Code du travail, Livre III ERP, Livre II ERP, froid/aération,
+ascenseurs, arrêtés divers.
+**Méthode** — **agent, sur Légifrance, verbatim rapporté**, avec recoupement
+partiel en première main par la session pilote. Le document se donne trois
+niveaux explicites : `CONTRE-VÉRIFIÉ` (relu à la source par la pilote),
+`À CONTRE-VÉRIFIER` (rapporté, plausible, non recoupé), `SUR-APPEL` (l'agent
+conclut à un défaut qui n'en est pas un). **Aucun des 123 n'est resté
+illisible.**
+
+**Sortie** — dix sections, dont huit de constats à trancher : environ
+**40 constats**, dont 5 rattachements sans base textuelle, 6 fondements à
+recaler, 6 champs d'application trop étroits, 11 rythmes non portés, 3
+sur-couvertures, 5 URL fausses, 5 fondements mis en cause. Plus un motif
+dominant, chiffré : **le second rythme du même article, sur au moins quinze
+articles.** « Le référentiel a été construit en retenant une périodicité par
+article. Le droit n'est pas écrit comme ça. »
+
+**Appliqué cette nuit-là** — deux choses seulement, et le commit le dit :
+« **Rien n'est appliqué. La décision revient à l'utilisatrice.** »
+
+**Appliqué depuis** — voir la partie 2, qui reprend les dix sections une par
+une. En résumé : la section mécanique (URL) est soldée, deux rattachements sur
+cinq sont corrigés, les six champs d'application sont ouverts à cinq sur six,
+et **quatre constats visaient un état déjà révolu au moment où ils ont été
+écrits** — deux d'entre eux de moins de quatre heures.
+
+---
+
+### C6 · 2026-08-27, 11:16 → 11:55 — Ce que la nuit a rendu applicable
+
+Quarante minutes de commits, et c'est tout ce que la nuit a produit
+directement.
+
+| Commit | Ce qu'il fait | Méthode |
+|---|---|---|
+| `5826fc5` | Les cinq adresses fausses du corpus, **chacune rouverte avant substitution** : « je ne substitue pas une URL fausse par une autre sans avoir ouvert la page » | première main |
+| `d9770b4` | Trois périodicités affichées sans qu'aucun texte ne les donne | première main |
+| `491157c` | **Sur onze accusations portées contre nos fondements, deux tenaient** : `R. 4412-17` sur les deux obligations de stockage, `MS 73` + `GC 8` sur l'extinction automatique | première main, verbatim au corpus |
+| `f4124e1` | **Six rythmes que le référentiel ne porte pas, inscrits au corpus et non en note de bas de page** — « chacun bute sur un porteur qui n'existe pas, et inventer le rattachement reviendrait à décider à la place du texte » | déclaration, pas encodage |
+| `9f54964` | **`pnpm relecture`** — la « requête mécanique » que le § 2.1 du document réclamait. Mesure d'alors : 85 obligations, 155 références, 152 articles dépouillés, 0 jamais lu | relevé mécanique |
+
+**Le rapport d'application de la nuit est donc : ~40 constats → 2 fondements
+corrigés, 5 URL, 6 rythmes déclarés, 1 outil.** Neuf sur onze accusations sur
+les fondements étaient des sur-appels. Ce chiffre — **deux sur onze** — est la
+mesure la plus honnête de ce que vaut une lecture d'agent non recoupée, et il
+justifie à lui seul le champ `lecture`.
+
+`9f54964` nomme au passage trois défauts que rien ne portait, dont celui qui
+reviendra deux fois : *« Dix-sept références nomment plusieurs articles et ne
+portent qu'une clé […] Les autres ne sont ni déclarés lus ni surveillés : c'est
+le mécanisme exact qui avait fait rater R. 4544-11-1, créé en octobre 2025 sur
+un article voisin de celui que la clé désignait. »*
+
+---
+
+### C7 · 2026-08-27 après-midi — ADR-022, le modèle cesse de bloquer
+
+`9ecef5e` *Une échéance peut naître d'autre chose qu'un équipement déclaré* ·
+`bd6db71` *Le porteur d'échéance devient l'établissement, et deux articles
+cessent d'être muets.*
+
+Ce n'est pas une campagne de lecture, c'est **la levée du blocage qui empêchait
+d'appliquer une famille entière de constats** : jusque-là une obligation ne
+pouvait s'accrocher qu'à une catégorie d'équipement déclarée. Trois constats de
+la nuit du 26 attendaient cela. Le lot qui les traite viendra quatre jours plus
+tard (C9) — l'écart entre la levée du blocage et son exploitation est un des
+endroits où la mémoire du projet a coûté cher.
+
+---
+
+### C8 · 2026-08-28 — Le balayage des URL Légifrance, et la troisième mise en cause de `L. 4711-5`
+
+**Périmètre** — les **127 URL Légifrance du dépôt**, ouvertes une par une.
+**Méthode** — ouverture manuelle, « seule l'ouverture une par une l'a montré,
+et personne ne rouvrira 127 pages à chaque commit ».
+**Sortie** — **17 fausses**. La plus coûteuse : `LEGIARTI000018530833`, annoncé
+« R. 4121-1 · document unique », servait `R. 4412-49` — « la pastille affichait
+un extrait du DUERP à côté d'un lien vers un texte sans rapport ». Rien ne
+pouvait le voir : l'URL répond 200, la page s'ouvre, elle est en vigueur.
+
+**Appliqué** — oui : `80ad4c5`, `3dec0a4`, `8bba612`, `5d8fbf6`, `ed7f772`,
+`11e0c2e`, plus la garde `f0cd868` (`urls-legifrance.test.ts`) — *un article
+cité deux fois porte le même identifiant*, avec normalisation des graphies
+testée, et une dérogation assortie d'une condition de péremption (« une
+dérogation sans condition de péremption devient une permission permanente »).
+La garde dit elle-même ce qu'elle ne prouve pas.
+
+**Et `3d4ee41` (12:05)** *L. 4711-5 ne fonde pas le registre de sécurité* —
+troisième passage sur le même article en huit jours (`648969f` le 20,
+`dbf511f` le 26, celui-ci le 28), et il reviendra une quatrième fois le 31.
+**Aucun de ces quatre passages ne savait que les trois autres avaient eu lieu.**
+C'est le meilleur argument pour ce journal.
+
+---
+
+### C9 · 2026-08-31 — Trois lots en parallèle : 85 obligations deviennent 116
+
+La plus grosse campagne du dossier, et la première conduite par briefs écrits
+d'avance (`e8cd15f`, `d7c8171`, `f964574`, 15:24–15:49).
+
+**Palier 1 — faux négatifs d'ancrage** (`a2186cf`, `35c5f90`)
+*Périmètre* : six obligations accrochées à une catégorie d'équipement qui ne
+les conditionne pas. *Méthode* : relecture au verbatim avant tout encodage.
+*Sortie* : **trois rebranchées au porteur établissement, trois refusées — et
+l'agent a eu raison de refuser les trois.** Le commit de la session pilote
+s'intitule *Trois de mes six « faux négatifs » n'en étaient pas*, et nomme la
+cause : « la carto et une note recopiées sans être recoupées sur les textes ».
+Il ajoute la phrase qui résume tout le dossier : **« Une note qui dit "à faire"
+ne dit pas que ça reste à faire. »**
+*Trouvaille hors brief* : la branche `travail: true` du registre reposait sur
+`L. 4711-5`, une faculté. Corrigée. → partie 2, § 2.2 #4.
+
+**Lot 7 — dépouillement salarié** (`3cd8b72`)
+*Périmètre* : **38 articles lus sur Légifrance**, quatre corpus, treize
+obligations — formation à la sécurité, suivi médical, secours, conduite.
+*Résultat* : 85 → 98 obligations, 10 → 13 domaines ; le catalogue de titres de
+salarié passe de 1 à 9 lignes. *Choix signalés comme discutables* : trois
+périodicités du suivi médical sont des **plafonds**, pas des rythmes.
+
+**Lot 8 — socle employeur** (`022fadd`)
+*Périmètre* : **28 articles**, six corpus, quinze obligations — organisation de
+la prévention, information des travailleurs, locaux sociaux, co-activité.
+98 → 113 obligations. *Sortie remarquable* : **trois références du brief
+étaient fausses et la lecture les a corrigées** (`R. 4224-16` n'est pas un
+affichage mais un document consigné ; le protocole de chargement ne se fonde
+pas sur l'arrêté de 1996 mais sur `R. 4515-1` et s. ; le règlement intérieur
+n'entre par la santé-sécurité que par `L. 1321-1 1°`), plus une quatrième
+vérification **négative** consignée en `sans_objet` « pour que personne ne
+refasse le détour ».
+
+**Assemblage** (`888a32c`, 17:09) : **85 → 116 obligations, 10 → 17 domaines.**
+Un bureau de six personnes sans aucun équipement déclaré recevait une
+obligation le matin, il en reçoit dix-sept.
+
+**Le soir**, seconde vague de relecture sur les rapports eux-mêmes : `ab87ced`
+*Un article abrogé cité comme droit vivant, et trois intervalles jamais
+ouverts* · `157fd4c` `R. 4544-11` inscrit · `5955414` `L. 4622-1` remis ·
+`45fbb00` *Le seul renvoi d'intervalle que le lot 8 laissait sans nom* ·
+`774d9c0` `PE 37` · `032bc22` le II de `R. 4624-23`. Puis `fcc63cd` /
+`41c050b` : **la nature d'une obligation devient un champ (ADR-026)**, sur
+dépouillement, « et deux consignes que la lecture a corrigées ».
+
+---
+
+### C10 · 2026-09-01 — Plan de bataille, six lots, trois sources recoupées
+
+`4ff5b5f` (11:25) : *« Ma liste scellée avant l'audit, l'audit externe
+indépendant et les six axes de la revue d'assemblage. **Aucune des trois ne
+contenait les deux autres.** »*
+
+| Lot | Périmètre | Méthode | Sortie · application |
+|---|---|---|---|
+| **D2** `d797d23` | décret n° 2026-253 du 8 avril 2026 : 7 articles, 13 articles de code touchés | première lecture du décret, **puis croisement mécanique** contre les 116 obligations et les 237 articles des 33 corpus | Un seul point de contact (`R. 4624-23`), conforme mot pour mot. **Aucune obligation n'est fausse.** Trois affirmations que le dépôt tirait du décret sans l'avoir ouvert sont corrigées |
+| **D3** `39a6e94` | les quatre familles relevées par l'audit externe et non recoupées par lui | recoupement en droit, **lot en lecture seule, aucun fichier de `src/` modifié** | Les quatre existent ; deux donnent des obligations à encoder (chapitre chaleur `R. 4463-1` à `-8` ; VGP trimestrielle de l'arrêté du 5 mars 1993 sur presses à balles, compacteurs et massicots). **Rien encodé** |
+| **D1** `c21beb9`, `d8e3758` | travail en hauteur : **section 8 lue INTÉGRALEMENT, 33 articles `R. 4323-58` à `-90`**, plus l'arrêté du 21 décembre 2004 art. 1 à 7 | agent, Légifrance, 2026-09-01 ; **la borne réelle relevée à la source** — « "et suivants" n'annonçait pas le paragraphe des échelles » | 40 articles dépouillés, corpus neuf. Trois périodicités opposables trouvées, **aucune dans le Code** |
+| **A, B, C, E** | exclusions mutuelles, cohérence du corpus, public reçu indéterminé, phrases qui mentent | mixte | `d8de57c` (`L. 4622-1` cessait d'être déclaré manquant **et** encodé), `2fdab49`, `fcb49b9`, `4f2d1ad`, `d915db1` |
+
+Tous ces lots sont sur `origin/main`.
+
+**Deux campagnes du 1er septembre ne le sont pas** — elles vivent sur
+`integration/2026-09-01-recadrage` :
+
+- `dfac392` **la confrontation à un guide professionnel** (Qualiconsult) —
+  quatrième angle après la liste scellée, l'audit externe et la revue. Le
+  référentiel est **trois fois plus juste que le guide** (`PE 4` : le guide
+  donne un an, le texte trois depuis l'arrêté du 1er décembre 2025 ;
+  l'habilitation électrique : le guide affiche la NF C 18-510 comme du droit ;
+  les échelles : un annuel qu'aucun article ne fonde). Quatre pistes, **aucune
+  encodée sur la foi du document — « il est commercial, il date de novembre
+  2021, et il dit lui-même n'être pas exhaustif »**. C'est l'application la
+  plus nette de l'interdiction du niveau `indirect`.
+- `f758fb8` **le semestriel des gaines de recyclage** — voir l'encadré de la
+  partie 2, § 9.2. Lu le 26 août, déclaré manquant en majuscules dans le code
+  le 27, posé le 1er septembre, **et toujours pas sur `main`**.
+
+---
+
+### Ce que la chronologie donne à voir
+
+1. **Le dépôt lit beaucoup et applique peu, et l'écart est systématique.** La
+   nuit du 26 : ~40 constats, deux fondements corrigés. Le lot D3 : quatre
+   familles fondées, zéro encodée. Ce n'est pas une négligence — c'est
+   presque toujours une cause nommée (un porteur qui n'existe pas, un attribut
+   que le formulaire ne pose pas, une valeur absente d'une énumération). Mais
+   la cause est écrite dans un commit, et le constat meurt avec.
+2. **Ce qui est appliqué est ce qui ne demande pas de lecture.** URL,
+   identifiants, ordres de références. Tout ce qui suppose de rouvrir un
+   article attend.
+3. **Le même article est mis en cause quatre fois en onze jours** (`L. 4711-5`,
+   les 20, 26, 28 et 31 août) sans qu'aucun passage sache des autres.
+4. **Une lecture d'agent non recoupée se trompe souvent** : 2 sur 11 accusations
+   tenaient le 27 août ; 3 sur 6 « faux négatifs » du brief du 31 n'en étaient
+   pas ; 3 références de brief sur 4 étaient fausses au lot 8. Le dispositif
+   qui rattrape cela — briefs contredits, contre-vérification indépendante,
+   agents qui refusent — fonctionne, et c'est la meilleure nouvelle du dossier.
+5. **Les instruments ont été construits, et ils sont bons.** Corpus, clé
+   d'article, `versionConstatee`, `relectureDue`, `lecture`,
+   `obligation_manquante`, `reserve`, `pnpm veille`, `pnpm relecture`,
+   `urls-legifrance.test.ts`. Ce qui manquait n'était pas l'outillage : c'était
+   le fil de l'histoire.
 
 ---
 
