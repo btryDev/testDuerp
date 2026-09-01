@@ -23,8 +23,16 @@
  * Le premier garde-fou n'est pas décoratif : une base de production a été
  * effacée sur ce projet le 2026-08-27 par une commande qui semblait sûre.
  *
- *   pnpm tsx scripts/remettre-en-onboarding.ts contact@exemple.fr
- *   pnpm tsx scripts/remettre-en-onboarding.ts contact@exemple.fr --vraiment
+ *   pnpm tsx scripts/remettre-en-onboarding.ts                      # liste les dossiers
+ *   pnpm tsx scripts/remettre-en-onboarding.ts <userId>
+ *   pnpm tsx scripts/remettre-en-onboarding.ts <userId> --vraiment
+ *
+ * **On désigne un dossier par son `userId`, pas par une adresse e-mail**, et la
+ * première rédaction de ce script se trompait sur ce point : elle interrogeait
+ * `auth.users`, qui n'existe pas dans la base locale. L'identité vit chez
+ * Supabase, seul le dossier est ici — la seule clé commune aux deux mondes est
+ * l'UUID que `Entreprise.userId` porte. Sans argument, le script liste les
+ * dossiers présents avec leur `userId` : c'est là qu'on lit celui qu'on veut.
  */
 
 import { PrismaClient } from "@prisma/client";
@@ -46,30 +54,10 @@ function exigerBaseLocale(): void {
 async function main(): Promise<void> {
   exigerBaseLocale();
 
-  const email = process.argv[2];
+  const userId = process.argv[2];
   const vraiment = process.argv.includes("--vraiment");
 
-  if (!email || email.startsWith("--")) {
-    console.error(
-      "Usage : pnpm tsx scripts/remettre-en-onboarding.ts <email> [--vraiment]",
-    );
-    process.exit(1);
-  }
-
-  // L'identité vit dans Supabase, le dossier dans Postgres : on passe par
-  // `auth.users`, qui est la seule table qui porte l'e-mail.
-  const users = await prisma.$queryRaw<{ id: string; email: string }[]>`
-    SELECT id::text, email FROM auth.users WHERE email = ${email}
-  `;
-
-  if (users.length === 0) {
-    console.error(`Aucun compte pour ${email}.`);
-    process.exit(1);
-  }
-
-  const userId = users[0].id;
-  const entreprise = await prisma.entreprise.findFirst({
-    where: { userId },
+  const dossiers = await prisma.entreprise.findMany({
     include: {
       etablissements: {
         include: {
@@ -86,14 +74,32 @@ async function main(): Promise<void> {
     },
   });
 
-  if (!entreprise) {
-    console.log(`${email} n'a pas d'entreprise : le compte est déjà en onboarding.`);
+  // Sans argument : on montre ce qu'il y a, avec la clé qui sert à le désigner.
+  // Un script destructif ne doit jamais avoir à deviner sa cible.
+  if (!userId || userId.startsWith("--")) {
+    console.log(`${dossiers.length} dossier(s) dans la base locale :\n`);
+    for (const d of dossiers) {
+      console.log(`  ${d.userId ?? "(sans compte)"}  ${d.raisonSociale}`);
+    }
+    console.log(
+      "\nUsage : pnpm tsx scripts/remettre-en-onboarding.ts <userId> [--vraiment]",
+    );
     return;
   }
 
+  const entreprise = dossiers.find((d) => d.userId === userId);
+  if (!entreprise) {
+    console.error(
+      `Aucun dossier pour ${userId}. Relance sans argument pour voir la liste.`,
+    );
+    process.exit(1);
+  }
+
   const etab = entreprise.etablissements[0];
-  console.log(`Compte    : ${email}`);
-  console.log(`Entreprise: ${entreprise.raisonSociale} (SIRET ${entreprise.siret ?? "—"})`);
+  console.log(`Compte    : ${userId}`);
+  console.log(
+    `Entreprise: ${entreprise.raisonSociale} (SIRET ${entreprise.siret ?? "—"})`,
+  );
   if (etab) {
     const c = etab._count;
     console.log(
@@ -108,7 +114,7 @@ async function main(): Promise<void> {
   }
 
   await prisma.entreprise.delete({ where: { id: entreprise.id } });
-  console.log(`\nSupprimé. ${email} est de nouveau en onboarding.`);
+  console.log(`\nSupprimé. Ce compte est de nouveau en onboarding.`);
 }
 
 main()
