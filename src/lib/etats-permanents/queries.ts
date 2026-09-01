@@ -191,43 +191,53 @@ export async function listerEtatsPermanents(
 }
 
 /**
- * Les deux compteurs du score, et rien d'autre.
+ * Les états permanents d'un dossier, chargés depuis son seul identifiant.
  *
- * **Pourquoi une entrée séparée plutôt que `listerEtatsPermanents` appelée
- * depuis le tableau de bord.** L'écran a besoin des groupes, des libellés et
- * des dates ; le score n'a besoin que de deux entiers. Faire transiter le
- * reste par le tableau de bord et par le générateur de PDF les rendrait
- * dépendants de la forme d'affichage d'un écran, qui bouge.
+ * **Une seule porte pour tout ce qui n'est pas l'écran.** `listerEtatsPermanents`
+ * réclame un établissement déjà projeté et son parc : c'est ce que la page a
+ * sous la main, et ce que ni le tableau de bord ni un générateur de document
+ * n'ont. Chacun aurait donc refait le chargement à sa façon — c'est exactement
+ * ainsi que le score du tableau de bord et celui du dossier PDF ont fini par
+ * sortir deux valeurs différentes au même instant, chacun composant son
+ * dénominateur.
  *
- * **Mais le calcul, lui, n'est pas dupliqué**, et c'est la seule chose qui
- * compte : cette fonction ne recompte rien, elle prend `enPlace` et `total` du
- * même passage que l'écran. Un compteur réécrit ici finirait par diverger de
- * celui qu'affiche l'écran — c'est déjà arrivé au score lui-même, quand le
- * tableau de bord et le dossier PDF composaient chacun son dénominateur et
- * sortaient deux notes différentes au même instant.
+ * **Elle ne recompte rien.** `total`, `enPlace` et les lignes viennent du même
+ * passage que l'écran. Un appelant qui n'a besoin que des deux entiers en
+ * prend deux (`compterEtatsPermanents`, juste en dessous) ; celui qui imprime
+ * les lignes prend les mêmes lignes que celles qui s'affichent. Aucun des deux
+ * ne peut décrire un ensemble que l'autre ne décrit pas.
  *
  * **`userId` en paramètre plutôt qu'un `requireUser()` interne**, sur le
- * modèle de `dashboard/transmissions.ts` : les deux appelants viennent d'un
+ * modèle de `dashboard/transmissions.ts` : les appelants viennent tous d'un
  * contexte déjà authentifié, et rappeler `requireUser()` ajoutait une lecture
  * de session par affichage du tableau de bord. La garantie ne s'en remet pas
  * pour autant à l'appelant — le prédicat d'appartenance est porté par la
  * requête ci-dessous, et c'est `etab.id` qui est propagé ensuite, jamais
  * l'identifiant reçu.
  */
-export async function compterEtatsPermanents(
+export async function etatsPermanentsDuDossier(
   etablissementId: string,
   userId: string,
-): Promise<{ total: number; enPlace: number }> {
+): Promise<EtatsPermanentsDuDossier> {
   const etab = await prisma.etablissement.findFirst({
     where: { id: etablissementId, entreprise: { userId } },
     include: { equipements: { where: { actif: true } } },
   });
-  // Un dossier qui n'est pas celui de l'utilisateur n'a pas d'état permanent
-  // à montrer, et zéro sur zéro ne produit aucune indétermination : le score
-  // reste ce qu'il aurait été sans ce terme.
-  if (!etab) return { total: 0, enPlace: 0 };
+  // Un dossier qui n'est pas celui de l'utilisateur n'a rien à montrer, et
+  // zéro sur zéro ne produit aucune indétermination : le score reste ce qu'il
+  // aurait été sans ce terme, et le document n'imprime aucun tableau.
+  if (!etab) {
+    return {
+      groupes: [],
+      faits: [],
+      enPlace: 0,
+      total: 0,
+      faitsDates: 0,
+      faitsDatesRenseignes: 0,
+    };
+  }
 
-  const { total, enPlace } = await listerEtatsPermanents(
+  return listerEtatsPermanents(
     etab,
     etab.equipements.map((eq) => ({
       id: eq.id,
@@ -239,6 +249,24 @@ export async function compterEtatsPermanents(
       > | null,
     })),
   );
+}
 
+/**
+ * Les deux compteurs du score, et rien d'autre.
+ *
+ * **Pourquoi une entrée séparée plutôt que la précédente rendue telle quelle.**
+ * Le tableau de bord n'a besoin que de deux entiers ; lui faire transiter les
+ * groupes, les libellés et les dates le rendrait dépendant de la forme
+ * d'affichage d'un écran, qui bouge. Le calcul, lui, est le même —
+ * l'énumération ci-dessus — et c'est la seule chose qui compte.
+ */
+export async function compterEtatsPermanents(
+  etablissementId: string,
+  userId: string,
+): Promise<{ total: number; enPlace: number }> {
+  const { total, enPlace } = await etatsPermanentsDuDossier(
+    etablissementId,
+    userId,
+  );
   return { total, enPlace };
 }

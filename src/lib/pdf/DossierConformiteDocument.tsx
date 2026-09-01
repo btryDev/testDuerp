@@ -13,6 +13,11 @@ import {
 import type { Score } from "@/lib/dashboard/score";
 import type { CouvertureEtablissement } from "@/lib/perimetre/couverture";
 import { blocsPerimetre, chapeauPerimetre } from "./mentions-perimetre";
+import {
+  phraseIndetermines,
+  type BlocEtatsPermanents,
+  type LigneEtatPermanentPdf,
+} from "./mentions-etats-permanents";
 
 export type DossierData = {
   entreprise: string;
@@ -31,6 +36,15 @@ export type DossierData = {
   couverture: CouvertureEtablissement | null;
 
   score: Score;
+  /**
+   * Ce que l'employeur a déclaré en place, et ce qu'il n'a pas déclaré.
+   *
+   * **Requis, et pour la même raison que `etatsPermanents` l'est au score.**
+   * Un champ optionnel serait resté vide : ce document n'a rien porté de ces
+   * trente obligations pendant tout le temps où personne n'avait à y penser.
+   * Le compilateur impose désormais que le builder réponde.
+   */
+  etatsPermanents: BlocEtatsPermanents;
   duerp:
     | {
         duerpId: string;
@@ -53,13 +67,34 @@ export type DossierData = {
   actionsEnCours: LignePlanActions[]; // toutes
 };
 
+/**
+ * L'encre du niveau, **par table plutôt que par chaîne de ternaires**.
+ *
+ * Elle était écrite `satisfaisante ? vert : a_surveiller ? ambre : signal`,
+ * donc avec un défaut par épuisement. Le niveau `indetermine`, ajouté au score
+ * le 2026-09-01, y tombait dans l'encre de « Rattrapage nécessaire » : la page
+ * de garde du dossier remis à un inspecteur imprimait « 100/100 » en rouge à
+ * côté de « Reste à renseigner », sans que rien n'échoue. Le même défaut avait
+ * été corrigé le jour même sur la pastille du tableau de bord, et il était
+ * resté ici — c'est le mode de propagation de cette famille : la correction
+ * suit le fichier qu'on avait ouvert.
+ *
+ * La table est indexée par `Score["niveau"]` : un niveau neuf ne compile plus
+ * tant qu'il n'a pas sa ligne.
+ *
+ * L'ardoise pour l'indétermination, et c'est un choix : le vert dirait « tout
+ * va bien », le signal dirait « il y a un problème », et le produit ne sait ni
+ * l'un ni l'autre.
+ */
+const ENCRE_PAR_NIVEAU: Record<Score["niveau"], string> = {
+  satisfaisante: BOARD.vertEncre,
+  a_surveiller: BOARD.ambreEncre,
+  rattrapage: BOARD.signalEncre,
+  indetermine: BOARD.ardoiseEncre,
+};
+
 function ScoreLigne({ score }: { score: Score }) {
-  const couleur =
-    score.niveau === "satisfaisante"
-      ? BOARD.vertEncre
-      : score.niveau === "a_surveiller"
-        ? BOARD.ambreEncre
-        : BOARD.signalEncre;
+  const couleur = ENCRE_PAR_NIVEAU[score.niveau];
   return (
     <View
       style={{
@@ -79,6 +114,39 @@ function ScoreLigne({ score }: { score: Score }) {
         {score.valeur}/100
       </Text>
       <Text style={{ fontSize: 11, color: couleur }}>{score.libelle}</Text>
+    </View>
+  );
+}
+
+/**
+ * Les deux sections d'états permanents s'impriment avec le même tableau.
+ *
+ * Un second tableau écrit à côté aurait donné deux mises en page pour un même
+ * objet — et c'est la moitié « mise en page » de la règle que ce module suit
+ * déjà pour la moitié « règle » : partage la règle, partage la forme, ne
+ * partage pas la décision.
+ */
+function TableauEtats({ lignes }: { lignes: LigneEtatPermanentPdf[] }) {
+  return (
+    <View>
+      <View style={s.thead}>
+        <Text style={[s.th, { width: "40%" }]}>Obligation</Text>
+        <Text style={[s.th, { width: "18%" }]}>Domaine</Text>
+        <Text style={[s.th, { width: "20%" }]}>Écrit attendu</Text>
+        <Text style={[s.th, { width: "22%" }]}>Déclaration de l&apos;employeur</Text>
+      </View>
+      {lignes.map((l, i) => (
+        <View key={i} style={s.row} wrap={false}>
+          <Text style={[s.td, { width: "40%", paddingRight: 4 }]}>
+            {l.libelle}
+          </Text>
+          <Text style={[s.td, { width: "18%" }]}>{l.domaine}</Text>
+          <Text style={[s.td, { width: "20%", paddingRight: 4 }]}>
+            {l.ecritAttendu ?? "—"}
+          </Text>
+          <Text style={[s.td, { width: "22%" }]}>{l.declaration}</Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -138,6 +206,23 @@ export function DossierConformiteDocument({ data }: { data: DossierData }) {
             Score de conformité (indicateur interne)
           </Text>
           <ScoreLigne score={data.score} />
+          {/* Sans cette ligne, la page de garde imprimait « 100/100 · Reste à
+              renseigner » sans que rien n'explique ce qui reste. `score.ts`
+              rend `indetermines` à part de la valeur « pour que l'interface le
+              dise à tous les niveaux » : ce document est une interface, et il
+              ne le disait pas. */}
+          {phraseIndetermines(data.score.indetermines) && (
+            <Text
+              style={{
+                fontSize: 9,
+                color: BOARD.ardoiseMoyenne,
+                marginTop: 8,
+                maxWidth: 380,
+              }}
+            >
+              {phraseIndetermines(data.score.indetermines)}
+            </Text>
+          )}
         </View>
 
         <View style={{ position: "absolute", bottom: 60, left: 60, right: 60 }}>
@@ -228,6 +313,66 @@ export function DossierConformiteDocument({ data }: { data: DossierData }) {
             </View>
           </View>
         </View>
+
+        <Text
+          style={s.footer}
+          render={({ pageNumber, totalPages }) =>
+            `Dossier de conformité — ${data.etablissement} — page ${pageNumber}/${totalPages}`
+          }
+          fixed
+        />
+      </Page>
+
+      {/* Ce qui doit être en place — déclarations de l'employeur.
+
+          Placée ici, juste après la synthèse et AVANT les pages de retards :
+          ces obligations décrivent l'état permanent de l'établissement, pas ce
+          qui est en souffrance. Reléguée en fin de document, la section aurait
+          rejoint « le pied de page, là où l'on arrive après avoir tout coché »
+          — la leçon du contrôle visuel du 2026-08-31, qui vaut pour un
+          inspecteur autant que pour un dirigeant.
+
+          Aucune phrase n'est décidée ici : elles viennent toutes de
+          `mentions-etats-permanents.ts`, où elles se testent. */}
+      <Page size="A4" style={s.page}>
+        <Text style={s.h1}>Ce qui doit être en place</Text>
+
+        {data.etatsPermanents.vide ? (
+          <Text style={[s.small, { marginTop: 12, maxWidth: 460 }]}>
+            {data.etatsPermanents.vide}
+          </Text>
+        ) : (
+          <View>
+            <Text style={[s.small, { marginTop: 4, maxWidth: 460 }]}>
+              {data.etatsPermanents.chapeau}
+            </Text>
+            {data.etatsPermanents.compteur && (
+              <Text style={{ marginTop: 10, fontFamily: "Helvetica-Bold" }}>
+                {data.etatsPermanents.compteur}
+              </Text>
+            )}
+
+            {data.etatsPermanents.etats.length > 0 && (
+              <TableauEtats lignes={data.etatsPermanents.etats} />
+            )}
+
+            {/* Le second verbe garde sa propre section, et son explication vit
+                à côté de ses lignes. Les deux verbes mêlés sous deux pastilles
+                identiques sont le défaut que l'écran a corrigé le
+                2026-08-31 ; les remêler à l'impression le referait. */}
+            {data.etatsPermanents.faits.length > 0 && (
+              <View>
+                <Text style={s.h2}>Ce qui revient, sans rythme écrit</Text>
+                {data.etatsPermanents.noteFaits && (
+                  <Text style={[s.small, { maxWidth: 460 }]}>
+                    {data.etatsPermanents.noteFaits}
+                  </Text>
+                )}
+                <TableauEtats lignes={data.etatsPermanents.faits} />
+              </View>
+            )}
+          </View>
+        )}
 
         <Text
           style={s.footer}
