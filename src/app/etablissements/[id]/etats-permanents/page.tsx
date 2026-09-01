@@ -39,9 +39,20 @@ export const metadata = {
  *
  * **Ce que cet écran n'est pas.** Une case cochée est une déclaration de
  * l'employeur — ni un rapport, ni une pièce, ni un constat du produit
- * (ADR-027). Elle n'allume rien ailleurs : ni le « % prêt » de Préparer un
- * contrôle, ni un indicateur au vert, ni une entrée du ZIP. Aucune surface de
- * dépôt n'est ouverte ici.
+ * (ADR-027). Elle ne fait progresser aucun « % prêt » et n'ouvre aucune
+ * surface de dépôt.
+ *
+ * **Ce qu'elle fait, depuis le 2026-09-01, et qui a changé.** Cette note
+ * disait « ni une entrée du ZIP », et ce n'est plus vrai : le dossier de
+ * conformité porte désormais ces lignes, déclarées comme non déclarées,
+ * nommées comme des déclarations de l'employeur et jamais comme des pièces
+ * (amendement de l'ADR-027). Tant que ce n'était pas le cas, un dirigeant qui
+ * avait passé ses douze états en revue ne pouvait le montrer à personne — et
+ * c'est ce document qu'on présente à un inspecteur.
+ *
+ * La phrase est corrigée ici plutôt que laissée telle quelle : une note d'en-tête
+ * qui décrit un état révolu se lit comme une règle en vigueur, et c'est la
+ * famille de défauts que ce dépôt a passé la semaine à retirer.
  *
  * **Ce que la séparation des deux verbes fait, et ne fait pas.** Les lignes
  * « fait le » ont leur propre section depuis le contrôle visuel du 2026-08-31 :
@@ -276,6 +287,19 @@ export default async function EtatsPermanentsPage({
                   Rien n&apos;est relancé : aucun de ces textes n&apos;écrit à
                   quel rythme revoir ce que vous avez mis en place. La date
                   s&apos;affiche, vous jugez vous-même si elle a vieilli.
+                </p>
+                {/* Le dirigeant doit savoir où va ce qu'il coche, et sous quels
+                    mots — c'est ce qui distingue une déclaration enregistrée
+                    d'une déclaration publiée. Les lignes NON cochées y figurent
+                    aussi : le taire ici ferait cocher pour « faire bonne
+                    figure » quelqu'un qui découvrirait le tableau après coup. */}
+                <p className="m-0">
+                  Ce que vous déclarez ici figure dans le dossier de conformité
+                  que vous remettez à un tiers, avec sa date — présenté comme
+                  votre déclaration, jamais comme une pièce justificative. Les
+                  lignes que vous n&apos;avez pas cochées y figurent aussi,
+                  accompagnées de la même précision : une ligne sans déclaration
+                  n&apos;y est pas présentée comme un manquement.
                 </p>
                 {/* Une seule expression, jamais une phrase recousue dans le
                     JSX : c'est le défaut qui a produit « Elles n'entrepas ».
