@@ -3,7 +3,9 @@
  *
  * Sources primaires :
  *   - Code du travail, articles R. 4222-1 à R. 4222-26 (aération des lieux de
- *     travail), notamment R. 4222-20 (entretien) et R. 4222-21 (contrôle).
+ *     travail), notamment R. 4222-20 — maintien en bon état et contrôle
+ *     régulier. R. 4222-21 n'y figure plus : il n'impose qu'une consigne
+ *     d'utilisation écrite, aucun contrôle (relevé du 2026-09-01).
  *   - Arrêté du 8 octobre 1987 relatif au contrôle périodique des installations
  *     d'aération et d'assainissement des locaux de travail.
  *   - Arrêté du 25 juin 1980 modifié (règlement ERP) — article CH 58
@@ -84,8 +86,28 @@ export const obligationsAeration: Obligation[] = [
     domaine: "aeration",
     libelle: "Contrôle initial des installations d'aération à la mise en service",
     description:
-      "L'employeur fait procéder, au plus tard un mois après la mise en service, aux mesures et contrôles permettant de vérifier la conformité des installations d'aération et d'assainissement de l'air aux prescriptions du Code du travail. Les résultats sont consignés dans le dossier d'installation.",
+      "Pour toute installation nouvelle ou ayant fait l'objet de modifications notables, l'employeur fait procéder aux mesures qui établissent le dossier de valeurs de référence — débit global minimal d'air neuf, pressions ou vitesses aux points caractéristiques, caractéristiques des filtres — au plus tard un mois après la première mise en service. Ce dossier est joint à la notice d'instruction et tenu à jour.",
     referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 8 octobre 1987, art. 2 a) (dossier de valeurs de référence, un mois après la première mise en service)",
+        article: "Arrêté 1987-10-08 art. 2",
+        url:
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000863044/",
+        note: "« Ce dossier doit être établi, au plus tard, un mois après la première mise en service des installations. » C'est le SEUL texte de la chaîne qui date un acte par la mise en service ; il vise les installations nouvelles et celles ayant fait l'objet de modifications notables.",
+        versionConstatee: "1988-04-01",
+      },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 8 octobre 1987, art. 3-1 (contenu du dossier de valeurs de référence, locaux à pollution non spécifique)",
+        article: "Arrêté 1987-10-08 art. 3",
+        url:
+          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000863044/",
+        note: "Cité pour le contenu — ce que les mesures initiales doivent porter. Son 2, en revanche, porte l'annuelle, et c'est `aeration-controle-installations-r4222-20` qui l'encode.",
+        versionConstatee: "1988-04-01",
+      },
       {
         source: "CODE_TRAVAIL",
         reference: "R. 4222-20",
@@ -93,22 +115,6 @@ export const obligationsAeration: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
         versionConstatee: "2008-05-01",
-      },
-      {
-        source: "CODE_TRAVAIL",
-        reference: "R. 4222-21",
-        article: "R. 4222-21",
-        url:
-          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483604/",
-        versionConstatee: "2018-01-01",
-      },
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 8 octobre 1987, art. 2, 3 et 4",
-        article: "Arrêté 1987-10-08 art. 3",
-        url:
-          "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000863044/",
-        versionConstatee: "1988-04-01",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -119,7 +125,8 @@ export const obligationsAeration: Obligation[] = [
     transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["VMC", "CTA"],
-    notesInternes: "NATURE : PONCTUELLE (ADR-026). « Au plus tard un mois après la mise en service » : un seul titre, un seul acte, daté par un fait que le produit connaît. À distinguer des deux mises en service électriques, dont l'article vise aussi les modifications ultérieures.",
+    notesInternes:
+      "NATURE : PONCTUELLE (ADR-026). « Au plus tard un mois après la mise en service » : un seul titre, un seul acte, daté par un fait que le produit connaît. À distinguer des deux mises en service électriques, dont l'article vise aussi les modifications ultérieures.\n\nFONDEMENT RECALÉ LE 2026-09-01 (lot A). Deux défauts, tous deux relevés au corpus le même jour et corrigés ici.\n\n(1) R. 4222-21 était cité pour un contrôle : il n'en impose aucun. Son seul objet est une consigne d'utilisation écrite, soumise à l'avis du médecin du travail et du CSE. Ni « vérification », ni « contrôle », ni « mise en service » n'y figurent. La référence est retirée ; l'article passe `obligation_manquante` au corpus, la consigne n'étant portée nulle part.\n\n(2) L'ancre `article` pointait l'article 3 de l'arrêté du 8 octobre 1987 alors que le délai d'un mois est à l'article 2 a) — et il court non sur un contrôle mais sur l'établissement du DOSSIER DE VALEURS DE RÉFÉRENCE. La description a été recalée sur ce que le texte dit ; l'article 2 est entré au corpus à cette occasion.",
   },
   // `aeration-travail-entretien-annuel` a été RETIRÉ le 2026-08-27 (ADR-022).
   //

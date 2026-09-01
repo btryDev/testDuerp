@@ -349,6 +349,18 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // NF C 18-510 déjà retiré de ce dépôt. Encoder supposerait de trancher ce
       // qu'il vaut, et ce n'est pas un choix technique.
       "R. 4544-11",
+      // R. 4222-21 entre le 2026-09-01 avec le recalage des fondements (lot A),
+      // et il y entre par le chemin inverse de tous les autres : non parce
+      // qu'on a lu un texte de plus, mais parce qu'on a RETIRÉ la seule
+      // obligation qui s'y adossait. `aeration-travail-mise-en-service` le
+      // citait pour fonder un contrôle à la mise en service ; l'article
+      // n'impose qu'une consigne d'utilisation écrite — dispositions prises
+      // pour la ventilation, mesures en cas de panne, avis du médecin du
+      // travail et du CSE —, et cette consigne n'est portée par aucune
+      // obligation. Elle est nommée par trois textes (celui-ci, l'article 2 b)
+      // de l'arrêté du 8 octobre 1987, R. 4224-17) et demandée par aucun. Le
+      // lot A ne crée pas d'obligation : le manque est nommé, pas comblé.
+      "R. 4222-21",
       "Arrêté 23-02-2018 art. 26 § 3",
       // Les trois suivantes entrent avec le lot 7, et la liste s'allonge pour
       // la raison qu'elle s'allonge toujours ici : on a lu quatre textes de

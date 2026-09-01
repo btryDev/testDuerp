@@ -14,6 +14,22 @@ export const ARRETE_1987_10_08_AERATION: Corpus = {
     "Pris pour R. 4222-20. L'article 4 fixe le contrôle annuel des locaux à pollution spécifique, et un contrôle semestriel supplémentaire lorsqu'il existe un système de recyclage.",
   articles: [
     {
+      ref: "Arrêté 1987-10-08 art. 2",
+      intitule: "Dossier de l'installation",
+      url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000863044/",
+      versionEnVigueur: "1988-04-01",
+      luLe: "2026-09-01",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Impose au chef d'établissement de tenir à jour DEUX documents et de les tenir à la disposition de l'inspection du travail, des agents des services de prévention et du CHSCT. Le a) — installations nouvelles et installations ayant fait l'objet de modifications notables — est la notice d'instruction, complétée d'un DOSSIER DE VALEURS DE RÉFÉRENCE à établir au plus tard UN MOIS après la première mise en service. Le b) — toutes les installations — est la consigne d'utilisation, complétée d'un dossier de maintenance où sont portés les dates et résultats des contrôles, les opérations d'entretien et de nettoyage, et les aménagements apportés. Entré au corpus le 2026-09-01 : c'est le seul article de la chaîne qui date un acte par la mise en service, et `aeration-travail-mise-en-service` s'ancrait sur l'article 3, qui ne le porte pas.",
+      citationCle:
+        "Ce dossier doit être établi, au plus tard, un mois après la première mise en service des installations.",
+      statut: "retenu",
+      obligations: ["aeration-travail-mise-en-service"],
+      reserve:
+        "DEUX EXIGENCES DE L'ARTICLE NE SONT PORTÉES NULLE PART, relevées au corpus le 2026-09-01 sous l'article 3 et confirmées ici. (1) La TENUE À JOUR du dossier et sa mise à disposition de l'inspection du travail, des services de prévention et du CHSCT : un état permanent, sans porteur. (2) Le b) désigne « la consigne d'utilisation prescrite par l'article R. 232-5-9 du code du travail » — numérotation d'avant la recodification de 2008, aujourd'hui R. 4222-21 —, écrit que le référentiel n'encode pas davantage, et qui est la raison pour laquelle R. 4222-21 est classé `obligation_manquante`. Le lot A ne crée pas d'obligation.\n\nRENVOI À UNE NUMÉROTATION ABROGÉE, à ne pas recopier : le a) vise « l'article R. 235-10 du code du travail », disparu à la recodification de 2008.",
+    },
+    {
       ref: "Arrêté 1987-10-08 art. 3",
       intitule: "Locaux à pollution non spécifique",
       url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000863044/",
@@ -26,13 +42,16 @@ export const ARRETE_1987_10_08_AERATION: Corpus = {
         "Au minimum une fois par an, les opérations suivantes doivent être effectuées et leurs résultats portés sur le dossier de maintenance mentionné à l'article 2 (b) : contrôle du débit global minimal d'air neuf de l'installation ; examen de l'état des éléments de l'installation (système d'introduction et d'extraction, gaines, ventilateurs) […] ; examen de l'état des systèmes de traitement de l'air (humidificateur, batterie d'échangeurs) ; lorsque le dossier de valeurs de référence est constitué, contrôle des pressions statiques ou des vitesses d'air aux points caractéristiques de l'installation.",
       statut: "retenu",
       obligations: [
+        // Cité en contexte par la mise en service : le 1 dit ce que le dossier
+        // de valeurs de référence doit contenir, donc ce que les mesures
+        // initiales portent. Le délai d'un mois, lui, est à l'article 2 a).
         "aeration-travail-mise-en-service",
         // Le rythme annuel de l'obligation portée par l'établissement vient
         // de cet article : R. 4222-20 dit « régulièrement » sans chiffre.
         "aeration-controle-installations-r4222-20",
       ],
       reserve:
-        "LE MOIS N'EST PAS DANS CET ARTICLE, relevé le 2026-09-01. `aeration-travail-mise-en-service` décrit un contrôle « au plus tard un mois après la mise en service » et s'ancre sur l'article 3 ; or ce délai est à l'ARTICLE 2 a), et il ne porte pas sur un contrôle mais sur l'établissement du DOSSIER DE VALEURS DE RÉFÉRENCE : « Ce dossier doit être établi, au plus tard, un mois après la première mise en service des installations. » L'article 2 n'est ni cité au corpus ni ancré comme `article` sur l'obligation — la référence le nomme (« art. 2, 3 et 4 ») mais l'ancre de veille pointe l'article 3.\n\nDeux autres choses tenues par l'article 2 et encodées nulle part : il rend le chef d'établissement responsable de TENIR À JOUR ce dossier et de le tenir à disposition de l'inspection du travail, des services de prévention et du CHSCT ; et son b) désigne « la consigne d'utilisation prescrite par l'article R. 232-5-9 du code du travail » — numérotation d'avant la recodification de 2008, aujourd'hui R. 4222-21. C'est le même écrit que celui relevé sous R. 4222-21, vu par l'autre bout.",
+        "CORRIGÉ LE 2026-09-01 (lot A). LE MOIS N'EST PAS DANS CET ARTICLE : `aeration-travail-mise-en-service` décrivait un contrôle « au plus tard un mois après la mise en service » et s'ancrait ici ; or ce délai est à l'ARTICLE 2 a), et il ne porte pas sur un contrôle mais sur l'établissement du DOSSIER DE VALEURS DE RÉFÉRENCE. L'article 2 est entré au corpus et porte désormais le fondement ; l'article 3 reste cité, en contexte, pour le contenu du dossier.",
     },
     {
       ref: "Arrêté 1987-10-08 art. 4",

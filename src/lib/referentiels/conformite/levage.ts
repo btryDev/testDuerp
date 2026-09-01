@@ -51,10 +51,22 @@ export const obligationsLevage: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 1er mars 2004, art. 5 (examen d'adéquation et de montage) et art. 12 à 15",
+        reference:
+          "Arrêté du 1er mars 2004, art. 14-I a) (vérification à la mise en service : examen d'adéquation)",
+        article: "Arrêté 2004-03-01 art. 14",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680458",
+        note: "« I. - Les appareils de levage neufs ou considérés comme neufs […] dont l'aptitude à l'emploi n'a pas été vérifiée dans les configurations d'utilisation prévues doivent, avant leur mise en service, faire l'objet : a) De l'examen d'adéquation prévu à l'article 5-I […] » C'est cet article qui EXIGE l'examen ; l'article 5 se borne à le définir.",
+        versionConstatee: "2005-03-31",
+      },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 1er mars 2004, art. 5-I (définition de l'examen d'adéquation)",
         article: "Arrêté 2004-03-01 art. 5",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
+        note: "Article de définition, cité pour le contenu de l'examen : « l'examen qui consiste à vérifier qu'il est approprié aux travaux que l'utilisateur prévoit d'effectuer ainsi qu'aux risques auxquels les travailleurs sont exposés ». Il n'impose l'examen à personne et ne porte aucune échéance.",
         versionConstatee: "2005-03-31",
       },
       {
@@ -74,7 +86,8 @@ export const obligationsLevage: Obligation[] = [
     transmet: [],
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
-    notesInternes: "NATURE : PONCTUELLE (ADR-026). « Avant première mise en service » : un seul titre. La remise en service après réparation est portée par `levage-remise-en-service-apres-reparation`.",
+    notesInternes:
+      "NATURE : PONCTUELLE (ADR-026). « Avant première mise en service » : un seul titre. La remise en service après réparation est portée par `levage-remise-en-service-apres-reparation`.\n\nFONDEMENT RECALÉ LE 2026-09-01 (lot A). Le fondement cité était « art. 5 […] et art. 12 à 15 » — or l'article 5 DÉFINIT l'examen d'adéquation, il ne l'impose pas, et « art. 12 à 15 » est un intervalle qui noie l'article porteur. Le seul article qui EXIGE l'examen avant mise en service est le 14-I a). C'est le même défaut « définir n'est pas prescrire » que celui corrigé le 2026-08-26 sur `levage-epreuve-initiale-fonctionnement`, où les articles 6, 10 et 11 avaient été mis pour l'article 14. L'article 5 reste cité, en contexte, parce que c'est lui qui dit ce que l'examen contient.",
   },
   {
     id: "levage-epreuve-initiale-fonctionnement",
@@ -386,10 +399,32 @@ export const obligationsLevage: Obligation[] = [
     referencesLegales: [
       {
         source: "ARRETE",
-        reference: "Arrêté du 1er mars 2004, art. 9 (examen de l'état de conservation) et art. 22",
+        reference:
+          "Arrêté du 1er mars 2004, art. 22-II (contenu de la vérification générale périodique)",
+        article: "Arrêté 2004-03-01 art. 22",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680468",
+        note: "« I. - Les appareils de levage visés au a de l'article 2 du présent arrêté, utilisés dans un établissement visé à l'article L. 4221-1 du code du travail, doivent […] faire l'objet d'une vérification générale effectuée selon la périodicité définie à l'article 23 ci-après. II. - Cette vérification comporte l'examen de l'état de conservation prévu à l'article 9 et les essais prévus aux b et c de l'article 6. » C'est cet article qui EXIGE l'examen de l'état de conservation.",
+        versionConstatee: "2008-05-01",
+      },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 1er mars 2004, art. 23 (périodicité : tous les douze mois)",
+        article: "Arrêté 2004-03-01 art. 23",
+        url:
+          "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680469",
+        note: "« La vérification générale périodique des appareils de levage soumis à l'article 22 doit avoir lieu tous les douze mois. » C'est cet article qui CADENCE l'examen ; les dérogations à six et trois mois sont portées par `levage-vgp-semestrielle-chariot-gerbeur` et `levage-vgp-semestrielle-personnes`.",
+        versionConstatee: "2005-03-31",
+      },
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 1er mars 2004, art. 9 (définition de l'examen de l'état de conservation)",
         article: "Arrêté 2004-03-01 art. 9",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000439029",
+        note: "Article de définition, cité pour le contenu de l'examen — les huit familles d'éléments essentiels et la méthode (« examen visuel détaillé, complété en tant que de besoin d'essais de fonctionnement »). Il n'impose l'examen à personne et ne porte aucune périodicité.",
         versionConstatee: "2005-03-31",
       },
       {
@@ -410,7 +445,7 @@ export const obligationsLevage: Obligation[] = [
     typologies: { travail: true },
     categoriesEquipement: ["EQUIPEMENT_LEVAGE"],
     notesInternes:
-      "Corrigé à l'audit 2026-08 : l'ancienne version citait R. 4323-27, qui traite du support du registre de sécurité.",
+      "Corrigé à l'audit 2026-08 : l'ancienne version citait R. 4323-27, qui traite du support du registre de sécurité.\n\nFONDEMENT RECALÉ LE 2026-09-01 (lot A). Le fondement était l'article 9, qui DÉFINIT l'examen de l'état de conservation sans l'imposer ni le cadencer ; l'article 22 était mentionné en queue de la citation littérale, donc invisible à la clé `article` et hors du corpus. Les trois articles sont maintenant cités pour ce que chacun fait : le 22 exige, le 23 cadence, le 9 définit. L'article 22 est entré au corpus à cette occasion (verbatim lu sur Légifrance le 2026-09-01, version du 1er mai 2008).",
   },
   {
     id: "levage-remise-en-service-apres-reparation",

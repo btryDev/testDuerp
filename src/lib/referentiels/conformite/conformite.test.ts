@@ -417,6 +417,15 @@ describe("référentiel conformité — anti-doublon", () => {
       raison:
         "Instruit le 2026-08-27, ce n'est PAS un doublon. `R. 4412-11` fonde deux actes que les citations elles-mêmes distinguent : « procédures de stockage sûres des agents chimiques dangereux » (la rétention) et « entretien régulier des équipements de stockage » (l'étanchéité). Objets différents, gestes différents ; seul l'article est commun.",
     },
+    // ── Apparue le 2026-09-01 avec le recalage des fondements (lot A) ──
+    {
+      paire: [
+        "levage-examen-adequation-mise-en-service",
+        "levage-epreuve-initiale-fonctionnement",
+      ],
+      raison:
+        "CELLE-CI EN EST PEUT-ÊTRE UNE, ET LA QUESTION EST OUVERTE. Elle n'apparaît que depuis le 2026-09-01 : `levage-examen-adequation-mise-en-service` se fondait sur l'article 5, qui DÉFINIT l'examen d'adéquation sans l'imposer, et le lot A l'a recalée sur l'article 14, seul article qui l'exige. Or c'est déjà le fondement de `levage-epreuve-initiale-fonctionnement`, dont la description reprend les quatre actes du I — examen d'adéquation a), examen de montage b), épreuve statique c), épreuve dynamique d). L'examen d'adéquation est donc décrit deux fois, une fois seul et une fois dans l'énumération. LA QUESTION QUI TRANCHE : l'article 14 fonde-t-il UNE vérification à quatre volets — auquel cas la ligne d'adéquation est un fragment à fondre — ou quatre actes séparables, sachant que le d) porte une exception qui ne vaut que pour lui (épreuve dynamique non exigée pour les appareils mus par la force humaine) et que les trois autres n'en ont pas ? Le fondre est un retrait de ligne : décision de la propriétaire, hors mandat du lot A. Le défaut de fondement, lui, était réel et est corrigé ; la déclaration ne le masque pas, elle rend visible ce qu'il découvre.",
+    },
     {
       paire: [
         "stockage-dangereux-fiches-donnees",

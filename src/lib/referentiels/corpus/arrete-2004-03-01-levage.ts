@@ -31,8 +31,15 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
       versionEnVigueur: "2005-03-31",
       luLe: "2026-08-26",
       lecture: "premiere_main",
+      url: "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680458",
       statut: "retenu",
-      obligations: ["levage-epreuve-initiale-fonctionnement"],
+      obligations: [
+        "levage-epreuve-initiale-fonctionnement",
+        // Rebranchée le 2026-09-01 (lot A) : elle citait l'article 5, qui
+        // définit l'examen d'adéquation sans l'imposer. Le a) du I ci-dessous
+        // est ce qui l'exige.
+        "levage-examen-adequation-mise-en-service",
+      ],
       citationCle:
         "« d) De l'épreuve dynamique prévue par l'article 11. Cette épreuve n'est pas exigée pour les appareils de levage mus par la force humaine employée directement sauf s'ils sont conçus pour lever des personnes. »",
       prescrit:
@@ -61,15 +68,36 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
         "I. - La vérification lors de la remise en service des appareils de levage, prévue à l'article 19, doit être effectuée dans les cas suivants : […] II. - En cas de changement de site d'utilisation, les appareils de levage ne nécessitant pas l'installation de support particulier sont dispensés de la vérification de remise en service définie à l'article 19 du présent arrêté, sous réserve qu'ils aient fait l'objet, dans la même configuration d'emploi : […]",
     },
     {
+      ref: "Arrêté 2004-03-01 art. 22",
+      intitule:
+        "Vérification générale périodique — assujettissement et contenu",
+      url: "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680468",
+      versionEnVigueur: "2008-05-01",
+      luLe: "2026-09-01",
+      lecture: "agent_verbatim",
+      statut: "retenu",
+      obligations: ["levage-examen-etat-conservation"],
+      prescrit:
+        "L'article qui EXIGE la vérification générale périodique, là où l'article 23 la cadence et les articles 6 et 9 en définissent les actes. Le I soumet les appareils de levage du a de l'article 2, utilisés dans un établissement de L. 4221-1, à une vérification générale selon la périodicité de l'article 23. Le II en donne le contenu, en deux actes seulement : l'examen de l'état de conservation de l'article 9 et les essais des b et c de l'article 6. Entré au corpus le 2026-09-01 : le référentiel le mentionnait en queue d'une citation littérale (« art. 9 […] et art. 22 ») sans clé `article`, donc sans qu'aucun contrôle puisse le rapprocher d'un texte lu.",
+      citationCle:
+        "I.-Les appareils de levage visés au a de l'article 2 du présent arrêté, utilisés dans un établissement visé à l'article L. 4221-1 du code du travail, doivent, conformément aux articles R4323-23 à R4323-27, R4535-7 et R4721-11 dudit code, faire l'objet d'une vérification générale effectuée selon la périodicité définie à l'article 23 ci-après. II.-Cette vérification comporte l'examen de l'état de conservation prévu à l'article 9 et les essais prévus aux b et c de l'article 6.",
+      reserve:
+        "LES ESSAIS DES b) ET c) DE L'ARTICLE 6 NE SONT PORTÉS NULLE PART. Le II fait de la VGP DEUX actes, pas un : l'examen de l'état de conservation — encodé — et les essais de fonctionnement et d'efficacité des dispositifs de l'article 6 b) et c), que le référentiel n'a pas. Relevé le 2026-09-01 ; le lot A ne crée pas d'obligation.",
+    },
+    {
       ref: "Arrêté 2004-03-01 art. 23",
       versionEnVigueur: "2005-03-31",
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
+      url: "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006680469",
       obligations: [
         "levage-vgp-annuelle-charges",
         "levage-vgp-semestrielle-chariot-gerbeur",
         "levage-vgp-semestrielle-personnes",
+        // Ajoutée le 2026-09-01 (lot A) : `levage-examen-etat-conservation`
+        // citait l'article 9, qui définit l'examen ; le rythme lui vient d'ici.
+        "levage-examen-etat-conservation",
       ],      prescrit:
         "Fixe la PÉRIODICITÉ de la vérification générale périodique des appareils soumis à l'article 22 : douze mois en principe. Deux dérogations, en échéance fixe et non en plafond : six mois pour les appareils listés aux II et III de l'article 20 et pour ceux, mus par une énergie autre que la force humaine directe, servant au transport de personnes ou à déplacer en élévation un poste de travail ; trois mois pour les appareils mus par la force humaine employée directement servant à déplacer en élévation un poste de travail. L'article écrit « doit avoir lieu tous les douze mois » et « cette périodicité est de » — c'est bien un rythme, pas un maximum, à la différence de l'arrêté ESP du 20 novembre 2017.",
       citationCle:
@@ -93,7 +121,9 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
       lecture: "premiere_main",
       statut: "retenu",
       obligations: ["levage-examen-adequation-mise-en-service"],      prescrit:
-        "Article de DÉFINITION, non de prescription. Il dit ce qu'est un « examen d'adéquation » (I) et un « examen de montage et d'installation » (II) ; il n'impose ni l'un ni l'autre à personne et ne porte aucune échéance. Ce sont les articles 14 (mise en service), 19 (remise en service) et 22-23 (VGP) qui les EXIGENT en renvoyant à lui. Le référentiel le cite en fondement de `levage-examen-adequation-mise-en-service` : c'est le même défaut « définir n'est pas prescrire » que celui relevé le 2026-08-26 sur `levage-epreuve-initiale-fonctionnement`, où les articles 6, 10 et 11 avaient été mis pour l'article 14. Non corrigé ici : hors du mandat de relevé.",
+        "Article de DÉFINITION, non de prescription. Il dit ce qu'est un « examen d'adéquation » (I) et un « examen de montage et d'installation » (II) ; il n'impose ni l'un ni l'autre à personne et ne porte aucune échéance. Ce sont les articles 14 (mise en service), 19 (remise en service) et 22-23 (VGP) qui les EXIGENT en renvoyant à lui.",
+      reserve:
+        "CORRIGÉ LE 2026-09-01 (lot A). L'article était le FONDEMENT de `levage-examen-adequation-mise-en-service` — même défaut « définir n'est pas prescrire » que celui relevé le 2026-08-26 sur `levage-epreuve-initiale-fonctionnement`, où les articles 6, 10 et 11 avaient été mis pour l'article 14. Le fondement est désormais l'article 14-I a). L'article reste cité par cette obligation, mais en contexte : c'est lui qui dit ce que l'examen contient.",
       citationCle:
         "I. - On entend par « examen d'adéquation d'un appareil de levage » l'examen qui consiste à vérifier qu'il est approprié aux travaux que l'utilisateur prévoit d'effectuer ainsi qu'aux risques auxquels les travailleurs sont exposés et que les opérations prévues sont compatibles avec les conditions d'utilisation de l'appareil définies par le fabricant. II. - On entend par « examen de montage et d'installation d'un appareil de levage » l'examen qui consiste à s'assurer qu'il est monté et installé de façon sûre, conformément à la notice d'instructions du fabricant.",
     },
@@ -103,7 +133,10 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
-      obligations: ["levage-examen-etat-conservation"],      prescrit:
+      obligations: ["levage-examen-etat-conservation"],
+      reserve:
+        "CORRIGÉ LE 2026-09-01 (lot A). L'article était le FONDEMENT de `levage-examen-etat-conservation`, alors qu'il définit sans exiger ni cadencer. Le fondement est désormais l'article 22-II (qui l'exige) complété de l'article 23 (qui le cadence à douze mois) ; l'article 9 reste cité, en contexte, pour le contenu de l'examen.",
+      prescrit:
         "Article de DÉFINITION : dit en quoi consiste l'« examen de l'état de conservation » et énumère les huit familles d'éléments essentiels à contrôler (calage et freinage, freins, contrôle de descente, poulies, limiteurs de charge et de moment, limiteurs de mouvement, crochets et préhension, câbles et chaînes), puis précise la méthode — examen visuel détaillé complété au besoin d'essais de fonctionnement. Il n'impose pas l'examen et ne porte aucune périodicité : c'est l'article 22 qui soumet les appareils à la VGP et l'article 23 qui en fixe le rythme.",
       citationCle:
         "On entend par « examen de l'état de conservation d'un appareil de levage » l'examen qui a pour objet de vérifier le bon état de conservation de l'appareil de levage et de ses supports, et de déceler toute détérioration susceptible d'être à l'origine de situations dangereuses intéressant notamment les éléments essentiels suivants : a) Dispositifs de calage, amarrage et freinage, destinés à immobiliser dans la position de repos les appareils de levage mobiles ; […] h) Câbles et chaînes de charge. Cet examen comprend un examen visuel détaillé, complété en tant que de besoin d'essais de fonctionnement.",
