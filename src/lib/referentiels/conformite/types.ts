@@ -510,6 +510,69 @@ export type Transmission =
       motif: string;
     };
 
+/**
+ * Deux titres que le droit **interdit de cumuler sur la même personne**.
+ *
+ * Le référentiel le savait déjà et le disait en prose : « EXCLUSIF DU SIR »,
+ * « se substitue à la visite d'information et de prévention », « la visite
+ * intermédiaire mentionnée au même article n'est pas requise », « l'interface
+ * ne doit pas proposer les deux ensemble ». Rien ne lisait ces phrases. Un
+ * employeur pouvait déclarer les deux titres, et le générateur inscrivait au
+ * calendrier une échéance que le texte **écarte expressément** — le genre
+ * d'échéance inventée qui se présente à un contrôle.
+ *
+ * **Pourquoi pas une `ConditionApplication`.** Elles portent sur des propriétés
+ * d'ÉQUIPEMENT et sont interdites sur un porteur salarié (`conditions?: never`).
+ * Elles décident en outre de l'applicabilité d'une obligation d'après un fait
+ * du parc ; ici il n'y a aucun fait à interroger, seulement deux déclarations
+ * de l'employeur qui ne peuvent pas coexister.
+ *
+ * **Pourquoi au référentiel et pas à l'interface.** L'exclusion est une
+ * propriété du texte, pas d'un écran. Une règle écrite dans le formulaire
+ * serait invisible à `declarerTitre`, qui est une action serveur atteignable
+ * sans lui, et invisible aux dossiers où les deux titres sont **déjà**
+ * déclarés. Même raisonnement que l'ADR-024 pour `transmet` : le référentiel
+ * porte ce que le texte dit, les lecteurs en tirent des écrans.
+ *
+ * **CE QUE CE CHAMP PORTE, ET CE QU'IL NE PORTE PAS.** Il porte ce qu'un texte
+ * EXCLUT — une substitution (« se substitue à »), une dispense (« n'est pas
+ * requise »), ou le même acte à un autre rythme (« et non tous les quatre
+ * ans »). Il ne porte PAS ce qui serait seulement incohérent. La visite
+ * intermédiaire du suivi renforcé ne naît pas chez un salarié qui n'a qu'une
+ * visite d'information et de prévention, mais aucun texte ne l'exclut pour
+ * lui : elle n'est donc pas déclarée là. Sans cette ligne, la table cesse
+ * d'être une lecture du droit et devient un treillis déduit, qui refuserait
+ * des saisies que rien n'interdit.
+ *
+ * **UN SEUL CÔTÉ DÉCLARE, ET C'EST LE CÔTÉ DÉROGATOIRE.** L'obligation qui
+ * porte le texte d'exception — R. 4624-24 qui substitue, R. 4451-82 qui
+ * dispense — déclare ce qu'elle écarte ; l'autre ne recopie rien. La symétrie
+ * n'est pas écrite deux fois puis vérifiée, elle est **fermée à la lecture**
+ * par `exclusionsDuTitre()` (`lib/salaries/catalogue.ts`), donc vraie par
+ * construction. C'est la règle du dépôt sur les listes tenues à la main :
+ * recopiée, une moitié de couple finit par manquer, et une garde qui se répare
+ * en recopiant cesse de vérifier.
+ *
+ * La relation n'est **jamais fermée transitivement**. A exclut B et B exclut C
+ * n'implique pas que A exclut C ; les couples qui tiennent se déclarent, un
+ * par un, chacun avec le texte qui le fonde.
+ */
+export type ExclusionMutuelle = {
+  /**
+   * L'identifiant de l'autre titre. Doit désigner une obligation **portée par
+   * un salarié** et réellement présente au référentiel — `exclusion.test.ts`
+   * le vérifie, et un titre ne s'exclut pas lui-même.
+   */
+  titre: string;
+  /**
+   * Ce que le texte dit, qui fonde l'exclusion. Une phrase — et pas une note
+   * interne : **elle est montrée au dirigeant** quand le produit refuse la
+   * déclaration ou signale le cumul déjà en place. Un refus sans motif serait
+   * un mur ; le motif est ce qui le rend actionnable.
+   */
+  motif: string;
+};
+
 /** Champs communs à toutes les obligations, quel que soit leur porteur. */
 type ObligationCommune = {
   /** Identifiant stable, versionné avec le code. Jamais réutilisé. */
@@ -678,6 +741,31 @@ export type ObligationPorteeParSalarie = ObligationCommune & {
   conditions?: never;
   /** Interdit : le contexte d'équipement n'a de sens que pour l'établissement. */
   equipementsEnContexte?: never;
+  /**
+   * Les titres que le droit interdit de cumuler avec celui-ci. **Requis, et
+   * c'est le point** — troisième champ de ce type après `transmet` et
+   * `pieceMedicale`, et le même argument mot pour mot : un tableau vide est
+   * une réponse, un champ absent n'en est pas une.
+   *
+   * L'arithmétique est celle qui compte ici, et elle diffère de `transmet`.
+   * Le champ ne vit **que sur le porteur salarié** : treize obligations, pas
+   * cent seize. Une exclusion ne peut mordre que là où un humain DÉCLARE —
+   * les instances d'équipement et d'établissement sont dérivées par le moteur,
+   * qui ne peut pas produire un couple interdit. Requis sur treize lignes dont
+   * cinq portent quelque chose, ce n'est pas du sur-engineering : c'est le
+   * cliquet qui force la question au prochain titre encodé.
+   *
+   * Et l'oubli est ici la faute NATURELLE, pas une hypothèse : les deux
+   * dernières obligations entrées dans ce fichier — `-vip-adaptee` et
+   * `-sir-categorie-a` — ont chacune créé une exclusion, l'ont écrite dans
+   * leurs notes, et personne ne l'a portée nulle part. Optionnel, le champ se
+   * serait tu une troisième fois.
+   *
+   * **N'entre pas dans `empreinteReferentiel()`**, comme `transmet`. Une
+   * exclusion ne crée aucune ligne de calendrier ; elle en empêche une. Ce
+   * qu'elle change, elle le change à la saisie, pas à la génération.
+   */
+  exclut: ExclusionMutuelle[];
   /**
    * La pièce est-elle de nature médicale ? **Requis, et c'est le point.**
    *

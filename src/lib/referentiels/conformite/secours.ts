@@ -78,6 +78,7 @@ export const obligationsSecours: Obligation[] = [
     criticite: 4,
     typologies: { travail: true },
     porteur: "salarie",
+    exclut: [],
     pieceMedicale: false,
     transmet: [],
     notesInternes:
