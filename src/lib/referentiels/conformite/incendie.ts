@@ -370,6 +370,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072657",
         note: "« Dans le cadre de la maintenance prescrite à l'article R. 4226-7 du code du travail, l'employeur procède aux vérifications de fonctionnement périodiques suivantes : Une fois par mois : a) Du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et de l'allumage de toutes les lampes […] ; b) De l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. »",
+        versionConstatee: "2011-12-31",
       },
       {
         source: "CODE_TRAVAIL",
@@ -396,6 +397,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072663",
         note: "Fonde le `erp: false` : « Dans les établissements recevant du public, pour les locaux dont la fonction essentielle est de recevoir du public et pour les dégagements accessibles au public, les dispositions du règlement de sécurité relatif à de tels établissements sont seules applicables à l'éclairage de sécurité de ces locaux ou dégagements. » Texte relu le 23 août 2026.",
+        versionConstatee: "2011-12-31",
       },
     ],
     periodicite: "mensuelle",
@@ -423,6 +425,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072657",
         note: "« Une fois tous les six mois, de l'autonomie d'au moins une heure. Dans les établissements comportant des périodes de fermeture, ces opérations doivent être effectuées de telle manière qu'au début de chaque période d'ouverture l'installation d'éclairage ait retrouvé l'autonomie prescrite. »",
+        versionConstatee: "2011-12-31",
       },
       {
         source: "CODE_TRAVAIL",
@@ -449,6 +452,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000025072663",
         note: "Fonde le `erp: false` : « Dans les établissements recevant du public, pour les locaux dont la fonction essentielle est de recevoir du public et pour les dégagements accessibles au public, les dispositions du règlement de sécurité relatif à de tels établissements sont seules applicables à l'éclairage de sécurité de ces locaux ou dégagements. » Texte relu le 23 août 2026.",
+        versionConstatee: "2011-12-31",
       },
     ],
     periodicite: "semestrielle",
