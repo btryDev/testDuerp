@@ -17,7 +17,6 @@ import {
 import {
   estActionEnRetard,
   estVerificationEnRetard,
-  joursDeRetard,
 } from "@/lib/dates/retard";
 import { classerVerification } from "@/lib/calendrier/etats";
 import {
@@ -48,6 +47,7 @@ import {
   EcranFiche,
   HeroFiche,
   PastilleFiche,
+  PastilleRetard,
   SignatureBlock,
   TitreSection,
   type FaitFiche,
@@ -243,14 +243,14 @@ export default async function VerificationDetailPage({
               <BadgeStatut statut={v.statut} />
             )}
             {enRetard ? (
-              <PastilleFiche ton="retard">
-                {`En retard de ${joursDeRetard(v.datePrevue, aujourdhui)} jours`}
-              </PastilleFiche>
+              <PastilleRetard echeance={v.datePrevue} maintenant={aujourdhui} />
             ) : urgent ? (
               <PastilleFiche ton="proche">
                 {joursRestants === 0
                   ? "Échéance aujourd'hui"
-                  : `Dans ${joursRestants} jours`}
+                  : joursRestants === 1
+                    ? "Échéance demain"
+                    : `Dans ${joursRestants} jours`}
               </PastilleFiche>
             ) : null}
           </>
