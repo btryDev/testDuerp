@@ -24,7 +24,10 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { RegleAnnuelle, totalDuMois, type MoisRegle } from "./RegleAnnuelle";
-import { libelleTotalAnnee } from "@/lib/calendrier/labels";
+import {
+  libelleMoisPrecedents,
+  libelleTotalAnnee,
+} from "@/lib/calendrier/labels";
 import { SectionMois } from "./SectionMois";
 import { ecrireLecture, lectureDesParams } from "./SelecteurLecture";
 
@@ -317,7 +320,7 @@ export function AnneeCalendrier({
             libelle={
               voirPasses
                 ? "Replier les mois précédents"
-                : `Voir les ${nbCartesPassees} mois précédents`
+                : libelleMoisPrecedents(nbCartesPassees)
             }
             nbEnRetard={voirPasses ? 0 : nbRetardsPasses}
           />

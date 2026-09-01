@@ -1,7 +1,7 @@
 # Rapport — tenancy et gardes du module « états permanents »
 
 **Branche** `fix/tenancy-etats-permanents`, depuis `origin/integration/2026-08-31` ·
-quatre corrections · **1834 tests verts** (1824 au départ), `tsc` propre, un
+huit corrections · **1836 tests verts** (1824 au départ), `tsc` propre, un
 avertissement eslint préexistant (`normaliserFormData`).
 
 ---
@@ -152,3 +152,73 @@ ait ajouté des appels Prisma ce jour-là.
 **Une convention écrite ne se fait pas respecter par un lot pressé.** Les deux
 gardes de ce lot ne remplacent pas les conventions : elles les rendent
 opposables au moment où on les enfreint, plutôt qu'au moment où quelqu'un relit.
+
+---
+
+# 5. « Voir les 1 mois précédents » — et ce qu'il apprend sur les revues
+
+**Corrigé**, ainsi que trois autres du même genre trouvés en cherchant.
+
+## Le défaut qu'aucune revue de diff ne pouvait voir
+
+`AnneeCalendrier` affichait, en tête du calendrier de tous les dossiers :
+**« Voir les 1 mois précédents »**.
+
+**Aucun commit ne l'a introduit.** Au 31 août, aucun mois n'était passé dans
+l'année en cours : la branche ne se rendait jamais, et le contrôle visuel de la
+veille ne pouvait pas la voir. Elle est apparue le 1er septembre **par le seul
+passage du temps**.
+
+C'est une famille à part, et elle mérite d'être nommée : une revue de diff y est
+structurellement aveugle, puisqu'il n'y a pas de diff. Seul un balayage de
+l'espace des entrées la couvre — et un balayage suppose que la phrase soit
+**appelable**.
+
+## La garde : non, pas sous forme générale — et voici la mesure
+
+La question posée était : jusqu'où étendre la garde d'accord ? **Réponse : pas
+au-delà de ce qui est appelable, et le balayage de source n'est pas tenable.**
+Mesuré, en trois passes :
+
+| Passe | Critère | Résultat |
+|---|---|---|
+| 1 | interpolation d'un compte suivie d'un mot | **36 suspects**, en majorité faux |
+| 2 | + le mot suivant est au pluriel | **15** |
+| 3 | + aucun ternaire de garde dans les 400 signes précédents | **4** |
+
+La troisième passe semble bonne. **Elle est pire que la deuxième**, et c'est ce
+qui tranche : elle a produit un **faux négatif** — `simples.tsx` (« 1 repliés »),
+un défaut réel — parce qu'un ternaire voisin, appartenant à *une autre
+interpolation*, satisfaisait la recherche en arrière.
+
+Savoir quel ternaire gouverne quelle interpolation demande d'analyser la
+syntaxe, pas de regarder 400 signes en arrière. **Une heuristique qui crie sur du
+code correct et rate le défaut pour lequel on l'écrit est pire que rien** : on
+la désactive, et on croit avoir été couvert.
+
+## Ce qui est tenable, et que le dépôt a déjà trouvé deux fois
+
+Une propriété sur une fonction **pure**, balayée sur tout l'espace des entrées.
+C'est ce qui garde `phraseFaitsDates`, et c'est ce qui garde désormais le
+libellé des mois passés — qui a quitté le JSX pour `calendrier/labels.ts`, comme
+`libelleTotalAnnee` et `MetaRecommandation` avant lui.
+
+**Le motif se répète assez pour être une règle :** trois fois cette semaine, la
+correction utile n'a pas été de réparer la phrase mais de **la sortir du JSX**.
+Une phrase dans un composant n'est appelable par aucun test ; extraite, elle
+devient balayable — et le test ne fait que nommer la garantie que l'extraction a
+créée.
+
+## Les trois autres trouvés en cherchant
+
+Ils étaient tous atteignables :
+
+- `simples.tsx` — « 1 repliés » ;
+- `caracteristiques.ts` — « 1 véhicules » pour un parking d'un véhicule ;
+- `calendrier/page.tsx` — « aucun des 1 déclarés n'en produit ».
+
+Deux candidats ont été écartés après lecture, et non par le filtre :
+`FormulairePermisFeu` compte les mesures d'un référentiel INRS fixe, et le motif
+de catégorie ERP de `deduction-erp` ne se rend qu'au-dessus d'un seuil de
+plusieurs centaines de personnes. **Inatteignables, donc laissés** — corriger un
+accord qui ne peut pas s'afficher aurait grossi le diff sans rien changer.

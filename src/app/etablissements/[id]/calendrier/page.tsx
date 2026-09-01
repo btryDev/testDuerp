@@ -1094,7 +1094,9 @@ export default async function CalendrierPage({
                     déclarés :{" "}
                     {equipements.length > 0 &&
                     horsReferentiel === equipements.length
-                      ? `aucun des ${equipements.length} déclarés n'en produit.`
+                      ? equipements.length === 1
+                        ? "le seul que vous ayez déclaré n'en produit."
+                        : `aucun des ${equipements.length} déclarés n'en produit.`
                       : "il n'y en a pas encore."}
                   </p>
                   {/* Un parc déclaré et un calendrier vide, ce n'est pas la
