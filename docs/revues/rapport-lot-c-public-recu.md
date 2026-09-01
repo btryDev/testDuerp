@@ -195,3 +195,101 @@ l'axe la prend sans qu'on y touche.
   sous-estimation en sur-application silencieuse — le symétrique exact, et
   celui-là fabriquerait des échéances. `engine.ts` est laissé intact.
 - **Aucun total, aucun score.** L'axe rend une phrase, comme les quatre autres.
+
+---
+
+## 7. Ce qui a été écrit
+
+| fichier | rôle |
+|---|---|
+| `src/lib/matching/public-recu.ts` | **neuf** — rend les obligations que ce dossier verrait si le chiffre manquant atteignait leur seuil |
+| `src/lib/matching/public-recu.test.ts` | **neuf** — 15 tests |
+| `src/lib/perimetre/couverture.ts` | cinquième axe `public_recu`, en **indétermination** |
+| `src/lib/perimetre/couverture.test.ts` | 7 tests de plus |
+| `src/lib/perimetre/faits.ts` | collecte du fait ; une seule projection d'établissement au lieu de deux |
+| `src/lib/matching/index.ts` | export |
+| `src/components/perimetre/BandeauCouverture.tsx` | le geste de l'axe — « Renseigner la fiche de l'établissement » |
+
+`pdf/` n'est pas touché et n'avait pas à l'être : `pdf/builders.ts:386` appelle
+`couvertureDuDossier`, et `pdf/mentions-perimetre.ts` projette les deux listes
+sans jamais tester l'axe. Le dossier remis à un tiers porte donc la phrase sans
+qu'une ligne y change. Aucun des fichiers réservés aux autres lots n'est touché.
+
+Le seul `switch` exhaustif sur `AxeCouverture` est `lienDeLAxe`
+(`BandeauCouverture.tsx:36`) : il a **refusé de compiler** à l'ajout de l'axe,
+ce qui est le comportement voulu — quelqu'un doit décider du geste, il ne se
+devine pas.
+
+## 8. La garde, cassée exprès
+
+Huit injections, chacune remise en état après mesure. Chaque fois, **le test
+qui prétend l'interdire tombe, et lui seul** :
+
+| injection | tests rouges |
+|---|---|
+| le seuil `51` écrit en dur au lieu d'être lu sur l'obligation | 1 — « prend un seuil que le référentiel n'a pas » |
+| le repli ignoré : on parle même quand le chiffre est déclaré | 1 — « ni en dessous du seuil » |
+| `matchTypologie` au lieu du verdict complet du moteur | 1 — « ne rend pas une obligation portée par un salarié » |
+| le contrôle « déjà applicable » retiré | 2 — effectif ≥ seuil, et matières déclarées |
+| l'axe rangé parmi les manques au lieu des indéterminations | 6 |
+| l'axe ne se tait plus quand rien n'est suspendu | 1 |
+| le registre de sécurité retiré de la phrase | 1 |
+| un seuil commun supposé au lieu de celui de chaque obligation | 1 |
+| le repli n'est plus dit au dirigeant | 1 |
+
+Deux enseignements de l'exercice, et le second a corrigé un test :
+
+- L'injection « on parle même quand le chiffre est déclaré » ne casse **qu'un**
+  test, pas deux. C'est correct : au-dessus du seuil, le contrôle « déjà
+  applicable » rattrape le cas tout seul. Le garde-fou du haut de fonction ne
+  porte réellement que le dossier qui a répondu **sous** le seuil — celui qui a
+  tranché « non ». C'est le cas qu'il fallait tester, et c'est celui qui tombe.
+- Ma première tentative d'injection « rangé parmi les manques » est restée
+  **verte** : elle poussait dans le même tableau derrière un `as`, elle ne
+  déplaçait donc rien. Refaite honnêtement — poussée dans `manques` —, elle
+  casse six tests. Une injection qui ne casse rien est d'abord une injection à
+  relire.
+
+## 9. Vert
+
+```
+pnpm vitest run   134 fichiers, 1858 tests  (référence main : 1836, + 22 écrits ici)
+npx tsc --noEmit  aucune sortie
+npx eslint src    1 warning — 'normaliserFormData' is defined but never used
+                  (préexistant, equipements/actions.ts:81)
+```
+
+## 10. Ce que cette voie ne règle pas
+
+À dire sans l'adoucir, parce que c'est la moitié de l'arbitrage.
+
+**Un dirigeant qui ne lit pas le bandeau reste avec deux obligations éteintes.**
+L'indétermination ne rétablit ni la consigne ni les exercices : elle nomme leur
+absence. Le calendrier reste sans ligne, le registre sans fiche, et le dossier
+de contrôle sans les deux. Ce que la voie change, c'est qu'un dirigeant qui
+regarde ne peut plus prendre ce silence pour une réponse — et qu'un tiers qui
+lit le dossier voit la question ouverte, imprimée avec le reste.
+
+Trois autres limites :
+
+1. **La visibilité dépend de deux écrans.** Le bandeau est sur le calendrier et
+   sur le registre, pas sur le tableau de bord. Un dirigeant qui vit sur le
+   board ne le croisera pas.
+2. **`manipuleMatieresR422722` garde son propre silence.** L'axe le traite quand
+   il est déclaré `true` — il se tait alors, l'obligation étant déjà due — mais
+   un dossier qui déclare 20 personnes présentes et laisse la question des
+   matières sans réponse ne produit rien. C'est la seconde entorse de
+   l'ADR-022 § 4, et elle reste entière. Elle mérite le même traitement ; elle
+   n'était pas dans ce lot, et l'ajouter sans l'avoir mesurée aurait été
+   exactement la dérivation que ce lot s'interdit.
+3. **Le champ reste facultatif**, donc le cas continue de se créer. C'est la
+   question n° 2 de la propriétaire, et **ce lot ne la ferme pas** — il la rend
+   seulement moins coûteuse à laisser ouverte.
+
+**Pourquoi cette voie d'abord, et pas le champ obligatoire d'abord** : rendre le
+champ requis règle les dossiers **futurs** et laisse les dossiers existants
+exactement où ils sont — avec un `null` qu'aucune migration ne peut remplir
+honnêtement. L'indétermination, elle, traite les deux, et elle reste utile après
+que le champ sera devenu obligatoire : elle est ce qui parle quand la donnée
+manque, quelle qu'en soit la raison. Les deux sont souhaitables ; **seule celle-ci
+n'est pas conditionnée à l'autre**, et c'est ce qui décide de l'ordre.
