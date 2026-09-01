@@ -34,12 +34,29 @@ import { CONSIGNE_SERVEUR, OUTILS_MCP, type ScopeMcp } from "./tools";
 export const NOM_SERVEUR = "rojer";
 export const VERSION_SERVEUR = "0.1.0";
 
+/**
+ * Ce que `resoudreScope` rend : servir, refuser, ou renvoyer une réponse que
+ * le mécanisme d'authentification a construite lui-même.
+ *
+ * Ce troisième cas est né avec l'ADR-028. Un porteur OAuth qui possède
+ * plusieurs établissements et n'en désigne aucun n'est pas refusé — son jeton
+ * est valide — mais il n'est pas servi non plus : il doit choisir, et on lui
+ * répond en listant. Ce transport-ci n'a pas à connaître ce cas ; il lui suffit
+ * de laisser passer une réponse toute faite plutôt que d'imposer le binaire
+ * « portée ou refus », qui aurait obligé à répondre `401` — et à faire boucler
+ * le client sur une authentification qui réussit sans jamais rien débloquer.
+ */
+export type ResolutionPortee =
+  | { statut: "ok"; scope: ScopeMcp }
+  | { statut: "refus" }
+  | { statut: "reponse"; reponse: Response };
+
 export type OptionsServeurHttp = {
   /**
-   * Établit la portée d'une requête, ou rend `null` pour la refuser. C'est
-   * le seul point d'authentification du serveur.
+   * Établit la portée d'une requête. C'est le seul point d'authentification
+   * du serveur.
    */
-  resoudreScope: (request: Request) => Promise<ScopeMcp | null>;
+  resoudreScope: (request: Request) => Promise<ResolutionPortee>;
   /** Hôtes acceptés dans l'en-tête `Host` (le domaine de déploiement). */
   hotesAutorises: string[];
   /** Origines acceptées dans l'en-tête `Origin`. */
@@ -142,8 +159,13 @@ export function creerHandlerMcpHttp(options: OptionsServeurHttp) {
       originValidationResponse(request, options.originesAutorisees);
     if (rejete) return rejete;
 
-    const scope = await options.resoudreScope(request);
-    if (!scope) return (options.reponseRefus ?? refusMuet)(request);
+    const resolution = await options.resoudreScope(request);
+    if (resolution.statut === "refus") {
+      return (options.reponseRefus ?? refusMuet)(request);
+    }
+    if (resolution.statut === "reponse") return resolution.reponse;
+
+    const scope = resolution.scope;
 
     return handler.fetch(request, {
       authInfo: {

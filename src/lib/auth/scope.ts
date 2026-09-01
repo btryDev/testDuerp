@@ -3,6 +3,7 @@
 // appartient bien au user connecté. On passe par ces helpers pour éviter de
 // dupliquer les WHERE clauses un peu partout.
 
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getOptionalUser, requireUser } from "./require-user";
@@ -183,17 +184,39 @@ export async function assertEntrepriseOwnership(entrepriseId: string) {
 }
 
 /**
- * Invariant produit : 1 user → 1 entreprise → 1 établissement.
- * Retourne l'établissement unique du user connecté, ou `null` si le
- * parcours d'onboarding n'a pas encore été complété.
+ * Nom du cookie qui porte l'établissement actif (ADR-028).
  *
- * Utilisé par les routes multi-entreprises pour rediriger vers le
- * dashboard unique, et par les pages publiques pour savoir si l'user
- * doit aller sur /onboarding ou sur son dashboard.
+ * Le mécanisme le plus sobre qui réponde à la question posée. Il n'y a ni
+ * table ni colonne parce qu'il n'y a rien à conserver : l'établissement actif
+ * n'est pas un fait du dossier, c'est l'endroit où ce navigateur-ci travaillait
+ * la dernière fois. Les URL portent déjà l'identifiant partout où il compte —
+ * les deux layouts résolvent l'établissement par le chemin, jamais par ce
+ * cookie. Ce cookie ne sert qu'à répondre « où est-ce que j'atterris ? » quand
+ * l'URL ne le dit pas : l'accueil, `/entreprises`, un signet d'avant.
+ */
+export const COOKIE_ETABLISSEMENT_ACTIF = "etablissement-actif";
+
+/**
+ * L'établissement actif du user connecté, ou `null` si le parcours
+ * d'onboarding n'a pas encore été complété.
+ *
+ * Depuis l'ADR-028, un compte peut en porter plusieurs : « l'établissement du
+ * compte » n'existe plus, et cette fonction rend un DÉFAUT RAISONNABLE, pas une
+ * vérité. Deux étages :
+ *
+ *  1. le cookie `etablissement-actif`, posé par le sélecteur de la barre haute ;
+ *  2. à défaut, le plus ancien — celui qu'a créé l'onboarding.
+ *
+ * **La valeur du cookie est une entrée utilisateur**, au même titre qu'un
+ * paramètre d'URL : elle est revalidée par le même prédicat que tout le reste
+ * du produit — `entreprise: { userId }` — et jamais lue par un `findUnique` sur
+ * l'identifiant seul. Un cookie forgé désignant l'établissement d'un autre
+ * compte ne ramène donc rien, et le repli joue : on sert le sien, jamais celui
+ * d'en face. Le repli couvre du même geste le cas ordinaire — l'établissement
+ * a été supprimé depuis, le cookie survit à ce qu'il désignait.
  *
  * Version "optional" : ne déclenche pas de redirect vers /login — à
- * combiner avec `getOptionalUser()`. Utiliser `requireUserEtablissement`
- * pour forcer le login.
+ * combiner avec `getOptionalUser()`.
  */
 export async function getOptionalUserEtablissement(): Promise<{
   id: string;
@@ -203,9 +226,24 @@ export async function getOptionalUserEtablissement(): Promise<{
   const user = await getOptionalUser();
   if (!user) return null;
 
+  const champs = {
+    id: true,
+    raisonDisplay: true,
+    entrepriseId: true,
+  } as const;
+
+  const demande = (await cookies()).get(COOKIE_ETABLISSEMENT_ACTIF)?.value;
+  if (demande) {
+    const actif = await prisma.etablissement.findFirst({
+      where: { id: demande, entreprise: { userId: user.id } },
+      select: champs,
+    });
+    if (actif) return actif;
+  }
+
   return prisma.etablissement.findFirst({
     where: { entreprise: { userId: user.id } },
     orderBy: { createdAt: "asc" },
-    select: { id: true, raisonDisplay: true, entrepriseId: true },
+    select: champs,
   });
 }

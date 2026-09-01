@@ -3,10 +3,10 @@ import { getOptionalUserEtablissement } from "@/lib/auth/scope";
 import { requireUser } from "@/lib/auth/require-user";
 
 /**
- * 1 user = 1 entreprise = 1 établissement.
- * Ancienne page de détail entreprise : redirigée vers le dashboard
- * de l'établissement unique. Les modifs entreprise restent accessibles
- * via /entreprises/[id]/modifier (URL directe).
+ * Ancienne page de détail entreprise : redirigée vers l'établissement ACTIF
+ * (ADR-028) — il n'y a plus « l'établissement du compte » à désigner, mais il y
+ * a toujours celui sur lequel on travaillait. Les modifications d'entreprise
+ * restent accessibles via /entreprises/[id]/modifier (URL directe).
  */
 export default async function EntrepriseDetailPage() {
   await requireUser();

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { depuisCleJourCivil } from "@/lib/dates";
+import { EFFECTIF_MAX } from "@/lib/onboarding/schema";
 
 // Enums reflétant le schéma Prisma. Si on ajoute une valeur côté Prisma,
 // pensez à la refléter ici — pas d'import direct de @prisma/client pour
@@ -243,6 +244,35 @@ export const etablissementCreationSchema = etablissementSchema.superRefine(
         path: ["familleHabitation"],
         message:
           "Famille d'habitation requise (1ʳᵉ, 2ᵉ, 3ᵉ A, 3ᵉ B ou 4ᵉ)",
+      });
+    }
+
+    // Les deux refus de périmètre (ADR-031). Ils vivent ici et non dans
+    // `etablissementSchema` pour la même raison que la famille : ce schéma-là
+    // sert aussi à modifier un dossier ancien, et un client qui passe de
+    // quarante-cinq à soixante salariés reste servi — son dossier porte alors
+    // un manque de couverture, il ne se ferme pas.
+    //
+    // Ils vivent ici et PAS SEULEMENT dans le wizard : depuis l'ADR-028, un
+    // second établissement se crée par un autre chemin. Une règle posée sur le
+    // parcours et non sur la porte se contourne en changeant de parcours.
+    if (val.effectifSurSite > EFFECTIF_MAX) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["effectifSurSite"],
+        message: `Rojer prend en charge les structures jusqu'à ${EFFECTIF_MAX} salariés.`,
+      });
+    }
+
+    // La borne compte les TRAVAILLEURS. Le public reçu ne la déclenche jamais :
+    // un restaurant de huit salariés qui sert trois cents couverts est classé
+    // en 3ᵉ catégorie d'ERP et reste dans la cible.
+    if (val.estERP && val.estIGH) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["estIGH"],
+        message:
+          "Un établissement recevant du public situé dans un immeuble de grande hauteur relève du règlement de sécurité des IGH, que Rojer ne couvre pas.",
       });
     }
   },

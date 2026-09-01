@@ -458,8 +458,16 @@ export function construireSections({
 // (`BarreCompte`). Le partage tient en une phrase — la sidebar porte la
 // hiérarchie du **produit**, la barre haute porte les utilitaires de
 // **session**. Ce déménagement est aussi ce qui justifie la barre : sans le
-// compte, elle n'aurait rien à porter, le produit n'ayant ni recherche, ni
-// notifications, ni établissement à commuter.
+// compte, elle n'aurait rien à porter, le produit n'ayant ni recherche ni
+// notifications.
+//
+// Cette dernière phrase ajoutait « ni établissement à commuter » jusqu'au
+// 2026-09-01. L'ADR-028 l'a retirée du réel : une entreprise porte autant
+// d'établissements qu'elle en a, et le sélecteur vit dans la barre haute — pas
+// dans le rail. Le partage ne change pas pour autant, il se confirme : commuter
+// d'établissement répond à « où je travaille », qui est un repère de session au
+// même titre que « qui je suis », et non une branche du produit. Le rail, lui,
+// reste celui de l'établissement où l'on se trouve.
 
 export type RailCategorieId =
   | "tableau"

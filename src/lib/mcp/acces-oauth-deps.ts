@@ -52,21 +52,44 @@ export function creerVerificateurSupabase(
 }
 
 /**
- * Résout l'établissement d'un utilisateur Supabase.
+ * Résout les établissements d'un utilisateur Supabase.
  *
- * `Entreprise.userId` est unique et l'invariant « 1 entreprise = 1
- * établissement » est porté par la base : la requête ne peut pas rendre deux
- * résultats, et `findFirst` sur la relation est ici sans ambiguïté.
+ * `Entreprise.userId` est unique (ADR-005) : le `findUnique` reste juste, et
+ * c'est ce maillon-là qui cloisonne — un porteur ne peut voir que le contenu de
+ * SON entreprise, quelle que soit la suite.
  *
- * Rend `null` pour un utilisateur sans entreprise ou sans établissement —
- * compte créé, onboarding non terminé. C'est un refus, pas une erreur.
+ * Ce qui a changé le 2026-09-01 (ADR-028) : la relation `etablissements` peut
+ * en porter plusieurs. Cette fonction rendait auparavant
+ * `etablissements[0].id` — le seul `[0]` du code de production — et le
+ * commentaire au-dessus le déclarait sûr en invoquant un `@unique` qui n'existe
+ * plus. Une ligne comme celle-là ne devient pas fausse bruyamment : elle aurait
+ * simplement servi le plus ancien des établissements du porteur, toujours le
+ * même, sans que rien ne l'indique. Elle rend donc la liste, et le choix
+ * remonte à qui a le droit de le faire.
+ *
+ * Une liste vide vaut pour un utilisateur sans entreprise comme pour une
+ * entreprise sans établissement — compte créé, onboarding non terminé. C'est un
+ * refus, pas une erreur.
+ *
+ * L'ordre est celui de la création, comme partout ailleurs dans le produit
+ * (`listerEtablissementsDeLEntreprise`, `getOptionalUserEtablissement`) : un
+ * ordre stable, sinon la liste rendue à un porteur qui doit choisir changerait
+ * d'un appel à l'autre.
  */
 export const chercherEtablissementDeUtilisateur: ChercheurEtablissement =
   async (userId) => {
     const entreprise = await prismaMcp.entreprise.findUnique({
       where: { userId },
-      select: { etablissements: { select: { id: true }, take: 1 } },
+      select: {
+        etablissements: {
+          select: { id: true, raisonDisplay: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
     });
 
-    return entreprise?.etablissements[0]?.id ?? null;
+    return (entreprise?.etablissements ?? []).map((e) => ({
+      id: e.id,
+      nom: e.raisonDisplay,
+    }));
   };

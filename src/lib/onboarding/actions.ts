@@ -37,9 +37,14 @@ export async function finaliserOnboarding(
 ): Promise<OnboardingActionState> {
   const user = await requireUser();
 
-  // 1 user = 1 entreprise = 1 établissement (invariant produit).
-  // Si l'utilisateur a déjà un établissement, on ne refait pas
-  // l'onboarding : retour direct au dashboard.
+  // Un compte = une entreprise (ADR-005, ADR-028) : l'onboarding crée
+  // l'entreprise en même temps que son premier établissement, il ne peut donc
+  // se jouer qu'une fois. Les établissements suivants naissent ailleurs —
+  // `/etablissements/nouveau`, depuis le sélecteur — et c'est cette porte-là
+  // qui porte les règles de périmètre.
+  //
+  // La phrase précédente disait « 1 user = 1 entreprise = 1 établissement » :
+  // sa première moitié tient, la seconde est tombée avec l'ADR-028.
   const existant = await getOptionalUserEtablissement();
   if (existant) redirect(`/etablissements/${existant.id}`);
   // On lit les champs un à un — permet de convertir checkboxes (HTML

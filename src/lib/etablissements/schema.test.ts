@@ -196,3 +196,77 @@ describe("famille d'habitation — exigée à la création, pas à la modificati
     expect(etablissementCreationSchema.safeParse(hors).success).toBe(false);
   });
 });
+
+/**
+ * Les refus de périmètre sur la PORTE, pas sur le parcours (ADR-031).
+ *
+ * Depuis l'ADR-028, un second établissement se crée par `/etablissements/nouveau`
+ * et non par le wizard. Une règle posée sur le parcours se contournerait donc
+ * en changeant de parcours — c'est exactement ce qui a failli arriver : les
+ * deux lots ayant été écrits en parallèle, ce chemin est resté un instant sur
+ * le schéma de modification, et un dossier refusé à l'onboarding se serait créé
+ * en deux clics par l'autre porte.
+ */
+describe("refus de périmètre — création seulement", () => {
+  it("refuse plus de 50 travailleurs à la création", () => {
+    const res = etablissementCreationSchema.safeParse({
+      ...base,
+      effectifSurSite: 51,
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.flatten().fieldErrors.effectifSurSite).toBeDefined();
+    }
+  });
+
+  it("accepte 50 travailleurs", () => {
+    expect(
+      etablissementCreationSchema.safeParse({ ...base, effectifSurSite: 50 })
+        .success,
+    ).toBe(true);
+  });
+
+  it("laisse un dossier existant dépasser 50 en modification", () => {
+    // Un client qui embauche ne perd pas son dossier : il porte un manque de
+    // couverture, il ne se ferme pas.
+    expect(
+      etablissementSchema.safeParse({ ...base, effectifSurSite: 60 }).success,
+    ).toBe(true);
+  });
+
+  it("ne borne pas sur le public reçu", () => {
+    // La catégorie mesure le public, la borne mesure les salariés. Les
+    // confondre reviendrait à refuser la cible du produit.
+    expect(
+      etablissementCreationSchema.safeParse({
+        ...base,
+        effectifSurSite: 8,
+        estERP: true,
+        typeErp: "N",
+        categorieErp: "N1",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("refuse un ERP situé dans un IGH", () => {
+    const res = etablissementCreationSchema.safeParse({
+      ...base,
+      estERP: true,
+      typeErp: "M",
+      categorieErp: "N5",
+      estIGH: true,
+      classeIgh: "GHW",
+    });
+    expect(res.success).toBe(false);
+  });
+
+  it("accepte un IGH qui n'est pas un ERP", () => {
+    expect(
+      etablissementCreationSchema.safeParse({
+        ...base,
+        estIGH: true,
+        classeIgh: "GHW",
+      }).success,
+    ).toBe(true);
+  });
+});

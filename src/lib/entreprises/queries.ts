@@ -20,6 +20,23 @@ export async function listerEntreprises() {
   });
 }
 
+/**
+ * L'entreprise du user connecté, ou `null` si l'onboarding n'a pas eu lieu.
+ *
+ * `Entreprise.userId` reste `@unique` après l'ADR-028 — c'est ce que cette
+ * ADR ne touche pas —, donc « l'entreprise du compte » est toujours une notion
+ * définie, là où « l'établissement du compte » a cessé de l'être. C'est elle
+ * qu'il faut pour ouvrir un établissement de plus : le formulaire de création a
+ * besoin du parent, pas d'un frère.
+ */
+export async function getEntrepriseDuUser() {
+  const user = await requireUser();
+  return prisma.entreprise.findFirst({
+    where: { userId: user.id },
+    select: { id: true, raisonSociale: true },
+  });
+}
+
 export async function getEntreprise(id: string) {
   const user = await requireUser();
   return prisma.entreprise.findFirst({

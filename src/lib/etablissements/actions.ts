@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { NOM_BATIMENT_PRINCIPAL } from "@/lib/batiments/schema";
 import {
+  COOKIE_ETABLISSEMENT_ACTIF,
   assertEntrepriseOwnership,
   assertEtablissementOwnership,
 } from "@/lib/auth/scope";
@@ -120,17 +122,18 @@ export async function creerEtablissement(
 ): Promise<EtablissementActionState> {
   await assertEntrepriseOwnership(entrepriseId);
 
-  // 1 entreprise = 1 établissement : si un établissement existe déjà
-  // pour cette entreprise, on redirige au lieu d'en créer un second.
-  const dejaExistant = await prisma.etablissement.findFirst({
-    where: { entrepriseId },
-    select: { id: true },
-  });
-  if (dejaExistant) redirect(`/etablissements/${dejaExistant.id}`);
-
-  // Schéma de CRÉATION : il exige la famille d'habitation, que le schéma de
-  // modification n'exige pas (ADR-025 § 4). Un dossier neuf porte les règles
-  // du jour ; un dossier ancien reste modifiable sans être mis en défaut.
+  // ADR-028 : le verrou qui redirigeait vers l'établissement existant plutôt
+  // que d'en créer un second est parti avec l'invariant qu'il gardait. Une
+  // entreprise porte autant d'établissements qu'elle en a ; créer le deuxième
+  // est le même geste que créer le premier.
+  //
+  // Et « le même geste » vaut aussi pour ce qu'on refuse : c'est le schéma de
+  // CRÉATION qui valide ici, celui qui exige la famille d'habitation
+  // (ADR-025 § 4) et porte les deux refus de périmètre (ADR-031). Les deux
+  // lots ayant été écrits en parallèle, ce chemin est resté un instant sur le
+  // schéma de modification — un dossier refusé à l'onboarding se serait alors
+  // créé en deux clics par l'autre porte. C'est la porte, pas le parcours, qui
+  // doit porter la règle.
   const parsed = etablissementCreationSchema.safeParse(
     normaliserFormData(formData),
   );
@@ -152,7 +155,52 @@ export async function creerEtablissement(
   });
 
   revalidatePath(`/entreprises/${entrepriseId}`);
+  // On vient de le créer et on y atterrit : c'est lui, l'établissement actif.
+  // Sans ce trait, le second établissement se créerait puis l'accueil
+  // renverrait au premier — l'utilisateur aurait rempli un formulaire pour se
+  // retrouver ailleurs.
+  await poserEtablissementActif(etab.id);
   redirect(`/etablissements/${etab.id}`);
+}
+
+/**
+ * Pose le cookie de l'établissement actif (ADR-028).
+ *
+ * `httpOnly` : rien côté client n'a à le lire. Il ne porte aucun droit — le
+ * scoping le revalide à chaque lecture (`getOptionalUserEtablissement`) — mais
+ * un cookie que du JavaScript peut écrire est un cookie qu'une extension ou un
+ * script tiers écrit aussi, et le premier symptôme serait un dirigeant qui
+ * atterrit chez lui sur le mauvais dossier sans comprendre pourquoi.
+ *
+ * Un an : c'est une préférence de navigateur, pas une session. La reperdre à
+ * chaque déconnexion obligerait à recommuter à chaque retour.
+ */
+async function poserEtablissementActif(etablissementId: string): Promise<void> {
+  (await cookies()).set(COOKIE_ETABLISSEMENT_ACTIF, etablissementId, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+}
+
+/**
+ * Commute l'établissement actif — l'action du sélecteur de `BarreCompte`.
+ *
+ * `assertEtablissementOwnership` d'abord, et ce n'est pas une formalité : la
+ * cible arrive d'un formulaire, donc du client. Sans elle, on écrirait dans le
+ * cookie l'identifiant de n'importe quel établissement — la lecture le
+ * refuserait bien (le `where` remonte à `entreprise.userId`), mais l'utilisateur
+ * serait renvoyé en boucle vers un dossier qui n'est pas le sien et qu'il ne
+ * verrait jamais s'ouvrir. Mieux vaut un 404 franc au moment du geste.
+ */
+export async function choisirEtablissementActif(
+  etablissementId: string,
+): Promise<never> {
+  await assertEtablissementOwnership(etablissementId);
+  await poserEtablissementActif(etablissementId);
+  redirect(`/etablissements/${etablissementId}`);
 }
 
 export async function modifierEtablissement(

@@ -7,6 +7,7 @@ import { BarreCompte } from "@/components/layout/BarreCompte";
 import { getDuerp } from "@/lib/duerps/queries";
 import { getOptionalUser } from "@/lib/auth/require-user";
 import { getEtatModules } from "@/lib/etablissements/modules";
+import { listerEtablissementsDeLEntreprise } from "@/lib/etablissements/queries";
 import { chargerSidebarCounts } from "@/lib/navigation/sidebar-counts";
 import {
   trouverReferentielParId,
@@ -47,9 +48,12 @@ export default async function DuerpLayout({
   // compteurs, registres et pastilles y seraient qualifiés autrement
   // qu'ailleurs dans le produit — entrer dans le wizard faisait
   // disparaître les retards (ADR-015).
-  const [modules, counts] = await Promise.all([
+  // La fratrie vient avec, pour le sélecteur de la barre haute : le shell DUERP
+  // partage la même barre, donc la même règle (ADR-028).
+  const [modules, counts, fratrie] = await Promise.all([
     getEtatModules(etab.id, etab.estERP),
     chargerSidebarCounts(etab.id),
+    listerEtablissementsDeLEntreprise(etab.entrepriseId),
   ]);
   // Secteur affiché en pill : celui choisi dans le wizard en priorité,
   // sinon suggestion par NAF (même règle que la page secteur elle-même).
@@ -87,6 +91,10 @@ export default async function DuerpLayout({
         <BarreCompte
           etablissementId={etab.id}
           email={user?.email ?? null}
+          etablissements={fratrie.map((e) => ({
+            id: e.id,
+            raisonDisplay: e.raisonDisplay,
+          }))}
         />
         <AppTopbar
           title="DUERP"

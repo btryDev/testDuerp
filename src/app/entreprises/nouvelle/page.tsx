@@ -1,11 +1,23 @@
 import { redirect } from "next/navigation";
+import { getOptionalUserEtablissement } from "@/lib/auth/scope";
+import { requireUser } from "@/lib/auth/require-user";
 
 /**
- * Route legacy. La création d'entreprise passe désormais par le wizard
- * d'onboarding unifié (/onboarding) qui crée Entreprise + premier
- * Etablissement en une seule transaction. On redirige pour conserver
- * les anciens liens.
+ * Route héritée. Créer une entreprise n'est pas un geste du produit : un compte
+ * EST une entreprise (`Entreprise.userId @unique`, ADR-005, que l'ADR-028 ne
+ * touche pas). Ce qui se crée, c'est un établissement de plus —
+ * `/etablissements/nouveau`.
+ *
+ * Elle redirigeait en dur vers `/onboarding`, ce qui était juste tant qu'un
+ * compte n'avait qu'un dossier : arriver ici sans entreprise et arriver ici
+ * avec revenaient au même écran. Ça ne l'est plus — l'onboarding refuse un
+ * compte déjà pourvu et renvoie en arrière —, alors on aiguille comme les deux
+ * autres routes d'entreprise : l'établissement actif quand il y en a un,
+ * l'onboarding sinon.
  */
-export default function NouvelleEntreprisePage() {
+export default async function NouvelleEntreprisePage() {
+  await requireUser();
+  const etab = await getOptionalUserEtablissement();
+  if (etab) redirect(`/etablissements/${etab.id}`);
   redirect("/onboarding");
 }
