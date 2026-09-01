@@ -41,7 +41,13 @@ function compteur() {
   };
 }
 
-function construire(
+/** Une unité déjà en base — non transverse sauf mention contraire. */
+function existante(nom: string, id: string): UniteExistante {
+  return { id, nom, estTransverse: false };
+}
+
+/** Le résultat brut, refus compris (ADR-033). */
+function construireBrut(
   unites: PlanImport["unites"],
   unitesExistantes: UniteExistante[] = [],
 ) {
@@ -53,6 +59,16 @@ function construire(
     genererId: compteur(),
     maintenant: MAINTENANT,
   });
+}
+
+/** Les écritures, pour les cas qui passent la borne. */
+function construire(
+  unites: PlanImport["unites"],
+  unitesExistantes: UniteExistante[] = [],
+) {
+  const r = construireBrut(unites, unitesExistantes);
+  if (!r.ok) throw new Error(`Import refusé : ${r.message}`);
+  return r.ecritures;
 }
 
 describe("criticiteImportee", () => {
@@ -73,7 +89,7 @@ describe("criticiteImportee", () => {
 describe("construireEcrituresImport — résolution des unités", () => {
   it("réutilise une unité existante et n'en crée pas de doublon", () => {
     const e = construire([{ nom: "Cuisine", risques: [ligne()] }], [
-      { id: "unite-deja-la", nom: "Cuisine" },
+      existante("Cuisine", "unite-deja-la"),
     ]);
 
     expect(e.unitesACreer).toHaveLength(0);
@@ -105,8 +121,8 @@ describe("construireEcrituresImport — résolution des unités", () => {
     const e = construire(
       [{ nom: "Cuisine", risques: [ligne()] }],
       [
-        { id: "premiere", nom: "Cuisine" },
-        { id: "seconde", nom: "Cuisine" },
+        existante("Cuisine", "premiere"),
+        existante("Cuisine", "seconde"),
       ],
     );
 
@@ -186,7 +202,7 @@ describe("construireEcrituresImport — invariants du lot", () => {
         { nom: "Cuisine", risques: [ligne({ mesuresExistantes: ["Gants"] })] },
         { nom: "Salle", risques: [ligne({ uniteTravail: "Salle" })] },
       ],
-      [{ id: "unite-deja-la", nom: "Cuisine" }],
+      [existante("Cuisine", "unite-deja-la")],
     );
 
     const unitesConnues = new Set([
@@ -202,5 +218,90 @@ describe("construireEcrituresImport — invariants du lot", () => {
   it("un plan vide ne produit aucune écriture", () => {
     const e = construire([]);
     expect(e).toEqual({ unitesACreer: [], risques: [], actions: [] });
+  });
+});
+
+describe("construireEcrituresImport — le plafond de cinq unités (ADR-033)", () => {
+  const fichier = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({
+      nom: `Unité ${i + 1}`,
+      risques: [ligne({ uniteTravail: `Unité ${i + 1}` })],
+    }));
+
+  it("laisse passer cinq unités", () => {
+    const e = construire(fichier(5));
+    expect(e.unitesACreer).toHaveLength(5);
+    expect(e.risques).toHaveLength(5);
+  });
+
+  it("refuse sept unités, et le message nomme la limite", () => {
+    const r = construireBrut(fichier(7));
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.message).toContain("7 unités");
+      expect(r.message).toContain("limite est de 5");
+    }
+  });
+
+  it("ne tronque pas : un refus ne rend aucune écriture", () => {
+    // Le point de la décision. Un import qui garderait les cinq premières
+    // unités ferait perdre au dirigeant les risques des deux dernières, sans
+    // qu'aucun écran ne le lui dise.
+    const r = construireBrut(fichier(7));
+
+    expect("ecritures" in r).toBe(false);
+  });
+
+  it("compte les unités déjà en base, pas seulement celles du fichier", () => {
+    // Trois en base plus trois au fichier font six : la borne serait aveugle
+    // si elle ne regardait que le document déposé.
+    const r = construireBrut(fichier(3), [
+      existante("Déjà 1", "u1"),
+      existante("Déjà 2", "u2"),
+      existante("Déjà 3", "u3"),
+    ]);
+
+    expect(r.ok).toBe(false);
+  });
+
+  it("ne compte pas une unité du fichier qui sera réutilisée", () => {
+    // Cinq en base dont trois portées par le fichier : rien ne naît, donc
+    // rien ne franchit la borne.
+    const r = construireBrut(fichier(3), [
+      existante("Unité 1", "u1"),
+      existante("Unité 2", "u2"),
+      existante("Unité 3", "u3"),
+      existante("Autre A", "u4"),
+      existante("Autre B", "u5"),
+    ]);
+
+    expect(r.ok).toBe(true);
+  });
+
+  it("ne compte pas l'unité transverse, et ne lui rattache rien", () => {
+    // Cinq unités au fichier plus la transverse en base : ça passe. C'est le
+    // cas du pré-remplissage restauration, parfaitement dans la cible.
+    const transverse: UniteExistante = {
+      id: "u-transverse",
+      nom: "Risques transverses",
+      estTransverse: true,
+    };
+
+    const e = construire(fichier(5), [transverse]);
+
+    expect(e.unitesACreer).toHaveLength(5);
+    expect(e.risques.some((r) => r.uniteId === "u-transverse")).toBe(false);
+  });
+
+  it("un DUERP ancien à huit unités n'est pas cassé : il refuse, il ne perd rien", () => {
+    const huit = Array.from({ length: 8 }, (_, i) =>
+      existante(`Ancienne ${i + 1}`, `u${i + 1}`),
+    );
+
+    const r = construireBrut(fichier(1), huit);
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.message).toContain("9 unités");
   });
 });

@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
 import { construireEcrituresImport } from "./ecritures";
+import { verifierPlafondImport } from "../plafond-unites";
 import { parserFichierDuerp, planifierImport } from "./parser";
 import { validerFichier } from "@/lib/rapports/validator";
 
@@ -141,32 +142,47 @@ export async function commitImport(
   }
   const plan = planifierImport(res.lignes);
 
-  // Trouve ou crée un DUERP actif sur l'établissement.
-  let duerp = await prisma.duerp.findFirst({
+  // Le DUERP actif de l'établissement, s'il y en a un — on ne le crée pas
+  // encore.
+  const duerpExistant = await prisma.duerp.findFirst({
     where: { etablissementId },
     orderBy: { updatedAt: "desc" },
   });
-  if (!duerp) {
-    duerp = await prisma.duerp.create({
-      data: { etablissementId },
-    });
-  }
-
-  const duerpId = duerp.id;
 
   // Unités déjà en base, lues **avant** la transaction et en une fois. La
   // version précédente les cherchait une par une depuis l'intérieur de la
   // transaction, ce qui forçait celle-ci à rester interactive et à payer un
   // aller-retour réseau par ligne du fichier.
-  const unitesExistantes = await prisma.uniteTravail.findMany({
-    where: { duerpId, nom: { in: plan.unites.map((u) => u.nom) } },
-    select: { id: true, nom: true },
-  });
+  //
+  // Elles sont désormais lues **toutes**, et non plus les seules dont le nom
+  // figure dans le fichier : le plafond de l'ADR-033 se compte sur ce que le
+  // DUERP porte déjà, pas sur ce que l'import y reconnaît. Un filtre par nom
+  // aurait rendu la borne aveugle aux unités que le fichier ne mentionne pas
+  // — c'est-à-dire au cas courant.
+  const unitesExistantes = duerpExistant
+    ? await prisma.uniteTravail.findMany({
+        where: { duerpId: duerpExistant.id },
+        select: { id: true, nom: true, estTransverse: true },
+      })
+    : [];
+
+  // Le plafond est vérifié **avant** la création du DUERP : un import refusé
+  // laisserait sinon derrière lui un document vide que personne n'a demandé,
+  // et que la prochaine ouverture réutiliserait en silence.
+  const borne = verifierPlafondImport(
+    unitesExistantes,
+    plan.unites.map((u) => u.nom),
+  );
+  if (!borne.ok) return { status: "error", message: borne.message };
+
+  const duerpId =
+    duerpExistant?.id ??
+    (await prisma.duerp.create({ data: { etablissementId } })).id;
 
   // Les identifiants sont générés ici, donc plus aucune écriture n'attend le
   // résultat d'une autre : les trois listes partent en autant de `createMany`,
   // dans une transaction séquentielle envoyée en un seul lot.
-  const ecritures = construireEcrituresImport({
+  const resultat = construireEcrituresImport({
     plan,
     unitesExistantes,
     duerpId,
@@ -174,6 +190,11 @@ export async function commitImport(
     genererId: (prefixe) => `${prefixe}_${randomUUID()}`,
     maintenant: new Date(),
   });
+
+  // Un refus arrive avant toute écriture, et il porte sa raison : le fichier
+  // reste au dirigeant, à lui de regrouper ses unités et de le redéposer.
+  if (!resultat.ok) return { status: "error", message: resultat.message };
+  const ecritures = resultat.ecritures;
 
   const nbRisquesCrees = ecritures.risques.length;
 

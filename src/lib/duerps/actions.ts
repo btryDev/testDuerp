@@ -11,6 +11,11 @@ import {
   requireUnite,
 } from "@/lib/auth/scope";
 import { trouverReferentielParId } from "@/lib/referentiels";
+import {
+  compterUnitesPlafonnees,
+  messagePlafondAjout,
+  placesRestantes,
+} from "./plafond-unites";
 
 /**
  * Cloisonnement : aucune de ces actions ne peut faire confiance à
@@ -39,6 +44,9 @@ export async function creerDuerp(etablissementId: string): Promise<void> {
   });
 
   if (!duerp) {
+    // L'unité transverse est créée sans regarder le plafond, et c'est voulu :
+    // elle ne compte pas dans les cinq (ADR-033). Le DUERP naît donc toujours
+    // avec ses cinq places entières.
     duerp = await prisma.duerp.create({
       data: {
         etablissementId,
@@ -87,11 +95,23 @@ export async function choisirSecteur(
 
   const unitesExistantes = await prisma.uniteTravail.findMany({
     where: { duerpId },
-    select: { nom: true },
+    select: { nom: true, estTransverse: true },
   });
   const nomsExistants = new Set(
     unitesExistantes.map((u) => u.nom.toLowerCase()),
   );
+
+  // Le pré-remplissage sectoriel s'arrête au plafond (ADR-033). Il s'arrête,
+  // il ne refuse pas : ce sont des unités que le produit propose, pas des
+  // données que le dirigeant a apportées — en écarter une ne lui fait rien
+  // perdre, et il peut toujours l'ajouter à la main. C'est la différence avec
+  // l'import, qui refuse en bloc plutôt que d'amputer un document reçu.
+  //
+  // Le cas où la coupe mord vraiment est le changement de secteur : les unités
+  // de l'ancien secteur restent et occupent les places. Une bascule
+  // restauration → bureau n'en installera donc aucune, et l'utilisateur devra
+  // supprimer les anciennes lui-même.
+  const places = placesRestantes(compterUnitesPlafonnees(unitesExistantes));
 
   await prisma.$transaction([
     prisma.duerp.update({
@@ -103,6 +123,7 @@ export async function choisirSecteur(
     }),
     ...ref.unitesTravailSuggerees
       .filter((u) => !nomsExistants.has(u.nom.toLowerCase()))
+      .slice(0, places)
       .map((u) =>
         prisma.uniteTravail.create({
           data: {
@@ -156,6 +177,19 @@ export async function ajouterUnite(
       message: "Formulaire invalide",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
+  }
+
+  // Le plafond de l'ADR-033 vaut à l'ajout, jamais à la lecture : un DUERP qui
+  // porte déjà huit unités n'en perd aucune, il n'en gagne plus.
+  const unites = await prisma.uniteTravail.findMany({
+    where: { duerpId },
+    select: { estTransverse: true },
+  });
+  if (placesRestantes(compterUnitesPlafonnees(unites)) === 0) {
+    const message = messagePlafondAjout();
+    // Sur le champ `nom` : c'est le seul que `AjouterUniteForm` affiche, un
+    // message rangé ailleurs ne serait jamais lu.
+    return { status: "error", message, fieldErrors: { nom: [message] } };
   }
 
   await prisma.uniteTravail.create({
