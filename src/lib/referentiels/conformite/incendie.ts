@@ -128,6 +128,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "R. 4227-28",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532081/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -135,6 +136,7 @@ export const obligationsIncendie: Obligation[] = [
         article: "R. 4227-29",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489127/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "autre",
@@ -246,6 +248,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769386",
         note: "Consignation sur registre des essais et exercices périodiques, avec leur date et les observations auxquelles ils ont donné lieu.",
+        versionConstatee: "2011-11-10",
       },
       {
         source: "CODE_TRAVAIL",
@@ -375,6 +378,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022764985",
         note: "Fonde l'obligation d'éclairage de sécurité en lieu de travail et renvoie à un arrêté le soin de fixer « les conditions d'exploitation et de maintenance de cet éclairage ». Ne fixe lui-même aucune périodicité : c'est l'arrêté du 14 décembre 2011 qui la pose.",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -383,6 +387,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",
@@ -426,6 +431,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022764985",
         note: "Fonde l'obligation d'éclairage de sécurité en lieu de travail et renvoie à un arrêté le soin de fixer « les conditions d'exploitation et de maintenance de cet éclairage ». Ne fixe lui-même aucune périodicité : c'est l'arrêté du 14 décembre 2011 qui la pose.",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -434,6 +440,7 @@ export const obligationsIncendie: Obligation[] = [
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
         note: "Registre sur lequel l'article 11 de l'arrêté fait porter le résultat des opérations. Support de consignation, pas fondement de la périodicité.",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",

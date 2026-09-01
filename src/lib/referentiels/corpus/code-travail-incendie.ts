@@ -17,25 +17,43 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
   articles: [
     {
       ref: "R. 4227-28",
+      intitule: "Mesures pour combattre tout commencement d'incendie",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532081/",
+      prescrit:
+        "Tout employeur : prendre les mesures nécessaires pour qu'un début d'incendie puisse être combattu rapidement et efficacement. Obligation de résultat sur l'état des moyens, sans aucune périodicité ni seuil d'effectif.",
+      citationCle:
+        "L'employeur prend les mesures nécessaires pour que tout commencement d'incendie puisse être rapidement et efficacement combattu dans l'intérêt du sauvetage des travailleurs.",
       versionEnVigueur: "2008-05-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: ["incendie-travail-moyens-lutte"],
     },
     {
       ref: "R. 4227-29",
+      intitule: "Extincteurs — premier secours contre l'incendie",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489127/",
+      prescrit:
+        "Tout employeur : doter les lieux de travail d'extincteurs en nombre suffisant et les maintenir en bon état de fonctionnement — au moins un extincteur portatif à eau pulvérisée de 6 litres minimum pour 200 m² de plancher, au moins un appareil par niveau, et des appareils appropriés aux risques particuliers. « Maintenus en bon état » est un état à tenir : l'article ne fixe AUCUNE périodicité de vérification.",
+      citationCle:
+        "Le premier secours contre l'incendie est assuré par des extincteurs en nombre suffisant et maintenus en bon état de fonctionnement. Il existe au moins un extincteur portatif à eau pulvérisée d'une capacité minimale de 6 litres pour 200 mètres carrés de plancher. Il existe au moins un appareil par niveau. Lorsque les locaux présentent des risques d'incendie particuliers, notamment des risques électriques, ils sont dotés d'extincteurs dont le nombre et le type sont appropriés aux risques.",
       versionEnVigueur: "2008-05-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: ["incendie-travail-moyens-lutte"],
     },
     {
       ref: "R. 4227-14",
+      intitule: "Éclairage de sécurité des lieux de travail",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022764985/",
+      prescrit:
+        "Tout établissement dispose d'un éclairage de sécurité permettant l'évacuation en cas d'interruption accidentelle de l'éclairage normal. L'article POSE l'obligation et renvoie à un arrêté ministériel pour la conception, la mise en œuvre, l'exploitation, la maintenance et les dispenses : c'est l'arrêté du 14 décembre 2011, pas cet article, qui porte les périodicités.",
+      citationCle:
+        "Les établissements disposent d'un éclairage de sécurité permettant d'assurer l'évacuation des personnes en cas d'interruption accidentelle de l'éclairage normal. La conception, la mise en œuvre et les conditions d'exploitation et de maintenance de cet éclairage ainsi que les locaux qui peuvent en être dispensés en raison de leur faible superficie ou de leur faible fréquentation sont définis par un arrêté des ministres chargés du travail et de l'agriculture.",
       versionEnVigueur: "2011-07-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: [
         "incendie-travail-eclairage-securite-autonomie-semestrielle",
@@ -44,9 +62,15 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
     },
     {
       ref: "R. 4226-19",
+      intitule: "Registre des vérifications d'installations électriques",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
+      prescrit:
+        "Consigner sur un registre les résultats des vérifications de R. 4226-14 et R. 4226-16 et les justifications des travaux correctifs, et y annexer les rapports d'un organisme accrédité. Support de consignation des seules vérifications ÉLECTRIQUES : l'article ne dit rien de l'éclairage de sécurité et ne porte aucune périodicité.",
+      citationCle:
+        "Les résultats des vérifications prévues aux articles R. 4226-14 et R. 4226-16 ainsi que les justifications des travaux et modifications effectués pour porter remède aux défectuosités constatées sont consignés sur un registre. Lorsque les vérifications sont effectuées par un organisme accrédité, les rapports établis à la suite de ces vérifications sont annexés à ce registre.",
       versionEnVigueur: "2011-07-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: [
         "incendie-travail-eclairage-securite-autonomie-semestrielle",
@@ -55,9 +79,15 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
     },
     {
       ref: "R. 4227-39",
+      intitule: "Essais et visites périodiques du matériel, exercices semestriels",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769386/",
+      prescrit:
+        "La consigne de sécurité incendie prévoit des essais et visites périodiques du matériel ET des exercices d'apprentissage ; les deux ont lieu au moins tous les six mois, et leur date comme leurs observations sont consignées sur un registre tenu à la disposition de l'inspection du travail. « Au moins tous les six mois » est un plancher de fréquence, pas un rendez-vous fixe. Le champ est celui de R. 4227-34, par le double renvoi 39 → 37 → 34.",
+      citationCle:
+        "La consigne de sécurité incendie prévoit des essais et visites périodiques du matériel et des exercices au cours desquels les travailleurs apprennent à reconnaître les caractéristiques du signal sonore d'alarme générale, à localiser et à utiliser les espaces d'attente sécurisés ou les espaces équivalents à se servir des moyens de premier secours et à exécuter les diverses manœuvres nécessaires. Ces exercices et essais périodiques ont lieu au moins tous les six mois. Leur date et les observations auxquelles ils peuvent avoir donné lieu sont consignées sur un registre tenu à la disposition de l'inspection du travail.",
       versionEnVigueur: "2011-11-10",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: [
         "incendie-registre-securite",
@@ -66,18 +96,30 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
     },
     {
       ref: "R. 4227-34",
+      intitule: "Établissements équipés d'un système d'alarme sonore",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532067/",
+      prescrit:
+        "Équiper d'un système d'alarme sonore les établissements où plus de cinquante personnes peuvent être occupées ou réunies habituellement, ainsi que ceux, quelle que soit leur importance, où sont manipulées et mises en œuvre les matières inflammables de R. 4227-22. C'est l'article de champ auquel R. 4227-37 puis R. 4227-39 renvoient.",
+      citationCle:
+        "Les établissements dans lesquels peuvent se trouver occupées ou réunies habituellement plus de cinquante personnes, ainsi que ceux, quelle que soit leur importance, où sont manipulées et mises en œuvre des matières inflammables mentionnées à l'article R. 4227-22 sont équipés d'un système d'alarme sonore.",
       versionEnVigueur: "2008-05-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: ["incendie-travail-exercice-semestriel"],
     },
     {
       ref: "R. 4227-37",
+      intitule: "Consigne de sécurité incendie établie et affichée",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769379/",
+      prescrit:
+        "Dans les seuls établissements du champ de R. 4227-34 : établir et afficher de manière très apparente une consigne de sécurité incendie, dans chaque local de plus de cinq personnes et dans les locaux de R. 4227-24, sinon dans chaque local ou dégagement desservant un groupe de locaux. Dans les AUTRES établissements, de simples instructions d'évacuation. Aucun équipement n'y est nommé et aucune périodicité n'y figure.",
+      citationCle:
+        "Dans les établissements mentionnés à l'article R. 4227-34, une consigne de sécurité incendie est établie et affichée de manière très apparente : 1° Dans chaque local pour les locaux dont l'effectif est supérieur à cinq personnes et pour les locaux mentionnés à l'article R. 4227-24 ; 2° Dans chaque local ou dans chaque dégagement desservant un groupe de locaux dans les autres cas. Dans les autres établissements, des instructions sont établies, permettant d'assurer l'évacuation des personnes présentes dans les locaux dans les conditions prévues au 1° de l'article R. 4216-2.",
       versionEnVigueur: "2011-11-10",
       versionFuture: "2027-01-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: ["incendie-travail-consigne-affichee"],
     },
