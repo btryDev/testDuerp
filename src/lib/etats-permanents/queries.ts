@@ -15,6 +15,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth/require-user";
 import {
   determineObligationsApplicables,
   projeterEtablissement,
@@ -24,7 +25,7 @@ import {
 import type { Obligation } from "@/lib/referentiels/conformite";
 import { LABEL_DOMAINE } from "@/lib/calendrier/labels";
 import type { DomaineObligation } from "@/lib/referentiels/conformite";
-import { modeDeclaration, type ModeDeclaration } from "./regle";
+import { modeDeclarationApplique, type ModeDeclaration } from "./regle";
 
 export type LigneEtatPermanent = {
   obligation: Obligation;
@@ -95,8 +96,27 @@ export async function listerEtatsPermanents(
     equipements,
   );
 
+  // Le prédicat d'appartenance, porté par la lecture elle-même.
+  //
+  // L'unique appelant d'aujourd'hui passe par `requireEtablissement(id)`, et
+  // cette lecture était donc sûre. Ça ne suffit pas, et le dépôt l'a déjà écrit
+  // ailleurs : `batimentParDefaut` porte le même prédicat MALGRÉ un appelant
+  // vérifié, avec la note « décrit l'usage, pas une dispense ».
+  //
+  // La raison est dans la signature : cette fonction accepte n'importe quel
+  // `EtablissementMatching`. Le jour où un second appelant la nourrit d'un id
+  // qui n'a pas été confronté au user, les déclarations d'un autre compte
+  // sortent — avec leur note libre, qui est du texte écrit par un dirigeant sur
+  // sa propre conformité. La sécurité d'une lecture ne doit pas dépendre de qui
+  // l'appelle : c'est ce que `batiments/queries.ts` formule par « une lecture
+  // qui ne le porte pas devient une fuite le jour où quelqu'un rend la fonction
+  // publique ».
+  const user = await requireUser();
   const declarations = await prisma.declarationEtatPermanent.findMany({
-    where: { etablissementId: etablissement.id },
+    where: {
+      etablissementId: etablissement.id,
+      etablissement: { entreprise: { userId: user.id } },
+    },
     select: { obligationId: true, declareLe: true, note: true },
   });
   const parObligation = new Map(declarations.map((d) => [d.obligationId, d]));
@@ -110,16 +130,10 @@ export async function listerEtatsPermanents(
 
   for (const app of applicables) {
     const o = app.obligation;
-    // La périodicité effective, surcharge de prescription comprise : une
-    // obligation à qui un arrêté préfectoral donne un rythme quitte cet écran
-    // pour le calendrier. `surcharges` est indexé par équipement ; une
-    // obligation portée par l'établissement n'en reçoit jamais.
-    const surcharge = app.equipementsConcernes
-      .map((eq) => app.surcharges?.[eq.id])
-      .find((s) => s !== undefined);
-    const periodiciteEffective = surcharge?.periodicite ?? o.periodicite;
-
-    const mode = modeDeclaration(o, periodiciteEffective);
+    // La règle vit dans `regle.ts`, surcharge de prescription comprise. Elle
+    // était calculée ici, et la garde de l'action ne la calculait pas : deux
+    // lectures de la même règle, dont une fausse.
+    const mode = modeDeclarationApplique(app);
     if (!mode) continue;
 
     const d = parObligation.get(o.id) ?? null;

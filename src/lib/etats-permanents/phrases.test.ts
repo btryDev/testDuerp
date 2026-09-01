@@ -58,7 +58,7 @@ describe("les phrases assemblées", () => {
       "Le texte fait revenir cette obligation, sans dire à quel rythme. Elle se date donc — « fait le » — au lieu de se déclarer en place, et elle n'entre pas dans le compte de l'en-tête, qui ne parle que d'états. Elle porte une date.",
     );
     expect(phraseFaitsDates(3, 1)).toBe(
-      "Les textes font revenir ces 3 obligations, sans dire à quel rythme. Elles se datent donc — « fait le » — au lieu de se déclarer en place, et elles n'entrent pas dans le compte de l'en-tête, qui ne parle que d'états. 1 sur 3 portent une date.",
+      "Les textes font revenir ces 3 obligations, sans dire à quel rythme. Elles se datent donc — « fait le » — au lieu de se déclarer en place, et elles n'entrent pas dans le compte de l'en-tête, qui ne parle que d'états. 1 sur 3 porte une date.",
     );
     expect(phraseFaitsDates(3, 3)).toBe(
       "Les textes font revenir ces 3 obligations, sans dire à quel rythme. Elles se datent donc — « fait le » — au lieu de se déclarer en place, et elles n'entrent pas dans le compte de l'en-tête, qui ne parle que d'états. Toutes portent une date.",
@@ -102,7 +102,8 @@ describe("les phrases assemblées", () => {
   it("dit l'état des dates sans se contredire", () => {
     expect(phraseFaitsDates(3, 0)!).toContain("Aucune ne porte encore de date.");
     expect(phraseFaitsDates(3, 3)!).toContain("Toutes portent une date.");
-    expect(phraseFaitsDates(3, 1)!).toContain("1 sur 3 portent une date.");
+    expect(phraseFaitsDates(3, 1)!).toContain("1 sur 3 porte une date.");
+    expect(phraseFaitsDates(3, 2)!).toContain("2 sur 3 portent une date.");
     expect(phraseFaitsDates(1, 1)!).toContain("Elle porte une date.");
     expect(phraseFaitsDates(1, 0)!).toContain("Elle ne porte pas encore de date.");
   });
@@ -195,5 +196,70 @@ describe("aucune phrase ne se recoud dans le JSX", () => {
     );
     expect(motif.test("{texteFaits && <p>{texteFaits}</p>}")).toBe(false);
     expect(motif.test("mode === \"etat\" ? etatIcon : faitIcon")).toBe(false);
+  });
+});
+
+describe("l'accord des branches où un nombre s'insère", () => {
+  /**
+   * Une assertion qui recopie la sortie ne mesure rien.
+   *
+   * Le défaut qui a fait écrire ce bloc : `phraseFaitsDates(3, 1)` rendait
+   * « 1 sur 3 **portent** une date. », et le test l'assérait mot pour mot. Il
+   * passait, il serait passé toujours — et il rendait la correction
+   * DÉCOURAGEANTE : qui corrigeait l'accord faisait tomber un test vert et
+   * pouvait croire avoir cassé quelque chose.
+   *
+   * C'est le même piège, un cran plus loin, que celui contre lequel ce fichier
+   * a été créé : « la première version cherchait les collages par expression
+   * régulière ; elle attrapait l'exemple parce qu'il était écrit en dur dans le
+   * motif, et laissait passer le cas général. » Une garde qui cite son propre
+   * exemple ne prouve rien.
+   *
+   * Ce test-ci ne recopie aucune phrase. Il vérifie une RÈGLE — le verbe
+   * s'accorde avec le nombre qui le précède — sur tout l'espace des entrées.
+   *
+   * ⚠ CE QU'IL NE FAIT PAS. Il ne contrôle pas « l'accord » en général :
+   * l'accord du français ne se vérifie pas sans grammaire, et prétendre le
+   * contraire serait la promesse creuse que ce dépôt refuse ailleurs. Il
+   * couvre UNE forme, celle où le défaut s'est logé et où il se logera encore :
+   * un nombre interpolé suivi d'un verbe. Les branches écrites en toutes
+   * lettres n'en ont pas besoin — c'est précisément parce qu'on les lit que
+   * leur singulier a été traité partout.
+   */
+  it("le verbe suit le nombre qui le précède, sur tout l'espace des entrées", () => {
+    const fautes: string[] = [];
+    for (let total = 1; total <= 6; total++) {
+      for (let renseignes = 0; renseignes <= total; renseignes++) {
+        const phrase = phraseFaitsDates(total, renseignes);
+        if (!phrase) continue;
+        for (const m of phrase.matchAll(/(\d+) sur \d+ (\w+)/g)) {
+          const n = Number(m[1]);
+          const verbe = m[2];
+          const attendu = n === 1 ? "porte" : "portent";
+          if (verbe !== attendu) {
+            fautes.push(
+              `phraseFaitsDates(${total}, ${renseignes}) → « ${m[0]} » (attendu « ${attendu} »)`,
+            );
+          }
+        }
+      }
+    }
+    expect(
+      fautes,
+      "Un verbe ne s'accorde pas avec le nombre qui le précède.",
+    ).toEqual([]);
+  });
+
+  it("la règle porte sur quelque chose : la forme « N sur M » existe bien", () => {
+    // Contre-épreuve. Sans elle, une refonte qui supprimerait cette tournure
+    // rendrait le test précédent vert et vide — il ne vérifierait plus rien,
+    // sans que personne ne l'apprenne.
+    const avecForme = [phraseFaitsDates(3, 1), phraseFaitsDates(3, 2)].filter(
+      (p) => p && /\d+ sur \d+/.test(p),
+    );
+    expect(
+      avecForme.length,
+      "Plus aucune phrase n'interpole « N sur M » : la règle ci-dessus ne garde plus rien.",
+    ).toBe(2);
   });
 });

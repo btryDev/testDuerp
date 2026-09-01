@@ -61,7 +61,14 @@ export function phraseFaitsDates(
         ? faitsDates === 1
           ? "Elle porte une date."
           : "Toutes portent une date."
-        : `${renseignes} sur ${faitsDates} portent une date.`;
+        : // Le sujet du verbe est `renseignes`, pas `faitsDates` : « 1 sur 3
+          // PORTE une date ». La branche interpolée était la seule du fichier
+          // à ne pas s'accorder — toutes les autres traitent le singulier,
+          // parce qu'elles sont écrites en toutes lettres et que l'œil le
+          // voit. Ici un nombre s'insère, et l'accord se perd avec lui.
+          renseignes === 1
+          ? `1 sur ${faitsDates} porte une date.`
+          : `${renseignes} sur ${faitsDates} portent une date.`;
 
   return `${quoi} ${consequence} ${etat}`;
 }
