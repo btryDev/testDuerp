@@ -261,6 +261,11 @@ export const obligationsElectricite: Obligation[] = [
   // ---------------------------------------------------------------------------
   {
     id: "elec-erp-mise-en-service",
+    relectureDue: {
+      le: "2027-06-01",
+      motif:
+        "GE 6, cité en premier par cette obligation, affiche « Version en vigueur du 19/11/2007 au 01/06/2027 » : l'arrêté du 19 février 2026 le réécrit à cette date, en même temps que GE 2 et GE 7 (JORFTEXT000053525217, lu au JO le 2026-09-01). GE 6 est l'article de RÉGIME — il dit qui vérifie, organisme agréé ou technicien compétent — et c'est de lui que le réalisateur `organisme_agree` de cette ligne est tiré, par son § 2. Relire GE 6 dans sa version au 1er juin 2027, et avec lui GE 7 et GE 8, cités dans la même `reference` et absents du corpus. Vérifier au passage si le renvoi du § 1 vers « l'article R. 123-43 du code de la construction et de l'habitation » — numérotation disparue à la recodification de 2021 — est enfin corrigé. Le texte modificateur ne s'appliquant qu'aux demandes d'autorisation de travaux déposées à compter de cette date, regarder aussi ce qu'il advient du parc existant.",
+    },
     domaine: "electricite",
     libelle: "Vérification électrique à la mise en service ou après travaux (ERP)",
     description:

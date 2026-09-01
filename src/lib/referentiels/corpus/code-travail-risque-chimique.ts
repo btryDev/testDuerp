@@ -1,17 +1,23 @@
-// Corpus : code du travail — agents chimiques dangereux et équipements de travail.
+// Corpus : code du travail — agents chimiques dangereux, et l'aération qui s'y
+// rattache.
 //
 // Étendue « articles_cites » : seuls les articles que le référentiel cite.
+//
+// AMENDEMENT 2026-09-01 : `R. 4323-1` est sorti d'ici. Il ne relève ni du
+// risque chimique ni du livre II, mais de la section 1 « Information et
+// formation des travailleurs » du chapitre des équipements de travail, et il
+// vise tout employeur. Il est passé dans `code-travail-equipements-information`,
+// qui porte cette section.
 
 import type { Corpus } from "./types";
 
 export const CODE_TRAVAIL_RISQUE_CHIMIQUE: Corpus = {
   id: "code-travail-risque-chimique",
-  intitule:
-    "Code du travail — agents chimiques dangereux et équipements de travail",
+  intitule: "Code du travail — agents chimiques dangereux et aération",
   url: "https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018530931/",
   etendue: "articles_cites",
   portee:
-    "Prévention du risque chimique (R. 4412-11 et s.), information et formation (R. 4412-38, R. 4412-87), aération (R. 4222-20), et formation à l'utilisation des équipements de travail (R. 4323-1 et s.).",
+    "Prévention du risque chimique (R. 4412-11 et s.), information et formation (R. 4412-38, R. 4412-87), aération (R. 4222-20). La formation à l'utilisation des équipements de travail n'est plus ici : `R. 4323-1` relève du livre III (équipements de travail), pas du risque chimique, et a rejoint `code-travail-equipements-information` le 2026-09-01.",
   articles: [
     {
       ref: "R. 4222-21",
@@ -122,17 +128,6 @@ export const CODE_TRAVAIL_RISQUE_CHIMIQUE: Corpus = {
       statut: "sans_objet",
       motif:
         "Renvoi pur : l'article n'impose rien à l'employeur, il habilite les ministres à fixer par arrêté les méthodes de mesure et la fréquence des contrôles. Il est dépouillé parce qu'il est le maillon qui donne son rythme à R. 4222-20 — lequel dit « régulièrement » sans chiffre. La fréquence vient de l'arrêté du 8 octobre 1987 pris sur ce fondement, dont l'article 3 impose « au minimum une fois par an » en local à pollution non spécifique. Sans ce maillon relevé, la périodicité annuelle de `aeration-controle-installations-r4222-20` serait une déduction non sourcée.",
-    },
-    {
-      ref: "R. 4323-1",
-      versionEnVigueur: "2009-12-29",
-      luLe: "2026-09-01",
-      lecture: "premiere_main",
-      statut: "retenu",
-      obligations: ["esp-personnel-formation"],      prescrit:
-        "Impose à l'employeur d'informer de manière appropriée les travailleurs chargés de l'utilisation ou de la maintenance des équipements de travail sur quatre points : conditions d'utilisation ou de maintenance, instructions et consignes dont celles de la notice du fabricant, conduite à tenir face aux situations anormales prévisibles, conclusions tirées de l'expérience acquise. Obligation d'INFORMATION, permanente, sans périodicité écrite ; la formation proprement dite et son renouvellement relèvent des articles suivants de la même section 1 (R. 4323-3 en particulier). Champ : tout équipement de travail et tout employeur — l'article n'est pas propre aux équipements sous pression, et le référentiel ne le cite que pour eux.",
-      citationCle:
-        "L'employeur informe de manière appropriée les travailleurs chargés de l'utilisation ou de la maintenance des équipements de travail : 1° De leurs conditions d'utilisation ou de maintenance ; 2° Des instructions ou consignes les concernant notamment celles contenues dans la notice d'instructions du fabricant ; 3° De la conduite à tenir face aux situations anormales prévisibles ; 4° Des conclusions tirées de l'expérience acquise permettant de supprimer certains risques.",
     },
     {
       ref: "R. 4412-17",

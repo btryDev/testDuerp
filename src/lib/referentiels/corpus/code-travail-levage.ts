@@ -44,6 +44,12 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
         "levage-vgp-annuelle-charges",
         "levage-vgp-semestrielle-chariot-gerbeur",
         "levage-vgp-semestrielle-personnes",
+        // Ajoutée le 2026-09-01. Elle manquait seule parmi les cinq VGP de
+        // levage, sans raison : R. 4323-23 les fonde toutes de la même façon —
+        // il oblige à la vérification générale périodique et renvoie la
+        // périodicité à l'arrêté, ici l'article 23 b) de l'arrêté du 1er mars
+        // 2004. Article rouvert à la source ce jour avant l'ajout.
+        "levage-vgp-trimestrielle-force-humaine",
       ],
     },
     {

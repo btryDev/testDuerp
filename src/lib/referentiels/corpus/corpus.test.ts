@@ -349,6 +349,30 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // ces périodicités — PO 8 § 1 fait de même pour PO 1 § 3. Même blocage
       // que PO 7 : aucun équipement porteur.
       "PO 12",
+      // ── Lot D (traçabilité), 2026-09-01 : GZ 13 et GZ 14, entrés au corpus
+      // parce que GZ 15 s'ouvre sur « Elles » et qu'on est allé chercher
+      // l'antécédent. Il n'était pas là — voir la réserve de GZ 15 —, mais les
+      // deux articles qu'on a ouverts pour le trouver portent chacun une
+      // obligation d'exploitant que le référentiel ne porte pas. Ce ne sont
+      // donc pas deux défauts d'encodage : ce sont deux textes lus de plus,
+      // même motif que les entrées du lot 7 et du lot D1.
+      //
+      // GZ 13 § 4 : « L'utilisation du gaz ne peut intervenir qu'après
+      // vérification de l'installation, par une personne ou un organisme
+      // agréé », avec rapport conforme à GE 9 et visa au registre de sécurité.
+      // Préalable à la mise en service, pas une périodicité.
+      "GZ 13",
+      // GZ 14 § 1 : l'entretien et le maintien en l'état des installations de
+      // gaz « incombent à l'exploitant ». État permanent, du même genre que le
+      // « maintenus en bon état » de R. 4227-29 — que le référentiel porte
+      // pour les extincteurs et pas ici.
+      //
+      // Les deux sont bloquées par la même chose : aucune catégorie
+      // d'équipement « installation de gaz ». Les accrocher à
+      // `APPAREIL_CUISSON_ERP` sous-appliquerait, une installation de gaz
+      // alimentant aussi un chauffage ou une production d'eau chaude. C'est le
+      // blocage déjà nommé pour l'arrêté du 23 février 2018, art. 26 § 3.
+      "GZ 14",
       // `R. 4544-11-1` a quitté cette liste le 2026-08-27 : le porteur salarié
       // de l'ADR-023 la rend encodable, et elle l'est —
       // `elec-salarie-attestation-medicale-voisinage`. Troisième sortie par
