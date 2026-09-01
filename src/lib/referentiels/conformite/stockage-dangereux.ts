@@ -150,6 +150,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4222-20",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "ARRETE",
@@ -157,6 +158,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "Arrêté 1987-10-08 art. 4",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678611",
+        versionConstatee: "1988-04-01",
       },
     ],
     periodicite: "annuelle",

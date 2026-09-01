@@ -15,9 +15,13 @@ export const ARRETE_1980_LIVRE_4_PARCS: Corpus = {
   articles: [
     {
       ref: "PS 32",
+      intitule: "Maintenance et vérifications",
+      url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000024812448/",
       versionEnVigueur: "2006-07-09",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      citationCle:
+        "Les installations électriques, de désenfumage mécanique, les dispositifs de signalisation, les systèmes d'alarme, de détection et de sécurité incendie, les moyens de lutte contre l'incendie, les dispositifs d'obturation coupe-feu ainsi que les dispositifs de surveillance de la qualité de l'air font l'objet d'une maintenance régulière par un professionnel qualifié. A ces occasions, il est réalisé des essais de fonctionnement au moins une fois tous les deux ans pour les parcs d'une capacité d'accueil inférieure ou égale à 250 véhicules et une fois tous les ans pour les autres parcs. Ces installations, à l'exception des dispositifs de surveillance de la qualité de l'air, sont vérifiées lors de leur mise en service puis au moins une fois tous les cinq ans par un organisme agréé.",
       statut: "retenu",
       obligations: [
         "aeration-erp-ps-surveillance-qualite-air-inf-250",
