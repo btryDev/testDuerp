@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   CATEGORIES_ERP,
   CLASSES_IGH,
+  FAMILLES_HABITATION,
   TYPE_ERP,
 } from "@/lib/etablissements/schema";
 import { evaluerScopeSecteur } from "./scope";
@@ -84,6 +85,10 @@ export const onboardingSchema = z
       (v) => (v === "" || v === null ? undefined : v),
       z.enum(CLASSES_IGH).optional(),
     ),
+    familleHabitation: z.preprocess(
+      (v) => (v === "" || v === null ? undefined : v),
+      z.enum(FAMILLES_HABITATION).optional(),
+    ),
   })
   .superRefine((val, ctx) => {
     // Le code NAF ne conditionne plus la création (lib/onboarding/scope.ts).
@@ -152,6 +157,26 @@ export const onboardingSchema = z
       });
     }
 
+    // Famille d'habitation (ADR-025 § 4). Exigée ici — c'est une création —
+    // alors que `etablissementSchema` ne l'exige pas : un dossier antérieur
+    // au 2026-09-01 n'en a pas et doit rester modifiable.
+    if (val.estHabitation) {
+      if (!val.familleHabitation) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["familleHabitation"],
+          message: "Famille d'habitation requise (1ʳᵉ, 2ᵉ, 3ᵉ A, 3ᵉ B ou 4ᵉ)",
+        });
+      }
+    } else if (val.familleHabitation) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["familleHabitation"],
+        message:
+          "Ne doit être posée que si l'établissement est un immeuble d'habitation",
+      });
+    }
+
     const aucunRegime =
       !val.estEtablissementTravail &&
       !val.estERP &&
@@ -188,4 +213,5 @@ export const onboardingValeursInitiales = {
   typeErp: "" as string | undefined,
   categorieErp: "" as string | undefined,
   classeIgh: "" as string | undefined,
+  familleHabitation: "" as string | undefined,
 };

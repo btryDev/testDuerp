@@ -45,6 +45,7 @@ function restaurant(
     typeErp: "N",
     categorieErp: "N5",
     classeIgh: null,
+    familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
     ...over,

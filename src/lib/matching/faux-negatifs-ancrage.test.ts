@@ -50,6 +50,7 @@ function bureauSansRien(
     typeErp: null,
     categorieErp: null,
     classeIgh: null,
+    familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
     ...over,
@@ -70,6 +71,7 @@ function restoErpCat5SansRien(
     typeErp: "N",
     categorieErp: "N5",
     classeIgh: null,
+    familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
     ...over,
@@ -127,6 +129,7 @@ describe("faux négatif — tenue du registre de sécurité", () => {
       typeErp: null,
       categorieErp: null,
       classeIgh: null,
+      familleHabitation: null,
       personnesPresentesHabituellement: null,
       manipuleMatieresR422722: null,
     };

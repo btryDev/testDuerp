@@ -870,6 +870,7 @@ describe("référentiel conformité — éclairage de sécurité en lieu de trav
       typeErp: "N" as const,
       categorieErp: "N5" as const,
       classeIgh: null,
+      familleHabitation: null,
       personnesPresentesHabituellement: null,
       manipuleMatieresR422722: null,
     };

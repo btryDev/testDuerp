@@ -231,6 +231,7 @@ export async function equipementsSansEcheance(
       typeErp: etab.typeErp,
       categorieErp: etab.categorieErp,
       classeIgh: etab.classeIgh,
+      familleHabitation: etab.familleHabitation,
       personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
       manipuleMatieresR422722: etab.manipuleMatieresR422722,
     },

@@ -14,6 +14,8 @@ const regimeCouvert: RegimeEtablissement = {
   estERP: true,
   estIGH: false,
   categorieErp: "N5",
+  estHabitation: false,
+  familleHabitation: null,
 };
 
 /** Un dossier sans rien à signaler : chaque test n'y ajoute que son axe. */
@@ -45,6 +47,8 @@ describe("axe du régime", () => {
       estERP: false,
       estIGH: false,
       categorieErp: null,
+      estHabitation: false,
+      familleHabitation: null,
     });
     expect(riensASignaler(c)).toBe(true);
   });
@@ -72,6 +76,8 @@ describe("axe du régime", () => {
       ...regimeCouvert,
       estIGH: true,
       categorieErp: "N5",
+      estHabitation: false,
+      familleHabitation: null,
     });
     expect(axes(c)).toEqual(["igh"]);
     expect(c.manques[0].motif).toContain("immeuble de grande hauteur");
@@ -439,7 +445,7 @@ describe("axe domaine_equipement", () => {
 
 describe("les axes ne s'additionnent ni ne se recouvrent", () => {
   const troisManques = couvertureDeLEtablissement({
-    regime: { estERP: true, estIGH: false, categorieErp: "N2" },
+    regime: { estERP: true, estIGH: false, categorieErp: "N2" , estHabitation: false, familleHabitation: null },
     duerp: {
       etat: "secteur_inconnu",
       secteurNom: null,
@@ -481,7 +487,7 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
     // d'être des deux listes.
     const c = couvertureDeLEtablissement(
       faits({
-        regime: { estERP: true, estIGH: false, categorieErp: null },
+        regime: { estERP: true, estIGH: false, categorieErp: null , estHabitation: false, familleHabitation: null },
         equipements: { nbSansObligation: 2, nbEquipements: 5 },
       }),
     );
@@ -584,5 +590,52 @@ describe("axe public_recu", () => {
     const interdits = /conforme|non conforme|infraction|en défaut|obligatoire/i;
     expect(c.indeterminations[0].motif).not.toMatch(interdits);
     expect(c.indeterminations[0].quoiFaire).not.toMatch(interdits);
+  });
+});
+
+/* ─── L'axe de la famille d'habitation ────────────────────────────────── */
+
+describe("axe famille d'habitation", () => {
+  const habitation = (
+    familleHabitation: RegimeEtablissement["familleHabitation"],
+  ): RegimeEtablissement => ({
+    estERP: false,
+    estIGH: false,
+    categorieErp: null,
+    estHabitation: true,
+    familleHabitation,
+  });
+
+  it("signale une INDÉTERMINATION quand la famille manque, pas un manque", () => {
+    const c = couvertureDuRegime(habitation(null));
+    // La distinction est le fond du sujet : un manque dirait « l'outil ne
+    // couvre pas votre régime », ce qui est faux — il le couvre, et il sert
+    // même large en attendant la réponse.
+    expect(axesIndetermines(c)).toContain("famille_habitation");
+    expect(axes(c)).not.toContain("famille_habitation");
+  });
+
+  it("ne signale rien quand la famille est renseignée", () => {
+    expect(riensASignaler(couvertureDuRegime(habitation("TROISIEME_A")))).toBe(
+      true,
+    );
+  });
+
+  it("ne signale rien pour un établissement qui n'est pas une habitation", () => {
+    // Le piège serait de déclencher l'axe sur `familleHabitation === null`
+    // seul : tous les commerces et tous les bureaux le porteraient.
+    expect(riensASignaler(couvertureDuRegime(regimeCouvert))).toBe(true);
+  });
+
+  it("cohabite avec l'axe du régime sans le remplacer", () => {
+    const c = couvertureDuRegime({
+      estERP: true,
+      estIGH: false,
+      categorieErp: "N2",
+      estHabitation: true,
+      familleHabitation: null,
+    });
+    expect(axes(c)).toContain("categorie_erp");
+    expect(axesIndetermines(c)).toContain("famille_habitation");
   });
 });

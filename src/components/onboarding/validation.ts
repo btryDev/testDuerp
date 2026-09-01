@@ -55,6 +55,12 @@ export function validerTypologie(s: OnboardingState): string | null {
   if (s.estERP && !s.typeErp) return "Précisez votre activité ERP.";
   if (s.estERP && !s.categorieErp) return "Précisez votre capacité d'accueil.";
   if (s.estIGH && !s.classeIgh) return "Précisez la classe IGH.";
+  // La famille d'habitation, requise depuis le 2026-09-01 (ADR-025 § 4) :
+  // neuf obligations portent la typologie habitation et certaines ne visent
+  // qu'une partie des familles. Sans elle, elles s'appliquent toutes à tout
+  // le monde.
+  if (s.estHabitation && !s.familleHabitation)
+    return "Précisez la famille de l'immeuble d'habitation.";
   return null;
 }
 

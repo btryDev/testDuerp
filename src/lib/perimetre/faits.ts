@@ -93,6 +93,7 @@ export async function faitsDeCouverture(
     typeErp: etab.typeErp,
     categorieErp: etab.categorieErp,
     classeIgh: etab.classeIgh,
+      familleHabitation: etab.familleHabitation,
     personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
     manipuleMatieresR422722: etab.manipuleMatieresR422722,
   });
@@ -116,6 +117,8 @@ export async function faitsDeCouverture(
       estERP: etab.estERP,
       estIGH: etab.estIGH,
       categorieErp: etab.categorieErp,
+      estHabitation: etab.estHabitation,
+      familleHabitation: etab.familleHabitation,
     },
     duerp: couvertureDuerp && {
       etat: couvertureDuerp.etat,

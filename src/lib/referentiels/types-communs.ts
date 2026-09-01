@@ -138,6 +138,22 @@ export const CLASSES_IGH = [
 export type ClasseIgh = (typeof CLASSES_IGH)[number];
 
 /**
+ * Familles d'habitation — arrêté du 31 janvier 1986 (ADR-025 § 4).
+ * Reflet exact de l'enum Prisma `FamilleHabitation`.
+ *
+ * La 3ᵉ famille est scindée : 3A et 3B se distinguent par la desserte par la
+ * voie échelle, et cette distinction emporte des obligations différentes.
+ */
+export const FAMILLES_HABITATION = [
+  "PREMIERE",
+  "DEUXIEME",
+  "TROISIEME_A",
+  "TROISIEME_B",
+  "QUATRIEME",
+] as const;
+export type FamilleHabitation = (typeof FAMILLES_HABITATION)[number];
+
+/**
  * Critère d'application d'une obligation à un établissement (ADR-004).
  *
  * Sémantique des champs :
@@ -169,7 +185,21 @@ export type TypologieApplication = {
   travail?: boolean;
   erp?: boolean | { categories?: CategorieErp[]; types?: TypeErp[] };
   igh?: boolean | { classes: ClasseIgh[] };
-  habitation?: boolean;
+  /**
+   * `{ familles: [...] }` = requis ET restreint à ces familles d'habitation.
+   *
+   * **La famille non renseignée ne rejette PAS**, à l'inverse de la catégorie
+   * ERP et du type d'exploitation. La dissymétrie est voulue et elle tient à
+   * qui subit l'erreur : la catégorie ERP est demandée à la création depuis
+   * toujours, son absence est une anomalie ; la famille d'habitation n'existe
+   * que depuis le 2026-09-01, et tous les dossiers antérieurs en sont
+   * dépourvus. Les écarter reviendrait à retirer en silence des obligations à
+   * des dossiers qui les doivent peut-être — un faux négatif que personne ne
+   * peut voir. On retient donc l'obligation, en disant dans la raison qu'elle
+   * est à confirmer : un dirigeant qui lit une échéance qu'il ne doit pas a
+   * une chance de s'en apercevoir, l'inverse n'en a aucune.
+   */
+  habitation?: boolean | { familles: FamilleHabitation[] };
   effectifMin?: number;
   effectifMax?: number;
   /**

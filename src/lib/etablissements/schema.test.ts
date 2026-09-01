@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { etablissementSchema } from "./schema";
+import {
+  etablissementCreationSchema,
+  etablissementSchema,
+} from "./schema";
 
 const base = {
   raisonDisplay: "Restaurant du Marché",
@@ -148,5 +151,48 @@ describe("etablissementSchema — dates civiles (registre, fiche renseignements)
       etablissementSchema.safeParse({ ...base, dateAutorisationOuverture: "" })
         .success,
     ).toBe(true);
+  });
+});
+
+/**
+ * La dissymétrie création / modification (ADR-025 § 4, ADR-031).
+ *
+ * C'est la forme que prend la coexistence : une règle neuve borne ce qui
+ * entre, elle ne rend pas inutilisable ce qui était là avant. Un dossier
+ * d'habitation créé avant le 2026-09-01 n'a pas de famille ; si le schéma de
+ * modification l'exigeait, son propriétaire ne pourrait plus rien changer —
+ * pas même son adresse — tant qu'il ne l'aurait pas retrouvée.
+ *
+ * Les deux moitiés sont testées : sans la seconde, on pourrait retirer la
+ * règle de création et le test de modification resterait vert.
+ */
+describe("famille d'habitation — exigée à la création, pas à la modification", () => {
+  const habitationSansFamille = { ...base, estHabitation: true };
+
+  it("la création refuse une habitation sans famille", () => {
+    const res = etablissementCreationSchema.safeParse(habitationSansFamille);
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.flatten().fieldErrors.familleHabitation).toBeDefined();
+    }
+  });
+
+  it("la modification accepte une habitation sans famille", () => {
+    const res = etablissementSchema.safeParse(habitationSansFamille);
+    expect(res.success).toBe(true);
+  });
+
+  it("la création accepte une habitation avec sa famille", () => {
+    const res = etablissementCreationSchema.safeParse({
+      ...habitationSansFamille,
+      familleHabitation: "DEUXIEME",
+    });
+    expect(res.success).toBe(true);
+  });
+
+  it("les deux refusent une famille posée hors régime habitation", () => {
+    const hors = { ...base, familleHabitation: "PREMIERE" };
+    expect(etablissementSchema.safeParse(hors).success).toBe(false);
+    expect(etablissementCreationSchema.safeParse(hors).success).toBe(false);
   });
 });

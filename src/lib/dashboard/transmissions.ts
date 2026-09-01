@@ -193,6 +193,7 @@ export async function chargerTransmissions(
       typeErp: etab.typeErp,
       categorieErp: etab.categorieErp,
       classeIgh: etab.classeIgh,
+      familleHabitation: etab.familleHabitation,
       // Ces deux-là manquaient. La première rédaction de ce commentaire
       // parlait d'« une » divergence et la déclarait résorbée : il y en avait
       // deux autres, dans `equipements/hors-referentiel.ts` et dans la page

@@ -10,6 +10,7 @@ import {
 import {
   CHOIX_ACTIVITE_ERP,
   CHOIX_CLASSES_IGH,
+  CHOIX_FAMILLES_HABITATION,
   type ChoixActiviteId,
   typeErpDepuisChoix,
 } from "@/lib/onboarding/deduction-erp";
@@ -227,6 +228,38 @@ export function StepTypologie({ state, update, errors }: StepProps) {
                 onClick={() => update({ estHabitation: false })}
               />
             </div>
+
+            {state.estHabitation && (
+              <div className="flex flex-col gap-4">
+                <SousQuestion question="À quelle famille l'immeuble appartient-il ?" />
+                <p className="m-0 max-w-[62ch] text-[13px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+                  Ce classement figure au dossier de l&apos;immeuble. En cas de
+                  doute, votre syndic ou votre bureau de contrôle vous le
+                  donne — ne le devinez pas : il change les obligations qui
+                  vous seront présentées.
+                </p>
+                <div
+                  role="radiogroup"
+                  aria-label="Famille d'habitation"
+                  className="grid grid-cols-1 gap-3 sm:grid-cols-3"
+                >
+                  {CHOIX_FAMILLES_HABITATION.map((f) => (
+                    <CarteChoix
+                      key={f.id}
+                      id={f.id}
+                      label={f.label}
+                      actif={state.familleHabitation === f.id}
+                      onClick={() => update({ familleHabitation: f.id })}
+                    />
+                  ))}
+                </div>
+                {errors?.familleHabitation && (
+                  <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                    {errors.familleHabitation}
+                  </p>
+                )}
+              </div>
+            )}
           </section>
         </>
       )}
@@ -459,13 +492,47 @@ function ModeAvance({ state, update, errors }: StepProps) {
           <input
             type="checkbox"
             checked={state.estHabitation}
-            onChange={(e) => update({ estHabitation: e.currentTarget.checked })}
+            onChange={(e) =>
+              update({
+                estHabitation: e.currentTarget.checked,
+                familleHabitation: e.currentTarget.checked
+                  ? state.familleHabitation
+                  : "",
+              })
+            }
             className="mt-1 size-4 rounded border-[color:var(--board-slate)] accent-[color:var(--board-ink)]"
           />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="m-0 text-[13.5px] font-semibold text-[color:var(--board-ink)]">
               Immeuble d&apos;habitation
             </p>
+            {state.estHabitation && (
+              <div className="mt-3">
+                <label className="label-board" htmlFor="familleHabitation">
+                  Famille *
+                </label>
+                <select
+                  id="familleHabitation"
+                  value={state.familleHabitation}
+                  onChange={(e) =>
+                    update({ familleHabitation: e.currentTarget.value })
+                  }
+                  className="champ-board"
+                >
+                  <option value="">— Sélectionner —</option>
+                  {CHOIX_FAMILLES_HABITATION.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.label}
+                    </option>
+                  ))}
+                </select>
+                {errors?.familleHabitation && (
+                  <p className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]">
+                    {errors.familleHabitation}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </label>
       </div>

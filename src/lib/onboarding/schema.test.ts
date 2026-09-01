@@ -109,6 +109,47 @@ describe("onboardingSchema", () => {
     expect(res.success).toBe(false);
   });
 
+  // Famille d'habitation (ADR-025 § 4). Les trois cas qui décident : exigée
+  // quand le régime est déclaré, interdite quand il ne l'est pas, acceptée
+  // quand les deux vont ensemble. Le premier seul se réparerait en retirant
+  // la règle, le second seul en la retirant aussi.
+  it("exige la famille si estHabitation=true", () => {
+    const res = onboardingSchema.safeParse({ ...base, estHabitation: true });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.flatten().fieldErrors.familleHabitation).toBeDefined();
+    }
+  });
+
+  it("accepte une habitation avec sa famille", () => {
+    const res = onboardingSchema.safeParse({
+      ...base,
+      estHabitation: true,
+      familleHabitation: "TROISIEME_B",
+    });
+    expect(res.success).toBe(true);
+  });
+
+  it("refuse la famille si estHabitation=false", () => {
+    const res = onboardingSchema.safeParse({
+      ...base,
+      familleHabitation: "PREMIERE",
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.flatten().fieldErrors.familleHabitation).toBeDefined();
+    }
+  });
+
+  it("refuse une famille qui n'existe pas", () => {
+    const res = onboardingSchema.safeParse({
+      ...base,
+      estHabitation: true,
+      familleHabitation: "CINQUIEME",
+    });
+    expect(res.success).toBe(false);
+  });
+
   it("accepte le cumul ERP + IGH", () => {
     const res = onboardingSchema.safeParse({
       ...base,

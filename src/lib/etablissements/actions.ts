@@ -10,7 +10,10 @@ import {
 } from "@/lib/auth/scope";
 import { genererCalendrier } from "@/lib/calendrier/actions";
 import { marquerCalendrierPerime } from "@/lib/calendrier/reconciliation";
-import { etablissementSchema } from "./schema";
+import {
+  etablissementCreationSchema,
+  etablissementSchema,
+} from "./schema";
 
 export type EtablissementActionState =
   | { status: "idle" }
@@ -43,6 +46,7 @@ const CHAMPS_STRUCTURANTS = [
   "typeErp",
   "categorieErp",
   "classeIgh",
+  "familleHabitation",
   "effectifSurSite",
   "personnesPresentesHabituellement",
   "manipuleMatieresR422722",
@@ -87,6 +91,7 @@ function normaliserFormData(fd: FormData): Record<string, unknown> {
     typeErp: raw.typeErp || undefined,
     categorieErp: raw.categorieErp || undefined,
     classeIgh: raw.classeIgh || undefined,
+    familleHabitation: raw.familleHabitation || undefined,
     natureActivite: raw.natureActivite,
     // Ces trois champs ne sont rendus que dans le bloc `{estERP && (…)}` du
     // formulaire. Décocher la case les retire donc du FormData, et un
@@ -123,7 +128,12 @@ export async function creerEtablissement(
   });
   if (dejaExistant) redirect(`/etablissements/${dejaExistant.id}`);
 
-  const parsed = etablissementSchema.safeParse(normaliserFormData(formData));
+  // Schéma de CRÉATION : il exige la famille d'habitation, que le schéma de
+  // modification n'exige pas (ADR-025 § 4). Un dossier neuf porte les règles
+  // du jour ; un dossier ancien reste modifiable sans être mis en défaut.
+  const parsed = etablissementCreationSchema.safeParse(
+    normaliserFormData(formData),
+  );
   if (!parsed.success) {
     return {
       status: "error",
@@ -172,6 +182,7 @@ export async function modifierEtablissement(
       typeErp: true,
       categorieErp: true,
       classeIgh: true,
+      familleHabitation: true,
       effectifSurSite: true,
       personnesPresentesHabituellement: true,
       manipuleMatieresR422722: true,

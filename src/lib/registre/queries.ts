@@ -76,6 +76,7 @@ export const composerRegistreDeLEtablissement = cache(
         typeErp: true,
         categorieErp: true,
         classeIgh: true,
+        familleHabitation: true,
         personnesPresentesHabituellement: true,
         manipuleMatieresR422722: true,
         // Seul le parc en service compte (ADR-012) : un appareil retiré ne fait
@@ -113,6 +114,7 @@ export const composerRegistreDeLEtablissement = cache(
         typeErp: etab.typeErp,
         categorieErp: etab.categorieErp,
         classeIgh: etab.classeIgh,
+      familleHabitation: etab.familleHabitation,
         personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
         manipuleMatieresR422722: etab.manipuleMatieresR422722,
       },

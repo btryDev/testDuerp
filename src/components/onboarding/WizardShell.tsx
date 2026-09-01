@@ -396,6 +396,11 @@ function ChampsCaches({ state }: { state: OnboardingState }) {
       <input type="hidden" name="typeErp" value={state.typeErp} />
       <input type="hidden" name="categorieErp" value={state.categorieErp} />
       <input type="hidden" name="classeIgh" value={state.classeIgh} />
+      <input
+        type="hidden"
+        name="familleHabitation"
+        value={state.familleHabitation}
+      />
     </>
   );
 }

@@ -15,6 +15,10 @@ export const CLASSES_IGH = [
   "GHA", "GHW", "GHO", "GHR", "GHS", "GHU", "GHZ", "ITGH",
 ] as const;
 
+export const FAMILLES_HABITATION = [
+  "PREMIERE", "DEUXIEME", "TROISIEME_A", "TROISIEME_B", "QUATRIEME",
+] as const;
+
 const nafRegex = /^\d{2}\.?\d{2}[A-Z]?$/;
 
 /**
@@ -103,6 +107,10 @@ export const etablissementSchema = z
       (v) => (v === "" || v === null ? undefined : v),
       z.enum(CLASSES_IGH).optional(),
     ),
+    familleHabitation: z.preprocess(
+      (v) => (v === "" || v === null ? undefined : v),
+      z.enum(FAMILLES_HABITATION).optional(),
+    ),
 
     // Renseignements de la fiche « Renseignements généraux » du registre de
     // sécurité (CCH R. 143-44). Ils vivent sur l'établissement, pas dans une
@@ -185,6 +193,21 @@ export const etablissementSchema = z
       });
     }
 
+    // La famille ne se pose que sur un immeuble d'habitation. Elle n'est pas
+    // EXIGÉE ici : ce schéma sert aussi à modifier un dossier existant, et les
+    // dossiers d'habitation créés avant le 2026-09-01 n'en ont pas. Leur
+    // interdire toute modification tant qu'ils ne l'ont pas renseignée
+    // bloquerait des écrans qui n'ont rien à voir avec l'habitation.
+    // L'exigence vit dans `etablissementCreationSchema`, plus bas.
+    if (!val.estHabitation && val.familleHabitation) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["familleHabitation"],
+        message:
+          "Ne doit être posée que si l'établissement est un immeuble d'habitation",
+      });
+    }
+
     // Un établissement doit relever d'au moins un régime ; si tout est à
     // false, on retombe implicitement sur « travail classique ».
     const aucunRegime =
@@ -203,3 +226,24 @@ export const etablissementSchema = z
   });
 
 export type EtablissementInput = z.infer<typeof etablissementSchema>;
+
+/**
+ * Schéma de **création** d'un établissement (ADR-025 § 4, ADR-031).
+ *
+ * Il ajoute ce qu'un dossier neuf doit porter et qu'un dossier ancien n'a pas
+ * forcément : la famille d'habitation. La dissymétrie création / modification
+ * est la forme que prend la coexistence — une règle neuve ne rend pas
+ * inutilisable ce qui a été saisi avant elle, elle borne ce qui entre.
+ */
+export const etablissementCreationSchema = etablissementSchema.superRefine(
+  (val, ctx) => {
+    if (val.estHabitation && !val.familleHabitation) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["familleHabitation"],
+        message:
+          "Famille d'habitation requise (1ʳᵉ, 2ᵉ, 3ᵉ A, 3ᵉ B ou 4ᵉ)",
+      });
+    }
+  },
+);

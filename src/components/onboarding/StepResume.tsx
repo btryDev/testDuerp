@@ -5,6 +5,7 @@ import type { StepProps } from "./types";
 import {
   CHOIX_ACTIVITE_ERP,
   CHOIX_CLASSES_IGH,
+  CHOIX_FAMILLES_HABITATION,
 } from "@/lib/onboarding/deduction-erp";
 
 /**
@@ -38,7 +39,14 @@ export function StepResume({ state }: StepProps) {
       classeIghLabel ? `IGH · ${classeIghLabel}` : "IGH",
     );
   }
-  if (state.estHabitation) regimes.push("Habitation");
+  if (state.estHabitation) {
+    const familleLabel = CHOIX_FAMILLES_HABITATION.find(
+      (f) => f.id === state.familleHabitation,
+    )?.label;
+    regimes.push(
+      familleLabel ? `Habitation · ${familleLabel}` : "Habitation",
+    );
+  }
 
   const adresseComplete = [
     state.adresseRue.trim(),

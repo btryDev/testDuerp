@@ -78,7 +78,10 @@
 
 import type { EtatCouverture } from "@/lib/duerps/couverture";
 import type { CorrespondanceSecteur } from "./secteur";
-import type { CategorieErp } from "@/lib/referentiels/types-communs";
+import type {
+  CategorieErp,
+  FamilleHabitation,
+} from "@/lib/referentiels/types-communs";
 
 /**
  * Les catégories que le produit couvre.
@@ -113,7 +116,10 @@ export type AxeCouverture =
   | "domaine_equipement"
   /** Le public reçu n'est pas déclaré, et le repli du moteur écarte des
    *  obligations — projection de `matching/public-recu.ts`. */
-  | "public_recu";
+  | "public_recu"
+  /** L'immeuble d'habitation n'a pas de famille : les obligations de
+   *  l'arrêté du 31 janvier 1986 lui sont servies sans distinction. */
+  | "famille_habitation";
 
 /**
  * Un fait établi : l'outil ne sait pas dire quelque chose, et on sait quoi.
@@ -169,6 +175,8 @@ export type RegimeEtablissement = {
   estERP: boolean;
   estIGH: boolean;
   categorieErp: CategorieErp | null;
+  estHabitation: boolean;
+  familleHabitation: FamilleHabitation | null;
 };
 
 /**
@@ -259,6 +267,32 @@ const LIBELLE_CATEGORIE: Record<CategorieErp, string> = {
   N4: "4ᵉ catégorie",
   N5: "5ᵉ catégorie",
 };
+
+/**
+ * L'habitation sans famille — indétermination, jamais un manque.
+ *
+ * La nuance compte : un manque dit « l'outil ne couvre pas », une
+ * indétermination dit « il ne sait pas encore, et voici comment le lui
+ * apprendre ». Ici le produit sert bien le régime ; il lui manque une donnée
+ * que le dirigeant possède. Le moteur, lui, ne retire rien en attendant : il
+ * retient les obligations et les marque « à confirmer » (cf.
+ * `matching/engine.ts`, `evaluerHabitation`). Les deux moitiés de la même
+ * honnêteté — on sert, et on dit sur quoi on sert large.
+ */
+function axeFamilleHabitation(
+  regime: RegimeEtablissement,
+  indeterminations: IndeterminationCouverture[],
+): void {
+  if (!regime.estHabitation) return;
+  if (regime.familleHabitation !== null) return;
+  indeterminations.push({
+    axe: "famille_habitation",
+    motif:
+      "La famille de votre immeuble d'habitation n'est pas renseignée.",
+    quoiFaire:
+      "Elle figure au dossier de l'immeuble ; votre syndic ou votre bureau de contrôle vous la donne. Sans elle, les obligations propres à l'habitation vous sont toutes présentées, y compris celles qui ne visent peut-être pas votre immeuble : mieux vaut une ligne en trop, que vous pouvez écarter, qu'une ligne manquante que personne ne verrait.",
+  });
+}
 
 function axeRegime(
   regime: RegimeEtablissement,
@@ -575,6 +609,7 @@ export function couvertureDeLEtablissement(
   axeRegime(faits.regime, manques, indeterminations);
   axeDuerp(faits.duerp, manques, indeterminations);
   axeSecteurParDefaut(faits.duerp, manques);
+  axeFamilleHabitation(faits.regime, indeterminations);
   axeEquipements(faits.equipements, manques);
   axePublicRecu(faits.publicRecu, indeterminations);
 

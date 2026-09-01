@@ -254,6 +254,32 @@ export const CHOIX_CLASSES_IGH = [
   },
 ] as const;
 
+/**
+ * Familles d'habitation — arrêté du 31 janvier 1986 (ADR-025 § 4).
+ *
+ * **Aucune description ici, et c'est délibéré.** L'arrêté du 31 janvier 1986
+ * n'a jamais été ouvert dans ce dépôt : décrire les familles de mémoire — « R+3
+ * au plus », « desserte par la voie échelle » — reviendrait à faire choisir un
+ * dirigeant sur une reformulation que personne n'a vérifiée, et à l'inscrire
+ * ensuite dans son dossier. Trois références de brief se sont déjà révélées
+ * fausses cette semaine pour avoir été recopiées sans être ouvertes.
+ *
+ * Le classement en famille n'est pas une déduction à faire ici : il figure au
+ * dossier de l'immeuble, et le syndic ou le bureau de contrôle le donne. On
+ * demande donc une information que le dirigeant possède, au lieu de la lui
+ * faire reconstituer.
+ *
+ * Les descriptions viendront avec le dépouillement de l'arrêté (lot B2 du
+ * recadrage), pas avant.
+ */
+export const CHOIX_FAMILLES_HABITATION = [
+  { id: "PREMIERE", label: "1ʳᵉ famille" },
+  { id: "DEUXIEME", label: "2ᵉ famille" },
+  { id: "TROISIEME_A", label: "3ᵉ famille A" },
+  { id: "TROISIEME_B", label: "3ᵉ famille B" },
+  { id: "QUATRIEME", label: "4ᵉ famille" },
+] as const;
+
 // -----------------------------------------------------------------------------
 // Frontière 4ᵉ / 5ᵉ catégorie — table des seuils, type par type (2026-08-25)
 // -----------------------------------------------------------------------------

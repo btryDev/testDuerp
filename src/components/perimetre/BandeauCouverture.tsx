@@ -49,6 +49,9 @@ function lienDeLAxe(
     // n'a jamais été donné et se renseigne. « Vérifier » enverrait relire un
     // champ vide.
     case "public_recu":
+    // La famille d'habitation se renseigne au même endroit, et pour la même
+    // raison : c'est une donnée jamais donnée, pas un champ à relire.
+    case "famille_habitation":
       return {
         href: hrefs.etablissement,
         libelle: "Renseigner la fiche de l'établissement",

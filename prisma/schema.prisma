@@ -69,6 +69,13 @@ model Etablissement {
   typeErp                 TypeErp?
   categorieErp            CategorieErp?
   classeIgh               ClasseIgh?
+  // Famille au sens de l'arrêté du 31 janvier 1986 (ADR-025 § 4). Nullable
+  // comme `categorieErp` : la contrainte « obligatoire si le régime est
+  // déclaré » vit dans les schémas de création, pas dans la colonne — les
+  // dossiers d'habitation créés avant le 2026-09-01 n'en ont pas, et ils
+  // continuent d'exister. Ce qu'ils portent à la place est une indétermination
+  // visible, pas une valeur inventée.
+  familleHabitation       FamilleHabitation?
 
   batiments                        Batiment[]
   // Champ d'application de R. 4227-34 CT (alarme sonore → consigne R. 4227-37
@@ -162,6 +169,18 @@ enum CategorieErp {
   N3
   N4
   N5
+}
+
+// Familles d'habitation de l'arrêté du 31 janvier 1986. La 3ᵉ famille se
+// scinde en 3A et 3B — la distinction porte sur la desserte par la voie
+// échelle, et elle change les obligations : les séparer dès l'enum évite
+// d'avoir à la rattraper plus tard sur des données déjà saisies.
+enum FamilleHabitation {
+  PREMIERE
+  DEUXIEME
+  TROISIEME_A
+  TROISIEME_B
+  QUATRIEME
 }
 
 enum ClasseIgh {

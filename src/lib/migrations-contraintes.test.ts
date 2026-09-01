@@ -422,3 +422,53 @@ describe("Verification.salarieId — Restrict, comme DuerpVersion.duerp", () => 
   });
 });
 
+
+describe("la famille d'habitation est nullable, et c'est une décision (ADR-025 § 4)", () => {
+  /**
+   * Ce que ce filet garde n'est pas la présence du champ — le client Prisma
+   * la signalerait — mais son **absence de contrainte NOT NULL**.
+   *
+   * Un `NOT NULL` posé plus tard « pour faire propre » exigerait un défaut, et
+   * le seul défaut possible serait une famille inventée pour des immeubles
+   * dont personne n'a lu le dossier. C'est exactement l'affirmation fausse que
+   * ce champ existe pour retirer : neuf obligations d'habitation étaient déjà
+   * servies sans distinction de famille.
+   *
+   * L'exigence vit dans les schémas Zod de création, où elle ne met en défaut
+   * que les dossiers neufs.
+   */
+  const schema = readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8");
+  const migrations = lireMigrations();
+
+  it("crée l'enum et la colonne dans une migration dédiée", () => {
+    const migration = migrations.find((m) =>
+      m.nom.endsWith("_famille_habitation"),
+    );
+    expect(
+      migration,
+      "La migration `_famille_habitation` a disparu. La colonne ne peut pas naître d'un `db push`.",
+    ).toBeDefined();
+    const sql = normaliser(migration!.sql);
+    expect(sql).toContain('CREATE TYPE "FamilleHabitation"');
+    expect(sql).toContain('ALTER TABLE "Etablissement" ADD COLUMN "familleHabitation"');
+    expect(
+      sql,
+      "La colonne a été posée NOT NULL : les dossiers d'habitation antérieurs n'ont pas de famille, et aucun défaut ne peut être inventé pour eux.",
+    ).not.toContain('"familleHabitation" "FamilleHabitation" NOT NULL');
+  });
+
+  it("garde la colonne optionnelle dans le schéma Prisma", () => {
+    const m = schema.match(/\bmodel\s+Etablissement\s*\{([\s\S]*?)\n\}/);
+    expect(m).not.toBeNull();
+    expect(m![1]).toMatch(/familleHabitation\s+FamilleHabitation\?/);
+  });
+
+  it("scinde la 3ᵉ famille en A et B", () => {
+    // La distinction porte des obligations différentes. La rattraper après
+    // coup supposerait de redemander sa famille à chaque dossier déjà saisi.
+    const m = schema.match(/enum\s+FamilleHabitation\s*\{([\s\S]*?)\n\}/);
+    expect(m, "enum FamilleHabitation introuvable").not.toBeNull();
+    expect(m![1]).toContain("TROISIEME_A");
+    expect(m![1]).toContain("TROISIEME_B");
+  });
+});

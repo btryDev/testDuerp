@@ -9,6 +9,7 @@ import {
   CLASSES_IGH,
   TYPE_ERP,
 } from "@/lib/etablissements/schema";
+import { CHOIX_FAMILLES_HABITATION } from "@/lib/onboarding/deduction-erp";
 import type { EtablissementActionState } from "@/lib/etablissements/actions";
 
 const LABEL_TYPE_ERP: Record<(typeof TYPE_ERP)[number], string> = {
@@ -86,6 +87,7 @@ type Valeurs = {
   dateAutorisationOuverture?: string | null;
   dateCertificatConformite?: string | null;
   classeIgh?: string | null;
+  familleHabitation?: string | null;
 };
 
 type Props = {
@@ -113,6 +115,9 @@ export function EtablissementForm({
   // immédiate sans tour serveur.
   const [estERP, setEstERP] = useState<boolean>(
     valeursInitiales?.estERP ?? false,
+  );
+  const [estHabitation, setEstHabitation] = useState<boolean>(
+    valeursInitiales?.estHabitation ?? false,
   );
   const [estIGH, setEstIGH] = useState<boolean>(
     valeursInitiales?.estIGH ?? false,
@@ -445,23 +450,62 @@ export function EtablissementForm({
             </div>
 
             {/* Habitation */}
-            <label className="flex cursor-pointer items-start gap-3">
-              <input
-                type="checkbox"
-                name="estHabitation"
-                defaultChecked={valeursInitiales?.estHabitation ?? false}
-                className={CASE_A_COCHER}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="m-0 text-[14px] font-semibold leading-[1.35] text-[color:var(--board-ink)]">
-                  Immeuble d&apos;habitation
-                </p>
-                <p className="m-0 mt-1 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
-                  Logements collectifs. Code de la construction et de
-                  l&apos;habitation — paratonnerres, ramonage, ascenseurs.
-                </p>
-              </div>
-            </label>
+            <div className="flex flex-col gap-3">
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  name="estHabitation"
+                  checked={estHabitation}
+                  onChange={(e) => setEstHabitation(e.currentTarget.checked)}
+                  className={CASE_A_COCHER}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="m-0 text-[14px] font-semibold leading-[1.35] text-[color:var(--board-ink)]">
+                    Immeuble d&apos;habitation
+                  </p>
+                  <p className="m-0 mt-1 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                    Logements collectifs. Code de la construction et de
+                    l&apos;habitation — paratonnerres, ramonage, ascenseurs.
+                  </p>
+                </div>
+              </label>
+
+              {estHabitation && (
+                <div className="ml-7">
+                  <div className="max-w-sm">
+                    <label className="label-board" htmlFor="familleHabitation">
+                      Famille d&apos;habitation
+                    </label>
+                    <select
+                      id="familleHabitation"
+                      name="familleHabitation"
+                      defaultValue={valeursInitiales?.familleHabitation ?? ""}
+                      className="champ-board"
+                      aria-invalid={Boolean(err("familleHabitation"))}
+                    >
+                      <option value="">— Sélectionner —</option>
+                      {CHOIX_FAMILLES_HABITATION.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.label}
+                        </option>
+                      ))}
+                    </select>
+                    {/* Sans astérisque, et sans `required` : ce formulaire sert
+                        aussi à modifier un dossier créé avant le 2026-09-01,
+                        qui n'a pas de famille. L'exiger ici bloquerait toute
+                        modification — y compris celles qui n'ont rien à voir —
+                        tant que le dirigeant ne l'a pas retrouvée. Le dossier
+                        le lui demande ailleurs, en permanence. */}
+                    <p className="m-0 mt-1.5 text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+                      Arrêté du 31 janvier 1986. Le classement figure au dossier
+                      de l&apos;immeuble ; votre syndic ou votre bureau de
+                      contrôle vous le donne.
+                    </p>
+                    <Erreur message={err("familleHabitation")} />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </SectionChamps>
       </div>

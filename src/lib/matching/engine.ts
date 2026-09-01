@@ -40,6 +40,7 @@ import {
 } from "@/lib/referentiels/conformite/types";
 import type {
   CategorieEquipement,
+  FamilleHabitation,
   TypologieApplication,
 } from "@/lib/referentiels/types-communs";
 import type {
@@ -127,6 +128,51 @@ function evaluerIgh(
   return { etat: "match", raison: "IGH" };
 }
 
+const LIBELLE_FAMILLE: Record<FamilleHabitation, string> = {
+  PREMIERE: "1ʳᵉ famille",
+  DEUXIEME: "2ᵉ famille",
+  TROISIEME_A: "3ᵉ famille A",
+  TROISIEME_B: "3ᵉ famille B",
+  QUATRIEME: "4ᵉ famille",
+};
+
+/**
+ * Habitation, avec ou sans restriction de famille (arrêté du 31 janvier 1986).
+ *
+ * Le cas qui distingue cette fonction d'`evaluerErp` est **la famille non
+ * renseignée** : elle ne rejette pas, elle retient l'obligation en le disant.
+ * La raison est écrite dans `TypologieApplication.habitation` — la famille
+ * n'existe que depuis le 2026-09-01, tous les dossiers antérieurs en sont
+ * dépourvus, et les écarter retirerait en silence des obligations que
+ * personne ne pourrait voir manquer.
+ */
+function evaluerHabitation(
+  critere: TypologieApplication["habitation"],
+  etab: EtablissementMatching,
+): EvalRegime {
+  if (critere === undefined || critere === false) return { etat: "absent" };
+  if (!etab.estHabitation) return { etat: "mismatch" };
+  if (typeof critere === "object") {
+    const attendues = critere.familles
+      .map((f) => LIBELLE_FAMILLE[f])
+      .join(", ");
+    if (!etab.familleHabitation) {
+      return {
+        etat: "match",
+        raison: `immeuble d'habitation, famille non renseignée — obligation retenue par prudence, à confirmer (règle limitée à : ${attendues})`,
+      };
+    }
+    if (!critere.familles.includes(etab.familleHabitation)) {
+      return { etat: "mismatch" };
+    }
+    return {
+      etat: "match",
+      raison: `immeuble d'habitation de ${LIBELLE_FAMILLE[etab.familleHabitation]} (règle limitée à : ${attendues})`,
+    };
+  }
+  return { etat: "match", raison: "immeuble d'habitation" };
+}
+
 /**
  * Sémantique (amendements 2026-08, cf. `docs/regles-matching.md`) :
  *   - Les critères de régime **positifs** (`travail: true`, `erp: true |
@@ -194,6 +240,22 @@ export function matchTypologie(
   ) {
     return { ok: false };
   }
+  // Famille d'habitation : même rôle que la restriction de catégorie ERP —
+  // empêcher qu'une obligation restreinte passe par une autre branche de la
+  // disjonction (`travail: true`) sans que la restriction soit vérifiée.
+  // Une seule différence, et c'est celle qui gouverne tout ce champ : la
+  // famille ABSENTE ne rejette pas. Elle ne peut pas rejeter ici sans annuler
+  // la prudence d'`evaluerHabitation`.
+  if (
+    typeof t.habitation === "object" &&
+    t.habitation.familles.length > 0 &&
+    etab.estHabitation &&
+    etab.familleHabitation !== null &&
+    etab.familleHabitation !== undefined &&
+    !t.habitation.familles.includes(etab.familleHabitation)
+  ) {
+    return { ok: false };
+  }
 
   // 2. Régimes positifs (OU) — au moins un déclaré doit matcher.
   const regimes: EvalRegime[] = [
@@ -204,11 +266,7 @@ export function matchTypologie(
       : { etat: "absent" },
     evaluerErp(t.erp, etab),
     evaluerIgh(t.igh, etab),
-    t.habitation === true
-      ? etab.estHabitation
-        ? { etat: "match", raison: "immeuble d'habitation" }
-        : { etat: "mismatch" }
-      : { etat: "absent" },
+    evaluerHabitation(t.habitation, etab),
   ];
 
   const declares = regimes.filter((r) => r.etat !== "absent");

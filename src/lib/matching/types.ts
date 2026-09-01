@@ -2,6 +2,7 @@ import type {
   CategorieErp,
   CategorieEquipement,
   ClasseIgh,
+  FamilleHabitation,
   Periodicite,
   Realisateur,
   TypeErp,
@@ -28,6 +29,19 @@ export type EtablissementMatching = {
   typeErp: TypeErp | null;
   categorieErp: CategorieErp | null;
   classeIgh: ClasseIgh | null;
+  /**
+   * Famille d'habitation (arrêté du 31 janvier 1986). `null` = non renseignée,
+   * ce qui est le cas de tous les dossiers créés avant le 2026-09-01.
+   *
+   * **Requis dans la projection, comme `personnesPresentesHabituellement` et
+   * pour la même raison** : six modules projettent un établissement vers le
+   * moteur, et un champ optionnel s'omet sans que rien ne le signale. `null`
+   * est une réponse — c'est l'absence de réponse qui est interdite.
+   *
+   * Contrairement à `categorieErp`, `null` ne fait perdre aucune obligation :
+   * le moteur retient et signale « à confirmer » (cf. `evaluerHabitation`).
+   */
+  familleHabitation: FamilleHabitation | null;
   /**
    * Personnes habituellement présentes, salariés + public + tiers réguliers
    * (R. 4227-34 : « occupées ou réunies habituellement »). `null` ⇒ le moteur

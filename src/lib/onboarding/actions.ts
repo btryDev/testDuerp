@@ -60,6 +60,7 @@ export async function finaliserOnboarding(
     typeErp: raw.typeErp || undefined,
     categorieErp: raw.categorieErp || undefined,
     classeIgh: raw.classeIgh || undefined,
+    familleHabitation: raw.familleHabitation || undefined,
   };
 
   const parsed = onboardingSchema.safeParse(input);
@@ -105,6 +106,7 @@ export async function finaliserOnboarding(
         typeErp: d.typeErp,
         categorieErp: d.categorieErp,
         classeIgh: d.classeIgh,
+        familleHabitation: d.familleHabitation,
         // ADR-019 : tout établissement naît avec son bâtiment principal.
         batiments: { create: { nom: NOM_BATIMENT_PRINCIPAL, ordre: 0 } },
       },

@@ -20,6 +20,7 @@ function etabBureau(
     typeErp: null,
     categorieErp: null,
     classeIgh: null,
+    familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
     ...over,
