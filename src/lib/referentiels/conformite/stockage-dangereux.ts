@@ -41,6 +41,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "C. env. L. 512-1",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000006159273/",
+        versionConstatee: "2017-03-01",
       },
     ],
     periodicite: "autre",
@@ -75,6 +76,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "Arrêté 2015-06-01 art. 22",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044166790",
+        versionConstatee: "2022-01-01",
       },
       {
         source: "CODE_TRAVAIL",
