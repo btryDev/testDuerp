@@ -224,7 +224,16 @@ export function StepTypologie({ state, update, errors }: StepProps) {
               <BoutonOuiNon
                 actif={!state.estHabitation}
                 label="Non"
-                onClick={() => update({ estHabitation: false })}
+                // La famille part avec le régime, comme le type et la catégorie
+                // partent avec l'ERP et la classe avec l'IGH. L'oublier ne
+                // laissait pas une valeur inutile : le schéma serveur refuse
+                // une famille posée hors régime habitation, l'erreur ne
+                // s'affiche que dans le bloc qu'on vient de démonter, et le
+                // wizard devenait un cul-de-sac silencieux — bouton sans effet,
+                // aucun message, aucune carte à désélectionner.
+                onClick={() =>
+                  update({ estHabitation: false, familleHabitation: "" })
+                }
               />
             </div>
 

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getOptionalUserEtablissement } from "@/lib/auth/scope";
+import { getEntrepriseDuUser } from "@/lib/entreprises/queries";
 import { requireUser } from "@/lib/auth/require-user";
 
 /**
@@ -19,5 +20,8 @@ export default async function NouvelleEntreprisePage() {
   await requireUser();
   const etab = await getOptionalUserEtablissement();
   if (etab) redirect(`/etablissements/${etab.id}`);
-  redirect("/onboarding");
+  // Même garde que `/entreprises` : un compte sans établissement peut avoir
+  // gardé son entreprise, et l'onboarding la recréerait (P2002, 500).
+  const entreprise = await getEntrepriseDuUser();
+  redirect(entreprise ? "/etablissements/nouveau" : "/onboarding");
 }

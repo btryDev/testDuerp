@@ -133,6 +133,37 @@ describe("étape 2 — les régimes (ADR-004)", () => {
   });
 });
 
+describe("étape 2 — une réponse retirée ne laisse pas sa précision derrière", () => {
+  // Le cul-de-sac que la revue a trouvé : répondre « Oui » à l'habitation,
+  // choisir une famille, puis revenir à « Non » laissait la famille dans
+  // l'état. L'étape 2 passait, le schéma serveur refusait, et son message ne
+  // s'affichait que dans le bloc qu'on venait de démonter — bouton sans effet,
+  // aucune carte à désélectionner, sortie par rechargement de page.
+  //
+  // La garde vit dans le composant (le bouton nettoie), donc ce test décrit
+  // l'invariant que la validation doit voir : un état cohérent passe, un état
+  // incohérent est refusé par le schéma serveur — c'est lui qui tranche.
+  it("accepte une habitation abandonnée dont la famille a été nettoyée", () => {
+    expect(
+      validerTypologie({
+        ...complet,
+        estHabitation: false,
+        familleHabitation: "",
+      }),
+    ).toBeNull();
+  });
+
+  it("exige la famille tant que l'habitation est cochée", () => {
+    expect(
+      validerTypologie({
+        ...complet,
+        estHabitation: true,
+        familleHabitation: "",
+      }),
+    ).toBe("Précisez la famille de l'immeuble d'habitation.");
+  });
+});
+
 describe("étape 1 — la borne d'effectif (ADR-031)", () => {
   // Elle porte sur les TRAVAILLEURS. Le refus vit ici autant que dans le
   // schéma Zod : un dirigeant bloqué à l'étape 1 n'atteint jamais la server

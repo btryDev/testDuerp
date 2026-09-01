@@ -66,3 +66,10 @@ next-env.d.ts
 # Attention au tag `!override` sur `ports` : sans lui, Compose AJOUTE le port
 # à la liste du fichier de base au lieu de la remplacer, et le conflit revient.
 docker-compose.override.yml
+
+# Sorties du script de relecture : régénérables à la demande, jamais suivies.
+# Un fichier nommé « --detail » vient d'une version du script qui lisait
+# argv[2] sans filtrer les options ; son nom le rend hostile à la plupart des
+# outils en ligne de commande.
+/--detail
+Rojer-*.pdf

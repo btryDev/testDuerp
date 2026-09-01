@@ -106,6 +106,20 @@ export function caracteristiquesLisibles(
     });
   }
 
+  // Même garde que ci-dessus, et même raison : la case n'est posée que sur les
+  // catégories d'aération. Elle décide d'une échéance semestrielle (arrêté du
+  // 8 octobre 1987, art. 4 b) — la fiche doit donc montrer la réponse, sans
+  // quoi un exploitant ne peut ni vérifier ni corriger ce qui lui vaut, ou lui
+  // retire, une ligne de calendrier.
+  const recyclage = bool(c.aSystemeDeRecyclage);
+  if (CATEGORIES_AERATION.includes(categorie) && recyclage !== undefined) {
+    out.push({
+      cle: "aSystemeDeRecyclage",
+      libelle: "Système de recyclage d'air",
+      valeur: recyclage ? "Oui" : "Non",
+    });
+  }
+
   if (typeof c.nbVehiculesParkingCouvert === "number") {
     out.push({
       cle: "nbVehiculesParkingCouvert",

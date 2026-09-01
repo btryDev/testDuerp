@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getOptionalUserEtablissement } from "@/lib/auth/scope";
+import { getEntrepriseDuUser } from "@/lib/entreprises/queries";
 import { requireUser } from "@/lib/auth/require-user";
 
 /**
@@ -17,5 +18,14 @@ export default async function EntreprisesPage() {
   await requireUser();
   const etab = await getOptionalUserEtablissement();
   if (etab) redirect(`/etablissements/${etab.id}`);
-  redirect("/onboarding");
+  // Un compte peut avoir une entreprise et plus aucun établissement : la
+  // suppression du dernier est permise tant qu'aucune version de DUERP n'est
+  // figée (ADR-012). Le renvoyer à l'onboarding le ferait buter sur le
+  // `tx.entreprise.create` de `finaliserOnboarding`, qui ne demande pas si
+  // l'entreprise existe : violation de `Entreprise.userId @unique`, P2002 non
+  // traitée, 500. L'onboarding crée l'entreprise ET son premier établissement —
+  // il ne sait pas n'en créer qu'un des deux. On l'envoie donc là où l'on
+  // ouvre un établissement de plus.
+  const entreprise = await getEntrepriseDuUser();
+  redirect(entreprise ? "/etablissements/nouveau" : "/onboarding");
 }
