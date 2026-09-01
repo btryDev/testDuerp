@@ -3,6 +3,12 @@ import {
   OnboardingChecklist,
   type EtapeOnboarding,
 } from "@/components/layout/OnboardingChecklist";
+import { QuestionParametrage } from "@/components/layout/QuestionParametrage";
+import { questionRepondue } from "@/lib/etablissements/questions";
+import {
+  repondreDemandesAssureur,
+  repondreEpiPresents,
+} from "@/lib/etablissements/parametrage";
 import { DashboardGrid } from "@/components/dashboard/widgets/DashboardGrid";
 import { BlocBrief } from "@/components/dashboard/widgets/impl/board";
 import type { DashboardBundle } from "@/components/dashboard/widgets/types";
@@ -174,6 +180,56 @@ export default async function EtablissementPage({
       faite: duerpOuvert,
       href: `/etablissements/${id}/duerp`,
       cta: !duerpOuvert ? "Ouvrir le DUERP" : undefined,
+    },
+    // ── Les deux questions de paramétrage (ADR-025 § 7, ADR-032) ──────
+    //
+    // Elles se posent ici faute d'écran de réglage : « Paramètres » pointe la
+    // page de connexion d'un assistant. La checklist est le seul endroit du
+    // produit qui sait poser une question et s'effacer une fois répondue —
+    // le lot A8, qui refait la navigation, leur donnera leur foyer.
+    //
+    // `faite` observe **une réponse donnée**, jamais une valeur : `null` veut
+    // dire « pas encore répondu » (migration 20260901170000), et un `=== true`
+    // aurait rouvert la question indéfiniment à qui a répondu « non » — c'est
+    // la majorité des dossiers, donc la majorité des utilisateurs.
+    {
+      id: "assureur",
+      titre: "Dire si votre assureur impose des vérifications",
+      pourquoi:
+        "Beaucoup de contrats d'assurance imposent des contrôles que le droit n'impose pas — extincteurs plus fréquents, thermographie, hotte. Les oublier fait perdre la garantie. Déclarées ici, elles entrent au calendrier en portant la mention qui les distingue du droit.",
+      faite: questionRepondue(etab.aDemandesAssureur),
+      question: (
+        <QuestionParametrage
+          action={repondreDemandesAssureur.bind(null, id)}
+          labelOui="Oui, mon assureur en impose"
+          labelNon="Non, pas à ma connaissance"
+          suite={{
+            // Pré-réglé sur la nouvelle source : le dirigeant qui répond
+            // « oui » a la lettre de son assureur en main, pas une hésitation
+            // sur la nature de l'acte.
+            href: `/etablissements/${id}/prescriptions?source=demande_assureur`,
+            libelle: "Déclarer ce que votre assureur impose",
+          }}
+        />
+      ),
+    },
+    {
+      id: "epi",
+      titre: "Dire si vous fournissez des équipements de protection",
+      pourquoi:
+        "Harnais, casques, gants, chaussures de sécurité, protections auditives. La réponse est consignée dans votre dossier : à ce stade Rojer ne calcule aucune échéance à partir d'elle, et ne vous en annoncera aucune tant que les textes qui la fonderaient n'auront pas été dépouillés.",
+      faite: questionRepondue(etab.epiPresents),
+      question: (
+        <QuestionParametrage
+          action={repondreEpiPresents.bind(null, id)}
+          labelOui="Oui, nous en fournissons"
+          labelNon="Non, aucun"
+          detailSiOui={{
+            label: "Lesquels ? (facultatif)",
+            placeholder: "Harnais antichute, gants anti-coupure, chaussures…",
+          }}
+        />
+      ),
     },
   ];
   const onboardingFini = etapesOnboarding.every((e) => e.faite);

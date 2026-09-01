@@ -14,6 +14,7 @@
 import Link from "next/link";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
+import { MentionContractuelle } from "@/components/prescriptions/MentionContractuelle";
 import type { ContenuAilleurs } from "@/lib/registre/contenu-ailleurs";
 
 // Les lignes arrivent en donnée pure (`lib/registre/contenu-ailleurs`) : ce
@@ -32,8 +33,13 @@ export function ContenuTenuAilleurs({ lignes, source, vide }: ContenuAilleurs) {
             const contenu = (
               <>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[14px] font-semibold leading-[1.35] tracking-[-0.015em] text-[color:var(--board-ink)]">
-                    {ligne.titre}
+                  <span className="flex items-baseline gap-2 text-[14px] font-semibold leading-[1.35] tracking-[-0.015em] text-[color:var(--board-ink)]">
+                    <span className="min-w-0 truncate">{ligne.titre}</span>
+                    {/* Le registre est le document qu'on présente à la
+                        commission : une échéance d'assurance qui s'y lirait
+                        comme réglementaire est l'erreur la plus coûteuse du
+                        lot (ADR-032). */}
+                    {ligne.contractuelle && <MentionContractuelle />}
                   </span>
                   {ligne.meta && (
                     <span className="mt-0.5 block truncate text-[12.5px] text-[color:var(--board-slate-mid)]">

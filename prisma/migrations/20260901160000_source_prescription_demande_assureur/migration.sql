@@ -1,0 +1,34 @@
+-- ============================================================================
+-- Sixième source de prescription : la demande de l'assureur — ADR-032
+-- (2026-09-01), qui amende l'ADR-014.
+--
+-- Les cinq sources existantes sont des actes d'autorité opposables : arrêté
+-- préfectoral, arrêté du maire, PV de commission, arrêté ICPE, mise en demeure
+-- de l'inspection du travail. Une demande d'assureur n'en est pas un — elle est
+-- contractuelle. Elle entre quand même, parce que le dirigeant qui l'oublie
+-- perd sa garantie, et que le produit n'avait aucun endroit pour la recevoir.
+--
+-- Ce qui rend l'ajout acceptable, c'est le marquage : partout où une échéance
+-- née de cette source s'affiche — calendrier, registre, PDF, dossier de
+-- contrôle — elle porte « engagement d'assurance, pas une obligation légale »,
+-- et aucune référence légale ne lui est fabriquée. Le produit pratique déjà
+-- cette distinction pour la règle APSAD R43 (page des permis de feu, pied du
+-- dossier de contrôle) : on étend une pratique éprouvée, on n'en invente pas.
+--
+-- La ligne qu'on ne franchit pas, elle aussi dans l'ADR-032 : une source
+-- contractuelle PAR ACTE REÇU, jamais un référentiel privé encodé. Le jour où
+-- quelqu'un proposera d'encoder « le référentiel APSAD R4 » comme un domaine
+-- d'obligations, la réponse reste non.
+--
+-- La valeur se range APRÈS `inspection_travail`, donc avant `autre` : l'ordre
+-- de l'enum est celui du sélecteur de source, et « Autre acte » y ferme la
+-- liste depuis toujours.
+--
+-- Ce fichier ne contient QUE l'ajout de la valeur d'enum : PostgreSQL refuse
+-- d'utiliser une valeur ajoutée par ALTER TYPE ... ADD VALUE dans la même
+-- transaction (« unsafe use of new value »), et `prisma migrate deploy`
+-- exécute chaque migration dans une transaction. Même raison que
+-- 20260825130000_categorie_equipement_ria, qui l'explique en long.
+-- ============================================================================
+
+ALTER TYPE "SourcePrescription" ADD VALUE IF NOT EXISTS 'demande_assureur' AFTER 'inspection_travail';

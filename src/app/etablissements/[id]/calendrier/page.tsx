@@ -7,6 +7,8 @@ import { couvertureDuDossier } from "@/lib/perimetre/faits";
 import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
+import { MentionContractuelle } from "@/components/prescriptions/MentionContractuelle";
+import { estEcheanceContractuelle } from "@/lib/prescriptions/sources";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 import {
@@ -126,6 +128,7 @@ function LigneEcheance({
   type,
   titre,
   meta,
+  contractuelle,
   pastille,
   registre,
 }: {
@@ -145,6 +148,13 @@ function LigneEcheance({
   titre: string;
   /** Le complément — le mot de nature est posé par le marqueur. */
   meta: string;
+  /**
+   * La ligne naît-elle d'un acte contractuel (ADR-032) ? Un booléen et non
+   * un morceau de `meta` : `meta` est tronqué au `truncate`, et un marquage
+   * qui disparaît quand le libellé est long est un marquage qui manque
+   * exactement là où il compte.
+   */
+  contractuelle?: boolean;
   pastille: React.ReactNode;
   registre: RegistreLigne;
 }) {
@@ -185,8 +195,9 @@ function LigneEcheance({
         )}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="m-0 truncate text-[14.5px] font-semibold leading-[1.3] tracking-[-0.015em] text-[color:var(--board-ink)]">
-          {titre}
+        <p className="m-0 flex items-baseline gap-2 text-[14.5px] font-semibold leading-[1.3] tracking-[-0.015em] text-[color:var(--board-ink)]">
+          <span className="min-w-0 truncate">{titre}</span>
+          {contractuelle && <MentionContractuelle />}
         </p>
         {/* Nature puis complément. Le mot est visible : une icône seule
             disparaît en niveaux de gris et pour qui n'y voit pas. */}
@@ -601,6 +612,7 @@ export default async function CalendrierPage({
           meta:
             LABEL_PERIODICITE[v.periodicite] +
             (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : ""),
+          contractuelle: estEcheanceContractuelle(v),
           etat,
           // Le rendez-vous suivant n'hérite pas du statut réalisé de la
           // ligne : sa pastille dit ce qu'il est — planifié.
@@ -1240,6 +1252,7 @@ export default async function CalendrierPage({
                                 LABEL_PERIODICITE[v.periodicite] +
                                 (o ? ` · ${LABEL_DOMAINE[o.domaine]}` : "")
                               }
+                              contractuelle={estEcheanceContractuelle(v)}
                               pastille={
                                 // Le rendez-vous suivant d'un cycle soldé
                                 // n'hérite pas du badge « Conforme » : sa

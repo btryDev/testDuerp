@@ -23,6 +23,7 @@ import { DuerpDocument } from "@/lib/pdf/DuerpDocument";
 import { PlanActionsDocument } from "@/lib/pdf/PlanActionsDocument";
 import { RegistreDocument } from "@/lib/pdf/RegistreDocument";
 import { slugifyFilename } from "@/lib/pdf/styles";
+import { MARQUAGE_CONTRACTUEL } from "@/lib/prescriptions/sources";
 import { nomDossierArchive, nomEntreeArchive } from "@/lib/storage/noms";
 import type { DuerpSnapshot } from "@/lib/versions/snapshot";
 
@@ -53,10 +54,24 @@ export async function GET(
   const maintenant = new Date();
   const dateNow = formaterDateFr(maintenant);
 
+  // Les échéances contractuelles réellement imprimées dans ce dossier
+  // (ADR-032). Un `Set` d'identifiants et non un compteur : la même
+  // occurrence peut figurer dans le dossier de conformité et dans le
+  // registre, et le README annoncerait deux lignes là où il n'y en a qu'une.
+  //
+  // Alimenté depuis les données déjà construites pour les PDF, sans lecture
+  // nouvelle : le README dit ce que le ZIP contient, pas ce que le dossier
+  // porte. Si une brique échoue, ses lignes ne sont pas imprimées et ne sont
+  // donc pas annoncées — c'est cohérent, pas un oubli.
+  const echeancesContractuelles = new Set<string>();
+
   // ── 01 Dossier de conformité ────────────────────────────────────────
   try {
     const data = await construireDossierConformiteData(id);
     if (data) {
+      for (const v of data.verifsEnRetard) {
+        if (v.contractuelle) echeancesContractuelles.add(v.id);
+      }
       const buf = await renderToBuffer(DossierConformiteDocument({ data }));
       zip.file("01_Dossier_conformite.pdf", new Uint8Array(buf));
     }
@@ -116,6 +131,9 @@ export async function GET(
   try {
     const data = await construireRegistreData(id);
     if (data) {
+      for (const v of data.verifsEnAttente) {
+        if (v.contractuelle) echeancesContractuelles.add(v.id);
+      }
       const buf = await renderToBuffer(RegistreDocument({ data }));
       zip.file("03_Registre_securite.pdf", new Uint8Array(buf));
     }
@@ -354,6 +372,7 @@ export async function GET(
     aCarnetSanitaire: Boolean(
       carnetSan && (carnetSan.pointsReleve.length > 0 || carnetSan.analyses.length > 0),
     ),
+    nbEcheancesContractuelles: echeancesContractuelles.size,
   });
   zip.file("00_README.txt", readme);
 
@@ -382,6 +401,9 @@ function genererReadme(args: {
   nbPermisFeu: number;
   nbPlansPrevention: number;
   aCarnetSanitaire: boolean;
+  /** Échéances nées d'une demande d'assureur et imprimées dans ce dossier
+   *  (ADR-032). Zéro = rien à annoncer, et rien n'est écrit. */
+  nbEcheancesContractuelles: number;
 }): string {
   const lignes: string[] = [];
   lignes.push(
@@ -463,6 +485,33 @@ function genererReadme(args: {
     "                            (travaux par points chauds). Opposable par",
     "                            votre contrat d'assurance, pas par le droit.",
     "",
+  );
+  // Le même titre que ci-dessus vaudrait pour ces lignes, mais elles ne sont
+  // pas de même nature : un référentiel privé est cité, une échéance
+  // contractuelle est PLANIFIÉE et figure dans les tableaux. Le lecteur du
+  // dossier doit savoir que certaines des lignes qu'il vient de lire
+  // n'engagent pas l'employeur devant l'administration (ADR-032).
+  //
+  // Rien n'est écrit quand il n'y en a pas : une mention rassurante sur un
+  // dossier qui n'en contient aucune apprendrait au lecteur une distinction
+  // dont il n'a que faire, et ferait chercher ce qui n'existe pas.
+  if (args.nbEcheancesContractuelles > 0) {
+    const n = args.nbEcheancesContractuelles;
+    lignes.push(
+      "────────────────────────────────────────────────────────────",
+      " ÉCHÉANCES CONTRACTUELLES FIGURANT DANS CE DOSSIER",
+      "────────────────────────────────────────────────────────────",
+      "",
+      ` ${n} échéance${n > 1 ? "s" : ""} de ce dossier ${n > 1 ? "naissent" : "naît"} d'une demande de`,
+      " votre assureur, et non d'un texte. Chacune porte la mention",
+      ` « ${MARQUAGE_CONTRACTUEL} »`,
+      " là où elle apparaît. Elles sont opposables par votre contrat",
+      " d'assurance, pas par le droit, et aucune référence légale ne leur",
+      " est attachée.",
+      "",
+    );
+  }
+  lignes.push(
     "────────────────────────────────────────────────────────────",
     "",
     "Document généré automatiquement par Rojer.",

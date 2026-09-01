@@ -5,6 +5,7 @@ import { listerVerifications, type VerificationListee } from "@/lib/calendrier/q
 import { libellePorteurSansNom } from "@/lib/calendrier/labels";
 import { listerRapportsDeLEtablissement } from "@/lib/rapports/queries";
 import { obligationParId } from "@/lib/referentiels/conformite";
+import { estEcheanceContractuelle } from "@/lib/prescriptions/sources";
 import { calculerScoreDepuisEtat } from "@/lib/dashboard/score";
 import { etatsPermanentsDuDossier } from "@/lib/etats-permanents/queries";
 import { evaluerEtatDuerp } from "@/lib/dashboard/duerp";
@@ -158,6 +159,7 @@ function ligneVerif(v: VerificationListee, multiBatiments: boolean): LigneVerif 
     datePrevue: v.datePrevue,
     statut: v.statut,
     domaine: obligationParId(v.obligationId)?.domaine ?? null,
+    contractuelle: estEcheanceContractuelle(v),
   };
 }
 

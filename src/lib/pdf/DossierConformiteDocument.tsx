@@ -4,6 +4,7 @@ import type { LigneRapport, LigneVerif } from "./RegistreDocument";
 import { LABEL_STATUT_ACTION, LABEL_TYPE_ACTION } from "@/lib/actions/labels";
 import { LABEL_RESULTAT } from "@/lib/rapports/schema";
 import { LABEL_DOMAINE } from "@/lib/calendrier/labels";
+import { MARQUAGE_CONTRACTUEL } from "@/lib/prescriptions/sources";
 import {
   BOARD,
   formatDateCourte,
@@ -407,9 +408,19 @@ export function DossierConformiteDocument({ data }: { data: DossierData }) {
                 <Text style={[s.td, { width: "14%" }]}>
                   {formatDateCourte(v.datePrevue)}
                 </Text>
-                <Text style={[s.td, { width: "46%" }]}>
-                  {v.libelleObligation}
-                </Text>
+                <View style={{ width: "46%", paddingRight: 4 }}>
+                  <Text style={s.td}>{v.libelleObligation}</Text>
+                  {/* Ce dossier part chez un assureur, un bailleur ou un
+                      acquéreur : c'est le document où une échéance
+                      contractuelle a le plus de chances de se lire comme une
+                      obligation légale, et le seul qu'on ne pourra pas
+                      corriger après l'avoir remis (ADR-032). */}
+                  {v.contractuelle && (
+                    <Text style={[s.small, { color: BOARD.ambreEncre }]}>
+                      {MARQUAGE_CONTRACTUEL}
+                    </Text>
+                  )}
+                </View>
                 <Text style={[s.td, { width: "26%" }]}>
                   {v.equipementLibelle}
                 </Text>
