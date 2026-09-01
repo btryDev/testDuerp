@@ -207,13 +207,28 @@ export async function listerEtatsPermanents(
  * les lignes prend les mêmes lignes que celles qui s'affichent. Aucun des deux
  * ne peut décrire un ensemble que l'autre ne décrit pas.
  *
- * **`userId` en paramètre plutôt qu'un `requireUser()` interne**, sur le
- * modèle de `dashboard/transmissions.ts` : les appelants viennent tous d'un
- * contexte déjà authentifié, et rappeler `requireUser()` ajoutait une lecture
- * de session par affichage du tableau de bord. La garantie ne s'en remet pas
- * pour autant à l'appelant — le prédicat d'appartenance est porté par la
- * requête ci-dessous, et c'est `etab.id` qui est propagé ensuite, jamais
- * l'identifiant reçu.
+ * **`userId` en paramètre**, sur le modèle de `dashboard/transmissions.ts` :
+ * les appelants viennent tous d'un contexte déjà authentifié. La garantie ne
+ * s'en remet pas pour autant à l'appelant — le prédicat d'appartenance est
+ * porté par la requête ci-dessous, et c'est `etab.id` qui est propagé ensuite,
+ * jamais l'identifiant reçu.
+ *
+ * ⚠ CE PARAMÈTRE N'ÉVITE AUCUNE LECTURE DE SESSION, contrairement à ce que
+ * cette note a affirmé le 2026-09-01. `listerEtatsPermanents`, appelée juste
+ * en dessous, fait son propre `requireUser()` — c'est elle qui porte le
+ * prédicat sur les déclarations, et elle a raison de le faire : sa signature
+ * accepte n'importe quel `EtablissementMatching`. La session est donc lue de
+ * toute façon, à chaque affichage du tableau de bord comme avant. Constaté en
+ * exécutant la fonction hors requête HTTP : elle lève « `cookies` was called
+ * outside a request scope », depuis `require-user.ts` via `listerEtatsPermanents`.
+ *
+ * Ce qu'il faut en retenir pour un appelant futur : l'établissement est borné
+ * par le `userId` REÇU, les déclarations par l'utilisateur de la SESSION. Les
+ * deux coïncident chez les trois appelants d'aujourd'hui. Passer l'identifiant
+ * d'un autre utilisateur ne ferait fuir aucune donnée — la seconde portée est
+ * la plus étroite — mais produirait un dossier trouvé et vide, ce qui est un
+ * document faux. La correction, si un tel appelant apparaît, est de faire de
+ * cette fonction la seule à établir la portée, pas d'ajouter un garde ici.
  */
 export async function etatsPermanentsDuDossier(
   etablissementId: string,
