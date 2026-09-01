@@ -26,6 +26,7 @@ function verif(
     date: jour(j),
     tone,
     type: "verification",
+    contractuelle: false,
     equipement: "Tableau électrique",
     batiment,
   };
@@ -44,6 +45,7 @@ function titre(
     date: jour(j),
     tone,
     type: "titre-salarie",
+    contractuelle: false,
     equipement: "Camille Roy",
     batiment: null,
   };

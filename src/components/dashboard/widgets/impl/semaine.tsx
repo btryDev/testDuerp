@@ -10,6 +10,7 @@ import { BentoCell } from "@/components/dashboard/BentoCell";
 import { cleJourCivil } from "@/lib/dates";
 import { colonnesJours } from "../temps";
 import type { DashboardBundle } from "../types";
+import { MentionContractuelle } from "@/components/prescriptions/MentionContractuelle";
 
 export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
   const { evenementsSemaine = [], etablissementId } = bundle;
@@ -29,6 +30,7 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
       id: string;
       libelle: string;
       tone: "alerte" | "warn" | "ok";
+      contractuelle: boolean;
       equipement: string;
     }[]
   >();
@@ -39,6 +41,7 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
       id: e.id,
       libelle: e.libelle,
       tone: e.tone,
+      contractuelle: e.contractuelle,
       equipement: e.equipement,
     });
     eventsParJour.set(key, arr);
@@ -103,6 +106,9 @@ export function WidgetSemaine({ bundle }: { bundle: DashboardBundle }) {
                       }
                     >
                       {e.libelle}
+                      {e.contractuelle ? (
+                        <MentionContractuelle className="ml-1.5 align-middle" />
+                      ) : null}
                     </LienProvenance>
                   </li>
                 ))}

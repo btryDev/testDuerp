@@ -47,6 +47,7 @@ import {
   toutesLesConditions,
 } from "@/lib/calendrier/portee";
 import { libellePorteur } from "@/lib/calendrier/labels";
+import { estEcheanceContractuelle } from "@/lib/prescriptions/sources";
 import {
   genererRecommandations,
   type Recommandation,
@@ -109,6 +110,11 @@ export type EvenementFenetre = {
    *  équipement et l'échéance du titre d'une personne. Requis — l'oublier
    *  rangerait de nouveau une attestation médicale dans « Contrôles ». */
   type: TypeVerification;
+  /** `true` quand la ligne naît d'un engagement contractuel — une demande
+   *  d'assureur — et non d'un texte (ADR-032). Les vues calendrier du board
+   *  affichent des libellés d'échéance comme les autres surfaces : sans ce
+   *  drapeau, elles présentent une exigence d'assurance comme du droit. */
+  contractuelle: boolean;
   /** L'appareil, ou « Tout l'établissement » (ADR-022). */
   equipement: string;
   /** Le bâtiment de l'équipement (ADR-019). `null` quand l'échéance porte sur
@@ -179,6 +185,10 @@ export async function listerEvenementsFenetre(
       // Le porteur salarié (ADR-023) : sans cette sélection, la ligne
       // d'une personne s'afficherait « Tout l'établissement ».
       salarie: { select: { nom: true, prenom: true } },
+      // La source de la prescription : les vues calendrier du board affichent
+      // des libellés d'échéance comme les autres surfaces, et doivent donc
+      // pouvoir dire lesquelles sont contractuelles (ADR-032).
+      prescription: { select: { source: true } },
     },
     orderBy: { datePrevue: "asc" },
   });
@@ -203,6 +213,7 @@ export async function listerEvenementsFenetre(
         date: lec.date,
         tone: TON_REGISTRE[lec.registre],
         type: typeDeVerification(v),
+        contractuelle: estEcheanceContractuelle(v),
         equipement: libellePorteur(v),
         // Pas d'équipement, pas de bâtiment : la ligne reste visible sous
         // tous les filtres par bâtiment (ADR-010, ADR-019).

@@ -108,7 +108,13 @@ export default async function EtablissementPage({
         },
         porteeBatiment(batimentFiltre),
       ),
-      include: { equipement: true, salarie: true },
+      // `prescription` : la source suffit, et elle seule — c'est de quoi dire
+      // qu'une ligne est contractuelle sans faire remonter l'acte (ADR-032).
+      include: {
+        equipement: true,
+        salarie: true,
+        prescription: { select: { source: true } },
+      },
       orderBy: { datePrevue: "asc" },
       take: 5,
     }),
@@ -286,6 +292,12 @@ export default async function EtablissementPage({
       libelleObligation: v.libelleObligation,
       datePrevue: v.datePrevue,
       statut: v.statut,
+      // La source de la prescription traverse jusqu'au board, sans quoi le
+      // marquage contractuel n'y paraît jamais (ADR-032). La requête la
+      // chargeait déjà et le type l'acceptait : c'est cette projection, entre
+      // les deux, qui la jetait — trois couches justes séparément, et une
+      // pastille qui n'apparaît nulle part.
+      prescription: v.prescription,
       equipement: {
         libelle: libellePorteur(v),
       },
