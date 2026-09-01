@@ -1434,8 +1434,11 @@ const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
     "lot 7 : la liste des postes à risques particuliers « est transmise au " +
     "service de prévention et de santé au travail, tenue à disposition […] et " +
     "**mise à jour tous les ans** ». Relu à la source le 2026-08-31, version " +
-    "en vigueur du 2026-04-10 (décret n° 2026-253 du 8 avril 2026) — l'article " +
-    "le plus récemment modifié de tout le référentiel.",
+    "en vigueur du 2026-04-10 (décret n° 2026-253 du 8 avril 2026). Ce décret " +
+    "a été dépouillé le 2026-09-01 : il ne touche PAS le III, il supprime sept " +
+    "mots au 2° du I. Et ce n'est pas « l'article le plus récemment modifié de " +
+    "tout le référentiel », comme le disait cette entrée : douze articles du " +
+    "corpus portent une version postérieure, jusqu'au 2026-07-01.",
   "conduite-salarie-attestation-medicale":
     "R. 4323-56 porte le chiffre, dans les mêmes termes que R. 4544-11-1 et " +
     "par le même décret : « Cette attestation, **d'une validité de cinq ans**, " +
