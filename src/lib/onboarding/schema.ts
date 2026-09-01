@@ -2,9 +2,14 @@ import { z } from "zod";
 import {
   CATEGORIES_ERP,
   CLASSES_IGH,
+  EFFECTIF_MAX,
   FAMILLES_HABITATION,
   TYPE_ERP,
 } from "@/lib/etablissements/schema";
+
+// Réexportée : la validation client du wizard la lit ici, au plus près du
+// parcours qu'elle borne.
+export { EFFECTIF_MAX };
 import { evaluerScopeSecteur } from "./scope";
 
 /**
@@ -18,17 +23,6 @@ import { evaluerScopeSecteur } from "./scope";
  * ici depuis `etablissements/schema.ts` — pas de duplication.
  */
 
-/**
- * La borne du produit (ADR-025 § 1). Elle porte sur les **travailleurs**, et
- * sur eux seuls : le public reçu ne la déclenche jamais. Un restaurant de huit
- * salariés qui sert trois cents couverts relève de la 3ᵉ catégorie d'ERP et
- * reste dans la cible — la catégorie mesure le public, pas l'effectif.
- *
- * Exportée parce que la validation client (`components/onboarding/validation`)
- * doit poser la même borne : un refus qui n'apparaît qu'au submit fait
- * ressaisir tout le formulaire.
- */
-export const EFFECTIF_MAX = 50;
 
 const siretRegex = /^\d{14}$/;
 const nafRegex = /^\d{2}\.?\d{2}[A-Z]?$/;

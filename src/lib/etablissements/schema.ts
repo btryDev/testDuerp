@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { depuisCleJourCivil } from "@/lib/dates";
-import { EFFECTIF_MAX } from "@/lib/onboarding/schema";
 
 // Enums reflétant le schéma Prisma. Si on ajoute une valeur côté Prisma,
 // pensez à la refléter ici — pas d'import direct de @prisma/client pour
@@ -19,6 +18,22 @@ export const CLASSES_IGH = [
 export const FAMILLES_HABITATION = [
   "PREMIERE", "DEUXIEME", "TROISIEME_A", "TROISIEME_B", "QUATRIEME",
 ] as const;
+
+/**
+ * La borne du produit (ADR-025 § 1). Elle porte sur les **travailleurs**, et
+ * sur eux seuls : le public reçu ne la déclenche jamais. Un restaurant de huit
+ * salariés qui sert trois cents couverts relève de la 3ᵉ catégorie d'ERP et
+ * reste dans la cible — la catégorie mesure le public, pas l'effectif.
+ *
+ * Elle vit ici, au plus bas, parce que trois écrits la posent : le schéma
+ * d'onboarding, celui de création d'un établissement suivant, et la validation
+ * client du wizard. Elle a d'abord été déclarée dans `onboarding/schema.ts`, ce
+ * qui a fabriqué un cycle d'imports — et un cycle, en Zod, ne casse pas à la
+ * compilation mais à l'initialisation : `z.enum(TYPE_ERP)` recevait
+ * `undefined`. Le chiffre appartient au périmètre du produit, pas à l'un de ses
+ * parcours.
+ */
+export const EFFECTIF_MAX = 50;
 
 const nafRegex = /^\d{2}\.?\d{2}[A-Z]?$/;
 
