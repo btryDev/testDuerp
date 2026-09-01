@@ -395,6 +395,14 @@ describe("référentiel conformité — anti-doublon", () => {
     },
     {
       paire: [
+        "elec-travail-habilitation-personnel",
+        "elec-salarie-habilitation",
+      ],
+      raison:
+        "Instruit le 2026-09-01, ce n'est PAS un doublon, et la paire est la réplique exacte de `formation-securite-etablissement-organisation` / `formation-securite-salarie-accueil` — à ceci près que celle-là a échappé au test parce que ses deux lignes se fondent sur des articles différents (R. 4141-13 et R. 4141-20), quand `R. 4544-10` porte les deux actes à lui seul. La première ligne est déclenchée par une installation électrique déclarée et existe MÊME si aucune personne n'est déclarée : c'est elle qui dit au dirigeant « cette obligation suppose une personne nommée, en voici le titre ». La seconde ne produit de ligne que par salarié déclaré détenteur. Les fondre imposerait de choisir entre deux erreurs : une obligation qui disparaît de l'écran quand personne n'est déclaré — alors qu'elle est due dès qu'on opère sur l'installation —, ou une obligation qui ne se solde jamais nominativement, alors que R. 4544-10 délivre l'habilitation « à un travailleur désigné ». Ce test ne compare que la clé d'article ; il ne sait pas voir qu'un même article institue une charge d'employeur et un titre de personne.",
+    },
+    {
+      paire: [
         "aeration-controle-installations-r4222-20",
         "stockage-dangereux-ventilation-locaux",
       ],
@@ -1025,7 +1033,18 @@ describe("référentiel conformité — version et empreinte", () => {
   // Réalisateur et libellé entrent tous deux dans l'empreinte parce qu'ils
   // s'affichent au calendrier et décident de ce que le dirigeant croit devoir
   // faire — c'est exactement ce qu'on veut voir bouger.
-  const EMPREINTE_ATTENDUE = "116-97f9faa35169ab0b";
+  //
+  // 2026-09-01, 116 → 117 : `elec-salarie-habilitation` entre au catalogue des
+  // titres. C'est un AJOUT PUR — aucune ligne existante ne change de
+  // périodicité, de porteur ni de libellé —, donc aucun calendrier généré ne
+  // perd de ligne à la réconciliation. Le porteur salarié ne dérive rien : le
+  // titre ne produit d'échéance que si un employeur le déclare sur une
+  // personne, et sa périodicité `autre` fait que le générateur n'en calcule
+  // aucune même alors. Le déplacement d'empreinte force donc une
+  // réconciliation qui, sur les dossiers existants, ne changera rien — et
+  // c'est le comportement voulu : l'empreinte dit que le référentiel a bougé,
+  // pas qu'un calendrier est faux.
+  const EMPREINTE_ATTENDUE = "117-f3e28b9866830b26";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1143,7 +1162,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(116);
+    ).toBe(117);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {

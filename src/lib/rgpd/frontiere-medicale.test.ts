@@ -315,21 +315,31 @@ describe("frontière médicale — le drapeau est une décision, pas un défaut"
       .map((o) => `${o.id} → pieceMedicale: ${o.pieceMedicale}`)
       .sort();
 
-    // Onze depuis le lot 7 et sa revue (2026-08-31), contre une seule auparavant. C'est
+    // Quatorze au 2026-09-01, contre une seule avant le lot 7. C'est
     // précisément le moment que le commentaire ci-dessus annonçait — « quand
     // les dix-huit autres arriveront, c'est ici qu'on verra d'un coup d'œil
     // qui a été qualifié de médical et qui non ». Le voici, et la liste se lit
     // en deux blocs nets :
     //
-    //  * `true` (7) — les six visites et attestations du suivi médical, plus
-    //    l'attestation d'habilitation électrique. Toutes délivrées par un
-    //    médecin du travail ou un professionnel de santé au travail. L'outil
-    //    n'en détient que l'existence, la date et l'échéance (docs/rgpd.md
-    //    § 2.3), et le drapeau interdit à l'interface de proposer le
-    //    téléversement de la pièce.
-    //  * `false` (4) — les titres de COMPÉTENCE : formation à la sécurité,
+    //  * `true` (7) — les visites et attestations du suivi médical, dont
+    //    l'attestation d'absence de contre-indication qui conditionne
+    //    l'habilitation électrique. Toutes délivrées par un médecin du travail
+    //    ou un professionnel de santé au travail. L'outil n'en détient que
+    //    l'existence, la date et l'échéance (docs/rgpd.md § 2.3), et le
+    //    drapeau interdit à l'interface de proposer le téléversement de la
+    //    pièce.
+    //  * `false` (7) — les titres de COMPÉTENCE : formation à la sécurité,
     //    formation à la conduite, autorisation de conduite, certificat de
-    //    sauveteur secouriste du travail. Aucun n'atteste d'un état de santé.
+    //    sauveteur secouriste du travail, les deux formations santé-sécurité
+    //    du lot 8, et l'habilitation électrique elle-même. Aucun n'atteste
+    //    d'un état de santé.
+    //
+    // LA PAIRE À NE PAS CONFONDRE EST CELLE DE L'ÉLECTRICITÉ, et elle tombe des
+    // deux côtés de la frontière : `elec-salarie-habilitation` (2026-09-01) est
+    // le titre de compétence délivré par l'employeur au titre de `R. 4544-10`,
+    // `elec-salarie-attestation-medicale-voisinage` est la pièce médicale de
+    // `R. 4544-11-1` qui le conditionne. Deux obligations, deux drapeaux
+    // opposés, un même domaine — c'est le cas d'école du champ.
     //
     // La frontière n'est ni devinée ni déduite d'un libellé : elle est tranchée
     // obligation par obligation, et `pieceMedicale` étant requis sur la variante
@@ -339,6 +349,7 @@ describe("frontière médicale — le drapeau est une décision, pas un défaut"
       "conduite-salarie-autorisation → pieceMedicale: false",
       "conduite-salarie-formation → pieceMedicale: false",
       "elec-salarie-attestation-medicale-voisinage → pieceMedicale: true",
+      "elec-salarie-habilitation → pieceMedicale: false",
       "formation-securite-salarie-accueil → pieceMedicale: false",
       // Lot 8. Le mot « santé » est dans l'intitulé de la formation
       // (« santé, sécurité et conditions de travail ») et la pièce n'est pas

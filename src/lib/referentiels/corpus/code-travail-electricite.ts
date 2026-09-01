@@ -114,7 +114,17 @@ export const CODE_TRAVAIL_ELECTRICITE: Corpus = {
       luLe: "2026-08-26",
       lecture: "agent_verbatim",
       statut: "retenu",
-      obligations: ["elec-travail-habilitation-personnel"],
+      // Deux obligations, et non une : l'article en fonde une côté
+      // établissement — l'employeur s'assure que ses travailleurs sont
+      // habilités, due dès qu'une installation est déclarée — et un titre
+      // nominatif côté salarié, ajouté le 2026-09-01. C'est le même article
+      // parce que c'est le même texte qui délivre l'habilitation « à un
+      // travailleur désigné » ; ce sont deux lignes parce que l'une existe
+      // sans que personne soit déclaré et l'autre pas.
+      obligations: [
+        "elec-travail-habilitation-personnel",
+        "elec-salarie-habilitation",
+      ],
     },
     {
       ref: "L. 4711-5",

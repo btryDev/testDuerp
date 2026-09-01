@@ -37,6 +37,12 @@ const SOURCE_FORMULAIRE = join(
   "src/components/salaries/FormulaireTitre.tsx",
 );
 
+/** La fiche d'une personne : c'est elle qui NOMME l'état d'un titre échu. */
+const SOURCE_FICHE = join(
+  process.cwd(),
+  "src/app/etablissements/[id]/equipe/[salarieId]/page.tsx",
+);
+
 /** Les périodicités pour lesquelles le générateur ne calcule rien. */
 const SANS_DUREE = new Set(
   Object.entries(PERIODICITE_EN_JOURS)
@@ -81,6 +87,47 @@ describe("la promesse d'échéance de l'écran et ce que le générateur fait", 
       permanents.length,
       "Aucun titre permanent : l'aide conditionnelle est devenue inutile.",
     ).toBeGreaterThan(0);
+  });
+
+  it("la fiche ne présente pas une échéance saisie comme un état de droit", () => {
+    // Le pendant du test précédent, sur l'autre écran et dans l'autre sens.
+    // Celui-là garde ce que le produit CALCULE ; celui-ci garde ce qu'il
+    // QUALIFIE. La fiche d'une personne peint un titre dont la date est passée
+    // et le nomme d'un mot. Tant qu'un seul titre du catalogue porte une
+    // périodicité sans durée écrite, ce mot ne peut pas être un simple
+    // « Expiré » : sur `elec-salarie-habilitation`, la date saisie vient de
+    // l'organisme de formation — `R. 4544-10` renvoie à des modalités de
+    // normes qu'il qualifie lui-même de recommandées —, et un état de droit
+    // affirmé là-dessus serait une non-conformité inventée.
+    //
+    // L'ANTÉCÉDENT EST MESURÉ, PAS SUPPOSÉ : si le catalogue cessait de porter
+    // un tel titre, la règle n'aurait plus d'objet et le test le dirait au
+    // lieu de rester vert pour rien.
+    const sansDureeEcrite = cataloguerTitres().filter((o) =>
+      SANS_DUREE.has(o.periodicite),
+    );
+    expect(
+      sansDureeEcrite.length,
+      "Plus aucun titre sans durée écrite au catalogue : cette garantie n'a " +
+        "plus d'objet, la relire avant de la retirer.",
+    ).toBeGreaterThan(0);
+
+    const source = readFileSync(SOURCE_FICHE, "utf8");
+    const motDuRetard = source.match(/\n\s*enRetard: "([^"]+)",/);
+    expect(
+      motDuRetard,
+      "`MOT_DE_L_ETAT.enRetard` est introuvable dans la fiche : le test ne " +
+        "garde plus rien. Retrouver le mot avant de toucher au reste.",
+    ).not.toBeNull();
+
+    // Ce que le mot doit dire : à qui appartient l'échéance. Pas une liste de
+    // formulations autorisées — elle se réparerait en y ajoutant la suivante.
+    expect(
+      motDuRetard?.[1],
+      `Le mot affiché sur un titre échu est « ${motDuRetard?.[1]} ». Il doit ` +
+        `nommer l'échéance DÉCLARÉE : sur un titre sans durée écrite, la date ` +
+        `passée est celle que le dirigeant a saisie, jamais un terme légal.`,
+    ).toMatch(/déclarée/i);
   });
 
   it("tout titre à durée chiffrée produit bien une échéance calculée", () => {

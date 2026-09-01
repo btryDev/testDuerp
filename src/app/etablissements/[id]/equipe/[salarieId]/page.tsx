@@ -38,14 +38,37 @@ import Link from "next/link";
 const MOT_DE_L_ETAT: Record<RegistreLigne, string> = {
   faite: "À jour",
   lointain: "À jour",
-  proche: "Expire bientôt",
-  enRetard: "Expiré",
+  proche: "Échéance déclarée proche",
+  enRetard: "Échéance déclarée dépassée",
   // Pas « en retard » : un titre sans terme écrit n'a pas de rendez-vous
   // manqué. Le Code renvoie ici à des modalités qu'il qualifie lui-même de
   // recommandées (ADR-023 § 6) — décréter une échéance serait inventer une
   // non-conformité.
   aPlanifier: "Sans terme écrit",
 };
+
+// POURQUOI « DÉCLARÉE » DANS LES DEUX MOTS DU MILIEU. Ils disaient « Expire
+// bientôt » et « Expiré », et l'entrée au catalogue de l'habilitation
+// électrique (`elec-salarie-habilitation`, 2026-09-01) rend cette formulation
+// intenable. La date qu'un dirigeant saisit sur ce titre-là ne vient d'aucun
+// texte : `R. 4544-10` renvoie aux modalités de normes qu'il qualifie
+// lui-même de recommandées, et le triennal que portent les attestations de
+// recyclage vient de la NF C 18-510 — pas du Code. « Expiré », dans un outil
+// de conformité, se lit comme un état de droit ; ici c'est la date de
+// l'organisme de formation qui est passée, rien d'autre.
+//
+// Le mot vaut pour TOUS les titres, y compris ceux dont l'échéance est bien
+// légale (VIP, suivi renforcé, attestation médicale). Il les sous-dit un peu.
+// C'est le sens d'erreur voulu : sur ceux-là, le dirigeant lit la date et
+// l'article juste à côté sur la même ligne et peut se corriger ; sur
+// l'habilitation, rien à l'écran ne lui aurait signalé que « Expiré » ne
+// venait pas du droit.
+//
+// Ce qui n'a PAS été touché, et qui reste ouvert : « À jour ». C'est une
+// affirmation positive sur l'état d'une personne, et le dépôt s'interdit de
+// dire à un dirigeant qu'il est conforme (CLAUDE.md, règle 8). La reprendre
+// demande de décider ce que l'écran affirme, pas de choisir un synonyme —
+// ce lot ne le tranche pas.
 
 export default async function SalarieDetailPage({
   params,
