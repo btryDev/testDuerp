@@ -56,9 +56,16 @@ export type MotifSansEcheance =
    *  remplies par cet appareil. */
   | "aucune_obligation_applicable"
   /** Des obligations s'appliquent, mais aucune n'est datable : toutes ont
-   *  la périodicité `autre` (obligation permanente), que le générateur
-   *  n'ouvre pas en occurrence. Le parc en porte donc la trace, le
-   *  calendrier non. */
+   *  la périodicité `autre` — le texte n'écrit aucun rythme —, que le
+   *  générateur n'ouvre pas en occurrence. Le parc en porte donc la trace, le
+   *  calendrier non.
+   *
+   *  Ce motif ne dit rien de la NATURE des obligations en cause (ADR-026), et
+   *  c'est le point : sur un stockage de matières dangereuses sans volume
+   *  renseigné — le cas d'école de ce motif —, les règles qui restent
+   *  comprennent une vérification d'étanchéité qui REVIENT et des fiches de
+   *  données qui se refont à chaque produit nouveau. Les appeler
+   *  « permanentes » attribuait au droit un régime qu'il ne donne pas. */
   | "aucune_echeance_datable";
 
 /**
@@ -70,14 +77,14 @@ export type MotifSansEcheance =
  * souvent sans la phrase qui la suit : coller « hors référentiel » sur un BAES
  * parfaitement connu du référentiel, mais qu'aucune règle ne vise chez un
  * employeur non-ERP, dirait au dirigeant d'aller chercher un autre outil. Le
- * référentiel le connaît ; c'est ici qu'il ne s'applique pas. Et « obligation
- * permanente » n'est pas non plus une absence : la règle existe, elle n'a
- * simplement pas de date à poser.
+ * référentiel le connaît ; c'est ici qu'il ne s'applique pas. Et le troisième
+ * n'est pas non plus une absence : la règle existe, elle n'a simplement pas de
+ * date à poser — d'où le mot « obligation », gardé en tête de la pastille.
  */
 export const LIBELLE_SANS_ECHEANCE: Record<MotifSansEcheance, string> = {
   categorie_hors_referentiel: "Hors référentiel",
   aucune_obligation_applicable: "Aucune échéance calculée",
-  aucune_echeance_datable: "Obligation permanente",
+  aucune_echeance_datable: "Obligation sans rythme écrit",
 };
 
 /** La phrase longue, celle qui dit le fait complet. */
@@ -87,7 +94,7 @@ export const EXPLICATION_SANS_ECHEANCE: Record<MotifSansEcheance, string> = {
   aucune_obligation_applicable:
     "Aucune échéance n'est calculée pour cet équipement : aucune obligation du référentiel ne s'applique à lui compte tenu de la typologie de l'établissement et de ses caractéristiques. Cela ne veut pas dire qu'aucune vérification ne lui est due.",
   aucune_echeance_datable:
-    "Les obligations qui visent cet équipement sont permanentes : le référentiel n'en tire aucune date, il n'y a donc rien à poser sur le calendrier.",
+    "Aucun texte n'écrit de rythme pour les obligations qui visent cet équipement : le référentiel n'en tire aucune date, il n'y a donc rien à poser sur le calendrier. Elles s'appliquent malgré tout.",
 };
 
 /**
@@ -96,8 +103,8 @@ export const EXPLICATION_SANS_ECHEANCE: Record<MotifSansEcheance, string> = {
  * qu'aucune règle ne vise ici.
  *
  * `aucune_echeance_datable` en est délibérément exclu, et c'est tout l'intérêt
- * de la fonction : là, des obligations s'appliquent bel et bien, elles sont
- * simplement permanentes. Un stockage de matières dangereuses sans volume
+ * de la fonction : là, des obligations s'appliquent bel et bien, aucun texte
+ * n'en écrit le rythme. Un stockage de matières dangereuses sans volume
  * renseigné relève de la rétention et des fiches de données de sécurité ; lui
  * dire que « rien ne s'applique » serait faux, et faux dans le sens qui rassure.
  * Les trois motifs ont été séparés pour cette raison — les recompter ensemble
@@ -164,8 +171,8 @@ export function reperterSansEcheance(
 
   // Par équipement : combien de règles le déclenchent, et combien d'entre
   // elles savent produire une date. La périodicité `autre` marque une
-  // obligation permanente — le générateur la saute (cf. generateur.ts), donc
-  // elle ne compte pas comme une échéance.
+  // obligation dont aucun texte n'écrit le rythme — le générateur la saute
+  // (cf. generateur.ts), donc elle ne compte pas comme une échéance.
   const declenchees = new Map<string, { total: number; datables: number }>();
   for (const a of applicables) {
     const datable = a.obligation.periodicite !== "autre";
