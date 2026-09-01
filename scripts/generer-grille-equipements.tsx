@@ -1,10 +1,25 @@
 #!/usr/bin/env tsx
 //
-// Grille des équipements déclarables dans Rojer, et — pour chacun — le
-// sous-tableau des obligations du référentiel qui le citent : périodicité,
-// réalisateur, régime d'application, condition éventuelle et **article
-// fondateur**. Document de relecture, pas un document remis à un tiers :
-// il décrit ce que l'outil calcule, à une version donnée du référentiel.
+// Grille de RELECTURE du référentiel : les 116 obligations, sans exception,
+// rangées par ce qui les déclenche.
+//
+// Trois parties, une par porteur (ADR-022, ADR-023) :
+//   1. par catégorie d'équipement — ce qu'un appareil déclaré fait naître ;
+//   2. par domaine, pour les obligations portées par l'ÉTABLISSEMENT — elles
+//      ne naissent d'aucun appareil, c'est le statut d'employeur, l'effectif
+//      ou la typologie qui les déclenche ;
+//   3. par domaine, pour les obligations portées par un SALARIÉ — l'employeur
+//      les déclare, le produit ne les dérive jamais.
+//
+// La première partie existait seule jusqu'au 2026-09-01, et elle laissait
+// **37 obligations sur 116 hors du document** — précisément les plus récentes,
+// donc les moins éprouvées, donc celles qu'un relecteur a le plus de raisons
+// de lire. Une grille organisée par appareil n'a aucune colonne où ranger une
+// obligation qui ne naît d'aucun appareil : le silence était structurel, pas
+// accidentel.
+//
+// Document de relecture, pas un document remis à un tiers : il décrit ce que
+// l'outil calcule, à une version donnée du référentiel.
 //
 //   npx tsx scripts/generer-grille-equipements.tsx [chemin.pdf]
 
@@ -17,6 +32,8 @@ import {
 } from "@/lib/referentiels/conformite";
 import {
   estPorteeParEquipement,
+  estPorteeParSalarie,
+  LIBELLE_NATURE,
   type ConditionApplication,
   type Obligation,
 } from "@/lib/referentiels/conformite/types";
@@ -60,6 +77,13 @@ const LABEL_SOURCE: Record<string, string> = {
  * plate, qui se lit, plutôt qu'une forme savante qui ne s'imprime pas.
  */
 const SUBSTITUTIONS: [RegExp, string][] = [
+  // Helvetica, dans l'encodage WinAnsi que react-pdf utilise, ne porte ni `≥`
+  // ni `≤` : ils sortaient remplacés par un glyphe faux, sans erreur. Le
+  // document destiné à un relecteur affichait « e 51 personnes présentes ».
+  // Les seuils s'écrivent donc en toutes lettres à la source ; ces deux lignes
+  // sont le filet pour les occurrences qui échapperaient.
+  [/≥\s*/g, "au moins "],
+  [/≤\s*/g, "au plus "],
   [/ʳᵉ/g, "re"],
   [/ᵉʳ/g, "er"],
   [/ᵉ/g, "e"],
@@ -101,10 +125,10 @@ function texteTypologie(t: TypologieApplication): string {
   else if (t.igh && typeof t.igh === "object")
     bouts.push(`IGH (${t.igh.classes.join(", ")})`);
   if (t.habitation === true) bouts.push("Habitation");
-  if (t.effectifMin !== undefined) bouts.push(`effectif ≥ ${t.effectifMin}`);
-  if (t.effectifMax !== undefined) bouts.push(`effectif ≤ ${t.effectifMax}`);
+  if (t.effectifMin !== undefined) bouts.push(`effectif d'au moins ${t.effectifMin}`);
+  if (t.effectifMax !== undefined) bouts.push(`effectif d'au plus ${t.effectifMax}`);
   if (t.personnesPresentesMin !== undefined)
-    bouts.push(`≥ ${t.personnesPresentesMin} personnes présentes`);
+    bouts.push(`au moins ${t.personnesPresentesMin} personnes présentes`);
   if (t.champR422734) bouts.push("ou matières R. 4227-22");
   return bouts.length ? bouts.join(" · ") : "Tous régimes";
 }
@@ -168,6 +192,36 @@ function obligationsDe(c: CategorieEquipement): Obligation[] {
     );
 }
 
+/**
+ * Les obligations portées par l'établissement, groupées par domaine.
+ *
+ * Elles ne naissent d'aucun appareil : c'est le statut d'employeur, l'effectif
+ * ou la typologie du bâtiment qui les déclenche. Le domaine est donc le seul
+ * regroupement qui ait un sens ici — il n'y a pas d'objet à ranger dessous.
+ */
+function parDomaine(obligations: Obligation[]): Map<string, Obligation[]> {
+  const m = new Map<string, Obligation[]>();
+  for (const o of obligations) {
+    const l = m.get(o.domaine) ?? [];
+    l.push(o);
+    m.set(o.domaine, l);
+  }
+  for (const [, l] of m) {
+    l.sort(
+      (a, b) =>
+        b.criticite - a.criticite ||
+        (PERIODICITE_EN_JOURS[a.periodicite] ?? 1e9) -
+          (PERIODICITE_EN_JOURS[b.periodicite] ?? 1e9),
+    );
+  }
+  return m;
+}
+
+const OBLIGATIONS_ETABLISSEMENT = obligationsConformite.filter(
+  (o) => !estPorteeParEquipement(o) && !estPorteeParSalarie(o),
+);
+const OBLIGATIONS_SALARIE = obligationsConformite.filter(estPorteeParSalarie);
+
 // ── Mise en page ───────────────────────────────────────────────────────────
 
 const C = {
@@ -214,7 +268,8 @@ function LigneObligation({ o }: { o: Obligation }) {
       <View style={[cell, { width: C.obligation }]}>
         <Text style={s.td}>{t(o.libelle)}</Text>
         <Text style={[s.small, { marginTop: 1 }]}>
-          criticité {o.criticite}/5 · {LABEL_DOMAINE[o.domaine]}
+          criticité {o.criticite}/5 · {LABEL_DOMAINE[o.domaine]} ·{" "}
+          {LIBELLE_NATURE[o.nature]}
         </Text>
       </View>
       <Text style={[s.td, cell, { width: C.periodicite }]}>
@@ -253,7 +308,7 @@ function PiedDePage() {
       style={s.footer}
       fixed
       render={({ pageNumber, totalPages }) =>
-        `Rojer — grille des équipements · référentiel ${REFERENTIEL_VERSION} · page ${pageNumber}/${totalPages}`
+        `Rojer — grille de relecture du référentiel ${REFERENTIEL_VERSION} · page ${pageNumber}/${totalPages}`
       }
     />
   );
@@ -268,7 +323,7 @@ function GrilleDocument({ genereLe }: { genereLe: string }) {
 
   return (
     <Document
-      title="Rojer — grille des équipements déclarables"
+      title="Rojer — grille de relecture du référentiel"
       author="Rojer"
     >
       {/* Récapitulatif */}
@@ -277,11 +332,11 @@ function GrilleDocument({ genereLe }: { genereLe: string }) {
           Rojer — référentiel de conformité {REFERENTIEL_VERSION}
         </Text>
         <Text style={[s.h1, { marginTop: 4 }]}>
-          Grille des équipements déclarables
+          Grille de relecture du référentiel
         </Text>
         <Text style={{ fontSize: 10, color: BOARD.ardoiseMoyenne }}>
-          {CATEGORIES_EQUIPEMENT.length} catégories · {total} obligations au
-          référentiel · document généré le {genereLe}
+          {total} obligations · {CATEGORIES_EQUIPEMENT.length} catégories
+          d&apos;équipement · document généré le {genereLe}
         </Text>
 
         <View style={s.mentionsLegalesBloc}>
@@ -297,9 +352,56 @@ function GrilleDocument({ genereLe }: { genereLe: string }) {
             l&apos;absence d&apos;une obligation n&apos;emporte aucune
             conclusion. Rojer calcule, il n&apos;avise pas.
           </Text>
+          <Text style={{ marginTop: 6 }}>
+            Le document couvre les {total} obligations, rangées par ce qui les
+            déclenche : un équipement déclaré, le statut de
+            l&apos;établissement, ou un titre que l&apos;employeur déclare pour
+            une personne. Une obligation sans échéance chiffrée n&apos;est pas
+            un manque de dépouillement — la colonne « nature », sous chaque
+            libellé, dit si le texte impose un rythme, un état à maintenir, un
+            acte ponctuel ou une obligation qui renaît à chaque événement.
+          </Text>
         </View>
 
-        <Text style={s.h2}>Récapitulatif par catégorie</Text>
+        <Text style={s.h2}>Récapitulatif par porteur</Text>
+        <View style={s.thead}>
+          <Text style={[s.th, cell, { width: "22%" }]}>Porteur</Text>
+          <Text style={[s.th, cell, { width: "8%" }]}>Obligations</Text>
+          <Text style={[s.th, cell, { width: "70%" }]}>
+            Ce qui la fait naître
+          </Text>
+        </View>
+        {(
+          [
+            [
+              "Équipement",
+              obligationsConformite.filter(estPorteeParEquipement).length,
+              "Un appareil déclaré au parc. L'instance est dérivée par le moteur : une obligation par appareil concerné.",
+            ],
+            [
+              "Établissement",
+              OBLIGATIONS_ETABLISSEMENT.length,
+              "Le statut d'employeur, l'effectif, la typologie du bâtiment ou la co-activité. Aucun appareil n'est requis : un bureau sans matériel en reçoit.",
+            ],
+            [
+              "Salarié",
+              OBLIGATIONS_SALARIE.length,
+              "Un titre que l'employeur déclare pour une personne nommée. Le produit ne dérive JAMAIS qui est concerné (ADR-023) : sans déclaration, aucune échéance.",
+            ],
+          ] as [string, number, string][]
+        ).map(([nom, n, quoi]) => (
+          <View key={nom} style={s.row} wrap={false}>
+            <Text
+              style={[s.td, cell, { width: "22%", fontFamily: "Helvetica-Bold" }]}
+            >
+              {nom}
+            </Text>
+            <Text style={[s.td, cell, { width: "8%" }]}>{n}</Text>
+            <Text style={[s.small, cell, { width: "70%" }]}>{t(quoi)}</Text>
+          </View>
+        ))}
+
+        <Text style={s.h2}>Récapitulatif par catégorie d&apos;équipement</Text>
         <View style={s.thead}>
           <Text style={[s.th, cell, { width: "22%" }]}>Catégorie</Text>
           <Text style={[s.th, cell, { width: "30%" }]}>Ce qu&apos;elle couvre</Text>
@@ -379,6 +481,60 @@ function GrilleDocument({ genereLe }: { genereLe: string }) {
             <EnTeteTableau />
           )}
           {obligations.map((o) => (
+            <LigneObligation key={o.id} o={o} />
+          ))}
+          <PiedDePage />
+        </Page>
+      ))}
+
+      {/* Portées par l'établissement — une page par domaine */}
+      {[...parDomaine(OBLIGATIONS_ETABLISSEMENT)].map(([domaine, liste]) => (
+        <Page
+          key={`etab-${domaine}`}
+          size="A4"
+          orientation="landscape"
+          style={stylePage}
+        >
+          <Text style={{ fontSize: 9, color: BOARD.ardoiseMoyenne }}>
+            Portée par l&apos;établissement · aucun équipement requis
+          </Text>
+          <Text style={[s.h1, { fontSize: 16, marginTop: 2, marginBottom: 4 }]}>
+            {LABEL_DOMAINE[domaine as keyof typeof LABEL_DOMAINE]}
+          </Text>
+          <Text style={s.small}>
+            {t(
+              "Ces obligations ne naissent d'aucun appareil déclaré : elles sont dues au titre du statut d'employeur, de l'effectif, de la typologie du bâtiment ou de la co-activité. Un établissement sans le moindre équipement en reçoit.",
+            )}
+          </Text>
+          <EnTeteTableau />
+          {liste.map((o) => (
+            <LigneObligation key={o.id} o={o} />
+          ))}
+          <PiedDePage />
+        </Page>
+      ))}
+
+      {/* Portées par un salarié — une page par domaine */}
+      {[...parDomaine(OBLIGATIONS_SALARIE)].map(([domaine, liste]) => (
+        <Page
+          key={`sal-${domaine}`}
+          size="A4"
+          orientation="landscape"
+          style={stylePage}
+        >
+          <Text style={{ fontSize: 9, color: BOARD.ardoiseMoyenne }}>
+            Portée par un salarié · déclarée par l&apos;employeur
+          </Text>
+          <Text style={[s.h1, { fontSize: 16, marginTop: 2, marginBottom: 4 }]}>
+            {LABEL_DOMAINE[domaine as keyof typeof LABEL_DOMAINE]}
+          </Text>
+          <Text style={s.small}>
+            {t(
+              "Le produit ne dérive jamais qui est concerné : rien, dans le dossier, ne dit quelle personne opère sur quoi (ADR-023). C'est l'employeur qui déclare le titre pour une personne nommée, et l'échéance qu'il saisit prime sur tout calcul. Sans déclaration, aucune ligne n'est produite — et ce silence est un constat juste, pas un défaut.",
+            )}
+          </Text>
+          <EnTeteTableau />
+          {liste.map((o) => (
             <LigneObligation key={o.id} o={o} />
           ))}
           <PiedDePage />
