@@ -1047,24 +1047,25 @@ describe("référentiel conformité — version et empreinte", () => {
   // s'affichent au calendrier et décident de ce que le dirigeant croit devoir
   // faire — c'est exactement ce qu'on veut voir bouger.
   //
-  // 2026-09-01, 116 → 118 : deux lots écrits en parallèle ajoutent chacun une
-  // obligation, et chacun a vu 117 depuis sa propre base. `elec-salarie-habilitation`
-  // entre au catalogue des titres (`R. 4544-10`) ; le contrôle semestriel des
-  // gaines de recyclage entre par l'arrêté du 8 octobre 1987 art. 4 b).
-  // L'empreinte ci-dessous n'a été calculée par aucune des deux branches :
-  // elle a été REMESURÉE ici, à l'intégration. C'est la règle, et les deux
-  // branches l'avaient chacune écrite dans leur commentaire — se recopier
-  // l'une l'autre aurait donné une valeur fausse que le test aurait acceptée
-  // sur l'une des deux moitiés.
+  // 2026-09-01, 116 → 118, en trois mouvements venus de deux branches écrites
+  // en parallèle : `elec-salarie-habilitation` entre au catalogue des titres
+  // (`R. 4544-10`), le contrôle semestriel des gaines de recyclage entre par
+  // l'arrêté du 8 octobre 1987 art. 4 b), et `esp-inspection-periodique` passe
+  // de trois à quatre ans — la borne que le texte donne.
   //
-  // Les deux sont des AJOUTS PURS : aucune ligne existante ne change de
-  // périodicité, de porteur ni de libellé, donc aucun calendrier généré ne
-  // perd de ligne à la réconciliation. Le porteur salarié ne dérive rien, et
-  // le semestriel de recyclage ne naît que sur un équipement déclaré avec
-  // l'attribut. Le déplacement d'empreinte force une réconciliation qui, sur
-  // les dossiers existants, ne changera rien — et c'est le comportement voulu :
-  // l'empreinte dit que le référentiel a bougé, pas qu'un calendrier est faux.
-  const EMPREINTE_ATTENDUE = "118-b64e08697152821d";
+  // L'empreinte n'a été calculée par AUCUNE des branches, et deux fois plutôt
+  // qu'une : chacune a vu 117 depuis `840abe2`, puis la correction ESP est
+  // arrivée après un premier merge. Elle a été REMESURÉE ici à chaque fois.
+  // Se recopier d'une branche aurait donné une valeur fausse que le test
+  // aurait acceptée sur une moitié du référentiel.
+  //
+  // Les deux ajouts sont PURS — aucune ligne existante ne change de porteur ni
+  // de libellé —, mais la correction ESP, elle, change une périodicité : les
+  // calendriers qui portent une inspection ESP verront leur échéance reculer
+  // d'un an à la réconciliation. C'est le but. Trois ans inventaient une
+  // échéance plus tôt que le droit, et l'outil déclarait en retard un
+  // exploitant qui ne l'était pas.
+  const EMPREINTE_ATTENDUE = "118-ce7825323b3b5122";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(

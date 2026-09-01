@@ -94,7 +94,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000036128632",
       },
     ],
-    periodicite: "triennale",
+    periodicite: "quadriennale",
     nature: "echeance_recurrente",
     pieceAttendue: null,
     realisateurs: ["personne_competente", "organisme_agree"],
@@ -104,7 +104,7 @@ export const obligationsEquipementSousPression: Obligation[] = [
     categoriesEquipement: ["EQUIPEMENT_SOUS_PRESSION"],
     conditions: CONDITION_SUIVI_EN_SERVICE,
     notesInternes:
-      "Périodicité modélisée triennale (l'enum n'a pas de « quadriennale ») : proxy conservateur des 4 ans réglementaires. Corrigé à l'audit 2026-08 : l'ancienne version citait « art. 19 » (= requalification) et « 40 mois » comme intervalle général — or 40 mois figure bien à l'article 15 de l'arrêté de 2017, mais comme mesure TRANSITOIRE réservée aux équipements déclarés avant son entrée en vigueur ; l'intervalle général est de quatre ans (constaté 2026-08-26).",
+      "PÉRIODICITÉ PORTÉE À QUATRE ANS LE 2026-09-01, sur décision de la propriétaire. Elle était `triennale`, et la note justifiait ainsi : « l'enum n'a pas de quadriennale, proxy conservateur des 4 ans réglementaires ». La raison avait cessé d'être vraie sans que la ligne bouge : `quadriennale` existe dans l'énumération (`types-communs.ts:33`) et `elec-travail-rapport-quadriennal` s'en sert. C'est le motif de la journée — une justification juste à l'écriture, laissée debout après que ce qu'elle décrivait a changé.\n\nCE N'EST PAS UN DESSERRAGE DE CONFORT, et la distinction compte. Le dépôt encode partout les plafonds comme « la date au-delà de laquelle l'exploitant est nécessairement en défaut » — c'est la doctrine des cinq ans de la VIP, des quatre ans du SIR, des trois ans de PE 4. Trois ans inventait une échéance PLUS TÔT que le droit : l'outil déclarait en retard un exploitant qui ne l'était pas. Quatre ans est la borne du texte.\n\nCE QUI RESTE NON ENCODÉ, et que la description dit : deux ans pour les générateurs de vapeur et les appareils à couvercle amovible à fermeture rapide, un an pour certains récipients mobiles. Le modèle ne porte pas l'attribut qui distinguerait ces familles — même blocage que le recyclage d'aération avant le 2026-09-01. Ces équipements (autoclaves, stérilisateurs) sont improbables dans la cible TPE/PME, ce qui explique l'ordre de priorité, pas l'absence. Corrigé à l'audit 2026-08 : l'ancienne version citait « art. 19 » (= requalification) et « 40 mois » comme intervalle général — or 40 mois figure bien à l'article 15 de l'arrêté de 2017, mais comme mesure TRANSITOIRE réservée aux équipements déclarés avant son entrée en vigueur ; l'intervalle général est de quatre ans (constaté 2026-08-26).",
   },
   {
     id: "esp-requalification-decennale",
