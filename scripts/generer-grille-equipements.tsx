@@ -37,6 +37,7 @@ import {
   type ConditionApplication,
   type Obligation,
 } from "@/lib/referentiels/conformite/types";
+import { CORPUS } from "@/lib/referentiels/corpus";
 import {
   CATEGORIES_EQUIPEMENT,
   PERIODICITE_EN_JOURS,
@@ -217,6 +218,35 @@ function parDomaine(obligations: Obligation[]): Map<string, Obligation[]> {
   return m;
 }
 
+/**
+ * Ce que le corpus a relevé, par clé d'article.
+ *
+ * **Le verbatim ne vit pas sur l'obligation.** `ReferenceLegale` porte la
+ * référence, l'URL et la version constatée ; c'est `ArticleDepouille`, dans le
+ * corpus, qui porte le texte relevé — `prescrit` (ce que l'article impose, en
+ * une phrase) et `citationCle` (l'extrait qui le prouve). Un dossier de
+ * relecture qui n'irait pas les chercher demanderait au relecteur de croire
+ * l'encodage sur parole.
+ *
+ * Toutes les références n'ont pas de correspondance : un article cité que
+ * personne n'a dépouillé n'a rien à montrer, et l'absence est dite plutôt que
+ * masquée.
+ */
+const RELEVE_PAR_ARTICLE = new Map<
+  string,
+  { prescrit?: string; citationCle?: string; version?: string; statut: string }
+>();
+for (const corpus of CORPUS) {
+  for (const a of corpus.articles) {
+    RELEVE_PAR_ARTICLE.set(a.ref, {
+      prescrit: a.prescrit,
+      citationCle: a.citationCle,
+      version: a.versionEnVigueur,
+      statut: a.statut,
+    });
+  }
+}
+
 const OBLIGATIONS_ETABLISSEMENT = obligationsConformite.filter(
   (o) => !estPorteeParEquipement(o) && !estPorteeParSalarie(o),
 );
@@ -302,13 +332,13 @@ function LigneObligation({ o }: { o: Obligation }) {
   );
 }
 
-function PiedDePage() {
+function PiedDePage({ document }: { document?: string }) {
   return (
     <Text
       style={s.footer}
       fixed
       render={({ pageNumber, totalPages }) =>
-        `Rojer — grille de relecture du référentiel ${REFERENTIEL_VERSION} · page ${pageNumber}/${totalPages}`
+        `Rojer — ${document ?? "grille de relecture du référentiel"} ${REFERENTIEL_VERSION} · page ${pageNumber}/${totalPages}`
       }
     />
   );
@@ -544,16 +574,168 @@ function GrilleDocument({ genereLe }: { genereLe: string }) {
   );
 }
 
+/**
+ * Le dossier détaillé : une entrée par obligation, avec ce qui la fonde.
+ *
+ * La grille dit CE QUE l'outil calcule ; ce document dit SUR QUOI. Un relecteur
+ * qui veut contester une périodicité a besoin des trois choses que la grille ne
+ * porte pas — le texte relevé à la source, la version constatée, et
+ * l'argumentation qui a conduit à encoder ainsi plutôt qu'autrement.
+ *
+ * Les notes internes y figurent telles quelles. Elles sont écrites pour la
+ * personne suivante qui touchera la ligne, pas pour un lecteur extérieur, et
+ * leur ton s'en ressent — elles disent « ne retirez pas ceci », elles nomment
+ * des erreurs passées, elles se contredisent parfois d'une version à l'autre.
+ * **C'est précisément ce qui en fait le meilleur support de relecture** : un
+ * défaut d'encodage se voit dans le raisonnement bien avant de se voir dans le
+ * tableau.
+ */
+function DossierDetaille({ genereLe }: { genereLe: string }) {
+  const parPorteur: [string, string, Obligation[]][] = [
+    [
+      "Portées par un équipement",
+      "Elles naissent d'un appareil déclaré au parc.",
+      obligationsConformite.filter(estPorteeParEquipement),
+    ],
+    [
+      "Portées par l'établissement",
+      "Elles naissent du statut d'employeur, de l'effectif ou de la typologie. Aucun appareil n'est requis.",
+      OBLIGATIONS_ETABLISSEMENT,
+    ],
+    [
+      "Portées par un salarié",
+      "L'employeur les déclare pour une personne nommée. Le produit ne dérive jamais qui est concerné.",
+      OBLIGATIONS_SALARIE,
+    ],
+  ];
+
+  return (
+    <Document title="Rojer — dossier de relecture détaillé" author="Rojer">
+      <Page size="A4" style={stylePage}>
+        <Text style={{ fontSize: 10, color: BOARD.ardoiseMoyenne }}>
+          Rojer — référentiel de conformité {REFERENTIEL_VERSION}
+        </Text>
+        <Text style={[s.h1, { marginTop: 4 }]}>Dossier de relecture détaillé</Text>
+        <Text style={{ fontSize: 10, color: BOARD.ardoiseMoyenne }}>
+          {obligationsConformite.length} obligations · document généré le{" "}
+          {genereLe}
+        </Text>
+        <View style={s.mentionsLegalesBloc}>
+          <Text>
+            {t(
+              "Une entrée par obligation. Pour chacune : ce que le dirigeant lit, les textes cités avec ce que le corpus en a relevé à la source, et l'argumentation d'encodage telle qu'elle a été écrite.",
+            )}
+          </Text>
+          <Text style={{ marginTop: 6 }}>
+            {t(
+              "Les notes d'encodage sont internes : elles s'adressent à la personne suivante qui touchera la ligne, elles nomment des erreurs passées et des réserves non levées. Elles sont reproduites sans retouche — un défaut se lit dans le raisonnement avant de se lire dans le tableau. Le référentiel n'est pas le droit : l'absence d'une obligation n'emporte aucune conclusion.",
+            )}
+          </Text>
+          <Text style={{ marginTop: 6 }}>
+            {t(
+              "Sous chaque référence, deux mentions reviennent souvent et il faut les lire pour ce qu'elles sont. « Dépouillé, aucun extrait relevé » : quelqu'un a ouvert l'article et l'a classé, sans en recopier le texte — le relecteur doit donc l'ouvrir lui-même, et c'est le cas le plus fréquent du référentiel. « Aucune version constatée » : la date de la version lue n'a pas été notée, donc rien ne dit que l'article n'a pas changé depuis. Ces deux silences sont affichés plutôt que masqués : ils bornent ce que cette relecture peut établir.",
+            )}
+          </Text>
+        </View>
+        <PiedDePage document="dossier de relecture détaillé ·" />
+      </Page>
+
+      {parPorteur.map(([titre, sous, liste]) => (
+        <Page key={titre} size="A4" style={stylePage}>
+          <Text style={[s.h1, { fontSize: 18 }]}>{titre}</Text>
+          <Text style={[s.small, { marginTop: 2 }]}>
+            {t(sous)} — {liste.length} obligations.
+          </Text>
+          {liste.map((o) => (
+            <View key={o.id} style={{ marginTop: 14 }} wrap>
+              <Text
+                style={{ fontSize: 11, fontFamily: "Helvetica-Bold" }}
+              >
+                {t(o.libelle)}
+              </Text>
+              <Text style={[s.small, { marginTop: 1 }]}>
+                {o.id} · {LABEL_DOMAINE[o.domaine]} · {LIBELLE_NATURE[o.nature]}{" "}
+                · {LABEL_PERIODICITE[o.periodicite]} · criticité {o.criticite}/5
+                · par {o.realisateurs.map((r) => LABEL_REALISATEUR[r]).join(" ou ")}
+              </Text>
+              <Text style={[s.small, { marginTop: 1 }]}>
+                Régime : {texteTypologie(o.typologies)} · Condition :{" "}
+                {conditionsTexte(o)}
+              </Text>
+              {o.description && (
+                <Text style={[s.td, { marginTop: 4 }]}>{t(o.description)}</Text>
+              )}
+              {o.referencesLegales.map((r, i) => {
+                const releve = r.article
+                  ? RELEVE_PAR_ARTICLE.get(r.article)
+                  : undefined;
+                return (
+                  <View key={i} style={{ marginTop: 4 }}>
+                    <Text style={[s.small, { fontFamily: "Helvetica-Bold" }]}>
+                      {t(r.reference)}
+                      {r.versionConstatee
+                        ? ` — version constatée ${r.versionConstatee}`
+                        : " — aucune version constatée"}
+                    </Text>
+                    {releve?.prescrit && (
+                      <Text style={s.small}>{t(releve.prescrit)}</Text>
+                    )}
+                    {releve?.citationCle && (
+                      <Text style={[s.small, { fontFamily: "Helvetica-Oblique" }]}>
+                        « {t(releve.citationCle)} »
+                      </Text>
+                    )}
+                    {!releve && (
+                      <Text style={s.small}>
+                        {t("Absent du corpus — jamais dépouillé.")}
+                      </Text>
+                    )}
+                    {releve && !releve.prescrit && !releve.citationCle && (
+                      <Text style={s.small}>
+                        {t("Dépouillé, aucun extrait relevé — texte à ouvrir.")}
+                      </Text>
+                    )}
+                  </View>
+                );
+              })}
+              {o.notesInternes && (
+                <Text style={[s.small, { marginTop: 4 }]}>
+                  {t(o.notesInternes)}
+                </Text>
+              )}
+            </View>
+          ))}
+          <PiedDePage document="dossier de relecture détaillé ·" />
+        </Page>
+      ))}
+    </Document>
+  );
+}
+
+const detaille = process.argv.includes("--detail");
+const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+
 const sortie =
-  process.argv[2] ??
-  path.resolve(process.cwd(), "..", "Rojer-grille-equipements.pdf");
+  args[0] ??
+  path.resolve(
+    process.cwd(),
+    "..",
+    detaille ? "Rojer-dossier-relecture.pdf" : "Rojer-grille-equipements.pdf",
+  );
 
 const genereLe = new Intl.DateTimeFormat("fr-FR", {
   dateStyle: "long",
   timeZone: "Europe/Paris",
 }).format(new Date());
 
-renderToFile(<GrilleDocument genereLe={genereLe} />, sortie).then(
+renderToFile(
+  detaille ? (
+    <DossierDetaille genereLe={genereLe} />
+  ) : (
+    <GrilleDocument genereLe={genereLe} />
+  ),
+  sortie,
+).then(
   () => console.log(`PDF écrit : ${sortie}`),
   (e) => {
     console.error(e);
