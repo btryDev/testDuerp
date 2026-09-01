@@ -1,4 +1,12 @@
 import { cleJourCivil } from "@/lib/dates";
+// Depuis le module feuille, pas depuis `prescriptions/schema.ts` : celui-ci
+// importe `estPeriodicitePlusStricte` d'ici, et passer par lui refermerait le
+// cycle que `sources.ts` a été créé pour ouvrir.
+import {
+  MARQUAGE_CONTRACTUEL,
+  estSourceContractuelle,
+  type SourcePrescription,
+} from "@/lib/prescriptions/sources";
 import {
   PERIODICITE_EN_JOURS,
   type Periodicite,
@@ -62,20 +70,44 @@ export type ResultatPrescriptions = {
   ignorees: PrescriptionIgnoree[];
 };
 
+/**
+ * Libellés en milieu de phrase — minuscule initiale, d'où la table locale
+ * plutôt que `LABEL_SOURCE_PRESCRIPTION`, qui est faite pour un sélecteur.
+ *
+ * `Record<SourcePrescription, …>` et non `Record<string, …>` : le `??
+ * "prescription"` qui fermait la fonction transformait tout oubli en mot
+ * générique plausible. Une demande d'assureur s'y serait fondue — c'est
+ * précisément la ligne qui doit se distinguer (ADR-032). Le cliquet est le
+ * type : une source ajoutée à l'enum sans entrée ici ne compile pas.
+ */
+const LIBELLE_SOURCE_EN_PHRASE: Record<SourcePrescription, string> = {
+  arrete_prefectoral: "arrêté préfectoral",
+  arrete_municipal: "arrêté municipal",
+  pv_commission_securite: "PV de la commission de sécurité",
+  arrete_icpe: "arrêté préfectoral ICPE",
+  inspection_travail: "demande de l'inspection du travail",
+  demande_assureur: "demande de votre assureur",
+  autre: "prescription",
+};
+
 function libelleSource(p: PrescriptionMatching): string {
-  const source: Record<string, string> = {
-    arrete_prefectoral: "arrêté préfectoral",
-    arrete_municipal: "arrêté municipal",
-    pv_commission_securite: "PV de la commission de sécurité",
-    arrete_icpe: "arrêté préfectoral ICPE",
-    inspection_travail: "demande de l'inspection du travail",
-    autre: "prescription",
-  };
   // `cleJourCivil` et non `toISOString()` : les dates d'acte sont stockées à
   // minuit **Paris** (ADR-011), soit 22:00 ou 23:00 UTC la veille — un slice
   // de l'ISO affichait donc systématiquement le jour précédent.
   const date = cleJourCivil(p.dateDocument);
-  return `${source[p.source] ?? "prescription"} ${p.reference} du ${date}`;
+  return `${LIBELLE_SOURCE_EN_PHRASE[p.source]} ${p.reference} du ${date}`;
+}
+
+/**
+ * Suffixe de marquage, ajouté aux raisons que le moteur rend en clair.
+ *
+ * Les `raisons` d'une obligation sur mesure et la `raison` d'une surcharge
+ * voyagent jusqu'au calendrier, au registre et au dossier de contrôle : les
+ * marquer à la source, c'est marquer d'un coup les surfaces qui les recopient,
+ * sans dépendre du fait que chacune y ait pensé.
+ */
+function suffixeMarquage(p: PrescriptionMatching): string {
+  return estSourceContractuelle(p.source) ? ` ${MARQUAGE_CONTRACTUEL}` : "";
 }
 
 /**
@@ -180,7 +212,7 @@ export function appliquerPrescriptions(
         surcharges[eq.id] = {
           periodicite: p.periodicite,
           prescriptionId: p.id,
-          raison: `Périodicité portée à « ${p.periodicite} » par ${libelleSource(p)}.`,
+          raison: `Périodicité portée à « ${p.periodicite} » par ${libelleSource(p)}.${suffixeMarquage(p)}`,
         };
         appliquee = true;
       }
@@ -215,7 +247,7 @@ export function appliquerPrescriptions(
       prescription: p,
       equipementsConcernes: declencheurs,
       raisons: [
-        `Prescription propre à votre établissement : ${libelleSource(p)}.`,
+        `Prescription propre à votre établissement : ${libelleSource(p)}.${suffixeMarquage(p)}`,
       ],
     });
   }

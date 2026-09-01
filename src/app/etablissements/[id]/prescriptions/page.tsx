@@ -4,16 +4,40 @@ import { requireEtablissement } from "@/lib/auth/scope";
 import { cleJourCivil, formaterDateFr } from "@/lib/dates";
 import { chargerPagePrescriptions } from "@/lib/prescriptions/queries";
 import { creerPrescription } from "@/lib/prescriptions/actions";
-import { LABEL_SOURCE_PRESCRIPTION } from "@/lib/prescriptions/schema";
+import {
+  LABEL_SOURCE_PRESCRIPTION,
+  MARQUAGE_CONTRACTUEL,
+  PASTILLE_CONTRACTUELLE,
+  SOURCES_PRESCRIPTION,
+  estSourceContractuelle,
+  type SourcePrescription,
+} from "@/lib/prescriptions/schema";
 import { PrescriptionForm } from "@/components/prescriptions/PrescriptionForm";
 import { PrescriptionActions } from "@/components/prescriptions/PrescriptionActions";
 
 /**
  * Prescriptions particulières propres à l'établissement (ADR-014) : arrêtés
- * du maire ou du préfet, arrêtés ICPE, demandes de l'inspection du travail.
+ * du maire ou du préfet, arrêtés ICPE, demandes de l'inspection du travail —
+ * et, depuis l'ADR-032, demandes de l'assureur, seule source qui ne soit pas
+ * un acte d'autorité. Celles-là portent leur marquage contractuel ici comme
+ * partout ailleurs : cette liste est la première surface où une échéance
+ * d'assurance pourrait se lire comme du droit.
+ *
  * L'état de chaque prescription (active / levée / ignorée avec raison) est
  * recalculé à l'affichage par la même fonction pure que le générateur.
  */
+
+/**
+ * `?source=` vient de l'URL : une valeur inconnue est ignorée, jamais
+ * reportée telle quelle dans le formulaire. La reconnaissance passe par
+ * `SOURCES_PRESCRIPTION`, donc une source retirée de l'enum cesse d'être
+ * acceptée sans qu'on ait à y penser.
+ */
+function sourceDemandee(
+  brut: string | undefined,
+): SourcePrescription | undefined {
+  return SOURCES_PRESCRIPTION.find((s) => s === brut);
+}
 
 // Les trois états d'une prescription, en champs du board.
 //

@@ -24,6 +24,7 @@ import type { StatutVerification } from "@prisma/client";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
 import { listerVerifications } from "@/lib/calendrier/queries";
 import { formaterDateCourteFr } from "@/lib/dates";
+import { estEcheanceContractuelle } from "@/lib/prescriptions/sources";
 import type { SectionRegistre } from "./sections";
 
 /**
@@ -52,6 +53,16 @@ export type VerificationTenue = {
    *  (ADR-022). Une telle ligne n'a pas de catégorie, donc pas de fiche de
    *  registre à laquelle se rattacher : voir le filtre plus bas. */
   equipement: { libelle: string; categorie: string } | null;
+  /**
+   * L'acte dont la ligne est née, quand elle vient d'une prescription
+   * particulière (ADR-014). `null` = elle vient du référentiel.
+   *
+   * La fonction est pure et ne lit pas la base : sans ce champ dans sa forme
+   * d'entrée, le registre serait la seule des six surfaces à ne pas pouvoir
+   * marquer une échéance contractuelle — et c'est le document qu'on présente
+   * à la commission de sécurité.
+   */
+  prescription?: { source: string } | null;
 };
 
 /** Une ligne de ce que la fiche porte, telle qu'elle se lira. */
@@ -64,6 +75,10 @@ export type LigneTenue = {
   href?: string;
   /** Le statut d'une vérification, quand la ligne en est une. */
   statut?: StatutVerification;
+  /** La ligne naît-elle d'un engagement contractuel (ADR-032) ? Le rendu en
+   *  fait une mention à part, jamais un mot noyé dans `meta` — qui est
+   *  tronqué. */
+  contractuelle?: boolean;
 };
 
 export type ContenuAilleurs = {
@@ -166,6 +181,7 @@ export function contenuTenuAilleursDepuis(
           ].join(" · "),
           href: `${base}/verifications/${v.id}`,
           statut: v.statut,
+          contractuelle: estEcheanceContractuelle(v),
         })),
       source: { libelle: "votre calendrier", href: `${base}/calendrier` },
       vide: "Aucune vérification n'est encore programmée pour ce matériel. Elle apparaîtra ici dès que votre calendrier en portera une.",

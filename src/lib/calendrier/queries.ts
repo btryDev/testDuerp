@@ -81,6 +81,14 @@ export async function listerVerifications(
       // d'une personne s'affiche « Tout l'établissement » sur toutes ces
       // surfaces, et aucune correction en aval n'y peut rien.
       salarie: { select: { nom: true, prenom: true } },
+      // La source de l'acte dont la ligne est née (ADR-032). Une seule
+      // colonne, et c'est le point de levier du marquage contractuel : six
+      // surfaces passent par `VerificationListee` — calendrier, fiche de
+      // vérification, registre, registre PDF, dossier de conformité PDF, et
+      // le ZIP qui assemble les deux PDF. Sans elle, chacune devait redemander
+      // la prescription, et celle qui l'oubliait présentait un engagement
+      // d'assurance comme une obligation légale sans que rien ne le signale.
+      prescription: { select: { source: true } },
     },
     orderBy: [{ datePrevue: "asc" }],
   });
@@ -117,6 +125,9 @@ export async function getVerification(id: string) {
       rapports: {
         orderBy: { dateRapport: "desc" },
       },
+      // Même raison que dans `listerVerifications` : la fiche d'une échéance
+      // est l'écran où l'on vient chercher ce qu'elle engage (ADR-032).
+      prescription: { select: { source: true, reference: true } },
     },
   });
   return v;

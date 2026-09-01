@@ -8,6 +8,12 @@ import { UploadRapportForm } from "@/components/rapports/UploadRapportForm";
 import { BadgeStatutAction } from "@/components/actions/BadgeStatutAction";
 import { CreerActionVerifForm } from "@/components/actions/CreerActionVerifForm";
 import { getVerification } from "@/lib/calendrier/queries";
+import { MentionContractuelle } from "@/components/prescriptions/MentionContractuelle";
+import {
+  MARQUAGE_CONTRACTUEL,
+  MARQUAGE_CONTRACTUEL_LONG,
+  estEcheanceContractuelle,
+} from "@/lib/prescriptions/sources";
 import {
   JOURS_HORIZON_PROCHE,
   formaterDateCourteFr,
@@ -167,6 +173,11 @@ export default async function VerificationDetailPage({
       obligation.pieceMedicale === true);
   const etat = classerVerification(v, aujourdhui);
 
+  // ADR-032. La fiche est l'écran où l'on vient chercher ce qu'une échéance
+  // engage : c'est le dernier endroit où elle peut encore se lire comme une
+  // obligation légale, et le premier où on ira vérifier.
+  const contractuelle = estEcheanceContractuelle(v);
+
   const faits: FaitFiche[] = [
     {
       cle: "Prochaine échéance",
@@ -209,6 +220,20 @@ export default async function VerificationDetailPage({
     },
   ];
 
+  // Un fait, et non une note en bas de page : ce qui fonde l'échéance est du
+  // même ordre que sa date et son réalisateur. Il n'est ajouté que pour une
+  // ligne contractuelle — les autres n'ont rien à distinguer, leur fondement
+  // est le référentiel, et l'écran le dit déjà par ses références légales.
+  if (contractuelle) {
+    faits.push({
+      cle: "Origine",
+      valeur: v.prescription?.reference
+        ? `Demande de votre assureur — ${v.prescription.reference}`
+        : "Demande de votre assureur",
+      note: MARQUAGE_CONTRACTUEL_LONG,
+    });
+  }
+
   return (
     <EcranFiche provenance={provenance} canonique={calendrier}>
       <HeroFiche
@@ -234,6 +259,7 @@ export default async function VerificationDetailPage({
         faits={faits}
         pastilles={
           <>
+            {contractuelle && <MentionContractuelle />}
             {/* Le statut « dépassée » se lit déjà « En retard » : deux
                 pastilles rose côte à côte disaient la même chose. Le
                 compte de jours la remplace alors, plutôt que de s'y
@@ -561,9 +587,26 @@ export default async function VerificationDetailPage({
                   </li>
                 ))}
               </ul>
-              <p className="board-eyebrow m-0 mt-6 text-[10px] tracking-[0.16em] text-[color:var(--board-blue-ink)]">
-                {obligation?.referencesLegales[0]?.reference ??
-                  "Obligation réglementaire"}
+              {/* Le repli disait « Obligation réglementaire » dès que
+                  `obligationId` ne résolvait pas — donc sur TOUTES les
+                  obligations sur mesure nées d'une prescription, dont celles
+                  qui viennent d'un assureur. C'est une référence légale
+                  fabriquée sur une ligne qui n'en a pas, exactement ce que
+                  l'ADR-032 interdit. Une ligne contractuelle dit ce qu'elle
+                  est ; les autres gardent le repli, qui reste vrai pour
+                  elles. */}
+              <p
+                className={
+                  "board-eyebrow m-0 mt-6 text-[10px] tracking-[0.16em] " +
+                  (contractuelle
+                    ? "text-[color:var(--board-amber-ink)]"
+                    : "text-[color:var(--board-blue-ink)]")
+                }
+              >
+                {contractuelle
+                  ? MARQUAGE_CONTRACTUEL
+                  : (obligation?.referencesLegales[0]?.reference ??
+                    "Obligation réglementaire")}
               </p>
             </section>
           }

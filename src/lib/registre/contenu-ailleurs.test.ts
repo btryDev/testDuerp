@@ -1,0 +1,85 @@
+import { describe, expect, it } from "vitest";
+import {
+  contenuTenuAilleursDepuis,
+  type VerificationTenue,
+} from "./contenu-ailleurs";
+import type { SectionRegistre } from "./sections";
+
+/**
+ * Le marquage contractuel sur la surface où il coûte le plus cher (ADR-032).
+ *
+ * Le registre de sécurité est le document qu'on ouvre devant une commission
+ * de sécurité ou un inspecteur : une échéance née d'une demande d'assureur
+ * qui s'y lirait comme réglementaire est l'erreur que l'ADR-014 voulait
+ * empêcher, et elle est invisible pour celui qui la subit — le dirigeant, qui
+ * croit devoir au droit ce qu'il doit à son contrat.
+ */
+
+// Une fiche de la partie 3, celle que le calendrier alimente.
+const sectionExtincteurs: SectionRegistre = {
+  id: "verifications-moyens-extinction",
+  partie: "3.1",
+  titre: "Vérifications des moyens d'extinction",
+  attendu: "Vérifications périodiques des extincteurs.",
+  categoriesEquipement: ["EXTINCTEUR"],
+};
+
+function verif(partial: Partial<VerificationTenue> = {}): VerificationTenue {
+  return {
+    id: "v1",
+    libelleObligation: "Vérification annuelle des extincteurs",
+    datePrevue: new Date("2026-11-02T00:00:00Z"),
+    dateRealisee: null,
+    statut: "a_planifier",
+    equipement: { libelle: "Extincteurs RDC", categorie: "EXTINCTEUR" },
+    prescription: null,
+    ...partial,
+  };
+}
+
+function lignesDe(verifications: VerificationTenue[]) {
+  const contenu = contenuTenuAilleursDepuis(
+    "etab-1",
+    "3.1",
+    sectionExtincteurs,
+    [],
+    verifications,
+  );
+  return contenu?.lignes ?? [];
+}
+
+describe("registre — marquage des échéances contractuelles", () => {
+  it("une échéance née d'une demande d'assureur est marquée", () => {
+    const [ligne] = lignesDe([
+      verif({ prescription: { source: "demande_assureur" } }),
+    ]);
+    expect(ligne.contractuelle).toBe(true);
+  });
+
+  it("une échéance du référentiel ne l'est pas", () => {
+    // Borne haute : marquer une obligation réglementaire « engagement
+    // d'assurance » la ferait paraître facultative, et personne ne viendrait
+    // le relever.
+    const [ligne] = lignesDe([verif()]);
+    expect(ligne.contractuelle).toBe(false);
+  });
+
+  it("une échéance née d'un arrêté préfectoral ne l'est pas non plus", () => {
+    // La couche voisine : toutes les lignes de prescription ne sont pas
+    // contractuelles. Un arrêté est un acte d'autorité, opposable.
+    const [ligne] = lignesDe([
+      verif({ prescription: { source: "arrete_prefectoral" } }),
+    ]);
+    expect(ligne.contractuelle).toBe(false);
+  });
+
+  it("le marquage ne se cache pas dans le texte tronqué de la ligne", () => {
+    // `meta` est rendu avec `truncate` : un marquage qui y serait glissé
+    // disparaîtrait sur un libellé long, c'est-à-dire précisément sur les
+    // lignes que l'assureur impose et qui portent des noms à rallonge.
+    const [ligne] = lignesDe([
+      verif({ prescription: { source: "demande_assureur" } }),
+    ]);
+    expect(ligne.meta ?? "").not.toContain("assurance");
+  });
+});

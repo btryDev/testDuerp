@@ -28,6 +28,21 @@ export type EtapeOnboarding = {
   href?: string;
   /** Texte du bouton d'action. Non affiché si l'étape est faite. */
   cta?: string;
+  /**
+   * Une étape qui se règle **ici**, sans quitter l'écran : la question est
+   * posée dans la liste et sa réponse s'y donne (ADR-025 § 7).
+   *
+   * Deux questions de paramétrage n'avaient nulle part où vivre — « Paramètres »
+   * pointe la page de connexion d'un assistant, et il n'existe pas d'écran de
+   * réglage du dossier. La checklist est l'endroit du produit qui sait déjà
+   * poser une question et disparaître quand elle est répondue ; leur foyer
+   * définitif viendra avec la refonte de la navigation.
+   *
+   * Exclusif de `href`/`cta` : une étape qui se règle sur place n'envoie
+   * nulle part. La suite éventuelle d'une réponse « oui » est portée par le
+   * formulaire lui-même.
+   */
+  question?: React.ReactNode;
 };
 
 export function OnboardingChecklist({
@@ -162,6 +177,8 @@ export function OnboardingChecklist({
                 <p className="m-0 mt-1 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                   {e.pourquoi}
                 </p>
+
+                {!e.faite && e.question}
 
                 {!e.faite && e.href && e.cta && (
                   <div className="mt-3">

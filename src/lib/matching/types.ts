@@ -11,6 +11,9 @@ import type {
   Obligation,
   PorteurObligation,
 } from "@/lib/referentiels/conformite/types";
+// Type seul : l'import est effacé à la compilation, il ne crée donc pas de
+// cycle avec `prescriptions/schema.ts`, qui importe une valeur d'ici.
+import type { SourcePrescription } from "@/lib/prescriptions/schema";
 
 /**
  * Types utilisés par le moteur de matching (étape 5, ADR-005).
@@ -124,7 +127,14 @@ export type SurchargePeriodicite = {
 /** Projection minimale d'une `PrescriptionParticuliere` active. */
 export type PrescriptionMatching = {
   id: string;
-  source: string;
+  /**
+   * `SourcePrescription` et non `string` : la table de libellés de
+   * `libelleSource()` est indexée par ce type, donc une source ajoutée à
+   * l'enum sans libellé ne compile plus. En `string`, elle retombait
+   * silencieusement sur le mot générique « prescription » — et une demande
+   * d'assureur s'y serait fondue sans que personne s'en aperçoive.
+   */
+  source: SourcePrescription;
   effet: "renforce_periodicite" | "obligation_sur_mesure";
   reference: string;
   autorite: string | null;

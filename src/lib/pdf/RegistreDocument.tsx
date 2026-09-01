@@ -1,6 +1,7 @@
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import { LABEL_RESULTAT } from "@/lib/rapports/schema";
 import { LABEL_DOMAINE } from "@/lib/calendrier/labels";
+import { MARQUAGE_CONTRACTUEL } from "@/lib/prescriptions/sources";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
 import type { ResultatVerification, StatutVerification } from "@prisma/client";
 import {
@@ -29,6 +30,14 @@ export type LigneVerif = {
   datePrevue: Date;
   statut: StatutVerification;
   domaine: DomaineObligation | null;
+  /**
+   * La ligne naît-elle d'un engagement contractuel (ADR-032) ? Portée par le
+   * type partagé, donc le registre et le dossier de conformité la reçoivent
+   * ensemble : un PDF remis à un assureur ou à un acquéreur qui présenterait
+   * une échéance contractuelle comme réglementaire est une affirmation que le
+   * produit ne peut pas soutenir, et le papier ne se corrige pas après coup.
+   */
+  contractuelle: boolean;
 };
 
 /**
@@ -644,6 +653,22 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
                   <Text style={[s.small, { marginTop: 2 }]}>
                     {v.domaine ? LABEL_DOMAINE[v.domaine] : ""}
                   </Text>
+                  {/* Sous l'obligation, en ambre : c'est la place où la ligne
+                      dit ce qu'elle est, et le domaine y est vide pour une
+                      obligation sur mesure. Le registre se lit devant une
+                      commission de sécurité — ce document ne peut pas laisser
+                      une échéance d'assurance passer pour du droit
+                      (ADR-032). */}
+                  {v.contractuelle && (
+                    <Text
+                      style={[
+                        s.small,
+                        { marginTop: 2, color: BOARD.ambreEncre },
+                      ]}
+                    >
+                      {MARQUAGE_CONTRACTUEL}
+                    </Text>
+                  )}
                 </View>
                 <Text style={[s.td, { width: "25%" }]}>
                   {v.equipementLibelle}

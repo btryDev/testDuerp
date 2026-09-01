@@ -43,6 +43,7 @@ import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import type { StatutVerification } from "@prisma/client";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
+import { MentionContractuelle } from "@/components/prescriptions/MentionContractuelle";
 import { MOIS_FR, MOIS_FR_COURT } from "@/lib/calendrier/labels";
 import {
   CHAMP_ETAT,
@@ -121,6 +122,12 @@ export type OccurrenceEquipement = {
   moisCourt: string;
   titre: string;
   meta: string;
+  /**
+   * L'occurrence naît-elle d'un acte contractuel (ADR-032) ? Un booléen et
+   * non un ajout à `meta`, qui est tronqué : un marquage qui s'efface quand
+   * le libellé est long manque là où il compte.
+   */
+  contractuelle?: boolean;
   etat: RegistreLigne;
   /** Statut de vérification — absent hors du parc, où il n'existe pas. */
   statut?: StatutVerification;
@@ -491,8 +498,9 @@ function CarteEquipement({
                       <span className="line-clamp-2 text-[13.5px] font-semibold leading-[1.35] tracking-[-0.01em] text-[color:var(--board-ink)]">
                         {o.titre}
                       </span>
-                      <span className="mt-0.5 block truncate text-[12px] text-[color:var(--board-slate-mid)]">
-                        {o.meta}
+                      <span className="mt-0.5 flex items-center gap-1.5 text-[12px] text-[color:var(--board-slate-mid)]">
+                        <span className="min-w-0 truncate">{o.meta}</span>
+                        {o.contractuelle && <MentionContractuelle />}
                       </span>
                     </span>
                     {o.statut ? (

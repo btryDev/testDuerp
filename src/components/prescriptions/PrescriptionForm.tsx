@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { ChampBoard } from "@/components/ui-kit";
 import {
   LABEL_SOURCE_PRESCRIPTION,
+  MARQUAGE_CONTRACTUEL_LONG,
   SOURCES_PRESCRIPTION,
+  estSourceContractuelle,
+  type SourcePrescription,
 } from "@/lib/prescriptions/schema";
 import type { PrescriptionActionState } from "@/lib/prescriptions/actions";
 import {
@@ -24,6 +27,13 @@ type Props = {
   ) => Promise<PrescriptionActionState>;
   obligations: { id: string; libelle: string; periodicite: string }[];
   equipements: { id: string; libelle: string; categorie: string }[];
+  /**
+   * Source pré-sélectionnée. La checklist du tableau de bord amène ici avec
+   * `demande_assureur` quand le dirigeant a répondu « oui » à la question de
+   * l'assureur : il arrive avec une lettre en main, pas avec une hésitation
+   * sur la nature de l'acte.
+   */
+  sourceInitiale?: SourcePrescription;
 };
 
 /**
@@ -82,10 +92,20 @@ function Erreur({ message }: { message?: string }) {
   );
 }
 
-export function PrescriptionForm({ action, obligations, equipements }: Props) {
+export function PrescriptionForm({
+  action,
+  obligations,
+  equipements,
+  sourceInitiale = "arrete_prefectoral",
+}: Props) {
   const [state, formAction, pending] = useActionState(action, {
     status: "idle",
   });
+  // La source est un état contrôlé — pas pour la valider, le schéma s'en
+  // charge, mais parce que l'avertissement contractuel doit apparaître au
+  // moment du choix. Une prescription d'assureur saisie sans que le dirigeant
+  // ait lu ce qu'elle n'est pas, c'est le marquage arrivé trop tard.
+  const [source, setSource] = useState<SourcePrescription>(sourceInitiale);
   const [effet, setEffet] = useState<
     "renforce_periodicite" | "obligation_sur_mesure"
   >("renforce_periodicite");
@@ -103,13 +123,31 @@ export function PrescriptionForm({ action, obligations, equipements }: Props) {
             <label className="label-board" htmlFor="source">
               Nature de l&apos;acte *
             </label>
-            <select id="source" name="source" className="champ-board">
+            <select
+              id="source"
+              name="source"
+              className="champ-board"
+              value={source}
+              onChange={(e) =>
+                setSource(e.target.value as SourcePrescription)
+              }
+            >
               {SOURCES_PRESCRIPTION.map((s) => (
                 <option key={s} value={s}>
                   {LABEL_SOURCE_PRESCRIPTION[s]}
                 </option>
               ))}
             </select>
+            {estSourceContractuelle(source) && (
+              // Ambre : l'attention, pas l'alarme. Ce n'est pas une erreur de
+              // saisie — la ligne est légitime —, c'est ce qu'elle engage.
+              <p className="m-0 mt-2 max-w-[52ch] rounded-2xl bg-[color:var(--board-amber)] px-3.5 py-2.5 text-[12.5px] leading-[1.55] text-[color:var(--board-amber-ink)]">
+                {MARQUAGE_CONTRACTUEL_LONG} Les échéances qui en naîtront
+                porteront cette mention dans le calendrier, le registre et le
+                dossier de contrôle, et aucune référence légale ne leur sera
+                attachée.
+              </p>
+            )}
           </div>
           <ChampBoard
             id="reference"

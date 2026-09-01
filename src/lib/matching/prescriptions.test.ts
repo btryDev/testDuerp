@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { obligationsIncendie } from "@/lib/referentiels/conformite";
+import { MARQUAGE_CONTRACTUEL } from "@/lib/prescriptions/sources";
 import {
   porteurDe,
   type Obligation,
@@ -351,5 +352,115 @@ describe("prescriptions — namespace des obligations sur mesure", () => {
     expect(estObligationSurMesure("incendie-erp-extincteurs-annuelle")).toBe(
       false,
     );
+  });
+});
+
+describe("prescriptions — marquage des sources contractuelles (ADR-032)", () => {
+  it("la raison d'une obligation sur mesure d'assureur porte le marquage", () => {
+    const res = appliquerPrescriptions(
+      [],
+      [
+        prescription({
+          id: "p1",
+          effet: "obligation_sur_mesure",
+          source: "demande_assureur",
+          reference: "Contrat 88-421",
+          libelle: "Thermographie du tableau électrique",
+          categorieEquipement: "EXTINCTEUR",
+        }),
+      ],
+      [extincteur],
+      NOW,
+    );
+    expect(res.surMesure[0].raisons[0]).toContain(MARQUAGE_CONTRACTUEL);
+  });
+
+  it("la raison d'une surcharge de périodicité d'assureur porte le marquage", () => {
+    const res = appliquerPrescriptions(
+      [applicable(extincteursAnnuelle, [extincteur])],
+      [
+        prescription({
+          id: "p1",
+          effet: "renforce_periodicite",
+          source: "demande_assureur",
+          obligationId: extincteursAnnuelle.id,
+        }),
+      ],
+      [extincteur],
+      NOW,
+    );
+    expect(res.applicables[0].surcharges!["eq-ext"].raison).toContain(
+      MARQUAGE_CONTRACTUEL,
+    );
+  });
+
+  it("un acte d'autorité ne porte AUCUN marquage : il n'a rien à nuancer", () => {
+    // La borne haute. Coller la mention sur un arrêté du maire sous-dirait
+    // une obligation qui, elle, est bien opposable — l'erreur symétrique, et
+    // celle que personne ne viendrait relever.
+    const res = appliquerPrescriptions(
+      [applicable(extincteursAnnuelle, [extincteur])],
+      [
+        prescription({
+          id: "p1",
+          effet: "renforce_periodicite",
+          source: "arrete_municipal",
+          obligationId: extincteursAnnuelle.id,
+        }),
+      ],
+      [extincteur],
+      NOW,
+    );
+    expect(res.applicables[0].surcharges!["eq-ext"].raison).not.toContain(
+      "assurance",
+    );
+  });
+
+  it("la source est nommée, jamais rabattue sur le mot générique", () => {
+    // `libelleSource` fermait sur `?? "prescription"` : une source sans
+    // libellé s'affichait comme n'importe quelle autre, et une demande
+    // d'assureur s'y serait fondue. La table est désormais typée par source,
+    // donc exhaustive — ce test vérifie que ce qu'elle rend arrive bien
+    // jusqu'à la raison que l'utilisateur lit.
+    const res = appliquerPrescriptions(
+      [],
+      [
+        prescription({
+          id: "p1",
+          effet: "obligation_sur_mesure",
+          source: "demande_assureur",
+          libelle: "Contrôle de hotte trimestriel",
+          categorieEquipement: "EXTINCTEUR",
+        }),
+      ],
+      [extincteur],
+      NOW,
+    );
+    expect(res.surMesure[0].raisons[0]).toContain("demande de votre assureur");
+  });
+
+  it("aucune référence légale n'est fabriquée pour une ligne d'assureur", () => {
+    // ADR-032 : « une prescription d'assureur ne cite pas d'article, et le
+    // produit ne doit pas lui en chercher un pour faire bonne figure ». Une
+    // obligation sur mesure ne vient d'aucun texte : rien de ce qu'elle rend
+    // ne doit ressembler à une citation d'article.
+    const res = appliquerPrescriptions(
+      [],
+      [
+        prescription({
+          id: "p1",
+          effet: "obligation_sur_mesure",
+          source: "demande_assureur",
+          libelle: "Vérification annuelle du désenfumage",
+          categorieEquipement: "EXTINCTEUR",
+        }),
+      ],
+      [extincteur],
+      NOW,
+    );
+    const ligne = res.surMesure[0];
+    expect(ligne.prescription.obligationId).toBeNull();
+    // Un article du Code s'écrit « L. 4121-1 », « R. 4227-34 », « D. 4711-1 ».
+    expect(ligne.raisons.join(" ")).not.toMatch(/\b[LRD]\.\s?\d{3,}/);
   });
 });

@@ -6,6 +6,7 @@ import {
 } from "@/lib/referentiels/types-communs";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import { estPeriodicitePlusStricte } from "@/lib/matching/prescriptions";
+import { SOURCES_PRESCRIPTION } from "./sources";
 
 /**
  * Validation d'une prescription particulière (ADR-014).
@@ -17,24 +18,21 @@ import { estPeriodicitePlusStricte } from "@/lib/matching/prescriptions";
  *    règle vit ici et dans le moteur.
  */
 
-export const SOURCES_PRESCRIPTION = [
-  "arrete_prefectoral",
-  "arrete_municipal",
-  "pv_commission_securite",
-  "arrete_icpe",
-  "inspection_travail",
-  "autre",
-] as const;
-export type SourcePrescription = (typeof SOURCES_PRESCRIPTION)[number];
-
-export const LABEL_SOURCE_PRESCRIPTION: Record<SourcePrescription, string> = {
-  arrete_prefectoral: "Arrêté préfectoral",
-  arrete_municipal: "Arrêté du maire",
-  pv_commission_securite: "Procès-verbal de la commission de sécurité",
-  arrete_icpe: "Arrêté préfectoral ICPE",
-  inspection_travail: "Demande ou mise en demeure de l'inspection du travail",
-  autre: "Autre acte",
-};
+// Sources, libellés et marquage contractuel vivent dans le module feuille
+// `sources.ts` — ce fichier importe le moteur de matching, et le moteur
+// importe désormais le marquage : les y laisser fermait un cycle d'imports.
+// Réexportés ici : les écrans qui les prennent de `schema.ts` n'ont pas
+// bougé, et n'avaient aucune raison de bouger.
+export {
+  SOURCES_PRESCRIPTION,
+  LABEL_SOURCE_PRESCRIPTION,
+  MARQUAGE_CONTRACTUEL,
+  MARQUAGE_CONTRACTUEL_LONG,
+  PASTILLE_CONTRACTUELLE,
+  estEcheanceContractuelle,
+  estSourceContractuelle,
+  type SourcePrescription,
+} from "./sources";
 
 export const EFFETS_PRESCRIPTION = [
   "renforce_periodicite",
