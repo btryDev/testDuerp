@@ -184,8 +184,10 @@ article. Le droit n'est pas écrit comme ça. »
 **Appliqué depuis** — voir la partie 2, qui reprend les dix sections une par
 une. En résumé : la section mécanique (URL) est soldée, deux rattachements sur
 cinq sont corrigés, les six champs d'application sont ouverts à cinq sur six,
-et **quatre constats visaient un état déjà révolu au moment où ils ont été
-écrits** — deux d'entre eux de moins de quatre heures.
+et **trois constats visaient un état déjà révolu sans que le document le
+sache** — dont deux révolus depuis moins de quatre heures. (Deux autres sont
+sans objet, mais le document les signalait lui-même comme tels : ceux-là ont
+bien fonctionné.)
 
 ---
 
@@ -376,11 +378,18 @@ Tous ces lots sont sur `origin/main`.
 | **SANS OBJET** | Le constat décrivait un état déjà révolu **au moment où il a été écrit**. Ce n'est pas un succès : c'est un sur-appel qui n'a pas été détecté comme tel, et qui a coûté une relecture. |
 | **ENREGISTRÉ** | Le constat est confirmé et porté par le code (statut `obligation_manquante`, ou `reserve` de lecture) — donc il ne se reperdra plus. Le manque, lui, demeure. |
 
-**Attention à SANS OBJET.** Quatre constats de la nuit du 26 août portaient sur
-un état du référentiel antérieur de quelques heures à leur rédaction. C'est le
-défaut de méthode le plus coûteux du dossier, et il est invisible sans ce
-tableau : un lecteur du document d'origine croit avoir cinq défauts à traiter
-là où il en a deux.
+**Attention à SANS OBJET.** Trois constats de la nuit du 26 août portaient sur
+un état du référentiel déjà révolu **sans que le document le sache** — celui de
+l'éclairage depuis cinq jours, ceux de `CH 58` et de `R. 4227-39` depuis quatre
+heures. C'est le défaut de méthode le plus coûteux du dossier, et il est
+invisible sans ce tableau : sur les cinq rattachements du § 2.2, un lecteur du
+document d'origine croit avoir cinq défauts à traiter là où il en a deux.
+
+À distinguer des sur-appels que le document **avait** vus et nommés
+(`elec-travail-periodique-annuelle`, les slugs d'ascenseur, l'arrêté du
+21 décembre 1993) : ceux-là ont coûté une lecture, pas une correction. Le
+dispositif à trois niveaux du document a donc fonctionné pour ce qu'il pouvait
+voir ; il ne pouvait pas voir que le code avait bougé sous lui.
 
 ---
 
