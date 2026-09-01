@@ -51,15 +51,29 @@ appliqué aux deux obligations entrées en dernier :
 | # | Couple | Fondement |
 |---|--------|-----------|
 | 4 | `sir-categorie-a` ⟂ `sir` | Même critère que #2. C'est la **même visite de R. 4624-28** à un rythme annuel : la description de `categorie-a` écrit elle-même « renouvelée chaque année — **et non tous les quatre ans** », et sa note « la périodicité passe donc de quatre ans à un an ». |
-| 5 | `vip-adaptee` ⟂ `sir` | Même critère que #1. R. 4624-24 substitue l'examen du SIR à « la visite d'information et de prévention prévue à l'article R. 4624-10 » ; `vip-adaptee` EST cette visite, aux modalités adaptées de R. 4624-17. |
+| 5 | `vip-adaptee` ⟂ `sir` | Même critère que #1, **à un pas de plus**. R. 4624-24 substitue nominativement l'examen du SIR à « la visite d'information et de prévention prévue à l'article R. 4624-10 » ; R. 4624-17 fait courir ses modalités adaptées « à l'issue de la visite d'information et de prévention » — visite qu'un salarié en suivi renforcé n'a pas. |
 
 Et deux de plus par composition des deux critères — `categorie-a` est l'examen
 du SIR, donc il se substitue lui aussi à la VIP sous ses deux formes :
 
-| # | Couple |
-|---|--------|
-| 6 | `sir-categorie-a` ⟂ `vip` |
-| 7 | `sir-categorie-a` ⟂ `vip-adaptee` |
+| # | Couple | Fondement |
+|---|--------|-----------|
+| 6 | `sir-categorie-a` ⟂ `vip` | R. 4451-82 renvoie le suivi du travailleur classé aux articles **R. 4624-22 à R. 4624-28**, intervalle qui CONTIENT R. 4624-24. Le renvoi lu en entier fonde le couple nominativement. |
+| 7 | `sir-categorie-a` ⟂ `vip-adaptee` | Même chaîne que #6, plus le pas de #5. |
+
+Les sept articles ont été **relus sur Légifrance le 2026-09-01 avant d'être
+cités**, et cette relecture a corrigé le fondement de #2 : la note du
+référentiel disait « c'est la même visite, à un rythme adapté », mais
+R. 4624-17 n'écrit pas cela — il fait bénéficier le travailleur, « à l'issue de
+la visite d'information et de prévention », de « modalités de suivi adaptées
+[…] selon une périodicité qui n'excède pas une durée de trois ans », et son
+seul renvoi normatif est au troisième alinéa de L. 4624-1. **L'exclusion tient,
+mais pas pour la raison écrite** : ce qui l'oppose à `vip`, c'est
+l'inconciliabilité des plafonds — trois ans ici, cinq à R. 4624-16 pour le
+renouvellement du même suivi. Le motif montré au dirigeant a été réécrit en
+conséquence, et la note du référentiel avec lui. C'est la règle « le rapport ne
+doit pas être plus affirmatif que le texte », appliquée à un motif qui, ici,
+s'affiche à l'écran.
 
 **Sept couples, sous deux critères et un seul, pas sept décisions.** Un
 mécanisme dimensionné sur deux en aurait trouvé sept : c'est exactement
