@@ -270,6 +270,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "GE 6",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303884/",
+        versionConstatee: "2007-11-19",
       },
       {
         source: "ARRETE",
@@ -277,6 +278,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
+        versionConstatee: "2010-01-23",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -303,6 +305,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
+        versionConstatee: "2010-01-23",
       },
     ],
     periodicite: "annuelle",
@@ -378,6 +381,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 18",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038485456/",
+        versionConstatee: "2019-07-01",
       },
       {
         source: "ARRETE",
@@ -385,6 +389,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
+        versionConstatee: "2010-01-23",
       },
     ],
     periodicite: "mensuelle",

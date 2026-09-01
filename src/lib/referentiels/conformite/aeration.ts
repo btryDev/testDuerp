@@ -199,6 +199,7 @@ export const obligationsAeration: Obligation[] = [
         article: "CH 58",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
+        versionConstatee: "2025-09-10",
       },
       {
         source: "ARRETE",
@@ -206,6 +207,7 @@ export const obligationsAeration: Obligation[] = [
         article: "CH 57",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "annuelle",
