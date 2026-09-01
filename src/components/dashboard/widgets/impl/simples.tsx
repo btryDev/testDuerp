@@ -452,7 +452,9 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
         >
           {deplie
             ? "Réduire"
-            : `Afficher les ${nbReplies} autres`}
+            : nbReplies === 1
+              ? "Afficher le dernier"
+              : `Afficher les ${nbReplies} autres`}
           <ChevronDown
             className={
               "size-3.5 transition-transform " + (deplie ? "rotate-180" : "")

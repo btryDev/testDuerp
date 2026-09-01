@@ -1709,7 +1709,12 @@ export function BlocPlanActions({ bundle }: { bundle: DashboardBundle }) {
           ? "Aucune action ouverte sur cet établissement."
           : c.actionsEnRetard === 0
             ? "Aucune action ne dépasse son échéance."
-            : `${c.actionsEnRetard} action${c.actionsEnRetard > 1 ? "s" : ""} sur ${ouvertes} dépasse${c.actionsEnRetard > 1 ? "nt" : ""} son échéance.`}
+            : // Le possessif s'accorde avec les actions, pas avec l'échéance :
+              // « 2 actions sur 5 dépassent LEUR échéance ». Il était figé au
+              // singulier là où le verbe, lui, était déjà accordé — donc faux
+              // dès la deuxième action en retard, et sur le premier écran du
+              // produit.
+              `${c.actionsEnRetard} action${c.actionsEnRetard > 1 ? "s" : ""} sur ${ouvertes} dépasse${c.actionsEnRetard > 1 ? "nt leur" : " son"} échéance.`}
       </p>
     </CarteBoard>
   );

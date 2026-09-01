@@ -20,10 +20,26 @@
  * Le chapitre `R. 4141-*` ne chiffre aucune durée, et `L. 4141-2` renvoie la
  * répétition à « des conditions déterminées par voie réglementaire ou par
  * convention ou accord collectif de travail » — conditions que le règlement
- * n'a jamais fixées. Toutes les obligations de formation de ce fichier portent
- * donc `periodicite: "autre"` : un état à maintenir, pas un rendez-vous.
- * **Aucune obligation de ce fichier ne porte de périodicité chiffrée**, et ce
- * n'est pas un manque de dépouillement : c'est ce que les textes disent.
+ * n'a jamais fixées. Les obligations tirées de ce chapitre portent donc
+ * `periodicite: "autre"`, qui ne dit qu'une chose : le texte n'écrit pas de
+ * rythme. Ce qu'elles SONT se lit dans `nature` (ADR-026), et elles ne sont
+ * pas toutes de la même espèce — l'accueil au poste est événementiel,
+ * l'autorisation de conduite est un état à maintenir.
+ *
+ * UNE SEULE PORTE UNE PÉRIODICITÉ CHIFFRÉE, ET ELLE VIENT DU CODE.
+ * `formation-securite-salarie-cse-sst` porte `quadriennale` :
+ * `L. 2315-17` écrit que ces formations « sont renouvelées lorsque les
+ * représentants ont exercé leur mandat pendant quatre ans, consécutifs ou
+ * non ». Cette ligne a d'abord porté `autre` ; c'était un dépouillement
+ * incomplet — `L. 4644-1` renvoie aux articles `L. 2315-16` À `L. 2315-18` et
+ * seul le dernier avait été ouvert. Ses `notesInternes` portent l'argument.
+ * L'en-tête de ce fichier a affirmé pendant ce temps que RIEN ici ne portait
+ * de périodicité chiffrée, « et ce n'est pas un manque de dépouillement :
+ * c'est ce que les textes disent ». La phrase était juste à l'écriture ; elle
+ * a survécu à la correction qu'elle contredisait, quatre cents lignes plus
+ * bas, sans qu'aucun diff ne la touche. Une affirmation en « aucune » ou
+ * « toutes » ne se relit pas quand on ajoute une ligne — c'est ce qui la rend
+ * chère.
  *
  * La seule durée écrite de la section 7 — les cinq ans de l'attestation
  * médicale de `R. 4323-56` — n'est pas ici : elle est délivrée par le médecin
@@ -48,7 +64,7 @@ export const obligationsFormationSecurite: Obligation[] = [
     domaine: "formation_securite",
     libelle: "Organiser la formation à la sécurité des salariés",
     description:
-      "L'employeur organise une formation pratique et appropriée à la sécurité pour les travailleurs qu'il embauche, ceux qui changent de poste ou de technique, les salariés temporaires, et — à la demande du médecin du travail — ceux qui reprennent après un arrêt d'au moins vingt et un jours. Elle porte sur les conditions de circulation, les conditions d'exécution du travail et la conduite à tenir en cas d'accident. Le Code ne fixe aucune périodicité de renouvellement : il la renvoie à un règlement qui ne l'a pas fixée, ou à un accord collectif. C'est donc une obligation permanente, à maintenir, et non une échéance qui tombe à date.",
+      "L'employeur organise une formation pratique et appropriée à la sécurité pour les travailleurs qu'il embauche, ceux qui changent de poste ou de technique, les salariés temporaires, et — à la demande du médecin du travail — ceux qui reprennent après un arrêt d'au moins vingt et un jours. Elle porte sur les conditions de circulation, les conditions d'exécution du travail et la conduite à tenir en cas d'accident. Le Code ne fixe aucune périodicité de renouvellement : il la renvoie à un règlement qui ne l'a pas fixée, ou à un accord collectif. Elle revient donc — à chaque embauche, à chaque changement de poste ou de technique, à chaque retour d'un arrêt long — sans qu'aucune date ne soit fixée pour la refaire.",
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
