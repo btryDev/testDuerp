@@ -71,11 +71,19 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
       versionEnVigueur: "2011-07-01",
       luLe: "2026-09-01",
       lecture: "premiere_main",
+      // LU DEUX FOIS LE MÊME JOUR, par deux lots qui s'ignoraient — le relevé
+      // incendie et le relevé électricité. Les deux `citationCle` sont
+      // identiques au mot près, et les deux `prescrit` concluent la même
+      // chose : l'article ne vise que les vérifications électriques et ne dit
+      // rien de l'éclairage de sécurité. Cette corroboration indépendante clôt
+      // une question ouverte quatre fois en onze jours.
       statut: "retenu",
       obligations: [
         "incendie-travail-eclairage-securite-autonomie-semestrielle",
         "incendie-travail-eclairage-securite-essai-mensuel",
       ],
+      reserve:
+        "RÉFÉRENCE À TORT, constat du 2026-09-01, article ouvert à la source. R. 4226-19 se borne aux vérifications électriques de R. 4226-14 et R. 4226-16, et son chemin le confirme : Chapitre VI « Installations électriques », Section 5 « Vérification des installations électriques ». Il ne fonde ni l'essai mensuel ni l'autonomie semestrielle de l'éclairage de sécurité, qui relèvent de R. 4227-14 et de l'arrêté du 14 décembre 2011. La question avait été ouverte quatre fois depuis le 2026-08-27, une fois dans chaque sens ; elle est tranchée. Retirer la référence des deux obligations n'était pas dans le lot de relevé.",
     },
     {
       ref: "R. 4227-39",

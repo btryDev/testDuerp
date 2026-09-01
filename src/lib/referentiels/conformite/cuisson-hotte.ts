@@ -65,6 +65,7 @@ export const obligationsCuissonHotte: Obligation[] = [
         article: "GC 22",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
+        versionConstatee: "1980-08-15",
       },
       {
         source: "ARRETE",
@@ -72,6 +73,7 @@ export const obligationsCuissonHotte: Obligation[] = [
         article: "GE 6",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303884/",
+        versionConstatee: "2007-11-19",
       },
       {
         source: "ARRETE",
@@ -108,6 +110,7 @@ export const obligationsCuissonHotte: Obligation[] = [
         article: "GC 22",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "annuelle",
@@ -153,6 +156,7 @@ export const obligationsCuissonHotte: Obligation[] = [
         article: "GZ 15",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304213",
+        versionConstatee: "2026-01-01",
       },
     ],
     periodicite: "annuelle",
@@ -205,6 +209,7 @@ export const obligationsCuissonHotte: Obligation[] = [
         article: "GC 22",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020317519/",
+        versionConstatee: "1980-08-15",
       },
       {
         source: "ARRETE",

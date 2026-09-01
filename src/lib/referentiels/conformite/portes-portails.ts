@@ -29,6 +29,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "Arrêté 1993-12-21 art. 2",
         url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006082855",
+        versionConstatee: "1994-07-13",
       },
       {
         source: "CODE_TRAVAIL",
@@ -36,6 +37,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "R. 4224-13",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532209/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -61,6 +63,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "Arrêté 1993-12-21 art. 9",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006679563",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "semestrielle",
@@ -87,6 +90,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "Arrêté 1993-12-21 art. 9",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006679563",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -94,6 +98,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "R. 4224-17",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532197/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "autre",
@@ -120,6 +125,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "R. 4224-13",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532209/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -127,6 +133,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "R. 4224-17",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532197/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "autre",
@@ -153,6 +160,7 @@ export const obligationsPortesPortails: Obligation[] = [
         article: "Arrêté 1993-12-21 art. 2",
         url:
           "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006082855",
+        versionConstatee: "1994-07-13",
       },
     ],
     periodicite: "mise_en_service_uniquement",

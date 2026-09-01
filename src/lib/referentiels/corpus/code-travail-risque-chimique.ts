@@ -15,41 +15,76 @@ export const CODE_TRAVAIL_RISQUE_CHIMIQUE: Corpus = {
   articles: [
     {
       ref: "R. 4222-21",
+      intitule: "Consigne d'utilisation des installations de ventilation",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483604",
       versionEnVigueur: "2018-01-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Impose un ÉCRIT permanent — une consigne d'utilisation disant les dispositions prises pour la ventilation et les mesures à prendre en cas de panne —, soumise à l'avis du médecin du travail et du CSE. Aucun contrôle, aucune mesure, aucune date.",
+      citationCle:
+        "L'employeur indique dans une consigne d'utilisation les dispositions prises pour la ventilation et fixe les mesures à prendre en cas de panne des installations. Cette consigne est établie en tenant compte, s'il y a lieu, des indications de la notice d'instructions fournie par le maître d'ouvrage conformément à l'article R. 4212-7. Elle est soumise à l'avis du médecin du travail, du comité social et économique.",
       statut: "retenu",
       obligations: ["aeration-travail-mise-en-service"],
+      reserve:
+        "L'ARTICLE NE FONDE PAS UN CONTRÔLE À LA MISE EN SERVICE — constat du 2026-09-01, article lu à la source, dernier des cinq constats du 2026-08-27 de cette famille resté non corrigé. Ni « vérification », ni « contrôle », ni « mise en service » n'y figurent : le seul acte prescrit est la rédaction d'une consigne, et le seul rythme, un avis à recueillir. `aeration-travail-mise-en-service` s'y adosse à tort ; le contrôle initial « au plus tard un mois après la mise en service » qu'elle décrit vient de l'article 3 de l'arrêté du 8 octobre 1987, qu'elle cite par ailleurs et qui suffit à la porter.\n\nCE QUE CELA LAISSE DE CÔTÉ, et qui est le vrai manque : la consigne d'utilisation elle-même n'est encodée nulle part au référentiel. C'est un état permanent, avec une pièce écrite, un avis de deux instances, et aucun porteur. Non corrigé ici — le lot ne crée pas d'obligation et n'en retire pas de référence.",
     },
     {
       ref: "R. 4412-11",
+      intitule:
+        "Mesures de prévention du risque d'exposition aux agents chimiques dangereux",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530929",
       versionEnVigueur: "2008-05-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Liste en sept points les mesures d'organisation par lesquelles l'employeur supprime ou réduit au minimum le risque d'exposition. Aucun contrôle daté, aucune périodicité, aucun dispositif matériel nommé : le 7° est le seul point à toucher au stockage, et il vise des « procédures de travail adéquates ».",
+      citationCle:
+        "L'employeur définit et applique les mesures de prévention visant à supprimer ou à réduire au minimum le risque d'exposition à des agents chimiques dangereux : […] 7° En concevant des procédures de travail adéquates, notamment des dispositions assurant la sécurité lors de la manutention, du stockage et du transport sur le lieu de travail des agents chimiques dangereux et des déchets contenant de tels agents.",
       statut: "retenu",
       obligations: [
         "stockage-dangereux-retention",
         "stockage-dangereux-verification-etancheite",
       ],
+      reserve:
+        "NI « RÉTENTION » NI « ÉTANCHÉITÉ » N'Y FIGURENT — constat du 2026-09-01, article lu en entier à la source, les sept alinéas relevés. Le rapport du 2026-08-27 le soutenait ; il est confirmé. Ce que le chapitre porte de plus proche est R. 4412-17, qui vise « les risques de débordement ou d'éclaboussures, ainsi que de déversement par rupture des parois des cuves, bassins, réservoirs et récipients de toute nature » : c'est une exigence de résultat sur les contenants, sans acte de contrôle daté ni mot de rétention. La rétention d'un volume est prescrite ailleurs — art. 22 de l'arrêté ministériel du 1er juin 2015, hors code du travail. `stockage-dangereux-verification-etancheite` se réclame donc d'un article qui ne dit pas ce qu'elle avance, et sa périodicité n'a aucun porteur ici. Non corrigé : hors du lot de relevé.",
     },
     {
       ref: "R. 4412-38",
+      intitule:
+        "Information et formation des travailleurs sur les agents chimiques dangereux",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483735",
       versionEnVigueur: "2018-01-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Trois obligations d'employeur envers les travailleurs ET le CSE : une information périodiquement actualisée sur les agents chimiques dangereux présents, l'accès aux fiches de données de sécurité du fournisseur, et une formation aux précautions à prendre. Le déclencheur est la PRÉSENCE d'agents chimiques dangereux sur le lieu de travail, pas un équipement de stockage. Aucun chiffre : « périodiquement actualisées » est le seul rythme, et il ne se convertit pas en échéance.",
+      citationCle:
+        "L'employeur veille à ce que les travailleurs ainsi que le comité social et économique : 1° Reçoivent des informations sous des formes appropriées et périodiquement actualisées sur les agents chimiques dangereux se trouvant sur le lieu de travail, telles que notamment leurs noms, les risques pour la santé et la sécurité qu'ils comportent et, le cas échéant, les valeurs limites d'exposition professionnelle et les valeurs limites biologiques qui leur sont applicables ; 2° Aient accès aux fiches de données de sécurité fournies par le fournisseur des agents chimiques ; 3° Reçoivent une formation et des informations sur les précautions à prendre pour assurer leur protection et celle des autres travailleurs présents sur le lieu de travail.",
       statut: "retenu",
       obligations: [
         "stockage-dangereux-fiches-donnees",
         "stockage-dangereux-formation-personnel",
       ],
+      reserve:
+        "LE CSE EST DESTINATAIRE AU MÊME TITRE QUE LES TRAVAILLEURS — « L'employeur veille à ce que les travailleurs AINSI QUE LE COMITÉ SOCIAL ET ÉCONOMIQUE » —, et aucune des deux obligations qui citent l'article ne le porte : l'une nomme les fiches, l'autre la formation des salariés qui manipulent. Relevé le 2026-09-01, non corrigé.",
     },
     {
       ref: "R. 4412-87",
+      intitule:
+        "Information et formation à la sécurité des travailleurs exposés aux agents CMR",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483731",
       versionEnVigueur: "2018-01-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "L'employeur organise, avec le CSE et le médecin du travail, l'information et la formation à la sécurité des travailleurs susceptibles d'être exposés aux agents cancérogènes, mutagènes ou toxiques pour la reproduction, et en fixe le contenu en cinq points. Aucune périodicité.",
+      citationCle:
+        "L'employeur organise, en liaison avec le comité social et économique et le médecin du travail, l'information et la formation à la sécurité des travailleurs susceptibles d'être exposés à l'action d'agents cancérogènes, mutagènes ou toxiques pour la reproduction.",
       statut: "retenu",
       obligations: ["stockage-dangereux-formation-personnel"],
+      reserve:
+        "CHAMP RESTREINT AUX CMR, confirmé par le chemin relevé le 2026-09-01 : Livre IV, Titre Ier, Chapitre II, SECTION 2 « Dispositions particulières aux agents chimiques dangereux cancérogènes, mutagènes et toxiques pour la reproduction », sous-section 6. R. 4412-38, lui, relève de la Section 1, commune à tous les agents chimiques dangereux. La référence porte déjà la mention « agents CMR uniquement » ; elle est exacte. Rien à corriger, l'entrée existe pour que le détour ne se refasse pas.",
     },
     {
       ref: "R. 4222-20",

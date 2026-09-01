@@ -92,6 +92,7 @@ export const obligationsAeration: Obligation[] = [
         article: "R. 4222-20",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -99,6 +100,7 @@ export const obligationsAeration: Obligation[] = [
         article: "R. 4222-21",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483604/",
+        versionConstatee: "2018-01-01",
       },
       {
         source: "ARRETE",
@@ -106,6 +108,7 @@ export const obligationsAeration: Obligation[] = [
         article: "Arrêté 1987-10-08 art. 3",
         url:
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000863044/",
+        versionConstatee: "1988-04-01",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -148,6 +151,7 @@ export const obligationsAeration: Obligation[] = [
         article: "Arrêté 1987-10-08 art. 4",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678611",
+        versionConstatee: "1988-04-01",
       },
     ],
     periodicite: "annuelle",
@@ -198,6 +202,7 @@ export const obligationsAeration: Obligation[] = [
         article: "CH 58",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
+        versionConstatee: "2025-09-10",
       },
       {
         source: "ARRETE",
@@ -205,6 +210,7 @@ export const obligationsAeration: Obligation[] = [
         article: "CH 57",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020304588/",
+        versionConstatee: "1980-08-15",
       },
     ],
     periodicite: "annuelle",
@@ -229,6 +235,7 @@ export const obligationsAeration: Obligation[] = [
         article: "PS 32",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000024812448/",
+        versionConstatee: "2006-07-09",
       },
     ],
     periodicite: "biennale",
@@ -264,6 +271,7 @@ export const obligationsAeration: Obligation[] = [
         article: "PS 32",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000024812448/",
+        versionConstatee: "2006-07-09",
       },
     ],
     periodicite: "annuelle",

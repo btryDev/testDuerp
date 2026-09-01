@@ -36,6 +36,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-14",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765072/",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",
@@ -43,6 +44,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "Arrêté 2011-12-26 art. 2",
         url:
           "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000025046978",
+        versionConstatee: "2011-12-30",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -68,6 +70,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-16",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070/",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "ARRETE",
@@ -76,6 +79,7 @@ export const obligationsElectricite: Obligation[] = [
         note: "L'article 3 fixe la périodicité à un an, puis ouvre une faculté que le référentiel ne portait pas : « Toutefois, le délai entre deux vérifications peut être porté à deux ans par le chef d'établissement si le rapport précédent ne présente aucune observation ou si, avant l'échéance, le chef d'établissement a fait réaliser les travaux de mise en conformité de nature à répondre aux observations contenues dans le rapport de vérification. » Le texte ne la subordonne pas à une autorisation : « Le chef d'établissement informe l'inspecteur du travail par lettre recommandée avec accusé de réception, accompagnée des éléments prouvant qu'il n'y a pas de non-conformité ou que les non-conformités ont été levées. Cet envoi doit comprendre, le cas échéant, l'avis des membres du CHSCT ou des délégués du personnel. » Constaté le 2026-08-26.",
         url:
           "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000025046978",
+        versionConstatee: "2011-12-30",
       },
     ],
     periodicite: "annuelle",
@@ -100,6 +104,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-19",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765064/",
+        versionConstatee: "2011-07-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -107,6 +112,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "L. 4711-5",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "autre",
@@ -132,6 +138,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4544-10",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051500368",
+        versionConstatee: "2025-10-01",
       },
       {
         source: "INRS",
@@ -265,6 +272,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "GE 6",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303884/",
+        versionConstatee: "2007-11-19",
       },
       {
         source: "ARRETE",
@@ -272,6 +280,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
+        versionConstatee: "2010-01-23",
       },
     ],
     periodicite: "mise_en_service_uniquement",
@@ -298,6 +307,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
+        versionConstatee: "2010-01-23",
       },
     ],
     periodicite: "annuelle",
@@ -373,6 +383,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 18",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038485456/",
+        versionConstatee: "2019-07-01",
       },
       {
         source: "ARRETE",
@@ -380,6 +391,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "EL 19",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000021231068/",
+        versionConstatee: "2010-01-23",
       },
     ],
     periodicite: "mensuelle",
@@ -494,6 +506,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4226-16",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000022765070/",
+        versionConstatee: "2011-07-01",
       },
     ],
     periodicite: "quadriennale",

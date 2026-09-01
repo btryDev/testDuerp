@@ -41,6 +41,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "C. env. L. 512-1",
         url:
           "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000006159273/",
+        versionConstatee: "2017-03-01",
       },
     ],
     periodicite: "autre",
@@ -67,6 +68,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-11",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530929/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "ARRETE",
@@ -74,6 +76,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "Arrêté 2015-06-01 art. 22",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044166790",
+        versionConstatee: "2022-01-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -110,6 +113,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-11",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018530929/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -146,6 +150,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4222-20",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018532294/",
+        versionConstatee: "2008-05-01",
       },
       {
         source: "ARRETE",
@@ -153,6 +158,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "Arrêté 1987-10-08 art. 4",
         url:
           "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006678611",
+        versionConstatee: "1988-04-01",
       },
     ],
     periodicite: "annuelle",
@@ -179,6 +185,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-38",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483735/",
+        versionConstatee: "2018-01-01",
       },
     ],
     periodicite: "autre",
@@ -204,6 +211,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-38",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483735/",
+        versionConstatee: "2018-01-01",
       },
       {
         source: "CODE_TRAVAIL",
@@ -211,6 +219,7 @@ export const obligationsStockageDangereux: Obligation[] = [
         article: "R. 4412-87",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036483731/",
+        versionConstatee: "2018-01-01",
       },
     ],
     periodicite: "autre",
