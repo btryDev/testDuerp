@@ -343,45 +343,95 @@ Ce paragraphe n'a donc plus de point ouvert.
 
 ---
 
-## 7 bis. Dette de veille — le décret n° 2026-253 n'a jamais été dépouillé
+## 7 bis. Dette de veille — le décret n° 2026-253, dépouillé le 2026-09-01
 
-*Ajouté le 2026-08-31 au soir. Numéroté « 7 bis » plutôt qu'inséré en renumérotant :
-les renvois à ce document désignent des sections par leur numéro.*
+*Ajouté le 2026-08-31 au soir, soldé le 2026-09-01 (lot D2). Numéroté « 7 bis »
+plutôt qu'inséré en renumérotant : les renvois à ce document désignent des
+sections par leur numéro. La section est conservée plutôt que supprimée — ce
+qu'elle disait de faux importe autant que ce qu'elle demandait.*
 
-**Le décret n° 2026-253 du 8 avril 2026 a touché au moins deux articles du
-référentiel, et personne n'a lu la liste de ce qu'il modifie.**
+**Le décret a été ouvert article par article sur Légifrance. Réponse : AUCUNE
+obligation encodée n'est fausse à cause de lui.**
 
-Les deux occurrences connues, l'une et l'autre découvertes **séparément et par
-accident**, à deux moments différents du 2026-08-31 :
+Objet réel du décret : valeurs limites d'exposition professionnelle pour le
+plomb, les diisocyanates et les émissions de moteurs diesel — transposition de
+la directive (UE) 2024/869 du 13 mars 2024. Sept articles, **treize articles de
+code touchés** :
 
-| Article | Ce que le décret en a fait | Comment on l'a su |
+| Art. du décret | Article de code | Effet |
 |---|---|---|
-| `R. 4624-23` | **réécrit**, version en vigueur au 10/04/2026 — c'est cette réécriture qui porte le `II` élargissant l'assiette du suivi renforcé | en relisant l'article pour encoder la liste des postes à risques |
-| `R. 4412-160` | **abrogé** (art. 3), effet au 10/04/2026 | en vérifiant une affirmation du corpus santé-travail qui le citait vivant |
+| 1 | `R. 4412-149` (tableau VLEP) | modifié |
+| 2 | `R. 4412-152` (valeurs limites biologiques) | remplacé |
+| 3, 1° | `R. 4412-160` | **abrogé** |
+| 3, 2° | `R. 4624-23`, I, 2° | sept mots supprimés |
+| 4 | `R. 4721-6` à `R. 4721-10` | modifiés (mise en demeure, « mesures correctrices » au lieu de « plan d'action ») |
+| 5 | `R. 4724-14`, + création de `R. 4724-14-1` et `R. 4724-14-2` | mesurages d'empoussièrement amiante |
+| 6 | `R. 717-16` code rural et de la pêche maritime, II, 2° | mots supprimés |
 
-Le second cas est le plus parlant : le même commentaire de
-`corpus/code-travail-sante-travail.ts` **citait le décret** pour la réécriture de
-`R. 4624-23` et **citait `R. 4412-160` comme en vigueur**. L'article avait été vu
-mourir et cité vivant dans le même paragraphe, parce que personne n'avait fait le
-lien entre les deux mentions du même texte.
+Croisé mécaniquement — et non au grep — contre les 116 obligations et les 237
+articles des 33 corpus : **un seul point de contact**, `R. 4624-23`, cité par le
+corpus `code-travail-sante-travail` et par l'obligation
+`sante-travail-etablissement-liste-postes-risques`. Les douze autres articles ne
+sont cités nulle part, ni au numéro ni au sujet (VLEP, valeur limite,
+empoussièrement, diisocyanate, mise en demeure, plan d'action, arrêt temporaire).
 
-**Ce qui n'est pas su.** Le décret n'a pas été ouvert article par article, et sa
-notice n'a pas été lue. S'il a modifié ou abrogé d'autres articles que le
-référentiel cite, rien ne le signale aujourd'hui — ni la veille
-(`veille-textes.ts` ne porte que des textes à application **différée**, celui-ci
-est en vigueur depuis avril), ni le corpus, qui contrôle la version d'un article
-lu mais ne remonte pas d'un texte modificateur vers les articles qu'il touche.
+**Et `R. 4624-23` est encodé juste.** L'article a été relevé verbatim le
+2026-09-01 dans sa version en vigueur : ses I, II, III et IV correspondent mot
+pour mot à ce que le corpus en dit. Le décret ne touche ni le III — qui fonde
+l'obligation — ni le IV.
 
-**Ce que ce serait de le solder** : ouvrir le décret, relever sa liste de
-modifications, et croiser avec les `article` du référentiel. C'est un lot de
-veille, pas un effet de bord d'un lot d'encodage — ce qui est précisément
-pourquoi il est écrit ici plutôt que fait en passant.
+### Ce que cette section elle-même affirmait de faux
 
-**Et la question qui le dépasse** : ce décret n'est probablement pas le seul.
-Le mécanisme qui manque est le sens inverse de `versionConstatee` — celui-ci
+Le tableau qui figurait ici disait que le décret avait **réécrit** `R. 4624-23`
+et que « c'est cette réécriture qui porte le `II` élargissant l'assiette du suivi
+renforcé ». **Les deux sont faux**, et c'était le seul endroit du dépôt à le
+dire :
+
+- il ne l'a pas réécrit. Verbatim de l'art. 3 : « Au 2° du I de l'article
+  R. 4624-23, les mots : "dans les conditions prévues à l'article R. 4412-160"
+  sont supprimés. » Sept mots dans un alinéa. Légifrance affiche « Modifié par » ;
+- le `II` ne vient pas de lui. Il est en vigueur depuis le **28/04/2022**
+  (décret n° 2022-679 du 26 avril 2022, art. 2) — vérifié sur la version
+  antérieure de l'article, en vigueur du 28/04/2022 au 10/04/2026, qui le porte
+  déjà mot pour mot. La date de 2026 est celle de la version courante de
+  l'article, pas celle du paragraphe. Trois fichiers avaient repris cette
+  confusion ; ils sont corrigés.
+
+**Ce que le décret a réellement fait, et qui n'était consigné nulle part** : le
+I 2° lisait « Au plomb dans les conditions prévues à l'article R. 4412-160 » ; il
+lit désormais « Au plomb ; ». `R. 4412-160`, abrogé le même jour, subordonnait le
+suivi renforcé à des seuils — 0,05 mg/m³ dans l'air, ou une plombémie de
+200 µg/l pour les hommes et 100 µg/l pour les femmes. **L'assiette du suivi
+renforcé s'est donc élargie pour le plomb**, sans seuil désormais. Sans effet sur
+le produit, qui ne dérive jamais qui relève du suivi renforcé.
+
+**Une troisième affirmation fausse, trouvée en passant et sans Légifrance** :
+trois fichiers appelaient `R. 4624-23` « l'article le plus récemment modifié de
+tout le référentiel ». Les données du corpus le démentent seules — douze articles
+portent une `versionEnVigueur` postérieure au 2026-04-10, jusqu'au 2026-07-01
+(`PE 4`, `PE 10`, `CCH R. 143-44`, `CCH R. 141-10`, `CCH R. 141-11`,
+`CCH R. 146-35`, `Arrêté 2025-12-01`, `L. 4141-5`, `L. 2315-17`,
+`CCH R. 134-11`, `Arrêté 2012-08-07`, `PE 27`). Corrigé aux trois endroits.
+
+### Ce qui reste, et qui dépasse ce décret
+
+Le mécanisme qui manque est le sens inverse de `versionConstatee` : celui-ci
 détecte qu'un article qu'on cite a bougé, il ne détecte pas qu'un texte qu'on ne
-cite pas a bougé nos articles. Les deux occurrences ci-dessus ont été trouvées à
-la main.
+cite pas a bougé nos articles. Ce décret-ci est soldé ; rien ne dit qu'il était
+le seul, et les deux occurrences qui l'ont fait découvrir l'avaient été à la
+main.
+
+**Deux voisins non ouverts**, signalés parce que le dépouillement les a croisés
+sans les lire : l'**arrêté du 8 avril 2026** publié avec ce décret, et l'arrêté
+ministériel désignant l'organisme national de `R. 4724-14-2`. Ni l'un ni l'autre
+n'a d'accroche dans le référentiel aujourd'hui.
+
+**Un dernier constat de même classe, laissé en l'état** :
+`conformite.test.ts` décrit `L. 2315-17` comme « le deuxième texte le plus
+récent du référentiel après `R. 4225-2` ». Ce classement est faux lui aussi
+(sept articles au 2026-07-01 le précèdent), mais il ne relève pas de ce décret.
+Ces superlatifs se périment à chaque dépouillement : **aucun ne devrait être
+écrit à la main.**
 
 ---
 
