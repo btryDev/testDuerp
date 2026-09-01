@@ -1,5 +1,10 @@
 # ADR-013 — Serveur MCP distant authentifié en OAuth 2.1
 
+> **Amendée le 2026-09-01 par l'ADR-028.** Ce document suppose qu'un utilisateur
+> n'a qu'un seul établissement — l'affirmation « la requête ne peut pas rendre
+> deux résultats » ne tient plus. L'outil MCP doit désambiguïser. Le reste de
+> l'ADR (OAuth 2.1, portée, lecture seule) est inchangé.
+
 - Statut : acceptée
 - Date : 2026-08-12
 - Portée : `src/lib/mcp/`, `src/app/api/mcp/`, `src/app/.well-known/`

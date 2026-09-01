@@ -1,5 +1,11 @@
 # ADR-019 — Le bâtiment est un lieu, le classement reste à l'établissement
 
+> **Remplacée le 2026-09-01 par l'ADR-029.** Le mot « bâtiment » quitte
+> l'interface au profit de « zone », et un établissement n'en porte plus que
+> trois au plus. Le modèle `Batiment` et **l'invariant central de cette ADR — un
+> lieu ne porte aucun régime — sont conservés mot pour mot** ; c'est le
+> vocabulaire et le plafond qui changent.
+
 - Statut : acceptée
 - Date : 2026-08-20
 - Portée : `prisma/schema.prisma` (`Batiment`, `Equipement.batimentId`,

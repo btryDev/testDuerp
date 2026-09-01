@@ -1,5 +1,12 @@
 # ADR-015 — « À faire » est un écran, pas un dossier : le calendrier en devient la porte
 
+> **Remplacée le 2026-09-01 par l'ADR-030.** Le rail ne porte plus les cinq
+> entrées décrites ici mais trois axes thématiques — santé-sécurité, équipement
+> et bâtiment, documentation — plus « À faire » et « Paramètres ». Ce que cette
+> ADR pose sur la nature d'une entrée (une page réelle, jamais une
+> approximation ; cliquer navigue *et* ouvre le panneau) est conservé par
+> l'ADR-030.
+
 - Statut : acceptée, **révisée le jour même** (voir « Révision » en fin de
   page), puis **amendée par l'ADR-017** (une cinquième entrée de rail,
   « Opérations », recueille le permis de feu et le plan de prévention, qui

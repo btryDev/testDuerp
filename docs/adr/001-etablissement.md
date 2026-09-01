@@ -1,5 +1,10 @@
 # ADR-001 — Introduction de l'entité `Etablissement`
 
+> **Statut au 2026-09-01 : de nouveau effective.** Le multi-établissements posé
+> ici a été refermé en août 2026 par deux contraintes d'unicité, puis rouvert par
+> la décision de réunion du 2026-09-01. Voir **ADR-028** pour les modalités, et
+> **ADR-025** pour le cadrage de périmètre dont elle découle.
+
 - **Date** : 2026-04-21
 - **Statut** : Acceptée
 - **Auteur** : Claude Code (sur brief Paloma)

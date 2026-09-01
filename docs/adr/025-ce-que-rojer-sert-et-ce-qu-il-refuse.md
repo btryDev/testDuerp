@@ -1,20 +1,23 @@
 # ADR-025 — Ce que Rojer sert, et ce qu'il refuse
 
-**Statut : proposé, non tranché.** Ce document met par écrit un cadrage produit
-énoncé le 2026-08-31. Il n'est pas une décision acquise : plusieurs de ses points
-contredisent des ADR en vigueur, et l'écart entre ce qu'il pose et ce que le code
-fait aujourd'hui est mesuré ci-dessous, point par point.
+- **Statut : tranché en réunion d'équipe le 2026-09-01.** Ce document a été
+  rédigé le 2026-08-31 comme un cadrage proposé, non acquis. Il est devenu la
+  décision.
+- **Portée** : le périmètre du produit, donc l'onboarding, le moteur de
+  matching, le module de couverture, et le contenu du référentiel.
+- **Remplace ou amende** : ADR-015 (navigation), ADR-019 (bâtiment), ADR-020
+  (nommer plutôt que refuser), ADR-014-prescriptions (sources), ADR-013 (MCP,
+  un seul établissement) ; **rend de nouveau effective** l'ADR-001 sur le
+  multi-établissements. Chacune de ces décisions a son ADR propre, listée au
+  § 9 : celle-ci porte le périmètre, les autres portent les mécanismes.
 
-Il est écrit pour être **discuté**, y compris avec un préventeur. C'est sa
-fonction : un cadrage qu'on peut contredire vaut mieux qu'un périmètre implicite
-qu'on découvre en s'y cognant.
+## Pourquoi ce document existe
 
-## Pourquoi maintenant
-
-Le référentiel est passé de 85 obligations à 116 en une journée, et de 10 domaines
-à 17. Tant qu'il ne servait que des équipements déclarés, son périmètre se lisait
-dans ses catégories d'appareils. Depuis qu'il sert le **statut d'employeur**, il
-n'a plus de bord visible : rien, dans le code, ne dit où le produit s'arrête.
+Le référentiel est passé de 85 obligations à 116 en une journée, et de 10
+domaines à 17. Tant qu'il ne servait que des équipements déclarés, son périmètre
+se lisait dans ses catégories d'appareils. Depuis qu'il sert le **statut
+d'employeur**, il n'a plus de bord visible : rien, dans le code, ne disait où le
+produit s'arrête.
 
 `docs/couverture-declaree-du-produit.md` dit ce que le produit **ne couvre pas**
 dossier par dossier. Ce document dit ce qu'il **refuse de couvrir**, toutes
@@ -26,173 +29,219 @@ affaires cessantes.
 
 **Servi** : Code du travail, ERP, habitation.
 
-**Refusé** : IGH, ICPE, gares, chapiteaux et tentes (CTS), établissements
-pénitentiaires, équipements sous pression particuliers, équipements frigorifiques
-sous pression, ATEX, DRPCE, CEM, CMR, amiante, plomb, radon, rayonnements
-ionisants, équipements sportifs.
+**Refusé à la création d'un dossier** : IGH, ICPE, gares, chapiteaux et tentes
+(CTS), établissements pénitentiaires, équipements sportifs, ATEX, DRPCE, CEM,
+CMR, amiante, plomb, radon, rayonnements ionisants.
 
-### Écart mesuré
+**Refusé au niveau de l'équipement, sans refuser le dossier** : équipements sous
+pression particuliers et équipements frigorifiques sous pression. Les ESP et les
+installations frigorifiques **standards** restent servis — six obligations
+`equipement-sous-pression.ts` et huit `froid.ts`. Le critère qui sépare les deux
+n'est pas encodé aujourd'hui : il est à établir par lecture de l'arrêté du
+20 novembre 2017 avant d'écrire la question qui le pose (lot B4 du plan de
+recadrage).
 
-`.claude/CLAUDE.md` déclare déjà hors périmètre : IGH, ICPE, ATEX, rayonnements
-ionisants, équipements sportifs, piscines. **Ne sont pas déclarés** : gares, CTS,
-établissements pénitentiaires, CEM, DRPCE, amiante, plomb, radon.
+### La différence entre refuser et déclarer, et pourquoi elle est nette
 
-Deux frictions réelles :
+Un régime **refusé** ne crée pas de dossier : l'onboarding s'arrête et dit
+pourquoi. Un régime **servi partiellement** crée le dossier et le prévient en
+permanence, par le mécanisme de l'ADR-020, qui reste en vigueur pour tout ce qui
+n'est pas refusé.
 
-- **Neuf obligations portent la typologie `igh`** alors que l'IGH est refusé. Le
-  produit le dit à l'utilisateur — un bandeau de périmètre s'affiche sur un
-  établissement déclaré IGH, vérifié à l'écran le 2026-08-31 — mais le référentiel
-  garde les lignes. À trancher : les retirer, ou assumer qu'elles servent à
-  qualifier le refus.
-- **Le CMR est partiellement encodé.** `stockage-dangereux.ts` cite `R. 4412-87`
-  (agents CMR), et le suivi individuel renforcé nomme les CMR parmi les sept
-  expositions qu'il ne sait pas identifier. Refuser le CMR suppose de décider ce
-  que devient cette ligne.
+Le critère : on refuse ce que le produit ne sait pas servir **du tout** — un
+règlement entier qu'il n'a jamais lu, une exposition qu'il ne sait pas détecter.
+On déclare ce qu'il sert **incomplètement**, parce que le dirigeant y gagne quand
+même quelque chose et qu'il est prévenu de ce qui manque.
 
-**Ce point est le plus discutable du document.** Refuser l'amiante et le plomb
-retire au produit des obligations qu'une TPE du bâtiment rencontre. Le critère qui
-les exclut — ce sont des expositions que le produit ne sait pas détecter — est
-juste, mais il vaut aussi pour d'autres lignes qu'on garde.
+### Deux frictions connues, non résolues par cette décision
+
+- **Neuf obligations portent la typologie `igh`** alors que l'IGH est refusé.
+  Leur retrait effectif est différé : le refus à l'entrée suffit
+  fonctionnellement, et le retrait toucherait une vingtaine de fichiers pour un
+  gain nul tant qu'aucun dossier IGH n'existe. Une seule est `igh`-only
+  (`incendie.ts:790`) ; les sept lignes d'ascenseur sont multi-régime et
+  survivraient au retrait du flag.
+- **Le CMR est partiellement encodé.** `stockage-dangereux.ts` cite `R. 4412-87`.
+  Refuser le régime CMR suppose de décider ce que devient cette ligne — à
+  trancher après relecture de l'article en première main, pas avant.
+
+**Ce point reste le plus discutable du document.** Refuser l'amiante et le plomb
+retire au produit des obligations qu'une TPE du bâtiment rencontre. Le critère
+qui les exclut — ce sont des expositions que le produit ne sait pas détecter —
+est juste, mais il vaut aussi pour d'autres lignes qu'on garde.
 
 ---
 
-## 2. Un bâtiment par SIRET, jusqu'à trois zones
+## 2. Les catégories d'ERP : servies, mais inégalement, et cela se dit
 
-Un établissement porte **un seul bâtiment**, subdivisable en **trois zones** au
-plus.
+**Décision du 2026-09-01** : les ERP de 1re à 4e catégorie **ne sont pas
+refusés**. Ils sont servis partiellement et prévenus, exactement comme
+aujourd'hui — `CATEGORIES_COUVERTES = ["N5"]` reste la déclaration honnête, et
+le bandeau de couverture le dit à chaque dossier concerné.
 
-### Écart mesuré
+Le premier cadrage envisageait de couvrir pleinement les catégories 1 à 4. Il a
+été renversé le jour même, et le motif mérite d'être gravé parce qu'il gouverne
+les arbitrages suivants :
 
-Le modèle permet aujourd'hui **N bâtiments** par établissement, sans limite, et il
-n'a pas de notion de zone. Le jeu de démonstration en porte deux depuis le
-2026-08-31.
+> Tout ce recadrage **resserre** la surface du produit — un établissement par
+> dossier, cinquante salariés au plus, cinq unités de DUERP, régimes spéciaux
+> refusés. Couvrir les catégories 1 à 4 serait le seul point qui
+> **augmenterait** la promesse, et il le ferait sur un règlement — le livre II
+> de l'arrêté du 25 juin 1980, par type d'activité — dont **aucun chapitre
+> type-spécifique n'a jamais été dépouillé**. Le défaut que cela produirait ne
+> casserait aucun test : un dirigeant de 2e catégorie verrait un dossier
+> d'apparence complète qui ne l'est pas. C'est la famille de défauts la plus
+> coûteuse, et celle-là serait construite exprès.
+
+La couverture pleine des catégories 1 à 4 est donc un **chantier postérieur**,
+hors du recadrage. Quand il s'ouvrira, il commencera par revérifier en première
+main `docs/registre-releve-types-erp.md` — relevé du 2026-08-26 qui couvre neuf
+types sur dix-neuf et déclare lui-même n'avoir lu aucun article en première main
+— puis dépouillera les dix types manquants et les deux arrêtés modificatifs de
+2025 (29 juillet et 1er septembre), jamais ouverts.
+
+**Ce qui reste dans le recadrage** : les obligations par type **au sein de la
+5e catégorie** — chapitres PO (hôtels, type O) et PU (soins, type U) du livre
+III, vingt articles aujourd'hui `non_couvert` dans
+`corpus/arrete-1980-livre-3.ts`. Le mécanisme qui les portera —
+`typologies.erp.types` — existe déjà et fonctionne ; il n'a qu'un seul usage
+(`electricite.ts:469`).
+
+---
+
+## 3. Un établissement, une zone à trois subdivisions au plus
+
+Un utilisateur peut tenir **plusieurs établissements** — c'était déjà la cible de
+l'ADR-001, refermée en août par deux contraintes d'unicité. Chaque établissement
+porte **un seul lieu**, subdivisable en **trois zones** au plus.
+
+Le mot « bâtiment » quitte l'interface. Le modèle `Batiment` reste en base sous
+ce nom — il porte déjà exactement ce qu'une zone doit porter : un nom, un
+complément d'adresse, des équipements — mais l'utilisateur ne lit plus que
+« zone ». Voir l'ADR-029, qui remplace l'ADR-019 en en gardant l'invariant : une
+zone est un lieu, elle ne porte aucun régime.
 
 **Cette règle est plus restrictive que le modèle : l'appliquer retire une
-capacité.** Ce n'est pas un simple réglage.
-
-Elle interroge aussi l'**ADR-019**, qui pose que le bâtiment est un lieu et ne
-porte aucun régime. Un « bâtiment unique avec trois zones » est un autre objet
-qu'« un bâtiment parmi N » : si la zone porte des équipements, elle devient le lieu
-que l'ADR-019 confie au bâtiment ; si elle n'en porte pas, elle est décorative.
-
-**À trancher avant d'écrire une ligne de code** : qu'est-ce qu'une zone porte ?
+capacité.** Le plafond de trois vaut à la création ; les dossiers qui portent
+déjà plus de trois bâtiments les gardent.
 
 ---
 
-## 3. La catégorie d'ERP ou la famille d'habitation est obligatoire
+## 4. La catégorie d'ERP et la famille d'habitation sont obligatoires
 
-Un dossier ne peut pas exister sans que son régime soit précisé.
+Un dossier ne peut pas se créer sans que son régime soit précisé.
 
-### Écart mesuré
+`Etablissement.categorieErp` reste **optionnel en base** — la contrainte vit dans
+les schémas de création, pas dans la colonne, pour que les dossiers existants qui
+ne l'ont pas continuent d'exister. Ils portent en revanche une indétermination
+visible, qui demande de compléter.
 
-`Etablissement.categorieErp` est **optionnel** en base (`CategorieErp?`). La rendre
-obligatoire demande une migration et une reprise de l'onboarding — plus une
-décision sur les dossiers existants qui ne l'ont pas.
+**La famille d'habitation n'existait pas du tout.** `estHabitation` était un
+booléen ; aucun champ ne portait la famille. Or **neuf obligations portent la
+typologie habitation** : elles s'appliquaient sans qu'on sache à quelle famille.
 
-**La famille d'habitation n'existe pas du tout.** `estHabitation` est un booléen ;
-aucun champ ne porte la famille. Or **neuf obligations portent déjà la typologie
-habitation** : elles s'appliquent aujourd'hui sans qu'on sache à quelle famille.
-
-C'est le point où le code est le plus en retard sur le cadrage, et le seul où
-l'écart produit déjà un risque : une obligation d'habitation servie sans
+C'est le point où le code était le plus en retard sur le cadrage, et le seul où
+l'écart produisait déjà un risque : une obligation d'habitation servie sans
 distinction de famille est probablement fausse pour certaines d'entre elles.
+C'est pour cette raison que la famille est le **premier lot** du recadrage, et
+que l'arrêté du 31 janvier 1986 — jamais ouvert — est le premier dépouillement.
 
 ---
 
-## 4. Trois axes transversaux
+## 5. Trois axes transversaux, et deux entrées qui n'en sont pas
 
 L'application s'organise en trois axes : **santé-sécurité**, **équipement et
 bâtiment**, **documentation**.
 
-### Écart mesuré
-
-La navigation actuelle porte **cinq entrées de rail** — À faire, Opérations, Mon
-établissement, Mes registres, Paramètres — posées par l'**ADR-015**, qui écrit
-qu'une entrée de rail désigne une page et non une approximation.
-
-Passer à trois axes est une **refonte de la navigation**, pas un regroupement de
-menus. Elle demande de rouvrir l'ADR-015 et de dire ce que devient chacune des
-cinq entrées.
-
-**Une question que ce document ne tranche pas** : les trois axes sont-ils une
-navigation, ou une grille de lecture ? Un dirigeant qui cherche son registre de
-sécurité le cherche-t-il sous « documentation » ou sous « santé-sécurité » ? Les
-deux réponses sont défendables et elles produisent deux produits différents.
+Le rail en portera **cinq entrées** : les trois axes, plus « À faire » et
+« Paramètres ». L'écart à la lettre de la directive est assumé et il a une
+raison : les trois axes sont **thématiques**, les deux autres sont
+**fonctionnelles**. Le calendrier est l'écran le plus consulté du produit ;
+l'enterrer dans un axe thématique le cacherait. Voir l'ADR-030, qui remplace
+l'ADR-015.
 
 ---
 
-## 5. Le DUERP est limité à cinq postes de travail
+## 6. Le DUERP est limité à cinq unités de travail
 
-### Écart mesuré
-
-Aucune limite n'existe aujourd'hui.
+Cinq **hors** l'unité « Risques transverses », qui est créée systématiquement et
+que l'écran masque déjà. Sans cette précision, les pré-remplissages sectoriels
+restauration et bureau — cinq unités chacun — seraient refusés dès la première
+étape.
 
 C'est le point le plus simple à implémenter et le plus lourd de conséquences
 commerciales : il fixe la taille d'entreprise que le produit accepte de servir.
 Cinq postes n'est pas cinq salariés — une TPE de six personnes peut n'avoir que
 deux postes, un commerce de trois peut en avoir quatre.
 
-**À vérifier avant de le poser** : combien de postes portent les dossiers réels ?
-La limite doit sortir d'une mesure, pas d'une intuition.
-
 ---
 
-## 6. Deux questions à poser, qui n'existent pas
+## 7. Deux questions à poser, qui n'existaient pas
 
 **Les demandes spécifiques de l'assureur.** Un assureur impose des vérifications
-que le droit n'impose pas — c'est fréquent en restauration et en commerce. Le
-produit n'a aucun endroit pour les recevoir, et le référentiel refuse par
-construction les référentiels privés comme sources opposables.
+que le droit n'impose pas — c'est fréquent en restauration et en commerce. Elles
+entrent par le mécanisme des prescriptions particulières, sous une source
+nouvelle, et portent un marquage qui les distingue du droit partout où elles
+s'affichent. Voir l'ADR-032, qui amende l'ADR-014.
 
-La question posée à l'onboarding permettrait de **nommer** ces demandes sans les
-confondre avec du droit. C'est la même distinction que l'ADR-024 pose pour les
-transmissions : nommer sans dériver.
-
-**Les EPI présents.** Les EPI sont aujourd'hui **hors périmètre déclaré**. Poser la
-question sans encoder l'obligation est cohérent — l'outil saurait ce qu'il ne
-couvre pas — mais il faut décider ce qu'il en fait, sous peine de collecter une
-donnée qui ne sert à rien.
+**Les EPI présents.** La question est posée et la réponse consignée. Ce qu'on en
+fait dépend d'une lecture qui n'a jamais été faite : `R. 4323-95` à `-106` et
+l'arrêté du 19 mars 1993 ne sont ouverts nulle part dans le dépôt. Si la
+vérification périodique est fondée pour les EPI qu'une TPE porte — le harnais,
+essentiellement —, une catégorie d'équipement la portera. Sinon la réponse reste
+une consignation. **Lire avant d'encoder** : c'est un guide commercial, non une
+source, qui a fait croire à une périodicité annuelle générale.
 
 ---
 
-## 7. Deux interfaces qui disent ce qui manque
+## 8. Deux interfaces qui disent ce qui manque
 
-**Dans la documentation** : la liste des documents obligatoires, y compris ceux que
-le produit ne produit pas.
+**Dans la documentation** : la liste des documents obligatoires, y compris ceux
+que le produit ne produit pas.
 
 **Dans la santé-sécurité** : ce qui est exclu du périmètre, avec des indications.
+Cette page distingue **trois statuts**, et la distinction est le fond du sujet :
+refusé à l'entrée / servi partiellement et prévenu (les ERP de 1re à 4e
+catégorie) / hors périmètre déclaré.
 
-### Écart mesuré
-
-C'est le point où le produit est **le plus avancé**. Le bandeau de périmètre du
+C'est le point où le produit était le plus avancé : le bandeau de périmètre du
 calendrier dit déjà ce qui n'est pas couvert sur quatre axes, et
-`docs/couverture-declaree-du-produit.md` grave ces déclarations. L'ADR-020 en pose
-le mécanisme.
-
-Ce qui manque est l'écran documentation, et l'extension du bandeau aux régimes
-refusés par le présent document.
+`docs/couverture-declaree-du-produit.md` grave ces déclarations, sous la garde
+d'un test qui échoue si le document et le corpus divergent.
 
 ---
 
-## Ce que ce document ne fait pas
+## 9. Les ADR que cette décision déplace
 
-Il ne modifie aucun code. Il ne modifie pas `.claude/CLAUDE.md`, qui appartient à
-sa propriétaire et dont la liste hors périmètre reste la référence tant que ce
-cadrage n'est pas tranché.
+| ADR | Ce qui lui arrive | Portée par |
+|---|---|---|
+| 001 — établissement | **Redevient effective** : le multi-site était sa cible, refermée en août | ADR-028 |
+| 013 — MCP OAuth | Amendée : « la requête ne peut pas rendre deux résultats » tombe | ADR-028 |
+| 014 — prescriptions | Amendée : une source contractuelle existe, à côté des actes d'autorité | ADR-032 |
+| 015 — rail de navigation | **Remplacée** : cinq entrées deviennent trois axes + deux fonctionnelles | ADR-030 |
+| 019 — bâtiment lieu | **Remplacée** : la zone prend la place du bâtiment, plafonnée à trois | ADR-029 |
+| 020 — couverture déclarée | Amendée : on refuse à l'entrée les régimes exclus, on nomme tout le reste | ADR-031 |
 
-Il ne classe pas les sept points par priorité : trois touchent le modèle
-(bâtiment, catégorie, famille d'habitation), un touche la navigation, un touche le
-périmètre réglementaire, deux ajoutent des questions. Ce ne sont pas des travaux de
-même nature, et les mêmes arbitrages ne les gouvernent pas.
+Aucune n'est supprimée : leur motif d'origine reste utile, c'est leur statut qui
+change. Chacune porte en tête un renvoi vers celle qui la remplace.
 
-## Ce qui reste à trancher, en une ligne chacun
+**À trancher par la propriétaire** : deux fichiers portent le numéro ADR-014
+(`014-prescriptions-particulieres.md` et `014-provenance-navigation.md`). La
+collision précède ce recadrage ; elle mérite une renumérotation.
 
-| # | Question |
+---
+
+## 10. Ce que ce document ne fait pas
+
+Il ne modifie pas `.claude/CLAUDE.md`, qui appartient à sa propriétaire. Les
+lignes que ce recadrage rend fausses lui sont signalées, sans être touchées :
+
+| Ligne | Ce qui devient faux |
 |---|---|
-| 1 | Que deviennent les neuf obligations IGH, et la ligne CMR ? |
-| 2 | Qu'est-ce qu'une zone porte, et l'ADR-019 tient-il ? |
-| 3 | La famille d'habitation : quel champ, et que faire des dossiers sans catégorie ? |
-| 4 | Les trois axes sont-ils une navigation ou une grille de lecture ? |
-| 5 | Cinq postes : mesuré sur quoi ? |
-| 6 | La demande d'assureur : nommée seulement, ou suivie ? |
-| 7 | L'écran documentation : que liste-t-il exactement ? |
+| 71-77 | La section Périmètre ignore la borne à cinquante salariés et le refus à l'entrée |
+| 286-287 | « IGH, sites industriels… hors périmètre » et la bascule ICPE en couverture partielle : ces régimes sont désormais refusés à la création. La bascule reste vraie pour les ERP de 1re à 4e catégorie |
+| 298 | « Registres non couverts : … EPI » — à requalifier selon l'issue du dépouillement (le registre reste non couvert dans tous les cas) |
+| 318 | « régimes cumulables travail / ERP / **IGH** / habitation » — l'IGH est refusé, et la famille entre dans le régime habitation |
+| 341, 385-405 | Toute la section Navigation décrit les cinq entrées de l'ADR-015 |
+| 355 | ADR-025 y figure comme « proposé, non tranché » |
+| 37, 423 | Le DUERP y est décrit sans son plafond de cinq unités |

@@ -1,5 +1,11 @@
 # ADR-020 — Ce qu'un DUERP ne couvre pas se déclare, et se grave avec lui
 
+> **Amendée le 2026-09-01 par l'ADR-031.** Le mécanisme décrit ici — ce qui n'est
+> pas couvert se déclare, se grave avec la version, et ne se refuse pas — reste
+> entier. L'ADR-031 ajoute en amont une classe de cas traitée autrement : les
+> régimes que le produit ne sait pas servir *du tout* sont refusés à la création
+> du dossier, au lieu d'être déclarés.
+
 Date : 2026-08-21
 Statut : accepté
 

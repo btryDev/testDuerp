@@ -1,5 +1,14 @@
 # ADR-014 — Prescriptions particulières propres à un établissement
 
+> **Amendée le 2026-09-01 par l'ADR-032.** Les sources d'une prescription ne sont
+> plus exclusivement des actes d'autorité opposables : une source contractuelle
+> — la demande d'assureur — existe, marquée comme telle partout où elle
+> s'affiche. Le mécanisme décrit ici est inchangé.
+>
+> *(Note : deux ADR portent le numéro 014 dans ce dossier — celle-ci et
+> `014-provenance-navigation.md`. Collision antérieure au recadrage, à
+> renuméroter.)*
+
 - **Date** : 2026-08-25
 - **Statut** : Acceptée
 - **Auteur** : Claude Code (sur brief Paloma)
