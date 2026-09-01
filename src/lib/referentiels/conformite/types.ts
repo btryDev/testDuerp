@@ -469,11 +469,22 @@ export type Transmission =
        * L'identifiant de l'obligation salarié correspondante au catalogue —
        * ou `null` quand le référentiel ne sait pas encore l'encoder.
        *
-       * `null` est une **réponse déclarée**, pas un oubli : c'est le cas de
-       * l'habilitation électrique elle-même, que R. 4544-10 délivre « à un
-       * travailleur désigné » mais qu'aucune ligne de catalogue ne porte
-       * encore. Le champ est nullable et requis pour cette raison précise :
-       * optionnel, l'absence aurait été muette.
+       * `null` est une **réponse déclarée**, pas un oubli. Le champ est
+       * nullable et requis pour cette raison précise : optionnel, l'absence
+       * aurait été muette.
+       *
+       * **Il n'en reste aucun, et `transmission.test.ts` tient le cliquet à
+       * zéro.** Le seul cas qui a existé était l'habilitation électrique de
+       * `R. 4544-10` — branchée sur `elec-salarie-habilitation` le
+       * 2026-09-01. Ce qu'il coûtait mérite d'être su avant d'en réécrire
+       * un : l'écran disait au dirigeant « cette obligation suppose une
+       * personne nommée, aucune n'est déclarée » et ne lui laissait pas
+       * répondre. Un `null` n'est donc pas neutre — il pose une question
+       * fermée. Et ce qui bloquait l'encodage n'était pas l'absence de
+       * lecture, c'était la croyance qu'un titre suppose une durée :
+       * `TitreSalarie.echeanceLe` est nullable, et `periodicite: "autre"`
+       * interdit au générateur d'en calculer une. Avant d'écrire `null`,
+       * vérifier que le blocage n'est pas celui-là.
        */
       titre: string | null;
       /** Ce que le texte dit, qui fonde la transmission. Une phrase. */

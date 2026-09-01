@@ -9,6 +9,8 @@ import {
   obligationsManquantes,
   obligationsSurTextesNonDepouilles,
   referencesSansCle,
+  type ArticleDepouille,
+  type Corpus,
 } from "./index";
 
 describe("corpus — forme des dépouillements", () => {
@@ -252,6 +254,157 @@ describe("corpus — la dette de lecture, mesurée et décroissante", () => {
       `PLAFOND (${PLAFOND}) est trop haut : il n'en reste que ${restantes.length}. ` +
         `Abaisser PLAFOND à ${restantes.length}.`,
     ).toBeLessThanOrEqual(2);
+  });
+});
+
+/**
+ * Le jour où la règle de lecture entre en vigueur.
+ *
+ * Elle ne mord PAS sur ce qui précède, et c'est la seule façon de la rendre
+ * tenable : reprendre les 276 articles déjà dépouillés supposerait de rouvrir
+ * Légifrance article par article, et une valeur devinée y serait pire que le
+ * vide. Un index partiel attrape quand même le prochain décret.
+ */
+const REGLE_MODIFICATEUR_DEPUIS = "2026-09-01";
+
+/**
+ * Les lectures de première main postérieures à la règle qui ne disent pas par
+ * quel texte leur version en vigueur l'est devenue.
+ *
+ * Extraite pour que la garantie et sa contre-épreuve emploient **le même**
+ * prédicat, comme `renvoisMorts` dans `transmission.test.ts` : une
+ * contre-épreuve qui recopie la logique reste verte quand on neutralise la
+ * garantie, puisqu'elles ne partagent plus rien.
+ *
+ * `undefined` seul est un manquement. `null` est une réponse — « regardé, pas
+ * de texte modificateur à signaler » — et c'est ce qui évite le piège de la
+ * liste : il n'y a **aucune liste d'articles dispensés** à tenir ici, donc
+ * aucun moyen de réparer le test en y ajoutant une ligne. La seule réparation
+ * est d'écrire la réponse sur l'article.
+ */
+function lecturesSansTexteModificateur(
+  corpus: readonly Corpus[],
+): string[] {
+  const muettes: string[] = [];
+  for (const c of corpus) {
+    for (const a of c.articles) {
+      if (a.statut === "non_depouille") continue;
+      if (a.lecture !== "premiere_main") continue;
+      if ((a.luLe ?? "") < REGLE_MODIFICATEUR_DEPUIS) continue;
+      if (a.modifiePar === undefined) muettes.push(`${c.id} / ${a.ref}`);
+    }
+  }
+  return muettes;
+}
+
+describe("corpus — d'un article modifié au texte qui l'a modifié", () => {
+  it("toute lecture de première main dit par quel texte, ou dit qu'il n'y en a pas", () => {
+    expect(
+      lecturesSansTexteModificateur(CORPUS),
+      "Un article dépouillé en première main depuis le " +
+        `${REGLE_MODIFICATEUR_DEPUIS} ne porte pas \`modifiePar\`. Écrivez le ` +
+        "texte qui a produit la version lue — et ouvrez-le EN ENTIER avant, " +
+        "c'est la règle en tête de `corpus/types.ts` qui compte, pas le " +
+        "champ. Si l'article n'a pas de texte modificateur à signaler, " +
+        "écrivez `modifiePar: null` : c'est une réponse, l'absence n'en est " +
+        "pas une.",
+    ).toEqual([]);
+  });
+
+  it("la règle mord sur ce qu'elle vise, et sur rien d'autre", () => {
+    // Contre-épreuve. Sur le corpus livré, la garantie ci-dessus ne traverse
+    // AUCUN article : les quarante lectures du 2026-09-01 sont toutes en
+    // `agent_verbatim`. Éprouvée sur le seul corpus, elle serait verte et
+    // vide — le mode de panne exact de ce genre de garde. Les cas fabriqués
+    // la font mordre aujourd'hui, et exercent les trois frontières qui la
+    // définissent : la borne de date, la provenance, et le statut.
+    const article = (a: Partial<ArticleDepouille>): ArticleDepouille =>
+      ({
+        ref: "R. 0000-0",
+        luLe: "2026-09-02",
+        lecture: "premiere_main",
+        statut: "sans_objet",
+        motif: "Motif de test, assez long pour tenir les autres contrôles.",
+        ...a,
+      }) as ArticleDepouille;
+
+    const corpusTemoin = (...articles: ArticleDepouille[]): Corpus[] => [
+      {
+        id: "temoin",
+        intitule: "Corpus témoin",
+        url: "https://example.invalid/",
+        portee: "Cas fabriqués pour éprouver la garde.",
+        etendue: "articles_cites",
+        articles,
+      },
+    ];
+
+    // Le cas visé : lu de première main après la règle, muet. Attrapé, nommé.
+    expect(
+      lecturesSansTexteModificateur(corpusTemoin(article({ ref: "MUET" }))),
+    ).toEqual(["temoin / MUET"]);
+
+    // BORNE BASSE, inclusive. Le jour même de la règle est dedans ; la veille
+    // ne l'est pas. Sans ces deux cas, écrire `>` au lieu de `>=` — ou dater
+    // la règle d'un jour trop tard — passerait sans bruit.
+    expect(
+      lecturesSansTexteModificateur(
+        corpusTemoin(article({ ref: "JOUR-J", luLe: REGLE_MODIFICATEUR_DEPUIS })),
+      ),
+    ).toEqual(["temoin / JOUR-J"]);
+    expect(
+      lecturesSansTexteModificateur(
+        corpusTemoin(article({ ref: "VEILLE", luLe: "2026-08-31" })),
+      ),
+    ).toEqual([]);
+
+    // LES DEUX RÉPONSES ACCEPTÉES, et le fait qu'elles le soient toutes deux
+    // est la moitié de la règle : un article sans texte modificateur doit
+    // pouvoir le DIRE, sinon la seule sortie serait d'en inventer un.
+    expect(
+      lecturesSansTexteModificateur(
+        corpusTemoin(article({ ref: "NÉANT", modifiePar: null })),
+      ),
+    ).toEqual([]);
+    expect(
+      lecturesSansTexteModificateur(
+        corpusTemoin(
+          article({ ref: "NOMMÉ", modifiePar: { texte: "Décret n° 0000-0" } }),
+        ),
+      ),
+    ).toEqual([]);
+
+    // COUCHE VOISINE, ET C'EST UNE LIMITE ASSUMÉE, PAS UN OUBLI. La règle ne
+    // vise que `premiere_main`. Les lectures d'agent — 238 des 276 articles —
+    // n'y sont pas soumises, parce qu'on ne peut pas exiger d'un dépouillement
+    // déjà fait ce qu'il n'a pas relevé, et que quarante entrées du 2026-09-01
+    // en `agent_verbatim` seraient rouges le jour de l'ajout sans que personne
+    // puisse les remplir sans rouvrir les textes. La garde couvre donc ce qui
+    // PEUT s'y conformer. Ce cas fige la frontière : l'élargir est une
+    // décision, pas un effet de bord.
+    expect(
+      lecturesSansTexteModificateur(
+        corpusTemoin(article({ ref: "AGENT", lecture: "agent_verbatim" })),
+      ),
+    ).toEqual([]);
+    expect(
+      lecturesSansTexteModificateur(
+        corpusTemoin(article({ ref: "PAS-LU", statut: "non_depouille" })),
+      ),
+    ).toEqual([]);
+  });
+
+  it("la valeur écrite au champ n'est pas une coquille vide", () => {
+    // Le champ pourrait se remplir de `{ texte: "" }` et satisfaire la garde
+    // ci-dessus : elle ne regarde que la présence. Un texte modificateur se
+    // cite comme il s'ouvre — « Décret n° 2025-482 du 27 mai 2025 » —, sans
+    // quoi le prochain lecteur ne saura pas quoi ouvrir.
+    for (const c of CORPUS) {
+      for (const a of c.articles) {
+        if (!a.modifiePar) continue;
+        expect(a.modifiePar.texte.trim().length, `${c.id} / ${a.ref}`,).toBeGreaterThan(10);
+      }
+    }
   });
 });
 

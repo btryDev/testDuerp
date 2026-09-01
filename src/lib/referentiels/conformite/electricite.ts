@@ -167,15 +167,24 @@ export const obligationsElectricite: Obligation[] = [
     transmet: [
       {
         vers: "salarie_designe",
-        // `null`, et c'est une réponse, pas un oubli. R. 4544-10 délivre
-        // l'habilitation « à un travailleur désigné » : l'obligation est donc
-        // nominative par nature. Mais le catalogue des titres ne porte pas
-        // l'habilitation elle-même — seulement l'attestation médicale qui la
-        // conditionne, qui est une autre obligation avec sa propre ligne.
-        // Pointer vers elle dirait quelque chose de faux ; c'est bien
-        // l'habilitation qui manque au catalogue, et le dépouillement des
-        // normes qu'elle appelle n'est pas fait.
-        titre: null,
+        // Ce champ a valu `null` jusqu'au 2026-09-01, et son commentaire
+        // d'alors disait vrai sur le constat, faux sur la conclusion : « le
+        // catalogue des titres ne porte pas l'habilitation elle-même —
+        // seulement l'attestation médicale qui la conditionne ». Le constat
+        // tenait, mais il faisait du manque une fatalité. Or ce qui bloquait
+        // l'encodage n'était pas l'absence de lecture — R. 4544-10 est lu et
+        // au corpus depuis le 2026-08-26 —, c'était la croyance qu'un titre
+        // suppose une durée. Il n'en suppose pas : `TitreSalarie.echeanceLe`
+        // est nullable, et `periodicite: "autre"` empêche le générateur de
+        // rien calculer. Le titre encode donc l'habilitation SANS lui
+        // inventer de rythme.
+        //
+        // Ce que le `null` coûtait, et qui justifie de le retirer : l'écran
+        // annonçait au dirigeant « cette obligation suppose une personne
+        // nommée, aucune n'est déclarée » et ne lui laissait pas répondre.
+        // Une question fermée dans un outil de conformité se lit comme un
+        // reproche sans issue.
+        titre: "elec-salarie-habilitation",
         motif:
           "R. 4544-10 fait délivrer l'habilitation à un travailleur désigné : l'obligation suppose une personne nommée. Le produit ne peut pas deviner qui opère sur ou à proximité des installations — ce serait le cinquième déclencheur, non implémenté (ADR-023) — mais il peut dire qu'aucune personne n'est déclarée.",
       },
@@ -183,12 +192,41 @@ export const obligationsElectricite: Obligation[] = [
     typologies: { travail: true },
     categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     notesInternes:
-      "Périodicité passée de `triennale` à `autre` le 2026-08-27 (ADR-023 § 6) : voir le commentaire au-dessus du champ. Le précédent est celui du Kbis d'un prestataire, suivi sans statut d'expiration au motif que « le texte n'assortit pas la pièce d'une périodicité citable […] le produit informe, il ne décrète pas ».\n\nCe que l'utilisateur perd : une ligne d'échéance à trois ans. Ce qu'il gagne : une échéance réelle à sa place — l'attestation médicale — et un état permanent qui dit ce que le droit dit.\n\nLimite connue, non corrigée ici : la clé d'article est `R. 4544-10` alors que la citation couvre R. 4544-9 à R. 4544-11. Les deux bornes ne sont donc ni déclarées lues, ni surveillées par la veille. R. 4544-9 et R. 4544-11 n'ont d'ailleurs aucune entrée de corpus.\n\nAmendement 2026-08-26 : L. 4711-5 était en refs[0], c'est-à-dire présenté comme l'article FONDATEUR (convention ADR-003). Or il n'institue aucun registre — il autorise à en réunir plusieurs en un seul, ce que le CLAUDE.md du dépôt écrit noir sur blanc. La contradiction était interne. R. 4226-19 passe en premier : c'est lui qui impose la consignation des résultats de vérification. Ce n'est pas cosmétique : le test anti-doublon compare les obligations sur leur article fondateur, donc un refs[0] faux le rend aveugle — le mécanisme même qui masquait le doublon des portails.\n\nNATURE : ÉTAT PERMANENT (ADR-026). La description le dit déjà — « un état à maintenir en permanence, pas un rendez-vous » — et le champ le porte désormais. C'est la ligne qui a fait passer la périodicité de `triennale` à `autre` le 2026-08-27 ; le couple nature + périodicité dit maintenant pourquoi, sans qu'on ait à lire la note.",
+      "Périodicité passée de `triennale` à `autre` le 2026-08-27 (ADR-023 § 6) : voir le commentaire au-dessus du champ. Le précédent est celui du Kbis d'un prestataire, suivi sans statut d'expiration au motif que « le texte n'assortit pas la pièce d'une périodicité citable […] le produit informe, il ne décrète pas ».\n\nCe que l'utilisateur perd : une ligne d'échéance à trois ans. Ce qu'il gagne : une échéance réelle à sa place — l'attestation médicale — et un état permanent qui dit ce que le droit dit.\n\nLimite connue, non corrigée ici : la clé d'article est `R. 4544-10` alors que la citation couvre R. 4544-9 à R. 4544-11. Les deux bornes ne sont donc ni déclarées lues par cette ligne, ni surveillées par la veille à ce titre. (La dernière phrase de ce paragraphe disait « R. 4544-9 et R. 4544-11 n'ont d'ailleurs aucune entrée de corpus » : c'est faux depuis le 2026-08-31, où les deux sont entrées au corpus `code-travail-electricite` — R. 4544-9 en `sans_objet`, R. 4544-11 en `obligation_manquante`. Corrigé le 2026-09-01 plutôt que laissé : une limite qui a cessé d'exister et qui continue de s'annoncer envoie le prochain lecteur dépouiller ce qui l'est déjà.)\n\nTRANSMISSION BRANCHÉE LE 2026-09-01. `transmet[0].titre` ne vaut plus `null` : le catalogue porte désormais `elec-salarie-habilitation`. Voir le commentaire au-dessus du champ pour ce que le `null` coûtait.\n\nAmendement 2026-08-26 : L. 4711-5 était en refs[0], c'est-à-dire présenté comme l'article FONDATEUR (convention ADR-003). Or il n'institue aucun registre — il autorise à en réunir plusieurs en un seul, ce que le CLAUDE.md du dépôt écrit noir sur blanc. La contradiction était interne. R. 4226-19 passe en premier : c'est lui qui impose la consignation des résultats de vérification. Ce n'est pas cosmétique : le test anti-doublon compare les obligations sur leur article fondateur, donc un refs[0] faux le rend aveugle — le mécanisme même qui masquait le doublon des portails.\n\nNATURE : ÉTAT PERMANENT (ADR-026). La description le dit déjà — « un état à maintenir en permanence, pas un rendez-vous » — et le champ le porte désormais. C'est la ligne qui a fait passer la périodicité de `triennale` à `autre` le 2026-08-27 ; le couple nature + périodicité dit maintenant pourquoi, sans qu'on ait à lire la note.",
   },
 
   // ---------------------------------------------------------------------------
   // Porteur : le salarié (ADR-023)
   // ---------------------------------------------------------------------------
+  {
+    id: "elec-salarie-habilitation",
+    domaine: "electricite",
+    libelle: "Habilitation électrique du travailleur désigné",
+    description:
+      "L'employeur délivre à un travailleur désigné une habilitation adaptée aux opérations qu'il lui confie sur des installations électriques ou dans leur voisinage, puis la maintient ou la renouvelle. Aucune durée de validité n'est écrite dans le Code : il renvoie aux modalités de normes qu'il qualifie lui-même de recommandées. La date de fin que porte le titre est donc celle de qui l'a délivré, pas celle du droit — c'est à ce titre-là qu'elle se saisit ici, et Rojer n'en calcule aucune.",
+    referencesLegales: [
+      {
+        source: "CODE_TRAVAIL",
+        reference: "R. 4544-10 (habilitation délivrée à un travailleur désigné)",
+        article: "R. 4544-10",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051500368",
+        versionConstatee: "2025-10-01",
+      },
+    ],
+    periodicite: "autre",
+    nature: "etat_permanent",
+    pieceAttendue: null,
+    realisateurs: ["exploitant"],
+    criticite: 4,
+    typologies: { travail: true },
+    porteur: "salarie",
+    exclut: [],
+    pieceMedicale: false,
+    transmet: [],
+    notesInternes:
+      "CETTE LIGNE EXISTE POUR QUE LE DIRIGEANT PUISSE RÉPONDRE. `elec-travail-habilitation-personnel` transmettait vers `salarie_designe` avec `titre: null` : l'écran annonçait « cette obligation suppose une personne nommée, aucune n'est déclarée » et ne laissait aucun moyen d'en déclarer une. C'était le seul renvoi du référentiel resté sans titre — les neuf autres transmissions `salarie_designe` en portaient un. Le trou n'était pas dans le droit, il était dans le catalogue, et son effet était de poser au dirigeant une question fermée.\n\nPÉRIODICITÉ « AUTRE », ET C'EST LA MÊME RÉPONSE QU'AU 2026-08-27. Aucune durée n'est écrite. `R. 4544-10`, dans sa version en vigueur au 2025-10-01, fait « délivrer, maintenir ou renouveler l'habilitation selon les modalités contenues dans les normes mentionnées à l'article R. 4544-3 », et `R. 4544-3` précise que ces normes contiennent « les modalités RECOMMANDÉES pour leur exécution ». Le recyclage triennal que l'on rencontre partout vient de la NF C 18-510 : une norme, que le référentiel n'accepte pas comme source opposable (ADR-003). La ligne d'établissement a porté « triennale » et l'a perdue pour ce motif le 2026-08-27 ; le titre ne la réintroduit pas par la porte de derrière.\n\nCONSÉQUENCE MÉCANIQUE, ET C'EST ELLE QUI PROTÈGE L'UTILISATEUR : `PERIODICITE_EN_JOURS.autre` vaut `null`, donc `prochaineDate` ne rend rien et le générateur ne calcule aucune échéance (`calendrier/generateur.ts`). La seule date affichée est celle que le dirigeant saisit, et `TitreSalarie.echeanceLe` est nullable précisément pour ce cas — `formation-securite-salarie-accueil` le dit déjà, en désignant cette habilitation-ci. Un titre sans terme écrit se classe `aPlanifier`, jamais `enRetard` (`salaries/queries.ts`).\n\nPOURQUOI DEUX LIGNES SUR `R. 4544-10`, ET PAS UNE. La paire est déclarée au test anti-doublon, avec sa raison. En deux mots : la ligne d'établissement est due dès qu'une installation électrique est déclarée, MÊME si personne n'est déclaré — c'est elle qui dit « aucune personne n'est habilitée ici » —, tandis que ce titre-ci ne produit de ligne que par personne déclarée. Les fondre aurait forcé un choix entre deux erreurs : une obligation qui disparaît quand personne n'est déclaré, ou une obligation qui ne se solde jamais nominativement. C'est mot pour mot l'arbitrage rendu pour `formation-securite-etablissement-organisation` et `formation-securite-salarie-accueil`.\n\n`pieceMedicale: false` — une habilitation n'est pas une pièce médicale. Celle qui l'est est `elec-salarie-attestation-medicale-voisinage`, fondée sur `R. 4544-11-1`, et elle reste une obligation distincte : ses cinq ans sont écrits noir sur blanc, ceux-là. NE PAS CONFONDRE LES DEUX — c'est la confusion qui avait fait écrire « triennale » ici.\n\n`exclut: []` — l'attestation médicale ne s'oppose pas à l'habilitation, elle la conditionne pour les travaux sous tension (`R. 4544-11` I). Conditionner n'est pas exclure : le champ ne porte que les cumuls que le droit interdit sur une même personne.\n\nNATURE : ÉTAT PERMANENT (ADR-026), comme la ligne d'établissement et pour la même raison. Le texte fait délivrer, maintenir ou renouveler, sans nommer ni rythme ni fait déclencheur ; la règle de résolution de l'ADR-026 range sur le titre qui oblige à REFAIRE l'acte, et aucun n'y oblige ici.\n\nCE QUE CE LOT N'A PAS OUVERT. Aucun article n'a été relu : la lecture de `R. 4544-9` à `R. 4544-11` est datée des 2026-08-26, 2026-08-27 et 2026-08-31 et vit au corpus `code-travail-electricite`. Ce lot branche un titre sur une lecture existante, il n'en produit aucune. L'habilitation SPÉCIFIQUE aux travaux sous tension de `R. 4544-11` reste `obligation_manquante` au corpus, avec son `bloquePar` : elle n'entre pas ici, et l'encoder demanderait de trancher ce que « selon les modalités contenues dans les normes » veut dire pour l'outil.",
+  },
+
   {
     id: "elec-salarie-attestation-medicale-voisinage",
     domaine: "electricite",

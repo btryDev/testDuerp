@@ -80,10 +80,10 @@ Sources primaires libres d'accès uniquement :
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **116 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **117 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
 **79 d'entre elles sont déclenchées par un équipement déclaré, vingt-quatre sont portées
-par l'établissement, treize par un salarié.** La répartition a changé deux fois le
+par l'établissement, quatorze par un salarié.** La répartition a changé deux fois le
 2026-08-31 : les trois lots ont ajouté trente et une obligations, et le lot « faux
 négatifs d'ancrage » a fait passer trois obligations existantes de l'équipement à
 l'établissement — le registre de sécurité, les exercices d'évacuation et les consignes
@@ -179,8 +179,12 @@ réellement événementielles recensées sont hors périmètre (déclaration d'A
 accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
 l'ADR-022, sans mécanisme.
 
-Répartition au 2026-08-31, après les trois lots : **79 équipement, 24 établissement,
-13 salarié** (total 116).
+Répartition au 2026-09-01 : **79 équipement, 24 établissement, 14 salarié**
+(total 117) — mesurée en appelant, pas au grep. Le quatorzième titre est
+l'habilitation électrique (`elec-salarie-habilitation`, `R. 4544-10`) ; elle
+n'ajoute **aucune** ligne au moteur, un porteur salarié ne dérivant rien : un
+établissement de travail sans équipement en doit toujours dix-huit à six
+salariés, dix-neuf à douze, vingt-deux à cinquante-cinq, remesurés le même jour.
 Les cinq premières obligations portées par l'établissement étaient l'entretien triennal de
 `PE 4 § 2`, le contrôle des installations d'aération de `R. 4222-20`, et — depuis le lot
 `fix/faux-negatifs-ancrage` — la tenue du registre de sécurité, la consigne de sécurité
@@ -194,8 +198,13 @@ sont **pas dérivées** par le moteur. Rien ne dit qu'une personne opère sur de
 électriques — ce serait le cinquième déclencheur, non implémenté —, donc l'employeur déclare
 qui détient quel titre (`Salarie`, `TitreSalarie`), et le référentiel fournit le catalogue.
 
-**Treize obligations salarié sont livrées** depuis les lots 7 et 8 (2026-08-31) — le catalogue n'en
-comptait qu'une jusque-là, l'attestation médicale quinquennale de `R. 4544-11-1` :
+**Quatorze obligations salarié sont livrées** : treize aux lots 7 et 8 (2026-08-31),
+la quatorzième le 2026-09-01 — l'habilitation électrique de `R. 4544-10`, en
+`periodicite: "autre"` faute de toute durée écrite, le recyclage triennal venant
+de la NF C 18-510 et non du Code. C'est elle qui vide le dernier `titre: null` du
+référentiel : `elec-travail-habilitation-personnel` annonçait qu'une personne
+nommée était requise sans laisser en déclarer une. Le catalogue n'en
+comptait qu'une avant les lots 7 et 8, l'attestation médicale quinquennale de `R. 4544-11-1` :
 formation à la sécurité reçue (`R. 4141-20`, due à TOUS les salariés), formation à la
 conduite et autorisation de conduite (`R. 4323-55`, `R. 4323-56`), attestation médicale de
 conduite (`R. 4323-56`, quinquennale), secouriste SST (`R. 4224-15`), VIP (`R. 4624-16`,

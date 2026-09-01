@@ -28,6 +28,23 @@ function renvoisMorts(obligations: readonly Obligation[]): string[] {
 }
 
 /**
+ * Les transmissions qui posent une question sans laisser répondre.
+ *
+ * Même construction que `renvoisMorts` — un seul prédicat, partagé par la
+ * garantie et par sa contre-épreuve — et pour la même raison.
+ */
+function renvoisSansTitre(obligations: readonly Obligation[]): string[] {
+  const muets: string[] = [];
+  for (const o of obligations) {
+    for (const t of o.transmet) {
+      if (t.vers !== "salarie_designe") continue;
+      if (t.titre === null) muets.push(o.id);
+    }
+  }
+  return muets;
+}
+
+/**
  * Les garanties de l'ADR-024. Chacune est éprouvée en réinjectant le défaut
  * qu'elle prétend interdire : une garantie qu'on n'a pas vue mordre est une
  * décoration.
@@ -57,11 +74,14 @@ describe("transmissions (ADR-024)", () => {
     // neutraliser la garantie laissait la contre-épreuve verte, puisqu'elles
     // ne partageaient plus rien. Les deux appellent maintenant `renvoisMorts`.
     //
-    // Et ce test porte une seconde charge : sur le référentiel livré, la
-    // garantie ne traverse AUCUNE transmission nommée — il n'en existe qu'une
-    // à porteur salarié, et son `titre` est `null`. Éprouvée sur le seul
-    // référentiel, elle ne mordrait que le jour d'un ajout. Les cas fabriqués
-    // ci-dessous la font mordre aujourd'hui.
+    // Et ce test porte une seconde charge, qui a changé de nature le
+    // 2026-09-01. Quand il a été écrit, la garantie ne traversait AUCUNE
+    // transmission nommée — il n'en existait qu'une à porteur salarié, et son
+    // `titre` était `null` : éprouvée sur le seul référentiel, elle n'aurait
+    // mordu que le jour d'un ajout. Le référentiel en porte désormais dix,
+    // toutes nommées ; les cas fabriqués ci-dessous restent utiles pour la
+    // raison inverse — ils éprouvent les branches que le référentiel réel ne
+    // contient PAS, à commencer par l'identifiant inventé.
     const titreReel = obligationsConformite.filter(estPorteeParSalarie)[0];
     expect(titreReel, "le référentiel doit porter au moins un titre").toBeDefined();
 
@@ -109,6 +129,84 @@ describe("transmissions (ADR-024)", () => {
         avecTransmission("aeration-controle-installations-r4222-20"),
       ]),
     ).toEqual(["temoin-renvoi → aeration-controle-installations-r4222-20"]);
+  });
+
+  /**
+   * Le cliquet ajouté le 2026-09-01, et ce qu'il empêche.
+   *
+   * `titre: null` compile, et le type le documente comme « une réponse
+   * déclarée ». Il l'est du point de vue du rédacteur ; il ne l'est pas du
+   * point de vue du dirigeant, à qui l'écran annonce alors « cette obligation
+   * suppose une personne nommée, aucune n'est déclarée » sans lui laisser en
+   * déclarer une. Une question fermée dans un outil de conformité se lit comme
+   * un reproche sans issue.
+   *
+   * Le référentiel en portait UN — l'habilitation électrique de `R. 4544-10`,
+   * branchée ce jour sur `elec-salarie-habilitation`. Le compte est donc à
+   * zéro, et il ne remonte pas : c'est le même idiome de plafond que
+   * `corpus.test.ts`, avec la même règle — s'il augmente, ce n'est pas le
+   * plafond qu'on relève, c'est le titre qu'on encode.
+   *
+   * Ce qui a débloqué celui-ci vaut pour le prochain : le blocage n'était pas
+   * l'absence de lecture, c'était la croyance qu'un titre suppose une durée.
+   * `TitreSalarie.echeanceLe` est nullable, et `periodicite: "autre"` empêche
+   * le générateur d'en calculer une.
+   */
+  const PLAFOND_RENVOIS_SANS_TITRE = 0;
+
+  it("aucune transmission ne pose une question sans laisser répondre", () => {
+    const muets = renvoisSansTitre(obligationsConformite);
+    expect(
+      muets,
+      `${muets.length} transmission(s) \`salarie_designe\` déclarent ` +
+        `\`titre: null\` (plafond ${PLAFOND_RENVOIS_SANS_TITRE}). L'écran ` +
+        `annonce alors au dirigeant qu'une personne nommée est requise sans ` +
+        `lui laisser en déclarer une. Encoder la ligne de catalogue plutôt ` +
+        `que relever le plafond : un titre n'a pas besoin d'une durée pour ` +
+        `exister — \`periodicite: "autre"\` et \`echeanceLe\` nulle suffisent, ` +
+        `c'est ce qui a débloqué l'habilitation électrique.`,
+    ).toHaveLength(PLAFOND_RENVOIS_SANS_TITRE);
+  });
+
+  it("le cliquet voit bien le `null` qu'il interdit", () => {
+    // Contre-épreuve sur le prédicat que la garantie emploie, comme
+    // ci-dessus : neutraliser `renvoisSansTitre` doit rendre CE test rouge,
+    // sans quoi le cliquet est une décoration qui reste verte parce que le
+    // référentiel est propre aujourd'hui.
+    const temoin = (titre: string | null): Obligation => ({
+      id: "temoin-muet",
+      domaine: "electricite",
+      libelle: "Obligation témoin",
+      referencesLegales: [{ source: "CODE_TRAVAIL", reference: "R. 0000-0" }],
+      periodicite: "autre",
+      nature: "etat_permanent",
+      pieceAttendue: null,
+      realisateurs: ["exploitant"],
+      criticite: 3,
+      transmet: [
+        {
+          vers: "salarie_designe",
+          titre,
+          motif:
+            "Motif de test, assez long pour tenir le contrôle de substance du motif.",
+        },
+      ],
+      typologies: { travail: true },
+      categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
+    });
+
+    // `null` : attrapé, et nommé.
+    expect(renvoisSansTitre([...obligationsConformite, temoin(null)])).toEqual([
+      "temoin-muet",
+    ]);
+    // Un titre nommé : accepté, même inventé — ce n'est pas le défaut que ce
+    // cliquet-ci surveille, c'est celui de `renvoisMorts`. Les deux gardes
+    // sont disjointes, et ce cas le prouve : sans lui, écrire
+    // `renvoisSansTitre` en `t.titre === null || !titres.has(t.titre)` les
+    // confondrait et laisserait les deux tests verts.
+    expect(
+      renvoisSansTitre([...obligationsConformite, temoin("titre-inexistant")]),
+    ).toEqual([]);
   });
 
   it("chaque transmission porte un motif substantiel", () => {
