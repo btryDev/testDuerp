@@ -1865,3 +1865,69 @@ describe("moteur matching — inspection périodique ESP : le couple d'énuméra
     expect(ids).not.toContain(GENERALE);
   });
 });
+
+// -----------------------------------------------------------------------------
+// GE 4 § 1 — la visite périodique de commission des 1ʳᵉ à 4ᵉ catégories
+// (2026-09-01). Le référentiel n'en portait aucune pour ces établissements.
+//
+// Ce qui se vérifie ici est surtout la FRONTIÈRE avec la ligne de 5ᵉ catégorie :
+// GE 4 relève du Livre II, écarté en 5ᵉ par PE 1 § 1, et PE 37 ne vise que la
+// 5ᵉ. Aucun établissement ne doit recevoir les deux, ni — parmi les cinq
+// catégories — se retrouver sans aucune.
+// -----------------------------------------------------------------------------
+describe("moteur matching — visite de commission : GE 4 en 1ʳᵉ–4ᵉ, PE 37 en 5ᵉ", () => {
+  const CAT14 = "incendie-erp-cat1-4-visite-commission";
+  const CAT5 = "incendie-erp-5-visite-commission";
+
+  function erp(categorieErp: EtablissementMatching["categorieErp"]): EtablissementMatching {
+    return { ...etabErpCat3(), categorieErp };
+  }
+
+  it("un ERP de 3ᵉ catégorie reçoit la visite de GE 4, sans aucun équipement déclaré", () => {
+    // Le § 1 ne conditionne la visite à aucun équipement : la ligne existe même
+    // sur un dossier vide. C'est ce qui justifie le porteur `etablissement`.
+    const ids = idsObligations(determineObligationsApplicables(erp("N3"), []));
+    expect(ids).toContain(CAT14);
+  });
+
+  it("la ligne de GE 4 ne produit qu'UNE échéance, quel que soit le parc déclaré", () => {
+    const res = determineObligationsApplicables(erp("N2"), [
+      { id: "eq-a", libelle: "Alarme", categorie: "ALARME_INCENDIE" as const, caracteristiques: null },
+      { id: "eq-b", libelle: "Extincteur", categorie: "EXTINCTEUR" as const, caracteristiques: null },
+    ]);
+    const ligne = res.find((r) => r.obligation.id === CAT14);
+    expect(ligne?.porteur).toBe("etablissement");
+    // ADR-022 : une obligation d'établissement n'a pas d'équipement déclencheur,
+    // et une liste vide n'y signifie pas « aucune ligne ».
+    expect(ligne?.equipementsConcernes).toEqual([]);
+  });
+
+  it("un ERP de 5ᵉ catégorie ne reçoit PAS la ligne de GE 4", () => {
+    // GE 4 relève du Livre II, écarté en 5ᵉ catégorie par PE 1 § 1.
+    const ids = idsObligations(determineObligationsApplicables(erp("N5"), []));
+    expect(ids).not.toContain(CAT14);
+  });
+
+  it("les deux visites de commission ne se recouvrent jamais", () => {
+    // Borne haute : jamais deux lignes de visite pour un même établissement.
+    // Le cas dangereux est la 5ᵉ catégorie AVEC alarme, où la ligne PE 37
+    // s'applique — GE 4 ne doit pas s'y ajouter.
+    for (const cat of ["N1", "N2", "N3", "N4", "N5"] as const) {
+      const ids = idsObligations(
+        determineObligationsApplicables(erp(cat), [
+          { id: "eq-a", libelle: "Alarme", categorie: "ALARME_INCENDIE" as const, caracteristiques: null },
+        ]),
+      );
+      const visites = [CAT14, CAT5].filter((id) => ids.includes(id));
+      expect(visites, cat).toHaveLength(1);
+    }
+  });
+
+  it("un établissement de travail non-ERP n'a aucune visite de commission", () => {
+    // Borne basse de la typologie : la commission de sécurité ne visite que des
+    // ERP. Un bureau non-ERP ne doit rien recevoir de ces deux lignes.
+    const ids = idsObligations(determineObligationsApplicables(etabBureau(), []));
+    expect(ids).not.toContain(CAT14);
+    expect(ids).not.toContain(CAT5);
+  });
+});

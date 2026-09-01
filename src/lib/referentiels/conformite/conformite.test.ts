@@ -4,6 +4,7 @@ import {
   CATEGORIES_EQUIPEMENT,
   CATEGORIES_ERP,
   CLASSES_IGH,
+  PERIODICITE_EN_JOURS,
   PERIODICITES,
   REALISATEURS,
   TYPES_ERP,
@@ -1074,7 +1075,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // CETTE branche. À l'intégration, elle se relit dans la sortie du test après
   // merge — reprendre à la main le chiffre d'une branche graverait une empreinte
   // qui ne décrit aucun référentiel réel, et le compte qui la préfixe aussi.
-  const EMPREINTE_ATTENDUE = "117-a92dcadeeeca1b62";
+  const EMPREINTE_ATTENDUE = "118-a6b6508e86676c4";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1192,7 +1193,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(117);
+    ).toBe(118);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1578,5 +1579,43 @@ describe("référentiel conformité — d'où vient le chiffre", () => {
         "article de code porte vraiment le chiffre, ajoutez l'obligation à " +
         "`PERIODICITE_SUR_CODE_JUSTIFIEE` avec le verbatim qui le prouve.",
     ).toEqual([]);
+  });
+});
+
+describe("GE 4 § 1 — le plafond du § 3 n'est pas devenu un rythme", () => {
+  const ligne = () => obligationParId("incendie-erp-cat1-4-visite-commission");
+
+  it("la périodicité ne dépasse pas le barreau le plus court du tableau", () => {
+    // Le tableau du § 1 ne porte que deux valeurs, trois ans et cinq ans. Le
+    // détail de ses cellules n'a pas pu être lu à la source, et c'est
+    // précisément pourquoi cette borne compte : elle est la seule chose que le
+    // référentiel peut affirmer sans reconstituer le tableau. Poser cinq ans
+    // laisserait un établissement dû à trois ans se croire à jour deux ans de
+    // trop — invisible pour lui.
+    const jours = PERIODICITE_EN_JOURS[ligne()!.periodicite];
+    expect(jours).not.toBeNull();
+    expect(jours!).toBeLessThanOrEqual(PERIODICITE_EN_JOURS.triennale!);
+  });
+
+  it("la prolongation « dans la limite de cinq ans » du § 3 n'est pas encodée", () => {
+    // Le § 3 est une FACULTÉ sous plafond, ouverte après deux avis favorables
+    // consécutifs — un historique que le produit n'observe pas. Le § 4 est un
+    // pouvoir du maire ou du préfet, donc une prescription particulière
+    // (ADR-014). Ni l'un ni l'autre n'est un rythme, et `quinquennale` sur
+    // cette ligne serait le signe qu'on a confondu les deux.
+    expect(ligne()!.periodicite).not.toBe("quinquennale");
+    // Ils sont nommés au dirigeant, en description, plutôt que tus.
+    expect(ligne()!.description).toContain("dans la limite de cinq ans");
+    expect(ligne()!.description).toContain("maire ou le préfet");
+  });
+
+  it("aucune relecture n'est due au 1er juin 2027 sur cette ligne", () => {
+    // Le piège de l'article : le sélecteur de la page de SECTION affiche un
+    // terme « au 01/06/2027 » qui est celui de GE 2 et GE 6, pas de GE 4. Trois
+    // lectures s'y sont laissé prendre le 2026-09-01. La section relue au
+    // 1er juillet 2027 rend GE 4 inchangé — il n'a pas de fin de vigueur.
+    expect(ligne()!.relectureDue).toBeUndefined();
+    const ge4 = ligne()!.referencesLegales.find((r) => r.article === "GE 4");
+    expect(ge4?.versionConstatee).toBe("2015-01-01");
   });
 });
