@@ -110,7 +110,9 @@ export function caracteristiquesLisibles(
     out.push({
       cle: "nbVehiculesParkingCouvert",
       libelle: "Parking couvert",
-      valeur: `${c.nbVehiculesParkingCouvert} véhicules`,
+      valeur: `${c.nbVehiculesParkingCouvert} véhicule${
+        c.nbVehiculesParkingCouvert > 1 ? "s" : ""
+      }`,
     });
   }
 

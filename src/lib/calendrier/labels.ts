@@ -193,3 +193,23 @@ export function libelleTotalAnnee(total: number, sansDate: number): string {
     ? `${total} datée${s(total)} · ${sansDate} à planifier`
     : `${total} échéance${s(total)}`;
 }
+
+/**
+ * Le libellé de la couture des mois passés.
+ *
+ * Extrait de `AnneeCalendrier` pour la même raison que `libelleTotalAnnee` :
+ * une phrase qui vit dans du JSX n'est appelable par aucun test, donc
+ * n'est balayable par aucune propriété. Ce n'est pas qu'on oublie de
+ * l'éprouver, c'est qu'on ne le peut pas.
+ *
+ * Le défaut qui l'a fait sortir : « Voir les 1 mois précédents », affiché sur
+ * tous les dossiers le 1er septembre. Il n'a été introduit par aucun commit —
+ * au 31 août, aucun mois n'était passé dans l'année et la branche ne se rendait
+ * jamais. **Il est apparu par le seul passage du temps**, et aucune revue de
+ * diff ne pouvait le voir : il n'y avait pas de diff.
+ */
+export function libelleMoisPrecedents(nbCartesPassees: number): string {
+  return nbCartesPassees === 1
+    ? "Voir le mois précédent"
+    : `Voir les ${nbCartesPassees} mois précédents`;
+}
