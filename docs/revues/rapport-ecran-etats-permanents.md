@@ -257,3 +257,135 @@ section ferait perdre l'adossement de l'explication à la ligne, qui est ce que
 cette passe a gagné de plus solide.
 
 Capture : `captures-etats-permanents/91-section.png`.
+
+
+---
+
+# Troisième passe — `2e64fea`, dernier regard avant merge
+
+Deux dossiers, le 1er septembre 2026. Les cinq migrations appliquées sur les deux
+bases.
+
+## 1. La section, avec son nouveau titre — **elle se lit enfin comme autre chose**
+
+Mesuré dans le DOM, les deux en-têtes côte à côte :
+
+| | Balise | Taille | Graisse | Casse | Couleur |
+|---|---|---|---|---|---|
+| Domaine (`SANTÉ AU TRAVAIL`) | `h2` | **10,5 px** | 500 | majuscules | gris `#5C7182` |
+| Section (`Ce qui revient…`) | `h2` | **22 px** | 600 | normale | noir `#0A0A0A` |
+
+Deux fois plus grand, noir contre gris, casse normale contre capitales. Dans le
+défilement, c'est le **seul grand titre noir** de la page : il ne se confond plus
+avec un nom de domaine, et la différence se voit sans se lire. Mon reproche
+précédent est levé.
+
+**Jugée à cinq lignes, comme je l'avais exigé** : elle tient mieux qu'à une. Un
+titre reste un titre quel que soit ce qu'il coiffe, alors qu'une teinte ou une
+icône se seraient diluées en se répétant cinq fois. Et le rapport
+explication/contenu, aujourd'hui inversé — trois lignes pour une —, se
+normalisera au lieu de se dégrader. **La forme retenue est celle qui vieillit le
+mieux**, ce qui n'était vrai d'aucune des autres.
+
+Capture : `captures-etats-permanents/A1-titre.png`.
+
+## 2. La ligne quinquennale — **le chemin est praticable, et mieux que décrit**
+
+**D'abord une correction de prémisse : elle n'apparaît que sur un dossier, pas
+deux.** Atelier Vermeil est un bureau (NAF 70.22Z) sans aucun équipement : il n'a
+pas d'alarme, donc pas de ligne. Vérifié à l'écran — ni « commission de
+sécurité », ni « quinquennale », ni « PE 37 ». **Un faux positif sur un, pas deux
+sur deux.**
+
+Sur le Bistrot, elle apparaît :
+
+> « Visite périodique de la commission de sécurité (**ERP 5ᵉ avec locaux à sommeil
+> ou installations spécifiques**) — Bâtiment principal · Alarme type 4 · tous les
+> 5 ans »
+
+**Le libellé porte lui-même sa condition** — « avec locaux à sommeil » est dans le
+titre de la ligne. C'est déjà la moitié du chemin : un restaurateur lit la
+condition avant d'ouvrir quoi que ce soit.
+
+**Le chemin, mesuré de bout en bout :**
+
+1. **La fiche de la vérification explique la règle**, sans jargon et sans se
+   dérober : « En 5ᵉ catégorie, la périodicité dépend de la présence de locaux à
+   sommeil : les établissements qui en comportent pour le public sont visités
+   tous les cinq ans (PE 37) … ceux qui n'en comportent pas ne relèvent d'aucune
+   périodicité écrite. »
+2. Un bouton **« Modifier l'équipement »** y mène.
+3. La question est sur la fiche de l'alarme, et **son texte d'aide nomme le cas
+   exact** :
+
+> **Votre établissement dispose-t-il de locaux où des personnes dorment ?**
+> *Chambres d'hôtel, hébergement, internat, dortoir, logement de fonction ouvert
+> au public. **Un restaurant, un commerce ou un bureau sans hébergement :
+> répondez « non ».** En 5ᵉ catégorie, c'est ce qui déclenche la visite
+> périodique de la commission de sécurité.*
+
+Trois choix : « Je ne sais pas encore » (valeur par défaut), « Oui », « Non ».
+
+4. **Répondre « non » et enregistrer : 4 secondes.** La ligne disparaît du
+   calendrier, et la valeur est bien conservée — vérifiée en base
+   (`dessertLocauxSommeil: false`) **et** re-affichée « Non » au rechargement de
+   la fiche.
+
+**Mon avis : oui, un dirigeant peut faire ce clic.** Le texte d'aide fait le
+travail décisif — il ne se contente pas de définir « locaux à sommeil », il dit à
+un restaurateur ce qu'il doit répondre. C'est rare et c'est bien vu. L'argument
+du faux positif visible tient : l'erreur se voit, elle s'explique, elle se corrige
+en quatre secondes.
+
+**Une réserve, qui ne remet pas l'arbitrage en cause** : rien ne relie le geste à
+son effet. Après enregistrement, l'écran ne dit pas qu'une échéance vient d'être
+retirée du calendrier — le dirigeant doit y retourner pour le constater. Sur une
+question dont l'unique fonction est de faire disparaître une obligation
+réglementaire, un mot suffirait.
+
+Captures : `A2-fiche-verif.png`, `A3-equipement.png`.
+
+*État rendu : j'ai répondu « non » pour éprouver le chemin, puis **remis
+l'attribut à son état non renseigné** — le Bistrot porte de nouveau la ligne, tel
+que la session principale l'a laissé.*
+
+## 3. La tenancy — **conforme**
+
+Le dossier bureau ne propose que ce qui le concerne : aucune mention d'ascenseur
+sur l'écran des états permanents, 12 lignes inchangées.
+
+## Ce qui m'a paru faux
+
+### a. « Voir les 1 mois précédents » ★
+
+Sur **les deux dossiers**, le calendrier affiche en tête de liste :
+
+> **Voir les 1 mois précédents**
+
+Source : `AnneeCalendrier.tsx:320` — `` `Voir les ${nbCartesPassees} mois précédents` ``.
+Aucun singulier. À un mois, la phrase devrait être « Voir le mois précédent ».
+
+C'est **exactement la famille que la garde de ce lot vient de couvrir** — une
+phrase qui s'accorde en nombre, écrite en interpolation — mais dans un autre
+fichier, que la garde ne regarde pas. La leçon vaut d'être notée : une garde
+posée sur l'écran où le défaut est apparu ne protège pas les écrans où il
+existait déjà.
+
+Cette formulation n'apparaît qu'à partir du 1er septembre : au 31 août, aucun
+mois n'était encore passé. Elle était donc invisible hier, et l'est devenue par
+le seul passage du temps.
+
+### b. Une alerte que j'ai failli écrire, et qui n'existait pas
+
+Juste après avoir enregistré la réponse « non », j'ai lu le formulaire et vu le
+select revenu sur « Je ne sais pas encore ». J'ai cru tenir un défaut de
+persistance — le pire possible sur une question qui retire une obligation.
+
+**C'était une lecture d'un DOM périmé**, pris avant que la page ne se re-rende
+depuis le serveur. Sur un chargement neuf, la fiche affiche « Non ». La base et
+l'écran sont d'accord.
+
+Je le consigne parce que c'est le symétrique de tout ce que ce rapport reproche
+au produit : j'ai failli affirmer une divergence entre deux surfaces en n'en
+ayant regardé qu'une, et au mauvais moment. La vérification qui l'a écartée est
+la même que celle que je demande au code — relire après que l'état a bougé.
