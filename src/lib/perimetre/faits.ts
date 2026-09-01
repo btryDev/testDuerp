@@ -24,6 +24,7 @@ import {
   obligationsSuspenduesAuPublicRecu,
   projeterEtablissement,
 } from "@/lib/matching";
+import { EFFECTIF_MAX } from "@/lib/etablissements/schema";
 import { correspondanceSecteur } from "./secteur";
 import {
   couvertureDeLEtablissement,
@@ -157,6 +158,15 @@ export async function faitsDeCouverture(
         etabMatching,
         equipementsMatching,
       ),
+    },
+    // La borne d'effectif de l'ADR-031, lue là où elle est FAITE RESPECTER —
+    // `etablissements/schema.ts`, la porte de création. La recopier dans
+    // `couverture.ts` en ferait une seconde déclaration de ce que le produit
+    // sait servir ; l'importer ici est le seul endroit qui le permette, le
+    // module de projection n'ayant aucune arête sortante au runtime.
+    effectif: {
+      surSite: etab.effectifSurSite,
+      seuilServi: EFFECTIF_MAX,
     },
   };
 }

@@ -1,5 +1,4 @@
 import {
-  BookOpen,
   CalendarClock,
   ClipboardCheck,
   Dot,
@@ -68,16 +67,15 @@ const OUTILS: Outil[] = [
     statut: "bientot",
     icon: Wind,
   },
-  {
-    n: "06",
-    titre: "Autres outils",
-    sousTitre: "À venir",
-    description:
-      "Registre unique du personnel, affichages obligatoires, fiche d'entreprise…",
-    couleur: "muted",
-    statut: "bientot",
-    icon: BookOpen,
-  },
+  // La carte « 06 · Autres outils — À venir » a été retirée le 2026-09-01, et
+  // pas parce qu'elle était laide. Elle annonçait « Registre unique du
+  // personnel, affichages obligatoires, fiche d'entreprise… » sous une
+  // pastille « Bientôt », c'est-à-dire une promesse — sur des documents que le
+  // CLAUDE.md déclare hors périmètre depuis toujours, et sur le seul écran où
+  // un dirigeant vient chercher la liste de ce qu'il doit tenir. Ils sont
+  // désormais nommés pour ce qu'ils sont, avec leur texte fondateur et
+  // l'endroit où ils se tiennent, dans `DocumentsObligatoires`. Mieux vaut une
+  // porte annoncée fermée qu'un bouton inerte (charte, interdit 19).
 ];
 
 export function OutilsConformite() {
@@ -96,8 +94,10 @@ export function OutilsConformite() {
           plan d&apos;actions…), les met à jour au fil de vos
           vérifications et <strong>vous rappelle les échéances</strong>{" "}
           avant qu&apos;elles ne passent. Chaque outil ci-dessous
-          correspond à une obligation précise — la plateforme en
-          maintient quatre aujourd&apos;hui, d&apos;autres arrivent.
+          correspond à une obligation précise. Les documents que vous devez
+          tenir <strong>et que la plateforme ne produit pas</strong> sont
+          nommés plus bas, avec le texte qui les fonde et l&apos;endroit où
+          ils se tiennent.
         </p>
       </header>
 

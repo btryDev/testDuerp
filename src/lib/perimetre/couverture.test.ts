@@ -25,6 +25,7 @@ function faits(partiel: Partial<FaitsCouverture> = {}): FaitsCouverture {
     duerp: null,
     equipements: { nbSansObligation: 0, nbEquipements: 12 },
     publicRecu: null,
+    effectif: null,
     ...partiel,
   };
 }
@@ -454,6 +455,7 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
     },
     equipements: { nbSansObligation: 4, nbEquipements: 9 },
     publicRecu: null,
+    effectif: null,
   });
 
   it("rend un manque par axe, dans un ordre stable — le régime d'abord", () => {
@@ -637,5 +639,81 @@ describe("axe famille d'habitation", () => {
     });
     expect(axes(c)).toContain("categorie_erp");
     expect(axesIndetermines(c)).toContain("famille_habitation");
+  });
+});
+
+/* ─── L'axe de l'effectif — ADR-031 § 1 bis ───────────────────────────── */
+
+describe("axe effectif", () => {
+  it("se tait quand l'effectif n'a pas été collecté", () => {
+    // Et surtout il ne conclut pas « dans la cible » : un écran qui n'a pas
+    // lu l'effectif n'a rien établi. Même règle que `publicRecu`.
+    expect(riensASignaler(couvertureDeLEtablissement(faits()))).toBe(true);
+  });
+
+  it("se tait au seuil, et parle juste au-dessus", () => {
+    // Deux assertions et non une : une borne se prouve des deux côtés. Un
+    // `>=` mis à la place du `>` refuserait l'établissement de cinquante
+    // salariés, qui est exactement la cible haute du produit.
+    const au = couvertureDeLEtablissement(
+      faits({ effectif: { surSite: 50, seuilServi: 50 } }),
+    );
+    expect(axes(au)).not.toContain("effectif");
+
+    const audela = couvertureDeLEtablissement(
+      faits({ effectif: { surSite: 51, seuilServi: 50 } }),
+    );
+    expect(axes(audela)).toContain("effectif");
+  });
+
+  it("est un MANQUE, jamais une indétermination", () => {
+    // La distinction porte tout l'axe. Une indétermination dirait « répondez
+    // et on saura » ; ici la réponse est donnée, et c'est elle qui établit le
+    // manque. Le dossier reste ouvert (ADR-031 § 1 bis) : ce module ne ferme
+    // rien, il dit.
+    const c = couvertureDeLEtablissement(
+      faits({ effectif: { surSite: 62, seuilServi: 50 } }),
+    );
+    expect(axes(c)).toEqual(["effectif"]);
+    expect(c.indeterminations).toEqual([]);
+  });
+
+  it("dit l'effectif déclaré et le seuil qu'il reçoit, sans en écrire aucun", () => {
+    // Le seuil est un FAIT reçu, pas une constante de ce module : la phrase
+    // doit donc suivre celui qu'on lui donne. Un 50 écrit en dur ici ferait
+    // de cet axe une seconde déclaration de ce que le produit sait servir, et
+    // elle divergerait en silence de `EFFECTIF_MAX`.
+    const c = couvertureDeLEtablissement(
+      faits({ effectif: { surSite: 77, seuilServi: 60 } }),
+    );
+    const m = c.manques.find((x) => x.axe === "effectif");
+    expect(m?.motif).toContain("77");
+    expect(m?.motif).toContain("60");
+  });
+
+  it("ne qualifie jamais la situation au regard du droit", () => {
+    const c = couvertureDeLEtablissement(
+      faits({ effectif: { surSite: 80, seuilServi: 50 } }),
+    );
+    const dit = c.manques.map((m) => `${m.motif} ${m.consequence}`).join(" ");
+    for (const interdit of [
+      "conforme",
+      "non conforme",
+      "infraction",
+      "en règle",
+    ]) {
+      expect(dit.toLowerCase()).not.toContain(interdit);
+    }
+  });
+
+  it("s'ajoute à l'axe du régime au lieu de s'y substituer", () => {
+    const c = couvertureDeLEtablissement(
+      faits({
+        regime: { ...regimeCouvert, categorieErp: "N3" },
+        effectif: { surSite: 90, seuilServi: 50 },
+      }),
+    );
+    // L'ordre est celui de l'énumération : le régime, puis la taille.
+    expect(axes(c)).toEqual(["categorie_erp", "effectif"]);
   });
 });
