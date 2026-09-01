@@ -1,7 +1,9 @@
 # ADR-033 — Le DUERP est borné à cinq unités de travail
 
 - **Statut** : acceptée, 2026-09-01 (réunion d'équipe)
-- **Portée** : `src/lib/duerps/actions.ts`, `src/lib/duerps/import/`
+- **Portée** : `src/lib/duerps/plafond-unites.ts` (le chiffre, le compte hors
+  unité transverse et les deux phrases de refus, sans prisma),
+  `src/lib/duerps/actions.ts`, `src/lib/duerps/import/`
 - **Découle de** l'ADR-025
 
 ## Le problème
@@ -33,7 +35,19 @@ c'est aussi celui qui peut faire entrer douze unités d'un coup.
 **À l'import, on refuse en nommant la limite. On ne tronque pas.** Tronquer
 silencieusement un document que le dirigeant a apporté lui ferait perdre des
 risques évalués sans qu'il le sache — le contraire exact de ce que le produit
-promet.
+promet. Le refus est posé **avant** la création du DUERP : un import refusé qui
+laisserait derrière lui un document vide serait un second dégât.
+
+**Le pré-remplissage sectoriel, lui, s'arrête au plafond sans refuser** — et
+c'est la seule dissymétrie de la règle. Ce sont des unités que le produit
+*propose* : en écarter une ne retire rien au dirigeant, qui peut l'ajouter à la
+main. Le cas où la coupe mord est le changement de secteur, les unités de
+l'ancien secteur occupant les places ; l'utilisateur doit alors les supprimer
+lui-même.
+
+À la **création** du DUERP, rien n'est plafonné : seule l'unité « Risques
+transverses » y est écrite, et elle ne compte pas. Le DUERP naît donc toujours
+avec ses cinq places entières.
 
 ## Ce qu'il faudrait mesurer, et qui ne l'a pas été
 

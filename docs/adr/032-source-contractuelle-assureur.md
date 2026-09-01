@@ -2,8 +2,15 @@
 
 - **Statut** : acceptée, 2026-09-01 (réunion d'équipe)
 - **Portée** : `prisma/schema.prisma` (`SourcePrescription`),
-  `src/lib/prescriptions/`, `src/lib/matching/prescriptions.ts`, les surfaces
-  qui affichent une échéance (calendrier, registre, PDF, dossier de contrôle)
+  `src/lib/prescriptions/sources.ts` (l'enum, le prédicat et les trois
+  formulations du marquage, en module feuille), `src/lib/matching/prescriptions.ts`,
+  et **toutes** les surfaces qui affichent une échéance : calendrier, fiche de
+  vérification, registre et dossier de conformité (PDF), ZIP de contrôle, écran
+  et formulaire des prescriptions, **widget d'échéances du tableau de bord** et
+  **serveur MCP** (`src/lib/mcp/queries.ts`). Ces deux dernières ont été ajoutées
+  après coup, le 2026-09-01 : « le marquage n'est pas optionnel » ne souffre pas
+  d'exception, et une requête distincte de celle du calendrier est exactement
+  l'endroit où l'exception s'installe sans bruit
 - **Amende** l'ADR-014 (prescriptions particulières) · **Découle de** l'ADR-025
 
 ## Le problème

@@ -33,8 +33,13 @@ d'établissements qu'elle en a.**
 - `Etablissement.entrepriseId @unique` **tombe**.
 - `Entreprise.userId @unique` **reste**. Un compte reste une entreprise : la
   racine de tenancy de l'ADR-005 ne bouge pas, et c'est ce qui permet de ne
-  toucher aucun des dix helpers de `auth/scope.ts` — ils bornent déjà par
-  `entreprise.userId` en prenant toujours un identifiant explicite.
+  toucher aucun des **neuf** helpers de `auth/scope.ts` qui prennent un
+  identifiant explicite (`requireEntreprise`, `requireEtablissement`,
+  `requireDuerp`, `requireUnite`, `requireRisque`, `requireAction`,
+  `requireVerification`, `assertEtablissementOwnership`,
+  `assertEntrepriseOwnership`) — ils bornent déjà par `entreprise.userId`. Le
+  dixième, `getOptionalUserEtablissement`, est le seul qui n'en prend pas : il
+  change, et c'est l'objet de la conséquence 1.
 
 Trois conséquences, et elles suffisent.
 
@@ -48,8 +53,13 @@ et ce repli n'a besoin d'être qu'un défaut raisonnable.
 **2. Le MCP doit désambiguïser.** `chercherEtablissementDeUtilisateur` prenait le
 premier élément d'une liste en s'appuyant explicitement sur l'invariant — c'est
 le seul `[0]` du code de production, et il est documenté comme sûr par une phrase
-qui devient fausse. L'outil accepte un identifiant d'établissement ; à défaut, il
-répond en listant, il ne choisit pas. **C'est l'amendement à l'ADR-013.**
+qui devient fausse. L'outil accepte un identifiant d'établissement (paramètre
+d'URL) ; à défaut, il répond `400` en listant les établissements et l'URL à
+former — il ne choisit pas. Un identifiant qui ne désigne aucun établissement du
+porteur reçoit la même liste, jamais un repli silencieux. Le seul cas où il ne
+demande rien est celui où le compte n'en porte qu'un : il n'y a alors pas de
+choix à faire, et exiger le paramètre casserait tous les connecteurs déjà
+configurés. **C'est l'amendement à l'ADR-013.**
 
 **3. Créer un second établissement redevient possible.** `creerEtablissement`
 redirigeait vers l'existant ; il crée. Les gardes de périmètre de l'ADR-031 —

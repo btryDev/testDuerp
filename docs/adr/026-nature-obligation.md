@@ -64,7 +64,9 @@ export const NATURES_OBLIGATION = [
 choix — après `transmet` (ADR-024), `pieceMedicale` (ADR-023) et
 `referencesLegales` — et pour le même motif, écrit à chaque fois : optionnel, le
 champ se serait tu, et l'oubli aurait été la faute naturelle. Requis, l'oubli ne
-compile pas. Les cent seize obligations livrées le portent.
+compile pas. Les cent seize obligations livrées le portent — cent vingt et une
+au soir du 2026-09-01, et c'est bien le point : cinq lignes de plus sont
+entrées sans qu'aucune puisse omettre sa nature.
 
 ### 2. La nature est une propriété du TEXTE, jamais de ce que le produit sait en faire
 
@@ -99,6 +101,14 @@ montre :
 > écrit : 4 → 3. **La démonstration ne bouge pas** — `autre` recouvre toujours
 > quatre natures, et c'est le champ `nature` qui a nommé le désaccord jusqu'à ce
 > qu'il soit tranché.
+
+> **Recalibrage du 2026-09-01.** Le tableau ci-dessus est le croisement au
+> 2026-08-31, sur 116 obligations ; il est conservé tel quel, c'est lui que la
+> démonstration commente. Le référentiel en porte **121** au soir du 2026-09-01,
+> et la répartition par nature, mesurée en appelant le référentiel : **67**
+> échéances récurrentes, **33** états permanents, **9** obligations ponctuelles,
+> **12** événementielles. Le croisement avec `periodicite` n'a pas été
+> recalculé ; les totaux par nature, si.
 
 Les deux valeurs sans rythme recouvrent chacune trois natures. Un seul sens de
 déduction tient, et il est verrouillé par un test : **un rythme chiffré impose
@@ -243,7 +253,8 @@ serait vrai d'une empreinte qui ne verrait plus rien.
 - **L'écran des états permanents doit trier sur `nature`, pas sur
   `periodicite`.** Le critère est : `nature === "etat_permanent"` — vingt-neuf
   obligations en `autre`, plus une en `mise_en_service_uniquement` dont la
-  périodicité est un défaut connu. **Les quatorze autres des quarante-trois n'y
+  périodicité est un défaut connu (trente au 2026-08-31 ; **trente-trois** au
+  soir du 2026-09-01, le critère ne changeant pas). **Les quatorze autres des quarante-trois n'y
   ont pas leur place** : quatre reviennent à rythme inconnu, sept se
   redéclenchent sur un fait, trois sont soldées une fois. Il leur faut une
   surface, mais pas celle-là — et c'est le chiffre qui manquait au brief.

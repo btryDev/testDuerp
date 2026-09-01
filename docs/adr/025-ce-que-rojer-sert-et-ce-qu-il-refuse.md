@@ -14,7 +14,8 @@
 ## Pourquoi ce document existe
 
 Le référentiel est passé de 85 obligations à 116 en une journée, et de 10
-domaines à 17. Tant qu'il ne servait que des équipements déclarés, son périmètre
+domaines à 17 — 121 obligations au soir du 2026-09-01, les lots du recadrage
+ayant continué d'en ajouter. Tant qu'il ne servait que des équipements déclarés, son périmètre
 se lisait dans ses catégories d'appareils. Depuis qu'il sert le **statut
 d'employeur**, il n'a plus de bord visible : rien, dans le code, ne disait où le
 produit s'arrête.
@@ -118,10 +119,12 @@ déclaration tombera d'elle-même quand la lecture sera faite, type par type ;
 elle n'a pas à être avancée pour faire joli.
 
 **Ce qui reste réalisable tout de suite** : les obligations par type **au sein de
-la 5ᵉ catégorie** — chapitres PO (hôtels) et PU (soins) du livre III, vingt
-articles aujourd'hui `non_couvert` dans `corpus/arrete-1980-livre-3.ts`. Le
-mécanisme qui les portera, `typologies.erp.types`, existe et fonctionne ; il n'a
-qu'un seul usage (`electricite.ts:469`).
+la 5ᵉ catégorie** — chapitres PO (hôtels) et PU (soins) du livre III, **vingt
+articles relevés dans `corpus/arrete-1980-livre-3.ts`, dont quinze `non_couvert`**
+(les cinq autres : deux `retenu`, trois `obligation_manquante`). Le mécanisme qui
+les portera, `typologies.erp.types`, existe et fonctionne ; il n'a qu'un seul
+usage — `elec-erp-o-cat5-annuelle` dans `electricite.ts`, qui porte
+`{ erp: { categories: ["N5"], types: ["O"] } }`.
 
 **Le chantier du livre II** commencera par revérifier en première main
 `docs/registre-releve-types-erp.md` — relevé du 2026-08-26 qui couvre neuf types
@@ -159,6 +162,10 @@ visible, qui demande de compléter.
 **La famille d'habitation n'existait pas du tout.** `estHabitation` était un
 booléen ; aucun champ ne portait la famille. Or **neuf obligations portent la
 typologie habitation** : elles s'appliquaient sans qu'on sache à quelle famille.
+
+Ces neuf sont douze depuis le dépouillement de l'arrêté du 31 janvier 1986 :
+les sept obligations d'ascenseur portent désormais la typologie habitation en
+plus de la typologie IGH, et trois lignes propres à l'habitation sont entrées.
 
 C'est le point où le code était le plus en retard sur le cadrage, et le seul où
 l'écart produisait déjà un risque : une obligation d'habitation servie sans
@@ -225,7 +232,10 @@ refusé à l'entrée / servi partiellement et prévenu (les ERP de 1re à 4e
 catégorie) / hors périmètre déclaré.
 
 C'est le point où le produit était le plus avancé : le bandeau de périmètre du
-calendrier dit déjà ce qui n'est pas couvert sur quatre axes, et
+calendrier dit déjà ce qui n'est pas couvert, sur sept axes au 2026-09-01
+(`AxeCouverture` : `igh`, `categorie_erp`, `secteur_duerp`,
+`domaine_equipement`, `public_recu`, `famille_habitation`, `effectif` — les deux
+derniers sont nés du recadrage), et
 `docs/couverture-declaree-du-produit.md` grave ces déclarations, sous la garde
 d'un test qui échoue si le document et le corpus divergent.
 
@@ -239,6 +249,7 @@ d'un test qui échoue si le document et le corpus divergent.
 | 013 — MCP OAuth | Amendée : « la requête ne peut pas rendre deux résultats » tombe | ADR-028 |
 | 014 — prescriptions | Amendée : une source contractuelle existe, à côté des actes d'autorité | ADR-032 |
 | 015 — rail de navigation | **Remplacée** : cinq entrées deviennent trois axes + deux fonctionnelles | ADR-030 |
+| 017 — opérations ponctuelles | Amendée : son entrée de rail « Opérations » disparaît, le permis de feu et le plan de prévention passent sous santé-sécurité. Sa doctrine — ni corrections ni registres — est intacte | ADR-030 |
 | 019 — bâtiment lieu | **Remplacée** : la zone prend la place du bâtiment, plafonnée à trois | ADR-029 |
 | 020 — couverture déclarée | Amendée : on refuse à l'entrée les régimes exclus, on nomme tout le reste | ADR-031 |
 
@@ -258,10 +269,21 @@ lignes que ce recadrage rend fausses lui sont signalées, sans être touchées :
 
 | Ligne | Ce qui devient faux |
 |---|---|
-| 71-77 | La section Périmètre ignore la borne à cinquante salariés et le refus à l'entrée |
-| 286-287 | « IGH, sites industriels… hors périmètre » et la bascule ICPE en couverture partielle : ces régimes sont désormais refusés à la création. La bascule reste vraie pour les ERP de 1re à 4e catégorie |
-| 298 | « Registres non couverts : … EPI » — à requalifier selon l'issue du dépouillement (le registre reste non couvert dans tous les cas) |
-| 318 | « régimes cumulables travail / ERP / **IGH** / habitation » — l'IGH est refusé, et la famille entre dans le régime habitation |
-| 341, 385-405 | Toute la section Navigation décrit les cinq entrées de l'ADR-015 |
-| 355 | ADR-025 y figure comme « proposé, non tranché » |
-| 37, 423 | Le DUERP y est décrit sans son plafond de cinq unités |
+| 42 | « Registres complémentaires (section « Mes registres » de la sidebar) » — cette section du rail n'existe plus (ADR-030) |
+| 71-83 | La section Périmètre dit bien la borne de cinquante salariés, mais ignore le **refus à l'entrée** et ses deux cas (ADR-031) |
+| 148 | « Équipement déclaré — **79** obligations livrées » — 80 au 2026-09-01, mesuré en appelant ; la ligne 182 du même fichier dit déjà 80 |
+| 158 | « Effectif — seuils 11, **25**, 50 » — aucune obligation du référentiel ne porte de seuil 25 (11, 50, et un plafond à 49) |
+| 298 | « IGH, sites industriels ; ATEX, rayonnements ionisants… hors périmètre » — l'**IGH seul est servi** (neuf obligations `igh`), et ATEX comme rayonnements ionisants se déclarent au lieu de se refuser. Seul le cumul ERP + IGH est refusé |
+| 299 | La bascule ICPE en couverture partielle **reste vraie** — l'ICPE n'est pas refusée à l'entrée. Rien à corriger ici |
+| 310 | « Registres non couverts : … EPI » — reste vrai ; à requalifier seulement si le dépouillement de `R. 4323-95` à `-106` change la donne (§ 7) |
+| 330 | « régimes cumulables travail / ERP / IGH / habitation » — vrai encore, mais incomplet : la **famille** d'habitation entre dans le régime habitation, et le cumul **ERP + IGH** est refusé à la création |
+| 339-373 | La liste des ADR s'arrête à 027 : **028 à 033 manquent** |
+| 353, 355, 357, 360, 351, 339 | Les entrées 015, 017, 019, 020, 013 et 001 ne portent pas leur renvoi (respectivement 030, 030, 029, 031, 028, 028) |
+| 367-368 | ADR-025 y figure comme « proposé, non tranché » |
+| 397-418 | Toute la section Navigation décrit les cinq entrées de l'ADR-015. En particulier : « Opérations », « Mon établissement » et « Mes registres » n'existent plus ; « Préparer un contrôle » a quitté « À faire » pour « Documentation » ; « Paramètres » ouvre la fiche établissement et non `/connecter` ; et le guide **a retrouvé** une entrée de rail, sous « Documentation » |
+| 423-424 | L'onboarding y est décrit sans la famille d'habitation, sans la catégorie d'ERP devenue obligatoire, et sans les deux refus à l'entrée |
+| 37, 423-424 | Le DUERP y est décrit sans son plafond de cinq unités de travail |
+| — | Rien n'y dit qu'un compte peut tenir **plusieurs établissements** (ADR-028) |
+
+Les numéros de ligne sont ceux du fichier au 2026-09-01, 466 lignes. Ils bougent
+au premier ajout : c'est la citation qui identifie le passage, pas le numéro.

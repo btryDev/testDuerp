@@ -188,7 +188,9 @@ sur les sept appelants de `determineObligationsApplicables`, aucun n'était un
 générateur — ni `pdf/builders.ts`, ni `api/etablissements/[id]/controle-zip`.
 
 Conséquence, mesurée et non supposée : trente obligations en
-`nature: "etat_permanent"` vivaient sur un seul écran. **Un dirigeant qui avait
+`nature: "etat_permanent"` vivaient sur un seul écran (**trente-trois** au soir
+du même jour, les lots suivants du recadrage en ayant ajouté trois ; le compte
+qui suit garde le chiffre du constat, et le raisonnement ne dépend pas de lui). **Un dirigeant qui avait
 coché ses douze états ne pouvait le montrer à personne**, et le document qu'on
 présente à un inspecteur est précisément celui qui n'en portait rien.
 

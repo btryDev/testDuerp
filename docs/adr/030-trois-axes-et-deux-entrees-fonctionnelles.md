@@ -28,13 +28,18 @@ personne.
 **Le rail porte cinq entrées : les trois axes, plus « À faire » et
 « Paramètres ».**
 
-| Entrée | Nature | Ce qu'elle recueille |
-|---|---|---|
-| À faire | fonctionnelle | calendrier (page d'entrée), plan d'actions, ce qui doit être en place, préparer un contrôle |
-| Santé-sécurité | thématique | DUERP, équipe et titres, prescriptions, éléments exclus du périmètre |
-| Équipement et bâtiment | thématique | équipements, zones, vérifications, registre de sécurité, accessibilité, carnet sanitaire |
-| Documentation | thématique | documents obligatoires, exports et dossier de contrôle, guide |
-| Paramètres | fonctionnelle | fiche établissement, questions de paramétrage, connexion d'un assistant |
+Le tableau ci-dessous est celui du rail **tel qu'il est construit** par
+`construireSections` / `construireRail` — pas celui du premier jet : trois de ses
+cases ont été tranchées à l'implémentation, et la section suivante dit lesquelles
+et pourquoi.
+
+| Entrée | Nature | Page d'entrée | Ce qu'elle recueille |
+|---|---|---|---|
+| À faire | fonctionnelle | calendrier | calendrier, plan d'actions, ce qui doit être en place |
+| Santé-sécurité | thématique | DUERP | DUERP, équipe et titres, prescriptions, permis de feu, plans de prévention, ce que Rojer ne couvre pas |
+| Équipement et bâtiment | thématique | équipements | équipements, zones, prestataires, registre de sécurité, accessibilité, carnet sanitaire |
+| Documentation | thématique | documents obligatoires | documents obligatoires, préparer un contrôle, comprendre (le guide) |
+| Paramètres | fonctionnelle | fiche établissement | rien — entrée sans panneau |
 
 **L'écart à la lettre de la directive est assumé et il est motivé.** Les trois
 axes sont thématiques — ils répondent à « de quoi s'agit-il ». « À faire » et
@@ -46,6 +51,42 @@ usage quotidien pour gagner une symétrie que personne ne regarde.
 **Ce que l'ADR-015 avait raison de poser est conservé** : une entrée de rail
 désigne une page réelle, jamais une approximation ; cliquer navigue *et* ouvre le
 panneau ; les pastilles de retard suivent l'entrée qui les concerne.
+
+## Ce que l'implémentation a tranché, et que la décision ne disait pas
+
+Ajouté au moment de l'écriture de `sidebar-nav.ts`, le 2026-09-01. Trois points
+manquaient ou se contredisaient ; les voici avec leur motif, pour que le tableau
+ci-dessus soit le rail réel et non l'intention.
+
+**1. Les deux opérations ponctuelles vont sous « Santé-sécurité ».** Le premier
+jet du tableau ne les rangeait nulle part. Elles avaient une entrée de rail
+propre (ADR-017, « Opérations ») que cette ADR supprime avec les cinq entrées de
+l'ADR-015, et rien ne disait où elles atterrissaient. Un permis de feu et un plan
+de prévention sont des **actes de prévention datés** : ils suivent les personnes,
+pas le lieu. Ce que l'ADR-017 posait ne bouge pas — ce ne sont ni des corrections
+ni des registres tenus en continu ; ils gardent d'ailleurs leur qualification
+événementielle (`non-ouvert` tant qu'aucun n'est ouvert), au même titre qu'un
+registre non commencé. Seule leur entrée de rail disparaît, absorbée par un axe.
+
+**2. « Préparer un contrôle » est rangé sous « Documentation », une seule fois.**
+Le premier jet le citait sous deux axes — « À faire » et « Documentation ». Ce
+n'est pas un rangement, c'est une hésitation. Il va du côté des documents parce
+que sa sortie en est un, et parce que la décision 4 de l'ADR-015 interdit qu'une
+entrée figure deux fois : le dirigeant chercherait laquelle est la bonne.
+
+**3. Le guide retrouve une entrée, sous « Documentation ».** La troisième
+révision de l'ADR-015 la lui avait retirée faute d'endroit juste — une lecture
+n'est pas une des questions du dirigeant, et le rang de rail la mettait au niveau
+d'un registre tenu. L'axe documentation en est un : le guide est un document
+parmi ceux qui expliquent le dossier. `categorieDeItem("guide")` rend donc
+`"documentation"` et non plus `null`.
+
+**Et « Paramètres » n'a pas de panneau.** Sa page d'entrée est la **fiche
+établissement** (`/modifier`), qui a quitté « Mon établissement » avec la
+disparition de cette entrée. Reste ouvert, et non tranché ici : la page de
+connexion d'un assistant (`/connecter`) est rattachée à cette catégorie par
+`categorieDeItem`, mais une catégorie sans panneau n'affiche aucun item — la page
+existe et plus aucun écran n'y mène.
 
 ## Le point qui sera difficile, et qu'il faut regarder en face
 

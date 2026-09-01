@@ -1,5 +1,15 @@
 # ADR-017 — Les opérations ponctuelles ne sont ni des corrections ni des registres
 
+> **Amendée le 2026-09-01 par l'ADR-030.** La décision 2 ci-dessous — « une
+> entrée de rail *Opérations* » — tombe avec les cinq entrées de l'ADR-015 : le
+> rail porte désormais trois axes thématiques plus « À faire » et
+> « Paramètres ». Le permis de feu et le plan de prévention sont rangés sous
+> **santé-sécurité**, parce que ce sont des actes de prévention datés qui
+> suivent les personnes et non le lieu. **Tout le reste de cette ADR est
+> intact** : la famille d'échéance `operations` (décision 1), le fait que ces
+> deux objets ne soient ni des corrections ni des registres tenus en continu, et
+> leur qualification événementielle dans la navigation.
+
 Date : 2026-08-20
 Statut : accepté
 

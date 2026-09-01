@@ -1,9 +1,12 @@
 # ADR-031 — Refuser à l'entrée ce qu'on ne sait pas servir du tout
 
 - **Statut** : acceptée, 2026-09-01 (réunion d'équipe)
-- **Portée** : `src/lib/onboarding/` (validation, schéma, actions),
-  `src/lib/etablissements/schema.ts`, `src/lib/perimetre/couverture.ts`,
-  `src/lib/referentiels/corpus/perimetre.ts`
+- **Portée** : `src/lib/onboarding/` (schéma, actions),
+  `src/components/onboarding/validation.ts` (la validation client du wizard —
+  elle vit sous `components/`, pas sous `lib/`),
+  `src/lib/etablissements/schema.ts` (`etablissementCreationSchema`),
+  `src/lib/perimetre/exclusions.ts` (`refusAlEntree`, catalogue des deux refus),
+  `src/lib/perimetre/couverture.ts`, `src/lib/referentiels/corpus/perimetre.ts`
 - **Amende** l'ADR-020, qu'elle ne renverse pas · **Découle de** l'ADR-025
 
 ## Le problème
