@@ -162,6 +162,14 @@ vi.mock("./transmissions", () => ({
     obligationsSupposantUnePersonne: [],
   }),
 }));
+// Les états permanents sont testés chez eux — leur module a son propre
+// passage de matching et ses propres gardes d'appartenance. Ici on ne veut
+// que le terme d'indétermination qu'ils apportent au score, et le laisser à
+// zéro décrit un dossier entièrement renseigné : les cas où il ne l'est pas
+// sont éprouvés dans `score.test.ts`, sur la fonction pure.
+vi.mock("@/lib/etats-permanents/queries", () => ({
+  compterEtatsPermanents: async () => ({ total: 0, enPlace: 0 }),
+}));
 // `compterActions` est testé chez lui ; ici on ne veut que ses agrégats.
 vi.mock("@/lib/actions/queries", () => ({
   compterActions: async () => ({

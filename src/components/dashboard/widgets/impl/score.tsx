@@ -14,11 +14,13 @@ import { BentoCell } from "@/components/dashboard/BentoCell";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { formaterDateFr } from "@/lib/dates";
 import type { DashboardBundle } from "../types";
+import type { Score } from "@/lib/dashboard/score";
 
 const LIBELLE_NIVEAU = {
   satisfaisante: "Satisfaisante",
   a_surveiller: "À surveiller",
   rattrapage: "Rattrapage nécessaire",
+  indetermine: "Reste à renseigner",
 } as const;
 
 /**
@@ -30,13 +32,51 @@ function ScoreInfoTooltip({ align = "right" }: { align?: "left" | "right" | "cen
   return (
     <InfoTooltip align={align}>
       Repère interne, pas une certification. Le score agrège trois
-      engagements : les vérifications périodiques dépassées (art. R4226-16
+      engagements datés : les vérifications périodiques dépassées (art. R4226-16
       CT), les actions correctives en retard (art. L4121-2 CT) et la mise
       à jour du DUERP depuis moins de 12 mois (art. R4121-2 CT). Plus un
-      engagement est urgent, plus son retard pénalise.
+      engagement est urgent, plus son retard pénalise. Les états permanents
+      n&apos;ont pas de date : ils ne pénalisent rien, mais tant qu&apos;ils
+      restent sans réponse le score ne conclut pas.
     </InfoTooltip>
   );
 }
+
+/**
+ * La pastille de niveau, **par table plutôt que par chaîne de ternaires**.
+ *
+ * Elle était écrite `satisfaisante ? vert : a_surveiller ? ambre : alerte`,
+ * donc avec un défaut par épuisement : le niveau `indetermine`, ajouté au
+ * score le 2026-09-01, y serait tombé dans « Rattrapage nécessaire » — un
+ * dossier sans le moindre retard aurait été annoncé en rattrapage, et rien
+ * n'aurait échoué. La table est indexée par `Score["niveau"]` : un niveau neuf
+ * ne compile pas tant qu'il n'a pas sa ligne.
+ *
+ * `pill-v2-dashed` pour l'indétermination, et c'est un choix : le vert dirait
+ * « tout va bien », l'alerte dirait « il y a un problème », et le produit ne
+ * sait ni l'un ni l'autre. Un trait discontinu dit qu'il manque une réponse.
+ */
+const PILL_PAR_NIVEAU: Record<
+  Score["niveau"],
+  { classe: string; label: string }
+> = {
+  satisfaisante: {
+    classe: "pill-v2 pill-v2-green",
+    label: LIBELLE_NIVEAU.satisfaisante,
+  },
+  a_surveiller: {
+    classe: "pill-v2 pill-v2-amber",
+    label: LIBELLE_NIVEAU.a_surveiller,
+  },
+  rattrapage: {
+    classe: "pill-v2 pill-v2-alert",
+    label: LIBELLE_NIVEAU.rattrapage,
+  },
+  indetermine: {
+    classe: "pill-v2 pill-v2-dashed",
+    label: LIBELLE_NIVEAU.indetermine,
+  },
+};
 
 /** Regroupement des catégories d'équipement en « familles » affichées dans la
  *  vue V2 du score.
@@ -154,12 +194,7 @@ export function WidgetScore({
 
   // --- Variant « anneau » : V2 layout (ring + per-famille bars) -----
   const familles = calculerFamilles(equipements);
-  const niveauPill =
-    dashboard.score.niveau === "satisfaisante"
-      ? { classe: "pill-v2 pill-v2-green", label: LIBELLE_NIVEAU.satisfaisante }
-      : dashboard.score.niveau === "a_surveiller"
-        ? { classe: "pill-v2 pill-v2-amber", label: LIBELLE_NIVEAU.a_surveiller }
-        : { classe: "pill-v2 pill-v2-alert", label: LIBELLE_NIVEAU.rattrapage };
+  const niveauPill = PILL_PAR_NIVEAU[dashboard.score.niveau];
 
   return (
     <section className="carte-board px-7 py-6 sm:px-8">
@@ -179,6 +214,20 @@ export function WidgetScore({
         <div className="flex min-w-[160px] flex-col items-center gap-3">
           <ScoreRingV2 pct={global} />
           <span className={niveauPill.classe}>{niveauPill.label}</span>
+          {/* Affiché quel que soit le niveau, et non seulement quand la
+              pastille l'annonce : un dossier en rattrapage a lui aussi des
+              états non renseignés, et les taire parce qu'une information plus
+              urgente s'affiche à côté serait le même silence, déplacé.
+              La phrase nomme le geste qui lève le doute — c'est la forme que
+              `perimetre/couverture.ts` donne à ses indéterminations. */}
+          {dashboard.score.indetermines > 0 && (
+            <p className="text-center text-[0.78rem] leading-snug text-[color:var(--board-slate-mid)]">
+              {dashboard.score.indetermines === 1
+                ? "1 point reste à confirmer"
+                : `${dashboard.score.indetermines} points restent à confirmer`}{" "}
+              dans «&nbsp;Ce qui doit être en place&nbsp;».
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-3">

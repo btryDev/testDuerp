@@ -189,3 +189,56 @@ export async function listerEtatsPermanents(
 
   return { groupes, faits, enPlace, total, faitsDates, faitsDatesRenseignes };
 }
+
+/**
+ * Les deux compteurs du score, et rien d'autre.
+ *
+ * **Pourquoi une entrée séparée plutôt que `listerEtatsPermanents` appelée
+ * depuis le tableau de bord.** L'écran a besoin des groupes, des libellés et
+ * des dates ; le score n'a besoin que de deux entiers. Faire transiter le
+ * reste par le tableau de bord et par le générateur de PDF les rendrait
+ * dépendants de la forme d'affichage d'un écran, qui bouge.
+ *
+ * **Mais le calcul, lui, n'est pas dupliqué**, et c'est la seule chose qui
+ * compte : cette fonction ne recompte rien, elle prend `enPlace` et `total` du
+ * même passage que l'écran. Un compteur réécrit ici finirait par diverger de
+ * celui qu'affiche l'écran — c'est déjà arrivé au score lui-même, quand le
+ * tableau de bord et le dossier PDF composaient chacun son dénominateur et
+ * sortaient deux notes différentes au même instant.
+ *
+ * **`userId` en paramètre plutôt qu'un `requireUser()` interne**, sur le
+ * modèle de `dashboard/transmissions.ts` : les deux appelants viennent d'un
+ * contexte déjà authentifié, et rappeler `requireUser()` ajoutait une lecture
+ * de session par affichage du tableau de bord. La garantie ne s'en remet pas
+ * pour autant à l'appelant — le prédicat d'appartenance est porté par la
+ * requête ci-dessous, et c'est `etab.id` qui est propagé ensuite, jamais
+ * l'identifiant reçu.
+ */
+export async function compterEtatsPermanents(
+  etablissementId: string,
+  userId: string,
+): Promise<{ total: number; enPlace: number }> {
+  const etab = await prisma.etablissement.findFirst({
+    where: { id: etablissementId, entreprise: { userId } },
+    include: { equipements: { where: { actif: true } } },
+  });
+  // Un dossier qui n'est pas celui de l'utilisateur n'a pas d'état permanent
+  // à montrer, et zéro sur zéro ne produit aucune indétermination : le score
+  // reste ce qu'il aurait été sans ce terme.
+  if (!etab) return { total: 0, enPlace: 0 };
+
+  const { total, enPlace } = await listerEtatsPermanents(
+    etab,
+    etab.equipements.map((eq) => ({
+      id: eq.id,
+      libelle: eq.libelle,
+      categorie: eq.categorie,
+      caracteristiques: (eq.caracteristiques ?? null) as Record<
+        string,
+        unknown
+      > | null,
+    })),
+  );
+
+  return { total, enPlace };
+}
