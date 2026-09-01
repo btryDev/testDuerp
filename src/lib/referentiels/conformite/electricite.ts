@@ -112,6 +112,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "L. 4711-5",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389/",
+        versionConstatee: "2008-05-01",
       },
     ],
     periodicite: "autre",
@@ -137,6 +138,7 @@ export const obligationsElectricite: Obligation[] = [
         article: "R. 4544-10",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051500368",
+        versionConstatee: "2025-10-01",
       },
       {
         source: "INRS",

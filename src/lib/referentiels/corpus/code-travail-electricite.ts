@@ -131,22 +131,38 @@ export const CODE_TRAVAIL_ELECTRICITE: Corpus = {
     },
     {
       ref: "R. 4544-10",
+      intitule: "Habilitation délivrée par l'employeur",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051500368",
       versionEnVigueur: "2025-10-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Met QUATRE actes à la charge de l'employeur : délivrer l'habilitation en spécifiant la nature des opérations autorisées ; s'assurer AVANT de la délivrer que le travailleur a reçu la formation théorique et pratique ; remettre à chaque travailleur un carnet de prescriptions ; et, pour les opérations au voisinage de pièces nues sous tension, subordonner la validité à une attestation d'absence de contre-indication médicale. AUCUNE durée de validité, AUCUNE périodicité : la délivrance, le maintien et le renouvellement sont renvoyés aux normes de R. 4544-3.",
+      citationCle:
+        "Un travailleur est habilité dans les limites des attributions qui lui sont confiées. L'habilitation, délivrée par l'employeur, spécifie la nature des opérations qu'il est autorisé à effectuer. Avant de délivrer l'habilitation, l'employeur s'assure que le travailleur a reçu la formation théorique et pratique qui lui confère la connaissance des risques liés à l'électricité et des mesures à prendre pour intervenir en sécurité lors de l'exécution des opérations qui lui sont confiées. L'employeur délivre, maintient ou renouvelle l'habilitation selon les modalités contenues dans les normes mentionnées à l'article R. 4544-3. L'employeur remet à chaque travailleur un carnet de prescriptions établi sur la base des prescriptions pertinentes de ces normes, complété, le cas échéant, par des instructions de sécurité particulières au travail effectué.",
       statut: "retenu",
       obligations: ["elec-travail-habilitation-personnel"],
+      reserve:
+        "LE TRIENNAL NE VIENT PAS D'ICI, et l'article le prouve en creux : relu le 2026-09-01, il ne porte aucune durée. « L'employeur délivre, maintient ou renouvelle l'habilitation selon les modalités contenues dans les normes mentionnées à l'article R. 4544-3 » — soit la NF C 18-510, que R. 4544-3 qualifie lui-même de recommandation et que ce dépôt n'accepte pas comme source opposable. Le carnet de prescriptions du quatrième alinéa, remis à CHAQUE travailleur, n'est encodé nulle part. Non corrigé.",
     },
     {
       ref: "L. 4711-5",
+      intitule: "Faculté de réunir les registres en un registre unique",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006903389",
       versionEnVigueur: "2008-05-01",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
+      prescrit:
+        "Rien. L'article AUTORISE, il n'impose pas : il permet de réunir en un registre unique des informations que d'autres textes font figurer dans des registres distincts.",
+      citationCle:
+        "Lorsqu'il est prévu que les informations énumérées aux articles L. 4711-1 et L. 4711-2 figurent dans des registres distincts, l'employeur est autorisé à réunir ces informations dans un registre unique dès lors que cette mesure est de nature à faciliter la conservation et la consultation de ces informations.",
       statut: "retenu",
       obligations: [
         "elec-travail-consignation-registre",
         "incendie-registre-securite",
       ],
+      reserve:
+        "MÊME CONSTAT QUE SUR L'ENTRÉE JUMELLE du corpus incendie, refait ici le 2026-09-01 pour que la branche électricité ne se lise pas seule : le verbe est « est autorisé à », c'est une FACULTÉ. `elec-travail-consignation-registre` a heureusement un vrai fondement — R. 4226-19, qui impose la consignation —, de sorte que L. 4711-5 n'y ajoute que la forme permise. La question a été ouverte quatre fois en onze jours ; l'entrée existe pour qu'elle ne le soit pas une cinquième.",
     },
   ],
 };
