@@ -72,42 +72,47 @@ est juste, mais il vaut aussi pour d'autres lignes qu'on garde.
 
 ---
 
-## 2. Les catégories d'ERP : servies, mais inégalement, et cela se dit
+## 2. Les catégories d'ERP : toutes servies, et la 5ᵉ seule est couverte à ce jour
 
-**Décision du 2026-09-01** : les ERP de 1re à 4e catégorie **ne sont pas
-refusés**. Ils sont servis partiellement et prévenus, exactement comme
-aujourd'hui — `CATEGORIES_COUVERTES = ["N5"]` reste la déclaration honnête, et
-le bandeau de couverture le dit à chaque dossier concerné.
+**Décision du 2026-09-01, arbitrée deux fois.** Les ERP de 1ʳᵉ à 4ᵉ catégorie
+sont **servis**, comme les autres. Aucun dossier n'est refusé sur sa catégorie.
 
-Le premier cadrage envisageait de couvrir pleinement les catégories 1 à 4. Il a
-été renversé le jour même, et le motif mérite d'être gravé parce qu'il gouverne
-les arbitrages suivants :
+Le motif est un fait de terrain qui tranche le débat : **la catégorie mesure le
+public reçu, pas l'effectif salarié.** Un restaurant de huit salariés qui reçoit
+trois cents couverts relève de la 3ᵉ catégorie. C'est exactement la cible du
+produit, et le refuser au nom d'un chiffre qui ne parle pas de ses salariés
+serait une erreur de lecture du cadrage lui-même. La borne du produit est de
+**cinquante salariés** ; elle ne s'applique pas au public reçu.
 
-> Tout ce recadrage **resserre** la surface du produit — un établissement par
-> dossier, cinquante salariés au plus, cinq unités de DUERP, régimes spéciaux
-> refusés. Couvrir les catégories 1 à 4 serait le seul point qui
-> **augmenterait** la promesse, et il le ferait sur un règlement — le livre II
-> de l'arrêté du 25 juin 1980, par type d'activité — dont **aucun chapitre
-> type-spécifique n'a jamais été dépouillé**. Le défaut que cela produirait ne
-> casserait aucun test : un dirigeant de 2e catégorie verrait un dossier
-> d'apparence complète qui ne l'est pas. C'est la famille de défauts la plus
-> coûteuse, et celle-là serait construite exprès.
+Une position intermédiaire a été proposée en cours de journée — différer les
+catégories 1 à 4 hors du recadrage — et **elle a été écartée** par la
+propriétaire. L'argument qui la portait garde sa valeur et devient une contrainte
+de rythme plutôt qu'une frontière :
 
-La couverture pleine des catégories 1 à 4 est donc un **chantier postérieur**,
-hors du recadrage. Quand il s'ouvrira, il commencera par revérifier en première
-main `docs/registre-releve-types-erp.md` — relevé du 2026-08-26 qui couvre neuf
-types sur dix-neuf et déclare lui-même n'avoir lu aucun article en première main
-— puis dépouillera les dix types manquants et les deux arrêtés modificatifs de
-2025 (29 juillet et 1er septembre), jamais ouverts.
+> Couvrir pleinement les catégories 1 à 4 suppose le livre II de l'arrêté du
+> 25 juin 1980, par type d'activité, dont **aucun chapitre type-spécifique n'a
+> jamais été dépouillé**. Un dépouillement bâclé ne casserait aucun test : il
+> produirait un dossier d'apparence complète qui ne l'est pas.
 
-**Ce qui reste dans le recadrage** : les obligations par type **au sein de la
-5e catégorie** — chapitres PO (hôtels, type O) et PU (soins, type U) du livre
-III, vingt articles aujourd'hui `non_couvert` dans
-`corpus/arrete-1980-livre-3.ts`. Le mécanisme qui les portera —
-`typologies.erp.types` — existe déjà et fonctionne ; il n'a qu'un seul usage
-(`electricite.ts:469`).
+D'où la seconde moitié de la décision, qui n'est pas un compromis mais la règle
+de la maison appliquée : **`CATEGORIES_COUVERTES` reste `["N5"]` tant que le
+livre II n'est pas lu.** Un ERP de 2ᵉ catégorie ouvre son dossier, reçoit tout
+ce que le produit sait faire — calendrier, registre, DUERP, plan d'actions — et
+lit en permanence que le règlement propre à sa catégorie n'est pas instruit. La
+déclaration tombera d'elle-même quand la lecture sera faite, type par type ;
+elle n'a pas à être avancée pour faire joli.
 
----
+**Ce qui reste réalisable tout de suite** : les obligations par type **au sein de
+la 5ᵉ catégorie** — chapitres PO (hôtels) et PU (soins) du livre III, vingt
+articles aujourd'hui `non_couvert` dans `corpus/arrete-1980-livre-3.ts`. Le
+mécanisme qui les portera, `typologies.erp.types`, existe et fonctionne ; il n'a
+qu'un seul usage (`electricite.ts:469`).
+
+**Le chantier du livre II** commencera par revérifier en première main
+`docs/registre-releve-types-erp.md` — relevé du 2026-08-26 qui couvre neuf types
+sur dix-neuf et déclare lui-même n'avoir lu aucun article en première main —
+puis dépouillera les dix types manquants et les deux arrêtés modificatifs de
+2025 (29 juillet et 1ᵉʳ septembre), jamais ouverts.
 
 ## 3. Un établissement, une zone à trois subdivisions au plus
 
