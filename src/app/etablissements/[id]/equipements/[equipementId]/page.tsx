@@ -338,7 +338,7 @@ export default async function EquipementDetailPage({
                   {LABEL_CATEGORIE_EQUIPEMENT[eq.categorie]}
                 </ChampFiche>
                 {multiBatiments ? (
-                  <ChampFiche cle="Bâtiment">{eq.batiment.nom}</ChampFiche>
+                  <ChampFiche cle="Zone">{eq.batiment.nom}</ChampFiche>
                 ) : null}
                 <ChampFiche cle="Localisation">
                   {eq.localisation ?? (

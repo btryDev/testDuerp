@@ -100,7 +100,7 @@ function Enseigne({
           {nom}
         </p>
         <p className="board-eyebrow m-0 mt-1 text-[color:var(--board-slate-soft)]">
-          {nbBatiments} bâtiment{nbBatiments > 1 ? "s" : ""}
+          {nbBatiments} zone{nbBatiments > 1 ? "s" : ""}
         </p>
       </div>
     </div>
@@ -211,7 +211,7 @@ function Fleche({
       onClick={onClick}
       disabled={disabled}
       aria-label={
-        sens === "gauche" ? "Bâtiments précédents" : "Bâtiments suivants"
+        sens === "gauche" ? "Zones précédentes" : "Zones suivantes"
       }
       className={
         "flex size-8 flex-none items-center justify-center rounded-full border border-[color:rgba(10,10,10,.16)] text-[color:var(--board-ink)] transition-opacity " +

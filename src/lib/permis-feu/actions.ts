@@ -71,8 +71,8 @@ export async function creerPermisFeu(
   if (!batiment.ok) {
     return {
       status: "error",
-      message: "Bâtiment introuvable",
-      fieldErrors: { batimentId: ["Bâtiment introuvable"] },
+      message: "Zone introuvable",
+      fieldErrors: { batimentId: ["Zone introuvable"] },
     };
   }
 

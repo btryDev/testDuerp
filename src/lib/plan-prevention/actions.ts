@@ -103,8 +103,8 @@ export async function creerPlanPrevention(
   if (!batiment.ok) {
     return {
       status: "error",
-      message: "Bâtiment introuvable",
-      fieldErrors: { batimentId: ["Bâtiment introuvable"] },
+      message: "Zone introuvable",
+      fieldErrors: { batimentId: ["Zone introuvable"] },
     };
   }
 

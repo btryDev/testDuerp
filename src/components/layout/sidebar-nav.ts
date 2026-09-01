@@ -117,7 +117,7 @@ export const LABEL_ITEM: Record<SidebarItemId, string> = {
   // table que de les découpler.
   connecter: "Paramètres",
   equipements: "Équipements",
-  batiments: "Bâtiments",
+  batiments: "Zones",
   prestataires: "Prestataires",
   prescriptions: "Prescriptions particulières",
   fiche: "Fiche établissement",
@@ -300,7 +300,7 @@ export function construireSections({
       count: counts?.equipements,
     },
     {
-      // Toujours présent, même mono-bâtiment : c'est ici qu'on en déclare
+      // Toujours présent, même sous une seule zone : c'est ici qu'on en déclare
       // un second. Le reste de l'interface (sélecteurs, filtres, colonnes)
       // n'apparaît qu'à partir de deux (ADR-019).
       id: "batiments",

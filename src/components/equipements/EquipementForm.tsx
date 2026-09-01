@@ -161,8 +161,9 @@ type Props = {
     formData: FormData,
   ) => Promise<EquipementActionState>;
   valeursInitiales?: Valeurs;
-  /** Les bâtiments de l'établissement. Le champ n'est rendu qu'à partir de
-   *  deux : en mono-bâtiment l'action rattache au seul existant (ADR-019). */
+  /** Les zones de l'établissement. Le champ n'est rendu qu'à partir de
+   *  deux : sous une seule zone, l'action rattache à la seule existante
+   *  (ADR-029). */
   batiments?: { id: string; nom: string }[];
   libelleSubmit: string;
   labelAnnuler?: { libelle: string; href: string };
@@ -253,7 +254,7 @@ export function EquipementForm({
         {multiBatiments && (
           <div>
             <label className="label-board" htmlFor="batimentId">
-              Bâtiment *
+              Zone *
             </label>
             <select
               id="batimentId"
