@@ -27,17 +27,35 @@ function itemsDe(titre: string, modules?: SidebarModules) {
   return section?.items ?? [];
 }
 
-/** Registres de la section « Mes registres », dans l'ordre de rendu. */
-function registres(modules?: SidebarModules) {
-  return itemsDe("Mes registres", modules);
+/** L'axe du lieu — le parc, les zones, et les registres qui en consignent
+ *  l'état (ADR-030). */
+function equipementBatiment(modules?: SidebarModules) {
+  return itemsDe("Équipement et bâtiment", modules);
 }
 
-function operations(modules?: SidebarModules) {
-  return itemsDe("Opérations", modules);
+/** L'axe des personnes et des actes de prévention (ADR-030). */
+function santeSecurite(modules?: SidebarModules) {
+  return itemsDe("Santé-sécurité", modules);
+}
+
+/**
+ * Les quatre registres, où qu'ils soient rangés.
+ *
+ * L'ADR-030 les a séparés : le DUERP suit les personnes, les trois autres
+ * suivent le lieu. Leur QUALIFICATION — actif, non ouvert, non applicable —
+ * n'a pas bougé pour autant, et c'est ce que les tests ci-dessous gardent.
+ * Les chercher dans les deux axes plutôt que dans une section nommée évite
+ * qu'un déplacement d'entrée fasse passer une règle métier pour cassée.
+ */
+const IDS_REGISTRES = ["duerp", "registre", "accessibilite", "carnet-sanitaire"];
+function registres(modules?: SidebarModules) {
+  return [...santeSecurite(modules), ...equipementBatiment(modules)].filter(
+    (i) => IDS_REGISTRES.includes(i.id),
+  );
 }
 
 function etatDe(id: SidebarItemId, modules?: SidebarModules) {
-  return [...registres(modules), ...operations(modules)].find(
+  return [...equipementBatiment(modules), ...santeSecurite(modules)].find(
     (i) => i.id === id,
   )?.etat;
 }
@@ -56,9 +74,9 @@ describe("deduireActif", () => {
     expect(deduireActif(`/etablissements/${ID}/modifier`, ID)).toBe("fiche");
   });
 
-  it("range les bâtiments sous « Mon établissement » (ADR-019)", () => {
+  it("range les zones sous « Équipement et bâtiment » (ADR-019, ADR-030)", () => {
     expect(deduireActif(`/etablissements/${ID}/batiments`, ID)).toBe("batiments");
-    expect(categorieDeItem("batiments")).toBe("etablissement");
+    expect(categorieDeItem("batiments")).toBe("equipement-batiment");
   });
 
   it("rattache les vérifications au calendrier", () => {
@@ -83,24 +101,25 @@ describe("deduireActif", () => {
 });
 
 describe("construireSections — structure", () => {
-  it("expose les sections dans l'ordre des questions du dirigeant", () => {
+  // L'ordre porte la découpe de l'ADR-030 : l'activité d'abord — ce qui
+  // revient tout seul —, puis les trois axes thématiques.
+  it("expose l'activité puis les trois axes", () => {
     expect(sections().map((s) => s.title)).toEqual([
       "À faire",
-      "Opérations",
-      "Mon établissement",
-      "Mes registres",
+      "Santé-sécurité",
+      "Équipement et bâtiment",
+      "Documentation",
     ]);
   });
 
-  it("sort les opérations ponctuelles de « Mes registres »", () => {
-    // Un registre se tient en continu ; un permis de feu naît d'un chantier
-    // daté et meurt clos (ADR-017).
-    expect(operations().map((i) => i.id)).toEqual([
-      "permis-feu",
-      "plan-prevention",
-    ]);
-    expect(registres().map((i) => i.id)).not.toContain("permis-feu");
-    expect(registres().map((i) => i.id)).not.toContain("plan-prevention");
+  it("range les opérations ponctuelles avec la prévention, pas avec le lieu", () => {
+    // Un permis de feu naît d'un chantier daté et meurt clos (ADR-017) : ce
+    // n'est ni un registre tenu en continu, ni une propriété du bâtiment.
+    // C'est un acte de prévention, et il suit les personnes.
+    const ids = santeSecurite().map((i) => i.id);
+    expect(ids).toContain("permis-feu");
+    expect(ids).toContain("plan-prevention");
+    expect(equipementBatiment().map((i) => i.id)).not.toContain("permis-feu");
   });
 
   it("ne porte dans « À faire » que des activités, jamais un filtre", () => {
@@ -110,11 +129,14 @@ describe("construireSections — structure", () => {
     // aucune surface. Mettre en place EST une activité, et ce n'est pas l'état
     // filtré du calendrier — `estSansRendezVous` fait que ces lignes ne peuvent
     // pas y exister. Un filtre suppose que l'objet soit là.
+    // « Préparer un contrôle » a quitté cette liste pour « Documentation » :
+    // sa sortie est un jeu de documents, et une entrée qui figurerait aux
+    // deux endroits laisserait le dirigeant se demander laquelle est la
+    // bonne (ADR-015, décision 4).
     expect(aFaire.items.map((i) => i.id)).toEqual([
       "calendrier",
       "actions",
       "etats-permanents",
-      "controle",
     ]);
     // Aucune destination du panneau ne porte de query : un filtre est un
     // réglage d'écran, pas une place dans l'arborescence (ADR-015 révisé).
@@ -127,13 +149,24 @@ describe("construireSections — structure", () => {
     // Un résumé n'est pas une tâche — on y revient par la marque (ADR-015,
     // seconde révision) ; le guide a son entrée de premier niveau : les
     // laisser ici les afficherait deux fois.
+    // Le tableau de bord reste hors sections : un résumé n'est pas une des
+    // questions du dirigeant, on y revient par la marque (ADR-015, seconde
+    // révision). Le guide, lui, EST revenu — sous « Documentation », où il
+    // est un document parmi ceux qui expliquent le dossier et non une
+    // activité de premier rang (ADR-030).
     expect(idsVisibles()).not.toContain("tableau");
-    expect(idsVisibles()).not.toContain("guide");
+    expect(idsVisibles()).toContain("guide");
   });
 
-  it("expose les registres à plat, DUERP et registre de sécurité en tête", () => {
-    expect(registres().map((i) => i.id)).toEqual([
-      "duerp",
+  it("ouvre la santé-sécurité par le DUERP et la ferme par ce qui n'est pas couvert", () => {
+    const ids = santeSecurite().map((i) => i.id);
+    expect(ids[0]).toBe("duerp");
+    expect(ids[ids.length - 1]).toBe("perimetre");
+  });
+
+  it("garde les registres du lieu à plat, le registre de sécurité en tête", () => {
+    const ids = equipementBatiment().map((i) => i.id);
+    expect(ids.filter((i) => ["registre", "accessibilite", "carnet-sanitaire"].includes(i))).toEqual([
       "registre",
       "accessibilite",
       "carnet-sanitaire",
@@ -192,12 +225,15 @@ describe("construireRail — rail à deux niveaux", () => {
   }
 
   it("expose les catégories dans l'ordre du rail", () => {
-    // Les deux catégories d'activité d'abord, les descriptives ensuite.
+    // L'activité d'abord, les trois axes thématiques ensuite, le réglage en
+    // dernier (ADR-030). Cinq entrées pour trois axes, et c'est assumé : les
+    // trois axes répondent à « de quoi s'agit-il », les deux autres à
+    // « qu'est-ce que je fais maintenant » et « où je règle ».
     expect(rail().map((c) => c.id)).toEqual([
       "a-faire",
-      "operations",
-      "etablissement",
-      "registres",
+      "sante-securite",
+      "equipement-batiment",
+      "documentation",
       "parametres",
     ]);
   });
@@ -227,29 +263,33 @@ describe("construireRail — rail à deux niveaux", () => {
     expect(idsVisibles()).not.toContain("tableau");
   });
 
-  it("fait de « Paramètres » un lien direct, hors des trois panneaux", () => {
+  it("fait de « Paramètres » un lien direct, hors des panneaux", () => {
     const parametres = rail().find((c) => c.id === "parametres");
     expect(parametres?.items).toBeUndefined();
-    expect(parametres?.href).toBe(`/etablissements/${ID}/connecter`);
+    // La fiche établissement est devenue sa page d'entrée : c'est là qu'on
+    // renseigne ce que le dossier déclare (ADR-030).
+    expect(parametres?.href).toBe(`/etablissements/${ID}/modifier`);
     // Ce n'est ni une tâche ni un registre : il n'a pas à apparaître dans
     // les sections, sous peine de se retrouver dans deux endroits du rail.
     expect(idsVisibles()).not.toContain("connecter");
+    expect(idsVisibles()).not.toContain("fiche");
     // La césure entre le dossier et son réglage est portée par la donnée,
     // pas devinée au rendu.
     expect(parametres?.separateurAvant).toBe(true);
   });
 
-  it("ne met plus « Comprendre » dans le rail", () => {
-    // Le guide reste en ligne, mais ce n'est pas une des questions du
-    // dirigeant : c'est une lecture, pas un endroit où l'on travaille. Une
-    // entrée de rail permanente lui donnait le rang d'un registre tenu.
+  it("rend le guide au panneau Documentation, sans lui donner d'entrée de rail", () => {
+    // Il avait perdu son entrée de premier niveau en août, faute d'endroit
+    // juste : une lecture n'est pas une des questions du dirigeant, et le
+    // rang de rail la mettait au niveau d'un registre tenu. Sous
+    // « Documentation », il est un document parmi ceux qui expliquent le
+    // dossier — et il redevient atteignable sans passer par un autre écran.
     const cats = rail();
-    expect(cats.some((c) => c.id === "parametres")).toBe(true);
     expect(cats.map((c) => c.href)).not.toContain(
       `/etablissements/${ID}/guide`,
     );
-    // Et il ne se réfugie pas non plus dans un panneau.
-    expect(idsVisibles()).not.toContain("guide");
+    expect(idsVisibles()).toContain("guide");
+    expect(categorieDeItem("guide")).toBe("documentation");
   });
 
   it("reprend exactement les items des sections", () => {
@@ -266,7 +306,9 @@ describe("construireRail — rail à deux niveaux", () => {
       counts: { enRetardTotal: 2, prestatairesAlertes: 0 },
     });
     expect(cats.find((c) => c.id === "a-faire")?.alert).toBe(true);
-    expect(cats.find((c) => c.id === "etablissement")?.alert).toBe(false);
+    expect(cats.find((c) => c.id === "equipement-batiment")?.alert).toBe(
+      false,
+    );
   });
 
   it("rattache chaque item à la catégorie qui le contient", () => {
@@ -277,12 +319,16 @@ describe("construireRail — rail à deux niveaux", () => {
     }
     expect(categorieDeItem("tableau")).toBe("tableau");
     expect(categorieDeItem("connecter")).toBe("parametres");
-    // Le guide n'a plus d'entrée de rail : sa page reste atteignable, et
-    // aucune tuile ne s'allume dessus. Le rattacher au voisin le plus proche
-    // allumait « Paramètres » sur un écran qui n'en fait pas partie, avec
-    // une tuile qui mène ailleurs — l'ADR-015 veut qu'une entrée de rail
-    // désigne une page, pas une approximation.
-    expect(categorieDeItem("guide")).toBeNull();
+    // Le guide est rattaché depuis l'ADR-030, et ce n'est plus une
+    // approximation : il figure vraiment dans le panneau « Documentation ».
+    // Il avait été délié en août parce qu'aucun axe ne le contenait — le
+    // rattacher au voisin le plus proche allumait alors « Paramètres » sur un
+    // écran qui n'en faisait pas partie. L'ADR-015 veut qu'une entrée de rail
+    // désigne une page ; c'est désormais le cas.
+    expect(categorieDeItem("guide")).toBe("documentation");
+    // La fiche établissement, elle, quitte les panneaux pour « Paramètres »,
+    // dont elle devient la page d'entrée.
+    expect(categorieDeItem("fiche")).toBe("parametres");
   });
 });
 
@@ -373,16 +419,13 @@ describe("construireSections — qualification des registres", () => {
     expect(etatDe("carnet-sanitaire", modules)).toBe("actif");
   });
 
-  it("remonte ce qui concerne l'établissement et relègue le non applicable", () => {
-    const ordre = registres({ ...MODULES_ERP_NEUF, estERP: false }).map(
-      (i) => i.id,
-    );
-    expect(ordre).toEqual([
-      "duerp",
-      "registre",
-      "carnet-sanitaire",
-      "accessibilite",
-    ]);
+  it("relègue le non applicable en fin de liste, dans l'axe qui le porte", () => {
+    // Le tri ne concerne que les trois registres du lieu : le DUERP a rejoint
+    // l'axe santé-sécurité et n'est plus dans le même ordonnancement.
+    const ordre = equipementBatiment({ ...MODULES_ERP_NEUF, estERP: false })
+      .map((i) => i.id)
+      .filter((i) => IDS_REGISTRES.includes(i));
+    expect(ordre).toEqual(["registre", "carnet-sanitaire", "accessibilite"]);
   });
 
   it("ne retire jamais un registre de la liste", () => {
@@ -418,7 +461,7 @@ describe("construireSections — qualification des registres", () => {
     const panneau = construireRail({
       etablissementId: ID,
       modules: { ...MODULES_ERP_NEUF, estERP: false },
-    }).find((c) => c.id === "registres");
+    }).find((c) => c.id === "equipement-batiment");
     expect(panneau?.items?.find((i) => i.id === "accessibilite")?.etat).toBe(
       "non-applicable",
     );

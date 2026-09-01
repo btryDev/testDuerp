@@ -23,16 +23,16 @@ type Document = {
   reperes: string[];
 };
 
+// L'ORDRE EST UN PROPOS, et il a changé le 2026-09-01. Le DUERP ouvrait la
+// liste ; c'est le calendrier qui l'ouvre désormais. Le DUERP reste le
+// document que le dirigeant connaît de nom, mais il n'est plus le centre du
+// produit — et une page d'accueil qui le place en premier promet un
+// générateur de document là où le produit tient un suivi continu. C'est aussi
+// l'ordre du réel : le calendrier se remplit dès la déclaration des
+// équipements, le DUERP s'ouvre ensuite.
 const DOCUMENTS: Document[] = [
   {
     numero: "01",
-    famille: "Évaluation",
-    titre: "Le DUERP",
-    corps: "L'inventaire des risques, unité de travail par unité de travail, coté et daté. Chaque validation fige une version — c'est celle-là qu'on vous demandera.",
-    reperes: ["Mise à jour annuelle", "Conservé 40 ans"],
-  },
-  {
-    numero: "02",
     famille: "Échéances",
     titre: "Le calendrier des vérifications",
     corps: "Vous déclarez vos équipements une fois. Rojer en déduit les contrôles obligatoires, pose les dates et les repousse à mesure que les rapports arrivent.",
@@ -40,6 +40,13 @@ const DOCUMENTS: Document[] = [
     // À recompter quand le référentiel s'étend — un chiffre faux sur une
     // page publique se paie plus cher que pas de chiffre du tout.
     reperes: ["121 obligations · 17 domaines", "Sources Légifrance et INRS"],
+  },
+  {
+    numero: "02",
+    famille: "Évaluation",
+    titre: "Le DUERP",
+    corps: "L'inventaire des risques, unité de travail par unité de travail, coté et daté. Chaque validation fige une version — c'est celle-là qu'on vous demandera.",
+    reperes: ["Mise à jour annuelle", "Conservé 40 ans"],
   },
   {
     numero: "03",

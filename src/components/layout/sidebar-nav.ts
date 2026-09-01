@@ -69,6 +69,9 @@ import {
   HardHat,
   Archive,
   CircleCheck,
+  BookMarked,
+  CircleSlash,
+  Compass,
 } from "lucide-react";
 
 /** Ids historiques — conservés tels quels pour la prop `active`. */
@@ -91,7 +94,14 @@ export type SidebarActive =
 
 /** Ids réellement présents dans le rail (les deux derniers n'étaient pas
  *  adressables auparavant : `/modifier` surlignait « Tableau de bord »). */
-export type SidebarItemId = SidebarActive | "batiments" | "fiche" | "prescriptions" | "equipe";
+export type SidebarItemId =
+  | SidebarActive
+  | "batiments"
+  | "fiche"
+  | "prescriptions"
+  | "equipe"
+  | "perimetre"
+  | "documents";
 
 /**
  * Le nom de chaque écran, en un seul endroit. La sidebar s'en sert pour
@@ -111,6 +121,8 @@ export const LABEL_ITEM: Record<SidebarItemId, string> = {
   // découpler.
   "etats-permanents": "Ce qui doit être en place",
   guide: "Comprendre",
+  perimetre: "Ce que Rojer ne couvre pas",
+  documents: "Documents obligatoires",
   // L'identifiant et la route restent `connecter` : renommer une URL casse
   // les liens déjà partagés et les provenances enregistrées, pour un gain
   // nul. Seul le nom affiché change — c'est précisément le rôle de cette
@@ -283,15 +295,9 @@ export function construireSections({
       href: href("/etats-permanents"),
       Icon: CircleCheck,
     },
-    {
-      id: "controle",
-      label: LABEL_ITEM.controle,
-      href: href("/controle"),
-      Icon: ShieldCheck,
-    },
   ];
 
-  const monEtablissement: NavItem[] = [
+  const equipementBatiment: NavItem[] = [
     {
       id: "equipements",
       label: LABEL_ITEM.equipements,
@@ -315,30 +321,6 @@ export function construireSections({
       Icon: Users,
       count: counts?.prestatairesAlertes,
       alert: (counts?.prestatairesAlertes ?? 0) > 0,
-    },
-    {
-      id: "fiche",
-      label: LABEL_ITEM.fiche,
-      href: href("/modifier"),
-      Icon: Settings,
-    },
-    {
-      id: "prescriptions",
-      label: "Prescriptions",
-      href: href("/prescriptions"),
-      Icon: FileText,
-    },
-    {
-      id: "equipe",
-      label: LABEL_ITEM.equipe,
-      href: href("/equipe"),
-      // `Users` nommait déjà « Prestataires » : la même icône ne peut pas
-      // désigner deux objets. `IdCard` est aussi plus juste ici — l'écran ne
-      // gère pas des personnes en tant qu'utilisateurs, il tient le registre
-      // des titres nominatifs qu'elles détiennent.
-      Icon: IdCard,
-      count: counts?.titresEnRetard,
-      alert: (counts?.titresEnRetard ?? 0) > 0,
     },
   ];
 
@@ -382,13 +364,80 @@ export function construireSections({
     },
   ];
 
-  const registres: NavItem[] = [
+  // ─── Santé-sécurité ────────────────────────────────────────────────────
+  //
+  // L'axe des personnes et des actes de prévention (ADR-030). Le DUERP y est
+  // en tête parce que c'est de lui que part l'évaluation ; l'équipe porte les
+  // titres nominatifs (ADR-023) ; les prescriptions sont les exigences reçues
+  // d'une autorité ou d'un assureur ; les deux opérations ponctuelles
+  // (ADR-017) sont des actes de prévention datés, pas des registres.
+  //
+  // « Ce que Rojer ne couvre pas » ferme la liste, et c'est l'ADR-025 § 8 qui
+  // le veut ici : l'axe qui dit ce que le produit fait pour la sécurité est
+  // celui qui doit dire où il s'arrête.
+  const santeSecurite: NavItem[] = [
     {
       id: "duerp",
       label: LABEL_ITEM.duerp,
       href: href("/duerp"),
       Icon: FileCheck2,
     },
+    {
+      id: "equipe",
+      label: LABEL_ITEM.equipe,
+      href: href("/equipe"),
+      // `Users` nommait déjà « Prestataires » : la même icône ne peut pas
+      // désigner deux objets. `IdCard` est aussi plus juste ici — l'écran ne
+      // gère pas des personnes en tant qu'utilisateurs, il tient le registre
+      // des titres nominatifs qu'elles détiennent.
+      Icon: IdCard,
+      count: counts?.titresEnRetard,
+      alert: (counts?.titresEnRetard ?? 0) > 0,
+    },
+    {
+      id: "prescriptions",
+      label: "Prescriptions",
+      href: href("/prescriptions"),
+      Icon: FileText,
+    },
+    ...operations,
+    {
+      id: "perimetre",
+      label: LABEL_ITEM.perimetre,
+      href: href("/perimetre"),
+      Icon: CircleSlash,
+    },
+  ];
+
+  // ─── Documentation ─────────────────────────────────────────────────────
+  //
+  // Ce qui parle du dossier plutôt que du lieu (ADR-030). « Préparer un
+  // contrôle » y est rangé et non sous « À faire », alors que l'ADR-030 le
+  // citait aux deux endroits : sa sortie est un jeu de documents, et une
+  // entrée ne peut pas figurer deux fois sans que le dirigeant se demande
+  // laquelle est la bonne (ADR-015, décision 4).
+  const documentation: NavItem[] = [
+    {
+      id: "documents",
+      label: LABEL_ITEM.documents,
+      href: href("/documents"),
+      Icon: BookMarked,
+    },
+    {
+      id: "controle",
+      label: LABEL_ITEM.controle,
+      href: href("/controle"),
+      Icon: ShieldCheck,
+    },
+    {
+      id: "guide",
+      label: LABEL_ITEM.guide,
+      href: href("/guide"),
+      Icon: Compass,
+    },
+  ];
+
+  const registres: NavItem[] = [
     {
       id: "registre",
       label: LABEL_ITEM.registre,
@@ -422,11 +471,19 @@ export function construireSections({
     (a, b) => RANG_ETAT[a.etat ?? "actif"] - RANG_ETAT[b.etat ?? "actif"],
   );
 
+  // Le registre de sécurité, l'accessibilité et le carnet sanitaire suivent
+  // le parc : leur contenu est celui du lieu — vérifications, rapports,
+  // travaux, points de relevé. C'est le choix le plus fragile de l'ADR-030,
+  // et elle le dit : un dirigeant peut chercher son registre sous
+  // « Documentation ». S'il se révèle faux à l'usage, il se corrige en
+  // déplaçant une entrée, pas en rouvrant la découpe.
+  equipementBatiment.push(...registres);
+
   return [
     { title: "À faire", items: aFaire },
-    { title: "Opérations", items: operations },
-    { title: "Mon établissement", items: monEtablissement },
-    { title: "Mes registres", items: registres },
+    { title: "Santé-sécurité", items: santeSecurite },
+    { title: "Équipement et bâtiment", items: equipementBatiment },
+    { title: "Documentation", items: documentation },
   ];
 }
 
@@ -472,9 +529,9 @@ export function construireSections({
 export type RailCategorieId =
   | "tableau"
   | "a-faire"
-  | "operations"
-  | "etablissement"
-  | "registres"
+  | "sante-securite"
+  | "equipement-batiment"
+  | "documentation"
   | "parametres";
 
 export type RailCategorie = {
@@ -510,25 +567,33 @@ export function categorieDeItem(id: SidebarItemId): RailCategorieId | null {
   switch (id) {
     case "tableau":
       return "tableau";
-    case "guide":
-      return null;
     case "connecter":
+    case "fiche":
       return "parametres";
+    // Le guide a retrouvé une entrée, sous l'axe qui parle du dossier. Il
+    // avait perdu la sienne en août faute d'endroit juste : une lecture n'est
+    // pas une des questions du dirigeant, et lui donner un rang de premier
+    // niveau la mettait au niveau d'un registre tenu. Sous « Documentation »
+    // il est à sa place — c'est un document parmi ceux qui expliquent le
+    // dossier, pas une activité.
+    case "guide":
+    case "documents":
+    case "controle":
+      return "documentation";
     case "equipements":
     case "batiments":
     case "prestataires":
-    case "fiche":
-    case "prescriptions":
-    case "equipe":
-      return "etablissement";
-    case "permis-feu":
-    case "plan-prevention":
-      return "operations";
-    case "duerp":
     case "registre":
     case "accessibilite":
     case "carnet-sanitaire":
-      return "registres";
+      return "equipement-batiment";
+    case "duerp":
+    case "equipe":
+    case "prescriptions":
+    case "permis-feu":
+    case "plan-prevention":
+    case "perimetre":
+      return "sante-securite";
     default:
       return "a-faire";
   }
@@ -541,7 +606,7 @@ export function construireRail(params: {
 }): RailCategorie[] {
   // On dérive du même arbre que le rail simple : mêmes items, mêmes badges —
   // seule la présentation change.
-  const [aFaire, operations, etablissement, registres] =
+  const [aFaire, santeSecurite, equipementBatiment, documentation] =
     construireSections(params);
   const base = `/etablissements/${params.etablissementId}`;
   const alerte = (items: NavItem[]) => items.some((it) => it.alert);
@@ -557,44 +622,48 @@ export function construireRail(params: {
       alert: alerte(aFaire.items),
     },
     {
-      // Le ponctuel encadré : un permis de feu naît le jour d'un chantier,
-      // un plan de prévention le jour où un tiers intervient. Ni des
-      // corrections, ni des registres tenus en continu (ADR-017).
-      id: "operations",
-      label: "Opérations",
-      labelCourt: "Opérations",
+      // Les personnes et les actes de prévention. Le DUERP en est la page
+      // d'entrée : c'est de lui que part l'évaluation, et c'est l'écran que
+      // le dirigeant cite quand on lui parle de sécurité.
+      id: "sante-securite",
+      label: "Santé-sécurité",
+      labelCourt: "Sécurité",
       Icon: HardHat,
-      href: `${base}/permis-feu`,
-      items: operations.items,
-      alert: alerte(operations.items),
+      href: `${base}/duerp`,
+      items: santeSecurite.items,
+      alert: alerte(santeSecurite.items),
     },
     {
-      id: "etablissement",
-      label: "Mon établissement",
-      labelCourt: "Établissement",
+      // Le lieu et ce qu'il contient — le parc, les zones, ceux qui y
+      // interviennent, et les registres qui en consignent l'état.
+      id: "equipement-batiment",
+      label: "Équipement et bâtiment",
+      labelCourt: "Équipement",
       Icon: Building2,
       href: `${base}/equipements`,
-      items: etablissement.items,
-      alert: alerte(etablissement.items),
+      items: equipementBatiment.items,
+      alert: alerte(equipementBatiment.items),
     },
     {
-      id: "registres",
-      label: "Mes registres",
-      labelCourt: "Registres",
+      // Ce qui parle du dossier plutôt que du lieu.
+      id: "documentation",
+      label: "Documentation",
+      labelCourt: "Documents",
       Icon: Archive,
-      href: `${base}/duerp`,
-      items: registres.items,
-      alert: alerte(registres.items),
+      href: `${base}/documents`,
+      items: documentation.items,
+      alert: alerte(documentation.items),
     },
     {
-      // Une entrée de premier niveau sans panneau. Elle n'apparaît pas dans
-      // `construireSections` — ce n'est ni un registre ni une tâche, mais la
-      // façon de régler le dossier et d'y brancher un tiers.
+      // Une entrée de premier niveau sans panneau : régler le dossier et y
+      // brancher un tiers. La fiche établissement l'a rejointe — c'est là
+      // qu'on renseigne ce que le dossier déclare, et les deux questions de
+      // paramétrage (assureur, EPI) y trouveront leur place.
       id: "parametres",
       label: "Paramètres",
       labelCourt: "Paramètres",
       Icon: Settings,
-      href: `${base}/connecter`,
+      href: `${base}/modifier`,
       separateurAvant: true,
     },
   ];

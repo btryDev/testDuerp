@@ -6,7 +6,6 @@ import { ChezVous } from "@/components/guide/ChezVous";
 import { GReveal } from "@/components/guide/GReveal";
 import { GuideHero } from "@/components/guide/GuideHero";
 import { OutilsConformite } from "@/components/guide/OutilsConformite";
-import { DocumentsObligatoires } from "@/components/guide/DocumentsObligatoires";
 import { ParMetier } from "@/components/guide/ParMetier";
 import { OutilDetails } from "@/components/guide/OutilDetails";
 import { QuiFaitQuoi } from "@/components/guide/QuiFaitQuoi";
@@ -85,6 +84,17 @@ export default async function GuidePage({
                 est aujourd'hui le seul endroit où le produit parle de ce
                 qu'il couvre, donc le seul d'où l'on peut aller lire ce
                 qu'il ne couvre pas. */}
+            {/* Les documents obligatoires ont leur page depuis que l'axe
+                Documentation existe (ADR-030). Le guide y renvoie au lieu
+                d'en garder une copie : deux montages du même composant, ce
+                n'est pas deux vérités, mais c'est deux endroits où l'on croit
+                l'avoir lue. */}
+            <Link
+              href={`/etablissements/${id}/documents`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Documents obligatoires
+            </Link>
             <Link
               href={`/etablissements/${id}/perimetre`}
               className={buttonVariants({ variant: "outline", size: "sm" })}
@@ -121,14 +131,6 @@ export default async function GuidePage({
 
         <GReveal delay={80}>
           <OutilsConformite />
-        </GReveal>
-
-        {/* Les documents obligatoires, y compris ceux que Rojer ne produit
-            pas (ADR-025 § 8). Placés juste après les outils, parce que c'est
-            là qu'on lit ce que la plateforme fabrique — et donc le seul
-            endroit où l'on mesure ce qu'elle ne fabrique pas. */}
-        <GReveal delay={100}>
-          <DocumentsObligatoires />
         </GReveal>
 
         <GReveal delay={120}>
