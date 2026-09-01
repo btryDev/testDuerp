@@ -9,6 +9,43 @@ Ce référentiel n'accepte que des **sources primaires vérifiables**. Une
 obligation qui ne peut pas être recoupée sur Légifrance ou l'INRS n'y entre
 pas. Cette skill dit comment recouper sans se tromper.
 
+## Avant tout : le travail a peut-être déjà été fait
+
+**Ouvre `docs/journal-des-verifications.md` avant de lire quoi que ce soit.**
+
+Il porte la chronologie des campagnes de vérification et le registre des
+constats restés en suspens. Ce que tu t'apprêtes à ouvrir y figure peut-être
+déjà — et alors ce qui manque n'est pas une lecture, c'est une décision.
+
+`docs/etat-verification-referentiel.md` complète : pour chaque obligation, le
+degré de vérification de ses sources, et l'ancre de veille qui manque ou non.
+Il se régénère (`pnpm verification --ecrire`), un test le compare au fichier.
+
+Ce n'est pas une formalité. Dans la nuit du 26 août 2026, six agents ont relu
+123 articles à la source ; les relevés sont restés dans un compte rendu au lieu
+d'entrer dans le corpus, et six jours plus tard personne ne savait plus si une
+relecture avait eu lieu. `L. 4711-5` a été mis en cause quatre fois en onze
+jours par quatre passages qui s'ignoraient.
+
+## Ce que tu fais de ta lecture, et l'erreur à ne pas répéter
+
+**Ton relevé va dans le corpus, pas dans un rapport.**
+
+Un verbatim écrit dans un `.md` ne compte pour rien : ni pour la veille, ni
+pour le dossier remis à un relecteur, ni pour l'agent suivant. Seuls les champs
+d'`ArticleDepouille` sont lus par le produit et par les tests —
+`prescrit`, `citationCle`, `versionEnVigueur`, `luLe`, `lecture`.
+
+Le contrôle est mesurable : après ton passage, le nombre d'obligations sans
+verbatim doit avoir baissé (`pnpm relecture`). S'il n'a pas bougé, ton travail
+est invisible, quelle que soit sa qualité.
+
+Et **`versionConstatee`, sur la référence de l'obligation, n'est pas la même
+chose que `versionEnVigueur`, sur l'article de corpus**. La première est
+l'ancre de veille — elle dit contre quelle version l'obligation a été écrite,
+et c'est elle qui permettra un jour de détecter que le texte a bougé. Renseigne
+les deux ; en omettre une laisse la moitié du travail invisible.
+
 ## La règle qui prime sur toutes les autres
 
 **Tu rends des sources, pas des conclusions.**
