@@ -124,7 +124,7 @@ export const DEGRES: readonly Degre[] = [
   {
     code: "lu_sans_verbatim",
     rang: 3,
-    court: "lu, sans verbatim",
+    court: "lu sans verbatim",
     titre: "lu et daté, aucun verbatim",
     affirme:
       "le texte a été ouvert à une date connue ; ce qu'il dit n'est nulle part dans le dépôt",
@@ -227,7 +227,17 @@ export type ReferenceMesuree = {
   ancrage: Ancrage;
 };
 
-function degreDe(
+/**
+ * Le degré d'une référence, à partir de la seule chose qui l'établisse : ce que
+ * le corpus porte sur l'article qu'elle désigne.
+ *
+ * Exporté pour être éprouvé barreau par barreau. Trois des six degrés ne sont
+ * atteints par aucune référence du dépôt aujourd'hui ; sans un test qui les
+ * fabrique, rien ne dirait qu'ils fonctionnent le jour où une référence y
+ * tombe — et une échelle dont le bas ne marche pas classerait une lacune au
+ * milieu.
+ */
+export function degreDeReference(
   r: ReferenceLegale,
   article: ArticleDepouille | undefined,
 ): CodeDegre {
@@ -242,7 +252,8 @@ function degreDe(
   return article.lecture === "premiere_main" ? "premiere_main" : "agent_verbatim";
 }
 
-function ancrageDe(
+/** L'ancre de veille d'une référence. Exportée pour la même raison. */
+export function ancrageDeReference(
   r: ReferenceLegale,
   article: ArticleDepouille | undefined,
 ): Ancrage {
@@ -305,8 +316,8 @@ export function mesurerObligation(
       aCitationCle: Boolean(a?.citationCle),
       versionEnVigueur: a?.versionEnVigueur ?? null,
       versionConstatee: r.versionConstatee ?? null,
-      degre: degreDe(r, a),
-      ancrage: ancrageDe(r, a),
+      degre: degreDeReference(r, a),
+      ancrage: ancrageDeReference(r, a),
     } satisfies ReferenceMesuree;
   });
 

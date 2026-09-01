@@ -375,9 +375,9 @@ function parDomaine(mesures: readonly ObligationMesuree[]): string {
   l.push("");
   l.push(
     entiers.length === 0
-      ? "Aucun domaine n'est intégralement adossé à des textes lus à la source avec verbatim."
-      : `**${entiers.length} ${accord(entiers.length, "domaine repose", "domaines reposent")} intégralement sur des textes lus à la ` +
-          `source avec verbatim** : ${entiers.map((a) => `\`${a.cle}\` (${a.obligations})`).join(", ")}.`,
+      ? "Aucun domaine n'a toutes ses obligations adossées à des textes lus à la source avec verbatim relevé."
+      : `**${entiers.length} ${accord(entiers.length, "domaine a toutes ses obligations adossées", "domaines ont toutes leurs obligations adossées")} à des textes ` +
+          `lus à la source avec verbatim relevé** : ${entiers.map((a) => `\`${a.cle}\` (${a.obligations})`).join(", ")}.`,
   );
   l.push("");
   l.push(
@@ -385,9 +385,11 @@ function parDomaine(mesures: readonly ObligationMesuree[]): string {
       ? "Aucun domaine n'est entièrement dépourvu de verbatim."
       : `**${aucun.length} ${accord(aucun.length, "domaine n'en a aucune", "domaines n'en ont aucune")} : ` +
           `${aucun.map((a) => `\`${a.cle}\` (${a.obligations})`).join(", ")}.** ` +
-          `Chacune de leurs obligations cite au moins un texte ouvert dont rien ` +
-          `n'a été relevé. C'est là que porte le travail de relevé, et nulle part ` +
-          `ailleurs : ces textes ont été lus, ils n'ont pas été cités.`,
+          `Chacune de leurs obligations cite au moins un texte ouvert et daté dont ` +
+          `rien n'a été relevé. Le travail qu'ils appellent n'est pas de relire — ` +
+          `les textes ont été ouverts — mais d'en recopier la phrase décisive, ` +
+          `pour qu'un relecteur puisse contredire l'encodage sans rouvrir ` +
+          `Légifrance.`,
   );
   return l.join("\n");
 }
@@ -434,7 +436,6 @@ function quandOnALu(mesures: readonly ObligationMesuree[]): string {
 function luMaisPasCite(): string {
   const orphelins = lecturesNonCitees();
   const articles = orphelins.reduce((n, c) => n + c.articles, 0);
-  const total = orphelins.reduce((n, c) => n + c.total, 0);
   const entiers = orphelins.filter((c) => c.articles === c.total);
 
   const l: string[] = [];
