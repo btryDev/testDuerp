@@ -80,9 +80,9 @@ Sources primaires libres d'accès uniquement :
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **116 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **117 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
-**79 d'entre elles sont déclenchées par un équipement déclaré, vingt-quatre sont portées
+**80 d'entre elles sont déclenchées par un équipement déclaré, vingt-quatre sont portées
 par l'établissement, treize par un salarié.** La répartition a changé deux fois le
 2026-08-31 : les trois lots ont ajouté trente et une obligations, et le lot « faux
 négatifs d'ancrage » a fait passer trois obligations existantes de l'équipement à
@@ -145,7 +145,7 @@ Rojer couvre les obligations de **santé-sécurité au travail et de sécurité 
 — Code du travail, CCH, et Code de l'environnement quand il porte sur la sécurité des
 installations ou des personnes. Une obligation y naît de cinq déclencheurs possibles :
 
-1. **Équipement déclaré** — 79 obligations livrées
+1. **Équipement déclaré** — 80 obligations livrées
 2. **Statut d'employeur** — dès un salarié. **15 obligations livrées au lot 7**
    (2026-08-31) : formation à la sécurité, information et accès au DUERP, VIP, suivi
    individuel renforcé et sa visite intermédiaire, liste des postes à risques, matériel
@@ -179,8 +179,11 @@ réellement événementielles recensées sont hors périmètre (déclaration d'A
 accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
 l'ADR-022, sans mécanisme.
 
-Répartition au 2026-08-31, après les trois lots : **79 équipement, 24 établissement,
-13 salarié** (total 116).
+Répartition au 2026-09-01 : **80 équipement, 24 établissement, 13 salarié** (total 117).
+La 80ᵉ est `esp-inspection-periodique-generateur-vapeur`, créée ce jour : l'arrêté du
+20 novembre 2017 fixe deux ans aux générateurs de vapeur là où la ligne générale en porte
+quatre, et le moteur sait depuis le même jour lire une valeur d'énumération. Ces trois
+chiffres se REMESURENT en appelant le moteur ; quatre branches les touchent en parallèle.
 Les cinq premières obligations portées par l'établissement étaient l'entretien triennal de
 `PE 4 § 2`, le contrôle des installations d'aération de `R. 4222-20`, et — depuis le lot
 `fix/faux-negatifs-ancrage` — la tenue du registre de sécurité, la consigne de sécurité

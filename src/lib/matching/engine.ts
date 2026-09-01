@@ -311,19 +311,23 @@ function lireProprieteBooleenne(
 }
 
 /**
- * Une valeur d'énumération est lue comme une chaîne. La chaîne VIDE est
- * traitée comme une absence : `serialiserCaracteristiques` n'écrit pas la clé
- * quand le champ n'est pas renseigné, mais une reprise de données ou un
- * `<select>` non touché peuvent poser `""`, et « pas encore répondu » ne doit
- * pas se mettre à valoir « une famille qui n'est aucune des connues ».
+ * Une valeur d'énumération est lue comme une chaîne ; tout le reste vaut
+ * absence, exactement comme pour les deux lecteurs ci-dessus.
+ *
+ * Une première rédaction traitait aussi la chaîne VIDE comme une absence, au
+ * motif qu'une reprise de données peut poser `""`. Le cas est réel, la
+ * précaution était vide : sur une condition dont la `valeur` est un membre de
+ * l'énumération, `""` produit déjà le même verdict que l'absence — différent de
+ * la valeur visée, donc régime général. Le code ne gardait rien et le
+ * commentaire affirmait le contraire, ce qui est la forme la plus durable d'une
+ * fausse justification. Retiré.
  */
 function lireProprieteEnum(
   eq: EquipementMatching,
   propriete: string,
 ): string | undefined {
   const v = eq.caracteristiques?.[propriete];
-  if (typeof v !== "string") return undefined;
-  return v === "" ? undefined : v;
+  return typeof v === "string" ? v : undefined;
 }
 
 /**

@@ -610,6 +610,14 @@ describe("référentiel conformité — non-régression des obligations critique
     "froid-controle-etancheite-annuel-50t-detection",
     "froid-controle-etancheite-trimestriel-500t",
     "froid-controle-etancheite-semestriel-500t-detection",
+    // Créée le 2026-09-01 (arrêté du 20 novembre 2017, art. 15 : deux ans pour
+    // les générateurs de vapeur). Même critère que le chariot élévateur, et il
+    // est rempli pour les deux mêmes raisons : l'obligation est NEUVE — aucun
+    // équipement déjà en base ne peut la perdre —, et la couverture par défaut
+    // reste assurée par `esp-inspection-periodique`, qui porte sur la même
+    // propriété la condition `enum_differente` correspondante et s'applique
+    // donc tant que `familleEsp` n'a pas été renseignée.
+    "esp-inspection-periodique-generateur-vapeur",
   ]);
 
   /**
@@ -620,6 +628,14 @@ describe("référentiel conformité — non-régression des obligations critique
   const FORMES_SANS_EXTINCTION_AU_SILENCE = new Set([
     "equipement_propriete_non_infirmee",
     "equipement_propriete_infirmee",
+    // Ajoutée le 2026-09-01 avec la forme elle-même. `enum_differente` est
+    // satisfaite quand la propriété est absente — c'est sa raison d'être : elle
+    // porte la ligne GÉNÉRALE d'un couple d'énumération et doit survivre au
+    // silence, exactement comme `infirmee` porte la VGP annuelle de levage.
+    // Son pendant `enum_egale` n'y figure évidemment PAS : il est strict, et
+    // toute obligation de criticité ≥ 4 qui s'en sert doit passer par la liste
+    // blanche ci-dessus.
+    "equipement_propriete_enum_differente",
   ]);
 
   it("une obligation criticité ≥ 4 ne se conditionne pas sur le silence", () => {
@@ -1053,7 +1069,12 @@ describe("référentiel conformité — version et empreinte", () => {
   // Faire entrer `referencesLegales` dans l'empreinte déclencherait une
   // réconciliation à chaque correction de citation — un choix de conception,
   // qui n'appartient pas à un lot de correction.
-  const EMPREINTE_ATTENDUE = "116-97f9faa35169ab0b";
+  // ⚠ CETTE VALEUR SE REMESURE, ELLE NE SE RECOPIE PAS. Quatre branches la
+  // touchent en parallèle au 2026-09-01 ; celle-ci vaut pour le contenu de
+  // CETTE branche. À l'intégration, elle se relit dans la sortie du test après
+  // merge — reprendre à la main le chiffre d'une branche graverait une empreinte
+  // qui ne décrit aucun référentiel réel, et le compte qui la préfixe aussi.
+  const EMPREINTE_ATTENDUE = "117-a92dcadeeeca1b62";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1171,7 +1192,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(116);
+    ).toBe(117);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
