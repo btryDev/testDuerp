@@ -25,6 +25,16 @@ type TitreDuCatalogue = {
    * (`calendrier/generateur.ts`), et la promesse devenait fausse.
    */
   periodicite: Periodicite;
+  /**
+   * Le titre déjà déclaré sur cette personne que le droit interdit de cumuler
+   * avec celui-ci, et la phrase qui le fonde. Calculé côté serveur — la
+   * fermeture par symétrie de la table vit dans `lib/salaries/catalogue.ts`,
+   * et ce composant n'a pas à la refaire.
+   *
+   * Absent = rien ne s'oppose, ce qui est le cas de la quasi-totalité du
+   * catalogue.
+   */
+  bloquePar?: { libelle: string; motif: string };
 };
 
 /**
@@ -82,9 +92,14 @@ export function FormulaireTitre({
     FormData
   >(action, { status: "idle" });
 
-  const [choisi, setChoisi] = useState<string>(catalogue[0]?.id ?? "");
+  // Le premier titre DÉCLARABLE, pas le premier de la liste : présélectionner
+  // un titre bloqué offrirait un formulaire dont l'envoi est refusé d'avance.
+  const [choisi, setChoisi] = useState<string>(
+    (catalogue.find((o) => !o.bloquePar) ?? catalogue[0])?.id ?? "",
+  );
   const titre = catalogue.find((o) => o.id === choisi);
   const renouvellement = dejaDeclares.includes(choisi);
+  const bloque = titre?.bloquePar;
 
   const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
@@ -109,9 +124,19 @@ export function FormulaireTitre({
         <legend className="label-board">Quel titre ?</legend>
         <div className="mt-1 flex flex-col gap-2">
           {catalogue.map((o) => (
+            /* Le titre exclu reste AFFICHÉ, désactivé, avec la raison. Le
+               retirer de la liste aurait été le silence que ce dépôt refuse :
+               un dirigeant qui cherche « Visite d'information et de prévention »
+               et ne la trouve pas conclut que Rojer ne la connaît pas, alors
+               que le droit la lui interdit ici — et c'est précisément ce
+               qu'il a besoin de savoir. */
             <label
               key={o.id}
-              className="flex cursor-pointer items-start gap-3 rounded-[18px] bg-[color:var(--board-slate-pale)] px-4 py-3 transition-colors has-[:checked]:bg-[color:var(--board-blue-pale)]"
+              className={
+                o.bloquePar
+                  ? "flex items-start gap-3 rounded-[18px] bg-[color:var(--board-slate-pale)] px-4 py-3 opacity-70"
+                  : "flex cursor-pointer items-start gap-3 rounded-[18px] bg-[color:var(--board-slate-pale)] px-4 py-3 transition-colors has-[:checked]:bg-[color:var(--board-blue-pale)]"
+              }
             >
               <input
                 type="radio"
@@ -119,6 +144,7 @@ export function FormulaireTitre({
                 value={o.id}
                 checked={choisi === o.id}
                 onChange={() => setChoisi(o.id)}
+                disabled={o.bloquePar !== undefined}
                 className="mt-1 size-4 flex-none accent-[color:var(--board-ink)]"
               />
               <span className="min-w-0">
@@ -128,6 +154,14 @@ export function FormulaireTitre({
                 {o.description && (
                   <span className="mt-1 block text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]">
                     {o.description}
+                  </span>
+                )}
+                {o.bloquePar && (
+                  <span className="mt-1.5 block text-[12px] leading-[1.5] text-[color:var(--board-signal-ink)]">
+                    <strong>
+                      Incompatible avec « {o.bloquePar.libelle} », déjà déclaré.
+                    </strong>{" "}
+                    {o.bloquePar.motif}
                   </span>
                 )}
               </span>
@@ -202,7 +236,7 @@ export function FormulaireTitre({
           variant="board"
           size="board"
           type="submit"
-          disabled={pending || catalogue.length === 0}
+          disabled={pending || catalogue.length === 0 || bloque !== undefined}
         >
           {pending
             ? "Enregistrement…"

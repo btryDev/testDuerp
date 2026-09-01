@@ -133,7 +133,14 @@ describe("les cumuls déjà en place sont nommés", () => {
 
 const h = vi.hoisted(() => ({
   titreSalarie: { upsert: vi.fn(async () => ({})) },
-  salarie: { findFirst: vi.fn(async () => ({ id: "sal-1", titres: [] })) },
+  salarie: {
+    findFirst: vi.fn(
+      async (): Promise<{ id: string; titres: { obligationId: string }[] }> => ({
+        id: "sal-1",
+        titres: [],
+      }),
+    ),
+  },
   genererCalendrier: vi.fn(async () => {}),
 }));
 

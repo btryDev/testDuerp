@@ -16,7 +16,11 @@ import { FormulaireTitre } from "@/components/salaries/FormulaireTitre";
 import { lireProvenance } from "@/lib/navigation/provenance";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { getSalarie } from "@/lib/salaries/queries";
-import { cataloguerTitres } from "@/lib/salaries/catalogue";
+import {
+  cataloguerTitres,
+  conflitsExclusion,
+  exclusionsDuTitre,
+} from "@/lib/salaries/catalogue";
 import { declarerTitre } from "@/lib/salaries/actions";
 import { CHAMP_ETAT, ENCRE_ETAT, type RegistreLigne } from "@/lib/calendrier/etats";
 import { formaterDateLongueFr } from "@/lib/dates";
@@ -59,6 +63,15 @@ export default async function SalarieDetailPage({
   if (!s) notFound();
 
   const catalogue = cataloguerTitres();
+  const dejaDeclares = s.titres.map((t) => t.obligationId);
+
+  // Les cumuls que le droit écarte et qui sont DÉJÀ en place. Refuser les
+  // saisies futures ne répare aucun dossier existant : c'est de ceux-là que
+  // sort aujourd'hui l'échéance inventée, et le produit ne peut pas trancher à
+  // la place du dirigeant — lui seul sait laquelle des deux visites cette
+  // personne passe réellement.
+  const conflits = conflitsExclusion(dejaDeclares);
+
   const action = declarerTitre.bind(null, id, salarieId);
   const provenance = lireProvenance(de, id);
   const annuaire = { href: `/etablissements/${id}/equipe`, label: "Équipe" };
@@ -119,6 +132,33 @@ export default async function SalarieDetailPage({
             </section>
 
             <CarteFiche titreFort="Titres détenus">
+              {conflits.length > 0 && (
+                <div className="mb-4 flex flex-col gap-3">
+                  {conflits.map((c) => (
+                    <div
+                      key={c.titres.map((t) => t.id).join("|")}
+                      className="rounded-[18px] bg-[color:var(--board-signal-pale)] px-4 py-3.5"
+                    >
+                      <p className="m-0 text-[12.5px] font-semibold leading-[1.5] text-[color:var(--board-signal-ink)]">
+                        Ces deux titres ne peuvent pas se cumuler : «{" "}
+                        {c.titres[0].libelle} » et « {c.titres[1].libelle} ».
+                      </p>
+                      <p className="m-0 mt-1.5 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                        {c.motif}
+                      </p>
+                      {/* Rojer ne retire pas le titre de lui-même : lui seul
+                          sait lequel des deux s'applique à cette personne, et
+                          effacer une déclaration à sa place serait décider
+                          d'une conformité qu'on ne constate pas. */}
+                      <p className="m-0 mt-1.5 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                        Tant que les deux sont déclarés, votre calendrier porte
+                        un rendez-vous que le texte ne prévoit pas. Retirez
+                        celui qui ne s&apos;applique pas à cette personne.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
               {s.titres.length === 0 ? (
                 <p className="m-0 max-w-[64ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                   Rien de déclaré pour l&apos;instant. Rojer ne peut pas le
@@ -215,15 +255,25 @@ export default async function SalarieDetailPage({
                 </p>
               ) : (
                 <FormulaireTitre
-                  catalogue={catalogue.map((o) => ({
-                    id: o.id,
-                    libelle: o.libelle,
-                    description: o.description,
-                    pieceMedicale: o.pieceMedicale,
-                    periodicite: o.periodicite,
-                  }))}
+                  catalogue={catalogue.map((o) => {
+                    // Un titre déjà déclaré n'est pas bloqué par lui-même :
+                    // le redéclarer est un renouvellement.
+                    const bloquant = exclusionsDuTitre(o.id).find(
+                      (x) => x.titre.id !== o.id && dejaDeclares.includes(x.titre.id),
+                    );
+                    return {
+                      id: o.id,
+                      libelle: o.libelle,
+                      description: o.description,
+                      pieceMedicale: o.pieceMedicale,
+                      periodicite: o.periodicite,
+                      bloquePar: bloquant
+                        ? { libelle: bloquant.titre.libelle, motif: bloquant.motif }
+                        : undefined,
+                    };
+                  })}
                   action={action}
-                  dejaDeclares={s.titres.map((t) => t.obligationId)}
+                  dejaDeclares={dejaDeclares}
                 />
               )}
             </CarteFiche>

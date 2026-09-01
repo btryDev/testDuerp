@@ -84,3 +84,63 @@ PAS — c'est ce qui empêche la table de devenir un treillis inventé :
 incohérent.** Sans cette ligne, la table grossit sans fondement et le produit
 se met à refuser des saisies que le droit n'interdit pas — le faux positif que
 la propriétaire proscrit.
+
+## 4. La forme retenue, et pourquoi
+
+**Un champ `exclut` sur `ObligationPorteeParSalarie`, requis.** Pas une règle
+d'interface, pas une `ConditionApplication`.
+
+- **Au référentiel, pas à l'interface.** L'exclusion est une propriété du
+  texte. Une règle écrite dans le formulaire serait invisible à
+  `declarerTitre` — action serveur atteignable sans lui — et invisible aux
+  dossiers où les deux titres sont **déjà** déclarés. Le dépôt a le précédent
+  exact : `transmet` (ADR-024).
+- **Requis, et l'arithmétique n'est pas celle qu'on craignait.** Le champ ne
+  vit que sur le porteur salarié : **treize** obligations, pas cent seize. Une
+  exclusion ne peut mordre que là où un humain DÉCLARE — les instances
+  d'équipement et d'établissement sont dérivées par le moteur, qui ne peut pas
+  produire un couple interdit. Requis sur treize lignes dont cinq portent
+  quelque chose, ce n'est pas du sur-engineering : c'est le cliquet. Et
+  l'oubli est ici la faute **constatée**, pas supposée — les deux dernières
+  obligations entrées dans ce fichier ont chacune créé une exclusion, l'ont
+  écrite en note, et personne ne l'a portée nulle part.
+- **Un seul côté déclare : le côté dérogatoire**, celui qui porte le texte
+  d'exception. La symétrie se **ferme à la lecture** (`exclusionsDuTitre()`),
+  elle n'est donc pas une liste recopiée qu'on vérifie, elle est vraie par
+  construction. C'est la règle du dépôt sur les listes tenues à la main.
+- **Jamais de fermeture transitive.** A exclut B et B exclut C n'implique pas
+  que A exclut C. Chaque couple se déclare avec le texte qui le fonde.
+
+## 5. Ce que le produit fait, et pourquoi il refuse au lieu de signaler
+
+- `declarerTitre` **refuse**, en nommant le titre en conflit et en citant
+  l'article. Le dépôt préfère d'ordinaire nommer le trou plutôt que trancher
+  (ADR-024) ; ici le texte a déjà tranché — « se substitue à », « n'est pas
+  requise ». Et le critère de l'erreur visible par qui la subit tranche dans
+  le même sens : un silence produit une ligne de calendrier fausse que
+  personne ne remarque, un refus est vu par celui qui vient de cliquer.
+- Le formulaire **affiche le titre exclu, désactivé, avec la raison**. Le
+  retirer de la liste aurait été le silence que ce dépôt refuse : un dirigeant
+  qui ne trouve pas la VIP conclut que Rojer ne la connaît pas.
+- La fiche **nomme les cumuls déjà en place** et dit que le calendrier porte
+  un rendez-vous non prévu. Rojer ne retire rien de lui-même : lui seul sait
+  laquelle des deux visites cette personne passe.
+
+## 6. Les gardes, éprouvées en réinjectant le défaut
+
+Relevé de sortie, pas annonce.
+
+| Injection | Résultat |
+|---|---|
+| A — l'exclusion VIP/SIR retirée du référentiel | `5 failed | 11 passed (16)` |
+| B — la fermeture par symétrie supprimée | `7 failed | 9 passed (16)` |
+| C — le refus retiré de `declarerTitre`, référentiel intact (**le défaut d'origine, à l'identique**) | `3 failed | 13 passed (16)` |
+| D — un cumul que le droit IMPOSE déclaré exclusif (`-sir` ⟂ visite intermédiaire) | `3 failed | 13 passed (16)` |
+
+D est la contre-épreuve qui compte autant que les trois autres : elle vérifie
+que le mécanisme mord aussi quand il **excède**. Un dispositif qui n'attrape
+que la sous-application finirait par retirer du calendrier des rendez-vous
+réels.
+
+Suite complète : `135 passed | 1858 passed` — 1836 de référence + 22.
+`tsc --noEmit` propre, `eslint src` avec le seul avertissement préexistant.
