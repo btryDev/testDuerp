@@ -51,10 +51,28 @@ l'obligation revient, la déclaration revient avec elle.
 
 Le patron est `TitreSalarie` (ADR-023), pas `Verification`.
 
-### 2. Une déclaration n'allume rien ailleurs
+### 2. Une déclaration n'améliore aucune valeur
 
-Elle ne fait progresser aucun « % prêt », ne passe aucun indicateur au vert,
-n'entre dans aucun export comme une pièce du dossier.
+Elle ne fait progresser aucun « % prêt », ne fait monter aucune note, n'entre
+dans aucun export comme une pièce du dossier.
+
+> **Reformulée le 2026-09-01.** Elle disait « n'allume rien ailleurs », et cette
+> lettre a cessé d'être exacte le jour où le score a cessé de conclure
+> « Situation satisfaisante » sur un dossier dont personne n'a répondu aux états
+> permanents. Déclarer y **lève une indétermination** — ce qui n'est pas la même
+> chose qu'améliorer une valeur : la note ne monte pas d'un point, et elle ne
+> descend pas d'un point si personne ne coche jamais.
+>
+> L'arbitrage était entre reformuler cette décision et rendre le score muet à
+> nouveau. **Le rendre muet aurait restauré le défaut** : un bureau de six
+> personnes sortait à « 100 — Situation satisfaisante » avec treize états sans
+> réponse, et `.claude/CLAUDE.md` promet que « l'outil ne ment pas sur son
+> niveau de conformité ». Une décision qui protège d'une flatterie ne peut pas
+> se payer d'une flatterie plus grosse.
+>
+> Ce que la reformulation conserve intact : rien de ce que l'employeur coche
+> n'est présenté ailleurs comme vérifié, et **« lever une indétermination » ne
+> vaut jamais « établir une conformité »**.
 
 Le motif est précis : l'écran *Préparer un contrôle* est celui qu'on ouvre devant
 un inspecteur. Y faire remonter une déclaration non vérifiée reviendrait à
@@ -255,6 +273,9 @@ L'esprit tient — la déclaration ne fait toujours pas *monter* la note, elle
 lève une indétermination, et le score ne descend pas d'un point si personne ne
 coche jamais. Mais l'écart est réel, il est écrit ici plutôt que découvert plus
 tard, et **son arbitrage appartient à la propriétaire** : soit la décision 2 se
-reformule (« n'améliore aucune valeur », plus juste que « n'allume rien »),
-soit c'est le score qui redevient muet. Ce n'est pas au lot documentaire de
-trancher un point de score.
+reformule, soit c'est le score qui redevient muet.
+
+**Tranché le 2026-09-01 : la décision 2 est reformulée**, et le score reste
+parlant. Le motif est écrit dans la décision elle-même. Le lot documentaire a
+eu raison de ne pas trancher seul un point de score — et raison de l'écrire
+plutôt que de le laisser se découvrir plus tard.

@@ -123,10 +123,17 @@ Le sens d'erreur est délibéré.
 **Les sept derniers domaines ne naissent d'aucun équipement**, et c'est ce qui les
 distingue des dix premiers : leur déclencheur est le statut d'employeur, l'effectif ou
 la co-activité. Un bureau de six personnes sans le moindre appareil déclaré doit
-désormais **dix-sept obligations** — une seule avant le 2026-08-31, six après le lot 7,
-dix-sept après le lot 8. À douze salariés il en doit dix-huit (le CSE s'ajoute), à
-cinquante-cinq dix-neuf (le règlement intérieur s'ajoute, et le local de restauration
-remplace l'emplacement).
+désormais **dix-huit obligations**. À douze salariés il en doit **dix-neuf** (le CSE
+s'ajoute), à cinquante-cinq **vingt-deux** : le règlement intérieur s'ajoute, le local de
+restauration remplace l'emplacement, et le franchissement de cinquante et une personnes
+présentes fait entrer la consigne de sécurité incendie et l'exercice semestriel.
+
+Ces trois chiffres ont été mesurés en appelant le moteur le 2026-09-01. Les trois
+précédents — dix-sept, dix-huit, dix-neuf — étaient faux, et le troisième l'était de
+trois : la phrase n'attribuait l'écart qu'au règlement intérieur et manquait la paire
+incendie. **Un compte écrit à la main dans un document se périme au premier lot suivant,
+sans qu'aucun diff ne le touche** ; celui-ci se remesure en appelant
+`determineObligationsApplicables` sur un établissement de travail sans équipement.
 
 Le type `Obligation` est une union discriminée sur `porteur` : catégorie d'équipement
 requise et non vide d'un côté, interdite de l'autre. Le compte faisant foi est le préfixe
@@ -351,7 +358,7 @@ Il n'y a **pas** de modèle `Obligation` en base : le référentiel d'obligation
     récurrente, état permanent, ponctuelle, événementielle
 27. **027** — Une déclaration n'est pas une preuve : les états permanents ont
     leur écran et leur support (`DeclarationEtatPermanent`), et ce que
-    l'employeur y coche n'allume rien ailleurs
+    l'employeur y coche n'améliore aucune valeur — depuis le 2026-09-01 une déclaration lève une indétermination du score sans faire monter la note, et rien n'y est jamais présenté comme vérifié
 
 La puce reprend le numéro de l'ADR et non son rang dans la liste, pour que les
 branches puissent atterrir dans n'importe quel ordre sans se contredire.
