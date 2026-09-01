@@ -132,6 +132,20 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
       obligations: ["incendie-travail-consigne-affichee"],
     },
     {
+      ref: "R. 4227-38",
+      intitule: "Contenu de la consigne de sécurité incendie",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024769384/",
+      prescrit:
+        "Fixe en huit points ce que la consigne de R. 4227-37 doit indiquer : matériel d'extinction et de secours, personnes chargées de le mettre en action, personnes chargées de diriger l'évacuation local par local, mesures liées à la présence de personnes handicapées et espaces d'attente sécurisés, moyens d'alerte, personnes chargées d'aviser les sapeurs-pompiers, adresse et numéro du service de secours de premier appel, et le devoir d'alarme de toute personne apercevant un début d'incendie. Ne crée aucune obligation autonome et ne porte aucune périodicité : il donne le contenu de l'écrit que R. 4227-37 fait établir, et son champ est donc celui de R. 4227-37, lui-même celui de R. 4227-34.",
+      citationCle:
+        "La consigne de sécurité incendie indique : 1° Le matériel d'extinction et de secours qui se trouve dans le local ou à ses abords ; 2° Les personnes chargées de mettre ce matériel en action ; 3° Pour chaque local, les personnes chargées de diriger l'évacuation des travailleurs et éventuellement du public ; 4° Les mesures spécifiques liées à la présence de personnes handicapées, et notamment le nombre et la localisation des espaces d'attentes sécurisés ou des espaces équivalents ; 5° Les moyens d'alerte ; 6° Les personnes chargées d'aviser les sapeurs-pompiers dès le début d'un incendie ; 7° L'adresse et le numéro d'appel téléphonique du service de secours de premier appel, en caractères apparents ; 8° Le devoir, pour toute personne apercevant un début d'incendie, de donner l'alarme et de mettre en œuvre les moyens de premier secours, sans attendre l'arrivée des travailleurs spécialement désignés.",
+      versionEnVigueur: "2011-11-10",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
+      statut: "retenu",
+      obligations: ["incendie-travail-consigne-affichee"],
+    },
+    {
       ref: "L. 4711-5",
       intitule: "Faculté de réunir les registres en un registre unique",
       versionEnVigueur: "2008-05-01",
@@ -193,18 +207,18 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
     {
       ref: "D. 4711-3",
       intitule: "Durée de conservation des pièces de vérification",
-      url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018493740/",
-      versionEnVigueur: "2008-05-01",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020398142/",
+      versionEnVigueur: "2009-03-16",
       prescrit:
-        "Tout employeur conserve les documents des vérifications et contrôles des cinq dernières années et, en tout état de cause, ceux des deux derniers contrôles — ainsi que les observations et mises en demeure de l'inspection du travail.",
+        "Sauf dispositions particulières, tout employeur conserve les documents des vérifications et contrôles des cinq dernières années et, en tout état de cause, ceux des deux derniers contrôles — ainsi que les observations et mises en demeure de l'inspection du travail, et, pendant la même durée, les copies des déclarations d'accidents du travail faites à la caisse primaire d'assurance maladie. La réserve « sauf dispositions particulières » compte : cinq ans est un plancher supplétif, qu'un texte spécial peut allonger.",
       citationCle:
-        "L'employeur conserve les documents concernant les observations et mises en demeure de l'inspection du travail ainsi que ceux concernant les vérifications et contrôles mis à la charge des employeurs au titre de la santé et de la sécurité au travail des cinq dernières années et, en tout état de cause, ceux des deux derniers contrôles ou vérifications.",
-      luLe: "2026-08-31",
-      lecture: "agent_verbatim",
+        "Sauf dispositions particulières, l'employeur conserve les documents concernant les observations et mises en demeure de l'inspection du travail ainsi que ceux concernant les vérifications et contrôles mis à la charge des employeurs au titre de la santé et de la sécurité au travail des cinq dernières années et, en tout état de cause, ceux des deux derniers contrôles ou vérifications. Il conserve, pendant la même durée, les copies des déclarations d'accidents du travail déclarés à la caisse primaire d'assurance maladie.",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: ["incendie-registre-securite"],
       reserve:
-        "La durée de conservation — cinq ans, et en tout état de cause les deux derniers contrôles — n'est portée par aucun champ du référentiel. `incendie-registre-securite` est en `periodicite: autre`, ce qui dit « état à maintenir » et ne dit rien d'une rétention. Le produit conserve les rapports déposés sans jamais annoncer la durée que le texte exige.",
+        "La durée de conservation — cinq ans, et en tout état de cause les deux derniers contrôles — n'est portée par aucun champ du référentiel. `incendie-registre-securite` est en `periodicite: autre`, ce qui dit « état à maintenir » et ne dit rien d'une rétention. Le produit conserve les rapports déposés sans jamais annoncer la durée que le texte exige.\n\nCORRECTION 2026-09-01, lot « traçabilité ». L'entrée était datée 2008-05-01 : faux, l'article a été modifié par le décret n° 2009-289 du 13 mars 2009 et sa version en vigueur court depuis le 16/03/2009 (LEGIARTI000020398142). Sa citation amputait en outre les trois premiers mots — « Sauf dispositions particulières, » — et son second alinéa entier. Les deux manques ont des conséquences : la réserve fait de cinq ans un plancher supplétif et non un chiffre absolu, et le second alinéa étend la même durée aux copies des déclarations d'accidents du travail, pièces que le produit ne connaît pas du tout. Relu à la source ce jour, alinéa par alinéa.",
     },
   ],
 };
