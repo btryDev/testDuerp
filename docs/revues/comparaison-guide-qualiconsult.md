@@ -4,6 +4,30 @@
 au *Guide des principales obligations réglementaires* du Groupe Qualiconsult,
 mis à jour en **novembre 2021**.
 
+## Ce qui a été lu, et ce qui ne l'a pas été
+
+**Vingt pages sur quarante-huit.** Cette comparaison est partielle, et elle
+l'était déjà quand ses conclusions ont été rendues — c'est écrit ici pour que
+personne ne la prenne pour un balayage complet.
+
+**Lu et confronté** : le sommaire, ascenseurs et monte-charges (p. 6-7),
+sécurité incendie équipement pour les ERP (p. 9-13), installations électriques
+(p. 17), équipements de travail — machines, échafaudages, EPI, levage, portes
+et portails (p. 19-22), énergie thermique (p. 29), hygiène-santé-environnement
+— ambiance de travail, risques professionnels, risques eau, substances
+dangereuses (p. 31-34).
+
+**Non lu, et dans le périmètre du produit** : la suite de la sécurité incendie
+(p. 14-16) et le détail des équipements sous pression (p. 24-28). Ces deux
+sections peuvent contenir des divergences ou des pistes que ce document ne
+porte pas.
+
+**Non lu, et hors périmètre déclaré** : ICPE (p. 39-41), aires de jeux et
+équipements sportifs (p. 42), rayonnements ionisants et environnement
+(p. 35-38).
+
+---
+
 ## Ce que cet exercice peut établir, et ce qu'il ne peut pas
 
 Le guide **n'est pas une source**. Il est commercial, protégé, et il dit lui-même
@@ -137,7 +161,8 @@ Les **légionelles** ne sont pas un manque : elles sont servies par le module
 
 ## Conclusion
 
-**Le guide valide la carte plutôt qu'il ne l'étend.** Sur trois points il est
+**Sur les vingt pages confrontées**, le guide valide la carte plutôt qu'il ne
+l'étend. Sur trois points il est
 moins exact que nous — dont deux où le reprendre aurait fabriqué une échéance
 sans fondement. Il apporte **quatre pistes**, dont une déjà identifiée par un
 autre chemin et une déjà consignée par le corpus lui-même.
