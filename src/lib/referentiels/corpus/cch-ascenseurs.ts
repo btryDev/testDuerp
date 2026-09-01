@@ -16,38 +16,50 @@ export const CCH_ASCENSEURS: Corpus = {
     {
       ref: "CCH R. 134-1",
       versionEnVigueur: "2021-07-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
-      obligations: ["ascenseur-telealarme-liaison"],
+      obligations: ["ascenseur-telealarme-liaison"],      prescrit:
+        "Article de CHAMP, pas de prescription : il définit ce qu'est un ascenseur au sens de la section — appareil desservant de manière permanente les niveaux d'un bâtiment par une cabine se déplaçant le long de guides rigides inclinés de plus de 15 degrés, pour le transport de personnes, de personnes et d'objets, ou d'objets seuls dès lors que la cabine est accessible sans difficulté et équipée de commandes à portée. Y sont assimilés les appareils à course fixée dans l'espace même sans guides rigides (ascenseurs à ciseaux). EXCLUSION : les appareils dont la vitesse n'excède pas 0,15 m/s — la même borne que celle par laquelle l'annexe de l'arrêté du 1er mars 2004 les écarte du levage ; les deux corpus se recoupent exactement sur ce point. L'article ne dit RIEN des moyens d'alerte ni de la liaison avec un service d'intervention : cet objectif de sécurité est à R. 134-2, et son entretien à R. 134-6. Le référentiel rattache pourtant `ascenseur-telealarme-liaison` à la clé « CCH R. 134-1 » ; non corrigé ici, hors mandat de relevé.",
+      citationCle:
+        "Les ascenseurs auxquels s'appliquent les dispositions de la présente section sont les appareils qui desservent de manière permanente les niveaux de bâtiments et de constructions à l'aide d'une cabine qui se déplace le long de guides rigides dont l'inclinaison sur l'horizontale est supérieure à 15 degrés […]. La présente section ne s'applique pas aux appareils dont la vitesse n'excède pas 0,15 m/s.",
     },
     {
       ref: "CCH R. 134-6",
       versionEnVigueur: "2026-04-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
       obligations: [
         "ascenseur-entretien-contrat",
         "ascenseur-examen-annuel-securite",
         "ascenseur-examen-semestriel-secours",
-      ],
+      ],      prescrit:
+        "Version réécrite par le décret n° 2026-166 du 4 mars 2026, en vigueur au 1er avril 2026. Définit l'objet de l'entretien — assurer le bon fonctionnement et maintenir le niveau de sécurité de R. 134-2 — puis énumère les DISPOSITIONS MINIMALES que prend le propriétaire, en deux blocs. 1° Opérations et vérifications PÉRIODIQUES : visite toutes les six semaines ; vérification toutes les six semaines de l'efficacité des serrures ; examen SEMESTRIEL des câbles et vérification ANNUELLE des parachutes ; nettoyage annuel de la cuvette, du toit de cabine et du local des machines ; lubrification et nettoyage des pièces ; vérification toutes les six semaines du bon fonctionnement des moyens d'alerte. 2° Opérations OCCASIONNELLES : réparation ou remplacement des petites pièces usées ; mesures d'entretien destinées à supprimer les défauts ; en cas d'incident, intervention pour dégager les personnes bloquées ; remplacement des moyens d'alerte quand il est nécessaire. Trois rythmes distincts dans un seul article, tous en fréquence minimale — c'est ce qui fonde quatre obligations du référentiel à partir d'une seule clé de corpus.",
+      citationCle:
+        "L'entretien d'un ascenseur a pour objet d'assurer son bon fonctionnement et de maintenir le niveau de sécurité défini à l'article R. 134-2. […] le propriétaire d'une installation d'ascenseur prend les dispositions minimales suivantes : 1° Opérations et vérifications périodiques : a) Une visite toutes les six semaines […] b) La vérification toutes les six semaines de l'efficacité des serrures […] c) L'examen semestriel des câbles et la vérification annuelle des parachutes […] f) La vérification toutes les six semaines du bon fonctionnement des moyens d'alerte […]",
     },
     {
       ref: "CCH R. 134-10",
       versionEnVigueur: "2021-07-01",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
-      obligations: ["ascenseur-carnet-entretien"],
+      obligations: ["ascenseur-carnet-entretien"],      prescrit:
+        "PORTÉE PLUS ÉTROITE QUE L'USAGE QUI EN EST FAIT. L'article ne fonde pas le carnet d'entretien en général : il régit le seul cas où le propriétaire N'A PAS de prestataire et assure l'entretien PAR SES PROPRES MOYENS. Dans ce cas il reste tenu des prescriptions de R. 134-6, tient à jour le carnet d'entretien, établit un rapport annuel d'activité dans les conditions du III de R. 134-7, et le personnel qu'il emploie doit avoir reçu une formation appropriée au sens de l'article 9 du décret n° 95-826 du 30 juin 1995. Le carnet d'entretien du cas ordinaire — entretien confié à une entreprise — est porté par R. 134-7. Le référentiel rattache `ascenseur-carnet-entretien` à la clé « CCH R. 134-10 » alors que sa `reference` cite bien « R. 134-7 et R. 134-10 » : la clé désigne le cas particulier. Non corrigé ici, hors mandat de relevé. À noter aussi une exigence non portée : le rapport annuel d'activité et la formation du personnel en régie.",
+      citationCle:
+        "Lorsque le propriétaire ne recourt pas à un prestataire de services mais décide d'assurer par ses propres moyens l'entretien de l'ascenseur, il est tenu au respect des prescriptions de l'article R. 134-6. Il tient à jour le carnet d'entretien et établit un rapport annuel d'activité dans les conditions fixées au III de l'article R. 134-7. Le personnel qu'il emploie pour l'exercice de cette mission doit avoir reçu une formation appropriée dans les conditions prévues à l'article 9 du décret n° 95-826 du 30 juin 1995 […]",
     },
     {
       ref: "CCH R. 134-11",
       versionEnVigueur: "2026-05-15",
-      luLe: "2026-08-26",
-      lecture: "agent_verbatim",
+      luLe: "2026-09-01",
+      lecture: "premiere_main",
       statut: "retenu",
-      obligations: ["ascenseur-controle-technique-quinquennal"],
+      obligations: ["ascenseur-controle-technique-quinquennal"],      prescrit:
+        "Version réécrite par le décret n° 2026-166 du 4 mars 2026, en vigueur au 15 mai 2026. Impose au propriétaire de faire réaliser TOUS LES CINQ ANS un contrôle technique de son installation. Échéance fixe et non plafond : le texte écrit « tous les cinq ans », à la différence des régimes ESP en « au maximum ». Deux objets : a) vérifier que l'ascenseur est équipé des dispositifs permettant d'atteindre les objectifs de sécurité de R. 134-2, qu'ils sont en bon état, ET que les moyens d'alerte et de communication avec un service d'intervention sont compatibles avec les systèmes de communication autres que le réseau téléphonique commuté fixe ou un réseau mobile de troisième génération ou antérieur ; b) repérer tout défaut présentant un danger pour la sécurité des personnes ou portant atteinte au bon fonctionnement. Le a) est la nouveauté de mai 2026 : la compatibilité de la téléalarme avec la fin de la 2G/3G et du RTC entre dans l'objet du contrôle quinquennal.",
+      citationCle:
+        "Le propriétaire d'un ascenseur est tenu de faire réaliser tous les cinq ans un contrôle technique de son installation. Le contrôle technique a pour objet : a) De vérifier que les ascenseurs sont équipés des dispositifs permettant la réalisation des objectifs de sécurité mentionnés à l'article R. 134-2, que ces dispositifs sont en bon état et que les moyens d'alerte et de communication avec un service d'intervention sont compatibles avec les systèmes de communication autres que le réseau téléphonique commuté fixe ou un réseau de téléphonie mobile ouvert au public de troisième génération ou antérieur ; b) De repérer tout défaut présentant un danger pour la sécurité des personnes ou portant atteinte au bon fonctionnement de l'appareil.",
     },
   ],
 };
