@@ -63,7 +63,7 @@ export const CODE_TRAVAIL_LOCAUX_SOCIAUX: Corpus = {
       statut: "retenu",
       obligations: ["locaux-etablissement-eau-potable"],
       reserve:
-        "Article réécrit par le décret n° 2025-482 du 27 mai 2025 : c'est la version la plus récente de tout le lot 8, et la rédaction antérieure ne portait pas « et se rafraîchir ». Aucune analyse ni aucun contrôle périodique de l'eau n'est écrit ici ; les rythmes d'analyse relèvent du Code de la santé publique et du carnet sanitaire, servis ailleurs dans le produit.",
+        "Article réécrit par le décret n° 2025-482 du 27 mai 2025, dont c'est la version en vigueur ; la rédaction antérieure ne portait pas « et se rafraîchir ». Aucune analyse ni aucun contrôle périodique de l'eau n'est écrit ici ; les rythmes d'analyse relèvent du Code de la santé publique et du carnet sanitaire, servis ailleurs dans le produit.",
     },
     {
       ref: "R. 4225-3",

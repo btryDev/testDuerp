@@ -43,7 +43,14 @@ import { join } from "node:path";
  * remonter d'un cran, à `src/lib/referentiels`.
  */
 
-const RACINES = ["src/lib/referentiels/conformite"];
+// Remontée d'un cran à l'intégration du 2026-09-01, comme l'annonçait la note
+// ci-dessus : le lot qui a repris les deux notes de `corpus/` est passé, la
+// garde peut donc les couvrir. Elle est restée verte au moment de l'élargir —
+// vérifié, pas supposé.
+const RACINES = [
+  "src/lib/referentiels/conformite",
+  "src/lib/referentiels/corpus",
+];
 
 /**
  * Un superlatif de fraîcheur, BORNÉ à un ensemble que le dépôt possède.
