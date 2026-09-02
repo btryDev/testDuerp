@@ -337,6 +337,98 @@ function lecturesSansTexteModificateur(
   return muettes;
 }
 
+describe("corpus — une URL d'article mène à l'article, pas à sa section", () => {
+  /**
+   * Le nombre d'articles dont l'`url` pointe une SECTION de Légifrance
+   * (`section_lc`, qui porte un identifiant `LEGISCTA`) au lieu de l'article
+   * lui-même (`article_lc`, `LEGIARTI`).
+   *
+   * **Ce n'est pas une coquette de présentation, c'est une cause d'erreur de
+   * lecture mesurée.** Une URL de section rend la section ENTIÈRE : celui qui
+   * l'ouvre pour vérifier « GE 4 » lit une page où figurent GE 1 à GE 8, et
+   * rien ne lui dit lequel est le bon. L'incident a coûté trois lectures
+   * successives du même article le 2026-09-02, chacune sur un texte voisin.
+   * Et le dossier de relecture remis à un préventeur porte ces liens : il
+   * l'envoie sur un chapitre là où l'entrée annonce un article.
+   *
+   * La correction ne se dérive pas : l'identifiant `LEGIARTI` de l'article ne
+   * se déduit pas du `LEGISCTA` de sa section. Chacune de ces cinquante
+   * entrées demande d'ouvrir Légifrance et de relever l'URL de l'article —
+   * c'est un travail de dépouillement, pas un remplacement automatique, et
+   * fabriquer une URL plausible serait exactement la faute que ce corpus
+   * existe pour empêcher.
+   *
+   * D'où le cliquet plutôt qu'une correction en bloc : le nombre est établi,
+   * il ne remonte pas, et il descend à mesure que les articles sont rouverts.
+   * Une entrée neuve qui porterait une URL de section ferait échouer ce test
+   * le jour même.
+   *
+   * TRENTE, ET LE CHIFFRE A ÉTÉ MESURÉ EN APPELANT. Un `grep` sur
+   * `section_lc` en compte cinquante : il attrape aussi les URL de corpus —
+   * légitimes, un corpus désigne un texte ou une section — et des fichiers que
+   * `CORPUS` n'exporte pas. Trente est ce que le prédicat trouve sur les
+   * articles réellement exportés. C'est le même écart que celui qui a fait
+   * circuler trois comptes faux cette semaine, et il s'évite de la même
+   * façon : on appelle, on ne cherche pas une chaîne.
+   */
+  const PLAFOND_URLS_DE_SECTION = 30;
+
+  /** Les articles dont l'URL désigne une section plutôt qu'eux-mêmes. */
+  function urlsDeSection(): string[] {
+    const trouves: string[] = [];
+    for (const c of CORPUS) {
+      for (const a of c.articles) {
+        if (a.url?.includes("section_lc")) trouves.push(`${c.id} / ${a.ref}`);
+      }
+    }
+    return trouves;
+  }
+
+  it("le nombre d'URL de section ne remonte pas", () => {
+    const trouvees = urlsDeSection();
+    expect(
+      trouvees.length,
+      `${trouvees.length} article(s) portent une URL de SECTION là où l'entrée ` +
+        `désigne un article (plafond ${PLAFOND_URLS_DE_SECTION}). Une URL de ` +
+        `section rend la section entière : celui qui l'ouvre pour vérifier un ` +
+        `article en lit huit, et le dossier remis à un préventeur l'envoie sur ` +
+        `un chapitre. Relevez l'URL d'article sur Légifrance — elle ne se ` +
+        `déduit pas de celle de la section, et une URL fabriquée serait pire ` +
+        `que celle-ci.\n` +
+        trouvees.join("\n"),
+    ).toBeLessThanOrEqual(PLAFOND_URLS_DE_SECTION);
+  });
+
+  it("le cliquet voit bien l'URL de section qu'il compte", () => {
+    // Contre-épreuve : sans elle, un prédicat qui ne trouverait jamais rien
+    // resterait vert et passerait pour une garantie. On ajoute un corpus
+    // témoin plutôt que d'énumérer l'état réel — celui-ci descendra, et une
+    // liste recopiée cesserait de vérifier au premier article corrigé.
+    const avant = urlsDeSection().length;
+    const temoin: Corpus = {
+      id: "corpus-temoin",
+      intitule: "Corpus témoin",
+      url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000000000000/",
+      etendue: "articles_cites",
+      portee: "Corpus de test, jamais exporté.",
+      articles: [
+        {
+          ref: "T 1",
+          url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000000000/LEGISCTA000000000000/",
+          statut: "non_depouille",
+        },
+      ],
+    };
+    const avecTemoin = [...CORPUS, temoin].flatMap((c) =>
+      c.articles
+        .filter((a) => a.url?.includes("section_lc"))
+        .map((a) => `${c.id} / ${a.ref}`),
+    );
+    expect(avecTemoin.length).toBe(avant + 1);
+    expect(avecTemoin).toContain("corpus-temoin / T 1");
+  });
+});
+
 describe("corpus — d'un article modifié au texte qui l'a modifié", () => {
   it("toute lecture de première main dit par quel texte, ou dit qu'il n'y en a pas", () => {
     expect(
