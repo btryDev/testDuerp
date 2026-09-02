@@ -17,6 +17,9 @@ export const ESP_SUIVI_EN_SERVICE: Corpus = {
       ref: "C. env. R. 557-14-1",
       url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033741441",
       versionEnVigueur: "2016-12-31",
+      // Page de l'article : « Création Décret n°2016-1925 du 28 décembre 2016 - art. 1 ».
+      // Jamais modifié depuis sa création — pas de texte modificateur à signaler.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",

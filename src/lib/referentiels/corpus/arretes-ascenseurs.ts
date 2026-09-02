@@ -41,6 +41,9 @@ export const ARRETES_ASCENSEURS: Corpus = {
         "Contrôles techniques à réaliser dans les installations d'ascenseurs",
       url: "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000026286347",
       versionEnVigueur: "2026-05-15",
+      // Le texte consolidé porte cette mention ; ses articles 1, 3, 4, 5 et son
+      // annexe en relèvent, en vigueur au 15/05/2026.
+      modifiePar: { texte: "Arrêté du 4 mars 2026 - art. 2" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
