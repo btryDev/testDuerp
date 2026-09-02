@@ -31,6 +31,9 @@ export const ESP_SUIVI_EN_SERVICE: Corpus = {
     {
       ref: "Arrêté 2017-11-20 art. 6",
       versionEnVigueur: "2018-01-01",
+      // Page de l'article (LEGIARTI000036131075) : aucune ligne « Modifié par ».
+      // Version d'origine de l'arrêté du 20 novembre 2017, en vigueur au 01/01/2018.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -42,6 +45,10 @@ export const ESP_SUIVI_EN_SERVICE: Corpus = {
     {
       ref: "Arrêté 2017-11-20 art. 7-11",
       versionEnVigueur: "2018-01-01",
+      // Les cinq articles 7, 8, 9, 10 et 11 relus un à un sur leur propre page
+      // (LEGIARTI000036131081, ...083, ...085, ...087, ...089) : aucun ne porte de
+      // ligne « Modifié par ». Tous en version d'origine, en vigueur au 01/01/2018.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -63,6 +70,9 @@ export const ESP_SUIVI_EN_SERVICE: Corpus = {
     {
       ref: "Arrêté 2017-11-20 art. 18-19",
       versionEnVigueur: "2018-01-01",
+      // Articles 18 et 19 relus chacun sur sa page (LEGIARTI000036131133 et ...135) :
+      // aucune ligne « Modifié par ». Version d'origine, en vigueur au 01/01/2018.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -74,6 +84,9 @@ export const ESP_SUIVI_EN_SERVICE: Corpus = {
     {
       ref: "Arrêté 2017-11-20 art. 26-28",
       versionEnVigueur: "2025-09-08",
+      // Les articles 26 et 28 portent cette ligne, en vigueur au 08/09/2025.
+      // L'article 27 de l'intervalle est resté dans sa version d'origine.
+      modifiePar: { texte: "Arrêté du 5 septembre 2025 - art. 1" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",

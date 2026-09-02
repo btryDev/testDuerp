@@ -284,28 +284,7 @@ describe("corpus — la dette de lecture, mesurée et décroissante", () => {
  * Légifrance article par article, et une valeur devinée y serait pire que le
  * vide. Un index partiel attrape quand même le prochain décret.
  */
-/*
- * PALLIATIF DATÉ, ET IL EST NOMMÉ POUR ÊTRE RETIRÉ.
- *
- * La règle est née le 2026-09-01. Le même jour, et sur une branche parallèle,
- * une campagne de traçabilité a relu **quarante-neuf articles en première
- * main** — sans porter `modifiePar`, qui n'existait pas encore quand elle a
- * commencé. Les deux lots avaient raison séparément ; leur fusion rend la
- * garde rouge.
- *
- * Trois issues, et deux sont fausses. Écrire `modifiePar: null` sur les
- * quarante-neuf affirmerait « regardé, pas de texte modificateur » alors que
- * personne ne l'a regardé : c'est exactement l'affirmation sans lecture que ce
- * champ existe pour empêcher. Tenir une liste d'articles dispensés se
- * réparerait en y ajoutant le suivant, donc cesserait de vérifier.
- *
- * Reste le décalage d'un jour. Il ne corrige rien — il nomme une dette et la
- * borne : les quarante-neuf articles relus le 2026-09-01 doivent recevoir leur
- * `modifiePar`, et **ce palliatif se retire le jour où c'est fait**, en
- * ramenant la date au 2026-09-01. Tant qu'il est là, la règle ne mord que sur
- * les lectures postérieures.
- */
-const REGLE_MODIFICATEUR_DEPUIS = "2026-09-02";
+const REGLE_MODIFICATEUR_DEPUIS = "2026-09-01";
 
 /**
  * Les lectures de première main postérieures à la règle qui ne disent pas par
@@ -352,12 +331,15 @@ describe("corpus — d'un article modifié au texte qui l'a modifié", () => {
   });
 
   it("la règle mord sur ce qu'elle vise, et sur rien d'autre", () => {
-    // Contre-épreuve. Sur le corpus livré, la garantie ci-dessus ne traverse
-    // AUCUN article : les quarante lectures du 2026-09-01 sont toutes en
-    // `agent_verbatim`. Éprouvée sur le seul corpus, elle serait verte et
-    // vide — le mode de panne exact de ce genre de garde. Les cas fabriqués
-    // la font mordre aujourd'hui, et exercent les trois frontières qui la
-    // définissent : la borne de date, la provenance, et le statut.
+    // Contre-épreuve. La garantie ci-dessus traverse désormais quarante-neuf
+    // articles — les lectures de première main du 2026-09-01, dont chacune
+    // porte sa réponse depuis que la dette a été soldée. Elle est donc verte
+    // parce que le corpus est en règle, ce qui est indistinguable, sur le
+    // seul corpus, d'une garde qui ne mordrait sur rien : c'est le mode de
+    // panne exact de ce genre de garde, et c'était déjà vrai quand elle ne
+    // traversait aucun article. Les cas fabriqués la font mordre ici, et
+    // exercent les trois frontières qui la définissent : la borne de date,
+    // la provenance, et le statut.
     const article = (a: Partial<ArticleDepouille>): ArticleDepouille =>
       ({
         ref: "R. 0000-0",
