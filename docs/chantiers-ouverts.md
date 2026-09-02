@@ -133,8 +133,24 @@ migrée.** Il débloque le contrôle sur n'importe quelle machine.
   `R. 4512-7` le déclenche « dès lors qu'il apparaît » qu'elles seront atteintes.
   Depuis le 2026-09-02, l'aide de saisie le dit au dirigeant ; le module ne le
   fait toujours pas.
-- **Un compte de test à supprimer en prod** : `contact+controle-pr10@btry.fr` et
-  « Bistrot de la Verification SARL » (`cmtj4wq7y0002cigd4zauyfmw`).
+- **Comptes de test en production — à la main de la propriétaire, pas à
+  supprimer d'office.** `contact+controle-pr10@btry.fr` et « Bistrot de la
+  Verification SARL » (`cmtj4wq7y0002cigd4zauyfmw`) sont **gardés
+  volontairement** ; ils ont servi au contrôle visuel du 2026-09-02 et le
+  dossier a reçu une régénération de calendrier depuis. Une première version de
+  cette liste les rangeait « à supprimer » : c'était une décision prise à la
+  place de la propriétaire.
+
+  S'y ajoute `controle-visuel-seed@btry.fr` (uuid
+  `e2d350b2-534b-4500-8cc0-550d8e579047`), **créé par erreur** le 2026-09-03 par
+  le lot du seed, sur le projet Supabase de production. Non confirmé, jamais
+  utilisé. La cause est un défaut de brief : la session distante avait
+  l'interdiction écrite de toucher la prod, ce lot-là ne l'avait pas — on lui
+  demandait de traiter la question de l'authentification sans lui dire où il
+  n'avait pas le droit de la traiter. **Tout lot qui approche l'auth doit porter
+  cette interdiction explicitement**, l'auth vivant chez Supabase et non en base
+  (ADR-005) : un `.env` qui pointe une base locale peut parfaitement écrire dans
+  l'auth de production.
 
 ---
 
