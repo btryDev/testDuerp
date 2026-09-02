@@ -465,9 +465,13 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       "PE 27",
       // PE 37 a quitté cette liste le 2026-08-31 au soir : sa quinquennale est
       // désormais portée par `incendie-erp-5-visite-commission`, et l'article
-      // passe à `retenu` avec une `reserve` qui dit ce qui reste — l'ancrage
-      // sur une alarme déclarée, et le « pour le public » que
-      // `dessertLocauxSommeil` ne distingue pas. QUATRIÈME sortie par
+      // passe à `retenu` avec une `reserve`. Cette réserve disait alors deux
+      // choses — l'ancrage sur une alarme déclarée, et le « pour le public »
+      // qu'une caractéristique d'équipement ne distinguait pas ; les deux sont
+      // CLOSES depuis le 2026-09-01 et l'attribut d'établissement. Elle en dit
+      // une autre depuis, trouvée en relisant l'article : son renvoi exprès à
+      // GE 2, GE 3 et GE 5, trois articles du Livre II que personne n'a
+      // ouverts. QUATRIÈME sortie par
       // livraison plutôt que par requalification, après PE 4, R. 4222-20 et
       // R. 4544-11-1. Il y était entré le 2026-08-26, en rectification d'une
       // affirmation contraire portée le matin même ; il en sort parce que le
