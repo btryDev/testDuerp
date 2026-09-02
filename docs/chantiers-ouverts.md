@@ -109,17 +109,35 @@ elles se **déclarent**, elles ne s'encodent pas.
 `src/components` depuis le 2026-08-31, dont une quinzaine de corrections
 d'interface et de charte que personne n'a regardées à l'écran.
 
-**Ce qui l'empêche est identifié**, et c'est un défaut du dépôt : les trois seeds
-(`scripts/seed-demo.ts`, `prisma/seed.ts`, `scripts/seed-salaries-demo.ts`)
-**remplissent** un dossier, aucun n'en **crée** un — et `seed-demo.ts` code en dur
-deux `cuid` qui n'existent que sur la machine de la propriétaire. Le contrôle
-visuel est donc impossible ailleurs que là, ce qui explique qu'il n'ait jamais
-été fait.
+**Le blocage est levé depuis le 2026-09-03.** `scripts/seed-dossier-complet.ts`
+(`pnpm seed:complet --user <uuid>`) **crée** un dossier de bout en bout sur une
+base vide et migrée, là où les trois seeds précédents ne savaient que **remplir**
+un dossier existant — et où `seed-demo.ts` codait en dur deux `cuid` d'une seule
+machine. C'était la cause, mesurée, de ce que le contrôle visuel n'ait jamais pu
+se faire ailleurs.
 
-**Le remède est un seed qui crée un dossier complet sur une base fraîchement
-migrée.** Il débloque le contrôle sur n'importe quelle machine.
+Le dossier semé porte 3 zones, 10 équipements sur 8 domaines, 5 salariés et
+7 titres, un DUERP validé, 3 prestataires aux attestations échelonnées, permis de
+feu, plan de prévention, carnet sanitaire, accessibilité publiée, 36 échéances
+dont 6 en retard, et 28 actions. La prescription d'assureur y tombe **seule à
+J+160** — sa voisine à 48 jours, au-dessus du seuil de regroupement de la frise —
+pour que la pastille de l'ADR-032 soit jugeable, ce qu'elle n'était pas le
+2026-09-02.
 
----
+**Le calendrier semé est un point fixe de sa propre régénération**, vérifié à
+blanc : `0 à créer · 0 à modifier · 0 à supprimer · 36 inchangées`. Ouvrir
+`/calendrier` ne le déplace donc pas — ce qui est ce qu'il faut, l'ouverture de
+cet écran écrivant (§ 7).
+
+**Ce qui reste** : la passe elle-même, sur les sept écrans que personne n'a
+jamais pu regarder avec des données — `/equipe`, `/duerp`, `/permis-feu`,
+`/plan-prevention`, `/carnet-sanitaire`, `/accessibilite`, `/plan-actions`.
+
+Deux choses ne seront pas jugeables et ce n'est pas un défaut : les rapports de
+vérification, signatures et jetons d'accès ne sont pas semés — ils exigent un
+fichier réellement stocké, et en fabriquer produirait des entrées de registre
+pointant vers un fichier absent ; et les déclarations d'états permanents non plus,
+l'ADR-027 disant qu'une déclaration se coche et ne se sème pas.
 
 ## 6. Plus petit, mais mesuré
 
