@@ -202,11 +202,23 @@ condition non satisfaite, et le contraste est volontaire : une propriété
 d'équipement absente dit « cet équipement n'a pas cette caractéristique », une
 propriété d'établissement absente dit « on ne sait pas encore ».
 
-Deux attributs font aujourd'hui l'inverse de cette règle, et sont recensés ici pour
-ne pas être oubliés : `manipuleMatieresR422722` absent est lu « non », et
-`personnesPresentesHabituellement` absent retombe sur `effectifSurSite`
-(`src/lib/matching/types.ts:34-41`). Les deux sont des sous-estimations assumées et
-documentées ; elles ne sont **pas** corrigées ici, mais toute condition
+Deux attributs faisaient l'inverse de cette règle, et étaient recensés ici pour ne
+pas être oubliés : `manipuleMatieresR422722` absent lu « non », et
+`personnesPresentesHabituellement` absent retombant sur `effectifSurSite`.
+
+**Le second est rentré dans le rang le 2026-09-03** (décision de la propriétaire).
+Le moteur ne remplace plus le nombre manquant : il en déduit une borne basse — la
+catégorie d'ERP, puis l'effectif salarié — qui ne conclut que vers le haut, et
+retient l'obligation « à confirmer » quand elle ne conclut pas et que
+l'établissement reçoit du public. Un établissement de travail seul reste comparé à
+son effectif, qui y est le total et non une borne. Voir `evaluerPersonnesPresentes`
+dans `src/lib/matching/engine.ts`.
+
+**Le premier reste**, et c'est la seule entorse qui subsiste : `champR422734` est
+une branche qui ne fait qu'AJOUTER des cas à un champ déjà ouvert par le seuil, si
+bien que le silence n'y retire rien tant qu'une autre porte existe. Il en retirerait
+le jour où une obligation s'appuierait sur cette branche seule — le corpus
+`code-travail-matieres-inflammables.ts` le dit article en main. Toute condition
 d'établissement **nouvelle** suit la règle du non-renseigné.
 
 Le canal d'affichage manque : `EcheanceCalendrier.tone` est binaire et

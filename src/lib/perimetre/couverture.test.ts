@@ -24,7 +24,6 @@ function faits(partiel: Partial<FaitsCouverture> = {}): FaitsCouverture {
     regime: regimeCouvert,
     duerp: null,
     equipements: { nbSansObligation: 0, nbEquipements: 12 },
-    publicRecu: null,
     effectif: null,
     ...partiel,
   };
@@ -32,9 +31,8 @@ function faits(partiel: Partial<FaitsCouverture> = {}): FaitsCouverture {
 
 const axes = (c: { manques: { axe: AxeCouverture }[] }) =>
   c.manques.map((m) => m.axe);
-const axesIndetermines = (c: {
-  indeterminations: { axe: AxeCouverture }[];
-}) => c.indeterminations.map((i) => i.axe);
+const axesIndetermines = (c: { indeterminations: { axe: AxeCouverture }[] }) =>
+  c.indeterminations.map((i) => i.axe);
 
 /* ─── L'axe du régime — le comportement d'origine, préservé ───────────── */
 
@@ -101,9 +99,9 @@ describe("axe secteur_duerp — projection de l'ADR-020", () => {
     );
 
   it("se tait quand le dossier n'a pas de DUERP — un DUERP absent est un autre sujet", () => {
-    expect(riensASignaler(couvertureDeLEtablissement(faits({ duerp: null })))).toBe(
-      true,
-    );
+    expect(
+      riensASignaler(couvertureDeLEtablissement(faits({ duerp: null }))),
+    ).toBe(true);
   });
 
   it("se tait quand l'ADR-020 n'a identifié aucun manque", () => {
@@ -333,7 +331,9 @@ describe("axe secteur_duerp — `secteur_inconnu` couvre trois situations", () =
     // référentiel. Les confondre affirmerait l'inexistence sur une donnée
     // absente — l'hypothèse silencieuse que ce dossier existe pour empêcher.
     const c = inconnuAvec({ statut: "sans_naf" });
-    expect(c.manques[0].motif).toContain("aucun code d'activité n'est renseigné");
+    expect(c.manques[0].motif).toContain(
+      "aucun code d'activité n'est renseigné",
+    );
     expect(c.manques[0].consequence).toContain(
       "on ne peut pas non plus vous dire quel référentiel conviendrait",
     );
@@ -436,8 +436,10 @@ describe("axe domaine_equipement", () => {
     // et le test tombe, où qu'elle ait été glissée.
     for (const m of phrase.matchAll(/aucune vérification/gi)) {
       const avant = phrase.slice(0, m.index);
-      expect(avant, `« ${phrase.slice(Math.max(0, m.index - 40), m.index + 30)} »`)
-        .toMatch(/ne veut pas dire qu'$/);
+      expect(
+        avant,
+        `« ${phrase.slice(Math.max(0, m.index - 40), m.index + 30)} »`,
+      ).toMatch(/ne veut pas dire qu'$/);
     }
   });
 });
@@ -446,7 +448,13 @@ describe("axe domaine_equipement", () => {
 
 describe("les axes ne s'additionnent ni ne se recouvrent", () => {
   const troisManques = couvertureDeLEtablissement({
-    regime: { estERP: true, estIGH: false, categorieErp: "N2" , estHabitation: false, familleHabitation: null },
+    regime: {
+      estERP: true,
+      estIGH: false,
+      categorieErp: "N2",
+      estHabitation: false,
+      familleHabitation: null,
+    },
     duerp: {
       etat: "secteur_inconnu",
       secteurNom: null,
@@ -454,7 +462,6 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
       correspondance: { statut: "sans_naf" as const },
     },
     equipements: { nbSansObligation: 4, nbEquipements: 9 },
-    publicRecu: null,
     effectif: null,
   });
 
@@ -489,109 +496,18 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
     // d'être des deux listes.
     const c = couvertureDeLEtablissement(
       faits({
-        regime: { estERP: true, estIGH: false, categorieErp: null , estHabitation: false, familleHabitation: null },
+        regime: {
+          estERP: true,
+          estIGH: false,
+          categorieErp: null,
+          estHabitation: false,
+          familleHabitation: null,
+        },
         equipements: { nbSansObligation: 2, nbEquipements: 5 },
       }),
     );
     expect(axes(c)).toEqual(["domaine_equipement"]);
     expect(axesIndetermines(c)).toEqual(["categorie_erp"]);
-  });
-});
-
-/* ─── L'axe du public reçu — une donnée qui manque, pas un bord ────────── */
-
-describe("axe public_recu", () => {
-  /**
-   * Le fait projeté vient de `matching/public-recu.ts`, qui l'établit sur le
-   * verdict du moteur. Ici on ne vérifie que la mise en forme — c'est la
-   * répartition du module : les faits lui sont donnés, il écrit la phrase.
-   */
-  const suspendues = [
-    {
-      libelle: "Essais du matériel et exercices d'évacuation semestriels",
-      seuil: 51,
-    },
-  ];
-
-  it("se tait quand rien n'est suspendu, et quand les faits n'ont pas été collectés", () => {
-    for (const publicRecu of [
-      null,
-      { effectifRetenu: 6, suspendues: [] },
-    ]) {
-      expect(riensASignaler(couvertureDeLEtablissement(faits({ publicRecu }))))
-        .toBe(true);
-    }
-  });
-
-  it("est une indétermination, jamais un manque", () => {
-    // Le fait n'est pas que le référentiel ignore quelque chose : c'est que la
-    // donnée qui tranche n'a pas été donnée. Le ranger parmi les manques le
-    // dirait définitif, et retirerait au dirigeant le geste qui le lève.
-    const c = couvertureDeLEtablissement(
-      faits({ publicRecu: { effectifRetenu: 6, suspendues } }),
-    );
-    expect(axes(c)).toEqual([]);
-    expect(axesIndetermines(c)).toEqual(["public_recu"]);
-  });
-
-  it("dit sur quoi le calcul s'est replié, nomme ce qui manque, et où le renseigner", () => {
-    const c = couvertureDeLEtablissement(
-      faits({ publicRecu: { effectifRetenu: 6, suspendues } }),
-    );
-    const i = c.indeterminations[0];
-    expect(i.motif).toContain("n'est pas renseigné");
-    // Les trois choses qu'un dirigeant doit pouvoir lire : le repli qui a servi,
-    // ce qu'il éteint, et le geste.
-    expect(i.quoiFaire).toContain("vos 6 salariés");
-    expect(i.quoiFaire).toContain(
-      "Essais du matériel et exercices d'évacuation semestriels",
-    );
-    expect(i.quoiFaire).toContain("fiche de l'établissement");
-  });
-
-  it("nomme le registre de sécurité autant que le calendrier", () => {
-    // `registre/composition.ts` appelle le même `matchTypologie` : le repli lui
-    // retire une fiche aussi. La phrase serait fausse par omission si elle ne
-    // parlait que du calendrier. `matching/public-recu.test.ts` établit que la
-    // fiche manque réellement.
-    const c = couvertureDeLEtablissement(
-      faits({ publicRecu: { effectifRetenu: 6, suspendues } }),
-    );
-    expect(c.indeterminations[0].quoiFaire).toContain("registre de sécurité");
-  });
-
-  it("porte le seuil de chaque obligation, sans en supposer un commun", () => {
-    const c = couvertureDeLEtablissement(
-      faits({
-        publicRecu: {
-          effectifRetenu: 6,
-          suspendues: [
-            { libelle: "Obligation A", seuil: 51 },
-            { libelle: "Obligation B", seuil: 20 },
-          ],
-        },
-      }),
-    );
-    const q = c.indeterminations[0].quoiFaire;
-    expect(q).toContain("« Obligation A » (à partir de 51 personnes présentes)");
-    expect(q).toContain("« Obligation B » (à partir de 20 personnes présentes)");
-    expect(q).toContain("2 obligations ne figurent");
-  });
-
-  it("accorde au singulier quand une seule obligation est suspendue", () => {
-    const c = couvertureDeLEtablissement(
-      faits({ publicRecu: { effectifRetenu: 6, suspendues } }),
-    );
-    expect(c.indeterminations[0].quoiFaire).toContain("1 obligation ne figure");
-  });
-
-  it("ne qualifie jamais la situation au regard du droit", () => {
-    const c = couvertureDeLEtablissement(
-      faits({ publicRecu: { effectifRetenu: 6, suspendues } }),
-    );
-    const interdits = /conforme|non conforme|infraction|en défaut|obligatoire/i;
-    expect(c.indeterminations[0].motif).not.toMatch(interdits);
-    expect(c.indeterminations[0].quoiFaire).not.toMatch(interdits);
   });
 });
 

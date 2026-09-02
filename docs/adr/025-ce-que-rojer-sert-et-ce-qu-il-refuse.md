@@ -232,10 +232,11 @@ refusé à l'entrée / servi partiellement et prévenu (les ERP de 1re à 4e
 catégorie) / hors périmètre déclaré.
 
 C'est le point où le produit était le plus avancé : le bandeau de périmètre du
-calendrier dit déjà ce qui n'est pas couvert, sur sept axes au 2026-09-01
+calendrier dit déjà ce qui n'est pas couvert, sur six axes au 2026-09-03
 (`AxeCouverture` : `igh`, `categorie_erp`, `secteur_duerp`,
-`domaine_equipement`, `public_recu`, `famille_habitation`, `effectif` — les deux
-derniers sont nés du recadrage), et
+`domaine_equipement`, `famille_habitation`, `effectif` — les deux derniers sont
+nés du recadrage ; un septième, `public_recu`, a été retiré le 2026-09-03 quand
+le moteur a cessé d'écarter les obligations qu'il annonçait), et
 `docs/couverture-declaree-du-produit.md` grave ces déclarations, sous la garde
 d'un test qui échoue si le document et le corpus divergent.
 

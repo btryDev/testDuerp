@@ -16,13 +16,16 @@ qui part.
 
 ---
 
-## 1. Sept axes, et ce que chacun établit vraiment
+## 1. Six axes actifs, et ce que chacun établit vraiment
 
-Six axes sont actifs. Le septième, `famille_obligation`, a existé une
-journée et a été retiré — le § 3 bis dit pourquoi, et il est décrit ici parce
-que le comprendre est nécessaire pour lire le § 3.
+`AxeCouverture` porte **six** membres, relevés en le lisant. Deux autres ont
+existé et sont retirés : `famille_obligation`, qui a duré une journée — le
+§ 3 bis dit pourquoi —, et `public_recu`, parti le 2026-09-03. Tous deux
+restent au tableau, barrés, parce que les comprendre est nécessaire pour lire
+le § 3. La ligne « six axes » a dit « quatre » puis « sept » ; elle se
+remesure en ouvrant le type, jamais en recopiant la précédente.
 
-*(Relevé au 2026-09-01. Ce tableau a retardé sur le code une première fois : il
+*(Relevé au 2026-09-03. Ce tableau a retardé sur le code une première fois : il
 en annonçait quatre alors que `public_recu` et `famille_habitation` tournaient
 déjà. Un document de référence qui retarde envoie chercher un axe là où il n'y
 en a plus — ou fait croire qu'un manque n'est annoncé à personne.)*
@@ -45,7 +48,7 @@ ce que le dépôt s'interdit.
 | `categorie_erp` | L'ERP relève d'une catégorie 1 à 4, donc le livre II s'applique en entier (PE 1 § 1) | L'ampleur du manque. On sait qu'il existe, pas de combien | `CATEGORIES_COUVERTES` |
 | `secteur_duerp` | Ce que le DUERP déclare ne pas couvrir, et si son référentiel est celui du code NAF | Que le reste du DUERP soit complet — « aucun manque identifié » n'est pas « complet » | ADR-020 (`duerps/couverture.ts`) + `perimetre/secteur.ts` |
 | `domaine_equipement` | Des appareils du parc ne déclenchent aucune obligation du référentiel | Qu'aucune vérification ne leur soit due. C'est un fait sur l'outil, pas sur le droit | `equipements/hors-referentiel.ts` |
-| `public_recu` | Le nombre de personnes habituellement présentes manque, et le repli du moteur écarte des obligations qui en dépendent | Que ces obligations soient dues : on ne le sait pas, faute du chiffre. **Indétermination**, jamais un manque | `matching/public-recu.ts` |
+| ~~`public_recu`~~ **(retiré le 2026-09-03)** | Le nombre de personnes habituellement présentes manque, et le repli du moteur écartait des obligations qui en dépendent | — Le repli a changé de sens le même jour : la catégorie d'ERP déduit le franchissement du seuil dès la 3ᵉ, et sous la borne l'obligation est retenue « à confirmer » au lieu d'être retirée. Plus rien n'est suspendu, donc plus rien à annoncer : c'est la ligne servie qui porte l'information | néant (`matching/public-recu.ts` supprimé) |
 | `famille_habitation` | L'immeuble d'habitation n'a pas de famille renseignée, et les obligations lui sont donc toutes servies | Que l'outil ne couvre pas le régime — il le couvre, et sert large en attendant. **Indétermination** | `Etablissement.familleHabitation` |
 | `effectif` | L'effectif dépasse la borne au-delà de laquelle la création d'un dossier est refusée (ADR-031 § 1 bis) | Que le dossier soit fermé : la borne ne vaut qu'à la création, un client qui embauche reste servi | `EFFECTIF_MAX` (`etablissements/schema.ts`), passé en fait par `faits.ts` |
 | ~~`famille_obligation`~~ **(retiré, § 3 bis)** | Des articles lus imposent quelque chose que le produit ne porte pas | **Qu'ils visent cet établissement-là.** Voir § 2 | statut `non_couvert` du corpus |

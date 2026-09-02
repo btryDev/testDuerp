@@ -103,11 +103,12 @@ export async function finaliserOnboarding(
         // `personnesPresentesHabituellement` et `manipuleMatieresR422722` ne
         // sont plus demandés à l'onboarding (2026-09-01) : deux questions de
         // technicien au tout début d'un parcours, à qui n'a encore rien vu du
-        // produit. Les colonnes restent, la fiche établissement les porte, et
-        // l'axe `public_recu` de la couverture dit en permanence quelles
-        // obligations restent suspendues tant qu'elles sont vides. Ne pas les
-        // écrire ici les laisse à `null`, ce qui est leur valeur juste : on ne
-        // sait pas encore.
+        // produit. Les colonnes restent et la fiche établissement les porte.
+        // Ne pas les écrire ici les laisse à `null`, ce qui est leur valeur
+        // juste : on ne sait pas encore. Depuis le 2026-09-03, le moteur en
+        // tire ce qu'il peut sans rien demander — la catégorie d'ERP franchit
+        // le seuil de R. 4227-34 dès la 3ᵉ — et retient « à confirmer » ce
+        // qu'il ne peut pas trancher, au lieu de l'écarter.
         estEtablissementTravail: d.estEtablissementTravail,
         estERP: d.estERP,
         estIGH: d.estIGH,

@@ -54,12 +54,9 @@ function lienDeLAxe(
         libelle: "Vérifier l'effectif déclaré",
       };
     // Même destination que le régime, libellé différent — et la différence
-    // n'est pas cosmétique. Le régime est là et se vérifie ; le public reçu
-    // n'a jamais été donné et se renseigne. « Vérifier » enverrait relire un
-    // champ vide.
-    case "public_recu":
-    // La famille d'habitation se renseigne au même endroit, et pour la même
-    // raison : c'est une donnée jamais donnée, pas un champ à relire.
+    // n'est pas cosmétique. Le régime est là et se vérifie ; la famille
+    // d'habitation n'a jamais été donnée et se renseigne. « Vérifier »
+    // enverrait relire un champ vide.
     case "famille_habitation":
       return {
         href: hrefs.etablissement,
@@ -104,9 +101,7 @@ function Bloc({
       <span
         className="mt-0.5 flex-none"
         style={{
-          color: signal
-            ? "var(--board-signal-ink)"
-            : "var(--board-amber-ink)",
+          color: signal ? "var(--board-signal-ink)" : "var(--board-amber-ink)",
         }}
       >
         {signal ? (

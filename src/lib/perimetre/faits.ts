@@ -20,10 +20,7 @@ import {
   compterSansObligation,
   reperterSansEcheance,
 } from "@/lib/equipements/hors-referentiel";
-import {
-  obligationsSuspenduesAuPublicRecu,
-  projeterEtablissement,
-} from "@/lib/matching";
+import { projeterEtablissement } from "@/lib/matching";
 import { EFFECTIF_MAX } from "@/lib/etablissements/schema";
 import { correspondanceSecteur } from "./secteur";
 import {
@@ -94,7 +91,7 @@ export async function faitsDeCouverture(
     typeErp: etab.typeErp,
     categorieErp: etab.categorieErp,
     classeIgh: etab.classeIgh,
-      familleHabitation: etab.familleHabitation,
+    familleHabitation: etab.familleHabitation,
     personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
     manipuleMatieresR422722: etab.manipuleMatieresR422722,
     comporteLocauxSommeilPublic: etab.comporteLocauxSommeilPublic,
@@ -149,16 +146,6 @@ export async function faitsDeCouverture(
     equipements: {
       nbSansObligation: compterSansObligation(sansEcheance),
       nbEquipements: etab.equipements.length,
-    },
-    // Ce que le repli du moteur écarte faute du public reçu. Le tri est fait
-    // par `matching/public-recu.ts`, sur le verdict du moteur lui-même : rien
-    // n'est recalculé ici, et aucun seuil n'est écrit.
-    publicRecu: {
-      effectifRetenu: etab.effectifSurSite,
-      suspendues: obligationsSuspenduesAuPublicRecu(
-        etabMatching,
-        equipementsMatching,
-      ),
     },
     // La borne d'effectif de l'ADR-031, lue là où elle est FAITE RESPECTER —
     // `etablissements/schema.ts`, la porte de création. La recopier dans

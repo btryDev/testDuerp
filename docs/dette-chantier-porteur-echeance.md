@@ -164,18 +164,25 @@ mécanisme.
 L'ADR-022 pose : *l'incertitude ne réduit jamais la couverture*. `null` ne vaut
 pas « non ».
 
-**Deux attributs d'établissement font aujourd'hui l'inverse**, et sont recensés
-dans l'ADR :
+**Deux attributs d'établissement faisaient l'inverse**, et étaient recensés dans
+l'ADR :
 
-- `manipuleMatieresR422722` — absent, lu « non »
-- `personnesPresentesHabituellement` — absent, retombant sur `effectifSurSite`
+- `manipuleMatieresR422722` — absent, lu « non ». **Reste.**
+- `personnesPresentesHabituellement` — absent, retombant sur `effectifSurSite`.
+  **Corrigé le 2026-09-03** : le nombre manquant n'est plus remplacé, il est
+  borné par le bas (catégorie d'ERP, puis effectif salarié), et l'obligation est
+  retenue « à confirmer » quand la borne ne tranche pas et que l'établissement
+  reçoit du public.
 
-Toute condition **nouvelle** suit la règle. Ces deux-là sont antérieures et
-n'ont pas été reprises. Elles peuvent **retirer** une obligation à qui n'a rien
-déclaré, ce qui est exactement le sens que la règle interdit.
+Toute condition **nouvelle** suit la règle. Celle qui reste est antérieure ; elle
+ne retire aujourd'hui aucune obligation, sa branche n'en ajoutant qu'à un champ
+déjà ouvert par le seuil de personnes présentes. Elle en retirerait le jour où une
+obligation s'appuierait sur elle seule.
 
-Le canal d'affichage manque aussi : `tone` est binaire dans `src/lib/calendrier/echeances.ts`, il
-n'y a pas d'état « à confirmer » à l'écran.
+Le canal d'affichage manque toujours à l'écran d'échéances : `tone` est binaire
+dans `src/lib/calendrier/echeances.ts`. Le « à confirmer » vit dans les `raisons`
+du moteur, que le guide « Comprendre » affiche sous « pourquoi chez vous » ; il
+n'a pas de couleur au calendrier.
 
 ---
 
