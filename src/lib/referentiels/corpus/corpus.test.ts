@@ -828,16 +828,15 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // plutôt que fermé dans un sens ou dans l'autre.
       "Arrêté 1993-03-05 art. 2",
       // ── Lot « signalisation », 2026-09-02 ────────────────────────────────
-      // L'arrêté du 4 novembre 1993 entre au corpus `integral`, et onze de ses
-      // articles décrivent une obligation que le référentiel ne porte pas :
-      // AUCUNE de ses obligations livrées ne vise la signalisation de
-      // sécurité, sous aucun porteur. Ce n'est donc pas un manque de modèle
-      // comme PO 7 ou PE 27 — le déclencheur « statut d'employeur » et l'état
-      // permanent de l'ADR-026 existent tous deux. C'est un domaine entier
-      // qu'on n'avait pas ouvert, et les onze lignes sortiront ensemble le
-      // jour où il sera encodé.
+      // L'arrêté du 4 novembre 1993 est entré au corpus `integral` le
+      // 2026-09-02, et onze de ses articles décrivaient une obligation que le
+      // référentiel ne portait pas : AUCUNE de ses obligations livrées ne
+      // visait la signalisation de sécurité, sous aucun porteur. Ce n'était
+      // donc pas un manque de modèle comme PO 7 ou PE 27 — le déclencheur
+      // « statut d'employeur » et l'état permanent de l'ADR-026 existaient
+      // tous deux. C'était un domaine entier qu'on n'avait pas ouvert.
       //
-      // Une seule des onze porte une périodicité, et c'est l'art. 15 : « au
+      // Une seule des onze portait une périodicité, et c'est l'art. 15 : « au
       // moins chaque semestre » pour les signaux LUMINEUX et ACOUSTIQUES,
       // « au moins une fois par an » pour les alimentations de secours de
       // l'art. 7. Sur le reste de la signalisation — panneaux, couleurs,
@@ -845,17 +844,46 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // Le guide professionnel qui a déclenché ce lot annonçait le semestre
       // pour « les moyens et dispositifs de signalisation » : bon chiffre,
       // mauvaise assiette, et l'encoder de bonne foi aurait fabriqué un
-      // rendez-vous sur un parc que le texte ne vise pas.
-      "Arrêté 1993-11-04 art. 2",
+      // rendez-vous sur un parc que le texte ne vise pas. Les trois
+      // obligations de l'art. 15 respectent ce partage.
+      //
+      // SEPT DES ONZE SONT SORTIES LE 2026-09-02, encodées par le domaine
+      // `signalisation` : les articles 2, 7, 9, 10, 11, 12 et 15, qui donnent
+      // neuf obligations — l'article 15 en porte trois, une par rythme. Ce
+      // qu'elles ont demandé n'était pas un attribut nouveau : c'était de
+      // choisir le porteur établissement là où aucune catégorie d'équipement
+      // ne désigne un panneau ni un signal, et de trancher le recouvrement de
+      // la semestrielle avec l'autonomie de l'éclairage de sécurité — deux
+      // objets différents sur un même BAES, à la même cadence.
+      //
+      // LES QUATRE QUI RESTENT NE RESTENT PAS POUR LA MÊME RAISON, et c'est
+      // pourquoi elles sont commentées une par une plutôt qu'en bloc.
+      //
+      // Art. 4 : la consultation préalable à la détermination de la
+      // signalisation. Le texte, jamais modifié depuis 1993, désigne le CHSCT
+      // et, à défaut, les délégués du personnel — deux instances fondues dans
+      // le CSE au plus tard le 1er janvier 2020 par l'ordonnance n° 2017-1386.
+      // Le renvoi est mort ; substituer le CSE serait écrire ce qu'aucun texte
+      // de ce dépôt ne dit.
       "Arrêté 1993-11-04 art. 4",
-      "Arrêté 1993-11-04 art. 7",
+      // Art. 8 : les mesures dues aux travailleurs dont les capacités
+      // auditives ou visuelles sont limitées. Deux branches, deux blocages
+      // distincts : la première suppose une donnée de santé que `docs/rgpd.md`
+      // interdit de détenir, la seconde suppose de savoir quels postes portent
+      // des EPI — cinquième déclencheur de l'ADR-022, non implémenté.
       "Arrêté 1993-11-04 art. 8",
-      "Arrêté 1993-11-04 art. 9",
-      "Arrêté 1993-11-04 art. 10",
-      "Arrêté 1993-11-04 art. 11",
-      "Arrêté 1993-11-04 art. 12",
+      // Art. 13 : le marquage des voies de circulation. LE SEUL DES QUATRE QUE
+      // LEVERAIT UNE LECTURE, et non un modèle qui manque : l'obligation ne
+      // naît que « lorsqu'en application des articles R. 4214-11 ou R. 4224-3
+      // les voies de circulation doivent être clairement identifiées », et
+      // aucun de ces deux articles n'est dépouillé. Sa condition d'entrée
+      // serait devinée.
       "Arrêté 1993-11-04 art. 13",
-      "Arrêté 1993-11-04 art. 15",
+      // Annexe III : le dispositif lumineux utilisable en cas de danger grave,
+      // « spécialement surveillé ou muni d'une ampoule auxiliaire ». Le
+      // déclenchement suppose de qualifier un « danger grave », qualification
+      // qu'aucun attribut ne donne, et l'alternative laissée à l'exploitant se
+      // solderait de deux façons dont l'une n'est pas une preuve datable.
       "Arrêté 1993-11-04 annexe III",
       // ── Lot « disconnecteurs », 2026-09-02 : la protection du réseau d'eau
       // potable contre les retours d'eau. Bloc contigu et en fin de liste,

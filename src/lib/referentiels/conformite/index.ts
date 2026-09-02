@@ -32,6 +32,7 @@ import { obligationsOrganisationPrevention } from "./organisation-prevention";
 import { obligationsInformationTravailleurs } from "./information-travailleurs";
 import { obligationsLocauxSociaux } from "./locaux-sociaux";
 import { obligationsCoActivite } from "./co-activite";
+import { obligationsSignalisation } from "./signalisation";
 
 export {
   obligationsElectricite,
@@ -51,6 +52,7 @@ export {
   obligationsInformationTravailleurs,
   obligationsLocauxSociaux,
   obligationsCoActivite,
+  obligationsSignalisation,
 };
 export * from "./types";
 export * from "./veille-textes";
@@ -76,6 +78,13 @@ export const obligationsConformite: Obligation[] = [
   ...obligationsInformationTravailleurs,
   ...obligationsLocauxSociaux,
   ...obligationsCoActivite,
+  // Lot signalisation (2026-09-02) — l'arrêté du 4 novembre 1993, jamais
+  // ouvert avant lui. Neuf lignes, dont deux seulement portent un rythme : le
+  // semestre est réservé par le texte aux signaux LUMINEUX et ACOUSTIQUES, et
+  // l'annuel aux alimentations de secours. Sur les panneaux, les couleurs et
+  // les bandes, l'article 15 n'impose qu'un entretien « régulier », sans
+  // rythme — d'où sept états permanents en `periodicite: "autre"`.
+  ...obligationsSignalisation,
 ];
 
 /**
@@ -115,7 +124,7 @@ export const obligationsConformite: Obligation[] = [
  */
 // Version remesurée à l'intégration, comme l'empreinte : six lots l'ont portée
 // en deux jours, chacun juste chez lui et aucun après la fusion.
-export const REFERENTIEL_VERSION = "2026-09-02.5";
+export const REFERENTIEL_VERSION = "2026-09-02.6";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.

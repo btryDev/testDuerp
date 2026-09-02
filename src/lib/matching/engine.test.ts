@@ -1080,14 +1080,20 @@ describe("moteur matching — cartographie des catégories sans obligation", () 
         "DESENFUMAGE",
         "APPAREIL_CUISSON_ERP",
         "HOTTE_PRO",
-        // RIA : la seule obligation qui vise la catégorie est
-        // `incendie-erp-ria-annuelle`, fondée sur MS 73 — donc `erp: true`.
-        // Chez un employeur non-ERP, R. 4227-28 impose bien des moyens de
-        // lutte, mais aucun texte du référentiel ne pose de périodicité
-        // propre aux RIA hors ERP. Limite déclarée plutôt que périodicité
-        // inventée : un employeur non-ERP qui déclare un RIA n'obtient
-        // aucune échéance, et l'écran le dit.
-        "RIA",
+        // RIA A QUITTÉ CETTE LISTE LE 2026-09-02, et le trou qu'elle notait
+        // est comblé, pas contourné. La note disait : « la seule obligation
+        // qui vise la catégorie est `incendie-erp-ria-annuelle`, fondée sur
+        // MS 73 — donc `erp: true` [...] aucun texte du référentiel ne pose de
+        // périodicité propre aux RIA hors ERP ». C'est toujours vrai des
+        // PÉRIODICITÉS, et ce n'est plus vrai de la couverture : l'article 10
+        // de l'arrêté du 4 novembre 1993 impose d'identifier les équipements
+        // de lutte contre l'incendie par une coloration rouge et un panneau de
+        // localisation, sans condition de régime — `signalisation-incendie-
+        // moyens-lutte` la porte sur `EXTINCTEUR` et `RIA`, en `travail:
+        // true`. Un employeur non-ERP qui déclare un RIA obtient donc un état
+        // permanent à constituer, pas une échéance datée. La ligne sort de la
+        // liste parce que le test compte les obligations déclenchées par
+        // l'appareil, quelle que soit leur nature.
         // ALARME_INCENDIE, ajoutée le 2026-08-31 (lot « faux négatifs
         // d'ancrage »). Les trois obligations qui la citaient en DÉCLENCHEUR
         // chez un employeur non-ERP — consigne affichée, exercices

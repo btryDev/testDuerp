@@ -86,14 +86,28 @@
 //
 // ── CE QUE CE FICHIER NE COUVRE PAS ────────────────────────────────────────
 //
-// AUCUN ARTICLE N'EST « RETENU », et ce n'est pas un jugement sur le texte.
-// Le lot qui a écrit ce fichier dépouille et n'encode pas : `retenu` exige de
-// nommer au moins une obligation existante, et le câblage appartient à la
-// session délégante. Un article qui impose quelque chose porte donc
-// `obligation_manquante`, un article qui n'impose rien d'autonome porte
-// `sans_objet`. Deux entrées `sans_objet` — l'article 5 et l'article 14 — sont
-// des candidats à requalification en `retenu` le jour où le câblage tranche ;
-// leur motif le dit.
+// AUCUN ARTICLE N'ÉTAIT « RETENU » LE JOUR OÙ CE FICHIER A ÉTÉ ÉCRIT, et ce
+// n'était pas un jugement sur le texte. Le lot qui l'a écrit dépouillait et
+// n'encodait pas : `retenu` exige de nommer au moins une obligation existante,
+// et le câblage appartenait à la session délégante. Un article qui impose
+// quelque chose portait donc `obligation_manquante`, un article qui n'impose
+// rien d'autonome porte `sans_objet`. Deux entrées `sans_objet` — l'article 5
+// et l'article 14 — restent des candidats à requalification en `retenu` le
+// jour où le câblage tranche ; leur motif le dit.
+//
+// LE CÂBLAGE A EU LIEU LE MÊME JOUR, ET SEPT ARTICLES SONT PASSÉS `retenu` :
+// les articles 2, 7, 9, 10, 11, 12 et 15, qui fondent les neuf obligations du
+// domaine `signalisation` (`conformite/signalisation.ts`) — l'article 15 en
+// porte trois, une par rythme. Chacun de ces sept porte une `reserve` disant
+// ce qu'il impose encore et que le référentiel ne porte pas : une dispense
+// non évaluable, une branche sans catégorie d'équipement, une assiette
+// approximée par le porteur. QUATRE ARTICLES RESTENT `obligation_manquante`,
+// et pas pour la même raison : l'article 4 (instance abrogée), l'article 8
+// (donnée de santé refusée, et postes portant des EPI non modélisés),
+// l'article 13 (condition d'entrée logée dans R. 4214-11 et R. 4224-3, non
+// dépouillés) et l'annexe III (« danger grave » non qualifiable). Le premier,
+// le deuxième et le quatrième attendent un modèle ; le troisième n'attend
+// qu'une lecture.
 //
 // L'ÉCLAIRAGE DE SÉCURITÉ SE RECOUPE AVEC CE TEXTE, ET IL FAUT LE SAVOIR AVANT
 // D'ENCODER. `arrete-2011-12-14-eclairage.ts` porte déjà, par son article 11,
@@ -178,9 +192,10 @@ export const ARRETE_1993_11_04_SIGNALISATION: Corpus = {
         "Impose la mise en œuvre d'une signalisation de sécurité chaque fois qu'un risque ne peut être ni évité ni prévenu par une protection collective ou par l'organisation du travail — sans préjudice des signalisations dues par ailleurs (évacuation, secours, lutte contre l'incendie, substances dangereuses). Le choix se fait selon les points 3 et 4 de l'annexe I.",
       citationCle:
         "Sans préjudice de l'obligation de signalisation pour ce qui concerne notamment l'évacuation, le sauvetage et les secours, le matériel et l'équipement de lutte contre l'incendie, les substances ou mélanges dangereux ainsi que certains équipements et matériels spécifiques, la mise en oeuvre d'une signalisation de sécurité s'impose toutes les fois que sur un lieu de travail un risque ne peut pas être évité ou prévenu par l'existence d'une protection collective ou par l'organisation du travail. Le choix de cette signalisation est déterminé en fonction des principes énoncés aux points 3 et 4 de l'annexe I.",
-      statut: "obligation_manquante",
-      motif:
-        "C'est l'obligation générale de signaliser, et le référentiel n'en porte aucune trace : aucune des 121 obligations livrées ne vise la signalisation de sécurité, sous aucun de ses porteurs. La ligne est un état permanent au sens de l'ADR-026 — elle se constitue puis se maintient, elle ne produit pas de rendez-vous — et elle se rattache au risque résiduel constaté au DUERP, donc à un déclencheur « statut d'employeur » que le produit implémente déjà. Rien ne la bloque techniquement ; elle manque parce que le texte n'avait jamais été ouvert.",
+      statut: "retenu",
+      obligations: ["signalisation-etablissement-risques-residuels"],
+      reserve:
+        "L'obligation générale de signaliser est encodée. Ce que l'article porte en plus ne l'est pas, et c'est un renvoi : « Le choix de cette signalisation est déterminé en fonction des principes énoncés aux points 3 et 4 de l'annexe I. » Ces principes — interchangeabilité, complémentarité, conditions d'efficacité — guident un choix au cas par cas que le produit ne peut ni vérifier ni échéancer ; l'annexe I reste `sans_objet` pour cette raison. L'obligation encodée dit au dirigeant qu'il doit signaler ; elle ne lui dit pas quel panneau poser.",
     },
     {
       ref: "Arrêté 1993-11-04 art. 3",
@@ -262,11 +277,13 @@ export const ARRETE_1993_11_04_SIGNALISATION: Corpus = {
         "Toute signalisation ayant besoin d'une source d'énergie pour fonctionner doit être assurée d'une alimentation de secours en cas de rupture de cette énergie, sauf si le risque disparaît avec la coupure.",
       citationCle:
         "Les signalisations qui ont besoin d'une source d'énergie pour fonctionner doivent être assurées d'une alimentation de secours en cas de rupture de cette énergie, sauf si le risque disparaît avec la coupure d'énergie.",
-      statut: "obligation_manquante",
-      motif:
-        "C'est l'article qui fait EXISTER les alimentations de secours dont l'article 15 impose la vérification annuelle, et le référentiel n'en porte rien. Obligation d'état permanent : équiper d'une alimentation de secours toute signalisation alimentée en énergie — alarme sonore, signal lumineux de danger, panneau transparent lumineux. La réserve finale (« sauf si le risque disparaît avec la coupure d'énergie ») est une exception réelle, et elle a failli disparaître du relevé : la page consolidée du texte la tronque, elle n'a été retrouvée qu'en rouvrant l'article seul. L'encoder suppose de savoir quelles signalisations de l'établissement sont alimentées, ce que le parc d'équipements ne dit pas aujourd'hui.",
-      bloquePar:
-        "Aucune propriété d'équipement ne dit qu'une signalisation est alimentée en énergie, ni si le risque qu'elle signale disparaît avec la coupure ; la condition de l'exception n'est donc pas évaluable.",
+      statut: "retenu",
+      obligations: [
+        "signalisation-etablissement-alimentation-secours-presence",
+        "signalisation-etablissement-alimentations-secours-annuelle",
+      ],
+      reserve:
+        "L'EXCEPTION FINALE N'EST PAS ENCODÉE, ET LA LIGNE SUR-APPLIQUE DONC. « Sauf si le risque disparaît avec la coupure d'énergie » suppose de savoir, de chaque signalisation alimentée, si le risque qu'elle signale s'éteint avec le courant : aucune propriété d'équipement ne le dit. Le blocage relevé au dépouillement était réel ; ce qui l'a levé n'est pas un attribut nouveau mais la règle du non-renseigné, qui commande qu'un allègement de régime ne s'applique pas tant que sa condition n'est pas déclarée. L'obligation est donc posée entière, avec un porteur établissement — le parc ne déclarant pas les dispositifs de signalisation comme tels, `BAES` et `ALARME_INCENDIE` ne figurent qu'en contexte, et la liste n'est pas limitative.",
     },
     {
       ref: "Arrêté 1993-11-04 art. 8",
@@ -299,9 +316,10 @@ export const ARRETE_1993_11_04_SIGNALISATION: Corpus = {
         "Une signalisation doit baliser les cheminements d'évacuation vers la sortie la plus proche, par panneaux conformes à l'annexe II points 1 et 5 ; ces panneaux peuvent être opaques ou transparents lumineux et regroupés avec l'éclairage de sécurité. Les dégagements réglementaires non utilisés habituellement portent en outre un panneau additionnel « Sortie de secours ».",
       citationCle:
         "Une signalisation doit baliser les cheminements empruntés par le personnel pour l'évacuation vers la sortie la plus rapprochée. Cette signalisation est assurée par des panneaux conformes aux dispositions de l'annexe II, points 1 et 5. Ces panneaux peuvent être opaques ou transparents lumineux et regroupés avec l'éclairage de sécurité. Les dégagements faisant partie des dégagements réglementaires et qui ne servent pas habituellement de passage pendant la période de travail doivent être signalés par des panneaux comportant un panneau additionnel portant la mention Sortie de secours.",
-      statut: "obligation_manquante",
-      motif:
-        "Le balisage des cheminements d'évacuation est un état permanent que le référentiel ne porte pas : le domaine incendie couvre la consigne affichée, les exercices, l'éclairage de sécurité et les moyens de lutte, jamais les panneaux d'évacuation. C'EST AUSSI L'ARTICLE QUI ÉTABLIT LE RECOUVREMENT AVEC L'ÉCLAIRAGE DE SÉCURITÉ, en toutes lettres : « Ces panneaux peuvent être opaques ou transparents lumineux et regroupés avec l'éclairage de sécurité. » Un BAES d'évacuation à pictogramme est donc simultanément un bloc régi par l'arrêté du 14 décembre 2011 et un signal lumineux au sens de l'annexe I — le même matériel, deux textes, et un risque de doubler l'échéance semestrielle si l'article 15 est encodé sans condition.",
+      statut: "retenu",
+      obligations: ["signalisation-etablissement-cheminements-evacuation"],
+      reserve:
+        "L'article est encodé en une seule ligne, qui porte le balisage des cheminements ET le panneau additionnel « Sortie de secours » des dégagements réglementaires non utilisés habituellement : même phrase, même geste, même parcours — c'est le précédent de `PE 35` (trois plans en une ligne) et non celui de `PE 4`. La conformité des panneaux aux points 1 et 5 de l'annexe II n'est pas encodée à part : c'est une caractéristique du panneau, pas un acte distinct, et l'annexe II reste `sans_objet`.",
     },
     {
       ref: "Arrêté 1993-11-04 art. 10",
@@ -316,9 +334,10 @@ export const ARRETE_1993_11_04_SIGNALISATION: Corpus = {
         "Les équipements de lutte contre l'incendie doivent être identifiés par une coloration rouge des équipements et par un panneau de localisation ou une coloration de leurs emplacements ou accès ; les panneaux de l'annexe II point 6 s'utilisent selon les emplacements, et ne sont pas obligatoires lorsque les équipements sont directement visibles.",
       citationCle:
         "Les équipements de lutte contre l'incendie doivent être identifiés par une coloration des équipements et par un panneau de localisation ou une coloration des emplacements ou des accès aux emplacements dans lesquels ils se trouvent. La couleur d'identification de ces équipements est rouge. La surface rouge doit être suffisante pour permettre une identification facile. Les panneaux prévus à l'annexe II, point 6, doivent être utilisés en fonction des emplacements de ces équipements. Lorsque ces équipements sont directement visibles, les panneaux ne sont pas obligatoires.",
-      statut: "obligation_manquante",
-      motif:
-        "État permanent non porté, et le plus directement vérifiable de tout le texte pour les trois secteurs cibles : tout établissement qui déclare un extincteur est concerné, et `incendie-travail-moyens-lutte` porte l'existence des moyens sans jamais porter leur signalisation. La dernière phrase est une dispense conditionnelle — « Lorsque ces équipements sont directement visibles, les panneaux ne sont pas obligatoires » — dont la condition est un constat de terrain que le produit ne détient pas ; encoder l'obligation sans elle sur-appliquerait le texte, ce qui reste le sens d'erreur visible par celui qui le subit.",
+      statut: "retenu",
+      obligations: ["signalisation-incendie-moyens-lutte"],
+      reserve:
+        "LA DISPENSE DE LA DERNIÈRE PHRASE N'EST PAS ENCODÉE : « Lorsque ces équipements sont directement visibles, les panneaux ne sont pas obligatoires. » La visibilité directe est un constat de terrain qu'aucune propriété d'équipement ne porte, et en inventer une aurait été l'attribut de modèle que ce lot s'interdit. La sur-application est bornée — la dispense ne vise que les PANNEAUX, la coloration rouge et l'identification de l'emplacement restant dues dans tous les cas — et elle est écrite dans la `description` de l'obligation, donc visible par celui qui la subit. SECONDE RÉSERVE, D'ANCRAGE : l'obligation est portée par les catégories `EXTINCTEUR` et `RIA`, les seules du parc qui soient des équipements de lutte contre l'incendie. Une colonne sèche ou un système d'extinction automatique relèvent du même article et n'ont pas de catégorie : la ligne les sous-applique.",
     },
     {
       ref: "Arrêté 1993-11-04 art. 11",
@@ -333,9 +352,10 @@ export const ARRETE_1993_11_04_SIGNALISATION: Corpus = {
         "Depuis le 1er juin 2017, les tuyauteries apparentes contenant ou transportant des substances ou mélanges dangereux portent le pictogramme du règlement (CE) n° 1272/2008, placé sur au moins un côté visible près des points les plus dangereux et de manière répétitive. Le transport interne de ces substances est signalé de même. Les aires, salles ou enceintes de stockage en quantités importantes portent un panneau d'avertissement approprié, ou sont identifiées comme les tuyauteries, à moins que l'étiquetage des emballages n'y suffise.",
       citationCle:
         "Les tuyauteries apparentes contenant ou transportant des substances ou mélanges dangereux sont munis du pictogramme ou symbole sur couleur de fond défini par le règlement (CE) n° 1272/2008. […] Les aires, salles ou enceintes utilisées pour stocker des substances ou mélanges dangereux en quantités importantes doivent être signalisées par un panneau d'avertissement approprié choisi parmi ceux énumérés à l'annexe II, point 3, ou être identifiées conformément au premier alinéa du présent article, à moins que l'étiquetage des différents emballages ou récipients suffise à cet effet.",
-      statut: "obligation_manquante",
-      motif:
-        "Détaille l'obligation de R. 4224-21 du code du travail (signalisation des tuyauteries dangereuses), article qui n'est lui-même dans aucun corpus. Le domaine `stockage-dangereux` du référentiel porte six obligations — déclaration ICPE, rétention, étanchéité, ventilation, fiches de données de sécurité, formation du personnel — et AUCUNE ne porte la signalisation du stockage ni le marquage des tuyauteries. Le régime transitoire du texte est épuisé : la date butoir du 31 mai 2017 est passée, seul le régime CLP s'applique désormais.",
+      statut: "retenu",
+      obligations: ["signalisation-stockage-substances-dangereuses"],
+      reserve:
+        "DEUX DES TROIS BRANCHES DE L'ARTICLE NE SE DÉCLENCHENT PAS. L'obligation encodée est ancrée sur la catégorie `STOCKAGE_MATIERE_DANGEREUSE`, seul point d'accroche disponible : c'est la branche des « aires, salles ou enceintes utilisées pour stocker », celle qui touche réellement la cible produit. Les TUYAUTERIES APPARENTES et le TRANSPORT INTERNE de substances dangereuses n'ont aucune catégorie d'équipement et ne sont attachés à aucun stockage déclaré — un établissement qui a des tuyauteries à marquer sans stockage déclaré ne verra pas la ligne. Même arbitrage que `stockage-dangereux-formation-personnel` : la catégorie est un proxy imparfait du vrai déclencheur (la présence d'agents chimiques dangereux, cinquième déclencheur de l'ADR-022, non implémenté), et il sous-applique au lieu de sur-appliquer. DEUX CONDITIONS DU TEXTE NE SONT PAS ÉVALUÉES NON PLUS, dans l'autre sens celles-là : « en quantités importantes », que le texte ne chiffre pas, et « à moins que l'étiquetage des différents emballages ou récipients suffise ». Les deux sont écrites dans la `description`. ENFIN, R. 4224-21 DU CODE DU TRAVAIL, que cet article détaille, n'est dans aucun corpus : la section 5 du chapitre IV n'a jamais été dépouillée, et l'obligation ne le cite donc pas.",
     },
     {
       ref: "Arrêté 1993-11-04 art. 12",
@@ -349,9 +369,10 @@ export const ARRETE_1993_11_04_SIGNALISATION: Corpus = {
         "Dans les zones bâties auxquelles le travailleur a accès, les obstacles pouvant provoquer des chocs ou des chutes de personnes et les endroits dangereux (notamment de chute d'objets) doivent être signalés par des bandes jaune et noir ou rouge et blanc, dimensionnées à la taille de l'obstacle et conformes au point 3 (b) de l'annexe II.",
       citationCle:
         "A l'intérieur des zones bâties de l'entreprise auxquelles le travailleur a accès dans le cadre de son travail, les obstacles susceptibles de provoquer des chocs ou des chutes de personnes et les endroits dangereux, où notamment peuvent avoir lieu des chutes d'objets, doivent être signalés par des bandes jaune et noir ou rouge et blanc. Les dimensions de cette signalisation doivent tenir compte des dimensions de l'obstacle ou endroit dangereux signalé. Les bandes jaune et noir ou rouge et blanc doivent être conformes au point 3 (b) de l'annexe II.",
-      statut: "obligation_manquante",
-      motif:
-        "Détaille la signalisation des zones de danger que R. 4224-20 du code du travail impose, article absent de tout corpus. État permanent non porté par le référentiel. Le déclencheur est le constat d'un obstacle ou d'un endroit dangereux, donc un résultat de l'évaluation des risques du DUERP : c'est encodable comme obligation d'établissement, sans attendre le cinquième déclencheur, mais la ligne n'existe pas.",
+      statut: "retenu",
+      obligations: ["signalisation-etablissement-obstacles-zones-dangereuses"],
+      reserve:
+        "L'ARTICLE EST ENCODÉ EN ENTIER, MAIS PAS CE QU'IL DÉTAILLE. Cet article donne la forme — bandes jaune et noir ou rouge et blanc — de la signalisation des zones de danger que R. 4224-20 du code du travail impose. Or R. 4224-20 impose DEUX choses : signaler « de manière visible », et MATÉRIALISER la zone « par des dispositifs destinés à éviter que les travailleurs non autorisés pénètrent dans ces zones ». L'arrêté ne porte que la première ; la matérialisation n'est portée par aucune obligation du référentiel, et son article n'est dans aucun corpus — la section 5 du chapitre IV n'a jamais été dépouillée.",
     },
     {
       ref: "Arrêté 1993-11-04 art. 13",
@@ -406,11 +427,77 @@ export const ARRETE_1993_11_04_SIGNALISATION: Corpus = {
         "Trois prescriptions dans un seul article. (1) Les moyens et dispositifs de signalisation sont régulièrement nettoyés, entretenus, vérifiés, réparés et remplacés si nécessaire — sans aucun rythme chiffré. (2) Les signaux lumineux ET acoustiques font l'objet d'une vérification de leur bon fonctionnement et de leur réelle efficacité avant mise en service, puis au moins chaque semestre. (3) La vérification des alimentations de secours est pratiquée au moins une fois par an.",
       citationCle:
         "Les moyens et dispositifs de signalisation doivent, selon le cas, être régulièrement nettoyés, entretenus, vérifiés et réparés, remplacés si nécessaire, de manière à conserver leurs qualités intrinsèques ou de fonctionnement, et notamment les signaux lumineux et les signaux acoustiques doivent faire l'objet d'une vérification de leur bon fonctionnement et de leur réelle efficacité, avant leur mise en service et, ultérieurement, au moins chaque semestre. La vérification des alimentations de secours doit être pratiquée au moins une fois par an.",
-      statut: "obligation_manquante",
-      motif:
-        "L'ARTICLE QUI PORTE LES DEUX SEULES PÉRIODICITÉS DU TEXTE, et le référentiel n'en porte ni l'une ni l'autre. Deux échéances récurrentes distinctes, plus un état permanent d'entretien.\n\nCE QUE LE VERBATIM CORRIGE DANS LE POINT DE DÉPART. Un guide professionnel annonçait « moyens et dispositifs de signalisation : tous les 6 mois ». Le texte réserve le semestre aux SIGNAUX LUMINEUX ET ACOUSTIQUES, introduits par un « et notamment » qui restreint : les panneaux, les couleurs et les bandes jaune et noir, qui forment l'essentiel de la signalisation d'un commerce ou d'un bureau, ne relèvent que du « régulièrement nettoyés, entretenus, vérifiés et réparés » du début de phrase, lequel ne chiffre rien. Encoder un semestriel sur toute la signalisation créerait un rendez-vous que le texte ne demande pas. Les deux chiffres du guide, eux, sont exacts, et la lecture à la source les confirme : six mois et un an.\n\nDEUX PLANCHERS, PAS DEUX RENDEZ-VOUS. « Au moins chaque semestre » et « au moins une fois par an » sont des fréquences minimales, comme le « au moins tous les six mois » de R. 4227-39 déjà encodé.\n\nCE QUE LE CHAMP AJOUTE, ET C'EST LE POINT LE PLUS UTILE DU DÉPOUILLEMENT. L'article ne porte AUCUNE condition d'effectif ni de typologie. `incendie-travail-exercice-semestriel` couvre déjà les « essais et visites périodiques du matériel » de R. 4227-39 — mais dans le seul champ de R. 4227-34 : plus de cinquante personnes réunies, ou matières inflammables. Un bureau de six personnes équipé d'une alarme sonore est dans le champ de cet article-ci et hors de celui de R. 4227-39. Quant à la vérification annuelle des alimentations de secours, elle n'a aucun équivalent nulle part dans le référentiel, sous aucun régime.\n\nLE RECOUVREMENT À TRAITER AVANT D'ENCODER. Un BAES d'évacuation à pictogramme est un signal lumineux au sens de l'annexe I, et l'article 9 prévoit expressément que ces panneaux soient « regroupés avec l'éclairage de sécurité ». Une échéance semestrielle écrite sans condition sur les signaux lumineux tomberait donc sur le même parc que `incendie-travail-eclairage-securite-autonomie-semestrielle`, déjà semestrielle et fondée sur l'article 11 de l'arrêté du 14 décembre 2011. Le partage n'est pas arbitraire : c'est l'AUTONOMIE que l'arrêté de 2011 fait contrôler, et le BON FONCTIONNEMENT ET LA RÉELLE EFFICACITÉ que celui-ci fait vérifier. Deux objets différents sur un même matériel, à la même cadence.",
-      bloquePar:
-        "Aucune catégorie d'équipement ne désigne un signal lumineux, un signal acoustique ni une alimentation de secours de signalisation : le parc déclare des BAES et des alarmes incendie, pas les dispositifs de signalisation comme tels. Un porteur établissement produirait une ligne unique conforme à l'ADR-022, mais il faudrait alors trancher le recouvrement avec l'échéance semestrielle de l'éclairage de sécurité avant d'écrire la ligne, sous peine de doubler un rendez-vous existant sur le même matériel.",
+      statut: "retenu",
+      obligations: [
+        "signalisation-etablissement-entretien",
+        "signalisation-etablissement-signaux-lumineux-acoustiques-semestrielle",
+        "signalisation-etablissement-alimentations-secours-annuelle",
+      ],
+      reserve:
+        "TROIS PRESCRIPTIONS, TROIS OBLIGATIONS, ET LE PARTAGE EST CELUI DU TEXTE. L'entretien « régulier » de la première proposition porte `periodicite: \"autre\"` — le texte ne chiffre rien pour les panneaux, les couleurs et les bandes ; le semestre est réservé aux signaux LUMINEUX et ACOUSTIQUES par le « et notamment » qui les introduit ; l'annuel porte sur les alimentations de secours, sans restriction d'assiette. Trois rythmes ne se fondent pas en une ligne (ADR-022), et le modèle ne porte qu'une périodicité par obligation.\n\nCE QUI RESTE EN RÉSERVE, ET IL Y A TROIS CHOSES. (1) L'ASSIETTE EST APPROXIMÉE PAR LE PORTEUR. Le texte vise chaque signal ; les trois lignes sont portées par l'établissement et en produisent une seule chacune, parce qu'aucune catégorie d'équipement ne désigne un signal lumineux, un signal acoustique ni une alimentation de secours de signalisation. Un employeur sans aucun signal de ce genre reçoit donc les trois lignes — sur-application assumée, visible par celui qui la subit, et préférée au faux négatif muet qu'un ancrage sur `BAES` et `ALARME_INCENDIE` aurait créé pour tous les autres dispositifs. (2) LA VÉRIFICATION AVANT MISE EN SERVICE n'a pas de ligne propre : la règle de résolution de l'ADR-026 place l'échéance récurrente avant l'obligation ponctuelle quand un même membre de phrase porte les deux, et la `description` de la semestrielle la nomme. (3) LE RECOUVREMENT AVEC L'ÉCLAIRAGE DE SÉCURITÉ EST TRANCHÉ, PAS SUPPRIMÉ : un BAES à pictogramme relève de la semestrielle de cet article (bon fonctionnement et réelle efficacité, porteur établissement) ET de celle de l'arrêté du 14 décembre 2011 (autonomie d'une heure, porteur équipement). Deux objets, deux textes, la même cadence, sur un même matériel.",
+      // CE QUE LE DÉPOUILLEMENT AVAIT CONCLU, GARDÉ TEL QUEL. Les deux
+      // paragraphes qui suivent étaient le `motif` de l'entrée quand elle
+      // portait `obligation_manquante`, et son `bloquePar`. Ils sont conservés
+      // en commentaire plutôt que perdus au passage en `retenu` : le premier
+      // porte la lecture qui a corrigé le guide professionnel, le second dit
+      // ce qui bloquait l'encodage et que ce lot a levé — non par un attribut
+      // nouveau, mais en choisissant le porteur établissement et en tranchant
+      // le recouvrement avec l'éclairage de sécurité.
+      // ── LE MOTIF
+      //
+      // L'ARTICLE QUI PORTE LES DEUX SEULES PÉRIODICITÉS DU TEXTE, et le
+      // référentiel n'en porte ni l'une ni l'autre. Deux échéances
+      // récurrentes distinctes, plus un état permanent d'entretien.
+      //
+      // CE QUE LE VERBATIM CORRIGE DANS LE POINT DE DÉPART. Un guide
+      // professionnel annonçait « moyens et dispositifs de signalisation :
+      // tous les 6 mois ». Le texte réserve le semestre aux SIGNAUX LUMINEUX
+      // ET ACOUSTIQUES, introduits par un « et notamment » qui restreint :
+      // les panneaux, les couleurs et les bandes jaune et noir, qui forment
+      // l'essentiel de la signalisation d'un commerce ou d'un bureau, ne
+      // relèvent que du « régulièrement nettoyés, entretenus, vérifiés et
+      // réparés » du début de phrase, lequel ne chiffre rien. Encoder un
+      // semestriel sur toute la signalisation créerait un rendez-vous que le
+      // texte ne demande pas. Les deux chiffres du guide, eux, sont exacts,
+      // et la lecture à la source les confirme : six mois et un an.
+      //
+      // DEUX PLANCHERS, PAS DEUX RENDEZ-VOUS. « Au moins chaque semestre »
+      // et « au moins une fois par an » sont des fréquences minimales, comme
+      // le « au moins tous les six mois » de R. 4227-39 déjà encodé.
+      //
+      // CE QUE LE CHAMP AJOUTE, ET C'EST LE POINT LE PLUS UTILE DU
+      // DÉPOUILLEMENT. L'article ne porte AUCUNE condition d'effectif ni de
+      // typologie. `incendie-travail-exercice-semestriel` couvre déjà les «
+      // essais et visites périodiques du matériel » de R. 4227-39 — mais
+      // dans le seul champ de R. 4227-34 : plus de cinquante personnes
+      // réunies, ou matières inflammables. Un bureau de six personnes équipé
+      // d'une alarme sonore est dans le champ de cet article-ci et hors de
+      // celui de R. 4227-39. Quant à la vérification annuelle des
+      // alimentations de secours, elle n'a aucun équivalent nulle part dans
+      // le référentiel, sous aucun régime.
+      //
+      // LE RECOUVREMENT À TRAITER AVANT D'ENCODER. Un BAES d'évacuation à
+      // pictogramme est un signal lumineux au sens de l'annexe I, et
+      // l'article 9 prévoit expressément que ces panneaux soient « regroupés
+      // avec l'éclairage de sécurité ». Une échéance semestrielle écrite
+      // sans condition sur les signaux lumineux tomberait donc sur le même
+      // parc que l'obligation
+      // `incendie-travail-eclairage-securite-autonomie-semestrielle`, déjà
+      // semestrielle et fondée sur l'article 11 de l'arrêté du
+      // 14 décembre 2011. Le partage n'est pas arbitraire :
+      // c'est l'AUTONOMIE que l'arrêté de 2011 fait contrôler, et le BON
+      // FONCTIONNEMENT ET LA RÉELLE EFFICACITÉ que celui-ci fait vérifier.
+      // Deux objets différents sur un même matériel, à la même cadence.
+      // ── CE QUI BLOQUAIT
+      //
+      // Aucune catégorie d'équipement ne désigne un signal lumineux, un
+      // signal acoustique ni une alimentation de secours de signalisation :
+      // le parc déclare des BAES et des alarmes incendie, pas les
+      // dispositifs de signalisation comme tels. Un porteur établissement
+      // produirait une ligne unique conforme à l'ADR-022, mais il faudrait
+      // alors trancher le recouvrement avec l'échéance semestrielle de
+      // l'éclairage de sécurité avant d'écrire la ligne, sous peine de
+      // doubler un rendez-vous existant sur le même matériel.
     },
     {
       ref: "Arrêté 1993-11-04 art. 16",

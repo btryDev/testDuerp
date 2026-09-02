@@ -140,6 +140,35 @@ export const DOMAINES_OBLIGATION = [
    * de chargement : les deux ne se recouvrent pas, ils s'excluent.
    */
   "co_activite",
+
+  /**
+   * Signalisation de sécurité — arrêté du 4 novembre 1993, pris pour
+   * l'application de `R. 4224-24`.
+   *
+   * Les panneaux, les couleurs, les bandes jaune et noir, les signaux lumineux
+   * et acoustiques, et ce que le texte impose d'en faire : les poser, les
+   * entretenir, et vérifier ceux qui se déclenchent.
+   *
+   * ENTRÉ LE 2026-09-02, ET IL COMBLE UN DOMAINE ENTIER : le référentiel ne
+   * portait aucune obligation de signalisation, sous aucun de ses trois
+   * porteurs, parce que le texte qui gouverne la matière n'avait jamais été
+   * ouvert.
+   *
+   * POURQUOI PAS `incendie` NI `stockage_dangereux`, où deux de ses lignes
+   * auraient pu se ranger. Parce que le domaine sert à grouper ce qu'un
+   * dirigeant traite d'un seul geste, et qu'ici le geste est le même pour les
+   * neuf : faire le tour de ses murs. Ranger le balisage d'évacuation sous
+   * `incendie` et le pictogramme CLP sous `stockage_dangereux` aurait éclaté
+   * cette tournée en deux écrans, et laissé les bandes jaune et noir des
+   * obstacles sans domaine du tout.
+   *
+   * Comme les quatre domaines du lot 8, il n'appelle aucun tiers : l'arrêté ne
+   * réserve ni la pose ni la vérification de la signalisation à un organisme,
+   * à une personne compétente ni à une qualification quelconque. Il porte donc
+   * `aucun_tiers_attendu` dans `DOMAINES_PRESTATAIRE_ATTENDUS`, et c'est une
+   * lecture du texte, pas un mot vide.
+   */
+  "signalisation",
 ] as const;
 
 export type DomaineObligation = (typeof DOMAINES_OBLIGATION)[number];

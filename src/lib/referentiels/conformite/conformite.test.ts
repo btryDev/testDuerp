@@ -927,9 +927,26 @@ describe("référentiel conformité — éclairage de sécurité en lieu de trav
   ];
 
   it("la catégorie BAES est couverte hors régime ERP", () => {
+    // LE FILTRE PORTE SUR CE QUI DÉCLENCHE, PAS SUR CE QUI EST CITÉ, et la
+    // distinction a été posée le 2026-09-02 parce que la liste ci-dessus
+    // rougissait sans qu'aucune régression n'ait eu lieu. `categoriesCitees()`
+    // rend `equipementsEnContexte` pour un porteur établissement, or ce champ
+    // n'est pas un déclencheur : il dit au dirigeant quels appareils sont
+    // concernés par une ligne qui existe de toute façon. Quatre obligations du
+    // domaine `signalisation` nomment `BAES` à ce titre — un bloc à
+    // pictogramme est un signal lumineux au sens de l'annexe I de l'arrêté du
+    // 4 novembre 1993 —, et les compter ici aurait fait dire au test qu'elles
+    // couvrent la catégorie alors qu'elles ne s'y accrochent pas.
+    //
+    // Ce que le test garde est ce qu'il a toujours voulu garder : un employeur
+    // non-ERP qui DÉCLARE un BAES reçoit une échéance de son appareil. Écrit
+    // ainsi, il ne se répare plus en recopiant la sortie à chaque obligation
+    // qui mentionne un bloc en contexte.
     const horsErp = obligationsConformite.filter(
       (o) =>
-        categoriesCitees(o).includes("BAES") && o.typologies.travail === true,
+        estPorteeParEquipement(o) &&
+        o.categoriesEquipement.includes("BAES") &&
+        o.typologies.travail === true,
     );
     expect(horsErp.map((o) => o.id).sort()).toEqual([...IDS_TRAVAIL].sort());
   });
@@ -1216,7 +1233,21 @@ describe("référentiel conformité — version et empreinte", () => {
   // vert — alors qu'il déplace la date de première occurrence d'un équipement
   // neuf. Tout champ qui influence une échéance entre au hachage, et la preuve
   // se fait en changeant sa valeur : si l'empreinte ne bouge pas, il y manque.
-  const EMPREINTE_ATTENDUE = "135-929353f0bb5536f0";
+  //
+  // 2026-09-02 : 135 → 144. Le lot « signalisation » ouvre l'arrêté du
+  // 4 novembre 1993, que ce dépôt n'avait jamais lu, et en tire neuf
+  // obligations sur un domaine neuf. Sept articles sur les onze déclarés
+  // manquants au dépouillement sortent de la liste de `corpus.test.ts` ;
+  // quatre y restent, chacun avec sa raison. Deux des neuf lignes seulement
+  // portent un rythme — la semestrielle des signaux lumineux et acoustiques et
+  // l'annuelle des alimentations de secours —, les sept autres sont des états
+  // permanents en `periodicite: "autre"`, parce que l'article 15 n'impose sur
+  // les panneaux, les couleurs et les bandes qu'un entretien « régulier ».
+  // C'est le point où le lot pouvait se tromper : le guide professionnel qui
+  // l'a déclenché annonçait le semestre pour « les moyens et dispositifs de
+  // signalisation », alors que le « et notamment » du texte le réserve à ce
+  // qui se déclenche.
+  const EMPREINTE_ATTENDUE = "144-a0ec600a24335516";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1334,7 +1365,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(135);
+    ).toBe(144);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {

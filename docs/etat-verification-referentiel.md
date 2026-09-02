@@ -5,7 +5,7 @@
      du script. Pour le mettre à jour : pnpm verification --ecrire -->
 
 **Généré le** : 2026-09-02
-**Référentiel** : `2026-09-02.5`
+**Référentiel** : `2026-09-02.6`
 **Régénérer** : `pnpm verification --ecrire`
 
 Ce document répond à une question, et à une seule : **de quoi le
@@ -83,18 +83,18 @@ repose sur un texte que personne n'a ouvert.
 
 ## 2. Où en est-on
 
-**135 obligations**, **263 références** — 81 obligations en citent plus d'une.
+**144 obligations**, **273 références** — 82 obligations en citent plus d'une.
 
 | degré | obligations (au plancher) | part | dont fondements | références | part |
 | --- | --- | --- | --- | --- | --- |
-| 5 · lu à la source, verbatim relevé | 54 | 40 % | 61 | 129 | 49 % |
-| 4 · lu à la source par un agent, verbatim rapporté | 71 | 53 % | 68 | 123 | 47 % |
+| 5 · lu à la source, verbatim relevé | 54 | 38 % | 61 | 129 | 47 % |
+| 4 · lu à la source par un agent, verbatim rapporté | 80 | 56 % | 77 | 133 | 49 % |
 | 3 · lu et daté, aucun verbatim | 10 | 7 % | 6 | 11 | 4 % |
 | 2 · lu ailleurs qu'à la source | 0 | 0 % | 0 | 0 | 0 % |
 | 1 · au corpus, aucune trace de lecture | 0 | 0 % | 0 | 0 | 0 % |
 | 0 · rien à ouvrir | 0 | 0 % | 0 | 0 | 0 % |
 
-**125 obligations sur 135 (93 %)** reposent, jusqu'à leur dernière référence de contexte, sur des textes lus à la source avec verbatim relevé.
+**134 obligations sur 144 (93 %)** reposent, jusqu'à leur dernière référence de contexte, sur des textes lus à la source avec verbatim relevé.
 
 **10 obligations (7 %)** citent au moins un texte ouvert et daté dont rien n'a été relevé. Ce n'est pas une lecture à refaire : c'est une lecture qu'on ne peut ni contrôler ni contredire sans rouvrir Légifrance.
 
@@ -108,11 +108,11 @@ repose sur un texte que personne n'a ouvert.
 
 | ancrage | références | part |
 | --- | --- | --- |
-| ancrée | 243 | 92 % |
+| ancrée | 253 | 93 % |
 | divergente | 0 | 0 % |
-| jamais constatée | 20 | 8 % |
+| jamais constatée | 20 | 7 % |
 
-**11 obligations sur 135 (8 %) ne portent aucune version constatée, sur aucune de leurs références.** Le jour où l'un de leurs textes est modifié, rien dans le dépôt ne pourra le signaler : l'absence de repère se lit comme « à vérifier », jamais comme « à jour ».
+**11 obligations sur 144 (8 %) ne portent aucune version constatée, sur aucune de leurs références.** Le jour où l'un de leurs textes est modifié, rien dans le dépôt ne pourra le signaler : l'absence de repère se lit comme « à vérifier », jamais comme « à jour ».
 
 **Aucune divergence** entre la version qu'une obligation déclare avoir constatée et celle que le corpus déclare avoir lue. Les deux moitiés du dépôt disent la même chose partout où elles parlent toutes les deux.
 
@@ -138,11 +138,12 @@ repose sur un texte que personne n'a ouvert.
 | `porte_portail` | 5 | 8 | · | 5 | · | · | · | · | 5 / 5 — 100 % | 0 / 8 | 2026-09-01 |
 | `sante_travail` | 9 | 17 | · | 8 | 1 | · | · | · | 8 / 9 — 89 % | 0 / 17 | 2026-08-31 |
 | `secours` | 3 | 3 | · | 3 | · | · | · | · | 3 / 3 — 100 % | 0 / 3 | 2026-08-31 |
+| `signalisation` | 9 | 10 | · | 9 | · | · | · | · | 9 / 9 — 100 % | 0 / 10 | 2026-09-02 |
 | `stockage_dangereux` | 6 | 13 | · | 6 | · | · | · | · | 6 / 6 — 100 % | 0 / 13 | 2026-08-27 → 2026-09-01 |
 
 Colonnes numérotées : le nombre d'obligations à chaque rang de l'échelle, mesuré au plancher — **5** première main, **4** agent + verbatim, **3** lu sans verbatim, **2** indirect, **1** sans trace, **0** non rattaché.
 
-**13 domaines ont toutes leurs obligations adossées à des textes lus à la source avec verbatim relevé** : `aeration` (9), `ascenseur` (8), `co_activite` (1), `equipement_sous_pression` (7), `formation_securite` (9), `froid` (8), `information_travailleurs` (2), `levage` (10), `locaux_sociaux` (4), `organisation_prevention` (3), `porte_portail` (5), `secours` (3), `stockage_dangereux` (6).
+**14 domaines ont toutes leurs obligations adossées à des textes lus à la source avec verbatim relevé** : `aeration` (9), `ascenseur` (8), `co_activite` (1), `equipement_sous_pression` (7), `formation_securite` (9), `froid` (8), `information_travailleurs` (2), `levage` (10), `locaux_sociaux` (4), `organisation_prevention` (3), `porte_portail` (5), `secours` (3), `signalisation` (9), `stockage_dangereux` (6).
 
 Aucun domaine n'est entièrement dépourvu de verbatim.
 
@@ -152,8 +153,8 @@ Aucun domaine n'est entièrement dépourvu de verbatim.
 
 |  | obl. | réf. | 5 | 4 | 3 | 2 | 1 | 0 | vérifiées à la source | sans ancre | lu entre |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `equipement` | 83 | 149 | 43 | 32 | 8 | · | · | · | 75 / 83 — 90 % | 20 / 149 | 2026-08-26 → 2026-09-01 |
-| `etablissement` | 38 | 82 | 11 | 25 | 2 | · | · | · | 36 / 38 — 95 % | 0 / 82 | 2026-08-26 → 2026-09-01 |
+| `equipement` | 85 | 151 | 43 | 34 | 8 | · | · | · | 77 / 85 — 91 % | 20 / 151 | 2026-08-26 → 2026-09-02 |
+| `etablissement` | 45 | 90 | 11 | 32 | 2 | · | · | · | 43 / 45 — 96 % | 0 / 90 | 2026-08-26 → 2026-09-02 |
 | `salarie` | 14 | 32 | · | 14 | · | · | · | · | 14 / 14 — 100 % | 0 / 32 | 2026-08-27 → 2026-09-01 |
 
 Colonnes numérotées : le nombre d'obligations à chaque rang de l'échelle, mesuré au plancher — **5** première main, **4** agent + verbatim, **3** lu sans verbatim, **2** indirect, **1** sans trace, **0** non rattaché.
@@ -165,11 +166,12 @@ Colonnes numérotées : le nombre d'obligations à chaque rang de l'échelle, me
 | date de lecture | références | part | obligations concernées |
 | --- | --- | --- | --- |
 | 2026-08-26 | 46 | 17 % | 37 |
-| 2026-08-27 | 12 | 5 % | 9 |
-| 2026-08-31 | 70 | 27 % | 33 |
-| 2026-09-01 | 135 | 51 % | 83 |
+| 2026-08-27 | 12 | 4 % | 9 |
+| 2026-08-31 | 70 | 26 % | 33 |
+| 2026-09-01 | 135 | 49 % | 83 |
+| 2026-09-02 | 10 | 4 % | 9 |
 
-263 des 263 références portent une date de lecture, toutes comprises entre 2026-08-26 et 2026-09-01.
+273 des 273 références portent une date de lecture, toutes comprises entre 2026-08-26 et 2026-09-02.
 
 Ces dates ne sont pas un âge : elles disent quand quelqu'un a ouvert le
 texte, pas depuis quand la version lue est en vigueur. Une lecture d'hier
@@ -185,13 +187,13 @@ que rien ne cite n'apparaît donc dans aucun degré ci-dessus — et le prendre
 pour du travail restant est exactement l'erreur qui a failli faire relancer
 une relecture déjà faite.
 
-**189 articles dépouillés ne sont cités par aucune obligation**, répartis sur 21 corpus.
+**182 articles dépouillés ne sont cités par aucune obligation**, répartis sur 21 corpus.
 
 | corpus | articles non cités | sur | lus |
 | --- | --- | --- | --- |
 | `arrete-1980-livre-3` | 52 | 59 | 2026-08-26 → 2026-09-01 |
 | `code-travail-travail-en-hauteur` | 33 | 33 | 2026-09-01 |
-| `arrete-1993-11-04-signalisation` | 21 | 21 | 2026-09-02 |
+| `arrete-1993-11-04-signalisation` | 14 | 21 | 2026-09-02 |
 | `arrete-2021-09-10-retours-eau` | 14 | 14 | 2026-09-02 |
 | `code-travail-formation-securite` | 11 | 26 | 2026-08-31 |
 | `csp-eau-potable` | 10 | 10 | 2026-09-02 |
@@ -211,13 +213,13 @@ une relecture déjà faite.
 | `code-travail-locaux-sociaux` | 1 | 5 | 2026-08-31 |
 | `code-travail-service-prevention-sante` | 1 | 4 | 2026-08-31 |
 
-**7 corpus ne sont cités nulle part** — `code-travail-travail-en-hauteur` (33 articles, lus 2026-09-01), `arrete-1993-11-04-signalisation` (21 articles, lus 2026-09-02), `arrete-2021-09-10-retours-eau` (14 articles, lus 2026-09-02), `csp-eau-potable` (10 articles, lus 2026-09-02), `arrete-2004-12-21-echafaudages` (7 articles, lus 2026-09-01), `code-travail-duerp-principes` (6 articles, lus 2026-09-02), `arrete-1993-03-05-machines` (5 articles, lus 2026-09-02). Le dépouillement est fait, aucune obligation ne s'y branche encore.
+**6 corpus ne sont cités nulle part** — `code-travail-travail-en-hauteur` (33 articles, lus 2026-09-01), `arrete-2021-09-10-retours-eau` (14 articles, lus 2026-09-02), `csp-eau-potable` (10 articles, lus 2026-09-02), `arrete-2004-12-21-echafaudages` (7 articles, lus 2026-09-01), `code-travail-duerp-principes` (6 articles, lus 2026-09-02), `arrete-1993-03-05-machines` (5 articles, lus 2026-09-02). Le dépouillement est fait, aucune obligation ne s'y branche encore.
 
 Le total du corpus, les articles jamais lus et ceux qui imposent une obligation que le référentiel ne porte pas sont tenus par `pnpm relecture`, qui les compte à la maille du corpus.
 
 ---
 
-## 8. Les 135 obligations
+## 8. Les 144 obligations
 
 | obligation | domaine | porteur | réf. | fondement | plancher | sans ancre | lu |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -296,6 +298,15 @@ Le total du corpus, les articles jamais lus et ceux qui imposent une obligation 
 | `secours-etablissement-materiel` | secours | etablissement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-08-31 |
 | `secours-etablissement-mesures` | secours | etablissement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-08-31 |
 | `secours-salarie-secouriste` | secours | salarie | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-08-31 |
+| `signalisation-etablissement-alimentation-secours-presence` | signalisation | etablissement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-09-02 |
+| `signalisation-etablissement-alimentations-secours-annuelle` | signalisation | etablissement | 2 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 2 | 2026-09-02 |
+| `signalisation-etablissement-cheminements-evacuation` | signalisation | etablissement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-09-02 |
+| `signalisation-etablissement-entretien` | signalisation | etablissement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-09-02 |
+| `signalisation-etablissement-obstacles-zones-dangereuses` | signalisation | etablissement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-09-02 |
+| `signalisation-etablissement-risques-residuels` | signalisation | etablissement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-09-02 |
+| `signalisation-etablissement-signaux-lumineux-acoustiques-semestrielle` | signalisation | etablissement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-09-02 |
+| `signalisation-incendie-moyens-lutte` | signalisation | equipement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-09-02 |
+| `signalisation-stockage-substances-dangereuses` | signalisation | equipement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-09-02 |
 | `stockage-dangereux-declaration-icpe` | stockage_dangereux | equipement | 3 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 3 | 2026-09-01 |
 | `stockage-dangereux-fiches-donnees` | stockage_dangereux | equipement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-09-01 |
 | `stockage-dangereux-formation-personnel` | stockage_dangereux | equipement | 2 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 2 | 2026-09-01 |
@@ -362,7 +373,7 @@ demande le plus de travail.
 
 ---
 
-## 9. Les 263 références, une par une
+## 9. Les 273 références, une par une
 
 `prescrit` et `verbatim` sont les deux champs du corpus qui rendent une
 lecture relisible : ce que l'article impose, en une phrase, et la phrase
@@ -634,3 +645,13 @@ refaire pour la contredire.
 | `co-activite-etablissement-protocole-securite` | contexte 1 | R. 4515-1 (champ d'application : opérations réalisées par des entreprises extérieures transportant des marchandises en provenance ou à destination d'un lieu extérieur à l'enceinte de l'entreprise d'accueil) | R. 4515-1 | code-travail-co-activite | retenu | 2026-08-31 | agent_verbatim | ✓ | ✓ | 2018-01-01 | 2018-01-01 | 4 · agent + verbatim | ancrée |
 | `co-activite-etablissement-protocole-securite` | contexte 2 | R. 4515-9 (opérations répétitives : un seul protocole, applicable tant que les conditions n'ont pas subi de modification significative) | R. 4515-9 | code-travail-co-activite | retenu | 2026-08-31 | agent_verbatim | ✓ | ✓ | 2008-05-01 | 2008-05-01 | 4 · agent + verbatim | ancrée |
 | `co-activite-etablissement-protocole-securite` | contexte 3 | R. 4515-11 (exemplaire daté et signé tenu à la disposition des comités sociaux et économiques et de l'inspection du travail) | R. 4515-11 | code-travail-co-activite | retenu | 2026-08-31 | agent_verbatim | ✓ | ✓ | 2018-01-01 | 2018-01-01 | 4 · agent + verbatim | ancrée |
+| `signalisation-etablissement-risques-residuels` | fondement | Arrêté du 4 novembre 1993, art. 2 (mise en œuvre d'une signalisation de sécurité pour tout risque non évité par une protection collective ou par l'organisation du travail) | Arrêté 1993-11-04 art. 2 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 2014-01-19 | 2014-01-19 | 4 · agent + verbatim | ancrée |
+| `signalisation-etablissement-alimentation-secours-presence` | fondement | Arrêté du 4 novembre 1993, art. 7 (alimentation de secours des signalisations qui ont besoin d'une source d'énergie) | Arrêté 1993-11-04 art. 7 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 1993-12-17 | 1993-12-17 | 4 · agent + verbatim | ancrée |
+| `signalisation-etablissement-cheminements-evacuation` | fondement | Arrêté du 4 novembre 1993, art. 9 (balisage des cheminements d'évacuation par panneaux, et panneau additionnel « Sortie de secours » sur les dégagements réglementaires non utilisés habituellement) | Arrêté 1993-11-04 art. 9 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 1993-12-17 | 1993-12-17 | 4 · agent + verbatim | ancrée |
+| `signalisation-incendie-moyens-lutte` | fondement | Arrêté du 4 novembre 1993, art. 10 (coloration rouge des équipements de lutte contre l'incendie et panneau de localisation de leurs emplacements) | Arrêté 1993-11-04 art. 10 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 1993-12-17 | 1993-12-17 | 4 · agent + verbatim | ancrée |
+| `signalisation-stockage-substances-dangereuses` | fondement | Arrêté du 4 novembre 1993, art. 11 (pictogramme CLP sur les tuyauteries apparentes, panneau d'avertissement sur les aires, salles et enceintes de stockage) | Arrêté 1993-11-04 art. 11 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 2014-01-19 | 2014-01-19 | 4 · agent + verbatim | ancrée |
+| `signalisation-etablissement-obstacles-zones-dangereuses` | fondement | Arrêté du 4 novembre 1993, art. 12 (bandes jaune et noir ou rouge et blanc sur les obstacles et les endroits dangereux des zones bâties) | Arrêté 1993-11-04 art. 12 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 1993-12-17 | 1993-12-17 | 4 · agent + verbatim | ancrée |
+| `signalisation-etablissement-entretien` | fondement | Arrêté du 4 novembre 1993, art. 15, première phrase, premier membre (moyens et dispositifs de signalisation régulièrement nettoyés, entretenus, vérifiés et réparés, remplacés si nécessaire) | Arrêté 1993-11-04 art. 15 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 1993-12-17 | 1993-12-17 | 4 · agent + verbatim | ancrée |
+| `signalisation-etablissement-signaux-lumineux-acoustiques-semestrielle` | fondement | Arrêté du 4 novembre 1993, art. 15, première phrase, second membre (signaux lumineux et acoustiques : vérification du bon fonctionnement et de la réelle efficacité, avant mise en service puis au moins chaque semestre) | Arrêté 1993-11-04 art. 15 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 1993-12-17 | 1993-12-17 | 4 · agent + verbatim | ancrée |
+| `signalisation-etablissement-alimentations-secours-annuelle` | fondement | Arrêté du 4 novembre 1993, art. 15, seconde phrase (vérification des alimentations de secours au moins une fois par an) | Arrêté 1993-11-04 art. 15 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 1993-12-17 | 1993-12-17 | 4 · agent + verbatim | ancrée |
+| `signalisation-etablissement-alimentations-secours-annuelle` | contexte 1 | Arrêté du 4 novembre 1993, art. 7 (ce sont les alimentations de secours que cet article impose qui sont ici vérifiées) | Arrêté 1993-11-04 art. 7 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 1993-12-17 | 1993-12-17 | 4 · agent + verbatim | ancrée |

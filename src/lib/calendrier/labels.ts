@@ -65,6 +65,7 @@ export const LABEL_DOMAINE: Record<DomaineObligation, string> = {
   information_travailleurs: "Information des travailleurs",
   locaux_sociaux: "Locaux sociaux",
   co_activite: "Co-activité",
+  signalisation: "Signalisation de sécurité",
 };
 
 export const MOIS_FR = [

@@ -182,6 +182,22 @@ export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
   // donc pas à l'annuaire de vigilance, et le texte n'attend personne de ce
   // côté-ci de l'échange.
   co_activite: AUCUN_TIERS_ATTENDU,
+  // La signalisation de sécurité, entrée le 2026-09-02. Cinquième entrée à
+  // porter le marqueur, et c'est une lecture de l'arrêté du 4 novembre 1993 :
+  // il ne réserve ni la pose des panneaux, ni l'entretien, ni la vérification
+  // semestrielle des signaux lumineux et acoustiques, ni l'annuelle des
+  // alimentations de secours à un organisme agréé, à une personne compétente
+  // ou à une qualification quelconque. Ses neuf obligations portent toutes
+  // `realisateurs: ["exploitant"]`, et ce n'est pas un repli faute de mieux —
+  // le texte est muet, et lui prêter un vérificateur enverrait le dirigeant
+  // chercher un prestataire dont il n'a pas besoin.
+  //
+  // À distinguer du recouvrement matériel avec l'éclairage de sécurité : un
+  // BAES relève aussi de l'arrêté du 14 décembre 2011, dont les obligations
+  // vivent en domaine `incendie` et appellent, elles, les prestataires de ce
+  // domaine. Le même appareil, deux textes, deux domaines — et un seul des
+  // deux attend quelqu'un.
+  signalisation: AUCUN_TIERS_ATTENDU,
 };
 
 /**
