@@ -1,0 +1,102 @@
+// Corpus : arrêté du 25 juin 1980, **Livre Ier** — les dispositions qui
+// s'appliquent à TOUS les établissements recevant du public, quelle que soit
+// leur catégorie.
+//
+// POURQUOI UN TROISIÈME FICHIER PLUTÔT QU'UNE ENTRÉE DANS UN DES DEUX AUTRES.
+// `arrete-1980-livre-2.ts` couvre les quatre premières catégories,
+// `arrete-1980-livre-3.ts` la cinquième (règles PE) : leurs `portee`
+// respectives disent l'une et l'autre à quel GROUPE elles s'adressent, et
+// GN 1 ne s'adresse à aucun des deux en particulier — c'est lui qui les
+// définit. `PE 1 § 1`, au Livre III, écarte le Livre II en 5ᵉ catégorie ;
+// aucune de ces deux exclusions ne touche le Livre Ier. Ranger GN 1 sous
+// « quatre premières catégories » ou sous « cinquième » aurait rendu faux le
+// champ d'application de l'article le jour où quelqu'un le relit.
+//
+// CE QUE CE CORPUS SERT, ET IL EST LE PREMIER DANS CE CAS. Les autres corpus
+// existent parce qu'une OBLIGATION cite leurs articles. GN 1 n'en fonde
+// aucune : il ne prescrit pas d'échéance, il porte la **nomenclature des
+// types d'ERP**, c'est-à-dire l'énumération `TypeErp` du modèle. Le référentiel
+// n'en a pas besoin ; le modèle de données, si. Et c'est précisément ce qui a
+// manqué : l'ADR-004 a écrit cette liste de mémoire, sous la forme
+// « enum M, N, U, R, … (~20 valeurs) », et le tilde a survécu deux ans sans
+// que personne ne confronte la liste au texte. Elle en oubliait un type.
+//
+// La garde qui empêche la répétition est `types-erp.test.ts` : elle DÉRIVE la
+// liste attendue du verbatim ci-dessous plutôt que de la redéclarer. Si cette
+// entrée bouge, le modèle doit bouger avec elle, dans les deux sens.
+
+import type { Corpus } from "./types";
+
+export const ARRETE_1980_LIVRE_1: Corpus = {
+  id: "arrete-1980-livre-1",
+  intitule:
+    "Arrêté du 25 juin 1980, Livre Ier — dispositions applicables à tous les établissements recevant du public",
+  url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303816/",
+  etendue: "articles_cites",
+  portee:
+    "Dispositions générales (GN 1 à GN 15) applicables à tous les ERP, des deux groupes. Ni PE 1 § 1 — qui écarte le Livre II en 5ᵉ catégorie — ni aucune autre exclusion ne les restreint. Ce corpus ne porte à ce jour QUE GN 1, et seulement pour ce qu'il définit : la nomenclature des types, dont l'énumération `TypeErp` du modèle est censée être le reflet. Les quatorze autres articles du Livre Ier ne sont pas dépouillés et ne figurent pas ici — l'étendue `articles_cites` le dit.",
+  articles: [
+    {
+      ref: "GN 1",
+      intitule: "Classement des établissements",
+      url: "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000045143487",
+      versionEnVigueur: "2022-02-10",
+      modifiePar: {
+        texte:
+          "Arrêté du 7 février 2022 modifiant l'arrêté du 25 juin 1980 (NOR INTE2137489A). Il touche quatre articles : L 1 (relèvement des seuils d'assujettissement de certains types L), PE 2 (remplacement du tableau des seuils du premier groupe), N 2 (seconde modalité de calcul de l'effectif des zones de restauration assise, par déclaration du nombre de places) et GN 1 lui-même, où le libellé du type L passe de « salles à usage multiple » à « ou polyvalentes ». AUCUNE LETTRE N'EST AJOUTÉE NI RETIRÉE PAR CE TEXTE : la modification de GN 1 est purement rédactionnelle, elle porte sur le libellé de L. Le type J, lui, est entré au règlement bien avant — il figure dans la version consolidée depuis l'arrêté du 19 novembre 2001.",
+        url: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045141670",
+      },
+      luLe: "2026-09-03",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Article de DÉFINITION, et la seule source de la nomenclature des types d'ERP. Son § 1 énumère VINGT-DEUX types en deux groupes — quatorze pour les établissements installés dans un bâtiment (a), huit pour les établissements spéciaux (b). Son § 2 classe par ailleurs les établissements en deux GROUPES (1ʳᵉ à 4ᵉ catégories / 5ᵉ), pose la règle de calcul de l'effectif admis, et impose à l'exploitant d'informer le maire quand l'effectif déclaré varie au point de remettre en cause le niveau de sécurité. Ses § 3 et § 4 sont des définitions de vocabulaire — dont celle d'« hébergement », qui vaut pour tout le règlement : « les seuls locaux destinés au sommeil du public la nuit ».\n\nLE § 1 N'EST PAS SUBDIVISÉ EN R (1) / R (2). Le texte ne connaît qu'un seul R, « Etablissements d'éveil, d'enseignement, de formation, centres de vacances, centres de loisirs sans hébergement ». La distinction « R (1) avec hébergement » / « R (2) sans hébergement » que porte le tableau de GE 4 § 1 est une distinction de RÉGIME au sein d'une même ligne de tableau, pas un type de la nomenclature : elle croise le type R avec le fait d'héberger, que le § 4 définit ici. Y répondre par deux valeurs d'énumération inventerait un type que le texte n'écrit pas ; ce que la question appelle est un attribut d'établissement (cf. `comporteLocauxSommeilPublic`), et il n'est pas branché sur GE 4 à ce jour.",
+      // LE VERBATIM DU § 1, ET IL EST DE LA DONNÉE, PAS DE L'ORNEMENT.
+      // `types-erp.test.ts` le PARSE pour en tirer les vingt-deux lettres et
+      // les confronter à l'énumération `TypeErp`, à `TYPES_ERP`, à `TYPE_ERP`
+      // et à `LABEL_TYPE_ERP`. Une lettre retirée d'ici fait tomber le test en
+      // nommant ce qui ne colle plus. C'est ce qui distingue cette garde d'une
+      // liste exhaustive recopiée : elle ne se répare pas en réalignant deux
+      // copies, seulement en corrigeant celle qui s'écarte du texte.
+      //
+      // La casse est celle de Légifrance, qui n'accentue pas les capitales
+      // (« Etablissements »). Ne pas la « corriger » : le verbatim est un
+      // relevé, pas une rédaction.
+      citationCle:
+        "§ 1. Les établissements sont classés en types, selon la nature de leur exploitation :\n" +
+        "a) Etablissements installés dans un bâtiment :\n" +
+        "J Structures d'accueil pour personnes âgées et personnes handicapées ;\n" +
+        "L Salles d'auditions, de conférences, de réunions, de spectacles ou polyvalentes ;\n" +
+        "M Magasins de vente, centres commerciaux ;\n" +
+        "N Restaurants et débits de boissons ;\n" +
+        "O Hôtels et pensions de famille ;\n" +
+        "P Salles de danse et salles de jeux ;\n" +
+        "R Etablissements d'éveil, d'enseignement, de formation, centres de vacances, centres de loisirs sans hébergement ;\n" +
+        "S Bibliothèques, centres de documentation ;\n" +
+        "T Salles d'expositions ;\n" +
+        "U Etablissements sanitaires ;\n" +
+        "V Etablissements de culte ;\n" +
+        "W Administrations, banques, bureaux ;\n" +
+        "X Etablissements sportifs couverts ;\n" +
+        "Y Musées ;\n" +
+        "b) Etablissements spéciaux :\n" +
+        "PA Etablissements de plein air ;\n" +
+        "CTS Chapiteaux, tentes et structures ;\n" +
+        "SG Structures gonflables ;\n" +
+        "PS Parcs de stationnement couverts ;\n" +
+        "GA Gares ;\n" +
+        "OA Hôtels-restaurants d'altitude ;\n" +
+        "EF Etablissements flottants ;\n" +
+        "REF Refuges de montagne.\n" +
+        "§ 2. a) En outre, pour l'application du règlement de sécurité, les établissements recevant du public sont classés en deux groupes : - le premier groupe comprend les établissements de 1re, 2e, 3e et 4e catégories ; - le deuxième groupe comprend les établissements de la 5e catégorie. " +
+        "b) L'effectif des personnes admises est déterminé suivant les dispositions particulières à chaque type d'établissement. Il comprend : - d'une part, l'effectif des personnes constituant le public ; - d'autre part, l'effectif des autres personnes se trouvant à un titre quelconque dans les locaux accessibles ou non au public et ne disposant pas de dégagements indépendants de ceux mis à la disposition du public. Toutefois, pour les établissements de 5e catégorie, ce dernier effectif n'intervient pas pour le classement. " +
+        "c) Lorsque l'effectif déclaré ayant permis de classer l'établissement subit une augmentation ou une diminution de nature à remettre en cause le niveau de sécurité, l'exploitant doit en informer le maire.\n" +
+        "§ 3. Pour la suite du présent règlement, le terme : \"établissement\", employé sans autre qualification de sa nature, a le sens \"d'établissement recevant du public\".\n" +
+        "§ 4. Pour la suite du présent règlement, les expressions \"local destiné au sommeil\", \"local réservé au sommeil\" et \"hébergement\" désignent les seuls locaux destinés au sommeil du public la nuit.",
+      statut: "sans_objet",
+      motif:
+        "Aucune échéance n'en découle : GN 1 classe et définit, il ne prescrit aucune vérification périodique. C'est le cas type du statut — « définition, renvoi, règle ponctuelle sans récurrence ».\n\nUNE SEULE OBLIGATION D'EXPLOITANT Y FIGURE, ET ELLE EST PONCTUELLE : le § 2 c) impose d'informer le maire quand l'effectif déclaré varie au point de remettre en cause le niveau de sécurité. Elle ne se planifie pas — son fait générateur est un changement d'exploitation, pas une date —, et le produit n'observe pas l'effectif déclaré en préfecture. Elle est nommée ici pour qu'on n'ait pas à rouvrir l'article pour la retrouver, pas parce qu'elle serait couverte.\n\nCE QUE CETTE ENTRÉE SERT VRAIMENT est ailleurs que dans le référentiel : son § 1 est la source de l'énumération `TypeErp` du modèle, et `types-erp.test.ts` en dérive la liste attendue. Le dépouillement n'était pas fait — l'ADR-004 avait écrit la liste de mémoire, à « ~20 valeurs », et il en manquait une (J).",
+      reserve:
+        "LE LIVRE Ier N'EST PAS DÉPOUILLÉ, GN 1 MIS À PART. Quatorze articles (GN 2 à GN 15) restent hors de ce corpus, dont GN 6 (isolement), GN 8 (aménagements) et GN 13 (dispositions applicables aux établissements existants), qu'aucune obligation ne cite aujourd'hui et dont personne n'a vérifié qu'ils n'en imposent pas. `etendue: \"articles_cites\"` l'annonce ; cette réserve le nomme, pour qu'on ne lise pas la présence d'un corpus « Livre Ier » comme la preuve que le Livre Ier a été lu.\n\nÀ SIGNALER AU PROCHAIN LECTEUR : l'arrêté du 19 février 2026, déjà relevé dans `veille-textes.ts`, « modifie GN 4 et GN 16 (nouveau) ». Un GN 16 nouveau veut dire que le chapitre s'étend au-delà de GN 15 ; il n'est pas dans ce corpus et n'a pas été ouvert.",
+    },
+  ],
+};

@@ -1,6 +1,7 @@
 // Les corpus déclarés, et ce que leur dépouillement permet d'affirmer.
 
 import { obligationsConformite } from "../conformite";
+import { ARRETE_1980_LIVRE_1 } from "./arrete-1980-livre-1";
 import { ARRETE_1980_LIVRE_2 } from "./arrete-1980-livre-2";
 import { CORPUS_PE } from "./arrete-1980-livre-3";
 import { ARRETE_2011_12_14_ECLAIRAGE } from "./arrete-2011-12-14-eclairage";
@@ -78,6 +79,9 @@ export * from "./perimetre";
  */
 export const CORPUS: readonly Corpus[] = [
   CORPUS_PE,
+  // Le Livre Ier, qui gouverne les deux autres : GN 1 porte la nomenclature
+  // des types dont `TypeErp` est le reflet (`types-erp.test.ts`).
+  ARRETE_1980_LIVRE_1,
   ARRETE_1980_LIVRE_2,
   CODE_TRAVAIL_INCENDIE,
   CCH_REGISTRE_SECURITE,
