@@ -1061,7 +1061,7 @@ describe("référentiel conformité — forme normalisée des typologies", () =>
     }
   });
 
-  it("aucune obligation ne liste les 21 types d'ERP (écrire `erp: true`)", () => {
+  it("aucune obligation ne liste tous les types d'ERP (écrire `erp: true`)", () => {
     // Même raisonnement que pour les catégories : une restriction de type qui
     // n'exclut aucun type exige en plus que `typeErp` soit renseigné, et crée
     // donc un faux négatif silencieux sur tout ERP dont le type est inconnu.
@@ -1090,7 +1090,7 @@ describe("référentiel conformité — forme normalisée des typologies", () =>
     }
   });
 
-  it("les types exclus existent dans l'enum, et n'excluent jamais les 21", () => {
+  it("les types exclus existent dans l'enum, et ne les excluent jamais tous", () => {
     // Symétrique du test sur `types`, et pour la raison inverse : une
     // exclusion qui porte sur tous les types n'exclut pas « tout ERP », elle
     // exclut tout ERP DONT LE TYPE EST CONNU — l'obligation ne resterait qu'à
@@ -1843,7 +1843,7 @@ describe("GE 4 § 1 — le tableau, case par case", () => {
     type: (typeof TYPES_ERP)[number] | null;
     ans: [number, number, number, number];
   }[] = [
-    { colonne: "J", type: null, ans: [3, 3, 3, 3] },
+    { colonne: "J", type: "J", ans: [3, 3, 3, 3] },
     { colonne: "L", type: "L", ans: [3, 3, 3, 5] },
     { colonne: "M", type: "M", ans: [3, 3, 5, 5] },
     { colonne: "N", type: "N", ans: [3, 3, 5, 5] },
@@ -2024,15 +2024,24 @@ describe("GE 4 § 1 — le tableau, case par case", () => {
         "l'établissement héberge, donc tout R garde trois ans.",
     ).toEqual(["R (2) sans hébergement en N4"]);
 
-    // Le second manque, qui ne produit aucun écart de périodicité mais empêche
-    // un EHPAD de se déclarer pour ce qu'il est : le type J n'existe pas dans
-    // l'énumération. Il est à trois ans dans les quatre catégories, et les
-    // lignes triennales étant écrites en complément, un type non nommé y
-    // retombe — c'est pourquoi son absence ne déplace aucune case.
-    expect(TYPES_ERP as readonly string[]).not.toContain("J");
-    expect(TABLEAU.filter((c) => c.type === null).map((c) => c.colonne)).toEqual([
-      "J",
-    ]);
+    // IL N'Y EN A PLUS QU'UN, ET C'EST LE BON QUI RESTE. Le second manque
+    // — « le type J n'existe pas dans l'énumération » — a été levé le
+    // 2026-09-03 : GN 1 § 1 le porte, `TypeErp` aussi désormais. Il ne
+    // déplaçait aucune case (J est à trois ans dans les quatre catégories, et
+    // les lignes triennales sont écrites en complément), mais il empêchait un
+    // EHPAD de se déclarer pour ce qu'il est.
+    //
+    // Celui qui reste ne se lève PAS de la même façon, et la différence est
+    // dans le texte : « R (1) avec hébergement » et « R (2) sans hébergement »
+    // ne sont pas deux types de la nomenclature — GN 1 § 1 n'écrit qu'un seul
+    // R. Ce sont deux régimes d'une même ligne de tableau, séparés par un fait
+    // que le § 4 du même article définit (« les seuls locaux destinés au
+    // sommeil du public la nuit »). Ajouter une lettre inventerait un type ;
+    // ce qu'il faudrait est un croisement avec un attribut d'établissement.
+    expect(TABLEAU.filter((c) => c.type === null)).toEqual([]);
+    // Toute colonne du tableau se déclare désormais dans le produit, et
+    // chaque valeur nommée existe bien dans l'énumération.
+    for (const c of TABLEAU) expect(TYPES_ERP, c.colonne).toContain(c.type);
   });
 
   it("les huit types spéciaux gardent trois ans, faute de colonne au tableau", () => {

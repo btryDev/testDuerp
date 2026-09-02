@@ -16,7 +16,7 @@ import type { StepProps } from "./types";
  * Étape 2 sur 3 — la typologie de l'établissement (ERP / IGH / habitation).
  *
  * **Le parcours ne devine plus, il fait déclarer** (décision du 2026-09-01).
- * Il proposait auparavant huit cartes d'activité — huit types sur vingt et un
+ * Il proposait auparavant huit cartes d'activité — huit types sur vingt-deux
  * — puis déduisait la catégorie d'un effectif de public saisi, table de seuils
  * à l'appui. Deux défauts, et le second est le vrai : la liste tronquée ne
  * laissait aucune place à qui n'y figurait pas, et la catégorie *déduite*
@@ -113,15 +113,16 @@ export function StepTypologie({
                 <div className="flex flex-col gap-3">
                   <SousQuestion
                     question="Quel est votre type d'établissement ?"
-                    // « Le vôtre y figure » était faux : le règlement de
-                    // sécurité compte VINGT-DEUX types, et la liste en
-                    // propose vingt et un — le type J (structures d'accueil
-                    // pour personnes âgées et handicapées) n'y est pas.
-                    // La phrase se corrige, pas la liste : ouvrir le type J
-                    // ferait entrer un secteur que le référentiel ne sert
-                    // pas, et c'est une décision produit, pas une coquille
-                    // d'écran (voir `LABEL_TYPE_ERP`).
-                    aide="Vingt et un des vingt-deux types du règlement de sécurité. Le type J — accueil de personnes âgées ou handicapées — n'y est pas : Rojer ne le traite pas."
+                    // « Le vôtre y figure » a été faux, puis réparé du
+                    // mauvais côté. La liste en proposait vingt et un pour
+                    // vingt-deux au règlement, et l'écran a d'abord corrigé
+                    // sa PHRASE — « le type J n'y est pas : Rojer ne le
+                    // traite pas » —, en présentant comme une décision de
+                    // périmètre ce qui n'était qu'une liste écrite de
+                    // mémoire à l'ADR-004. Le type J est entré au modèle le
+                    // 2026-09-03 avec le dépouillement de GN 1 ; la liste
+                    // est désormais celle du texte, et la phrase le dit.
+                    aide="Les vingt-deux types du règlement de sécurité, dans l'ordre de l'article GN 1 : d'abord les établissements installés dans un bâtiment, puis les établissements spéciaux."
                   />
                   <select
                     id="typeErp"

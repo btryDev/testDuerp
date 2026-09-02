@@ -4,9 +4,25 @@ import { depuisCleJourCivil } from "@/lib/dates";
 // Enums reflétant le schéma Prisma. Si on ajoute une valeur côté Prisma,
 // pensez à la refléter ici — pas d'import direct de @prisma/client pour
 // garder le schéma Zod isolé (runtime Zod + typage Prisma).
+/**
+ * Les vingt-deux types de l'article GN 1 § 1 de l'arrêté du 25 juin 1980.
+ *
+ * TROISIÈME COPIE DE LA MÊME LISTE — après l'enum Prisma `TypeErp` et
+ * `TYPES_ERP` (src/lib/referentiels/types-communs.ts) —, et c'est cette
+ * multiplication qui a laissé le type J absent des trois à la fois. Rien ne
+ * les rapprochait ; `types-erp.test.ts` le fait désormais, en les confrontant
+ * toutes au verbatim de GN 1 dépouillé au corpus.
+ *
+ * Elle reste distincte parce que ce module ne doit pas dépendre du
+ * référentiel : c'est le schéma Zod des formulaires. Ce qui change, c'est
+ * qu'une divergence se voit maintenant le jour où elle s'écrit.
+ */
 export const TYPE_ERP = [
+  // a) Établissements installés dans un bâtiment.
   "M", "N", "O", "L", "P", "R", "S", "T", "U", "V",
-  "W", "X", "Y", "PA", "CTS", "SG", "PS", "REF", "GA", "OA", "EF",
+  "W", "X", "Y", "J",
+  // b) Établissements spéciaux.
+  "PA", "CTS", "SG", "PS", "REF", "GA", "OA", "EF",
 ] as const;
 
 export const CATEGORIES_ERP = ["N1", "N2", "N3", "N4", "N5"] as const;

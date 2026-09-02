@@ -212,6 +212,27 @@ enum TypeErp {
   W
   X
   Y
+  // Structures d'accueil pour personnes âgées et personnes handicapées.
+  // Entré le 2026-09-03, et il manquait depuis l'origine : l'ADR-004 avait
+  // écrit la liste de mémoire — « (~20 valeurs) » — sans jamais la confronter
+  // à l'article GN 1 de l'arrêté du 25 juin 1980, qui en compte vingt-deux.
+  // Un EHPAD ne pouvait pas se déclarer pour ce qu'il est, alors que le
+  // tableau de GE 4 § 1 lui donne une colonne à part entière.
+  //
+  // Placé ICI et non en tête : GN 1 § 1 ouvre sa liste par J, mais il la
+  // divise aussi en deux groupes — a) établissements installés dans un
+  // bâtiment, b) établissements spéciaux —, et c'est ce découpage-là que
+  // l'ordre de l'enum reproduit. J ferme donc le groupe a), juste avant PA
+  // qui ouvre le groupe b). L'ordre gouverne l'affichage du sélecteur de type
+  // du formulaire ; le reproduire à l'identique en base évite qu'il diverge
+  // de `TYPES_ERP` et de `TYPE_ERP`.
+  //
+  // L'ordre de l'énumération n'est PAS celui du texte pour autant, et aucun
+  // test ne le prétend : à l'intérieur de chaque groupe, la liste du produit
+  // met en avant les types des secteurs cibles (M, N, O). C'est un choix
+  // d'affichage, pas une lecture du texte, et le test `types-erp.test.ts`
+  // compare donc les deux listes comme des ENSEMBLES.
+  J
   PA
   CTS
   SG

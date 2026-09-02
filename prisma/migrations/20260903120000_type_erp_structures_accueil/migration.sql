@@ -1,0 +1,45 @@
+-- ============================================================================
+-- Type d'ERP « J » — structures d'accueil pour personnes âgées et personnes
+-- handicapées
+--
+-- L'article GN 1 § 1 de l'arrêté du 25 juin 1980 (version en vigueur du
+-- 10 février 2022, arrêté du 7 février 2022, NOR INTE2137489A) classe les
+-- établissements recevant du public en VINGT-DEUX types : quatorze installés
+-- dans un bâtiment — « J Structures d'accueil pour personnes âgées et
+-- personnes handicapées ; L Salles d'auditions… » — et huit établissements
+-- spéciaux. L'énumération du produit en portait vingt et un.
+--
+-- CE N'EST PAS UNE COQUILLE, ET C'EST POURQUOI LA CORRECTION S'ACCOMPAGNE
+-- D'UN TEST. L'ADR-004 a écrit cette liste une seule fois, sous la forme
+-- « enum M, N, U, R, L, O, S, T, V, W, X, Y, PA, CTS, SG, PS, REF, GA, OA, EF
+-- (~20 valeurs) ». Le tilde dit le reste : la liste a été posée de mémoire et
+-- déclarée complète par affirmation, jamais par construction. GN 1 n'était
+-- dépouillé nulle part ; il l'est depuis le 2026-09-03
+-- (`corpus/arrete-1980-livre-1.ts`), et `types-erp.test.ts` dérive désormais
+-- la liste attendue de son verbatim.
+--
+-- CE QUE L'ABSENCE COÛTAIT. Aucun écart de périodicité : le tableau de
+-- GE 4 § 1 met J à trois ans dans les quatre catégories, et les lignes
+-- triennales du référentiel sont écrites en complément (`typesExclus`), si
+-- bien qu'un type non nommé y retombe déjà. Ce qu'elle coûtait est ailleurs
+-- et n'est pas moindre : un EHPAD, une résidence autonomie, un foyer d'accueil
+-- médicalisé ouvraient la liste des types, n'y trouvaient pas la leur, et
+-- devaient se ranger sous U ou sous R pour continuer. La donnée saisie était
+-- alors fausse à la source, et tout ce qui s'en déduit avec elle.
+--
+-- PLACÉE AVANT 'PA'. GN 1 § 1 ouvre sa liste par J, mais il la divise aussi en
+-- deux groupes — a) établissements installés dans un bâtiment, b)
+-- établissements spéciaux — et c'est ce découpage que l'ordre de l'énumération
+-- reproduit : J ferme le groupe a), PA ouvre le groupe b). L'ordre gouverne
+-- l'affichage du sélecteur de type ; il doit rester le reflet exact de
+-- `TYPES_ERP` (src/lib/referentiels/types-communs.ts) et de `TYPE_ERP`
+-- (src/lib/etablissements/schema.ts), sans quoi la divergence se verrait à
+-- l'écran.
+--
+-- AJOUT PUR. Une valeur entre dans un type énuméré ; aucune ligne existante
+-- n'est touchée, aucune valeur n'est retirée, aucun `Etablissement` ne change
+-- de type. Une base sans cette valeur et une base avec ne diffèrent que par ce
+-- qu'un dirigeant peut désormais déclarer.
+-- ============================================================================
+
+ALTER TYPE "TypeErp" ADD VALUE IF NOT EXISTS 'J' BEFORE 'PA';

@@ -123,9 +123,36 @@ export type Realisateur = (typeof REALISATEURS)[number];
 // Typologie — ADR-004 (régimes cumulables)
 // -----------------------------------------------------------------------------
 
+/**
+ * Les VINGT-DEUX types d'exploitation de l'article GN 1 § 1 de l'arrêté du
+ * 25 juin 1980 — reflet exact de l'enum Prisma `TypeErp` et de `TYPE_ERP`
+ * (src/lib/etablissements/schema.ts).
+ *
+ * **Cette liste ne se relit plus, elle se dérive.** Elle en portait vingt et
+ * un jusqu'au 2026-09-03 : l'ADR-004 l'avait écrite une seule fois, de
+ * mémoire, en concluant sur « (~20 valeurs) », et personne ne l'avait
+ * confrontée à la nomenclature. Le type J — structures d'accueil pour
+ * personnes âgées et personnes handicapées — y manquait, si bien qu'un EHPAD
+ * ouvrait la liste des types sans y trouver la sienne.
+ *
+ * GN 1 est dépouillé depuis (`corpus/arrete-1980-livre-1.ts`), et
+ * `types-erp.test.ts` extrait la liste attendue de son verbatim pour la
+ * confronter aux quatre déclarations du dépôt, dans les deux sens. Ajouter ou
+ * retirer une valeur ici sans que le texte l'écrive fait tomber ce test en
+ * nommant la lettre en cause.
+ *
+ * L'ORDRE N'EST PAS CELUI DU TEXTE, et le test le sait : il compare des
+ * ENSEMBLES. GN 1 range J en tête ; le produit met en avant les types des
+ * secteurs cibles. Ce qui est repris du texte, en revanche, c'est son
+ * découpage en deux groupes — a) établissements installés dans un bâtiment
+ * (M à J ci-dessous), b) établissements spéciaux (PA à EF).
+ */
 export const TYPES_ERP = [
+  // a) Établissements installés dans un bâtiment.
   "M", "N", "O", "L", "P", "R", "S", "T", "U", "V",
-  "W", "X", "Y", "PA", "CTS", "SG", "PS", "REF", "GA", "OA", "EF",
+  "W", "X", "Y", "J",
+  // b) Établissements spéciaux.
+  "PA", "CTS", "SG", "PS", "REF", "GA", "OA", "EF",
 ] as const;
 export type TypeErp = (typeof TYPES_ERP)[number];
 

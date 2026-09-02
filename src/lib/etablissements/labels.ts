@@ -15,42 +15,68 @@ import type { CATEGORIES_ERP, TYPE_ERP } from "./schema";
  */
 
 /**
- * **Vingt et un types, et le règlement en compte vingt-deux.** Le type J —
- * structures d'accueil pour personnes âgées et personnes handicapées, ajouté
- * au règlement de sécurité par l'arrêté du 19 novembre 2001 — n'est pas dans
- * `TYPE_ERP`, donc pas ici.
+ * **Les vingt-deux types de l'article GN 1 § 1, et ils y sont tous.**
  *
- * Le relevé est fait, la décision ne l'est pas : ouvrir le type J ferait
- * entrer les EHPAD et les structures médico-sociales, dont les obligations
- * (locaux à sommeil, personnel de nuit, désenfumage) ne sont pas servies par
- * le référentiel et qui sortent des trois secteurs cibles. C'est un choix de
- * périmètre, pas un oubli de saisie — et il se tranche ailleurs qu'en
- * ajoutant une ligne à ce `Record`.
+ * Ils n'étaient que vingt et un jusqu'au 2026-09-03. La note qui vivait ici
+ * disait que le type J — structures d'accueil pour personnes âgées et
+ * personnes handicapées — était écarté par un choix de PÉRIMÈTRE, à trancher
+ * ailleurs qu'en ajoutant une ligne à ce `Record`. C'était une reconstruction
+ * après coup : rien, dans l'histoire du dépôt, ne montre une décision de
+ * l'écarter. L'ADR-004 avait écrit la liste une seule fois, de mémoire,
+ * en concluant sur « (~20 valeurs) » — et personne ne l'avait jamais
+ * confrontée à la nomenclature. Le manque a été DÉCOUVERT en lisant le
+ * tableau de GE 4, pas décidé.
  *
- * En attendant, l'écran le DIT (`StepTypologie`) au lieu de promettre « le
- * vôtre y figure », ce qui était faux pour un exploitant de type J : il
- * cherchait sa ligne, ne la trouvait pas, et n'apprenait rien.
+ * L'écran, lui, ne triait rien : un exploitant de type J cherchait sa ligne,
+ * ne la trouvait pas, et se rangeait sous U ou sous R pour pouvoir continuer.
+ * La donnée était fausse à la source, et tout ce qui s'en déduit avec elle.
+ *
+ * LES LIBELLÉS SUIVENT DÉSORMAIS LE TEXTE, ET PAS SEULEMENT LES LETTRES.
+ * Quatre d'entre eux ont été recalés sur le verbatim de GN 1 le même jour,
+ * pour la même raison qu'ils existent — décider si quelqu'un se reconnaît :
+ *   - `L` ne disait ni « réunion » ni « polyvalente », alors que l'arrêté du
+ *     7 février 2022 a précisément remplacé « à usage multiple » par
+ *     « ou polyvalentes » ; une salle des fêtes communale ne s'y voyait pas.
+ *   - `R` disait « enseignement, colonies » là où le texte écrit « éveil,
+ *     enseignement, FORMATION, centres de vacances, centres de loisirs sans
+ *     hébergement » : un organisme de formation et une crèche ne s'y
+ *     reconnaissaient pas.
+ *   - `U` disait « établissement de soins », le texte dit « établissements
+ *     sanitaires » ; les deux mots sont gardés, l'un pour la source, l'autre
+ *     pour la reconnaissance.
+ *   - `GA` disait « gare accessible au public », le texte dit « gares » —
+ *     la précision ajoutée n'est pas dans la nomenclature.
+ *
+ * Les `Record` sont exhaustifs par construction : ajouter un type à l'enum
+ * sans lui écrire de libellé ne compile pas. Ce que la compilation ne dit pas,
+ * c'est si l'enum est complet — `types-erp.test.ts` s'en charge, en dérivant
+ * la liste du verbatim de GN 1 dépouillé au corpus.
  */
 export const LABEL_TYPE_ERP: Record<(typeof TYPE_ERP)[number], string> = {
   M: "M · Magasin de vente, centre commercial",
   N: "N · Restaurant, débit de boissons",
   O: "O · Hôtel, pension de famille",
-  L: "L · Salle de spectacle, conférence",
+  L: "L · Salle d'audition, de conférence, de réunion, de spectacle ou polyvalente",
   P: "P · Salle de danse, salle de jeux",
-  R: "R · Établissement d'enseignement, colonies",
+  R: "R · Éveil, enseignement, formation, centre de vacances ou de loisirs",
   S: "S · Bibliothèque, centre de documentation",
   T: "T · Salle d'exposition",
-  U: "U · Établissement de soins",
+  U: "U · Établissement sanitaire, de soins",
   V: "V · Établissement de culte",
   W: "W · Administration, banque, bureau",
   X: "X · Établissement sportif couvert",
   Y: "Y · Musée",
+  // Le libellé dit ce que la nomenclature dit, et pas la lettre seule : c'est
+  // lui qui décide si le directeur d'un EHPAD, d'une résidence autonomie ou
+  // d'un foyer d'accueil médicalisé se reconnaît dans la liste. « J » tout
+  // court ne lui aurait rien appris.
+  J: "J · Structure d'accueil pour personnes âgées ou handicapées",
   PA: "PA · Établissement de plein air",
   CTS: "CTS · Chapiteau, tente, structure",
   SG: "SG · Structure gonflable",
   PS: "PS · Parc de stationnement couvert",
   REF: "REF · Refuge de montagne",
-  GA: "GA · Gare accessible au public",
+  GA: "GA · Gare",
   OA: "OA · Hôtel-restaurant d'altitude",
   EF: "EF · Établissement flottant",
 };

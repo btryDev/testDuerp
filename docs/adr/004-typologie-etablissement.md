@@ -38,13 +38,17 @@ model Etablissement {
   estHabitation            Boolean @default(false)  // rare pour TPE/PME, utile pour multi-activité
 
   // Précisions conditionnelles (null si le flag correspondant est false)
-  typeErp                  TypeErp?                 // enum M, N, U, R, L, O, S, T, V, W, X, Y, PA, CTS, SG, PS, REF, GA, OA, EF (~20 valeurs)
+  typeErp                  TypeErp?                 // enum des 22 types de l'article GN 1 § 1 (cf. addendum 2026-09-03)
   categorieErp             CategorieErp?            // enum N1..N5
   classeIgh                ClasseIgh?               // enum GHA, GHW, GHO, GHR, GHS, GHU, GHZ, ITGH
 
   // ...
 }
 
+// La liste ci-dessous est celle du 2026-04-21, et il lui manquait le type J.
+// Elle est conservée telle quelle : l'addendum 2026-09-03 en tête de section
+// « Conséquences » dit ce qu'elle a coûté. La liste qui fait foi est celle du
+// verbatim de GN 1, au corpus `arrete-1980-livre-1`.
 enum TypeErp {
   M  // Magasin de vente, centre commercial
   N  // Restaurant, débit de boissons
@@ -156,6 +160,74 @@ typologies: { erp: true }
 ### Neutres
 - Un établissement purement habitation sans salarié n'est pas dans le périmètre V2 (exclusion explicite dans CLAUDE.md). Le flag `estHabitation` reste utile quand une entreprise gère un immeuble d'habitation en plus de son activité principale (rare en TPE).
 
+
+## Addendum 2026-09-03 — La liste des types était complète par affirmation, jamais par construction
+
+L'énumération `TypeErp` ci-dessus porte vingt et un types. **L'article GN 1 § 1
+de l'arrêté du 25 juin 1980 en compte vingt-deux** : quatorze établissements
+installés dans un bâtiment, huit établissements spéciaux. Il manquait le type
+**J**, « structures d'accueil pour personnes âgées et personnes handicapées ».
+
+**Ce n'est pas une coquille, et c'est le vrai sujet de cet addendum.** Cette
+ADR est le seul endroit où la liste ait jamais été écrite, et elle l'a été sous
+la forme `enum M, N, U, R, L, O, S, T, V, W, X, Y, PA, CTS, SG, PS, REF, GA,
+OA, EF` **(~20 valeurs)**. Ce tilde dit tout : l'auteur savait sa liste
+approximative, et personne ne l'a ensuite confrontée à la nomenclature. Elle
+s'est recopiée trois fois — l'enum Prisma, `TYPES_ERP`, `TYPE_ERP` — chacune
+d'après la précédente, aucune d'après le texte. Trois copies concordantes, zéro
+lecture.
+
+Le manque a été *découvert*, non décidé : en lisant le tableau de GE 4 § 1 le
+2026-09-02, qui donne à J une colonne à part entière. Entre-temps,
+`LABEL_TYPE_ERP` et l'écran d'onboarding avaient été « corrigés » du mauvais
+côté — ils annonçaient au dirigeant que le type J était écarté par un choix de
+périmètre. La phrase avait été alignée sur le défaut plutôt que l'inverse.
+
+### Ce que l'absence coûtait
+
+Aucun écart de périodicité : J est à trois ans dans les quatre catégories du
+tableau de GE 4, et les lignes triennales du référentiel étant écrites en
+complément (`typesExclus`), un type non nommé y retombe déjà. Le coût était
+ailleurs, et il n'est pas moindre : un EHPAD, une résidence autonomie, un foyer
+d'accueil médicalisé ouvraient la liste des types, n'y trouvaient pas la leur,
+et se rangeaient sous `U` ou sous `R` pour pouvoir continuer. La donnée était
+fausse à la source.
+
+### Ce qui est décidé
+
+1. **GN 1 est dépouillé** (`src/lib/referentiels/corpus/arrete-1980-livre-1.ts`),
+   verbatim du § 1 relevé le 2026-09-03, version en vigueur du 10 février 2022
+   (arrêté du 7 février 2022, NOR INTE2137489A). Un troisième corpus de l'arrêté
+   de 1980, parce que le Livre Ier ne relève ni du Livre II (quatre premières
+   catégories) ni du Livre III (cinquième) — c'est lui qui les définit.
+2. **Le type J entre au modèle**, aux quatre endroits qui le déclarent, plus une
+   migration additive (`ALTER TYPE "TypeErp" ADD VALUE 'J' BEFORE 'PA'`).
+3. **Une garde dérive la liste du texte** : `types-erp.test.ts` extrait les
+   lettres du verbatim de GN 1 et les confronte à l'enum Prisma, à `TYPES_ERP`,
+   à `TYPE_ERP` et à `LABEL_TYPE_ERP`, dans les deux sens. C'est ce point-là qui
+   compte autant que la correction : sans lui, la prochaine liste écrite de
+   mémoire recommencera. Ce n'est pas une liste exhaustive recopiée — elle ne se
+   répare pas en réalignant deux copies, seulement en corrigeant celle qui
+   s'écarte du texte.
+
+### Ce qui n'est PAS décidé, et pourquoi
+
+**`R` n'est pas subdivisé.** Le tableau de GE 4 § 1 porte deux colonnes,
+« R (1) avec hébergement » et « R (2) sans hébergement », à des rythmes
+différents en 4ᵉ catégorie. Ce ne sont pas deux types de la nomenclature :
+GN 1 § 1 n'écrit qu'un seul R, et le § 4 du même article définit l'hébergement
+comme un FAIT — « les seuls locaux destinés au sommeil du public la nuit ».
+Créer `R1` et `R2` inventerait deux valeurs que le texte n'écrit pas ; ce qu'il
+faudrait est un croisement du type R avec un attribut d'établissement, du genre
+de `comporteLocauxSommeilPublic`, que `TypologieApplication` ne sait pas
+exprimer aujourd'hui. Tout R reste donc à trois ans — le plus court des deux
+rythmes, jamais le plus long.
+
+**L'ordre de l'énumération n'est pas celui du texte.** GN 1 ouvre par J ; le
+produit met en avant les types des secteurs cibles. Ce qui est repris du texte
+est son découpage en deux groupes — a) bâtiment, b) spéciaux — et la garde
+compare donc des ensembles, pas des séquences. Un ordre différent est un choix
+d'affichage ; il ne doit pas se déguiser en lecture.
 ## Alternatives rejetées
 
 ### Alternative A — Enum unique `TypologieEtablissement`

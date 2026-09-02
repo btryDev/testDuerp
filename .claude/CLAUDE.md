@@ -516,8 +516,10 @@ Compte → entreprise → **premier** établissement → déclaration guidée de
 Le parcours **ne déduit plus rien** depuis le 2026-09-01 : le type et la
 catégorie d'ERP sont **déclarés** par le dirigeant — son classement figure sur
 son arrêté d'ouverture ou au PV de la commission de sécurité — et la **famille
-d'habitation** est exigée si le régime habitation est coché. Les vingt et un
-types sont proposés, pas huit. Deux réponses arrêtent la création : plus de
+d'habitation** est exigée si le régime habitation est coché. Les vingt-deux
+types sont proposés, pas huit — les vingt et un d'avant le 2026-09-03 en
+oubliaient un, le type J (structures d'accueil pour personnes âgées et
+handicapées), que l'ADR-004 avait perdu en écrivant la liste de mémoire. Deux réponses arrêtent la création : plus de
 cinquante travailleurs, et un ERP situé en IGH (ADR-031).
 
 Les établissements **suivants** ne passent pas par là : ils s'ouvrent depuis le

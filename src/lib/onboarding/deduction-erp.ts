@@ -53,7 +53,7 @@ import type {
  * L'onboarding ne déduit plus rien : il fait **déclarer** le type et la
  * catégorie (ADR-025 § 2). Les huit cartes d'activité et leur mappage sont
  * partis avec le mode guidé — elles ne servaient qu'à lui, et ne couvraient
- * que huit types sur vingt et un.
+ * que huit types sur vingt-deux.
  *
  * Ce qui reste ci-dessous n'est **appelé par aucun écran** aujourd'hui, et
  * c'est délibéré : la table des seuils a été relue article par article sur
@@ -313,8 +313,9 @@ export type Seuil5eCategorie =
  *     d'hospitalisation), et le champ de U 1 vise les établissements de
  *     santé, pas les cabinets libéraux.
  *   - **J** (accueil de personnes âgées ou handicapées) : seuil en capacité
- *     d'hébergement (25 / 20 lits), pas en public — et le type n'est pas dans
- *     l'enum `TypeErp` du produit.
+ *     d'hébergement (25 / 20 lits), pas en public. Le type est entré dans
+ *     l'enum `TypeErp` le 2026-09-03 ; sa ligne de seuils, elle, n'a toujours
+ *     pas été relue mot pour mot, donc il reste hors table.
  *   - **L** : deux grilles selon la nature de la salle (a, b, e, f, g :
  *     100 en sous-sol / 200 au total ; c, d — projection, spectacles,
  *     cabarets : 20 / 50). L'assistant ne demande pas le sous-type.
