@@ -1,10 +1,39 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 import type { Prestataire } from "@prisma/client";
+import { joursCivilsEntre } from "@/lib/dates";
 import {
   MOIS_RENOUVELLEMENT_URSSAF,
   computeVigilance,
   messageExpiration,
 } from "./vigilance";
+
+/**
+ * Les fichiers d'une surface qui s'affiche où un nom donné apparaît.
+ *
+ * Même périmètre que `referentiels/corpus/citations-ecran.ts` — `src/app` et
+ * `src/components` —, et pour la même raison : ce qui atteint le dirigeant.
+ * Un balayage plutôt qu'une liste d'écrans, pour qu'un écran neuf soit tenu
+ * par la règle sans que personne ait pensé à l'y inscrire.
+ */
+function fichiersAffichant(nom: string): string[] {
+  const trouves: string[] = [];
+  const descendre = (d: string) => {
+    for (const entree of readdirSync(d)) {
+      const p = join(d, entree);
+      if (statSync(p).isDirectory()) {
+        if (entree !== "node_modules") descendre(p);
+      } else if (/\.tsx?$/.test(p) && !/\.test\./.test(p)) {
+        if (readFileSync(p, "utf8").includes(nom)) trouves.push(p);
+      }
+    }
+  };
+  for (const racine of ["src/app", "src/components"]) {
+    descendre(join(process.cwd(), racine));
+  }
+  return trouves;
+}
 
 /**
  * Les dates de validité arrivent d'un `<input type="date">` : elles sont
@@ -325,5 +354,99 @@ describe("etatLePlusGrave — la couleur ne se déduit pas du compte", () => {
     );
     expect(v.alertesOuvertes).toBe(0);
     expect(v.etatLePlusGrave).toBeNull();
+  });
+});
+
+/**
+ * L'ancrage de la borne semestrielle, et ce qu'il coûte.
+ *
+ * D. 8222-5 compte les six mois « lors de la conclusion et tous les six mois
+ * jusqu'à la fin de son exécution » : depuis la conclusion du contrat, puis
+ * depuis chaque remise. Le modèle ne détient aucune de ces deux dates, et
+ * `opposabiliteUrssaf` compte depuis `updatedAt`.
+ *
+ * Ces tests ne réparent pas l'ancrage — il faudrait une date de remise au
+ * modèle, donc une migration. Ils **rendent son effet visible**, de sorte que
+ * le jour où le champ arrivera, l'écart à corriger soit écrit noir sur blanc
+ * plutôt qu'à redécouvrir.
+ */
+describe("l'ancrage de la borne semestrielle (D. 8222-5)", () => {
+  const LOINTAINE = jour("2030-12-31");
+
+  it("une retouche de la fiche repousse la borne de six mois", () => {
+    // Deux fiches identiques, même attestation, même date de validité. La
+    // seule différence est une écriture sur la fiche — un téléphone corrigé,
+    // une note ajoutée : `updatedAt` bouge, la borne suit.
+    const jamaisRetouchee = computeVigilance(
+      prestataireFake({
+        attestationUrssafValableJusquA: LOINTAINE,
+        updatedAt: new Date("2026-03-10T07:00:00Z"),
+      }),
+      NOW,
+    );
+    const retoucheeCeJour = computeVigilance(
+      prestataireFake({
+        attestationUrssafValableJusquA: LOINTAINE,
+        updatedAt: NOW,
+      }),
+      NOW,
+    );
+
+    expect(jamaisRetouchee.urssafPlafonneeParLeSemestre).toBe(true);
+    expect(retoucheeCeJour.urssafPlafonneeParLeSemestre).toBe(true);
+    expect(
+      retoucheeCeJour.urssafExpireDans! - jamaisRetouchee.urssafExpireDans!,
+      "La borne ne dépend plus de `updatedAt` : si c'est parce qu'une date " +
+        "de remise est enfin au modèle, ce test a rempli son office et se " +
+        "remplace par celui de la vraie règle.",
+    ).toBeGreaterThan(0);
+  });
+
+  it("le décalage vaut exactement le retard de la dernière écriture", () => {
+    // La borne haute du test précédent : sans elle, un écart d'un seul jour
+    // le ferait passer alors que l'ancrage aurait changé de nature. Cinq mois
+    // sans retouche, cinq mois de borne en moins — au jour près.
+    const cinqMois = computeVigilance(
+      prestataireFake({
+        attestationUrssafValableJusquA: LOINTAINE,
+        updatedAt: new Date("2026-03-10T07:00:00Z"),
+      }),
+      NOW,
+    );
+    const aJour = computeVigilance(
+      prestataireFake({
+        attestationUrssafValableJusquA: LOINTAINE,
+        updatedAt: NOW,
+      }),
+      NOW,
+    );
+    expect(
+      aJour.urssafExpireDans! - cinqMois.urssafExpireDans!,
+    ).toBe(joursCivilsEntre(new Date("2026-03-10T07:00:00Z"), NOW));
+  });
+
+  it("les surfaces qui affichent cette borne disent d'où elle est comptée", () => {
+    // LA GARANTIE, ET ELLE PORTE SUR LES ÉCRANS. `urssafExpireDans` se lit
+    // « Expire dans 12 j » : sur une attestation plafonnée, ce chiffre ne
+    // date pas la pièce mais la dernière écriture sur la fiche. Un écran qui
+    // l'affiche sans lire `urssafPlafonneeParLeSemestre` ne peut pas le dire,
+    // et présente donc une échéance de vigilance qu'aucune remise ne fonde.
+    //
+    // Pas de liste d'écrans ici : c'est le balayage qui trouve les fichiers,
+    // pour qu'un écran neuf soit couvert sans que personne y pense.
+    const fautifs = fichiersAffichant("urssafExpireDans").filter(
+      (f) => !readFileSync(f, "utf8").includes("urssafPlafonneeParLeSemestre"),
+    );
+    expect(
+      fautifs,
+      "Ces surfaces affichent l'échéance URSSAF sans distinguer le cas où " +
+        "elle est comptée depuis `updatedAt` (cf. `MENTION_ANCRAGE_URSSAF`).",
+    ).toEqual([]);
+  });
+
+  it("le balayage voit vraiment un écran, sinon il ne prouve rien", () => {
+    // Borne haute du balayage : à zéro fichier trouvé, le test précédent
+    // passerait au vert en ne mesurant plus rien.
+    expect(fichiersAffichant("urssafExpireDans").length).toBeGreaterThan(0);
   });
 });

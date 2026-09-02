@@ -41,6 +41,18 @@ export const SEUIL_ALERTE_JOURS = JOURS_ALERTE_EXPIRATION;
 /** Périodicité de remise de l'attestation de vigilance (art. D. 8222-5 1°). */
 export const MOIS_RENOUVELLEMENT_URSSAF = 6;
 
+/**
+ * Ce que la borne semestrielle mesure, écrit pour celui qui la lit.
+ *
+ * Une seule phrase, ici et pas dans les écrans, parce que deux surfaces
+ * l'affichent — la carte de l'annuaire et la fiche — et qu'une mention qui
+ * diverge d'un écran à l'autre laisse chercher lequel dit vrai. Elle ne
+ * s'affiche que sur `urssafPlafonneeParLeSemestre` : quand la date saisie
+ * décide, il n'y a rien à corriger dans la lecture du chiffre.
+ */
+export const MENTION_ANCRAGE_URSSAF =
+  "Échéance comptée depuis la dernière modification de la fiche : la date de remise de l'attestation n'est pas enregistrée.";
+
 export type StatutPiece =
   | "a_jour"
   | "expire_bientot"
@@ -74,9 +86,11 @@ export type VigilanceSnapshot = {
   urssafOpposableJusquA: Date | null;
   /**
    * `true` quand c'est le rythme semestriel — et non la date saisie — qui
-   * détermine le statut. L'interface peut alors expliquer pourquoi une
-   * attestation « valable jusqu'en 2030 » demande quand même une nouvelle
-   * demande.
+   * détermine le statut. L'interface **doit** alors dire d'où la borne est
+   * comptée : elle part de `updatedAt`, la dernière modification de la fiche,
+   * et non d'une remise d'attestation (cf. `opposabiliteUrssaf`). Sans cette
+   * mention, l'écran présente comme une échéance de vigilance une date que
+   * n'importe quelle retouche de la fiche repousse de six mois.
    */
   urssafPlafonneeParLeSemestre: boolean;
   rcPro: StatutPiece;
@@ -116,14 +130,35 @@ function statutParDate(
 /**
  * Date de fin d'opposabilité de l'attestation URSSAF.
  *
- * L'article D. 8222-5 1° impose de se faire remettre une attestation
- * **tous les six mois**. Le produit ne stocke pas la date de remise, mais
- * il connaît `updatedAt` : la pièce en dossier n'a **pas pu** être déposée
- * après la dernière modification de la fiche. Passé six mois après cette
- * date, l'attestation détenue a donc nécessairement plus de six mois — la
- * déduction ne vaut que dans ce sens, et c'est le seul qu'on utilise : une
- * fiche modifiée récemment ne permet de conclure à rien, on s'en remet
- * alors à la date de validité saisie.
+ * L'article D. 8222-5 1° impose de se faire remettre une attestation « lors
+ * de la conclusion et tous les six mois jusqu'à la fin de son exécution ».
+ * Le texte compte donc depuis la conclusion du contrat, puis depuis chaque
+ * remise. Le produit ne détient ni l'une ni l'autre de ces dates.
+ *
+ * CE QUE CETTE FONCTION MESURE RÉELLEMENT, ET IL FAUT LE DIRE EN ENTIER.
+ * Elle compte les six mois depuis `updatedAt` — la dernière modification de
+ * la fiche —, sur ce raisonnement : la pièce en dossier n'a **pas pu** être
+ * déposée après cette date, donc six mois plus tard elle a nécessairement
+ * plus de six mois. La déduction ne vaut que dans ce sens, et c'est le seul
+ * qu'on utilise : une fiche modifiée récemment ne permet de conclure à rien,
+ * on s'en remet alors à la date de validité saisie. La borne obtenue est
+ * toujours plus tardive que l'échéance réelle — le module n'alerte jamais à
+ * tort.
+ *
+ * LE PRIX DE CETTE APPROXIMATION N'EST PAS L'IMPRÉCISION, C'EST LE SENS DE
+ * L'ERREUR. `updatedAt` bouge à **toute** écriture sur la fiche : un numéro
+ * de téléphone corrigé, une note interne ajoutée, un domaine coché repoussent
+ * la limite de six mois pleins, alors qu'aucune attestation n'a été remise.
+ * Un prestataire dont la fiche est retouchée deux fois l'an n'atteint jamais
+ * la borne, et l'écran reste vert indéfiniment. C'est un faux négatif que
+ * rien, dans le calcul, ne peut rattraper.
+ *
+ * LE REMÈDE EST UN CHAMP, PAS UNE FORMULE : une date de remise de
+ * l'attestation, saisie avec la pièce. Elle n'existe pas au modèle, et
+ * l'ajouter est une migration. Tant qu'elle manque, les surfaces qui
+ * affichent cette borne disent d'où elle est comptée — c'est la seule chose
+ * qu'on puisse faire sans mentir : voir la carte « Obligation de vigilance »
+ * de la fiche prestataire et la mention portée par `VigilancePiecePill`.
  *
  * On retient la plus proche des deux bornes. Sans ce plafond, une saisie
  * « valable jusqu'au 31/12/2030 » restait verte indéfiniment alors que

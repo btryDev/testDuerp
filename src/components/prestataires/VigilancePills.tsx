@@ -36,11 +36,22 @@ export function VigilancePiecePill({
   libelle,
   statut,
   jours,
+  mention,
   className,
 }: {
   libelle: string;
   statut: StatutPiece;
   jours: number | null;
+  /**
+   * D'où l'échéance affichée est comptée, quand ce n'est pas de la date
+   * saisie sur la pièce. Le seul emploi aujourd'hui est l'attestation URSSAF
+   * plafonnée par le rythme semestriel : la borne y part de la dernière
+   * modification de la fiche, faute de date de remise au modèle. Sans cette
+   * ligne, « Expire dans 12 j » se lit comme une échéance de la pièce, alors
+   * qu'une retouche de la fiche la repousse de six mois
+   * (cf. `lib/prestataires/vigilance.ts`).
+   */
+  mention?: string;
   className?: string;
 }) {
   const etat = ETAT_DE_LA_PIECE[statut];
@@ -64,6 +75,14 @@ export function VigilancePiecePill({
         {statut !== "manquante" && (
           <span className="mt-0.5 block text-[11.5px] leading-[1.4] text-[color:var(--board-slate-mid)]">
             {messageExpiration(jours)}
+          </span>
+        )}
+        {/* En clair sous l'échéance, jamais en infobulle (interdit 18) : une
+            phrase qui corrige la lecture d'un chiffre doit être là où le
+            chiffre est lu. */}
+        {mention && (
+          <span className="mt-0.5 block text-[11px] leading-[1.4] text-[color:var(--board-slate-soft)]">
+            {mention}
           </span>
         )}
       </span>
