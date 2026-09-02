@@ -260,7 +260,51 @@ export const obligationsAscenseurs: Obligation[] = [
     typologies: { travail: true, erp: true, igh: true, habitation: true },
     categoriesEquipement: ["ASCENSEUR"],
     notesInternes:
-      "NATURE : ÉTAT PERMANENT, `pieceAttendue: \"carnet d'entretien\"` (ADR-026). R. 134-7 III et R. 134-10 imposent la tenue du carnet lui-même, conservé toute la vie de l'appareil.\n\nFONDEMENT RECALÉ LE 2026-09-01 (lot A). La `reference` citait bien « R. 134-7 et R. 134-10 », mais la clé `article` — la seule que le corpus et la veille savent lire — pointait R. 134-10, qui ne régit QUE le propriétaire assurant l'entretien par ses propres moyens. Le cas ordinaire, l'entretien confié à une entreprise, est à R. 134-7 III, et il n'était rattaché à aucun texte lu. Les deux sont désormais cités séparément, chacun pour son régime, et R. 134-7 est entré au corpus.\n\nCE QUI RESTE NON PORTÉ : le RAPPORT ANNUEL D'ACTIVITÉ que l'entreprise remet au propriétaire (R. 134-7 III, et R. 134-10 pour la régie). La description le nomme, aucune échéance ne le planifie — il est annuel, il a un réalisateur, il n'a pas de ligne. Recensé en section C du cadrage du 2026-09-01 ; le lot A ne crée pas d'obligation.\n\nFAMILLE D'HABITATION — EXAMINÉE LE 2026-09-01, AUCUNE RESTRICTION POSÉE. L'arrêté du 31 janvier 1986, qui définit les familles, a été dépouillé ce jour (`corpus/arrete-1986-habitation.ts`). Son SEUL article traitant des ascenseurs est le 97, et il ne prescrit que des degrés coupe-feu de parois de cages par famille, plus un dispositif d'appel prioritaire des pompiers en 4ᵉ famille : des règles de construction, dont aucune ne conditionne l'entretien, la visite ni le contrôle technique. Le régime de cette ligne vient du CCH, et L. 134-1, relu le même jour, énumère huit exclusions de champ — installations à câbles, ascenseurs militaires, puits de mine, machinerie de théâtre, moyens de transport, accès au poste de travail d'une machine, ascenseurs de chantier, appareils à 0,15 m/s au plus — dont AUCUNE ne vise les maisons individuelles. Poser `habitation: { familles }` ici serait une restriction inventée : la typologie reste inchangée.",
+      "NATURE : ÉTAT PERMANENT, `pieceAttendue: \"carnet d'entretien\"` (ADR-026). R. 134-7 III et R. 134-10 imposent la tenue du carnet lui-même, conservé toute la vie de l'appareil.\n\nFONDEMENT RECALÉ LE 2026-09-01 (lot A). La `reference` citait bien « R. 134-7 et R. 134-10 », mais la clé `article` — la seule que le corpus et la veille savent lire — pointait R. 134-10, qui ne régit QUE le propriétaire assurant l'entretien par ses propres moyens. Le cas ordinaire, l'entretien confié à une entreprise, est à R. 134-7 III, et il n'était rattaché à aucun texte lu. Les deux sont désormais cités séparément, chacun pour son régime, et R. 134-7 est entré au corpus.\n\nCE QUI ÉTAIT NON PORTÉ L'EST DEPUIS LE 2026-09-01 (lot C) : le RAPPORT ANNUEL D'ACTIVITÉ a sa ligne, `ascenseur-rapport-annuel-activite`. La note disait « il est annuel, il a un réalisateur, il n'a pas de ligne » ; les trois restent vrais, le dernier ne l'est plus. Cette obligation-ci garde le seul carnet.\n\nFAMILLE D'HABITATION — EXAMINÉE LE 2026-09-01, AUCUNE RESTRICTION POSÉE. L'arrêté du 31 janvier 1986, qui définit les familles, a été dépouillé ce jour (`corpus/arrete-1986-habitation.ts`). Son SEUL article traitant des ascenseurs est le 97, et il ne prescrit que des degrés coupe-feu de parois de cages par famille, plus un dispositif d'appel prioritaire des pompiers en 4ᵉ famille : des règles de construction, dont aucune ne conditionne l'entretien, la visite ni le contrôle technique. Le régime de cette ligne vient du CCH, et L. 134-1, relu le même jour, énumère huit exclusions de champ dont AUCUNE ne vise les maisons individuelles. Poser `habitation: { familles }` ici serait une restriction inventée : la typologie reste inchangée.",
+  },
+  {
+    id: "ascenseur-rapport-annuel-activite",
+    domaine: "ascenseur",
+    libelle: "Rapport annuel d'activité de l'entreprise d'entretien (ascenseur)",
+    description:
+      "Chaque année, l'entreprise titulaire du contrat d'entretien remet au propriétaire un rapport d'activité. Lorsque le carnet d'entretien est tenu sous forme électronique, son contenu est annexé à ce rapport. Le propriétaire qui assure l'entretien par ses propres moyens établit lui-même ce rapport, dans les mêmes conditions.",
+    referencesLegales: [
+      {
+        source: "CCH",
+        reference:
+          "CCH, art. R. 134-7 III (rapport annuel d'activité — régime du contrat d'entretien)",
+        article: "CCH R. 134-7",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000053629120",
+        note: "« En outre, l'entreprise remet au propriétaire un rapport annuel d'activité auquel est annexé le contenu du carnet d'entretien lorsque celui-ci est établi sous forme électronique. » Article rouvert à la source le 2026-09-01 avant l'encodage — version réécrite par le décret n° 2026-166 du 4 mars 2026, en vigueur au 1er avril 2026. Le mot « annuel » est dans le texte : c'est un rythme, pas un plafond, et aucun tiers n'est autorisé à le déplacer.",
+        versionConstatee: "2026-04-01",
+      },
+      {
+        source: "CCH",
+        reference:
+          "CCH, art. R. 134-10 (rapport annuel d'activité — propriétaire assurant l'entretien par ses propres moyens)",
+        article: "CCH R. 134-10",
+        url:
+          "https://www.legifrance.gouv.fr/codes/id/LEGISCTA000043818735/",
+        note: "Cité pour le second régime, et pour lui seul : « Il tient à jour le carnet d'entretien et établit un rapport annuel d'activité dans les conditions fixées au III de l'article R. 134-7. » L'acte est le même, l'auteur change.",
+        versionConstatee: "2021-07-01",
+      },
+    ],
+    periodicite: "annuelle",
+    nature: "echeance_recurrente",
+    pieceAttendue: "rapport annuel d'activité",
+    // `personne_qualifiee` — c'est la valeur que porte déjà tout ce que
+    // l'entreprise d'entretien fait sur cet appareil (`ascenseur-visite-six-
+    // semaines`, `-examen-semestriel-secours`, `-examen-annuel-securite`).
+    // `exploitant` couvrirait le seul cas de la régie et dirait au propriétaire
+    // ordinaire qu'il rédige lui-même un rapport que son prestataire lui doit.
+    realisateurs: ["personne_qualifiee"],
+    criticite: 3,
+    transmet: [],
+    typologies: { travail: true, erp: true, igh: true, habitation: true },
+    categoriesEquipement: ["ASCENSEUR"],
+    notesInternes:
+      "AJOUTÉE LE 2026-09-01 (lot C). Le rapport était NOMMÉ dans la description de `ascenseur-carnet-entretien` et par les deux entrées de corpus R. 134-7 et R. 134-10, sans qu'aucune échéance ne le date. `ascenseur-carnet-entretien` porte un ÉTAT PERMANENT — le carnet est tenu ou il ne l'est pas —, et un état permanent ne peut pas dater un acte annuel : c'est exactement la distinction que l'ADR-026 a introduite le 2026-08-31. Les deux lignes se lisent ensemble et ne se recouvrent pas ; elles ne partagent pas de périodicité, ce qui est ce que le test anti-doublon compare.\n\nDEUX RÉGIMES, UNE LIGNE, ET C'EST VOULU. R. 134-7 III fait remettre le rapport par l'entreprise sous contrat ; R. 134-10 le fait établir par le propriétaire qui entretient en régie. L'acte, sa périodicité et sa pièce sont identiques — seul l'auteur change, et le produit ne détient pas le fait « entretien en régie » (aucune caractéristique d'équipement ne le porte). Scinder en deux lignes supposerait de deviner lequel des deux régimes s'applique : c'est précisément ce que l'ADR-023 interdit. Une ligne unique, dont la description nomme les deux cas, ne fait perdre au dirigeant que le nom de celui qui signe.\n\nCE QUE LE PRODUIT NE SAIT TOUJOURS PAS, et qui n'est pas résolu ici : `Etablissement` n'a pas de champ « ascenseur entretenu en régie ». Il commande aussi la formation du personnel d'entretien (Code du travail R. 4543-22 à R. 4543-24, ex-article 9 du décret n° 95-826 abrogé) — voir la réserve portée sur `CCH R. 134-10` au corpus.\n\nCRITICITÉ 3 : c'est une pièce à recevoir et à conserver, pas une vérification de sécurité. Son absence se constate à un contrôle, elle ne met personne en danger par elle-même.\n\nELLE FAIT MONTER `PERIODICITE_SANS_TEXTE_PORTEUR` DE DIX À ONZE, et c'est dit ici pour que personne ne le prenne pour un défaut. Le constat de `pnpm relecture` est mécanique — « périodicité récurrente, aucun arrêté ni décret cité » — et il ne sait pas qu'un code porte parfois le chiffre lui-même. C'est le cas de trois des onze : `incendie-travail-exercice-semestriel` (« au moins tous les six mois »), `elec-salarie-attestation-medicale-voisinage` (« d'une validité de cinq ans ») et celle-ci (« un rapport ANNUEL d'activité »). Les trois sont inscrites à `PERIODICITE_SUR_CODE_JUSTIFIEE` avec leur verbatim, qui est la garde prévue pour cette classe. Le cadrage du 2026-09-01 attend que ce compte baisse ; il monte d'un, sur un cas qui a sa justification écrite, et le reste du lot n'en ajoute aucun.",
   },
   {
     id: "ascenseur-telealarme-liaison",

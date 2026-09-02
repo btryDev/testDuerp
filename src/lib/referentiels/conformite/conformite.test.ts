@@ -403,6 +403,14 @@ describe("référentiel conformité — anti-doublon", () => {
     },
     {
       paire: [
+        "elec-travail-carnet-prescriptions",
+        "elec-salarie-habilitation",
+      ],
+      raison:
+        "Instruit à l'intégration du 2026-09-02, et c'est une paire née de deux branches qui ne se voyaient pas : le carnet de prescriptions a été encodé l'après-midi par un lot, quand une réserve écrite le matin par un autre disait qu'il n'était « encodé nulle part ». `R. 4544-10` porte les deux — le quatrième alinéa remet un carnet de prescriptions À CHAQUE travailleur, charge d'employeur due dès qu'on opère sur l'installation ; le premier délivre l'habilitation « à un travailleur désigné », titre nominatif qui n'existe que par personne déclarée. Un employeur peut avoir remis les carnets sans qu'aucune habilitation soit à jour, et l'inverse. Les fondre ferait cocher « fait » pour l'un en réglant l'autre. Le test ne compare que la clé d'article, et `R. 4544-10` en institue deux ; c'est le troisième couple de ce genre sur ce seul article.",
+    },
+    {
+      paire: [
         "aeration-controle-installations-r4222-20",
         "stockage-dangereux-ventilation-locaux",
       ],
@@ -433,6 +441,15 @@ describe("référentiel conformité — anti-doublon", () => {
       ],
       raison:
         "CELLE-CI EN EST PEUT-ÊTRE UNE, ET LA QUESTION EST OUVERTE. Elle n'apparaît que depuis le 2026-09-01 : `levage-examen-adequation-mise-en-service` se fondait sur l'article 5, qui DÉFINIT l'examen d'adéquation sans l'imposer, et le lot A l'a recalée sur l'article 14, seul article qui l'exige. Or c'est déjà le fondement de `levage-epreuve-initiale-fonctionnement`, dont la description reprend les quatre actes du I — examen d'adéquation a), examen de montage b), épreuve statique c), épreuve dynamique d). L'examen d'adéquation est donc décrit deux fois, une fois seul et une fois dans l'énumération. LA QUESTION QUI TRANCHE : l'article 14 fonde-t-il UNE vérification à quatre volets — auquel cas la ligne d'adéquation est un fragment à fondre — ou quatre actes séparables, sachant que le d) porte une exception qui ne vaut que pour lui (épreuve dynamique non exigée pour les appareils mus par la force humaine) et que les trois autres n'en ont pas ? Le fondre est un retrait de ligne : décision de la propriétaire, hors mandat du lot A. Le défaut de fondement, lui, était réel et est corrigé ; la déclaration ne le masque pas, elle rend visible ce qu'il découvre.",
+    },
+    // ── Apparue le 2026-09-01 avec le lot C ────────────────────────────
+    {
+      paire: [
+        "elec-travail-habilitation-personnel",
+        "elec-travail-carnet-prescriptions",
+      ],
+      raison:
+        "Instruit le 2026-09-01, ce n'est PAS un doublon, et c'est exactement le motif de la paire `R. 4412-38` juste en dessous : un même article met plusieurs actes à la charge de l'employeur, et ce test ne compare que la clé d'article. R. 4544-10 en met QUATRE — délivrer l'habilitation en spécifiant les opérations autorisées, s'assurer au préalable de la formation, remettre à chaque travailleur un carnet de prescriptions (quatrième alinéa), et subordonner la validité au voisinage à une attestation médicale. L'habilitation est une DÉCISION de l'employeur ; le carnet est une PIÈCE qu'il remet, et l'un peut exister sans l'autre — un employeur qui a habilité sans remettre est le manquement ordinaire, pas un cas d'école. Les deux se prouvent différemment : `pieceAttendue` est nulle sur l'habilitation, nommée sur le carnet. Article rouvert à la source avant l'encodage, version en vigueur du 2025-10-01.",
     },
     {
       paire: [
@@ -1086,7 +1103,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // vert — alors qu'il déplace la date de première occurrence d'un équipement
   // neuf. Tout champ qui influence une échéance entre au hachage, et la preuve
   // se fait en changeant sa valeur : si l'empreinte ne bouge pas, il y manque.
-  const EMPREINTE_ATTENDUE = "124-7badaeedbfb31463";
+  const EMPREINTE_ATTENDUE = "128-a9515603e18d300d";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1204,7 +1221,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(124);
+    ).toBe(128);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1485,6 +1502,20 @@ const PERIODICITE_SUR_CODE_JUSTIFIEE: Record<string, string> = {
     "Contraste à garder en tête : l'habilitation elle-même n'a AUCUN chiffre " +
     "— R. 4544-10 renvoie aux modalités des normes, que R. 4544-3 qualifie de " +
     "recommandées — et c'est pourquoi elle est passée à `autre` (ADR-023 § 6).",
+  "ascenseur-rapport-annuel-activite":
+    "Le CCH porte l'adjectif lui-même, au III de R. 134-7 : « En outre, " +
+    "l'entreprise remet au propriétaire un RAPPORT ANNUEL D'ACTIVITÉ auquel " +
+    "est annexé le contenu du carnet d'entretien lorsque celui-ci est établi " +
+    "sous forme électronique. » Article rouvert à la source le 2026-09-01, " +
+    "version en vigueur du 2026-04-01 (décret n° 2026-166 du 4 mars 2026). " +
+    "Ce n'est ni un plafond ni un renvoi : le texte ne dit pas « au moins une " +
+    "fois par an » et ne laisse à aucun tiers le soin de fixer le délai — " +
+    "c'est la différence avec les quatre cas de la section B du cadrage du " +
+    "2026-09-01. R. 134-10 le redit à l'identique pour le propriétaire qui " +
+    "entretient par ses propres moyens, « dans les conditions fixées au III " +
+    "de l'article R. 134-7 ». L'arrêté du 18 novembre 2004, qui porte les " +
+    "autres rythmes de l'entretien d'ascenseur, ne connaît pas ce rapport : " +
+    "son annexe ne cadence que des opérations techniques.",
 
   // ---------------------------------------------------------------------------
   // Lot 7 — les cinq périodicités chiffrées du dépouillement du 2026-08-31.

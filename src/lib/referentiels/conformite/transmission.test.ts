@@ -152,7 +152,26 @@ describe("transmissions (ADR-024)", () => {
    * `TitreSalarie.echeanceLe` est nullable, et `periodicite: "autre"` empêche
    * le générateur d'en calculer une.
    */
-  const PLAFOND_RENVOIS_SANS_TITRE = 0;
+  /*
+   * REMONTÉ À 1 À L'INTÉGRATION DU 2026-09-02, et la règle ci-dessus tient
+   * quand même — parce que le seul renvoi restant n'a pas de titre à encoder.
+   *
+   * `EL 18 § 2` exige la présence d'« une personne qualifiée » pendant toute
+   * la présence du public. Le texte ne renvoie à aucune formation, ne nomme
+   * aucun titre, ne fixe aucune durée : il exige une qualification sans la
+   * définir. Encoder une ligne de catalogue reviendrait à inventer le titre
+   * que l'article se garde de nommer, et pointer vers l'habilitation
+   * électrique dirait quelque chose qu'il n'écrit pas.
+   *
+   * C'est donc l'exception que la règle prévoit en creux : « s'il augmente,
+   * ce n'est pas le plafond qu'on relève, c'est le titre qu'on encode » vaut
+   * quand un titre existe à encoder. Le second renvoi de ce lot, lui, en
+   * avait un — le carnet de prescriptions a été branché sur
+   * `elec-salarie-habilitation` plutôt que compté ici.
+   *
+   * Il ne remonte pas au-delà sans le même genre d'argument, écrit ici.
+   */
+  const PLAFOND_RENVOIS_SANS_TITRE = 1;
 
   it("aucune transmission ne pose une question sans laisser répondre", () => {
     const muets = renvoisSansTitre(obligationsConformite);
@@ -195,10 +214,14 @@ describe("transmissions (ADR-024)", () => {
       categoriesEquipement: ["INSTALLATION_ELECTRIQUE"],
     });
 
-    // `null` : attrapé, et nommé.
-    expect(renvoisSansTitre([...obligationsConformite, temoin(null)])).toEqual([
-      "temoin-muet",
-    ]);
+    // `null` : attrapé, et nommé. On compare l'ÉCART au référentiel réel, pas
+    // une liste absolue : celle-ci valait tant que le compte était à zéro, et
+    // elle est devenue fausse le jour où le plafond est passé à 1. Une
+    // contre-épreuve qui énumère l'état du référentiel se répare en recopiant
+    // cet état — donc cesse de vérifier le prédicat qu'elle prétend éprouver.
+    const avant = renvoisSansTitre(obligationsConformite);
+    const apres = renvoisSansTitre([...obligationsConformite, temoin(null)]);
+    expect(apres.filter((id) => !avant.includes(id))).toEqual(["temoin-muet"]);
     // Un titre nommé : accepté, même inventé — ce n'est pas le défaut que ce
     // cliquet-ci surveille, c'est celui de `renvoisMorts`. Les deux gardes
     // sont disjointes, et ce cas le prouve : sans lui, écrire
@@ -206,7 +229,7 @@ describe("transmissions (ADR-024)", () => {
     // confondrait et laisserait les deux tests verts.
     expect(
       renvoisSansTitre([...obligationsConformite, temoin("titre-inexistant")]),
-    ).toEqual([]);
+    ).toEqual(avant);
   });
 
   it("chaque transmission porte un motif substantiel", () => {

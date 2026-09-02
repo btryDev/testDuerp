@@ -101,6 +101,8 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
         "incendie-registre-securite",
         "incendie-travail-exercice-semestriel",
       ],
+      reserve:
+        "RELEVÉ DE LA SECTION C DU CADRAGE INFIRMÉ LE 2026-09-01 (lot C), ET C'EST LA SEULE DES DIX QUI L'AIT ÉTÉ. Le cadrage annonçait « Essais et visites périodiques DU MATÉRIEL, semestriels — R. 4227-39 (le référentiel n'a que l'exercice) ». Le référentiel a les deux, et depuis longtemps : `incendie-travail-exercice-semestriel` s'intitule « Essais du matériel ET exercices d'évacuation semestriels » — libellé élargi bien avant cette passe, au commit `2d341ac` —, sa `description` reprend la phrase entière du texte, et sa `pieceAttendue` est le « registre des exercices et essais ». Cette entrée de corpus ne portait d'ailleurs aucune réserve, ce qui était juste.\n\nCE QUI A TROMPÉ LE RELEVÉ EST L'IDENTIFIANT, qui ne dit que l'exercice. Il ne se renomme pas : `Verification.obligationId` est stocké en base sous contrainte d'unicité, et le changer orphelinerait les lignes de calendrier existantes — même raison que pour `elec-erp-groupe-electrogene-annuel`, dont la périodicité est mensuelle.\n\nET SCINDER SERAIT FAUX. Le texte cadence les deux actes d'une seule phrase — « Ces exercices ET ESSAIS périodiques ont lieu au moins tous les six mois » —, sur une seule consigne et avec un seul registre. Deux lignes produiraient deux rendez-vous là où le texte en donne un, ce qui est exactement la décomposition que l'ADR-022 écarte.",
     },
     {
       ref: "R. 4227-34",

@@ -37,10 +37,32 @@ export const obligationsStockageDangereux: Obligation[] = [
     referencesLegales: [
       {
         source: "CODE_ENVIRONNEMENT",
-        reference: "L. 512-8 (déclaration) · L. 512-7 (enregistrement) · L. 512-1 (autorisation)",
+        reference:
+          "C. env., art. L. 512-8 — régime de la DÉCLARATION (section 3)",
+        article: "C. env. L. 512-8",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006834242",
+        note: "« Sont soumises à déclaration les installations qui, ne présentant pas de graves dangers ou inconvénients pour les intérêts visés à l'article L. 511-1, doivent néanmoins respecter les prescriptions générales édictées par le préfet en vue d'assurer dans le département la protection des intérêts visés à l'article L. 511-1. » Verbatim relevé le 2026-09-01. Placé en tête parce que c'est le SEUL des trois régimes qu'un commerce ou un restaurant rencontre couramment — une chambre froide, un stockage de gaz, une installation de réfrigération.",
+        versionConstatee: "2017-03-01",
+      },
+      {
+        source: "CODE_ENVIRONNEMENT",
+        reference:
+          "C. env., art. L. 512-7 — régime de l'ENREGISTREMENT, dit autorisation simplifiée (section 2)",
+        article: "C. env. L. 512-7",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042654882",
+        note: "« Sont soumises à autorisation simplifiée, sous la dénomination d'enregistrement, les installations qui présentent des dangers ou inconvénients graves pour les intérêts mentionnés à l'article L. 511-1, lorsque ces dangers et inconvénients peuvent, en principe, eu égard aux caractéristiques des installations et de leur impact potentiel, être prévenus par le respect de prescriptions générales édictées par le ministre chargé des installations classées. » Verbatim relevé le 2026-09-01. Second régime réellement atteignable dans les secteurs couverts.",
+        versionConstatee: "2020-12-09",
+      },
+      {
+        source: "CODE_ENVIRONNEMENT",
+        reference:
+          "C. env., art. L. 512-1 — régime de l'AUTORISATION environnementale (section 1)",
         article: "C. env. L. 512-1",
         url:
-          "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000006159273/",
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033933233",
+        note: "« Sont soumises à autorisation les installations qui présentent de graves dangers ou inconvénients pour les intérêts mentionnés à l'article L. 511-1. » Le plus haut des trois régimes, et celui que les secteurs couverts n'atteignent pas — cité pour que la vérification porte bien sur les trois, pas parce qu'un restaurant y tombe.",
         versionConstatee: "2017-03-01",
       },
     ],
@@ -53,7 +75,7 @@ export const obligationsStockageDangereux: Obligation[] = [
     typologies: { travail: true },
     categoriesEquipement: ["STOCKAGE_MATIERE_DANGEREUSE"],
     notesInternes:
-      "Étape de qualification initiale. Une fois le régime connu, les obligations ICPE spécifiques s'appliquent — sortie de périmètre MVP.\n\nNATURE : PONCTUELLE (ADR-026). La note ci-dessus la qualifie d'« étape de qualification initiale », et c'est exactement une obligation ponctuelle : faite une fois, elle ne se refait pas — sauf changement des quantités stockées, fait que le produit n'observe pas et qui n'est pas encodé ici. C'est l'une des trois obligations sur lesquelles l'audit du 2026-08-31 a établi que `periodicite: \"autre\"` recouvrait trois natures distinctes.",
+      "LES TROIS RÉGIMES SONT CITÉS SÉPARÉMENT DEPUIS LE 2026-09-01 (lot C), ET L'ORDRE EST UNE LECTURE. La ligne portait une seule référence dont le texte nommait bien les trois articles — « L. 512-8 (déclaration) · L. 512-7 (enregistrement) · L. 512-1 (autorisation) » — mais dont la clé `article`, la seule que le corpus et la veille savent lire, n'était que `C. env. L. 512-1`. Deux des trois régimes n'étaient donc ni surveillés par la veille, ni rattachables à un corpus, et c'est le troisième — l'autorisation — que la clé désignait : celui qu'un commerce ou un restaurant n'atteint jamais. L. 512-8 passe en fondement parce que c'est le régime réellement rencontré ; L. 512-7 le suit ; L. 512-1 reste, pour que la vérification porte bien sur les trois.\n\nCE QUE L'ARTICLE NE DIT PAS, et qui explique la forme de cette obligation : aucun des trois ne dit QUELLES QUANTITÉS déclenchent quel régime. C'est le décret de nomenclature pris pour L. 511-2. Le produit ne détient pas les quantités stockées et ne les devine pas (ADR-023) : l'obligation fait donc VÉRIFIER le régime, elle ne le déduit pas.\n\nCE QUI RESTE HORS RÉFÉRENTIEL, déclaré au corpus sur chacun des deux nouveaux articles : les procédures (L. 512-7-1 et s., L. 512-9 et s.) et, pour le régime déclaratif soumis à contrôle, ses contrôles périodiques — dont la périodicité dépend de la rubrique de nomenclature.\n\nÉtape de qualification initiale. Une fois le régime connu, les obligations ICPE spécifiques s'appliquent — sortie de périmètre MVP.\n\nNATURE : PONCTUELLE (ADR-026). La note ci-dessus la qualifie d'« étape de qualification initiale », et c'est exactement une obligation ponctuelle : faite une fois, elle ne se refait pas — sauf changement des quantités stockées, fait que le produit n'observe pas et qui n'est pas encodé ici. C'est l'une des trois obligations sur lesquelles l'audit du 2026-08-31 a établi que `periodicite: \"autre\"` recouvrait trois natures distinctes.",
   },
   {
     id: "stockage-dangereux-retention",

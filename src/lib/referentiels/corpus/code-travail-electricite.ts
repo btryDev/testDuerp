@@ -141,19 +141,22 @@ export const CODE_TRAVAIL_ELECTRICITE: Corpus = {
       citationCle:
         "Un travailleur est habilité dans les limites des attributions qui lui sont confiées. L'habilitation, délivrée par l'employeur, spécifie la nature des opérations qu'il est autorisé à effectuer. Avant de délivrer l'habilitation, l'employeur s'assure que le travailleur a reçu la formation théorique et pratique qui lui confère la connaissance des risques liés à l'électricité et des mesures à prendre pour intervenir en sécurité lors de l'exécution des opérations qui lui sont confiées. L'employeur délivre, maintient ou renouvelle l'habilitation selon les modalités contenues dans les normes mentionnées à l'article R. 4544-3. L'employeur remet à chaque travailleur un carnet de prescriptions établi sur la base des prescriptions pertinentes de ces normes, complété, le cas échéant, par des instructions de sécurité particulières au travail effectué.",
       statut: "retenu",
-      // Deux obligations, et non une : l'article en fonde une côté
+      // Trois obligations, et non une : l'article en fonde une côté
       // établissement — l'employeur s'assure que ses travailleurs sont
-      // habilités, due dès qu'une installation est déclarée — et un titre
-      // nominatif côté salarié, ajouté le 2026-09-01. C'est le même article
-      // parce que c'est le même texte qui délivre l'habilitation « à un
-      // travailleur désigné » ; ce sont deux lignes parce que l'une existe
-      // sans que personne soit déclaré et l'autre pas.
+      // habilités, due dès qu'une installation est déclarée —, un titre
+      // nominatif côté salarié, et le carnet de prescriptions de son quatrième
+      // alinéa, remis à chaque travailleur. C'est le même article parce que
+      // c'est le même texte ; ce sont trois lignes parce qu'elles n'existent
+      // pas aux mêmes conditions. Les deux dernières sont nées le même jour,
+      // sur deux branches qui ne se voyaient pas : la réserve du matin disait
+      // le carnet « encodé nulle part », un lot l'a encodé l'après-midi.
       obligations: [
         "elec-travail-habilitation-personnel",
         "elec-salarie-habilitation",
+        "elec-travail-carnet-prescriptions",
       ],
       reserve:
-        "LE TRIENNAL NE VIENT PAS D'ICI, et l'article le prouve en creux : relu le 2026-09-01, il ne porte aucune durée. « L'employeur délivre, maintient ou renouvelle l'habilitation selon les modalités contenues dans les normes mentionnées à l'article R. 4544-3 » — soit la NF C 18-510, que R. 4544-3 qualifie lui-même de recommandation et que ce dépôt n'accepte pas comme source opposable. Le carnet de prescriptions du quatrième alinéa, remis à CHAQUE travailleur, n'est encodé nulle part. Non corrigé.",
+        "LE TRIENNAL NE VIENT PAS D'ICI, et l'article le prouve en creux : relu le 2026-09-01, il ne porte aucune durée. « L'employeur délivre, maintient ou renouvelle l'habilitation selon les modalités contenues dans les normes mentionnées à l'article R. 4544-3 » — soit la NF C 18-510, que R. 4544-3 qualifie lui-même de recommandation et que ce dépôt n'accepte pas comme source opposable. Cette réserve-là reste entière.\n\nLE CARNET DE PRESCRIPTIONS EST ENCODÉ DEPUIS LE MÊME JOUR (lot C) : `elec-travail-carnet-prescriptions`, état permanent, pièce attendue « carnet de prescriptions ». L'article met QUATRE actes à la charge de l'employeur — délivrer l'habilitation, s'assurer de la formation préalable, remettre le carnet, subordonner la validité au voisinage à l'attestation médicale — et le référentiel en portait trois. Le quatrième alinéa a sa ligne, distincte de l'habilitation : celle-ci est une décision, celui-là une pièce, et un employeur peut avoir habilité sans avoir remis.\n\n« CHAQUE TRAVAILLEUR » NE VEUT PAS DIRE TOUT L'EFFECTIF, et c'est le chemin qui le dit : Quatrième partie > Livre V > Titre IV > Chapitre IV > SECTION 4 « Travailleurs autorisés à effectuer des opérations ». Le carnet est dû à qui est habilité. Le produit ne sait pas qui l'est — le déclencheur reste l'installation électrique déclarée, et `transmet` nomme le trou.",
     },
     {
       ref: "L. 4711-5",
