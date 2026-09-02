@@ -289,7 +289,14 @@ export function Cadran() {
               {/* Le texte du cran actif. Les six panneaux sont empilés :
                   celui qui est actif monte, les autres s'effacent. Le `pb`
                   mange le bas du bloc centré — le texte se cale donc un
-                  peu au-dessus du milieu de la carte. */}
+                  peu au-dessus du milieu de la carte.
+
+                  Le passage est SÉQUENTIEL, pas un fondu croisé. Les deux
+                  panneaux partageaient la même durée de 500 ms : le sortant
+                  passait en absolu d'un coup, se superposait à l'entrant et
+                  restait lisible tout du long — on lisait « Le DUERP e de
+                  sécurité », les deux titres l'un dans l'autre. Le sortant
+                  s'efface donc vite, et l'entrant n'arrive qu'après lui. */}
               <div className="flex h-full items-center pb-[7vh] pl-[42%] pr-[7%]">
                 <div className="relative w-full max-w-[520px]">
                   {DOCUMENTS.map((d, i) => {
@@ -299,10 +306,10 @@ export function Cadran() {
                         key={d.numero}
                         aria-hidden={!ici}
                         className={
-                          "transition-[opacity,transform] duration-500 ease-[cubic-bezier(.16,1,.3,1)] " +
+                          "transition-[opacity,transform] ease-[cubic-bezier(.16,1,.3,1)] " +
                           (ici
-                            ? "relative z-10 translate-y-0 opacity-100"
-                            : "pointer-events-none absolute inset-0 translate-y-2 opacity-0")
+                            ? "relative z-10 translate-y-0 opacity-100 delay-[160ms] duration-[380ms]"
+                            : "pointer-events-none absolute inset-0 translate-y-2 opacity-0 delay-0 duration-[140ms]")
                         }
                       >
                         <p className="lp-eyebrow">{d.famille}</p>
@@ -324,15 +331,22 @@ export function Cadran() {
                 </div>
               </div>
 
-              {/* Avancement — le seul repère de position, discret. */}
-              <div className="absolute inset-x-0 bottom-6 px-[7%]">
-                <div className="h-px w-full bg-[rgba(10,10,10,.16)]">
+              {/* Avancement — le seul repère de position, discret.
+
+                  La barre garde toute la largeur : elle mesure la carte
+                  entière. La LÉGENDE, elle, se range sous la colonne de
+                  texte, à l'aplomb du panneau (`pl-[42%]` ci-dessus). Posée
+                  à 7 %, elle tombait sous l'arc de la roue, où le chiffre du
+                  cran suivant — « 04 » quand « 02 » est actif — descend la
+                  recouvrir. */}
+              <div className="absolute inset-x-0 bottom-6">
+                <div className="mx-[7%] h-px bg-[rgba(10,10,10,.16)]">
                   <div
                     className="h-px bg-[color:var(--board-ink)] transition-[width] duration-150 ease-linear"
                     style={{ width: `${Math.round(avancement * 100)}%` }}
                   />
                 </div>
-                <p className="mt-3 text-[0.78rem] text-[color:var(--board-slate-ink)]">
+                <p className="ml-[42%] mr-[7%] mt-3 text-[0.78rem] text-[color:var(--board-slate-ink)]">
                   Faites défiler — la roue tourne, chaque document prend la
                   parole.
                 </p>

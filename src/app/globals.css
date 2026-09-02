@@ -679,7 +679,15 @@
        de droite apporte déjà le sien. */
     padding-inline: 22px 8px;
     border-radius: 9999px;
-    background-color: color-mix(in srgb, var(--board-card) 58%, transparent);
+    /* 88 % et non 58 %. L'îlot traverse la bande noire du manifeste, et
+       58 % de blanc par-dessus l'encre donne un gris à 2,2:1 sous les
+       liens (--board-slate-mid) : « Comprendre » et « Tarif » s'y lisaient
+       par-dessus le texte des colonnes, et non par-dessus un fond. Le
+       champ est donc calculé sur le pire fond possible — le noir — pour
+       tenir 4,5:1 (WCAG AA) : il faut 82,5 %, on en pose 88 pour la marge.
+       Le verre reste (flou, reflet spéculaire, ombre portée), il cesse
+       seulement d'être transparent au point de ne plus être un fond. */
+    background-color: color-mix(in srgb, var(--board-card) 88%, transparent);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     box-shadow:
@@ -730,14 +738,12 @@
     height: 54px;
   }
 
-  /* Sans backdrop-filter (Firefox si l'option est coupée), le flou ne
-     rend rien : on remonte l'opacité du champ pour que l'îlot reste
-     lisible au lieu de laisser passer le texte de la page. */
-  @supports not (backdrop-filter: blur(1px)) {
-    .lp-nav--ilot {
-      background-color: color-mix(in srgb, var(--board-card) 92%, transparent);
-    }
-  }
+  /* La reprise d'opacité pour les navigateurs sans backdrop-filter a été
+     retirée : elle posait 92 % là où le cas courant en posait 58, c'est-à-
+     dire deux chiffres pour une seule raison — la lisibilité de l'îlot —
+     dont un seul se corrigeait quand on la remesurait. À 88 %, la
+     lisibilité ne dépend plus du flou, et le cas sans flou est servi par la
+     même valeur. */
 
   @media (prefers-reduced-motion: reduce) {
     .lp-nav,
