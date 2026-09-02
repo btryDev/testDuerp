@@ -11,8 +11,22 @@
 // que le produit porte pour ces secteurs vient donc d'ailleurs — PE 4, le Code
 // du travail — et doit le dire.
 //
-// Deux articles portent le statut `obligation_manquante` : PE 4 et PE 27. Ce
-// n'est pas un défaut du dépouillement, c'est son produit.
+// UN SEUL article porte le statut `obligation_manquante` : PE 27, dont le § 5
+// fait instruire le personnel sans écrire de périodicité. Ce n'est pas un
+// défaut du dépouillement, c'est son produit.
+//
+// La phrase d'origine en annonçait deux, « PE 4 et PE 27 ». Elle était déjà
+// fausse quand elle a été écrite : PE 4 est `retenu` depuis l'ADR-022, avec
+// une `reserve` — ce que le statut `retenu` sert précisément à dire. Corrigée
+// le 2026-09-01, en même temps que la réserve de PE 4 était levée : son § 1
+// est encodé depuis que `Etablissement.comporteLocauxSommeilPublic` existe.
+//
+// LE CHAPITRE III A CHANGÉ DE VISAGE LE 2026-09-01. Ses neuf articles étaient
+// tous `non_couvert`, sous un motif unique — l'attribut « locaux à sommeil »
+// n'existait pas. Relus à la source une fois l'attribut posé : deux sont
+// retenus (PE 33, PE 35), quatre sont `hors_perimetre` / `construction`
+// (PE 28 à PE 31), trois sont `sans_objet` (PE 32, PE 34, PE 36) comme PE 24
+// et PE 26 le sont depuis le premier jour.
 
 import type { Corpus } from "./types";
 

@@ -524,6 +524,65 @@ describe("Verification.salarieId — Restrict, comme DuerpVersion.duerp", () => 
 });
 
 
+describe("les locaux à sommeil sont nullables, et c'est une décision (lot A11)", () => {
+  /**
+   * Même filet que la famille d'habitation ci-dessous, et pour un enjeu plus
+   * direct : cette colonne décide de QUATRE lignes de calendrier — PE 4 § 1,
+   * PE 33, PE 35 et PE 37 de l'arrêté du 25 juin 1980.
+   *
+   * Un `NOT NULL DEFAULT false` posé plus tard « pour faire propre »
+   * répondrait « je n'ai pas de chambres » à la place de chaque hôtelier qui
+   * n'a pas encore lu la question, et lui retirerait sa visite de commission
+   * quinquennale en silence. C'est exactement l'affirmation fausse que la
+   * règle du non-renseigné existe pour empêcher : `null` veut dire « pas
+   * encore répondu », jamais « non ».
+   *
+   * Le moteur, lui, ne retire rien en attendant : il retient l'obligation et
+   * la marque « à confirmer » (`evaluerLocauxSommeil`, `matching/engine.ts`).
+   */
+  const schema = readFileSync(join(RACINE, "prisma", "schema.prisma"), "utf8");
+  const migrations = lireMigrations();
+
+  it("crée la colonne dans une migration dédiée", () => {
+    const migration = migrations.find((m) =>
+      m.nom.endsWith("_locaux_sommeil"),
+    );
+    expect(
+      migration,
+      "La migration `_locaux_sommeil` a disparu. La colonne ne peut pas naître d'un `db push`.",
+    ).toBeDefined();
+    const sql = normaliser(migration!.sql);
+    expect(sql).toContain(
+      'ALTER TABLE "Etablissement" ADD COLUMN "comporteLocauxSommeilPublic"',
+    );
+  });
+
+  it("ne pose ni NOT NULL ni valeur par défaut", () => {
+    // Les deux sont vérifiés, et séparément : un `DEFAULT false` seul suffit à
+    // répondre à la place du dirigeant, même sans contrainte NOT NULL, parce
+    // que toute ligne existante reçoit la valeur.
+    const migration = migrations.find((m) =>
+      m.nom.endsWith("_locaux_sommeil"),
+    );
+    const sql = normaliser(migration!.sql);
+    expect(
+      sql,
+      "La colonne a été posée NOT NULL : `null` est la réponse « pas encore répondu », et aucune autre ne peut être inventée pour les dossiers antérieurs.",
+    ).not.toContain('"comporteLocauxSommeilPublic" BOOLEAN NOT NULL');
+    expect(
+      sql,
+      "Un DEFAULT répondrait « non » à la place du dirigeant sur tous les dossiers existants, et retirerait quatre obligations en silence.",
+    ).not.toMatch(/comporteLocauxSommeilPublic[^;]*DEFAULT/i);
+  });
+
+  it("garde la colonne optionnelle dans le schéma Prisma", () => {
+    const m = schema.match(/\bmodel\s+Etablissement\s*\{([\s\S]*?)\n\}/);
+    expect(m).not.toBeNull();
+    expect(m![1]).toMatch(/comporteLocauxSommeilPublic\s+Boolean\?/);
+  });
+});
+
+
 describe("la famille d'habitation est nullable, et c'est une décision (ADR-025 § 4)", () => {
   /**
    * Ce que ce filet garde n'est pas la présence du champ — le client Prisma
