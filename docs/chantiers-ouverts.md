@@ -338,3 +338,68 @@ finit son dossier.
 `docs/adr/004-typologie-etablissement.md` pour les seuils, et le mode `explain`
 du moteur — qui sait déjà dire *pourquoi* une obligation s'applique chez vous, et
 qui est donc l'inventaire des déductions existantes.
+
+---
+
+## 9. Les listes fermées du modèle ne sont attachées à aucune source
+
+**Constat du 2026-09-03, et c'est un axe entier que rien n'avait regardé.**
+
+Le référentiel dit ce que la loi exige. Le **modèle** — `prisma/schema.prisma` —
+dit ce qu'un dossier peut **dire de lui-même** : c'est le vocabulaire dans lequel
+le dirigeant décrit son établissement. Une obligation ne se déclenche que sur ce
+que ce vocabulaire sait exprimer. **Un mot manquant dans le modèle rend muette
+une obligation juste.**
+
+### Ce qui est mesuré
+
+Le modèle porte **25 listes fermées**. La plupart sont des états de flux —
+`StatutVerification`, `TypeAction`, `MethodeSignature` — que le produit invente
+légitimement et qui n'ont pas de source.
+
+**Sept transcrivent une nomenclature écrite dans un texte, et aucune n'a jamais
+été confrontée à ce texte** :
+
+| Liste | Sa source | État |
+| --- | --- | --- |
+| `TypeErp` | `GN 1`, arrêté du 25 juin 1980 | **fausse — `J` manquant**, lot en cours |
+| `CategorieErp` | même arrêté | non vérifiée |
+| `ClasseIgh` | arrêté du 30 décembre 2011 | non vérifiée |
+| `FamilleHabitation` | arrêté du 31 janvier 1986 | source citée en commentaire, pas testée |
+| `HandicapAccessible` | droit de l'accessibilité | non vérifiée |
+| `NatureTravauxPointChaud` | INRS ED 6030 | non vérifiée |
+| `Realisateur` | `R. 4323-24` et voisins | non vérifiée |
+
+**La première qu'on a ouverte était fausse.** On ne sait pas ce que valent les six
+autres.
+
+### Le défaut est à moitié couvert, et c'est ce qui l'a rendu invisible
+
+Le dépôt **vérifie déjà** qu'on n'encode pas une obligation sur un attribut qui
+n'existe pas : le lot « compacteur » du 2026-09-02 a refusé d'encoder une
+vérification trimestrielle faute de catégorie d'équipement, plutôt que de
+l'accrocher à `AUTRE` — ce qui aurait produit un faux négatif muet. Cette
+discipline-là tient.
+
+**Ce qui manque est l'inverse** : quand un texte porte une nomenclature, personne
+ne vérifie que le modèle en a le vocabulaire **complet**. On demande « le modèle
+peut-il porter cette obligation ? », jamais « le modèle dit-il tout ce que le
+texte distingue ? ».
+
+C'est la même famille que le § 8 : nos garanties répondent toutes à *« est-ce
+juste ? »*, aucune à *« est-ce tout ? »*.
+
+### Ce qu'il faut faire
+
+Le lot `TypeErp` en cours pose le patron : ouvrir la source, relever la
+nomenclature en verbatim, la porter au corpus, compléter l'enum, **et écrire un
+test qui dérive sa référence du corpus** — jamais une liste recopiée, qui se
+répare en recopiant et cesse alors de vérifier.
+
+Les six autres suivent le même chemin, chacune courte. Après quoi « est-ce
+complet » a une réponse mécanique au lieu d'une affirmation.
+
+**Origine du défaut, écrite pour qu'on ne la redécouvre pas.** `docs/adr/004-typologie-etablissement.md`
+énonce la liste des types une seule fois, avec la mention **« (~20 valeurs) »**.
+L'auteur savait sa liste approximative ; rien n'a jamais eu la charge de la
+confronter. C'est l'archétype du défaut de tout ce paragraphe.
