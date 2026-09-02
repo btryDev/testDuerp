@@ -44,6 +44,7 @@ export const CORPUS_PE: Corpus = {
         "Sont assujettis aux seules dispositions des articles PE 4, PE 10 B, PE 24 § 1, PE 26 § 1 et PE 27, s'ils reçoivent au plus 19 personnes constituant le public : - les établissements recevant du public de 5e catégorie sans locaux à sommeil ; - les locaux professionnels recevant du public situés dans les bâtiments d'habitation ou dans les immeubles de bureaux.",
       intitule: "Etablissements assujettis",
       versionEnVigueur: "2026-01-01",
+      modifiePar: { texte: "Arrêté du 1er décembre 2025 - art. 2" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "sans_objet",
@@ -419,6 +420,9 @@ export const CORPUS_PE: Corpus = {
         "Contrôle des établissements de 5ᵉ catégorie comportant des locaux à sommeil",
       url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020374774/",
       versionEnVigueur: "2004-11-24",
+      // Page de l'article : « Création Arrêté du 8 novembre 2004, v. init. ».
+      // Jamais modifié depuis sa création — pas de texte modificateur à signaler.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:

@@ -314,6 +314,10 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       citationCle:
         "Les établissements des 1re, 2e, 3e et 4e catégories doivent être visités périodiquement par les commissions de sécurité selon la fréquence fixée au tableau suivant en fonction de leur type et de leur catégorie",
       versionEnVigueur: "2015-01-01",
+      // Lu sur la page de l'ARTICLE (LEGIARTI000029642660), pas sur celle de sa
+      // section : c'est la confusion que la réserve ci-dessous documente déjà.
+      // Recoupé par une seconde source, qui donne le même arrêté du 20 octobre 2014.
+      modifiePar: { texte: "ARRÊTÉ du 20 octobre 2014 - art." },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
