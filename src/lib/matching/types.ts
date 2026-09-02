@@ -47,8 +47,15 @@ export type EtablissementMatching = {
   familleHabitation: FamilleHabitation | null;
   /**
    * Personnes habituellement présentes, salariés + public + tiers réguliers
-   * (R. 4227-34 : « occupées ou réunies habituellement »). `null` ⇒ le moteur
-   * retombe sur `effectifSurSite`, sous-estimation assumée.
+   * (R. 4227-34 : « occupées ou réunies habituellement »).
+   *
+   * `null` ⇒ le moteur ne le remplace par rien. Il en déduit une **borne
+   * basse** — la catégorie d'ERP, puis l'effectif salarié — qui ne conclut que
+   * vers le haut, et retient l'obligation « à confirmer » quand elle ne conclut
+   * pas et que l'établissement reçoit du public (cf.
+   * `evaluerPersonnesPresentes`). Jusqu'au 2026-09-02 le silence retombait sur
+   * `effectifSurSite` traité comme le total, ce qui retirait en silence la
+   * consigne de sécurité incendie et les exercices semestriels à tout ERP.
    *
    * **Requis, et il l'est devenu pour une raison mesurée.** Il était optionnel
    * « pour ne pas casser les projections existantes ». Quatre modules

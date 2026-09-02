@@ -28,6 +28,11 @@
  *      satisfaire — avec la règle du non-renseigné : `true` retient quand la
  *      réponse manque (« à confirmer »), `false` rejette (un allègement ne se
  *      donne pas sur une absence supposée).
+ *   6. Si l'obligation a `personnesPresentesMin`, le moteur ne connaît du
+ *      total (salariés + public) que des **bornes basses** : la catégorie
+ *      d'ERP et l'effectif salarié. Une borne basse établit « au-dessus du
+ *      seuil » et jamais « en dessous » — d'où, sous la borne, « à confirmer »
+ *      pour un ERP et un rejet pour un établissement de travail seul.
  *
  * Le moteur est **pur** : pas d'I/O, pas d'horloge, pas d'aléatoire. Deux
  * appels avec les mêmes entrées renvoient le même résultat, ce qui est la
@@ -44,6 +49,7 @@ import {
 } from "@/lib/referentiels/conformite/types";
 import type {
   CategorieEquipement,
+  CategorieErp,
   FamilleHabitation,
   TypologieApplication,
 } from "@/lib/referentiels/types-communs";
@@ -57,9 +63,7 @@ import type {
 // Étape 1 — Typologie
 // -----------------------------------------------------------------------------
 
-export type ResultatTypologie =
-  | { ok: true; raisons: string[] }
-  | { ok: false };
+export type ResultatTypologie = { ok: true; raisons: string[] } | { ok: false };
 
 /**
  * Évaluation d'un critère de régime : `absent` (non déclaré par
@@ -67,9 +71,7 @@ export type ResultatTypologie =
  * `mismatch` (déclaré mais non satisfait).
  */
 type EvalRegime =
-  | { etat: "absent" }
-  | { etat: "match"; raison: string }
-  | { etat: "mismatch" };
+  { etat: "absent" } | { etat: "match"; raison: string } | { etat: "mismatch" };
 
 function evaluerErp(
   critere: TypologieApplication["erp"],
@@ -122,8 +124,7 @@ function evaluerErp(
 
     return {
       etat: "match",
-      raison:
-        precisions.length > 0 ? `ERP ${precisions.join(", ")}` : "ERP",
+      raison: precisions.length > 0 ? `ERP ${precisions.join(", ")}` : "ERP",
     };
   }
   return { etat: "match", raison: "ERP" };
@@ -242,6 +243,110 @@ function evaluerLocauxSommeil(
     ok: true,
     raison: "absence de locaux à sommeil pour le public déclarée",
   };
+}
+
+/**
+ * Personnes habituellement présentes — R. 4227-34 CT, « occupées ou réunies ».
+ *
+ * LE NOMBRE COMPTE LES SALARIÉS **ET** LE PUBLIC, et c'est tout le sujet. Le
+ * produit ne le demande plus depuis le 2026-09-01 ; il en déduit donc ce qu'il
+ * peut, et ce qu'il peut n'est jamais qu'une **borne basse** du total.
+ *
+ * UNE BORNE BASSE NE CONCLUT QUE DANS UN SENS. Elle établit « au-dessus du
+ * seuil » et n'établit jamais « en dessous ». C'est le précédent de forme
+ * d'`opposabiliteUrssaf` (`prestataires/vigilance.ts`), dont le commentaire dit
+ * la même chose de `updatedAt` : la déduction ne vaut que dans ce sens, et
+ * c'est le seul qu'on utilise.
+ *
+ * TROIS ÉTATS, PAS DEUX. `atteint` (le seuil est franchi, on sait pourquoi),
+ * `non_atteint` (le total est connu et il est inférieur), `indetermine` (on ne
+ * sait pas, et l'obligation est retenue « à confirmer » — le mécanisme
+ * d'`evaluerHabitation` et d'`evaluerLocauxSommeil`, pas un second).
+ *
+ * CE QUI SÉPARE `non_atteint` D'`indetermine` EST LE RÉGIME. Un établissement
+ * de travail seul ne reçoit pas de public : son effectif salarié EST le total,
+ * la comparaison est exacte, et l'obligation tombe pour de bon. Un ERP en
+ * reçoit par définition : rien n'autorise à traiter ses huit salariés comme le
+ * nombre de personnes réunies chez lui, et le silence ne peut pas y valoir
+ * « non ».
+ */
+type EvalPersonnesPresentes =
+  | { etat: "atteint"; raison: string }
+  | { etat: "indetermine"; raison: string }
+  | { etat: "non_atteint" };
+
+/**
+ * Le public que la catégorie d'ERP garantit **au moins** (ADR-004, seuils du
+ * règlement de sécurité). Seules les trois premières catégories bornent par le
+ * bas : la 4ᵉ va du seuil du type jusqu'à 300 et la 5ᵉ est sous le seuil du
+ * type — ni l'une ni l'autre ne garantit quoi que ce soit, et les omettre est
+ * la façon d'écrire qu'elles ne déduisent rien.
+ *
+ * Le nombre est le premier de la fourchette, pas sa borne haute : la 3ᵉ
+ * catégorie commence à 301, pas à 700.
+ */
+const PLANCHER_PUBLIC_PAR_CATEGORIE: Partial<Record<CategorieErp, number>> = {
+  N1: 1501,
+  N2: 701,
+  N3: 301,
+};
+
+const LIBELLE_CATEGORIE_ERP: Record<CategorieErp, string> = {
+  N1: "1ʳᵉ catégorie",
+  N2: "2ᵉ catégorie",
+  N3: "3ᵉ catégorie",
+  N4: "4ᵉ catégorie",
+  N5: "5ᵉ catégorie",
+};
+
+function evaluerPersonnesPresentes(
+  seuil: number,
+  etab: EtablissementMatching,
+): EvalPersonnesPresentes {
+  // Le chiffre déclaré tranche seul, dans les deux sens : il n'y a plus de
+  // borne, il y a le total.
+  const declare = etab.personnesPresentesHabituellement;
+  if (declare !== null && declare !== undefined) {
+    return declare >= seuil
+      ? {
+          etat: "atteint",
+          raison: `${declare} personnes habituellement présentes (seuil ${seuil})`,
+        }
+      : { etat: "non_atteint" };
+  }
+
+  // Première borne : la catégorie d'ERP. Le public seul suffit à franchir le
+  // seuil dès la 3ᵉ, et le dirigeant l'a déclarée — rien à demander de plus.
+  const categorie = etab.estERP ? etab.categorieErp : null;
+  if (categorie) {
+    const plancherPublic = PLANCHER_PUBLIC_PAR_CATEGORIE[categorie];
+    if (plancherPublic !== undefined && plancherPublic >= seuil) {
+      return {
+        etat: "atteint",
+        raison: `ERP de ${LIBELLE_CATEGORIE_ERP[categorie]} : le public admis y atteint au moins ${plancherPublic} personnes, seuil de ${seuil} franchi par le public seul`,
+      };
+    }
+  }
+
+  // Seconde borne : l'effectif salarié, compté par le texte au même titre.
+  if (etab.effectifSurSite >= seuil) {
+    return {
+      etat: "atteint",
+      raison: `${etab.effectifSurSite} salariés sur site, seuil de ${seuil} personnes présentes franchi par l'effectif seul`,
+    };
+  }
+
+  // Sous les deux bornes. Pour un ERP, cela ne dit rien du total : il reçoit du
+  // public, et le nombre n'est pas déclaré.
+  if (etab.estERP) {
+    return {
+      etat: "indetermine",
+      raison: `nombre de personnes habituellement présentes non renseigné, et l'établissement reçoit du public — obligation retenue par prudence, à confirmer (seuil ${seuil})`,
+    };
+  }
+
+  // Établissement de travail seul : pas de public, l'effectif est le total.
+  return { etat: "non_atteint" };
 }
 
 /**
@@ -397,30 +502,63 @@ export function matchTypologie(
 
   // 3 bis. Personnes présentes (salariés + public) et champ R. 4227-34.
   //
-  // `personnesPresentesHabituellement` absent ⇒ repli sur l'effectif salarié :
-  // sous-estimation assumée (jamais un faux positif). `manipuleMatieresR422722`
-  // absent ⇒ « non » : cette branche ne fait qu'ajouter des cas, aucun
-  // établissement ne perd une obligation par son silence.
+  // Le seuil compte « les personnes occupées ou réunies » : salariés ET
+  // public. Le produit n'a pas toujours ce nombre — la question a été retirée
+  // du parcours de création le 2026-09-01, c'était une question de technicien
+  // posée à qui n'avait encore rien vu du produit — et ce qu'il fait alors est
+  // ce que ce bloc décide.
+  //
+  // CE QU'IL FAISAIT JUSQU'AU 2026-09-02, ET POURQUOI C'ÉTAIT LE MAUVAIS SENS.
+  // Le silence retombait sur `effectifSurSite` et le nombre obtenu était traité
+  // comme le total : sous le seuil, l'obligation disparaissait. Or un ERP reçoit
+  // du public par définition ; répondre « 8 » pour un restaurant de huit
+  // salariés qui sert trois cents couverts est une chose qu'on sait fausse, et
+  // elle faisait disparaître en silence la consigne de sécurité incendie et les
+  // exercices semestriels — deux lignes qu'un inspecteur regarde en premier.
+  //
+  // CE QU'IL FAIT MAINTENANT : il ne connaît que des BORNES BASSES du total, et
+  // une borne basse ne conclut que dans un sens. Elle établit « au-dessus du
+  // seuil », jamais « en dessous ». Deux bornes, et la meilleure des deux :
+  //
+  //   - la catégorie d'ERP, déclarée par le dirigeant depuis le 2026-09-01 —
+  //     dès la 3ᵉ catégorie le public seul dépasse trois cents personnes, donc
+  //     largement les cinquante et une du seuil, sans qu'on ait rien à
+  //     demander (`PLANCHER_PUBLIC_PAR_CATEGORIE`) ;
+  //   - l'effectif salarié, qui est compté par le texte lui aussi.
+  //
+  // Au-dessus de la borne : l'obligation s'applique, et la raison dit d'où le
+  // dépassement est établi. En dessous, la déduction ne dit rien, et la suite
+  // dépend du régime — un ERP reçoit du public, un établissement de travail
+  // seul n'en reçoit pas. C'est la même dissymétrie qu'`opposabiliteUrssaf`,
+  // dont le commentaire dit la même chose de `updatedAt`.
+  //
+  // `manipuleMatieresR422722` absent ⇒ « non ». Cette branche ne fait
+  // qu'ajouter des cas à un champ déjà ouvert par le seuil, aucun établissement
+  // ne perd d'obligation par son silence — mais c'est la seconde entorse à la
+  // règle du non-renseigné recensée par `.claude/CLAUDE.md`, et elle reste.
+  //
   // Le critère est évalué dès que **l'une** des deux branches est déclarée :
   // une obligation qui n'écrirait que `champR422734` (branche matières seule)
   // ne doit pas passer sans filtre — un critère que l'on ne sait pas vérifier
   // ne s'ignore jamais en silence.
   if (t.personnesPresentesMin !== undefined || t.champR422734 === true) {
-    const personnes =
-      etab.personnesPresentesHabituellement ?? etab.effectifSurSite;
-    const brancheSeuil =
-      t.personnesPresentesMin !== undefined &&
-      personnes >= t.personnesPresentesMin;
     const brancheMatieres =
       t.champR422734 === true && etab.manipuleMatieresR422722 === true;
-    if (!brancheSeuil && !brancheMatieres) return { ok: false };
-    if (brancheSeuil) {
-      raisons.push(
-        etab.personnesPresentesHabituellement !== undefined &&
-          etab.personnesPresentesHabituellement !== null
-          ? `${personnes} personnes habituellement présentes (seuil ${t.personnesPresentesMin})`
-          : `${personnes} salariés sur site, faute de déclaration des personnes présentes (seuil ${t.personnesPresentesMin})`,
-      );
+    const seuil =
+      t.personnesPresentesMin === undefined
+        ? { etat: "non_atteint" as const }
+        : evaluerPersonnesPresentes(t.personnesPresentesMin, etab);
+
+    if (seuil.etat === "non_atteint" && !brancheMatieres) return { ok: false };
+
+    // La raison « à confirmer » ne se dit que si rien d'autre n'établit le
+    // champ : quand les matières sont déclarées, l'obligation est due de façon
+    // certaine et annoncer un doute par-dessus se lirait comme le sien.
+    if (
+      seuil.etat === "atteint" ||
+      (seuil.etat === "indetermine" && !brancheMatieres)
+    ) {
+      raisons.push(seuil.raison);
     }
     if (brancheMatieres) {
       raisons.push(

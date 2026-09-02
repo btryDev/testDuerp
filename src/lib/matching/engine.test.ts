@@ -1829,14 +1829,20 @@ describe("moteur matching — champ disjonctif de R. 4227-34 (personnes présent
     expect(raison).toContain("60 personnes habituellement présentes");
   });
 
-  it("personnes présentes non déclarées → repli sur l'effectif salarié, raison explicite", () => {
+  it("personnes présentes non déclarées, effectif salarié au seuil → applicable, et la raison dit par quoi le seuil est franchi", () => {
+    // L'effectif salarié reste une BORNE BASSE du total de R. 4227-34, et une
+    // borne basse conclut dans ce sens-là : 51 salariés font au moins 51
+    // personnes présentes, quel que soit le public. Ce que la raison ne dit
+    // plus, c'est « faute de déclaration » — le chiffre manquant n'a pas été
+    // remplacé par un autre, il n'a simplement pas eu besoin de l'être.
     const res = determineObligationsApplicables(
       etabBureau({ effectifSurSite: 51, personnesPresentesHabituellement: null }),
       [alarme()],
     );
     expect(idsObligations(res)).toContain(EXERCICE);
     const raison = res.find((r) => r.obligation.id === EXERCICE)!.raisons.join(" ");
-    expect(raison).toContain("faute de déclaration");
+    expect(raison).toContain("51 salariés sur site");
+    expect(raison).toContain("franchi par l'effectif seul");
   });
 
   it("2 salariés, aucun public, matières R. 4227-22 déclarées → applicable quel que soit l'effectif", () => {
@@ -1876,6 +1882,136 @@ describe("moteur matching — champ disjonctif de R. 4227-34 (personnes présent
       [alarme()],
     );
     expect(idsObligations(res)).toContain(EXERCICE);
+  });
+});
+
+describe("R. 4227-34 — ce que la catégorie d'ERP déduit, et ce qu'elle ne déduit pas", () => {
+  // La question « personnes habituellement présentes » a été retirée du
+  // parcours ; le moteur en déduit donc ce qu'il peut. Ce qu'il peut n'est
+  // jamais qu'une BORNE BASSE du total, et une borne basse conclut dans un
+  // seul sens : « au-dessus du seuil », jamais « en dessous ».
+  //
+  // Les quatre cas de ce bloc sont les quatre réponses possibles, et ils sont
+  // écrits séparément exprès : borne franchie par le public, indétermination,
+  // total connu et inférieur, absence de public. Un test unique qui les
+  // parcourrait ensemble se réparerait en recopiant le comportement observé.
+  const EXERCICE = "incendie-travail-exercice-semestriel";
+  const CONSIGNE = "incendie-travail-consigne-affichee";
+  const LES_DEUX = [CONSIGNE, EXERCICE];
+
+  it("ERP de 3ᵉ catégorie sans le chiffre : le public seul franchit le seuil, rien à demander", () => {
+    // ADR-004 : la 3ᵉ catégorie commence à 301 personnes de public. Le seuil
+    // de R. 4227-34 est à 51 — il est franchi par le public seul, et
+    // l'établissement ne déclare que 45 salariés.
+    const res = determineObligationsApplicables(etabErpCat3(), []);
+    for (const id of LES_DEUX) expect(idsObligations(res), id).toContain(id);
+    const raison = res
+      .find((r) => r.obligation.id === EXERCICE)!
+      .raisons.join(" ");
+    expect(raison).toContain("3ᵉ catégorie");
+    expect(raison).toContain("le public admis");
+    // Une certitude, pas une prudence : la déduction tient, il n'y a rien à
+    // confirmer.
+    expect(raison).not.toContain("à confirmer");
+  });
+
+  it("ERP de 4ᵉ catégorie sans le chiffre : retenu « à confirmer », jamais retiré", () => {
+    // La 4ᵉ va du seuil du type jusqu'à 300 : elle ne borne rien par le bas.
+    // Le silence ne peut pas valoir « moins de 51 » chez un établissement qui
+    // reçoit du public par définition.
+    const res = determineObligationsApplicables(
+      etabRestoErpCat5({
+        categorieErp: "N4",
+        effectifSurSite: 8,
+        personnesPresentesHabituellement: null,
+      }),
+      [],
+    );
+    for (const id of LES_DEUX) expect(idsObligations(res), id).toContain(id);
+    const raison = res
+      .find((r) => r.obligation.id === EXERCICE)!
+      .raisons.join(" ");
+    expect(raison).toContain("à confirmer");
+    expect(raison).toContain("reçoit du public");
+  });
+
+  it("ERP de 4ᵉ catégorie AVEC le chiffre à 200 : le total est connu, les deux lignes s'appliquent", () => {
+    const res = determineObligationsApplicables(
+      etabRestoErpCat5({
+        categorieErp: "N4",
+        effectifSurSite: 8,
+        personnesPresentesHabituellement: 200,
+      }),
+      [],
+    );
+    for (const id of LES_DEUX) expect(idsObligations(res), id).toContain(id);
+    const raison = res
+      .find((r) => r.obligation.id === EXERCICE)!
+      .raisons.join(" ");
+    expect(raison).toContain("200 personnes habituellement présentes");
+    expect(raison).not.toContain("à confirmer");
+  });
+
+  it("le chiffre déclaré SOUS le seuil retire les deux lignes, même à un ERP", () => {
+    // La borne basse ne sert qu'à conclure vers le haut ; le chiffre déclaré,
+    // lui, est le total et tranche dans les deux sens. Sans ce cas, « à
+    // confirmer » ne serait plus une prudence mais une sur-application
+    // permanente à tout ERP.
+    const res = determineObligationsApplicables(
+      etabRestoErpCat5({
+        categorieErp: "N4",
+        effectifSurSite: 8,
+        personnesPresentesHabituellement: 20,
+      }),
+      [],
+    );
+    for (const id of LES_DEUX) expect(idsObligations(res), id).not.toContain(id);
+  });
+
+  it("établissement de travail seul, 8 salariés : pas de public, l'effectif EST le total", () => {
+    // Le cas que la correction ne devait pas casser. Sans public, le repli sur
+    // l'effectif salarié n'est pas une sous-estimation : c'est la mesure
+    // exacte, et les deux lignes tombent pour de bon.
+    const res = determineObligationsApplicables(
+      etabBureau({
+        effectifSurSite: 8,
+        personnesPresentesHabituellement: null,
+      }),
+      [alarme(), extincteur()],
+    );
+    for (const id of LES_DEUX) expect(idsObligations(res), id).not.toContain(id);
+  });
+
+  it("ERP de 1ʳᵉ et de 2ᵉ catégorie déduisent comme la 3ᵉ ; la 5ᵉ ne déduit rien", () => {
+    // Les bornes voisines, sans liste exhaustive des cinq : ce qui est
+    // éprouvé ici est la FRONTIÈRE entre ce qui déduit et ce qui ne déduit
+    // pas, et elle passe entre la 3ᵉ et la 4ᵉ.
+    for (const cat of ["N1", "N2", "N3"] as const) {
+      const res = determineObligationsApplicables(
+        etabRestoErpCat5({ categorieErp: cat, effectifSurSite: 8 }),
+        [],
+      );
+      const raison = res
+        .find((r) => r.obligation.id === EXERCICE)!
+        .raisons.join(" ");
+      expect(raison, cat).toContain("le public admis");
+    }
+    const cinq = determineObligationsApplicables(
+      etabRestoErpCat5({ categorieErp: "N5", effectifSurSite: 8 }),
+      [],
+    );
+    const raisonCinq = cinq
+      .find((r) => r.obligation.id === EXERCICE)!
+      .raisons.join(" ");
+    expect(raisonCinq).toContain("à confirmer");
+  });
+
+  it("ERP dont la catégorie n'est pas renseignée : « à confirmer » aussi, jamais retiré", () => {
+    const res = determineObligationsApplicables(
+      etabRestoErpCat5({ categorieErp: null, effectifSurSite: 8 }),
+      [],
+    );
+    for (const id of LES_DEUX) expect(idsObligations(res), id).toContain(id);
   });
 });
 
