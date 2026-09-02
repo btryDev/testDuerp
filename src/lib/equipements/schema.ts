@@ -35,8 +35,16 @@ import { FAMILLES_ESP } from "./esp";
  *     (l'intervalle entre deux contrôles d'étanchéité est doublé)
  *   - `estChargeSuperieure50TCo2`   → règlement (UE) 2024/573, art. 5 (palier)
  *   - `estChargeSuperieure500TCo2`  → règlement (UE) 2024/573, art. 5 (palier)
- *   - `dessertLocauxSommeil`        → ERP 5ᵉ cat., visite périodique de la
- *                                     commission de sécurité (CCH R. 143-34)
+ *
+ * `dessertLocauxSommeil` a été RETIRÉ le 2026-09-01 (lot A11). Il portait à lui
+ * seul la restriction « locaux à sommeil » de PE 37, faute d'attribut
+ * d'établissement pour elle. `Etablissement.comporteLocauxSommeilPublic`
+ * existe désormais, et les quatre articles du Livre III qui s'y adossent
+ * (PE 4 § 1, PE 33, PE 35, PE 37) s'y branchent directement. Laisser la
+ * question sur l'alarme aurait été pire que la retirer : le dirigeant y
+ * répondait en croyant que ça comptait, et le libellé du champ — « cette
+ * alarme dessert des locaux à sommeil » — ne distinguait pas le sommeil du
+ * public de celui du personnel, là où PE 37 écrit « pour le public ».
  *
  * ── Booléens à deux états contre booléens à trois états ────────────────────
  *
@@ -44,7 +52,7 @@ import { FAMILLES_ESP } from "./esp";
  * « non ». C'est acceptable parce qu'elles gouvernent des obligations en
  * « opt-in » (l'obligation n'apparaît qu'après une réponse positive).
  *
- * Les treize suivantes bornent au contraire des obligations **déjà publiées**, de
+ * Les treize suivantes (`CHAMPS_TRI_ETAT`) bornent au contraire des obligations **déjà publiées**, de
  * criticité élevée, en « opt-out » : elles restent applicables tant que le
  * dirigeant n'a pas répondu « non ». Une case à cocher ne convient donc pas —
  * elle ne distingue pas « j'ai répondu non » de « je n'ai pas encore répondu »,
@@ -93,8 +101,15 @@ export const CATEGORIES_AERATION: readonly CategorieEquipement[] = [
   "HOTTE_PRO",
 ];
 
-/** Les douze questions à trois états, dans l'ordre d'affichage. */
-/** Les sept questions à trois états, dans l'ordre d'affichage. */
+/**
+ * Les treize questions à trois états, dans l'ordre d'affichage.
+ *
+ * Le compte est écrit à la main et se périme donc seul : deux commentaires se
+ * superposaient ici, l'un annonçant douze questions et l'autre sept, aucun des
+ * deux n'étant juste. Ils sont remplacés par un seul, recompté le 2026-09-01
+ * après le retrait de `dessertLocauxSommeil`. Si vous en ajoutez une, ce
+ * nombre est à corriger — ou à supprimer, ce qui vaudrait mieux.
+ */
 export const CHAMPS_TRI_ETAT = [
   "estVmcGaz",
   "aRobinetsIncendieArmes",
@@ -108,7 +123,6 @@ export const CHAMPS_TRI_ETAT = [
   "estChargeSuperieure50TCo2",
   "estChargeSuperieure500TCo2",
   "aDetectionDeFuites",
-  "dessertLocauxSommeil",
   "estMuParForceHumaine",
 ] as const;
 
@@ -187,11 +201,6 @@ export const CATEGORIES_TRI_ETAT: readonly {
     champ: "aDetectionDeFuites",
     categories: ["INSTALLATION_FRIGORIFIQUE"],
     message: "Spécifique aux installations frigorifiques",
-  },
-  {
-    champ: "dessertLocauxSommeil",
-    categories: ["ALARME_INCENDIE"],
-    message: "Spécifique aux systèmes d'alarme / SSI",
   },
 ];
 
@@ -277,7 +286,6 @@ export const equipementSchema = z
     estChargeSuperieure50TCo2: triEtat,
     estChargeSuperieure500TCo2: triEtat,
     aDetectionDeFuites: triEtat,
-    dessertLocauxSommeil: triEtat,
     notes: z.preprocess(
       (v) => (typeof v === "string" ? v.trim() || undefined : v),
       z.string().max(1000).optional(),

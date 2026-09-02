@@ -87,6 +87,29 @@ model Etablissement {
   // visible, pas une valeur inventée.
   familleHabitation       FamilleHabitation?
 
+  // « Cet établissement comporte-t-il, POUR LE PUBLIC, des locaux à sommeil ? »
+  // — chambres d'hôtel, chambres d'hôtes, hébergement. C'est un fait
+  // d'ÉTABLISSEMENT, et il a mis six jours à trouver sa colonne : la
+  // restriction vivait jusqu'ici sur une caractéristique d'alarme
+  // (`dessertLocauxSommeil`), c'est-à-dire sur un équipement qu'un hôtel n'a
+  // pas forcément déclaré. Quatre articles du Livre III de l'arrêté du
+  // 25 juin 1980 s'y adossent : PE 4 § 1, PE 33, PE 35 et PE 37.
+  //
+  // NULLABLE, ET `null` VEUT DIRE « PAS ENCORE RÉPONDU », JAMAIS « NON »
+  // (règle du non-renseigné, `.claude/CLAUDE.md`). Un `@default(false)` aurait
+  // répondu « je n'ai pas de chambres » à la place d'un hôtelier qui n'a rien
+  // lu, et lui aurait retiré en silence la visite de commission quinquennale.
+  // Le moteur retient donc l'obligation tant que la réponse manque, en disant
+  // « à confirmer » (cf. `evaluerLocauxSommeil`, `matching/engine.ts`).
+  //
+  // Aucune reprise de données : les réponses déjà données à
+  // `dessertLocauxSommeil` ne sont PAS recopiées ici. « Cette alarme dessert
+  // des locaux à sommeil » et « l'établissement comporte des locaux à sommeil
+  // pour le public » ne sont pas la même question — la première ne distingue
+  // pas le sommeil du public de celui du personnel, et une alarme peut ne pas
+  // desservir des chambres qui existent. Cf. migration 20260901180000.
+  comporteLocauxSommeilPublic Boolean?
+
   batiments                        Batiment[]
   // Champ d'application de R. 4227-34 CT (alarme sonore → consigne R. 4227-37
   // → exercices semestriels R. 4227-39) : « plus de cinquante personnes

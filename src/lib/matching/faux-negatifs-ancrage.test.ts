@@ -53,6 +53,7 @@ function bureauSansRien(
     familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
+    comporteLocauxSommeilPublic: null,
     ...over,
   };
 }
@@ -74,6 +75,7 @@ function restoErpCat5SansRien(
     familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
+    comporteLocauxSommeilPublic: null,
     ...over,
   };
 }
@@ -132,6 +134,7 @@ describe("faux négatif — tenue du registre de sécurité", () => {
       familleHabitation: null,
       personnesPresentesHabituellement: null,
       manipuleMatieresR422722: null,
+      comporteLocauxSommeilPublic: null,
     };
     expect(idsSansAucunEquipement(habitation)).not.toContain(
       "incendie-registre-securite",
@@ -208,31 +211,69 @@ describe("faux négatif — consigne de sécurité incendie affichée", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 4. Visite de commission — le faux négatif CONNU qui reste ouvert
+// 4. Visite de commission — le faux négatif qui est resté ouvert six jours
 // ---------------------------------------------------------------------------
 
-describe("visite de commission — faux négatif connu, délibérément non corrigé", () => {
+describe("visite de commission — le faux négatif est corrigé (2026-09-01)", () => {
   /**
-   * Ce test constate un DÉFAUT, il ne célèbre pas une garantie. Il est ici pour
-   * que personne ne croie la ligne traitée.
+   * CE BLOC A CHANGÉ DE SENS, ET C'EST CE QU'IL ANNONÇAIT. Il constatait un
+   * DÉFAUT : « un hôtel de 5ᵉ catégorie sans alarme déclarée ne reçoit
+   * toujours PAS la visite », avec cette phrase — « le jour où cet attribut
+   * existera, ce test devra tomber : c'est ce qui le rend utile ». Il est
+   * tombé le 2026-09-01, et voici ce qui l'a fait tomber.
    *
-   * R. 143-41 fonde les visites sans condition d'équipement — le faux négatif
-   * est réel. Mais PE 37, seul article du Livre III à organiser une visite
-   * périodique en 5ᵉ catégorie, ne vise que les établissements comportant
-   * « pour le public, des locaux à sommeil ». Cette restriction décide de
-   * l'EXISTENCE de la visite, pas de son rythme : la retirer ferait naître une
-   * échéance chez chaque boutique. Or elle est aujourd'hui portée par une
-   * caractéristique de l'ALARME_INCENDIE, et un porteur établissement
-   * n'accepte pas de `conditions`.
+   * R. 143-41 fonde les visites sans condition d'équipement, et PE 37 — seul
+   * article du Livre III à organiser une visite périodique en 5ᵉ catégorie —
+   * ne vise que les établissements comportant « pour le public, des locaux à
+   * sommeil ». Cette restriction décide de l'EXISTENCE de la visite, pas de
+   * son rythme. Elle était portée par une caractéristique de
+   * l'ALARME_INCENDIE parce qu'aucun attribut d'établissement ne pouvait la
+   * porter, et un porteur établissement n'accepte pas de `conditions`.
    *
-   * Le déblocage est un attribut d'établissement, donc une migration — hors du
-   * périmètre de ce lot. Le jour où cet attribut existera, ce test devra
-   * tomber : c'est ce qui le rend utile.
+   * `Etablissement.comporteLocauxSommeilPublic` existe désormais, et
+   * `TypologieApplication.locauxSommeilPublic` la porte. L'obligation est
+   * passée au porteur établissement.
+   *
+   * Les trois cas ci-dessous sont les trois qui comptent, et ils sont écrits
+   * pour tomber séparément : la correction (l'hôtel sans alarme la reçoit),
+   * la borne (le commerce qui a répondu « non » ne la reçoit pas), et la
+   * prudence (le silence ne retire rien). Un seul des trois affirmé sans les
+   * deux autres se réparerait en supprimant la condition.
    */
-  it("un hôtel de 5ᵉ catégorie sans alarme déclarée ne reçoit toujours PAS la visite", () => {
-    expect(idsSansAucunEquipement(restoErpCat5SansRien())).not.toContain(
-      "incendie-erp-5-visite-commission",
-    );
+  const VISITE = "incendie-erp-5-visite-commission";
+
+  it("un hôtel de 5ᵉ catégorie sans aucun équipement déclaré reçoit la visite", () => {
+    expect(
+      idsSansAucunEquipement(
+        restoErpCat5SansRien({ comporteLocauxSommeilPublic: true }),
+      ),
+    ).toContain(VISITE);
+  });
+
+  it("un commerce de 5ᵉ catégorie qui a répondu « non » ne la reçoit pas", () => {
+    expect(
+      idsSansAucunEquipement(
+        restoErpCat5SansRien({ comporteLocauxSommeilPublic: false }),
+      ),
+    ).not.toContain(VISITE);
+  });
+
+  it("un dossier qui n'a pas répondu la reçoit quand même — l'incertitude ne réduit pas la couverture", () => {
+    // C'est le prix assumé de la règle du non-renseigné, et il est plus large
+    // qu'avant : la ligne tombe désormais chez tout ERP de 5ᵉ catégorie muet,
+    // alarme déclarée ou non. Elle est visible au calendrier et se retire
+    // d'une réponse ; l'oubli d'un hôtel, lui, ne se voyait de nulle part.
+    expect(idsSansAucunEquipement(restoErpCat5SansRien())).toContain(VISITE);
+  });
+
+  it("un employeur non-ERP ne la reçoit pas, même en déclarant des locaux à sommeil", () => {
+    // La condition de sommeil est en ET, pas un régime : elle ne fait entrer
+    // personne dans le champ de PE 37, elle en écarte.
+    expect(
+      idsSansAucunEquipement(
+        bureauSansRien({ comporteLocauxSommeilPublic: true }),
+      ),
+    ).not.toContain(VISITE);
   });
 });
 

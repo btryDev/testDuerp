@@ -113,7 +113,12 @@ export const obligationsConformite: Obligation[] = [
  * la bonne question n'est pas « l'empreinte a-t-elle bougé ? » mais « le
  * référentiel a-t-il changé ? ». Ici, oui.
  */
-export const REFERENTIEL_VERSION = "2026-09-01.6";
+// Version remesurée à l'intégration, comme l'empreinte : le lot A11 est parti
+// d'un état antérieur et portait `2026-09-02.1`, l'intégration avait déjà pris
+// le `.6`. Deux branches parallèles ne peuvent pas porter la même version sur
+// deux contenus différents — c'est ce que cette constante existe pour
+// distinguer, et elle ne se recopie donc d'aucun côté.
+export const REFERENTIEL_VERSION = "2026-09-02.2";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.

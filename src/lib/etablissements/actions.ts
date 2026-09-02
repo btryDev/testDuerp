@@ -52,6 +52,12 @@ const CHAMPS_STRUCTURANTS = [
   "effectifSurSite",
   "personnesPresentesHabituellement",
   "manipuleMatieresR422722",
+  // Répondre « non » à la question des locaux à sommeil retire quatre lignes
+  // de PE 4 § 1, PE 33, PE 35 et PE 37 ; répondre « oui » les fixe. Dans les
+  // deux cas le calendrier change, donc le champ est structurant — l'omettre
+  // ici laisserait la réponse sans effet visible jusqu'à la prochaine
+  // modification d'un autre champ.
+  "comporteLocauxSommeilPublic",
 ] as const;
 
 type ChampStructurant = (typeof CHAMPS_STRUCTURANTS)[number];
@@ -95,7 +101,7 @@ function normaliserFormData(fd: FormData): Record<string, unknown> {
     classeIgh: raw.classeIgh || undefined,
     familleHabitation: raw.familleHabitation || undefined,
     natureActivite: raw.natureActivite,
-    // Ces trois champs ne sont rendus que dans le bloc `{estERP && (…)}` du
+    // Ces quatre champs ne sont rendus que dans le bloc `{estERP && (…)}` du
     // formulaire. Décocher la case les retire donc du FormData, et un
     // `undefined` transmis tel quel serait coercé en `null` par le schéma puis
     // écrit en base : les valeurs saisies disparaîtraient pour de bon. On les
@@ -112,6 +118,13 @@ function normaliserFormData(fd: FormData): Record<string, unknown> {
     ...(raw.dateCertificatConformite === undefined
       ? {}
       : { dateCertificatConformite: raw.dateCertificatConformite }),
+    // Même protection, et elle compte davantage ici : cette colonne DÉCIDE de
+    // quatre obligations (PE 4 § 1, PE 33, PE 35, PE 37). Un « non » effacé en
+    // décochant l'ERP les ferait toutes réapparaître « à confirmer » sans que
+    // personne ne comprenne pourquoi.
+    ...(raw.comporteLocauxSommeilPublic === undefined
+      ? {}
+      : { comporteLocauxSommeilPublic: raw.comporteLocauxSommeilPublic }),
   };
 }
 
@@ -234,6 +247,7 @@ export async function modifierEtablissement(
       effectifSurSite: true,
       personnesPresentesHabituellement: true,
       manipuleMatieresR422722: true,
+      comporteLocauxSommeilPublic: true,
     },
   });
   if (!avant) {

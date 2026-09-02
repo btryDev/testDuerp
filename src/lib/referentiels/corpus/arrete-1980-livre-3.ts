@@ -11,8 +11,22 @@
 // que le produit porte pour ces secteurs vient donc d'ailleurs — PE 4, le Code
 // du travail — et doit le dire.
 //
-// Deux articles portent le statut `obligation_manquante` : PE 4 et PE 27. Ce
-// n'est pas un défaut du dépouillement, c'est son produit.
+// UN SEUL article porte le statut `obligation_manquante` : PE 27, dont le § 5
+// fait instruire le personnel sans écrire de périodicité. Ce n'est pas un
+// défaut du dépouillement, c'est son produit.
+//
+// La phrase d'origine en annonçait deux, « PE 4 et PE 27 ». Elle était déjà
+// fausse quand elle a été écrite : PE 4 est `retenu` depuis l'ADR-022, avec
+// une `reserve` — ce que le statut `retenu` sert précisément à dire. Corrigée
+// le 2026-09-01, en même temps que la réserve de PE 4 était levée : son § 1
+// est encodé depuis que `Etablissement.comporteLocauxSommeilPublic` existe.
+//
+// LE CHAPITRE III A CHANGÉ DE VISAGE LE 2026-09-01. Ses neuf articles étaient
+// tous `non_couvert`, sous un motif unique — l'attribut « locaux à sommeil »
+// n'existait pas. Relus à la source une fois l'attribut posé : deux sont
+// retenus (PE 33, PE 35), quatre sont `hors_perimetre` / `construction`
+// (PE 28 à PE 31), trois sont `sans_objet` (PE 32, PE 34, PE 36) comme PE 24
+// et PE 26 le sont depuis le premier jour.
 
 import type { Corpus } from "./types";
 
@@ -73,6 +87,8 @@ export const CORPUS_PE: Corpus = {
         // L'obligation portée par l'établissement (ADR-022), qui prend le § 2
         // pour ce qu'il dit : l'ensemble des installations techniques.
         "incendie-erp-pe4-entretien-installations-techniques",
+        // Le § 1, encodé le 2026-09-01 avec l'attribut « locaux à sommeil ».
+        "incendie-erp-5-sommeil-contrat-entretien-sdi",
         // Une seule entrée, et c'est le résultat du chantier, pas une
         // amputation. Les deux fragments qui citaient aussi PE 4 § 2 en
         // fondement — `elec-erp-cat5-quinquennale` et
@@ -82,7 +98,7 @@ export const CORPUS_PE: Corpus = {
         // `OBLIGATIONS_RETIREES` dans `conformite/index.ts`.
       ],
       reserve:
-        "Le § 2 est encodé depuis l'ADR-022 (porteur établissement, triennal). Restent deux choses. Le § 1 impose un contrat annuel d'entretien du système de détection automatique d'incendie, restreint aux établissements comportant des locaux à sommeil : il attend l'attribut `Etablissement.locauxSommeil`, qui n'existe pas — la caractéristique `dessertLocauxSommeil` porte sur un équipement, pas sur l'établissement, et ne peut donc pas conditionner une obligation qu'aucun équipement ne déclenche. Et le chapeau ajouté par l'arrêté du 1er décembre 2025, applicable au 2026-07-01, soumet les installations de gaz neuves ou modifiées aux vérifications de PE 10 B : c'est un contrôle à la construction ou après travaux, pas une échéance récurrente, et il n'est pas instruit.",
+        "Le § 2 est encodé depuis l'ADR-022 (porteur établissement, triennal). LE § 1 L'EST DEPUIS LE 2026-09-01 : l'attribut d'établissement qu'il attendait — `comporteLocauxSommeilPublic` — existe, et `incendie-erp-5-sommeil-contrat-entretien-sdi` porte le contrat annuel d'entretien du système de détection automatique d'incendie. La réserve qui figurait ici disait « il attend l'attribut `Etablissement.locauxSommeil`, qui n'existe pas » ; elle est levée.\n\nRESTE DEUX CHOSES, ET AUCUNE DES DEUX N'EST UNE ÉCHÉANCE RÉCURRENTE. (1) La première phrase du § 1 fait vérifier la détection, le désenfumage et les installations électriques « à la construction et avant l'ouverture par des personnes ou des organismes agréés » : c'est un contrôle d'ouverture, et le produit ne date pas l'ouverture d'un établissement qu'il prend en cours d'exploitation. (2) Le chapeau ajouté par l'arrêté du 1er décembre 2025, applicable au 2026-07-01, soumet les installations de gaz neuves ou modifiées aux vérifications de PE 10 B : contrôle à la construction ou après travaux, pas instruit. Les deux sont de la même espèce, et c'est la raison pour laquelle ils restent dehors ensemble.",
     },
     {
       ref: "PE 5",
@@ -311,11 +327,10 @@ export const CORPUS_PE: Corpus = {
       versionEnVigueur: "1990-08-27",
       luLe: "2026-08-26",
       lecture: "agent_verbatim",
-      statut: "non_couvert",
+      statut: "hors_perimetre",
+      exclusion: "construction",
       motif:
-        "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
-      declareA:
-        "docs/couverture-declaree-du-produit.md — NOTE INTERNE, pas une annonce à l'exploitant. Cet article a été nommé à l'écran, sur le tableau de bord de chaque établissement, du 2026-08-28 au soir du même jour ; la surface a été retirée par décision produit — déclarer ce que le produit ne couvre pas suppose d'avoir tranché ce qu'il couvre. Le document dit l'histoire et ce qu'il faudrait pour rendre l'annonce propre au dossier : un rattachement article → `Etablissement.typeErp`.",
+        "Structure stable au feu et planchers coupe-feu de degré une demi-heure, sauf établissement à simple rez-de-chaussée. C'est une exigence de résistance au feu de l'ouvrage : elle s'adresse au constructeur, et un exploitant ne peut ni la refaire ni la constater à date. RECLASSÉ LE 2026-09-01 (lot A11). L'article était `non_couvert`, au motif que « l'attribut « locaux à sommeil » n'existe pas en base ». `Etablissement.comporteLocauxSommeilPublic` existe désormais, et le motif avec lui est devenu faux : ce qui empêche d'encoder cet article n'a jamais été l'attribut, c'est ce que l'article impose. Le chapitre III a été relu à la source ce jour, article par article, avant de reclasser.",
     },
     {
       ref: "PE 29",
@@ -323,11 +338,10 @@ export const CORPUS_PE: Corpus = {
       versionEnVigueur: "1990-08-27",
       luLe: "2026-08-26",
       lecture: "agent_verbatim",
-      statut: "non_couvert",
+      statut: "hors_perimetre",
+      exclusion: "construction",
       motif:
-        "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
-      declareA:
-        "docs/couverture-declaree-du-produit.md — NOTE INTERNE, pas une annonce à l'exploitant. Cet article a été nommé à l'écran, sur le tableau de bord de chaque établissement, du 2026-08-28 au soir du même jour ; la surface a été retirée par décision produit — déclarer ce que le produit ne couvre pas suppose d'avoir tranché ce qu'il couvre. Le document dit l'histoire et ce qu'il faudrait pour rendre l'annonce propre au dossier : un rattachement article → `Etablissement.typeErp`.",
+        "Degré coupe-feu des cloisons séparant les chambres, portes pare-flammes de degré une demi-heure équipées d'un ferme-porte. Même espèce que PE 28 : caractéristiques de l'ouvrage et de ses menuiseries, posées à la construction. RECLASSÉ LE 2026-09-01 (lot A11). L'article était `non_couvert`, au motif que « l'attribut « locaux à sommeil » n'existe pas en base ». `Etablissement.comporteLocauxSommeilPublic` existe désormais, et le motif avec lui est devenu faux : ce qui empêche d'encoder cet article n'a jamais été l'attribut, c'est ce que l'article impose. Le chapitre III a été relu à la source ce jour, article par article, avant de reclasser.",
     },
     {
       ref: "PE 30",
@@ -335,11 +349,10 @@ export const CORPUS_PE: Corpus = {
       versionEnVigueur: "2002-04-07",
       luLe: "2026-08-26",
       lecture: "agent_verbatim",
-      statut: "non_couvert",
+      statut: "hors_perimetre",
+      exclusion: "construction",
       motif:
-        "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
-      declareA:
-        "docs/couverture-declaree-du-produit.md — NOTE INTERNE, pas une annonce à l'exploitant. Cet article a été nommé à l'écran, sur le tableau de bord de chaque établissement, du 2026-08-28 au soir du même jour ; la surface a été retirée par décision produit — déclarer ce que le produit ne couvre pas suppose d'avoir tranché ce qu'il couvre. Le document dit l'histoire et ce qu'il faudrait pour rendre l'annonce propre au dossier : un rattachement article → `Etablissement.typeErp`.",
+        "Distance maximale de 35 mètres entre une porte de chambre et un escalier, recoupement des couloirs par portes pare-flammes, désenfumage des escaliers et circulations. Dimensionnement des dégagements : l'exclusion `construction` le nomme expressément. RECLASSÉ LE 2026-09-01 (lot A11). L'article était `non_couvert`, au motif que « l'attribut « locaux à sommeil » n'existe pas en base ». `Etablissement.comporteLocauxSommeilPublic` existe désormais, et le motif avec lui est devenu faux : ce qui empêche d'encoder cet article n'a jamais été l'attribut, c'est ce que l'article impose. Le chapitre III a été relu à la source ce jour, article par article, avant de reclasser.",
     },
     {
       ref: "PE 31",
@@ -347,59 +360,60 @@ export const CORPUS_PE: Corpus = {
       versionEnVigueur: "1990-08-27",
       luLe: "2026-08-26",
       lecture: "agent_verbatim",
-      statut: "non_couvert",
+      statut: "hors_perimetre",
+      exclusion: "construction",
       motif:
-        "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
-      declareA:
-        "docs/couverture-declaree-du-produit.md — NOTE INTERNE, pas une annonce à l'exploitant. Cet article a été nommé à l'écran, sur le tableau de bord de chaque établissement, du 2026-08-28 au soir du même jour ; la surface a été retirée par décision produit — déclarer ce que le produit ne couvre pas suppose d'avoir tranché ce qu'il couvre. Le document dit l'histoire et ce qu'il faudrait pour rendre l'annonce propre au dossier : un rattachement article → `Etablissement.typeErp`.",
+        "Les cheminées à foyer ouvert fonctionnant au bois sont admises après avis de la commission de sécurité. L'article ouvre une possibilité d'aménagement sous condition d'avis ; il n'impose aucun acte périodique à l'exploitant. Le ramonage, lui, est dû ailleurs et le référentiel le porte. RECLASSÉ LE 2026-09-01 (lot A11). L'article était `non_couvert`, au motif que « l'attribut « locaux à sommeil » n'existe pas en base ». `Etablissement.comporteLocauxSommeilPublic` existe désormais, et le motif avec lui est devenu faux : ce qui empêche d'encoder cet article n'a jamais été l'attribut, c'est ce que l'article impose. Le chapitre III a été relu à la source ce jour, article par article, avant de reclasser.",
     },
     {
       ref: "PE 32",
       intitule: "Détection automatique d'incendie et système d'alarme",
       versionEnVigueur: "2011-10-30",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
-      statut: "non_couvert",
+      citationCle:
+        "les établissements doivent être équipés d'un système de sécurité incendie de catégorie A tel que défini à l'article MS 53 et conforme aux dispositions des articles MS 58 et MS 59",
+      statut: "sans_objet",
       motif:
-        "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
-      declareA:
-        "docs/couverture-declaree-du-produit.md — NOTE INTERNE, pas une annonce à l'exploitant. Cet article a été nommé à l'écran, sur le tableau de bord de chaque établissement, du 2026-08-28 au soir du même jour ; la surface a été retirée par décision produit — déclarer ce que le produit ne couvre pas suppose d'avoir tranché ce qu'il couvre. Le document dit l'histoire et ce qu'il faudrait pour rendre l'annonce propre au dossier : un rattachement article → `Etablissement.typeErp`.",
+        "Règle de DOTATION, sans récurrence : un SSI de catégorie A, sans temporisation, avec des détecteurs sensibles aux fumées et aux gaz de combustion implantés dans les circulations horizontales communes — sauf établissement à simple rez-de-chaussée dont les locaux à sommeil débouchent directement sur l'extérieur. Même classement que PE 24 (installations électriques et éclairage) et PE 26 (extincteurs), pour la même raison : le produit ne modélise pas la conformité de l'installation, il suit les actes qu'elle appelle. L'entretien du système, lui, est dû par PE 4 § 1 et le référentiel le porte depuis ce jour. RECLASSÉ LE 2026-09-01 (lot A11). L'article était `non_couvert`, au motif que « l'attribut « locaux à sommeil » n'existe pas en base ». `Etablissement.comporteLocauxSommeilPublic` existe désormais, et le motif avec lui est devenu faux : ce qui empêche d'encoder cet article n'a jamais été l'attribut, c'est ce que l'article impose. Le chapitre III a été relu à la source ce jour, article par article, avant de reclasser.\n\nÀ SAVOIR SI L'ON REVIENT DESSUS : l'exception du § 1 repose sur un fait que le modèle ne porte pas — « simple rez-de-chaussée dont les locaux réservés au sommeil débouchent directement sur l'extérieur ». Ce serait un second attribut d'établissement, distinct de celui de ce lot.",
     },
     {
       ref: "PE 33",
       intitule: "Registre de sécurité, consignes",
       versionEnVigueur: "2011-11-04",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
-      statut: "non_couvert",
-      motif:
-        "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
-      declareA:
-        "docs/couverture-declaree-du-produit.md — NOTE INTERNE, pas une annonce à l'exploitant. Cet article a été nommé à l'écran, sur le tableau de bord de chaque établissement, du 2026-08-28 au soir du même jour ; la surface a été retirée par décision produit — déclarer ce que le produit ne couvre pas suppose d'avoir tranché ce qu'il couvre. Le document dit l'histoire et ce qu'il faudrait pour rendre l'annonce propre au dossier : un rattachement article → `Etablissement.typeErp`.",
+      citationCle:
+        "Une consigne d'incendie doit être affichée dans chaque chambre ; elle est rédigée en français et complétée par une bande dessinée illustrant les consignes.",
+      statut: "retenu",
+      obligations: ["incendie-erp-5-sommeil-consigne-chambres"],
+      reserve:
+        "Le § 2 est encodé depuis le 2026-09-01 (lot A11). Le § 1 — « L'exploitant doit tenir à jour un registre de sécurité. Ce document doit pouvoir être présenté à chaque visite de la commission de sécurité. » — n'a PAS d'obligation propre, et c'est délibéré : `incendie-registre-securite` le porte déjà, fondée sur R. 143-44 CCH, dont le champ est « les établissements soumis aux prescriptions du présent chapitre », 5ᵉ catégorie comprise. En créer une seconde pour les seuls établissements à locaux à sommeil ferait croire à deux registres là où le texte n'en impose qu'un. Cette entrée ne cite pas cette obligation-là parce qu'elle ne cite pas PE 33 en fondement : la citer ici ferait dire au corpus qu'un article fonde une ligne qui ne le connaît pas.",
     },
     {
       ref: "PE 34",
       intitule: "Signalisations",
       versionEnVigueur: "2003-05-07",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
-      statut: "non_couvert",
+      citationCle:
+        "Les portes, les escaliers et les différents cheminements qui conduisent à l'extérieur de l'établissement doivent être pourvus de symboles de sécurité, visibles de jour comme de nuit, conformes aux dispositions de la norme NF X 08-003.",
+      statut: "sans_objet",
       motif:
-        "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
-      declareA:
-        "docs/couverture-declaree-du-produit.md — NOTE INTERNE, pas une annonce à l'exploitant. Cet article a été nommé à l'écran, sur le tableau de bord de chaque établissement, du 2026-08-28 au soir du même jour ; la surface a été retirée par décision produit — déclarer ce que le produit ne couvre pas suppose d'avoir tranché ce qu'il couvre. Le document dit l'histoire et ce qu'il faudrait pour rendre l'annonce propre au dossier : un rattachement article → `Etablissement.typeErp`.",
+        "Règle d'équipement du bâtiment, sans récurrence : les dégagements sont POURVUS de symboles de sécurité, et les portes que le public ne doit pas emprunter en cas d'incendie sont fermées à clé ou munies d'un ferme-porte. Même famille que PE 24, PE 26 et PE 32. La ligne de partage avec PE 35, retenu, est écrite dans les `notesInternes` de `incendie-erp-5-sommeil-plans-affiches` : PE 34 fait ÉQUIPER l'ouvrage, PE 35 fait PRODUIRE ET AFFICHER un écrit par l'exploitant. RECLASSÉ LE 2026-09-01 (lot A11). L'article était `non_couvert`, au motif que « l'attribut « locaux à sommeil » n'existe pas en base ». `Etablissement.comporteLocauxSommeilPublic` existe désormais, et le motif avec lui est devenu faux : ce qui empêche d'encoder cet article n'a jamais été l'attribut, c'est ce que l'article impose. Le chapitre III a été relu à la source ce jour, article par article, avant de reclasser.",
     },
     {
       ref: "PE 35",
       intitule: "Affichages",
       versionEnVigueur: "1990-08-27",
-      luLe: "2026-08-26",
+      luLe: "2026-09-01",
       lecture: "agent_verbatim",
-      statut: "non_couvert",
-      motif:
-        "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
-      declareA:
-        "docs/couverture-declaree-du-produit.md — NOTE INTERNE, pas une annonce à l'exploitant. Cet article a été nommé à l'écran, sur le tableau de bord de chaque établissement, du 2026-08-28 au soir du même jour ; la surface a été retirée par décision produit — déclarer ce que le produit ne couvre pas suppose d'avoir tranché ce qu'il couvre. Le document dit l'histoire et ce qu'il faudrait pour rendre l'annonce propre au dossier : un rattachement article → `Etablissement.typeErp`.",
+      citationCle:
+        "Un plan sommaire de repérage de chaque chambre par rapport aux dégagements à utiliser en cas d'incendie doit être fixé dans chaque chambre.",
+      statut: "retenu",
+      obligations: ["incendie-erp-5-sommeil-plans-affiches"],
+      reserve:
+        "Les trois paragraphes sont encodés en une seule obligation — plan de l'établissement au hall, plan d'orientation par étage, plan de repérage par chambre —, et le regroupement est motivé dans ses `notesInternes`. CE QUI RESTE : le § 1 exige un plan « conforme aux dispositions de l'article MS 41 ». MS 41 relève du Livre II, que PE 1 § 1 écarte SAUF renvoi exprès — et c'en est un, donc il s'applique. Il n'a pas été ouvert. L'obligation impose donc le plan sans décrire ce que MS 41 exige de son contenu.",
     },
     {
       ref: "PE 36",
@@ -407,11 +421,9 @@ export const CORPUS_PE: Corpus = {
       versionEnVigueur: "2010-05-16",
       luLe: "2026-08-26",
       lecture: "agent_verbatim",
-      statut: "non_couvert",
+      statut: "sans_objet",
       motif:
-        "Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le texte ne les met hors de portée du produit. Ce qui manque est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un manque de couverture assumé, pas une non-question.",
-      declareA:
-        "docs/couverture-declaree-du-produit.md — NOTE INTERNE, pas une annonce à l'exploitant. Cet article a été nommé à l'écran, sur le tableau de bord de chaque établissement, du 2026-08-28 au soir du même jour ; la surface a été retirée par décision produit — déclarer ce que le produit ne couvre pas suppose d'avoir tranché ce qu'il couvre. Le document dit l'histoire et ce qu'il faudrait pour rendre l'annonce propre au dossier : un rattachement article → `Etablissement.typeErp`.",
+        "Règle de dotation en éclairage de sécurité — blocs autonomes ou source centralisée, éclairage d'évacuation renforcé dans les escaliers et circulations. Aucune périodicité : c'est le pendant exact de PE 24, classé `sans_objet` pour la même raison dès le premier dépouillement. Les vérifications de l'éclairage de sécurité, elles, sont portées par le référentiel et fondées ailleurs. RECLASSÉ LE 2026-09-01 (lot A11). L'article était `non_couvert`, au motif que « l'attribut « locaux à sommeil » n'existe pas en base ». `Etablissement.comporteLocauxSommeilPublic` existe désormais, et le motif avec lui est devenu faux : ce qui empêche d'encoder cet article n'a jamais été l'attribut, c'est ce que l'article impose. Le chapitre III a été relu à la source ce jour, article par article, avant de reclasser.",
     },
     {
       ref: "PE 37",
@@ -428,7 +440,7 @@ export const CORPUS_PE: Corpus = {
       statut: "retenu",
       obligations: ["incendie-erp-5-visite-commission"],
       reserve:
-        "AMENDEMENT 2026-08-31, SOIR. Cet article était classé `obligation_manquante`, `bloquePar: \"attribut-locaux-a-sommeil\"`, au motif que « poser la quinquennale sur tous les ERP de 5ᵉ catégorie sur-appliquerait à la boutique et au bureau ». Le statut était devenu faux : le référentiel PORTE l\'obligation — `incendie-erp-5-visite-commission` — et elle porte désormais la quinquennale que cet article écrit. Le verbatim reste celui relevé ici le 2026-08-26 : « Ces établissements doivent être visités tous les cinq ans par la commission de sécurité compétente ; la fréquence de ces visites peut être augmentée, s\'il est jugé nécessaire, par arrêté du maire ou du préfet, après avis de la commission. » C\'est un rythme, pas un plafond, et le SEUL du Livre III pour une visite de commission.\n\nCE QUI RESTE DÛ ET QUE LE RÉFÉRENTIEL NE PORTE PAS, en deux points distincts.\n\n(1) L\'ANCRAGE. L\'obligation se déclenche sur une ALARME_INCENDIE déclarée ; PE 37, lui, vise l\'établissement. Un hôtel sans alarme déclarée ne reçoit rien. Le déblocage reste un attribut d\'établissement — `comporteLocauxSommeilPublic` —, donc une migration.\n\n(2) « POUR LE PUBLIC ». L\'article vise les locaux à sommeil réservés AU PUBLIC ; la caractéristique `dessertLocauxSommeil` ne distingue pas le sommeil du public de celui du personnel. Un logement de fonction occupé par un salarié n\'est pas un local à sommeil pour le public : la condition est plus large que l\'article, indépendamment de (1). Non corrigé — le resserrer suppose de reposer la question à des utilisateurs qui y ont déjà répondu.",
+        "AMENDEMENT 2026-08-31, SOIR. Cet article était classé `obligation_manquante`, `bloquePar: \"attribut-locaux-a-sommeil\"`, au motif que « poser la quinquennale sur tous les ERP de 5ᵉ catégorie sur-appliquerait à la boutique et au bureau ». Le statut était devenu faux : le référentiel PORTE l\'obligation — `incendie-erp-5-visite-commission` —, et elle porte la quinquennale que cet article écrit. C\'est un rythme, pas un plafond, et le SEUL du Livre III pour une visite de commission.\n\nDEUX RÉSERVES ONT VÉCU ICI ENTRE LE 2026-08-31 ET LE 2026-09-01, ET ELLES SONT CLOSES. (1) L\'ANCRAGE : l\'obligation se déclenchait sur une ALARME_INCENDIE déclarée, un hôtel sans alarme ne recevait rien. (2) « POUR LE PUBLIC » : la caractéristique `dessertLocauxSommeil` ne distinguait pas le sommeil du public de celui du personnel. Les deux tenaient à la même cause — l\'absence d\'attribut d\'établissement — et le lot A11 l\'a posé : `Etablissement.comporteLocauxSommeilPublic`. L\'obligation est passée au porteur établissement, la caractéristique d\'équipement est retirée, et la question posée au dirigeant dit en toutes lettres qu\'un logement de fonction ne compte pas.\n\nRELECTURE DU 2026-09-01, ET ELLE OUVRE UNE RÉSERVE NEUVE QUE PERSONNE N\'AVAIT VUE. Le corps de l\'article a été rendu par Légifrance ce jour, version en vigueur du 24 novembre 2004, et il ne commence pas par la phrase des cinq ans : « Le premier paragraphe et le premier alinéa du deuxième paragraphe de l\'article GE 2 du règlement de sécurité, ainsi que ses articles GE 3, GE 5 et GE 6 sont applicables aux établissements comportant, pour le public, des locaux à sommeil. »\n\nC\'EST UN RENVOI EXPRÈS AU LIVRE II, au sens de PE 1 § 1 — donc quatre articles du Livre II s\'appliquent bel et bien à ces établissements, alors que le Livre II est écarté par défaut en 5ᵉ catégorie. GE 6 est dépouillé et retenu (`elec-erp-mise-en-service`). GE 2, GE 3 ET GE 5 N\'ONT JAMAIS ÉTÉ OUVERTS : ils ne figurent pas au corpus du Livre II, qui est `articles_cites` et ne prétend donc pas les couvrir. Ce que ces trois articles imposent aux établissements à locaux à sommeil n\'est pas établi, et la quinquennale n\'en dépend pas — elle vient de la seconde phrase de PE 37.\n\nC\'est la règle de lecture du corpus qui attrape ce cas, et elle mérite d\'être citée : un article d\'habilitation lu sans énumérer ce qu\'il habilite est l\'une des trois familles de manques du 2026-08-31. Celui-ci est nommé plutôt que refermé.\n\nLA PHRASE DES CINQ ANS, ENFIN. « Ces établissements doivent être visités tous les cinq ans par la commission de sécurité compétente », relevé ce jour. La suite — « ; la fréquence de ces visites peut être augmentée, s\'il est jugé nécessaire, par arrêté du maire ou du préfet, après avis de la commission » — N\'A PAS été rendue par cette lecture-ci ; elle reste établie par trois relevés antérieurs concordants, et rien dans la lecture du jour ne la contredit. Elle relève de toute façon d\'une prescription particulière (ADR-014), pas du référentiel.",
     },
     {
       ref: "PO 1",

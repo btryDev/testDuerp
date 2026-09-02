@@ -54,5 +54,6 @@ export function projeterEtablissement(
       familleHabitation: etab.familleHabitation,
     personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
     manipuleMatieresR422722: etab.manipuleMatieresR422722,
+    comporteLocauxSommeilPublic: etab.comporteLocauxSommeilPublic,
   };
 }

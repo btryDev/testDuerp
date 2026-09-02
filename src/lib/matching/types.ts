@@ -72,6 +72,21 @@ export type EtablissementMatching = {
    * incident.
    */
   manipuleMatieresR422722: boolean | null;
+  /**
+   * L'établissement comporte-t-il, **pour le public**, des locaux à sommeil
+   * (arrêté du 25 juin 1980, Livre III — PE 4 § 1, PE 33, PE 35, PE 37) ?
+   *
+   * **Requis dans la projection, comme `familleHabitation` et
+   * `personnesPresentesHabituellement`, et pour la raison qu'ils ont chacun
+   * payée** : huit modules projettent un établissement vers le moteur, et un
+   * champ optionnel s'omet sans que rien ne le signale. `null` est une
+   * réponse — c'est l'absence de réponse qui est interdite.
+   *
+   * `null` ne fait perdre aucune obligation : le moteur retient et signale
+   * « à confirmer » (cf. `evaluerLocauxSommeil`). Il fait en revanche perdre
+   * un allègement de régime, ce qui est le même choix vu de l'autre côté.
+   */
+  comporteLocauxSommeilPublic: boolean | null;
 };
 
 export type EquipementMatching = {

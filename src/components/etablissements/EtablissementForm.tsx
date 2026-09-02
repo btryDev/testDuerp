@@ -61,6 +61,7 @@ type Valeurs = {
   dateCertificatConformite?: string | null;
   classeIgh?: string | null;
   familleHabitation?: string | null;
+  comporteLocauxSommeilPublic?: boolean | null;
 };
 
 type Props = {
@@ -370,6 +371,57 @@ export function EtablissementForm({
                     }
                     erreur={err("dateCertificatConformite")}
                   />
+
+                  {/* Locaux à sommeil — arrêté du 25 juin 1980, Livre III.
+                      La question est ici et NON au wizard d'onboarding : le
+                      recadrage vient d'en retirer deux questions de
+                      technicien, et celle-ci n'a pas à barrer la route d'une
+                      création de dossier. Elle est en revanche posée à
+                      l'endroit où le dirigeant vient déclarer ce que son
+                      établissement est, et elle est visible en permanence —
+                      tant qu'il n'y a pas répondu, quatre lignes lui sont
+                      servies « à confirmer ». */}
+                  <div className="sm:col-span-2">
+                    <label
+                      className="label-board"
+                      htmlFor="comporteLocauxSommeilPublic"
+                    >
+                      Votre établissement héberge-t-il du public pour la nuit ?
+                    </label>
+                    <select
+                      id="comporteLocauxSommeilPublic"
+                      name="comporteLocauxSommeilPublic"
+                      className="champ-board"
+                      aria-describedby="comporteLocauxSommeilPublic-aide"
+                      defaultValue={
+                        valeursInitiales?.comporteLocauxSommeilPublic === true
+                          ? "oui"
+                          : valeursInitiales?.comporteLocauxSommeilPublic ===
+                              false
+                            ? "non"
+                            : ""
+                      }
+                    >
+                      <option value="">Je ne sais pas encore</option>
+                      <option value="oui">Oui</option>
+                      <option value="non">Non</option>
+                    </select>
+                    <p
+                      id="comporteLocauxSommeilPublic-aide"
+                      className="m-0 mt-1.5 max-w-[66ch] text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]"
+                    >
+                      Chambres d&apos;hôtel, chambres d&apos;hôtes, gîte,
+                      hébergement — des locaux où le public dort. Un restaurant,
+                      un commerce ou un bureau sans hébergement : répondez
+                      «&nbsp;non&nbsp;». Un logement de fonction occupé par
+                      vous ou par un salarié ne compte pas : le texte vise le
+                      sommeil du public. Si oui, s&apos;ajoutent un contrat
+                      annuel d&apos;entretien de la détection incendie, des
+                      consignes et des plans affichés, et une visite de la
+                      commission de sécurité tous les cinq ans (arrêté du
+                      25 juin 1980, art. PE 4, PE 33, PE 35 et PE 37).
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

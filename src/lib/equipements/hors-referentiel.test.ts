@@ -22,6 +22,7 @@ const etablissement = (
   familleHabitation: null,
   personnesPresentesHabituellement: null,
   manipuleMatieresR422722: null,
+  comporteLocauxSommeilPublic: null,
   ...o,
 });
 

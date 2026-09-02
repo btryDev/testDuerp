@@ -205,6 +205,7 @@ export async function chargerTransmissions(
       // compilait. Ils sont requis depuis (`matching/types.ts`).
       personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
       manipuleMatieresR422722: etab.manipuleMatieresR422722,
+      comporteLocauxSommeilPublic: etab.comporteLocauxSommeilPublic,
     },
     etab.equipements.map((eq) => ({
       id: eq.id,
