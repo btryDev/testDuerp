@@ -239,3 +239,60 @@ la base de production. À savoir avant de refaire regarder un dossier réel.
 `/accessibilite` et `/plan-actions` s'affichent vides — un écran vide ne prouve
 rien sur une correction de charte. S'y ajoutent tout l'onboarding, le refus de la
 4ᵉ zone et le reset du formulaire de prescription : ce sont des écritures.
+
+---
+
+## 8. Ce que l'onboarding permet de déduire — à instruire, bas de liste
+
+**Idée de la propriétaire, 2026-09-03.** Le lot « personnes habituellement
+présentes » a montré qu'une question posée au dirigeant était **déjà répondue**
+par une autre : dès la 3ᵉ catégorie d'ERP, le public dépasse 301, donc les 51 de
+`R. 4227-34`. La question a pu partir.
+
+Il y a probablement **d'autres cas du même genre**, et il se peut aussi que le
+produit les traite déjà très bien — c'est à mesurer, pas à supposer.
+
+### La ligne de partage, à poser avant d'instruire
+
+Sans elle, ce chantier contredirait la décision du 2026-09-01, dont le commit
+s'intitule « L'onboarding cesse de deviner ». Les deux se concilient, et la
+distinction est nette :
+
+- **Deviner un fait** — ce qui a été retiré. Le parcours déduisait la catégorie
+  d'ERP d'un effectif de public saisi, puis **l'inscrivait au dossier comme si
+  elle avait été constatée**. Un dirigeant connaît son classement : il est sur
+  son arrêté d'ouverture ou au procès-verbal de la commission. On le lui demande.
+- **Tirer la conséquence d'un fait déclaré** — ce qui est légitime, et ce que
+  fait le lot `R. 4227-34`. La catégorie est déclarée par le dirigeant ; le
+  franchissement du seuil de 51 en découle par le texte, sans qu'on demande rien
+  et sans qu'on écrive au dossier un fait que personne n'a constaté.
+
+**La règle** : on ne déduit jamais une donnée qui sera stockée et présentée comme
+déclarée. On déduit des **conséquences** — quelles obligations s'appliquent,
+quelles questions deviennent inutiles.
+
+Et une seconde règle, tirée du même lot : **une déduction ne vaut que dans le
+sens où elle est sûre.** La catégorie donne une borne basse du public, ce qui
+suffit à conclure « au-dessus de 51 » et jamais « en dessous ». Une déduction
+retournée devient une sur-application ou un faux négatif.
+
+### Ce qu'il faudrait établir
+
+Pour chaque réponse d'onboarding — régime travail / ERP / IGH / habitation, type
+et catégorie d'ERP, famille d'habitation, effectif, secteur d'activité, zones,
+équipements déclarés :
+
+1. **Ce qui en découle mécaniquement** aujourd'hui, mesuré en appelant le moteur
+   et non en lisant le code.
+2. **Ce qui pourrait en découler et n'en découle pas** — le gisement.
+3. **Quelles questions ultérieures deviennent alors inutiles**, comme
+   « personnes habituellement présentes » l'est devenue pour les catégories 1 à 3.
+
+Le sens du chantier n'est pas d'ajouter des déductions : c'est de **retirer des
+questions**. Chaque question de moins à l'accueil est un dirigeant de plus qui
+finit son dossier.
+
+**Point de départ** : `src/lib/matching/engine.ts` pour ce qui découle déjà,
+`docs/adr/004-typologie-etablissement.md` pour les seuils, et le mode `explain`
+du moteur — qui sait déjà dire *pourquoi* une obligation s'applique chez vous, et
+qui est donc l'inventaire des déductions existantes.
