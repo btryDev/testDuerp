@@ -94,10 +94,10 @@ On refuse ce qu'on ne peut pas servir, pas ce qu'on ne couvre pas entièrement.
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **121 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **144 obligations sur 18 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité, et depuis le 2026-09-02 signalisation de sécurité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
-**80 d'entre elles sont déclenchées par un équipement déclaré, vingt-sept sont portées
-par l'établissement, quatorze par un salarié.** La répartition a changé deux fois le
+**85 d'entre elles sont déclenchées par un équipement déclaré, quarante-cinq sont
+portées par l'établissement, quatorze par un salarié.** La répartition a changé deux fois le
 2026-08-31 : les trois lots ont ajouté trente et une obligations, et le lot « faux
 négatifs d'ancrage » a fait passer trois obligations existantes de l'équipement à
 l'établissement — le registre de sécurité, les exercices d'évacuation et les consignes
@@ -137,13 +137,16 @@ Le sens d'erreur est délibéré.
 **Les sept derniers domaines ne naissent d'aucun équipement**, et c'est ce qui les
 distingue des dix premiers : leur déclencheur est le statut d'employeur, l'effectif ou
 la co-activité. Un bureau de six personnes sans le moindre appareil déclaré doit
-désormais **dix-huit obligations**. À douze salariés il en doit **dix-neuf** (le CSE
-s'ajoute), à cinquante-cinq **vingt-deux** : le règlement intérieur s'ajoute, le local de
+désormais **vingt-cinq obligations**. À douze salariés il en doit **vingt-six** (le CSE
+s'ajoute), à cinquante-cinq **vingt-neuf** : le règlement intérieur s'ajoute, le local de
 restauration remplace l'emplacement, et le franchissement de cinquante et une personnes
 présentes fait entrer la consigne de sécurité incendie et l'exercice semestriel.
 
-Ces trois chiffres ont été mesurés en appelant le moteur le 2026-09-01. Les trois
-précédents — dix-sept, dix-huit, dix-neuf — étaient faux, et le troisième l'était de
+Ces trois chiffres ont été mesurés en appelant le moteur le 2026-09-02, et ils ont
+gagné sept unités d'un coup : le domaine `signalisation` porte sept lignes que rien ne
+conditionne à un équipement. Les trois précédents — dix-huit, dix-neuf, vingt-deux —
+dataient de la veille et étaient déjà faux quand deux lots les ont dépassés sans les
+toucher. Ceux d'avant — dix-sept, dix-huit, dix-neuf — l'étaient de
 trois : la phrase n'attribuait l'écart qu'au règlement intérieur et manquait la paire
 incendie. **Un compte écrit à la main dans un document se périme au premier lot suivant,
 sans qu'aucun diff ne le touche** ; celui-ci se remesure en appelant
@@ -159,7 +162,7 @@ Rojer couvre les obligations de **santé-sécurité au travail et de sécurité 
 — Code du travail, CCH, et Code de l'environnement quand il porte sur la sécurité des
 installations ou des personnes. Une obligation y naît de cinq déclencheurs possibles :
 
-1. **Équipement déclaré** — 80 obligations livrées
+1. **Équipement déclaré** — 85 obligations livrées
 2. **Statut d'employeur** — dès un salarié. **15 obligations livrées au lot 7**
    (2026-08-31) : formation à la sécurité, information et accès au DUERP, VIP, suivi
    individuel renforcé et sa visite intermédiaire, liste des postes à risques, matériel
@@ -195,8 +198,16 @@ réellement événementielles recensées sont hors périmètre (déclaration d'A
 accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
 l'ADR-022, sans mécanisme.
 
-Répartition au 2026-09-01 : **80 équipement, 27 établissement, 14 salarié**
-(total 121) — mesurée en appelant, pas au grep. Les trois dernières sont entrées
+Répartition au 2026-09-02 : **85 équipement, 45 établissement, 14 salarié**
+(total 144) — mesurée en appelant, pas au grep. Les neuf dernières sont entrées le
+2026-09-02 avec le dépouillement de l'arrêté du 4 novembre 1993 : le domaine
+`signalisation`, dont le référentiel ne portait aucune ligne sous aucun porteur. Sept
+sont des états permanents et deux seulement portent un rythme — la vérification
+semestrielle des signaux LUMINEUX et ACOUSTIQUES, et l'annuelle des alimentations de
+secours. Le guide professionnel qui a déclenché le lot annonçait le semestre pour « les
+moyens et dispositifs de signalisation » : bon chiffre, mauvaise assiette, et le suivre
+aurait fabriqué un rendez-vous sur les panneaux, couleurs et bandes, que le texte
+n'astreint qu'à un entretien « régulier » sans rythme. Les trois dernières sont entrées
 le 2026-09-01 avec le dépouillement de l'arrêté du 31 janvier 1986 (habitation) :
 vérification annuelle des installations de sécurité, registre de sécurité de
 l'immeuble, affichage des consignes et plans d'intervention. Le quatorzième titre est
