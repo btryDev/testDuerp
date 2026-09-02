@@ -103,7 +103,7 @@ export default async function PerimetrePage({
             <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
               Ces phrases sont calculées sur ce que vous avez déclaré : elles
               changent quand le dossier change. Les mêmes se lisent en tête de
-              votre calendrier et de votre registre, avant leur contenu.
+              votre registre de sécurité, avant son contenu.
             </p>
           </div>
 

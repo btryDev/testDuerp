@@ -2,8 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { AideEcran } from "@/components/ui-kit/AideEcran";
-import { BandeauCouverture } from "@/components/perimetre/BandeauCouverture";
-import { couvertureDuDossier } from "@/lib/perimetre/faits";
 import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { LegalBadge } from "@/components/ui-kit/LegalBadge";
 import { BadgeStatut } from "@/components/calendrier/BadgeStatut";
@@ -230,11 +228,6 @@ export default async function CalendrierPage({
   const { domaine, urgent, famille, batiment } = await searchParams;
   const etab = await getEtablissement(id);
   if (!etab) notFound();
-
-  // Ce que l'outil ne couvre pas, sur les quatre axes. Lu ici, une fois : le
-  // bandeau se rend loin plus bas, et une collecte au point de rendu se
-  // referait à chaque variante de la page.
-  const couverture = await couvertureDuDossier(id);
 
   // Le filtre bâtiment n'existe qu'à partir de deux bâtiments (ADR-019) ;
   // un id inconnu vaut « tout l'établissement ».
@@ -1068,19 +1061,16 @@ export default async function CalendrierPage({
       {bandeTitre}
 
       <div className="flex flex-1 flex-col bg-[color:var(--board-card)] px-[var(--board-gutter)] pb-14 pt-7">
-        {/* Ce que l'outil couvre, avant ce qu'il montre. Un établissement
-            au-dessus de la 5e catégorie lit ici un calendrier d'apparence
-            complète qui ignore tout le livre II du règlement de sécurité
-            (PE 1 § 1) : c'est le seul écran où le taire serait grave, parce
-            que c'est celui qu'on suit pour savoir quoi faire. */}
-        {couverture && (
-          <BandeauCouverture
-            couverture={couverture}
-            hrefEtablissement={`/etablissements/${id}/modifier`}
-            hrefEquipements={`/etablissements/${id}/equipements`}
-          />
-        )}
-
+        {/* PAS DE BANDEAU DE COUVERTURE ICI, et c'est une décision de la
+            propriétaire (2026-09-02). Il y a vécu tant qu'il portait l'axe
+            « public reçu » — le calendrier étant l'écran qu'on suit pour
+            savoir quoi faire, y taire une obligation écartée aurait été
+            grave. Cet axe est parti avec sa cause : la ligne est désormais
+            servie « à confirmer » au lieu d'être retirée, donc elle est là,
+            sous les yeux, et un bandeau qui annoncerait son absence
+            au-dessus d'elle dirait le contraire de ce que la page montre.
+            Ce que l'outil ne couvre pas se lit sur « Ce que Rojer ne couvre
+            pas » et en tête du registre de sécurité. */}
         {lignes.length === 0 ? (
           <div>
             {/* Sans instrument, les commandes n'ont pas de barre où
