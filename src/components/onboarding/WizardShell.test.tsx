@@ -190,3 +190,26 @@ describe("le refus se rend au champ qu'il vise", () => {
     expect(select.parentElement!.contains(message)).toBe(true);
   });
 });
+
+describe("le refus de périmètre est aussi lisible sans le voir", () => {
+  it("le champ chaîne son aide ET le refus, pas l'un des deux", async () => {
+    // La règle du kit (charte § 4) : `aria-describedby` chaîne l'aide et
+    // l'erreur. Le refus vivant hors de `ChampBoard`, la chaîne est écrite à
+    // la main — et une chaîne écrite à la main est exactement celle qui perd
+    // une moitié.
+    render(<WizardShell />);
+    remplirEtape1();
+    saisir(/Effectif travailleur/, "51");
+    await souffler();
+
+    const champ = screen.getByLabelText(/Effectif travailleur/);
+    const decrit = champ.getAttribute("aria-describedby") ?? "";
+    expect(decrit.split(" ")).toContain("effectifSurSite-aide");
+    expect(decrit.split(" ")).toContain("effectifSurSite-refus");
+    // Et les deux cibles existent vraiment : un `aria-describedby` qui
+    // pointe dans le vide ne dit rien du tout.
+    for (const id of decrit.split(" ")) {
+      expect(document.getElementById(id), id).toBeTruthy();
+    }
+  });
+});

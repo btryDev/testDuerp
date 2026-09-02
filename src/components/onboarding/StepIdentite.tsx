@@ -153,7 +153,12 @@ export function StepIdentite({ state, update, errors, blocage }: StepProps) {
                 pattern="\d{5}"
                 maxLength={5}
                 erreur={messagePour("adresseCodePostal")}
-                aria-invalid={Boolean(errors?.adresse)}
+                // Le refus serveur porte sur l'adresse recomposée : son texte
+                // s'affiche sur la rue, mais les trois champs se marquent
+                // invalides — c'est l'ensemble qui l'est.
+                aria-invalid={Boolean(
+                  messagePour("adresseCodePostal") ?? errors?.adresse,
+                )}
               />
               <ChampBoard
                 id="adresseVille"
@@ -165,7 +170,7 @@ export function StepIdentite({ state, update, errors, blocage }: StepProps) {
                 placeholder="Paris"
                 autoComplete="address-level2"
                 erreur={messagePour("adresseVille")}
-                aria-invalid={Boolean(errors?.adresse)}
+                aria-invalid={Boolean(messagePour("adresseVille") ?? errors?.adresse)}
               />
             </div>
 
@@ -289,8 +294,16 @@ export function StepIdentite({ state, update, errors, blocage }: StepProps) {
                 // Le refus de périmètre n'est pas rendu ici mais dans le bloc
                 // ci-dessous : il tient trois lignes et il porte une icône.
                 erreur={refus ? undefined : messagePour("effectifSurSite")}
+                // L'aide EST reprise dans la chaîne : `ChampBoard` la
+                // construit lui-même, et ce `aria-describedby` la remplace
+                // (il est étalé après). L'omettre ferait taire « salariés +
+                // apprentis présents régulièrement » pour qui écoute le
+                // champ — précisément là où le refus rend la définition de
+                // l'effectif la plus utile.
                 aria-describedby={
-                  refus ? "effectifSurSite-refus" : undefined
+                  refus
+                    ? "effectifSurSite-aide effectifSurSite-refus"
+                    : undefined
                 }
               />
             </div>
