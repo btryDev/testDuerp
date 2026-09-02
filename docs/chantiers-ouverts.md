@@ -158,3 +158,73 @@ migrée.** Il débloque le contrôle sur n'importe quelle machine.
   fait toujours pas.
 - **Un compte de test à supprimer en prod** : `contact+controle-pr10@btry.fr` et
   « Bistrot de la Verification SARL » (`cmtj4wq7y0002cigd4zauyfmw`).
+
+---
+
+## 7. Ce que le contrôle visuel a rendu — 2026-09-02
+
+Passe faite sur `42df046` par une session distante, sur un dossier construit à
+la main : **6 corrections confirmées à l'écran, 2 défauts toujours là, 11 constats
+neufs.** Aucun n'est corrigé.
+
+**Le contrôle n'est pas un second œil indépendant, et l'agent l'a dit lui-même** :
+ses seize constats de la veille étaient dans sa fenêtre, il ne pouvait pas les
+désapprendre. Il a compensé en donnant ce qu'il voit plutôt que ce que le commit
+annonce, et en consacrant la moitié de la passe à des écrans jamais ouverts — d'où
+viennent presque tous les constats neufs.
+
+### Les trois qui comptent
+
+**L'îlot de navigation est encore translucide sur la section CLAIRE.** Le
+correctif du 2026-09-01 n'a traité que le fond sombre. À une position de
+défilement intermédiaire, on lit « Dépassée depuis lundi · 6 appareils » *à
+travers* la barre de navigation, et la photo du héros transparaît sur sa moitié
+gauche. Sur la page de vente. Demi-correction, pas correction.
+
+**`/equipements` tranche une ambiguïté du mauvais côté.** Sous les compteurs :
+« Les chiffres ci-dessus et les familles ci-dessous portent sur tout
+l'établissement. » C'est faux — ils portent sur les équipements seuls. La phrase
+existe pour lever la confusion et elle la scelle à l'envers. L'écart est
+exactement la répartition du référentiel : 86 obligations portées par un
+équipement, 45 par l'établissement, 14 par un salarié.
+
+**Quatre comptes divergents pour le même dossier** : 22 dépassées au tableau de
+bord, 19 sur la carte de zone, « 22 datées · 5 à planifier » au calendrier,
+« 19 en retard · 1 à planifier » sur `/equipements`. L'écart s'explique — porteur
+équipement contre porteur établissement — mais **aucun écran ne le dit**.
+
+### Les autres
+
+- `J−3` affiché sur une ligne « en retard » : le signe est inversé, et il se lit
+  « dans trois jours » à qui a déjà dépassé.
+- « 22 échéances à traiter cette semaine » au-dessus de « 22 dépassées · 0 sous
+  30 j » : le titre annonce un délai que ses propres chiffres démentent.
+- Deux espaces manquantes après un `<strong>` : « couvertespar l'application »
+  (`/registre`, dans un H2) et « tous les six mois**l'attestation** »
+  (`/prestataires`). Deux pages, donc un `grep` plutôt que deux correctifs.
+- La troisième carte de zone est tranchée en plein glyphe : « At », « 0 équ »,
+  une pastille réduite à un « À ».
+- « À jour » affiché sur une zone à **zéro équipement** — on certifie à jour un
+  lieu où rien n'a jamais été déclaré.
+- Pastille ambre « Engagement d'assurance » absente du widget « À faire », alors
+  que la ligne a de la place.
+- Le guide reste à « étape 4 sur 6 » alors que l'étape 5 paraît satisfaite ; un
+  bouton primaire y est indiscernable d'un choix déjà fait.
+- Le héros de la page d'accueil reste un aplat noir ~4 s avant que la photo
+  arrive. Pas cassé, lent — sur la première image d'une page de vente.
+
+### Et un fait de conception, découvert en le cherchant
+
+**Charger la page calendrier ÉCRIT.** `calendrier/page.tsx:296-306` appelle
+`regenererSansInvalider(id)` dès que le calendrier est désynchronisé. C'est la
+régénération idempotente de l'ADR-012, pas un défaut — mais elle a pour
+conséquence qu'**une consigne de « lecture seule en naviguant » n'est pas tenable
+sur ce produit**, ce qui a été demandé à tort à la session distante et exécuté sur
+la base de production. À savoir avant de refaire regarder un dossier réel.
+
+### Ce qui reste injugeable sans le seed du § 5
+
+`/equipe`, `/duerp`, `/permis-feu`, `/plan-prevention`, `/carnet-sanitaire`,
+`/accessibilite` et `/plan-actions` s'affichent vides — un écran vide ne prouve
+rien sur une correction de charte. S'y ajoutent tout l'onboarding, le refus de la
+4ᵉ zone et le reset du formulaire de prescription : ce sont des écritures.
