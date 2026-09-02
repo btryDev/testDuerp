@@ -16,7 +16,8 @@ import {
   type ObligationPorteeParEquipement,
   type ReferenceLegale,
 } from "./types";
-import { determineObligationsApplicables } from "@/lib/matching";
+import { determineObligationsApplicables, matchTypologie } from "@/lib/matching";
+import type { EtablissementMatching } from "@/lib/matching";
 import { CORPUS } from "../corpus";
 import {
   PALIER_PAR_OBLIGATION,
@@ -377,6 +378,61 @@ describe("référentiel conformité — anti-doublon", () => {
   }
 
   /**
+   * Deux obligations qu'AUCUN établissement ne peut recevoir ensemble ne sont
+   * pas un doublon — c'est la même distinction que `signatureConditions`, sur
+   * l'autre axe. Le cas qui l'a rendue nécessaire est le tableau de GE 4 § 1 :
+   * six lignes du même article, deux périodicités, sans aucune condition
+   * d'équipement, et une partition exacte par catégorie × type. Les déclarer
+   * une à une en exceptions aurait fait six commentaires là où le référentiel
+   * porte déjà la preuve.
+   *
+   * Volontairement ÉTROIT et conservateur : il ne répond « disjointes » que
+   * si les deux typologies ne déclarent QUE la dimension ERP — dès qu'un
+   * effectif, un autre régime ou un seuil entre en jeu, il répond « elles se
+   * recouvrent » et le doublon reste signalé. Un test qui devine trop se tait
+   * sur de vrais doublons.
+   */
+  function typologiesErpDisjointes(a: Obligation, b: Obligation): boolean {
+    const seulementErp = (o: Obligation) =>
+      Object.keys(o.typologies).length === 1 &&
+      typeof o.typologies.erp === "object";
+    if (!seulementErp(a) || !seulementErp(b)) return false;
+
+    const sonde = (
+      categorieErp: EtablissementMatching["categorieErp"],
+      typeErp: EtablissementMatching["typeErp"],
+    ): EtablissementMatching => ({
+      id: "sonde",
+      effectifSurSite: 10,
+      estEtablissementTravail: false,
+      estERP: true,
+      estIGH: false,
+      estHabitation: false,
+      typeErp,
+      categorieErp,
+      classeIgh: null,
+      personnesPresentesHabituellement: null,
+      manipuleMatieresR422722: null,
+    });
+
+    // `null` figure dans les deux axes : c'est l'établissement qui n'a pas
+    // précisé sa catégorie ou son type, et c'est précisément là que deux
+    // lignes complémentaires peuvent se recouvrir sans qu'on le voie.
+    for (const cat of [...CATEGORIES_ERP, null] as const) {
+      for (const type of [...TYPES_ERP, null] as const) {
+        const etab = sonde(cat, type);
+        if (
+          matchTypologie(a.typologies, etab).ok &&
+          matchTypologie(b.typologies, etab).ok
+        ) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
    * Les paires que la comparaison signale et qui n'en sont pas — ou qui en
    * sont, et attendent une décision qu'un test ne peut pas prendre.
    *
@@ -480,6 +536,7 @@ describe("référentiel conformité — anti-doublon", () => {
         const b = obligationsConformite[j];
         if (a.periodicite !== b.periodicite) continue;
         if (signatureConditions(a) !== signatureConditions(b)) continue;
+        if (typologiesErpDisjointes(a, b)) continue;
         // Le porteur ne dispense PAS de la comparaison. Une obligation
         // portée par l'établissement et un fragment de la même obligation
         // accroché à un équipement sont deux lignes pour un seul acte —
@@ -960,18 +1017,55 @@ describe("référentiel conformité — forme normalisée des typologies", () =>
     }
   });
 
+  it("`types` et `typesExclus` ne cohabitent jamais sur une même obligation", () => {
+    // Les deux écrivent la MÊME frontière, dans les deux sens. Les poser
+    // ensemble, c'est se garantir qu'elles divergeront à la première
+    // correction — et la divergence serait muette : le moteur les évalue en
+    // ET, donc la plus étroite gagnerait sans rien dire.
+    for (const o of obligationsConformite) {
+      if (typeof o.typologies.erp !== "object") continue;
+      const { types, typesExclus } = o.typologies.erp;
+      expect(
+        Boolean(types) && Boolean(typesExclus),
+        `${o.id} : \`types\` et \`typesExclus\` sur la même obligation`,
+      ).toBe(false);
+    }
+  });
+
+  it("les types exclus existent dans l'enum, et n'excluent jamais les 21", () => {
+    // Symétrique du test sur `types`, et pour la raison inverse : une
+    // exclusion qui porte sur tous les types n'exclut pas « tout ERP », elle
+    // exclut tout ERP DONT LE TYPE EST CONNU — l'obligation ne resterait qu'à
+    // ceux qui n'ont rien précisé. C'est une typologie qui ne veut rien dire.
+    for (const o of obligationsConformite) {
+      if (typeof o.typologies.erp !== "object") continue;
+      for (const t of o.typologies.erp.typesExclus ?? []) {
+        expect(TYPES_ERP, o.id).toContain(t);
+      }
+      if (o.typologies.erp.typesExclus) {
+        expect(
+          o.typologies.erp.typesExclus.length,
+          `${o.id} : exclusion de tous les types`,
+        ).toBeLessThan(TYPES_ERP.length);
+      }
+    }
+  });
+
   it("une restriction de catégorie ou de classe n'est jamais vide", () => {
     for (const o of obligationsConformite) {
       if (typeof o.typologies.erp === "object") {
         // `erp: {}` n'exprime rien : soit une restriction est posée, soit on
         // écrit `erp: true`.
-        const { categories, types } = o.typologies.erp;
+        const { categories, types, typesExclus } = o.typologies.erp;
         expect(
-          (categories?.length ?? 0) + (types?.length ?? 0),
+          (categories?.length ?? 0) +
+            (types?.length ?? 0) +
+            (typesExclus?.length ?? 0),
           `${o.id} : \`erp: {}\` sans restriction, écrire \`erp: true\``,
         ).toBeGreaterThan(0);
         if (categories) expect(categories.length, o.id).toBeGreaterThan(0);
         if (types) expect(types.length, o.id).toBeGreaterThan(0);
+        if (typesExclus) expect(typesExclus.length, o.id).toBeGreaterThan(0);
       }
       if (typeof o.typologies.igh === "object") {
         expect(o.typologies.igh.classes.length, o.id).toBeGreaterThan(0);
@@ -1075,7 +1169,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // CETTE branche. À l'intégration, elle se relit dans la sortie du test après
   // merge — reprendre à la main le chiffre d'une branche graverait une empreinte
   // qui ne décrit aucun référentiel réel, et le compte qui la préfixe aussi.
-  const EMPREINTE_ATTENDUE = "118-a6b6508e86676c4";
+  const EMPREINTE_ATTENDUE = "123-49a2d424a23bdca2";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1193,7 +1287,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(118);
+    ).toBe(123);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1582,40 +1676,284 @@ describe("référentiel conformité — d'où vient le chiffre", () => {
   });
 });
 
-describe("GE 4 § 1 — le plafond du § 3 n'est pas devenu un rythme", () => {
-  const ligne = () => obligationParId("incendie-erp-cat1-4-visite-commission");
+describe("GE 4 § 1 — le tableau, case par case", () => {
+  /**
+   * LE TABLEAU CONFIRMÉ. Relevé sur la donnée officielle de la DILA puis
+   * vérifié case par case sur le FAC-SIMILÉ du Journal officiel — quinze
+   * colonnes, huit lignes, sans un écart (`docs/revues/releve-ge4-tableau.md`).
+   *
+   * Il est écrit ici comme DONNÉE DE CONTRÔLE, et il n'est pas la copie de ce
+   * que le référentiel encode : le référentiel se déduit de lui par le
+   * moteur, et les tests ci-dessous comparent les deux. Ses quinze colonnes
+   * sont celles de l'arrêté, pas celles de l'énumération `TypeErp` — c'est ce
+   * décalage que le dernier test nomme.
+   *
+   * `type` porte la valeur de `TypeErp` par laquelle un tel établissement se
+   * déclare dans le produit, `null` quand il n'en existe aucune.
+   */
+  const TABLEAU: {
+    colonne: string;
+    type: (typeof TYPES_ERP)[number] | null;
+    ans: [number, number, number, number];
+  }[] = [
+    { colonne: "J", type: null, ans: [3, 3, 3, 3] },
+    { colonne: "L", type: "L", ans: [3, 3, 3, 5] },
+    { colonne: "M", type: "M", ans: [3, 3, 5, 5] },
+    { colonne: "N", type: "N", ans: [3, 3, 5, 5] },
+    { colonne: "O", type: "O", ans: [3, 3, 3, 3] },
+    { colonne: "P", type: "P", ans: [3, 3, 3, 5] },
+    { colonne: "R (1) avec hébergement", type: "R", ans: [3, 3, 3, 3] },
+    { colonne: "R (2) sans hébergement", type: "R", ans: [3, 3, 3, 5] },
+    { colonne: "S", type: "S", ans: [3, 3, 5, 5] },
+    { colonne: "T", type: "T", ans: [3, 3, 5, 5] },
+    { colonne: "U", type: "U", ans: [3, 3, 3, 3] },
+    { colonne: "V", type: "V", ans: [5, 5, 5, 5] },
+    { colonne: "W", type: "W", ans: [3, 3, 5, 5] },
+    { colonne: "X", type: "X", ans: [3, 3, 5, 5] },
+    { colonne: "Y", type: "Y", ans: [3, 3, 5, 5] },
+  ];
 
-  it("la périodicité ne dépasse pas le barreau le plus court du tableau", () => {
-    // Le tableau du § 1 ne porte que deux valeurs, trois ans et cinq ans. Le
-    // détail de ses cellules n'a pas pu être lu à la source, et c'est
-    // précisément pourquoi cette borne compte : elle est la seule chose que le
-    // référentiel peut affirmer sans reconstituer le tableau. Poser cinq ans
-    // laisserait un établissement dû à trois ans se croire à jour deux ans de
-    // trop — invisible pour lui.
-    const jours = PERIODICITE_EN_JOURS[ligne()!.periodicite];
-    expect(jours).not.toBeNull();
-    expect(jours!).toBeLessThanOrEqual(PERIODICITE_EN_JOURS.triennale!);
+  const CATEGORIES_DU_TABLEAU = ["N1", "N2", "N3", "N4"] as const;
+
+  /** Les six lignes qui portent le tableau, et rien d'autre. */
+  const LIGNES_GE4 = [
+    "incendie-erp-visite-commission-cat1-2-triennale",
+    "incendie-erp-visite-commission-cat1-2-quinquennale",
+    "incendie-erp-visite-commission-cat3-triennale",
+    "incendie-erp-visite-commission-cat3-quinquennale",
+    "incendie-erp-visite-commission-cat4-triennale",
+    "incendie-erp-visite-commission-cat4-quinquennale",
+  ];
+
+  function erpSonde(
+    categorieErp: EtablissementMatching["categorieErp"],
+    typeErp: EtablissementMatching["typeErp"],
+  ): EtablissementMatching {
+    return {
+      id: "sonde-ge4",
+      effectifSurSite: 10,
+      estEtablissementTravail: false,
+      estERP: true,
+      estIGH: false,
+      estHabitation: false,
+      typeErp,
+      categorieErp,
+      classeIgh: null,
+      personnesPresentesHabituellement: null,
+      manipuleMatieresR422722: null,
+    };
+  }
+
+  /**
+   * Ce que le PRODUIT rendrait à cet établissement : les lignes de GE 4 qu'il
+   * reçoit, avec leur périodicité en années. On passe par le moteur complet et
+   * non par la lecture des typologies : c'est le résultat qui compte, pas
+   * l'intention écrite.
+   */
+  function visitesRendues(
+    categorieErp: EtablissementMatching["categorieErp"],
+    typeErp: EtablissementMatching["typeErp"],
+  ): { id: string; ans: number }[] {
+    return determineObligationsApplicables(erpSonde(categorieErp, typeErp), [])
+      .filter((a) => LIGNES_GE4.includes(a.obligation.id))
+      .map((a) => ({
+        id: a.obligation.id,
+        ans: Math.round(PERIODICITE_EN_JOURS[a.obligation.periodicite]! / 365),
+      }));
+  }
+
+  it("les six lignes du tableau existent, et elles sont six", () => {
+    for (const id of LIGNES_GE4) expect(obligationParId(id), id).toBeDefined();
+    // Sur l'article FONDATEUR (`referencesLegales[0]`) : GE 4 est aussi cité
+    // par `incendie-erp-5-visite-commission`, en second, pour montrer
+    // précisément où sa périodicité N'EST PAS fixée.
+    const portantGe4 = obligationsConformite.filter(
+      (o) => o.referencesLegales[0].article === "GE 4",
+    );
+    expect(portantGe4.map((o) => o.id).sort()).toEqual([...LIGNES_GE4].sort());
   });
 
-  it("la prolongation « dans la limite de cinq ans » du § 3 n'est pas encodée", () => {
+  it("le tableau de contrôle reproduit les cardinalités lues au Journal officiel", () => {
+    // LE SEUL CONTRÔLE MÉCANIQUE DISPONIBLE SUR CE TABLEAU. Les cellules vides
+    // ne sont pas encodées dans la donnée officielle — le défaut vient du
+    // texte publié au JO et se retrouve dans le consolidé —, si bien qu'aucune
+    // extraction ne rend les POSITIONS. Ce qui est exact, et lu sur DEUX jeux
+    // de données officiels indépendants, ce sont les nombres de croix par
+    // ligne. Ils contraignent le tableau : une case déplacée casse une somme.
+    //
+    // Ce test porte sur la donnée de contrôle ci-dessus, pas sur le
+    // référentiel — il vérifie que le tableau depuis lequel on encode est bien
+    // celui du Journal officiel. Les tests suivants comparent l'encodage à ce
+    // tableau-là.
+    const troisAns = CATEGORIES_DU_TABLEAU.map(
+      (_, i) => TABLEAU.filter((c) => c.ans[i] === 3).length,
+    );
+    const cinqAns = CATEGORIES_DU_TABLEAU.map(
+      (_, i) => TABLEAU.filter((c) => c.ans[i] === 5).length,
+    );
+    expect(troisAns).toEqual([14, 14, 7, 4]);
+    expect(cinqAns).toEqual([1, 1, 8, 11]);
+    // Et chaque catégorie se complète à quinze : aucune colonne ne porte deux
+    // valeurs ni aucune.
+    expect(troisAns.map((n, i) => n + cinqAns[i])).toEqual([15, 15, 15, 15]);
+    expect(TABLEAU).toHaveLength(15);
+  });
+
+  it("chaque établissement reçoit EXACTEMENT une ligne de visite", () => {
+    // Borne haute et borne basse à la fois, et c'est ce qui fait tenir le
+    // découpage en six : les six typologies forment une partition des
+    // 1ʳᵉ à 4ᵉ catégories. Deux lignes, et le dirigeant voit deux fois la même
+    // visite à deux dates ; zéro ligne, et il ne voit rien du tout.
+    //
+    // `null` est dans les deux boucles À DESSEIN. Le type non renseigné est le
+    // cas que l'énumération des types aurait perdu en silence : c'est pour lui
+    // que `typesExclus` existe.
+    for (const cat of CATEGORIES_DU_TABLEAU) {
+      for (const type of [...TYPES_ERP, null] as const) {
+        const rendues = visitesRendues(cat, type);
+        expect(
+          rendues.map((r) => r.id),
+          `${cat} / type ${type ?? "non renseigné"}`,
+        ).toHaveLength(1);
+      }
+    }
+    // Hors du tableau, aucune ligne : ni la 5ᵉ catégorie (Livre II écarté par
+    // PE 1 § 1), ni l'ERP dont la catégorie n'est pas renseignée.
+    for (const type of [...TYPES_ERP, null] as const) {
+      expect(visitesRendues("N5", type), `N5 / ${type}`).toEqual([]);
+      expect(visitesRendues(null, type), `cat. inconnue / ${type}`).toEqual([]);
+    }
+  });
+
+  it("aucune case n'est allongée : le produit ne dit jamais cinq là où le tableau dit trois", () => {
+    // LA GARANTIE QUI COMPTE, et elle n'est pas symétrique de la suivante.
+    // Porter une case à cinq ans quand le texte dit trois donne à l'exploitant
+    // deux ans de délai qu'il n'a pas, et personne n'est en situation de s'en
+    // apercevoir. L'erreur inverse avance une date : elle se voit.
+    const allongees: string[] = [];
+    for (const colonne of TABLEAU) {
+      if (colonne.type === null) continue;
+      CATEGORIES_DU_TABLEAU.forEach((cat, i) => {
+        const rendues = visitesRendues(cat, colonne.type);
+        for (const r of rendues) {
+          if (r.ans > colonne.ans[i]) {
+            allongees.push(
+              `${colonne.colonne} en ${cat} : tableau ${colonne.ans[i]} ans, produit ${r.ans} ans (${r.id})`,
+            );
+          }
+        }
+      });
+    }
+    expect(
+      allongees,
+      "Une case du tableau est encodée PLUS LONGUE que le texte. C'est le seul " +
+        "sens d'erreur que ce référentiel refuse : il laisse un exploitant se " +
+        "croire à jour, et rien dans le produit ne le détrompera.",
+    ).toEqual([]);
+  });
+
+  it("les cases raccourcies sont exactement les deux que le modèle ne sait pas porter", () => {
+    // L'autre sens, celui qui se voit. Il est autorisé, mais pas au hasard :
+    // deux manques nommés le produisent, et aucun troisième ne doit s'y
+    // glisser sans être écrit.
+    const raccourcies: string[] = [];
+    for (const colonne of TABLEAU) {
+      if (colonne.type === null) continue;
+      CATEGORIES_DU_TABLEAU.forEach((cat, i) => {
+        for (const r of visitesRendues(cat, colonne.type)) {
+          if (r.ans < colonne.ans[i]) {
+            raccourcies.push(`${colonne.colonne} en ${cat}`);
+          }
+        }
+      });
+    }
+    expect(
+      raccourcies,
+      "Une case est encodée plus courte que le tableau sans que le manque qui " +
+        "l'explique soit nommé. Le seul admis est R sans hébergement en " +
+        "4ᵉ catégorie : `TypeErp` ne connaît qu'un seul R et rien ne dit si " +
+        "l'établissement héberge, donc tout R garde trois ans.",
+    ).toEqual(["R (2) sans hébergement en N4"]);
+
+    // Le second manque, qui ne produit aucun écart de périodicité mais empêche
+    // un EHPAD de se déclarer pour ce qu'il est : le type J n'existe pas dans
+    // l'énumération. Il est à trois ans dans les quatre catégories, et les
+    // lignes triennales étant écrites en complément, un type non nommé y
+    // retombe — c'est pourquoi son absence ne déplace aucune case.
+    expect(TYPES_ERP as readonly string[]).not.toContain("J");
+    expect(TABLEAU.filter((c) => c.type === null).map((c) => c.colonne)).toEqual([
+      "J",
+    ]);
+  });
+
+  it("les huit types spéciaux gardent trois ans, faute de colonne au tableau", () => {
+    // PA, CTS, SG, PS, GA, OA, REF, EF n'ont aucune colonne : GE 4 § 1 ne leur
+    // fixe rien. On ne leur invente pas cinq ans ; ils restent au statu quo,
+    // qui est la borne prudente. Le test le vérifie plutôt que de s'en
+    // remettre au fait qu'ils sont absents des listes `types`.
+    const SPECIAUX = ["PA", "CTS", "SG", "PS", "GA", "OA", "REF", "EF"] as const;
+    for (const type of SPECIAUX) {
+      for (const cat of CATEGORIES_DU_TABLEAU) {
+        const rendues = visitesRendues(cat, type);
+        expect(rendues.map((r) => r.ans), `${type} / ${cat}`).toEqual([3]);
+      }
+    }
+  });
+
+  it("la prolongation « dans la limite de cinq ans » du § 3 n'est pas devenue un rythme", () => {
     // Le § 3 est une FACULTÉ sous plafond, ouverte après deux avis favorables
-    // consécutifs — un historique que le produit n'observe pas. Le § 4 est un
-    // pouvoir du maire ou du préfet, donc une prescription particulière
-    // (ADR-014). Ni l'un ni l'autre n'est un rythme, et `quinquennale` sur
-    // cette ligne serait le signe qu'on a confondu les deux.
-    expect(ligne()!.periodicite).not.toBe("quinquennale");
-    // Ils sont nommés au dirigeant, en description, plutôt que tus.
-    expect(ligne()!.description).toContain("dans la limite de cinq ans");
-    expect(ligne()!.description).toContain("maire ou le préfet");
+    // consécutifs et sur PROPOSITION DE LA COMMISSION — un historique et une
+    // décision que le produit n'observe pas. Le § 4 est un pouvoir du maire ou
+    // du préfet, donc une prescription particulière (ADR-014).
+    //
+    // Ce qui les distingue du tableau, mécaniquement : une quinquennale du
+    // § 3 s'appliquerait à TOUT établissement sans hébergement, donc sans
+    // restriction de type. Une quinquennale du tableau vise des types nommés,
+    // et chacun de ces types doit porter cinq ans dans la catégorie visée.
+    for (const id of LIGNES_GE4) {
+      const o = obligationParId(id)!;
+      expect(["triennale", "quinquennale"], id).toContain(o.periodicite);
+      if (o.periodicite !== "quinquennale") continue;
+      const erp = o.typologies.erp;
+      expect(typeof erp === "object" && erp.types, id).toBeDefined();
+      const typologie = erp as { categories?: string[]; types?: string[] };
+      for (const cat of typologie.categories!) {
+        const i = CATEGORIES_DU_TABLEAU.indexOf(
+          cat as (typeof CATEGORIES_DU_TABLEAU)[number],
+        );
+        for (const type of typologie.types!) {
+          const colonnes = TABLEAU.filter((c) => c.type === type);
+          expect(
+            colonnes.every((c) => c.ans[i] === 5),
+            `${id} : ${type} en ${cat} n'est pas à cinq ans au tableau`,
+          ).toBe(true);
+        }
+      }
+    }
   });
 
-  it("aucune relecture n'est due au 1er juin 2027 sur cette ligne", () => {
+  it("les § 2, § 3 et § 4 sont nommés au dirigeant plutôt que tus", () => {
+    for (const id of LIGNES_GE4) {
+      const d = obligationParId(id)!.description;
+      expect(d, id).toContain("la périodicité la plus courte");
+      expect(d, id).toContain("dans la limite de cinq ans");
+      expect(d, id).toContain("maire ou le préfet");
+    }
+  });
+
+  it("aucune relecture n'est due au 1er juin 2027 sur ces lignes", () => {
     // Le piège de l'article : le sélecteur de la page de SECTION affiche un
     // terme « au 01/06/2027 » qui est celui de GE 2 et GE 6, pas de GE 4. Trois
     // lectures s'y sont laissé prendre le 2026-09-01. La section relue au
     // 1er juillet 2027 rend GE 4 inchangé — il n'a pas de fin de vigueur.
-    expect(ligne()!.relectureDue).toBeUndefined();
-    const ge4 = ligne()!.referencesLegales.find((r) => r.article === "GE 4");
-    expect(ge4?.versionConstatee).toBe("2015-01-01");
+    for (const id of LIGNES_GE4) {
+      const o = obligationParId(id)!;
+      expect(o.relectureDue, id).toBeUndefined();
+      const ge4 = o.referencesLegales.find((r) => r.article === "GE 4");
+      expect(ge4?.versionConstatee, id).toBe("2015-01-01");
+      // Deux arrêtés du 20 octobre 2014 portent le même titre au même JO ;
+      // celui qui a posé ce tableau est nommé par son NOR, pas par sa date.
+      expect(ge4?.note, id).toContain("INTE1420988A");
+    }
   });
 });

@@ -113,7 +113,7 @@ export const obligationsConformite: Obligation[] = [
  * la bonne question n'est pas « l'empreinte a-t-elle bougé ? » mais « le
  * référentiel a-t-il changé ? ». Ici, oui.
  */
-export const REFERENTIEL_VERSION = "2026-09-01.3";
+export const REFERENTIEL_VERSION = "2026-09-02.1";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.

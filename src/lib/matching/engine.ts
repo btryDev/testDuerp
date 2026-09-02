@@ -100,6 +100,21 @@ function evaluerErp(
       );
     }
 
+    // Exclusion par type d'exploitation — sémantique INVERSE de la
+    // restriction ci-dessus, et c'est voulu : un ERP dont le type n'est pas
+    // renseigné n'est PAS exclu. Une exclusion que l'on ne peut pas vérifier
+    // ne doit pas faire disparaître une ligne (cf. `TypologieApplication`).
+    if (critere.typesExclus && critere.typesExclus.length > 0) {
+      if (etab.typeErp && critere.typesExclus.includes(etab.typeErp)) {
+        return { etat: "mismatch" };
+      }
+      precisions.push(
+        etab.typeErp
+          ? `type ${etab.typeErp} (règle excluant les types ${critere.typesExclus.join(", ")})`
+          : `type non précisé (règle excluant les types ${critere.typesExclus.join(", ")}, exclusion non vérifiable)`,
+      );
+    }
+
     return {
       etat: "match",
       raison:
@@ -146,6 +161,11 @@ function evaluerIgh(
  *     erp: { categories: ["N1"] } }` s'appliquerait à un ERP de 5ᵉ catégorie
  *     employeur via la seule branche « travail », contournant en silence la
  *     restriction de catégorie que le rédacteur a explicitement posée.
+ *   - L'**exclusion par type** (`erp: { typesExclus: [...] }`) est elle aussi
+ *     en ET, mais ne mord que sur un type CONNU : un ERP dont le `typeErp`
+ *     n'est pas renseigné n'est pas exclu. C'est l'inverse de `types`, et
+ *     pour la même raison — dans les deux cas, ne pas savoir ne retire
+ *     jamais une ligne du calendrier.
  *   - `effectifMin`/`effectifMax` restent en ET avec le reste.
  *   - Les `raisons` ne contiennent que les régimes effectivement matchés.
  */
@@ -183,6 +203,21 @@ export function matchTypologie(
     t.erp.types.length > 0 &&
     etab.estERP &&
     (!etab.typeErp || !t.erp.types.includes(etab.typeErp))
+  ) {
+    return { ok: false };
+  }
+  // Exclusion par type (ET, comme la restriction) — mais elle ne mord que sur
+  // un type CONNU. Un ERP dont le type n'est pas renseigné traverse
+  // l'exclusion : c'est ce qui permet d'écrire le complément d'un tableau
+  // (GE 4 § 1) sans priver de ligne l'établissement qui n'a rien précisé.
+  if (
+    typeof t.erp === "object" &&
+    t.erp.typesExclus !== undefined &&
+    t.erp.typesExclus.length > 0 &&
+    etab.estERP &&
+    etab.typeErp !== null &&
+    etab.typeErp !== undefined &&
+    t.erp.typesExclus.includes(etab.typeErp)
   ) {
     return { ok: false };
   }

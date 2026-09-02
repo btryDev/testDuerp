@@ -80,7 +80,12 @@ export const CCH_REGISTRE_SECURITE: Corpus = {
       lecture: "premiere_main",
       statut: "retenu",
       obligations: [
-        "incendie-erp-cat1-4-visite-commission",
+        "incendie-erp-visite-commission-cat1-2-triennale",
+        "incendie-erp-visite-commission-cat1-2-quinquennale",
+        "incendie-erp-visite-commission-cat3-triennale",
+        "incendie-erp-visite-commission-cat3-quinquennale",
+        "incendie-erp-visite-commission-cat4-triennale",
+        "incendie-erp-visite-commission-cat4-quinquennale",
         "incendie-erp-5-visite-commission",
       ],
       citationCle:
