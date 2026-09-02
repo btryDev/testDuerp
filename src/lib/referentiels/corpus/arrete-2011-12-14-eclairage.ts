@@ -25,6 +25,9 @@ export const ARRETE_2011_12_14_ECLAIRAGE: Corpus = {
       citationCle:
         "Le présent arrêté fixe les règles de conception et de mise en œuvre ainsi que les conditions d'exploitation et de maintenance de l'éclairage de sécurité des établissements soumis aux dispositions de l'article R. 4227-14 du code du travail. Dans les établissements recevant du public, pour les locaux dont la fonction essentielle est de recevoir du public et pour les dégagements accessibles au public, les dispositions du règlement de sécurité relatif à de tels établissements sont seules applicables à l'éclairage de sécurité de ces locaux ou dégagements. Dans les établissements comportant des locaux tels que cantines, restaurants, salles de conférences, salles de réunions, l'éclairage de sécurité de ces locaux doit être réalisé conformément à la réglementation relative aux établissements recevant du public lorsque celle-ci s'avère plus contraignante.",
       versionEnVigueur: "2011-12-31",
+      // Page de l'article : aucune ligne « Modifié par » ni « Création ».
+      // Version d'origine de l'arrêté du 14 décembre 2011, en vigueur depuis le 31/12/2011.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -44,6 +47,9 @@ export const ARRETE_2011_12_14_ECLAIRAGE: Corpus = {
       reserve:
         "La norme NF C 71-820 visée par l'alinéa SATI est une norme privée : elle ne fonde rien par elle-même, c'est l'article qui rend l'automatisation possible. L'exception SATI n'est encodée dans aucune condition du référentiel — aucune propriété d'équipement ne porte la question — et une installation entièrement SATI reçoit donc les mêmes échéances mensuelle et semestrielle qu'une installation testée à la main.",
       versionEnVigueur: "2011-12-31",
+      // Page de l'article : aucune ligne « Modifié par » ni « Création ».
+      // Version d'origine de l'arrêté du 14 décembre 2011, en vigueur depuis le 31/12/2011.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",

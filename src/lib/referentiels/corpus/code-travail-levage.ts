@@ -16,6 +16,9 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
     {
       ref: "R. 4323-22",
       versionEnVigueur: "2008-05-01",
+      // Page de l'article : « Création Décret n°2008-244 du 7 mars 2008 - art. (V) ».
+      // Jamais modifié depuis sa création — pas de texte modificateur à signaler.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:
@@ -31,6 +34,9 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
     {
       ref: "R. 4323-23",
       versionEnVigueur: "2008-05-01",
+      // Page de l'article : « Création Décret n°2008-244 du 7 mars 2008 - art. (V) ».
+      // Jamais modifié depuis sa création — pas de texte modificateur à signaler.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:
@@ -55,6 +61,9 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
     {
       ref: "R. 4323-25",
       versionEnVigueur: "2008-05-01",
+      // Page de l'article : « Création Décret n°2008-244 du 7 mars 2008 - art. (V) ».
+      // Jamais modifié depuis sa création — pas de texte modificateur à signaler.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:
@@ -67,6 +76,9 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
     {
       ref: "R. 4323-26",
       versionEnVigueur: "2008-05-01",
+      // Page de l'article : « Création Décret n°2008-244 du 7 mars 2008 - art. (V) ».
+      // Jamais modifié depuis sa création — pas de texte modificateur à signaler.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:
@@ -79,6 +91,9 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
     {
       ref: "R. 4323-27",
       versionEnVigueur: "2008-05-01",
+      // Page de l'article : « Création Décret n°2008-244 du 7 mars 2008 - art. (V) ».
+      // Jamais modifié depuis sa création — pas de texte modificateur à signaler.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:
@@ -91,6 +106,9 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
     {
       ref: "R. 4323-28",
       versionEnVigueur: "2008-05-01",
+      // Page de l'article : « Création Décret n°2008-244 du 7 mars 2008 - art. (V) ».
+      // Jamais modifié depuis sa création — pas de texte modificateur à signaler.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:
