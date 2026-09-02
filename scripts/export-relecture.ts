@@ -37,8 +37,8 @@ import type {
 } from "../src/lib/referentiels/conformite/types";
 import {
   articlesNonCouverts,
-  CORPUS,
   couvertureParCorpus,
+  indexArticlesParRef,
   obligationsManquantes,
 } from "../src/lib/referentiels/corpus";
 import type {
@@ -53,17 +53,10 @@ import type { TypologieApplication } from "../src/lib/referentiels/types-communs
 
 type EntreeCorpus = { corpusId: string; article: ArticleDepouille };
 
-const PAR_ARTICLE = new Map<string, EntreeCorpus>();
-for (const c of CORPUS) {
-  for (const a of c.articles) {
-    // Un même article peut figurer dans deux corpus (un texte modificatif
-    // reprend l'article qu'il modifie). Le premier dépouillé gagne : une
-    // entrée `non_depouille` ne doit pas masquer une lecture réelle.
-    const existante = PAR_ARTICLE.get(a.ref);
-    if (existante && existante.article.statut !== "non_depouille") continue;
-    PAR_ARTICLE.set(a.ref, { corpusId: c.id, article: a });
-  }
-}
+// La règle de départage — un même article peut figurer dans deux corpus, et le
+// premier dépouillé gagne — vit désormais dans `indexArticlesParRef()`, parce
+// que la mesure de vérification en avait besoin à l'identique.
+const PAR_ARTICLE: Map<string, EntreeCorpus> = indexArticlesParRef();
 
 // -----------------------------------------------------------------------------
 // Rendu déclaratif des champs composés

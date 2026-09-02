@@ -1,5 +1,13 @@
 # Relecture à la source — nuit du 26 au 27 août 2026
 
+> **Ce document est daté, et il le reste.** Il rapporte l'état d'une nuit, pas
+> celui d'aujourd'hui : une partie de ses constats a été corrigée depuis, une
+> autre non, et rien ici ne dit laquelle. Pour savoir où en est la vérification
+> maintenant — combien d'obligations reposent sur des textes lus, par quel
+> moyen, avec ou sans verbatim relevé —, lisez
+> `docs/etat-verification-referentiel.md`, qui se régénère par
+> `pnpm verification --ecrire` au lieu de se rédiger.
+
 Six agents ont relu 123 articles sur Légifrance, chacun chargé de rapporter du
 verbatim et un verdict sur ce que le corpus affirme. Ce document trie leurs
 retours. **Rien ici n'a été appliqué au code** hors ce qui est marqué APPLIQUÉ.
