@@ -40,6 +40,10 @@ export const CCH_REGISTRE_SECURITE: Corpus = {
       citationCle:
         "Le registre de sécurité incendie, prévu par les articles L. 126-1 et L. 141-4, contient les renseignements indispensables à l'entretien et au contrôle de la sécurité contre les risques d'incendie. Il comprend en particulier les vérifications réalisées, les mesures de correction des écarts constatés ainsi que les diverses consignes établies en cas d'incendie, y compris concernant l'évacuation et la mise en sécurité des personnes.",
       versionEnVigueur: "2026-07-01",
+      // Page de l'article : « Création Décret n°2025-1100 du 19 novembre 2025 - art. 1 ».
+      // Article CRÉÉ par ce décret, jamais modifié depuis : pas de texte modificateur.
+      // Le décret lui-même est nommé sur R. 143-44 et R. 146-35, qu'il modifie.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -54,6 +58,9 @@ export const CCH_REGISTRE_SECURITE: Corpus = {
       citationCle:
         "Les éléments permettant d'identifier les solutions d'effet équivalent sont annexés au registre de sécurité et comprennent : 1° Un dossier décrivant la nature, la conception de la solution d'effet équivalent ainsi que les modalités de sa mise en œuvre et, s'il y a lieu, les conditions d'exploitation, d'entretien périodique et de maintenance garantissant le respect des objectifs de sécurité incendie ; 2° Les attestations de respect des objectifs et de bonne mise en œuvre de la solution d'effet équivalent, telles que prévues par les articles L. 112-9 et L. 112-10 ; 3° Les modifications apportées à la solution d'effet équivalent lorsqu'elles impactent la manière de respecter les objectifs de sécurité incendie.",
       versionEnVigueur: "2026-07-01",
+      // Page de l'article : « Création Décret n°2025-1100 du 19 novembre 2025 - art. 1 ».
+      // Article CRÉÉ par ce décret, jamais modifié depuis : pas de texte modificateur.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
