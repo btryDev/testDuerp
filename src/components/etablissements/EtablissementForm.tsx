@@ -190,10 +190,34 @@ export function EtablissementForm({
             erreur={err("personnesPresentesHabituellement")}
           />
 
+          {/* LA QUESTION DÉCRIT DÉSORMAIS L'ARTICLE QU'ELLE SERT, ET NON CELUI
+              DONT L'ATTRIBUT PORTE LE NOM. L'aide disait « produits classés
+              explosifs, comburants ou extrêmement inflammables (art.
+              R. 4227-22), manipulés ou mis en œuvre — pas seulement stockés ».
+              Les trois classes sont bien celles de R. 4227-22 ; la CONDITION
+              ne l'est pas. R. 4227-22 vise les locaux où ces matières sont
+              « entreposées OU manipulées » : le seul entreposage le déclenche.
+              « Manipulées ET mises en œuvre » est la phrase de R. 4227-34 —
+              l'article que le moteur sert réellement, par `champR422734`
+              (`matching/engine.ts`, critère 3 bis), et le seul dont dépendent
+              l'alarme, la consigne et les exercices.
+              Verbatim des deux articles relevé le 2026-09-02 :
+              `referentiels/corpus/code-travail-matieres-inflammables.ts` et
+              `code-travail-incendie.ts`.
+
+              CE QUI RESTE OUVERT, ET QUI N'EST PAS TRANCHÉ ICI : le champ du
+              moteur. Élargir la question à l'entreposage ferait entrer dans
+              les obligations de R. 4227-34 des établissements que ce texte
+              n'atteint pas ; la laisser étroite laisse un simple entreposeur
+              hors du champ de R. 4227-22, dont aucune obligation du
+              référentiel ne dépend aujourd'hui. La dernière phrase de l'aide
+              dit au dirigeant ce que la question ne couvre pas, plutôt que de
+              trancher à sa place. Renommer l'attribut est une migration, hors
+              de ce lot. */}
           <div className="sm:col-span-2">
             <label className="label-board" htmlFor="manipuleMatieresR422722">
-              Manipulez-vous des produits explosifs, comburants ou extrêmement
-              inflammables ?
+              Manipulez-vous <em>et</em> mettez-vous en œuvre des matières
+              explosives ou inflammables ?
             </label>
             <select
               id="manipuleMatieresR422722"
@@ -216,11 +240,16 @@ export function EtablissementForm({
               id="manipuleMatieresR422722-aide"
               className="m-0 mt-1.5 max-w-[66ch] text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]"
             >
-              Produits classés explosifs, comburants ou extrêmement inflammables
-              (art. R. 4227-22 du Code du travail), manipulés ou mis en œuvre
-              dans vos locaux — pas seulement stockés. Si oui, l&apos;alarme
-              sonore, la consigne et les exercices semestriels s&apos;appliquent
-              quel que soit l&apos;effectif.
+              Matières classées explosives, comburantes ou extrêmement
+              inflammables, ou dans un état physique susceptible d&apos;engendrer
+              une explosion ou une inflammation instantanée. Répondez oui si
+              elles sont <strong>à la fois manipulées et mises en œuvre</strong>{" "}
+              chez vous : c&apos;est ce que vise l&apos;art. R. 4227-34 du Code
+              du travail, et c&apos;est lui qui rend l&apos;alarme sonore, la
+              consigne incendie et les exercices semestriels dus quel que soit
+              l&apos;effectif. Les entreposer sans les mettre en œuvre ne relève
+              pas de cette question — d&apos;autres articles de la même section
+              le visent, que Rojer ne suit pas.
             </p>
           </div>
         </div>
