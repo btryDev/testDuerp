@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
+import { CarteMiseAJour } from "@/components/duerps/CarteMiseAJour";
 import { CreerVersionForm } from "@/components/duerps/CreerVersionForm";
 import { WizardSteps } from "@/components/duerps/WizardSteps";
 import {
@@ -74,9 +75,15 @@ export default async function SynthesePage({
   // recalculer ici ferait un second juge sur la même question.
   const perimetreQuestionne = couverture.listeInstruite;
 
-  // Rappel de mise à jour annuelle — art. R. 4121-2 : obligatoire pour les
-  // entreprises de 11 salariés et plus. On signale aussi le cas où aucune
+  // Rappel de mise à jour annuelle — art. R. 4121-2, 1° : obligatoire pour
+  // les entreprises de 11 salariés et plus. On signale aussi le cas où aucune
   // version n'a jamais été validée (DUERP en cours de constitution).
+  //
+  // Ce bandeau ne sert que le 1° de l'article, et c'est normal : il porte un
+  // RETARD, et le 1° est le seul des trois cas qui se date. Les 2° et 3°
+  // s'énoncent plus bas, en registre neutre, sur la carte « Quand ce document
+  // doit être mis à jour » — un rendez-vous manqué et une règle qui n'a pas
+  // de rendez-vous ne se disent pas au même endroit ni de la même couleur.
   const derniereVersion = versions[0];
   // Page serveur : un rendu par requête, l'horloge peut être lue — une
   // seule fois, pour que l'ancienneté affichée et le verdict d'échéance
@@ -125,15 +132,24 @@ export default async function SynthesePage({
               className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em]"
               style={{ color: ENCRE_ETAT[etatMaj] }}
             >
-              Mise à jour requise · art. R. 4121-2
+              {jamaisValide
+                ? "Aucune version validée · art. R. 4121-1"
+                : "Mise à jour requise · art. R. 4121-2"}
             </p>
-            <p
-              className="board-eyebrow m-0 text-[10px] tracking-[0.16em] tabular-nums"
-              style={{ color: ENCRE_ETAT[etatMaj] }}
-            >
-              Effectif {duerp.entreprise.effectif} salarié
-              {duerp.entreprise.effectif > 1 ? "s" : ""}
-            </p>
+            {/* L'effectif ne se montre que là où il décide de quelque
+                chose — c'est-à-dire sur l'échéance annuelle du 1°. Sur un
+                dossier jamais validé, l'obligation de transcrire ne connaît
+                aucun seuil : afficher l'effectif à côté laissait entendre
+                qu'il en existait un. */}
+            {!jamaisValide && (
+              <p
+                className="board-eyebrow m-0 text-[10px] tracking-[0.16em] tabular-nums"
+                style={{ color: ENCRE_ETAT[etatMaj] }}
+              >
+                Effectif {duerp.entreprise.effectif} salarié
+                {duerp.entreprise.effectif > 1 ? "s" : ""}
+              </p>
+            )}
           </div>
           <p
             className="m-0 mt-2.5 max-w-[68ch] text-[13.5px] leading-[1.6]"
@@ -142,9 +158,10 @@ export default async function SynthesePage({
             {jamaisValide ? (
               <>
                 Aucune version n&apos;a encore été validée pour ce DUERP.
-                L&apos;art. R. 4121-2 impose une mise à jour annuelle pour
-                les entreprises d&apos;au moins 11 salariés — validez une
-                première version dès que l&apos;évaluation est complète.
+                L&apos;art. R. 4121-1 impose de transcrire les résultats de
+                l&apos;évaluation dans un document unique, sans condition
+                d&apos;effectif — validez une première version dès que
+                l&apos;évaluation est complète.
               </>
             ) : (
               <>
@@ -153,7 +170,7 @@ export default async function SynthesePage({
                   {joursDepuisDerniereVersion} jours
                 </span>
                 . La mise à jour annuelle est obligatoire pour les entreprises
-                d&apos;au moins 11 salariés (art. R. 4121-2). Créez une
+                d&apos;au moins 11 salariés (art. R. 4121-2, 1°). Créez une
                 nouvelle version pour figer l&apos;état à jour.
               </>
             )}
@@ -507,6 +524,15 @@ export default async function SynthesePage({
           </div>
         </section>
       )}
+
+      {/* Les trois cas de mise à jour de l'art. R. 4121-2 — l'argument de la
+          carte est dans le composant. Sa PLACE se décide ici, et elle se
+          justifie : elle répond à « quand dois-je refaire ce document ? », et
+          le geste qui y répond est juste en dessous — le formulaire de
+          nouvelle version, dont les motifs sont ces trois mêmes cas
+          (`lib/versions/motifs.ts`). L'énoncé et le geste se lisent d'un seul
+          regard, au lieu que l'un ouvre la page et l'autre la ferme. */}
+      <CarteMiseAJour effectif={duerp.entreprise.effectif} />
 
       <section className="carte-board px-7 py-6 sm:px-8">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
