@@ -113,6 +113,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       intitule: "Conformité de l'installation et mise en service",
       url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051268454/",
       versionEnVigueur: "2026-01-01",
+      modifiePar: { texte: "Arrêté du 23 février 2025 - art. 1" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:
@@ -130,6 +131,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       intitule: "Entretien des installations",
       url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051268450/",
       versionEnVigueur: "2026-01-01",
+      modifiePar: { texte: "Arrêté du 23 février 2025 - art. 1" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:
@@ -206,6 +208,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       citationCle:
         "Un extincteur doit faire l'objet d'une vérification annuelle et d'une révision tous les dix ans par une personne ou un organisme compétent. Il doit être marqué d'une étiquette clairement identifiable apposée par la personne ou l'organisme ayant réalisé cette dernière. Les années et les mois des vérifications doivent apparaître sur l'étiquette. Un plan d'implantation des extincteurs et un relevé des vérifications doivent être portés au registre de sécurité.",
       versionEnVigueur: "2008-10-08",
+      modifiePar: { texte: "Arrêté du 26 juin 2008 - art. 2, v. init." },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -245,6 +248,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       citationCle:
         "L'exploitant s'assure périodiquement : - une fois par mois : - du passage à la position de fonctionnement en cas de défaillance de l'alimentation normale et à la vérification de l'allumage de toutes les lampes (le fonctionnement doit être strictement limité au temps nécessaire au contrôle visuel) ; - de l'efficacité de la commande de mise en position de repos à distance et de la remise automatique en position de veille au retour de l'alimentation normale. - une fois tous les six mois, de l'autonomie d'au moins 1 heure. Ces opérations peuvent être effectuées automatiquement par l'utilisation de blocs autonomes comportant un système automatique de test intégré (SATI) conforme à la norme NF C 71-820 (mai 1999). Dans les établissements comportant des périodes de fermeture, ces opérations sont effectuées de telle manière qu'au début de chaque période d'ouverture au public l'installation d'éclairage ait retrouvé l'autonomie prescrite. Les opérations ci-dessus et leurs résultats doivent être consignés dans le registre de sécurité.",
       versionEnVigueur: "2010-05-16",
+      modifiePar: { texte: "Arrêté du 11 décembre 2009 - art." },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -264,6 +268,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       citationCle:
         "Les installations d'éclairage doivent être vérifiées dans les conditions de l'article EL 19.",
       versionEnVigueur: "1980-08-15",
+      modifiePar: { texte: "Arrêté du 19 novembre 2001 - art. Annexe, v. init." },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -278,6 +283,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       citationCle:
         "§ 3. Les vérifications périodiques des installations non modifiées doivent être effectuées annuellement dans les conditions prévues à l'article GE 10. Elles concernent les articles suivants à condition qu'ils soient applicables à l'établissement : ― EL 4 (§ 4) ; EL 5 (§ 1, 4 et 5) ; EL 8 (§ 3) ; EL 10 (§ 4) ; EL 11 (§ 3, 4 et 7) ; EL 15 (§ 3) ; EL 17 et EL 18 ; ― EC 5 (§ 5) ; EC 6 (§ 5 et 6) ; EC 7 ; EC 9 (§ 1) ; EC 13 et EC 14 (§ 3). Elles ont pour objet de s'assurer : de l'absence de modifications depuis la dernière vérification ; de l'état d'entretien et de maintenance des installations ; de l'existence d'un relevé des essais ; du maintien en l'état des installations d'éclairage ; du bon état apparent des éventuelles installations extérieures de protection contre la foudre.",
       versionEnVigueur: "2010-01-23",
+      modifiePar: { texte: "Arrêté du 24 septembre 2009 - art. (V)" },
       luLe: "2026-09-01",
       // LU DEUX FOIS LE MÊME JOUR par deux lots qui s'ignoraient. Les deux
       // relevés concordent sur le fond — le § 3 porte l'annuelle — et chacun
@@ -304,6 +310,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       citationCle:
         "§ 2. La périodicité des vérifications est de un an. Elles concernent : le fonctionnement des commandes manuelles et automatiques ; le fonctionnement des volets, exutoires et ouvrants de désenfumage ; la fermeture des éléments mobiles de compartimentage participant à la fonction désenfumage ; l'arrêt de la ventilation de confort mentionné à l'article DF 3, § 5 ; le fonctionnement des ventilateurs de désenfumage ; les mesures de pression, de débit et de vitesse, dans le cas du désenfumage mécanique. § 3. Lorsque existent une installation de désenfumage mécanique et un système de sécurité incendie de catégorie A ou B, les vérifications sont effectuées tous les trois ans par un organisme agréé.",
       versionEnVigueur: "2007-10-28",
+      modifiePar: { texte: "Arrêté du 4 juillet 2007 - art. Annexe, v. init." },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -320,6 +327,10 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       citationCle:
         "Les établissements des 1re, 2e, 3e et 4e catégories doivent être visités périodiquement par les commissions de sécurité selon la fréquence fixée au tableau suivant en fonction de leur type et de leur catégorie",
       versionEnVigueur: "2015-01-01",
+      // Lu sur la page de l'ARTICLE (LEGIARTI000029642660), pas sur celle de sa
+      // section : c'est la confusion que la réserve ci-dessous documente déjà.
+      // Recoupé par une seconde source, qui donne le même arrêté du 20 octobre 2014.
+      modifiePar: { texte: "ARRÊTÉ du 20 octobre 2014 - art." },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",

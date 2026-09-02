@@ -24,6 +24,9 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
       citationCle:
         "L'employeur prend les mesures nécessaires pour que tout commencement d'incendie puisse être rapidement et efficacement combattu dans l'intérêt du sauvetage des travailleurs.",
       versionEnVigueur: "2008-05-01",
+      // Page de l'article : « Création Décret n°2008-244 du 7 mars 2008 - art. (V) ».
+      // Jamais modifié depuis sa création — pas de texte modificateur à signaler.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -38,6 +41,9 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
       citationCle:
         "Le premier secours contre l'incendie est assuré par des extincteurs en nombre suffisant et maintenus en bon état de fonctionnement. Il existe au moins un extincteur portatif à eau pulvérisée d'une capacité minimale de 6 litres pour 200 mètres carrés de plancher. Il existe au moins un appareil par niveau. Lorsque les locaux présentent des risques d'incendie particuliers, notamment des risques électriques, ils sont dotés d'extincteurs dont le nombre et le type sont appropriés aux risques.",
       versionEnVigueur: "2008-05-01",
+      // Page de l'article (LEGIARTI000018532079, retrouvée depuis la section) :
+      // « Créé par Décret n°2008-244 du 7 mars 2008 - art. (V) ». Jamais modifié.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -52,6 +58,7 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
       citationCle:
         "Les établissements disposent d'un éclairage de sécurité permettant d'assurer l'évacuation des personnes en cas d'interruption accidentelle de l'éclairage normal. La conception, la mise en œuvre et les conditions d'exploitation et de maintenance de cet éclairage ainsi que les locaux qui peuvent en être dispensés en raison de leur faible superficie ou de leur faible fréquentation sont définis par un arrêté des ministres chargés du travail et de l'agriculture.",
       versionEnVigueur: "2011-07-01",
+      modifiePar: { texte: "Décret n° 2010-1018 du 30 août 2010 - art. 1" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -69,6 +76,9 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
       citationCle:
         "Les résultats des vérifications prévues aux articles R. 4226-14 et R. 4226-16 ainsi que les justifications des travaux et modifications effectués pour porter remède aux défectuosités constatées sont consignés sur un registre. Lorsque les vérifications sont effectuées par un organisme accrédité, les rapports établis à la suite de ces vérifications sont annexés à ce registre.",
       versionEnVigueur: "2011-07-01",
+      // Page de l'article : « Création Décret n°2010-1016 du 30 août 2010 - art. 1 ».
+      // Jamais modifié depuis sa création — pas de texte modificateur à signaler.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       // LU DEUX FOIS LE MÊME JOUR, par deux lots qui s'ignoraient — le relevé
@@ -94,6 +104,7 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
       citationCle:
         "La consigne de sécurité incendie prévoit des essais et visites périodiques du matériel et des exercices au cours desquels les travailleurs apprennent à reconnaître les caractéristiques du signal sonore d'alarme générale, à localiser et à utiliser les espaces d'attente sécurisés ou les espaces équivalents à se servir des moyens de premier secours et à exécuter les diverses manœuvres nécessaires. Ces exercices et essais périodiques ont lieu au moins tous les six mois. Leur date et les observations auxquelles ils peuvent avoir donné lieu sont consignées sur un registre tenu à la disposition de l'inspection du travail.",
       versionEnVigueur: "2011-11-10",
+      modifiePar: { texte: "Décret n° 2011-1461 du 7 novembre 2011 - art. 8" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -113,6 +124,9 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
       citationCle:
         "Les établissements dans lesquels peuvent se trouver occupées ou réunies habituellement plus de cinquante personnes, ainsi que ceux, quelle que soit leur importance, où sont manipulées et mises en œuvre des matières inflammables mentionnées à l'article R. 4227-22 sont équipés d'un système d'alarme sonore.",
       versionEnVigueur: "2008-05-01",
+      // Page de l'article : « Création Décret n°2008-244 du 7 mars 2008 - art. (V) ».
+      // Jamais modifié depuis sa création — pas de texte modificateur à signaler.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -128,6 +142,7 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
         "Dans les établissements mentionnés à l'article R. 4227-34, une consigne de sécurité incendie est établie et affichée de manière très apparente : 1° Dans chaque local pour les locaux dont l'effectif est supérieur à cinq personnes et pour les locaux mentionnés à l'article R. 4227-24 ; 2° Dans chaque local ou dans chaque dégagement desservant un groupe de locaux dans les autres cas. Dans les autres établissements, des instructions sont établies, permettant d'assurer l'évacuation des personnes présentes dans les locaux dans les conditions prévues au 1° de l'article R. 4216-2.",
       versionEnVigueur: "2011-11-10",
       versionFuture: "2027-01-01",
+      modifiePar: { texte: "Décret n° 2011-1461 du 7 novembre 2011 - art. 6" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -142,6 +157,7 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
       citationCle:
         "La consigne de sécurité incendie indique : 1° Le matériel d'extinction et de secours qui se trouve dans le local ou à ses abords ; 2° Les personnes chargées de mettre ce matériel en action ; 3° Pour chaque local, les personnes chargées de diriger l'évacuation des travailleurs et éventuellement du public ; 4° Les mesures spécifiques liées à la présence de personnes handicapées, et notamment le nombre et la localisation des espaces d'attentes sécurisés ou des espaces équivalents ; 5° Les moyens d'alerte ; 6° Les personnes chargées d'aviser les sapeurs-pompiers dès le début d'un incendie ; 7° L'adresse et le numéro d'appel téléphonique du service de secours de premier appel, en caractères apparents ; 8° Le devoir, pour toute personne apercevant un début d'incendie, de donner l'alarme et de mettre en œuvre les moyens de premier secours, sans attendre l'arrivée des travailleurs spécialement désignés.",
       versionEnVigueur: "2011-11-10",
+      modifiePar: { texte: "Décret n° 2011-1461 du 7 novembre 2011 - art. 7" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -215,6 +231,7 @@ export const CODE_TRAVAIL_INCENDIE: Corpus = {
         "Sauf dispositions particulières, tout employeur conserve les documents des vérifications et contrôles des cinq dernières années et, en tout état de cause, ceux des deux derniers contrôles — ainsi que les observations et mises en demeure de l'inspection du travail, et, pendant la même durée, les copies des déclarations d'accidents du travail faites à la caisse primaire d'assurance maladie. La réserve « sauf dispositions particulières » compte : cinq ans est un plancher supplétif, qu'un texte spécial peut allonger.",
       citationCle:
         "Sauf dispositions particulières, l'employeur conserve les documents concernant les observations et mises en demeure de l'inspection du travail ainsi que ceux concernant les vérifications et contrôles mis à la charge des employeurs au titre de la santé et de la sécurité au travail des cinq dernières années et, en tout état de cause, ceux des deux derniers contrôles ou vérifications. Il conserve, pendant la même durée, les copies des déclarations d'accidents du travail déclarés à la caisse primaire d'assurance maladie.",
+      modifiePar: { texte: "Décret n° 2009-289 du 13 mars 2009 - art. 4" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",

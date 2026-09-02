@@ -25,6 +25,9 @@ export const ARRETE_2011_12_14_ECLAIRAGE: Corpus = {
       citationCle:
         "Le présent arrêté fixe les règles de conception et de mise en œuvre ainsi que les conditions d'exploitation et de maintenance de l'éclairage de sécurité des établissements soumis aux dispositions de l'article R. 4227-14 du code du travail. Dans les établissements recevant du public, pour les locaux dont la fonction essentielle est de recevoir du public et pour les dégagements accessibles au public, les dispositions du règlement de sécurité relatif à de tels établissements sont seules applicables à l'éclairage de sécurité de ces locaux ou dégagements. Dans les établissements comportant des locaux tels que cantines, restaurants, salles de conférences, salles de réunions, l'éclairage de sécurité de ces locaux doit être réalisé conformément à la réglementation relative aux établissements recevant du public lorsque celle-ci s'avère plus contraignante.",
       versionEnVigueur: "2011-12-31",
+      // Page de l'article : aucune ligne « Modifié par » ni « Création ».
+      // Version d'origine de l'arrêté du 14 décembre 2011, en vigueur depuis le 31/12/2011.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -44,6 +47,9 @@ export const ARRETE_2011_12_14_ECLAIRAGE: Corpus = {
       reserve:
         "La norme NF C 71-820 visée par l'alinéa SATI est une norme privée : elle ne fonde rien par elle-même, c'est l'article qui rend l'automatisation possible. L'exception SATI n'est encodée dans aucune condition du référentiel — aucune propriété d'équipement ne porte la question — et une installation entièrement SATI reçoit donc les mêmes échéances mensuelle et semestrielle qu'une installation testée à la main.\n\nRÉEXAMINÉE LE 2026-09-01 (lot C), MÊME CONSTAT QU'EN ERP ET MÊME NUANCE. L'article écrit « les opérations précédentes PEUVENT ÊTRE EFFECTUÉES AUTOMATIQUEMENT par l'utilisation de blocs autonomes comportant un système automatique de test intégré (SATI) », et il maintient sans réserve la phrase suivante : « Le résultat des opérations précédentes doit être mentionné sur le registre prévu à l'article R. 4226-19. » Le texte autorise un MOYEN, il ne dispense de rien. Ce que le produit fait de faux est donc plus étroit qu'une obligation inventée : il planifie un rendez-vous que l'employeur d'une installation SATI n'a pas à honorer de sa main, tandis que la consignation, elle, reste due.\n\nLE REMÈDE ET SON COÛT sont écrits une fois, sur `EC 14` du corpus `arrete-1980-livre-2`, parce qu'ils sont identiques des deux côtés et qu'ils portent sur les QUATRE lignes d'un coup — `incendie-erp-eclairage-securite-essai-mensuel`, `-autonomie-semestrielle`, et leurs deux pendants « travail ». En deux mots : une caractéristique `estEclairageSatiAutoteste` sur BAES, donc une question de plus au formulaire de parc et une reprise des équipements déjà déclarés ; puis un arbitrage entre éteindre les lignes (ce qui tairait la consignation encore due) et leur donner une seconde nature. Décision produit, proposée et non prise.",
       versionEnVigueur: "2011-12-31",
+      // Page de l'article : aucune ligne « Modifié par » ni « Création ».
+      // Version d'origine de l'arrêté du 14 décembre 2011, en vigueur depuis le 31/12/2011.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",

@@ -46,6 +46,7 @@ export const CODE_TRAVAIL_EQUIPEMENTS_INFORMATION: Corpus = {
         "Information des travailleurs chargés de l'utilisation ou de la maintenance",
       url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489707/",
       versionEnVigueur: "2009-12-29",
+      modifiePar: { texte: "Décret n° 2008-1156 du 7 novembre 2008 - art. 10" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:

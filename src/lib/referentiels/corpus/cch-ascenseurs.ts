@@ -16,6 +16,9 @@ export const CCH_ASCENSEURS: Corpus = {
     {
       ref: "CCH R. 134-1",
       versionEnVigueur: "2021-07-01",
+      // Page de l'article (LEGIARTI000043818725) : « Création Décret n°2021-872 du
+      // 30 juin 2021 - art. ». Jamais modifié depuis — pas de texte modificateur.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -46,6 +49,7 @@ export const CCH_ASCENSEURS: Corpus = {
     {
       ref: "CCH R. 134-6",
       versionEnVigueur: "2026-04-01",
+      modifiePar: { texte: "Décret n° 2026-166 du 4 mars 2026 - art. 1" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -91,6 +95,9 @@ export const CCH_ASCENSEURS: Corpus = {
     {
       ref: "CCH R. 134-10",
       versionEnVigueur: "2021-07-01",
+      // Page de l'article (LEGIARTI000043818745) : « Création Décret n°2021-872 du
+      // 30 juin 2021 - art. ». Jamais modifié depuis — pas de texte modificateur.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -109,6 +116,7 @@ export const CCH_ASCENSEURS: Corpus = {
     {
       ref: "CCH R. 134-11",
       versionEnVigueur: "2026-05-15",
+      modifiePar: { texte: "Décret n° 2026-166 du 4 mars 2026 - art. 1" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
