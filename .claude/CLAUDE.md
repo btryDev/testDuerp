@@ -80,9 +80,9 @@ Sources primaires libres d'accès uniquement :
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **118 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **123 obligations sur 17 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
-**80 d'entre elles sont déclenchées par un équipement déclaré, vingt-cinq sont portées
+**80 d'entre elles sont déclenchées par un équipement déclaré, trente sont portées
 par l'établissement, treize par un salarié.** La répartition a changé deux fois le
 2026-08-31 : les trois lots ont ajouté trente et une obligations, et le lot « faux
 négatifs d'ancrage » a fait passer trois obligations existantes de l'équipement à
@@ -179,14 +179,23 @@ réellement événementielles recensées sont hors périmètre (déclaration d'A
 accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
 l'ADR-022, sans mécanisme.
 
-Répartition au 2026-09-01 : **80 équipement, 25 établissement, 13 salarié** (total 118).
+Répartition au 2026-09-02 : **80 équipement, 30 établissement, 13 salarié** (total 123).
 La 80ᵉ est `esp-inspection-periodique-generateur-vapeur`, créée ce jour : l'arrêté du
 20 novembre 2017 fixe deux ans aux générateurs de vapeur là où la ligne générale en porte
 quatre, et le moteur sait depuis le même jour lire une valeur d'énumération. Ces trois
 chiffres se REMESURENT en appelant le moteur ; quatre branches les touchent en parallèle.
-La 25ᵉ obligation d'établissement est `incendie-erp-cat1-4-visite-commission` (GE 4 § 1) : le
-produit ne portait aucune visite de commission pour les ERP des quatre premières catégories,
-alors qu'il les sert par ailleurs.
+Les 25ᵉ à 30ᵉ obligations d'établissement portent le TABLEAU de `GE 4 § 1`
+(`incendie-erp-visite-commission-*`) : le produit ne portait aucune visite de commission pour
+les ERP des quatre premières catégories, alors qu'il les sert par ailleurs. Elles sont six et
+non une parce que le tableau croise le type d'exploitation et la catégorie pour donner trois
+ou cinq ans, quand `periodicite` est un scalaire — une ligne par bloc du tableau, et les six
+typologies forment une partition : chaque établissement en reçoit exactement une. C'est le
+premier et le seul usage de `TypologieApplication.erp.types`, et la raison d'être de
+`typesExclus`, ajouté le même jour : les lignes à trois ans s'écrivent en COMPLÉMENT des types
+portés à cinq, faute de quoi l'ERP dont le type n'est pas renseigné aurait perdu sa visite en
+silence. Deux manques restent nommés et vont tous deux dans le sens court — le type J n'existe
+pas dans `TypeErp`, et la distinction R avec / sans hébergement non plus, si bien que tout R
+garde trois ans y compris en 4ᵉ catégorie où le tableau met R sans hébergement à cinq.
 Les cinq premières obligations portées par l'établissement étaient l'entretien triennal de
 `PE 4 § 2`, le contrôle des installations d'aération de `R. 4222-20`, et — depuis le lot
 `fix/faux-negatifs-ancrage` — la tenue du registre de sécurité, la consigne de sécurité

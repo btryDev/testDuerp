@@ -77,6 +77,30 @@ Pour chaque `Obligation` du référentiel :
 > référentiel n'utilise `types` à ce jour — le mécanisme existe, son premier
 > usage devra être sourcé article par article.
 
+> **Amendement 2026-09-02 — exclusion par type d'exploitation ERP
+> (`typesExclus`), et le premier usage de `types`.** Les deux entrent
+> ensemble, par le tableau de `GE 4 § 1` : la périodicité des visites de
+> commission de sécurité y croise le type et la catégorie, six blocs, deux
+> valeurs (trois ans, cinq ans). C'est une exception nommée à la phrase
+> ci-dessus — `GE` est bien une disposition générale, et cet article-là
+> s'applique bien à tous les types, mais il ne leur donne pas le même rythme.
+>
+> Le tableau s'encode en six obligations qui forment une **partition** des
+> 1ʳᵉ à 4ᵉ catégories : chaque établissement en reçoit exactement une. Les
+> lignes à cinq ans nomment leurs types (`types`) ; les lignes à trois ans
+> écrivent le **complément** (`typesExclus`). Écrire le complément en
+> énumérant ses types aurait creusé un faux négatif muet, et c'est tout
+> l'objet du champ : `types` rejette l'ERP dont le `typeErp` est inconnu,
+> `typesExclus` le **retient**. L'asymétrie est délibérée et va dans le même
+> sens que la première — dans les deux cas, ne pas savoir ne retire jamais
+> une ligne d'un calendrier. Un ERP de 3ᵉ catégorie qui n'a pas précisé son
+> activité garde donc ses trois ans, le rythme court.
+>
+> Les deux champs sont **mutuellement exclusifs** sur une même obligation
+> (test dédié) : ils écrivent la même frontière dans les deux sens, et les
+> poser ensemble garantit qu'elles divergeront — en silence, le moteur les
+> évaluant en ET.
+
 > **Amendement 2026-08 — restrictions de catégorie en ET.** La disjonction
 > ci-dessus portait un piège : une obligation déclarant
 > `{ travail: true, erp: { categories: ["N1"] } }` aurait été matchée par un
@@ -101,6 +125,7 @@ ou de classe, et l'effectif s'appliquent **en ET** :
 | `erp: true`      | matché si l'établissement est ERP (toutes catégories)                                                                                                                |
 | `erp: { categories: [...] }` | matché si l'établissement est ERP **et** sa `categorieErp` appartient à la liste                                                                         |
 | `erp: { types: [...] }`      | matché si l'établissement est ERP **et** son `typeErp` appartient à la liste (cumulable avec `categories`)                                               |
+| `erp: { typesExclus: [...] }` | matché si l'établissement est ERP **et** que son `typeErp` n'appartient PAS à la liste — un `typeErp` non renseigné n'est pas exclu (cumulable avec `categories`, jamais avec `types`) |
 | `igh: true`      | matché si l'établissement est IGH                                                                                                                                    |
 | `igh: { classes: [...] }`    | matché si l'établissement est IGH **et** sa `classeIgh` appartient à la liste                                                                            |
 | `habitation: true`| matché si `estHabitation = true`                                                                                                                                    |
@@ -128,7 +153,9 @@ Convention retenue, verrouillée par un test :
 Même logique pour `igh: true` et `igh: { classes: [...] }`, et pour
 `erp: { types: [...] }` : un test interdit de lister les 21 types, qui
 reviendrait à écrire une restriction n'excluant rien tout en exigeant que
-`typeErp` soit renseigné.
+`typeErp` soit renseigné. Un test interdit symétriquement d'**exclure**
+les 21 types : l'obligation ne resterait qu'aux ERP dont le type n'est pas
+renseigné, ce qui ne veut rien dire.
 
 ### Cas du cumul ERP × IGH
 
@@ -287,7 +314,12 @@ Toute obligation qui entre dans `src/lib/referentiels/conformite/` doit :
    le **même article** (`referencesLegales[0]`), pour la même catégorie
    d'équipement et la même périodicité, sont un doublon : elles produisent
    deux échéances pour un seul travail à faire et faussent les agrégats de
-   conformité. Un test le vérifie.
+   conformité. Un test le vérifie. Deux exceptions, et elles se
+   calculent plutôt qu'elles ne se déclarent : deux entrées distinguées par
+   des `conditions` différentes, et deux entrées dont les typologies ERP sont
+   **disjointes** — aucun établissement ne pouvant recevoir les deux, il n'y a
+   pas de double échéance. C'est ce qui permet aux six lignes de `GE 4 § 1` de
+   coexister sans six exceptions écrites à la main.
 5. Si sa description énonce un seuil d'effectif, le déclarer en
    `effectifMin` / `effectifMax` — un seuil écrit en prose et jamais encodé
    est un seuil qui n'existe pas. Un test le vérifie également.
@@ -298,9 +330,11 @@ cohérence du référentiel
 
 ## Limites connues
 
-- **Filtrage par type ERP disponible, mais aucun usage à ce jour.** Le champ
-  `types` existe (cf. amendement ci-dessus) ; aucune obligation ne s'en sert,
-  faute de texte sourcé qui vise explicitement un type d'exploitation. Le
+- **Filtrage par type ERP employé par un seul article, et il est nommé.**
+  Depuis le 2026-09-02, les six lignes du tableau de `GE 4 § 1` emploient
+  `types` et `typesExclus` ; **aucune autre obligation du référentiel ne
+  restreint par type**, faute de texte sourcé qui vise explicitement un type
+  d'exploitation. Le
   ramonage annuel des circuits d'extraction reste donc appliqué à tout ERP
   déclarant une hotte professionnelle, quel que soit son type — et c'est
   volontaire : une grande cuisine se trouve aussi bien en hôtel (O), en école
