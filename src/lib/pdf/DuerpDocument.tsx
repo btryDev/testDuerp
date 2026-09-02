@@ -11,6 +11,10 @@ import { LABEL_STATUT, LABEL_TYPE_MESURE } from "@/lib/mesures/labels";
 import { estHorsReferentiel } from "@/lib/risques/helpers";
 import { phrasesMethodologie, quandSansReponse } from "./mentions-couverture";
 import {
+  CHAPEAU_ANNEXE_EXPOSITION,
+  TITRE_ANNEXE_EXPOSITION,
+} from "./mentions-exposition";
+import {
   activitesDeclareesSnapshot,
   activitesSansReponseSnapshot,
 } from "@/lib/activites/snapshot";
@@ -709,9 +713,20 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
         </Text>
       </Page>
 
-      {/* Annexe exposition — R. 4121-1-1 : proportion de salariés exposés.
+      {/* Dénombrement des expositions relevées.
           On ne la génère que si au moins un risque renseigne l'un des champs
-          (salariés exposés, mesures physiques, CMR). */}
+          (salariés exposés, mesures physiques, CMR).
+
+          CETTE PAGE S'ANNONÇAIT COMME L'ANNEXE DE R. 4121-1-1, ET NE L'EST
+          PAS. Elle imprime un effectif brut par risque du référentiel
+          sectoriel, là où l'article demande une proportion rapportée à une
+          liste fermée de facteurs de risques professionnels que le modèle
+          `Risque` ne connaît pas. Le tableau est resté — ce sont de vraies
+          saisies, et les réunir a une valeur propre —, le titre et le
+          chapeau ont changé. Ils vivent désormais dans
+          `mentions-exposition.ts`, où ils se vérifient : l'argument complet
+          y est, et un test tient chacune des phrases qui empêchent la page
+          d'être relue comme la pièce de l'article. */}
       {unites.some((u) =>
         u.risques.some(
           (r) =>
@@ -722,13 +737,18 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
       ) && (
         <Page size="A4" style={s.page}>
           {bandeau}
-          <Text style={s.h2}>Annexe — Exposition (R. 4121-1-1)</Text>
-          <Text style={[s.small, { marginBottom: 8 }]}>
-            Article R. 4121-1-1 : données utiles à l&apos;évaluation des
-            expositions individuelles et proportion de salariés exposés
-            au-delà des seuils réglementaires. Cette annexe consolide les
-            informations saisies sur chaque risque.
-          </Text>
+          <Text style={s.h2}>{TITRE_ANNEXE_EXPOSITION}</Text>
+          {CHAPEAU_ANNEXE_EXPOSITION.map((paragraphe, i) => (
+            <Text
+              key={i}
+              style={[
+                s.small,
+                { marginBottom: i === CHAPEAU_ANNEXE_EXPOSITION.length - 1 ? 8 : 5 },
+              ]}
+            >
+              {paragraphe}
+            </Text>
+          ))}
           <View style={s.thead}>
             <Text style={[s.th, { width: "30%" }]}>Risque</Text>
             <Text style={[s.th, { width: "20%" }]}>Unité</Text>
@@ -767,7 +787,13 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
                       r.exposeCMR ? { color: "#b30000" } : {},
                     ]}
                   >
-                    {r.exposeCMR ? "Oui — R. 4412" : "—"}
+                    {/* « Oui », et plus « Oui — R. 4412 ». `R. 4412` n'est
+                        pas un article mais un chapitre, et tronqué dans une
+                        cellule il se lit comme une référence. La cellule dit
+                        un fait de saisie ; l'article qui s'y attache est
+                        nommé en toutes lettres sous le tableau
+                        (R. 4412-59 et suivants), une fois et correctement. */}
+                    {r.exposeCMR ? "Oui" : "—"}
                   </Text>
                 </View>
               )),
