@@ -15,53 +15,30 @@ d'agent et une conversation — trois endroits qu'on ne rouvre pas. Voir aussi
 
 ---
 
-## 1. Retirer la question « personnes habituellement présentes »
+## 1. Ce qui reste du champ de R. 4227-34 — `manipuleMatieresR422722`
 
-**Décidé par la propriétaire le 2026-09-02.** La question ne revient pas dans le
-parcours — la décision du 1ᵉʳ septembre tient — et **le rattrapage actuel s'en va
-aussi** : le dirigeant ne doit plus lire ce bandeau sur son calendrier.
+**Le gros de l'entrée est fait, le 2026-09-03.** La question « personnes
+habituellement présentes » n'est pas revenue au parcours, le repli a changé de
+sens et le bandeau a quitté le calendrier. Ce que le moteur fait désormais est
+écrit dans `evaluerPersonnesPresentes` (`src/lib/matching/engine.ts`) et dans
+l'ADR-022 § 7 : borne basse par la catégorie d'ERP puis par l'effectif salarié,
+« à confirmer » sous la borne pour qui reçoit du public, rejet pour
+l'établissement de travail seul où l'effectif EST le total. L'axe `public_recu`
+de la couverture est parti avec sa cause, et `matching/public-recu.ts` avec lui.
 
-### Ce qu'il faut faire à la place
+**Ce qui reste est le second attribut**, que l'ADR-022 recensait avec le
+premier : `manipuleMatieresR422722` absent est lu « non ». Il ne retire rien
+aujourd'hui — sa branche n'ajoute des cas qu'à un champ déjà ouvert par le seuil
+de personnes présentes. Il en retirerait le jour où une obligation s'appuierait
+sur cette branche seule, et le corpus dit lequel :
+`code-travail-matieres-inflammables.ts` a relevé le 2026-09-02 que `R. 4227-22`
+oblige sans condition d'effectif ni d'équipement, qu'il vise « entreposées OU
+manipulées » là où l'attribut ne demande que la manipulation, et que deux états
+permanents en découlent que le référentiel ne porte pas.
 
-**Déduire pour les catégories 1 à 3.** `docs/adr/004-typologie-etablissement.md`
-donne les seuils : 3ᵉ catégorie = 301 à 700 personnes de public. Dès la 3ᵉ, le
-public seul dépasse cinquante-et-un, donc `R. 4227-34` s'applique **sans qu'on
-ait rien à demander**. La catégorie est déclarée par le dirigeant depuis le
-2026-09-01 : la donnée est là, il suffit de s'en servir.
-
-**Cesser de résoudre le silence en « non » pour les 4ᵉ et 5ᵉ.** Ces deux
-catégories ne donnent qu'une fourchette — la 4ᵉ va du seuil du type jusqu'à
-300 —, donc rien ne se déduit. Aujourd'hui `engine.ts:410` fait
-`personnesPresentesHabituellement ?? effectifSurSite` : le silence retombe sur
-l'effectif salarié, ce qui **sous-estime pour tout ERP**, un ERP recevant du
-public par définition. Les deux obligations concernées — consigne de sécurité
-incendie et exercices semestriels, `incendie-travail-consigne-affichee` et
-`incendie-travail-exercice-semestriel` — doivent s'afficher **« à confirmer »**
-plutôt que disparaître. C'est ce que le produit fait déjà pour la famille
-d'habitation.
-
-### Pourquoi ça compte plus que ça n'en a l'air
-
-Un restaurant de huit salariés qui sert trois cents couverts est le profil que
-`CLAUDE.md` nomme comme cœur de cible. Il dépasse cinquante-et-une personnes tous
-les jours. **La sous-estimation n'est donc pas un cas limite pour les trois
-secteurs : c'est le cas ordinaire**, et elle fait disparaître en silence deux
-obligations qu'un inspecteur regarde en premier.
-
-### Ce que ça touche
-
-`src/lib/matching/engine.ts` (le repli, l. 400-420), `src/lib/perimetre/couverture.ts`
-(le message), `src/components/perimetre/BandeauCouverture.tsx`, et ses deux points
-d'appel — `src/app/etablissements/[id]/perimetre/page.tsx` et
-**`src/app/etablissements/[id]/calendrier/page.tsx:1076`**, celui que la
-propriétaire a vu.
-
-`CLAUDE.md` recense cet attribut comme **l'un des deux qui violent la règle du
-non-renseigné** (*« l'incertitude ne réduit jamais la couverture »*). Le second,
-`manipuleMatieresR422722`, est du même lot : à traiter ensemble ou à ne pas
-oublier.
-
----
+**Ce qui le bloque** : rien de technique. C'est une décision sur le champ de la
+question posée au dirigeant — l'élargir à l'entreposage ferait entrer dans les
+obligations de `R. 4227-34` des établissements que ce texte-là ne vise pas.
 
 ## 2. La date de remise de l'attestation de vigilance
 

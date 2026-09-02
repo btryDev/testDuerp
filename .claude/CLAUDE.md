@@ -314,9 +314,17 @@ jamais le consentement. L'outil ne stocke d'une pièce médicale que son existen
 son échéance — plus strict que le texte, qui autorise l'employeur à en conserver copie.
 
 **Règle du non-renseigné** — *l'incertitude ne réduit jamais la couverture*. Posée par
-l'ADR-022, **pas encore appliquée partout** : deux attributs d'établissement font
-aujourd'hui l'inverse et sont recensés dans l'ADR (`manipuleMatieresR422722` absent lu
-« non », `personnesPresentesHabituellement` absent retombant sur `effectifSurSite`). Toute
+l'ADR-022, **appliquée partout sauf à un attribut**. Ils étaient deux ; le second est
+rentré dans le rang le 2026-09-03. `personnesPresentesHabituellement` absent ne retombe
+plus sur `effectifSurSite` : le moteur en déduit une **borne basse** — le plancher de
+public de la catégorie d'ERP, qui franchit à lui seul le seuil de `R. 4227-34` dès la
+3ᵉ catégorie, puis l'effectif salarié — et une borne basse ne conclut que vers le haut.
+Sous la borne, l'obligation est retenue « à confirmer » si l'établissement reçoit du
+public, et rejetée s'il est de travail seul, où l'effectif salarié EST le total et non
+une borne. Reste `manipuleMatieresR422722`, absent lu « non » : sa branche n'ajoute des
+cas qu'à un champ déjà ouvert par le seuil de personnes, donc elle ne retire rien
+aujourd'hui — elle retirerait le jour où une obligation s'appuierait sur elle seule, ce
+que `corpus/code-travail-matieres-inflammables.ts` documente article en main. Toute
 condition d'établissement **nouvelle** suit la règle. `null` ne
 vaut pas « non » : une obligation conditionnée à un attribut d'établissement non renseigné
 s'affiche « à confirmer », et un allègement de régime conditionné à l'absence de cet
