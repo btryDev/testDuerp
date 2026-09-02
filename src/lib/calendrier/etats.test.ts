@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { classerDate, classerVerification, lecturesCalendrier } from "./etats";
+import {
+  aUnRendezVous,
+  classerDate,
+  classerVerification,
+  lecturesCalendrier,
+} from "./etats";
 
 // L'horloge est injectée partout (ADR-011) : midi à Paris, un jour sans
 // piège de fuseau — les cas de bascule de minuit vivent dans
@@ -95,6 +100,56 @@ describe("classerVerification", () => {
         NOW,
       ),
     ).toBe("enRetard");
+  });
+});
+
+describe("aUnRendezVous", () => {
+  // Le défaut qu'il ferme : sur une ligne « à planifier » générée le jour
+  // même, la fiche annonçait « prochaine échéance 1ᵉʳ sept. » et « échéance
+  // aujourd'hui », pendant que le calendrier comptait la même ligne parmi les
+  // « à planifier », hors de ses barres, et la marquait « à dater ».
+  it("refuse le rendez-vous à une ligne que personne n'a datée", () => {
+    // Sa `datePrevue` est la date de GÉNÉRATION — ici, aujourd'hui même.
+    expect(
+      aUnRendezVous(
+        { statut: "a_planifier", datePrevue: NOW, dateRealisee: null },
+        NOW,
+      ),
+    ).toBe(false);
+  });
+
+  it("le refuse aussi à une date future, qui est le cas trompeur", () => {
+    // Une date à venir ressemble à un rendez-vous ; c'est précisément là que
+    // la fiche se trompait, et pas seulement sur la date du jour.
+    expect(
+      aUnRendezVous(
+        { statut: "a_planifier", datePrevue: jours(10), dateRealisee: null },
+        NOW,
+      ),
+    ).toBe(false);
+  });
+
+  it("l'accorde à une occurrence planifiée, proche ou lointaine", () => {
+    // Borne basse : le prédicat ne doit pas effacer les dates réelles.
+    for (const d of [jours(1), jours(10), jours(200)]) {
+      expect(
+        aUnRendezVous(
+          { statut: "planifiee", datePrevue: d, dateRealisee: null },
+          NOW,
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it("l'accorde à une ligne « à planifier » dont la date est passée", () => {
+    // Elle est en retard, pas sans rendez-vous — `classerVerification` la
+    // classe « enRetard », et la fiche doit continuer d'afficher son retard.
+    expect(
+      aUnRendezVous(
+        { statut: "a_planifier", datePrevue: jours(-3), dateRealisee: null },
+        NOW,
+      ),
+    ).toBe(true);
   });
 });
 

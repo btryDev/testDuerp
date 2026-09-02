@@ -3,7 +3,11 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
-const buttonVariants = cva(
+/**
+ * Le calcul brut des classes. Ne pas l'exporter tel quel — cf.
+ * `buttonVariants` juste en dessous.
+ */
+const classesBrutes = cva(
   "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-clip-padding text-[0.78rem] font-medium tracking-[0.08em] uppercase whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5 [font-family:var(--font-mono)]",
   {
     variants: {
@@ -54,16 +58,43 @@ const buttonVariants = cva(
   }
 )
 
+/**
+ * Les classes d'un bouton, **conflits déjà tranchés**.
+ *
+ * `cva` concatène, il ne remplace pas : les variantes `board` ne peuvent
+ * qu'ajouter `normal-case` et `[font-family:var(--font-body)]` par-dessus le
+ * `uppercase` et le `[font-family:var(--font-mono)]` du socle, qui restent
+ * dans la chaîne. Lequel gagne ? L'ordre du CSS produit — pas celui de la
+ * chaîne, ni celui du code. C'est-à-dire personne.
+ *
+ * Sur `/equipements`, la même action portait ainsi deux styles : « + Ajouter
+ * un équipement » depuis le bandeau, qui passait par `cn(…)` et perdait donc
+ * le `uppercase`, et « AJOUTER UN ÉQUIPEMENT » en petites capitales
+ * monospacées depuis l'état vide, qui appelait `buttonVariants` nu. Le bon
+ * des deux est le premier : le board pose des pilules en Plex semi-gras, les
+ * petites capitales monospacées sont la voix des écrans restés en papier.
+ *
+ * Le conflit se tranche donc ici, une fois, plutôt qu'à quarante appels : ce
+ * n'est pas à l'appelant de savoir qu'une variante de ce fichier a besoin
+ * d'être démêlée. `cn(buttonVariants(…))` reste sans effet ni danger —
+ * `twMerge` est idempotent —, et les appels nus deviennent justes.
+ */
+function buttonVariants(
+  options?: Parameters<typeof classesBrutes>[0],
+): string {
+  return cn(classesBrutes(options))
+}
+
 function Button({
   className,
   variant = "default",
   size = "default",
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonPrimitive.Props & VariantProps<typeof classesBrutes>) {
   return (
     <ButtonPrimitive
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={buttonVariants({ variant, size, className })}
       {...props}
     />
   )

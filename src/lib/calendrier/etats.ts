@@ -131,6 +131,28 @@ export function classerVerification(
 }
 
 /**
+ * La ligne a-t-elle une date ARRÊTÉE, ou seulement une date de génération ?
+ *
+ * `datePrevue` est non nulle en base pour toute ligne, y compris celles que
+ * personne n'a encore datées : le générateur y écrit alors le jour où il l'a
+ * produite. Lue comme un rendez-vous, cette date fait dire n'importe quoi —
+ * « échéance aujourd'hui » le jour de la génération du calendrier, sur un
+ * contrôle que personne n'a programmé.
+ *
+ * Le prédicat vit ici, avec le classement dont il se déduit, parce que deux
+ * écrans se sont déjà contredits dessus : le calendrier comptait la ligne
+ * « à planifier » et la marquait « à dater », pendant que sa fiche annonçait
+ * « prochaine échéance » à la date de génération et « échéance aujourd'hui ».
+ * Chacun avait sa propre lecture de `datePrevue` ; ils n'en ont plus qu'une.
+ */
+export function aUnRendezVous(
+  v: { statut: string; datePrevue: Date; dateRealisee: Date | null },
+  now: Date,
+): boolean {
+  return classerVerification(v, now) !== "aPlanifier";
+}
+
+/**
  * Une lecture calendrier d'une ligne de suivi : un événement posable sur
  * un mois, avec son état.
  */

@@ -696,10 +696,38 @@ export function BlocParOuCommencer({ bundle }: { bundle: DashboardBundle }) {
 
 /* ─── 2 · La frise ──────────────────────────────────────────── */
 
-/** Hauteur de la zone de marqueurs, en pixels. */
-const PISTE_HAUTEUR = 236;
+/*
+ * La géométrie de la piste — et pourquoi elle est écrite en constantes
+ * dérivées plutôt qu'en littéraux dispersés.
+ *
+ * Les cartes de la voie HAUTE sont posées par leur bord bas : elles
+ * grandissent donc vers le haut. Or le conteneur qui défile ne peut pas ne
+ * pas clipper — `overflow-x: auto` interdit `overflow-y: visible`, qui
+ * devient `auto`. Une carte plus haute que sa voie perdait donc ses angles
+ * supérieurs et le haut de son titre, accents compris : « Systèmes de
+ * sécurité » s'affichait décapité, sans coin arrondi.
+ *
+ * Deux corrections, et il faut les deux. La voie est dimensionnée sur la
+ * carte la plus haute — et le contenu est borné pour que ce nombre existe :
+ * titre sur deux lignes au plus, sous-titre qui se replie d'un bloc au lieu
+ * de s'empiler un mot par ligne (cf. la carte, plus bas). Sans la seconde,
+ * la hauteur maximale d'une carte est celle du plus long mot de la plus
+ * longue date, c'est-à-dire rien qu'on puisse réserver.
+ */
+
+/** Carte la plus haute que le contenu borné puisse produire :
+ *  `py-3` (12+12) + 2 lignes de titre (2×17,5) + `mt-[5px]` + 2 lignes de
+ *  sous-titre (2×17). */
+const CARTE_HAUTEUR_MAX = 98;
+/** Bord bas des cartes de la voie haute — au moins la carte la plus haute,
+ *  sinon le débord se fait vers le haut, là où ça coupe. */
+const VOIE_HAUTE = 104;
 /** Ordonnée de l'axe dans cette zone. */
-const AXE_Y = 112;
+const AXE_Y = VOIE_HAUTE + 16;
+/** Bord haut des cartes de la voie basse, à la même distance de l'axe. */
+const VOIE_BASSE = AXE_Y + 16;
+/** Hauteur de la zone de marqueurs, en pixels. */
+const PISTE_HAUTEUR = VOIE_BASSE + CARTE_HAUTEUR_MAX + 10;
 /** Demi-largeur d'une carte de marqueur — sert à la borner aux extrémités. */
 const DEMI_CARTE = 86;
 /** Marge à gauche d'aujourd'hui au cadrage initial, en pixels. */
@@ -1193,13 +1221,20 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                             frise.largeur - DEMI_CARTE,
                           ),
                           ...(m.cote === "haut"
-                            ? { bottom: PISTE_HAUTEUR - 96 }
-                            : { top: 128 }),
+                            ? { bottom: PISTE_HAUTEUR - VOIE_HAUTE }
+                            : { top: VOIE_BASSE }),
                         }}
                       >
+                        {/* `line-clamp-2` : la hauteur de la voie haute est
+                            réservée sur deux lignes de titre, et une carte
+                            plus haute que sa voie se ferait couper le haut
+                            plutôt que le bas. `raccourcirLibelle` borne déjà
+                            le titre à 33 caractères, qui tiennent en deux
+                            lignes sauf coupe de mot défavorable ; le texte
+                            entier reste dans le `title` du lien. */}
                         <p
                           className={
-                            "m-0 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] " +
+                            "m-0 line-clamp-2 text-[14px] font-semibold leading-[1.25] tracking-[-0.015em] " +
                             carte.titre
                           }
                         >
@@ -1209,9 +1244,17 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                             disait quand, jamais quoi. La couleur porte
                             déjà l'urgence — le pictogramme et le mot
                             portent le reste (ADR-016). */}
+                        {/* `flex-wrap` + `whitespace-nowrap` sur la date, et
+                            c'est la moitié de la correction du rognage. Sans
+                            eux, la rangée ne pouvant pas se replier, ses
+                            éléments se réduisaient à leur contenu minimal et
+                            « 1 SEPT. 2026 » s'empilait un mot par ligne : la
+                            carte gagnait 34 px et débordait sa voie par le
+                            haut. La date passe désormais entière à la ligne
+                            suivante, ou reste sur la même. */}
                         <p
                           className={
-                            "mt-[5px] flex items-center gap-1.5 text-[11.5px] font-semibold tracking-[0.06em] " +
+                            "mt-[5px] flex flex-wrap items-center justify-center gap-x-1.5 text-[11.5px] font-semibold tracking-[0.06em] " +
                             carte.sousTitre
                           }
                         >
@@ -1221,7 +1264,9 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                               <span aria-hidden>·</span>
                             </>
                           ) : null}
-                          {m.sousTitre}
+                          <span className="whitespace-nowrap">
+                            {m.sousTitre}
+                          </span>
                         </p>
                       </LienProvenance>
                     </Fragment>

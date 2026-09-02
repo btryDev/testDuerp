@@ -24,7 +24,7 @@ import {
   estActionEnRetard,
   estVerificationEnRetard,
 } from "@/lib/dates/retard";
-import { classerVerification } from "@/lib/calendrier/etats";
+import { aUnRendezVous, classerVerification } from "@/lib/calendrier/etats";
 import {
   FAMILLE_DE_TYPE,
   typeDeVerification,
@@ -133,7 +133,24 @@ export default async function VerificationDetailPage({
   const aujourdhui = new Date();
   const joursRestants = joursCivilsEntre(aujourdhui, v.datePrevue);
   const enRetard = estVerificationEnRetard(v, aujourdhui);
+
+  /**
+   * La ligne n'a pas de rendez-vous : sa `datePrevue` est une date de
+   * GÉNÉRATION, pas une date arrêtée.
+   *
+   * C'est la même lecture que le calendrier, prise à la même source
+   * (`classerVerification`) — et c'est la divergence qu'elle referme. Le
+   * calendrier comptait ces lignes « à planifier », hors de ses barres, et
+   * les marquait « à dater » ; la fiche, elle, affichait la même ligne
+   * « PROCHAINE ÉCHÉANCE 01 sept. 2026 » et « Échéance aujourd'hui ». Deux
+   * écrans, deux vérités sur une seule ligne, et c'est la fiche qui avait
+   * tort : elle prenait la date de génération pour un rendez-vous.
+   */
+  const etat = classerVerification(v, aujourdhui);
+  const sansRendezVous = !aUnRendezVous(v, aujourdhui);
+
   const urgent =
+    !sansRendezVous &&
     !enRetard &&
     !v.dateRealisee &&
     joursRestants >= 0 &&
@@ -171,22 +188,31 @@ export default async function VerificationDetailPage({
     (obligation !== undefined &&
       estPorteeParSalarie(obligation) &&
       obligation.pieceMedicale === true);
-  const etat = classerVerification(v, aujourdhui);
-
   // ADR-032. La fiche est l'écran où l'on vient chercher ce qu'une échéance
   // engage : c'est le dernier endroit où elle peut encore se lire comme une
   // obligation légale, et le premier où on ira vérifier.
   const contractuelle = estEcheanceContractuelle(v);
 
   const faits: FaitFiche[] = [
-    {
-      cle: "Prochaine échéance",
-      valeur: formatDateCourte(v.datePrevue),
-      note: v.dateRealisee
-        ? `Dernière : ${formatDateCourte(v.dateRealisee)}`
-        : undefined,
-      alerte: enRetard,
-    },
+    // Sans rendez-vous, la ligne n'a pas de « prochaine échéance » à
+    // annoncer : elle a un contrôle dû et pas de date. Écrire la date de
+    // génération sous cette clé, c'est inventer un rendez-vous que personne
+    // n'a pris — et c'est précisément ce que le calendrier refuse de faire
+    // en la comptant « à planifier » hors de ses barres.
+    sansRendezVous
+      ? {
+          cle: "Date",
+          valeur: "À planifier",
+          note: "Aucune date n'est encore arrêtée pour ce contrôle.",
+        }
+      : {
+          cle: "Prochaine échéance",
+          valeur: formatDateCourte(v.datePrevue),
+          note: v.dateRealisee
+            ? `Dernière : ${formatDateCourte(v.dateRealisee)}`
+            : undefined,
+          alerte: enRetard,
+        },
     // Sans équipement, l'échéance porte sur l'établissement lui-même
     // (ADR-022) : la ligne change de nom, parce qu'elle ne répond plus à la
     // même question. « Équipement : — » laisserait croire à une donnée
@@ -237,7 +263,11 @@ export default async function VerificationDetailPage({
   return (
     <EcranFiche provenance={provenance} canonique={calendrier}>
       <HeroFiche
-        date={v.datePrevue}
+        // Pas de tuile-date sans date arrêtée : la tuile est un rendez-vous
+        // posé, et poser la date de génération y donnait à lire un jour où
+        // rien n'est attendu. La pastille de statut dit « À planifier », et
+        // le fait ci-dessus dit qu'aucune date n'est arrêtée.
+        date={sansRendezVous ? null : v.datePrevue}
         etat={etat}
         /* Déduite du porteur, comme partout ailleurs (ADR-016) : la page
            connaît déjà `v.salarie`, qu'elle affiche vingt lignes plus haut.
