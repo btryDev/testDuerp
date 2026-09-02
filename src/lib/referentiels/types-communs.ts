@@ -162,6 +162,7 @@ export type FamilleHabitation = (typeof FAMILLES_HABITATION)[number];
  *  - `false`     = exclu (doit être faux côté établissement)
  *  - `{ categories: [...] }` = requis ET restreint à ces catégories ERP
  *  - `{ types:      [...] }` = requis ET restreint à ces types d'exploitation ERP
+ *  - `{ typesExclus: [...] }` = requis SAUF pour ces types d'exploitation ERP
  *  - `{ classes:   [...] }` = requis ET restreint à ces classes IGH
  *
  * `categories` et `types` sont indépendants et cumulables : une obligation
@@ -175,7 +176,25 @@ export type FamilleHabitation = (typeof FAMILLES_HABITATION)[number];
  * explicitement un ou plusieurs types d'exploitation (dispositions
  * particulières du règlement de sécurité). Les articles des dispositions
  * générales (EL, MS, EC, DF, CH, GC, GZ, GE) s'appliquent à tous les types :
- * y ajouter une liste de types serait une restriction inventée.
+ * y ajouter une liste de types serait une restriction inventée. **Une
+ * exception, et elle est la raison d'être de `typesExclus`** : `GE 4 § 1`
+ * est un article des dispositions générales dont le corps est un TABLEAU
+ * croisant le type et la catégorie. Il ne restreint pas son champ à quelques
+ * types — il s'applique à tous — mais il ne leur donne pas la même
+ * périodicité.
+ *
+ * `typesExclus` : le complément de `types`, et il n'en est PAS le symétrique
+ * exact. Là où `types` rejette un ERP dont le `typeErp` est inconnu — une
+ * restriction invérifiable ne s'ignore pas —, `typesExclus` le **retient** :
+ * une exclusion invérifiable ne s'applique pas. L'asymétrie est délibérée et
+ * va dans le même sens que la première : dans les deux cas, l'ignorance du
+ * type ne fait jamais disparaître une ligne d'un calendrier. Elle est ce qui
+ * permet d'écrire le complément d'un tableau sans creuser un faux négatif
+ * muet chez l'établissement qui n'a pas précisé son activité.
+ *
+ * `types` et `typesExclus` sont mutuellement exclusifs sur une même
+ * obligation (un test le vérifie) : écrire les deux, c'est écrire deux fois
+ * la même frontière et se garantir qu'elles divergeront.
  *
  * Cette structure est consommée par le moteur de matching (étape 5) de manière
  * purement déclarative, sans fonction TS arbitraire — condition nécessaire à
@@ -183,7 +202,13 @@ export type FamilleHabitation = (typeof FAMILLES_HABITATION)[number];
  */
 export type TypologieApplication = {
   travail?: boolean;
-  erp?: boolean | { categories?: CategorieErp[]; types?: TypeErp[] };
+  erp?:
+    | boolean
+    | {
+        categories?: CategorieErp[];
+        types?: TypeErp[];
+        typesExclus?: TypeErp[];
+      };
   igh?: boolean | { classes: ClasseIgh[] };
   /**
    * `{ familles: [...] }` = requis ET restreint à ces familles d'habitation.

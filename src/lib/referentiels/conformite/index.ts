@@ -113,11 +113,9 @@ export const obligationsConformite: Obligation[] = [
  * la bonne question n'est pas « l'empreinte a-t-elle bougé ? » mais « le
  * référentiel a-t-il changé ? ». Ici, oui.
  */
-// Version remesurée à l'intégration, comme l'empreinte. Cinq lots l'ont
-// portée en deux jours, chacun juste chez lui et aucun après la fusion :
-// c'est ce que cette constante existe pour distinguer, et c'est pourquoi elle
-// ne se recopie d'aucun côté.
-export const REFERENTIEL_VERSION = "2026-09-02.4";
+// Version remesurée à l'intégration, comme l'empreinte : six lots l'ont portée
+// en deux jours, chacun juste chez lui et aucun après la fusion.
+export const REFERENTIEL_VERSION = "2026-09-02.5";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.
@@ -174,6 +172,12 @@ export const OBLIGATIONS_RETIREES: Record<string, ObligationRetiree> = {
     absorbePar: "aeration-controle-installations-r4222-20",
     motif:
       "Retiré le 2026-08-27. Fragment « VMC/CTA » de R. 4222-20, sans fondement propre. L'absorbante garde le même domaine, le même rythme annuel et la même criticité : pour l'utilisateur, une ligne par appareil devient une ligne pour l'ensemble.",
+  },
+  // GE 4 § 1 — la ligne unique a éclaté en six quand le tableau a pu être lu.
+  "incendie-erp-cat1-4-visite-commission": {
+    absorbePar: "incendie-erp-visite-commission-cat1-2-triennale",
+    motif:
+      "Retirée le 2026-09-02, créée le 2026-09-01. Elle portait GE 4 § 1 en UNE ligne `triennale` bornée à N1–N4, faute d'avoir pu lire le corps du tableau à la source. Le tableau a depuis été relevé et vérifié case par case sur le fac-similé du Journal officiel : il croise le type et la catégorie, et donne trois OU cinq ans. `periodicite` étant un scalaire, il faut une ligne par bloc — six, qui forment une partition. `absorbePar` désigne celle des six qui hérite du plus grand nombre d'établissements, mais aucune ne la reprend à elle seule : un dossier de 3ᵉ ou 4ᵉ catégorie bascule sur une autre, et un établissement de culte passe de trois à cinq ans. L'id ne doit jamais être réemployé — c'est ce que ce registre garantit.",
   },
 };
 

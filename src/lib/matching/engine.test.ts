@@ -2029,7 +2029,20 @@ describe("moteur matching — inspection périodique ESP : le couple d'énuméra
 // catégories — se retrouver sans aucune.
 // -----------------------------------------------------------------------------
 describe("moteur matching — visite de commission : GE 4 en 1ʳᵉ–4ᵉ, PE 37 en 5ᵉ", () => {
-  const CAT14 = "incendie-erp-cat1-4-visite-commission";
+  // Le tableau de GE 4 § 1 est encodé en SIX lignes depuis le 2026-09-02 (une
+  // par bloc catégorie × périodicité). Le détail case par case est éprouvé
+  // dans `conformite.test.ts` ; ce qui se vérifie ici est la FRONTIÈRE avec la
+  // ligne de 5ᵉ catégorie — GE 4 relève du Livre II, écarté en 5ᵉ par PE 1
+  // § 1, et PE 37 ne vise que la 5ᵉ. Aucun établissement ne doit recevoir les
+  // deux, ni — parmi les cinq catégories — se retrouver sans aucune.
+  const CAT14 = [
+    "incendie-erp-visite-commission-cat1-2-triennale",
+    "incendie-erp-visite-commission-cat1-2-quinquennale",
+    "incendie-erp-visite-commission-cat3-triennale",
+    "incendie-erp-visite-commission-cat3-quinquennale",
+    "incendie-erp-visite-commission-cat4-triennale",
+    "incendie-erp-visite-commission-cat4-quinquennale",
+  ];
   const CAT5 = "incendie-erp-5-visite-commission";
 
   function erp(categorieErp: EtablissementMatching["categorieErp"]): EtablissementMatching {
@@ -2040,7 +2053,7 @@ describe("moteur matching — visite de commission : GE 4 en 1ʳᵉ–4ᵉ, PE 3
     // Le § 1 ne conditionne la visite à aucun équipement : la ligne existe même
     // sur un dossier vide. C'est ce qui justifie le porteur `etablissement`.
     const ids = idsObligations(determineObligationsApplicables(erp("N3"), []));
-    expect(ids).toContain(CAT14);
+    expect(ids.filter((id) => CAT14.includes(id))).toHaveLength(1);
   });
 
   it("la ligne de GE 4 ne produit qu'UNE échéance, quel que soit le parc déclaré", () => {
@@ -2048,31 +2061,52 @@ describe("moteur matching — visite de commission : GE 4 en 1ʳᵉ–4ᵉ, PE 3
       { id: "eq-a", libelle: "Alarme", categorie: "ALARME_INCENDIE" as const, caracteristiques: null },
       { id: "eq-b", libelle: "Extincteur", categorie: "EXTINCTEUR" as const, caracteristiques: null },
     ]);
-    const ligne = res.find((r) => r.obligation.id === CAT14);
-    expect(ligne?.porteur).toBe("etablissement");
+    const lignes = res.filter((r) => CAT14.includes(r.obligation.id));
+    expect(lignes).toHaveLength(1);
+    expect(lignes[0].porteur).toBe("etablissement");
     // ADR-022 : une obligation d'établissement n'a pas d'équipement déclencheur,
     // et une liste vide n'y signifie pas « aucune ligne ».
-    expect(ligne?.equipementsConcernes).toEqual([]);
+    expect(lignes[0].equipementsConcernes).toEqual([]);
   });
 
   it("un ERP de 5ᵉ catégorie ne reçoit PAS la ligne de GE 4", () => {
     // GE 4 relève du Livre II, écarté en 5ᵉ catégorie par PE 1 § 1.
     const ids = idsObligations(determineObligationsApplicables(erp("N5"), []));
-    expect(ids).not.toContain(CAT14);
+    expect(ids.filter((id) => CAT14.includes(id))).toEqual([]);
   });
 
   it("les deux visites de commission ne se recouvrent jamais", () => {
     // Borne haute : jamais deux lignes de visite pour un même établissement.
     // Le cas dangereux est la 5ᵉ catégorie AVEC alarme, où la ligne PE 37
-    // s'applique — GE 4 ne doit pas s'y ajouter.
+    // s'applique — GE 4 ne doit pas s'y ajouter. Depuis le découpage du
+    // tableau en six lignes, le second cas dangereux est en 1ʳᵉ à 4ᵉ : deux
+    // lignes de GE 4 qui se recouvriraient donneraient deux dates au même
+    // établissement pour la même visite.
     for (const cat of ["N1", "N2", "N3", "N4", "N5"] as const) {
       const ids = idsObligations(
         determineObligationsApplicables(erp(cat), [
           { id: "eq-a", libelle: "Alarme", categorie: "ALARME_INCENDIE" as const, caracteristiques: null },
         ]),
       );
-      const visites = [CAT14, CAT5].filter((id) => ids.includes(id));
+      const visites = [...CAT14, CAT5].filter((id) => ids.includes(id));
       expect(visites, cat).toHaveLength(1);
+    }
+  });
+
+  it("un ERP dont le type n'est pas renseigné garde sa visite, et une seule", () => {
+    // LE FAUX NÉGATIF QUE `typesExclus` EXISTE POUR ÉVITER. Les lignes
+    // triennales sont écrites en COMPLÉMENT des types portés à cinq ans, et
+    // non en énumération : une énumération aurait exigé un `typeErp` renseigné
+    // (`docs/regles-matching.md`) et privé de toute visite l'établissement qui
+    // n'a pas précisé son activité. Il retombe sur trois ans, le rythme court.
+    for (const cat of ["N1", "N2", "N3", "N4"] as const) {
+      const res = determineObligationsApplicables(
+        { ...erp(cat), typeErp: null },
+        [],
+      );
+      const lignes = res.filter((r) => CAT14.includes(r.obligation.id));
+      expect(lignes.map((l) => l.obligation.id), cat).toHaveLength(1);
+      expect(lignes[0].obligation.periodicite, cat).toBe("triennale");
     }
   });
 
@@ -2080,7 +2114,7 @@ describe("moteur matching — visite de commission : GE 4 en 1ʳᵉ–4ᵉ, PE 3
     // Borne basse de la typologie : la commission de sécurité ne visite que des
     // ERP. Un bureau non-ERP ne doit rien recevoir de ces deux lignes.
     const ids = idsObligations(determineObligationsApplicables(etabBureau(), []));
-    expect(ids).not.toContain(CAT14);
+    for (const id of CAT14) expect(ids).not.toContain(id);
     expect(ids).not.toContain(CAT5);
   });
 });

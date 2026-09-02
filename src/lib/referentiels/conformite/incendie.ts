@@ -22,7 +22,90 @@
  *   privées.
  */
 
-import type { Obligation } from "./types";
+import type { Obligation, ReferenceLegale } from "./types";
+
+// -----------------------------------------------------------------------------
+// GE 4 § 1 — le tableau des visites périodiques de commission, case par case
+//
+// Six lignes, une par bloc (catégorie × périodicité) du tableau. Elles
+// partagent leurs références, la partie de leur description qui ne dépend
+// d'aucune case, et l'essentiel de leurs notes : six copies d'un même
+// verbatim divergent à la première correction, et c'est la divergence qu'on
+// ne verrait pas.
+// -----------------------------------------------------------------------------
+
+/** Les deux références de GE 4 § 1, partagées par les six lignes du tableau. */
+const REFERENCES_GE4: [ReferenceLegale, ...ReferenceLegale[]] = [
+  {
+    source: "ARRETE",
+    reference:
+      "Arrêté du 25 juin 1980, art. GE 4 § 1 (visites périodiques des quatre premières catégories)",
+    article: "GE 4",
+    url: "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303874/",
+    note:
+      "« Les établissements des 1re, 2e, 3e et 4e catégories doivent être visités périodiquement par les commissions de sécurité selon la fréquence fixée au tableau suivant en fonction de leur type et de leur catégorie. » Verbatim relevé en première main le 2026-09-01. Le tableau lui-même — quinze colonnes de type, deux blocs de quatre lignes de catégorie, trois ans ou cinq ans — a été relevé le 2026-09-02 puis VÉRIFIÉ CASE PAR CASE SUR LE FAC-SIMILÉ DU JOURNAL OFFICIEL, les quinze colonnes sur les huit lignes : les positions concordent sans exception avec le relevé. Sa version actuelle lui vient de l'arrêté du 20 octobre 2014, NOR INTE1420988A (JORFTEXT000029641453, JORF n°0250 du 28 octobre 2014, texte n°23, page 17818), dont l'annexe dispose que « le tableau du chapitre Ier est remplacé par le tableau suivant ». ATTENTION : deux arrêtés du 20 octobre 2014 au titre identique figurent au même JO ; l'autre, NOR INTE1421827A (JORFTEXT000029641444), modifie REF 7 (refuges de montagne) et ne touche pas GE 4. Citer « l'arrêté du 20 octobre 2014 » sans son NOR désigne les deux à la fois. Version en vigueur depuis le 01/01/2015, SANS terme : vérifié sur la page d'article, et confirmé par une lecture de la section au 1er juillet 2027 où GE 4 figure inchangé.",
+    versionConstatee: "2015-01-01",
+  },
+  {
+    source: "CCH",
+    reference: "CCH, art. R. 143-41 (visites périodiques de la commission)",
+    article: "CCH R. 143-41",
+    url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000043819015/",
+    note:
+      "Fonde les visites périodiques de la commission et renvoie leur périodicité au règlement de sécurité, sans en fixer aucune. C'est GE 4 qui la fixe pour les quatre premières catégories.",
+    versionConstatee: "2021-07-01",
+  },
+];
+
+/**
+ * Ce que le tableau ne dit pas seul, et qui vaut pour les six lignes. Les
+ * § 2, § 3 et § 4 ne sont pas des rythmes ; ils sont nommés au dirigeant
+ * plutôt que tus, et ne sont encodés nulle part.
+ */
+const DESCRIPTION_GE4_RESERVES =
+  " Trois ajustements existent, qui ne sont pas des rythmes et que le produit " +
+  "ne calcule pas. Lorsque l'établissement comprend plusieurs bâtiments isolés " +
+  "les uns des autres, la catégorie s'apprécie bâtiment par bâtiment et les " +
+  "visites se font pour l'ensemble avec la périodicité la plus courte de celles " +
+  "qui correspondent aux catégories des bâtiments : le rythme réel peut donc " +
+  "être plus court que celui de la catégorie de l'établissement. Après deux " +
+  "visites périodiques consécutives conclues par un avis favorable, un " +
+  "établissement ne comportant pas de locaux d'hébergement peut voir le délai " +
+  "de sa prochaine visite prolongé dans la limite de cinq ans, sur proposition " +
+  "de la commission inscrite au procès-verbal — c'est une faculté sous plafond, " +
+  "pas un rythme. Et le maire ou le préfet peut modifier la fréquence des " +
+  "contrôles par arrêté, après avis de la commission. La visite est déclenchée " +
+  "par l'administration : ce qui se trace au registre est la visite lorsqu'elle " +
+  "a eu lieu.";
+
+/**
+ * La note commune aux six lignes : d'où vient le tableau, comment il est
+ * contrôlé, pourquoi six lignes, et ce qui reste non encodé.
+ */
+const NOTE_GE4_TABLEAU =
+  "— — — NOTE COMMUNE AUX SIX LIGNES DE GE 4 § 1 — — —\n\n" +
+  "LE TABLEAU, TEL QU'IL EST ENCODÉ (types × catégories, en années) :\n" +
+  "  J, O, R (1) avec hébergement, U .......... 3 | 3 | 3 | 3\n" +
+  "  L, P, R (2) sans hébergement ............. 3 | 3 | 3 | 5\n" +
+  "  M, N, S, T, W, X, Y ...................... 3 | 3 | 5 | 5\n" +
+  "  V ........................................ 5 | 5 | 5 | 5\n\n" +
+  "D'OÙ IL VIENT. Relevé du 2026-09-02 (`docs/revues/releve-ge4-tableau.md`, branche `releve/ge4-tableau`) : les libellés de lignes et de colonnes et le texte des § 1 à § 4 lus sur la donnée officielle consolidée (jeu LEGI de la DILA, LEGIARTI000029642660) ; les CARDINALITÉS de chaque ligne lues sur DEUX jeux de données officiels indépendants (LEGI consolidé et JORF tel qu'édicté en 2014) ; les POSITIONS lues d'abord sur quatre reproductions secondaires concordantes, PUIS VÉRIFIÉES CASE PAR CASE SUR LE FAC-SIMILÉ DU JOURNAL OFFICIEL par la propriétaire — les quinze colonnes sur les huit lignes, sans un écart. La réserve principale du relevé (« aucune position n'a été lue sur une source officielle ») est donc levée ; elle est reproduite ici parce que le relevé la porte encore et qu'il ne faut pas le lire sans savoir qu'elle a été levée après coup.\n\n" +
+  "LE CONTRÔLE MÉCANIQUE, ET IL EST LE SEUL DISPONIBLE. Dans la donnée officielle, les cellules VIDES du tableau ne sont pas encodées — le défaut est déjà dans le texte publié au JO et se retrouve dans le consolidé. Les lignes n'ont donc pas toutes le même nombre de cellules, et une extraction qui les aligne à gauche produit un tableau faux, faux DIFFÉREMMENT selon l'outil : c'est ce qui a fait se contredire quatre extractions le 2026-09-01. Ce qui est exact et officiel, ce sont les CARDINALITÉS : trois ans → 14, 14, 7, 4 ; cinq ans → 1, 1, 8, 11 ; chaque catégorie se complétant à quinze. Un test (`conformite.test.ts`) les recalcule depuis le tableau encodé au lieu de les recopier, et refuse toute case portée à cinq ans là où le tableau dit trois.\n\n" +
+  "POURQUOI SIX LIGNES, ET NON UNE. Le tableau est une fonction de deux variables ; `periodicite` est un scalaire. Il faut donc autant d'obligations que le tableau a de blocs (catégorie × valeur) : 1ʳᵉ-2ᵉ / 3ᵉ / 4ᵉ, trois ans / cinq ans. Regrouper 1ʳᵉ et 2ᵉ est exact — leurs deux lignes sont identiques —, regrouper au-delà ne l'est pas. Chaque établissement en reçoit EXACTEMENT UNE : les six typologies forment une partition, et un test l'éprouve sur les 21 types × 4 catégories, plus le cas du type non renseigné.\n\n" +
+  "POURQUOI `typesExclus`, ET POURQUOI IL A FALLU L'AJOUTER. Le complément d'un ensemble de types ne s'écrit pas avec `types` : une restriction `types` rejette l'ERP dont le `typeErp` n'est PAS RENSEIGNÉ (`docs/regles-matching.md` : « une restriction que l'on ne peut pas vérifier ne doit pas être silencieusement ignorée »). Énumérer les types à trois ans aurait donc privé de toute visite l'établissement de 1ʳᵉ à 4ᵉ catégorie qui n'a pas précisé son activité — un faux négatif MUET, exactement l'erreur que ce lot avait pour consigne de ne pas commettre. `typesExclus` est le complément, avec la sémantique inverse et pour la même raison : une exclusion invérifiable ne s'applique pas, l'établissement au type inconnu retombe sur les trois ans. Extension du modèle purement additive (aucune migration : la typologie vit en TypeScript, ADR-003).\n\n" +
+  "CE QUE L'ÉNUMÉRATION `TypeErp` NE PORTE PAS, ET QUI EST SIGNALÉ PLUTÔT QUE DEVINÉ.\n" +
+  "  (a) LE TYPE J N'EXISTE PAS dans `TypeErp` (ni côté Prisma). Le tableau lui donne trois ans dans les quatre catégories. L'absence ne crée aucun écart de périodicité — `typesExclus` fait retomber tout type non nommé sur les lignes triennales, qui est justement le régime de J —, mais elle empêche un EHPAD ou une résidence pour personnes handicapées de se déclarer pour ce qu'il est, et l'oriente vers un type voisin. À reprendre avec l'ajout de la valeur à l'énumération, qui est une migration de schéma.\n" +
+  "  (b) LA DISTINCTION R (1) / R (2) N'EXISTE PAS. Le tableau tient l'hébergement pour une COLONNE, pas pour une nuance : en 4ᵉ catégorie, R avec hébergement est à trois ans et R sans hébergement à cinq. Le modèle n'a aucun attribut d'établissement disant si l'exploitation héberge. Tout R est donc retenu à TROIS ANS, y compris en 4ᵉ catégorie où le tableau en met une moitié à cinq. C'est la seule sur-application volontaire de l'encodage, et elle est du bon côté : elle avance une date, elle ne l'allonge pas.\n" +
+  "  (c) LES HUIT TYPES SPÉCIAUX — PA, CTS, SG, PS, GA, OA, REF, EF — N'ONT AUCUNE COLONNE au tableau. GE 4 § 1 ne leur fixe rien. Aucune périodicité ne leur est inventée : ils ne figurent dans aucune liste `types` des lignes quinquennales, et tombent donc sur les lignes triennales par le jeu de `typesExclus` — c'est-à-dire au statu quo, qui est la borne prudente. Ce que ce référentiel ne sait pas, c'est où LEUR périodicité est fixée ; la question est ouverte, pas tranchée.\n\n" +
+  "CE QUI N'EST PAS ENCODÉ, ET NE DOIT PAS L'ÊTRE.\n" +
+  "  § 2 — bâtiments isolés : la catégorie s'apprécie bâtiment par bâtiment et la visite se fait pour l'ensemble « avec la périodicité la plus courte de celles qui correspondent aux catégories des bâtiments ». Le produit ne détermine pas de catégorie par bâtiment (ADR-019 : le bâtiment est un lieu). Nommé en description.\n" +
+  "  § 3 — après deux visites périodiques consécutives conclues par un avis favorable, un établissement sans locaux d'hébergement peut voir son délai « prolongé DANS LA LIMITE DE CINQ ANS », sur proposition de la commission inscrite au procès-verbal. C'est une FACULTÉ SOUS PLAFOND soumise à décision, pas un rythme, et elle suppose un historique que le produit n'observe pas. Deux tests interdisent que `quinquennale` s'y glisse : ils vérifient que la valeur cinq ans d'une ligne vient d'une case du TABLEAU, jamais du § 3.\n" +
+  "  § 4 — le maire ou le préfet peut modifier la fréquence des contrôles par arrêté, après avis de la commission. Pouvoir de l'autorité exercé par acte administratif individuel : prescription particulière (ADR-014), qui surcharge la périodicité sur un dossier donné.\n\n" +
+  "PORTEUR ÉTABLISSEMENT (ADR-022) : GE 4 § 1 ne conditionne la visite à aucun équipement, il vise « les établissements des 1re, 2e, 3e et 4e catégories ». La ligne existe donc même si rien n'est déclaré, et n'en produit qu'une.\n\n" +
+  "FRONTIÈRE AVEC LA 5ᵉ CATÉGORIE, INCHANGÉE : GE 4 relève du Livre II, écarté en 5ᵉ par PE 1 § 1 ; `incendie-erp-5-visite-commission` se fonde sur PE 37 et ne vise que la 5ᵉ. Aucun établissement ne peut recevoir une ligne de chaque, et un test l'éprouve sur les cinq catégories.\n\n" +
+  "LE PIÈGE DE LA DATE, RAPPELÉ POUR QU'IL NE SE REPRENNE PAS : le sélecteur de la page de SECTION affiche pour GE 4 « 01/01/2015 au 01/06/2027 ». Ce terme est celui de GE 2 et GE 6, qui vivent dans la même section ; trois lectures s'y sont laissé prendre le 2026-09-01. La section relue AU 1ER JUILLET 2027 rend GE 4 présent et inchangé. Aucune `relectureDue` n'est due de ce chef.\n\n" +
+  "RÉSERVE D'USAGE : la visite est initiée par l'administration, pas par l'exploitant. Une déclaration « en place » n'aurait pas de sens sur ces lignes ; ce qui se trace est la visite QUAND ELLE A EU LIEU.\n\n" +
+  "NATURE : ÉCHÉANCE RÉCURRENTE (ADR-026). La visite revient.";
 
 export const obligationsIncendie: Obligation[] = [
   // ---------------------------------------------------------------------------
@@ -926,41 +1009,149 @@ export const obligationsIncendie: Obligation[] = [
   },
 
   {
-    id: "incendie-erp-cat1-4-visite-commission",
+    id: "incendie-erp-visite-commission-cat1-2-triennale",
     domaine: "incendie",
     libelle: "Visite périodique de la commission de sécurité (ERP 1ʳᵉ à 4ᵉ catégorie)",
     description:
-      "Les établissements des 1ʳᵉ, 2ᵉ, 3ᵉ et 4ᵉ catégories sont visités périodiquement par la commission de sécurité, selon un tableau qui croise le type d'établissement et la catégorie et qui donne trois ans ou cinq ans. Le produit retient le rythme de TROIS ANS, le plus court des deux, pour ne jamais annoncer une visite plus tard que ne le prévoit le tableau. Deux ajustements existent, qui ne sont pas des rythmes et que le produit ne calcule pas : après deux visites périodiques consécutives conclues par un avis favorable, un établissement sans locaux d'hébergement peut voir son délai prolongé dans la limite de cinq ans ; et le maire ou le préfet peut modifier la fréquence des contrôles par arrêté, après avis de la commission. La visite est déclenchée par l'administration : ce qui se trace au registre est la visite lorsqu'elle a eu lieu.",
-    referencesLegales: [
-      {
-        source: "ARRETE",
-        reference: "Arrêté du 25 juin 1980, art. GE 4 § 1 (visites périodiques des quatre premières catégories)",
-        article: "GE 4",
-        url:
-          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000290033/LEGISCTA000020303874/",
-        note: "« Les établissements des 1re, 2e, 3e et 4e catégories doivent être visités périodiquement par les commissions de sécurité selon la fréquence fixée au tableau suivant en fonction de leur type et de leur catégorie. » Verbatim relevé en première main le 2026-09-01. Le tableau ne porte que deux valeurs, trois ans et cinq ans ; le détail de ses cellules n'a pas pu être lu de façon fiable à la source et n'est donc pas encodé (voir `notesInternes`). Version en vigueur depuis le 01/01/2015, SANS terme : vérifié sur la page d'article, et confirmé par une lecture de la section au 1er juillet 2027 où GE 4 figure inchangé.",
-        versionConstatee: "2015-01-01",
-      },
-      {
-        source: "CCH",
-        reference: "CCH, art. R. 143-41 (visites périodiques de la commission)",
-        article: "CCH R. 143-41",
-        url:
-          "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074096/LEGISCTA000043819015/",
-        note: "Fonde les visites périodiques de la commission et renvoie leur périodicité au règlement de sécurité, sans en fixer aucune. C'est GE 4 qui la fixe pour les quatre premières catégories.",
-        versionConstatee: "2021-07-01",
-      },
-    ],
+      "Les établissements de 1ʳᵉ et de 2ᵉ catégorie sont visités TOUS LES TROIS ANS par la commission de sécurité. Le tableau de l'article GE 4 § 1 croise le type d'exploitation et la catégorie ; sur ces deux catégories, le seul type qu'il porte à cinq ans est le culte (type V), qui fait l'objet d'une ligne distincte." +
+      DESCRIPTION_GE4_RESERVES,
+    referencesLegales: REFERENCES_GE4,
     periodicite: "triennale",
     nature: "echeance_recurrente",
     pieceAttendue: null,
     realisateurs: ["organisme_agree"],
     criticite: 4,
     transmet: [],
-    typologies: { erp: { categories: ["N1", "N2", "N3", "N4"] } },
+    typologies: { erp: { categories: ["N1", "N2"], typesExclus: ["V"] } },
     porteur: "etablissement",
     notesInternes:
-      "CRÉÉE LE 2026-09-01 (lot B3), SUR DÉCISION DE LA PROPRIÉTAIRE : le produit sert toutes les catégories d'ERP, donc la visite périodique des quatre premières entre au périmètre. Le référentiel n'en portait AUCUNE pour ces établissements, alors qu'il les sert par ailleurs (`elec-erp-cat1-4-annuelle`, `elec-erp-mise-en-service`). Le manque était relevé au corpus depuis le 2026-09-01 sans être encodé.\n\nGE 4 ROUVERT À LA SOURCE CE JOUR, et le piège de sa date levé par un test qui DISCRIMINE plutôt que par une relecture de plus. La page d'ARTICLE (LEGIARTI000029642660) affiche « En vigueur depuis le 01/01/2015 », sans terme, et ne porte ni version future ni abrogation programmée. Surtout : la section relue À LA DATE DU 1ER JUILLET 2027 — donc APRÈS le 01/06/2027 — rend GE 4 toujours présent, toujours dans sa version du 01/01/2015 et au texte inchangé, tandis que GE 2 y apparaît dans une version NOUVELLE datée du 01/06/2027. Si GE 4 avait une fin de vigueur à cette date, il aurait disparu ou changé ; il ne fait ni l'un ni l'autre.\n\nPOURQUOI CE DÉTOUR PLUTÔT QU'UNE LECTURE DE PLUS. Le sélecteur de la page de SECTION annonce, pour GE 4, « 01/01/2015 au 01/06/2027 » — et c'est exactement ce qui a fait tomber trois lectures successives le 2026-09-01. Une quatrième lecture de la même page aurait produit la même erreur : ce qui la corrige n'est pas de relire mieux, c'est de poser au texte une question dont les deux réponses se distinguent. Le terme lu sur la section est celui de GE 2 et GE 6, qui y vivent aussi. Recoupement indépendant, conforme au corpus : `veille-textes.ts` liste ce que l'arrêté du 19 février 2026 modifie — GN 4, GN 16, GE 2, GE 6, GE 7, CO 6 à CO 34, AM 1 à AM 8, EL 5, AS 1. GE 4 n'y est pas. Aucune `relectureDue` n'est donc due de ce chef.\n\nUNE SEULE LIGNE, ET LA RAISON N'EST PAS LA COMMODITÉ. Le § 1 croise type et catégorie dans un tableau de quinze colonnes ; `TypologieApplication` sait l'exprimer, `types` et `categories` y étant cumulables, et une ligne par case serait donc TECHNIQUEMENT possible. Elle ne l'est pas DOCUMENTAIREMENT : le corps du tableau n'a pas pu être lu de façon fiable à la source. Quatre extractions successives se contredisent entre elles — l'une place quatorze croix sur une ligne où le rendu brut n'en porte que quatre, une autre invente un type « Q » qui n'existe pas dans la nomenclature ERP, et les totaux d'une même ligne ne se reconstituent pas à quinze. Le tableau est aplati au rendu, cellules vides supprimées, ce qui rend l'alignement colonne par colonne indéterminable. La règle du dépôt tranche : on n'invente pas un seuil, et « ne pas avoir pu lire » s'écrit plutôt que se comble.\n\nCE QUI EST LU DE FAÇON SÛRE, ET QUI SUFFIT À FONDER LA VALEUR. Le tableau ne contient QUE DEUX barreaux, 3 ans et 5 ans — ce sont des en-têtes de lignes, structurels, stables sur les quatre lectures. Il n'est donc pas nécessaire de savoir quelle case porte quoi pour affirmer que `triennale` n'est JAMAIS en dessous d'une case : trois ans est le minimum de l'ensemble des valeurs du tableau. La périodicité est posée sur ce raisonnement-là, qui ne dépend d'aucune cellule, et non sur une reconstitution.\n\nLE SENS DE L'ERREUR RÉSIDUELLE, ASSUMÉ ET BORNÉ. Là où le tableau dit cinq ans, cette ligne dit trois : c'est une SUR-application d'au plus deux ans. Elle ne met personne en défaut — elle avance une date. L'erreur inverse, poser cinq ans partout, laisserait un établissement dû à trois ans se croire à jour pendant deux ans : invisible, et c'est précisément le sens d'erreur que le dépôt refuse. Entre sur- et sous-appliquer, ce qui tranche est qui a une chance de s'en apercevoir.\n\nCE QUE LA LIGNE N'ENCODE PAS, ET NE DOIT PAS ENCODER. Le § 3 : « lorsqu'un établissement ne comportant pas de locaux d'hébergement fait l'objet d'une visite périodique conclue par un avis favorable [...] et que la visite précédente [...] avait conduit à la même conclusion, le délai fixé pour sa prochaine visite par le tableau ci-dessus peut être prolongé DANS LA LIMITE DE CINQ ANS ». C'est une FACULTÉ de prolongation sous plafond, pas un rythme — « dans la limite de cinq ans » n'est pas « tous les cinq ans » —, et elle suppose un historique de deux avis favorables que le produit n'observe pas. Le § 4 : « la fréquence des contrôles peut être modifiée, s'il est jugé nécessaire, par arrêté du maire ou du préfet après avis de la commission de sécurité ». C'est un POUVOIR DE L'AUTORITÉ, exercé par acte administratif individuel : une prescription particulière (ADR-014), qui surcharge la périodicité sur un dossier donné. Ni l'un ni l'autre n'est un rythme ; les deux sont nommés en description pour que le dirigeant sache qu'ils existent. Le § 2 (bâtiments isolés, périodicité la plus courte retenue pour l'ensemble) n'est pas modélisé non plus : le produit ne détermine pas de catégorie par bâtiment.\n\nPORTEUR ÉTABLISSEMENT (ADR-022), ET C'EST UN CHOIX CONTRE LE PRÉCÉDENT VOISIN. GE 4 § 1 ne conditionne la visite à aucun équipement : il vise « les établissements des 1re, 2e, 3e et 4e catégories », un point c'est tout. La ligne existe donc même si rien n'est déclaré, et n'en produit qu'une. `incendie-erp-5-visite-commission` est, elle, accrochée à une ALARME_INCENDIE — un pis-aller que ses propres notes reconnaissent, imposé par la restriction « locaux à sommeil » de PE 37 qu'aucun attribut d'établissement ne porte. Ici rien de tel n'est requis : reproduire l'ancrage équipement aurait recréé le faux négatif sans aucune contrepartie.\n\nLES DEUX LIGNES NE SE RECOUVRENT PAS, et c'est vérifié par test : celle-ci est bornée à N1–N4, l'autre à N5. GE 4 relève du Livre II, écarté en 5ᵉ catégorie par PE 1 § 1 ; PE 37 relève du Livre III et ne vise que la 5ᵉ. Aucun établissement ne peut recevoir les deux.\n\nRÉSERVE, REPRISE DE LA LIGNE VOISINE ET TOUT AUSSI VRAIE ICI : la visite est initiée par l'administration, pas par l'exploitant. Ce qui se trace est la visite QUAND ELLE A EU LIEU ; une déclaration « en place » n'aurait pas de sens sur cette ligne.\n\nNATURE : ÉCHÉANCE RÉCURRENTE (ADR-026). La visite revient.",
+      "LIGNE 1 SUR 6 DU TABLEAU DE GE 4 § 1 — 1ʳᵉ et 2ᵉ catégories, tous types SAUF V.\n\nCASES COUVERTES : quatorze des quinze colonnes du tableau sur chacune des deux lignes de catégorie, soit les cardinalités officielles 14 et 14 (voir la note commune ci-dessous). Le type J n'étant pas dans l'énumération du produit, treize de ces quatorze colonnes sont représentables ; les huit types spéciaux, absents du tableau, y sont retenus à trois ans par prudence.\n\n" +
+      NOTE_GE4_TABLEAU,
+  },
+
+  {
+    id: "incendie-erp-visite-commission-cat1-2-quinquennale",
+    domaine: "incendie",
+    libelle: "Visite périodique de la commission de sécurité (ERP 1ʳᵉ à 4ᵉ catégorie)",
+    description:
+      "Les établissements de culte (type V) de 1ʳᵉ et de 2ᵉ catégorie sont visités TOUS LES CINQ ANS par la commission de sécurité. Le type V est le seul que le tableau de l'article GE 4 § 1 porte à cinq ans dans les quatre catégories." +
+      DESCRIPTION_GE4_RESERVES,
+    referencesLegales: REFERENCES_GE4,
+    periodicite: "quinquennale",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
+    realisateurs: ["organisme_agree"],
+    criticite: 4,
+    transmet: [],
+    typologies: { erp: { categories: ["N1", "N2"], types: ["V"] } },
+    porteur: "etablissement",
+    notesInternes:
+      "LIGNE 2 SUR 6 DU TABLEAU DE GE 4 § 1 — 1ʳᵉ et 2ᵉ catégories, type V seul.\n\nCASES COUVERTES : une colonne sur quinze sur chacune des deux lignes de catégorie, soit les cardinalités officielles 1 et 1 (voir la note commune ci-dessous). C'est la seule case de ces deux catégories où le tableau quitte les trois ans, et elle est la raison pour laquelle la note de corpus qui parlait du « type Y » était fausse : la lettre est V.\n\nCETTE LIGNE EST LA SEULE DES SIX QUI ALLONGE UN DÉLAI PAR RAPPORT À L'ÉTAT ANTÉRIEUR sur les deux premières catégories. Un établissement de culte de 1ʳᵉ ou 2ᵉ catégorie passait jusqu'ici en trois ans ; il passe à cinq. C'est ce que dit le tableau, et c'est le sens d'erreur que le dépôt surveille le plus : elle est posée sur un tableau vérifié case par case au fac-similé du Journal officiel, pas sur une reconstruction.\n\n" +
+      NOTE_GE4_TABLEAU,
+  },
+
+  {
+    id: "incendie-erp-visite-commission-cat3-triennale",
+    domaine: "incendie",
+    libelle: "Visite périodique de la commission de sécurité (ERP 1ʳᵉ à 4ᵉ catégorie)",
+    description:
+      "Les établissements de 3ᵉ catégorie sont visités TOUS LES TROIS ANS par la commission de sécurité lorsqu'ils relèvent des types que le tableau de l'article GE 4 § 1 y maintient à trois ans : structures d'accueil pour personnes âgées ou handicapées (J), salles d'auditions, de conférences, de réunions et de spectacles (L), hôtels et pensions de famille (O), salles de danse et de jeux (P), établissements d'enseignement et colonies (R), établissements de soins (U). Les autres types de 3ᵉ catégorie sont à cinq ans et font l'objet d'une ligne distincte." +
+      DESCRIPTION_GE4_RESERVES,
+    referencesLegales: REFERENCES_GE4,
+    periodicite: "triennale",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
+    realisateurs: ["organisme_agree"],
+    criticite: 4,
+    transmet: [],
+    typologies: {
+      erp: {
+        categories: ["N3"],
+        typesExclus: ["M", "N", "S", "T", "V", "W", "X", "Y"],
+      },
+    },
+    porteur: "etablissement",
+    notesInternes:
+      "LIGNE 3 SUR 6 DU TABLEAU DE GE 4 § 1 — 3ᵉ catégorie, types J, L, O, P, R (1), R (2) et U.\n\nCASES COUVERTES : sept colonnes sur quinze, soit la cardinalité officielle 7 (voir la note commune ci-dessous). En 3ᵉ catégorie, R avec et R sans hébergement sont TOUS DEUX à trois ans : la distinction R (1) / R (2) ne mord pas ici, et l'exclusion écrite en face — M, N, S, T, V, W, X, Y — reproduit exactement les huit cases à cinq ans de cette ligne.\n\n" +
+      NOTE_GE4_TABLEAU,
+  },
+
+  {
+    id: "incendie-erp-visite-commission-cat3-quinquennale",
+    domaine: "incendie",
+    libelle: "Visite périodique de la commission de sécurité (ERP 1ʳᵉ à 4ᵉ catégorie)",
+    description:
+      "Les établissements de 3ᵉ catégorie relevant des types magasins de vente et centres commerciaux (M), restaurants et débits de boissons (N), bibliothèques et centres de documentation (S), salles d'expositions (T), établissements de culte (V), administrations, banques et bureaux (W), établissements sportifs couverts (X) et musées (Y) sont visités TOUS LES CINQ ANS par la commission de sécurité, selon le tableau de l'article GE 4 § 1." +
+      DESCRIPTION_GE4_RESERVES,
+    referencesLegales: REFERENCES_GE4,
+    periodicite: "quinquennale",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
+    realisateurs: ["organisme_agree"],
+    criticite: 4,
+    transmet: [],
+    typologies: {
+      erp: {
+        categories: ["N3"],
+        types: ["M", "N", "S", "T", "V", "W", "X", "Y"],
+      },
+    },
+    porteur: "etablissement",
+    notesInternes:
+      "LIGNE 4 SUR 6 DU TABLEAU DE GE 4 § 1 — 3ᵉ catégorie, types M, N, S, T, V, W, X, Y.\n\nCASES COUVERTES : huit colonnes sur quinze, soit la cardinalité officielle 8 (voir la note commune ci-dessous).\n\nY EST ICI, ET IL N'EST PAS UNE EXCEPTION. La note de corpus corrigée par ce lot faisait du type Y le seul à sortir du rythme de trois ans ; il suit en réalité exactement le régime de M, N, S, T, W et X — trois ans en 1ʳᵉ et 2ᵉ catégories, cinq ans en 3ᵉ et 4ᵉ.\n\n" +
+      NOTE_GE4_TABLEAU,
+  },
+
+  {
+    id: "incendie-erp-visite-commission-cat4-triennale",
+    domaine: "incendie",
+    libelle: "Visite périodique de la commission de sécurité (ERP 1ʳᵉ à 4ᵉ catégorie)",
+    description:
+      "Les établissements de 4ᵉ catégorie sont visités TOUS LES TROIS ANS par la commission de sécurité lorsqu'ils relèvent des types que le tableau de l'article GE 4 § 1 y maintient à trois ans : structures d'accueil pour personnes âgées ou handicapées (J), hôtels et pensions de famille (O), établissements d'enseignement et colonies AVEC hébergement (R), établissements de soins (U). Le tableau distingue en 4ᵉ catégorie l'enseignement avec hébergement, visité tous les trois ans, de l'enseignement sans hébergement, visité tous les cinq ans ; le produit ne sait pas encore si votre établissement héberge, et retient donc trois ans pour tout établissement de type R — le plus court des deux rythmes, jamais le plus long." +
+      DESCRIPTION_GE4_RESERVES,
+    referencesLegales: REFERENCES_GE4,
+    periodicite: "triennale",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
+    realisateurs: ["organisme_agree"],
+    criticite: 4,
+    transmet: [],
+    typologies: {
+      erp: {
+        categories: ["N4"],
+        typesExclus: ["L", "M", "N", "P", "S", "T", "V", "W", "X", "Y"],
+      },
+    },
+    porteur: "etablissement",
+    notesInternes:
+      "LIGNE 5 SUR 6 DU TABLEAU DE GE 4 § 1 — 4ᵉ catégorie, types J, O, R (1) et U... PLUS R (2), ET C'EST LA SEULE SUR-APPLICATION VOLONTAIRE DES SIX LIGNES.\n\nCASES COUVERTES : quatre colonnes sur quinze au tableau — J, O, R (1), U —, soit la cardinalité officielle 4 (voir la note commune ci-dessous). Le produit en couvre une CINQUIÈME, R (2), l'enseignement SANS hébergement, que le tableau met à cinq ans. Il ne peut pas faire autrement : `TypeErp` ne connaît qu'un seul R, et rien dans le modèle ne dit si un établissement héberge. Entre mettre tout R à cinq ans — ce qui donnerait deux ans de trop à un internat de 4ᵉ catégorie, sans que personne le voie — et mettre tout R à trois ans — ce qui avance la date d'un centre de formation sans hébergement, ce qui se voit et se corrige —, la seconde est la seule acceptable.\n\nLE MANQUE À COMBLER EST NOMMÉ : un attribut d'établissement disant si l'exploitation comporte des locaux d'hébergement. Il n'existe pas ; le poser est une migration de schéma, hors du périmètre de ce lot. Tant qu'il n'existe pas, cette ligne garde R et la ligne quinquennale de 4ᵉ catégorie ne le prend pas.\n\nLES QUATRE CASES DU TABLEAU SONT CELLES QUE LA NOTE DE CORPUS FAUSSE AURAIT EFFACÉES. Elle disait « cinq ans en 4ᵉ catégorie hors Y » ; l'encoder aurait mis à cinq ans un EHPAD (J), un hôtel (O), un internat (R avec hébergement) et un établissement de soins (U) que le texte visite tous les trois ans.\n\n" +
+      NOTE_GE4_TABLEAU,
+  },
+
+  {
+    id: "incendie-erp-visite-commission-cat4-quinquennale",
+    domaine: "incendie",
+    libelle: "Visite périodique de la commission de sécurité (ERP 1ʳᵉ à 4ᵉ catégorie)",
+    description:
+      "Les établissements de 4ᵉ catégorie relevant des types salles d'auditions, de conférences, de réunions et de spectacles (L), magasins de vente et centres commerciaux (M), restaurants et débits de boissons (N), salles de danse et de jeux (P), bibliothèques et centres de documentation (S), salles d'expositions (T), établissements de culte (V), administrations, banques et bureaux (W), établissements sportifs couverts (X) et musées (Y) sont visités TOUS LES CINQ ANS par la commission de sécurité, selon le tableau de l'article GE 4 § 1." +
+      DESCRIPTION_GE4_RESERVES,
+    referencesLegales: REFERENCES_GE4,
+    periodicite: "quinquennale",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
+    realisateurs: ["organisme_agree"],
+    criticite: 4,
+    transmet: [],
+    typologies: {
+      erp: {
+        categories: ["N4"],
+        types: ["L", "M", "N", "P", "S", "T", "V", "W", "X", "Y"],
+      },
+    },
+    porteur: "etablissement",
+    notesInternes:
+      "LIGNE 6 SUR 6 DU TABLEAU DE GE 4 § 1 — 4ᵉ catégorie, types L, M, N, P, S, T, V, W, X, Y.\n\nCASES COUVERTES : dix colonnes sur quinze. La cardinalité officielle de cette ligne est ONZE, et l'écart est nommé : la onzième est R (2), l'enseignement sans hébergement, que le produit ne sait pas distinguer de R (1) et qu'il laisse donc à trois ans sur la ligne triennale de 4ᵉ catégorie. C'est le seul écart volontaire de l'encodage, et il va dans le sens court.\n\n" +
+      NOTE_GE4_TABLEAU,
   },
 
   // ---------------------------------------------------------------------------
