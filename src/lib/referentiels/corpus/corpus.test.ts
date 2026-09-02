@@ -625,6 +625,18 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // alimentant aussi un chauffage ou une production d'eau chaude. C'est le
       // blocage déjà nommé pour l'arrêté du 23 février 2018, art. 26 § 3.
       "GZ 14",
+      // R. 4323-24 entre le 2026-09-02 avec l'ouverture de la branche hors
+      // levage de R. 4323-23. Il n'y entre pas par un texte nouveau mais par
+      // un TROU DE LA SOUS-SECTION 2 : le corpus déclarait -23, -25, -26 et
+      // -27 et sautait celui-ci, que `levage-vgp-annuelle-charges` cite
+      // pourtant en clair depuis toujours — sa `reference` dit « R. 4323-23
+      // et R. 4323-24 » sous une clé `article` qui ne vaut que pour le
+      // premier, forme qu'`articlesCitesNonDepouilles()` ne peut pas voir.
+      // Ce qui manque au référentiel n'est pas la qualification du
+      // vérificateur — `personne_qualifiee` la porte — mais la LISTE des
+      // personnes qualifiées tenue à la disposition de l'inspection du
+      // travail, obligation documentaire permanente que rien ne réclame.
+      "R. 4323-24",
       // `R. 4544-11-1` a quitté cette liste le 2026-08-27 : le porteur salarié
       // de l'ADR-023 la rend encodable, et elle l'est —
       // `elec-salarie-attestation-medicale-voisinage`. Troisième sortie par
@@ -791,6 +803,104 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // sous cet arrêté : il n'existe aucun attribut de parc de stationnement
       // annexe côté établissement.
       "Arrêté 1986-01-31 art. 102",
+      // ── Lot machines, 2026-09-02 : la branche HORS LEVAGE de R. 4323-23.
+      // Bloc contigu ajouté en fin de liste, comme le lot D1 et pour la même
+      // raison — le lot B supprime cette liste exhaustive, un bloc d'un seul
+      // tenant se retire d'un coup.
+      //
+      // Deux entrées, et elles ne sont pas deux défauts d'encodage : ce sont
+      // les deux articles d'assujettissement d'un arrêté que ce dépôt n'avait
+      // jamais ouvert, alors que son article habilitant était dépouillé,
+      // daté et cité depuis le 2026-09-01. Le levage en avait épuisé la
+      // lecture.
+      //
+      // Art. 1er : VGP tous les trois mois. Deux des onze catégories du texte
+      // sont des équipements ordinaires du commerce de détail — presses à
+      // balles (compacteur à cartons) et compacteurs à déchets. Bloqué par
+      // l'absence de toute catégorie d'équipement « machine » dans
+      // `CATEGORIES_EQUIPEMENT`, exactement comme les échafaudages du lot D1.
+      "Arrêté 1993-03-05 art. 1",
+      // Art. 2 : VGP tous les douze mois. Les engins mobiles de terrassement
+      // et de forage ne touchent pas la cible ; les « centrifugeuses » ne se
+      // tranchent PAS à la source — l'arrêté n'en donne aucune définition et
+      // ne les borne à aucune branche, là où il borne expressément les
+      // machines à cylindres à l'industrie du caoutchouc. Déclaré manquant
+      // plutôt que fermé dans un sens ou dans l'autre.
+      "Arrêté 1993-03-05 art. 2",
+      // ── Lot « signalisation », 2026-09-02 ────────────────────────────────
+      // L'arrêté du 4 novembre 1993 entre au corpus `integral`, et onze de ses
+      // articles décrivent une obligation que le référentiel ne porte pas :
+      // AUCUNE de ses obligations livrées ne vise la signalisation de
+      // sécurité, sous aucun porteur. Ce n'est donc pas un manque de modèle
+      // comme PO 7 ou PE 27 — le déclencheur « statut d'employeur » et l'état
+      // permanent de l'ADR-026 existent tous deux. C'est un domaine entier
+      // qu'on n'avait pas ouvert, et les onze lignes sortiront ensemble le
+      // jour où il sera encodé.
+      //
+      // Une seule des onze porte une périodicité, et c'est l'art. 15 : « au
+      // moins chaque semestre » pour les signaux LUMINEUX et ACOUSTIQUES,
+      // « au moins une fois par an » pour les alimentations de secours de
+      // l'art. 7. Sur le reste de la signalisation — panneaux, couleurs,
+      // bandes — l'article n'impose qu'un entretien « régulier », sans rythme.
+      // Le guide professionnel qui a déclenché ce lot annonçait le semestre
+      // pour « les moyens et dispositifs de signalisation » : bon chiffre,
+      // mauvaise assiette, et l'encoder de bonne foi aurait fabriqué un
+      // rendez-vous sur un parc que le texte ne vise pas.
+      "Arrêté 1993-11-04 art. 2",
+      "Arrêté 1993-11-04 art. 4",
+      "Arrêté 1993-11-04 art. 7",
+      "Arrêté 1993-11-04 art. 8",
+      "Arrêté 1993-11-04 art. 9",
+      "Arrêté 1993-11-04 art. 10",
+      "Arrêté 1993-11-04 art. 11",
+      "Arrêté 1993-11-04 art. 12",
+      "Arrêté 1993-11-04 art. 13",
+      "Arrêté 1993-11-04 art. 15",
+      "Arrêté 1993-11-04 annexe III",
+      // ── Lot « disconnecteurs », 2026-09-02 : la protection du réseau d'eau
+      // potable contre les retours d'eau. Bloc contigu et en fin de liste,
+      // pour la raison écrite par le lot D1 — il se retirera d'un coup le jour
+      // où cette énumération disparaîtra.
+      //
+      // Quatre entrées, et AUCUNE ne vient de l'article que le brief
+      // désignait. `R. 1321-57` CSP, sur lequel un guide professionnel fonde
+      // un « contrôle annuel des disconnecteurs », ne porte pas de périodicité
+      // et s'adresse aux propriétaires des installations : il est consigné
+      // `sans_objet`, ce qui est le vrai produit de ce dépouillement.
+      //
+      // R. 1321-60 : entretien des réservoirs et bâches de stockage du réseau
+      // intérieur, « au moins une fois par an ». La seule périodicité annuelle
+      // du Code qui porte sur le réseau intérieur, en vigueur depuis 2007 et
+      // sans clause de date — donc opposable aux bâtiments existants, à la
+      // différence des trois suivantes. Bloquée par l'absence de catégorie
+      // d'équipement.
+      "R. 1321-60",
+      // Les trois entrées de l'arrêté du 10 septembre 2021, pris pour
+      // l'application de R. 1321-61. Elles partagent DEUX blocages, et le
+      // second est le plus inhabituel du référentiel : l'article 2 de l'arrêté
+      // réserve tout le texte aux réseaux « mis en place ou rénovés totalement
+      // à compter du 1er janvier 2023 », une date que le produit ne connaît
+      // pas. Le premier est le destinataire — l'article 1er III ne fait de
+      // l'exploitant un « propriétaire des réseaux intérieurs » que s'il est
+      // responsable d'établissement ou si la responsabilité lui a été
+      // contractuellement déléguée.
+      //
+      // Art. 9 : vérification, « a minima à fréquence annuelle ».
+      "Arrêté 10-09-2021 art. 9",
+      // Art. 10 : entretien, « a minima à une fréquence annuelle », et le seul
+      // texte du dossier qui écrive le mot « disconnecteur ». Deux articles et
+      // non un, parce que l'entretien exige un opérateur qualifié au sens de
+      // la loi du 5 juillet 1996 quand la vérification n'exige rien de tel :
+      // les fondre ferait disparaître la seule exigence opposable à un
+      // prestataire.
+      "Arrêté 10-09-2021 art. 10",
+      // Art. 12 : fichier sanitaire des réseaux intérieurs — état permanent au
+      // sens de l'ADR-026. À ne pas confondre avec le carnet sanitaire du
+      // produit, qui suit des températures d'ECS et des analyses de
+      // légionelles ; celui-ci est un plan des réseaux et un journal
+      // d'interventions sur les dispositifs anti-retour.
+      "Arrêté 10-09-2021 art. 12",
+
     ]);
   });
 

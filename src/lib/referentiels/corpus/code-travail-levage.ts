@@ -11,7 +11,7 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
   url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489757/",
   etendue: "articles_cites",
   portee:
-    "Section 4 du chapitre III : vérification initiale (R. 4323-22), vérifications périodiques (R. 4323-23 et s.), remise en service (R. 4323-28), consignation au registre (R. 4323-25 à -27). S'applique à tout employeur.",
+    "Section 4 du chapitre III : vérification initiale (R. 4323-22), vérifications périodiques (R. 4323-23), qualification du vérificateur (R. 4323-24), remise en service (R. 4323-28), consignation au registre (R. 4323-25 à -27). S'applique à tout employeur. ⚠ LE NOM DU FICHIER DIT « LEVAGE », LA SECTION NON : ces sept articles gouvernent TOUS les équipements de travail. Les articles d'habilitation R. 4323-22, -23 et -28 sont instruits ici par leur branche levage (arrêté du 1er mars 2004) ; la branche hors levage de R. 4323-23 est au corpus `arrete-1993-03-05-machines` depuis le 2026-09-02.",
   articles: [
     {
       ref: "R. 4323-22",
@@ -40,7 +40,7 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:
-        "Article d'habilitation. Il ne porte AUCUNE périodicité : il renvoie à des arrêtés du ministre chargé du travail ou de l'agriculture le soin de désigner les équipements soumis à vérification générale périodique ET d'en fixer la périodicité, la nature et le contenu. Sa portée est celle de tous les équipements de travail, pas seulement le levage : le corpus ne l'a instruit que par sa branche levage — l'arrêté du 1er mars 2004 —, alors qu'au moins une autre branche existe, l'arrêté du 5 mars 1993 relatif aux vérifications des machines hors appareils de levage, qui n'est instruite nulle part au référentiel. Le « retenu » ci-dessous ne vaut donc que pour la branche levage. Chemin : livre III, titre II, chapitre III, section 4, sous-section 2 « Vérifications périodiques ».",
+        "Article d'habilitation. Il ne porte AUCUNE périodicité : il renvoie à des arrêtés du ministre chargé du travail ou de l'agriculture le soin de désigner les équipements soumis à vérification générale périodique ET d'en fixer la périodicité, la nature et le contenu. Sa portée est celle de tous les équipements de travail, pas seulement le levage. LA SECONDE BRANCHE EST OUVERTE DEPUIS LE 2026-09-02 : l'arrêté du 5 mars 1993, qui soumet à VGP des machines qui ne sont pas des appareils de levage, est au corpus `arrete-1993-03-05-machines` — la ligne qui figurait ici disait qu'il « n'est instruit nulle part au référentiel », et c'est cette ligne qui a servi de point de départ au dépouillement. Une troisième branche a été ouverte et écartée le même jour : l'arrêté du 24 juin 1993, jumeau du précédent pour les seuls établissements agricoles, hors cible du produit. Le « retenu » ci-dessous ne vaut toujours que pour la branche levage : les deux obligations que la branche hors levage impose sont déclarées manquantes dans son propre corpus, elles ne sont pas encodées. Chemin : livre III, titre II, chapitre III, section 4, sous-section 2 « Vérifications périodiques ».",
       citationCle:
         "Des arrêtés du ministre chargé du travail ou du ministre chargé de l'agriculture déterminent les équipements de travail ou les catégories d'équipement de travail pour lesquels l'employeur procède ou fait procéder à des vérifications générales périodiques afin que soit décelée en temps utile toute détérioration susceptible de créer des dangers. Ces arrêtés précisent la périodicité des vérifications, leur nature et leur contenu.",
       statut: "retenu",
@@ -57,6 +57,41 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
         // 2004. Article rouvert à la source ce jour avant l'ajout.
         "levage-vgp-trimestrielle-force-humaine",
       ],
+    },
+    {
+      // ENTRÉ LE 2026-09-02, ET C'ÉTAIT LE SEUL TROU DE LA SOUS-SECTION 2.
+      // Le corpus déclarait R. 4323-23, -25, -26 et -27 et sautait celui-ci,
+      // alors que `levage-vgp-annuelle-charges` l'a toujours cité en clair —
+      // sa `reference` dit « R. 4323-23 et R. 4323-24 » pour une clé
+      // `article` qui ne vaut que pour le premier. Une référence lisible qui
+      // nomme deux articles sous une seule clé est invisible à
+      // `articlesCitesNonDepouilles()` : le second passe pour lu.
+      //
+      // Il est rangé ici plutôt que dans un fichier neuf parce que la
+      // sous-section 2 vit ici : un second corpus qui reprendrait R. 4323-23
+      // ou -25 pour accueillir celui-ci divergerait de celui-là. Le nom du
+      // fichier dit « levage », ce que la section ne dit pas — la sous-section
+      // 4 du chapitre III vaut pour TOUS les équipements de travail, et
+      // l'arrêté du 5 mars 1993 (corpus `arrete-1993-03-05-machines`) s'y
+      // adosse autant que celui du 1er mars 2004. C'est un nom de fichier à
+      // corriger, pas une frontière à créer.
+      ref: "R. 4323-24",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531477",
+      versionEnVigueur: "2008-05-01",
+      // Page de l'article : « Création Décret n°2008-244 du 7 mars 2008 ».
+      // Jamais modifié depuis — pas de texte modificateur à signaler.
+      modifiePar: null,
+      luLe: "2026-09-02",
+      lecture: "premiere_main",
+      prescrit:
+        "L'article qui dit QUI réalise les vérifications générales périodiques, pour tous les équipements de travail et pas seulement le levage. Il répond en trois temps : par des « personnes qualifiées », appartenant OU NON à l'établissement — un organisme extérieur n'est donc jamais exigé par le Code, contrairement au régime des équipements sous pression ; ces personnes doivent être compétentes en prévention des risques présentés par l'équipement vérifié et connaître les dispositions réglementaires afférentes ; et leur LISTE est tenue à la disposition de l'inspection du travail. C'est cet article qui fonde la valeur `personne_qualifiee` de `realisateurs` sur toutes les VGP d'équipement de travail du référentiel. Chemin : partie réglementaire, quatrième partie, livre III, titre II, chapitre III, section 4, sous-section 2 « Vérifications périodiques ».",
+      citationCle:
+        "Les vérifications générales périodiques sont réalisées par des personnes qualifiées, appartenant ou non à l'établissement, dont la liste est tenue à la disposition de l'inspection du travail. Ces personnes sont compétentes dans le domaine de la prévention des risques présentés par les équipements de travail soumis à vérification et connaissent les dispositions réglementaires afférentes.",
+      statut: "obligation_manquante",
+      motif:
+        "La première phrase de l'article porte DEUX exigences, et le référentiel n'en couvre qu'une. La qualification du vérificateur est couverte : c'est la valeur `personne_qualifiee` que portent les VGP du domaine. LA LISTE DES PERSONNES QUALIFIÉES TENUE À LA DISPOSITION DE L'INSPECTION DU TRAVAIL NE L'EST PAS. C'est une obligation documentaire permanente d'employeur, de même nature que la consignation au registre de sécurité de R. 4323-25 — laquelle est portée, elle, par `levage-registre-securite-consignation`. Aucune obligation du référentiel ne demande cette liste, aucun écran ne la réclame, et elle est opposable à tout employeur détenant un équipement soumis à VGP, levage ou non. Le manque est nommé, pas comblé : ce lot dépouille et n'encode pas.",
+      bloquePar:
+        "Rien de technique : la pièce est un document permanent d'établissement, forme que le modèle sait déjà porter. Ce qui manque est l'encodage lui-même — l'obligation n'a jamais été écrite parce que l'article n'avait jamais été ouvert.",
     },
     {
       ref: "R. 4323-25",

@@ -8,11 +8,17 @@ import { ARRETE_2011_12_30_IGH } from "./arrete-2011-12-30-igh";
 import { CCH_REGISTRE_SECURITE } from "./cch-registre-securite";
 import { CODE_TRAVAIL_INCENDIE } from "./code-travail-incendie";
 import { ARRETE_2004_03_01_LEVAGE } from "./arrete-2004-03-01-levage";
+import { ARRETE_1993_03_05_MACHINES } from "./arrete-1993-03-05-machines";
 import { ARRETE_2011_12_26_ELECTRICITE } from "./arrete-2011-12-26-electricite";
 import { ARRETE_1980_LIVRE_4_PARCS } from "./arrete-1980-livre-4-parcs";
 import { ARRETE_1987_10_08_AERATION } from "./arrete-1987-10-08-aeration";
+import { ARRETE_1993_11_04_SIGNALISATION } from "./arrete-1993-11-04-signalisation";
 import { ARRETE_1993_12_21_PORTES } from "./arrete-1993-12-21-portes";
 import { ARRETE_1986_HABITATION } from "./arrete-1986-habitation";
+import {
+  ARRETE_2021_09_10_RETOURS_EAU,
+  CSP_EAU_POTABLE,
+} from "./csp-eau-potable";
 import { ARRETE_2018_02_23_GAZ_HABITATION } from "./arrete-2018-02-23-gaz-habitation";
 import { ARRETES_ASCENSEURS } from "./arretes-ascenseurs";
 import { ARRETES_MODIFICATIFS_ERP } from "./arretes-modificatifs-erp";
@@ -110,6 +116,38 @@ export const CORPUS: readonly Corpus[] = [
   // l'enum `FamilleHabitation` en était tirée et que neuf obligations
   // portaient déjà la typologie `habitation`.
   ARRETE_1986_HABITATION,
+  // Lot machines — la SECONDE branche de l'habilitation de `R. 4323-23`,
+  // ouverte le 2026-09-02. Le dépôt n'avait instruit cet article que par son
+  // arrêté de levage ; celui du 5 mars 1993 soumet à vérification générale
+  // périodique une liste de machines qui n'en sont pas, et deux d'entre elles
+  // — presse à balles et compacteur à déchets — sont des équipements
+  // ordinaires du commerce de détail. Premier corpus `integral` de ce dépôt
+  // pris sur un arrêté LODA : cinq articles sur cinq.
+  ARRETE_1993_03_05_MACHINES,
+  // Lot « signalisation », 2026-09-02 — l'arrêté du 4 novembre 1993, jamais
+  // ouvert alors qu'il gouverne tout le domaine : aucune des obligations
+  // livrées ne vise la signalisation de sécurité, sous aucun porteur. Le guide
+  // professionnel qui a déclenché le lot a RAISON sur ses deux chiffres et
+  // FAUX sur l'assiette du premier : le semestre de l'article 15 ne porte pas
+  // sur « les moyens et dispositifs de signalisation » — panneaux, couleurs,
+  // bandes jaune et noir, l'essentiel du parc d'un restaurant — mais sur les
+  // seuls signaux LUMINEUX et ACOUSTIQUES, ceux qui se déclenchent. Sur les
+  // autres, le texte n'impose qu'un entretien « régulier », sans rythme.
+  // L'encoder d'après le guide aurait fabriqué un rendez-vous semestriel sur
+  // un parc que le texte ne vise pas. L'annuelle des alimentations de secours,
+  // elle, est écrite sans restriction d'assiette. `integral`.
+  ARRETE_1993_11_04_SIGNALISATION,
+  // Lot « disconnecteurs », 2026-09-02 — les deux premiers corpus du dépôt
+  // tirés du code de la SANTÉ PUBLIQUE. Point de départ : un guide
+  // professionnel fondant un « contrôle annuel des disconnecteurs » sur
+  // `R. 1321-57` CSP, article dont `src/` n'avait aucune trace. Ouvert, il ne
+  // porte ni périodicité ni le mot « disconnecteur », et son unique phrase
+  // impérative s'adresse aux propriétaires des installations. Le rythme est
+  // dans l'arrêté, doublement borné : par une clause de date (réseaux posés ou
+  // refaits totalement depuis le 1er janvier 2023) et par un destinataire que
+  // le produit ne sait pas identifier.
+  CSP_EAU_POTABLE,
+  ARRETE_2021_09_10_RETOURS_EAU,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {
