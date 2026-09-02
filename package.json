@@ -20,6 +20,7 @@
     "mcp:test": "tsx scripts/mcp-http-test.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",
     "seed:salaries": "tsx scripts/seed-salaries-demo.ts",
+    "seed:complet": "tsx --env-file=.env scripts/seed-dossier-complet.ts",
     "fix:libelles": "tsx scripts/corriger-libelles-demo.ts",
     "etaler:echeances": "tsx scripts/etaler-echeances-demo.ts",
     "veille": "tsx scripts/veille-worklist.ts",
