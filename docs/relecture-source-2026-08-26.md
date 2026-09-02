@@ -1,12 +1,22 @@
 # Relecture à la source — nuit du 26 au 27 août 2026
 
-> **Ce document est daté, et il le reste.** Il rapporte l'état d'une nuit, pas
-> celui d'aujourd'hui : une partie de ses constats a été corrigée depuis, une
-> autre non, et rien ici ne dit laquelle. Pour savoir où en est la vérification
-> maintenant — combien d'obligations reposent sur des textes lus, par quel
-> moyen, avec ou sans verbatim relevé —, lisez
-> `docs/etat-verification-referentiel.md`, qui se régénère par
-> `pnpm verification --ecrire` au lieu de se rédiger.
+> **CE DOCUMENT EST DATÉ, et il le reste.** Il rapporte l'état du référentiel
+> au 2026-08-26 à 23:09, et n'a jamais été mis à jour depuis. Une partie de ses
+> constats a été appliquée dans les jours qui ont suivi ; une autre non ; et
+> quatre d'entre eux visaient déjà un état révolu au moment où ils ont été
+> écrits. **Rien ici ne dit lequel est lequel.**
+>
+> N'agissez sur aucun constat de ce document sans avoir lu, selon ce que vous
+> cherchez :
+>
+> - `docs/journal-des-verifications.md` § 2.A — les constats de cette nuit-là
+>   repris **un par un**, chacun avec la preuve de son état dans le code
+>   d'aujourd'hui. C'est ce qu'il faut lire avant d'agir sur une ligne précise.
+> - `docs/etat-verification-referentiel.md` — l'état **d'ensemble** de la
+>   vérification : combien d'obligations reposent sur des textes lus, par quel
+>   moyen, avec ou sans verbatim relevé. Il se régénère par
+>   `pnpm verification --ecrire` au lieu de se rédiger, donc il ne se périme pas
+>   comme celui-ci l'a fait.
 
 Six agents ont relu 123 articles sur Légifrance, chacun chargé de rapporter du
 verbatim et un verdict sur ce que le corpus affirme. Ce document trie leurs
