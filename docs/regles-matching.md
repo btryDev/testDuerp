@@ -131,6 +131,7 @@ ou de classe, et l'effectif s'appliquent **en ET** :
 | `habitation: true`| matché si `estHabitation = true`                                                                                                                                    |
 | `effectifMin`    | requis (ET) : `effectifSurSite` ≥ `effectifMin` (bornes incluses)                                                                                                    |
 | `effectifMax`    | requis (ET) : `effectifSurSite` ≤ `effectifMax` (bornes incluses)                                                                                                    |
+| `personnesPresentesMin` | requis (ET) : le total « personnes occupées ou réunies » (salariés + public) doit l'atteindre. Le chiffre déclaré tranche dans les deux sens ; à défaut le moteur ne connaît que des **bornes basses** — plancher de public de la catégorie d'ERP (1ʳᵉ 1501, 2ᵉ 701, 3ᵉ 301 ; la 4ᵉ et la 5ᵉ n'en donnent pas), puis `effectifSurSite`. Au-dessus d'une borne : applicable. En dessous : « à confirmer » si l'établissement est ERP, rejet s'il est de travail seul (pas de public, l'effectif est le total) |
 
 **Règle importante** : si la typologie d'une obligation est vide (aucun
 champ défini), elle est **rejetée**. C'est un garde-fou contre les
@@ -367,10 +368,16 @@ cohérence du référentiel
   groupe de fluide (qualification CLP par le dirigeant), régime du plan
   d'inspection.
 - **Champ de R. 4227-34 (consigne, exercices semestriels) : disjonctif et
-  compté sur les personnes présentes** (amendement 2026-08-25). Le moteur
-  connaît deux données d'établissement nouvelles,
-  `personnesPresentesHabituellement` (salariés + public, repli sur
-  `effectifSurSite` si absent) et `manipuleMatieresR422722` (absent = non).
+  compté sur les personnes présentes** (amendement 2026-08-25, **sens du repli
+  corrigé le 2026-09-03**). Le moteur connaît deux données d'établissement,
+  `personnesPresentesHabituellement` (salariés + public) et
+  `manipuleMatieresR422722` (absent = non). Le premier absent ne se remplace
+  plus par `effectifSurSite` : il se **borne par le bas**, et une borne basse
+  ne conclut que vers le haut. La catégorie d'ERP en est une — dès la 3ᵉ, le
+  public seul dépasse trois cents personnes —, l'effectif salarié en est une
+  autre. Sous les deux, l'obligation est retenue « à confirmer » pour un ERP,
+  qui reçoit du public par définition, et rejetée pour un établissement de
+  travail seul, où l'effectif EST le total.
   `TypologieApplication` gagne `personnesPresentesMin` et `champR422734`,
   ce dernier étant le seul OU inter-critères du moteur, nommé d'après son
   article. Reste au dirigeant : la qualification R. 4227-22 des produits
