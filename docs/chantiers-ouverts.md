@@ -276,6 +276,48 @@ sens où elle est sûre.** La catégorie donne une borne basse du public, ce qui
 suffit à conclure « au-dessus de 51 » et jamais « en dessous ». Une déduction
 retournée devient une sur-application ou un faux négatif.
 
+### Un constat déjà sorti par cette méthode, le 2026-09-03
+
+En mesurant ce que chaque déclaration déclenche à elle seule — moteur appelé,
+aucun équipement — une anomalie est apparue tout de suite :
+
+| Déclaré | Obligations |
+| --- | --- |
+| rien | 0 |
+| travail seul | 25 |
+| ERP seul, 5ᵉ catégorie, type N | 6 |
+| travail + ERP 5ᵉ | **32** |
+| travail + ERP 3ᵉ | **28** |
+| travail + habitation 3ᵉ famille A | 28 |
+
+**Un ERP de 3ᵉ catégorie reçoit moins d'obligations qu'un ERP de 5ᵉ.** Il perd
+cinq lignes `PE` — `PE 4`, la visite de commission de 5ᵉ, et les trois lignes de
+locaux à sommeil — et n'en gagne qu'une, la visite quinquennale de 3ᵉ.
+
+**En droit c'est correct** : les articles `PE` du Livre III régissent le second
+groupe, c'est-à-dire la 5ᵉ catégorie. La 3ᵉ relève du **Livre II**. Mais voilà ce
+que le corpus en porte :
+
+| | articles au corpus | étendue |
+| --- | --- | --- |
+| Livre III — 5ᵉ catégorie | 59 | **`integral`** |
+| Livre II — catégories 1 à 4 | **18** | `articles_cites` |
+
+**Plus l'établissement est grand, plus la couverture est mince — et rien ne le
+dit au dirigeant.** Un restaurant de 3ᵉ catégorie voit un dossier qui a l'air
+complet.
+
+**Réserve** : le dénominateur du Livre II n'est pas établi. On sait qu'on en cite
+dix-huit articles, on ne sait pas combien il en compte. Le mesurer est le premier
+geste, avant toute conclusion sur l'ampleur.
+
+Ce n'est pas un défaut de déduction, et ce chantier n'est donc pas son remède :
+c'est un **trou de couverture**, qui relève du mécanisme de déclaration
+(`corpus/perimetre.ts`, page « Ce que Rojer ne couvre pas ») et non de
+l'encodage. Il est ici parce que c'est la méthode de ce chantier qui l'a trouvé,
+et que ça vaut démonstration : **on ne le voit pas en lisant le code, on le voit
+en demandant au moteur ce que chaque réponse déclenche.**
+
 ### Ce qu'il faudrait établir
 
 Pour chaque réponse d'onboarding — régime travail / ERP / IGH / habitation, type
