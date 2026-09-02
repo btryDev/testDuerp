@@ -6,6 +6,7 @@ import {
 } from "@/lib/referentiels/conformite";
 import type { Obligation } from "@/lib/referentiels/conformite/types";
 import { CATEGORIES_EQUIPEMENT } from "@/lib/referentiels/types-communs";
+import { FAMILLES_ESP } from "@/lib/equipements/esp";
 import {
   determineObligationsApplicables,
   evaluerObligation,
@@ -1224,6 +1225,11 @@ describe("moteur matching — aucun établissement existant ne perd une obligati
     const formesSures = new Set([
       "equipement_propriete_non_infirmee",
       "equipement_propriete_infirmee",
+      // `enum_differente` rejoint les deux autres le 2026-09-01, pour la même
+      // raison et pas parce qu'elle gênait : elle est SATISFAITE quand la
+      // propriété est absente. C'est elle qui garde `esp-inspection-periodique`
+      // sur un équipement dont `familleEsp` n'a jamais été saisie.
+      "equipement_propriete_enum_differente",
     ]);
     const strictes = obligationsConformite
       .filter((o) => o.criticite >= 4)
@@ -1240,6 +1246,12 @@ describe("moteur matching — aucun établissement existant ne perd une obligati
       // « oui ». Aucun équipement en base ne peut donc rien perdre.
       "aeration-travail-recyclage-semestriel",
       "elec-erp-groupe-electrogene-annuel",
+      // Obligation neuve du 2026-09-01 (arrêté du 20 novembre 2017, art. 15 :
+      // deux ans pour les générateurs de vapeur). Elle porte l'égalité
+      // `familleEsp = generateur_vapeur`, qui est stricte ; sa jumelle
+      // `esp-inspection-periodique` porte la différence, satisfaite au silence,
+      // et couvre donc l'équipement tant que la famille n'est pas saisie.
+      "esp-inspection-periodique-generateur-vapeur",
       // Cinq paliers non nominaux du contrôle d'étanchéité : obligations
       // neuves, et `froid-controle-etancheite-annuel` couvre l'installation
       // tant qu'aucune question n'a reçu « oui ».
@@ -1903,5 +1915,172 @@ describe("les raisons se lisent, elles ne se décodent pas", () => {
     expect(
       raisonsPour({ travail: true, effectifMin: 11, effectifMax: 49 }, 20),
     ).toContain("de 11 à 49 salariés");
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Arrêté du 20 novembre 2017, art. 15 — l'inspection périodique se scinde en
+// deux régimes selon la famille de l'équipement (2026-09-01).
+//
+// C'est le premier couple d'obligations bâti sur une valeur d'ÉNUMÉRATION et
+// non sur un booléen. La contrainte est la même que pour le levage et le froid,
+// et elle se vérifie dans les deux sens : pour toute valeur de `familleEsp` —
+// y compris aucune — il doit s'appliquer EXACTEMENT une des deux lignes, jamais
+// zéro (faux négatif muet) et jamais deux (deux inspections pour un seul acte).
+// -----------------------------------------------------------------------------
+describe("moteur matching — inspection périodique ESP : le couple d'énumération", () => {
+  const GENERALE = "esp-inspection-periodique";
+  const BIENNALE = "esp-inspection-periodique-generateur-vapeur";
+
+  function esp(caracteristiques: Record<string, unknown> | null) {
+    return {
+      id: "eq-esp",
+      libelle: "Appareil sous pression",
+      categorie: "EQUIPEMENT_SOUS_PRESSION" as const,
+      caracteristiques,
+    };
+  }
+
+  /** Les deux lignes du couple qui s'appliquent, dans l'ordre. */
+  function couple(caracteristiques: Record<string, unknown> | null): string[] {
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [esp(caracteristiques)]),
+    );
+    return [GENERALE, BIENNALE].filter((id) => ids.includes(id));
+  }
+
+  it("un générateur de vapeur déclaré reçoit la biennale et PERD la générale", () => {
+    // Le défaut corrigé : sans cette ligne, il héritait de la seule générale —
+    // `triennale` ici, `quadriennale` après le merge d'à côté — alors que
+    // l'article lui fixe deux ans. Sous-application invisible, criticité 5.
+    expect(couple({ familleEsp: "generateur_vapeur" })).toEqual([BIENNALE]);
+  });
+
+  it("un compresseur d'atelier garde la générale et n'a pas la biennale", () => {
+    // La couche voisine : une autre valeur de l'énumération ne doit rien
+    // attraper de la ligne spécifique.
+    expect(couple({ familleEsp: "recipient_gaz_groupe2" })).toEqual([GENERALE]);
+  });
+
+  it("sans famille renseignée, la générale reste due — le silence n'éteint rien", () => {
+    // La garantie qui a décidé de la FORME retenue. Si la ligne générale
+    // portait une égalité niée plutôt qu'une différence satisfaite au silence,
+    // un équipement dont personne n'a saisi la plaque tomberait hors des deux
+    // et perdrait toute inspection sans qu'aucun écran ne le signale.
+    expect(couple(null)).toEqual([GENERALE]);
+    expect(couple({})).toEqual([GENERALE]);
+    expect(couple({ estSoumisSuiviEnService: true })).toEqual([GENERALE]);
+  });
+
+  it("une famille vide, nulle ou d'un type inattendu laisse la générale en place", () => {
+    // Ces trois valeurs arrivent d'une reprise de données ou d'un `<select>`
+    // non touché. Aucune n'est un membre de l'énumération, et le régime général
+    // est la bonne réponse pour toutes — c'est la borne à tenir. Elles
+    // convergent ici avec le cas de l'absence, et c'est pour cela qu'aucune
+    // normalisation particulière ne les traite : voir `lireProprieteEnum`.
+    expect(couple({ familleEsp: "" })).toEqual([GENERALE]);
+    expect(couple({ familleEsp: 42 })).toEqual([GENERALE]);
+    expect(couple({ familleEsp: null })).toEqual([GENERALE]);
+  });
+
+  it("chaque valeur de l'énumération reçoit exactement une des deux lignes", () => {
+    // La partition, énoncée sur la borne basse (jamais zéro) et la borne haute
+    // (jamais deux) plutôt qu'en recopiant le résultat attendu valeur par
+    // valeur — une liste qui se répare en la recopiant cesse de vérifier.
+    for (const famille of FAMILLES_ESP) {
+      expect(couple({ familleEsp: famille }), famille).toHaveLength(1);
+    }
+    expect(couple(null)).toHaveLength(1);
+  });
+
+  it("la réponse « non » au suivi en service éteint les DEUX lignes", () => {
+    // Le garde-fou de périmètre prime sur la scission : un équipement hors
+    // champ de l'arrêté ne doit recevoir aucune des deux inspections.
+    expect(couple({ familleEsp: "generateur_vapeur", estSoumisSuiviEnService: false })).toEqual([]);
+    expect(couple({ familleEsp: "recipient_gaz_groupe2", estSoumisSuiviEnService: false })).toEqual([]);
+  });
+
+  it("la biennale ne déborde pas sur une autre catégorie d'équipement", () => {
+    // `familleEsp` n'est contraint à aucune catégorie côté schéma : rien
+    // n'empêche d'écrire la clé sur une hotte. C'est la `categorie` portée par
+    // la condition qui doit l'empêcher de mordre, pas la discipline de saisie.
+    const ids = idsObligations(
+      determineObligationsApplicables(etabBureau(), [
+        {
+          id: "eq-hotte",
+          libelle: "Hotte de cuisson",
+          categorie: "HOTTE_PRO" as const,
+          caracteristiques: { familleEsp: "generateur_vapeur" },
+        },
+      ]),
+    );
+    expect(ids).not.toContain(BIENNALE);
+    expect(ids).not.toContain(GENERALE);
+  });
+});
+
+// -----------------------------------------------------------------------------
+// GE 4 § 1 — la visite périodique de commission des 1ʳᵉ à 4ᵉ catégories
+// (2026-09-01). Le référentiel n'en portait aucune pour ces établissements.
+//
+// Ce qui se vérifie ici est surtout la FRONTIÈRE avec la ligne de 5ᵉ catégorie :
+// GE 4 relève du Livre II, écarté en 5ᵉ par PE 1 § 1, et PE 37 ne vise que la
+// 5ᵉ. Aucun établissement ne doit recevoir les deux, ni — parmi les cinq
+// catégories — se retrouver sans aucune.
+// -----------------------------------------------------------------------------
+describe("moteur matching — visite de commission : GE 4 en 1ʳᵉ–4ᵉ, PE 37 en 5ᵉ", () => {
+  const CAT14 = "incendie-erp-cat1-4-visite-commission";
+  const CAT5 = "incendie-erp-5-visite-commission";
+
+  function erp(categorieErp: EtablissementMatching["categorieErp"]): EtablissementMatching {
+    return { ...etabErpCat3(), categorieErp };
+  }
+
+  it("un ERP de 3ᵉ catégorie reçoit la visite de GE 4, sans aucun équipement déclaré", () => {
+    // Le § 1 ne conditionne la visite à aucun équipement : la ligne existe même
+    // sur un dossier vide. C'est ce qui justifie le porteur `etablissement`.
+    const ids = idsObligations(determineObligationsApplicables(erp("N3"), []));
+    expect(ids).toContain(CAT14);
+  });
+
+  it("la ligne de GE 4 ne produit qu'UNE échéance, quel que soit le parc déclaré", () => {
+    const res = determineObligationsApplicables(erp("N2"), [
+      { id: "eq-a", libelle: "Alarme", categorie: "ALARME_INCENDIE" as const, caracteristiques: null },
+      { id: "eq-b", libelle: "Extincteur", categorie: "EXTINCTEUR" as const, caracteristiques: null },
+    ]);
+    const ligne = res.find((r) => r.obligation.id === CAT14);
+    expect(ligne?.porteur).toBe("etablissement");
+    // ADR-022 : une obligation d'établissement n'a pas d'équipement déclencheur,
+    // et une liste vide n'y signifie pas « aucune ligne ».
+    expect(ligne?.equipementsConcernes).toEqual([]);
+  });
+
+  it("un ERP de 5ᵉ catégorie ne reçoit PAS la ligne de GE 4", () => {
+    // GE 4 relève du Livre II, écarté en 5ᵉ catégorie par PE 1 § 1.
+    const ids = idsObligations(determineObligationsApplicables(erp("N5"), []));
+    expect(ids).not.toContain(CAT14);
+  });
+
+  it("les deux visites de commission ne se recouvrent jamais", () => {
+    // Borne haute : jamais deux lignes de visite pour un même établissement.
+    // Le cas dangereux est la 5ᵉ catégorie AVEC alarme, où la ligne PE 37
+    // s'applique — GE 4 ne doit pas s'y ajouter.
+    for (const cat of ["N1", "N2", "N3", "N4", "N5"] as const) {
+      const ids = idsObligations(
+        determineObligationsApplicables(erp(cat), [
+          { id: "eq-a", libelle: "Alarme", categorie: "ALARME_INCENDIE" as const, caracteristiques: null },
+        ]),
+      );
+      const visites = [CAT14, CAT5].filter((id) => ids.includes(id));
+      expect(visites, cat).toHaveLength(1);
+    }
+  });
+
+  it("un établissement de travail non-ERP n'a aucune visite de commission", () => {
+    // Borne basse de la typologie : la commission de sécurité ne visite que des
+    // ERP. Un bureau non-ERP ne doit rien recevoir de ces deux lignes.
+    const ids = idsObligations(determineObligationsApplicables(etabBureau(), []));
+    expect(ids).not.toContain(CAT14);
+    expect(ids).not.toContain(CAT5);
   });
 });

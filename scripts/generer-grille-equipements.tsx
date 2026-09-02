@@ -49,6 +49,8 @@ import {
   LABEL_CATEGORIE_EQUIPEMENT,
 } from "@/lib/equipements/labels";
 import { LIBELLE_CARACTERISTIQUE } from "@/lib/equipements/caracteristiques";
+import { LABEL_FAMILLE_ESP } from "@/lib/equipements/esp";
+import type { FamilleEsp } from "@/lib/equipements/esp";
 import {
   CATEGORIES_AERATION,
   CATEGORIES_TRI_ETAT,
@@ -160,7 +162,23 @@ function texteCondition(c: ConditionApplication): string {
       return `${nom} : sauf réponse « non »`;
     case "equipement_propriete_infirmee":
       return `${nom} : sauf réponse « oui »`;
+    case "equipement_propriete_enum_egale":
+      return `${nom} = ${libelleValeurEnum(c.propriete, c.valeur)}`;
+    case "equipement_propriete_enum_differente":
+      return `${nom} : sauf ${libelleValeurEnum(c.propriete, c.valeur)}`;
   }
+}
+
+/**
+ * Une valeur d'énumération s'imprime sous le libellé que le dirigeant a vu au
+ * formulaire, pas sous sa clé technique : la grille est un document qu'on lui
+ * remet.
+ */
+function libelleValeurEnum(propriete: string, valeur: string): string {
+  if (propriete === "familleEsp" && valeur in LABEL_FAMILLE_ESP) {
+    return `« ${LABEL_FAMILLE_ESP[valeur as FamilleEsp]} »`;
+  }
+  return `« ${valeur} »`;
 }
 
 function conditionsTexte(o: Obligation): string {

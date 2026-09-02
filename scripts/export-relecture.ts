@@ -97,6 +97,10 @@ function rendreCondition(c: ConditionApplication): string {
       return `${c.categorie}.${c.propriete} ≠ false (sauf si)`;
     case "equipement_propriete_infirmee":
       return `${c.categorie}.${c.propriete} ≠ true (sauf si)`;
+    case "equipement_propriete_enum_egale":
+      return `${c.categorie}.${c.propriete} = « ${c.valeur} » (seulement si)`;
+    case "equipement_propriete_enum_differente":
+      return `${c.categorie}.${c.propriete} ≠ « ${c.valeur} » (sauf si)`;
   }
 }
 

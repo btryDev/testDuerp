@@ -35,6 +35,10 @@ import { FAMILLES_ESP } from "./esp";
  *     (l'intervalle entre deux contrôles d'étanchéité est doublé)
  *   - `estChargeSuperieure50TCo2`   → règlement (UE) 2024/573, art. 5 (palier)
  *   - `estChargeSuperieure500TCo2`  → règlement (UE) 2024/573, art. 5 (palier)
+ *   - `familleEsp`                  → arrêté du 20 novembre 2017, art. 15 :
+ *     inspection périodique biennale des générateurs de vapeur, distinguée du
+ *     régime général. Seule propriété d'ÉNUMÉRATION de cette liste ; les
+ *     autres sont des booléens ou des nombres.
  *
  * `dessertLocauxSommeil` a été RETIRÉ le 2026-09-01 (lot A11). Il portait à lui
  * seul la restriction « locaux à sommeil » de PE 37, faute d'attribut
@@ -259,7 +263,19 @@ export const equipementSchema = z
     ),
     // Équipements sous pression — plaque constructeur (C. env. R. 557-14-1).
     // Servent au verdict indicatif `verdictSuiviEnService` (lib/equipements/esp.ts)
-    // qui pré-remplit `estSoumisSuiviEnService` ; jamais lus par le moteur.
+    // qui pré-remplit `estSoumisSuiviEnService`.
+    //
+    // ⚠ `familleEsp` EST DÉSORMAIS LUE PAR LE MOTEUR (2026-09-01). Ces trois
+    // champs étaient annotés « jamais lus par le moteur », et cette phrase a
+    // servi de justification à ne pas encoder les deux ans des générateurs de
+    // vapeur de l'arrêté du 20 novembre 2017, art. 15 — alors que la donnée
+    // était déjà en base. `familleEsp` porte maintenant le couple
+    // `esp-inspection-periodique` / `esp-inspection-periodique-generateur-vapeur`
+    // via les formes `enum_differente` et `enum_egale` de `ConditionApplication`.
+    // Conséquence pratique : sa valeur n'est plus un simple confort de saisie,
+    // et en changer une modifie une échéance de criticité 5.
+    // `pressionMaxAdmissibleBar` et `volumeLitres`, eux, ne sont toujours pas
+    // lus par le moteur.
     familleEsp: z.preprocess(
       (v) => (v === "" || v === null || v === undefined ? undefined : v),
       z.enum(FAMILLES_ESP).optional(),

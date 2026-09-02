@@ -88,7 +88,10 @@ export const CCH_REGISTRE_SECURITE: Corpus = {
       luLe: "2026-08-26",
       lecture: "premiere_main",
       statut: "retenu",
-      obligations: ["incendie-erp-5-visite-commission"],
+      obligations: [
+        "incendie-erp-cat1-4-visite-commission",
+        "incendie-erp-5-visite-commission",
+      ],
       citationCle:
         "« Ces établissements doivent faire l'objet, dans les conditions fixées au règlement de sécurité, de visites périodiques de contrôle et de visites inopinées effectuées par la commission de sécurité compétente. »",
       prescrit:

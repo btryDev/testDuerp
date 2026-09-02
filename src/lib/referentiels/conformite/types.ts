@@ -294,8 +294,13 @@ export type RelectureDue = {
  * avec > 250 véhicules). Reste déclaratif pour rester auditable : aucune
  * fonction TypeScript arbitraire n'entre dans le référentiel (ADR-003).
  *
- * Trois formes, qui se distinguent par leur comportement **quand la propriété
- * n'est pas renseignée** — c'est le point de sécurité du modèle :
+ * Six formes, qui se distinguent par leur comportement **quand la propriété
+ * n'est pas renseignée** — c'est le point de sécurité du modèle.
+ *
+ * (Ce dénombrement disait « trois » alors que la liste en portait déjà quatre,
+ * et il l'a dit pendant tout le temps où la quatrième existait. Un compte écrit
+ * en toutes lettres au-dessus d'une liste ne se met pas à jour tout seul : il
+ * se relit à chaque ajout, sinon il devient la prochaine fausse justification.)
  *
  *  - `equipement_propriete_numerique` : propriété absente ⇒ condition NON
  *    satisfaite. À réserver aux obligations dont la portée exacte dépend d'un
@@ -318,6 +323,22 @@ export type RelectureDue = {
  *    chariots élévateurs et gerbeurs (arrêté du 1er mars 2004, art. 20-II
  *    et 23) — les deux périodicités s'excluent, et l'absence de réponse
  *    laisse la périodicité annuelle en place plutôt que de tout éteindre.
+ *  - `equipement_propriete_enum_egale` : propriété absente ⇒ condition NON
+ *    satisfaite. C'est l'« opt-in » du couple d'énumération : la ligne
+ *    spécifique n'apparaît qu'une fois la valeur explicitement choisie.
+ *  - `equipement_propriete_enum_differente` : propriété absente ⇒ condition
+ *    SATISFAITE. C'est le miroir, et il est le seul des deux à pouvoir porter
+ *    la règle générale : tant que la famille n'a pas été renseignée, c'est
+ *    elle qui continue de s'appliquer. Une valeur d'un type inattendu est
+ *    traitée comme une absence, pour la même raison.
+ *
+ * Le couple `enum_egale` / `enum_differente` est à l'énumération ce que le
+ * couple `booleenne` / `infirmee` est au booléen : il sert à SCINDER un régime
+ * en deux, jamais à en ajouter un. Poser l'égalité sans poser la différence
+ * sur la ligne générale ne crée pas un trou — il crée un DOUBLON : l'appareil
+ * visé reçoit alors les deux échéances, la générale et la sienne, pour un seul
+ * acte. C'est l'erreur symétrique de celle que `infirmee` prévient, et elle est
+ * plus difficile à voir parce qu'elle ne retire rien à personne.
  *
  * Règle de rédaction (verrouillée par `conformite.test.ts`) : ajouter une
  * condition sur une obligation **déjà publiée** de criticité ≥ 4 impose une
@@ -351,6 +372,18 @@ export type ConditionApplication =
       type: "equipement_propriete_infirmee";
       categorie: CategorieEquipement;
       propriete: string;
+    }
+  | {
+      type: "equipement_propriete_enum_egale";
+      categorie: CategorieEquipement;
+      propriete: string;
+      valeur: string;
+    }
+  | {
+      type: "equipement_propriete_enum_differente";
+      categorie: CategorieEquipement;
+      propriete: string;
+      valeur: string;
     };
 
 /**

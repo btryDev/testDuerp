@@ -347,6 +347,11 @@ describe("cohérence schéma ↔ référentiel d'obligations", () => {
       "estLocalPollutionSpecifique",
       "aSystemeDeRecyclage",
       "nbVehiculesParkingCouvert",
+      // Ajoutée le 2026-09-01. `familleEsp` était collectée depuis l'origine —
+      // `<select name="familleEsp">` dans `EquipementForm` — mais aucune
+      // condition ne s'en servait ; elle entre ici parce qu'elle en porte une
+      // désormais, pas parce que la collecte aurait changé.
+      "familleEsp",
     ]);
     for (const o of obligationsConformite) {
       for (const c of o.conditions ?? []) {

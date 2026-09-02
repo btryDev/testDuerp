@@ -4,6 +4,7 @@ import {
   CATEGORIES_EQUIPEMENT,
   CATEGORIES_ERP,
   CLASSES_IGH,
+  PERIODICITE_EN_JOURS,
   PERIODICITES,
   REALISATEURS,
   TYPES_ERP,
@@ -647,6 +648,14 @@ describe("référentiel conformité — non-régression des obligations critique
     "froid-controle-etancheite-annuel-50t-detection",
     "froid-controle-etancheite-trimestriel-500t",
     "froid-controle-etancheite-semestriel-500t-detection",
+    // Créée le 2026-09-01 (arrêté du 20 novembre 2017, art. 15 : deux ans pour
+    // les générateurs de vapeur). Même critère que le chariot élévateur, et il
+    // est rempli pour les deux mêmes raisons : l'obligation est NEUVE — aucun
+    // équipement déjà en base ne peut la perdre —, et la couverture par défaut
+    // reste assurée par `esp-inspection-periodique`, qui porte sur la même
+    // propriété la condition `enum_differente` correspondante et s'applique
+    // donc tant que `familleEsp` n'a pas été renseignée.
+    "esp-inspection-periodique-generateur-vapeur",
   ]);
 
   /**
@@ -657,6 +666,14 @@ describe("référentiel conformité — non-régression des obligations critique
   const FORMES_SANS_EXTINCTION_AU_SILENCE = new Set([
     "equipement_propriete_non_infirmee",
     "equipement_propriete_infirmee",
+    // Ajoutée le 2026-09-01 avec la forme elle-même. `enum_differente` est
+    // satisfaite quand la propriété est absente — c'est sa raison d'être : elle
+    // porte la ligne GÉNÉRALE d'un couple d'énumération et doit survivre au
+    // silence, exactement comme `infirmee` porte la VGP annuelle de levage.
+    // Son pendant `enum_egale` n'y figure évidemment PAS : il est strict, et
+    // toute obligation de criticité ≥ 4 qui s'en sert doit passer par la liste
+    // blanche ci-dessus.
+    "equipement_propriete_enum_differente",
   ]);
 
   it("une obligation criticité ≥ 4 ne se conditionne pas sur le silence", () => {
@@ -1103,7 +1120,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // vert — alors qu'il déplace la date de première occurrence d'un équipement
   // neuf. Tout champ qui influence une échéance entre au hachage, et la preuve
   // se fait en changeant sa valeur : si l'empreinte ne bouge pas, il y manque.
-  const EMPREINTE_ATTENDUE = "128-a9515603e18d300d";
+  const EMPREINTE_ATTENDUE = "130-fbe3cbb89b9e5eda";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1221,7 +1238,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(128);
+    ).toBe(130);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1658,5 +1675,43 @@ describe("référentiel conformité — d'où vient le chiffre", () => {
         "article de code porte vraiment le chiffre, ajoutez l'obligation à " +
         "`PERIODICITE_SUR_CODE_JUSTIFIEE` avec le verbatim qui le prouve.",
     ).toEqual([]);
+  });
+});
+
+describe("GE 4 § 1 — le plafond du § 3 n'est pas devenu un rythme", () => {
+  const ligne = () => obligationParId("incendie-erp-cat1-4-visite-commission");
+
+  it("la périodicité ne dépasse pas le barreau le plus court du tableau", () => {
+    // Le tableau du § 1 ne porte que deux valeurs, trois ans et cinq ans. Le
+    // détail de ses cellules n'a pas pu être lu à la source, et c'est
+    // précisément pourquoi cette borne compte : elle est la seule chose que le
+    // référentiel peut affirmer sans reconstituer le tableau. Poser cinq ans
+    // laisserait un établissement dû à trois ans se croire à jour deux ans de
+    // trop — invisible pour lui.
+    const jours = PERIODICITE_EN_JOURS[ligne()!.periodicite];
+    expect(jours).not.toBeNull();
+    expect(jours!).toBeLessThanOrEqual(PERIODICITE_EN_JOURS.triennale!);
+  });
+
+  it("la prolongation « dans la limite de cinq ans » du § 3 n'est pas encodée", () => {
+    // Le § 3 est une FACULTÉ sous plafond, ouverte après deux avis favorables
+    // consécutifs — un historique que le produit n'observe pas. Le § 4 est un
+    // pouvoir du maire ou du préfet, donc une prescription particulière
+    // (ADR-014). Ni l'un ni l'autre n'est un rythme, et `quinquennale` sur
+    // cette ligne serait le signe qu'on a confondu les deux.
+    expect(ligne()!.periodicite).not.toBe("quinquennale");
+    // Ils sont nommés au dirigeant, en description, plutôt que tus.
+    expect(ligne()!.description).toContain("dans la limite de cinq ans");
+    expect(ligne()!.description).toContain("maire ou le préfet");
+  });
+
+  it("aucune relecture n'est due au 1er juin 2027 sur cette ligne", () => {
+    // Le piège de l'article : le sélecteur de la page de SECTION affiche un
+    // terme « au 01/06/2027 » qui est celui de GE 2 et GE 6, pas de GE 4. Trois
+    // lectures s'y sont laissé prendre le 2026-09-01. La section relue au
+    // 1er juillet 2027 rend GE 4 inchangé — il n'a pas de fin de vigueur.
+    expect(ligne()!.relectureDue).toBeUndefined();
+    const ge4 = ligne()!.referencesLegales.find((r) => r.article === "GE 4");
+    expect(ge4?.versionConstatee).toBe("2015-01-01");
   });
 });
