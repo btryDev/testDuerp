@@ -18,8 +18,17 @@
 //      connaît déjà. Le résumé du dossier n'a donc plus d'entrée de rail :
 //      il n'est pas une des questions du dirigeant, il y répond toutes.
 //
-//   2. Le panneau (224px) affiche les items de la catégorie choisie, avec
+//   2. Le panneau (256px) affiche les items de la catégorie choisie, avec
 //      les mêmes pilules qu'avant (actif = pilule blanche pleine).
+//
+//      Il en faisait 224 et ses entrées se mangeaient elles-mêmes :
+//      « Permis de f… », « Plans de pr… », « Carnet sani… ». Deux causes qui
+//      s'additionnaient — l'étiquette d'état (« au besoin ») prenait sa place
+//      sur la même ligne que le libellé, et la ligne était trop courte même
+//      sans elle (« Ce que Rojer ne couvr… »). L'étiquette est donc passée
+//      SOUS le libellé, comme la seconde information d'un tableau board, et
+//      le libellé se replie au lieu de se couper : un libellé replié se lit,
+//      un libellé coupé se devine.
 //
 // Toute entrée de rail est un lien (ADR-015) : cliquer navigue vers la page
 // d'entrée de la catégorie **et** ouvre son panneau. Auparavant une icône de
@@ -198,12 +207,12 @@ export function AppSidebar({
         inert={ferme}
         className={
           "shrink-0 overflow-hidden bg-white/[0.04] transition-[width] duration-200 " +
-          (ferme ? "w-0" : "w-[224px]")
+          (ferme ? "w-0" : "w-[256px]")
         }
       >
         {/* Largeur fixe interne : le contenu glisse sous le bord au lieu de
             se recomposer pendant l'animation de largeur. */}
-        <div className="flex h-full w-[224px] flex-col">
+        <div className="flex h-full w-[256px] flex-col">
           <div className="flex h-[67px] shrink-0 items-center justify-end border-b border-white/10 pl-5 pr-3">
             <button
               type="button"
@@ -265,7 +274,16 @@ function RailEntree({
       // `aria-current` dit où l'on est ; l'ouverture d'un panneau n'est pas
       // un état de page et n'a pas à s'y ajouter.
       aria-current={surPage ? "page" : undefined}
-      aria-label={cat.label}
+      // PAS d'`aria-label`. Il portait le libellé LONG (« Santé-sécurité »,
+      // « Documentation ») alors que la tuile affiche le court (« Sécurité »,
+      // « Documents ») : le nom accessible ne contenait pas le texte visible,
+      // ce que WCAG 2.5.3 « Label in Name » interdit — et sur « Documents » /
+      // « Documentation » il ne le contenait même pas à un mot près. La
+      // divergence court/long, elle, est voulue : le rail fait 88 px, aucun
+      // des trois axes n'y tient en entier. Elle se règle donc dans l'autre
+      // sens — le nom accessible suit ce qu'on lit, et le libellé long reste
+      // là où il y a la place de l'écrire : l'en-tête du panneau, qui nomme
+      // aussi sa région (`aria-label={panneau.label}`).
       className="group flex w-full flex-col items-center gap-1.5 rounded-xl py-2 transition-colors hover:bg-white/10"
     >
       <TuileIcone cat={cat} pleine={allume} />
@@ -299,7 +317,14 @@ function RailLibelle({ cat, allume }: { cat: RailCategorie; allume: boolean }) {
   return (
     <span
       className={
-        "max-w-full truncate px-0.5 text-[9px] leading-none tracking-[0.02em] " +
+        // `leading-[1.35]` et non `leading-none` : à 9 px, une boîte de ligne
+        // haute de 9 px ne contient pas les accents. Comme `truncate` pose
+        // `overflow: hidden`, ils étaient rognés — le rail affichait « A
+        // faire » là où le lien et le panneau disent « À faire ». Le texte
+        // était juste depuis le début (`labelCourt`), c'est le rendu qui
+        // mangeait l'accent. Même cause exactement que les cartes de frise du
+        // tableau de bord : une boîte trop courte, un `overflow` qui coupe.
+        "max-w-full truncate px-0.5 text-[9px] leading-[1.35] tracking-[0.02em] " +
         (allume ? "text-white" : "text-white/50 group-hover:text-white")
       }
     >
@@ -377,9 +402,9 @@ function NavLink({ item, actif }: { item: NavItem; actif: SidebarItemId }) {
   if (item.bientot) {
     return (
       <span className={CLASSES_ITEM + " text-white/30"} aria-disabled>
-        <item.Icon aria-hidden className="size-4 opacity-70" />
-        <span className="flex-1 truncate">{item.label}</span>
-        <span className="font-mono text-[9px] uppercase tracking-[0.1em]">
+        <item.Icon aria-hidden className="size-4 flex-none opacity-70" />
+        <span className="min-w-0 flex-1 leading-[1.3]">{item.label}</span>
+        <span className="flex-none font-mono text-[9px] uppercase tracking-[0.1em]">
           bientôt
         </span>
       </span>
@@ -401,18 +426,28 @@ function NavLink({ item, actif }: { item: NavItem; actif: SidebarItemId }) {
     >
       <item.Icon
         aria-hidden
-        className={"size-4 " + (etiquette && !isActive ? "opacity-50" : "opacity-90")}
+        className={
+          "size-4 flex-none " +
+          (etiquette && !isActive ? "opacity-50" : "opacity-90")
+        }
       />
-      <span className="flex-1 truncate">{item.label}</span>
-      {etiquette && !isActive ? (
-        <span className="flex-none font-mono text-[9px] uppercase tracking-[0.1em]">
-          {etiquette}
-        </span>
-      ) : null}
+      {/* Le libellé d'abord, son état DESSOUS. L'étiquette partageait la
+          ligne et prenait 60 px des 148 disponibles : « Permis de f… ». Une
+          seconde information se range sous la première (charte, patron de
+          tableau dense), elle ne dispute pas sa largeur au nom de l'écran —
+          c'est le nom qui sert à choisir, l'état ne fait que le qualifier. */}
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="leading-[1.3]">{item.label}</span>
+        {etiquette && !isActive ? (
+          <span className="mt-[3px] font-mono text-[9px] uppercase leading-none tracking-[0.1em] opacity-80">
+            {etiquette}
+          </span>
+        ) : null}
+      </span>
       {typeof item.count === "number" && item.count > 0 ? (
         <span
           className={
-            "rounded-full px-[7px] py-px font-mono text-[11px] " +
+            "flex-none rounded-full px-[7px] py-px font-mono text-[11px] " +
             (isActive
               ? "bg-[color:var(--board-ink)]/10 text-[color:var(--board-ink)]"
               : item.alert

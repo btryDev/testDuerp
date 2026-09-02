@@ -128,7 +128,15 @@ export const LABEL_ITEM: Record<SidebarItemId, string> = {
   // les liens déjà partagés et les provenances enregistrées, pour un gain
   // nul. Seul le nom affiché change — c'est précisément le rôle de cette
   // table que de les découpler.
-  connecter: "Paramètres",
+  //
+  // « Connecter un assistant » et non « Paramètres » : le mot était dit trois
+  // fois pour quatre écrans différents — entrée de rail, en-tête de panneau,
+  // item, et une page intitulée « Connecter » au bout. Un item qui reprend le
+  // nom de sa section ne nomme rien : il ne dit pas ce qui le distingue de sa
+  // voisine. Celui-ci ouvre le dossier à un assistant (serveur MCP), c'est ce
+  // qu'il fait et c'est ce qu'il dit. Le libellé est celui que `CLAUDE.md`
+  // annonçait déjà pour cette entrée.
+  connecter: "Connecter un assistant",
   equipements: "Équipements",
   batiments: "Zones",
   prestataires: "Prestataires",
