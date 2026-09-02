@@ -94,9 +94,9 @@ On refuse ce qu'on ne peut pas servir, pas ce qu'on ne couvre pas entièrement.
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **144 obligations sur 18 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité, et depuis le 2026-09-02 signalisation de sécurité. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **145 obligations sur 19 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité, et depuis le 2026-09-02 signalisation de sécurité et compactage des déchets. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
-**85 d'entre elles sont déclenchées par un équipement déclaré, quarante-cinq sont
+**86 d'entre elles sont déclenchées par un équipement déclaré, quarante-cinq sont
 portées par l'établissement, quatorze par un salarié.** La répartition a changé deux fois le
 2026-08-31 : les trois lots ont ajouté trente et une obligations, et le lot « faux
 négatifs d'ancrage » a fait passer trois obligations existantes de l'équipement à
@@ -134,9 +134,11 @@ intérieure** — un troisième cas de figure après ceux du lot 7 —, et le pr
 modélisant aucun mandat, l'échéance calculée arrive en avance pour un mandat interrompu.
 Le sens d'erreur est délibéré.
 
-**Les sept derniers domaines ne naissent d'aucun équipement**, et c'est ce qui les
-distingue des dix premiers : leur déclencheur est le statut d'employeur, l'effectif ou
-la co-activité. Un bureau de six personnes sans le moindre appareil déclaré doit
+**Sept des dix-neuf domaines ne naissent d'aucun équipement** — les sept du milieu,
+de `formation_securite` à `signalisation` : leur déclencheur est le statut d'employeur,
+l'effectif ou la co-activité. La phrase disait « les sept DERNIERS » jusqu'au
+2026-09-02 ; `compactage_dechets` est arrivé après eux et naît, lui, d'un équipement
+déclaré, ce qui rendait le rang faux sans qu'aucun compte ne bouge. Un bureau de six personnes sans le moindre appareil déclaré doit
 désormais **vingt-cinq obligations**. À douze salariés il en doit **vingt-six** (le CSE
 s'ajoute), à cinquante-cinq **vingt-neuf** : le règlement intérieur s'ajoute, le local de
 restauration remplace l'emplacement, et le franchissement de cinquante et une personnes
@@ -144,7 +146,11 @@ présentes fait entrer la consigne de sécurité incendie et l'exercice semestri
 
 Ces trois chiffres ont été mesurés en appelant le moteur le 2026-09-02, et ils ont
 gagné sept unités d'un coup : le domaine `signalisation` porte sept lignes que rien ne
-conditionne à un équipement. Les trois précédents — dix-huit, dix-neuf, vingt-deux —
+conditionne à un équipement. **Remesurés le même jour après le lot machines : ils n'ont
+pas bougé**, et c'est la réponse juste — `compactage_dechets` est portée par un
+équipement, donc invisible à un établissement qui n'en déclare aucun. Une remesure qui
+ne déplace rien vaut d'être écrite : sans elle, le prochain lecteur ne saura pas si le
+chiffre a été vérifié ou seulement laissé en place. Les trois précédents — dix-huit, dix-neuf, vingt-deux —
 dataient de la veille et étaient déjà faux quand deux lots les ont dépassés sans les
 toucher. Ceux d'avant — dix-sept, dix-huit, dix-neuf — l'étaient de
 trois : la phrase n'attribuait l'écart qu'au règlement intérieur et manquait la paire
@@ -162,7 +168,7 @@ Rojer couvre les obligations de **santé-sécurité au travail et de sécurité 
 — Code du travail, CCH, et Code de l'environnement quand il porte sur la sécurité des
 installations ou des personnes. Une obligation y naît de cinq déclencheurs possibles :
 
-1. **Équipement déclaré** — 85 obligations livrées
+1. **Équipement déclaré** — 86 obligations livrées
 2. **Statut d'employeur** — dès un salarié. **15 obligations livrées au lot 7**
    (2026-08-31) : formation à la sécurité, information et accès au DUERP, VIP, suivi
    individuel renforcé et sa visite intermédiaire, liste des postes à risques, matériel
@@ -198,8 +204,25 @@ réellement événementielles recensées sont hors périmètre (déclaration d'A
 accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
 l'ADR-022, sans mécanisme.
 
-Répartition au 2026-09-02 : **85 équipement, 45 établissement, 14 salarié**
-(total 144) — mesurée en appelant, pas au grep. Les neuf dernières sont entrées le
+Répartition au 2026-09-02 : **86 équipement, 45 établissement, 14 salarié**
+(total 145) — remesurée en appelant `obligationsConformite` et
+`determineObligationsApplicables` le 2026-09-02, pas au grep. La dernière est entrée le
+même jour avec le dépouillement intégral de l'arrêté du 5 mars 1993 : le domaine
+`compactage_dechets`, une seule ligne, la vérification générale périodique
+TRIMESTRIELLE des presses à balles et des compacteurs à déchets
+(`compactage-dechets-vgp-trimestrielle`, criticité 5). C'est la SECONDE branche de
+`R. 4323-23` — l'article habilitant que le dépôt n'avait instruit que par le levage, et
+dont il écrivait depuis la veille que l'autre branche « n'est instruite nulle part ».
+Elle s'appuie sur une catégorie d'équipement neuve,
+`COMPACTEUR_PRESSE_DECHETS_MOTORISE`, dont le NOM porte le proviso du I de l'article
+1er — « mus par une source d'énergie autre que la force humaine employée directement » —
+plutôt qu'un attribut d'équipement inventé pour lui. Neuf des onze catégories du I
+restent hors du référentiel, chacune avec son motif, dans la `reserve` de l'article
+(machines à cylindres bornées par le texte à l'industrie du caoutchouc, systèmes de
+compactage des véhicules de collecte, massicot manuel écarté par le proviso, presses
+d'atelier industriel hors cible). L'article 2 du même arrêté reste
+`obligation_manquante` : ce qu'est une « centrifugeuse » au sens de cet arrêté ne se
+tranche pas à la source. Les neuf précédentes étaient entrées le
 2026-09-02 avec le dépouillement de l'arrêté du 4 novembre 1993 : le domaine
 `signalisation`, dont le référentiel ne portait aucune ligne sous aucun porteur. Sept
 sont des états permanents et deux seulement portent un rythme — la vérification

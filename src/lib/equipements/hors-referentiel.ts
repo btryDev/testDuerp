@@ -20,9 +20,14 @@
 // n'appelle aucune vérification. Il dit un fait sur l'outil — le
 // référentiel de Rojer, à sa version courante, ne calcule pas d'échéance
 // pour cet appareil. Le droit ne s'arrête pas au périmètre du référentiel
-// (3 secteurs, 17 domaines, cf. CLAUDE.md), et l'outil ne certifie rien.
+// (3 secteurs, 19 domaines, cf. CLAUDE.md), et l'outil ne certifie rien.
 // « 9 domaines » jusqu'au 2026-09-01 : le compte datait d'avant les sept
 // domaines sans équipement, et la ligne citait CLAUDE.md, qui disait 17.
+// « 17 » jusqu'au 2026-09-02 : deux domaines sont entrés depuis — la
+// signalisation de sécurité et le compactage des déchets — sans qu'aucun
+// diff ne touche cette ligne. C'est la deuxième fois pour la même phrase,
+// et le remède n'est pas de mieux surveiller : un compte recopié dans un
+// commentaire se périme au lot suivant, ici comme dans CLAUDE.md.
 //
 // Zéro heuristique : le libellé saisi par l'utilisateur n'est jamais lu.
 // Le seul signal est l'absence de l'équipement dans les déclencheurs
