@@ -14,6 +14,23 @@ import type { CATEGORIES_ERP, TYPE_ERP } from "./schema";
  * sans lui écrire de libellé ne compile pas.
  */
 
+/**
+ * **Vingt et un types, et le règlement en compte vingt-deux.** Le type J —
+ * structures d'accueil pour personnes âgées et personnes handicapées, ajouté
+ * au règlement de sécurité par l'arrêté du 19 novembre 2001 — n'est pas dans
+ * `TYPE_ERP`, donc pas ici.
+ *
+ * Le relevé est fait, la décision ne l'est pas : ouvrir le type J ferait
+ * entrer les EHPAD et les structures médico-sociales, dont les obligations
+ * (locaux à sommeil, personnel de nuit, désenfumage) ne sont pas servies par
+ * le référentiel et qui sortent des trois secteurs cibles. C'est un choix de
+ * périmètre, pas un oubli de saisie — et il se tranche ailleurs qu'en
+ * ajoutant une ligne à ce `Record`.
+ *
+ * En attendant, l'écran le DIT (`StepTypologie`) au lieu de promettre « le
+ * vôtre y figure », ce qui était faux pour un exploitant de type J : il
+ * cherchait sa ligne, ne la trouvait pas, et n'apprenait rien.
+ */
 export const LABEL_TYPE_ERP: Record<(typeof TYPE_ERP)[number], string> = {
   M: "M · Magasin de vente, centre commercial",
   N: "N · Restaurant, débit de boissons",

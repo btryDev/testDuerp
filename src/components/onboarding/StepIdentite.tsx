@@ -1,10 +1,11 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, OctagonX } from "lucide-react";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { ChampBoard, SectionChamps } from "@/components/ui-kit";
 import { BlocCreux } from "@/components/ui-kit/fiche";
 import { evaluerScopeSecteur } from "@/lib/onboarding/scope";
+import { refusEffectif } from "./validation";
 import type { StepProps } from "./types";
 
 const SUGGESTIONS_NAF = [
@@ -23,12 +24,22 @@ const SUGGESTIONS_NAF = [
  * remplissent dans l'ordre qu'on veut — la numérotation n'y portait aucune
  * information (cf. `SectionChamps`).
  */
-export function StepIdentite({ state, update, errors }: StepProps) {
+export function StepIdentite({ state, update, errors, blocage }: StepProps) {
   const scope =
     state.codeNaf.trim().length > 0
       ? evaluerScopeSecteur(state.codeNaf)
       : null;
-  const hintEffectif = hintPourEffectif(state.effectifSurSite);
+  // Le refus de périmètre se lit en direct, sans attendre le clic (voir
+  // `refusEffectif`). Les autres refus, eux, n'arrivent qu'au passage
+  // d'étape — mais ils se rendent au champ qu'ils visent plutôt que d'être
+  // rendus en bas de colonne.
+  const refus = refusEffectif(state.effectifSurSite);
+  const repere = refus ? null : repereEffectif(state.effectifSurSite);
+  /** L'erreur d'un champ : le refus de passage d'étape, sinon le serveur. */
+  const messagePour = (champ: string) =>
+    (blocage?.champ === champ ? blocage.message : undefined) ??
+    errors?.[champ];
+  const erreurNaf = messagePour("codeNaf");
 
   return (
     <div className="flex flex-col gap-[22px]">
@@ -58,7 +69,7 @@ export function StepIdentite({ state, update, errors }: StepProps) {
               onChange={(e) => update({ raisonSociale: e.target.value })}
               placeholder="Ex : Bistrot du marché SARL"
               autoFocus
-              erreur={errors?.raisonSociale}
+              erreur={messagePour("raisonSociale")}
             />
 
             <div>
@@ -118,7 +129,9 @@ export function StepIdentite({ state, update, errors }: StepProps) {
               onChange={(e) => update({ adresseRue: e.target.value })}
               placeholder="12 rue des Halles"
               autoComplete="street-address"
-              erreur={errors?.adresse}
+              // Le refus client vise `adresseRue`, le refus serveur porte sur
+              // l'adresse recomposée : les deux se rendent au même champ.
+              erreur={messagePour("adresseRue") ?? errors?.adresse}
             />
 
             <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-[160px_1fr]">
@@ -139,7 +152,13 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                 inputMode="numeric"
                 pattern="\d{5}"
                 maxLength={5}
-                aria-invalid={Boolean(errors?.adresse)}
+                erreur={messagePour("adresseCodePostal")}
+                // Le refus serveur porte sur l'adresse recomposée : son texte
+                // s'affiche sur la rue, mais les trois champs se marquent
+                // invalides — c'est l'ensemble qui l'est.
+                aria-invalid={Boolean(
+                  messagePour("adresseCodePostal") ?? errors?.adresse,
+                )}
               />
               <ChampBoard
                 id="adresseVille"
@@ -150,7 +169,8 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                 onChange={(e) => update({ adresseVille: e.target.value })}
                 placeholder="Paris"
                 autoComplete="address-level2"
-                aria-invalid={Boolean(errors?.adresse)}
+                erreur={messagePour("adresseVille")}
+                aria-invalid={Boolean(messagePour("adresseVille") ?? errors?.adresse)}
               />
             </div>
 
@@ -181,18 +201,18 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                   // n'a pas de secteur pour ce code. Le marquer invalide
                   // faisait dire à la technologie d'assistance qu'il y avait
                   // une saisie à corriger, alors qu'il n'y a rien à corriger.
-                  aria-invalid={Boolean(errors?.codeNaf)}
+                  aria-invalid={Boolean(erreurNaf)}
                   // Les trois messages de ce champ lui sont chaînés, et non
                   // le seul premier : le panneau « secteur non couvert »
                   // annonce que l'inscription ne peut pas aboutir. Le champ
                   // passait « invalide » sans que rien ne dise pourquoi.
                   aria-describedby={
                     [
-                      errors?.codeNaf ? "codeNaf-erreur" : null,
-                      scope?.status === "ok" && !errors?.codeNaf
+                      erreurNaf ? "codeNaf-erreur" : null,
+                      scope?.status === "ok" && !erreurNaf
                         ? "codeNaf-secteur"
                         : null,
-                      scope?.status === "sans_referentiel" && !errors?.codeNaf
+                      scope?.status === "sans_referentiel" && !erreurNaf
                         ? "codeNaf-sans-referentiel"
                         : null,
                     ]
@@ -200,19 +220,19 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                       .join(" ") || undefined
                   }
                 />
-                {errors?.codeNaf && (
+                {erreurNaf && (
                   <p
                     id="codeNaf-erreur"
                     className="m-0 mt-1.5 text-[12.5px] text-[color:var(--board-signal-ink)]"
                   >
-                    {errors.codeNaf}
+                    {erreurNaf}
                   </p>
                 )}
                 {/* « Secteur reconnu » est un fait de saisie — ce que le code
                     tapé désigne —, pas un jugement de conformité : le vert du
                     board (« fait ») convient, et la coche évite que
                     l'information ne tienne qu'à la couleur. */}
-                {scope?.status === "ok" && !errors?.codeNaf ? (
+                {scope?.status === "ok" && !erreurNaf ? (
                   <p
                     id="codeNaf-secteur"
                     className="m-0 mt-1.5 flex items-center gap-1.5 text-[12.5px] text-[color:var(--board-green-ink)]"
@@ -228,7 +248,7 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                     ouverte. `role="status"` et non `role="alert"`, pour la
                     même raison — ce n'est pas une erreur à annoncer, c'est un
                     fait à lire. */}
-                {scope?.status === "sans_referentiel" && !errors?.codeNaf ? (
+                {scope?.status === "sans_referentiel" && !erreurNaf ? (
                   <div
                     id="codeNaf-sans-referentiel"
                     role="status"
@@ -271,20 +291,62 @@ export function StepIdentite({ state, update, errors }: StepProps) {
                 onChange={(e) => update({ effectifSurSite: e.target.value })}
                 placeholder="8"
                 aide="Salariés + apprentis présents régulièrement. Rojer s'arrête à 50 : au-delà, les obligations changent de nature (CSSCT dédiée, programme annuel de prévention) et l'outil ne les porte pas."
-                erreur={errors?.effectifSurSite}
+                // Le refus de périmètre n'est pas rendu ici mais dans le bloc
+                // ci-dessous : il tient trois lignes et il porte une icône.
+                erreur={refus ? undefined : messagePour("effectifSurSite")}
+                // L'aide EST reprise dans la chaîne : `ChampBoard` la
+                // construit lui-même, et ce `aria-describedby` la remplace
+                // (il est étalé après). L'omettre ferait taire « salariés +
+                // apprentis présents régulièrement » pour qui écoute le
+                // champ — précisément là où le refus rend la définition de
+                // l'effectif la plus utile.
+                aria-describedby={
+                  refus
+                    ? "effectifSurSite-aide effectifSurSite-refus"
+                    : undefined
+                }
               />
             </div>
+
+            {/* Le REFUS. Il ferme la porte — au-delà de cinquante travailleurs
+                l'outil ne sert plus le dossier (ADR-025 § 1, ADR-031) —, donc
+                il se peint comme un refus : voile rose, encre signal, et une
+                icône, parce qu'une signalétique qui tient à la seule couleur
+                disparaît en niveaux de gris et pour qui n'y voit pas (charte,
+                interdit 10). Il était rendu dans le même creux ardoise que le
+                repère de seuil au-dessus : le refus qui arrête tout se lisait
+                plus doucement qu'un champ oublié.
+
+                `role="status"` et non `"alert"` : il est là avant qu'on ait
+                rien tenté, il n'interrompt rien. C'est le bouton « Suivant »,
+                désactivé par `WizardShell`, qui dit que la porte est fermée —
+                et le refus n'est donc plus répété en rouge après le clic. */}
+            {refus ? (
+              <div
+                id="effectifSurSite-refus"
+                role="status"
+                className="flex items-start gap-2.5 rounded-[18px] bg-[color:var(--board-signal-wash)] px-4 py-3 shadow-[inset_0_0_0_1px_var(--board-signal-line)]"
+              >
+                <OctagonX
+                  aria-hidden
+                  className="mt-px size-4 flex-none text-[color:var(--board-signal-ink)]"
+                />
+                <p className="m-0 max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-signal-ink)]">
+                  {refus.message}
+                </p>
+              </div>
+            ) : null}
 
             {/* Rappel de seuil : un repère de lecture, pas un état. Le creux
                 ardoise le pose sans lui prêter de couleur — un fond vert y
                 dirait « fait », un fond ambre « attention ». */}
-            {hintEffectif ? (
+            {repere ? (
               <BlocCreux>
                 <strong className="block text-[13.5px] font-semibold text-[color:var(--board-ink)]">
-                  {hintEffectif.titre}
+                  {repere.titre}
                 </strong>
                 <span className="mt-1 block max-w-[62ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
-                  {hintEffectif.corps}
+                  {repere.corps}
                 </span>
               </BlocCreux>
             ) : null}
@@ -295,11 +357,24 @@ export function StepIdentite({ state, update, errors }: StepProps) {
   );
 }
 
-function hintPourEffectif(
+/**
+ * Le repère de lecture qui accompagne l'effectif saisi — et **rien d'autre**.
+ *
+ * Il portait aussi le refus au-delà de cinquante, dans les mêmes mots gris et
+ * la même boîte que les deux seuils informatifs. Un refus qui arrête la
+ * création se lisait donc dans le registre d'un rappel, puis revenait en
+ * rouge au clic, dans une seconde formulation. Le refus vit maintenant dans
+ * `refusEffectif` (`validation.ts`) : un seul texte, une seule fois, et dans
+ * le registre du refus.
+ */
+function repereEffectif(
   v: string,
 ): { titre: string; corps: string } | null {
+  // Entier seulement : « 50,5 salariés » n'est pas un effectif, et une saisie
+  // non entière est de toute façon refusée au passage d'étape. Le repère se
+  // tait plutôt que de commenter un nombre qui ne veut rien dire.
   const n = Number(v);
-  if (!Number.isFinite(n) || n < 1) return null;
+  if (!Number.isInteger(n) || n < 1) return null;
   if (n < 11) {
     return {
       titre: `${n} salarié${n > 1 ? "s" : ""}`,
@@ -307,20 +382,11 @@ function hintPourEffectif(
         "Seuil CSSCT (11+) non atteint — certaines obligations sont allégées (élections, consultation CSE).",
     };
   }
-  if (n <= 50) {
-    return {
-      titre: `${n} salariés`,
-      corps:
-        "Seuil CSE atteint — mise à jour annuelle du DUERP obligatoire, élection d'un CSE sous 12 mois.",
-    };
-  }
-  // Au-delà de 50, ce n'est plus un repère de lecture mais un refus : le
-  // dire ici, sous le champ, plutôt que d'attendre le bouton « Continuer ».
-  // Un refus qui n'arrive qu'au moment de valider fait ressaisir tout le
-  // formulaire pour rien.
+  // Au-delà d'EFFECTIF_MAX, l'appelant n'arrive jamais ici : `refusEffectif`
+  // a déjà répondu, et c'est lui qui porte le texte.
   return {
-    titre: `${n} salariés — au-delà de ce que Rojer prend en charge`,
+    titre: `${n} salariés`,
     corps:
-      "Rojer est construit pour les structures jusqu'à 50 salariés. Au-delà, les obligations changent de nature — CSSCT dédiée, programme annuel de prévention présenté au CSE, bilan annuel — et l'outil ne les porte pas. Mieux vaut vous le dire ici que vous laisser tenir un dossier incomplet.",
+      "Seuil CSE atteint — mise à jour annuelle du DUERP obligatoire, élection d'un CSE sous 12 mois.",
   };
 }

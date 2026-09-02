@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
 import { assertEtablissementOwnership } from "@/lib/auth/scope";
-import { batimentSchema, MAX_ZONES } from "./schema";
+import { batimentSchema, MAX_ZONES, PLAFOND_ZONES } from "./schema";
 
 /**
  * Mutations des zones (ADR-029, qui remplace l'ADR-019). Une zone est un
@@ -83,8 +83,11 @@ export async function creerBatiment(
   // Le plafond vaut à l'ajout, jamais à la lecture (ADR-029) : un dossier
   // qui porte déjà quatre lieux n'en perd aucun, il n'en gagne plus.
   if (existant._count >= MAX_ZONES) {
-    const message = `Un établissement compte ${MAX_ZONES} zones au plus. Renommez ou regroupez une zone existante avant d'en ajouter une autre.`;
-    return { status: "error", message, fieldErrors: { nom: [message] } };
+    return {
+      status: "error",
+      message: PLAFOND_ZONES,
+      fieldErrors: { nom: [PLAFOND_ZONES] },
+    };
   }
 
   try {

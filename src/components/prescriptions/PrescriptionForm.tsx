@@ -98,22 +98,58 @@ export function PrescriptionForm({
   equipements,
   sourceInitiale = "arrete_prefectoral",
 }: Props) {
-  const [state, formAction, pending] = useActionState(action, {
-    status: "idle",
-  });
-  // La source est un état contrôlé — pas pour la valider, le schéma s'en
-  // charge, mais parce que l'avertissement contractuel doit apparaître au
-  // moment du choix. Une prescription d'assureur saisie sans que le dirigeant
-  // ait lu ce qu'elle n'est pas, c'est le marquage arrivé trop tard.
+  // La source est un état — pas pour la valider, le schéma s'en charge, mais
+  // parce que l'avertissement contractuel doit apparaître au moment du choix.
+  // Une prescription d'assureur saisie sans que le dirigeant ait lu ce
+  // qu'elle n'est pas, c'est le marquage arrivé trop tard.
   const [source, setSource] = useState<SourcePrescription>(sourceInitiale);
   const [effet, setEffet] = useState<
     "renforce_periodicite" | "obligation_sur_mesure"
   >("renforce_periodicite");
+
+  /**
+   * Le jeton de remontage, et la raison pour laquelle il existe.
+   *
+   * React 19 remet un `<form action={…}>` à blanc dès que l'action rend la
+   * main. Le `<select>` piloté par l'état ne suivait pas : après un
+   * enregistrement, le champ revenait à « Arrêté préfectoral » pendant que
+   * l'état gardait « demande d'assureur » — et le bandeau ambre restait
+   * affiché sous un champ qui ne le disait plus. Deux états contradictoires
+   * sur la même chose, dont l'un est précisément le marquage que l'ADR-032
+   * rend obligatoire.
+   *
+   * Aucun crochet ne permet de suivre cette remise à blanc : elle
+   * n'émet PAS d'événement `reset` (mesuré), et porter l'action sur le
+   * bouton plutôt que sur le formulaire ne l'évite pas (mesuré aussi). Le
+   * jeton change donc à chaque fois que l'action rend la main, succès comme
+   * refus, et le formulaire est reconstruit — DOM et état repartent
+   * ensemble, d'une seule valeur. Un `<select>` neuf honore son
+   * `defaultValue` ; un `<select>` mis à jour, non.
+   *
+   * Ce que cela ne répare PAS : les champs de texte de ce formulaire sont
+   * toujours vidés par un refus de validation. La parade existe — le défaut
+   * synchronisé avec la frappe, cf. `SaisieZone` dans
+   * `components/batiments/` — mais elle demande de reprendre les dix champs
+   * un à un, ce qui n'est pas ce lot.
+   */
+  const [jeton, setJeton] = useState(0);
+  const [state, formAction, pending] = useActionState(
+    async (prev: PrescriptionActionState, fd: FormData) => {
+      const resultat = await action(prev, fd);
+      if (resultat.status === "success") {
+        setSource(sourceInitiale);
+        setEffet("renforce_periodicite");
+      }
+      setJeton((n) => n + 1);
+      return resultat;
+    },
+    { status: "idle" },
+  );
   const err = (champ: string) =>
     state.status === "error" ? state.fieldErrors?.[champ]?.[0] : undefined;
 
   return (
-    <form action={formAction} className="flex flex-col gap-7">
+    <form key={jeton} action={formAction} className="flex flex-col gap-7">
       <section className="carte-board flex flex-col gap-5 px-7 py-6 sm:px-8">
         <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
           L&apos;acte
@@ -127,7 +163,12 @@ export function PrescriptionForm({
               id="source"
               name="source"
               className="champ-board"
-              value={source}
+              // `defaultValue` et non `value` : le formulaire est reconstruit
+              // à chaque retour d'action (cf. `jeton`), et c'est ce
+              // remontage qui remet le champ et l'état d'accord. Un
+              // `<select>` contrôlé se désynchronisait de son état à la
+              // remise à blanc, sans que rien ne le rattrape.
+              defaultValue={source}
               onChange={(e) =>
                 setSource(e.target.value as SourcePrescription)
               }
@@ -157,11 +198,22 @@ export function PrescriptionForm({
             placeholder="AP n° 2026-123"
             erreur={err("reference")}
           />
+          {/* Le libellé suit le MÊME prédicat que le bandeau ci-dessus. Le
+              champ s'appelait « Autorité » pour toutes les sources, alors
+              que le sélecteur juste à côté propose « Demande de votre
+              assureur » : un assureur n'est pas une autorité, et c'est
+              exactement la distinction que le marquage contractuel existe
+              pour tenir (ADR-032). Un formulaire qui range l'assureur sous
+              « Autorité » défait en un mot ce que le bandeau vient de dire. */}
           <ChampBoard
             id="autorite"
             name="autorite"
-            label="Autorité"
-            placeholder="Préfecture du Rhône, Mairie de…"
+            label={estSourceContractuelle(source) ? "Assureur" : "Autorité"}
+            placeholder={
+              estSourceContractuelle(source)
+                ? "Nom de votre assureur"
+                : "Préfecture du Rhône, Mairie de…"
+            }
           />
           <ChampBoard
             id="dateDocument"
@@ -192,7 +244,7 @@ export function PrescriptionForm({
               name="effet"
               value="renforce_periodicite"
               className={CASE_A_COCHER}
-              checked={effet === "renforce_periodicite"}
+              defaultChecked={effet === "renforce_periodicite"}
               onChange={() => setEffet("renforce_periodicite")}
             />
             Un rythme plus court sur une obligation existante
@@ -203,7 +255,7 @@ export function PrescriptionForm({
               name="effet"
               value="obligation_sur_mesure"
               className={CASE_A_COCHER}
-              checked={effet === "obligation_sur_mesure"}
+              defaultChecked={effet === "obligation_sur_mesure"}
               onChange={() => setEffet("obligation_sur_mesure")}
             />
             Une vérification qui n&apos;est pas dans le référentiel

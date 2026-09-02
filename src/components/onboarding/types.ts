@@ -1,3 +1,5 @@
+import type { Blocage } from "./validation";
+
 /**
  * État du wizard d'onboarding — partagé entre toutes les étapes.
  * Reste structurellement aligné avec `onboardingSchema` côté serveur,
@@ -53,4 +55,11 @@ export type StepProps = {
   update: (patch: Partial<OnboardingState>) => void;
   /** Erreurs par champ, renvoyées côté serveur après l'étape finale. */
   errors?: Record<string, string | undefined>;
+  /**
+   * Le refus d'avancer, quand il vise un champ de cette étape : l'étape le
+   * rend **sous le champ concerné**. Le shell ne garde en bas de colonne
+   * que les refus qui ne visent aucun champ — un message posé six cents
+   * pixels sous le contrôle qu'il désigne se lit en regardant autre chose.
+   */
+  blocage?: Blocage | null;
 };

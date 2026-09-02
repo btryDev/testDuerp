@@ -1,6 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { VALEURS_INITIALES, type OnboardingState } from "./types";
-import { validerIdentite, validerTypologie } from "./validation";
+import {
+  refusEffectif,
+  validerIdentite,
+  validerTypologie,
+  type Blocage,
+} from "./validation";
+
+/**
+ * Le texte d'un refus, ou `null`.
+ *
+ * Les validateurs rendaient une chaîne ; ils rendent maintenant, avec elle,
+ * le champ que le refus vise et sa nature (cf. `Blocage`) — pour que le
+ * message se rende au champ au lieu d'être posé six cents pixels plus bas.
+ * Ce qui suit interroge le texte, c'est-à-dire ce que le dirigeant lit ; le
+ * champ et la nature ont leurs propres tests, plus bas.
+ */
+const texte = (b: Blocage | null) => (b === null ? null : b.message);
 
 const complet: OnboardingState = {
   ...VALEURS_INITIALES,
@@ -40,7 +56,7 @@ describe("étape 1 — la porte ne se ferme plus sur le secteur", () => {
     // Le message « Secteur non couvert. … » était le refus lui-même. S'il
     // réapparaît, c'est que le verrou est revenu par une autre porte.
     for (const codeNaf of ["43.22A", "", "pas-un-naf", "56.10A"]) {
-      const m = validerIdentite({ ...complet, codeNaf });
+      const m = texte(validerIdentite({ ...complet, codeNaf }));
       if (m !== null) expect(m, codeNaf).not.toMatch(/secteur|couvert/i);
     }
   });
@@ -48,7 +64,7 @@ describe("étape 1 — la porte ne se ferme plus sur le secteur", () => {
 
 describe("étape 1 — ce qui bloque encore", () => {
   it("refuse un code NAF illisible", () => {
-    expect(validerIdentite({ ...complet, codeNaf: "pas-un-naf" })).toBe(
+    expect(texte(validerIdentite({ ...complet, codeNaf: "pas-un-naf" }))).toBe(
       "Le code NAF doit ressembler à 56.10A.",
     );
     expect(validerIdentite({ ...complet, codeNaf: "561" })).not.toBeNull();
@@ -58,7 +74,7 @@ describe("étape 1 — ce qui bloque encore", () => {
   it("distingue un code absent d'un code illisible", () => {
     // Deux gestes différents pour l'utilisateur : en saisir un, ou corriger
     // celui qu'il a tapé.
-    expect(validerIdentite({ ...complet, codeNaf: "  " })).toBe(
+    expect(texte(validerIdentite({ ...complet, codeNaf: "  " }))).toBe(
       "Indiquez le code NAF.",
     );
   });
@@ -72,7 +88,9 @@ describe("étape 1 — ce qui bloque encore", () => {
     ["effectifSurSite", "2.5", "Indiquez un effectif (au moins 1)."],
     ["effectifSurSite", "", "Indiquez un effectif (au moins 1)."],
   ])("refuse %s = « %s »", (champ, valeur, message) => {
-    expect(validerIdentite({ ...complet, [champ]: valeur })).toBe(message);
+    expect(texte(validerIdentite({ ...complet, [champ]: valeur }))).toBe(
+      message,
+    );
   });
 });
 
@@ -91,28 +109,46 @@ describe("étape 2 — les régimes (ADR-004)", () => {
 
   it("exige au moins un régime", () => {
     expect(
-      validerTypologie({
-        ...complet,
-        estEtablissementTravail: false,
-        estERP: false,
-        estIGH: false,
-        estHabitation: false,
-      }),
+      texte(
+        validerTypologie({
+          ...complet,
+          estEtablissementTravail: false,
+          estERP: false,
+          estIGH: false,
+          estHabitation: false,
+        }),
+      ),
     ).toBe("Cochez au moins un régime (travail, ERP, IGH ou habitation).");
   });
 
-  it("exige le type et la catégorie d'un ERP", () => {
-    expect(validerTypologie({ ...erp, typeErp: "" })).toBe(
-      "Précisez votre activité ERP.",
+  // Les mots du refus sont ceux du champ qu'il vise. « Activité » et
+  // « capacité d'accueil » étaient le vocabulaire des cartes d'activité que
+  // le recadrage du 2026-09-01 a supprimées ; les champs, eux, demandent un
+  // « type d'établissement » et une « catégorie ». Un refus qui nomme autre
+  // chose que ce qu'il montre envoie chercher un champ qui n'existe pas.
+  it("exige le type et la catégorie d'un ERP, dans les mots des champs", () => {
+    expect(texte(validerTypologie({ ...erp, typeErp: "" }))).toBe(
+      "Précisez le type de votre ERP.",
     );
-    expect(validerTypologie({ ...erp, categorieErp: "" })).toBe(
-      "Précisez votre capacité d'accueil.",
+    expect(texte(validerTypologie({ ...erp, categorieErp: "" }))).toBe(
+      "Précisez la catégorie de votre ERP.",
     );
+  });
+
+  // Le vocabulaire des cartes supprimées ne doit revenir par aucune porte.
+  it("ne parle plus d'activité ni de capacité d'accueil", () => {
+    const refus = [
+      validerTypologie({ ...erp, typeErp: "" }),
+      validerTypologie({ ...erp, categorieErp: "" }),
+    ].map(texte);
+    for (const m of refus) {
+      expect(m).not.toMatch(/activité|capacité/i);
+    }
   });
 
   it("exige la classe d'un IGH", () => {
     expect(
-      validerTypologie({ ...complet, estIGH: true, classeIgh: "" }),
+      texte(validerTypologie({ ...complet, estIGH: true, classeIgh: "" })),
     ).toBe("Précisez la classe IGH.");
   });
 
@@ -122,7 +158,7 @@ describe("étape 2 — les régimes (ADR-004)", () => {
   // relève du Code du travail et que le produit sert entièrement.
   it("refuse un ERP situé dans un IGH", () => {
     expect(
-      validerTypologie({ ...erp, estIGH: true, classeIgh: "GHW" }),
+      texte(validerTypologie({ ...erp, estIGH: true, classeIgh: "GHW" })),
     ).toContain("immeuble de grande hauteur");
   });
 
@@ -155,11 +191,13 @@ describe("étape 2 — une réponse retirée ne laisse pas sa précision derriè
 
   it("exige la famille tant que l'habitation est cochée", () => {
     expect(
-      validerTypologie({
-        ...complet,
-        estHabitation: true,
-        familleHabitation: "",
-      }),
+      texte(
+        validerTypologie({
+          ...complet,
+          estHabitation: true,
+          familleHabitation: "",
+        }),
+      ),
     ).toBe("Précisez la famille de l'immeuble d'habitation.");
   });
 });
@@ -174,7 +212,9 @@ describe("étape 1 — la borne d'effectif (ADR-031)", () => {
   });
 
   it("refuse 51 salariés en nommant la limite", () => {
-    const message = validerIdentite({ ...complet, effectifSurSite: "51" });
+    const message = texte(
+      validerIdentite({ ...complet, effectifSurSite: "51" }),
+    );
     expect(message).toContain("50");
   });
 
@@ -185,5 +225,104 @@ describe("étape 1 — la borne d'effectif (ADR-031)", () => {
     expect(
       validerIdentite({ ...complet, estERP: true, categorieErp: "N1" }),
     ).toBeNull();
+  });
+});
+
+
+describe("le refus dit où regarder, et de quelle nature il est", () => {
+  // La moitié qui manquait au message. Rendu en bas de colonne, sous les
+  // trois cartes de l'étape 2, « Précisez… » s'affichait six cents pixels
+  // sous le contrôle visé — on le lisait en regardant la carte
+  // « habitation ». `champ` est ce qui permet à l'étape de le rendre sous le
+  // bon champ, et au shell d'y amener le regard.
+  const erp: OnboardingState = {
+    ...complet,
+    estEtablissementTravail: false,
+    estERP: true,
+    typeErp: "O",
+    categorieErp: "N5",
+  };
+
+  it.each([
+    ["raisonSociale", { raisonSociale: "" }],
+    ["adresseRue", { adresseRue: "ab" }],
+    ["adresseCodePostal", { adresseCodePostal: "2920" }],
+    ["adresseVille", { adresseVille: "B" }],
+    ["codeNaf", { codeNaf: "" }],
+    ["effectifSurSite", { effectifSurSite: "0" }],
+  ])("étape 1 : le refus vise %s", (champ, patch) => {
+    expect(validerIdentite({ ...complet, ...patch })?.champ).toBe(champ);
+  });
+
+  it.each([
+    ["typeErp", { ...erp, typeErp: "" }],
+    ["categorieErp", { ...erp, categorieErp: "" }],
+    ["classeIgh", { ...complet, estIGH: true, classeIgh: "" }],
+    [
+      "familleHabitation",
+      { ...complet, estHabitation: true, familleHabitation: "" },
+    ],
+  ])("étape 2 : le refus vise %s", (champ, etat) => {
+    expect(validerTypologie(etat as OnboardingState)?.champ).toBe(champ);
+  });
+
+  // Un régime manquant ne vise aucun champ : trois questions sont en cause,
+  // pas une. Celui-là reste rendu en bas de colonne — et c'est la seule
+  // raison pour laquelle le shell garde cet emplacement.
+  it("le régime manquant ne vise aucun champ", () => {
+    const b = validerTypologie({
+      ...complet,
+      estEtablissementTravail: false,
+      estERP: false,
+      estIGH: false,
+      estHabitation: false,
+    });
+    expect(b?.champ).toBeUndefined();
+  });
+
+  // `perimetre` distingue le champ oublié — qu'on lève en le remplissant, et
+  // que le clic révèle — de la borne du produit, qu'aucune saisie ne lève et
+  // qui ferme donc la porte avant le clic.
+  it("un champ oublié n'est pas un refus de périmètre", () => {
+    expect(
+      validerIdentite({ ...complet, raisonSociale: "" })?.perimetre,
+    ).toBeUndefined();
+    expect(validerTypologie({ ...erp, typeErp: "" })?.perimetre).toBeUndefined();
+  });
+
+  it("la borne d'effectif et l'ERP en IGH en sont", () => {
+    expect(
+      validerIdentite({ ...complet, effectifSurSite: "51" })?.perimetre,
+    ).toBe(true);
+    expect(
+      validerTypologie({ ...erp, estIGH: true, classeIgh: "GHW" })?.perimetre,
+    ).toBe(true);
+  });
+});
+
+describe("la borne d'effectif n'est écrite qu'une fois", () => {
+  // Elle l'était deux fois, dans deux formulations : « au-delà de ce que
+  // Rojer prend en charge » sous le champ, en gris et sans icône, puis
+  // « Rojer prend en charge les structures jusqu'à 50 salariés » en rouge au
+  // clic. L'écran et le passage d'étape lisent maintenant la même fonction —
+  // si les deux textes divergent à nouveau, c'est qu'un second a été réécrit
+  // quelque part.
+  it("le refus du passage d'étape EST celui que l'écran affiche", () => {
+    expect(validerIdentite({ ...complet, effectifSurSite: "51" })).toEqual(
+      refusEffectif("51"),
+    );
+  });
+
+  it("se tait jusqu'à la borne, et parle au-delà", () => {
+    expect(refusEffectif("50")).toBeNull();
+    expect(refusEffectif("51")?.message).toContain("50");
+  });
+
+  it("ne se déclenche pas sur une saisie qui n'est pas un entier", () => {
+    // « 50,5 » est refusé plus haut, par la règle de l'entier : ce n'est pas
+    // un dépassement de borne, et le dire ainsi enverrait chercher une
+    // structure trop grande là où il n'y a qu'une virgule.
+    expect(refusEffectif("50.5")).toBeNull();
+    expect(refusEffectif("")).toBeNull();
   });
 });
