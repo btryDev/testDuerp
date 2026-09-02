@@ -179,6 +179,27 @@ describe("construireSections — structure", () => {
     expect(new Set(tous).size).toBe(tous.length);
   });
 
+  it("ne fait porter à aucun item le nom de sa propre section", () => {
+    // Le rail affiche le nom de la catégorie, le panneau le répète en
+    // en-tête, et l'item le disait une troisième fois : « Paramètres » se
+    // lisait trois fois d'affilée pour quatre écrans différents, dont une
+    // page intitulée « Connecter » au bout du lien. Un item qui reprend le
+    // nom de sa section ne nomme rien — il ne dit pas ce qui le distingue de
+    // sa voisine, et c'est la seule chose qu'on lui demande.
+    for (const sec of sections()) {
+      for (const it of sec.items) {
+        expect(it.label.toLowerCase()).not.toBe(sec.title.toLowerCase());
+      }
+    }
+  });
+
+  it("ne fait porter à aucun item le nom d'un autre item", () => {
+    // Borne voisine, et pas la même règle : deux entrées homonymes dans deux
+    // panneaux différents se distinguent aussi mal que l'item et sa section.
+    const labels = sections().flatMap((s) => s.items.map((i) => i.label));
+    expect(new Set(labels).size).toBe(labels.length);
+  });
+
   it("préfixe toutes les destinations réelles par l'établissement", () => {
     for (const sec of sections()) {
       for (const it of sec.items) {
