@@ -1,11 +1,23 @@
 "use client";
 
 // Widget « Prochaines échéances » — 2 variants :
-//  - list     : liste verticale V2 (titre + equip · date J+N + pill)
+//  - list     : liste verticale (titre + equip · date J+N + pastille)
 //  - timeline : axe horizontal avec dots marqués aux dates (historique)
+//
+// La variante « liste » parlait un dialecte à elle : en-tête en `.v2-title` /
+// `.v2-subtitle`, séparateurs en pointillé, pastilles `.pill-v2` monospacées
+// dont l'une en contour tireté. Elle était seule de tout le board dans ce
+// registre — et les classes `v2-*` tirent leurs couleurs de `--ink`, `--rule`
+// et `--muted-foreground`, c'est-à-dire de la charte papier, celle qui est de
+// la dette. Elle passe donc à ce que le reste du board emploie : `BentoCell`
+// pour l'en-tête, filets pleins en `--board-slate-line`, et les couples
+// champ/encre de `CHAMP_ETAT`/`ENCRE_ETAT` pour les pastilles.
+//
+// Le monospace ne disparaît pas pour autant : la charte le réserve aux
+// sur-titres et aux DATES, qui le gardent ici. C'est le libellé d'équipement
+// qui n'y avait pas droit — c'est une méta de ligne, pas une date.
 
-import { CHAMP_ETAT } from "@/lib/calendrier/etats";
-import Link from "next/link";
+import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
 import { LienProvenance } from "@/components/navigation/LienProvenance";
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import { formaterDateCourteFr } from "@/lib/dates";
@@ -55,17 +67,11 @@ export function WidgetProchainesEcheances({
 
   if (prochainesVerifs.length === 0) {
     return (
-      <section className="carte-board px-7 py-6 sm:px-8">
-        <header className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="v2-title">Prochaines échéances</h3>
-            <p className="v2-subtitle">Les 5 prochaines vérifications</p>
-          </div>
-        </header>
-        <p className="text-[0.88rem] text-[color:var(--board-slate-mid)]">
+      <BentoCell kicker="Prochaines échéances" sub="Les 5 prochaines vérifications">
+        <p className="mt-3 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
           Aucune vérification planifiée pour l&apos;instant.
         </p>
-      </section>
+      </BentoCell>
     );
   }
 
@@ -87,30 +93,28 @@ export function WidgetProchainesEcheances({
     );
   }
 
-  // Variant "list" V2 : titre + equip (gauche) · date + J+N + pill (droite)
+  // Variant "list" : titre + equip (gauche) · date + J+N + pastille (droite)
   return (
-    <section className="carte-board px-7 py-6 sm:px-8">
-      <header className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="v2-title">Prochaines échéances</h3>
-          <p className="v2-subtitle">Les 5 prochaines vérifications</p>
-        </div>
-        <Link
-          href={`/etablissements/${etablissementId}/calendrier`}
-          className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-[color:var(--board-slate-ink)] hover:text-[color:var(--board-ink)]"
-        >
-          Tout voir ↗
-        </Link>
-      </header>
-      <ul className="flex flex-col">
+    <BentoCell
+      kicker="Prochaines échéances"
+      sub="Les 5 prochaines vérifications"
+      more={{
+        href: `/etablissements/${etablissementId}/calendrier`,
+        label: "Tout voir",
+      }}
+    >
+      <ul className="m-0 mt-1 flex list-none flex-col p-0">
         {prochainesVerifs.map((v, i) => {
           const c = classifier(v.statut, v.datePrevue, aujourdhui);
-          const pillClass =
+          // Les trois états que cette liste sait montrer, pris à la table
+          // unique : un couple champ/encre réinventé ici a déjà rendu un
+          // « à venir » rose dans un écran sur trois.
+          const etat =
             c.tone === "alerte"
-              ? "pill-v2 pill-v2-alert"
+              ? "enRetard"
               : c.tone === "warn"
-                ? "pill-v2 pill-v2-dashed"
-                : "pill-v2 pill-v2-navy-soft";
+                ? "aPlanifier"
+                : "lointain";
           const pillLabel =
             c.tone === "alerte"
               ? "Dépassé"
@@ -126,9 +130,14 @@ export function WidgetProchainesEcheances({
           return (
             <li
               key={v.id}
-              style={{
-                borderTop: i === 0 ? "0" : "1px dashed var(--board-slate)",
-              }}
+              // Filet plein, et sur le `<li>` : le pointillé était le seul
+              // du board, et `--board-slate` n'est pas une encre de filet —
+              // c'est la teinte des graduations.
+              className={
+                i === 0
+                  ? ""
+                  : "border-t border-[color:var(--board-slate-line)]"
+              }
             >
               <LienProvenance
                 href={`/etablissements/${etablissementId}/verifications/${v.id}`}
@@ -146,21 +155,30 @@ export function WidgetProchainesEcheances({
                       <MentionContractuelle />
                     ) : null}
                   </p>
-                  <p className="mt-[3px] truncate font-mono text-[11px] tracking-[0.04em] text-[color:var(--board-slate-mid)]">
+                  {/* Méta de ligne, pas une date : elle n'a rien à faire en
+                      monospace, et le `tracking` positif hors capitales
+                      monospacées n'existe pas dans le barème. */}
+                  <p className="mt-[3px] truncate text-[12.5px] text-[color:var(--board-slate-mid)]">
                     {v.equipement.libelle}
                   </p>
                 </div>
-                <div className="flex flex-col items-end gap-1">
+                <div className="flex flex-col items-end gap-1.5">
+                  {/* La date garde le monospace : le barème le lui réserve,
+                      avec les sur-titres. */}
                   <span className="font-mono text-[12px] tabular-nums text-[color:var(--board-slate-ink)]">
                     {c.libelleDate}
                   </span>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className={"text-[12px] " + dansColor}>{dans}</span>
                     <span
-                      className={"font-mono text-[10.5px] " + dansColor}
+                      className="pastille-board flex-none"
+                      style={{
+                        background: CHAMP_ETAT[etat],
+                        color: ENCRE_ETAT[etat],
+                      }}
                     >
-                      {dans}
+                      {pillLabel}
                     </span>
-                    <span className={pillClass}>{pillLabel}</span>
                   </div>
                 </div>
               </LienProvenance>
@@ -168,7 +186,7 @@ export function WidgetProchainesEcheances({
           );
         })}
       </ul>
-    </section>
+    </BentoCell>
   );
 }
 
