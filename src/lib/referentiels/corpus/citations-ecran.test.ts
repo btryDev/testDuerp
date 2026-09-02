@@ -12,15 +12,22 @@ import {
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 
 describe("ce que les écrans citent sans que personne l'ait ouvert", () => {
-  // CLIQUET. Mesuré le 2026-09-02 : 23 articles sont cités sur une surface qui
-  // s'affiche sans qu'aucun corpus les déclare dépouillés. Parmi eux les trois
-  // articles fondateurs du DUERP (`L. 4121-1`, `-2`, `-3`), la vigilance
-  // prestataires (`L. 8222-1`, `D. 8222-5`) et le plan de prévention entier
-  // (`R. 4512-2`, `-6`, `-7`, `-12`), ce dernier avec un extrait cité entre
-  // guillemets à l'écran.
+  // CLIQUET. Mesuré à 23 le 2026-09-02 au matin : 23 articles étaient cités
+  // sur une surface qui s'affiche sans qu'aucun corpus les déclare dépouillés.
+  // **16 le même jour**, après le dépouillement du socle DUERP
+  // (`code-travail-duerp.ts`) : les sept articles fondateurs — `L. 4121-1`,
+  // `-2`, `-3`, `-3-1`, `R. 4121-1`, `-1-1`, `-2` — sont entrés au corpus, en
+  // deux corpus intégraux. Le plus exposé était `R. 4121-2`, affiché sur
+  // l'écran de synthèse AVEC un seuil d'effectif : la lecture a confirmé le
+  // seuil de onze et montré que les deux autres déclencheurs de mise à jour,
+  // qui n'ont pas de seuil, ne sont portés par rien.
+  //
+  // Restent notamment la vigilance prestataires (`L. 8222-1`, `D. 8222-5`) et
+  // le plan de prévention entier (`R. 4512-2`, `-6`, `-7`, `-12`), ce dernier
+  // avec un extrait cité entre guillemets à l'écran.
   //
   // Il ne remonte pas. Chaque dépouillement qui en absorbe un l'abaisse d'autant.
-  const PLAFOND = 23;
+  const PLAFOND = 16;
 
   it("ne dépasse pas le plafond, et le plafond ne remonte pas", () => {
     const orphelines = citationsSansCorpus(RACINE);

@@ -185,7 +185,7 @@ que rien ne cite n'apparaît donc dans aucun degré ci-dessus — et le prendre
 pour du travail restant est exactement l'erreur qui a failli faire relancer
 une relecture déjà faite.
 
-**179 articles dépouillés ne sont cités par aucune obligation**, répartis sur 19 corpus.
+**189 articles dépouillés ne sont cités par aucune obligation**, répartis sur 21 corpus.
 
 | corpus | articles non cités | sur | lus |
 | --- | --- | --- | --- |
@@ -196,9 +196,11 @@ une relecture déjà faite.
 | `code-travail-formation-securite` | 11 | 26 | 2026-08-31 |
 | `csp-eau-potable` | 10 | 10 | 2026-09-02 |
 | `arrete-2004-12-21-echafaudages` | 7 | 7 | 2026-09-01 |
+| `code-travail-duerp-principes` | 6 | 6 | 2026-09-02 |
 | `code-travail-co-activite` | 5 | 9 | 2026-08-31 |
 | `arrete-1986-habitation` | 5 | 10 | 2026-09-01 |
 | `arrete-1993-03-05-machines` | 5 | 5 | 2026-09-02 |
+| `code-travail-duerp` | 4 | 5 | 2026-09-02 |
 | `arrete-2018-02-23-gaz-habitation` | 3 | 4 | 2026-08-26 |
 | `code-travail-sante-travail` | 3 | 15 | 2026-08-31 |
 | `arrete-1980-livre-2` | 2 | 18 | 2026-09-01 |
@@ -209,7 +211,7 @@ une relecture déjà faite.
 | `code-travail-locaux-sociaux` | 1 | 5 | 2026-08-31 |
 | `code-travail-service-prevention-sante` | 1 | 4 | 2026-08-31 |
 
-**6 corpus ne sont cités nulle part** — `code-travail-travail-en-hauteur` (33 articles, lus 2026-09-01), `arrete-1993-11-04-signalisation` (21 articles, lus 2026-09-02), `arrete-2021-09-10-retours-eau` (14 articles, lus 2026-09-02), `csp-eau-potable` (10 articles, lus 2026-09-02), `arrete-2004-12-21-echafaudages` (7 articles, lus 2026-09-01), `arrete-1993-03-05-machines` (5 articles, lus 2026-09-02). Le dépouillement est fait, aucune obligation ne s'y branche encore.
+**7 corpus ne sont cités nulle part** — `code-travail-travail-en-hauteur` (33 articles, lus 2026-09-01), `arrete-1993-11-04-signalisation` (21 articles, lus 2026-09-02), `arrete-2021-09-10-retours-eau` (14 articles, lus 2026-09-02), `csp-eau-potable` (10 articles, lus 2026-09-02), `arrete-2004-12-21-echafaudages` (7 articles, lus 2026-09-01), `code-travail-duerp-principes` (6 articles, lus 2026-09-02), `arrete-1993-03-05-machines` (5 articles, lus 2026-09-02). Le dépouillement est fait, aucune obligation ne s'y branche encore.
 
 Le total du corpus, les articles jamais lus et ceux qui imposent une obligation que le référentiel ne porte pas sont tenus par `pnpm relecture`, qui les compte à la maille du corpus.
 

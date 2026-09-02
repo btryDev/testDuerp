@@ -43,6 +43,10 @@ import { CODE_TRAVAIL_CO_ACTIVITE } from "./code-travail-co-activite";
 import { CODE_TRAVAIL_SERVICE_PREVENTION_SANTE } from "./code-travail-service-prevention-sante";
 import { CODE_TRAVAIL_MANUTENTION_ECRAN } from "./code-travail-manutention-ecran";
 import {
+  CODE_TRAVAIL_DUERP,
+  CODE_TRAVAIL_DUERP_PRINCIPES,
+} from "./code-travail-duerp";
+import {
   ARRETE_2004_12_21_ECHAFAUDAGES,
   CODE_TRAVAIL_TRAVAIL_EN_HAUTEUR,
 } from "./code-travail-travail-en-hauteur";
@@ -148,6 +152,19 @@ export const CORPUS: readonly Corpus[] = [
   // le produit ne sait pas identifier.
   CSP_EAU_POTABLE,
   ARRETE_2021_09_10_RETOURS_EAU,
+  // Lot « socle DUERP », 2026-09-02 — le texte fondateur du produit, dont le
+  // corpus ne portait qu'un article (`R. 4121-4`, entré par la porte de
+  // l'affichage obligatoire) alors que dix-neuf surfaces le citent au
+  // dirigeant. Le cliquet de `citations-ecran.ts` l'a mesuré : sept des
+  // vingt-trois citations orphelines venaient d'ici, dont le seuil d'effectif
+  // affiché sur l'écran de synthèse. Deux corpus et non un, parce que le
+  // domaine est écrit aux deux étages du Code et que chacun des deux est
+  // INTÉGRAL — six articles sur six, cinq sur cinq. Résultat principal : le
+  // seuil de onze salariés affiché à l'écran est le bon, et il est attribué au
+  // bon article ; ce qui manque est le RESTE de `R. 4121-2`, dont les 2° et 3°
+  // s'appliquent sans condition d'effectif et ne sont portés par rien.
+  CODE_TRAVAIL_DUERP_PRINCIPES,
+  CODE_TRAVAIL_DUERP,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {

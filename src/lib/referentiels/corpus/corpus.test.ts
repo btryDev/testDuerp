@@ -900,7 +900,58 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // légionelles ; celui-ci est un plan des réseaux et un journal
       // d'interventions sur les dispositifs anti-retour.
       "Arrêté 10-09-2021 art. 12",
-
+      // ── Lot « socle DUERP », 2026-09-02 : le texte fondateur du produit.
+      // Bloc contigu en fin de liste, pour la raison écrite par le lot D1 — le
+      // lot B supprime cette énumération, un bloc d'un seul tenant se retire
+      // d'un coup.
+      //
+      // Quatre entrées pour onze articles lus, en deux corpus INTÉGRAUX (six
+      // articles du chapitre législatif, cinq de la section réglementaire).
+      // Aucune n'est un défaut d'encodage : ce sont quatre obligations réelles
+      // trouvées dans le texte que le produit cite le plus et que le corpus
+      // n'avait jamais ouvert — un seul de ses articles y figurait, entré par
+      // la porte de l'affichage obligatoire.
+      //
+      // L. 4121-3 : « Cette évaluation des risques tient compte de l'impact
+      // différencié de l'exposition au risque en fonction du sexe », phrase
+      // insérée par la loi n° 2021-1018 et en vigueur depuis le 2022-03-31.
+      // ZÉRO occurrence dans le dépôt, balayage de `src/` et `docs/` le
+      // 2026-09-02. Le blocage n'est pas le modèle d'obligations — un état
+      // permanent d'établissement conviendrait — mais le fait que le texte
+      // exige que l'ÉVALUATION en tienne compte : une case à cocher y
+      // répondrait en apparence et pas en fait.
+      "L. 4121-3",
+      // L. 4121-3-1 : deux manques, et le premier vaut pour toute la cible. Le
+      // VI fait transmettre le document unique au service de prévention et de
+      // santé au travail À CHAQUE MISE À JOUR, sans seuil d'effectif — porté
+      // par rien. Événementiel, donc même blocage que R. 4141-8 et R. 4141-12,
+      // à ceci près que l'événement déclencheur est ici un acte de l'outil
+      // lui-même (la validation d'une version). Le III 1° ajoute, à cinquante
+      // salariés pile — DANS la cible de l'ADR-031 —, un programme annuel de
+      // prévention avec coût, indicateurs de résultat, ressources et
+      // calendrier, que le modèle `Action` ne sait pas porter.
+      "L. 4121-3-1",
+      // R. 4121-1-1 : l'annexe du document unique — données collectives
+      // d'exposition et PROPORTION de salariés exposés aux facteurs de
+      // L. 4161-1 au-delà des seuils. Le PDF imprime déjà une page à ce numéro
+      // qui rend autre chose : un effectif brut par risque du référentiel
+      // sectoriel, pas une proportion par facteur légal. Deux blocages : le
+      // modèle `Risque` ne rattache aucun risque à un facteur de L. 4161-1, et
+      // le renvoi « aux seuils prévus au même article » pointe un article qui
+      // n'en fixe plus depuis 2017 — où ils vivent aujourd'hui n'a pas été
+      // établi, et encoder sans le savoir fabriquerait une exigence chiffrée
+      // sur un renvoi en l'air.
+      "R. 4121-1-1",
+      // R. 4121-2 : l'article le plus exposé du lot, et celui dont la lecture
+      // était la plus attendue — il s'affiche sur l'écran de synthèse AVEC un
+      // seuil d'effectif. Le seuil est JUSTE (« Au moins chaque année dans les
+      // entreprises d'au moins onze salariés »), et il est attribué au bon
+      // article. Ce qui manque est le reste : les 2° et 3° — décision
+      // d'aménagement important, information supplémentaire — s'appliquent
+      // SANS condition d'effectif, et sont donc les seules règles de mise à
+      // jour pour la part de la cible en dessous de onze salariés, à qui le
+      // dossier ne dit rien. Événementiels tous les deux.
+      "R. 4121-2",
     ]);
   });
 
