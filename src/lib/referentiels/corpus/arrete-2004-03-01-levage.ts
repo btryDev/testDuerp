@@ -16,6 +16,7 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
     {
       ref: "Arrêté 2004-03-01 annexe",
       versionEnVigueur: "2011-01-09",
+      modifiePar: { texte: "Arrêté du 29 décembre 2010 - art. 7" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -48,6 +49,7 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
     {
       ref: "Arrêté 2004-03-01 art. 19",
       versionEnVigueur: "2008-05-01",
+      modifiePar: { texte: "Décret n° 2008-244 du 7 mars 2008 - art. 9 (V)" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -59,6 +61,9 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
     {
       ref: "Arrêté 2004-03-01 art. 20",
       versionEnVigueur: "2005-03-31",
+      // Page de l'article (LEGIARTI000006680466) : aucune ligne « Modifié par ».
+      // Version d'origine, en vigueur depuis le 31/03/2005.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -87,6 +92,9 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
     {
       ref: "Arrêté 2004-03-01 art. 23",
       versionEnVigueur: "2005-03-31",
+      // Page de l'article (LEGIARTI000006680469) : aucune ligne « Modifié par ».
+      // Version d'origine, en vigueur depuis le 31/03/2005.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -112,6 +120,9 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
     {
       ref: "Arrêté 2004-03-01 art. 24",
       versionEnVigueur: "2008-05-01",
+      // La page porte DEUX lignes ; la seconde, antérieure, est
+      // « Modifié par Ordonnance n° 2007-329 du 12 mars 2007 - art. 12 (V) ».
+      modifiePar: { texte: "Décret n° 2008-244 du 7 mars 2008 - art. 9 (V)" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -123,6 +134,9 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
     {
       ref: "Arrêté 2004-03-01 art. 5",
       versionEnVigueur: "2005-03-31",
+      // Page de l'article (LEGIARTI000006680446) : aucune ligne « Modifié par ».
+      // Version d'origine, en vigueur depuis le 31/03/2005.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -136,6 +150,9 @@ export const ARRETE_2004_03_01_LEVAGE: Corpus = {
     {
       ref: "Arrêté 2004-03-01 art. 9",
       versionEnVigueur: "2005-03-31",
+      // Page de l'article (LEGIARTI000006680450) : aucune ligne « Modifié par ».
+      // Version d'origine, en vigueur depuis le 31/03/2005.
+      modifiePar: null,
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
