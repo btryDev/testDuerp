@@ -87,9 +87,10 @@ export default async function PlanPreventionListePage({
                 Cette liste conserve l&apos;historique de ces analyses.
               </p>
               <p className="m-0 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
-                Créez un plan pour votre prochaine intervention. Commencez par
-                le diagnostic intégré : l&apos;outil vous dit si un plan écrit
-                est obligatoire ou si un plan recommandé suffit.
+                Créez un plan pour votre prochaine intervention. Le diagnostic
+                intégré vous dit si l&apos;<strong>écrit</strong> est
+                obligatoire ; le plan lui-même est dû dès qu&apos;un risque
+                d&apos;interférence existe, quelle que soit la durée.
               </p>
               <div className="mt-2">
                 <Link
@@ -168,11 +169,25 @@ export default async function PlanPreventionListePage({
           enjeu="Une entreprise qui intervient chez vous fait intervenir son personnel dans votre environnement : si un accident survient faute d'analyse conjointe, votre responsabilité est engagée."
           tonalite="info"
         >
+          {/* CE QUE LES 400 HEURES CONDITIONNENT, ET CE QU'ELLES NE
+              CONDITIONNENT PAS. C'est R. 4512-6 qui fait naître le plan, dès
+              que l'analyse conjointe révèle un risque d'interférence et quelle
+              que soit la durée ; R. 4512-7 ne commande que l'ÉCRIT. Cette
+              carte était la seule surface du module à préserver la
+              distinction — « écrit obligatoire si… » — sans dire pour autant
+              ce qui reste dû en dessous du seuil. Elle le dit maintenant :
+              sous 400 heures, le dirigeant doit toujours coordonner et
+              inspecter. Verbatim relevé le 2026-09-02
+              (`referentiels/corpus/code-travail-plan-prevention.ts`). */}
           <p className="m-0">
-            Le plan de prévention est <strong>écrit obligatoire</strong> si les
-            travaux atteignent <strong>400 h sur 12 mois</strong> OU figurent sur
-            la liste des travaux dangereux de l&apos;arrêté du 19-03-1993. Dans
-            tous les cas, une inspection commune préalable est imposée.
+            Le plan de prévention naît de l&apos;<strong>analyse conjointe des
+            risques</strong>, dès qu&apos;un risque d&apos;interférence existe
+            et quelle que soit la durée (art. R. 4512-6). Il doit être établi{" "}
+            <strong>par écrit</strong> si les travaux atteignent{" "}
+            <strong>400 h sur 12 mois</strong> OU figurent sur la liste des
+            travaux dangereux de l&apos;arrêté du 19-03-1993 (art. R. 4512-7).
+            Sous ce seuil, l&apos;inspection commune préalable et
+            l&apos;accord sur les mesures restent dus.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <LegalBadge

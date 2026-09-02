@@ -18,15 +18,28 @@ import { depuisCleJourCivil, depuisSaisieDateHeure } from "@/lib/dates";
  * l'écran ni dans le ZIP remis à un tiers, où « décret 92-158 » passait pour
  * une source en vigueur.
  *
- * Le diagnostic initial aide le dirigeant à savoir s'il doit établir un
- * plan ÉCRIT (obligatoire) ou juste oral. Les critères :
+ * DEUX ARTICLES, DEUX QUESTIONS, ET C'EST LE POINT QU'ON RATE. `R. 4512-6`
+ * fait NAÎTRE le plan : au vu de l'inspection commune, les chefs d'entreprise
+ * analysent en commun les risques d'interférence et, « lorsque ces risques
+ * existent », arrêtent d'un commun accord un plan de prévention avant le début
+ * des travaux — quelle que soit la durée, sans seuil d'aucune sorte.
+ * `R. 4512-7` ne crée aucune obligation nouvelle : il dit dans quels deux cas
+ * ce plan passe à l'ÉCRIT.
  *
  *   - Durée totale ≥ 400 h sur 12 mois : écrit obligatoire
  *   - Travaux sur liste dangereuse (arrêté 19-03-1993) : écrit obligatoire
  *     indépendamment de la durée
  *
- * En dessous, l'analyse et les mesures restent obligatoires mais peuvent
- * être simplement consignées oralement à l'inspection commune.
+ * Le diagnostic ne répond donc qu'à la seconde question. Sous le seuil,
+ * l'inspection commune préalable (`R. 4512-2`) et l'accord sur les mesures
+ * (`R. 4512-6`) restent dus : c'est la FORME qui n'est pas imposée, pas le
+ * plan. Les surfaces qui disaient « le plan » là où le texte dit « le plan
+ * écrit » laissaient entendre l'inverse, et `recommandation` disait que
+ * l'écrit protège « en cas de litige » — un argument de prudence, là où le
+ * texte porte une obligation.
+ *
+ * Verbatim des trois articles relevé le 2026-09-02 :
+ * `referentiels/corpus/code-travail-plan-prevention.ts`.
  */
 
 const DATETIME_FMT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
@@ -153,6 +166,6 @@ export function diagnostiquerPlan(params: {
     raisons,
     recommandation: ecritObligatoire
       ? "Un plan de prévention ÉCRIT est obligatoire avant démarrage des travaux."
-      : "Un plan écrit n'est pas strictement exigé, mais fortement recommandé — il protège les deux parties en cas de litige et sert de preuve de l'analyse de risques conjointe.",
+      : "Le plan reste dû : il naît de l'analyse conjointe dès qu'un risque d'interférence existe, quelle que soit la durée (art. R. 4512-6). Ce sont les 400 heures qui commandent l'écrit, et elles ne sont pas atteintes ici. L'inspection commune préalable et l'accord sur les mesures, eux, restent à faire avant le début des travaux.",
   };
 }
