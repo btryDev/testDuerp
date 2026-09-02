@@ -198,6 +198,23 @@ export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
   // domaine. Le même appareil, deux textes, deux domaines — et un seul des
   // deux attend quelqu'un.
   signalisation: AUCUN_TIERS_ATTENDU,
+  // Le compactage des déchets, entré le 2026-09-02. PAS `aucun_tiers_attendu`,
+  // et la différence avec la signalisation qui le précède se lit dans les deux
+  // textes : l'arrêté du 4 novembre 1993 ne réserve la signalisation à
+  // personne, tandis que `R. 4323-24` réserve la vérification générale
+  // périodique à des « personnes qualifiées » — un réalisateur que
+  // `REALISATEURS_TIERS` compte comme tiers, donc `supposeUnTiers()` est vrai
+  // et cette entrée est réellement consultée.
+  //
+  // `bureau_controle` SEUL, et c'est une lecture, pas un repli. Le même
+  // `R. 4323-24` ajoute « appartenant ou non à l'établissement » : aucun
+  // organisme extérieur n'est exigé, et l'arrêté du 5 mars 1993 n'accrédite
+  // personne. Le tiers réellement appelé quand l'employeur n'a pas de
+  // personne qualifiée en interne est celui qui fait déjà les VGP du domaine
+  // `levage` — un bureau de contrôle. Créer une valeur d'enum
+  // « compactage » ferait inscrire à l'annuaire un métier qui n'existe pas
+  // sous ce nom, et l'inscription resterait vide chez tout le monde.
+  compactage_dechets: ["bureau_controle"],
 };
 
 /**

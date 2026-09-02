@@ -11,7 +11,7 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
   url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018489757/",
   etendue: "articles_cites",
   portee:
-    "Section 4 du chapitre III : vérification initiale (R. 4323-22), vérifications périodiques (R. 4323-23), qualification du vérificateur (R. 4323-24), remise en service (R. 4323-28), consignation au registre (R. 4323-25 à -27). S'applique à tout employeur. ⚠ LE NOM DU FICHIER DIT « LEVAGE », LA SECTION NON : ces sept articles gouvernent TOUS les équipements de travail. Les articles d'habilitation R. 4323-22, -23 et -28 sont instruits ici par leur branche levage (arrêté du 1er mars 2004) ; la branche hors levage de R. 4323-23 est au corpus `arrete-1993-03-05-machines` depuis le 2026-09-02.",
+    "Section 4 du chapitre III : vérification initiale (R. 4323-22), vérifications périodiques (R. 4323-23), qualification du vérificateur (R. 4323-24), remise en service (R. 4323-28), consignation au registre (R. 4323-25 à -27). S'applique à tout employeur. ⚠ LE NOM DU FICHIER DIT « LEVAGE », LA SECTION NON : ces sept articles gouvernent TOUS les équipements de travail. Les articles d'habilitation R. 4323-22, -23 et -28 sont instruits ici par leur branche levage (arrêté du 1er mars 2004) ; la branche hors levage de R. 4323-23 est au corpus `arrete-1993-03-05-machines` depuis le 2026-09-02, et elle fonde une obligation depuis le même jour.",
   articles: [
     {
       ref: "R. 4323-22",
@@ -40,7 +40,7 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
       luLe: "2026-09-01",
       lecture: "premiere_main",
       prescrit:
-        "Article d'habilitation. Il ne porte AUCUNE périodicité : il renvoie à des arrêtés du ministre chargé du travail ou de l'agriculture le soin de désigner les équipements soumis à vérification générale périodique ET d'en fixer la périodicité, la nature et le contenu. Sa portée est celle de tous les équipements de travail, pas seulement le levage. LA SECONDE BRANCHE EST OUVERTE DEPUIS LE 2026-09-02 : l'arrêté du 5 mars 1993, qui soumet à VGP des machines qui ne sont pas des appareils de levage, est au corpus `arrete-1993-03-05-machines` — la ligne qui figurait ici disait qu'il « n'est instruit nulle part au référentiel », et c'est cette ligne qui a servi de point de départ au dépouillement. Une troisième branche a été ouverte et écartée le même jour : l'arrêté du 24 juin 1993, jumeau du précédent pour les seuls établissements agricoles, hors cible du produit. Le « retenu » ci-dessous ne vaut toujours que pour la branche levage : les deux obligations que la branche hors levage impose sont déclarées manquantes dans son propre corpus, elles ne sont pas encodées. Chemin : livre III, titre II, chapitre III, section 4, sous-section 2 « Vérifications périodiques ».",
+        "Article d'habilitation. Il ne porte AUCUNE périodicité : il renvoie à des arrêtés du ministre chargé du travail ou de l'agriculture le soin de désigner les équipements soumis à vérification générale périodique ET d'en fixer la périodicité, la nature et le contenu. Sa portée est celle de tous les équipements de travail, pas seulement le levage. LA SECONDE BRANCHE EST OUVERTE DEPUIS LE 2026-09-02 : l'arrêté du 5 mars 1993, qui soumet à VGP des machines qui ne sont pas des appareils de levage, est au corpus `arrete-1993-03-05-machines` — la ligne qui figurait ici disait qu'il « n'est instruit nulle part au référentiel », et c'est cette ligne qui a servi de point de départ au dépouillement. Une troisième branche a été ouverte et écartée le même jour : l'arrêté du 24 juin 1993, jumeau du précédent pour les seuls établissements agricoles, hors cible du produit. Le « retenu » ci-dessous a cessé de ne valoir que pour la branche levage le 2026-09-02 : `compactage-dechets-vgp-trimestrielle` y est entrée, fondée sur l'article 1er de l'arrêté du 5 mars 1993 pour ses deux catégories qui touchent les secteurs cibles — presses à balles et compacteurs à déchets. L'article 2 du même arrêté reste `obligation_manquante` dans son corpus, et l'article 1er y porte une `reserve` qui dit ce qui reste dehors. Chemin : livre III, titre II, chapitre III, section 4, sous-section 2 « Vérifications périodiques ».",
       citationCle:
         "Des arrêtés du ministre chargé du travail ou du ministre chargé de l'agriculture déterminent les équipements de travail ou les catégories d'équipement de travail pour lesquels l'employeur procède ou fait procéder à des vérifications générales périodiques afin que soit décelée en temps utile toute détérioration susceptible de créer des dangers. Ces arrêtés précisent la périodicité des vérifications, leur nature et leur contenu.",
       statut: "retenu",
@@ -56,6 +56,11 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
         // périodicité à l'arrêté, ici l'article 23 b) de l'arrêté du 1er mars
         // 2004. Article rouvert à la source ce jour avant l'ajout.
         "levage-vgp-trimestrielle-force-humaine",
+        // La branche HORS LEVAGE, encodée le 2026-09-02. Elle se rattache au
+        // même article habilitant que les six précédentes, et c'est le point :
+        // `R. 4323-23` n'a jamais été un article de levage, seule sa lecture
+        // l'était. La périodicité vient de l'arrêté du 5 mars 1993, art. 1er.
+        "compactage-dechets-vgp-trimestrielle",
       ],
     },
     {
@@ -106,7 +111,14 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
       citationCle:
         "Le résultat des vérifications générales périodiques est consigné sur le ou les registres de sécurité mentionnés à l'article L. 4711-5.",
       statut: "retenu",
-      obligations: ["levage-registre-securite-consignation"],
+      obligations: [
+        "levage-registre-securite-consignation",
+        // Ajoutée le 2026-09-02. L'article ne parle pas de levage : il vise
+        // « les vérifications générales périodiques », toutes branches
+        // confondues. La VGP trimestrielle des compacteurs et presses à
+        // balles s'y consigne au même titre, et le cite en contexte.
+        "compactage-dechets-vgp-trimestrielle",
+      ],
     },
     {
       ref: "R. 4323-26",

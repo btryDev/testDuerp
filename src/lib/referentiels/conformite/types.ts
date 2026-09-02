@@ -169,6 +169,36 @@ export const DOMAINES_OBLIGATION = [
    * lecture du texte, pas un mot vide.
    */
   "signalisation",
+
+  /**
+   * Compactage des déchets — arrêté du 5 mars 1993, art. 1er, pris pour
+   * l'application de `R. 4323-23`.
+   *
+   * La vérification générale périodique trimestrielle des presses à balles et
+   * des compacteurs à déchets : le compacteur-presse à cartons du commerce de
+   * détail, le compacteur du quai de livraison d'un supermarché ou d'une
+   * grande cuisine.
+   *
+   * POURQUOI PAS `levage`, où l'on aurait pu le ranger au motif que les deux
+   * portent une VGP d'équipement de travail fondée sur le même article
+   * habilitant. Parce que ce sont deux branches qui ne se recouvrent JAMAIS et
+   * que le corpus l'écrit : l'arrêté du 1er mars 2004 borne son champ à la
+   * définition d'« appareil de levage » de son article 2 a), l'arrêté du
+   * 5 mars 1993 procède par liste nominative fermée de machines qui n'en sont
+   * pas. Un compacteur rangé sous « Levage » au calendrier enverrait le
+   * dirigeant chercher son vérificateur de chariots élévateurs, et ferait
+   * croire à l'inverse — qu'un palan relève du trimestre.
+   *
+   * POURQUOI PAS UN DOMAINE « MACHINES » NI « ÉQUIPEMENTS DE TRAVAIL ». Le
+   * même motif que pour la catégorie d'équipement, et il vaut ici aussi : la
+   * liste de l'article 1er est fermée, neuf de ses onze entrées ne touchent
+   * pas les secteurs cibles, et un nom large annoncerait au dirigeant une
+   * couverture que le référentiel n'a pas. Le jour où une autre entrée de
+   * cette liste s'encode — un massicot MOTORISÉ d'atelier de reprographie est
+   * le seul candidat plausible —, la question du nom se rouvre : ce sera une
+   * décision, pas un effet de bord.
+   */
+  "compactage_dechets",
 ] as const;
 
 export type DomaineObligation = (typeof DOMAINES_OBLIGATION)[number];

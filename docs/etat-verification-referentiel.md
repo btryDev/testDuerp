@@ -5,7 +5,7 @@
      du script. Pour le mettre à jour : pnpm verification --ecrire -->
 
 **Généré le** : 2026-09-02
-**Référentiel** : `2026-09-02.6`
+**Référentiel** : `2026-09-02.7`
 **Régénérer** : `pnpm verification --ecrire`
 
 Ce document répond à une question, et à une seule : **de quoi le
@@ -83,18 +83,18 @@ repose sur un texte que personne n'a ouvert.
 
 ## 2. Où en est-on
 
-**144 obligations**, **273 références** — 82 obligations en citent plus d'une.
+**145 obligations**, **278 références** — 83 obligations en citent plus d'une.
 
 | degré | obligations (au plancher) | part | dont fondements | références | part |
 | --- | --- | --- | --- | --- | --- |
-| 5 · lu à la source, verbatim relevé | 54 | 38 % | 61 | 129 | 47 % |
-| 4 · lu à la source par un agent, verbatim rapporté | 80 | 56 % | 77 | 133 | 49 % |
+| 5 · lu à la source, verbatim relevé | 55 | 38 % | 62 | 134 | 48 % |
+| 4 · lu à la source par un agent, verbatim rapporté | 80 | 55 % | 77 | 133 | 48 % |
 | 3 · lu et daté, aucun verbatim | 10 | 7 % | 6 | 11 | 4 % |
 | 2 · lu ailleurs qu'à la source | 0 | 0 % | 0 | 0 | 0 % |
 | 1 · au corpus, aucune trace de lecture | 0 | 0 % | 0 | 0 | 0 % |
 | 0 · rien à ouvrir | 0 | 0 % | 0 | 0 | 0 % |
 
-**134 obligations sur 144 (93 %)** reposent, jusqu'à leur dernière référence de contexte, sur des textes lus à la source avec verbatim relevé.
+**135 obligations sur 145 (93 %)** reposent, jusqu'à leur dernière référence de contexte, sur des textes lus à la source avec verbatim relevé.
 
 **10 obligations (7 %)** citent au moins un texte ouvert et daté dont rien n'a été relevé. Ce n'est pas une lecture à refaire : c'est une lecture qu'on ne peut ni contrôler ni contredire sans rouvrir Légifrance.
 
@@ -108,11 +108,11 @@ repose sur un texte que personne n'a ouvert.
 
 | ancrage | références | part |
 | --- | --- | --- |
-| ancrée | 253 | 93 % |
+| ancrée | 258 | 93 % |
 | divergente | 0 | 0 % |
 | jamais constatée | 20 | 7 % |
 
-**11 obligations sur 144 (8 %) ne portent aucune version constatée, sur aucune de leurs références.** Le jour où l'un de leurs textes est modifié, rien dans le dépôt ne pourra le signaler : l'absence de repère se lit comme « à vérifier », jamais comme « à jour ».
+**11 obligations sur 145 (8 %) ne portent aucune version constatée, sur aucune de leurs références.** Le jour où l'un de leurs textes est modifié, rien dans le dépôt ne pourra le signaler : l'absence de repère se lit comme « à vérifier », jamais comme « à jour ».
 
 **Aucune divergence** entre la version qu'une obligation déclare avoir constatée et celle que le corpus déclare avoir lue. Les deux moitiés du dépôt disent la même chose partout où elles parlent toutes les deux.
 
@@ -125,6 +125,7 @@ repose sur un texte que personne n'a ouvert.
 | `aeration` | 9 | 14 | 3 | 6 | · | · | · | · | 9 / 9 — 100 % | 0 / 14 | 2026-08-26 → 2026-09-01 |
 | `ascenseur` | 8 | 16 | 5 | 3 | · | · | · | · | 8 / 8 — 100 % | 0 / 16 | 2026-08-26 → 2026-09-01 |
 | `co_activite` | 1 | 4 | · | 1 | · | · | · | · | 1 / 1 — 100 % | 0 / 4 | 2026-08-31 |
+| `compactage_dechets` | 1 | 5 | 1 | · | · | · | · | · | 1 / 1 — 100 % | 0 / 5 | 2026-09-01 → 2026-09-02 |
 | `cuisson_hotte` | 6 | 9 | 2 | 3 | 1 | · | · | · | 5 / 6 — 83 % | 1 / 9 | 2026-08-26 → 2026-09-01 |
 | `electricite` | 15 | 24 | 2 | 11 | 2 | · | · | · | 13 / 15 — 87 % | 2 / 24 | 2026-08-26 → 2026-09-01 |
 | `equipement_sous_pression` | 7 | 8 | 7 | · | · | · | · | · | 7 / 7 — 100 % | 1 / 8 | 2026-09-01 |
@@ -143,7 +144,7 @@ repose sur un texte que personne n'a ouvert.
 
 Colonnes numérotées : le nombre d'obligations à chaque rang de l'échelle, mesuré au plancher — **5** première main, **4** agent + verbatim, **3** lu sans verbatim, **2** indirect, **1** sans trace, **0** non rattaché.
 
-**14 domaines ont toutes leurs obligations adossées à des textes lus à la source avec verbatim relevé** : `aeration` (9), `ascenseur` (8), `co_activite` (1), `equipement_sous_pression` (7), `formation_securite` (9), `froid` (8), `information_travailleurs` (2), `levage` (10), `locaux_sociaux` (4), `organisation_prevention` (3), `porte_portail` (5), `secours` (3), `signalisation` (9), `stockage_dangereux` (6).
+**15 domaines ont toutes leurs obligations adossées à des textes lus à la source avec verbatim relevé** : `aeration` (9), `ascenseur` (8), `co_activite` (1), `compactage_dechets` (1), `equipement_sous_pression` (7), `formation_securite` (9), `froid` (8), `information_travailleurs` (2), `levage` (10), `locaux_sociaux` (4), `organisation_prevention` (3), `porte_portail` (5), `secours` (3), `signalisation` (9), `stockage_dangereux` (6).
 
 Aucun domaine n'est entièrement dépourvu de verbatim.
 
@@ -153,7 +154,7 @@ Aucun domaine n'est entièrement dépourvu de verbatim.
 
 |  | obl. | réf. | 5 | 4 | 3 | 2 | 1 | 0 | vérifiées à la source | sans ancre | lu entre |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `equipement` | 85 | 151 | 43 | 34 | 8 | · | · | · | 77 / 85 — 91 % | 20 / 151 | 2026-08-26 → 2026-09-02 |
+| `equipement` | 86 | 156 | 44 | 34 | 8 | · | · | · | 78 / 86 — 91 % | 20 / 156 | 2026-08-26 → 2026-09-02 |
 | `etablissement` | 45 | 90 | 11 | 32 | 2 | · | · | · | 43 / 45 — 96 % | 0 / 90 | 2026-08-26 → 2026-09-02 |
 | `salarie` | 14 | 32 | · | 14 | · | · | · | · | 14 / 14 — 100 % | 0 / 32 | 2026-08-27 → 2026-09-01 |
 
@@ -167,11 +168,11 @@ Colonnes numérotées : le nombre d'obligations à chaque rang de l'échelle, me
 | --- | --- | --- | --- |
 | 2026-08-26 | 46 | 17 % | 37 |
 | 2026-08-27 | 12 | 4 % | 9 |
-| 2026-08-31 | 70 | 26 % | 33 |
-| 2026-09-01 | 135 | 49 % | 83 |
-| 2026-09-02 | 10 | 4 % | 9 |
+| 2026-08-31 | 70 | 25 % | 33 |
+| 2026-09-01 | 137 | 49 % | 84 |
+| 2026-09-02 | 13 | 5 % | 10 |
 
-273 des 273 références portent une date de lecture, toutes comprises entre 2026-08-26 et 2026-09-02.
+278 des 278 références portent une date de lecture, toutes comprises entre 2026-08-26 et 2026-09-02.
 
 Ces dates ne sont pas un âge : elles disent quand quelqu'un a ouvert le
 texte, pas depuis quand la version lue est en vigueur. Une lecture d'hier
@@ -187,7 +188,7 @@ que rien ne cite n'apparaît donc dans aucun degré ci-dessus — et le prendre
 pour du travail restant est exactement l'erreur qui a failli faire relancer
 une relecture déjà faite.
 
-**244 articles dépouillés ne sont cités par aucune obligation**, répartis sur 28 corpus.
+**241 articles dépouillés ne sont cités par aucune obligation**, répartis sur 27 corpus.
 
 | corpus | articles non cités | sur | lus |
 | --- | --- | --- | --- |
@@ -206,27 +207,26 @@ une relecture déjà faite.
 | `code-travail-duerp-principes` | 6 | 6 | 2026-09-02 |
 | `code-travail-matieres-inflammables` | 6 | 6 | 2026-09-02 |
 | `arrete-1986-habitation` | 5 | 10 | 2026-09-01 |
-| `arrete-1993-03-05-machines` | 5 | 5 | 2026-09-02 |
 | `code-travail-bruit-vibrations` | 5 | 5 | 2026-09-02 |
 | `code-travail-duerp` | 4 | 5 | 2026-09-02 |
 | `code-travail-travail-dissimule` | 4 | 4 | 2026-09-02 |
 | `arrete-2018-02-23-gaz-habitation` | 3 | 4 | 2026-08-26 |
 | `code-travail-sante-travail` | 3 | 15 | 2026-08-31 |
+| `arrete-1993-03-05-machines` | 3 | 5 | 2026-09-02 |
 | `arrete-1980-livre-2` | 2 | 18 | 2026-09-01 |
 | `code-travail-electricite` | 2 | 8 | 2026-08-31 |
 | `arrete-2011-12-26-electricite` | 2 | 5 | 2026-08-26 |
 | `code-travail-risque-chimique` | 2 | 8 | 2026-09-01 → 2026-09-02 |
-| `code-travail-levage` | 1 | 7 | 2026-09-02 |
 | `code-travail-locaux-sociaux` | 1 | 5 | 2026-08-31 |
 | `code-travail-service-prevention-sante` | 1 | 4 | 2026-08-31 |
 
-**13 corpus ne sont cités nulle part** — `code-travail-travail-en-hauteur` (33 articles, lus 2026-09-01), `code-travail-plan-prevention` (16 articles, lus 2026-09-02), `arrete-2021-09-10-retours-eau` (14 articles, lus 2026-09-02), `code-travail-eclairage` (12 articles, lus 2026-09-02), `csp-eau-potable` (11 articles, lus 2026-09-02), `code-travail-vigilance-modalites` (8 articles, lus 2026-09-02), `arrete-2004-12-21-echafaudages` (7 articles, lus 2026-09-01), `code-travail-vigilance` (7 articles, lus 2026-09-02), `code-travail-duerp-principes` (6 articles, lus 2026-09-02), `code-travail-matieres-inflammables` (6 articles, lus 2026-09-02), `arrete-1993-03-05-machines` (5 articles, lus 2026-09-02), `code-travail-bruit-vibrations` (5 articles, lus 2026-09-02), `code-travail-travail-dissimule` (4 articles, lus 2026-09-02). Le dépouillement est fait, aucune obligation ne s'y branche encore.
+**12 corpus ne sont cités nulle part** — `code-travail-travail-en-hauteur` (33 articles, lus 2026-09-01), `code-travail-plan-prevention` (16 articles, lus 2026-09-02), `arrete-2021-09-10-retours-eau` (14 articles, lus 2026-09-02), `code-travail-eclairage` (12 articles, lus 2026-09-02), `csp-eau-potable` (11 articles, lus 2026-09-02), `code-travail-vigilance-modalites` (8 articles, lus 2026-09-02), `arrete-2004-12-21-echafaudages` (7 articles, lus 2026-09-01), `code-travail-vigilance` (7 articles, lus 2026-09-02), `code-travail-duerp-principes` (6 articles, lus 2026-09-02), `code-travail-matieres-inflammables` (6 articles, lus 2026-09-02), `code-travail-bruit-vibrations` (5 articles, lus 2026-09-02), `code-travail-travail-dissimule` (4 articles, lus 2026-09-02). Le dépouillement est fait, aucune obligation ne s'y branche encore.
 
 Le total du corpus, les articles jamais lus et ceux qui imposent une obligation que le référentiel ne porte pas sont tenus par `pnpm relecture`, qui les compte à la maille du corpus.
 
 ---
 
-## 8. Les 144 obligations
+## 8. Les 145 obligations
 
 | obligation | domaine | porteur | réf. | fondement | plancher | sans ancre | lu |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -328,6 +328,7 @@ Le total du corpus, les articles jamais lus et ceux qui imposent une obligation 
 | `ascenseur-examen-annuel-securite` | ascenseur | equipement | 2 | 5 · première main | 5 · première main | 0 / 2 | 2026-08-26 → 2026-09-01 |
 | `ascenseur-examen-semestriel-secours` | ascenseur | equipement | 2 | 5 · première main | 5 · première main | 0 / 2 | 2026-08-26 → 2026-09-01 |
 | `ascenseur-visite-six-semaines` | ascenseur | equipement | 2 | 5 · première main | 5 · première main | 0 / 2 | 2026-08-26 → 2026-09-01 |
+| `compactage-dechets-vgp-trimestrielle` | compactage_dechets | equipement | 5 | 5 · première main | 5 · première main | 0 / 5 | 2026-09-01 → 2026-09-02 |
 | `cuisson-erp-circuits-extraction-nettoyage` | cuisson_hotte | equipement | 1 | 5 · première main | 5 · première main | 1 / 1 | 2026-08-26 |
 | `cuisson-erp-filtres-hebdomadaire` | cuisson_hotte | equipement | 1 | 5 · première main | 5 · première main | 0 / 1 | 2026-08-26 |
 | `elec-erp-cat1-4-annuelle` | electricite | equipement | 1 | 5 · première main | 5 · première main | 0 / 1 | 2026-09-01 |
@@ -380,7 +381,7 @@ demande le plus de travail.
 
 ---
 
-## 9. Les 273 références, une par une
+## 9. Les 278 références, une par une
 
 `prescrit` et `verbatim` sont les deux champs du corpus qui rendent une
 lecture relisible : ce que l'article impose, en une phrase, et la phrase
@@ -662,3 +663,8 @@ refaire pour la contredire.
 | `signalisation-etablissement-signaux-lumineux-acoustiques-semestrielle` | fondement | Arrêté du 4 novembre 1993, art. 15, première phrase, second membre (signaux lumineux et acoustiques : vérification du bon fonctionnement et de la réelle efficacité, avant mise en service puis au moins chaque semestre) | Arrêté 1993-11-04 art. 15 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 1993-12-17 | 1993-12-17 | 4 · agent + verbatim | ancrée |
 | `signalisation-etablissement-alimentations-secours-annuelle` | fondement | Arrêté du 4 novembre 1993, art. 15, seconde phrase (vérification des alimentations de secours au moins une fois par an) | Arrêté 1993-11-04 art. 15 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 1993-12-17 | 1993-12-17 | 4 · agent + verbatim | ancrée |
 | `signalisation-etablissement-alimentations-secours-annuelle` | contexte 1 | Arrêté du 4 novembre 1993, art. 7 (ce sont les alimentations de secours que cet article impose qui sont ici vérifiées) | Arrêté 1993-11-04 art. 7 | arrete-1993-11-04-signalisation | retenu | 2026-09-02 | agent_verbatim | ✓ | ✓ | 1993-12-17 | 1993-12-17 | 4 · agent + verbatim | ancrée |
+| `compactage-dechets-vgp-trimestrielle` | fondement | Arrêté du 5 mars 1993, art. 1er, I (presses à balles ; compacteurs à déchets — moins de trois mois au moment de l'utilisation) | Arrêté 1993-03-05 art. 1 | arrete-1993-03-05-machines | retenu | 2026-09-02 | premiere_main | ✓ | ✓ | 1993-12-01 | 1993-12-01 | 5 · première main | ancrée |
+| `compactage-dechets-vgp-trimestrielle` | contexte 1 | R. 4323-23 (article habilitant, branche hors levage) | R. 4323-23 | code-travail-levage | retenu | 2026-09-01 | premiere_main | ✓ | ✓ | 2008-05-01 | 2008-05-01 | 5 · première main | ancrée |
+| `compactage-dechets-vgp-trimestrielle` | contexte 2 | Arrêté du 5 mars 1993, art. 3 (contenu de la vérification) | Arrêté 1993-03-05 art. 3 | arrete-1993-03-05-machines | sans_objet | 2026-09-02 | premiere_main | ✓ | ✓ | 1993-12-01 | 1993-12-01 | 5 · première main | ancrée |
+| `compactage-dechets-vgp-trimestrielle` | contexte 3 | R. 4323-24 (qualification du vérificateur) | R. 4323-24 | code-travail-levage | obligation_manquante | 2026-09-02 | premiere_main | ✓ | ✓ | 2008-05-01 | 2008-05-01 | 5 · première main | ancrée |
+| `compactage-dechets-vgp-trimestrielle` | contexte 4 | R. 4323-25 (consignation au registre de sécurité) | R. 4323-25 | code-travail-levage | retenu | 2026-09-01 | premiere_main | ✓ | ✓ | 2008-05-01 | 2008-05-01 | 5 · première main | ancrée |

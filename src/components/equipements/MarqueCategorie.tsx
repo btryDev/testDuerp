@@ -29,6 +29,7 @@ import {
   Lightbulb,
   Package,
   Refrigerator,
+  Shredder,
   Zap,
 } from "lucide-react";
 import type { ComponentType } from "react";
@@ -90,6 +91,13 @@ export const ICONE_CATEGORIE: Record<CategorieEquipement, Picto> = {
   EQUIPEMENT_SOUS_PRESSION: Gauge,
   STOCKAGE_MATIERE_DANGEREUSE: Barrel,
   EQUIPEMENT_LEVAGE: Forklift,
+  // Le compacteur-presse : une machine debout dans laquelle on jette sa
+  // matière par le haut. `Shredder` est le seul dessin de lucide qui montre
+  // cet objet-là. Les deux voisins plausibles disent autre chose : `Container`
+  // dessine la benne, que l'arrêté du 5 mars 1993 exclut expressément de cette
+  // catégorie, et `Recycle` est un symbole de thème, pas un appareil présent
+  // dans les murs — les deux règles de cette table le refusent.
+  COMPACTEUR_PRESSE_DECHETS_MOTORISE: Shredder,
   AUTRE: Package,
 };
 

@@ -1,0 +1,32 @@
+-- ============================================================================
+-- Nouvelle catégorie d'équipement : COMPACTEUR_PRESSE_DECHETS_MOTORISE
+--
+-- Le référentiel ne portait aucune vérification générale périodique pour un
+-- équipement de travail AUTRE qu'un appareil de levage, alors que
+-- l'article R. 4323-23 du code du travail habilite deux branches d'arrêtés et
+-- que le dépôt n'en avait instruit qu'une. L'autre est l'arrêté du 5 mars
+-- 1993, dont l'article 1er soumet à vérification trimestrielle une liste
+-- nominative et fermée de onze machines. Deux d'entre elles sont des
+-- équipements ordinaires des secteurs cibles : « presses à balles » — le
+-- compacteur-presse à cartons du commerce de détail — et « compacteurs à
+-- déchets » — supermarchés et grandes cuisines.
+--
+-- Une seule catégorie pour ces deux entrées : même acte, même périodicité,
+-- même réalisateur, même contenu de vérification, et un dirigeant qui ne
+-- distingue pas sa presse de son compacteur. Le suffixe `_MOTORISE` porte le
+-- proviso du I de l'article 1er, qui n'assujettit que les équipements mus par
+-- une source d'énergie autre que la force humaine employée directement : une
+-- presse à levier de petit commerce n'entre pas, et aucune propriété
+-- d'équipement n'a été inventée pour l'écarter.
+--
+-- La valeur est insérée AVANT 'AUTRE' pour que l'ordre de l'enum PostgreSQL
+-- reste le reflet exact de `CATEGORIES_EQUIPEMENT` (src/lib/referentiels/
+-- types-communs.ts) et de l'enum du schéma Prisma. L'ordre de l'enum gouverne
+-- l'ordre d'affichage du sélecteur de catégorie du formulaire d'équipement ;
+-- une divergence se verrait à l'écran.
+--
+-- Ajout pur : aucune ligne existante n'est touchée, aucune valeur n'est
+-- retirée. Les `Equipement` déjà en base gardent leur catégorie.
+-- ============================================================================
+
+ALTER TYPE "CategorieEquipement" ADD VALUE 'COMPACTEUR_PRESSE_DECHETS_MOTORISE' BEFORE 'AUTRE';

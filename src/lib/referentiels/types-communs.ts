@@ -303,6 +303,33 @@ export const CATEGORIES_EQUIPEMENT = [
   "STOCKAGE_MATIERE_DANGEREUSE",
   "EQUIPEMENT_LEVAGE",
   "INSTALLATION_FRIGORIFIQUE",
+  // Entrée le 2026-09-02 avec la branche HORS LEVAGE de `R. 4323-23` —
+  // l'arrêté du 5 mars 1993, corpus `arrete-1993-03-05-machines`.
+  //
+  // LE NOM PORTE LE PROVISO, ET C'EST TOUTE SA RAISON D'ÊTRE. Le I de
+  // l'article 1er ne soumet à la vérification trimestrielle que les
+  // équipements « mus par une source d'énergie autre que la force humaine
+  // employée directement ET dont le chargement ou le déchargement est
+  // effectué manuellement en phase de production » — deux conditions
+  // cumulatives, dont aucune n'a d'attribut d'équipement au modèle. La
+  // seconde est vraie par construction pour ces machines : on y jette ses
+  // cartons à la main. La première ne l'est pas — une presse à levier de
+  // petit commerce existe —, elle est donc écrite dans le nom plutôt que
+  // posée en question, et le libellé de formulaire la répète.
+  //
+  // POURQUOI PAS « MACHINE » NI « ÉQUIPEMENT DE TRAVAIL ». Une catégorie de
+  // ce nom attirerait le pétrin, le laminoir, la trancheuse — que l'arrêté
+  // ne vise pas —, et leur réclamerait tous les trois mois une vérification
+  // de criticité 5. La liste de l'article 1er est NOMINATIVE et FERMÉE : la
+  // catégorie se nomme donc pour ses deux entrées, et pour elles seules.
+  //
+  // POURQUOI PAS DEUX CATÉGORIES, une par entrée de la liste. « Presses à
+  // balles » et « compacteurs à déchets » portent le même acte, la même
+  // périodicité, le même réalisateur et le même contenu de vérification ; et
+  // le dirigeant qui déclare son matériel ne fait pas la différence entre son
+  // compacteur et sa presse. Les scinder aurait produit deux lignes de
+  // calendrier là où il y a une machine.
+  "COMPACTEUR_PRESSE_DECHETS_MOTORISE",
   "AUTRE",
 ] as const;
 

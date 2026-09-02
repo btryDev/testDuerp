@@ -814,12 +814,16 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // daté et cité depuis le 2026-09-01. Le levage en avait épuisé la
       // lecture.
       //
-      // Art. 1er : VGP tous les trois mois. Deux des onze catégories du texte
-      // sont des équipements ordinaires du commerce de détail — presses à
-      // balles (compacteur à cartons) et compacteurs à déchets. Bloqué par
-      // l'absence de toute catégorie d'équipement « machine » dans
-      // `CATEGORIES_EQUIPEMENT`, exactement comme les échafaudages du lot D1.
-      "Arrêté 1993-03-05 art. 1",
+      // L'ART. 1er A QUITTÉ CETTE LISTE LE 2026-09-02, le jour même où il y
+      // était entré. Il y figurait bloqué par « l'absence de toute catégorie
+      // d'équipement « machine » dans `CATEGORIES_EQUIPEMENT` » ; la catégorie
+      // `COMPACTEUR_PRESSE_DECHETS_MOTORISE` existe depuis, et
+      // `compactage-dechets-vgp-trimestrielle` porte ses deux entrées qui
+      // touchent les secteurs cibles. Sortie par LIVRAISON, comme PE 4,
+      // R. 4222-20, R. 4544-11-1 et PE 37 avant lui — et non par
+      // requalification. L'article passe à `retenu` avec une `reserve` : neuf
+      // des onze catégories du I restent dehors, et `reservesDeLecture()` les
+      // compte.
       // Art. 2 : VGP tous les douze mois. Les engins mobiles de terrassement
       // et de forage ne touchent pas la cible ; les « centrifugeuses » ne se
       // tranchent PAS à la source — l'arrêté n'en donne aucune définition et

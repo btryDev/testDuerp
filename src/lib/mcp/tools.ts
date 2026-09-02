@@ -323,6 +323,8 @@ const LIBELLE_CATEGORIE: Record<string, string> = {
   STOCKAGE_MATIERE_DANGEREUSE: "stockage de matières dangereuses",
   EQUIPEMENT_LEVAGE: "équipement de levage",
   INSTALLATION_FRIGORIFIQUE: "installation frigorifique",
+  COMPACTEUR_PRESSE_DECHETS_MOTORISE:
+    "compacteur à déchets ou presse à cartons motorisé",
   AUTRE: "autre",
 };
 

@@ -33,6 +33,7 @@ import { obligationsInformationTravailleurs } from "./information-travailleurs";
 import { obligationsLocauxSociaux } from "./locaux-sociaux";
 import { obligationsCoActivite } from "./co-activite";
 import { obligationsSignalisation } from "./signalisation";
+import { obligationsCompactageDechets } from "./compactage-dechets";
 
 export {
   obligationsElectricite,
@@ -53,6 +54,7 @@ export {
   obligationsLocauxSociaux,
   obligationsCoActivite,
   obligationsSignalisation,
+  obligationsCompactageDechets,
 };
 export * from "./types";
 export * from "./veille-textes";
@@ -85,6 +87,13 @@ export const obligationsConformite: Obligation[] = [
   // les bandes, l'article 15 n'impose qu'un entretien « régulier », sans
   // rythme — d'où sept états permanents en `periodicite: "autre"`.
   ...obligationsSignalisation,
+  // Lot machines (2026-09-02) — la branche HORS LEVAGE de `R. 4323-23`, ouverte
+  // par l'arrêté du 5 mars 1993. Une seule ligne, et c'est le résultat du
+  // dépouillement : sur les onze catégories d'équipements que le I de son
+  // article 1er soumet à vérification trimestrielle, deux touchent les
+  // secteurs cibles — presses à balles et compacteurs à déchets — et elles
+  // partagent l'acte, le rythme, le réalisateur et le contenu.
+  ...obligationsCompactageDechets,
 ];
 
 /**
@@ -124,7 +133,12 @@ export const obligationsConformite: Obligation[] = [
  */
 // Version remesurée à l'intégration, comme l'empreinte : six lots l'ont portée
 // en deux jours, chacun juste chez lui et aucun après la fusion.
-export const REFERENTIEL_VERSION = "2026-09-02.6";
+// `.7` le 2026-09-02 : le lot machines ouvre la branche hors levage de
+// `R. 4323-23` et ajoute une échéance TRIMESTRIELLE de criticité 5 sur une
+// catégorie d'équipement neuve. Aucun calendrier existant ne la porte — la
+// catégorie n'existait pas —, mais la version se lit à la main et le
+// référentiel a changé.
+export const REFERENTIEL_VERSION = "2026-09-02.7";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.

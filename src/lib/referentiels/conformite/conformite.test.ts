@@ -1247,7 +1247,25 @@ describe("référentiel conformité — version et empreinte", () => {
   // l'a déclenché annonçait le semestre pour « les moyens et dispositifs de
   // signalisation », alors que le « et notamment » du texte le réserve à ce
   // qui se déclenche.
-  const EMPREINTE_ATTENDUE = "144-a0ec600a24335516";
+  //
+  // 2026-09-02 : 144 → 145. Le lot machines ouvre la SECONDE branche de
+  // `R. 4323-23` — l'arrêté du 5 mars 1993 —, que le dépôt citait depuis la
+  // veille comme « non instruite nulle part » sans l'avoir encodée. Une seule
+  // ligne, et c'est le produit du dépouillement, pas sa moitié : sur les onze
+  // catégories d'équipements que le I de son article 1er soumet à
+  // vérification trimestrielle, deux touchent les secteurs cibles — presses à
+  // balles et compacteurs à déchets — et elles partagent l'acte, le rythme,
+  // le réalisateur, le contenu et la consignation. Les scinder aurait produit
+  // deux rendez-vous trimestriels sur une seule machine.
+  //
+  // C'est la première échéance TRIMESTRIELLE de criticité 5 portée par un
+  // équipement de travail hors levage, et le point où le lot pouvait se
+  // tromper n'est pas le chiffre mais l'ASSIETTE : une catégorie nommée
+  // « machine » aurait attiré le pétrin et la trancheuse, que l'arrêté ne vise
+  // pas, et leur aurait réclamé quatre visites par an. Le nom de la catégorie
+  // — `COMPACTEUR_PRESSE_DECHETS_MOTORISE` — porte le proviso du I, ce qui
+  // évite d'inventer un attribut d'équipement pour la motorisation.
+  const EMPREINTE_ATTENDUE = "145-dd6fed6f447eae01";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1365,7 +1383,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(144);
+    ).toBe(145);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
