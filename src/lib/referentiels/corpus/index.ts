@@ -40,6 +40,7 @@ import { CODE_TRAVAIL_ORGANISATION_PREVENTION } from "./code-travail-organisatio
 import { CODE_TRAVAIL_INFORMATION_TRAVAILLEURS } from "./code-travail-information-travailleurs";
 import { CODE_TRAVAIL_LOCAUX_SOCIAUX } from "./code-travail-locaux-sociaux";
 import { CODE_TRAVAIL_CO_ACTIVITE } from "./code-travail-co-activite";
+import { CODE_TRAVAIL_PLAN_PREVENTION } from "./code-travail-plan-prevention";
 import { CODE_TRAVAIL_SERVICE_PREVENTION_SANTE } from "./code-travail-service-prevention-sante";
 import { CODE_TRAVAIL_MANUTENTION_ECRAN } from "./code-travail-manutention-ecran";
 import {
@@ -50,6 +51,14 @@ import {
   ARRETE_2004_12_21_ECHAFAUDAGES,
   CODE_TRAVAIL_TRAVAIL_EN_HAUTEUR,
 } from "./code-travail-travail-en-hauteur";
+import {
+  CODE_TRAVAIL_TRAVAIL_DISSIMULE,
+  CODE_TRAVAIL_VIGILANCE,
+  CODE_TRAVAIL_VIGILANCE_MODALITES,
+} from "./code-travail-vigilance";
+import { CODE_TRAVAIL_ECLAIRAGE } from "./code-travail-eclairage";
+import { CODE_TRAVAIL_BRUIT_VIBRATIONS } from "./code-travail-bruit-vibrations";
+import { CODE_TRAVAIL_MATIERES_INFLAMMABLES } from "./code-travail-matieres-inflammables";
 import {
   couverture,
   type ArticleDepouille,
@@ -165,6 +174,71 @@ export const CORPUS: readonly Corpus[] = [
   // s'appliquent sans condition d'effectif et ne sont portés par rien.
   CODE_TRAVAIL_DUERP_PRINCIPES,
   CODE_TRAVAIL_DUERP,
+  // Lot « plan de prévention », 2026-09-02 — l'AUTRE versant de la
+  // co-activité, celui que `code-travail-co-activite.ts` dit exclure sans
+  // l'avoir jamais ouvert. C'était la plus grave des seize familles mesurées
+  // par le cliquet de `citations-ecran.ts`, parce qu'elle ne cite pas
+  // seulement des numéros : un EXTRAIT de l'arrêté du 19 mars 1993 s'affiche
+  // entre guillemets au dirigeant, et il ne venait d'aucun relevé. Vérifié à
+  // la source : il est exact, mot pour mot, y compris le « R. 4512-7 » qui
+  // surprend sur un texte de 1993 et que Légifrance porte au titre de sa
+  // version consolidée. Le verbatim FAUX était ailleurs — celui de
+  // `R. 4512-2`, tronqué de trois mots dans le formulaire. Chapitre INTÉGRAL :
+  // seize articles sur seize, cinq sections, et quatre d'entre eux
+  // s'adressent au chef de l'entreprise extérieure et non à l'utilisateur du
+  // produit.
+  CODE_TRAVAIL_PLAN_PREVENTION,
+  // Lot « vigilance prestataires », 2026-09-02 — la famille la plus citée des
+  // seize mesurées par le cliquet de `citations-ecran.ts` : vingt occurrences
+  // sur quatre surfaces, et pas un seul de ses cinq articles jamais ouvert.
+  // C'est le fondement de tout le module Prestataires. Trois corpus, dont
+  // deux INTÉGRAUX — le chapitre II législatif (sept articles sur sept) et le
+  // même chapitre en partie réglementaire (huit sur huit) —, plus les deux
+  // définitions du travail dissimulé auxquelles `L. 8222-1` renvoie
+  // nommément, tirées du chapitre précédent et donc `articles_cites`.
+  //
+  // Résultat principal : le rythme du produit est celui du texte — six mois,
+  // `D. 8222-5` —, son ANCRAGE ne l'est pas. Le module compte le semestre
+  // depuis `prestataire.updatedAt`, quand le texte le compte depuis la
+  // conclusion puis chaque remise ; toute retouche de la fiche repousse
+  // l'échéance. Le seuil de 5 000 € HT est à jour et bien attribué à
+  // `R. 8222-1` — il valait 3 000 euros, sans « hors taxes », jusqu'au
+  // 2015-05-01. Le périmètre, lui, n'est PAS tranché ici : ce chapitre est du
+  // droit du travail non santé-sécurité, et le produit le sert quand même.
+  CODE_TRAVAIL_TRAVAIL_DISSIMULE,
+  CODE_TRAVAIL_VIGILANCE,
+  CODE_TRAVAIL_VIGILANCE_MODALITES,
+  // Lot « les sept épars », 2026-09-02 — les citations d'écran qu'aucun
+  // regroupement ne rassemblait, et que personne n'aurait reprises. Trois
+  // corpus, dont DEUX INTÉGRAUX : la section de l'éclairage (douze articles
+  // sur douze) et celle des matières explosives et inflammables (six sur six,
+  // R. 4227-21 étant abrogé depuis 2011).
+  //
+  // L'ÉCLAIRAGE entre par `R. 4223-4`, imprimé dans le PDF du DUERP. La
+  // consigne était d'ouvrir le chapitre : c'est ce qui a rendu `R. 4223-11`,
+  // qui fait FIXER PAR L'EMPLOYEUR des règles d'entretien périodique du
+  // matériel d'éclairage, consignées dans un document communiqué au CSE. Le
+  // jumeau exact de `R. 4222-21`, et `R. 4224-17` les agrège tous deux
+  // nommément — sa réserve, écrite la veille, ne relevait que le premier.
+  CODE_TRAVAIL_ECLAIRAGE,
+  // LE BRUIT ET LES VIBRATIONS entrent par deux citations du PDF, et les deux
+  // sont JUSTES : « R. 4432-1 et suiv. », « R. 4441-1 et suiv. » désignent
+  // correctement deux titres par leur premier article, et le PDF les donne
+  // comme textes de référence, pas comme obligations. Ce que le détour a
+  // rendu est ailleurs : `R. 4433-2` chiffre le seul rythme des deux titres —
+  // « en cas de mesurage, celui-ci est renouvelé au moins tous les cinq
+  // ans » — et le produit collecte DÉJÀ la date qui le calculerait
+  // (`Risque.dateMesuresPhysiques`), rattachée à aucune exigence.
+  CODE_TRAVAIL_BRUIT_VIBRATIONS,
+  // LES MATIÈRES INFLAMMABLES sont le vrai objet de ce lot. Un attribut du
+  // modèle porte le numéro d'un de ces articles dans son nom
+  // (`Etablissement.manipuleMatieresR422722`) et l'article n'avait jamais été
+  // ouvert. Il est exact quant aux produits qu'il désigne ; il est MAL NOMMÉ
+  // quant à la condition — « manipulées ET mises en œuvre » est la phrase de
+  // `R. 4227-34`, pas la sienne, et son propre champ est plus large
+  // (« entreposées OU manipulées »). Voir l'en-tête du fichier et le motif de
+  // `R. 4227-22`.
+  CODE_TRAVAIL_MATIERES_INFLAMMABLES,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {

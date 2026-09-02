@@ -980,6 +980,188 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // jour pour la part de la cible en dessous de onze salariés, à qui le
       // dossier ne dit rien. Événementiels tous les deux.
       "R. 4121-2",
+      // ── Lot « plan de prévention », 2026-09-02 : le chapitre II du titre Ier
+      // du livre V, seize articles sur seize. Bloc contigu en fin de liste,
+      // pour la raison écrite par le lot D1 — il se retirera d'un coup le jour
+      // où cette énumération disparaîtra.
+      //
+      // CES CINQ ENTRÉES NE SONT PAS CINQ OBLIGATIONS ABSENTES DU RÉFÉRENTIEL
+      // AU SENS ORDINAIRE, et c'est la particularité du lot. Le plan de
+      // prévention n'est pas dans le référentiel d'obligations : il est porté
+      // par le module `PlanPrevention`, décision inscrite au domaine
+      // `co_activite` de `conformite/types.ts`. Onze des seize articles sont
+      // donc `sans_objet` — le module les sert, ou ils s'adressent au chef de
+      // l'entreprise extérieure. Les cinq qui suivent sont ceux que NI le
+      // module NI le référentiel ne portent, et les compter tous les seize
+      // aurait fait passer une décision de produit prise une fois pour seize
+      // manques.
+      //
+      // R. 4512-1 : le recours à de nouveaux sous-traitants après le début de
+      // l'intervention rend toute la procédure applicable à nouveau. Le modèle
+      // ne connaît qu'UNE entreprise extérieure par plan, et rien à l'écran ne
+      // laisse deviner qu'une question se pose. Événementiel ET structurel.
+      "R. 4512-1",
+      // R. 4512-8 : le contenu minimal du plan, cinq rubriques. Rojer ÉMET le
+      // document et n'en porte qu'une — les phases d'activité dangereuses. Ni
+      // premiers secours, ni instructions aux travailleurs, ni organisation du
+      // commandement, balayage du module le 2026-09-02. Le 4° est le plus
+      // voyant : il demande le dispositif de secours de l'entreprise
+      // UTILISATRICE, que le produit détient déjà sous R. 4224-16.
+      "R. 4512-8",
+      // R. 4512-9 : la liste des postes relevant du suivi individuel renforcé,
+      // que le texte fait FIGURER dans le plan. Aucun champ, et le blocage est
+      // celui qu'a déjà rencontré R. 4624-28-2 — le produit ne rattache aucun
+      // poste à un suivi renforcé.
+      "R. 4512-9",
+      // R. 4512-11 : les dossiers techniques amiante joints au plan. Une pièce
+      // que l'entreprise utilisatrice DÉTIENT, et dont le produit n'a aucune
+      // notion. Touche la cible : un local d'avant le 1er juillet 1997 a un
+      // DTA, et le plombier dans les faux plafonds est le cas visé.
+      "R. 4512-11",
+      // R. 4512-12 : la seule DÉMARCHE du chapitre qui sorte de l'entreprise —
+      // informer par écrit l'inspection du travail de l'ouverture des travaux.
+      // Deux surfaces affichent la pastille « R. 4512-6 à R. 4512-12 » sans en
+      // dire un mot ; un dirigeant qui les lit conclut qu'il a fini quand il a
+      // signé.
+      "R. 4512-12",
+      // ── Lot « vigilance prestataires », 2026-09-02 : le chapitre II du
+      // titre II de la HUITIÈME partie, aux deux étages du Code — sept
+      // articles législatifs sur sept, huit réglementaires sur huit, plus les
+      // deux définitions du travail dissimulé auxquelles L. 8222-1 renvoie.
+      // Bloc contigu en fin de liste, pour la raison écrite par le lot D1 —
+      // il se retirera d'un coup le jour où cette énumération disparaîtra.
+      //
+      // QUATRE ENTRÉES POUR DIX-NEUF ARTICLES LUS, et aucune n'est un défaut
+      // d'encodage. La vigilance est SERVIE par le produit — module
+      // Prestataires, annuaire, alertes d'expiration — mais hors du
+      // référentiel d'obligations : aucune `ReferenceLegale` ne cite
+      // L. 8222-1. C'est la même configuration que le plan de prévention
+      // ci-dessus, à une différence près qui n'est pas tranchée : là, la
+      // décision est inscrite au domaine `co_activite` ; ici, le périmètre
+      // même est en question — ce chapitre est du droit du travail NON
+      // santé-sécurité, et CLAUDE.md écarte le RH non-SST.
+      //
+      // L. 8222-1 : l'obligation de vérifier son cocontractant à la conclusion
+      // et périodiquement. Trois blocages cumulés — pas de porteur pour une
+      // RELATION contractuelle (l'ADR-022 en connaît trois : établissement,
+      // salarié, équipement), pas de contrat dans le modèle (ni montant ni
+      // date de conclusion, les deux données dont R. 8222-1 et D. 8222-5 font
+      // dépendre l'assujettissement et son point de départ), et le périmètre.
+      "L. 8222-1",
+      // L. 8222-5 : l'injonction due AUSSITÔT après signalement écrit d'un
+      // agent de contrôle, d'un syndicat ou d'une IRP, par lettre recommandée
+      // avec avis de réception (R. 8222-2). Distincte de la vérification
+      // périodique : elle vaut même quand toutes les vérifications ont été
+      // faites, et s'étend au sous-traitant et au subdélégataire, que
+      // l'annuaire ne connaît pas. Aucune surface ne la mentionne. Bloquée par
+      // le déclencheur événementiel, absent du modèle — même blocage que
+      // R. 4141-8, R. 4141-12 et L. 4121-3-1 VI.
+      "L. 8222-5",
+      // D. 8222-5 : l'article central du module, et celui dont la lecture était
+      // la plus attendue. LE RYTHME EST JUSTE — « tous les six mois », et
+      // MOIS_RENOUVELLEMENT_URSSAF vaut 6 —, L'ANCRAGE NE L'EST PAS : le
+      // module compte le semestre depuis `prestataire.updatedAt`, le texte
+      // depuis la conclusion puis chaque remise. La déduction ne vaut que dans
+      // le sens qui alerte TARD, et toute retouche de la fiche repousse la
+      // limite de six mois. S'y ajoutent trois exigences que rien ne sert :
+      // l'attestation « datant de moins de six mois » (le produit ne stocke
+      // aucune date d'émission), la vérification d'authenticité auprès de
+      // l'URSSAF, et le fait que le 2° offre QUATRE pièces au choix là où le
+      // produit n'a qu'un champ Kbis.
+      "D. 8222-5",
+      // D. 8222-7 : le même rythme et le même point de départ pour un
+      // cocontractant établi à l'étranger, mais une liste de pièces
+      // entièrement différente — identification TVA au sens de l'article
+      // 286 ter du CGI, attestation de régularité sociale au regard du
+      // règlement (CE) n° 883/2004, inscription au registre professionnel du
+      // pays. `prestataireSchema` est fermé sur trois documents nommés et
+      // exige un SIRET à quatorze chiffres. Le manque n'est pas seulement une
+      // absence : l'écran affiche à la place la liste française.
+      "D. 8222-7",
+      // ── Lot « les sept épars », 2026-09-02 : les citations d'écran qu'aucun
+      // regroupement ne rassemblait. Bloc contigu et en fin de liste, pour la
+      // raison écrite par le lot D1 — il se retirera d'un coup le jour où
+      // cette énumération disparaîtra.
+      //
+      // Neuf entrées pour vingt-trois articles lus, en trois corpus dont deux
+      // INTÉGRAUX. Aucune n'est un défaut d'encodage : ce sont trois sections
+      // du Code que le référentiel n'avait jamais ouvertes, et sur lesquelles
+      // il affichait pourtant des numéros au dirigeant.
+      //
+      // R. 4223-4 : le tableau des niveaux d'éclairement en lux, imprimé dans
+      // le PDF du DUERP comme « texte de référence » alors que c'est une
+      // obligation de résultat due par tout employeur. Il n'a ni périodicité,
+      // ni pièce, ni acte — aucun texte n'impose de mesurer l'éclairement à
+      // intervalle, à la différence du bruit. La voie qui l'ouvrirait est le
+      // DUERP, pas le calendrier de conformité.
+      "R. 4223-4",
+      // R. 4223-11 : LE JUMEAU EXACT DE R. 4222-21, et il a échappé au lot qui
+      // a inscrit celui-là. L'employeur fixe les règles d'entretien périodique
+      // du matériel d'éclairage et les consigne dans un document communiqué au
+      // CSE. R. 4224-17 agrège nommément les DEUX documents (« aux articles
+      // R. 4222-21 et R. 4223-11 ») ; sa réserve, écrite le 2026-09-01, n'en
+      // relevait qu'un. C'est un renvoi d'article lu à moitié, et c'est la
+      // seule entrée de ce lot que rien ne bloque techniquement.
+      "R. 4223-11",
+      // R. 4433-2 : « En cas de mesurage, celui-ci est renouvelé au moins tous
+      // les cinq ans » — la seule périodicité chiffrée des deux titres bruit
+      // et vibrations, et le produit détient DÉJÀ la date qui la calculerait
+      // (`Risque.dateMesuresPhysiques`, saisie à la cotation et réimprimée au
+      // PDF), rattachée à aucune exigence. Bloquée par sa condition d'entrée :
+      // l'obligation ne naît qu'« en cas de mesurage », lequel dépend des
+      // seuils de R. 4431-2 que le produit ne détient pas. La faire naître de
+      // la seule saisie d'une date ne l'exigerait que de celui qui a déjà
+      // mesuré — le faux négatif d'ancrage corrigé sur R. 4227-34 le
+      // 2026-08-31, refait en connaissance de cause.
+      "R. 4433-2",
+      // R. 4434-9 : « L'employeur vérifie l'efficacité des mesures prises en
+      // application du présent chapitre. » Classée ici et NON `non_couvert`,
+      // bien que le domaine du bruit ne soit pas servi : `non_couvert` dit
+      // « on a choisi de ne pas le porter, et on le dit à l'utilisateur », et
+      // aucune des deux moitiés n'est vraie — l'inventaire de la partie IV
+      // range le titre III comme « jamais ouvert », et aucune surface ne
+      // l'annonce. Les manques `non_couvert` du référentiel visent des
+      // établissements que le produit NE SERT PAS ; celui-ci vise un
+      // restaurant avec musique et lave-vaisselle.
+      "R. 4434-9",
+      // Les cinq de la section 4 « Emploi et stockage de matières explosives
+      // et inflammables », corpus INTÉGRAL. Elles partagent une cause et une
+      // seule : la section n'avait jamais été ouverte, alors qu'un attribut du
+      // modèle porte le numéro de son premier article dans son nom.
+      //
+      // R. 4227-22 : aucune source d'ignition, et une ventilation permanente
+      // appropriée. Le voisin qui semble la couvrir ne la couvre pas —
+      // `stockage-dangereux-ventilation-locaux` se fonde sur R. 4222-20 et se
+      // déclenche sur la catégorie STOCKAGE_MATIERE_DANGEREUSE, quand
+      // R. 4227-22 oblige sans condition d'équipement.
+      "R. 4227-22",
+      // R. 4227-23 : la signalisation de l'interdiction de fumer aux
+      // emplacements À L'AIR LIBRE. Le domaine `signalisation`, encodé le même
+      // jour, ne la porte pas : son champ est l'arrêté du 4 novembre 1993.
+      // Bloquée par un attribut — rien ne dit qu'un établissement manipule ces
+      // matières DEHORS. Son renvoi à « L. 3511-7 du code de la santé
+      // publique » est mort depuis le 19 mai 2016 (recodifié L. 3512-8).
+      "R. 4227-23",
+      // R. 4227-24 : dix mètres d'une issue, portes vers l'extérieur, grilles
+      // ouvrables de l'intérieur. L'article le plus LARGE de la section — il
+      // ajoute au champ de R. 4227-22 les substances « facilement
+      // inflammables », un cran en dessous —, donc le seul que l'attribut du
+      // modèle ne peut pas déclencher sans sous-appliquer.
+      "R. 4227-24",
+      // R. 4227-25 : ne pas déposer ni laisser séjourner ces matières dans les
+      // escaliers, passages et couloirs. Obligation de NE PAS FAIRE : une case
+      // à cocher à vie y répondrait en apparence, le manquement naissant d'un
+      // carton posé un mardi et retiré le jeudi.
+      "R. 4227-25",
+      // R. 4227-26 : les chiffons et papiers imprégnés de liquides
+      // inflammables OU DE MATIÈRES GRASSES, enfermés après usage dans des
+      // récipients métalliques clos et étanches. L'article de la section qui
+      // touche le plus directement la cible, et il n'a aucun rapport avec les
+      // matières explosives : un torchon huileux de cuisine en relève. Son
+      // champ est autonome — il ne dépend pas de R. 4227-22 —, donc son
+      // déclenchement suppose le cinquième déclencheur de l'ADR-022,
+      // « activité réellement exercée », non implémenté.
+      "R. 4227-26",
     ]);
   });
 

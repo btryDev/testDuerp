@@ -1207,7 +1207,8 @@ model PlanPrevention {
   naturesTravaux     String    @db.Text
   travauxDangereux   Boolean   @default(false)
 
-  // Inspection commune préalable (art. R4512-7)
+  // Inspection commune préalable (art. R. 4512-2 — c'est lui qui l'impose ;
+  // R. 4512-7 ne porte que le seuil de l'écrit. Relu à la source le 2026-09-02.)
   inspectionDate         DateTime?
   inspectionParticipants String?   @db.Text
 

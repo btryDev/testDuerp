@@ -356,7 +356,7 @@ export function FormulairePlanPrevention({
 
       <SectionChamps
         titre="Inspection commune préalable"
-        chapeau="Obligatoire avant démarrage, quelle que soit la durée des travaux. Art. R. 4512-2 : « Il est procédé, préalablement à l'exécution de l'opération réalisée par une entreprise extérieure, à une inspection commune des lieux de travail, des installations qui s'y trouvent et des matériels éventuellement mis à disposition. »"
+        chapeau="Obligatoire avant démarrage, quelle que soit la durée des travaux. Art. R. 4512-2 : « Il est procédé, préalablement à l'exécution de l'opération réalisée par une entreprise extérieure, à une inspection commune des lieux de travail, des installations qui s'y trouvent et des matériels éventuellement mis à disposition des entreprises extérieures. »"
       >
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-[220px_1fr]">
           <ChampBoard

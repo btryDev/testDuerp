@@ -31,10 +31,19 @@
 // par ailleurs — les mesurer ici les compterait deux fois, avec deux règles
 // différentes.
 //
-// LES LIGNES DE COMMENTAIRE SONT EXCLUES, et c'est délibéré. Un commentaire qui
-// cite un article raconte une décision — souvent une correction, comme ceux de
+// LES COMMENTAIRES SONT EXCLUS, et c'est délibéré. Un commentaire qui cite un
+// article raconte une décision — souvent une correction, comme ceux de
 // `code-travail-secours.ts` qui expliquent pourquoi un `grep` sur `R. 4224-15`
 // rend des résultats trompeurs. Le dirigeant ne les lit pas.
+//
+// LA PREMIÈRE VERSION N'ÉCARTAIT QUE LES LIGNES QUI COMMENCENT PAR UN MARQUEUR,
+// et c'était faux dès le premier jour. `permis-feu/page.tsx` porte un
+// `{/* … */}` de quatre lignes qui raconte une correction d'URL du 2026-08-28 ;
+// sa DEUXIÈME ligne cite `R. 4434-9`, et le balayage l'a compté comme une
+// citation faite au dirigeant. Un lot de dépouillement l'a relevé le jour même :
+// le module se contredisait, disant exclure les commentaires et n'excluant que
+// leur première ligne. L'état de bloc est désormais suivi d'une ligne à
+// l'autre.
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -99,11 +108,23 @@ export function citationsSansCorpus(racine: string): CitationOrpheline[] {
   for (const dossier of SURFACES_AFFICHEES) {
     for (const fichier of fichiersSources(racine, dossier)) {
       const lignes = readFileSync(fichier, "utf8").split("\n");
+      let dansBloc = false;
       lignes.forEach((ligne, index) => {
         const nue = ligne.trim();
-        if (nue.startsWith("//") || nue.startsWith("*") || nue.startsWith("/*")) {
-          return;
-        }
+        const ouvre = ligne.lastIndexOf("/*");
+        const ferme = ligne.lastIndexOf("*/");
+        const etaitDansBloc = dansBloc;
+        if (ouvre !== -1 && ouvre > ferme) dansBloc = true;
+        else if (ferme !== -1 && ferme > ouvre) dansBloc = false;
+
+        const commentaire =
+          etaitDansBloc ||
+          dansBloc ||
+          nue.startsWith("//") ||
+          nue.startsWith("*") ||
+          nue.startsWith("/*");
+        if (commentaire) return;
+
         for (const trouve of ligne.matchAll(MOTIF_ARTICLE)) {
           const ref = normaliser(trouve[0]);
           if (connus.has(ref)) continue;

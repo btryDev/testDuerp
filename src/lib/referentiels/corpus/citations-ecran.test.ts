@@ -12,32 +12,35 @@ import {
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 
 describe("ce que les écrans citent sans que personne l'ait ouvert", () => {
-  // CLIQUET. Mesuré à 23 le 2026-09-02 au matin : 23 articles étaient cités
-  // sur une surface qui s'affiche sans qu'aucun corpus les déclare dépouillés.
-  // **16 le même jour**, après le dépouillement du socle DUERP
-  // (`code-travail-duerp.ts`) : les sept articles fondateurs — `L. 4121-1`,
-  // `-2`, `-3`, `-3-1`, `R. 4121-1`, `-1-1`, `-2` — sont entrés au corpus, en
-  // deux corpus intégraux. Le plus exposé était `R. 4121-2`, affiché sur
-  // l'écran de synthèse AVEC un seuil d'effectif : la lecture a confirmé le
-  // seuil de onze et montré que les deux autres déclencheurs de mise à jour,
-  // qui n'ont pas de seuil, ne sont portés par rien.
+  // CE N'EST PLUS UN CLIQUET, C'EST UNE GARANTIE. Posé à 23 le 2026-09-02 au
+  // matin — 23 articles cités sur une surface qui s'affiche sans qu'aucun
+  // corpus les ait ouverts —, il est descendu à 0 le soir même. Quatre lots :
+  // le socle DUERP, le plan de prévention, la vigilance prestataires, et les
+  // sept épars (éclairage, bruit, vibrations, chimique, matières inflammables,
+  // eau potable).
   //
-  // Restent notamment la vigilance prestataires (`L. 8222-1`, `D. 8222-5`) et
-  // le plan de prévention entier (`R. 4512-2`, `-6`, `-7`, `-12`), ce dernier
-  // avec un extrait cité entre guillemets à l'écran.
+  // À ZÉRO, L'ÉNONCÉ CHANGE DE NATURE. Tant qu'il restait des exceptions, le
+  // test disait « pas plus qu'hier ». Il dit maintenant : aucune surface qui
+  // s'affiche ne cite au dirigeant un article qu'aucun corpus n'a ouvert. Un
+  // ajout le fait échouer en nommant le fichier et la ligne.
   //
-  // Il ne remonte pas. Chaque dépouillement qui en absorbe un l'abaisse d'autant.
-  const PLAFOND = 16;
+  // NE LE REMONTE PAS pour faire passer un écran. Deux remèdes, tous deux
+  // employés ce jour-là : dépouiller le texte, ou retirer la citation.
+  // `R. 1321-23` sur l'écran carnet sanitaire est le cas type du second — il
+  // s'adresse à l'exploitant du réseau d'eau PUBLIC, et son badge peut partir
+  // sans que le dirigeant y perde quoi que ce soit.
+  const PLAFOND = 0;
 
   it("ne dépasse pas le plafond, et le plafond ne remonte pas", () => {
     const orphelines = citationsSansCorpus(RACINE);
     expect(
       orphelines.length,
       `${orphelines.length} article(s) cité(s) à l'écran sans entrée de corpus ` +
-        `(plafond ${PLAFOND}). Si ce nombre a BAISSÉ, abaisser PLAFOND d'autant : ` +
-        `c'est un cliquet, il ne remonte pas. S'il a AUGMENTÉ, une surface cite ` +
-        `au dirigeant un article que personne n'a ouvert — dépouiller le texte ` +
-        `avant de l'afficher, ou retirer la citation.\n\n` +
+        `(plafond ${PLAFOND}). Une surface qui s'affiche cite au dirigeant un ` +
+        `article qu'aucun corpus n'a ouvert. Deux remèdes, jamais un troisième : ` +
+        `dépouiller le texte, ou retirer la citation. Remonter le plafond n'en ` +
+        `est pas un — il est à zéro, et c'est ce qui fait de ce test une ` +
+        `garantie plutôt qu'un compteur.\n\n` +
         orphelines
           .map((o) => `  ${o.ref}  —  ${o.emplacements[0]}`)
           .join("\n"),
@@ -92,6 +95,34 @@ describe("ce que les écrans citent sans que personne l'ait ouvert", () => {
       writeFileSync(
         join(bac, "src/app", "ecran.tsx"),
         `export const E = () => <p>art. ${connu} du code du travail</p>;\n`,
+      );
+      expect(citationsSansCorpus(bac)).toEqual([]);
+    } finally {
+      rmSync(bac, { recursive: true, force: true });
+    }
+  });
+
+  it("une citation dans un bloc de commentaire sur plusieurs lignes non plus", () => {
+    // LE DÉFAUT QUE CE TEST FIXE. La première version du balayage n'écartait
+    // que les lignes COMMENÇANT par un marqueur. `permis-feu/page.tsx` porte un
+    // `{/* … */}` de quatre lignes dont la deuxième cite `R. 4434-9` : elle a
+    // été comptée comme une citation faite au dirigeant. Le module se
+    // contredisait — il annonçait exclure les commentaires et n'excluait que
+    // leur première ligne. Relevé par un lot de dépouillement le jour même.
+    const bac = mkdtempSync(join(tmpdir(), "citations-"));
+    try {
+      for (const surface of SURFACES_AFFICHEES) {
+        mkdirSync(join(bac, surface), { recursive: true });
+      }
+      writeFileSync(
+        join(bac, "src/app", "ecran.tsx"),
+        `export const E = () => (\n` +
+          `  <p>\n` +
+          `    {/* L'URL pointait ailleurs : ce n'est pas R. 9999-4\n` +
+          `        mais R. 9999-5. Relu le 2026-09-02. */}\n` +
+          `    Texte affiche\n` +
+          `  </p>\n` +
+          `);\n`,
       );
       expect(citationsSansCorpus(bac)).toEqual([]);
     } finally {

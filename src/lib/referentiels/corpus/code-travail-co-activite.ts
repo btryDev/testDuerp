@@ -1,9 +1,23 @@
 // Corpus : code du travail — opérations de chargement et de déchargement.
 //
-// Étendue « articles_cites » : huit des neuf articles du chapitre V. Le seul
-// manquant est `R. 4515-8`, connu par le renvoi que lui fait `R. 4515-10` mais
-// non ouvert. Le chapitre serait presque intégral ; il ne se déclare pas tel,
-// parce qu'un article non lu suffit à rendre l'affirmation fausse.
+// Étendue « integral » depuis le 2026-09-02 : ONZE articles sur onze,
+// R. 4515-1 à R. 4515-11.
+//
+// LE DÉNOMINATEUR ÉTAIT FAUX, ET C'EST LA CORRECTION DE CE PASSAGE. L'en-tête
+// annonçait « huit des neuf articles du chapitre V ». Le chapitre en compte
+// ONZE en vigueur, relevés sur la page de section de Légifrance le
+// 2026-09-02 : la section 1 « Champ d'application » en porte trois — R. 4515-1
+// à R. 4515-3 — et non un seul. Le corpus en listait neuf, donc il lui en
+// manquait deux, `R. 4515-2` et `R. 4515-3`, qui sont les DÉFINITIONS de
+// l'opération de chargement et du caractère répétitif. Or c'est R. 4515-3 qui
+// dit ce que « répétitif » veut dire dans R. 4515-9, l'article dont le corpus
+// avait déjà écrit qu'il aurait pu faire inventer une périodicité. La
+// condition qui gouverne était donc hors du corpus qui la commentait.
+//
+// Un compte faux dans une portée n'est pas une coquille : il annonce une
+// couverture. « Huit sur neuf » se lit « il en manque un » ; il en manquait
+// trois. Les trois sont lus depuis le 2026-09-02, et le chapitre se déclare
+// intégral.
 //
 // LE FONDEMENT N'EST PAS L'ARRÊTÉ DE 1996, ET C'EST LA CORRECTION PRINCIPALE
 // DE CE CORPUS. Le brief du lot 8 datait le protocole de sécurité de l'arrêté
@@ -35,9 +49,9 @@ export const CODE_TRAVAIL_CO_ACTIVITE: Corpus = {
   intitule:
     "Code du travail — protocole de sécurité des opérations de chargement et de déchargement",
   url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018491658/",
-  etendue: "articles_cites",
+  etendue: "integral",
   portee:
-    "Le chapitre V du titre Ier du livre V : ce qu'impose la venue d'une entreprise extérieure de transport dans l'enceinte d'un établissement. Champ d'application et dérogation au plan de prévention (R. 4515-1), obligation du protocole écrit (R. 4515-4), son contenu pour chacune des deux parties (R. 4515-5 à R. 4515-7), le protocole unique des opérations répétitives (R. 4515-9), la dérogation quand le prestataire n'est pas identifiable (R. 4515-10) et la tenue d'un exemplaire à disposition (R. 4515-11). R. 4515-8, qui règle l'échange préalable, n'est pas lu.",
+    "Le chapitre V du titre Ier du livre V EN ENTIER, onze articles sur onze : ce qu'impose la venue d'une entreprise extérieure de transport dans l'enceinte d'un établissement. Section 1, champ d'application et définitions — dérogation au plan de prévention (R. 4515-1), définition de l'opération de chargement ou de déchargement (R. 4515-2), définition du caractère répétitif (R. 4515-3). Section 2, protocole de sécurité — obligation de l'écrit (R. 4515-4), contenu pour chacune des deux parties (R. 4515-5 à R. 4515-7), échange préalable et protocole spécifique par opération non répétitive (R. 4515-8), protocole unique des opérations répétitives (R. 4515-9), dérogation quand le prestataire n'est pas identifiable (R. 4515-10), tenue d'un exemplaire daté et signé à disposition (R. 4515-11).",
   articles: [
     {
       ref: "R. 4515-1",
@@ -54,6 +68,36 @@ export const CODE_TRAVAIL_CO_ACTIVITE: Corpus = {
       obligations: ["co-activite-etablissement-protocole-securite"],
       reserve:
         "Aucun seuil, aucune fréquence minimale, aucune quantité : le champ est celui de toute livraison par un transporteur extérieur. Le produit ne porte aucun attribut d'établissement disant s'il en reçoit ; l'obligation s'applique donc à tout établissement de travail, conformément à la règle du non-renseigné.",
+    },
+    {
+      ref: "R. 4515-2",
+      intitule: "Définition de l'opération de chargement ou de déchargement",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018529690",
+      versionEnVigueur: "2008-05-01",
+      luLe: "2026-09-02",
+      lecture: "agent_verbatim",
+      prescrit:
+        "L'opération de chargement ou de déchargement est l'activité concourant à la mise en place ou à l'enlèvement, sur ou dans un engin de transport routier, de produits, fonds et valeurs, matériels, engins, déchets, objets et matériaux de quelque nature que ce soit.",
+      citationCle:
+        "On entend par opération de chargement ou de déchargement, l'activité concourant à la mise en place ou à l'enlèvement sur ou dans un engin de transport routier, de produits, fonds et valeurs, matériels ou engins, déchets, objets et matériaux de quelque nature que ce soit.",
+      statut: "sans_objet",
+      motif:
+        "Article de définition, sans prescription propre. Entré au corpus le 2026-09-02 avec la correction du dénominateur : il manquait, et son absence n'était pas neutre. C'est LUI qui ferme la question du champ que la réserve de R. 4515-1 laissait ouverte — « de quelque nature que ce soit », sur un engin de TRANSPORT ROUTIER. L'enlèvement des déchets et la collecte de fonds y sont nommément, ce qui met dans le champ deux opérations qu'un restaurant ou un commerce de détail subit toutes les semaines sans les appeler des livraisons.",
+    },
+    {
+      ref: "R. 4515-3",
+      intitule: "Définition du caractère répétitif",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018529688",
+      versionEnVigueur: "2008-05-01",
+      luLe: "2026-09-02",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Sont répétitives les opérations qui portent sur des produits ou substances de même nature, sont accomplies sur les mêmes emplacements, selon le même mode opératoire, et mettent en œuvre les mêmes types de véhicules et de matériels de manutention.",
+      citationCle:
+        "On entend par opérations de chargement ou de déchargement à caractère répétitif, celles qui portent sur des produits ou substances de même nature, sont accomplies sur les mêmes emplacements, selon le même mode opératoire, et mettent en œuvre les mêmes types de véhicules et de matériels de manutention.",
+      statut: "sans_objet",
+      motif:
+        "Article de définition, et LA CONDITION QUI GOUVERNE R. 4515-9 — que ce corpus commentait déjà longuement sans l'avoir ouverte. Les quatre critères sont CUMULATIFS : même nature de produits, mêmes emplacements, même mode opératoire, mêmes types de véhicules et de matériels. Le protocole unique tombe donc dès qu'un seul change, ce qui est la traduction concrète de la « modification significative » de R. 4515-9 et confirme la nature événementielle retenue par l'obligation. Aucune prescription propre, aucune échéance.",
     },
     {
       ref: "R. 4515-4",
@@ -110,9 +154,18 @@ export const CODE_TRAVAIL_CO_ACTIVITE: Corpus = {
     },
     {
       ref: "R. 4515-8",
-      intitule: "Échange préalable entre les employeurs",
-      url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000018491668/",
-      statut: "non_depouille",
+      intitule: "Échange préalable et protocole spécifique par opération",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018529676",
+      versionEnVigueur: "2008-05-01",
+      luLe: "2026-09-02",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Le protocole est établi dans le cadre d'un échange entre les employeurs, préalablement à la réalisation de l'opération ; chaque opération non répétitive donne lieu à un protocole spécifique.",
+      citationCle:
+        "Le protocole de sécurité est établi dans le cadre d'un échange entre les employeurs intéressés, préalablement à la réalisation de l'opération. Chacune des opérations ne revêtant pas le caractère répétitif défini à l'article R. 4515-3 donne lieu à un protocole de sécurité spécifique.",
+      statut: "sans_objet",
+      motif:
+        "Ouvert le 2026-09-02, il était le seul article non lu du chapitre. Il ne crée pas d'obligation seconde : il dit COMMENT s'établit celle de R. 4515-4 — par un échange, avant l'opération — et à quelle maille. Sa seconde phrase est celle qui compte pour le produit, et elle est la contrepartie exacte de R. 4515-9 : hors opérations répétitives au sens de R. 4515-3, un protocole par opération. Un exploitant qui reçoit un transporteur occasionnel ne peut pas s'abriter derrière le protocole signé avec son fournisseur habituel. Rien à porter au calendrier pour autant, la nature événementielle de l'obligation le dit déjà.",
     },
     {
       ref: "R. 4515-9",

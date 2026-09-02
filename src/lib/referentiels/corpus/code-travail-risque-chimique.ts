@@ -17,7 +17,7 @@ export const CODE_TRAVAIL_RISQUE_CHIMIQUE: Corpus = {
   url: "https://www.legifrance.gouv.fr/codes/id/LEGISCTA000018530931/",
   etendue: "articles_cites",
   portee:
-    "Prévention du risque chimique (R. 4412-11 et s.), information et formation (R. 4412-38, R. 4412-87), aération (R. 4222-20). La formation à l'utilisation des équipements de travail n'est plus ici : `R. 4323-1` relève du livre III (équipements de travail), pas du risque chimique, et a rejoint `code-travail-equipements-information` le 2026-09-01.",
+    "Prévention du risque chimique (R. 4412-11 et s.), information et formation (R. 4412-38, R. 4412-87), aération (R. 4222-20). DEUX RÉGIMES Y COHABITENT DEPUIS LE 2026-09-02, et il faut le dire plutôt que de le laisser deviner : la SECTION 1 du chapitre II, commune à tous les agents chimiques dangereux (R. 4412-11, R. 4412-17, R. 4412-38), et la SECTION 2, propre aux agents CMR — R. 4412-87 y était seul, R. 4412-59 l'y rejoint en tant qu'article de champ. Ce corpus ne prétend couvrir ni l'une ni l'autre : il ne porte que les articles que le référentiel ou les écrans citent. La formation à l'utilisation des équipements de travail n'est plus ici : `R. 4323-1` relève du livre III (équipements de travail), pas du risque chimique, et a rejoint `code-travail-equipements-information` le 2026-09-01.",
   articles: [
     {
       ref: "R. 4222-21",
@@ -73,6 +73,26 @@ export const CODE_TRAVAIL_RISQUE_CHIMIQUE: Corpus = {
       ],
       reserve:
         "LE CSE EST DESTINATAIRE AU MÊME TITRE QUE LES TRAVAILLEURS — « L'employeur veille à ce que les travailleurs AINSI QUE LE COMITÉ SOCIAL ET ÉCONOMIQUE » —, et aucune des deux obligations qui citent l'article ne le porte : l'une nomme les fiches, l'autre la formation des salariés qui manipulent. Relevé le 2026-09-01, non corrigé.",
+    },
+    {
+      ref: "R. 4412-59",
+      intitule:
+        "Champ d'application de la section « agents CMR » et articles de la section 1 qui restent applicables",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033769354",
+      versionEnVigueur: "2017-01-01",
+      modifiePar: {
+        texte: "Décret n° 2016-1908 du 27 décembre 2016 - art. 10",
+        url: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000033729065",
+      },
+      luLe: "2026-09-02",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Article de CHAMP, pas de prescription. Il ouvre la section 2 (agents CMR) en la rendant applicable aux activités où les travailleurs sont exposés ou susceptibles de l'être à des agents cancérogènes, mutagènes ou toxiques pour la reproduction, et il écarte pour elles la section 1 (agents chimiques dangereux) SAUF sept blocs qu'il énumère : les définitions, les mesures contre les dangers physico-chimiques (R. 4412-17 et R. 4412-18), l'intervention en espace confiné (R. 4412-22), les vérifications périodiques des installations et appareils de protection collective, les mesures en cas d'accident ou d'incident, la notice de poste (R. 4412-39) et le suivi de l'état de santé.",
+      citationCle:
+        "Les dispositions de la présente section sont applicables aux activités dans lesquelles les travailleurs sont exposés ou susceptibles d'être exposés au cours de leur travail à des agents chimiques cancérogènes mutagènes ou toxiques pour la reproduction.",
+      statut: "sans_objet",
+      motif:
+        "ARTICLE DE CHAMP : il n'impose rien par lui-même, il dit à quoi s'applique la section et ce qu'elle écarte. Consigné pour clore une question, pas pour la rouvrir.\n\nLA CITATION QUI L'A FAIT OUVRIR EST EXACTE, et c'est le résultat. Deux surfaces le montrent au dirigeant : la case « exposition à un agent CMR » de l'écran de cotation (« art. R. 4412-59 et suivants ») et le PDF du DUERP, qui écrit « les obligations renforcées de l'art. R. 4412-59 et suivants (substitution, liste nominative, suivi médical) ». Les trois obligations nommées existent bien dans la section qu'il ouvre — le remplacement de l'agent à R. 4412-66, la liste actualisée des travailleurs susceptibles d'être exposés à R. 4412-93-1, et le suivi de l'état de santé par le renvoi du 7° de cet article même. La forme « et suivants » est la bonne : elle désigne la section par son premier article sans lui attribuer leur contenu. Rien à corriger sur ces deux surfaces.\n\nCE QUI RESTE OUVERT : aucun des trois articles porteurs (R. 4412-66, R. 4412-93-1, et les articles de suivi de santé) n'est dépouillé. La liste de R. 4412-93-1 est en particulier un état permanent documentaire dont on ignore ici s'il est porté — le vérifier n'était pas dans ce lot, et ne pas l'écrire laisserait croire que la question a été posée.",
     },
     {
       ref: "R. 4412-87",
