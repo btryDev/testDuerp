@@ -106,8 +106,15 @@ export function PreRemplissagePanel({ etablissementId, suggestions }: Props) {
         </ul>
 
         {/* Le vert du board dit « fait » : ici il l'est — les fiches
-            existent. */}
-        {message && (
+            existent. Et il ne le dit que si c'est vrai AU MOMENT où on le
+            lit : `pending` passe devant. « 8 équipements ajoutés » s'affichait
+            pendant que le bouton disait encore « Création… » — deux états
+            contradictoires du même geste, dont l'un annonce fait ce qui est en
+            train de se faire, ce que la charte interdit au vert. Le cas se
+            reproduit d'un second clic : le message du premier survivait à
+            l'ouverture du second. Une opération en cours n'a pas de résultat,
+            donc pas de message. */}
+        {!pending && message && (
           <p className="m-0 text-[12.5px] text-[color:var(--board-green-ink)]">
             {message}
           </p>

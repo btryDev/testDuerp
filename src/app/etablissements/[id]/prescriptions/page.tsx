@@ -94,16 +94,27 @@ export default async function PrescriptionsPage({
             <ArrowLeft className="size-3" aria-hidden />
             {etablissement.raisonDisplay}
           </Link>
+          {/* « Ce qu'une autorité vous a prescrit » : le formulaire de cette
+              page propose « Demande de votre assureur », et un assureur n'est
+              pas une autorité. Le titre rangeait donc sous le mot « autorité »
+              la seule source que l'ADR-032 existe pour en distinguer — et il
+              le faisait au-dessus du marquage qui dit le contraire. Ce qui
+              compte ici est « à vous seul » : le propre de cette page est la
+              prescription particulière, opposée au référentiel commun ; qui
+              l'a prescrite se lit ligne par ligne. */}
           <h1 className="board-titre m-0 mt-2.5 text-[clamp(22px,2.2vw,27px)]">
-            Ce qu&apos;une autorité vous a prescrit, à vous seul
+            Ce qu&apos;on vous a prescrit, à vous seul
           </h1>
           <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
             Le calendrier est calculé à partir d&apos;un référentiel commun à
             tous les établissements. Un arrêté du maire ou du préfet pris après
             avis de la commission de sécurité, un arrêté préfectoral ICPE ou une
             demande de l&apos;inspection du travail peuvent imposer davantage —
-            un rythme plus court, une vérification supplémentaire. Déclarez-les
-            ici&nbsp;: le calendrier les reprend, avec leur référence.
+            un rythme plus court, une vérification supplémentaire. Votre
+            assureur aussi peut l&apos;exiger, mais par contrat et non par le
+            droit&nbsp;: ces lignes-là portent leur mention partout où elles
+            s&apos;affichent. Déclarez-les ici&nbsp;: le calendrier les
+            reprend, avec leur référence.
           </p>
         </div>
       </header>
@@ -115,8 +126,9 @@ export default async function PrescriptionsPage({
           </h2>
           {prescriptions.length === 0 ? (
             <p className="carte-board m-0 px-7 py-5 text-[14px] leading-[1.6] text-[color:var(--board-slate-mid)] sm:px-8">
-              Aucune prescription déclarée. Si aucune autorité ne vous a rien
-              prescrit, il n&apos;y a rien à faire ici.
+              Aucune prescription déclarée. Si personne ne vous a rien
+              prescrit en propre — ni autorité, ni assureur —, il n&apos;y a
+              rien à faire ici.
             </p>
           ) : (
             <ul className="carte-board m-0 list-none p-0">
