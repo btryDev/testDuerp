@@ -25,6 +25,7 @@ export const CCH_REGISTRE_SECURITE: Corpus = {
       citationCle:
         "Dans les établissements soumis aux prescriptions du présent chapitre, il doit être tenu un registre de sécurité sur lequel sont reportés les renseignements indispensables à la bonne marche du service de sécurité. Ce registre comprend, outre les pièces attendues aux articles R. 141-10 et R. 141-11 : 1° Les dates des travaux d'aménagement et de transformation, leur nature, les noms du ou des entrepreneurs et, s'il y a lieu, de l'architecte ou du technicien chargé de surveiller les travaux ; 2° L'état nominatif et hiérarchique des personnes appartenant au service de sécurité ; 3° Les diverses consignes, générales et particulières, établies en cas d'incendie, y compris les consignes d'évacuation prenant en compte les différents types de handicap ; 4° Les dates des divers contrôles et vérifications ainsi que les observations auxquelles ceux-ci ont donné lieu ; 5° Les dates des exercices de sécurité incendie.",
       versionEnVigueur: "2026-07-01",
+      modifiePar: { texte: "Décret n° 2025-1100 du 19 novembre 2025 - art. 1" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
@@ -67,6 +68,7 @@ export const CCH_REGISTRE_SECURITE: Corpus = {
       citationCle:
         "Il doit être tenu, par le propriétaire, un registre de sécurité sur lequel sont portés les renseignements indispensables au contrôle de la sécurité. Ce registre comprend, outre les pièces attendues aux articles R. 141-10 et R. 141-11 : 1° Les dates des travaux d'aménagement et de transformation, leur nature, les noms du ou des entrepreneurs, et, s'il y a lieu, de l'architecte ou du technicien chargé de surveiller les travaux ; 2° L'état nominatif et hiérarchique des personnes appartenant au service de sécurité ; 3° Les diverses consignes, générales et particulières, établies en cas d'incendie, y compris les consignes d'évacuation prenant en compte les différents types de handicap ; 4° Les dates des divers contrôles et vérifications ainsi que les observations ou rapports auxquels ceux-ci ont donné lieu ; 5° Les dates des exercices de sécurité incendie ; 6° L'état et les plans de situation des moyens de secours mis à disposition du service de sécurité.",
       versionEnVigueur: "2026-07-01",
+      modifiePar: { texte: "Décret n° 2025-1100 du 19 novembre 2025 - art. 1" },
       luLe: "2026-09-01",
       lecture: "premiere_main",
       statut: "retenu",
