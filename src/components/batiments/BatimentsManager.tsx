@@ -9,6 +9,7 @@ import {
   supprimerBatiment,
   type BatimentActionState,
 } from "@/lib/batiments/actions";
+import { MAX_ZONES, PLAFOND_ZONES } from "@/lib/batiments/schema";
 import type { BatimentListe } from "@/lib/batiments/queries";
 
 /**
@@ -78,7 +79,41 @@ export function BatimentsManager({
         ))}
       </ul>
 
-      <FormulaireAjout etablissementId={etablissementId} />
+      {/* La borne s'annonce AVANT la tentative. Elle était muette : on
+          saisissait un quatrième nom, on cliquait, et le refus arrivait —
+          en emportant la saisie. Une borne qui ne se découvre qu'en la
+          heurtant n'est pas une borne, c'est un piège ; l'onboarding, lui,
+          avertit en direct sur l'effectif. */}
+      {batiments.length >= MAX_ZONES ? (
+        <PlafondAtteint />
+      ) : (
+        <FormulaireAjout
+          etablissementId={etablissementId}
+          restantes={MAX_ZONES - batiments.length}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * La porte annoncée fermée, plutôt qu'un formulaire qui ne peut plus
+ * aboutir (charte, interdit 19).
+ *
+ * Registre ardoise et non ambre : rien n'est en retard ni en faute, c'est
+ * une limite atteinte — l'ambre est l'attention, pas la borne (interdit 4).
+ * Le refus serveur reste en place : c'est lui qui tranche, l'écran ne fait
+ * que cesser de promettre.
+ */
+function PlafondAtteint() {
+  return (
+    <div className="carte-board px-7 py-6 sm:px-8">
+      <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+        Ajouter une zone
+      </p>
+      <p className="m-0 mt-2 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+        {PLAFOND_ZONES}
+      </p>
     </div>
   );
 }
@@ -152,20 +187,77 @@ function LigneBatiment({
   );
 }
 
-function FormulaireAjout({ etablissementId }: { etablissementId: string }) {
+function FormulaireAjout({
+  etablissementId,
+  restantes,
+}: {
+  etablissementId: string;
+  /** Zones encore ajoutables — dit d'avance ce que le refus dirait après. */
+  restantes: number;
+}) {
   const action = creerBatiment.bind(null, etablissementId);
   const [state, formAction, pending] = useActionState(action, ETAT_INITIAL);
 
   return (
+    <SaisieZone
+      // Vider le formulaire après succès : la clé change, React remonte. Le
+      // remontage est ce qui remet la saisie à blanc — et lui seul : en cas
+      // de refus la clé ne bouge pas, donc ce qui a été tapé reste.
+      key={state.status === "success" ? state.id : "vierge"}
+      formAction={formAction}
+      state={state}
+      pending={pending}
+      restantes={restantes}
+    />
+  );
+}
+
+/**
+ * Les champs de l'ajout, et ce qui les fait survivre à un refus.
+ *
+ * React 19 remet un `<form action={…}>` à blanc dès que l'action rend la
+ * main — **y compris quand elle refuse**. Le nom tapé pour une quatrième
+ * zone disparaissait donc avec le message qui expliquait pourquoi elle
+ * était refusée : il fallait le retaper pour lire le refus, ou renoncer.
+ *
+ * La parade tient à `defaultValue` : `form.reset()` ne vide pas un champ,
+ * il le ramène à son défaut. En tenant le défaut synchronisé avec la
+ * frappe, la remise à blanc devient un geste sans effet. Un champ
+ * *contrôlé* (`value`) n'y suffit pas — vérifié : le DOM repart au défaut
+ * et l'état React ne le sait pas, ce qui produit un champ et un écran qui
+ * se contredisent.
+ */
+function SaisieZone({
+  formAction,
+  state,
+  pending,
+  restantes,
+}: {
+  formAction: (fd: FormData) => void;
+  state: BatimentActionState;
+  pending: boolean;
+  restantes: number;
+}) {
+  const [nom, setNom] = useState("");
+  const [complement, setComplement] = useState("");
+
+  return (
     <form
       action={formAction}
-      // Vider le formulaire après succès : la clé change, React remonte.
-      key={state.status === "success" ? state.id : "vierge"}
       className="carte-board flex flex-col gap-5 px-7 py-6 sm:px-8"
     >
-      <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
-        Ajouter une zone
-      </p>
+      <div>
+        <p className="board-eyebrow m-0 text-[10.5px] tracking-[0.18em] text-[color:var(--board-slate-soft)]">
+          Ajouter une zone
+        </p>
+        {/* La borne, dite avant qu'on la heurte. */}
+        <p className="m-0 mt-2 text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+          {MAX_ZONES} zones au plus par établissement —{" "}
+          {restantes === 1
+            ? "il en reste une à poser."
+            : `il en reste ${restantes} à poser.`}
+        </p>
+      </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <ChampBoard
@@ -175,6 +267,8 @@ function FormulaireAjout({ etablissementId }: { etablissementId: string }) {
             requis
             maxLength={80}
             placeholder="Ex : Réserve, Atelier, Annexe"
+            defaultValue={nom}
+            onChange={(e) => setNom(e.target.value)}
             aria-invalid={
               state.status === "error" && Boolean(state.fieldErrors?.nom)
             }
@@ -187,6 +281,8 @@ function FormulaireAjout({ etablissementId }: { etablissementId: string }) {
           label="Complément d'adresse"
           maxLength={200}
           placeholder="Facultatif — si la zone a sa propre entrée"
+          defaultValue={complement}
+          onChange={(e) => setComplement(e.target.value)}
         />
       </div>
       {state.status === "error" && !state.fieldErrors?.nom && (

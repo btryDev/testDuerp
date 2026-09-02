@@ -32,7 +32,24 @@ import type { StepProps } from "./types";
  * Les questions ne sont pas numérotées : elles sont posées toutes les trois en
  * même temps et se répondent dans n'importe quel ordre.
  */
-export function StepTypologie({ state, update, errors }: StepProps) {
+export function StepTypologie({
+  state,
+  update,
+  errors,
+  blocage,
+}: StepProps) {
+  /**
+   * L'erreur d'un champ : le refus de passage d'étape s'il vise ce champ,
+   * sinon celle du serveur.
+   *
+   * Le refus était rendu par le shell, en bas de colonne — six cents pixels
+   * sous le `<select>` visé, après trois cartes. On lisait « Précisez… » en
+   * regardant la carte « habitation », sans rien pour dire lequel des quatre
+   * contrôles manquait.
+   */
+  const messagePour = (champ: string) =>
+    (blocage?.champ === champ ? blocage.message : undefined) ??
+    errors?.[champ];
 
   return (
     <div className="flex flex-col gap-[22px]">
@@ -44,7 +61,13 @@ export function StepTypologie({ state, update, errors }: StepProps) {
           Quelques questions pour cadrer les obligations applicables.
         </h2>
         <p className="m-0 mt-2.5 max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
-          Trois questions, et deux précisions si vous y répondez oui. Votre
+          {/* « et deux précisions » : il y en a quatre — type et catégorie
+              d'ERP, nature de l'immeuble IGH, famille d'habitation. Le
+              chapeau comptait les précisions du seul « oui » à l'ERP.
+              Compter à la main un nombre que trois blocs plus bas
+              contredisent revient à annoncer un parcours plus court qu'il
+              ne l'est ; on dit donc la règle, pas le total. */}
+          Trois questions. Chaque « oui » en ouvre une ou deux de plus. Votre
           classement figure sur votre arrêté d&apos;ouverture ou au
           procès-verbal de la commission de sécurité — nous ne le devinons
           pas à votre place.
@@ -90,7 +113,15 @@ export function StepTypologie({ state, update, errors }: StepProps) {
                 <div className="flex flex-col gap-3">
                   <SousQuestion
                     question="Quel est votre type d'établissement ?"
-                    aide="Les vingt et un types du règlement de sécurité. Le vôtre y figure."
+                    // « Le vôtre y figure » était faux : le règlement de
+                    // sécurité compte VINGT-DEUX types, et la liste en
+                    // propose vingt et un — le type J (structures d'accueil
+                    // pour personnes âgées et handicapées) n'y est pas.
+                    // La phrase se corrige, pas la liste : ouvrir le type J
+                    // ferait entrer un secteur que le référentiel ne sert
+                    // pas, et c'est une décision produit, pas une coquille
+                    // d'écran (voir `LABEL_TYPE_ERP`).
+                    aide="Vingt et un des vingt-deux types du règlement de sécurité. Le type J — accueil de personnes âgées ou handicapées — n'y est pas : Rojer ne le traite pas."
                   />
                   <select
                     id="typeErp"
@@ -98,7 +129,7 @@ export function StepTypologie({ state, update, errors }: StepProps) {
                     value={state.typeErp}
                     onChange={(e) => update({ typeErp: e.currentTarget.value })}
                     className="champ-board max-w-md"
-                    aria-invalid={Boolean(errors?.typeErp)}
+                    aria-invalid={Boolean(messagePour("typeErp"))}
                   >
                     <option value="">— Sélectionner —</option>
                     {TYPE_ERP.map((t) => (
@@ -107,9 +138,9 @@ export function StepTypologie({ state, update, errors }: StepProps) {
                       </option>
                     ))}
                   </select>
-                  {errors?.typeErp && (
+                  {messagePour("typeErp") && (
                     <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
-                      {errors.typeErp}
+                      {messagePour("typeErp")}
                     </p>
                   )}
                 </div>
@@ -127,7 +158,7 @@ export function StepTypologie({ state, update, errors }: StepProps) {
                       update({ categorieErp: e.currentTarget.value })
                     }
                     className="champ-board max-w-md"
-                    aria-invalid={Boolean(errors?.categorieErp)}
+                    aria-invalid={Boolean(messagePour("categorieErp"))}
                   >
                     <option value="">— Sélectionner —</option>
                     {CATEGORIES_ERP.map((c) => (
@@ -136,9 +167,9 @@ export function StepTypologie({ state, update, errors }: StepProps) {
                       </option>
                     ))}
                   </select>
-                  {errors?.categorieErp && (
+                  {messagePour("categorieErp") && (
                     <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
-                      {errors.categorieErp}
+                      {messagePour("categorieErp")}
                     </p>
                   )}
                 </div>
@@ -178,6 +209,10 @@ export function StepTypologie({ state, update, errors }: StepProps) {
               <div className="flex flex-col gap-4">
                 <SousQuestion question="Quelle est la nature de l'immeuble ?" />
                 <div
+                  // L'`id` porte le nom du champ au sens de la validation :
+                  // c'est lui que le shell va chercher pour amener le refus
+                  // sous les yeux (`Blocage.champ`).
+                  id="classeIgh"
                   role="radiogroup"
                   aria-label="Classe IGH"
                   className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
@@ -194,9 +229,9 @@ export function StepTypologie({ state, update, errors }: StepProps) {
                     />
                   ))}
                 </div>
-                {errors?.classeIgh && (
+                {messagePour("classeIgh") && (
                   <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
-                    {errors.classeIgh}
+                    {messagePour("classeIgh")}
                   </p>
                 )}
               </div>
@@ -247,6 +282,7 @@ export function StepTypologie({ state, update, errors }: StepProps) {
                   vous seront présentées.
                 </p>
                 <div
+                  id="familleHabitation"
                   role="radiogroup"
                   aria-label="Famille d'habitation"
                   className="grid grid-cols-1 gap-3 sm:grid-cols-3"
@@ -261,9 +297,9 @@ export function StepTypologie({ state, update, errors }: StepProps) {
                     />
                   ))}
                 </div>
-                {errors?.familleHabitation && (
+                {messagePour("familleHabitation") && (
                   <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
-                    {errors.familleHabitation}
+                    {messagePour("familleHabitation")}
                   </p>
                 )}
               </div>

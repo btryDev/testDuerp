@@ -16,6 +16,7 @@ import {
   validerIdentite,
   validerResume,
   validerTypologie,
+  type Blocage,
 } from "./validation";
 import {
   VALEURS_INITIALES,
@@ -29,7 +30,7 @@ type Etape = {
   titre: string;
   sousTitre: string;
   Component: React.ComponentType<StepProps>;
-  valide: (s: OnboardingState) => string | null;
+  valide: (s: OnboardingState) => Blocage | null;
 };
 
 const ETAPES: Etape[] = [
@@ -63,7 +64,7 @@ export function WizardShell() {
   const router = useRouter();
   const [state, setState] = useState<OnboardingState>(VALEURS_INITIALES);
   const [etapeIdx, setEtapeIdx] = useState(0);
-  const [blocage, setBlocage] = useState<string | null>(null);
+  const [blocage, setBlocage] = useState<Blocage | null>(null);
 
   // Quitter : rien n'est persisté avant l'étape finale (état React pur),
   // donc on le dit honnêtement au lieu d'un « Enregistrer et quitter »
@@ -105,10 +106,35 @@ export function WizardShell() {
     setBlocage(null);
   };
 
+  /**
+   * Le refus de périmètre de l'étape courante, recalculé à chaque rendu.
+   *
+   * Il ne se lève par aucune saisie de plus — plus de cinquante travailleurs,
+   * un ERP en IGH (ADR-031) —, donc la porte s'annonce fermée AVANT le clic :
+   * le bouton passe en `disabled`, et le refus s'écrit une seule fois, à
+   * l'endroit où on le provoque. Il restait « noir plein » et le clic
+   * répétait en rouge ce qui était déjà écrit sous le champ, dans d'autres
+   * mots.
+   *
+   * Les autres refus — un champ oublié — laissent le bouton actif : ils se
+   * lèvent en remplissant, et c'est le clic qui les apprend.
+   */
+  const refusPerimetre = etape.valide(state)?.perimetre === true;
+
   const suivant = () => {
     const err = etape.valide(state);
     if (err) {
       setBlocage(err);
+      // Le refus se rend au champ qu'il vise : sans cela il s'affichait en
+      // bas de colonne, hors écran sur les étapes longues, et rien ne disait
+      // lequel des quatre contrôles il désignait. Pas de `behavior: "smooth"`
+      // en dur — le défilement suit ce que la page a décidé, `prefers-
+      // reduced-motion` compris (charte, interdit 22).
+      if (err.champ) {
+        const cible = document.getElementById(err.champ);
+        cible?.scrollIntoView({ block: "center" });
+        cible?.focus({ preventScroll: true });
+      }
       return;
     }
     setBlocage(null);
@@ -267,21 +293,46 @@ export function WizardShell() {
           </div>
         </div>
 
-        <form action={formAction} className="flex flex-1 flex-col">
+        <form
+          action={formAction}
+          className="flex flex-1 flex-col"
+          // Ce formulaire couvre les trois étapes, et il ne se soumet qu'à la
+          // dernière. La garde n'est pas décorative : le bouton de droite est
+          // le MÊME nœud DOM d'une étape à l'autre — React réconcilie par
+          // position, le `<Button>` change seulement de `type` —, et
+          // l'« activation behavior » d'un `<button>` lit son `type` APRÈS
+          // que les écouteurs de clic ont tourné (vérifié en jsdom : un
+          // écouteur qui passe le type à `submit` pendant le clic fait partir
+          // la soumission). Un clic sur « Suivant » à l'étape 2 laisse donc
+          // sous le curseur un bouton « Créer mon espace » que le navigateur
+          // peut activer dans la foulée — c'est le symptôme rapporté : étape 3
+          // affichée, espace déjà en création, résumé jamais lu.
+          //
+          // On ne corrige pas un mécanisme supposé, on tient l'invariant :
+          // une soumission qui ne vient pas de l'étape 3 n'a pas lieu.
+          onSubmit={(e) => {
+            if (etapeIdx !== ETAPES.length - 1) e.preventDefault();
+          }}
+        >
           <div className="max-w-[720px] flex-1">
             <CurrentStep
               state={state}
               update={update}
               errors={serverErrors}
+              blocage={blocage}
             />
           </div>
 
           <ChampsCaches state={state} />
 
-          {blocage ? <Blocage>{blocage}</Blocage> : null}
+          {/* Seuls les refus qui ne visent aucun champ restent ici : les
+              autres sont rendus par l'étape, sous le contrôle concerné. */}
+          {blocage && !blocage.champ ? (
+            <BandeauBlocage>{blocage.message}</BandeauBlocage>
+          ) : null}
 
           {serverState.status === "error" && !serverState.fieldErrors ? (
-            <Blocage>{serverState.message}</Blocage>
+            <BandeauBlocage>{serverState.message}</BandeauBlocage>
           ) : null}
 
           <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--board-slate-line)] pt-8">
@@ -311,6 +362,12 @@ export function WizardShell() {
                 variant="board"
                 size="board"
                 onClick={suivant}
+                // Un vrai `disabled`, pas un `aria-disabled` : sans lui
+                // l'attribut n'est pas exposé (charte, interdit 20). La
+                // raison est écrite juste au-dessus, sous le champ qui la
+                // provoque — une porte annoncée fermée, pas un bouton inerte
+                // (interdit 19).
+                disabled={refusPerimetre}
               >
                 Suivant →
               </Button>
@@ -339,7 +396,7 @@ export function WizardShell() {
  * Voile rose pleine largeur plutôt que la ligne d'erreur de champ : la
  * phrase ne se rattache à aucun champ précis, elle barre le passage.
  */
-function Blocage({ children }: { children: React.ReactNode }) {
+function BandeauBlocage({ children }: { children: React.ReactNode }) {
   return (
     <p
       role="alert"

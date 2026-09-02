@@ -18,6 +18,56 @@ import { EFFECTIF_MAX } from "@/lib/onboarding/schema";
 import type { OnboardingState } from "./types";
 
 /**
+ * Un refus d'avancer, et ce qu'il faut pour le montrer au bon endroit.
+ *
+ * Le retour était une simple chaîne, et le shell la rendait en bas de
+ * colonne, sous les cartes. « Précisez le type de votre ERP » s'affichait
+ * ainsi six cents pixels sous le `<select>` visé, sans que rien ne dise
+ * lequel : à l'étape 2, on lisait le refus en regardant la carte
+ * « habitation ». `champ` porte l'`id` du contrôle concerné — le message
+ * se rend au champ, il n'attend plus qu'on le rejoigne.
+ *
+ * `perimetre` distingue les deux natures de refus, et la distinction est
+ * visible à l'écran : un champ oublié se lève en le remplissant, donc le
+ * bouton reste actif et c'est le clic qui l'apprend ; une borne du produit
+ * ne se lève par aucune saisie, donc la porte s'annonce fermée avant le
+ * clic (charte, interdit 19) et le refus ne s'écrit qu'une fois.
+ */
+export type Blocage = {
+  message: string;
+  /** `id` du champ visé, quand le refus en vise un. */
+  champ?: string;
+  /** Vrai quand aucune saisie supplémentaire ne peut lever le refus. */
+  perimetre?: boolean;
+};
+
+/**
+ * La borne d'effectif du produit (ADR-025 § 1, ADR-031), écrite **une
+ * fois**.
+ *
+ * `StepIdentite` l'affiche en direct sous le champ et `validerIdentite` la
+ * pose au passage d'étape : deux surfaces, un seul texte. Elles en
+ * portaient deux, écrits séparément — « au-delà de ce que Rojer prend en
+ * charge » sous le champ, « Rojer prend en charge les structures jusqu'à
+ * 50 salariés » au clic —, et le dirigeant lisait le même refus deux fois
+ * dans deux formulations.
+ *
+ * Elle porte sur les TRAVAILLEURS et sur eux seuls : le public reçu ne la
+ * déclenche jamais — un restaurant de huit salariés qui sert trois cents
+ * couverts est dans la cible, et sa catégorie d'ERP ne dit rien de son
+ * effectif.
+ */
+export function refusEffectif(effectifSurSite: string): Blocage | null {
+  const n = Number(effectifSurSite);
+  if (!Number.isInteger(n) || n <= EFFECTIF_MAX) return null;
+  return {
+    champ: "effectifSurSite",
+    perimetre: true,
+    message: `${n} salariés : Rojer prend en charge les structures jusqu'à ${EFFECTIF_MAX} salariés. Au-delà, les obligations changent de nature — CSSCT dédiée, programme annuel de prévention présenté au CSE, bilan annuel — et l'outil ne les porte pas.`,
+  };
+}
+
+/**
  * Étape 1 — identité et lieu. Rend le message à afficher, ou `null`.
  *
  * Le contrôle de format du code NAF passe par `evaluerScopeSecteur` et par
@@ -33,32 +83,43 @@ import type { OnboardingState } from "./types";
  * demandée. L'absence se dit à l'écran (`StepIdentite`), puis en permanence
  * sur le dossier (`perimetre/couverture.ts`, axe `secteur_duerp`).
  */
-export function validerIdentite(s: OnboardingState): string | null {
+export function validerIdentite(s: OnboardingState): Blocage | null {
   if (s.raisonSociale.trim().length === 0)
-    return "Indiquez la raison sociale pour continuer.";
-  if (s.adresseRue.trim().length < 3) return "Indiquez le numéro et la rue.";
+    return {
+      champ: "raisonSociale",
+      message: "Indiquez la raison sociale pour continuer.",
+    };
+  if (s.adresseRue.trim().length < 3)
+    return { champ: "adresseRue", message: "Indiquez le numéro et la rue." };
   if (!/^\d{5}$/.test(s.adresseCodePostal.trim()))
-    return "Le code postal doit faire 5 chiffres.";
-  if (s.adresseVille.trim().length < 2) return "Indiquez la ville.";
-  if (s.codeNaf.trim().length === 0) return "Indiquez le code NAF.";
+    return {
+      champ: "adresseCodePostal",
+      message: "Le code postal doit faire 5 chiffres.",
+    };
+  if (s.adresseVille.trim().length < 2)
+    return { champ: "adresseVille", message: "Indiquez la ville." };
+  if (s.codeNaf.trim().length === 0)
+    return { champ: "codeNaf", message: "Indiquez le code NAF." };
   if (evaluerScopeSecteur(s.codeNaf).status === "format_invalide")
-    return "Le code NAF doit ressembler à 56.10A.";
+    return {
+      champ: "codeNaf",
+      message: "Le code NAF doit ressembler à 56.10A.",
+    };
   const n = Number(s.effectifSurSite);
   if (!Number.isInteger(n) || n < 1)
-    return "Indiquez un effectif (au moins 1).";
-  // La borne du produit (ADR-025 § 1, ADR-031). Elle porte sur les
-  // TRAVAILLEURS et sur eux seuls : le public reçu ne la déclenche jamais —
-  // un restaurant de huit salariés qui sert trois cents couverts est dans la
-  // cible, et sa catégorie d'ERP ne dit rien de son effectif.
-  if (n > EFFECTIF_MAX)
-    return `Rojer prend en charge les structures jusqu'à ${EFFECTIF_MAX} salariés. Au-delà, les obligations changent de nature et l'outil ne les porte pas.`;
-  return null;
+    return {
+      champ: "effectifSurSite",
+      message: "Indiquez un effectif (au moins 1).",
+    };
+  return refusEffectif(s.effectifSurSite);
 }
 
 /** Étape 2 — les régimes (ADR-004). */
-export function validerTypologie(s: OnboardingState): string | null {
+export function validerTypologie(s: OnboardingState): Blocage | null {
   if (!s.estEtablissementTravail && !s.estERP && !s.estIGH && !s.estHabitation)
-    return "Cochez au moins un régime (travail, ERP, IGH ou habitation).";
+    return {
+      message: "Cochez au moins un régime (travail, ERP, IGH ou habitation).",
+    };
   // Le seul cumul refusé (ADR-025 § 1). Un ERP situé dans un immeuble de
   // grande hauteur relève du règlement de sécurité des IGH, que le référentiel
   // ne connaît pas du tout.
@@ -68,20 +129,38 @@ export function validerTypologie(s: OnboardingState): string | null {
   // Code du travail, que le produit sert entièrement. Les obligations du
   // règlement IGH pèsent sur l'exploitant de l'immeuble, pas sur lui.
   if (s.estERP && s.estIGH)
-    return "Un établissement recevant du public situé dans un immeuble de grande hauteur relève du règlement de sécurité des IGH, que Rojer ne couvre pas.";
-  if (s.estERP && !s.typeErp) return "Précisez votre activité ERP.";
-  if (s.estERP && !s.categorieErp) return "Précisez votre capacité d'accueil.";
-  if (s.estIGH && !s.classeIgh) return "Précisez la classe IGH.";
+    return {
+      perimetre: true,
+      message:
+        "Un établissement recevant du public situé dans un immeuble de grande hauteur relève du règlement de sécurité des IGH, que Rojer ne couvre pas.",
+    };
+  // « Précisez votre activité ERP » nommait un champ qui n'existe plus : le
+  // parcours proposait des cartes d'« activité », le recadrage du
+  // 2026-09-01 les a remplacées par la question « Quel est votre type
+  // d'établissement ? ». Le refus reprend les mots du champ qu'il vise,
+  // sinon il envoie chercher autre chose.
+  if (s.estERP && !s.typeErp)
+    return { champ: "typeErp", message: "Précisez le type de votre ERP." };
+  if (s.estERP && !s.categorieErp)
+    return {
+      champ: "categorieErp",
+      message: "Précisez la catégorie de votre ERP.",
+    };
+  if (s.estIGH && !s.classeIgh)
+    return { champ: "classeIgh", message: "Précisez la classe IGH." };
   // La famille d'habitation, requise depuis le 2026-09-01 (ADR-025 § 4) :
   // neuf obligations portent la typologie habitation et certaines ne visent
   // qu'une partie des familles. Sans elle, elles s'appliquent toutes à tout
   // le monde.
   if (s.estHabitation && !s.familleHabitation)
-    return "Précisez la famille de l'immeuble d'habitation.";
+    return {
+      champ: "familleHabitation",
+      message: "Précisez la famille de l'immeuble d'habitation.",
+    };
   return null;
 }
 
 /** Étape 3 — le résumé ne valide rien : c'est la server action qui tranche. */
-export function validerResume(): string | null {
+export function validerResume(): Blocage | null {
   return null;
 }

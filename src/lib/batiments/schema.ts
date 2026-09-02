@@ -21,6 +21,16 @@ import { z } from "zod";
  */
 export const MAX_ZONES = 3;
 
+/**
+ * Ce que dit le plafond, écrit **une fois**.
+ *
+ * `creerBatiment` le rend en refus, et l'écran l'annonce avant qu'on essaie :
+ * la borne était muette jusqu'à la tentative, alors que l'effectif de
+ * l'onboarding, lui, avertit en direct. Deux surfaces, un seul texte — deux
+ * formulations d'une même règle divergent en silence.
+ */
+export const PLAFOND_ZONES = `Un établissement compte ${MAX_ZONES} zones au plus. Renommez ou regroupez une zone existante avant d'en ajouter une autre.`;
+
 /** Nom semé à la création d'un établissement. Les dossiers existants gardent
  *  le leur : le nom est libre et affiché tel quel, le migrer ne ferait que
  *  déplacer une chaîne sous une contrainte d'unicité, pour rien (ADR-029). */
