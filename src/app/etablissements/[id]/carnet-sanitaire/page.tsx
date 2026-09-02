@@ -91,11 +91,39 @@ export default async function CarnetSanitairePage({
                 fichier est l&apos;ARS.
               </p>
             </LegalBadge>
-            <LegalBadge
-              charte="board"
-              reference="Art. R. 1321-23 CSP"
-              href="https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006909518"
-            />
+            {/* ICI SE TENAIT « Art. R. 1321-23 CSP », ET IL EST PARTI LE
+                2026-09-02. Ouvert à la source ce jour-là
+                (`referentiels/corpus/csp-eau-potable.ts`), l'article ne
+                s'adresse pas au dirigeant : son destinataire est la
+                « personne responsable de la production ou de la distribution
+                d'eau », c'est-à-dire l'exploitant du réseau PUBLIC au sens du
+                1° de R. 1321-43. Un restaurant, un commerce ou un bureau
+                raccordé à ce réseau tient un réseau INTÉRIEUR (3° du même
+                article) et n'est pas cette personne.
+
+                CE QUI A PRODUIT LA CITATION EST UN HOMONYME, et il vaut d'être
+                nommé pour que le détour ne se refasse pas : le 3° de cet
+                article impose « un fichier sanitaire » — le recueil des
+                analyses de qualité de l'eau distribuée —, quand l'arrêté du
+                1er février 2010 affiché juste au-dessus impose « un fichier
+                sanitaire DES INSTALLATIONS », qui consigne les températures et
+                les légionelles des réseaux d'eau chaude du bâtiment. Deux
+                documents, deux destinataires. C'est le second que ce module
+                sert, et son verbatim est déjà sur cet écran : l'écran ne perd
+                rien.
+
+                LA RÉSERVE, QUI NE CHANGE PAS LA DÉCISION. Un établissement
+                alimenté par sa PROPRE ressource — puits, forage — devient la
+                personne responsable de la production, et l'article lui est
+                alors pleinement opposable. Le produit ne détient aucun
+                attribut disant d'où vient l'eau : le badge était donc affiché
+                à tous, c'est-à-dire à raison pour une minorité qu'on ne sait
+                pas identifier et à tort pour tous les autres. Et même pour
+                celle-là il ne servait rien — un numéro sans extrait ni
+                destinataire, sur un module qui traite les légionelles, pas la
+                qualité de l'eau produite. Servir ce cas suppose de savoir
+                d'où vient l'eau ; c'est un attribut, donc une migration, et
+                la question reste ouverte au corpus. */}
           </div>
         </WhyCard>
 
