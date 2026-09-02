@@ -296,24 +296,28 @@ describe("aller-retour édition — aucune réponse ne se perd", () => {
    * revenir identique après un aller-retour formulaire.
    */
   it("un équipement pleinement renseigné se relit sans perte", () => {
+    // Porté par `dessertLocauxSommeil` jusqu'au 2026-09-01, retiré ce jour-là
+    // avec l'attribut d'établissement qui le remplace (lot A11). Le maillon
+    // gardé n'a rien de propre à ce champ : n'importe quelle question à trois
+    // états le vérifie, et celle-ci est en opt-out comme l'était l'autre.
     const saisie = {
-      libelle: "SSI du hall",
-      categorie: "ALARME_INCENDIE" as const,
-      dessertLocauxSommeil: "non",
+      libelle: "Extincteur du hall",
+      categorie: "EXTINCTEUR" as const,
+      aRobinetsIncendieArmes: "non",
     };
     const res = equipementSchema.safeParse(saisie);
     expect(res.success).toBe(true);
     if (!res.success) return;
 
     const stocke = serialiserCaracteristiques(res.data);
-    expect(stocke).toEqual({ dessertLocauxSommeil: false });
+    expect(stocke).toEqual({ aRobinetsIncendieArmes: false });
 
     // Second passage : la page repasse la valeur stockée au formulaire, qui la
     // resoumet. Le « non » doit survivre.
     const relu = equipementSchema.safeParse({
       libelle: saisie.libelle,
       categorie: saisie.categorie,
-      dessertLocauxSommeil: valeurTriEtat(false),
+      aRobinetsIncendieArmes: valeurTriEtat(false),
     });
     expect(relu.success).toBe(true);
     if (relu.success) {
@@ -325,8 +329,8 @@ describe("aller-retour édition — aucune réponse ne se perd", () => {
     // Démonstration du mécanisme, pour que la régression soit lisible : si la
     // page oublie un champ, le schéma reçoit `undefined` et la clé disparaît.
     const res = equipementSchema.safeParse({
-      libelle: "SSI du hall",
-      categorie: "ALARME_INCENDIE",
+      libelle: "Extincteur du hall",
+      categorie: "EXTINCTEUR",
     });
     expect(res.success).toBe(true);
     if (res.success) expect(serialiserCaracteristiques(res.data)).toBeNull();

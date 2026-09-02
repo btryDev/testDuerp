@@ -31,6 +31,7 @@ function etabBureau(over: Partial<EtablissementMatching> = {}): EtablissementMat
     familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
+    comporteLocauxSommeilPublic: null,
     ...over,
   };
 }
@@ -51,6 +52,7 @@ function etabRestoErpCat5(
     familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
+    comporteLocauxSommeilPublic: null,
     ...over,
   };
 }
@@ -69,6 +71,7 @@ function etabErpCat3(): EtablissementMatching {
     familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
+    comporteLocauxSommeilPublic: null,
   };
 }
 
@@ -86,6 +89,7 @@ function etabIgh(): EtablissementMatching {
     familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
+    comporteLocauxSommeilPublic: null,
   };
 }
 
@@ -103,6 +107,7 @@ function etabHabitationPure(): EtablissementMatching {
     familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
+    comporteLocauxSommeilPublic: null,
   };
 }
 
@@ -795,6 +800,7 @@ describe("moteur matching — cohérence avec le référentiel", () => {
       familleHabitation: null,
       personnesPresentesHabituellement: null,
       manipuleMatieresR422722: null,
+      comporteLocauxSommeilPublic: null,
     };
     const eqComplet: EquipementMatching[] = [
       elec({ caracteristiques: { aGroupeElectrogene: true } }),
@@ -1162,6 +1168,7 @@ describe("moteur matching — aucun établissement existant ne perd une obligati
     familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,
+    comporteLocauxSommeilPublic: null,
   };
 
   /** Un équipement sans caractéristiques pour chacune des catégories. */
@@ -1677,30 +1684,111 @@ describe("moteur matching — restriction de type d'exploitation ERP en ET", () 
 describe("moteur matching — visite de commission ERP 5ᵉ bornée aux locaux à sommeil", () => {
   const VISITE = "incendie-erp-5-visite-commission";
 
-  // La restriction « locaux à sommeil » figurait au libellé et à la
-  // description de l'obligation, mais n'était encodée nulle part : tout ERP de
-  // 5ᵉ catégorie déclarant une alarme recevait l'échéance, restaurants et
-  // commerces compris.
+  // HISTOIRE DE CE BLOC, parce qu'il a changé de sujet deux fois. La
+  // restriction « locaux à sommeil » figurait au libellé et à la description
+  // de l'obligation sans être encodée nulle part : tout ERP de 5ᵉ catégorie
+  // déclarant une alarme recevait l'échéance, restaurants et commerces
+  // compris. Elle a d'abord été bornée par une caractéristique d'ÉQUIPEMENT
+  // (`dessertLocauxSommeil` sur l'ALARME_INCENDIE), faute d'attribut
+  // d'établissement. Depuis le 2026-09-01 elle l'est par l'établissement
+  // lui-même, et l'équipement n'entre plus dans l'équation — ce que les deux
+  // premiers tests vérifient en ne déclarant AUCUN équipement.
 
-  it("ne s'applique plus quand le dirigeant répond « non »", () => {
-    const res = determineObligationsApplicables(etabRestoErpCat5(), [
-      { ...alarme(), caracteristiques: { dessertLocauxSommeil: false } },
-    ]);
-    expect(idsObligations(res)).not.toContain(VISITE);
+  it("s'applique à un hôtel qui n'a déclaré aucun équipement", () => {
+    // Le faux négatif que l'ancrage sur l'alarme produisait : PE 37 vise
+    // l'établissement, pas son SSI.
+    const res = determineObligationsApplicables(
+      etabRestoErpCat5({ comporteLocauxSommeilPublic: true }),
+      [],
+    );
+    expect(idsObligations(res)).toContain(VISITE);
   });
 
-  it("s'applique quand le dirigeant répond « oui »", () => {
-    const res = determineObligationsApplicables(etabRestoErpCat5(), [
-      { ...alarme(), caracteristiques: { dessertLocauxSommeil: true } },
-    ]);
-    expect(idsObligations(res)).toContain(VISITE);
+  it("ne s'applique plus quand le dirigeant répond « non », même avec une alarme déclarée", () => {
+    const res = determineObligationsApplicables(
+      etabRestoErpCat5({ comporteLocauxSommeilPublic: false }),
+      [alarme()],
+    );
+    expect(idsObligations(res)).not.toContain(VISITE);
   });
 
   it("reste affichée tant que personne n'a répondu (opt-out)", () => {
     // Criticité 4 sur une obligation déjà publiée : aucun établissement
     // existant ne doit perdre la ligne en silence à la régénération.
-    const res = determineObligationsApplicables(etabRestoErpCat5(), [alarme()]);
+    const res = determineObligationsApplicables(etabRestoErpCat5(), []);
     expect(idsObligations(res)).toContain(VISITE);
+  });
+
+  it("ne s'applique pas à un ERP de 2ᵉ catégorie, même avec des locaux à sommeil", () => {
+    // GE 4 gouverne les quatre premières catégories, et relève du Livre II
+    // que PE 1 § 1 écarte. La restriction de catégorie reste en ET.
+    const res = determineObligationsApplicables(
+      etabRestoErpCat5({
+        categorieErp: "N2",
+        comporteLocauxSommeilPublic: true,
+      }),
+      [],
+    );
+    expect(idsObligations(res)).not.toContain(VISITE);
+  });
+});
+
+describe("moteur matching — les trois autres lignes du chapitre III (locaux à sommeil)", () => {
+  // PE 4 § 1, PE 33 § 2 et PE 35, encodées le 2026-09-01. Elles partagent la
+  // typologie de la visite de commission ; ce qui est vérifié ici est
+  // qu'elles la partagent VRAIMENT — une seule d'entre elles écrite avec un
+  // `erp: true` au lieu de `{ categories: ["N5"] }`, ou sans la condition de
+  // sommeil, tomberait chez tous les restaurants sans que rien ne le dise.
+  const LIGNES = [
+    "incendie-erp-5-sommeil-contrat-entretien-sdi",
+    "incendie-erp-5-sommeil-consigne-chambres",
+    "incendie-erp-5-sommeil-plans-affiches",
+  ];
+
+  it("sont servies à l'hôtel qui a répondu « oui », sans aucun équipement déclaré", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(
+        etabRestoErpCat5({ comporteLocauxSommeilPublic: true }),
+        [],
+      ),
+    );
+    for (const id of LIGNES) expect(ids, id).toContain(id);
+  });
+
+  it("disparaissent toutes les trois quand le dirigeant répond « non »", () => {
+    const ids = idsObligations(
+      determineObligationsApplicables(
+        etabRestoErpCat5({ comporteLocauxSommeilPublic: false }),
+        [alarme()],
+      ),
+    );
+    for (const id of LIGNES) expect(ids, id).not.toContain(id);
+  });
+
+  it("sont servies « à confirmer » tant que personne n'a répondu", () => {
+    const res = determineObligationsApplicables(etabRestoErpCat5(), []);
+    for (const id of LIGNES) {
+      const ligne = res.find((o) => o.obligation.id === id);
+      expect(ligne, id).toBeDefined();
+      // La raison est lue par un dirigeant : elle doit dire que la ligne est
+      // servie faute de savoir, pas la présenter comme établie.
+      expect(ligne!.raisons.join(" "), id).toContain("à confirmer");
+    }
+  });
+
+  it("produisent UNE ligne chacune, quel que soit le parc déclaré", () => {
+    // Porteur établissement (ADR-022) : une alarme de plus ne dédouble pas
+    // le contrat d'entretien.
+    const res = determineObligationsApplicables(
+      etabRestoErpCat5({ comporteLocauxSommeilPublic: true }),
+      [alarme(), { ...alarme(), id: "eq-alarme-2" }],
+    );
+    for (const id of LIGNES) {
+      const ligne = res.find((o) => o.obligation.id === id);
+      expect(ligne, id).toBeDefined();
+      expect(ligne!.porteur, id).toBe("etablissement");
+      expect(ligne!.equipementsConcernes, id).toHaveLength(0);
+    }
   });
 });
 

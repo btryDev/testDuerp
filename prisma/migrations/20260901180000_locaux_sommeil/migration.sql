@@ -1,0 +1,51 @@
+-- ============================================================================
+-- L'attribut « locaux à sommeil » — arrêté du 25 juin 1980, Livre III.
+--
+-- CE QUE CETTE COLONNE DÉBLOQUE. Quatre articles du Livre III s'adossent à la
+-- présence de locaux à sommeil : PE 4 § 1 (contrat annuel d'entretien du
+-- système de détection automatique d'incendie), PE 33 (consigne affichée dans
+-- chaque chambre), PE 35 (plans affichés) et PE 37 (visite quinquennale de la
+-- commission de sécurité). Aucun des quatre ne parle d'un équipement déclaré :
+-- ils parlent de l'établissement.
+--
+-- Faute de colonne, la restriction vivait depuis fin août sur une
+-- CARACTÉRISTIQUE D'ÉQUIPEMENT — `dessertLocauxSommeil`, portée par
+-- l'ALARME_INCENDIE. Le pis-aller était écrit en toutes lettres dans les
+-- `notesInternes` de `incendie-erp-5-visite-commission`, avec ses deux
+-- conséquences : un hôtel n'ayant déclaré aucune alarme ne recevait AUCUNE
+-- ligne alors que PE 37 le vise, et la caractéristique ne distinguait pas le
+-- sommeil du public de celui du personnel, là où PE 37 écrit « pour le
+-- public ». `ObligationPorteeParEtablissement` interdit les `conditions` — à
+-- raison, elles portent sur une propriété d'équipement — et il n'y avait donc
+-- aucun moyen de porter la restriction sans cette colonne.
+--
+-- LA COLONNE EST NULLABLE, ET C'EST UNE DÉCISION, PAS UNE FACILITÉ.
+-- `null` veut dire « pas encore répondu ». Jamais « non ». C'est la règle du
+-- non-renseigné du dépôt (`.claude/CLAUDE.md` : « l'incertitude ne réduit
+-- jamais la couverture »), et elle se lit ici dans les deux sens :
+--
+--   * une obligation conditionnée à la PRÉSENCE de locaux à sommeil reste
+--     servie tant que la réponse manque, en disant « à confirmer » ;
+--   * un allègement conditionné à leur ABSENCE ne s'applique PAS tant que
+--     l'absence n'est pas déclarée.
+--
+-- Un `DEFAULT false` aurait répondu « je n'ai pas de chambres » à la place
+-- d'un hôtelier qui n'a rien lu, et lui aurait retiré en silence une visite de
+-- commission quinquennale — un faux négatif que personne n'aurait pu voir. Une
+-- sur-application, elle, se voit au calendrier et se corrige en répondant
+-- « non » à la question de la fiche établissement.
+--
+-- AUCUNE REPRISE DE DONNÉES, et c'est également une décision. Les
+-- établissements ayant déjà répondu à `dessertLocauxSommeil` ne voient pas
+-- leur réponse recopiée ici. « Cette alarme dessert des locaux à sommeil » et
+-- « l'établissement comporte, pour le public, des locaux à sommeil » ne sont
+-- pas la même question : la première ne distingue pas le sommeil du public de
+-- celui du personnel, et une alarme peut parfaitement ne pas desservir des
+-- chambres qui existent. Recopier l'une dans l'autre aurait fabriqué une
+-- réponse que personne n'a donnée — exactement ce que la nullabilité
+-- ci-dessus refuse.
+--
+-- Pas d'enum, pas d'ALTER TYPE : une seule instruction, comme 20260901170000.
+-- ============================================================================
+
+ALTER TABLE "Etablissement" ADD COLUMN "comporteLocauxSommeilPublic" BOOLEAN;

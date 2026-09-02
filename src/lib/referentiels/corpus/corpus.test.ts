@@ -753,7 +753,30 @@ describe("corpus — ce qu'on ne couvre pas, et où on le dit", () => {
     // silencieux : il n'y a pas de type à qui ne pas le montrer. Le faire
     // redescendre à 27 suppose donc de le COUVRIR, par le DUERP et non par le
     // calendrier de conformité.
-    const MUETS = 28;
+    // ⚠ **19 DEPUIS LE 2026-09-01, ET LE CLIQUET DESCEND POUR LA PREMIÈRE
+    // FOIS.** Neuf articles sortent du décompte — PE 28 à PE 36, le chapitre
+    // III du Livre III. Ils y étaient pour UN motif, écrit dans chacun d'eux :
+    // « l'attribut « locaux à sommeil » n'existe pas en base ». Il existe
+    // (`Etablissement.comporteLocauxSommeilPublic`), et le chapitre a été relu
+    // à la source avant d'être reclassé : deux articles sont COUVERTS (PE 33
+    // § 2, la consigne affichée dans chaque chambre ; PE 35, les trois plans),
+    // quatre passent `hors_perimetre` / `construction` (PE 28 à PE 31), trois
+    // `sans_objet` comme PE 24 et PE 26 avant eux (PE 32, PE 34, PE 36).
+    //
+    // CE QUI SERAIT UNE RUSTINE ET NE L'EST PAS. Le paragraphe ci-dessus dit
+    // que le chiffre « redescendra par les deux mêmes voies : couvrir, ou
+    // donner une adresse visible ». C'est la PREMIÈRE qui a joué — et elle a
+    // joué deux fois, sous deux formes : couvrir ce qui était dû, et établir
+    // que le reste n'était pas dû. Reclasser sans relire aurait été la
+    // rustine : garder le plafond bas en niant des obligations qui existent.
+    // Le motif de chacun des sept est écrit dans le corpus, et ce qui reste
+    // non porté y est nommé aussi (l'exception de PE 32, le renvoi à MS 41).
+    //
+    // Le cliquet reste saturé : 19 muets sur 19 articles `non_couvert`. Il
+    // protège donc toujours contre l'ARRIVÉE d'un manque muet — un 20ᵉ le
+    // ferait tomber — et toujours pas contre la PERTE d'une adresse existante,
+    // pour la raison expliquée plus haut.
+    const MUETS = 19;
     // Une note interne n'est pas une annonce à l'exploitant. `declareA`
     // mélange aujourd'hui les deux natures — une adresse produit et un
     // document de travail — et cette distinction reste à trancher (lot 3) ;

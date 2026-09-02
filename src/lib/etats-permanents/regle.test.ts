@@ -39,6 +39,7 @@ const bureau = (effectif: number): EtablissementMatching => ({
   familleHabitation: null,
   personnesPresentesHabituellement: null,
   manipuleMatieresR422722: null,
+  comporteLocauxSommeilPublic: null,
 });
 
 describe("le critère de l'écran", () => {

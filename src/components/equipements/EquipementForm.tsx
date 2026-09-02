@@ -149,11 +149,6 @@ const QUESTIONS_TRI_ETAT: Record<
       "Un système fixe de détection des fuites est-il installé sur cette installation ?",
     aide: "Un détecteur permanent, relié à une alarme, qui signale une fuite de fluide frigorigène sans intervention humaine — à ne pas confondre avec le contrôle d'étanchéité lui-même, ni avec une sonde de température. S'il y en a un, le règlement double l'intervalle entre deux contrôles. En cas de doute, laissez « Je ne sais pas encore » : c'est l'intervalle le plus court qui reste affiché.",
   },
-  dessertLocauxSommeil: {
-    question:
-      "Votre établissement dispose-t-il de locaux où des personnes dorment ?",
-    aide: "Chambres d'hôtel, hébergement, internat, dortoir, logement de fonction ouvert au public. Un restaurant, un commerce ou un bureau sans hébergement : répondez « non ». En 5ᵉ catégorie, c'est ce qui déclenche la visite périodique de la commission de sécurité.",
-  },
 };
 
 type Props = {

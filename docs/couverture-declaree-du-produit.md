@@ -99,16 +99,21 @@ sixième `??` recopié.
 C'est la limite la plus importante de ce document, et la raison directe du
 retrait de la carte.
 
-Les 28 articles ci-dessous sont ceux que le dépouillement a lus, qui imposent
+Les 19 articles ci-dessous sont ceux que le dépouillement a lus, qui imposent
 quelque chose à un exploitant, et que le référentiel ne porte pas. **Rien ne les
 restreint aux établissements que leur chapitre vise.** Un bureau tertiaire les
 voyait tous, y compris les onze articles propres aux hôtels.
 
-**Le 28ᵉ, entré le 2026-09-01, n'est pas de la même espèce que les 27 autres, et
-c'est ce qui le rend gênant.** Les 27 premiers visent des établissements que le
-produit ne sert pas — hôtels, locaux à sommeil, établissements de soins,
-équipements sportifs : le manque de rattachement les affiche trop largement,
-mais aucun ne concerne réellement un restaurant, un commerce ou un bureau.
+**Le chiffre a bougé le 2026-09-01 : 28 → 19.** Neuf articles du chapitre III
+du Livre III (locaux à sommeil) sont sortis de cette liste, et le § 3 dit
+comment. Les « 27 » et « 28 » qui subsistent plus bas dans ce document
+racontent une histoire datée — ils ne décrivent pas l'état d'aujourd'hui.
+
+**Le dernier entré, `R. 4323-63`, n'est pas de la même espèce que les autres,
+et c'est ce qui le rend gênant.** Les autres visent des établissements que le
+produit ne sert pas — hôtels, établissements de soins, équipements sportifs :
+le manque de rattachement les affiche trop largement, mais aucun ne concerne
+réellement un restaurant, un commerce ou un bureau.
 `R. 4323-63` en concerne un sur deux. C'est le premier article de cette liste
 dont le manque touche les secteurs cibles eux-mêmes, et le rattachement par
 `Etablissement.typeErp` réclamé ci-dessus ne le résoudrait pas : il n'y a pas de
@@ -142,28 +147,47 @@ couverture.
 
 ---
 
-## 3. Les 28 articles lus et non portés
+## 3. Les 19 articles lus et non portés
 
-Six familles. Les motifs sont ceux du corpus, cités et non réécrits : ils ont
+Cinq familles, une sixième étant sortie de la liste le 2026-09-01 (voir
+ci-dessous). Les motifs sont ceux du corpus, cités et non réécrits : ils ont
 été rédigés par la personne qui a lu l'article, et une reformulation ici
 vieillirait à part de la source.
 
-### Locaux à sommeil, 5ᵉ catégorie — 9 articles
+### Locaux à sommeil, 5ᵉ catégorie — la famille est SORTIE de cette liste (2026-09-01)
 
-`PE 28` · `PE 29` · `PE 30` · `PE 31` · `PE 32` · `PE 33` · `PE 34` · `PE 35` ·
-`PE 36`
+Neuf articles y figuraient — PE 28 à PE 36 —, sous ce motif : « Ce qui manque
+est chez nous — l'attribut « locaux à sommeil » n'existe pas en base, alors que
+quatre articles du Livre III s'y adossent. » L'attribut existe désormais
+(`Etablissement.comporteLocauxSommeilPublic`, migration 20260901180000), et le
+chapitre III a été relu à la source article par article avant d'être reclassé.
+Le résultat n'est pas « neuf obligations de plus » :
 
-> Chapitre III — établissements de 5ᵉ catégorie comportant des locaux réservés
-> au sommeil. Ce sont des ERP du deuxième groupe comme les autres : rien dans le
-> texte ne les met hors de portée du produit. Ce qui manque est chez nous —
-> l'attribut « locaux à sommeil » n'existe pas en base, alors que quatre
-> articles du Livre III s'y adossent (PE 4 § 1, PE 28, PE 32, PE 37). C'est un
-> manque de couverture assumé, pas une non-question.
+- **Deux articles sont couverts** : PE 33 § 2 (consigne d'incendie affichée dans
+  chaque chambre) et PE 35 (plan de l'établissement, plans d'orientation et de
+  repérage). Le référentiel les porte. PE 4 § 1 — le contrat annuel d'entretien
+  du système de détection — est couvert par le même lot, et il ne figurait pas
+  dans cette liste : il vivait en `reserve` sur un article `retenu`.
+- **Quatre passent `hors_perimetre`, motif `construction`** : PE 28 (structure
+  et planchers coupe-feu), PE 29 (cloisons et portes), PE 30 (couloirs et
+  désenfumage), PE 31 (cheminées à foyer ouvert). Ce sont des exigences de
+  l'ouvrage, adressées au constructeur.
+- **Trois passent `sans_objet`** : PE 32 (dotation en SSI de catégorie A),
+  PE 34 (symboles de sécurité et régime des portes) et PE 36 (dotation en
+  éclairage de sécurité). Règles de dotation sans récurrence, exactement comme
+  PE 24 et PE 26 le sont depuis le premier dépouillement.
 
-**Le blocage est un attribut manquant, pas une décision.** `Etablissement`
-ne porte pas « locaux à sommeil » ; la caractéristique `dessertLocauxSommeil`
-existe mais qualifie un **équipement**, et ne peut donc pas conditionner une
-obligation qu'aucun équipement ne déclenche.
+**Ce reclassement retire neuf lignes du décompte, et il faut dire pourquoi ce
+n'est pas une rustine.** Ranger un manque parmi les exclusions le fait
+disparaître de la dette : c'est la faute que `corpus/perimetre.ts` interdit en
+tête de fichier. Ici le motif d'origine était l'attribut manquant, et lui seul ;
+une fois l'attribut posé, la question « qu'est-ce que ces articles imposent à un
+exploitant ? » a été reposée à la source, et sept des neuf n'imposent aucun acte
+datable. Le motif de chacun est écrit dans le corpus, article par article. Ce
+qui reste dû et non porté y est nommé aussi — l'exception de PE 32 repose sur un
+fait que le modèle n'a pas (« simple rez-de-chaussée dont les locaux à sommeil
+débouchent directement sur l'extérieur »), et le renvoi de PE 35 § 1 à MS 41 n'a
+pas été ouvert.
 
 ### Hôtels (type O), 5ᵉ catégorie — 10 articles
 
@@ -391,13 +415,16 @@ La carte du tableau de bord est retirée. Ce qui reste :
   interroge le schéma au lieu de le décrire), et les articles `hors_perimetre`
   du corpus, groupés par motif d'exclusion.
 
-  **Elle ne donne PAS d'adresse aux 28 articles `non_couvert`**, et un test le
+  **Elle ne donne PAS d'adresse aux 19 articles `non_couvert`**, et un test le
   verrouille. La tentation était forte — la page ressemble à l'endroit où les
   mettre — mais ce serait exactement la confusion que `corpus/perimetre.ts`
   interdit en tête de fichier : ranger un manque parmi les exclusions le fait
   disparaître du décompte, il cesse d'être une dette pour devenir une
-  non-question. Le cliquet `MUETS` reste donc à 28, et il redescendra par les
-  deux mêmes voies que le § 3 bis nomme, par aucune troisième.
+  non-question. Le cliquet `MUETS` est descendu à 19 le 2026-09-01 — par la
+  PREMIÈRE des deux voies, celle qui couvre : l'attribut « locaux à sommeil »
+  a fait sortir neuf articles du décompte, dont deux en les couvrant et sept
+  en établissant qu'ils n'imposent aucun acte à un exploitant. Il ne
+  redescendra jamais par une troisième voie.
 
 Aucune de ces surfaces ne qualifie la situation au regard du droit : ni
 « conforme », ni « non conforme », ni « incomplet ». Elles décrivent ce que

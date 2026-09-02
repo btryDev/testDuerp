@@ -24,6 +24,10 @@
  *      E satisfaisant TOUTES les conditions dont `categorie === E.categorie`.
  *   4. Si l'obligation a `effectifMin`/`effectifMax`, l'effectif sur site
  *      doit être dans la plage (bornes incluses).
+ *   5. Si l'obligation a `locauxSommeilPublic`, l'établissement doit le
+ *      satisfaire — avec la règle du non-renseigné : `true` retient quand la
+ *      réponse manque (« à confirmer »), `false` rejette (un allègement ne se
+ *      donne pas sur une absence supposée).
  *
  * Le moteur est **pur** : pas d'I/O, pas d'horloge, pas d'aléatoire. Deux
  * appels avec les mêmes entrées renvoient le même résultat, ce qui est la
@@ -171,6 +175,58 @@ function evaluerHabitation(
     };
   }
   return { etat: "match", raison: "immeuble d'habitation" };
+}
+
+/**
+ * Locaux à sommeil pour le public — arrêté du 25 juin 1980, Livre III
+ * (PE 4 § 1, PE 33, PE 35, PE 37).
+ *
+ * Le patron est celui d'`evaluerHabitation` : **l'attribut non renseigné ne
+ * retire rien**, il retient l'obligation en le disant. La règle du
+ * non-renseigné (`.claude/CLAUDE.md`) veut ici la même prudence, et pour la
+ * même raison mesurable — la colonne n'existe que depuis le 2026-09-01, aucun
+ * dossier antérieur ne porte de réponse, et retirer PE 37 à un hôtel qui n'a
+ * pas encore répondu serait un faux négatif que personne ne peut voir.
+ *
+ * Le sens INVERSE ne se comporte pas de la même façon, et c'est la seconde
+ * moitié de la même règle : un allègement de régime conditionné à l'ABSENCE de
+ * locaux à sommeil (`locauxSommeilPublic: false`) ne s'applique pas tant que
+ * l'absence n'est pas déclarée. On ne allège jamais sur une supposition.
+ *
+ * `null` (le critère est absent de l'obligation) ⇒ aucune contrainte : cette
+ * fonction ne se prononce pas.
+ */
+type EvalLocauxSommeil = { ok: false } | { ok: true; raison: string };
+
+function evaluerLocauxSommeil(
+  critere: TypologieApplication["locauxSommeilPublic"],
+  etab: EtablissementMatching,
+): EvalLocauxSommeil | null {
+  if (critere === undefined) return null;
+  const declare = etab.comporteLocauxSommeilPublic;
+
+  if (critere === true) {
+    // Seule une réponse « non » explicite écarte l'obligation.
+    if (declare === false) return { ok: false };
+    return declare === true
+      ? {
+          ok: true,
+          raison: "locaux à sommeil pour le public déclarés",
+        }
+      : {
+          ok: true,
+          raison:
+            "présence de locaux à sommeil pour le public non renseignée — obligation retenue par prudence, à confirmer",
+        };
+  }
+
+  // `false` : l'obligation ne vise que les établissements SANS locaux à
+  // sommeil. Le silence ne vaut pas absence, donc il ne donne pas l'allègement.
+  if (declare !== false) return { ok: false };
+  return {
+    ok: true,
+    raison: "absence de locaux à sommeil pour le public déclarée",
+  };
 }
 
 /**
@@ -336,6 +392,13 @@ export function matchTypologie(
         "manipulation de matières visées par R. 4227-22 déclarée (champ R. 4227-34, quel que soit l'effectif)",
       );
     }
+  }
+
+  // 3 ter. Locaux à sommeil pour le public (ET).
+  const sommeil = evaluerLocauxSommeil(t.locauxSommeilPublic, etab);
+  if (sommeil !== null) {
+    if (!sommeil.ok) return { ok: false };
+    raisons.push(sommeil.raison);
   }
 
   // Si aucune contrainte de typologie n'a été posée ET aucune raison n'a

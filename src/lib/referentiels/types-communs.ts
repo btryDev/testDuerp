@@ -200,6 +200,39 @@ export type TypologieApplication = {
    * une chance de s'en apercevoir, l'inverse n'en a aucune.
    */
   habitation?: boolean | { familles: FamilleHabitation[] };
+  /**
+   * Présence, **pour le public**, de locaux à sommeil — chambres d'hôtel,
+   * chambres d'hôtes, hébergement. Évalué sur
+   * `Etablissement.comporteLocauxSommeilPublic`. En ET avec le reste : ce
+   * n'est pas un régime, c'est une caractéristique de l'établissement, au même
+   * titre qu'un seuil d'effectif.
+   *
+   * Quatre articles du Livre III de l'arrêté du 25 juin 1980 s'y adossent :
+   * PE 4 § 1, PE 33, PE 35 et PE 37.
+   *
+   * LES DEUX SENS N'ONT PAS LE MÊME COMPORTEMENT FACE AU SILENCE, et c'est
+   * toute la raison d'être de ce champ. C'est la règle du non-renseigné
+   * (`.claude/CLAUDE.md`), écrite pour un attribut d'ÉTABLISSEMENT — l'inverse
+   * exact d'`equipement_propriete_booleenne`, où une propriété absente dit
+   * « cet équipement n'a pas cette caractéristique » :
+   *
+   *   - `true` (l'obligation exige des locaux à sommeil) : l'attribut non
+   *     renseigné **ne rejette pas**. L'obligation est retenue, et la raison
+   *     dit « à confirmer ». Même dissymétrie qu'`habitation: { familles }`,
+   *     et pour le même motif — la colonne n'existe que depuis le 2026-09-01,
+   *     aucun dossier antérieur ne porte de réponse, et les écarter retirerait
+   *     en silence une visite de commission à un hôtel.
+   *   - `false` (l'obligation ne vise que les établissements SANS locaux à
+   *     sommeil — un allègement de régime) : l'attribut non renseigné
+   *     **rejette**. Un allègement ne se donne pas sur une absence supposée ;
+   *     il attend que l'absence soit déclarée.
+   *
+   * Aucune obligation n'écrit `false` à ce jour, et le sens existe quand même :
+   * PE 2 § 3 réduit le régime des établissements « ne comportant pas de locaux
+   * à sommeil » qui reçoivent au plus 19 personnes. Le jour où cet allègement
+   * s'encode, la moitié qui protège est déjà là et éprouvée.
+   */
+  locauxSommeilPublic?: boolean;
   effectifMin?: number;
   effectifMax?: number;
   /**

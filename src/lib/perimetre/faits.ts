@@ -97,6 +97,7 @@ export async function faitsDeCouverture(
       familleHabitation: etab.familleHabitation,
     personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
     manipuleMatieresR422722: etab.manipuleMatieresR422722,
+    comporteLocauxSommeilPublic: etab.comporteLocauxSommeilPublic,
   });
 
   const sansEcheance = reperterSansEcheance(etabMatching, equipementsMatching);

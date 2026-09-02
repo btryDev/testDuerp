@@ -234,6 +234,7 @@ export async function equipementsSansEcheance(
       familleHabitation: etab.familleHabitation,
       personnesPresentesHabituellement: etab.personnesPresentesHabituellement,
       manipuleMatieresR422722: etab.manipuleMatieresR422722,
+      comporteLocauxSommeilPublic: etab.comporteLocauxSommeilPublic,
     },
     etab.equipements.map((eq) => ({
       id: eq.id,

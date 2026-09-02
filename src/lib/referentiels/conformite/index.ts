@@ -97,7 +97,13 @@ export const obligationsConformite: Obligation[] = [
  * `conformite.test.ts` compare une empreinte du contenu à celle enregistrée :
  * l'oubli fait échouer la suite.
  */
-export const REFERENTIEL_VERSION = "2026-09-01.5";
+// 2026-09-02.1 et non 2026-09-01.6 : le lot A11 part d'un état antérieur
+// à l'intégration, qui a déjà pris le .6 pendant qu'il était écrit. Deux
+// branches parallèles ne peuvent pas porter la même version sur deux
+// contenus différents — c'est exactement ce que cette constante existe pour
+// distinguer. Au merge, la version se remesure comme l'empreinte : elle ne
+// se recopie pas d'une branche.
+export const REFERENTIEL_VERSION = "2026-09-02.1";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.

@@ -28,7 +28,6 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
 export const LIBELLE_CARACTERISTIQUE: Record<ChampTriEtat, string> = {
   estVmcGaz: "VMC raccordée au gaz",
   aRobinetsIncendieArmes: "Robinets d'incendie armés (RIA)",
-  dessertLocauxSommeil: "Locaux à sommeil",
   aExtinctionAutomatique: "Extinction automatique en cuisine",
   sertAuLevageDePersonnes: "Sert au levage de personnes",
   estChariotOuGerbeur: "Chariot élévateur, gerbeur ou hayon",

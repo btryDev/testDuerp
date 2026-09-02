@@ -893,6 +893,7 @@ describe("référentiel conformité — éclairage de sécurité en lieu de trav
       familleHabitation: null,
       personnesPresentesHabituellement: null,
       manipuleMatieresR422722: null,
+      comporteLocauxSommeilPublic: null,
     };
     const parc = [
       { id: "eq-baes", libelle: "BAES", categorie: "BAES" as const, caracteristiques: null },
@@ -1082,7 +1083,24 @@ describe("référentiel conformité — version et empreinte", () => {
   // qui influence une échéance entre dans `empreinteReferentiel()`, et la
   // preuve se fait en changeant sa valeur : si l'empreinte ne bouge pas, il
   // manque au hachage.
-  const EMPREINTE_ATTENDUE = "121-f50e590a2f78fc94";
+  //
+  // 2026-09-01 → 2026-09-02, 121 → 124, lot A11 (« locaux à sommeil »). Trois
+  // obligations d'établissement entrent — le contrat annuel d'entretien du
+  // système de détection (PE 4 § 1), la consigne affichée dans chaque chambre
+  // (PE 33 § 2) et les trois plans affichés (PE 35) — et une quatrième
+  // obligation change d'assiette sans changer de nombre : la visite de
+  // commission de PE 37 passe du porteur équipement au porteur établissement,
+  // perd sa `categoriesEquipement` et sa condition sur `dessertLocauxSommeil`.
+  // Ce quatrième mouvement déplace l'empreinte sans toucher au compte, et
+  // c'est le cas même qui justifie que les deux chiffres soient vérifiés
+  // séparément.
+  //
+  // REMESURÉE EN APPELANT, JAMAIS RECOPIÉE. L'intégration porte au même moment
+  // `121-f50e590a2f78fc94` en version `2026-09-01.6`, et `lot-c/obligations-
+  // manquantes` en porte une troisième, chacune juste chez elle. Aucune des
+  // trois ne vaut pour les autres : au merge, on relance le test et on prend
+  // la valeur qu'il rend.
+  const EMPREINTE_ATTENDUE = "124-7badaeedbfb31463";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1200,7 +1218,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(121);
+    ).toBe(124);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1299,6 +1317,40 @@ describe("référentiel conformité — version et empreinte", () => {
     expect(apres).not.toBe(avant);
   });
 
+  it("l'empreinte change quand la condition de locaux à sommeil change", () => {
+    // LA PREUVE, ET ELLE SE FAIT EN CHANGEANT LA VALEUR. `premierDelai` a été
+    // posé le 2026-09-01 sans entrer au hachage : le champ existait, sa valeur
+    // était écrite, la suite passait au vert, et il déplaçait pourtant la date
+    // de première occurrence. Une garde qui ne mesure pas ce qu'elle prétend
+    // couvrir rassure d'autant mieux.
+    //
+    // `locauxSommeilPublic` décide de l'EXISTENCE de quatre lignes de
+    // calendrier — la basculer de `true` à `false` retire les quatre chez un
+    // hôtel et les rend chez un bureau. Il entre au hachage par
+    // `canonique(o.typologies)`, ce qui est un chemin déjà couvert ; ce test
+    // vérifie que ce chemin porte bien CE champ, et pas seulement les
+    // régimes que le test voisin fait varier.
+    const sans = empreinteReferentiel([OBLIGATION_TEMOIN]);
+    const avecOui = empreinteReferentiel([
+      {
+        ...OBLIGATION_TEMOIN,
+        typologies: { erp: true, locauxSommeilPublic: true },
+      },
+    ]);
+    const avecNon = empreinteReferentiel([
+      {
+        ...OBLIGATION_TEMOIN,
+        typologies: { erp: true, locauxSommeilPublic: false },
+      },
+    ]);
+    // Les trois états se distinguent deux à deux : poser le critère bouge
+    // l'empreinte, et l'inverser la rebouge. Un hachage qui ne verrait que la
+    // PRÉSENCE de la clé passerait le premier et échouerait au second.
+    expect(avecOui).not.toBe(sans);
+    expect(avecNon).not.toBe(sans);
+    expect(avecNon).not.toBe(avecOui);
+  });
+
   it("l'empreinte change quand une condition est ajoutée", () => {
     const avant = empreinteReferentiel([OBLIGATION_TEMOIN]);
     const apres = empreinteReferentiel([
@@ -1308,7 +1360,10 @@ describe("référentiel conformité — version et empreinte", () => {
           {
             type: "equipement_propriete_non_infirmee",
             categorie: "ALARME_INCENDIE",
-            propriete: "dessertLocauxSommeil",
+            // Propriété quelconque : le test mesure l'empreinte, pas le
+            // référentiel. Elle citait `dessertLocauxSommeil`, retiré le
+            // 2026-09-01 avec l'attribut d'établissement qui le remplace.
+            propriete: "uneProprieteQuelconque",
           },
         ],
       },

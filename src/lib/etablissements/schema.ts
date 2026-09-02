@@ -127,6 +127,28 @@ export const etablissementSchema = z
       (v) => (v === "" || v === null ? undefined : v),
       z.enum(FAMILLES_HABITATION).optional(),
     ),
+    // Locaux à sommeil pour le public (arrêté du 25 juin 1980, Livre III —
+    // PE 4 § 1, PE 33, PE 35, PE 37). Trois états comme
+    // `manipuleMatieresR422722`, et la même règle : vide = « pas encore
+    // répondu », jamais « non ».
+    //
+    // `undefined` traverse au lieu d'être coercé en `null` — c'est ce qui
+    // distingue « le champ n'a pas été posté » (bloc ERP replié) de
+    // « l'utilisateur a remis « je ne sais pas ». Sans lui, décocher l'ERP
+    // effacerait un « non » déjà donné et ferait réapparaître quatre lignes.
+    comporteLocauxSommeilPublic: z.preprocess(
+      (v) =>
+        v === "oui"
+          ? true
+          : v === "non"
+            ? false
+            : v === true || v === false
+              ? v
+              : v === undefined
+                ? undefined
+                : null,
+      z.boolean().nullable().optional(),
+    ),
 
     // Renseignements de la fiche « Renseignements généraux » du registre de
     // sécurité (CCH R. 143-44). Ils vivent sur l'établissement, pas dans une
