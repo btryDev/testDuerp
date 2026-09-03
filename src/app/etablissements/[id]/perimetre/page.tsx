@@ -34,6 +34,7 @@ import { BandeauCouverture } from "@/components/perimetre/BandeauCouverture";
 import { requireEtablissement } from "@/lib/auth/scope";
 import { couvertureDuDossier } from "@/lib/perimetre/faits";
 import { riensASignaler } from "@/lib/perimetre/couverture";
+import { porte } from "@/lib/perimetre/non-couverture";
 import {
   exclusionsDeclarees,
   refusAlEntree,
@@ -103,7 +104,7 @@ export default async function PerimetrePage({
             <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
               Ces phrases sont calculées sur ce que vous avez déclaré : elles
               changent quand le dossier change. Les mêmes se lisent en tête de
-              votre registre de sécurité, avant son contenu.
+              votre {porte("registre de sécurité")}, avant son contenu.
             </p>
           </div>
 

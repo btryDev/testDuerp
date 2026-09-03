@@ -77,6 +77,7 @@
 // `reperterSansEcheance` / `equipementsSansEcheance`.
 
 import type { EtatCouverture } from "@/lib/duerps/couverture";
+import { nonPorte, porte } from "./non-couverture";
 import type { CorrespondanceSecteur } from "./secteur";
 import type {
   CategorieErp,
@@ -302,8 +303,13 @@ function axeRegime(
     manques.push({
       axe: "igh",
       motif: "Cet établissement est déclaré immeuble de grande hauteur (IGH).",
-      consequence:
-        "Le règlement de sécurité des IGH impose un service de sécurité permanent et des vérifications que cet outil ne connaît pas. Ce que vous lisez ici ne couvre pas votre régime.",
+      // « des vérifications que cet outil ne connaît pas », disait cette
+      // phrase jusqu'au 2026-09-03. Deux obligations IGH sont pourtant au
+      // référentiel, adossées à l'article GH 5 du même arrêté : le dirigeant
+      // les voyait dans son calendrier en lisant ici qu'elles n'existaient
+      // pas. Le corpus est explicite — `arrete-2011-12-30-igh` est d'étendue
+      // « articles_cites », et GH 5 est le seul article lu.
+      consequence: `Le règlement de sécurité des IGH impose bien davantage que ce que cet outil en connaît : de son article GH 5, l'outil porte les vérifications annuelles, et rien du reste — ${nonPorte("le service de sécurité permanent")}, ${nonPorte("les dispositions propres à la classe de l'immeuble")}. Ce que vous lisez ici ne couvre pas votre régime.`,
     });
     return;
   }
@@ -328,8 +334,15 @@ function axeRegime(
   manques.push({
     axe: "categorie_erp",
     motif: `Cet établissement relève de la ${LIBELLE_CATEGORIE[regime.categorieErp]}.`,
-    consequence:
-      "Rojer est construit pour les ERP de 5ᵉ catégorie. Au-dessus, le règlement de sécurité applique en entier son livre II — moyens de secours, service de sécurité incendie, et des obligations propres à votre type d'activité — que cet outil ne connaît pas. Votre calendrier et votre registre sont donc incomplets, et le resteront.",
+    // « moyens de secours […] que cet outil ne connaît pas » était faux du
+    // même défaut que la phrase de l'effectif, relevé le 2026-09-03 : le
+    // référentiel porte des obligations fondées sur le livre II qui atteignent
+    // les quatre premières catégories — extincteurs (MS 38), SSI, désenfumage,
+    // visites de la commission de sécurité. Un dirigeant de 2ᵉ catégorie les
+    // lisait dans son calendrier. Ce qui reste vrai, et qui suffit à
+    // l'avertissement, c'est que le livre II s'applique en entier et que
+    // l'outil n'en porte qu'une part.
+    consequence: `Rojer est construit pour les ERP de 5ᵉ catégorie. Au-dessus, le règlement de sécurité applique en entier son livre II, dont cet outil ne porte qu'une part : ${nonPorte("le service de sécurité incendie")} et ${nonPorte("les dispositions particulières à votre type d'activité")}, notamment, n'y sont pas. Votre calendrier et votre registre sont donc incomplets, et le resteront.`,
   });
 }
 
@@ -557,7 +570,19 @@ function axeEquipements(
  * cinquante travailleurs » sous les refus à l'entrée — un cas qui n'est pas le
  * sien, puisque son dossier existe.
  *
- * Aucun seuil écrit ici : `seuilServi` est reçu. Voir `FaitEffectif`.
+ * Aucun seuil écrit ici : `seuilServi` est reçu. Voir `FaitEffectif`. La phrase
+ * disait pourtant « au-delà de cinquante salariés » en toutes lettres, ce que le
+ * commentaire ci-dessus interdisait déjà ; corrigé le 2026-09-03 en même temps
+ * que ce qui suit.
+ *
+ * ⚠ CETTE PHRASE A ANNONCÉ UN TROU COMBLÉ. Elle nommait le règlement intérieur
+ * parmi les obligations non portées ; le lot 8 l'avait livré
+ * (`prevention-etablissement-reglement-interieur`, `effectifMin: 50`). Le même
+ * dossier lisait donc la ligne dans ses états permanents et son absence ici, et
+ * la phrase s'imprimait en tête du registre de sécurité. C'est le défaut que la
+ * page existe pour éviter. `non-couverture.ts` et son balayage sont nés de là :
+ * ce que ce module affirme de la couverture passe désormais par `nonPorte()` ou
+ * `porte()`, et se confronte au référentiel.
  */
 function axeEffectif(
   fait: FaitEffectif | null,
@@ -568,8 +593,7 @@ function axeEffectif(
   manques.push({
     axe: "effectif",
     motif: `Cet établissement déclare ${fait.surSite} salariés, au-delà des ${fait.seuilServi} pour lesquels Rojer est construit.`,
-    consequence:
-      "Au-delà de cinquante salariés, des obligations que cet outil ne porte pas s'ajoutent — le programme annuel de prévention des risques et le règlement intérieur, notamment. Votre dossier reste ouvert et ce qu'il contient reste juste ; il est incomplet sur ce qui vient avec la taille, et le restera.",
+    consequence: `Au-delà de ce seuil, des obligations que cet outil ne porte pas s'ajoutent — ${nonPorte("le programme annuel de prévention des risques")}, notamment. ${porte("Le règlement intérieur")}, lui, vous est bien présenté : sa ligne est dans vos états permanents depuis le franchissement. Votre dossier reste ouvert et ce qu'il contient reste juste ; il est incomplet sur ce qui vient avec la taille, et le restera.`,
   });
 }
 

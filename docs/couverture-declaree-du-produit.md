@@ -44,7 +44,7 @@ ce que le dépôt s'interdit.
 
 | Axe | Ce qu'il établit | Ce qu'il n'établit **pas** | Source projetée |
 |---|---|---|---|
-| `igh` | L'établissement est déclaré IGH, donc hors du régime que le référentiel connaît | Rien sur ce qui lui est dû : le règlement IGH n'est pas dépouillé du tout | `Etablissement.estIGH` |
+| `igh` | L'établissement est déclaré IGH, donc hors du régime que le référentiel connaît | Que rien ne lui soit dû : le règlement IGH est dépouillé sur son seul article « GH 5 », qui porte deux obligations annuelles. La colonne disait « pas dépouillé du tout » jusqu'au 2026-09-03 — même défaut que la phrase de l'écran, corrigé le même jour | `Etablissement.estIGH` |
 | `categorie_erp` | L'ERP relève d'une catégorie 1 à 4, donc le livre II s'applique en entier (PE 1 § 1) | L'ampleur du manque. On sait qu'il existe, pas de combien | `CATEGORIES_COUVERTES` |
 | `secteur_duerp` | Ce que le DUERP déclare ne pas couvrir, et si son référentiel est celui du code NAF | Que le reste du DUERP soit complet — « aucun manque identifié » n'est pas « complet » | ADR-020 (`duerps/couverture.ts`) + `perimetre/secteur.ts` |
 | `domaine_equipement` | Des appareils du parc ne déclenchent aucune obligation du référentiel | Qu'aucune vérification ne leur soit due. C'est un fait sur l'outil, pas sur le droit | `equipements/hors-referentiel.ts` |
@@ -66,6 +66,39 @@ module :
   `familles.ts` et `secteur.ts` isolent les lectures du référentiel. Le cycle
   `referentiels → perimetre → referentiels`, annoncé par le commentaire de
   `CATEGORIES_COUVERTES`, reste à distance.
+
+### Une affirmation que le mécanisme a faite, et qui a tenu trois jours
+
+**« Le règlement intérieur n'est pas porté par cet outil. »** Elle se lisait sur
+`/perimetre` et en tête du registre de sécurité, à deux endroits — l'indication
+du refus d'effectif et la conséquence de l'axe `effectif`. Le lot 8 avait livré
+l'obligation le 2026-08-31 (`prevention-etablissement-reglement-interieur`,
+porteur établissement, `effectifMin: 50`, fondée sur `L. 1321-1` 1°). Un dossier
+passé à cinquante-cinq salariés lisait donc la ligne dans ses états permanents
+et son absence sur la page qui déclare les manques.
+
+Ce n'est pas une phrase à retoucher : c'est **le** mode de défaillance de cette
+page. Une page dont la raison d'être est de dire la vérité sur ce qui n'est pas
+couvert, et qui annonce un trou comblé, fait douter de tout le reste — qui est
+juste.
+
+**La garde posée le 2026-09-03** (`perimetre/non-couverture.ts` et son
+balayage) tient trois règles, toutes dérivées d'`obligationsConformite` et
+d'aucune liste recopiée :
+
+1. toute obligation nommée comme non portée passe par `nonPorte("…")`, et le
+   référentiel ne doit rien lui répondre ;
+2. toute obligation nommée comme portée passe par `porte("…")`, et le
+   référentiel doit lui répondre — le défaut retourné, promettre ce qu'on ne
+   livre pas ;
+3. toute `pieceAttendue` du référentiel qui apparaît dans un texte de couverture
+   doit être à l'intérieur de l'un des deux — c'est la règle qui ferme le chemin
+   d'entrée, puisque le lot 8 n'a pas menti dans un marqueur mais sous une prose
+   que personne n'avait déclarée.
+
+Ce qu'elle ne voit pas : une obligation **sans** `pieceAttendue` nommée par une
+prose muette. Les vingt pièces attendues du référentiel sont le filet, pas le
+mur.
 
 ### Deux affirmations que le mécanisme a failli faire, et ne fait pas
 

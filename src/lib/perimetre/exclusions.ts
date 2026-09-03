@@ -39,6 +39,7 @@ import {
 } from "@/lib/etablissements/schema";
 import { CORPUS, EXCLUSIONS } from "@/lib/referentiels/corpus";
 import type { MotifExclusion } from "@/lib/referentiels/corpus";
+import { nonPorte } from "./non-couverture";
 
 /* ─── 1. Ce qui est refusé à l'entrée ─────────────────────────────────── */
 
@@ -120,8 +121,7 @@ export function refusAlEntree(): RefusAlEntree[] {
       cle: "effectif",
       regime: `Une structure de plus de ${EFFECTIF_MAX} travailleurs`,
       message: effectif,
-      indication:
-        "La borne compte les travailleurs, jamais le public reçu : un restaurant de huit salariés qui sert trois cents couverts reste dans la cible. Au-delà, des obligations que cet outil ne porte pas s'ajoutent — programme annuel de prévention des risques, règlement intérieur — et votre service de prévention et de santé au travail est le premier interlocuteur pour les cadrer. Un dossier déjà ouvert n'est jamais fermé s'il franchit le seuil en cours de route : il porte alors ce manque, écrit, dans la partie ci-dessous.",
+      indication: `La borne compte les travailleurs, jamais le public reçu : un restaurant de huit salariés qui sert trois cents couverts reste dans la cible. Au-delà, des obligations que cet outil ne porte pas s'ajoutent — ${nonPorte("le programme annuel de prévention des risques")}, notamment — et votre service de prévention et de santé au travail est le premier interlocuteur pour les cadrer. Un dossier déjà ouvert n'est jamais fermé s'il franchit le seuil en cours de route : il porte alors ce manque, écrit, dans la partie ci-dessous.`,
     });
   }
 
@@ -142,8 +142,7 @@ export function refusAlEntree(): RefusAlEntree[] {
       regime:
         "Un établissement recevant du public situé dans un immeuble de grande hauteur",
       message: erpEnIgh,
-      indication:
-        "Le règlement de sécurité des immeubles de grande hauteur — arrêté du 30 décembre 2011 — n'a pas été dépouillé : service de sécurité permanent, compartimentage, dispositions propres à la classe de l'immeuble. L'IGH seul, lui, n'est pas refusé : un employeur locataire de bureaux dans une tour relève du Code du travail, que le produit sert, et les obligations du règlement IGH pèsent sur l'exploitant de l'immeuble, pas sur lui. C'est le cumul avec l'accueil du public qui ferme la porte.",
+      indication: `Du règlement de sécurité des immeubles de grande hauteur — arrêté du 30 décembre 2011 — seul l'article GH 5 a été lu, celui des vérifications périodiques. Le reste ne l'a pas été : ${nonPorte("le service de sécurité permanent")}, ${nonPorte("le compartimentage des immeubles de grande hauteur")}, ${nonPorte("les dispositions propres à la classe de l'immeuble")}. L'IGH seul, lui, n'est pas refusé : un employeur locataire de bureaux dans une tour relève du Code du travail, que le produit sert, et les obligations du règlement IGH pèsent sur l'exploitant de l'immeuble, pas sur lui. C'est le cumul avec l'accueil du public qui ferme la porte.`,
     });
   }
 
