@@ -28,7 +28,8 @@
  *
  * ## Mais la nature seule ne suffit pas non plus
  *
- * `nature === "etat_permanent"` compte **trente** obligations, et l'une d'elles
+ * `nature === "etat_permanent"` compte **quarante-cinq** obligations au 2026-09-04
+ * — remesuré en appelant `obligationsConformite`, jamais au grep —, et l'une d'elles
  * produit bel et bien une ligne de calendrier : `porte-auto-portail-piete-coulissant`
  * est un état permanent porté par un équipement, avec
  * `periodicite: "mise_en_service_uniquement"` — que le générateur date de la
@@ -208,7 +209,10 @@ export function modeDeclarationApplique(
  * juste pour une affiche au mur ou de l'eau potable. Mais cocher « en place »
  * sur un registre de sécurité est une déclaration qui ressemble à une preuve.
  * `pieceAttendue` nomme l'écrit ; l'écran l'affiche pour que le dirigeant sache
- * ce qu'il affirme détenir. Douze des lignes de cet écran en portent un.
+ * ce qu'il affirme détenir. **Dix-huit** des quarante-sept lignes de cet écran en
+ * portent un au 2026-09-04, remesuré en appelant `modeDeclaration` sur le
+ * référentiel entier. La dix-huitième est `stockage-dangereux-fiches-donnees`,
+ * entrée ce jour-là avec la correction de sa nature.
  */
 export function pieceAttendue(o: Obligation): string | null {
   return o.pieceAttendue;
