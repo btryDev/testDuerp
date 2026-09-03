@@ -146,17 +146,22 @@ export function validerTypologie(s: OnboardingState): Blocage | null {
       champ: "categorieErp",
       message: "Précisez la catégorie de votre ERP.",
     };
-  if (s.estIGH && !s.classeIgh)
-    return { champ: "classeIgh", message: "Précisez la classe IGH." };
-  // La famille d'habitation, requise depuis le 2026-09-01 (ADR-025 § 4) :
-  // neuf obligations portent la typologie habitation et certaines ne visent
-  // qu'une partie des familles. Sans elle, elles s'appliquent toutes à tout
-  // le monde.
-  if (s.estHabitation && !s.familleHabitation)
-    return {
-      champ: "familleHabitation",
-      message: "Précisez la famille de l'immeuble d'habitation.",
-    };
+  // DEUX REFUS ONT VÉCU ICI, ET SONT TOMBÉS LE 2026-09-03 : « Précisez la
+  // classe IGH » et « Précisez la famille de l'immeuble d'habitation ».
+  //
+  // Le second portait sa justification en commentaire, et cette justification
+  // était FAUSSE : « neuf obligations portent la typologie habitation et
+  // certaines ne visent qu'une partie des familles. Sans elle, elles
+  // s'appliquent toutes à tout le monde. » Aucune obligation du référentiel ne
+  // vise une famille — vérifié en appelant, et confirmé par le texte : l'unique
+  // obligation périodique de l'arrêté du 31 janvier 1986 (article 101) ne
+  // mentionne aucune famille. Même constat pour la classe d'IGH, dont les
+  // vérifications (arrêté du 30 décembre 2011, GH 5) s'adressent aux
+  // « propriétaires » sans varier par classe.
+  //
+  // Les deux sous-questions sont retirées du parcours, et ces deux refus avec
+  // elles : un refus qui garde une donnée dont rien ne dépend est une étape de
+  // plus, pas une garantie.
   return null;
 }
 

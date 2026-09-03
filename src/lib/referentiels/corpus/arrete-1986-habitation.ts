@@ -11,14 +11,57 @@
 // CE QUE LA LECTURE ÉTABLIT, ET QUI N'ÉTAIT PAS ATTENDU
 // ---------------------------------------------------------------------------
 //
+// AMENDEMENT DU 2026-09-03 — LA PRÉSOMPTION DES TITRES II À VI EST LEVÉE, ET
+// ELLE ÉTAIT FAUSSE PAR MOITIÉ.
+//
+// Le `portee` ci-dessous annonçait que les titres II à VI (articles 5 à 96)
+// n'étaient PAS lus, et que les tenir pour purement constructifs restait « une
+// PRÉSOMPTION tant qu'ils ne sont pas ouverts ». Le lot du 2026-09-03 — qui
+// venait établir si la FAMILLE d'habitation doit rester demandée — les a
+// balayés. Résultat en deux moitiés qui ne vont pas dans le même sens :
+//
+//   SUR LA FAMILLE, la présomption est CONFIRMÉE. Aucune obligation
+//   d'entretien ni de vérification des articles 5 à 96 ne dépend de la
+//   famille. Ce que la famille commande dans ces titres, elle le commande en
+//   construction et jamais en exploitation — degrés coupe-feu des celliers
+//   (art. 10), des conduits (art. 45), des clapets (art. 62), des vide-ordures
+//   (art. 64), dispositions de dégagements des logements-foyers (art. 70, 72).
+//
+//   SUR « TOUT EST CONSTRUCTIF », elle est FAUSSE. L'article 78-1 porte un
+//   contrôle visuel ANNUEL, consigné au registre de l'article 101. Il a
+//   échappé au dépouillement du 2026-09-01 pour une raison mécanique : il
+//   n'existait pas encore. Créé par l'arrêté du 27 juillet 2026, en vigueur
+//   depuis le 3 août 2026. Voir son entrée ci-dessous.
+//
+// DEUX PIÈGES DE MÉTHODE, RELEVÉS CE JOUR-LÀ ET À VERSER AU DOSSIER.
+//
+// (1) La page consolidée de ce texte ne fabrique pas seulement du contenu
+// (art. 100) et des périodicités (art. 102) — elle produit aussi des FAUX
+// NÉGATIFS. Interrogée sur les occurrences d'« entretien », « vérifi », « une
+// fois par an », « périodique » entre les articles 5 et 96, elle a répondu
+// « aucune occurrence ». L'article 78-1, dans cette plage, contient « au moins
+// une fois par an » et quatre fois « contrôle ». Sur ce texte, un NÉGATIF rendu
+// par la page consolidée ne vaut rien.
+//
+// (2) Un article long peut être rendu SILENCIEUSEMENT RÉSUMÉ par une lecture
+// automatique. L'article 78-1 a été rendu abrégé au premier appel, son 7° et
+// son contrôle annuel absents ; c'est en redemandant le paragraphe mot pour
+// mot qu'ils sont apparus. La parade appliquée ici : redemander le paragraphe
+// décisif seul, et le lire deux fois.
+//
+// ---------------------------------------------------------------------------
+//
 // Le lot cherchait des obligations périodiques conditionnées par la famille.
 // **Il n'y en a aucune.** Les familles gouvernent la CONSTRUCTION — degré
 // coupe-feu des parois de cages d'ascenseurs (art. 97), présence d'une colonne
 // sèche (art. 98), dispositif d'appel prioritaire des pompiers en 4ᵉ famille
-// (art. 97 in fine). La seule obligation périodique du texte est l'article
+// (art. 97 in fine). L'obligation périodique centrale du texte est l'article
 // 101, et il ne mentionne aucune famille : il vise « le propriétaire » de tout
 // bâtiment entrant dans le champ de l'article 1er, c'est-à-dire les quatre
-// familles.
+// familles. (Il fut écrit ici qu'elle était la SEULE : l'article 78-1, entré en
+// vigueur le 2026-08-03, en porte une seconde — annuelle, adossée au même
+// registre. Voir l'amendement ci-dessus. Elle ne dépend d'aucune famille non
+// plus.)
 //
 // La famille atteint donc l'entretien de manière INDIRECTE : elle décide de ce
 // que le bâtiment CONTIENT, et l'article 101 fait vérifier ce qui est là. Une
@@ -81,7 +124,7 @@ export const ARRETE_1986_HABITATION: Corpus = {
   url: URL_TEXTE,
   etendue: "articles_cites",
   portee:
-    "109 articles et 5 annexes. Le TITRE VIII « Obligations des propriétaires » (art. 100 à 104) est lu en entier : c'est le seul titre qui s'adresse à l'exploitant, et il porte l'unique obligation périodique du texte (art. 101, vérification annuelle). Sont lus en outre l'article 1er (champ d'application), l'article 3 (classement en familles, qui fonde l'enum `FamilleHabitation`) et les articles 97 à 99 du titre VII. NE SONT PAS LUS : les titres II à VI (art. 5 à 96 — structures, dégagements, conduits et gaines, logements-foyers, parcs de stationnement) ni les annexes. Ce sont des prescriptions de construction, mais cela reste une PRÉSOMPTION tant qu'elles ne sont pas ouvertes : le titre V (logements-foyers) et le titre VI (parcs) peuvent porter des règles d'exploitation qu'aucune entrée ci-dessous n'écarte. Les textes modificateurs du 19 juin 2015 et du 7 août 2019 ont en revanche été ouverts pour lister ce qu'ils touchent d'autre — voir les entrées des articles 98, 100, 102 et 103.",
+    "109 articles et 5 annexes. Le TITRE VIII « Obligations des propriétaires » (art. 100 à 104) est lu en entier : c'est le seul titre qui s'adresse à l'exploitant, et il porte l'unique obligation périodique du texte (art. 101, vérification annuelle). Sont lus en outre l'article 1er (champ d'application), l'article 3 (classement en familles, qui fonde l'enum `FamilleHabitation`), les articles 97 à 99 du titre VII et, depuis le 2026-09-03, l'article 78-1. LES TITRES II À VI (art. 5 à 96) ONT ÉTÉ BALAYÉS le 2026-09-03 sans être dépouillés : le titre V (logements-foyers, art. 65 à 76) a été lu en entier et ne porte aucune obligation périodique ; seize articles du titre VI et quatorze des titres II à IV ont été ouverts, choisis sur leur intitulé comme candidats à une règle d'exploitation. Un seul en portait une, l'article 78-1, et il est dépouillé ici. TRENTE-SIX ARTICLES DE CETTE PLAGE RESTENT NON OUVERTS, écartés sur leur seul intitulé de plan — c'est une inférence, pas une lecture. Les annexes ne sont pas lues non plus. Les textes modificateurs du 19 juin 2015 et du 7 août 2019 ont en revanche été ouverts pour lister ce qu'ils touchent d'autre — voir les entrées des articles 98, 100, 102 et 103.",
   articles: [
     {
       ref: "Arrêté 1986-01-31 art. 1",
@@ -165,6 +208,27 @@ export const ARRETE_1986_HABITATION: Corpus = {
         "Article de définition : il classe, il ne prescrit pas. Dépouillé parce qu'il FONDE l'enum `FamilleHabitation`, posée le 2026-09-01 avant que ce texte n'ait été ouvert. VÉRIFICATION FAITE, ET LA DÉCOUPE EST JUSTE : cinq valeurs, dans cet ordre, et la troisième famille se subdivise bien en A et B au sein d'un même seuil de 28 mètres — ce qui explique pourquoi l'enum porte `TROISIEME_A` et `TROISIEME_B` plutôt qu'une `TROISIEME` unique. La 3ᵉ A est définie par TROIS conditions cumulatives (au plus sept étages, dix mètres de circulation horizontale au plus, accès aux escaliers atteints par la voie échelles) et la 3ᵉ B est son complément : une habitation qui manque une seule des trois bascule en B. À NOTER pour qui remplira le champ : l'article prévoit que le maire d'une commune dotée d'échelles aériennes suffisantes PEUT décider qu'un bâtiment de 3ᵉ famille B soit soumis aux seules prescriptions de la 3ᵉ famille A. La famille déclarée peut donc diverger de la famille calculée sur la géométrie, et c'est le texte qui l'autorise, pas une erreur de saisie.\n\nCONFRONTATION MÉCANISÉE LE 2026-09-03, ET ELLE CONFIRME LA LECTURE DE MAIN. `familles-habitation.test.ts` dérive désormais les familles du verbatim ci-dessus et les confronte aux CINQ déclarations du modèle — l'énumération Prisma, `FAMILLES_HABITATION` du référentiel, `FAMILLES_HABITATION` du schéma Zod, `CHOIX_FAMILLES_HABITATION` de l'onboarding et `LIBELLE_FAMILLE` du moteur. Aucun écart, dans aucun des deux sens : rien ne manque, rien n'est en trop. C'est la seule des trois listes ouvertes ce jour-là dont la source présumée était la bonne ET le contenu juste.\n\nLE PIÈGE DE CET ARTICLE EST SON 5°. Il compte cinq points numérotés et quatre familles : le 5° « Duplex et triplex » est une règle de comptage des niveaux pour le classement des trois premières familles, pas une cinquième famille. Un parseur qui lirait les « N° » plutôt que les mots « … famille » en fabriquerait une, et le modèle gagnerait un membre que le texte n'écrit pas. Le test lit les familles, jamais les numéros, et il vérifie explicitement qu'aucune cinquième famille n'en sort. La troisième, elle, n'entre pas comme membre : le texte la subdivise lui-même — « parmi lesquelles on distingue » — en A et B, et ce sont les feuilles qui sont les valeurs.",
     },
     {
+      ref: "Arrêté 1986-01-31 art. 78-1",
+      intitule:
+        "Boxes de stockage dans un parc de stationnement couvert annexe",
+      url: "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000054599988/",
+      versionEnVigueur: "2026-08-03",
+      modifiePar: {
+        texte: "Arrêté du 27 juillet 2026 - art. 1 (article créé)",
+        url: URL_TEXTE,
+      },
+      luLe: "2026-09-03",
+      lecture: "agent_verbatim",
+      statut: "obligation_manquante",
+      citationCle:
+        "2° Le parc de stationnement relève d'un propriétaire unique. Le propriétaire unique ou la personne qu'il désigne expressément pour assurer la gestion du parc est dénommée, pour l'application du présent article, le gestionnaire.\n" +
+        "7° Le gestionnaire assure le suivi et le contrôle des boxes affectés au stockage. Il procède à un contrôle visuel de chaque box affecté au stockage au moins une fois par an et à chaque changement d'utilisateur. Ce contrôle a pour but de s'assurer du respect des dispositions prévues au 4° et de la déclaration mentionnée au 6°. Les résultats du contrôle sont consignés dans le registre mentionné à l'article 101 et tenus à la disposition de l'autorité compétente. Les boxes affectés au stockage sont identifiés dans un document tenu à jour par le gestionnaire et annexé au registre mentionné à l'article 101.",
+      motif:
+        "ARTICLE NEUF — CRÉÉ PAR L'ARRÊTÉ DU 27 JUILLET 2026, EN VIGUEUR DEPUIS LE 3 AOÛT 2026, soit un mois avant sa découverte. Il dément, à lui seul, la présomption que les articles 5 à 96 de ce texte seraient purement constructifs : son 7° porte un CONTRÔLE VISUEL AU MOINS ANNUEL de chaque box affecté au stockage, plus un contrôle à chaque changement d'utilisateur, dont les résultats se consignent au registre de l'article 101.\n\nLE DESTINATAIRE EST UN TROISIÈME PORTEUR, ET C'EST CE QUI BLOQUE. Ni « le propriétaire » de l'article 101, ni « l'exploitant » : le 2° définit un GESTIONNAIRE, qui est le propriétaire unique du parc ou la personne qu'il désigne expressément. Un employeur locataire d'un local dans un immeuble d'habitation n'est pas le gestionnaire du parc annexe ; il peut l'être si le parc lui appartient et qu'il en assure la gestion.\n\nAUCUNE CONDITION DE FAMILLE, ce qui est le résultat que le lot venait chercher : les conditions de déclenchement sont l'existence d'un parc de stationnement couvert annexe de plus de 100 m² (art. 1er et 77), d'au plus 100 places, à propriétaire unique, dont une part des places est affectée au stockage en boxes. Aucune n'est une famille d'habitation.\n\nLE PREMIER CONTRÔLE N'EST PAS SEUL : « à chaque changement d'utilisateur » est un déclencheur d'ÉVÉNEMENT, que le modèle ne porte pas (ADR-022, pas de sixième déclencheur). L'annuel, lui, serait portable — c'est l'attribut du parc qui manque.",
+      bloquePar:
+        "Aucun attribut d'établissement ne dit qu'un parc de stationnement couvert annexe existe, ni qu'il comporte des boxes affectés au stockage — c'est le même manque que l'article 102 signale depuis le 2026-09-01 pour son second alinéa. S'y ajoute la question du destinataire : l'obligation vise le GESTIONNAIRE du parc, qualité que le modèle ne connaît pas et qui ne se déduit pas de la typologie de l'établissement. Le déclencheur « à chaque changement d'utilisateur » n'est de toute façon pas portable.",
+    },
+    {
       ref: "Arrêté 1986-01-31 art. 97",
       intitule: "Ascenseurs — isolement et dispositif prioritaire pompiers",
       url: "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006828535",
@@ -241,7 +305,7 @@ export const ARRETE_1986_HABITATION: Corpus = {
       citationCle:
         "Le propriétaire ou, le cas échéant, la personne responsable désignée par ses soins, est tenu de faire effectuer, au moins une fois par an, les vérifications des installations de détection, de désenfumage, de ventilation, ainsi que de toutes les installations fonctionnant automatiquement et des colonnes sèches. Il doit s'assurer, en particulier, du bon fonctionnement des portes coupe-feu, des ferme-portes ainsi que des dispositifs de manoeuvre des ouvertures en partie haute des escaliers. Il doit également assurer l'entretien de toutes les installations concourant à la sécurité et doit pouvoir le justifier par la tenue d'un registre de sécurité.",
       prescrit:
-        "L'UNIQUE OBLIGATION PÉRIODIQUE DU TEXTE, et elle ne porte AUCUNE condition de famille — ni ici, ni par renvoi. Elle vise « le propriétaire » de tout bâtiment entrant dans le champ de l'article 1er. Rythme écrit noir sur blanc : « au moins une fois par an ». L'article porte deux obligations distinctes et le référentiel les sépare : la vérification annuelle (un acte à refaire) et le registre de sécurité (un écrit à tenir), qui n'ont ni la même périodicité ni la même nature. Relu une seconde fois sur une URL distincte avant encodage : les deux relevés sont identiques, mot pour mot.",
+        "L'OBLIGATION PÉRIODIQUE CENTRALE DU TEXTE, et elle ne porte AUCUNE condition de famille — ni ici, ni par renvoi. Elle vise « le propriétaire » de tout bâtiment entrant dans le champ de l'article 1er. Rythme écrit noir sur blanc : « au moins une fois par an ». L'article porte deux obligations distinctes et le référentiel les sépare : la vérification annuelle (un acte à refaire) et le registre de sécurité (un écrit à tenir), qui n'ont ni la même périodicité ni la même nature. Relu une seconde fois sur une URL distincte avant encodage : les deux relevés sont identiques, mot pour mot.\n\nCORRECTION DU 2026-09-03 : cette entrée disait « L'UNIQUE obligation périodique du texte ». Elle ne l'est plus, et ne l'était déjà plus au moment où la phrase a été écrite — l'article 78-1, créé par l'arrêté du 27 juillet 2026 et en vigueur depuis le 3 août, porte un contrôle visuel annuel des boxes de stockage d'un parc annexe. Il ne la contredit pas, il s'y ADOSSE : son 7° fait consigner les résultats « dans le registre mentionné à l'article 101 » et annexer au même registre le document identifiant les boxes. L'article 101 reste donc l'obligation périodique centrale du texte, et le registre qu'il institue reste le réceptacle des deux.",
     },
     {
       ref: "Arrêté 1986-01-31 art. 102",

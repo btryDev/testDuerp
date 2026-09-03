@@ -135,12 +135,13 @@ sixième `??` recopié.
 C'est la limite la plus importante de ce document, et la raison directe du
 retrait de la carte.
 
-Les 19 articles ci-dessous sont ceux que le dépouillement a lus, qui imposent
+Les 20 articles ci-dessous sont ceux que le dépouillement a lus, qui imposent
 quelque chose à un exploitant, et que le référentiel ne porte pas. **Rien ne les
 restreint aux établissements que leur chapitre vise.** Un bureau tertiaire les
 voyait tous, y compris les onze articles propres aux hôtels.
 
-**Le chiffre a bougé le 2026-09-01 : 28 → 19.** Neuf articles du chapitre III
+**Le chiffre a bougé deux fois : 28 → 19 le 2026-09-01, puis 19 → 20 le
+2026-09-03.** Neuf articles du chapitre III
 du Livre III (locaux à sommeil) sont sortis de cette liste, et le § 3 dit
 comment. Les « 27 » et « 28 » qui subsistent plus bas dans ce document
 racontent une histoire datée — ils ne décrivent pas l'état d'aujourd'hui.
@@ -183,7 +184,7 @@ couverture.
 
 ---
 
-## 3. Les 19 articles lus et non portés
+## 3. Les 20 articles lus et non portés
 
 Cinq familles, une sixième étant sortie de la liste le 2026-09-01 (voir
 ci-dessous). Les motifs sont ceux du corpus, cités et non réécrits : ils ont
@@ -281,6 +282,44 @@ pas été ouvert.
 > un délai déclenché par un événement, la seconde une durée de vie maximale d'un
 > composant. Le modèle ne porte ni l'un ni l'autre. Ces règles pèsent sur le
 > distributeur et le propriétaire d'immeuble collectif, à la marge du périmètre.
+
+### Immeubles de grande hauteur — 1 article
+
+`GH W 5`
+
+> LA SEULE OBLIGATION D'UN CHAPITRE DE CLASSE QUI PÈSE VRAIMENT SUR L'EMPLOYEUR
+> OCCUPANT, et c'est pour cela qu'elle est dépouillée : c'était le meilleur
+> candidat à une restriction `igh: { classes: [...] }`, et il ne tient pas. Trois
+> raisons, dans l'ordre où elles mordent.
+>
+> (1) ELLE NE DISTINGUE PAS GH W1 DE GH W2. Le § 1 les distingue bien — un chef
+> d'équipe pour GH W1, trois agents en permanence pour GH W2 — mais il compose le
+> service CENTRAL, « sous la direction du chef de sécurité incendie de
+> l'immeuble », c'est-à-dire du côté du propriétaire. Le § 2, celui de
+> l'occupant, ne mentionne aucune des deux. Or GH W1 et GH W2 sont précisément
+> les deux valeurs que le modèle offre : la question posée au dirigeant ne
+> pourrait donc jamais moduler cette ligne.
+>
+> (2) GH 66 EN FAIT LE MAUVAIS ANCRAGE. Le déclencheur réel est d'occuper un
+> COMPARTIMENT DE BUREAUX dans un IGH, ce que le produit sait déjà par la
+> typologie de l'établissement ; la classe DÉCLARÉE de la tour, elle, peut être
+> GH U ou GH Z pour ce même plateau.
+>
+> (3) LE PRODUIT NE LA COUVRE PAS, ET LE DIT. `non_couvert` et non
+> `obligation_manquante` : l'obligation existe et vise un établissement que le
+> produit sert, mais le service de sécurité incendie des IGH est déclaré hors
+> couverture sur la page « Ce que Rojer ne couvre pas ». C'est aussi un ÉTAT
+> PERMANENT — désigner des agents parmi son personnel permanent — et non une
+> échéance ; la participation aux exercices du § 3 est portée par le service
+> central, donc par le propriétaire, l'occupant n'étant tenu que d'y participer.
+
+**C'est le vingtième article, et il entre le 2026-09-03 par une porte
+inhabituelle** : un lot venu poser une tout autre question — la classe d'IGH
+sert-elle à quelque chose ? — a dû balayer les chapitres de classe pour y
+répondre, et a trouvé cela en chemin. Il a **une adresse visible**, contrairement
+à `R. 4323-63` : la page « Ce que Rojer ne couvre pas » nomme déjà « le service
+de sécurité permanent » et « les dispositions propres à la classe de l'immeuble »
+parmi ce que l'outil ne porte pas. Le cliquet `MUETS` ne bouge donc pas.
 
 ### Travail en hauteur, tous secteurs confondus — 1 article
 
@@ -451,7 +490,7 @@ La carte du tableau de bord est retirée. Ce qui reste :
   interroge le schéma au lieu de le décrire), et les articles `hors_perimetre`
   du corpus, groupés par motif d'exclusion.
 
-  **Elle ne donne PAS d'adresse aux 19 articles `non_couvert`**, et un test le
+  **Elle ne donne PAS d'adresse aux 20 articles `non_couvert`**, et un test le
   verrouille. La tentation était forte — la page ressemble à l'endroit où les
   mettre — mais ce serait exactement la confusion que `corpus/perimetre.ts`
   interdit en tête de fichier : ranger un manque parmi les exclusions le fait

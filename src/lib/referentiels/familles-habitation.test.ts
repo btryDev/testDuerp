@@ -63,8 +63,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { CORPUS, type ArticleDepouille } from "./corpus";
 import { FAMILLES_HABITATION } from "./types-communs";
-import { FAMILLES_HABITATION as FAMILLES_HABITATION_ZOD } from "@/lib/etablissements/schema";
-import { CHOIX_FAMILLES_HABITATION } from "@/lib/onboarding/deduction-erp";
+import { etablissementCreationSchema } from "@/lib/etablissements/schema";
+import { onboardingSchema } from "@/lib/onboarding/schema";
 
 /** L'entrée de corpus qui porte la nomenclature. */
 function article3(): ArticleDepouille {
@@ -261,74 +261,90 @@ describe("familles d'habitation — la liste du modèle est celle de l'article 3
     ).toEqual({ manquants: [], enTrop: [] });
   });
 
-  it("`FAMILLES_HABITATION` (schéma Zod) porte exactement les familles du texte", () => {
-    // Troisième copie littérale, et celle par laquelle une famille absente
-    // devient INSAISISSABLE : c'est elle qui valide les formulaires.
-    const e = ecart(
-      famillesEcritesParArticle3().map((f) => f.cle),
-      FAMILLES_HABITATION_ZOD,
-    );
-    expect(
-      e,
-      messageEcart(
-        "`FAMILLES_HABITATION` (src/lib/etablissements/schema.ts)",
-        e,
-      ),
-    ).toEqual({ manquants: [], enTrop: [] });
-  });
-
-  it("`CHOIX_FAMILLES_HABITATION` (onboarding) porte exactement les familles du texte", () => {
-    // QUATRIÈME COPIE, ET LA PLUS EXPOSÉE. C'est elle qui remplit la grille du
-    // parcours d'entrée. Contrairement à `LIBELLE_FAMILLE` du moteur, qui est
-    // un `Record<FamilleHabitation, string>` tenu par le compilateur, elle
-    // n'est vérifiée par rien : c'est un tableau de littéraux.
-    const e = ecart(
-      famillesEcritesParArticle3().map((f) => f.cle),
-      CHOIX_FAMILLES_HABITATION.map((f) => f.id),
-    );
-    expect(
-      e,
-      messageEcart(
-        "`CHOIX_FAMILLES_HABITATION` (src/lib/onboarding/deduction-erp.ts)",
-        e,
-      ),
-    ).toEqual({ manquants: [], enTrop: [] });
-  });
-
-  it("chaque libellé porte le rang de sa famille, et sa branche quand elle en a une", () => {
-    // LA RÈGLE N'EST PAS UNE LONGUEUR MINIMALE. Le libellé du produit est une
-    // reformulation légitime : le texte écrit « Troisième famille A », la
-    // grille écrit « 3ᵉ famille A ». Exiger les mots du texte reviendrait à
-    // interdire de rendre la nomenclature lisible.
+  it("aucune famille ne peut plus être écrite — pas même une famille valide", () => {
+    // TROIS TESTS ONT ÉTÉ REMPLACÉS PAR CELUI-CI LE 2026-09-03, et il faut
+    // dire ce qu'ils gardaient avant de dire pourquoi ils partent.
     //
-    // CE QUI NE SE REFORMULE PAS, C'EST LE RANG ET LA BRANCHE. Ce sont les deux
-    // seules choses par lesquelles un propriétaire reconnaît la ligne que son
-    // syndic ou son bureau de contrôle lui a donnée — « 3ᵉ famille B » se lit
-    // sur un document, pas « habitations ne satisfaisant pas à l'une des
-    // conditions précédentes ». Un libellé qui les perd fait cocher au hasard,
-    // et la famille est justement l'attribut sur lequel le moteur retient des
-    // obligations par prudence quand il est vide.
-    const muets: string[] = [];
-    for (const famille of famillesEcritesParArticle3()) {
-      const choix = CHOIX_FAMILLES_HABITATION.find((f) => f.id === famille.cle);
-      if (!choix) continue; // l'écart de liste est le sujet du test précédent.
-      const attendu = new RegExp(
-        `\\b${famille.rang}[ᵉʳ]{1,2}\\s+famille${famille.branche ? `\\s+${famille.branche}\\b` : "\\s*$"}`,
-      );
-      if (!attendu.test(choix.label)) {
-        muets.push(
-          `${famille.cle} → « ${choix.label} » : attendu « ${famille.rang}ᵉ famille` +
-            `${famille.branche ? ` ${famille.branche}` : ""} »`,
-        );
-      }
+    // Ils confrontaient au verbatim de l'article 3 les deux DÉCLARATIONS de
+    // saisie — la liste Zod, par laquelle une famille absente devient
+    // insaisissable, et la grille d'onboarding — puis vérifiaient que chaque
+    // libellé porte le RANG et la BRANCHE (« 3e famille B »), seule forme sous
+    // laquelle un propriétaire reconnaît la ligne que son syndic lui a donnée.
+    // Ils étaient justes, et ils sont passés au vert le 2026-09-03 : la liste
+    // était bonne, la source était bonne.
+    //
+    // LA QUESTION A ÉTÉ RETIRÉE DU PRODUIT LE MÊME JOUR, pour une raison
+    // qu'aucun de ces trois tests ne pouvait voir : la famille est juste, et
+    // elle ne décide de rien. L'arrêté du 31 janvier 1986 a été dépouillé —
+    // son unique obligation périodique, l'article 101, vise « le
+    // propriétaire » sans mentionner de famille ; les familles gouvernent la
+    // construction (art. 97, 98). Un test qui vérifie qu'une liste est fidèle
+    // à son texte ne peut pas répondre à « cette liste sert-elle à quelque
+    // chose ».
+    //
+    // CE QUI EST GARDÉ ICI À LEUR PLACE : que la famille ne puisse plus être
+    // écrite du tout. Vérifié par le comportement, non par une lecture de
+    // texte — un champ que Zod ne déclare pas est retiré de l'objet validé et
+    // n'atteint jamais Prisma. Les deux comparaisons qui restent vivantes plus
+    // haut portent sur ce qui existe encore : l'énumération PostgreSQL et son
+    // reflet `FAMILLES_HABITATION` de `types-communs.ts`, tous deux confrontés
+    // au verbatim de l'article 3.
+    const regime = {
+      effectifSurSite: 4,
+      estEtablissementTravail: true,
+      estERP: false,
+      estIGH: false,
+      estHabitation: true,
+    };
+    for (const [ou, schema, identite] of [
+      [
+        "`etablissementCreationSchema`",
+        etablissementCreationSchema,
+        {
+          raisonDisplay: "Syndic Témoin",
+          adresse: "3 rue des Lilas, 75020 Paris",
+        },
+      ],
+      [
+        "`onboardingSchema`",
+        onboardingSchema,
+        {
+          raisonSociale: "Syndic Témoin",
+          adresse: "3 rue des Lilas, 75020 Paris",
+          codeNaf: "68.32A",
+        },
+      ],
+    ] as const) {
+      const dossier = { ...identite, ...regime };
+      // Une famille PARFAITEMENT VALIDE au regard de l'article 3, et elle ne
+      // passe pas : ce n'est pas une liste qu'on a resserrée, c'est une
+      // question qu'on ne pose plus.
+      const res = schema.safeParse({
+        ...dossier,
+        familleHabitation: "TROISIEME_B",
+      });
+      expect(res.success, `${ou} refuse le dossier temoin`).toBe(true);
+      if (!res.success) continue;
+      expect(
+        Object.prototype.hasOwnProperty.call(res.data, "familleHabitation"),
+        `${ou} laisse passer une famille d'habitation. La question a été ` +
+          `retirée du produit le 2026-09-03 ; si une surface la repose, elle ` +
+          `doit revenir avec l'obligation qui la justifie, et les trois tests ` +
+          `de libellés sont à reprendre dans l'historique de ce fichier — pas ` +
+          `à réinventer. Voir corpus/arrete-1986-habitation.ts.`,
+      ).toBe(false);
     }
+
+    // ET LA CONTRE-ÉPREUVE, sans laquelle ce test passerait même si les
+    // schémas refusaient tout : un dossier d'habitation SANS famille est
+    // accepté à la création, ce qui était impossible entre le 2026-09-01 et
+    // ce jour.
     expect(
-      muets,
-      "Ces libellés ne portent pas le rang — ou la branche A/B — de leur " +
-        "famille. C'est sous cette forme que la famille figure au dossier de " +
-        "l'immeuble ; un propriétaire qui ne la retrouve pas dans la liste " +
-        "coche au hasard.\n" +
-        muets.join("\n"),
-    ).toEqual([]);
+      etablissementCreationSchema.safeParse({
+        raisonDisplay: "Syndic Témoin",
+        adresse: "3 rue des Lilas, 75020 Paris",
+        ...regime,
+      }).success,
+    ).toBe(true);
   });
 });

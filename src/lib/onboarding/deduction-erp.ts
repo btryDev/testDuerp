@@ -185,99 +185,38 @@ export function deduireCategorieErpDepuisEffectif(
 }
 
 /**
- * Grille des classes IGH avec libellés lisibles pour le dirigeant.
- * Cas très rare en TPE — pour les quelques cas où un TPE gère un
- * immeuble de grande hauteur, on affiche la grille mais avec une aide
- * claire « rare chez vous ».
+ * LA CLASSE D'IGH ET LA FAMILLE D'HABITATION NE SONT PLUS DEMANDÉES (2026-09-03).
  *
- * DIX ENTRÉES, ET DEUX D'ENTRE ELLES SONT NÉES DE LA CONFRONTATION DU
- * 2026-09-03. La grille était tirée de l'arrêté du 30 décembre 2011, qui ne
- * porte pas la nomenclature ; le CCH, art. R. 146-4, la porte, et il en écrit
- * dix. Manquaient `GHTC` — tour de contrôle — et la coupure des bureaux en
- * `GHW 1` / `GHW 2` ; figurait en trop un `GHW` que le code n'écrit nulle
- * part.
+ * Deux grilles de choix vivaient ici — `CHOIX_CLASSES_IGH`, dix classes de
+ * l'article R. 146-4 du CCH, et `CHOIX_FAMILLES_HABITATION`, cinq familles de
+ * l'article 3 de l'arrêté du 31 janvier 1986. Toutes deux ont été confrontées à
+ * leur texte les 2026-09-01 et 2026-09-03, et toutes deux étaient JUSTES au
+ * terme de cette confrontation. Elles ne partent pas parce qu'elles étaient
+ * fausses : elles partent parce qu'elles ne décidaient de rien.
  *
- * LES HAUTEURS SONT DANS LES LIBELLÉS PARCE QUE C'EST TOUT CE QUI DISTINGUE
- * DEUX CLASSES. « Bureaux » seul ne permettait à personne de choisir : le
- * plancher bas du dernier niveau à 40 mètres donne GHW 1, à 60 mètres GHW 2, et
- * la question n'était jamais posée. Même raison pour GHZ, dont le libellé
- * disait « Mixte » là où le texte décrit un immeuble à usage PRINCIPAL
- * D'HABITATION entre 28 et 50 mètres : un syndic cherchait « habitation »,
- * trouvait GHA, et se déclarait dans la mauvaise classe.
- * `src/lib/referentiels/classes-igh.test.ts` tient ces chiffres à ceux du
- * verbatim de R. 146-4.
+ * Mesuré en appelant le moteur le 2026-09-03 : les dix classes et `null`
+ * rendaient le même jeu d'obligations, les cinq familles et `null` aussi. La
+ * lecture des deux règlements dit pourquoi, et dans les deux cas c'est une
+ * question de DESTINATAIRE ou d'OBJET :
  *
- * L'ORDRE N'EST PAS CELUI DU TEXTE, et c'est assumé : le texte range GHA en
- * tête, la grille met les bureaux devant parce que c'est le cas le plus
- * probable. Un ordre d'affichage est un choix de produit ; le test ne le
- * vérifie pas.
+ *   — arrêté du 30 décembre 2011 : GH 5 met les vérifications périodiques à la
+ *     charge des « propriétaires » sans les moduler par classe ; la seule
+ *     périodicité indexée sur la classe (GH 4 § 3) est celle de la visite de la
+ *     commission de sécurité ; et GH 66 dispose que le classement retient
+ *     « l'usage principal de l'immeuble », les dispositions de chaque classe
+ *     s'appliquant « dans chacune des parties concernées » — la classe déclarée
+ *     de la tour n'est donc même pas le bon objet pour décrire le plateau qu'on
+ *     y occupe ;
+ *   — arrêté du 31 janvier 1986 : l'article 101, unique obligation périodique
+ *     du texte, vise « le propriétaire » sans mentionner de famille. Les
+ *     familles gouvernent la construction (articles 97 et 98).
+ *
+ * Les deux corpus portent le détail article par article. Ce qui reste : les
+ * colonnes, les énumérations Prisma, leurs reflets dans `types-communs.ts`, et
+ * la capacité du moteur à exprimer `igh: { classes }` / `habitation:
+ * { familles }` — retirer la question n'est pas retirer la capacité.
  */
-export const CHOIX_CLASSES_IGH = [
-  {
-    id: "GHW1",
-    label: "Bureaux, de 28 à 50 m",
-    description:
-      "Tour de bureaux dont le plancher bas du dernier niveau est à plus de 28 mètres et à 50 mètres au plus.",
-  },
-  {
-    id: "GHW2",
-    label: "Bureaux, plus de 50 m",
-    description:
-      "Tour de bureaux dont le plancher bas du dernier niveau est à plus de 50 mètres.",
-  },
-  { id: "GHA", label: "Habitation", description: "Immeuble de logement." },
-  {
-    id: "GHZ",
-    label: "Habitation avec des locaux d'une autre nature",
-    description:
-      "Immeuble à usage principal d'habitation, plancher bas de plus de 28 mètres et de 50 mètres au plus, comportant des locaux d'une autre nature qui ne répondent pas aux conditions d'isolement.",
-  },
-  { id: "GHO", label: "Hôtel", description: "Tour hôtelière." },
-  { id: "GHR", label: "Enseignement", description: "Établissement scolaire." },
-  {
-    id: "GHS",
-    label: "Dépôt d'archives",
-    description: "Centre d'archives.",
-  },
-  {
-    id: "GHTC",
-    label: "Tour de contrôle",
-    description: "Immeuble à usage de tour de contrôle.",
-  },
-  { id: "GHU", label: "Sanitaire", description: "Hôpital, clinique." },
-  {
-    id: "ITGH",
-    label: "Très grande hauteur",
-    description:
-      "Immeuble dont le plancher bas du dernier niveau est à plus de 200 mètres.",
-  },
-] as const;
 
-/**
- * Familles d'habitation — arrêté du 31 janvier 1986 (ADR-025 § 4).
- *
- * **Aucune description ici, et c'est délibéré.** L'arrêté du 31 janvier 1986
- * n'a jamais été ouvert dans ce dépôt : décrire les familles de mémoire — « R+3
- * au plus », « desserte par la voie échelle » — reviendrait à faire choisir un
- * dirigeant sur une reformulation que personne n'a vérifiée, et à l'inscrire
- * ensuite dans son dossier. Trois références de brief se sont déjà révélées
- * fausses cette semaine pour avoir été recopiées sans être ouvertes.
- *
- * Le classement en famille n'est pas une déduction à faire ici : il figure au
- * dossier de l'immeuble, et le syndic ou le bureau de contrôle le donne. On
- * demande donc une information que le dirigeant possède, au lieu de la lui
- * faire reconstituer.
- *
- * Les descriptions viendront avec le dépouillement de l'arrêté (lot B2 du
- * recadrage), pas avant.
- */
-export const CHOIX_FAMILLES_HABITATION = [
-  { id: "PREMIERE", label: "1ʳᵉ famille" },
-  { id: "DEUXIEME", label: "2ᵉ famille" },
-  { id: "TROISIEME_A", label: "3ᵉ famille A" },
-  { id: "TROISIEME_B", label: "3ᵉ famille B" },
-  { id: "QUATRIEME", label: "4ᵉ famille" },
-] as const;
 
 // -----------------------------------------------------------------------------
 // Frontière 4ᵉ / 5ᵉ catégorie — table des seuils, type par type (2026-08-25)

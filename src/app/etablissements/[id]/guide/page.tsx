@@ -63,8 +63,10 @@ export default async function GuidePage({
   if (etab.estEtablissementTravail) regimes.push("Travail");
   if (etab.estERP)
     regimes.push(etab.categorieErp ? `ERP · ${etab.categorieErp}` : "ERP");
-  if (etab.estIGH)
-    regimes.push(etab.classeIgh ? `IGH · ${etab.classeIgh}` : "IGH");
+  // La classe n'est plus affichée depuis le 2026-09-03 : elle n'est plus
+  // demandée, donc plus corrigible, et un guide qui affiche une valeur que son
+  // lecteur ne peut plus reprendre lui montre une donnée morte.
+  if (etab.estIGH) regimes.push("IGH");
   if (etab.estHabitation) regimes.push("Habitation");
 
   return (

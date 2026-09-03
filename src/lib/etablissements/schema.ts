@@ -29,28 +29,42 @@ export const TYPE_ERP = [
 export const CATEGORIES_ERP = ["N1", "N2", "N3", "N4", "N5"] as const;
 
 /**
- * Classes d'IGH **DÉCLARABLES** — CCH, art. R. 146-4, dans l'ordre du texte.
- * Dix, exactement celles que le code écrit.
+ * LA CLASSE D'IGH ET LA FAMILLE D'HABITATION NE SE DÉCLARENT PLUS (2026-09-03).
  *
- * C'est la liste qui valide les formulaires et qui remplit les menus : elle dit
- * ce qu'un dossier peut se voir ATTRIBUER aujourd'hui. Elle est plus courte que
- * `CLASSES_IGH` de `src/lib/referentiels/types-communs.ts`, qui dit ce que la
- * base peut CONTENIR et porte encore `GHW` — une valeur que R. 146-4 n'écrit
- * pas, restée dans l'énumération PostgreSQL le temps qu'on établisse s'il en
- * existe des lignes.
+ * Deux listes vivaient ici — `CLASSES_IGH` (dix valeurs de R. 146-4) et
+ * `FAMILLES_HABITATION` (cinq valeurs de l'article 3 de l'arrêté du 31 janvier
+ * 1986) —, chacune validant un menu de formulaire. Les deux questions ont été
+ * retirées de l'onboarding et de la fiche : mesuré en appelant le moteur, leurs
+ * quinze valeurs et `null` rendaient exactement le même jeu d'obligations, et
+ * la lecture des deux textes a établi qu'aucune obligation d'exploitant ne
+ * dépend ni de l'une ni de l'autre.
  *
- * L'écart entre les deux listes est la forme même du palier : plus personne ne
- * peut créer un `GHW`, et aucune donnée n'est effacée pour autant. Voir
- * `docs/chantiers-ouverts.md` § 9 bis.
+ *   IGH — les périodicités de GH 5 s'adressent aux « propriétaires » et ne
+ *   varient pas par classe ; la seule périodicité indexée sur la classe de tout
+ *   l'arrêté (GH 4 § 3) est celle de la visite de la commission de sécurité ;
+ *   et GH 66 achève le sujet — le classement retient « l'usage principal de
+ *   l'immeuble », les dispositions de chaque classe s'appliquant « dans chacune
+ *   des parties concernées », si bien que la classe DÉCLARÉE de la tour n'est
+ *   pas le régime du plateau qu'on y occupe. Voir `corpus/arrete-2011-12-30-igh.ts`.
+ *
+ *   HABITATION — l'article 101 est la seule obligation périodique du texte et
+ *   ne mentionne aucune famille : les familles gouvernent la CONSTRUCTION
+ *   (degrés coupe-feu de l'article 97, colonnes sèches de l'article 98). Voir
+ *   `corpus/arrete-1986-habitation.ts`.
+ *
+ * LES COLONNES ET LES ÉNUMÉRATIONS RESTENT : `Etablissement.classeIgh`,
+ * `Etablissement.familleHabitation`, `enum ClasseIgh`, `enum FamilleHabitation`,
+ * et leurs reflets dans `types-communs.ts` — qui disent ce que la base peut
+ * CONTENIR, et continuent d'être tenus à leur texte par `classes-igh.test.ts`
+ * et `familles-habitation.test.ts`. Une migration destructive se décide à part ;
+ * le dépôt en a un palier en cours pour `GHW` (`docs/chantiers-ouverts.md`
+ * § 9 bis).
+ *
+ * CE QUE LE MOTEUR SAIT ENCORE FAIRE NE BOUGE PAS NON PLUS : `igh: { classes }`
+ * et `habitation: { familles }` restent des restrictions exprimables. Retirer la
+ * question n'est pas retirer la capacité — c'est cesser de demander une donnée
+ * dont aucune obligation ne dépend.
  */
-export const CLASSES_IGH = [
-  "GHA", "GHO", "GHR", "GHS", "GHTC", "GHU", "GHW1", "GHW2", "GHZ", "ITGH",
-] as const;
-
-/** Familles d'habitation — arrêté du 31 janvier 1986, art. 3. La 3ᵉ se scinde. */
-export const FAMILLES_HABITATION = [
-  "PREMIERE", "DEUXIEME", "TROISIEME_A", "TROISIEME_B", "QUATRIEME",
-] as const;
 
 /**
  * La borne du produit (ADR-025 § 1). Elle porte sur les **travailleurs**, et
@@ -152,29 +166,10 @@ export const etablissementSchema = z
       (v) => (v === "" || v === null ? undefined : v),
       z.enum(CATEGORIES_ERP).optional(),
     ),
-    // LE MESSAGE EST ÉCRIT, ET IL EST LE SEUL DE CE BLOC À L'ÊTRE. Depuis le
-    // 2026-09-03, `CLASSES_IGH` est plus courte que l'énumération de la base :
-    // `GHW` y a été retirée. Un dossier antérieur qui en porte une et qu'on
-    // réenregistre sans y toucher arrive donc ici, et le message par défaut de
-    // Zod — « Invalid option » — ne dirait pas quoi faire. Celui-ci nomme le
-    // fait qui manque, la hauteur du plancher bas, parce que c'est la seule
-    // chose que le déclarant ait à aller chercher.
-    classeIgh: z.preprocess(
-      (v) => (v === "" || v === null ? undefined : v),
-      z
-        .enum(CLASSES_IGH, {
-          message:
-            "Classe IGH inconnue de l'article R. 146-4. Si ce dossier portait « GHW », " +
-            "le code n'écrit pas cette classe : les bureaux en sont deux, séparées par la " +
-            "hauteur du plancher bas du dernier niveau — GHW1 de plus de 28 m à 50 m au " +
-            "plus, GHW2 au-delà de 50 m. Choisissez celle qui correspond.",
-        })
-        .optional(),
-    ),
-    familleHabitation: z.preprocess(
-      (v) => (v === "" || v === null ? undefined : v),
-      z.enum(FAMILLES_HABITATION).optional(),
-    ),
+    // `classeIgh` et `familleHabitation` ne figurent plus ici : les deux
+    // questions ont été retirées des formulaires le 2026-09-03, et un champ
+    // qu'aucune surface ne poste n'a rien à valider. Les colonnes restent en
+    // base — voir le bloc en tête de fichier.
     // Locaux à sommeil pour le public (arrêté du 25 juin 1980, Livre III —
     // PE 4 § 1, PE 33, PE 35, PE 37). Trois états comme
     // `manipuleMatieresR422722`, et la même règle : vide = « pas encore
@@ -263,36 +258,11 @@ export const etablissementSchema = z
       }
     }
 
-    if (val.estIGH) {
-      if (!val.classeIgh) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["classeIgh"],
-          message: "Classe IGH requise (GHA à ITGH)",
-        });
-      }
-    } else if (val.classeIgh) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["classeIgh"],
-        message: "Ne doit être posée que si l'établissement est IGH",
-      });
-    }
-
-    // La famille ne se pose que sur un immeuble d'habitation. Elle n'est pas
-    // EXIGÉE ici : ce schéma sert aussi à modifier un dossier existant, et les
-    // dossiers d'habitation créés avant le 2026-09-01 n'en ont pas. Leur
-    // interdire toute modification tant qu'ils ne l'ont pas renseignée
-    // bloquerait des écrans qui n'ont rien à voir avec l'habitation.
-    // L'exigence vit dans `etablissementCreationSchema`, plus bas.
-    if (!val.estHabitation && val.familleHabitation) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["familleHabitation"],
-        message:
-          "Ne doit être posée que si l'établissement est un immeuble d'habitation",
-      });
-    }
+    // Trois règles vivaient ici et sont tombées avec les questions, le
+    // 2026-09-03 : « classe IGH requise si estIGH », « classe interdite hors
+    // IGH », « famille interdite hors habitation ». Aucune n'était fausse ;
+    // elles gardaient la cohérence d'une donnée que plus personne ne saisit.
+    // Un régime IGH ou habitation se déclare désormais par son seul booléen.
 
     // Un établissement doit relever d'au moins un régime ; si tout est à
     // false, on retombe implicitement sur « travail classique ».
@@ -316,27 +286,24 @@ export type EtablissementInput = z.infer<typeof etablissementSchema>;
 /**
  * Schéma de **création** d'un établissement (ADR-025 § 4, ADR-031).
  *
- * Il ajoute ce qu'un dossier neuf doit porter et qu'un dossier ancien n'a pas
- * forcément : la famille d'habitation. La dissymétrie création / modification
- * est la forme que prend la coexistence — une règle neuve ne rend pas
- * inutilisable ce qui a été saisi avant elle, elle borne ce qui entre.
+ * Il ne porte plus que les deux refus de périmètre de l'ADR-031.
+ *
+ * IL A PORTÉ UNE TROISIÈME RÈGLE, ET SA DISPARITION SE RACONTE. Du 2026-09-01
+ * au 2026-09-03, la FAMILLE D'HABITATION était exigée ici et nulle part
+ * ailleurs — dissymétrie création / modification voulue, pour qu'une règle
+ * neuve ne rende pas inutilisables les dossiers saisis avant elle. Elle tombe
+ * avec la question : l'arrêté du 31 janvier 1986 a été dépouillé, son unique
+ * obligation périodique (article 101) ne mentionne aucune famille, et aucune
+ * obligation du référentiel n'en dépend. Exiger à la création une donnée qui ne
+ * décide de rien, c'est ajouter une étape au parcours pour rien.
  */
 export const etablissementCreationSchema = etablissementSchema.superRefine(
   (val, ctx) => {
-    if (val.estHabitation && !val.familleHabitation) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["familleHabitation"],
-        message:
-          "Famille d'habitation requise (1ʳᵉ, 2ᵉ, 3ᵉ A, 3ᵉ B ou 4ᵉ)",
-      });
-    }
-
     // Les deux refus de périmètre (ADR-031). Ils vivent ici et non dans
-    // `etablissementSchema` pour la même raison que la famille : ce schéma-là
-    // sert aussi à modifier un dossier ancien, et un client qui passe de
-    // quarante-cinq à soixante salariés reste servi — son dossier porte alors
-    // un manque de couverture, il ne se ferme pas.
+    // `etablissementSchema` parce que ce schéma-là sert aussi à modifier un
+    // dossier ancien, et un client qui passe de quarante-cinq à soixante
+    // salariés reste servi — son dossier porte alors un manque de couverture,
+    // il ne se ferme pas.
     //
     // Ils vivent ici et PAS SEULEMENT dans le wizard : depuis l'ADR-028, un
     // second établissement se crée par un autre chemin. Une règle posée sur le

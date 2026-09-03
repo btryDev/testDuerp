@@ -91,11 +91,6 @@ const QUESTIONS_TRI_ETAT: Record<
     question: "Cette VMC est-elle raccordée à des appareils à gaz ?",
     aide: "On parle de « VMC-Gaz » : la ventilation évacue aussi les produits de combustion de chaudières ou de chauffe-eau au gaz. Si oui, entretien et vérification annuels par un professionnel sous contrat écrit (arrêté du 25 avril 1985).",
   },
-  aRobinetsIncendieArmes: {
-    question:
-      "Votre établissement dispose-t-il de robinets d'incendie armés (RIA) ?",
-    aide: "Un RIA est un tuyau souple enroulé dans un coffret mural, relié en permanence à l'eau — à ne pas confondre avec un extincteur. Si oui, vérification annuelle (débit, pression, fonctionnement).",
-  },
   aExtinctionAutomatique: {
     question:
       "Un système d'extinction automatique est-il installé sur les appareils de cuisson ?",

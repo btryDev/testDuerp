@@ -90,11 +90,19 @@ describe("onboardingSchema", () => {
     expect(res.success).toBe(false);
   });
 
-  it("exige classeIgh si estIGH=true", () => {
+  // « exige classeIgh si estIGH=true » a vécu ici jusqu'au 2026-09-03. La
+  // question de la classe a été retirée du parcours : elle ne décidait
+  // d'aucune obligation, et l'arrêté du 30 décembre 2011 explique pourquoi —
+  // ses vérifications périodiques (GH 5) s'adressent aux « propriétaires »
+  // sans varier par classe, et GH 66 fait du classement l'affaire de l'usage
+  // PRINCIPAL de l'immeuble.
+  it("n'exige plus de classe d'un IGH, et n'en accepte plus", () => {
     const res = onboardingSchema.safeParse({ ...base, estIGH: true });
-    expect(res.success).toBe(false);
-    if (!res.success) {
-      expect(res.error.flatten().fieldErrors.classeIgh).toBeDefined();
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(
+        Object.prototype.hasOwnProperty.call(res.data, "classeIgh"),
+      ).toBe(false);
     }
   });
 
@@ -109,46 +117,38 @@ describe("onboardingSchema", () => {
     expect(res.success).toBe(false);
   });
 
-  // Famille d'habitation (ADR-025 § 4). Les trois cas qui décident : exigée
-  // quand le régime est déclaré, interdite quand il ne l'est pas, acceptée
-  // quand les deux vont ensemble. Le premier seul se réparerait en retirant
-  // la règle, le second seul en la retirant aussi.
-  it("exige la famille si estHabitation=true", () => {
-    const res = onboardingSchema.safeParse({ ...base, estHabitation: true });
-    expect(res.success).toBe(false);
-    if (!res.success) {
-      expect(res.error.flatten().fieldErrors.familleHabitation).toBeDefined();
-    }
-  });
-
-  it("accepte une habitation avec sa famille", () => {
+  // FAMILLE D'HABITATION — QUATRE TESTS ONT VÉCU ICI, DU 2026-09-01 AU
+  // 2026-09-03, et ils étaient bien construits : exigée quand le régime est
+  // déclaré, interdite quand il ne l'est pas, acceptée quand les deux vont
+  // ensemble, et une cinquième famille inventée refusée. Chacun rattrapait la
+  // façon dont les autres se seraient réparés de travers.
+  //
+  // Ils ne gardaient pourtant rien d'utile, et il aura fallu ouvrir le texte
+  // pour le voir : l'arrêté du 31 janvier 1986 ne conditionne aucune
+  // obligation d'entretien à la famille — son unique obligation périodique,
+  // l'article 101, vise « le propriétaire » et n'en mentionne pas. La question
+  // est retirée du parcours ; ce qui reste vérifié est qu'elle ne revient pas
+  // par une porte de derrière.
+  it("n'exige plus de famille d'une habitation, et n'en accepte plus", () => {
     const res = onboardingSchema.safeParse({
       ...base,
       estHabitation: true,
       familleHabitation: "TROISIEME_B",
     });
     expect(res.success).toBe(true);
-  });
-
-  it("refuse la famille si estHabitation=false", () => {
-    const res = onboardingSchema.safeParse({
-      ...base,
-      familleHabitation: "PREMIERE",
-    });
-    expect(res.success).toBe(false);
-    if (!res.success) {
-      expect(res.error.flatten().fieldErrors.familleHabitation).toBeDefined();
+    if (res.success) {
+      expect(
+        Object.prototype.hasOwnProperty.call(res.data, "familleHabitation"),
+      ).toBe(false);
     }
   });
 
-  it("refuse une famille qui n'existe pas", () => {
-    const res = onboardingSchema.safeParse({
-      ...base,
-      estHabitation: true,
-      familleHabitation: "CINQUIEME",
-    });
-    expect(res.success).toBe(false);
+  it("accepte une habitation qui ne dit rien de plus", () => {
+    expect(
+      onboardingSchema.safeParse({ ...base, estHabitation: true }).success,
+    ).toBe(true);
   });
+
 
   // Ce test disait l'inverse jusqu'au 2026-09-01 : le cumul ERP + IGH était
   // accepté. Il est désormais le SEUL cumul de régimes refusé (ADR-025 § 1) —
@@ -161,7 +161,6 @@ describe("onboardingSchema", () => {
       typeErp: "W",
       categorieErp: "N1",
       estIGH: true,
-      classeIgh: "GHW1",
     });
     expect(res.success).toBe(false);
   });
@@ -174,7 +173,6 @@ describe("onboardingSchema", () => {
     const res = onboardingSchema.safeParse({
       ...base,
       estIGH: true,
-      classeIgh: "GHW1",
     });
     expect(res.success).toBe(true);
   });

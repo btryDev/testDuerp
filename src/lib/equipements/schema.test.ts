@@ -192,12 +192,12 @@ describe("equipementSchema — questions à trois états", () => {
       ["", undefined],
     ] as const) {
       const res = equipementSchema.safeParse({
-        libelle: "Extincteurs du hall",
-        categorie: "EXTINCTEUR",
-        aRobinetsIncendieArmes: valeur,
+        libelle: "VMC du sous-sol",
+        categorie: "VMC",
+        estVmcGaz: valeur,
       });
       expect(res.success).toBe(true);
-      if (res.success) expect(res.data.aRobinetsIncendieArmes).toBe(attendu);
+      if (res.success) expect(res.data.estVmcGaz).toBe(attendu);
     }
   });
 
@@ -296,28 +296,31 @@ describe("aller-retour édition — aucune réponse ne se perd", () => {
    * revenir identique après un aller-retour formulaire.
    */
   it("un équipement pleinement renseigné se relit sans perte", () => {
-    // Porté par `dessertLocauxSommeil` jusqu'au 2026-09-01, retiré ce jour-là
-    // avec l'attribut d'établissement qui le remplace (lot A11). Le maillon
-    // gardé n'a rien de propre à ce champ : n'importe quelle question à trois
-    // états le vérifie, et celle-ci est en opt-out comme l'était l'autre.
+    // Porté par `dessertLocauxSommeil` jusqu'au 2026-09-01, puis par
+    // `aRobinetsIncendieArmes` jusqu'au 2026-09-03 — deux champs retirés le
+    // jour où ils ont cessé de borner quoi que ce soit. Le maillon gardé n'a
+    // rien de propre à un champ : n'importe quelle question à trois états le
+    // vérifie, et `estVmcGaz` est en opt-out comme l'étaient les deux autres.
+    // Qu'il ait fallu le rebrancher deux fois est le signe qu'il faudrait
+    // le dériver de `CHAMPS_TRI_ETAT` plutôt que d'y nommer un champ.
     const saisie = {
-      libelle: "Extincteur du hall",
-      categorie: "EXTINCTEUR" as const,
-      aRobinetsIncendieArmes: "non",
+      libelle: "VMC du logement",
+      categorie: "VMC" as const,
+      estVmcGaz: "non",
     };
     const res = equipementSchema.safeParse(saisie);
     expect(res.success).toBe(true);
     if (!res.success) return;
 
     const stocke = serialiserCaracteristiques(res.data);
-    expect(stocke).toEqual({ aRobinetsIncendieArmes: false });
+    expect(stocke).toEqual({ estVmcGaz: false });
 
     // Second passage : la page repasse la valeur stockée au formulaire, qui la
     // resoumet. Le « non » doit survivre.
     const relu = equipementSchema.safeParse({
       libelle: saisie.libelle,
       categorie: saisie.categorie,
-      aRobinetsIncendieArmes: valeurTriEtat(false),
+      estVmcGaz: valeurTriEtat(false),
     });
     expect(relu.success).toBe(true);
     if (relu.success) {

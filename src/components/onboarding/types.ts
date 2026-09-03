@@ -27,9 +27,10 @@ export type OnboardingState = {
 
   typeErp: string;
   categorieErp: string;
-  classeIgh: string;
-  /** Famille au sens de l'arrêté du 31 janvier 1986 — requise si `estHabitation`. */
-  familleHabitation: string;
+  // `classeIgh` et `familleHabitation` ont quitté l'état du wizard le
+  // 2026-09-03 : les deux sous-questions qui les remplissaient ont été
+  // retirées, aucune obligation du référentiel ne dépendant de l'une ni de
+  // l'autre.
 };
 
 export const VALEURS_INITIALES: OnboardingState = {
@@ -46,8 +47,6 @@ export const VALEURS_INITIALES: OnboardingState = {
   estHabitation: false,
   typeErp: "",
   categorieErp: "",
-  classeIgh: "",
-  familleHabitation: "",
 };
 
 export type StepProps = {

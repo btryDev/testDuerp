@@ -5,11 +5,6 @@ import {
   LABEL_CATEGORIE_ERP,
   LABEL_TYPE_ERP,
 } from "@/lib/etablissements/labels";
-import {
-  CHOIX_CLASSES_IGH,
-  CHOIX_FAMILLES_HABITATION,
-} from "@/lib/onboarding/deduction-erp";
-import { CarteChoix } from "./CarteChoix";
 import type { StepProps } from "./types";
 
 /**
@@ -209,43 +204,17 @@ export function StepTypologie({
               <BoutonOuiNon
                 actif={!state.estIGH}
                 label="Non"
-                onClick={() =>
-                  update({ estIGH: false, classeIgh: "" })
-                }
+                onClick={() => update({ estIGH: false })}
               />
             </div>
-
-            {state.estIGH && (
-              <div className="flex flex-col gap-4">
-                <SousQuestion question="Quelle est la nature de l'immeuble ?" />
-                <div
-                  // L'`id` porte le nom du champ au sens de la validation :
-                  // c'est lui que le shell va chercher pour amener le refus
-                  // sous les yeux (`Blocage.champ`).
-                  id="classeIgh"
-                  role="radiogroup"
-                  aria-label="Classe IGH"
-                  className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
-                >
-                  {CHOIX_CLASSES_IGH.map((c) => (
-                    <CarteChoix
-                      key={c.id}
-                      id={c.id}
-                      label={c.label}
-                      description={c.description}
-                      badge={c.id}
-                      actif={state.classeIgh === c.id}
-                      onClick={() => update({ classeIgh: c.id })}
-                    />
-                  ))}
-                </div>
-                {messagePour("classeIgh") && (
-                  <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
-                    {messagePour("classeIgh")}
-                  </p>
-                )}
-              </div>
-            )}
+            {/* La sous-question « Quelle est la nature de l'immeuble ? » a été
+                retirée le 2026-09-03. Elle proposait les dix classes de
+                l'article R. 146-4 du CCH et n'ouvrait aucune obligation : les
+                vérifications de l'arrêté du 30 décembre 2011 sont à la charge
+                des « propriétaires » et ne varient pas par classe, et GH 66
+                dispose que le classement retient l'usage PRINCIPAL de
+                l'immeuble — la classe d'une tour ne décrit donc pas le plateau
+                qu'on y occupe. Voir `corpus/arrete-2011-12-30-igh.ts`. */}
           </section>
 
           {/* ─── Habitation ──────────────────────────────────── */}
@@ -269,51 +238,18 @@ export function StepTypologie({
               <BoutonOuiNon
                 actif={!state.estHabitation}
                 label="Non"
-                // La famille part avec le régime, comme le type et la catégorie
-                // partent avec l'ERP et la classe avec l'IGH. L'oublier ne
-                // laissait pas une valeur inutile : le schéma serveur refuse
-                // une famille posée hors régime habitation, l'erreur ne
-                // s'affiche que dans le bloc qu'on vient de démonter, et le
-                // wizard devenait un cul-de-sac silencieux — bouton sans effet,
-                // aucun message, aucune carte à désélectionner.
-                onClick={() =>
-                  update({ estHabitation: false, familleHabitation: "" })
-                }
+                onClick={() => update({ estHabitation: false })}
               />
             </div>
-
-            {state.estHabitation && (
-              <div className="flex flex-col gap-4">
-                <SousQuestion question="À quelle famille l'immeuble appartient-il ?" />
-                <p className="m-0 max-w-[62ch] text-[13px] leading-[1.6] text-[color:var(--board-slate-mid)]">
-                  Ce classement figure au dossier de l&apos;immeuble. En cas de
-                  doute, votre syndic ou votre bureau de contrôle vous le
-                  donne — ne le devinez pas : il change les obligations qui
-                  vous seront présentées.
-                </p>
-                <div
-                  id="familleHabitation"
-                  role="radiogroup"
-                  aria-label="Famille d'habitation"
-                  className="grid grid-cols-1 gap-3 sm:grid-cols-3"
-                >
-                  {CHOIX_FAMILLES_HABITATION.map((f) => (
-                    <CarteChoix
-                      key={f.id}
-                      id={f.id}
-                      label={f.label}
-                      actif={state.familleHabitation === f.id}
-                      onClick={() => update({ familleHabitation: f.id })}
-                    />
-                  ))}
-                </div>
-                {messagePour("familleHabitation") && (
-                  <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
-                    {messagePour("familleHabitation")}
-                  </p>
-                )}
-              </div>
-            )}
+            {/* La sous-question « À quelle famille l'immeuble appartient-il ? »
+                a été retirée le 2026-09-03, avec l'aide qui la présentait comme
+                décisive — « ne le devinez pas : il change les obligations qui
+                vous seront présentées ». C'était faux, et mesurable : les cinq
+                familles et l'absence de réponse rendaient le même jeu
+                d'obligations. L'arrêté du 31 janvier 1986 le dit aussi, article
+                par article — son unique obligation périodique, l'article 101,
+                vise « le propriétaire » sans mentionner de famille. Voir
+                `corpus/arrete-1986-habitation.ts`. */}
           </section>
     </div>
   );

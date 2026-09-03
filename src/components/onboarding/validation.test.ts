@@ -146,10 +146,14 @@ describe("étape 2 — les régimes (ADR-004)", () => {
     }
   });
 
-  it("exige la classe d'un IGH", () => {
-    expect(
-      texte(validerTypologie({ ...complet, estIGH: true, classeIgh: "" })),
-    ).toBe("Précisez la classe IGH.");
+  // « exige la classe d'un IGH » a vécu ici jusqu'au 2026-09-03. La
+  // sous-question a été retirée du parcours : les vérifications de l'arrêté du
+  // 30 décembre 2011 s'adressent aux « propriétaires » et ne varient pas par
+  // classe, et GH 66 fait du classement l'affaire de l'usage PRINCIPAL de
+  // l'immeuble, non du plateau qu'on y occupe. Ce que le test suivant garde
+  // reste entier : l'IGH SEUL n'est pas refusé, et c'est la moitié qui compte.
+  it("n'exige plus rien d'un IGH que son régime", () => {
+    expect(validerTypologie({ ...complet, estIGH: true })).toBeNull();
   });
 
   // Le seul cumul refusé (ADR-025 § 1). Les deux moitiés comptent : sans la
@@ -158,47 +162,38 @@ describe("étape 2 — les régimes (ADR-004)", () => {
   // relève du Code du travail et que le produit sert entièrement.
   it("refuse un ERP situé dans un IGH", () => {
     expect(
-      texte(validerTypologie({ ...erp, estIGH: true, classeIgh: "GHW1" })),
+      texte(validerTypologie({ ...erp, estIGH: true })),
     ).toContain("immeuble de grande hauteur");
   });
 
   it("accepte un IGH qui n'est pas un ERP", () => {
-    expect(
-      validerTypologie({ ...complet, estIGH: true, classeIgh: "GHW1" }),
-    ).toBeNull();
+    expect(validerTypologie({ ...complet, estIGH: true })).toBeNull();
   });
 });
 
-describe("étape 2 — une réponse retirée ne laisse pas sa précision derrière", () => {
-  // Le cul-de-sac que la revue a trouvé : répondre « Oui » à l'habitation,
-  // choisir une famille, puis revenir à « Non » laissait la famille dans
-  // l'état. L'étape 2 passait, le schéma serveur refusait, et son message ne
-  // s'affichait que dans le bloc qu'on venait de démonter — bouton sans effet,
-  // aucune carte à désélectionner, sortie par rechargement de page.
+describe("étape 2 — l'habitation ne réclame plus de précision", () => {
+  // CE BLOC GARDAIT UN CUL-DE-SAC, ET CE CUL-DE-SAC N'EXISTE PLUS PARCE QUE SA
+  // CAUSE A DISPARU. Répondre « Oui » à l'habitation, choisir une famille,
+  // puis revenir à « Non » laissait la famille dans l'état du wizard : l'étape
+  // 2 passait, le schéma serveur refusait une famille posée hors régime, et
+  // son message ne s'affichait que dans le bloc qu'on venait de démonter —
+  // bouton sans effet, aucune carte à désélectionner, sortie par rechargement.
   //
-  // La garde vit dans le composant (le bouton nettoie), donc ce test décrit
-  // l'invariant que la validation doit voir : un état cohérent passe, un état
-  // incohérent est refusé par le schéma serveur — c'est lui qui tranche.
-  it("accepte une habitation abandonnée dont la famille a été nettoyée", () => {
+  // La sous-question de famille a été retirée le 2026-09-03 : le wizard n'a
+  // plus de précision d'habitation à laisser derrière lui, et le schéma n'a
+  // plus de règle à opposer. Ce qui est gardé ici est donc l'état d'arrivée —
+  // l'habitation se coche et se décoche sans rien réclamer — plutôt qu'un
+  // scénario devenu impossible à écrire.
+  it("accepte une habitation cochée, sans précision à fournir", () => {
     expect(
-      validerTypologie({
-        ...complet,
-        estHabitation: false,
-        familleHabitation: "",
-      }),
+      validerTypologie({ ...complet, estHabitation: true }),
     ).toBeNull();
   });
 
-  it("exige la famille tant que l'habitation est cochée", () => {
+  it("accepte une habitation abandonnée", () => {
     expect(
-      texte(
-        validerTypologie({
-          ...complet,
-          estHabitation: true,
-          familleHabitation: "",
-        }),
-      ),
-    ).toBe("Précisez la famille de l'immeuble d'habitation.");
+      validerTypologie({ ...complet, estHabitation: false }),
+    ).toBeNull();
   });
 });
 
@@ -257,11 +252,6 @@ describe("le refus dit où regarder, et de quelle nature il est", () => {
   it.each([
     ["typeErp", { ...erp, typeErp: "" }],
     ["categorieErp", { ...erp, categorieErp: "" }],
-    ["classeIgh", { ...complet, estIGH: true, classeIgh: "" }],
-    [
-      "familleHabitation",
-      { ...complet, estHabitation: true, familleHabitation: "" },
-    ],
   ])("étape 2 : le refus vise %s", (champ, etat) => {
     expect(validerTypologie(etat as OnboardingState)?.champ).toBe(champ);
   });
@@ -295,7 +285,7 @@ describe("le refus dit où regarder, et de quelle nature il est", () => {
       validerIdentite({ ...complet, effectifSurSite: "51" })?.perimetre,
     ).toBe(true);
     expect(
-      validerTypologie({ ...erp, estIGH: true, classeIgh: "GHW1" })?.perimetre,
+      validerTypologie({ ...erp, estIGH: true })?.perimetre,
     ).toBe(true);
   });
 });

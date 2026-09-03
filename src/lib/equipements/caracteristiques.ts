@@ -1,10 +1,12 @@
 // Ce qu'un équipement déclare de lui-même, rendu lisible.
 //
-// `Equipement.caracteristiques` est un JSON : le nombre d'appareils, deux
-// cases à cocher, un seuil de parking, six questions à trois états et une
-// note libre. Ces valeurs ne sont pas décoratives — six d'entre elles
-// **bornent des obligations** du référentiel : répondre « non » retire une
-// échéance du calendrier, et « pas encore répondu » la laisse.
+// `Equipement.caracteristiques` est un JSON : le nombre d'appareils, des cases
+// à cocher, un seuil de parking, les questions à trois états de
+// `CHAMPS_TRI_ETAT` et une note libre. Ces valeurs ne sont pas décoratives —
+// les questions à trois états **bornent des obligations** du référentiel :
+// répondre « non » retire une échéance du calendrier, et « pas encore
+// répondu » la laisse. (Le compte de ces questions ne figure plus ici : deux
+// nombres écrits à la main s'y sont périmés, cf. `CHAMPS_TRI_ETAT`.)
 //
 // La fiche doit donc les montrer, et montrer aussi les questions restées
 // sans réponse : c'est le seul endroit où le dirigeant peut comprendre
@@ -27,7 +29,6 @@ import type { CategorieEquipement } from "@/lib/referentiels/types-communs";
  */
 export const LIBELLE_CARACTERISTIQUE: Record<ChampTriEtat, string> = {
   estVmcGaz: "VMC raccordée au gaz",
-  aRobinetsIncendieArmes: "Robinets d'incendie armés (RIA)",
   aExtinctionAutomatique: "Extinction automatique en cuisine",
   sertAuLevageDePersonnes: "Sert au levage de personnes",
   estChariotOuGerbeur: "Chariot élévateur, gerbeur ou hayon",

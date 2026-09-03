@@ -15,7 +15,6 @@ const regimeCouvert: RegimeEtablissement = {
   estIGH: false,
   categorieErp: "N5",
   estHabitation: false,
-  familleHabitation: null,
 };
 
 /** Un dossier sans rien à signaler : chaque test n'y ajoute que son axe. */
@@ -47,7 +46,6 @@ describe("axe du régime", () => {
       estIGH: false,
       categorieErp: null,
       estHabitation: false,
-      familleHabitation: null,
     });
     expect(riensASignaler(c)).toBe(true);
   });
@@ -76,7 +74,6 @@ describe("axe du régime", () => {
       estIGH: true,
       categorieErp: "N5",
       estHabitation: false,
-      familleHabitation: null,
     });
     expect(axes(c)).toEqual(["igh"]);
     expect(c.manques[0].motif).toContain("immeuble de grande hauteur");
@@ -453,7 +450,6 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
       estIGH: false,
       categorieErp: "N2",
       estHabitation: false,
-      familleHabitation: null,
     },
     duerp: {
       etat: "secteur_inconnu",
@@ -501,7 +497,6 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
           estIGH: false,
           categorieErp: null,
           estHabitation: false,
-          familleHabitation: null,
         },
         equipements: { nbSansObligation: 2, nbEquipements: 5 },
       }),
@@ -511,52 +506,20 @@ describe("les axes ne s'additionnent ni ne se recouvrent", () => {
   });
 });
 
-/* ─── L'axe de la famille d'habitation ────────────────────────────────── */
+/* ─── L'axe de la famille d'habitation, retiré le 2026-09-03 ──────────────
+   Quatre tests vivaient ici et tenaient une distinction juste : l'habitation
+   sans famille produisait une INDÉTERMINATION — « il ne sait pas encore, et
+   voici comment le lui apprendre » — et jamais un MANQUE, qui aurait dit à
+   tort « l'outil ne couvre pas votre régime ». Ils vérifiaient aussi les deux
+   pièges : ne pas déclencher l'axe sur `familleHabitation === null` seul, ce
+   qui l'aurait posé sur tous les commerces, et cohabiter avec l'axe du régime
+   sans le remplacer.
 
-describe("axe famille d'habitation", () => {
-  const habitation = (
-    familleHabitation: RegimeEtablissement["familleHabitation"],
-  ): RegimeEtablissement => ({
-    estERP: false,
-    estIGH: false,
-    categorieErp: null,
-    estHabitation: true,
-    familleHabitation,
-  });
-
-  it("signale une INDÉTERMINATION quand la famille manque, pas un manque", () => {
-    const c = couvertureDuRegime(habitation(null));
-    // La distinction est le fond du sujet : un manque dirait « l'outil ne
-    // couvre pas votre régime », ce qui est faux — il le couvre, et il sert
-    // même large en attendant la réponse.
-    expect(axesIndetermines(c)).toContain("famille_habitation");
-    expect(axes(c)).not.toContain("famille_habitation");
-  });
-
-  it("ne signale rien quand la famille est renseignée", () => {
-    expect(riensASignaler(couvertureDuRegime(habitation("TROISIEME_A")))).toBe(
-      true,
-    );
-  });
-
-  it("ne signale rien pour un établissement qui n'est pas une habitation", () => {
-    // Le piège serait de déclencher l'axe sur `familleHabitation === null`
-    // seul : tous les commerces et tous les bureaux le porteraient.
-    expect(riensASignaler(couvertureDuRegime(regimeCouvert))).toBe(true);
-  });
-
-  it("cohabite avec l'axe du régime sans le remplacer", () => {
-    const c = couvertureDuRegime({
-      estERP: true,
-      estIGH: false,
-      categorieErp: "N2",
-      estHabitation: true,
-      familleHabitation: null,
-    });
-    expect(axes(c)).toContain("categorie_erp");
-    expect(axesIndetermines(c)).toContain("famille_habitation");
-  });
-});
+   L'axe part avec la question. Une indétermination annonce à l'utilisateur
+   qu'une réponse manquante élargit ce qu'on lui sert ; l'arrêté du 31 janvier
+   1986 ouvert, aucune obligation ne dépend de la famille, et il n'y avait donc
+   rien à élargir. Annoncer une incertitude qui n'en est pas une envoie
+   chercher chez son syndic une information sans effet. */
 
 /* ─── L'axe de l'effectif — ADR-031 § 1 bis ───────────────────────────── */
 

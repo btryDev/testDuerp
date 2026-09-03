@@ -318,11 +318,66 @@ l'encodage. Il est ici parce que c'est la méthode de ce chantier qui l'a trouv�
 et que ça vaut démonstration : **on ne le voit pas en lisant le code, on le voit
 en demandant au moteur ce que chaque réponse déclenche.**
 
+### Un second constat, et il a été soldé le 2026-09-03
+
+La même méthode — appeler le moteur pour chaque valeur d'une réponse, plutôt que
+lire le code — a rendu un résultat plus net encore, et cette fois **la
+conséquence a été tirée**.
+
+| Question | Valeurs | Obligations rendues |
+| --- | --- | --- |
+| Classe d'IGH | les 10 de `R. 146-4`, plus `null` | **le même jeu pour les 11** |
+| Famille d'habitation | les 5 de l'article 3, plus `null` | **le même jeu pour les 6** |
+| « Robinets d'incendie armés » (sur chaque extincteur) | `oui`, `non`, absent | **le même jeu pour les 3** |
+
+Trois questions, dont deux **obligatoires**, qui ne changeaient rien sur 145
+obligations. La suite n'est pas allée au chantier : les trois questions ont été
+retirées le jour même, après lecture des textes.
+
+**CE QUE L'ÉTAPE DE LECTURE A APPORTÉ, ET QUE LE COMPTAGE NE POUVAIT PAS DONNER.**
+Un comptage dit « cette question ne sert pas aujourd'hui ». Il ne dit pas si elle
+DEVRAIT servir — c'est-à-dire s'il existe, dans le texte, une obligation qu'on
+aurait dû encoder avec cette restriction. Seule l'ouverture du règlement le dit,
+et la réponse s'y trouve toujours au même endroit : **à qui le texte s'adresse.**
+
+- Les vérifications périodiques des IGH (`GH 5`) visent « les propriétaires »,
+  et ne varient pas par classe. La seule périodicité que l'arrêté indexe sur la
+  classe (`GH 4 § 3`) a pour sujet « la commission de sécurité ». Et `GH 66`
+  achève : le classement retient « l'usage principal de l'immeuble », les
+  dispositions de chaque classe s'appliquant « dans chacune des parties
+  concernées » — la classe déclarée d'une tour ne décrit pas le plateau qu'on y
+  occupe. **La classe n'était pas seulement inutile : c'était le mauvais objet.**
+- L'obligation périodique centrale de l'arrêté du 31 janvier 1986 (art. 101)
+  vise « le propriétaire » et ne mentionne aucune famille. Les familles
+  gouvernent la construction.
+
+**LA LECTURE A RAPPORTÉ PLUS QUE LA QUESTION QU'ELLE VENAIT TRANCHER**, et c'est
+l'argument pour ne jamais retirer une question sans ouvrir son texte :
+
+- `GH 61 § 5` — vérification **quinquennale** de la charge calorifique par
+  organisme agréé, que le texte met à la charge des « **occupants** » des locaux
+  autres que d'habitation. C'est l'employeur locataire de bureaux dans une tour,
+  c'est-à-dire l'utilisateur même du produit, et cela ne dépend d'aucune classe.
+  Le corpus la connaissait de loin par le renvoi de `GH 5 § 3.1.4` et en donnait
+  une raison de non-encodage **fausse** — « faute de catégorie d'équipement »,
+  alors que son porteur est l'établissement. **Rien au modèle ne la bloque.**
+- Arrêté du 31 janvier 1986, **art. 78-1** — créé le 27 juillet 2026, en vigueur
+  depuis le 3 août : un contrôle visuel annuel des boxes de stockage d'un parc
+  annexe, consigné au registre de l'article 101. Il dément la phrase que le
+  corpus portait depuis deux jours — « la seule obligation périodique du texte
+  est l'article 101 ». Bloqué, lui : pas d'attribut de parc annexe, et un
+  débiteur — « le gestionnaire » — que le modèle ne connaît pas.
+
+Les deux sont au corpus en `obligation_manquante`, aucune n'est encodée : une
+obligation ne s'encode pas en effet de bord d'une question à laquelle elle ne
+répond pas.
+
 ### Ce qu'il faudrait établir
 
 Pour chaque réponse d'onboarding — régime travail / ERP / IGH / habitation, type
-et catégorie d'ERP, famille d'habitation, effectif, secteur d'activité, zones,
-équipements déclarés :
+et catégorie d'ERP, effectif, secteur d'activité, zones, équipements déclarés
+(la famille d'habitation et la classe d'IGH ont quitté cette liste le
+2026-09-03 : les questions n'existent plus) :
 
 1. **Ce qui en découle mécaniquement** aujourd'hui, mesuré en appelant le moteur
    et non en lisant le code.
@@ -357,19 +412,78 @@ Le modèle porte **25 listes fermées**. La plupart sont des états de flux —
 `StatutVerification`, `TypeAction`, `MethodeSignature` — que le produit invente
 légitimement et qui n'ont pas de source.
 
-**Sept transcrivent une nomenclature écrite dans un texte, et aucune n'a jamais
-été confrontée à ce texte** :
+**Sept transcrivent une nomenclature écrite dans un texte.** Aucune ne l'avait
+jamais été confrontée ; les sept le sont désormais.
 
-<<<<<<< HEAD
-| Liste | Sa source, une fois ouverte | État |
+> ⚠ **CE PARAGRAPHE PORTAIT DES MARQUEURS DE CONFLIT GIT NON RÉSOLUS**
+> (`<<<<<<< HEAD`, `=======`, `>>>>>>>`), livrés tels quels sur `main` en
+> `c928a98`. Deux versions du tableau des sept listes y coexistaient — celle
+> d'avant le lot du 2026-09-03 et celle d'après —, ce qui rendait la section
+> illisible et contradictoire : la même ligne y disait `ClasseIgh` « non
+> vérifiée » et « était fausse, corrigée ». Résolu le 2026-09-03 par un lot
+> voisin, qui devait écrire dans cette section et ne pouvait pas le faire
+> par-dessus des marqueurs. **Le tableau retenu est le plus récent** ; les
+> analyses des deux côtés sont conservées, elles portent sur des listes
+> différentes et ne se contredisent pas.
+
+| Liste | Sa source **établie** | État au 2026-09-03 |
 | --- | --- | --- |
-| `TypeErp` | `GN 1`, arrêté du 25 juin 1980 | **était fausse — `J` manquait** ; corrigée et tenue par `types-erp.test.ts` |
-| `CategorieErp` | même arrêté | non vérifiée |
-| `ClasseIgh` | arrêté du 30 décembre 2011 | non vérifiée |
-| `FamilleHabitation` | arrêté du 31 janvier 1986 | source citée en commentaire, pas testée |
-| `HandicapAccessible` | **`L. 114` CASF**, pas le droit de l'accessibilité | **il en manquait deux** ; corrigée et tenue par `handicap-accessible.test.ts` |
+| `TypeErp` | `GN 1 § 1`, arrêté du 25 juin 1980 | **était fausse — `J` manquant** ; corrigée et gardée par `types-erp.test.ts` |
+| `CategorieErp` | `R. 143-19` CCH — **pas** `GN 2` | liste juste ; **source présumée fausse** ; gardée par `categories-erp.test.ts` |
+| `ClasseIgh` | `R. 146-4` CCH — **pas** l'arrêté de 2011 | **était fausse — `GHTC`, `GHW1`, `GHW2` manquants, `GHW` en trop** ; manquants ajoutés, `GHW` **encore dans l'énumération** (§ 9 bis). **La QUESTION est retirée du produit le 2026-09-03** : elle ne décidait d'aucune obligation |
+| `FamilleHabitation` | art. 3, arrêté du 31 janvier 1986 | liste juste, source juste. **La QUESTION est retirée du produit le 2026-09-03**, pour la même raison |
+| `HandicapAccessible` | **`L. 114` CASF** — *pas* le droit de l'accessibilité | **il en manquait deux** ; corrigée et tenue par `handicap-accessible.test.ts` |
 | `NatureTravauxPointChaud` | **aucune** — voir ci-dessous | convention de produit, assumée et bornée par `nature-travaux-point-chaud.test.ts` |
 | `Realisateur` | **aucune liste** — dix textes, un par valeur | ancrée valeur par valeur, tenue par `realisateur.test.ts` |
+
+**Les sept sont confrontées, et trois étaient fausses** — `TypeErp`, `ClasseIgh`,
+`HandicapAccessible`. **Deux des sources présumées n'existaient pas** :
+`HandicapAccessible` ne vient pas du droit de l'accessibilité mais de `L. 114`
+du code de l'action sociale et des familles, et `NatureTravauxPointChaud` n'a
+aucune source du tout.
+
+**ET UNE LEÇON QUE CE TABLEAU NE POUVAIT PAS DONNER, ajoutée le 2026-09-03.**
+Confronter une liste à son texte dit si elle est JUSTE. Cela ne dit pas si elle
+SERT. `ClasseIgh` et `FamilleHabitation` sont sorties de cet exercice justes
+toutes les deux — et les deux questions qui les posaient au dirigeant ont été
+retirées trois jours plus tard, parce qu'aucune obligation du référentiel n'en
+dépendait : les dix classes, les cinq familles et l'absence de réponse rendaient
+le même calendrier, mesuré en appelant le moteur. Une liste fidèle à son texte
+peut n'avoir aucun effet ; les deux questions se posent séparément, et la seconde
+ne se pose qu'en ouvrant le règlement pour y chercher **à qui il s'adresse**.
+
+### Ce que la seconde passe a appris, et qui n'était pas dans la première
+
+**LA SOURCE PRÉSUMÉE EST AUSSI PEU FIABLE QUE LA LISTE.** Deux des trois sources
+citées ci-dessus étaient fausses, et de la même façon : elles désignaient le
+RÈGLEMENT DE SÉCURITÉ là où la nomenclature est au CODE. `GN 2` de l'arrêté du
+25 juin 1980 traite du classement des GROUPEMENTS d'établissements, pas des
+catégories ; `GH 1` de l'arrêté du 30 décembre 2011 renvoie explicitement au CCH
+« pour les prescriptions générales communes aux diverses classes ». Le règlement
+EMPLOIE une nomenclature que le code POSE.
+
+Ce n'est pas une nuance d'érudition : **c'est ce mauvais renvoi qui a coûté trois
+classes à `ClasseIgh`.** Le titre III de l'arrêté de 2011 groupe GH W 1 et GH W 2
+sous un chapitre unique « GH W », et c'est ce chapitre — pas une classe — que le
+modèle avait recopié. Chercher une liste dans le texte qui l'applique au lieu du
+texte qui la définit produit une liste plausible et fausse.
+
+**UN MEMBRE EN TROP SE PAIE COMME UN MANQUANT.** `GHW` n'était pas une valeur
+inoffensive : un exploitant de tour de bureaux la cochait, enregistrait une classe
+qui n'existe pas, et n'était jamais interrogé sur la hauteur du plancher bas — le
+seul fait qui sépare GHW 1 de GHW 2. **Mais un membre en trop ne se retire pas
+comme on ajoute un manquant** : l'ajout est additif, le retrait réécrit la
+colonne. C'est ce qui a scindé le lot en deux, et le § 9 bis en porte la suite.
+
+**LES LIBELLÉS SE CONFRONTENT AU TEXTE, PAS SEULEMENT LES CLÉS.** Le lot `TypeErp`
+l'avait déjà relevé ; les trois listes suivantes le confirment. « GHZ · Mixte »
+désignait, dans le texte, un immeuble à usage PRINCIPAL D'HABITATION entre 28 et
+50 mètres : un syndic cherchait « habitation », trouvait GHA, et se rangeait dans
+la mauvaise classe. Les gardes vérifient désormais que les libellés portent les
+CHIFFRES du texte — hauteurs pour les classes d'IGH, seuils d'effectif pour les
+catégories d'ERP —, jamais ses mots : exiger les mots interdirait de rendre la
+nomenclature lisible, et un plancher de longueur forcerait à rallonger
+« Y · Musée ».
 
 **La première qu'on a ouverte était fausse. La cinquième aussi.** Trois de plus ont
 été ouvertes le 2026-09-03, et le résultat le plus utile est que **deux des trois
@@ -411,56 +525,9 @@ légitimement et qui n'ont pas de source.
   `bureau_controle`, seul mot de métier de la liste — le droit dit « contrôleur
   technique ».
 
-Il reste **trois listes non vérifiées** : `CategorieErp`, `ClasseIgh`,
-`FamilleHabitation`.
-=======
-| Liste | Sa source **établie** | État au 2026-09-03 |
-| --- | --- | --- |
-| `TypeErp` | `GN 1 § 1`, arrêté du 25 juin 1980 | **était fausse — `J` manquant** ; corrigée et gardée par `types-erp.test.ts` |
-| `CategorieErp` | `R. 143-19` CCH — **pas** `GN 2` | liste juste ; **source présumée fausse** ; gardée par `categories-erp.test.ts` |
-| `ClasseIgh` | `R. 146-4` CCH — **pas** l'arrêté de 2011 | **était fausse — `GHTC`, `GHW1`, `GHW2` manquants, `GHW` en trop** ; manquants ajoutés, `GHW` retiré des choix mais **encore dans l'énumération** — voir § 9 bis |
-| `FamilleHabitation` | art. 3, arrêté du 31 janvier 1986 | liste juste, source juste ; gardée par `familles-habitation.test.ts` |
-| `HandicapAccessible` | droit de l'accessibilité | non vérifiée |
-| `NatureTravauxPointChaud` | INRS ED 6030 | non vérifiée |
-| `Realisateur` | `R. 4323-24` et voisins | non vérifiée |
-
-**Quatre sur sept sont désormais confrontées, et deux étaient fausses.** On ne sait
-toujours pas ce que valent les trois dernières.
-
-### Ce que la seconde passe a appris, et qui n'était pas dans la première
-
-**LA SOURCE PRÉSUMÉE EST AUSSI PEU FIABLE QUE LA LISTE.** Deux des trois sources
-citées ci-dessus étaient fausses, et de la même façon : elles désignaient le
-RÈGLEMENT DE SÉCURITÉ là où la nomenclature est au CODE. `GN 2` de l'arrêté du
-25 juin 1980 traite du classement des GROUPEMENTS d'établissements, pas des
-catégories ; `GH 1` de l'arrêté du 30 décembre 2011 renvoie explicitement au CCH
-« pour les prescriptions générales communes aux diverses classes ». Le règlement
-EMPLOIE une nomenclature que le code POSE.
-
-Ce n'est pas une nuance d'érudition : **c'est ce mauvais renvoi qui a coûté trois
-classes à `ClasseIgh`.** Le titre III de l'arrêté de 2011 groupe GH W 1 et GH W 2
-sous un chapitre unique « GH W », et c'est ce chapitre — pas une classe — que le
-modèle avait recopié. Chercher une liste dans le texte qui l'applique au lieu du
-texte qui la définit produit une liste plausible et fausse.
-
-**UN MEMBRE EN TROP SE PAIE COMME UN MANQUANT.** `GHW` n'était pas une valeur
-inoffensive : un exploitant de tour de bureaux la cochait, enregistrait une classe
-qui n'existe pas, et n'était jamais interrogé sur la hauteur du plancher bas — le
-seul fait qui sépare GHW 1 de GHW 2. **Mais un membre en trop ne se retire pas
-comme on ajoute un manquant** : l'ajout est additif, le retrait réécrit la
-colonne. C'est ce qui a scindé le lot en deux, et le § 9 bis en porte la suite.
-
-**LES LIBELLÉS SE CONFRONTENT AU TEXTE, PAS SEULEMENT LES CLÉS.** Le lot `TypeErp`
-l'avait déjà relevé ; les trois listes suivantes le confirment. « GHZ · Mixte »
-désignait, dans le texte, un immeuble à usage PRINCIPAL D'HABITATION entre 28 et
-50 mètres : un syndic cherchait « habitation », trouvait GHA, et se rangeait dans
-la mauvaise classe. Les gardes vérifient désormais que les libellés portent les
-CHIFFRES du texte — hauteurs pour les classes d'IGH, seuils d'effectif pour les
-catégories d'ERP —, jamais ses mots : exiger les mots interdirait de rendre la
-nomenclature lisible, et un plancher de longueur forcerait à rallonger
-« Y · Musée ».
->>>>>>> worktree-agent-ad453a51e5c6e6836
-
+*(La phrase qui concluait ici « il reste trois listes non vérifiées :
+`CategorieErp`, `ClasseIgh`, `FamilleHabitation` » datait de la passe précédente.
+Les trois ont été ouvertes depuis, et le tableau ci-dessus en rend compte.)*
 ### Le défaut est à moitié couvert, et c'est ce qui l'a rendu invisible
 
 Le dépôt **vérifie déjà** qu'on n'encode pas une obligation sur un attribut qui
@@ -552,6 +619,47 @@ Et un comptage fait avant le temps 1 n'aurait rien prouvé : **tant que `GHW`
 était offert au formulaire, un déclarant pouvait en écrire un entre la lecture et
 le déploiement.** C'est le sens du palier — après lui, le compte ne peut plus
 remonter.
+
+> ⚠ **AMENDEMENT DU 2026-09-03 — LA QUESTION DE LA CLASSE A ÉTÉ RETIRÉE DU
+> PRODUIT, ET CELA CHANGE DEUX CHOSES À CE PALIER. Le palier lui-même n'est pas
+> touché** : l'énumération PostgreSQL porte toujours `GHW`, la dérogation
+> `EN_SURSIS_JUSQU_AU_TEMPS_2` est intacte, aucune migration destructive n'a été
+> écrite, et rien de la marche à suivre ci-dessous n'a été exécuté.
+>
+> **CE QUI S'EST PASSÉ.** Un lot voisin est venu établir si la classe d'IGH
+> décide de quoi que ce soit pour l'utilisateur du produit. La réponse est non,
+> et elle est fondée article par article — GH 5 met les vérifications à la
+> charge des « propriétaires » sans les moduler par classe, GH 4 § 3 indexe bien
+> une périodicité sur la classe mais son sujet est « la commission de sécurité »,
+> et GH 66 dispose que le classement retient l'usage PRINCIPAL de l'immeuble,
+> les dispositions de chaque classe s'appliquant « dans chacune des parties
+> concernées ». La question a donc été retirée de l'onboarding et de la fiche.
+>
+> **(1) LE TEMPS 1 EST DÉSORMAIS ACQUIS PLUS FORTEMENT QUE PRÉVU.** Le palier
+> visait « plus personne ne peut créer un `GHW` ». Le fait est maintenant : plus
+> personne ne peut écrire une classe, quelle qu'elle soit. Le comptage du point 2
+> ci-dessous reste donc valide, et le devient a fortiori. La garantie a suivi :
+> `classes-igh.test.ts` ne vérifie plus qu'aucune valeur en sursis n'est offerte
+> aux trois surfaces de déclaration — elles n'existent plus —, il vérifie que les
+> deux schémas d'écriture rejettent TOUTE classe, y compris une classe valide.
+>
+> **(2) LE POINT 4 PERD SON MÉCANISME, ET C'EST LA VRAIE PERTE.** Il comptait
+> sur ceci : « le formulaire de modification refuse déjà d'enregistrer un dossier
+> resté en `GHW` et affiche pourquoi : dans bien des cas, la correction viendra
+> d'elle-même à la première édition ». Ce menu n'existe plus. **Un dossier qui
+> porte `GHW` ne peut plus être corrigé par son titulaire.** Si le comptage du
+> point 2 n'est pas nul, l'auto-correction n'est plus une des issues, et il ne
+> reste que celles qui demandaient déjà un moyen de joindre les dossiers
+> concernés.
+>
+> **CE QUE CELA SUGGÈRE, SANS LE TRANCHER ICI.** La question posée au temps 2
+> n'est plus tout à fait « comment retirer `GHW` de l'énumération » mais « à quoi
+> sert encore cette colonne ». Une colonne que rien n'écrit, que rien ne lit, et
+> dont aucune obligation ne dépend est candidate à disparaître entière plutôt
+> qu'à être nettoyée d'une valeur. **Ce choix appartient à la propriétaire**, il
+> est plus destructif que celui décrit ci-dessous, et il ne se prend pas en effet
+> de bord d'un lot qui posait une autre question. La marche à suivre qui suit
+> reste donc écrite telle quelle.
 
 ### Ce qu'il faut faire, dans cet ordre
 

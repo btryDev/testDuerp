@@ -13,7 +13,9 @@ function regimes(etab: DashboardBundle["etablissement"]): string[] {
     if (etab.categorieErp) suffixes.push(`cat. ${etab.categorieErp.slice(1)}`);
     out.push(`ERP${suffixes.length ? " · " + suffixes.join(" · ") : ""}`);
   }
-  if (etab.estIGH) out.push(`IGH ${etab.classeIgh ?? ""}`.trim());
+  // Sans la classe depuis le 2026-09-03 : elle n'est plus demandée ni
+  // corrigible, et la carte d'identité ne doit montrer que ce qui se saisit.
+  if (etab.estIGH) out.push("IGH");
   if (etab.estHabitation) out.push("Habitation");
   return out;
 }

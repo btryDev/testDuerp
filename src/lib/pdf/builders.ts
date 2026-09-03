@@ -87,7 +87,10 @@ function regimesTexte(etab: {
     if (etab.categorieErp) lib += ` cat. ${etab.categorieErp.slice(1)}`;
     out.push(lib);
   }
-  if (etab.estIGH) out.push(`IGH ${etab.classeIgh ?? ""}`.trim());
+  // Sans la classe depuis le 2026-09-03. Un document remis à un tiers est le
+  // pire endroit pour une donnée que son porteur ne peut plus reprendre :
+  // celui qui la lit la croit tenue à jour.
+  if (etab.estIGH) out.push("IGH");
   if (etab.estHabitation) out.push("Habitation");
   return out.join(", ");
 }

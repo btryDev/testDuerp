@@ -4,41 +4,13 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ChampBoard, SectionChamps } from "@/components/ui-kit";
-import {
-  CATEGORIES_ERP,
-  CLASSES_IGH,
-  TYPE_ERP,
-} from "@/lib/etablissements/schema";
+import { CATEGORIES_ERP, TYPE_ERP } from "@/lib/etablissements/schema";
 import {
   LABEL_CATEGORIE_ERP,
   LABEL_TYPE_ERP,
 } from "@/lib/etablissements/labels";
-import { CHOIX_FAMILLES_HABITATION } from "@/lib/onboarding/deduction-erp";
 import type { EtablissementActionState } from "@/lib/etablissements/actions";
 
-
-/**
- * Les dix classes de `R. 146-4`, telles qu'un dirigeant peut s'y reconnaître.
- *
- * LES HAUTEURS FONT PARTIE DU LIBELLÉ, elles ne sont pas un ornement : c'est
- * le plancher bas du dernier niveau, et lui seul, qui sépare GHW1 de GHW2. Un
- * libellé « Bureaux » unique ne posait jamais la question, et c'est ainsi que
- * le modèle a vécu avec un `GHW` que le code n'écrit pas. Même chose pour GHZ,
- * dont le libellé disait « Mixte » quand le texte décrit un immeuble à usage
- * PRINCIPAL d'habitation entre 28 et 50 mètres.
- */
-const LABEL_CLASSE_IGH: Record<(typeof CLASSES_IGH)[number], string> = {
-  GHA: "GHA · Habitation",
-  GHO: "GHO · Hôtel",
-  GHR: "GHR · Enseignement",
-  GHS: "GHS · Dépôt d'archives",
-  GHTC: "GHTC · Tour de contrôle",
-  GHU: "GHU · Sanitaire",
-  GHW1: "GHW1 · Bureaux, plancher bas de plus de 28 mètres et de 50 mètres au plus",
-  GHW2: "GHW2 · Bureaux, plancher bas de plus de 50 mètres",
-  GHZ: "GHZ · Habitation principale de plus de 28 mètres et de 50 mètres au plus, avec des locaux d'une autre nature non isolés",
-  ITGH: "ITGH · Immeuble de très grande hauteur, plancher bas de plus de 200 mètres",
-};
 
 /** La case à cocher du board : encre pleine à l'état coché, filet d'ardoise. */
 const CASE_A_COCHER =
@@ -71,8 +43,6 @@ type Valeurs = {
   effectifPublicAdmis?: number | null;
   dateAutorisationOuverture?: string | null;
   dateCertificatConformite?: string | null;
-  classeIgh?: string | null;
-  familleHabitation?: string | null;
   comporteLocauxSommeilPublic?: boolean | null;
 };
 
@@ -111,24 +81,6 @@ export function EtablissementForm({
 
   const err = (champ: string) =>
     state.status === "error" ? state.fieldErrors?.[champ]?.[0] : undefined;
-
-  /**
-   * La classe IGH enregistrée qui n'est plus déclarable, s'il y en a une.
-   *
-   * `CLASSES_IGH` est la liste des classes que R. 146-4 écrit ; l'énumération
-   * de la base en porte une de plus, `GHW`, retirée des choix le 2026-09-03 et
-   * du type au temps 2 (`docs/chantiers-ouverts.md` § 9 bis). Un dossier
-   * antérieur peut donc porter une valeur absente du menu.
-   *
-   * On la calcule au lieu de nommer `GHW` : le jour où la valeur sortira du
-   * type, ce code n'aura rien à désapprendre, et si une autre valeur se
-   * trouvait un jour dans le même cas il la montrerait aussi.
-   */
-  const classeRetireeDuReglement =
-    valeursInitiales?.classeIgh &&
-    !(CLASSES_IGH as readonly string[]).includes(valeursInitiales.classeIgh)
-      ? valeursInitiales.classeIgh
-      : null;
 
   return (
     <form action={formAction} className="flex flex-col gap-8">
@@ -535,63 +487,27 @@ export function EtablissementForm({
                 </div>
               </label>
 
-              {estIGH && (
-                <div className="ml-7">
-                  <div className="max-w-sm">
-                    <label className="label-board" htmlFor="classeIgh">
-                      Classe IGH *
-                    </label>
-                    <select
-                      id="classeIgh"
-                      name="classeIgh"
-                      defaultValue={valeursInitiales?.classeIgh ?? ""}
-                      required={estIGH}
-                      className="champ-board"
-                      aria-invalid={Boolean(err("classeIgh"))}
-                      aria-describedby={
-                        classeRetireeDuReglement ? "classeIgh-sursis" : undefined
-                      }
-                    >
-                      <option value="">— Sélectionner —</option>
-                      {/* LA CLASSE ENREGISTRÉE QUI N'EST PLUS OFFERTE RESTE
-                          VISIBLE. Sans cette option, un `<select>` dont la
-                          valeur ne figure dans aucune option retombe sur la
-                          première : le dossier afficherait « GHA » là où il
-                          porte « GHW », et l'enregistrement suivant écraserait
-                          la donnée en silence. C'est exactement l'erreur que ce
-                          palier existe pour éviter. */}
-                      {classeRetireeDuReglement && (
-                        <option value={classeRetireeDuReglement}>
-                          {classeRetireeDuReglement} · classe retirée du
-                          règlement — à corriger
-                        </option>
-                      )}
-                      {CLASSES_IGH.map((c) => (
-                        <option key={c} value={c}>
-                          {LABEL_CLASSE_IGH[c]}
-                        </option>
-                      ))}
-                    </select>
-                    {classeRetireeDuReglement && (
-                      <p
-                        id="classeIgh-sursis"
-                        className="m-0 mt-1.5 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]"
-                      >
-                        Ce dossier porte la classe{" "}
-                        <strong>{classeRetireeDuReglement}</strong>, qui ne
-                        figure pas à l&apos;article R. 146-4 du code de la
-                        construction et de l&apos;habitation. Les bureaux y sont
-                        deux classes, que seule sépare la hauteur du plancher bas
-                        du dernier niveau : <strong>GHW1</strong> de plus de
-                        28 mètres à 50 mètres au plus, <strong>GHW2</strong>{" "}
-                        au-delà de 50 mètres. Choisissez celle qui correspond —
-                        cette information figure au dossier de l&apos;immeuble.
-                      </p>
-                    )}
-                    <Erreur message={err("classeIgh")} />
-                  </div>
-                </div>
-              )}
+              {/* LA QUESTION « CLASSE IGH » A ÉTÉ RETIRÉE LE 2026-09-03.
+                  Elle était obligatoire, offrait les dix classes de R. 146-4,
+                  et ne décidait de rien : mesuré en appelant le moteur, les
+                  dix valeurs et l'absence rendaient le même jeu d'obligations.
+                  Les vérifications de l'arrêté du 30 décembre 2011 sont à la
+                  charge des « propriétaires » (GH 5) et ne varient pas par
+                  classe ; la seule périodicité que l'arrêté indexe sur la
+                  classe est la visite de la commission de sécurité (GH 4 § 3) ;
+                  et GH 66 dispose que le classement retient l'usage PRINCIPAL
+                  de l'immeuble, les dispositions de chaque classe s'appliquant
+                  « dans chacune des parties concernées » — la classe d'une tour
+                  ne décrit donc pas le plateau qu'on y occupe.
+
+                  CE QUI PART AVEC ELLE, ET QU'IL FAUT SAVOIR : ce menu était le
+                  seul chemin par lequel un dossier portant l'ancienne valeur
+                  `GHW` pouvait être corrigé en GHW1 ou GHW2. Le palier du
+                  § 9 bis de `docs/chantiers-ouverts.md` comptait dessus ; son
+                  amendement du 2026-09-03 dit ce que cela change. Ce qui est
+                  ACQUIS en revanche l'est plus fortement qu'avant : plus aucune
+                  surface ne peut écrire une classe, quelle qu'elle soit, donc
+                  le compte des `GHW` en production ne peut plus remonter. */}
             </div>
 
             {/* Habitation */}
@@ -615,41 +531,19 @@ export function EtablissementForm({
                 </div>
               </label>
 
-              {estHabitation && (
-                <div className="ml-7">
-                  <div className="max-w-sm">
-                    <label className="label-board" htmlFor="familleHabitation">
-                      Famille d&apos;habitation
-                    </label>
-                    <select
-                      id="familleHabitation"
-                      name="familleHabitation"
-                      defaultValue={valeursInitiales?.familleHabitation ?? ""}
-                      className="champ-board"
-                      aria-invalid={Boolean(err("familleHabitation"))}
-                    >
-                      <option value="">— Sélectionner —</option>
-                      {CHOIX_FAMILLES_HABITATION.map((f) => (
-                        <option key={f.id} value={f.id}>
-                          {f.label}
-                        </option>
-                      ))}
-                    </select>
-                    {/* Sans astérisque, et sans `required` : ce formulaire sert
-                        aussi à modifier un dossier créé avant le 2026-09-01,
-                        qui n'a pas de famille. L'exiger ici bloquerait toute
-                        modification — y compris celles qui n'ont rien à voir —
-                        tant que le dirigeant ne l'a pas retrouvée. Le dossier
-                        le lui demande ailleurs, en permanence. */}
-                    <p className="m-0 mt-1.5 text-[12px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-                      Arrêté du 31 janvier 1986. Le classement figure au dossier
-                      de l&apos;immeuble ; votre syndic ou votre bureau de
-                      contrôle vous le donne.
-                    </p>
-                    <Erreur message={err("familleHabitation")} />
-                  </div>
-                </div>
-              )}
+              {/* LA QUESTION « FAMILLE D'HABITATION » A ÉTÉ RETIRÉE LE
+                  2026-09-03, trois jours après avoir été posée. Elle offrait
+                  les cinq familles de l'article 3 de l'arrêté du 31 janvier
+                  1986 — liste juste, source juste, confrontée au verbatim le
+                  2026-09-03 et confirmée. Elle part parce qu'aucune obligation
+                  n'en dépend : l'unique obligation périodique du texte est son
+                  article 101, il vise « le propriétaire » et ne mentionne
+                  aucune famille. Les familles gouvernent la CONSTRUCTION —
+                  degrés coupe-feu des cages d'ascenseurs (art. 97), colonnes
+                  sèches (art. 98) —, et l'article 98 dispense même certaines
+                  3ᵉ familles B de colonne sèche : la famille ne détermine donc
+                  pas ce que le bâtiment contient. Voir
+                  `corpus/arrete-1986-habitation.ts`. */}
             </div>
           </div>
         </SectionChamps>

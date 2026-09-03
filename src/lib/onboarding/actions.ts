@@ -62,8 +62,6 @@ export async function finaliserOnboarding(
     estHabitation: raw.estHabitation === "true",
     typeErp: raw.typeErp || undefined,
     categorieErp: raw.categorieErp || undefined,
-    classeIgh: raw.classeIgh || undefined,
-    familleHabitation: raw.familleHabitation || undefined,
   };
 
   const parsed = onboardingSchema.safeParse(input);
@@ -115,8 +113,11 @@ export async function finaliserOnboarding(
         estHabitation: d.estHabitation,
         typeErp: d.typeErp,
         categorieErp: d.categorieErp,
-        classeIgh: d.classeIgh,
-        familleHabitation: d.familleHabitation,
+        // `classeIgh` et `familleHabitation` ne sont plus écrites : les deux
+        // questions ont été retirées du parcours le 2026-09-03. Les colonnes
+        // restent en base et gardent leurs valeurs sur les dossiers anciens ;
+        // un dossier neuf naît avec `null`, ce qui ne lui retire aucune
+        // obligation — le moteur ne restreint rien par classe ni par famille.
         // ADR-019 : tout établissement naît avec son bâtiment principal.
         batiments: { create: { nom: NOM_BATIMENT_PRINCIPAL, ordre: 0 } },
       },

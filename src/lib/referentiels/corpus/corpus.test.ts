@@ -625,6 +625,30 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // alimentant aussi un chauffage ou une production d'eau chaude. C'est le
       // blocage déjà nommé pour l'arrêté du 23 février 2018, art. 26 § 3.
       "GZ 14",
+      // GH 61 entre le 2026-09-03, et il entre par une porte que cette liste
+      // n'avait encore jamais vue : un lot venu POSER UNE AUTRE QUESTION.
+      // Celui-ci devait établir si la CLASSE d'IGH (GHA, GHW1, GHW2…) module
+      // quoi que ce soit pour l'employeur occupant — la réponse est non, et
+      // la question a été retirée du produit. En balayant les chapitres de
+      // classe pour s'en assurer, la lecture est tombée sur GH 61 § 5, qui ne
+      // dépend d'aucune classe : « les occupants sont tenus de faire établir,
+      // par un organisme agréé, un rapport de vérification de conformité de la
+      // charge calorifique […] puis périodiquement tous les cinq ans ».
+      //
+      // C'EST LA PREMIÈRE ENTRÉE DE CETTE LISTE QUE RIEN NE BLOQUE AU MODÈLE.
+      // Toutes les autres attendent quelque chose — une catégorie
+      // d'équipement, un porteur nominatif, un attribut d'établissement. Celle-
+      // ci a tout ce qu'il lui faut depuis l'ADR-022 : porteur établissement,
+      // périodicité quinquennale, réalisateur `organisme_agree`, typologie
+      // `igh`. Elle n'attend que d'être encodée, et ne l'a pas été ici parce
+      // qu'une obligation ne s'encode pas en effet de bord d'une question à
+      // laquelle elle ne répond pas.
+      //
+      // Elle corrige au passage une affirmation FAUSSE du corpus : GH 5
+      // § 3.1.4 renvoyait déjà à cette quinquennale et la disait non portée
+      // « faute de catégorie d'équipement », en la rangeant avec les
+      // paratonnerres. Elle n'en a jamais eu besoin.
+      "GH 61",
       // R. 4323-24 entre le 2026-09-02 avec l'ouverture de la branche hors
       // levage de R. 4323-23. Il n'y entre pas par un texte nouveau mais par
       // un TROU DE LA SOUS-SECTION 2 : le corpus déclarait -23, -25, -26 et
@@ -802,6 +826,19 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // moins de 30 jours par des non-résidents, qui décide si le parc reste
       // sous cet arrêté : il n'existe aucun attribut de parc de stationnement
       // annexe côté établissement.
+      // Arrêté du 31 janvier 1986, art. 78-1 — entré le 2026-09-03, et c'est
+      // la première entrée de cette liste qui vienne d'un article QUI N'EXISTAIT
+      // PAS lors du dépouillement précédent. Créé par l'arrêté du 27 juillet
+      // 2026, en vigueur depuis le 3 août : le dépouillement du 2026-09-01
+      // n'avait aucune chance de le voir, et il concluait que l'article 101
+      // était « la SEULE obligation périodique du texte ». Contrôle visuel des
+      // boxes de stockage d'un parc annexe, au moins annuel, consigné au
+      // registre de l'article 101. Bloqué par deux choses : aucun attribut ne
+      // dit qu'un parc de stationnement annexe existe (même manque que l'art.
+      // 102 juste en dessous), et le débiteur est un troisième porteur — « le
+      // gestionnaire », propriétaire unique du parc ou son délégué — que le
+      // modèle ne connaît pas.
+      "Arrêté 1986-01-31 art. 78-1",
       "Arrêté 1986-01-31 art. 102",
       // ── Lot machines, 2026-09-02 : la branche HORS LEVAGE de R. 4323-23.
       // Bloc contigu ajouté en fin de liste, comme le lot D1 et pour la même

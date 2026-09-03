@@ -188,7 +188,7 @@ que rien ne cite n'apparaît donc dans aucun degré ci-dessus — et le prendre
 pour du travail restant est exactement l'erreur qui a failli faire relancer
 une relecture déjà faite.
 
-**252 articles dépouillés ne sont cités par aucune obligation**, répartis sur 33 corpus.
+**257 articles dépouillés ne sont cités par aucune obligation**, répartis sur 34 corpus.
 
 | corpus | articles non cités | sur | lus |
 | --- | --- | --- | --- |
@@ -204,10 +204,11 @@ une relecture déjà faite.
 | `code-travail-co-activite` | 7 | 11 | 2026-08-31 → 2026-09-02 |
 | `arrete-2004-12-21-echafaudages` | 7 | 7 | 2026-09-01 |
 | `code-travail-vigilance` | 7 | 7 | 2026-09-02 |
+| `arrete-1986-habitation` | 6 | 11 | 2026-09-01 → 2026-09-03 |
 | `code-travail-duerp-principes` | 6 | 6 | 2026-09-02 |
 | `code-travail-matieres-inflammables` | 6 | 6 | 2026-09-02 |
-| `arrete-1986-habitation` | 5 | 10 | 2026-09-01 → 2026-09-03 |
 | `code-travail-bruit-vibrations` | 5 | 5 | 2026-09-02 |
+| `arrete-2011-12-30-igh` | 4 | 5 | 2026-09-03 |
 | `code-travail-duerp` | 4 | 5 | 2026-09-02 |
 | `code-travail-travail-dissimule` | 4 | 4 | 2026-09-02 |
 | `arrete-2017-04-19-registre-accessibilite` | 4 | 4 | 2026-09-03 |

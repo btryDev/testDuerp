@@ -1,9 +1,7 @@
 import { z } from "zod";
 import {
   CATEGORIES_ERP,
-  CLASSES_IGH,
   EFFECTIF_MAX,
-  FAMILLES_HABITATION,
   TYPE_ERP,
 } from "@/lib/etablissements/schema";
 
@@ -81,14 +79,9 @@ export const onboardingSchema = z
       (v) => (v === "" || v === null ? undefined : v),
       z.enum(CATEGORIES_ERP).optional(),
     ),
-    classeIgh: z.preprocess(
-      (v) => (v === "" || v === null ? undefined : v),
-      z.enum(CLASSES_IGH).optional(),
-    ),
-    familleHabitation: z.preprocess(
-      (v) => (v === "" || v === null ? undefined : v),
-      z.enum(FAMILLES_HABITATION).optional(),
-    ),
+    // `classeIgh` et `familleHabitation` ont quitté ce schéma le 2026-09-03
+    // avec les deux questions du parcours qui les posaient. Voir le bloc en
+    // tête de `@/lib/etablissements/schema`.
   })
   .superRefine((val, ctx) => {
     // Le code NAF ne conditionne plus la création (lib/onboarding/scope.ts).
@@ -155,41 +148,11 @@ export const onboardingSchema = z
       });
     }
 
-    if (val.estIGH) {
-      if (!val.classeIgh) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["classeIgh"],
-          message: "Classe IGH requise (GHA à ITGH)",
-        });
-      }
-    } else if (val.classeIgh) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["classeIgh"],
-        message: "Ne doit être posée que si l'établissement est IGH",
-      });
-    }
-
-    // Famille d'habitation (ADR-025 § 4). Exigée ici — c'est une création —
-    // alors que `etablissementSchema` ne l'exige pas : un dossier antérieur
-    // au 2026-09-01 n'en a pas et doit rester modifiable.
-    if (val.estHabitation) {
-      if (!val.familleHabitation) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["familleHabitation"],
-          message: "Famille d'habitation requise (1ʳᵉ, 2ᵉ, 3ᵉ A, 3ᵉ B ou 4ᵉ)",
-        });
-      }
-    } else if (val.familleHabitation) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["familleHabitation"],
-        message:
-          "Ne doit être posée que si l'établissement est un immeuble d'habitation",
-      });
-    }
+    // Quatre règles vivaient ici et sont tombées le 2026-09-03 avec les deux
+    // questions qu'elles bornaient : classe IGH exigée puis interdite hors
+    // IGH, famille d'habitation exigée puis interdite hors habitation. Le
+    // parcours cesse de réclamer deux précisions dont aucune obligation ne
+    // dépend ; les deux régimes se déclarent par leur seul booléen.
 
     const aucunRegime =
       !val.estEtablissementTravail &&
@@ -224,6 +187,4 @@ export const onboardingValeursInitiales = {
   estHabitation: false,
   typeErp: "" as string | undefined,
   categorieErp: "" as string | undefined,
-  classeIgh: "" as string | undefined,
-  familleHabitation: "" as string | undefined,
 };

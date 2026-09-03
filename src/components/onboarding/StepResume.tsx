@@ -2,10 +2,6 @@
 
 import { PastilleFiche } from "@/components/ui-kit/fiche";
 import type { StepProps } from "./types";
-import {
-  CHOIX_CLASSES_IGH,
-  CHOIX_FAMILLES_HABITATION,
-} from "@/lib/onboarding/deduction-erp";
 import { LABEL_TYPE_ERP } from "@/lib/etablissements/labels";
 import type { TYPE_ERP } from "@/lib/etablissements/schema";
 
@@ -20,10 +16,6 @@ export function StepResume({ state }: StepProps) {
   const typeErpLabel =
     LABEL_TYPE_ERP[state.typeErp as (typeof TYPE_ERP)[number]] ??
     state.typeErp;
-  const classeIghLabel =
-    CHOIX_CLASSES_IGH.find((c) => c.id === state.classeIgh)?.label ??
-    state.classeIgh;
-
   const regimes: string[] = [];
   if (state.estEtablissementTravail) regimes.push("Travail");
   if (state.estERP) {
@@ -35,19 +27,13 @@ export function StepResume({ state }: StepProps) {
       precisions.length > 0 ? `ERP · ${precisions.join(" · ")}` : "ERP",
     );
   }
-  if (state.estIGH) {
-    regimes.push(
-      classeIghLabel ? `IGH · ${classeIghLabel}` : "IGH",
-    );
-  }
-  if (state.estHabitation) {
-    const familleLabel = CHOIX_FAMILLES_HABITATION.find(
-      (f) => f.id === state.familleHabitation,
-    )?.label;
-    regimes.push(
-      familleLabel ? `Habitation · ${familleLabel}` : "Habitation",
-    );
-  }
+  // Depuis le 2026-09-03, IGH et habitation n'ont plus de précision à
+  // afficher : la classe d'IGH et la famille d'habitation ne sont plus
+  // demandées, faute d'obligation qui en dépende. Le résumé ne montre donc que
+  // le régime lui-même — il ne doit jamais annoncer plus que ce qui a été
+  // saisi.
+  if (state.estIGH) regimes.push("IGH");
+  if (state.estHabitation) regimes.push("Habitation");
 
   const adresseComplete = [
     state.adresseRue.trim(),

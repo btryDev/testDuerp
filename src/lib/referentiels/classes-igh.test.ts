@@ -117,8 +117,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { CORPUS, type ArticleDepouille } from "./corpus";
 import { CLASSES_IGH } from "./types-communs";
-import { CLASSES_IGH as CLASSES_IGH_ZOD } from "@/lib/etablissements/schema";
-import { CHOIX_CLASSES_IGH } from "@/lib/onboarding/deduction-erp";
+import { etablissementCreationSchema } from "@/lib/etablissements/schema";
+import { onboardingSchema } from "@/lib/onboarding/schema";
 
 /** L'entrée de corpus qui porte la nomenclature. */
 function articleR146_4(): ArticleDepouille {
@@ -190,39 +190,6 @@ function enumPrismaClasseIgh(): string[] {
     // liste. On coupe au `//` avant de lire la valeur.
     .map((l) => l.split("//")[0].trim())
     .filter((l) => l.length > 0);
-}
-
-/**
- * Les libellés du menu du formulaire, lus à la source.
- *
- * `LABEL_CLASSE_IGH` vit dans un composant client (`EtablissementForm.tsx`) que
- * ce test ne peut pas importer sans tirer React. On le lit donc dans le
- * fichier, comme l'énumération Prisma — et deux tests s'en servent : celui qui
- * confronte les libellés au texte, et celui qui vérifie qu'aucune valeur en
- * sursis n'y est offerte.
- */
-function libellesDuFormulaire(): Map<string, string> {
-  const source = readFileSync(
-    path.join(
-      process.cwd(),
-      "src",
-      "components",
-      "etablissements",
-      "EtablissementForm.tsx",
-    ),
-    "utf8",
-  );
-  const bloc = /const LABEL_CLASSE_IGH[^{]*\{([^}]*)\}/.exec(source);
-  expect(
-    bloc,
-    "`LABEL_CLASSE_IGH` introuvable dans EtablissementForm.tsx",
-  ).not.toBeNull();
-  return new Map(
-    [...bloc![1].matchAll(/^\s*(\w+)\s*:\s*"([^"]*)"/gm)].map((m) => [
-      m[1],
-      m[2],
-    ]),
-  );
 }
 
 /**
@@ -326,26 +293,14 @@ function messageEcart(quoi: string, e: ReturnType<typeof ecart>): string {
   );
 }
 
-/**
- * Les hauteurs que le texte écrit sur une classe, en mètres.
- *
- * C'est la seule information qui SÉPARE deux classes de la nomenclature :
- * « bureaux » ne dit pas si l'on est en GHW 1 ou en GHW 2, « habitation » ne
- * dit pas si l'on est en GHA ou en GHZ. Un libellé qui la tait ne permet pas
- * de choisir, et c'est ainsi que le modèle a vécu avec un « GHW » unique.
- */
-function hauteursDuTexte(designation: string): number[] {
-  return [
-    ...new Set(
-      [...designation.matchAll(/(\d+)\s*mètres/g)].map((m) => Number(m[1])),
-    ),
-  ].sort((a, b) => a - b);
-}
-
-/** Les nombres qu'un libellé du produit donne à lire. */
-function nombresDuLibelle(libelle: string): number[] {
-  return [...libelle.matchAll(/\d+/g)].map((m) => Number(m[0]));
-}
+/* `hauteursDuTexte()` et `nombresDuLibelle()` vivaient ici. Ils extrayaient les
+   hauteurs que R. 146-4 écrit sur une classe et celles qu'un libellé du produit
+   donne à lire, pour vérifier que le second ne tait pas les premières — la seule
+   information qui SÉPARE deux classes de la nomenclature, et dont l'absence a
+   fait vivre le modèle avec un « GHW » unique. Ils partent avec les deux tests
+   de libellés qu'ils servaient, la question de la classe ayant été retirée du
+   produit le 2026-09-03 : plus aucun libellé de classe ne s'affiche nulle part.
+   À reprendre dans l'historique de ce fichier si la question revient. */
 
 describe("classes d'IGH — la liste du modèle est celle de l'article R. 146-4", () => {
   it("le verbatim de R. 146-4 porte bien une nomenclature, et le parseur la voit", () => {
@@ -412,40 +367,6 @@ describe("classes d'IGH — la liste du modèle est celle de l'article R. 146-4"
     ).toEqual({ manquants: [], enTrop: [] });
   });
 
-  it("`CLASSES_IGH` (schéma Zod) porte exactement les classes du texte, sans dérogation", () => {
-    // CE QU'ON PEUT DÉCLARER — et ici `ecart`, pas `ecartHorsSursis` : la
-    // dérogation ne descend PAS jusqu'aux choix. C'est ce qui donne son sens au
-    // palier : `GHW` reste lisible en base et devient inécrivable le même jour.
-    // Cette liste valide les formulaires de création et d'onboarding ; une
-    // valeur qui y figure est une valeur qu'on peut encore fabriquer.
-    const e = ecart(
-      classesEcritesParR146_4().map((c) => c.sigle),
-      CLASSES_IGH_ZOD,
-    );
-    expect(
-      e,
-      messageEcart("`CLASSES_IGH` (src/lib/etablissements/schema.ts)", e),
-    ).toEqual({ manquants: [], enTrop: [] });
-  });
-
-  it("`CHOIX_CLASSES_IGH` (onboarding) porte exactement les classes du texte", () => {
-    // QUATRIÈME COPIE, ET LA PLUS EXPOSÉE. C'est elle qui remplit la grille du
-    // parcours d'entrée. Contrairement aux `Record<ClasseIgh, …>` du dépôt,
-    // elle n'est PAS vérifiée par le compilateur : c'est un tableau de
-    // littéraux, et rien n'y aurait signalé l'absence de `GHTC`.
-    //
-    // `ecart` et non `ecartHorsSursis` : c'est un CHOIX offert, la dérogation
-    // ne s'y applique pas.
-    const e = ecart(
-      classesEcritesParR146_4().map((c) => c.sigle),
-      CHOIX_CLASSES_IGH.map((c) => c.id),
-    );
-    expect(
-      e,
-      messageEcart("`CHOIX_CLASSES_IGH` (src/lib/onboarding/deduction-erp.ts)", e),
-    ).toEqual({ manquants: [], enTrop: [] });
-  });
-
   it("la dérogation ne couvre que du vrai, et se périme d'elle-même", () => {
     // SANS CE TEST, LA DÉROGATION SERAIT UNE RUSTINE. Une liste d'exceptions
     // qu'on peut allonger et qui survit à sa cause finit par décrire l'état du
@@ -487,122 +408,97 @@ describe("classes d'IGH — la liste du modèle est celle de l'article R. 146-4"
     ).toEqual([]);
   });
 
-  it("aucune valeur en sursis n'est offerte au choix — plus personne ne peut en créer", () => {
-    // LA MOITIÉ QUI REND LE COMPTAGE CONCLUANT. La dérogation dit « cette
-    // valeur peut encore être LUE » ; elle ne doit jamais dire « cette valeur
-    // peut encore être ÉCRITE ». Tant qu'un menu l'offre, un déclarant peut en
-    // fabriquer une entre la lecture de la base et le déploiement du retrait,
-    // et le compte n'a aucune valeur.
+  it("aucune classe ne peut plus être écrite — pas même une classe valide", () => {
+    // CE TEST A CHANGÉ D'OBJET LE 2026-09-03, ET IL EST DEVENU PLUS FORT.
     //
-    // Les trois surfaces par lesquelles une classe s'attribue sont donc
-    // vérifiées séparément — le schéma Zod (création et onboarding), la grille
-    // d'onboarding, les libellés du formulaire de modification.
-    const offertes: { ou: string; valeurs: string[] }[] = [];
-    for (const [ou, liste] of [
-      ["`CLASSES_IGH` (src/lib/etablissements/schema.ts, schémas Zod)", [...CLASSES_IGH_ZOD]],
-      ["`CHOIX_CLASSES_IGH` (grille d'onboarding)", CHOIX_CLASSES_IGH.map((c) => c.id)],
-      ["`LABEL_CLASSE_IGH` (menu du formulaire)", [...libellesDuFormulaire().keys()]],
+    // Il vérifiait que la valeur EN SURSIS n'était offerte par aucune des trois
+    // surfaces de déclaration — schéma Zod, grille d'onboarding, menu du
+    // formulaire —, ce qui rendait concluant le comptage du temps 2 : tant
+    // qu'un menu offre `GHW`, un déclarant peut en fabriquer un entre la
+    // lecture de la base et le déploiement du retrait.
+    //
+    // Les trois surfaces n'existent plus. La question de la classe d'IGH a été
+    // retirée du produit : la lecture de l'arrêté du 30 décembre 2011 a établi
+    // que ses vérifications périodiques s'adressent aux « propriétaires » sans
+    // varier par classe (GH 5), que la seule périodicité indexée sur la classe
+    // est celle de la visite de la commission de sécurité (GH 4 § 3), et que
+    // le classement retient l'usage PRINCIPAL de l'immeuble, les dispositions
+    // de chaque classe s'appliquant « dans chacune des parties concernées »
+    // (GH 66) — la classe déclarée d'une tour ne décrit donc pas le plateau
+    // qu'on y occupe.
+    //
+    // LA GARANTIE NE DISPARAÎT PAS AVEC LES SURFACES, ELLE SE RESSERRE : ce
+    // n'est plus « aucune valeur en sursis ne peut être écrite », c'est
+    // « AUCUNE classe ne peut être écrite ». On le vérifie par le
+    // comportement des deux schémas qui écrivent un établissement, et non par
+    // une lecture de texte : un champ que Zod ne déclare pas est retiré de
+    // l'objet validé, et n'atteint donc jamais Prisma.
+    const regime = {
+      effectifSurSite: 12,
+      estEtablissementTravail: true,
+      estERP: false,
+      estIGH: true,
+      estHabitation: false,
+    };
+    // Les deux schémas n'attendent pas les mêmes champs d'identité : la fiche
+    // porte `raisonDisplay`, le parcours d'entrée `raisonSociale` et le code
+    // NAF. On donne à chacun le sien plutôt qu'un dénominateur commun qui ne
+    // validerait ni l'un ni l'autre.
+    for (const [ou, schema, identite] of [
+      [
+        "`etablissementCreationSchema`",
+        etablissementCreationSchema,
+        {
+          raisonDisplay: "Tour Témoin",
+          adresse: "1 place de la Défense, 92400 Courbevoie",
+        },
+      ],
+      [
+        "`onboardingSchema`",
+        onboardingSchema,
+        {
+          raisonSociale: "Tour Témoin",
+          adresse: "1 place de la Défense, 92400 Courbevoie",
+          codeNaf: "70.22Z",
+        },
+      ],
     ] as const) {
-      const fautives = liste.filter((c) =>
-        EN_SURSIS_JUSQU_AU_TEMPS_2.includes(c),
-      );
-      if (fautives.length > 0) offertes.push({ ou, valeurs: [...fautives] });
+      const creation = { ...identite, ...regime };
+      // Une classe PARFAITEMENT VALIDE au regard de R. 146-4, et elle ne passe
+      // pas davantage que `GHW` : c'est le sens du resserrement.
+      const res = schema.safeParse({ ...creation, classeIgh: "GHW1" });
+      expect(res.success, `${ou} refuse le dossier témoin`).toBe(true);
+      if (!res.success) continue;
+      expect(
+        Object.prototype.hasOwnProperty.call(res.data, "classeIgh"),
+        `${ou} laisse passer une \`classeIgh\`. La question a été retirée du ` +
+          `produit le 2026-09-03 ; si une surface la repose, elle doit revenir ` +
+          `avec l'obligation qui la justifie, et ce test doit être réécrit — ` +
+          `pas contourné. Voir corpus/arrete-2011-12-30-igh.ts.`,
+      ).toBe(false);
     }
-    expect(
-      offertes,
-      "Une valeur EN SURSIS est encore proposée à la déclaration :\n" +
-        offertes.map((o) => `  ${o.ou} → ${o.valeurs.join(", ")}`).join("\n") +
-        "\nLa dérogation autorise à LIRE cette valeur en base, jamais à en " +
-        "écrire une nouvelle. Tant qu'un menu l'offre, le comptage qui doit " +
-        "déclencher le temps 2 ne conclut rien — voir " +
-        "docs/chantiers-ouverts.md § 9 bis.",
-    ).toEqual([]);
+
+    // ET LA CONSÉQUENCE POUR LE PALIER, qui est la raison d'être de cette
+    // garantie : le comptage des lignes `GHW` en production est désormais
+    // concluant a fortiori. Plus rien ne peut créer une classe, donc plus rien
+    // ne peut créer un `GHW`. Voir docs/chantiers-ouverts.md § 9 bis.
+    expect(EN_SURSIS_JUSQU_AU_TEMPS_2).toContain("GHW");
   });
 
-  it("chaque libellé de la grille porte les hauteurs qui distinguent sa classe", () => {
-    // LA RÈGLE N'EST PAS UNE LONGUEUR MINIMALE, C'EST LA PRÉSENCE DU FAIT QUI
-    // DISCRIMINE. Un plancher de caractères ferait rougir « GHA · Habitation »,
-    // qui est le mot du texte, et pousserait à rallonger la nomenclature avec
-    // des mots qu'elle n'a pas — la faute exacte que le lot `TypeErp` a
-    // rencontrée sur « Y · Musée ».
-    //
-    // Ce qui se vérifie ici est ce que le TEXTE écrit et que le libellé ne doit
-    // pas taire : la hauteur du plancher bas. Elle sépare GHW 1 de GHW 2 et GHZ
-    // de GHA ; sans elle, « Bureaux » ne permet à personne de choisir, et le
-    // modèle a effectivement vécu avec un « GHW » unique faute de l'avoir
-    // jamais demandée. Les classes dont la définition ne porte aucune hauteur
-    // — GHA, GHO, GHR, GHS, GHTC, GHU — n'ont rien à porter et ne sont pas
-    // contraintes.
-    const muets: string[] = [];
-    for (const classe of classesEcritesParR146_4()) {
-      const attendues = hauteursDuTexte(classe.designation);
-      if (attendues.length === 0) continue;
-      const choix = CHOIX_CLASSES_IGH.find((c) => c.id === classe.sigle);
-      if (!choix) continue; // l'écart de liste est le sujet du test précédent.
-      const lus = nombresDuLibelle(`${choix.label} ${choix.description}`);
-      const oubliees = attendues.filter((h) => !lus.includes(h));
-      if (oubliees.length > 0) {
-        muets.push(
-          `${classe.sigle} → « ${choix.label} — ${choix.description} » ` +
-            `ne dit pas : ${oubliees.join(", ")} m`,
-        );
-      }
-    }
-    expect(
-      muets,
-      "Ces entrées de la grille taisent une hauteur que R. 146-4 écrit sur " +
-        "leur classe. C'est le seul fait qui permet de choisir entre deux " +
-        "classes voisines : un dirigeant qui ne sait pas si sa tour de bureaux " +
-        "relève de GHW 1 ou de GHW 2 ne coche rien de juste, et l'obligation " +
-        "ne se déclenche jamais sur la bonne classe.\n" +
-        muets.join("\n"),
-    ).toEqual([]);
-  });
+  /* DEUX TESTS DE LIBELLÉS ONT ÉTÉ RETIRÉS LE 2026-09-03, avec les surfaces
+     qu'ils gardaient — la grille d'onboarding et le menu du formulaire.
 
-  it("chaque classe a un libellé de formulaire, et il dit plus que le sigle", () => {
-    // `LABEL_CLASSE_IGH` est un `Record` exhaustif dont les clés sont déjà
-    // garanties par le compilateur — comme les trois autres `Record` keyés sur
-    // `ClasseIgh` du dépôt. Ce que le compilateur ne garantit pas, c'est que la
-    // valeur apprenne quelque chose : `GHTC: "GHTC"` compilerait.
-    //
-    // `ecart` et non `ecartHorsSursis` : ces libellés remplissent un MENU,
-    // c'est-à-dire un choix offert. La dérogation ne s'y applique pas.
-    const libelles = libellesDuFormulaire();
+     Ils vérifiaient une chose que ce dépôt tient pour acquise et qui ne l'est
+     pas ailleurs : qu'un libellé porte les CHIFFRES du texte, la hauteur du
+     plancher bas notamment, seul fait qui sépare GHW 1 de GHW 2. Ils avaient
+     leur raison d'être — c'est faute de poser cette question que le modèle a
+     vécu avec un « GHW » unique que le code n'écrit pas.
 
-    const e = ecart(
-      classesEcritesParR146_4().map((c) => c.sigle),
-      [...libelles.keys()],
-    );
-    expect(e, messageEcart("`LABEL_CLASSE_IGH`", e)).toEqual({
-      manquants: [],
-      enTrop: [],
-    });
-
-    const fautifs: string[] = [];
-    for (const classe of classesEcritesParR146_4()) {
-      const libelle = libelles.get(classe.sigle) ?? "";
-      // La FORME : le sigle, un séparateur, une désignation non vide.
-      if (!new RegExp(`^${classe.sigle} · \\S`).test(libelle)) {
-        fautifs.push(`${classe.sigle} → « ${libelle} » n'est pas « sigle · désignation »`);
-        continue;
-      }
-      // Et les hauteurs, pour la même raison que dans la grille d'onboarding.
-      const oubliees = hauteursDuTexte(classe.designation).filter(
-        (h) => !nombresDuLibelle(libelle).includes(h),
-      );
-      if (oubliees.length > 0) {
-        fautifs.push(
-          `${classe.sigle} → « ${libelle} » ne dit pas : ${oubliees.join(", ")} m`,
-        );
-      }
-    }
-    expect(
-      fautifs,
-      "Ces libellés du formulaire ne permettent pas à un dirigeant de " +
-        "reconnaître sa classe : écrivez, après le sigle et le séparateur, ce " +
-        "que R. 146-4 dit de la classe — hauteur du plancher bas comprise " +
-        "quand le texte en donne une.\n" +
-        fautifs.join("\n"),
-    ).toEqual([]);
-  });
+     Ils ne sont pas remplacés, parce qu'il n'y a plus rien à garder : aucun
+     écran ne propose ni n'affiche de classe. Le jour où la question
+     reviendrait, ces deux tests sont à reprendre dans l'historique de ce
+     fichier avant d'écrire les libellés — pas à réinventer. Ce qui reste
+     gardé ici est ce qui existe encore : l'énumération PostgreSQL et son
+     reflet `CLASSES_IGH` de `types-communs.ts`, tous deux confrontés au
+     verbatim de R. 146-4, plus la dérogation `GHW` et son inécrivabilité. */
 });

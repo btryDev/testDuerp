@@ -340,6 +340,72 @@ Tous ces lots sont sur `origin/main`.
 
 ---
 
+### C11 · 2026-09-03 — Trois questions d'onboarding, et ce qu'on trouve en cherchant à qui un texte s'adresse
+
+**Périmètre** — trois questions du produit qui, mesurées en appelant le moteur,
+ne changeaient aucune des 145 obligations : la **classe d'IGH** (10 valeurs,
+obligatoire), la **famille d'habitation** (5 valeurs, obligatoire), et la case
+« robinets d'incendie armés » posée sur chaque extincteur.
+
+**Méthode** — l'inverse de l'ordre habituel. D'abord un comptage, qui dit
+seulement « ça ne sert pas AUJOURD'HUI » ; puis la lecture des deux règlements,
+seule à pouvoir dire « et ça ne DEVRAIT pas servir ». Agent sur Légifrance, deux
+lectures indépendantes par paragraphe décisif, la seconde exigeant la
+reproduction mot pour mot.
+
+| Question | Ce que le texte dit, et À QUI | Sortie |
+|---|---|---|
+| **Classe d'IGH** | `GH 5` : « **Les propriétaires** font effectuer… », aucune modulation par classe. `GH 4 § 3` : seule périodicité indexée sur la classe de tout l'arrêté, sujet « **la commission de sécurité** ». `GH W 5 § 2` : la seule obligation d'un chapitre de classe qui vise l'occupant, et elle **ne distingue pas GHW1 de GHW2**. `GH 66` : le classement retient « l'usage **principal** de l'immeuble », les dispositions de chaque classe s'appliquant « dans chacune des parties concernées » | **Question retirée** de l'onboarding et de la fiche. Colonne et énumération conservées |
+| **Famille d'habitation** | Art. 101, obligation périodique centrale : vise « **le propriétaire** », aucune famille. Titres II à VI balayés (le titre V lu en entier) : rien de conditionné par la famille en exploitation | **Question retirée** |
+| **RIA sur extincteur** | Rien à lire : la `notesInternes` de `incendie-erp-ria-annuelle` posait le critère de retrait, et `ff87f4b` (2026-08-25) atteste qu'il est rempli — reprise appliquée en production, plus aucun extincteur porteur de la clé | **Question retirée**, neuf jours après ses deux retraits jumeaux |
+
+**CE QUE LA LECTURE A RAPPORTÉ EN PLUS, et c'est l'argument contre le retrait
+d'une question sans ouvrir son texte** — deux obligations réelles, versées au
+corpus en `obligation_manquante`, **aucune encodée** :
+
+- **`GH 61 § 5`** — « Dans les locaux autres que les locaux d'habitation, **les
+  occupants** sont tenus de faire établir, par un organisme agréé, un rapport de
+  vérification de conformité de la charge calorifique. […] puis **périodiquement
+  tous les cinq ans**. » Le destinataire est l'employeur locataire de bureaux
+  dans une tour, c'est-à-dire l'utilisateur du produit, et cela ne dépend
+  d'aucune classe. Le corpus la connaissait de loin par `GH 5 § 3.1.4` et en
+  donnait une raison de non-encodage **fausse** — « faute de catégorie
+  d'équipement » — corrigée ce jour : son porteur est l'établissement, et
+  **rien au modèle ne la bloque**.
+- **Arrêté du 31 janvier 1986, art. 78-1** — créé par l'arrêté du 27 juillet
+  2026, en vigueur depuis le **3 août 2026**. Contrôle visuel annuel des boxes
+  de stockage d'un parc annexe, consigné au registre de l'article 101. Il
+  dément la phrase que le corpus portait depuis deux jours, « la seule
+  obligation périodique du texte est l'article 101 ». Bloqué : pas d'attribut de
+  parc annexe, et un débiteur — « **le gestionnaire** » — qui n'est ni le
+  propriétaire ni l'exploitant.
+
+**DEUX PIÈGES DE LÉGIFRANCE, dont un inédit au registre du dépôt.**
+
+1. **La page consolidée produit aussi des FAUX NÉGATIFS.** Interrogée sur les
+   occurrences d'« entretien », « vérifi », « une fois par an » entre les
+   articles 5 et 96 de l'arrêté de 1986, elle a répondu « aucune occurrence ».
+   L'article 78-1, dans cette plage, contient « au moins une fois par an » et
+   quatre fois « contrôle ». Le dépôt savait déjà que cette page **fabrique** du
+   contenu (art. 100) et invente des périodicités (art. 102) ; il sait
+   maintenant qu'elle **nie ce qui s'y trouve**. Sur ce texte, un négatif rendu
+   par la page consolidée ne vaut rien.
+2. **Un article long peut être rendu silencieusement RÉSUMÉ.** `GH 61 § 5` et
+   l'art. 78-1 ont tous deux été rendus tronqués au premier appel — dans le cas
+   de `GH 61`, la phrase manquante était précisément celle qui porte les cinq
+   ans. La parade qui a marché : redemander le paragraphe décisif SEUL, mot pour
+   mot, puis poser une question fermée sur le point qui tranche.
+
+**Application** — trois questions retirées, deux corpus amendés (5 articles IGH
+dépouillés là où il n'y en avait qu'un, art. 78-1 ajouté à l'habitation), deux
+affirmations du dépôt corrigées parce qu'elles étaient fausses, une dissymétrie
+du moteur fermée (`evaluerIgh` ne rejetait pas comme `evaluerHabitation` sur
+l'attribut non renseigné — devenu un faux négatif certain une fois la question
+retirée). **Zéro obligation encodée**, et c'est délibéré : une obligation ne
+s'encode pas en effet de bord d'une question à laquelle elle ne répond pas.
+
+---
+
 ### Ce que la chronologie donne à voir
 
 1. **Le dépôt lit beaucoup et applique peu, et l'écart est systématique.** La

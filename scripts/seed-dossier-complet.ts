@@ -240,7 +240,7 @@ const EQUIPEMENTS: EquipementSeed[] = [
     zone: NOM_BATIMENT_PRINCIPAL,
     localisation: "Salle, bar, dégagement",
     dateMiseEnService: "2023-04-18",
-    champs: { nombre: 4, aRobinetsIncendieArmes: "non" },
+    champs: { nombre: 4 },
   },
   {
     libelle: "Extincteurs de la cuisine (dont classe F)",
@@ -248,7 +248,7 @@ const EQUIPEMENTS: EquipementSeed[] = [
     zone: "Cuisine et réserves",
     localisation: "Cuisine, plonge",
     dateMiseEnService: "2021-10-02",
-    champs: { nombre: 3, aRobinetsIncendieArmes: "non" },
+    champs: { nombre: 3 },
   },
   {
     libelle: "Blocs autonomes d'éclairage de sécurité",

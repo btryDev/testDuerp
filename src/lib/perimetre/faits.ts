@@ -117,7 +117,6 @@ export async function faitsDeCouverture(
       estIGH: etab.estIGH,
       categorieErp: etab.categorieErp,
       estHabitation: etab.estHabitation,
-      familleHabitation: etab.familleHabitation,
     },
     duerp: couvertureDuerp && {
       etat: couvertureDuerp.etat,

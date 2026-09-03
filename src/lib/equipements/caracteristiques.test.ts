@@ -14,41 +14,57 @@ describe("caracteristiquesLisibles", () => {
   });
 
   it("pose les questions de la catégorie même sans aucune donnée", () => {
-    // Un extincteur sans caractéristiques enregistrées porte quand même la
-    // question RIA : c'est elle qui explique l'échéance au calendrier.
-    const c = caracteristiquesLisibles("EXTINCTEUR", null);
-    expect(c.map((x) => x.cle)).toEqual(["aRobinetsIncendieArmes"]);
-    expect(c[0].enAttente).toBe(true);
+    // Une VMC sans caractéristiques enregistrées porte quand même la question
+    // VMC-Gaz : c'est elle qui explique l'échéance au calendrier.
+    const c = caracteristiquesLisibles("VMC", null);
+    expect(c.map((x) => x.cle)).toContain("estVmcGaz");
+    expect(c.find((x) => x.cle === "estVmcGaz")?.enAttente).toBe(true);
   });
 
   it("annonce une question sans réponse plutôt que de la taire", () => {
     // C'est le point : l'obligation reste au calendrier tant que la
     // réponse manque, et la fiche est le seul endroit qui l'explique.
-    const c = caracteristiquesLisibles("EXTINCTEUR", { nombre: 3 });
-    const ria = c.find((x) => x.cle === "aRobinetsIncendieArmes");
-    expect(ria).toMatchObject({
+    const c = caracteristiquesLisibles("VMC", { nombre: 3 });
+    const gaz = c.find((x) => x.cle === "estVmcGaz");
+    expect(gaz).toMatchObject({
       valeur: "Pas encore répondu",
       enAttente: true,
     });
   });
 
   it("rend « oui » et « non » sans les confondre avec l'absence de réponse", () => {
-    const oui = caracteristiquesLisibles("EXTINCTEUR", {
-      aRobinetsIncendieArmes: true,
+    const oui = caracteristiquesLisibles("VMC", { estVmcGaz: true });
+    expect(oui.find((x) => x.cle === "estVmcGaz")).toMatchObject({
+      valeur: "Oui",
+      enAttente: false,
     });
-    expect(oui[0]).toMatchObject({ valeur: "Oui", enAttente: false });
 
-    const non = caracteristiquesLisibles("EXTINCTEUR", {
-      aRobinetsIncendieArmes: false,
+    const non = caracteristiquesLisibles("VMC", { estVmcGaz: false });
+    expect(non.find((x) => x.cle === "estVmcGaz")).toMatchObject({
+      valeur: "Non",
+      enAttente: false,
     });
-    expect(non[0]).toMatchObject({ valeur: "Non", enAttente: false });
+  });
+
+  it("ne pose plus aucune question sur un extincteur", () => {
+    // La question « Robinets d'incendie armés (RIA) » a été retirée le
+    // 2026-09-03 : elle ne bornait plus rien depuis que les RIA ont leur
+    // propre catégorie d'équipement et que la reprise a été jouée
+    // (`incendie-erp-ria-annuelle`, notesInternes). Un extincteur ne porte
+    // donc plus de question à trois états, et la fiche ne doit pas en
+    // ressusciter une : une question qui ne décide de rien fait croire au
+    // dirigeant que sa réponse compte.
+    expect(caracteristiquesLisibles("EXTINCTEUR", null)).toEqual([]);
+    expect(
+      caracteristiquesLisibles("EXTINCTEUR", { aRobinetsIncendieArmes: true }),
+    ).toEqual([]);
   });
 
   it("n'affiche que les questions de la catégorie", () => {
-    // « Sert au levage de personnes » sur un extincteur ferait douter du
+    // « Sert au levage de personnes » sur une VMC ferait douter du
     // reste de la fiche.
-    const cles = caracteristiquesLisibles("EXTINCTEUR", {}).map((x) => x.cle);
-    expect(cles).toContain("aRobinetsIncendieArmes");
+    const cles = caracteristiquesLisibles("VMC", {}).map((x) => x.cle);
+    expect(cles).toContain("estVmcGaz");
     expect(cles).not.toContain("sertAuLevageDePersonnes");
 
     const levage = caracteristiquesLisibles("EQUIPEMENT_LEVAGE", {}).map(

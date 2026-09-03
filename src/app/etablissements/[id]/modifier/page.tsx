@@ -53,8 +53,6 @@ export default async function ModifierEtablissementPage({
               estHabitation: etab.estHabitation,
               typeErp: etab.typeErp,
               categorieErp: etab.categorieErp,
-              classeIgh: etab.classeIgh,
-              familleHabitation: etab.familleHabitation,
               comporteLocauxSommeilPublic: etab.comporteLocauxSommeilPublic,
               natureActivite: etab.natureActivite,
               effectifPublicAdmis: etab.effectifPublicAdmis,

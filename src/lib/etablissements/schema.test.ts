@@ -53,16 +53,13 @@ describe("etablissementSchema — typologie (ADR-004)", () => {
     expect(res.success).toBe(false);
   });
 
-  it("refuse un IGH sans classe", () => {
-    const res = etablissementSchema.safeParse({
-      ...base,
-      estIGH: true,
-    });
-    expect(res.success).toBe(false);
-    if (!res.success) {
-      const champs = res.error.issues.map((i) => i.path[0]);
-      expect(champs).toContain("classeIgh");
-    }
+  // « refuse un IGH sans classe » a vécu ici jusqu'au 2026-09-03. La classe
+  // n'est plus demandée : elle ne bornait aucune obligation, et l'arrêté du
+  // 30 décembre 2011 met ses vérifications à la charge des « propriétaires »
+  // sans les moduler par classe. Le régime IGH se déclare seul.
+  it("accepte un IGH qui ne dit rien de plus que son régime", () => {
+    const res = etablissementSchema.safeParse({ ...base, estIGH: true });
+    expect(res.success).toBe(true);
   });
 
   it("accepte ERP + IGH cumulés (régimes non exclusifs)", () => {
@@ -72,7 +69,6 @@ describe("etablissementSchema — typologie (ADR-004)", () => {
       typeErp: "W",
       categorieErp: "N2",
       estIGH: true,
-      classeIgh: "GHW1",
     });
     expect(res.success).toBe(true);
   });
@@ -155,47 +151,26 @@ describe("etablissementSchema — dates civiles (registre, fiche renseignements)
 });
 
 /**
- * La dissymétrie création / modification (ADR-025 § 4, ADR-031).
+ * LA FAMILLE D'HABITATION N'EST PLUS DEMANDÉE — 2026-09-03.
  *
- * C'est la forme que prend la coexistence : une règle neuve borne ce qui
- * entre, elle ne rend pas inutilisable ce qui était là avant. Un dossier
- * d'habitation créé avant le 2026-09-01 n'a pas de famille ; si le schéma de
- * modification l'exigeait, son propriétaire ne pourrait plus rien changer —
- * pas même son adresse — tant qu'il ne l'aurait pas retrouvée.
+ * Quatre tests occupaient cette place depuis le 2026-09-01. Ils gravaient une
+ * dissymétrie soignée : la création EXIGEAIT la famille, la modification ne
+ * l'exigeait pas, pour qu'un dossier d'habitation ouvert avant cette date
+ * reste modifiable — sans quoi son propriétaire n'aurait plus pu changer même
+ * son adresse tant qu'il n'aurait pas retrouvé sa famille. Les deux moitiés
+ * étaient testées, précisément pour qu'on ne puisse pas réparer l'une en
+ * supprimant l'autre.
  *
- * Les deux moitiés sont testées : sans la seconde, on pourrait retirer la
- * règle de création et le test de modification resterait vert.
+ * La règle tombe entière, et pas parce qu'elle était mal faite : l'arrêté du
+ * 31 janvier 1986 a été dépouillé et ne conditionne aucune obligation
+ * d'entretien à la famille. Exiger à la création une donnée qui ne décide de
+ * rien ajoutait une étape et une occasion d'abandon.
+ *
+ * Ce qui garde le retrait vit désormais dans
+ * `src/lib/referentiels/familles-habitation.test.ts` : aucune famille ne peut
+ * plus être écrite, par aucun des deux schémas, et un dossier d'habitation
+ * sans famille est accepté à la création.
  */
-describe("famille d'habitation — exigée à la création, pas à la modification", () => {
-  const habitationSansFamille = { ...base, estHabitation: true };
-
-  it("la création refuse une habitation sans famille", () => {
-    const res = etablissementCreationSchema.safeParse(habitationSansFamille);
-    expect(res.success).toBe(false);
-    if (!res.success) {
-      expect(res.error.flatten().fieldErrors.familleHabitation).toBeDefined();
-    }
-  });
-
-  it("la modification accepte une habitation sans famille", () => {
-    const res = etablissementSchema.safeParse(habitationSansFamille);
-    expect(res.success).toBe(true);
-  });
-
-  it("la création accepte une habitation avec sa famille", () => {
-    const res = etablissementCreationSchema.safeParse({
-      ...habitationSansFamille,
-      familleHabitation: "DEUXIEME",
-    });
-    expect(res.success).toBe(true);
-  });
-
-  it("les deux refusent une famille posée hors régime habitation", () => {
-    const hors = { ...base, familleHabitation: "PREMIERE" };
-    expect(etablissementSchema.safeParse(hors).success).toBe(false);
-    expect(etablissementCreationSchema.safeParse(hors).success).toBe(false);
-  });
-});
 
 /**
  * Les refus de périmètre sur la PORTE, pas sur le parcours (ADR-031).
@@ -255,7 +230,6 @@ describe("refus de périmètre — création seulement", () => {
       typeErp: "M",
       categorieErp: "N5",
       estIGH: true,
-      classeIgh: "GHW1",
     });
     expect(res.success).toBe(false);
   });
@@ -265,7 +239,6 @@ describe("refus de périmètre — création seulement", () => {
       etablissementCreationSchema.safeParse({
         ...base,
         estIGH: true,
-        classeIgh: "GHW1",
       }).success,
     ).toBe(true);
   });

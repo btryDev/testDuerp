@@ -1558,12 +1558,42 @@ describe("moteur matching — restriction de catégorie ERP en ET avec les autre
       id: "test-restriction-classe-igh-et",
       typologies: { travail: true, igh: { classes: ["GHA"] } },
     };
-    // etabIgh() est un GHW employeur : la restriction GHA doit rejeter.
+    // etabIgh() est un GHW1 employeur : la restriction GHA doit rejeter.
     expect(
       determineObligationsApplicables(etabIgh(), [elec()], {
         obligations: [synthetique],
       }),
     ).toHaveLength(0);
+  });
+
+  it("mais la classe NON RENSEIGNÉE ne rejette pas — et c'est le cas normal", () => {
+    // CE QUE CE TEST EMPÊCHE, ET POURQUOI IL EST DEVENU NÉCESSAIRE LE
+    // 2026-09-03. La question de la classe d'IGH a été retirée du produit ce
+    // jour-là : plus aucune surface ne l'écrit, donc TOUT dossier neuf porte
+    // `classeIgh: null`. Jusque-là, `null` faisait mismatch sur une règle
+    // bornée par `classes` — ce qui était déjà contraire à la règle du
+    // non-renseigné de l'ADR-022, et devenait, la question retirée, la
+    // garantie qu'une obligation ainsi bornée disparaîtrait de tous les
+    // dossiers sans que personne ne le voie.
+    //
+    // La capacité `igh: { classes }` est conservée volontairement : retirer la
+    // question n'est pas retirer la capacité. Elle doit donc rester
+    // utilisable sans piège, et le comportement est désormais celui de la
+    // famille d'habitation — retenu, et dit.
+    const synthetique: Obligation = {
+      ...obligationsElectricite[0],
+      id: "test-restriction-classe-igh-non-renseignee",
+      typologies: { travail: true, igh: { classes: ["GHA"] } },
+    };
+    const sansClasse = etabIgh();
+    sansClasse.classeIgh = null;
+    const res = determineObligationsApplicables(sansClasse, [elec()], {
+      obligations: [synthetique],
+    });
+    expect(res).toHaveLength(1);
+    // Retenue, mais pas en silence : l'écran doit pouvoir dire sur quoi il
+    // sert large.
+    expect(res[0].raisons.join(" ")).toContain("classe non renseignée");
   });
 
   it("un ERP dont la catégorie est inconnue est rejeté par une restriction de catégorie", () => {

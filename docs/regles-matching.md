@@ -127,7 +127,7 @@ ou de classe, et l'effectif s'appliquent **en ET** :
 | `erp: { types: [...] }`      | matché si l'établissement est ERP **et** son `typeErp` appartient à la liste (cumulable avec `categories`)                                               |
 | `erp: { typesExclus: [...] }` | matché si l'établissement est ERP **et** que son `typeErp` n'appartient PAS à la liste — un `typeErp` non renseigné n'est pas exclu (cumulable avec `categories`, jamais avec `types`) |
 | `igh: true`      | matché si l'établissement est IGH                                                                                                                                    |
-| `igh: { classes: [...] }`    | matché si l'établissement est IGH **et** sa `classeIgh` appartient à la liste                                                                            |
+| `igh: { classes: [...] }`    | matché si l'établissement est IGH **et** sa `classeIgh` appartient à la liste — **ou n'est pas renseignée**, auquel cas l'obligation est retenue « à confirmer » (2026-09-03, même dissymétrie que la famille : la question de la classe ayant été retirée du produit, tout dossier neuf porte `null`, et rejeter reviendrait à faire disparaître en silence la première obligation qu'on bornerait ainsi)                                                                            |
 | `habitation: true`| matché si `estHabitation = true`                                                                                                                                    |
 | `effectifMin`    | requis (ET) : `effectifSurSite` ≥ `effectifMin` (bornes incluses)                                                                                                    |
 | `effectifMax`    | requis (ET) : `effectifSurSite` ≤ `effectifMax` (bornes incluses)                                                                                                    |
@@ -225,8 +225,8 @@ sont considérées comme **triviallement satisfaites** pour lui.
 // Condition « maintenue tant que l'utilisateur n'a pas répondu non »
 {
   type: "equipement_propriete_non_infirmee",
-  categorie: "EXTINCTEUR",
-  propriete: "aRobinetsIncendieArmes",
+  categorie: "VMC",
+  propriete: "estVmcGaz",
 }
 ```
 
@@ -394,11 +394,30 @@ cohérence du référentiel
   de bâtiment. Limite restante : l'onboarding exige `effectifSurSite ≥ 1`,
   un immeuble d'habitation sans salarié se déclare donc par la fiche
   établissement.
-- **RIA : catégorie propre, branche EXTINCTEUR transitoire** (amendement
-  2026-08-25). `RIA` existe dans l'enum ; `incendie-erp-ria-annuelle` vise
-  `["RIA", "EXTINCTEUR"]`, la seconde bornée par `aRobinetsIncendieArmes`
-  (opt-out) tant que la reprise `scripts/reprise-ria.ts` n'a pas été jouée.
-  Critère de retrait : plus aucun extincteur ne porte la clé en base.
+- **RIA : catégorie propre, branche EXTINCTEUR retirée** (amendement
+  2026-08-25, soldé le 2026-09-03). `RIA` est une catégorie d'équipement ;
+  `incendie-erp-ria-annuelle` ne vise plus qu'elle. La branche `EXTINCTEUR`
+  bornée par l'opt-out `aRobinetsIncendieArmes` était transitoire, le temps de
+  la reprise `scripts/reprise-ria.ts` ; celle-ci a été appliquée en production
+  le 2026-08-25 (cinq RIA créés, cinq lignes de calendrier réaffectées, plus
+  aucun extincteur porteur de la clé) et la branche est tombée le jour même.
+  **La QUESTION du formulaire, elle, avait survécu neuf jours** — posée sur
+  chaque extincteur alors que `true`, `false` et l'absence rendaient le même
+  jeu d'obligations. Elle est retirée le 2026-09-03 ; la caractéristique
+  `aRobinetsIncendieArmes` n'existe plus.
+
+- **Classe d'IGH et famille d'habitation : les questions sont retirées, les
+  restrictions restent exprimables** (2026-09-03). `igh: { classes }` et
+  `habitation: { familles }` demeurent des critères valides du moteur ; aucune
+  obligation du référentiel ne les emploie, et plus aucun formulaire ne collecte
+  les deux attributs. La lecture des deux règlements a établi qu'aucune
+  obligation d'exploitant n'en dépend — l'arrêté du 30 décembre 2011 met ses
+  vérifications à la charge des « propriétaires » (`GH 5`) sans les moduler par
+  classe, et l'obligation périodique centrale de l'arrêté du 31 janvier 1986
+  (art. 101) vise « le propriétaire » sans mentionner de famille. **Retirer la
+  question n'est pas retirer la capacité** : le jour où un texte imposerait
+  quelque chose à une classe ou à une famille, le critère existe, la colonne
+  existe, et il ne resterait qu'à reposer la question.
 
 ## Prescriptions particulières (ADR-014)
 

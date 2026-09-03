@@ -130,6 +130,28 @@ function evaluerErp(
   return { etat: "match", raison: "ERP" };
 }
 
+/**
+ * L'IGH, avec ou sans restriction de classe (arrêté du 30 décembre 2011).
+ *
+ * LA CLASSE NON RENSEIGNÉE NE REJETTE PLUS, depuis le 2026-09-03, et ce
+ * changement n'est pas un confort : il ferme un faux négatif MUET que le
+ * retrait de la question aurait rendu certain.
+ *
+ * Jusqu'ici, `classeIgh: null` faisait `mismatch` sur toute règle bornée par
+ * `classes`. C'était déjà contraire à la règle du non-renseigné de l'ADR-022 —
+ * « l'incertitude ne réduit jamais la couverture » —, et c'était sans
+ * conséquence tant qu'un dirigeant pouvait renseigner la classe. La question a
+ * été retirée du produit le 2026-09-03 : plus aucune surface ne l'écrit, donc
+ * tout dossier neuf porte `null`, donc la PREMIÈRE obligation qu'on encoderait
+ * un jour avec `igh: { classes }` disparaîtrait silencieusement pour tout le
+ * monde. Une capacité qu'on garde doit rester utilisable sans piège.
+ *
+ * Le comportement est désormais celui d'`evaluerHabitation`, mot pour mot :
+ * classe connue et visée → match ; classe connue et non visée → mismatch ;
+ * classe absente → match, en le disant. Ce qui reste asymétrique — et doit le
+ * rester — est `evaluerErp` sur la catégorie, où l'absence écarte : une
+ * catégorie d'ERP se déclare toujours, elle.
+ */
 function evaluerIgh(
   critere: TypologieApplication["igh"],
   etab: EtablissementMatching,
@@ -138,10 +160,20 @@ function evaluerIgh(
   if (!etab.estIGH) return { etat: "mismatch" };
   if (typeof critere === "object") {
     if (critere.classes && critere.classes.length > 0) {
-      if (!etab.classeIgh || !critere.classes.includes(etab.classeIgh)) {
+      const attendues = critere.classes.join(", ");
+      if (!etab.classeIgh) {
+        return {
+          etat: "match",
+          raison: `IGH, classe non renseignée — obligation retenue par prudence, à confirmer (règle limitée à : ${attendues})`,
+        };
+      }
+      if (!critere.classes.includes(etab.classeIgh)) {
         return { etat: "mismatch" };
       }
-      return { etat: "match", raison: `IGH classe ${etab.classeIgh}` };
+      return {
+        etat: "match",
+        raison: `IGH classe ${etab.classeIgh} (règle limitée à : ${attendues})`,
+      };
     }
     return { etat: "match", raison: "IGH" };
   }
@@ -428,11 +460,20 @@ export function matchTypologie(
   ) {
     return { ok: false };
   }
+  // Classe d'IGH : même rôle que la restriction de catégorie ERP — empêcher
+  // qu'une obligation restreinte passe par une autre branche de la disjonction
+  // (`travail: true`) sans que la restriction soit vérifiée. Et depuis le
+  // 2026-09-03, même dissymétrie que la famille d'habitation : la classe
+  // ABSENTE ne rejette pas. La garde en ET ne doit pas défaire la prudence
+  // d'`evaluerIgh` — sans quoi une obligation bornée par classe disparaîtrait
+  // de tous les dossiers, la question ayant été retirée du produit.
   if (
     typeof t.igh === "object" &&
     t.igh.classes.length > 0 &&
     etab.estIGH &&
-    (!etab.classeIgh || !t.igh.classes.includes(etab.classeIgh))
+    etab.classeIgh !== null &&
+    etab.classeIgh !== undefined &&
+    !t.igh.classes.includes(etab.classeIgh)
   ) {
     return { ok: false };
   }

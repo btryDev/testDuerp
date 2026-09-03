@@ -354,7 +354,13 @@ est nulle, la conservation reste à la charge de l'employeur hors de l'outil.
 
 ### Hors périmètre (à ce jour)
 - **ERP situé en IGH** (refusé à la création, ADR-031) ; sites industriels ;
-  équipements sportifs, piscines. L'**IGH seul est servi** : neuf obligations
+  équipements sportifs, piscines. La CLASSE d'IGH n'est plus demandée depuis le
+  2026-09-03 (`GH 5` s'adresse aux « propriétaires » sans varier par classe,
+  `GH 66` fait du classement l'affaire de l'usage principal de l'immeuble).
+  Une obligation IGH qui vise bien l'**occupant** est identifiée et **non
+  encodée** : `GH 61 § 5`, vérification quinquennale de la charge calorifique
+  par organisme agréé — au corpus en `obligation_manquante`, rien au modèle ne
+  la bloque. L'**IGH seul est servi** : neuf obligations
   portent la typologie `igh`, et les obligations du règlement IGH pèsent sur
   l'exploitant de l'immeuble, pas sur l'employeur qui y loue des bureaux
 - **ATEX, rayonnements ionisants, amiante, plomb, radon, CMR** : non couverts,
@@ -391,7 +397,7 @@ Le stockage des fichiers uploadés passe par une **abstraction** (`src/lib/stora
 
 ### Modèle de données (prisma/schema.prisma)
 
-Cœur : `Entreprise` → `Etablissement` (régimes cumulables travail/ERP/IGH/habitation, ADR-001/004 ; la **famille d'habitation** — `FamilleHabitation`, obligatoire à la création si `estHabitation` — précise le régime habitation comme la catégorie précise l'ERP) → `UniteTravail`, `Equipement`, `Duerp`/`DuerpVersion`, `Risque`, `Verification`, `RapportVerification`, `Action` (unifiée, XOR risque/vérification — ADR-002 ; `Mesure` a été supprimée).
+Cœur : `Entreprise` → `Etablissement` (régimes cumulables travail/ERP/IGH/habitation, ADR-001/004 ; les colonnes `familleHabitation` et `classeIgh` existent toujours et gardent leurs valeurs, mais **les deux questions ont été retirées du produit le 2026-09-03** — ni l'arrêté du 31 janvier 1986 ni celui du 30 décembre 2011 ne conditionnent d'obligation d'exploitant à la famille ou à la classe, et les quinze valeurs rendaient le même calendrier que `null`, mesuré en appelant le moteur. Seule la **catégorie d'ERP** précise encore un régime, parce qu'elle borne réellement des obligations) → `UniteTravail`, `Equipement`, `Duerp`/`DuerpVersion`, `Risque`, `Verification`, `RapportVerification`, `Action` (unifiée, XOR risque/vérification — ADR-002 ; `Mesure` a été supprimée).
 
 Modules complémentaires : `Prestataire`, `AccessToken`, `Signature`, `RegistreAccessibilite`, `PermisFeu`, `PlanPrevention`/`LignePlanPrevention`, `CarnetSanitaire`/`PointReleve`/`ReleveTemperature`/`AnalyseLegionelle`.
 
@@ -515,8 +521,10 @@ Compte → entreprise → **premier** établissement → déclaration guidée de
 
 Le parcours **ne déduit plus rien** depuis le 2026-09-01 : le type et la
 catégorie d'ERP sont **déclarés** par le dirigeant — son classement figure sur
-son arrêté d'ouverture ou au PV de la commission de sécurité — et la **famille
-d'habitation** est exigée si le régime habitation est coché. Les vingt-deux
+son arrêté d'ouverture ou au PV de la commission de sécurité. **Il ne demande
+plus non plus la famille d'habitation ni la classe d'IGH depuis le 2026-09-03** :
+les deux étaient obligatoires et ne décidaient d'aucune obligation ; les régimes
+IGH et habitation se cochent désormais sans précision. Les vingt-deux
 types sont proposés, pas huit — les vingt et un d'avant le 2026-09-03 en
 oubliaient un, le type J (structures d'accueil pour personnes âgées et
 handicapées), que l'ADR-004 avait perdu en écrivant la liste de mémoire. Deux réponses arrêtent la création : plus de

@@ -79,10 +79,7 @@
 import type { EtatCouverture } from "@/lib/duerps/couverture";
 import { nonPorte, porte } from "./non-couverture";
 import type { CorrespondanceSecteur } from "./secteur";
-import type {
-  CategorieErp,
-  FamilleHabitation,
-} from "@/lib/referentiels/types-communs";
+import type { CategorieErp } from "@/lib/referentiels/types-communs";
 
 /**
  * Les catégories que le produit couvre.
@@ -115,9 +112,16 @@ export type AxeCouverture =
   /** Des appareils du parc ne portent aucune échéance — rappel de
    *  `equipements/hors-referentiel.ts`. */
   | "domaine_equipement"
-  /** L'immeuble d'habitation n'a pas de famille : les obligations de
-   *  l'arrêté du 31 janvier 1986 lui sont servies sans distinction. */
-  | "famille_habitation"
+  /* L'axe `famille_habitation` a existé du 2026-09-01 au 2026-09-03. Il
+     disait : « l'immeuble d'habitation n'a pas de famille, les obligations de
+     l'arrêté du 31 janvier 1986 lui sont servies sans distinction ». Cette
+     phrase était fausse dans les deux sens — il n'existe aucune obligation
+     distinguée par famille dont il faudrait s'excuser, et le texte, une fois
+     ouvert, ne conditionne rien à la famille (son unique obligation
+     périodique, l'article 101, vise « le propriétaire »). Annoncer une
+     incertitude qui n'en est pas une est un mensonge poli : le dirigeant
+     cherche une information qui ne changerait rien. L'axe part avec la
+     question. */
   /** L'effectif dépasse la taille que la porte de création accepte, et le
    *  dossier vit quand même — projection de l'ADR-031 § 1 bis. */
   | "effectif";
@@ -177,7 +181,8 @@ export type RegimeEtablissement = {
   estIGH: boolean;
   categorieErp: CategorieErp | null;
   estHabitation: boolean;
-  familleHabitation: FamilleHabitation | null;
+  /* `familleHabitation` a quitté ce type le 2026-09-03 avec l'axe qui la
+     lisait : plus rien, dans la couverture, ne dépend de la famille. */
 };
 
 /**
@@ -266,31 +271,6 @@ const LIBELLE_CATEGORIE: Record<CategorieErp, string> = {
   N4: "4ᵉ catégorie",
   N5: "5ᵉ catégorie",
 };
-
-/**
- * L'habitation sans famille — indétermination, jamais un manque.
- *
- * La nuance compte : un manque dit « l'outil ne couvre pas », une
- * indétermination dit « il ne sait pas encore, et voici comment le lui
- * apprendre ». Ici le produit sert bien le régime ; il lui manque une donnée
- * que le dirigeant possède. Le moteur, lui, ne retire rien en attendant : il
- * retient les obligations et les marque « à confirmer » (cf.
- * `matching/engine.ts`, `evaluerHabitation`). Les deux moitiés de la même
- * honnêteté — on sert, et on dit sur quoi on sert large.
- */
-function axeFamilleHabitation(
-  regime: RegimeEtablissement,
-  indeterminations: IndeterminationCouverture[],
-): void {
-  if (!regime.estHabitation) return;
-  if (regime.familleHabitation !== null) return;
-  indeterminations.push({
-    axe: "famille_habitation",
-    motif: "La famille de votre immeuble d'habitation n'est pas renseignée.",
-    quoiFaire:
-      "Elle figure au dossier de l'immeuble ; votre syndic ou votre bureau de contrôle vous la donne. Sans elle, les obligations propres à l'habitation vous sont toutes présentées, y compris celles qui ne visent peut-être pas votre immeuble : mieux vaut une ligne en trop, que vous pouvez écarter, qu'une ligne manquante que personne ne verrait.",
-  });
-}
 
 function axeRegime(
   regime: RegimeEtablissement,
@@ -621,7 +601,6 @@ export function couvertureDeLEtablissement(
   axeEffectif(faits.effectif, manques);
   axeDuerp(faits.duerp, manques, indeterminations);
   axeSecteurParDefaut(faits.duerp, manques);
-  axeFamilleHabitation(faits.regime, indeterminations);
   axeEquipements(faits.equipements, manques);
 
   return { manques, indeterminations };

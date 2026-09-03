@@ -150,7 +150,45 @@ déjà plus de trois bâtiments les gardent.
 
 ---
 
-## 4. La catégorie d'ERP et la famille d'habitation sont obligatoires
+## 4. La catégorie d'ERP est obligatoire — la famille d'habitation ne l'est plus
+
+> ⚠ **AMENDÉ LE 2026-09-03. La seconde moitié de ce paragraphe est renversée :
+> la famille d'habitation n'est plus demandée, ni à la création ni à la
+> modification.** Le texte d'origine est conservé sous l'amendement, parce qu'il
+> raconte pourquoi la question a été posée, et que la raison invoquée s'est
+> révélée fausse une fois le texte ouvert — ce qui vaut d'être lu.
+>
+> **CE QUI CHANGE.** La famille d'habitation (`FamilleHabitation`) ne figure
+> plus ni à l'onboarding, ni à la fiche établissement, ni dans les schémas de
+> validation. La classe d'IGH (`ClasseIgh`), qui n'était pas nommée dans cette
+> ADR mais obéissait à la même règle, est retirée en même temps et pour la même
+> raison. Les colonnes et les énumérations restent en base.
+>
+> **CE QUI LE FONDE.** L'argument ci-dessous — « une obligation d'habitation
+> servie sans distinction de famille est probablement fausse pour certaines
+> d'entre elles » — était une hypothèse, écrite avant que l'arrêté du 31 janvier
+> 1986 n'ait été ouvert. Il l'a été le 2026-09-01, puis complété le 2026-09-03 :
+> **aucune** de ses obligations ne dépend de la famille. Son unique obligation
+> périodique centrale, l'article 101, vise « le propriétaire » et ne mentionne
+> pas les familles ; celles-ci gouvernent la CONSTRUCTION — degrés coupe-feu
+> (art. 97), colonnes sèches (art. 98). Mesuré en appelant le moteur : les cinq
+> familles et `null` rendent le même jeu d'obligations. Idem pour les dix
+> classes d'IGH, dont l'arrêté du 30 décembre 2011 met les vérifications à la
+> charge des « propriétaires » sans les moduler par classe (GH 5), et dont
+> GH 66 dispose que le classement retient l'usage PRINCIPAL de l'immeuble —
+> la classe déclarée d'une tour ne décrit donc pas le plateau qu'on y occupe.
+>
+> **LA CATÉGORIE D'ERP N'EST PAS TOUCHÉE**, et la dissymétrie est le fond de
+> l'affaire : `erp: { categories }` borne réellement des obligations du
+> référentiel, `habitation: { familles }` et `igh: { classes }` n'en bornent
+> aucune. Une précision de régime se demande parce qu'elle décide, pas parce
+> qu'elle complète.
+>
+> **CE QUI SURVIT DE CE PARAGRAPHE**, mot pour mot : « un dossier ne peut pas se
+> créer sans que son régime soit précisé » reste vrai de l'ERP. Le régime IGH et
+> le régime habitation, eux, se déclarent désormais par leur seul booléen.
+
+*Texte d'origine, 2026-09-01 :*
 
 Un dossier ne peut pas se créer sans que son régime soit précisé.
 

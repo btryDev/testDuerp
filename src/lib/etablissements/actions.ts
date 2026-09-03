@@ -47,8 +47,9 @@ const CHAMPS_STRUCTURANTS = [
   "estHabitation",
   "typeErp",
   "categorieErp",
-  "classeIgh",
-  "familleHabitation",
+  // `classeIgh` et `familleHabitation` ont quitté cette liste le 2026-09-03
+  // avec les questions qui les posaient : plus aucun formulaire ne les poste,
+  // et un champ structurant qui n'est jamais soumis ne peut rien restructurer.
   "effectifSurSite",
   "personnesPresentesHabituellement",
   "manipuleMatieresR422722",
@@ -98,8 +99,6 @@ function normaliserFormData(fd: FormData): Record<string, unknown> {
     estHabitation: bool("estHabitation"),
     typeErp: raw.typeErp || undefined,
     categorieErp: raw.categorieErp || undefined,
-    classeIgh: raw.classeIgh || undefined,
-    familleHabitation: raw.familleHabitation || undefined,
     natureActivite: raw.natureActivite,
     // Ces quatre champs ne sont rendus que dans le bloc `{estERP && (…)}` du
     // formulaire. Décocher la case les retire donc du FormData, et un

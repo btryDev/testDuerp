@@ -53,15 +53,12 @@ function lienDeLAxe(
         href: hrefs.etablissement,
         libelle: "Vérifier l'effectif déclaré",
       };
-    // Même destination que le régime, libellé différent — et la différence
-    // n'est pas cosmétique. Le régime est là et se vérifie ; la famille
-    // d'habitation n'a jamais été donnée et se renseigne. « Vérifier »
-    // enverrait relire un champ vide.
-    case "famille_habitation":
-      return {
-        href: hrefs.etablissement,
-        libelle: "Renseigner la fiche de l'établissement",
-      };
+    // Le cas `famille_habitation` a vécu ici du 2026-09-01 au 2026-09-03, avec
+    // un libellé à lui — « Renseigner la fiche de l'établissement » — et une
+    // bonne raison de l'avoir : on n'envoie pas « vérifier » un champ vide.
+    // L'axe est retiré avec la question : aucune obligation du référentiel ne
+    // dépend de la famille, et une indétermination annoncée sur une donnée qui
+    // ne décide de rien envoie le dirigeant chercher pour rien.
     case "secteur_duerp":
       return hrefs.duerp
         ? { href: hrefs.duerp, libelle: "Ouvrir le document unique" }

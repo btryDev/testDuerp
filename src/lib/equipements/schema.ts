@@ -19,7 +19,6 @@ import { FAMILLES_ESP } from "./esp";
  *     (contrôle semestriel des gaines de recyclage, en SUS de l'annuel)
  *   - `nbVehiculesParkingCouvert`   → ERP, art. PS 32 (biennale ou annuelle)
  *   - `estVmcGaz`                   → habitation, arrêté 25-04-1985
- *   - `aRobinetsIncendieArmes`      → ERP, vérification annuelle des RIA
  *   - `aExtinctionAutomatique`      → ERP, extinction automatique en cuisine
  *   - `sertAuLevageDePersonnes`     → travail, VGP semestrielle (arrêté 02-03-2004)
  *   - `estChariotOuGerbeur`         → travail, VGP semestrielle (arrêté 01-03-2004, art. 20-II et 23)
@@ -50,13 +49,28 @@ import { FAMILLES_ESP } from "./esp";
  * alarme dessert des locaux à sommeil » — ne distinguait pas le sommeil du
  * public de celui du personnel, là où PE 37 écrit « pour le public ».
  *
+ * `aRobinetsIncendieArmes` a été RETIRÉ le 2026-09-03, et ce retrait était
+ * ÉCRIT D'AVANCE. Les `notesInternes` de `incendie-erp-ria-annuelle` posaient
+ * le critère : « plus aucun équipement EXTINCTEUR ne porte la clé
+ * `aRobinetsIncendieArmes` en base — retirer alors "EXTINCTEUR" des
+ * catégories, la condition, ET LA QUESTION DU FORMULAIRE ». Le critère est
+ * rempli depuis le commit `ff87f4b` du 2026-08-25, qui relate la reprise
+ * appliquée en production ce jour-là — cinq RIA créés, cinq lignes de
+ * calendrier réaffectées, plus aucun extincteur porteur de la clé, vérifié en
+ * base après écriture. Les deux premiers retraits ont été faits dans ce même
+ * commit ; le troisième a été oublié. La question survivait donc à sa cause
+ * de neuf jours : posée sur chaque extincteur, obligatoire nulle part,
+ * décidant de rien — `true`, `false` et l'absence rendaient exactement le même
+ * jeu d'obligations, mesuré en appelant le moteur. Les RIA se déclarent
+ * désormais par leur propre catégorie d'équipement `RIA`.
+ *
  * ── Booléens à deux états contre booléens à trois états ────────────────────
  *
  * Les deux premières propriétés sont des **cases à cocher** : décochée vaut
  * « non ». C'est acceptable parce qu'elles gouvernent des obligations en
  * « opt-in » (l'obligation n'apparaît qu'après une réponse positive).
  *
- * Les treize suivantes (`CHAMPS_TRI_ETAT`) bornent au contraire des obligations **déjà publiées**, de
+ * Celles de `CHAMPS_TRI_ETAT` bornent au contraire des obligations **déjà publiées**, de
  * criticité élevée, en « opt-out » : elles restent applicables tant que le
  * dirigeant n'a pas répondu « non ». Une case à cocher ne convient donc pas —
  * elle ne distingue pas « j'ai répondu non » de « je n'ai pas encore répondu »,
@@ -106,17 +120,18 @@ export const CATEGORIES_AERATION: readonly CategorieEquipement[] = [
 ];
 
 /**
- * Les treize questions à trois états, dans l'ordre d'affichage.
+ * Les questions à trois états, dans l'ordre d'affichage.
  *
- * Le compte est écrit à la main et se périme donc seul : deux commentaires se
- * superposaient ici, l'un annonçant douze questions et l'autre sept, aucun des
- * deux n'étant juste. Ils sont remplacés par un seul, recompté le 2026-09-01
- * après le retrait de `dessertLocauxSommeil`. Si vous en ajoutez une, ce
- * nombre est à corriger — ou à supprimer, ce qui vaudrait mieux.
+ * LE COMPTE N'EST PLUS ÉCRIT ICI, ET C'EST DÉLIBÉRÉ. Trois commentaires s'y
+ * sont succédé — « douze », « sept », puis « treize » —, chacun juste le jour
+ * où il a été écrit et faux le lendemain : le retrait de `dessertLocauxSommeil`
+ * le 2026-09-01 a périmé le deuxième, celui de `aRobinetsIncendieArmes` le
+ * 2026-09-03 aurait périmé le troisième. Un nombre recopié à la main dans un
+ * commentaire ne peut pas rester vrai ; celui qui veut le savoir lit
+ * `CHAMPS_TRI_ETAT.length`, qui ne ment jamais.
  */
 export const CHAMPS_TRI_ETAT = [
   "estVmcGaz",
-  "aRobinetsIncendieArmes",
   "aExtinctionAutomatique",
   "sertAuLevageDePersonnes",
   "estChariotOuGerbeur",
@@ -145,11 +160,6 @@ export const CATEGORIES_TRI_ETAT: readonly {
     champ: "estVmcGaz",
     categories: ["VMC"],
     message: "Spécifique aux VMC raccordées à des appareils à gaz",
-  },
-  {
-    champ: "aRobinetsIncendieArmes",
-    categories: ["EXTINCTEUR"],
-    message: "Spécifique aux moyens d'extinction (RIA)",
   },
   {
     champ: "aExtinctionAutomatique",
@@ -290,7 +300,6 @@ export const equipementSchema = z
     ),
     // Questions à trois états (oui / non / pas encore répondu).
     estVmcGaz: triEtat,
-    aRobinetsIncendieArmes: triEtat,
     aExtinctionAutomatique: triEtat,
     sertAuLevageDePersonnes: triEtat,
     estChariotOuGerbeur: triEtat,
