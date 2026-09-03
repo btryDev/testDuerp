@@ -1,0 +1,43 @@
+-- Les deux dernières situations de l'article L. 114 du code de l'action
+-- sociale et des familles, que `HandicapAccessible` ne savait pas dire.
+--
+-- « Constitue un handicap, au sens de la présente loi, toute limitation
+-- d'activité ou restriction de participation à la vie en société subie dans son
+-- environnement par une personne en raison d'une altération substantielle,
+-- durable ou définitive d'une ou plusieurs fonctions physiques, sensorielles,
+-- mentales, cognitives ou psychiques, D'UN POLYHANDICAP OU D'UN TROUBLE DE
+-- SANTÉ INVALIDANT. » — verbatim relevé sur Légifrance le 2026-09-03, version
+-- en vigueur du 2005-02-12 (loi n° 2005-102 du 11 février 2005, art. 2). Lu
+-- deux fois : la première lecture insérait un deux-points après « fonctions »,
+-- la seconde, interrogée sur ce point, a confirmé qu'il n'y en a pas.
+--
+-- POURQUOI CETTE SOURCE ET PAS UNE AUTRE. Le champ servi est
+-- `RegistreAccessibilite.handicapsAccueillis`, et on aurait attendu que le
+-- droit de l'accessibilité porte la nomenclature. Il n'en porte aucune : ni
+-- `L. 161-1` ni `L. 164-1` du CCH, ni `R. 164-6`, ni l'arrêté du 19 avril 2017
+-- ne répartissent les personnes handicapées — les quatre disent « les personnes
+-- handicapées » sans les distinguer. `L. 114` est la seule énumération du droit
+-- français. Les quatre textes sont dépouillés dans
+-- `src/lib/referentiels/corpus/accessibilite-handicap.ts`.
+--
+-- CE QUE LEUR ABSENCE COÛTAIT. C'est le défaut du type `J` de `TypeErp`, dans
+-- un autre module : un établissement adapté au polyhandicap — un IME, un
+-- accueil de jour — ouvrait la liste et n'y trouvait pas la sienne. Il cochait
+-- alors « mental » ou « moteur », ou ne cochait rien, et le registre public
+-- qu'il publie disait moins que ce que l'établissement fait. `L. 114` met ces
+-- deux situations sur le même plan que les cinq familles de fonctions ; le
+-- modèle les mettait nulle part.
+--
+-- Les six valeurs existantes ne bougent pas. Trois d'entre elles ne sont pas
+-- les mots de `L. 114` mais un affinage de deux d'entre eux — `moteur` pour
+-- « physiques », `visuel` et `auditif` pour « sensorielles ». Cet affinage est
+-- désormais déclaré valeur par valeur (`FAMILLE_L114`,
+-- `src/lib/accessibilite/schema.ts`) et vérifié contre le verbatim par
+-- `src/lib/referentiels/handicap-accessible.test.ts`.
+--
+-- Additif et rétrocompatible : aucune ligne existante n'est touchée, le champ
+-- est un tableau qui peut rester vide. Même régime que les migrations
+-- `..._realisateur_sante_travail` et `..._realisateur_equipe_pluridisciplinaire`.
+
+ALTER TYPE "HandicapAccessible" ADD VALUE IF NOT EXISTS 'polyhandicap' AFTER 'psychique';
+ALTER TYPE "HandicapAccessible" ADD VALUE IF NOT EXISTS 'trouble_sante_invalidant' AFTER 'polyhandicap';

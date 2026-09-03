@@ -60,6 +60,11 @@ import {
 import { CODE_TRAVAIL_ECLAIRAGE } from "./code-travail-eclairage";
 import { CODE_TRAVAIL_BRUIT_VIBRATIONS } from "./code-travail-bruit-vibrations";
 import { CODE_TRAVAIL_MATIERES_INFLAMMABLES } from "./code-travail-matieres-inflammables";
+import { ARRETE_1993_03_19_TRAVAUX_DANGEREUX } from "./arrete-1993-03-19-travaux-dangereux";
+import {
+  ARRETE_2017_04_19_REGISTRE_ACCESSIBILITE,
+  CASF_DEFINITION_HANDICAP,
+} from "./accessibilite-handicap";
 import {
   couverture,
   type ArticleDepouille,
@@ -243,6 +248,30 @@ export const CORPUS: readonly Corpus[] = [
   // (« entreposées OU manipulées »). Voir l'en-tête du fichier et le motif de
   // `R. 4227-22`.
   CODE_TRAVAIL_MATIERES_INFLAMMABLES,
+  // Lot « listes fermées », 2026-09-03 — trois textes ouverts non pour une
+  // obligation mais pour une ÉNUMÉRATION du modèle (§ 9 de
+  // `docs/chantiers-ouverts.md`). Deux d'entre eux sont ici pour ce qu'ils
+  // NE disent PAS, et c'est leur usage principal.
+  //
+  // L'ARRÊTÉ DU 19 MARS 1993 était cité en prose par le corpus du plan de
+  // prévention sans avoir jamais été porté. Ouvert, son 21° est la seule
+  // désignation d'un travail par point chaud dans un texte opposable —
+  // « soudage oxyacétylénique exigeant le recours à un permis de feu » — et
+  // c'est la borne basse, unique, de `NatureTravauxPointChaud`.
+  ARRETE_1993_03_19_TRAVAUX_DANGEREUX,
+  // `L. 114` DU CASF est le seul article du droit français qui énumère les
+  // familles de handicap : cinq fonctions, plus le polyhandicap et le trouble
+  // de santé invalidant, mis sur le même plan. C'est de lui que
+  // `HandicapAccessible` tient sa nomenclature — et non du droit de
+  // l'accessibilité, qui n'en écrit aucune.
+  CASF_DEFINITION_HANDICAP,
+  // L'ARRÊTÉ DU 19 AVRIL 2017 est le texte que le produit cite au dirigeant
+  // sur l'écran du registre. Il est ici pour porter une ABSENCE : ses quatre
+  // articles de fond énumèrent neuf pièces et pas une famille de handicap.
+  // Sans son verbatim, « le droit de l'accessibilité ne nomme aucune famille »
+  // resterait une affirmation ; avec lui, c'est une propriété vérifiée sur le
+  // texte par `handicap-accessible.test.ts`.
+  ARRETE_2017_04_19_REGISTRE_ACCESSIBILITE,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {

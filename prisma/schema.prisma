@@ -1077,6 +1077,27 @@ model RegistreAccessibilite {
   // second index sur la même colonne ne fait que coûter à l'écriture.
 }
 
+// Les familles de handicap dans lesquelles un ERP déclare être adapté.
+//
+// LA SOURCE N'EST PAS LE DROIT DE L'ACCESSIBILITÉ, et c'est le résultat du
+// relevé du 2026-09-03. Toute la chaîne a été ouverte — `L. 161-1` et
+// `L. 164-1` du CCH, `R. 164-6` qui institue le registre, l'arrêté du
+// 19 avril 2017 qui en fixe le contenu — et aucun de ces textes ne répartit
+// les personnes handicapées : ils disent « quel que soit le handicap ». La
+// seule énumération du droit français est `L. 114` du code de l'action sociale
+// et des familles, écrit par l'article 2 de la loi du 11 février 2005 : cinq
+// familles de fonctions — physiques, sensorielles, mentales, cognitives,
+// psychiques — plus DEUX situations que l'article met sur le même plan.
+//
+// Ces deux-là manquaient, et c'est le défaut de type `J` : un établissement
+// adapté au polyhandicap ne pouvait pas le déclarer. Ajoutées le 2026-09-03.
+//
+// Les six premières valeurs ne sont pas les mots de `L. 114` : elles en
+// affinent deux — `moteur` pour « physiques », `visuel` et `auditif` pour
+// « sensorielles ». Cet affinage est DÉCLARÉ, valeur par valeur, dans
+// `FAMILLE_L114` (`src/lib/accessibilite/schema.ts`), et
+// `handicap-accessible.test.ts` exige que chaque famille du texte y ait au
+// moins un répondant. Voir `corpus/accessibilite-handicap.ts`.
 enum HandicapAccessible {
   moteur
   visuel
@@ -1084,6 +1105,10 @@ enum HandicapAccessible {
   mental
   cognitif
   psychique
+  // « d'un polyhandicap ou d'un trouble de santé invalidant » — la fin de
+  // `L. 114`, que les six valeurs ci-dessus ne savaient pas dire.
+  polyhandicap
+  trouble_sante_invalidant
 }
 
 enum RegimeConformiteErp {

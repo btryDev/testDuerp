@@ -119,6 +119,94 @@ export const REALISATEURS = [
 
 export type Realisateur = (typeof REALISATEURS)[number];
 
+/**
+ * Ce qui, dans un texte, nomme chacun de ces réalisateurs.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * `Realisateur` N'EST PAS LA TRANSCRIPTION D'UNE NOMENCLATURE
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * Le § 9 de `docs/chantiers-ouverts.md` range cette liste parmi les sept qui
+ * « transcrivent une nomenclature écrite dans un texte », et lui donne pour
+ * source « `R. 4323-24` et voisins ». Ouvert le 2026-09-03, `R. 4323-24` ne
+ * nomme **qu'une seule** de ces dix valeurs : « Les vérifications générales
+ * périodiques sont réalisées par des personnes qualifiées, appartenant ou non à
+ * l'établissement… ». Il n'y a pas d'article, ni d'arrêté, qui énumère les
+ * qualifications admises pour vérifier quoi que ce soit : chaque texte nomme
+ * celle qu'il exige, et le produit les agrège.
+ *
+ * **Il n'y a donc pas de comparaison à faire, dans les deux sens, avec une
+ * liste de référence — il n'en existe aucune.** Ce qui se vérifie à la place
+ * est plus faible et c'est la seule chose vraie : qu'aucune de ces valeurs ne
+ * soit un mot de métier sans texte derrière. Chacune désigne ici l'article du
+ * corpus dont le verbatim l'écrit, et `realisateur.test.ts` va relire ce
+ * verbatim. Une valeur ajoutée sans ancrage fait rougir le test ; elle ne se
+ * répare pas en recopiant une autre déclaration, mais en trouvant le texte.
+ *
+ * `expression` est le mot du TEXTE, pas la valeur du modèle — les deux
+ * divergent volontairement deux fois, et c'est le point le plus intéressant de
+ * cette table : voir `bureau_controle` et `exploitant`.
+ */
+export const ANCRAGE_REALISATEUR: Record<
+  Realisateur,
+  { ref: string; expression: string }
+> = {
+  // « soit par des organismes agréés par le ministre de l'intérieur, soit par
+  // des techniciens compétents » (GE 6 § 1).
+  organisme_agree: { ref: "GE 6", expression: "organismes agréés" },
+  // « Lorsque les vérifications sont effectuées par un organisme accrédité… »
+  // — R. 4226-19, la consignation au registre des résultats de vérification
+  // électrique. AU SINGULIER : la première rédaction de cet ancrage écrivait
+  // « organismes accrédités », au pluriel comme son voisin `GE 6`, et le test
+  // a rougi. C'est la démonstration en petit de ce que la table sert à faire —
+  // le mot vient du texte, pas de la symétrie avec la ligne d'à côté.
+  organisme_accredite: { ref: "R. 4226-19", expression: "organisme accrédité" },
+  // L'article qui dit QUI réalise les vérifications générales périodiques, pour
+  // tous les équipements de travail. Le seul des dix que le § 9 nommait.
+  personne_qualifiee: { ref: "R. 4323-24", expression: "personnes qualifiées" },
+  // « sous la direction d'une personne compétente » — le montage des
+  // échafaudages. À ne pas confondre avec la phrase de `R. 4323-24`, qui
+  // emploie « compétentes » comme un adjectif de la personne QUALIFIÉE et non
+  // comme une qualité distincte.
+  personne_competente: { ref: "R. 4323-69", expression: "personne compétente" },
+  // LE TEXTE N'ÉCRIT PAS « EXPLOITANT » ICI, IL ÉCRIT « L'EMPLOYEUR », et la
+  // valeur couvre les deux : `R. 4323-23` met la vérification à la charge de
+  // l'employeur, qui « procède OU fait procéder ». C'est cette première branche
+  // — il la fait lui-même — que `exploitant` nomme. Le règlement ERP, lui, dit
+  // « l'exploitant » ; les deux mots désignent le destinataire du produit.
+  exploitant: { ref: "R. 4323-23", expression: "l'employeur procède" },
+  // « la vérification de l'état de conservation […] conformément à la notice
+  // d'instructions du fabricant » — arrêté du 1er mars 2004, art. 5.
+  fabricant: { ref: "Arrêté 2004-03-01 art. 5", expression: "fabricant" },
+  // LA SEULE VALEUR DONT LE MOT N'EST DANS AUCUN TEXTE. « Bureau de contrôle »
+  // est du vocabulaire de métier ; le droit dit « contrôleur technique »
+  // (CCH, L. 125-1, et R. 134-12 pour les ascenseurs, qui énumère les
+  // contrôleurs admis). La valeur est ancrée sur ce mot-là, et l'écart est
+  // déclaré ici plutôt que corrigé : renommer la clé imposerait une migration
+  // de données pour un gain nul côté dirigeant, qui ne lit que le libellé et
+  // pour qui « bureau de contrôle » est le mot juste. Ce qu'il ne faut pas
+  // faire, c'est présenter cette valeur comme un mot du texte.
+  bureau_controle: {
+    ref: "Arrêté 2012-08-07",
+    expression: "contrôleur technique",
+  },
+  // `R. 4544-11-1` : l'attestation d'absence de contre-indication médicale à la
+  // conduite, que seul le médecin du travail délivre.
+  medecin_travail: { ref: "R. 4544-11-1", expression: "médecin du travail" },
+  // « l'un des professionnels de santé mentionnés au premier alinéa de
+  // l'article L. 4624-1 » — la visite d'information et de prévention.
+  professionnel_sante_travail: {
+    ref: "R. 4624-10",
+    expression: "professionnels de santé",
+  },
+  // « le médecin du travail OU, dans les services de prévention et de santé au
+  // travail interentreprises, l'équipe pluridisciplinaire ».
+  equipe_pluridisciplinaire: {
+    ref: "R. 4624-46",
+    expression: "équipe pluridisciplinaire",
+  },
+};
+
 // -----------------------------------------------------------------------------
 // Typologie — ADR-004 (régimes cumulables)
 // -----------------------------------------------------------------------------

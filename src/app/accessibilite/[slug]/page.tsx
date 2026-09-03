@@ -48,6 +48,13 @@ const PICTO: Record<keyof typeof LABEL_HANDICAP, string> = {
   mental: "✶",
   cognitif: "✦",
   psychique: "❋",
+  // Entrées le 2026-09-03 avec les deux dernières situations de `L. 114` du
+  // code de l'action sociale et des familles. Le `Record` exhaustif est ce qui
+  // a fait remonter cette table : c'est la QUATRIÈME déclaration de
+  // `HandicapAccessible`, et la seule que le compilateur tienne — les trois
+  // autres se recopiaient l'une l'autre en silence.
+  polyhandicap: "✻",
+  trouble_sante_invalidant: "✚",
 };
 
 export default async function RegistrePublicPage({

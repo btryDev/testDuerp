@@ -360,18 +360,58 @@ légitimement et qui n'ont pas de source.
 **Sept transcrivent une nomenclature écrite dans un texte, et aucune n'a jamais
 été confrontée à ce texte** :
 
-| Liste | Sa source | État |
+| Liste | Sa source, une fois ouverte | État |
 | --- | --- | --- |
-| `TypeErp` | `GN 1`, arrêté du 25 juin 1980 | **fausse — `J` manquant**, lot en cours |
+| `TypeErp` | `GN 1`, arrêté du 25 juin 1980 | **était fausse — `J` manquait** ; corrigée et tenue par `types-erp.test.ts` |
 | `CategorieErp` | même arrêté | non vérifiée |
 | `ClasseIgh` | arrêté du 30 décembre 2011 | non vérifiée |
 | `FamilleHabitation` | arrêté du 31 janvier 1986 | source citée en commentaire, pas testée |
-| `HandicapAccessible` | droit de l'accessibilité | non vérifiée |
-| `NatureTravauxPointChaud` | INRS ED 6030 | non vérifiée |
-| `Realisateur` | `R. 4323-24` et voisins | non vérifiée |
+| `HandicapAccessible` | **`L. 114` CASF**, pas le droit de l'accessibilité | **il en manquait deux** ; corrigée et tenue par `handicap-accessible.test.ts` |
+| `NatureTravauxPointChaud` | **aucune** — voir ci-dessous | convention de produit, assumée et bornée par `nature-travaux-point-chaud.test.ts` |
+| `Realisateur` | **aucune liste** — dix textes, un par valeur | ancrée valeur par valeur, tenue par `realisateur.test.ts` |
 
-**La première qu'on a ouverte était fausse.** On ne sait pas ce que valent les six
-autres.
+**La première qu'on a ouverte était fausse. La cinquième aussi.** Trois de plus ont
+été ouvertes le 2026-09-03, et le résultat le plus utile est que **deux des trois
+« sources » du tableau d'origine n'existaient pas** :
+
+- **`HandicapAccessible` ne vient pas du droit de l'accessibilité.** Toute la chaîne
+  a été ouverte — `L. 161-1` et `L. 164-1` du CCH, `R. 164-6` qui institue le
+  registre, les quatre articles de fond de l'arrêté du 19 avril 2017 qui en fixe le
+  contenu — et aucun ne répartit les personnes handicapées : les quatre disent « les
+  personnes handicapées ». La seule énumération du droit français est `L. 114` du code
+  de l'action sociale et des familles, écrit par l'article 2 de la loi du 11 février
+  2005 : cinq familles de fonctions, **plus le polyhandicap et le trouble de santé
+  invalidant**, mis sur le même plan. Ces deux-là manquaient aux **quatre**
+  déclarations — c'est le défaut du type `J` : un établissement adapté au
+  polyhandicap ouvrait la liste et n'y trouvait pas la sienne. Migration
+  `20260903120000_handicap_polyhandicap_trouble_sante_invalidant`, additive.
+  « Les quatre familles de handicap », au passage, n'est dans aucun de ces textes :
+  la formule vient du document ministériel d'aide à l'accueil que l'arrêté fait
+  **annexer** au registre sans en édicter le contenu.
+- **`NatureTravauxPointChaud` n'a aucune source, et c'est le résultat.** ED 6030 est
+  une brochure de l'INRS — association loi 1901 — que l'ADR-032 nomme parmi les
+  référentiels privés jamais opposables. Et elle ne porte pas de nomenclature non
+  plus : sa définition est ouverte par construction (« découpage, meulage,
+  ébarbage… », puis « de manière générale, cette désignation comprend tous les
+  travaux générateurs d'étincelles ou de surfaces chaudes »), et sa seule liste
+  cochable en compte **quatre**, avec deux lignes vides imprimées pour en ajouter.
+  Onze valeurs face à quatre items : il n'y a rien à comparer, dans aucun sens. Le
+  droit ne nomme qu'un seul travail par point chaud — arrêté du 19 mars 1993, art.
+  1er, **21°**, « travaux de soudage oxyacétylénique exigeant le recours à un permis
+  de feu » — et il le nomme pour dire qu'un plan de prévention doit être **écrit**,
+  pas pour énumérer les points chauds. C'est la seule borne de droit de la liste, et
+  le test ne tient qu'elle.
+- **`Realisateur` n'est pas une transcription non plus.** `R. 4323-24`, donné pour sa
+  source, ne nomme **qu'une** de ses dix valeurs (« des personnes qualifiées »). Il
+  n'existe pas d'inventaire des qualifications admises : chaque texte nomme celle
+  qu'il exige. La garde est donc de l'autre sens — chaque valeur désigne l'article
+  dont le verbatim l'écrit, et le test relit ce verbatim. Aucun membre en trop, aucun
+  membre sans texte ; deux divergent du mot du texte et le déclarent, dont
+  `bureau_controle`, seul mot de métier de la liste — le droit dit « contrôleur
+  technique ».
+
+Il reste **trois listes non vérifiées** : `CategorieErp`, `ClasseIgh`,
+`FamilleHabitation`.
 
 ### Le défaut est à moitié couvert, et c'est ce qui l'a rendu invisible
 
@@ -391,12 +431,23 @@ juste ? »*, aucune à *« est-ce tout ? »*.
 
 ### Ce qu'il faut faire
 
-Le lot `TypeErp` en cours pose le patron : ouvrir la source, relever la
+Le lot `TypeErp` a posé le patron : ouvrir la source, relever la
 nomenclature en verbatim, la porter au corpus, compléter l'enum, **et écrire un
 test qui dérive sa référence du corpus** — jamais une liste recopiée, qui se
 répare en recopiant et cesse alors de vérifier.
 
-Les six autres suivent le même chemin, chacune courte. Après quoi « est-ce
+**Le lot du 2026-09-03 a montré que le patron ne suffit pas**, et c'est ce qu'il
+faut retenir pour les trois restantes. Il suppose qu'une source existe. Sur deux
+des trois listes ouvertes ce jour-là, elle n'existait pas — et la bonne réponse
+n'était pas d'en trouver une approchante, mais de l'écrire. Le geste devient
+donc : ouvrir la source **présumée**, et si elle ne porte pas la nomenclature,
+**le dire et le vérifier** plutôt que rabattre la liste sur le texte le plus
+proche. `nature-travaux-point-chaud.test.ts` et le dernier `it` de
+`handicap-accessible.test.ts` montrent à quoi ressemble un test qui tient une
+absence : il relit le verbatim d'un texte pour constater qu'il ne dit rien, et
+rougit le jour où le texte se met à parler.
+
+Les trois autres suivent le même chemin, chacune courte. Après quoi « est-ce
 complet » a une réponse mécanique au lieu d'une affirmation.
 
 **Origine du défaut, écrite pour qu'on ne la redécouvre pas.** `docs/adr/004-typologie-etablissement.md`

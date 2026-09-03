@@ -46,6 +46,21 @@ const optionalDate = z.preprocess(
     .transform((v) => (v ? depuisCleJourCivil(v) : undefined)),
 );
 
+/**
+ * Les familles de handicap dans lesquelles un ERP déclare être adapté.
+ *
+ * **Leur source n'est pas le droit de l'accessibilité.** Toute la chaîne a été
+ * ouverte le 2026-09-03 — `L. 161-1` et `L. 164-1` du CCH, `R. 164-6` qui
+ * institue le registre, l'arrêté du 19 avril 2017 qui en fixe le contenu — et
+ * aucun de ces textes ne répartit les personnes handicapées. La seule
+ * énumération du droit français est `L. 114` du code de l'action sociale et des
+ * familles (loi du 11 février 2005, art. 2), dépouillée dans
+ * `referentiels/corpus/accessibilite-handicap.ts`.
+ *
+ * Les « quatre familles de handicap » qui circulent partout ne sont dans aucun
+ * de ces textes ; elles viennent du document ministériel d'aide à l'accueil que
+ * l'arrêté fait ANNEXER au registre sans en édicter le contenu.
+ */
 export const HANDICAPS = [
   "moteur",
   "visuel",
@@ -53,7 +68,45 @@ export const HANDICAPS = [
   "mental",
   "cognitif",
   "psychique",
+  // Entrées le 2026-09-03. `L. 114` les met sur le même plan que les cinq
+  // familles de fonctions, et le modèle ne savait ni l'une ni l'autre : un
+  // établissement adapté au polyhandicap ouvrait la liste et n'y trouvait pas
+  // la sienne.
+  "polyhandicap",
+  "trouble_sante_invalidant",
 ] as const satisfies readonly HandicapAccessible[];
+
+/**
+ * Ce que chaque valeur du modèle dit de l'énumération de `L. 114`.
+ *
+ * **Le modèle n'écrit pas les mots du texte, et il faut le déclarer plutôt que
+ * de le taire.** `L. 114` énumère cinq familles de FONCTIONS — physiques,
+ * sensorielles, mentales, cognitives, psychiques — puis deux situations. Le
+ * produit en affine deux : `moteur` pour « physiques », `visuel` et `auditif`
+ * pour « sensorielles ». C'est le vocabulaire dans lequel un dirigeant se
+ * reconnaît, et l'affiner ne cache personne tant que chaque famille du texte
+ * garde au moins un répondant.
+ *
+ * C'est exactement ce que `handicap-accessible.test.ts` vérifie, **dans les
+ * deux sens** : aucune famille écrite par le texte sans valeur qui la porte,
+ * aucune valeur qui prétende porter un mot que le texte n'écrit pas. Les mots
+ * de droite sont comparés au verbatim de `L. 114` relevé au corpus — ils ne se
+ * réparent donc pas en recopiant une autre déclaration.
+ *
+ * Ce que cette table N'EST PAS : une équivalence juridique. `moteur` n'est pas
+ * synonyme de « physiques », il en est un cas ; c'est pour cela que
+ * `trouble_sante_invalidant` existe à part et non comme un second `moteur`.
+ */
+export const FAMILLE_L114: Record<HandicapAccessible, string> = {
+  moteur: "physiques",
+  visuel: "sensorielles",
+  auditif: "sensorielles",
+  mental: "mentales",
+  cognitif: "cognitives",
+  psychique: "psychiques",
+  polyhandicap: "polyhandicap",
+  trouble_sante_invalidant: "trouble de santé invalidant",
+};
 
 export const REGIMES = [
   "conforme_origine",
@@ -70,6 +123,12 @@ export const LABEL_HANDICAP: Record<HandicapAccessible, string> = {
   mental: "Handicap mental",
   cognitif: "Handicap cognitif",
   psychique: "Handicap psychique",
+  // Ces deux-là ne prennent pas la forme « Handicap X », et c'est le texte qui
+  // le veut : `L. 114` écrit « d'un polyhandicap ou d'un trouble de santé
+  // invalidant », pas « handicap polyhandicap ». Le test vérifie donc la FORME
+  // du libellé — il doit dire les mots de la valeur —, jamais un gabarit fixe.
+  polyhandicap: "Polyhandicap",
+  trouble_sante_invalidant: "Trouble de santé invalidant",
 };
 
 export const LABEL_REGIME: Record<RegimeConformiteErp, string> = {
