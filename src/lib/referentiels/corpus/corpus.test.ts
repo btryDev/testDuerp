@@ -625,30 +625,22 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // alimentant aussi un chauffage ou une production d'eau chaude. C'est le
       // blocage déjà nommé pour l'arrêté du 23 février 2018, art. 26 § 3.
       "GZ 14",
-      // GH 61 entre le 2026-09-03, et il entre par une porte que cette liste
-      // n'avait encore jamais vue : un lot venu POSER UNE AUTRE QUESTION.
-      // Celui-ci devait établir si la CLASSE d'IGH (GHA, GHW1, GHW2…) module
-      // quoi que ce soit pour l'employeur occupant — la réponse est non, et
-      // la question a été retirée du produit. En balayant les chapitres de
-      // classe pour s'en assurer, la lecture est tombée sur GH 61 § 5, qui ne
-      // dépend d'aucune classe : « les occupants sont tenus de faire établir,
-      // par un organisme agréé, un rapport de vérification de conformité de la
-      // charge calorifique […] puis périodiquement tous les cinq ans ».
+      // GH 61 A QUITTÉ CETTE LISTE LE 2026-09-04, ET C'EST LE POINT DU LOT.
+      // Il y était entré la veille en `obligation_manquante` avec cette
+      // observation : « c'est la première entrée de cette liste que rien ne
+      // bloque au modèle ». Elle était juste. Le § 5 a été rouvert, lu en
+      // entier — sept paragraphes, quatre appels sur trois URL, plus le
+      // recoupement indépendant de GH 5 § 3.1.4 — et l'obligation est encodée :
+      // `incendie-igh-charge-calorifique-quinquennale`, porteur établissement,
+      // quinquennale, `organisme_agree`, `typologies: { igh: true }` sans
+      // restriction de classe. L'article est passé en `retenu`, avec une
+      // réserve pour la moitié qui reste dehors : le premier cycle « dans
+      // l'année qui suit l'installation dans les lieux », qui est un
+      // déclencheur d'événement que le modèle ne porte pas.
       //
-      // C'EST LA PREMIÈRE ENTRÉE DE CETTE LISTE QUE RIEN NE BLOQUE AU MODÈLE.
-      // Toutes les autres attendent quelque chose — une catégorie
-      // d'équipement, un porteur nominatif, un attribut d'établissement. Celle-
-      // ci a tout ce qu'il lui faut depuis l'ADR-022 : porteur établissement,
-      // périodicité quinquennale, réalisateur `organisme_agree`, typologie
-      // `igh`. Elle n'attend que d'être encodée, et ne l'a pas été ici parce
-      // qu'une obligation ne s'encode pas en effet de bord d'une question à
-      // laquelle elle ne répond pas.
-      //
-      // Elle corrige au passage une affirmation FAUSSE du corpus : GH 5
-      // § 3.1.4 renvoyait déjà à cette quinquennale et la disait non portée
-      // « faute de catégorie d'équipement », en la rangeant avec les
-      // paratonnerres. Elle n'en a jamais eu besoin.
-      "GH 61",
+      // Ce qu'il faut retenir pour les entrées suivantes : une entrée de cette
+      // liste que rien ne bloque au modèle n'attend pas un ADR, elle attend une
+      // heure de travail. Celle-ci en a demandé une.
       // R. 4323-24 entre le 2026-09-02 avec l'ouverture de la branche hors
       // levage de R. 4323-23. Il n'y entre pas par un texte nouveau mais par
       // un TROU DE LA SOUS-SECTION 2 : le corpus déclarait -23, -25, -26 et
@@ -838,6 +830,21 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // 102 juste en dessous), et le débiteur est un troisième porteur — « le
       // gestionnaire », propriétaire unique du parc ou son délégué — que le
       // modèle ne connaît pas.
+      // Arrêté du 31 janvier 1986, art. 60, 1 — entré le 2026-09-04, et il ne
+      // vient d'aucun texte nouveau : il est en vigueur depuis 1986. Il a
+      // échappé à deux dépouillements successifs parce qu'il est rangé sous un
+      // titre intitulé « Conduits et gaines », que le lot du 2026-09-03 a
+      // écarté sur cet intitulé sans l'ouvrir. « Le fonctionnement du groupe
+      // électrogène et du dispositif de mise en marche automatique doit être
+      // vérifié AU MOINS UNE FOIS PAR MOIS » — la périodicité la plus courte du
+      // texte. Bloqué par trois choses, et la deuxième est la plus instructive :
+      // le déclencheur réel (un groupe électrogène de secours asservi,
+      // alimentant le ventilateur de VMC) n'existe ni comme catégorie
+      // d'équipement ni comme propriété ; l'accrocher à `VMC` ferait tomber une
+      // ligne MENSUELLE sur la quasi-totalité des VMC déclarées, ce qui n'est
+      // plus une sur-application visible mais du bruit ; et l'article ne nomme
+      // aucun débiteur, étant écrit à la voix passive.
+      "Arrêté 1986-01-31 art. 60",
       "Arrêté 1986-01-31 art. 78-1",
       "Arrêté 1986-01-31 art. 102",
       // ── Lot machines, 2026-09-02 : la branche HORS LEVAGE de R. 4323-23.

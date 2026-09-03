@@ -288,8 +288,18 @@ function axeRegime(
       // référentiel, adossées à l'article GH 5 du même arrêté : le dirigeant
       // les voyait dans son calendrier en lisant ici qu'elles n'existaient
       // pas. Le corpus est explicite — `arrete-2011-12-30-igh` est d'étendue
-      // « articles_cites », et GH 5 est le seul article lu.
-      consequence: `Le règlement de sécurité des IGH impose bien davantage que ce que cet outil en connaît : de son article GH 5, l'outil porte les vérifications annuelles, et rien du reste — ${nonPorte("le service de sécurité permanent")}, ${nonPorte("les dispositions propres à la classe de l'immeuble")}. Ce que vous lisez ici ne couvre pas votre régime.`,
+      // « articles_cites ».
+      //
+      // AMENDÉE LE 2026-09-04, et il fallait le faire dans les deux sens. Une
+      // TROISIÈME obligation IGH est entrée ce jour-là, et elle n'est pas de
+      // même nature que les deux autres : GH 61 § 5 met le rapport de
+      // conformité de la charge calorifique à la charge des OCCUPANTS, donc de
+      // l'employeur qui lit cette page, quand GH 5 s'adresse aux propriétaires.
+      // Continuer d'écrire « de son article GH 5, et rien du reste » aurait été
+      // faux dans le sens qui trompe le plus : sous-annoncer une ligne dont le
+      // lecteur est justement le débiteur. Ce qui reste non porté est nommé
+      // avec la même précision qu'avant.
+      consequence: `Le règlement de sécurité des IGH impose bien davantage que ce que cet outil en connaît. L'outil porte les vérifications annuelles de son article GH 5, qui incombent au propriétaire de l'immeuble, et le rapport quinquennal de conformité de la charge calorifique de son article GH 61, qui vous incombe à vous en tant qu'occupant. Du reste, il ne porte rien — ${nonPorte("le service de sécurité permanent")}, ${nonPorte("les dispositions propres à la classe de l'immeuble")}. Ce que vous lisez ici ne couvre pas votre régime.`,
     });
     return;
   }

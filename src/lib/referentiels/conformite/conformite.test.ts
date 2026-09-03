@@ -1265,7 +1265,7 @@ describe("référentiel conformité — version et empreinte", () => {
   // pas, et leur aurait réclamé quatre visites par an. Le nom de la catégorie
   // — `COMPACTEUR_PRESSE_DECHETS_MOTORISE` — porte le proviso du I, ce qui
   // évite d'inventer un attribut d'équipement pour la motorisation.
-  const EMPREINTE_ATTENDUE = "145-dd6fed6f447eae01";
+  const EMPREINTE_ATTENDUE = "146-aaa6de5c8497787c";
 
   it("l'empreinte du contenu correspond à la version déclarée", () => {
     expect(
@@ -1383,7 +1383,7 @@ describe("référentiel conformité — version et empreinte", () => {
       "Le nombre d'obligations a changé. Si c'est voulu, mettez ce compte à " +
         "jour — ainsi que `EMPREINTE_ATTENDUE` et `.claude/CLAUDE.md`, qui " +
         "l'annoncent tous les deux.",
-    ).toBe(145);
+    ).toBe(146);
   });
 
   it("l'empreinte bouge quand une condition, une typologie ou une catégorie change", () => {
@@ -1820,6 +1820,68 @@ describe("référentiel conformité — d'où vient le chiffre", () => {
         "article de code porte vraiment le chiffre, ajoutez l'obligation à " +
         "`PERIODICITE_SUR_CODE_JUSTIFIEE` avec le verbatim qui le prouve.",
     ).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GH 61 § 5 — la seule obligation du règlement IGH qui vise l'OCCUPANT
+// ---------------------------------------------------------------------------
+//
+// Ce bloc existe parce que la restriction qu'il interdit a été ÉPROUVÉE EN LA
+// POSANT, le 2026-09-04. Injecter `igh: { classes: ["GHW1", "GHW2"] }` sur
+// cette ligne — la restriction que l'intuition suggère, puisqu'il s'agit de
+// bureaux — la fait DISPARAÎTRE du calendrier d'un établissement qui déclare
+// `classeIgh: "GHU"`. C'est exactement le faux négatif que GH 66 prédit : le
+// classement d'une tour mixte retient « l'usage principal de l'immeuble », donc
+// un plateau de bureaux peut vivre dans une tour classée GH U, et son occupant
+// doit la même vérification. Sans ce test, la restriction se reposerait un jour
+// sur un raisonnement plausible, et rien ne l'arrêterait.
+//
+// Le premier cas — classe non renseignée — ne discrimine RIEN aujourd'hui :
+// `evaluerIgh` retient sur l'attribut absent. Il est là quand même, parce que
+// c'est le cas nominal depuis que la question a été retirée du produit
+// (2026-09-03), et qu'une dissymétrie qui bougerait le casserait.
+describe("GH 61 § 5 — la quinquennale de la charge calorifique atteint l'occupant", () => {
+  const bureauEnIgh: EtablissementMatching = {
+    id: "etab-igh",
+    effectifSurSite: 8,
+    estEtablissementTravail: true,
+    estERP: false,
+    estIGH: true,
+    estHabitation: false,
+    typeErp: null,
+    categorieErp: null,
+    classeIgh: null,
+    familleHabitation: null,
+    comporteLocauxSommeilPublic: null,
+    personnesPresentesHabituellement: null,
+    manipuleMatieresR422722: null,
+  };
+
+  const idsDe = (etab: EtablissementMatching) =>
+    determineObligationsApplicables(etab, []).map((a) => a.obligation.id);
+
+  it("tombe sur un bureau en IGH sans classe déclarée ET SANS AUCUN ÉQUIPEMENT", () => {
+    // Porteur établissement : le parc vide ne doit rien lui retirer. C'était
+    // tout l'objet de l'ADR-022, et c'est ce qui distingue cette ligne des
+    // deux autres obligations IGH, portées par des équipements.
+    expect(idsDe(bureauEnIgh)).toContain(
+      "incendie-igh-charge-calorifique-quinquennale",
+    );
+  });
+
+  it("tombe aussi sur un plateau de bureaux dans une tour classée GH U", () => {
+    expect(idsDe({ ...bureauEnIgh, classeIgh: "GHU" })).toContain(
+      "incendie-igh-charge-calorifique-quinquennale",
+    );
+  });
+
+  it("ne tombe pas sur un établissement qui n'est pas en IGH", () => {
+    // La borne basse : sans ce cas, la ligne pourrait s'appliquer partout et
+    // les deux cas ci-dessus passeraient quand même.
+    expect(idsDe({ ...bureauEnIgh, estIGH: false })).not.toContain(
+      "incendie-igh-charge-calorifique-quinquennale",
+    );
   });
 });
 

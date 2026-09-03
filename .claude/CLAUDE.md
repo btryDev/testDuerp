@@ -94,7 +94,7 @@ On refuse ce qu'on ne peut pas servir, pas ce qu'on ne couvre pas entièrement.
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **145 obligations sur 19 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité, et depuis le 2026-09-02 signalisation de sécurité et compactage des déchets. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **146 obligations sur 19 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité, et depuis le 2026-09-02 signalisation de sécurité et compactage des déchets. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
 **86 d'entre elles sont déclenchées par un équipement déclaré, quarante-cinq sont
 portées par l'établissement, quatorze par un salarié.** La répartition a changé deux fois le
@@ -204,9 +204,12 @@ réellement événementielles recensées sont hors périmètre (déclaration d'A
 accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
 l'ADR-022, sans mécanisme.
 
-Répartition au 2026-09-02 : **86 équipement, 45 établissement, 14 salarié**
-(total 145) — remesurée en appelant `obligationsConformite` et
-`determineObligationsApplicables` le 2026-09-02, pas au grep. La dernière est entrée le
+Répartition au 2026-09-04 : **86 équipement, 46 établissement, 14 salarié**
+(total 146) — remesurée en appelant `obligationsConformite` et
+`porteurDe` le 2026-09-04, pas au grep. La quarante-sixième obligation
+d'établissement est entrée ce jour-là : `incendie-igh-charge-calorifique-quinquennale`,
+le rapport quinquennal de conformité de la charge calorifique que `GH 61 § 5` met à la
+charge des **occupants** d'un IGH. La dernière est entrée le
 même jour avec le dépouillement intégral de l'arrêté du 5 mars 1993 : le domaine
 `compactage_dechets`, une seule ligne, la vérification générale périodique
 TRIMESTRIELLE des presses à balles et des compacteurs à déchets
@@ -357,12 +360,19 @@ est nulle, la conservation reste à la charge de l'employeur hors de l'outil.
   équipements sportifs, piscines. La CLASSE d'IGH n'est plus demandée depuis le
   2026-09-03 (`GH 5` s'adresse aux « propriétaires » sans varier par classe,
   `GH 66` fait du classement l'affaire de l'usage principal de l'immeuble).
-  Une obligation IGH qui vise bien l'**occupant** est identifiée et **non
-  encodée** : `GH 61 § 5`, vérification quinquennale de la charge calorifique
-  par organisme agréé — au corpus en `obligation_manquante`, rien au modèle ne
-  la bloque. L'**IGH seul est servi** : neuf obligations
-  portent la typologie `igh`, et les obligations du règlement IGH pèsent sur
-  l'exploitant de l'immeuble, pas sur l'employeur qui y loue des bureaux
+  L'**IGH seul est servi** : **onze obligations portent la typologie `igh`**,
+  remesuré en appelant le 2026-09-04 — le « neuf » qui figurait ici était périmé
+  avant même le lot qui l'a corrigé. **Dix d'entre elles pèsent sur l'exploitant
+  ou le propriétaire de l'immeuble, pas sur l'employeur qui y loue des bureaux.
+  La onzième est l'exception, et elle est entrée le 2026-09-04** :
+  `incendie-igh-charge-calorifique-quinquennale`, fondée sur `GH 61 § 5` — « les
+  OCCUPANTS sont tenus de faire établir, par un organisme agréé, un rapport de
+  vérification de conformité de la charge calorifique […] puis périodiquement
+  tous les cinq ans ». C'est la première ligne du règlement IGH dont l'employeur
+  locataire est lui-même le débiteur. Le corpus la portait en
+  `obligation_manquante` depuis le 2026-09-03 avec une raison de non-encodage
+  fausse — « faute de catégorie d'équipement » —, alors que son porteur est
+  l'établissement depuis l'ADR-022
 - **ATEX, rayonnements ionisants, amiante, plomb, radon, CMR** : non couverts,
   mais **déclarés** et non refusés — le dossier se crée et la page
   « Ce que Rojer ne couvre pas » le dit en permanence

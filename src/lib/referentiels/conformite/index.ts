@@ -138,7 +138,7 @@ export const obligationsConformite: Obligation[] = [
 // catégorie d'équipement neuve. Aucun calendrier existant ne la porte — la
 // catégorie n'existait pas —, mais la version se lit à la main et le
 // référentiel a changé.
-export const REFERENTIEL_VERSION = "2026-09-02.7";
+export const REFERENTIEL_VERSION = "2026-09-04.1";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.

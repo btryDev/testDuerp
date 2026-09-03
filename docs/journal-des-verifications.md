@@ -406,6 +406,65 @@ s'encode pas en effet de bord d'une question à laquelle elle ne répond pas.
 
 ---
 
+### C12 · 2026-09-04 — Refaire les lectures qu'un lot n'a pas pu finir, et confirmer ce qu'il n'a pas pu prouver
+
+**Périmètre** — les quatre choses que le lot C11 a lui-même nommées comme non
+établies : `GH 61 § 5`, rapporté mais reçu tronqué au premier appel ; les
+**36 articles** de l'arrêté de 1986 écartés sur leur seul intitulé de plan ; le
+corps de `GH 5`, non relu au mot près ; `GH U 16`, jamais rendu par Légifrance.
+Plus la vérification du faux négatif de la page consolidée.
+
+**Méthode** — la parade que C11 recommandait, poussée d'un cran : ne pas se
+contenter de deux lectures concordantes, mais **chercher un recoupement qui ne
+partage pas le même angle mort**. Deux lectures d'une même page peuvent être
+tronquées au même endroit ; un AUTRE ARTICLE, non.
+
+| Question de C11 | Ce que la relecture établit |
+|---|---|
+| **`GH 61 § 5` dit-il bien ce qu'on lui prête ?** | **OUI, au mot.** L'article compte **sept paragraphes**, tous couverts par deux demandes disjointes (§ 1-4, puis § 5-7) ; deux lectures indépendantes annoncent d'elles-mêmes le compte de sept. Quatre appels sur **trois URL distinctes** rendent le § 5 identique. Et surtout `GH 5 § 3.1.4`, article DIFFÉRENT lu séparément, porte la même quinquennale — c'est le seul recoupement sans angle mort commun. Destinataire : « **les occupants** » des locaux autres que d'habitation. Réalisateur : « un **organisme agréé** ». Version du 1ᵉʳ avril 2012, aucun modificateur, aucune version future |
+| **Les 36 articles écartés sur leur intitulé** | **Ouverts** — et par prudence sur leur identité, ce sont les **82 articles** des titres II, III, IV et VI qui ont été relus un par un sur leur page individuelle (5-16, 17-29 bis, 30-43, 44-57, 58-64, 77-80, 81-96). **80 sont constructifs**, l'exclusion devient donc une lecture. **Deux ne le sont pas** : l'art. 78-1, déjà connu et confirmé au mot, et **l'article 60, 1, que personne n'avait vu** |
+| **Le corps de `GH 5`** | **Relu au mot près, réserve levée.** Trois choses en sortent, absentes de tous les relevés antérieurs : la phrase « les vérifications […] **hormis les vérifications de la charge calorifique** […] sous la responsabilité d'un même organisme agréé », qui explique pourquoi `GH 61` charge l'occupant ; un **délai d'un mois** de remise en état après vérification (§ 6), régime que le produit ne connaît pas ; et la confirmation que les « 20 % par an » sont un bouclage interne à l'annuel |
+| **`GH U 16`** | **Rendu, et il ne porte rien.** Une phrase, une liaison technique entre le PC sécurité et le centre de traitement de l'alerte. Ni périodicité ni débiteur. Retrouvé en demandant au plan consolidé son **identifiant de lien** — jamais son contenu —, puis vérifié en ouvrant la page, qui annonce elle-même « Article GH U 16 » |
+
+**CE QUI EST ENCODÉ, ET C'EST LA PREMIÈRE FOIS QUE LE RÈGLEMENT IGH PRODUIT UNE
+LIGNE POUR L'OCCUPANT** — `incendie-igh-charge-calorifique-quinquennale`,
+porteur établissement, quinquennale, `organisme_agree`, `typologies: { igh: true }`
+**sans restriction de classe**. Les dix autres obligations `igh` du référentiel
+pèsent sur le propriétaire ou l'exploitant de l'immeuble ; celle-ci pèse sur
+l'employeur qui y loue ses bureaux, c'est-à-dire sur l'utilisateur du produit.
+Le corpus la portait depuis la veille en `obligation_manquante` avec une raison
+de non-encodage fausse — « faute de catégorie d'équipement » — alors que rien au
+modèle ne la bloquait. Ce que la moitié restante coûte est écrit en réserve : le
+premier cycle, « dans l'année qui suit l'installation dans les lieux », est un
+déclencheur d'événement que le modèle ne porte pas.
+
+**CE QUI N'EST PAS ENCODÉ, ET POURQUOI** — **arrêté du 31 janvier 1986,
+art. 60, 1** : « Le fonctionnement du groupe électrogène et du dispositif de mise
+en marche automatique doit être vérifié **au moins une fois par mois**. » C'est
+la périodicité la plus courte du texte, en vigueur **depuis 1986**, et elle a
+traversé deux dépouillements. Trois choses la bloquent, dont une qui mérite
+d'être connue : son déclencheur réel est un groupe électrogène de secours
+alimentant un ventilateur de VMC, que le modèle ne connaît pas ; l'accrocher à
+la catégorie `VMC` ferait tomber une ligne **mensuelle** sur la quasi-totalité
+des VMC déclarées — ce n'est plus une sur-application visible et corrigible,
+c'est du bruit ; et l'article, écrit à la voix passive, **ne nomme aucun
+débiteur**. Versée au corpus en `obligation_manquante`, avec le déblocage nommé
+(une propriété booléenne d'équipement, pas une migration).
+
+**LE PIÈGE DE C11 EST CONFIRMÉ, ET IL EST PIRE QUE DÉCRIT.** Voir le § 2.D
+ci-dessous, qui devient le registre des pièges de Légifrance.
+
+**Application** — une obligation encodée (145 → **146**, remesuré en appelant),
+un corpus IGH passé de cinq à six articles dépouillés avec `GH 61` en `retenu`,
+un corpus habitation dont la plage 5-96 est dépouillée, deux affirmations du
+dépôt corrigées parce qu'elles étaient fausses (« l'article 101 est l'unique
+obligation périodique du texte », deux fois amendée et encore fausse ; « de son
+article GH 5, l'outil porte les vérifications annuelles, et rien du reste », sur
+la page de couverture, qui sous-annonçait à l'occupant la seule ligne dont il
+est le débiteur).
+
+---
+
 ### Ce que la chronologie donne à voir
 
 1. **Le dépôt lit beaucoup et applique peu, et l'écart est systématique.** La
@@ -929,6 +988,35 @@ constat ». Ce qui est un défaut est de l'oublier : c'est exactement le
 mécanisme qui a produit les deux références fausses, dont un article abrogé
 depuis quatre mois, qui ont motivé l'invention du champ `lecture`.
 L'interdiction du niveau `indirect` est, elle, **tenue** : zéro entrée.
+
+---
+
+## 2.D — Les pièges de Légifrance, constatés
+
+Ce registre existe parce que trois lots successifs ont buté sur les mêmes
+mécanismes sans qu'aucun sache des autres. **Il est le pendant de la liste de la
+skill `veille-reglementaire`** — celle-ci dit comment lire, celui-ci dit ce
+qu'on a vu mentir, avec la date et l'article sur lequel ça s'est produit.
+
+| # | Le piège | Constaté sur | Ce qui le déjoue |
+|---|---|---|---|
+| **1** | **`curl` et `fetch` reçoivent un 403.** Le site refuse les clients HTTP ordinaires, même avec un User-Agent de navigateur | partout | `WebFetch`. Ne pas contourner par un script |
+| **2** | **Une URL `article_lc` ne rend parfois qu'une table des matières** | codes | basculer sur la page de section, rendue côté serveur. *Ne marche PAS sur les textes LODA* : `/loda/section_lc/…` rend un **404** et `/loda/id/<TEXTE>/<LEGISCTA>/` redirige vers l'accueil. Sur un arrêté, il faut y aller **article par article** (constaté le 2026-09-04) |
+| **3** | **Un renvoi peut pointer vers une numérotation abrogée** | arrêté du 25 juin 1980 → `R. 123-11` CCH | signaler, ne pas recopier |
+| **4** | **La page consolidée FABRIQUE du contenu** | arrêté 1986, art. 100 : « le propriétaire doit veiller à la conformité du bâtiment » alors que l'article traite de l'affichage des consignes (2026-09-01) | ne rien retenir d'une page consolidée |
+| **5** | **La page consolidée INVENTE des périodicités** | arrêté 1986, art. 102, annuel qu'il ne porte pas (2026-09-01) | idem |
+| **6** | **La page consolidée produit des FAUX NÉGATIFS** | arrêté 1986 : « aucune occurrence » d'« une fois par an » ni de « contrôle » entre les art. 5 et 96, alors que l'art. 78-1 contient les deux. **Reproduit à l'identique le 2026-09-04**, la même page affichant pourtant le lien de l'art. 78-1 | **un négatif rendu par une page consolidée ne vaut rien.** Ouvrir les articles |
+| **7** | **La page consolidée FABRIQUE DES TEXTES MODIFICATEURS** — le pire des trois, parce que c'est ce dont `versionEnVigueur` et `modifiePar` dépendent | arrêté 1986, art. 78-1 : la page consolidée annonce « Création par arrêté du **28 octobre 2021** », la page d'article annonce « Arrêté du **27 juillet 2026** » (2026-09-04) | ne prendre d'une page consolidée **qu'un identifiant de lien**, puis vérifier en ouvrant la page qu'il désigne |
+| **8** | **Un article long peut être rendu SILENCIEUSEMENT RÉSUMÉ.** Ce n'est pas un refus, c'est une paraphrase : la page rend bien le texte, la lecture automatique en rend un abrégé, sans le dire | `GH 61 § 5` amputé de la phrase portant les cinq ans ; art. 78-1 amputé de son 7° et de son contrôle annuel (2026-09-03) ; art. 14, 15, 53 et 54 de l'arrêté 1986 abrégés au premier appel (2026-09-04) | redemander le paragraphe décisif **seul**, mot pour mot, puis poser une **question fermée** sur le point qui tranche |
+| **9** | **Deux lectures concordantes peuvent partager le même angle mort** — c'est la limite de la parade n° 8, et elle a failli coûter `GH 61` | 2026-09-04 | chercher un **second article** qui dit la même chose. `GH 5 § 3.1.4` a confirmé la quinquennale de `GH 61 § 5` : c'est le seul recoupement du dossier qui ne partageait aucun angle mort |
+| **10** | **Une lecture automatique peut aussi AJOUTER une conclusion de droit** que le texte ne porte pas | arrêté 1986, art. 62 : « contrôlable et remplaçable » rendu avec le commentaire « cela implique une obligation de vérification du propriétaire », que le texte ne dit pas (2026-09-04) | ne retenir que ce qui est **entre guillemets dans le texte** |
+| **11** | **Le fil d'Ariane rendu peut être faux** alors que l'article, lui, est le bon | arrêté 1986, art. 21 et 26 : chemin annoncé « Titre II » pour des articles du titre III (2026-09-04) | recouper le chemin sur les **articles voisins** avant de s'en servir pour appliquer une exclusion |
+
+**Trois contrôles suffisent à valider une page d'article**, et ils ont tenu sur
+les 82 lectures du 2026-09-04 : la page **annonce elle-même son numéro
+d'article**, elle **nomme le texte** dont elle relève, et son contenu est
+**assez court pour être rendu mot pour mot**. Quand le troisième n'est pas
+satisfait, la parade n° 8 s'applique.
 
 ---
 

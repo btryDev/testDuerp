@@ -5,7 +5,7 @@
      du script. Pour le mettre à jour : pnpm verification --ecrire -->
 
 **Généré le** : 2026-09-03
-**Référentiel** : `2026-09-02.7`
+**Référentiel** : `2026-09-04.1`
 **Régénérer** : `pnpm verification --ecrire`
 
 Ce document répond à une question, et à une seule : **de quoi le
@@ -83,22 +83,22 @@ repose sur un texte que personne n'a ouvert.
 
 ## 2. Où en est-on
 
-**145 obligations**, **278 références** — 83 obligations en citent plus d'une.
+**146 obligations**, **280 références** — 84 obligations en citent plus d'une.
 
 | degré | obligations (au plancher) | part | dont fondements | références | part |
 | --- | --- | --- | --- | --- | --- |
 | 5 · lu à la source, verbatim relevé | 55 | 38 % | 62 | 134 | 48 % |
-| 4 · lu à la source par un agent, verbatim rapporté | 80 | 55 % | 77 | 133 | 48 % |
-| 3 · lu et daté, aucun verbatim | 10 | 7 % | 6 | 11 | 4 % |
+| 4 · lu à la source par un agent, verbatim rapporté | 80 | 55 % | 78 | 134 | 48 % |
+| 3 · lu et daté, aucun verbatim | 11 | 8 % | 6 | 12 | 4 % |
 | 2 · lu ailleurs qu'à la source | 0 | 0 % | 0 | 0 | 0 % |
 | 1 · au corpus, aucune trace de lecture | 0 | 0 % | 0 | 0 | 0 % |
 | 0 · rien à ouvrir | 0 | 0 % | 0 | 0 | 0 % |
 
-**135 obligations sur 145 (93 %)** reposent, jusqu'à leur dernière référence de contexte, sur des textes lus à la source avec verbatim relevé.
+**135 obligations sur 146 (92 %)** reposent, jusqu'à leur dernière référence de contexte, sur des textes lus à la source avec verbatim relevé.
 
-**10 obligations (7 %)** citent au moins un texte ouvert et daté dont rien n'a été relevé. Ce n'est pas une lecture à refaire : c'est une lecture qu'on ne peut ni contrôler ni contredire sans rouvrir Légifrance.
+**11 obligations (8 %)** citent au moins un texte ouvert et daté dont rien n'a été relevé. Ce n'est pas une lecture à refaire : c'est une lecture qu'on ne peut ni contrôler ni contredire sans rouvrir Légifrance.
 
-**9 obligations sont mieux vérifiées sur leur fondement que sur l'ensemble de leurs références** — leur point faible est une référence de contexte, celle que le dossier de relecture replie dans un « + N réf. » : `elec-travail-consignation-registre`, `elec-travail-habilitation-personnel`, `elec-salarie-attestation-medicale-voisinage`, `elec-travail-rapport-quadriennal`, `incendie-erp-pe4-entretien-installations-techniques`, `incendie-registre-securite`, `incendie-erp-extincteurs-annuelle`, `stockage-dangereux-ventilation-locaux`, `sante-travail-etablissement-adhesion-spst`.
+**10 obligations sont mieux vérifiées sur leur fondement que sur l'ensemble de leurs références** — leur point faible est une référence de contexte, celle que le dossier de relecture replie dans un « + N réf. » : `elec-travail-consignation-registre`, `elec-travail-habilitation-personnel`, `elec-salarie-attestation-medicale-voisinage`, `elec-travail-rapport-quadriennal`, `incendie-erp-pe4-entretien-installations-techniques`, `incendie-registre-securite`, `incendie-erp-extincteurs-annuelle`, `incendie-igh-charge-calorifique-quinquennale`, `stockage-dangereux-ventilation-locaux`, `sante-travail-etablissement-adhesion-spst`.
 
 **Aucune référence n'est au bas de l'échelle** : les 2 degrés « au corpus, aucune trace de lecture » et « rien à ouvrir » sont vides. Toute référence du référentiel porte une clé d'article, cette clé est connue d'un corpus, et cet article porte une date et un moyen de lecture. Ces degrés restent dans l'échelle parce que leur disparition ne se verrait pas si l'échelle ne les nommait plus.
 
@@ -108,11 +108,11 @@ repose sur un texte que personne n'a ouvert.
 
 | ancrage | références | part |
 | --- | --- | --- |
-| ancrée | 258 | 93 % |
+| ancrée | 260 | 93 % |
 | divergente | 0 | 0 % |
 | jamais constatée | 20 | 7 % |
 
-**11 obligations sur 145 (8 %) ne portent aucune version constatée, sur aucune de leurs références.** Le jour où l'un de leurs textes est modifié, rien dans le dépôt ne pourra le signaler : l'absence de repère se lit comme « à vérifier », jamais comme « à jour ».
+**11 obligations sur 146 (8 %) ne portent aucune version constatée, sur aucune de leurs références.** Le jour où l'un de leurs textes est modifié, rien dans le dépôt ne pourra le signaler : l'absence de repère se lit comme « à vérifier », jamais comme « à jour ».
 
 **Aucune divergence** entre la version qu'une obligation déclare avoir constatée et celle que le corpus déclare avoir lue. Les deux moitiés du dépôt disent la même chose partout où elles parlent toutes les deux.
 
@@ -127,11 +127,11 @@ repose sur un texte que personne n'a ouvert.
 | `co_activite` | 1 | 4 | · | 1 | · | · | · | · | 1 / 1 — 100 % | 0 / 4 | 2026-08-31 |
 | `compactage_dechets` | 1 | 5 | 1 | · | · | · | · | · | 1 / 1 — 100 % | 0 / 5 | 2026-09-01 → 2026-09-02 |
 | `cuisson_hotte` | 6 | 9 | 2 | 3 | 1 | · | · | · | 5 / 6 — 83 % | 1 / 9 | 2026-08-26 → 2026-09-01 |
-| `electricite` | 15 | 24 | 2 | 11 | 2 | · | · | · | 13 / 15 — 87 % | 2 / 24 | 2026-08-26 → 2026-09-01 |
+| `electricite` | 15 | 24 | 2 | 11 | 2 | · | · | · | 13 / 15 — 87 % | 2 / 24 | 2026-08-26 → 2026-09-04 |
 | `equipement_sous_pression` | 7 | 8 | 7 | · | · | · | · | · | 7 / 7 — 100 % | 1 / 8 | 2026-09-01 |
 | `formation_securite` | 9 | 30 | · | 9 | · | · | · | · | 9 / 9 — 100 % | 0 / 30 | 2026-08-31 |
 | `froid` | 8 | 16 | 8 | · | · | · | · | · | 8 / 8 — 100 % | 16 / 16 | 2026-08-26 |
-| `incendie` | 30 | 64 | 18 | 6 | 6 | · | · | · | 24 / 30 — 80 % | 0 / 64 | 2026-08-26 → 2026-09-01 |
+| `incendie` | 31 | 66 | 18 | 6 | 7 | · | · | · | 24 / 31 — 77 % | 0 / 66 | 2026-08-26 → 2026-09-04 |
 | `information_travailleurs` | 2 | 2 | · | 2 | · | · | · | · | 2 / 2 — 100 % | 0 / 2 | 2026-08-31 |
 | `levage` | 10 | 26 | 9 | 1 | · | · | · | · | 10 / 10 — 100 % | 0 / 26 | 2026-08-26 → 2026-09-01 |
 | `locaux_sociaux` | 4 | 4 | · | 4 | · | · | · | · | 4 / 4 — 100 % | 0 / 4 | 2026-08-31 |
@@ -154,8 +154,8 @@ Aucun domaine n'est entièrement dépourvu de verbatim.
 
 |  | obl. | réf. | 5 | 4 | 3 | 2 | 1 | 0 | vérifiées à la source | sans ancre | lu entre |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `equipement` | 86 | 156 | 44 | 34 | 8 | · | · | · | 78 / 86 — 91 % | 20 / 156 | 2026-08-26 → 2026-09-02 |
-| `etablissement` | 45 | 90 | 11 | 32 | 2 | · | · | · | 43 / 45 — 96 % | 0 / 90 | 2026-08-26 → 2026-09-02 |
+| `equipement` | 86 | 156 | 44 | 34 | 8 | · | · | · | 78 / 86 — 91 % | 20 / 156 | 2026-08-26 → 2026-09-04 |
+| `etablissement` | 46 | 92 | 11 | 32 | 3 | · | · | · | 43 / 46 — 93 % | 0 / 92 | 2026-08-26 → 2026-09-04 |
 | `salarie` | 14 | 32 | · | 14 | · | · | · | · | 14 / 14 — 100 % | 0 / 32 | 2026-08-27 → 2026-09-01 |
 
 Colonnes numérotées : le nombre d'obligations à chaque rang de l'échelle, mesuré au plancher — **5** première main, **4** agent + verbatim, **3** lu sans verbatim, **2** indirect, **1** sans trace, **0** non rattaché.
@@ -166,13 +166,14 @@ Colonnes numérotées : le nombre d'obligations à chaque rang de l'échelle, me
 
 | date de lecture | références | part | obligations concernées |
 | --- | --- | --- | --- |
-| 2026-08-26 | 46 | 17 % | 37 |
+| 2026-08-26 | 44 | 16 % | 35 |
 | 2026-08-27 | 12 | 4 % | 9 |
 | 2026-08-31 | 70 | 25 % | 33 |
 | 2026-09-01 | 137 | 49 % | 84 |
 | 2026-09-02 | 13 | 5 % | 10 |
+| 2026-09-04 | 4 | 1 % | 3 |
 
-278 des 278 références portent une date de lecture, toutes comprises entre 2026-08-26 et 2026-09-02.
+280 des 280 références portent une date de lecture, toutes comprises entre 2026-08-26 et 2026-09-04.
 
 Ces dates ne sont pas un âge : elles disent quand quelqu'un a ouvert le
 texte, pas depuis quand la version lue est en vigueur. Une lecture d'hier
@@ -188,7 +189,7 @@ que rien ne cite n'apparaît donc dans aucun degré ci-dessus — et le prendre
 pour du travail restant est exactement l'erreur qui a failli faire relancer
 une relecture déjà faite.
 
-**257 articles dépouillés ne sont cités par aucune obligation**, répartis sur 34 corpus.
+**258 articles dépouillés ne sont cités par aucune obligation**, répartis sur 34 corpus.
 
 | corpus | articles non cités | sur | lus |
 | --- | --- | --- | --- |
@@ -203,12 +204,12 @@ une relecture déjà faite.
 | `code-travail-vigilance-modalites` | 8 | 8 | 2026-09-02 |
 | `code-travail-co-activite` | 7 | 11 | 2026-08-31 → 2026-09-02 |
 | `arrete-2004-12-21-echafaudages` | 7 | 7 | 2026-09-01 |
+| `arrete-1986-habitation` | 7 | 12 | 2026-09-01 → 2026-09-04 |
 | `code-travail-vigilance` | 7 | 7 | 2026-09-02 |
-| `arrete-1986-habitation` | 6 | 11 | 2026-09-01 → 2026-09-03 |
 | `code-travail-duerp-principes` | 6 | 6 | 2026-09-02 |
 | `code-travail-matieres-inflammables` | 6 | 6 | 2026-09-02 |
 | `code-travail-bruit-vibrations` | 5 | 5 | 2026-09-02 |
-| `arrete-2011-12-30-igh` | 4 | 5 | 2026-09-03 |
+| `arrete-2011-12-30-igh` | 4 | 6 | 2026-09-03 → 2026-09-04 |
 | `code-travail-duerp` | 4 | 5 | 2026-09-02 |
 | `code-travail-travail-dissimule` | 4 | 4 | 2026-09-02 |
 | `arrete-2017-04-19-registre-accessibilite` | 4 | 4 | 2026-09-03 |
@@ -233,19 +234,20 @@ Le total du corpus, les articles jamais lus et ceux qui imposent une obligation 
 
 ---
 
-## 8. Les 145 obligations
+## 8. Les 146 obligations
 
 | obligation | domaine | porteur | réf. | fondement | plancher | sans ancre | lu |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `cuisson-erp-extinction-automatique-annuelle` | cuisson_hotte | equipement | 2 | 3 · lu sans verbatim | 3 · lu sans verbatim | 0 / 2 | 2026-08-26 → 2026-08-27 |
-| `elec-igh-annuelle` | electricite | equipement | 1 | 3 · lu sans verbatim | 3 · lu sans verbatim | 1 / 1 | 2026-08-26 |
+| `elec-igh-annuelle` | electricite | equipement | 1 | 3 · lu sans verbatim | 3 · lu sans verbatim | 1 / 1 | 2026-09-04 |
 | `elec-travail-habilitation-personnel` | electricite | equipement | 2 | 4 · agent + verbatim | 3 · lu sans verbatim | 1 / 2 | 2026-08-26 → 2026-09-01 |
 | `incendie-erp-extincteurs-annuelle` | incendie | equipement | 2 | 5 · première main | 3 · lu sans verbatim | 0 / 2 | 2026-08-26 → 2026-09-01 |
 | `incendie-erp-pe4-entretien-installations-techniques` | incendie | etablissement | 3 | 5 · première main | 3 · lu sans verbatim | 0 / 3 | 2026-08-26 → 2026-09-01 |
 | `incendie-erp-ria-annuelle` | incendie | equipement | 1 | 3 · lu sans verbatim | 3 · lu sans verbatim | 0 / 1 | 2026-08-26 |
 | `incendie-erp-ssi-annuelle` | incendie | equipement | 1 | 3 · lu sans verbatim | 3 · lu sans verbatim | 0 / 1 | 2026-08-26 |
 | `incendie-erp-ssi-triennale` | incendie | equipement | 1 | 3 · lu sans verbatim | 3 · lu sans verbatim | 0 / 1 | 2026-08-26 |
-| `incendie-igh-moyens-secours-annuelle` | incendie | equipement | 1 | 3 · lu sans verbatim | 3 · lu sans verbatim | 0 / 1 | 2026-08-26 |
+| `incendie-igh-charge-calorifique-quinquennale` | incendie | etablissement | 2 | 4 · agent + verbatim | 3 · lu sans verbatim | 0 / 2 | 2026-09-04 |
+| `incendie-igh-moyens-secours-annuelle` | incendie | equipement | 1 | 3 · lu sans verbatim | 3 · lu sans verbatim | 0 / 1 | 2026-09-04 |
 | `sante-travail-etablissement-adhesion-spst` | sante_travail | etablissement | 3 | 4 · agent + verbatim | 3 · lu sans verbatim | 0 / 3 | 2026-08-31 |
 | `aeration-erp-chauffage-ventilation-annuelle` | aeration | equipement | 2 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 2 | 2026-09-01 |
 | `aeration-erp-ps-surveillance-qualite-air-inf-250` | aeration | equipement | 1 | 4 · agent + verbatim | 4 · agent + verbatim | 0 / 1 | 2026-09-01 |
@@ -388,7 +390,7 @@ demande le plus de travail.
 
 ---
 
-## 9. Les 278 références, une par une
+## 9. Les 280 références, une par une
 
 `prescrit` et `verbatim` sont les deux champs du corpus qui rendent une
 lecture relisible : ce que l'article impose, en une phrase, et la phrase
@@ -416,7 +418,7 @@ refaire pour la contredire.
 | `elec-erp-presence-personne-qualifiee` | fondement | Arrêté du 25 juin 1980, art. EL 18 § 2 (présence physique d'une personne qualifiée) | EL 18 | arrete-1980-livre-2 | retenu | 2026-09-01 | agent_verbatim | ✓ | ✓ | 2019-07-01 | 2019-07-01 | 4 · agent + verbatim | ancrée |
 | `elec-erp-groupe-electrogene-annuel` | fondement | Arrêté du 25 juin 1980, art. EL 18 § 4 (entretien et essais des groupes électrogènes de sécurité) | EL 18 | arrete-1980-livre-2 | retenu | 2026-09-01 | agent_verbatim | ✓ | ✓ | 2019-07-01 | 2019-07-01 | 4 · agent + verbatim | ancrée |
 | `elec-erp-groupe-electrogene-annuel` | contexte 1 | Arrêté du 25 juin 1980, art. EL 19 (vérification annuelle) | EL 19 | arrete-1980-livre-2 | retenu | 2026-09-01 | premiere_main | ✓ | ✓ | 2010-01-23 | 2010-01-23 | 5 · première main | ancrée |
-| `elec-igh-annuelle` | fondement | Arrêté du 30 décembre 2011 (règlement IGH), art. GH 5 (vérifications techniques par organismes agréés) | GH 5 | arrete-2011-12-30-igh | retenu | 2026-08-26 | agent_verbatim | ✓ | — | 2026-01-01 | — | 3 · lu sans verbatim | jamais constatée |
+| `elec-igh-annuelle` | fondement | Arrêté du 30 décembre 2011 (règlement IGH), art. GH 5 (vérifications techniques par organismes agréés) | GH 5 | arrete-2011-12-30-igh | retenu | 2026-09-04 | agent_verbatim | ✓ | — | 2026-01-01 | — | 3 · lu sans verbatim | jamais constatée |
 | `incendie-hotel-po-controle-annuel-electricite` | fondement | Arrêté du 25 juin 1980, art. PO 1 § 3 (règles spécifiques aux hôtels) | PO 1 | arrete-1980-livre-3 | retenu | 2026-08-26 | premiere_main | ✓ | ✓ | 2018-01-01 | 2018-01-01 | 5 · première main | ancrée |
 | `incendie-hotel-po-controle-annuel-electricite` | contexte 1 | Arrêté du 25 juin 1980, art. PO 8 § 1 (extension aux hôtels existants) | PO 8 | arrete-1980-livre-3 | retenu | 2026-08-26 | premiere_main | ✓ | ✓ | 2011-10-30 | 2011-10-30 | 5 · première main | ancrée |
 | `elec-travail-rapport-quadriennal` | fondement | Arrêté du 26 décembre 2011, annexe II, point 3.5 (mise à jour des renseignements descriptifs) | Arrêté 2011-12-26 annexe II | arrete-2011-12-26-electricite | retenu | 2026-08-26 | premiere_main | ✓ | ✓ | 2011-12-30 | 2011-12-30 | 5 · première main | ancrée |
@@ -477,7 +479,9 @@ refaire pour la contredire.
 | `incendie-erp-visite-commission-cat4-triennale` | contexte 1 | CCH, art. R. 143-41 (visites périodiques de la commission) | CCH R. 143-41 | cch-registre-securite | retenu | 2026-08-26 | premiere_main | ✓ | ✓ | 2021-07-01 | 2021-07-01 | 5 · première main | ancrée |
 | `incendie-erp-visite-commission-cat4-quinquennale` | fondement | Arrêté du 25 juin 1980, art. GE 4 § 1 (visites périodiques des quatre premières catégories) | GE 4 | arrete-1980-livre-2 | retenu | 2026-09-01 | premiere_main | ✓ | ✓ | 2015-01-01 | 2015-01-01 | 5 · première main | ancrée |
 | `incendie-erp-visite-commission-cat4-quinquennale` | contexte 1 | CCH, art. R. 143-41 (visites périodiques de la commission) | CCH R. 143-41 | cch-registre-securite | retenu | 2026-08-26 | premiere_main | ✓ | ✓ | 2021-07-01 | 2021-07-01 | 5 · première main | ancrée |
-| `incendie-igh-moyens-secours-annuelle` | fondement | Arrêté du 30 décembre 2011 (règlement IGH), art. GH 5 (vérifications techniques par organismes agréés) | GH 5 | arrete-2011-12-30-igh | retenu | 2026-08-26 | agent_verbatim | ✓ | — | 2026-01-01 | 2026-01-01 | 3 · lu sans verbatim | ancrée |
+| `incendie-igh-moyens-secours-annuelle` | fondement | Arrêté du 30 décembre 2011 (règlement IGH), art. GH 5 (vérifications techniques par organismes agréés) | GH 5 | arrete-2011-12-30-igh | retenu | 2026-09-04 | agent_verbatim | ✓ | — | 2026-01-01 | 2026-01-01 | 3 · lu sans verbatim | ancrée |
+| `incendie-igh-charge-calorifique-quinquennale` | fondement | Arrêté du 30 décembre 2011 (règlement IGH), art. GH 61 § 5 (rapport de vérification de la charge calorifique, à la charge des occupants) | GH 61 | arrete-2011-12-30-igh | retenu | 2026-09-04 | agent_verbatim | ✓ | ✓ | 2012-04-01 | 2012-04-01 | 4 · agent + verbatim | ancrée |
+| `incendie-igh-charge-calorifique-quinquennale` | contexte 1 | Arrêté du 30 décembre 2011 (règlement IGH), art. GH 5 § 3.1.4 (la quinquennale au tableau des vérifications techniques) | GH 5 | arrete-2011-12-30-igh | retenu | 2026-09-04 | agent_verbatim | ✓ | — | 2026-01-01 | 2026-01-01 | 3 · lu sans verbatim | ancrée |
 | `habitation-verification-annuelle-installations-securite` | fondement | Arrêté du 31 janvier 1986, art. 101 (vérifications annuelles à la charge du propriétaire) | Arrêté 1986-01-31 art. 101 | arrete-1986-habitation | retenu | 2026-09-01 | agent_verbatim | ✓ | ✓ | 1986-03-05 | 1986-03-05 | 4 · agent + verbatim | ancrée |
 | `habitation-verification-annuelle-installations-securite` | contexte 1 | Arrêté du 31 janvier 1986, art. 103 (qualité du vérificateur) | Arrêté 1986-01-31 art. 103 | arrete-1986-habitation | retenu | 2026-09-01 | agent_verbatim | ✓ | ✓ | 2015-10-01 | 2015-10-01 | 4 · agent + verbatim | ancrée |
 | `habitation-verification-annuelle-installations-securite` | contexte 2 | Arrêté du 31 janvier 1986, art. 1er (champ d'application : habitations dont le plancher bas du logement le plus haut est à 50 m au plus) | Arrêté 1986-01-31 art. 1 | arrete-1986-habitation | sans_objet | 2026-09-01 | agent_verbatim | — | ✓ | 2020-12-25 | 2020-12-25 | 4 · agent + verbatim | ancrée |

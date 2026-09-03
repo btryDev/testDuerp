@@ -74,6 +74,35 @@ la page de section, qui est rendue côté serveur :
 Ces URL acceptent une date en suffixe, ce qui permet aussi de lire une
 **version future** d'un article.
 
+**Cette parade ne marche PAS sur un texte LODA** (arrêté, décret, loi non
+codifiée). Constaté le 2026-09-04 : `/loda/section_lc/<JORFTEXT>/<LEGISCTA>/`
+rend un **404**, et `/loda/id/<JORFTEXT>/<LEGISCTA>/` redirige vers l'accueil
+du site. Sur un arrêté, il faut y aller **article par article**. Pour obtenir
+les identifiants, demande au plan du texte consolidé **les identifiants de
+liens** — jamais le contenu —, puis vérifie chaque page en l'ouvrant.
+
+**Une lecture automatique peut rendre un article long SILENCIEUSEMENT RÉSUMÉ.**
+Ce n'est pas un refus, c'est une paraphrase : la page rend bien le texte, et le
+lecteur en rend un abrégé sans le dire. `GH 61 § 5` a ainsi été rendu amputé de
+la phrase qui portait sa périodicité, et l'article 78-1 de l'arrêté de 1986
+amputé du point qui portait la sienne. **Une périodicité absente d'une première
+lecture n'est pas une périodicité absente du texte.** La parade : redemander le
+paragraphe décisif **seul**, mot pour mot, puis poser une **question fermée**
+sur le point qui tranche (« l'expression "tous les cinq ans" figure-t-elle dans
+cet article ? OUI ou NON »).
+
+**Et deux lectures concordantes peuvent partager le même angle mort.** C'est la
+limite de la parade ci-dessus. Quand un point est décisif, cherche un **second
+article** qui dit la même chose : `GH 5 § 3.1.4` a confirmé la quinquennale de
+`GH 61 § 5` là où deux relectures de `GH 61` auraient pu se tromper ensemble.
+
+**Le registre complet des pièges constatés, avec leurs dates et les articles sur
+lesquels ils se sont produits, est au § 2.D de
+`docs/journal-des-verifications.md`** — dont celui-ci, le plus coûteux : la page
+consolidée d'un texte ne fabrique pas seulement du contenu et des périodicités,
+elle **nie ce qui s'y trouve** (faux négatifs) et **invente des textes
+modificateurs**. Un négatif rendu par une page consolidée ne vaut rien.
+
 **Distingue trois dates**, elles ne disent pas la même chose :
 - la date d'entrée en vigueur de la **version en vigueur** — c'est elle qui va
   dans `versionConstatee` ;
@@ -153,9 +182,17 @@ commerce de détail, bureau ; électricité, incendie, aération, cuisson et
 hottes, ascenseurs, portes et portails, équipements sous pression, stockage de
 matières dangereuses, levage, fluides frigorigènes.
 
-Sont **hors périmètre** : IGH, ICPE complexes, ATEX, rayonnements ionisants,
+Sont **hors périmètre** : ICPE complexes, ATEX, rayonnements ionisants,
 équipements sportifs, piscines. Un texte qui ne concerne qu'eux se signale en
 une ligne, sans développement.
+
+**L'IGH n'en fait plus partie, et cette ligne le rangeait à tort parmi eux.**
+Seul l'ERP SITUÉ en IGH est refusé (ADR-031) ; l'IGH seul est servi, parce qu'un
+employeur locataire d'une tour relève du Code du travail. Onze obligations
+portent la typologie `igh`, et le règlement de sécurité des IGH (arrêté du
+30 décembre 2011) est **dans le périmètre de la veille** pour ce qu'il met à la
+charge de l'OCCUPANT — `GH 61 § 5` en est l'exemple, et il a été manqué pendant
+des mois parce qu'on ne lisait pas ce texte.
 
 ## Outils
 

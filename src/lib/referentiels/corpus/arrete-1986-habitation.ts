@@ -50,6 +50,61 @@
 // décisif seul, et le lire deux fois.
 //
 // ---------------------------------------------------------------------------
+// AMENDEMENT DU 2026-09-04 — LES ARTICLES 5 À 96 SONT LUS, ET IL Y AVAIT
+// ENCORE QUELQUE CHOSE DEDANS
+// ---------------------------------------------------------------------------
+//
+// Le `portee` annonçait que TRENTE-SIX ARTICLES de la plage 5-96 restaient
+// « écartés sur leur seul intitulé de plan — c'est une inférence, pas une
+// lecture ». Ils ont été ouverts. Par prudence sur l'identité des trente-six,
+// que le lot précédent n'avait pas listés, ce sont les QUATRE-VINGT-DEUX
+// articles des titres II, III, IV et VI qui ont été relus intégralement, un
+// par un, sur leur page d'article individuelle : 5 à 16, 17 à 29 bis, 30 à 43,
+// 44 à 57, 58 à 64, 77 à 80 (78-1 compris) et 81 à 96. Chaque page a annoncé
+// elle-même son numéro d'article et l'arrêté dont elle relève ; aucune n'a
+// manqué. Le titre V (logements-foyers, art. 65 à 76) avait été lu en entier
+// le 2026-09-03. LA PLAGE 5-96 EST DONC DÉPOUILLÉE, et l'exclusion des titres
+// II à IV et VI est désormais une lecture.
+//
+// ELLE EST JUSTE, ET ELLE N'EST PAS COMPLÈTE. Quatre-vingts des quatre-vingt-
+// deux articles sont bien constructifs ou définitoires, comme la présomption
+// le disait. Les deux autres ne le sont pas :
+//
+//   ART. 78-1, 7° — déjà au corpus depuis le 2026-09-03, et CONFIRMÉ ici par
+//   une relecture indépendante en trois appels : huit points numérotés, le 7°
+//   bien présent, contrôle visuel « au moins une fois par an et à chaque
+//   changement d'utilisateur », débiteur « le gestionnaire », consignation au
+//   registre de l'article 101. Le relevé du lot précédent est exact au mot.
+//
+//   ART. 60, 1 — NOUVEAU, ET PERSONNE NE L'AVAIT VU. « Le fonctionnement du
+//   groupe électrogène et du dispositif de mise en marche automatique doit
+//   être vérifié AU MOINS UNE FOIS PAR MOIS. » Une périodicité MENSUELLE, la
+//   plus courte du texte, dans un titre que deux lots successifs avaient tenu
+//   pour purement constructif. Voir son entrée ci-dessous — elle n'est pas
+//   encodée, et la raison y est écrite.
+//
+// CE QUE ÇA CORRIGE DANS CE FICHIER. La phrase « l'obligation périodique
+// centrale du texte est l'article 101 » a été écrite le 2026-09-01 comme « la
+// SEULE », puis amendée le 2026-09-03 en « une seconde, l'article 78-1 ». Elle
+// se trompait encore : il y en a TROIS, et la troisième dormait dans le texte
+// depuis 1986. Le mode de défaillance est le même les trois fois — un titre
+// jugé sur son intitulé de plan. « Conduits et gaines » n'annonce pas un
+// groupe électrogène de secours.
+//
+// UN TROISIÈME PIÈGE DE LÉGIFRANCE, DE LA MÊME FAMILLE QUE LES DEUX AUTRES.
+// La page consolidée, réinterrogée le 2026-09-04, a REPRODUIT son faux négatif
+// à l'identique — « une fois par an » et « contrôle » absents des articles 5 à
+// 96 — alors même qu'elle affichait le lien de l'article 78-1 qui contient les
+// deux. Elle a fait pire : invitée à rendre l'article 78-1, elle a annoncé
+// « Création par arrêté du 28 octobre 2021 - art. 1 » là où la page d'article
+// annonce « Arrêté du 27 juillet 2026 - art. 1 ». Elle ne fabrique donc pas
+// seulement du contenu et des périodicités : elle FABRIQUE AUSSI DES TEXTES
+// MODIFICATEURS, c'est-à-dire précisément ce dont `versionEnVigueur` et
+// `modifiePar` dépendent. Sur ce texte, rien de cette page ne se recopie —
+// sauf un identifiant de lien, qui se vérifie ensuite en ouvrant la page qu'il
+// désigne.
+//
+// ---------------------------------------------------------------------------
 //
 // Le lot cherchait des obligations périodiques conditionnées par la famille.
 // **Il n'y en a aucune.** Les familles gouvernent la CONSTRUCTION — degré
@@ -58,10 +113,12 @@
 // (art. 97 in fine). L'obligation périodique centrale du texte est l'article
 // 101, et il ne mentionne aucune famille : il vise « le propriétaire » de tout
 // bâtiment entrant dans le champ de l'article 1er, c'est-à-dire les quatre
-// familles. (Il fut écrit ici qu'elle était la SEULE : l'article 78-1, entré en
-// vigueur le 2026-08-03, en porte une seconde — annuelle, adossée au même
-// registre. Voir l'amendement ci-dessus. Elle ne dépend d'aucune famille non
-// plus.)
+// familles. (Il fut écrit ici qu'elle était la SEULE, puis qu'elles étaient
+// DEUX. Elles sont TROIS : l'article 78-1, entré en vigueur le 2026-08-03,
+// porte un contrôle annuel adossé au même registre ; l'article 60, 1, en
+// vigueur depuis 1986 et lu seulement le 2026-09-04, porte une vérification
+// MENSUELLE du groupe électrogène de secours d'un ventilateur de VMC. Voir les
+// deux amendements ci-dessus. Aucune des trois ne dépend d'une famille.)
 //
 // La famille atteint donc l'entretien de manière INDIRECTE : elle décide de ce
 // que le bâtiment CONTIENT, et l'article 101 fait vérifier ce qui est là. Une
@@ -124,7 +181,7 @@ export const ARRETE_1986_HABITATION: Corpus = {
   url: URL_TEXTE,
   etendue: "articles_cites",
   portee:
-    "109 articles et 5 annexes. Le TITRE VIII « Obligations des propriétaires » (art. 100 à 104) est lu en entier : c'est le seul titre qui s'adresse à l'exploitant, et il porte l'unique obligation périodique du texte (art. 101, vérification annuelle). Sont lus en outre l'article 1er (champ d'application), l'article 3 (classement en familles, qui fonde l'enum `FamilleHabitation`), les articles 97 à 99 du titre VII et, depuis le 2026-09-03, l'article 78-1. LES TITRES II À VI (art. 5 à 96) ONT ÉTÉ BALAYÉS le 2026-09-03 sans être dépouillés : le titre V (logements-foyers, art. 65 à 76) a été lu en entier et ne porte aucune obligation périodique ; seize articles du titre VI et quatorze des titres II à IV ont été ouverts, choisis sur leur intitulé comme candidats à une règle d'exploitation. Un seul en portait une, l'article 78-1, et il est dépouillé ici. TRENTE-SIX ARTICLES DE CETTE PLAGE RESTENT NON OUVERTS, écartés sur leur seul intitulé de plan — c'est une inférence, pas une lecture. Les annexes ne sont pas lues non plus. Les textes modificateurs du 19 juin 2015 et du 7 août 2019 ont en revanche été ouverts pour lister ce qu'ils touchent d'autre — voir les entrées des articles 98, 100, 102 et 103.",
+    "109 articles et 5 annexes. Le TITRE VIII « Obligations des propriétaires » (art. 100 à 104) est lu en entier : c'est le seul titre qui s'adresse à l'exploitant, et il porte l'unique obligation périodique du texte (art. 101, vérification annuelle). Sont lus en outre l'article 1er (champ d'application), l'article 3 (classement en familles, qui fonde l'enum `FamilleHabitation`), les articles 97 à 99 du titre VII et, depuis le 2026-09-03, l'article 78-1. LES TITRES II À VI (art. 5 à 96) SONT DÉPOUILLÉS DEPUIS LE 2026-09-04, et l'exclusion qui les frappait est devenue une lecture. Le titre V (logements-foyers, art. 65 à 76) avait été lu en entier le 2026-09-03. Les quatre-vingt-deux articles des titres II, III, IV et VI ont été relus un par un sur leur page d'article individuelle le 2026-09-04 — 5 à 16, 17 à 29 bis, 30 à 43, 44 à 57, 58 à 64, 77 à 80, 81 à 96 —, chacune annonçant son propre numéro d'article. Quatre-vingts sont constructifs ou définitoires. DEUX NE LE SONT PAS : l'article 78-1 (contrôle visuel annuel des boxes de stockage, débiteur « le gestionnaire ») et l'article 60, 1 (vérification MENSUELLE du groupe électrogène de secours d'un ventilateur de VMC, aucun débiteur nommé). Tous deux sont dépouillés ici en `obligation_manquante` ; aucun n'est encodé, et les raisons sont dans leurs entrées. Le lot du 2026-09-03 avait laissé trente-six articles écartés sur leur seul intitulé de plan : l'un d'eux était l'article 60. Les annexes ne sont pas lues non plus. Les textes modificateurs du 19 juin 2015 et du 7 août 2019 ont en revanche été ouverts pour lister ce qu'ils touchent d'autre — voir les entrées des articles 98, 100, 102 et 103.",
   articles: [
     {
       ref: "Arrêté 1986-01-31 art. 1",
@@ -206,6 +263,24 @@ export const ARRETE_1986_HABITATION: Corpus = {
         "Les quadruplex et plus ne sont pas admis dans les bâtiments d'habitation collectifs.",
       motif:
         "Article de définition : il classe, il ne prescrit pas. Dépouillé parce qu'il FONDE l'enum `FamilleHabitation`, posée le 2026-09-01 avant que ce texte n'ait été ouvert. VÉRIFICATION FAITE, ET LA DÉCOUPE EST JUSTE : cinq valeurs, dans cet ordre, et la troisième famille se subdivise bien en A et B au sein d'un même seuil de 28 mètres — ce qui explique pourquoi l'enum porte `TROISIEME_A` et `TROISIEME_B` plutôt qu'une `TROISIEME` unique. La 3ᵉ A est définie par TROIS conditions cumulatives (au plus sept étages, dix mètres de circulation horizontale au plus, accès aux escaliers atteints par la voie échelles) et la 3ᵉ B est son complément : une habitation qui manque une seule des trois bascule en B. À NOTER pour qui remplira le champ : l'article prévoit que le maire d'une commune dotée d'échelles aériennes suffisantes PEUT décider qu'un bâtiment de 3ᵉ famille B soit soumis aux seules prescriptions de la 3ᵉ famille A. La famille déclarée peut donc diverger de la famille calculée sur la géométrie, et c'est le texte qui l'autorise, pas une erreur de saisie.\n\nCONFRONTATION MÉCANISÉE LE 2026-09-03, ET ELLE CONFIRME LA LECTURE DE MAIN. `familles-habitation.test.ts` dérive désormais les familles du verbatim ci-dessus et les confronte aux CINQ déclarations du modèle — l'énumération Prisma, `FAMILLES_HABITATION` du référentiel, `FAMILLES_HABITATION` du schéma Zod, `CHOIX_FAMILLES_HABITATION` de l'onboarding et `LIBELLE_FAMILLE` du moteur. Aucun écart, dans aucun des deux sens : rien ne manque, rien n'est en trop. C'est la seule des trois listes ouvertes ce jour-là dont la source présumée était la bonne ET le contenu juste.\n\nLE PIÈGE DE CET ARTICLE EST SON 5°. Il compte cinq points numérotés et quatre familles : le 5° « Duplex et triplex » est une règle de comptage des niveaux pour le classement des trois premières familles, pas une cinquième famille. Un parseur qui lirait les « N° » plutôt que les mots « … famille » en fabriquerait une, et le modèle gagnerait un membre que le texte n'écrit pas. Le test lit les familles, jamais les numéros, et il vérifie explicitement qu'aucune cinquième famille n'en sort. La troisième, elle, n'entre pas comme membre : le texte la subdivise lui-même — « parmi lesquelles on distingue » — en A et B, et ce sont les feuilles qui sont les valeurs.",
+    },
+    {
+      ref: "Arrêté 1986-01-31 art. 60",
+      intitule:
+        "Systèmes de ventilation — conditions de dispense et vérification mensuelle du groupe électrogène",
+      url: "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006828494/",
+      versionEnVigueur: "1986-03-05",
+      modifiePar: null,
+      luLe: "2026-09-04",
+      lecture: "agent_verbatim",
+      statut: "obligation_manquante",
+      citationCle:
+        "Si l'une des conditions suivantes est respectée, le système de ventilation est soumis aux seules prescriptions de l'article 59 relatives aux conduits.\n" +
+        "1. Le fonctionnement du ventilateur est réputé assuré en permanence. Cette condition est réalisée quand : L'alimentation électrique du ventilateur est protégée de façon à ne pas être affectée par un incident survenant sur les autres circuits et ne traverse pas de locaux présentant des risques particuliers d'incendie, ou assurée par un groupe électrogène de secours dont la mise en marche est asservie à la coupure de l'alimentation électrique normale. Le fonctionnement du groupe électrogène et du dispositif de mise en marche automatique doit être vérifié au moins une fois par mois.",
+      motif:
+        "LA TROISIÈME OBLIGATION PÉRIODIQUE DE CE TEXTE, ET LA PLUS COURTE : UN MOIS. Elle dormait depuis 1986 dans un titre intitulé « Conduits et gaines », que deux lots successifs avaient tenu pour purement constructif — le 2026-09-01 sans l'ouvrir, le 2026-09-03 en l'écartant sur son intitulé de plan. C'est le même mode de défaillance que pour l'article 78-1, à ceci près que celui-ci n'a pas l'excuse d'être récent.\n\nCE QU'ELLE EST EXACTEMENT, parce que la lire de travers ferait une obligation générale là où il n'y en a pas. L'article 60 est une DISPENSE conditionnelle : « si l'une des conditions suivantes est respectée, le système de ventilation est soumis aux seules prescriptions de l'article 59 ». Sa condition 1 est que le fonctionnement du ventilateur soit « réputé assuré en permanence », ce qui s'obtient de deux façons — une alimentation électrique protégée, OU un groupe électrogène de secours asservi à la coupure du réseau. La vérification mensuelle est le prix de la SECONDE branche seulement. Un immeuble qui a pris la première ne la doit pas ; un immeuble qui n'a pris aucune des deux conditions relève du régime complet des articles 59 et suivants et ne la doit pas davantage.\n\nAUCUN DÉBITEUR N'EST NOMMÉ, et c'est vérifié : l'article est écrit à la voix passive — « doit être vérifié » — et ne contient ni « propriétaire », ni « exploitant », ni « gestionnaire », ni « occupant », ni « locataire ». Deux lectures indépendantes concordent sur ce point comme sur le verbatim. Rien n'interdit de penser que le propriétaire de l'article 101 en est le débiteur naturel ; le texte ne le dit pas, et le corpus n'écrit pas ce que le texte ne dit pas.\n\nCE QUE ÇA CORRIGE. La phrase de ce fichier selon laquelle l'article 101 portait « l'unique obligation périodique du texte » a été fausse deux fois : d'abord parce que l'article 78-1 en portait une seconde, ensuite parce que celle-ci existait déjà quand la phrase a été écrite.",
+      bloquePar:
+        "TROIS MANQUES, ET AUCUN N'EST UNE PARESSE D'ENCODAGE. (1) LE DÉCLENCHEUR N'EXISTE PAS AU MODÈLE : il faudrait savoir que l'alimentation permanente du ventilateur de VMC est assurée par un groupe électrogène de secours asservi. Ce n'est ni une catégorie d'équipement — il n'y a pas de `GROUPE_ELECTROGENE`, la seule catégorie voisine étant `VMC` — ni une propriété d'équipement collectée. (2) L'ACCROCHER À `VMC` SERAIT UNE FAUTE, et c'est la tentation à écarter : la plupart des VMC n'ont pas de groupe électrogène, et une ligne mensuelle de criticité élevée posée sur chaque VMC déclarée d'un immeuble d'habitation sur-appliquerait massivement — pas d'un cran visible et corrigible, mais sur la quasi-totalité du parc, ce qui n'est plus un sens d'erreur mais du bruit. (3) LE DÉBITEUR N'EST PAS NOMMÉ. Le dépôt préfère une obligation manquante nommée à une obligation accrochée à une catégorie qui ne se déclenche jamais, ou qui se déclenche toujours à tort.\n\nCE QUI LA DÉBLOQUERAIT : une propriété booléenne d'équipement sur la VMC — « alimentation de secours par groupe électrogène » —, qui est exactement la forme que `ConditionApplication` sait déjà porter (`equipement_propriete_booleenne`). C'est une question de plus au formulaire d'équipement, pas une migration de schéma d'établissement. À arbitrer, pas à supposer.",
     },
     {
       ref: "Arrêté 1986-01-31 art. 78-1",
