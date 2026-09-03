@@ -96,9 +96,28 @@ export default async function DuerpLayout({
             raisonDisplay: e.raisonDisplay,
           }))}
         />
+        {/* PAS DE `kicker` ICI, ET C'EST UNE CORRECTION DU 2026-09-03.
+            Il portait `Établissements / ${raisonDisplay.split(" ")[0]}…`, ce
+            qui donnait « ÉTABLISSEMENTS / LE… » pour « Le Comptoir des
+            Halles » : le `split(" ")[0]` prend le PREMIER MOT, donc l'article
+            pour la plupart des enseignes françaises. Deux lettres et des
+            points de suspension, au-dessus d'un fil d'Ariane qui écrivait le
+            nom en entier juste en dessous.
+
+            Le remède n'est pas de mieux tronquer, c'est de reconnaître que
+            cette ligne n'avait pas lieu d'être. L'ADR-014 nomme deux
+            affirmations de navigation, et deux seulement : le fil d'Ariane dit
+            où la fiche VIT, le retour dit d'où l'on ARRIVE. `kicker` n'est ni
+            l'un ni l'autre — c'est un intitulé éditorial, et TOUS les autres
+            du dépôt le confirment : « Pourquoi cette page », « Obligation »,
+            « Bon à savoir », « Ce que vous signez ». Le shell DUERP était le
+            seul à y loger un chemin, et le seul à le rendre illisible.
+
+            Le fil d'Ariane reste, entier et cliquable ; l'emplacement du
+            `retour` reste libre pour la provenance le jour où le wizard la
+            lira (ADR-014, dernière conséquence). */}
         <AppTopbar
           title="DUERP"
-          kicker={`Établissements / ${etab.raisonDisplay.split(" ")[0]}…`}
           crumbs={[
             {
               href: `/etablissements/${etab.id}`,

@@ -47,11 +47,43 @@ export function SalarieCard({
           <span className="board-titre block truncate text-[16px] leading-tight">
             {salarie.prenom} {salarie.nom}
           </span>
+          {/* LE POSTE PREND L'ENCRE DU NOM SUR UNE TÊTE COLORÉE — correction du
+              2026-09-03.
+
+              Il héritait de `ENCRE_ETAT`, posée par `style` sur le conteneur,
+              tandis que le nom porte `board-titre`, qui fixe
+              `color: var(--board-ink)`. Sur la tête rouge d'une personne en
+              retard, le nom sortait donc en quasi-noir et le poste en rouge
+              foncé — deux encres pour deux lignes voisines, et c'est la
+              SECONDE que le lecteur peinait à lire.
+
+              MESURÉ AVANT DE CHOISIR, parce que « l'encre du champ » avait
+              l'air d'être la bonne réponse et ne l'était pas. Rapports de
+              contraste sur chacun des trois champs de cette tête :
+
+                champ rouge   #ff9d9e  ·  signal-ink #8a2a23 →  4,34   SOUS AA
+                                         ·  board-ink  #0a0a0a →  9,96
+                champ ambre   #fff3ba  ·  amber-ink  #754d0a →  6,65
+                                         ·  board-ink  #0a0a0a → 17,71
+                champ ardoise #edf2f5  ·  slate-mid  #4d5d6b →  6,02
+                                         ·  board-ink  #0a0a0a → 17,55
+
+              À 11,5 px, le seuil AA est de 4,5 : **le couple rouge est le seul
+              des trois à ne pas le tenir**, et l'aligner sur l'encre du champ
+              aurait donc fait échouer les DEUX lignes au lieu d'une. C'est le
+              nom qui avait raison. Le poste le rejoint quand la tête est
+              colorée, et garde son gris ardoise quand elle ne l'est pas — la
+              hiérarchie reste portée par le corps et la graisse, jamais par un
+              contraste insuffisant.
+
+              Réserve à traiter ailleurs : `--board-signal-ink` reste sous AA
+              sur `--board-signal` partout où le couple sert du texte de labeur.
+              Corriger le jeton passe par la charte, pas par cette carte. */}
           <span
             className="mt-1 block truncate text-[11.5px] leading-[1.4]"
             style={{
               color: etatDeLaTete
-                ? "inherit"
+                ? "var(--board-ink)"
                 : "var(--board-slate-mid)",
             }}
           >
@@ -74,13 +106,25 @@ export function SalarieCard({
         ) : (
           <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
             {salarie.titres.slice(0, 3).map((t) => (
-              <li key={t.id} className="flex items-center gap-2">
+              <li key={t.id} className="flex items-start gap-2">
+                {/* `items-start` depuis que le libellé peut tenir sur deux
+                    lignes : centré, la puce se posait entre les deux. Le
+                    décalage la remet sur la première. */}
                 <span
                   aria-hidden
-                  className="size-[7px] flex-none rounded-full"
+                  className="mt-[5px] size-[7px] flex-none rounded-full"
                   style={{ background: CHAMP_ETAT[t.etat] }}
                 />
-                <span className="min-w-0 flex-1 truncate text-[12.5px] text-[color:var(--board-slate-ink)]">
+                {/* `line-clamp-2` et non `truncate` — correction du
+                    2026-09-03. Sur une colonne de grille, une seule ligne
+                    coupait « Formation en santé, sécurité et conditions de
+                    tra… » : le titre du membre du CSE ne se distinguait plus
+                    d'aucune autre formation. Les libellés du catalogue sont
+                    des intitulés réglementaires, ils ne s'abrègent pas — et la
+                    carte a la place, son corps portant au plus trois titres et
+                    la mention « et n autres ». Même remède que
+                    `PrestataireCard` sur sa raison sociale. */}
+                <span className="min-w-0 flex-1 text-[12.5px] leading-[1.35] text-[color:var(--board-slate-ink)] line-clamp-2">
                   {t.libelle}
                 </span>
               </li>

@@ -105,23 +105,51 @@ export function colonnesJours(aujourdhui: Date, nb: number): ColonneJour[] {
 // ---------------------------------------------------------------------
 
 /**
- * « Aujourd'hui », « J+3 », « J−2 ». L'écart est compté en **jours
+ * « Aujourd'hui », « J+3 », « 2 j de retard ». L'écart est compté en **jours
  * civils** : il ne change qu'à minuit, heure de Paris, jamais en cours
  * d'après-midi.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * LE PASSÉ NE S'ÉCRIT PLUS EN « J− » — CORRECTION DU 2026-09-03
+ * ───────────────────────────────────────────────────────────────────────────
+ *
+ * Ces deux fonctions rendaient `J−96` pour une échéance dépassée de 96 jours,
+ * et le widget « À faire » l'affichait à côté du sous-titre « Vérification ·
+ * en retard ». Les deux se contredisaient sur la même ligne.
+ *
+ * La donnée était juste — `joursCivilsEntre` rend bien un écart négatif pour
+ * une date passée. C'est la NOTATION qui mentait. « J−3 » est un compte à
+ * rebours : en français, J−1 est la veille, J−3 le surlendemain de
+ * l'avant-veille — bref, trois jours À VENIR. Le code s'en servait comme d'un
+ * simple signe algébrique (« aujourd'hui moins trois jours »), et les deux
+ * lectures sont exactement inverses.
+ *
+ * Deux remèdes se présentaient. Inverser le signe — « J+96 » pour un retard,
+ * « J−12 » pour une échéance dans douze jours — rétablit la convention, mais
+ * réécrit TOUS les badges du futur, qui sont l'écrasante majorité, et laisse
+ * le lecteur devant une notation d'ingénieur.
+ *
+ * L'autre, retenue : **le futur garde `J+n`, le passé dit son retard en
+ * toutes lettres.** Le mot ne se lit que d'une façon, et il n'introduit aucun
+ * vocabulaire — le produit écrit déjà « depuis 3 j » (`libelleAnciennete`),
+ * « j. de retard » (`compteARebours`) et « 4 actions dépassent leur
+ * échéance ». Il ne restait que ces deux badges pour dire le contraire.
  */
 export function libelleEcart(date: Date, aujourdhui: Date): string {
   const j = joursCivilsEntre(aujourdhui, date);
   if (j === 0) return "Aujourd'hui";
   if (j > 0) return `J+${j}`;
-  return `J−${-j}`;
+  return `${-j} j de retard`;
 }
 
-/** Même écart, en pastille : « Auj. » tient là où « Aujourd'hui » déborde. */
+/** Même écart, en pastille : « Auj. » tient là où « Aujourd'hui » déborde.
+ *  Le retard s'y écrit comme dans `libelleEcart` : « J− » disait l'inverse de
+ *  ce qu'il comptait, voir la note ci-dessus. */
 export function badgeEcart(date: Date, aujourdhui: Date): string {
   const j = joursCivilsEntre(aujourdhui, date);
   if (j === 0) return "Auj.";
   if (j > 0) return `J+${j}`;
-  return `J−${-j}`;
+  return `${-j} j de retard`;
 }
 
 /** Compte à rebours des cartes-chiffre : le nombre et sa légende.

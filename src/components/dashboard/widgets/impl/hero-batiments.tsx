@@ -26,6 +26,7 @@ import Image from "next/image";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { BatimentCharge } from "@/lib/batiments/queries";
+import { etatCharge, libelleCharge } from "@/lib/batiments/etat-charge";
 
 type Props = {
   /** Le nom d'usage de l'établissement. L'adresse ne figure pas ici : elle
@@ -43,6 +44,36 @@ type Props = {
 /** Au-delà de ce nombre, la rangée défile plutôt que de se comprimer :
  *  quatre volumes à la taille de trois ne se distinguent plus. */
 const VISIBLES_SANS_DEFILEMENT = 3;
+
+/**
+ * La largeur en deçà de laquelle un volume cesse de se comprimer — et donc le
+ * point où la rangée se met à défiler pour de bon.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * LA DÉCOUPE DU 2026-09-03
+ * ───────────────────────────────────────────────────────────────────────────
+ *
+ * Avec trois zones, `taille` valait 184 px et le `<li>` portait `flex-none` :
+ * la rangée mesurait 668 px de large dans une plaque qui n'en offrait que 577.
+ * Le troisième volume était donc **tranché en plein glyphe** au bord arrondi —
+ * « Terrasse et l… », « 0 équi… », « Sans… ».
+ *
+ * Ce n'était pas une pagination, c'était une découpe, et la distinction
+ * commande le remède : une pagination montre un bout de la carte suivante pour
+ * dire qu'il y en a d'autres — elle est délibérée, et elle laisse une carte
+ * ENTIÈRE lisible. Ici les trois cartes tenaient dans le contrat annoncé par
+ * le commentaire du calcul de `taille` (« sous le seuil, les volumes prennent
+ * la place disponible »), mais le code leur imposait une largeur fixe. Le
+ * commentaire disait vrai, le code disait autre chose.
+ *
+ * Sous le seuil, les volumes partagent donc réellement la largeur
+ * (`flex: 1 1 0`), plafonnés à `taille` pour ne pas s'étirer quand la place
+ * abonde, et planchés ici pour ne pas devenir illisibles quand elle manque.
+ * En dessous de ce plancher — fenêtre très étroite —, la rangée déborde et le
+ * défilement reprend son office, avec ses flèches : le débordement redevient
+ * alors ce qu'il doit être, une pagination qu'on a choisie.
+ */
+const LARGEUR_PLANCHER = 116;
 
 /**
  * Le monogramme de repli, quand aucun logo n'est déposé.
@@ -107,14 +138,42 @@ function Enseigne({
   );
 }
 
-function PastilleCharge({ nbEnRetard }: { nbEnRetard: number }) {
-  if (nbEnRetard === 0) {
+/**
+ * La pastille de charge — trois états, jamais deux.
+ *
+ * La règle est dans `lib/batiments/etat-charge.ts`, avec la raison : une zone
+ * sans équipement déclaré n'est ni à jour ni en retard, elle est **sans objet**,
+ * et l'annoncer « à jour » était une affirmation fausse sur un écran de
+ * conformité. Le composant ne rejuge rien, il rend l'état qu'on lui donne.
+ */
+function PastilleCharge({
+  nbEquipements,
+  nbEnRetard,
+}: {
+  nbEquipements: number;
+  nbEnRetard: number;
+}) {
+  const etat = etatCharge({ nbEquipements, nbEnRetard });
+
+  if (etat.nature === "sansObjet") {
+    // Ardoise, et non le blanc de « À jour » : la pastille claire se lit comme
+    // un feu vert au milieu des autres volumes. Ici il n'y a pas de feu — il
+    // n'y a rien à quoi l'allumer.
     return (
-      <span className="mt-2 inline-flex items-center rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-[color:var(--board-slate-ink)]">
-        À jour
+      <span className="mt-2 inline-flex items-center rounded-full bg-[color:var(--board-slate-pale)] px-2.5 py-1 text-[11px] font-medium text-[color:var(--board-slate-mid)]">
+        {libelleCharge(etat)}
       </span>
     );
   }
+
+  if (etat.nature === "aJour") {
+    return (
+      <span className="mt-2 inline-flex items-center rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-[color:var(--board-slate-ink)]">
+        {libelleCharge(etat)}
+      </span>
+    );
+  }
+
   return (
     <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[color:var(--board-signal-pale)] py-1 pl-1 pr-2.5 text-[11px] font-semibold text-[color:var(--board-signal-ink)]">
       {/* `--board-signal-on` et non `--board-signal-ink` : l'encre est faite
@@ -122,9 +181,9 @@ function PastilleCharge({ nbEnRetard }: { nbEnRetard: number }) {
           tombait sous le seuil AA — et c'est le seul endroit de la pastille
           où le nombre se lit. */}
       <span className="flex size-4 items-center justify-center rounded-full bg-[color:var(--board-signal)] text-[9.5px] font-bold text-[color:var(--board-signal-on)]">
-        {nbEnRetard}
+        {etat.nbEnRetard}
       </span>
-      à traiter
+      {libelleCharge(etat)}
     </span>
   );
 }
@@ -156,15 +215,26 @@ function Volume({
   batiment,
   src,
   taille,
+  souple,
 }: {
   batiment: BatimentCharge;
   src: string;
   taille: number;
+  /** Le volume partage la largeur disponible au lieu de l'imposer. Cf. la
+   *  note sur `LARGEUR_PLANCHER` : c'est ce qui empêche la découpe. */
+  souple: boolean;
 }) {
   return (
     <li
-      className="flex flex-none snap-start flex-col items-center"
-      style={{ width: taille }}
+      className={
+        "flex snap-start flex-col items-center " +
+        (souple ? "min-w-0" : "flex-none")
+      }
+      style={
+        souple
+          ? { flex: "1 1 0", minWidth: LARGEUR_PLANCHER, maxWidth: taille }
+          : { width: taille }
+      }
     >
       {/* Décoratif : tout ce que le dessin évoque est écrit sous lui. */}
       {/* `sizes` : sans lui, Next sert la variante correspondant à la
@@ -182,14 +252,28 @@ function Volume({
         priority
         className="h-auto w-full select-none"
       />
-      <span className="mt-2 w-full truncate text-center text-[13px] font-semibold tracking-[-0.01em] text-[color:var(--board-ink)]">
+      {/* Deux lignes plutôt qu'une, depuis que les volumes se partagent la
+          largeur : « Terrasse et local technique » ne tenait pas sur une ligne
+          de 150 px et s'abrégeait en « Terrasse et local techni… ». Le nom
+          d'une zone est écrit par le dirigeant — l'abréger lui rend un mot
+          qu'il n'a pas choisi. La hauteur, elle, est libre : rien ne suit sous
+          la pastille.
+
+          `min-h-[2lh]` réserve les deux lignes à TOUS les volumes, même à ceux
+          dont le nom tient sur une : sans quoi le parc et la pastille du
+          volume au nom long descendent d'un cran et la rangée cesse de se lire
+          comme une rangée. */}
+      <span className="mt-2 line-clamp-2 min-h-[2lh] w-full text-balance text-center text-[13px] font-semibold leading-[1.25] tracking-[-0.01em] text-[color:var(--board-ink)]">
         {batiment.nom}
       </span>
       <span className="mt-0.5 text-[11.5px] text-[color:var(--board-slate-mid)]">
         {batiment.nbEquipements} équipement
         {batiment.nbEquipements > 1 ? "s" : ""}
       </span>
-      <PastilleCharge nbEnRetard={batiment.nbEnRetard} />
+      <PastilleCharge
+        nbEquipements={batiment.nbEquipements}
+        nbEnRetard={batiment.nbEnRetard}
+      />
     </li>
   );
 }
@@ -268,6 +352,7 @@ export function HeroBatiments({
   // Sous le seuil, les volumes prennent la place disponible ; au-delà, ils
   // gardent une taille fixe et la piste défile — les comprimer davantage
   // les rendrait indistincts.
+  const souple = batiments.length <= VISIBLES_SANS_DEFILEMENT;
   const taille =
     batiments.length > VISIBLES_SANS_DEFILEMENT
       ? 156
@@ -322,7 +407,12 @@ export function HeroBatiments({
         {batiments.map((b, i) => (
           <Fragment key={b.id}>
             {i > 0 ? <TraitDeCote /> : null}
-            <Volume batiment={b} src={srcIllustration} taille={taille} />
+            <Volume
+              batiment={b}
+              src={srcIllustration}
+              taille={taille}
+              souple={souple}
+            />
           </Fragment>
         ))}
       </ul>

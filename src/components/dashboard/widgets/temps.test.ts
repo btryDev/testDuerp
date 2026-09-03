@@ -88,8 +88,10 @@ describe("libelleEcart", () => {
     expect(libelleEcart(jour, new Date("2026-08-10T21:59:00.000Z"))).toBe(
       "Aujourd'hui",
     );
+    // Le libellé du retard a changé le 2026-09-03 (« J−1 » se lisait « demain
+    // ») ; ce que ce test surveille reste la BASCULE, pas les mots.
     expect(libelleEcart(jour, new Date("2026-08-10T22:01:00.000Z"))).toBe(
-      "J−1",
+      "1 j de retard",
     );
   });
 
@@ -107,10 +109,29 @@ describe("badgeEcart", () => {
     ).toBe("Auj.");
   });
 
-  it("garde le signe des écarts", () => {
+  it("garde le « J+ » pour le futur", () => {
     const now = new Date("2026-08-10T15:00:00.000Z");
     expect(badgeEcart(echeance("2026-08-12"), now)).toBe("J+2");
-    expect(badgeEcart(echeance("2026-08-08"), now)).toBe("J−2");
+  });
+
+  it("dit le retard en toutes lettres, jamais en « J− »", () => {
+    // « J−2 » se lit « dans deux jours » : c'est un compte à rebours, et il
+    // s'affichait à côté de « en retard ». Voir la note de `libelleEcart`.
+    const now = new Date("2026-08-10T15:00:00.000Z");
+    expect(badgeEcart(echeance("2026-08-08"), now)).toBe("2 j de retard");
+    expect(libelleEcart(echeance("2026-08-08"), now)).toBe("2 j de retard");
+  });
+
+  it("n'écrit « J− » nulle part, sur tout l'intervalle utile", () => {
+    // La garantie, balayée plutôt qu'exemplifiée : de 400 jours de retard à
+    // 400 jours à venir, aucune des deux fonctions ne rend la notation qui
+    // dit l'inverse de ce qu'elle compte.
+    const now = new Date("2026-08-10T15:00:00.000Z");
+    for (let d = -400; d <= 400; d++) {
+      const jour = new Date(Date.UTC(2026, 7, 10 + d, 12, 0, 0));
+      expect(badgeEcart(jour, now)).not.toContain("J−");
+      expect(libelleEcart(jour, now)).not.toContain("J−");
+    }
   });
 });
 
