@@ -117,12 +117,23 @@ describe("listerBatimentsAvecCharge", () => {
     batimentId: string,
     datePrevue: string,
     libelleObligation = "Vérification annuelle",
+    actif = true,
   ) => ({
     statut: "planifiee",
     datePrevue: new Date(datePrevue),
     dateRealisee: null,
     libelleObligation,
-    equipement: { batimentId },
+    equipement: { batimentId, actif },
+  });
+
+  /** Une échéance que personne ne porte dans une zone : l'établissement
+   *  lui-même, ou un salarié (ADR-022, ADR-023). */
+  const ligneSansEquipement = (datePrevue: string) => ({
+    statut: "planifiee",
+    datePrevue: new Date(datePrevue),
+    dateRealisee: null,
+    libelleObligation: "Contrôle annuel des installations d'aération",
+    equipement: null,
   });
 
   beforeEach(() => {
@@ -185,7 +196,7 @@ describe("listerBatimentsAvecCharge", () => {
     expect(charge.find((b) => b.id === RESERVE)?.nbEnRetard).toBe(0);
   });
 
-  it("borne la lecture au parc en service et au dossier du user", async () => {
+  it("borne la lecture au dossier du user", async () => {
     // Sans RLS (ADR-005), l'isolation est applicative : une lecture qui ne
     // porte pas le prédicat d'appartenance est une convention rompue.
     await listerBatimentsAvecCharge("etab-1", NOW);
@@ -194,7 +205,64 @@ describe("listerBatimentsAvecCharge", () => {
     expect(args.where).toMatchObject({
       etablissementId: "etab-1",
       etablissement: { entreprise: { userId: "user-1" } },
-      equipement: { actif: true },
     });
+  });
+
+  /**
+   * LA LECTURE NE DOIT PLUS ÉCARTER EN SQL CE QUE LE REGROUPEMENT ÉCARTE.
+   *
+   * Le `where` portait `equipement: { actif: true }`, c'est-à-dire une
+   * jointure interne : les échéances d'établissement et de salarié
+   * n'atteignaient jamais le TypeScript. Deux gardes disaient la même chose,
+   * et une seule était atteignable par un test.
+   *
+   * L'exclusion vit désormais dans `grouperChargeParBatiment` — seule forme
+   * qu'on puisse SONDER en lui passant une ligne de chaque porteur, ce dont
+   * dépend la phrase affichée sous la plaque des zones
+   * (`perimetre/porteurs-comptes.ts`). Remettre la jointure ici ne changerait
+   * aucun chiffre affiché, et rendrait la sonde menteuse : elle mesurerait une
+   * fonction que la donnée réelle n'atteint plus.
+   */
+  it("ramène les lignes sans équipement, pour que ce soit le code qui les écarte", async () => {
+    await listerBatimentsAvecCharge("etab-1", NOW);
+
+    const args = h.db.requetes[0] as {
+      where: Record<string, unknown>;
+      select: Record<string, unknown>;
+    };
+    expect(
+      args.where.equipement,
+      "une jointure interne ici rendrait l'exclusion insondable",
+    ).toBeUndefined();
+    expect(args.select.equipement).toMatchObject({
+      select: { batimentId: true, actif: true },
+    });
+  });
+
+  it("une échéance sans équipement ne pèse sur aucune carte", async () => {
+    // Elle n'est dans aucune zone : la compter dans chacune gonflerait
+    // autant de pastilles qu'il y a de volumes, dans une seule serait
+    // arbitraire. Elle reste lisible au calendrier, et le relevé
+    // « Dépassées » du hero la compte.
+    h.db.verifs = [
+      ligne(PRINCIPAL, "2026-08-20T00:00:00+02:00"),
+      ligneSansEquipement("2026-08-18T00:00:00+02:00"),
+    ];
+
+    const charge = await listerBatimentsAvecCharge("etab-1", NOW);
+
+    expect(charge.reduce((n, b) => n + b.nbEnRetard, 0)).toBe(1);
+  });
+
+  it("un appareil retiré du parc ne pèse sur aucune carte", async () => {
+    // ADR-012 : la ligne survit au retrait quand elle porte une preuve, elle
+    // ne réclame plus rien pour autant.
+    h.db.verifs = [
+      ligne(PRINCIPAL, "2026-08-20T00:00:00+02:00", "Vérification annuelle", false),
+    ];
+
+    const charge = await listerBatimentsAvecCharge("etab-1", NOW);
+
+    expect(charge.find((b) => b.id === PRINCIPAL)?.nbEnRetard).toBe(0);
   });
 });

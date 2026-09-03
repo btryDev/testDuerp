@@ -39,6 +39,15 @@ type Props = {
   batiments: BatimentCharge[];
   /** La planche à afficher — la même pour tous les bâtiments du lieu. */
   srcIllustration: string;
+  /**
+   * Ce que les pastilles comptent, et ce qu'elles laissent au relevé d'à côté.
+   *
+   * Elle arrive toute faite depuis le serveur (`DashboardBundle.perimetreHero`)
+   * et non calculée ici : sa dérivation passe par le référentiel des
+   * obligations, qui n'a rien à faire dans un composant client — et la plaque
+   * n'a pas à savoir comment on obtient une phrase, seulement à la porter.
+   */
+  legende: string;
 };
 
 /** Au-delà de ce nombre, la rangée défile plutôt que de se comprimer :
@@ -314,6 +323,7 @@ export function HeroBatiments({
   logoUrl,
   batiments,
   srcIllustration,
+  legende,
 }: Props) {
   const piste = useRef<HTMLUListElement>(null);
   const [bords, setBords] = useState({ gauche: false, droite: false });
@@ -416,6 +426,15 @@ export function HeroBatiments({
           </Fragment>
         ))}
       </ul>
+
+      {/* Ce que les pastilles comptent — et ce qu'elles ne comptent pas.
+          Sans elle, la plaque annonçait « 5 à traiter » toutes zones
+          confondues à un empan du relevé « Dépassées » qui en annonçait onze,
+          et rien nulle part ne disait pourquoi. Deux nombres justes qui se
+          contredisent à l'œil font douter des deux. */}
+      <p className="m-0 mt-5 max-w-[46ch] text-[11.5px] leading-[1.5] text-[color:var(--board-slate-ink)]">
+        {legende}
+      </p>
     </div>
   );
 }

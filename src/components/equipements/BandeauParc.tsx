@@ -16,6 +16,32 @@
 // et un en-tête ne doit jamais contredire ce qu'il coiffe. La légende sous
 // le sélecteur dit à chaque fois sur quoi la rangée porte — un compteur
 // dont le périmètre se règle d'un clic doit annoncer son périmètre.
+//
+// ── LA LÉGENDE A DEUX AXES, ET N'EN DISAIT QU'UN ────────────────────────
+//
+// Elle a longtemps tenu en un ternaire : « ne portent que sur cette zone » /
+// « portent sur tout l'établissement ». L'intention était juste — un compteur
+// réglable d'un clic doit dire son réglage — mais « tout l'établissement » y
+// voulait dire « toutes les zones », et se lisait « toutes vos obligations ».
+//
+// Or ces chiffres ne comptent QUE ce que porte un équipement.
+// `repartirParEquipement` saute les lignes sans `equipementId`, c'est-à-dire
+// tout ce qui est dû au titre de l'établissement ou d'un salarié : sur les 145
+// obligations du référentiel, 86 seulement naissent d'un appareil. L'écran
+// avait raison de ne compter que le parc — c'est sa définition, pas son défaut ;
+// ce qui était faux est ce qu'il en disait, et il l'affirmait là où les trois
+// autres écrans se contentaient de diverger en silence.
+//
+// La légende dit donc désormais **ses deux axes** — la zone, et la restriction
+// par porteur — et elle n'est plus écrite : elle est **dérivée** de ce que
+// l'agrégation compte pour de bon (`legendeParc`, `porteursDuBandeauParc`).
+// Personne ne peut plus écrire « tout » au-dessus d'un compteur qui compte une
+// part, parce que personne n'écrit plus cette phrase.
+//
+// Et elle est rendue **même sans sélecteur de zone** : la restriction par
+// porteur ne dépend pas du nombre de zones, un établissement mono-zone la subit
+// à l'identique. Elle vivait dans la légende du sélecteur, donc elle
+// disparaissait exactement chez ceux qui n'ont qu'un lieu.
 
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -23,6 +49,8 @@ import { SelecteurBatiment } from "@/components/batiments/SelecteurBatiment";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
+import { porteursDuBandeauParc } from "@/lib/equipements/etat-verifications";
+import { legendeParc } from "@/lib/perimetre/porteurs-comptes";
 
 function Compteur({
   nombre,
@@ -55,6 +83,7 @@ function Compteur({
 
 export function BandeauParc({
   hrefRetour,
+  hrefCalendrier,
   enRetard,
   proches,
   aPlanifier,
@@ -64,6 +93,9 @@ export function BandeauParc({
   filtreBatiment,
 }: {
   hrefRetour: string;
+  /** Où se lit ce que ces chiffres ne comptent pas. La légende y renvoie :
+   *  nommer un manque sans dire où le trouver le laisse entier. */
+  hrefCalendrier: string;
   enRetard: number;
   proches: number;
   /**
@@ -92,6 +124,35 @@ export function BandeauParc({
     actif: string | undefined;
   } | null;
 }) {
+  // Les deux axes, dérivés — jamais recopiés. Le second sort d'un appel à
+  // l'agrégation elle-même : c'est elle qui décide du périmètre, c'est donc
+  // elle qui doit dicter la phrase.
+  const { perimetre, horsCompte } = legendeParc({
+    zone: !filtreBatiment
+      ? "sansObjet"
+      : filtreBatiment.actif
+        ? "cette"
+        : "toutes",
+    comptes: porteursDuBandeauParc(),
+  });
+  const legende = (
+    <>
+      {perimetre}
+      {horsCompte ? (
+        <>
+          {" "}
+          {horsCompte}{" "}
+          <Link
+            href={hrefCalendrier}
+            className="font-semibold text-[color:var(--board-blue-ink)] underline-offset-2 hover:text-[color:var(--board-ink)] hover:underline"
+          >
+            Voir le calendrier →
+          </Link>
+        </>
+      ) : null}
+    </>
+  );
+
   return (
     <>
       <header className="border-b border-[color:var(--board-slate-line)] bg-[color:var(--board-card)] px-[var(--board-gutter)] py-[22px]">
@@ -170,16 +231,20 @@ export function BandeauParc({
                   filtreBatiment.batiments.map((b) => [b.id, b.nbEquipements]),
                 )
               }
-              legende={
-                // Un compteur doit dire sur quoi il compte, surtout quand
-                // le périmètre est réglable d'un clic juste à côté.
-                filtreBatiment.actif
-                  ? "Les chiffres ci-dessus et les familles ci-dessous ne portent que sur cette zone."
-                  : "Les chiffres ci-dessus et les familles ci-dessous portent sur tout l'établissement."
-              }
+              // Un compteur doit dire sur quoi il compte, surtout quand le
+              // périmètre est réglable d'un clic juste à côté — et surtout
+              // quand l'autre moitié de son périmètre, elle, ne se règle pas.
+              legende={legende}
             />
           </div>
-        ) : null}
+        ) : (
+          /* Mono-zone : pas de sélecteur, donc pas de légende de sélecteur —
+             mais la restriction par porteur, elle, s'applique pareil. Elle
+             prend sa propre ligne plutôt que de disparaître. */
+          <p className="m-0 mt-[18px] border-t border-[color:var(--board-slate-line)] pt-[15px] text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+            {legende}
+          </p>
+        )}
       </header>
 
       {suggestions && suggestions.nombre > 0 ? (

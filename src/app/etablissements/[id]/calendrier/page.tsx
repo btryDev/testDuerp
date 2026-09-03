@@ -68,6 +68,7 @@ import { LABEL_ITEM } from "@/components/layout/sidebar-nav";
 import { FiltresCalendrier } from "@/components/calendrier/FiltresCalendrier";
 import { SelecteurLecture } from "@/components/calendrier/SelecteurLecture";
 import {
+  enumererFamilles,
   LABEL_DOMAINE,
   LABEL_PERIODICITE,
   LABEL_TOUT_ETABLISSEMENT,
@@ -937,14 +938,24 @@ export default async function CalendrierPage({
       <h1 className="board-titre m-0 mt-3 text-[clamp(29px,3vw,39px)]">
         {LABEL_ITEM.calendrier}
       </h1>
-      {/* « Calendrier » ne dit pas ce qu'on y trouve : quatre familles y
-          sont réunies depuis l'ADR-010. La phrase les nomme — et rien de
-          plus : « cliquez une ligne pour la traiter » décrivait un clic
-          que la ligne annonce déjà toute seule. */}
+      {/* « Calendrier » ne dit pas ce qu'on y trouve : les familles y sont
+          réunies depuis l'ADR-010. La phrase les nomme — et rien de plus :
+          « cliquez une ligne pour la traiter » décrivait un clic que la ligne
+          annonce déjà toute seule.
+
+          Elle les nommait de mémoire, et quatre sur cinq : `personnel` est née
+          avec l'ADR-023 sans que personne rouvre la phrase. Elle se dérive
+          désormais de `FAMILLES_FILTRABLES` (`enumererFamilles`).
+
+          La seconde phrase est là parce que le dirigeant arrive souvent ici
+          depuis un compteur d'équipement qui annonce un autre nombre. Elle dit
+          l'écart dans le sens utile — ce que le parc laisse dehors — sans
+          revendiquer d'exclusivité : le relevé « Dépassées » du tableau de bord
+          réunit lui aussi toutes les familles. */}
       <p className="m-0 mt-[11px] max-w-[62ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
         {filtreFamille
           ? DESCRIPTION_FAMILLE[filtreFamille]
-          : "Vos échéances datées, réunies : vérifications d'équipements, corrections à mener, chantiers encadrés, documents à renouveler."}
+          : `Vos échéances datées, toutes réunies : ${enumererFamilles()}. Le parc et les zones, eux, ne comptent que ce que portent vos équipements.`}
       </p>
     </div>
   );
@@ -979,11 +990,28 @@ export default async function CalendrierPage({
       {/* L'écart entre ce bandeau et le badge de la barre latérale était
           expliqué ici faute d'être corrigé. Les deux nombres sortent
           désormais du même calcul (`repartirRetards`, ADR-015) : il n'y a
-          plus rien à arbitrer. */}
+          plus rien à arbitrer.
+
+          Restait un écart d'énumération : la phrase disait « toutes les
+          familles » puis en nommait trois sur cinq. Elle se dérive maintenant
+          du type fermé, comme celle du chapeau. */}
       <p className="m-0">
-        Les compteurs du bandeau réunissent toutes les familles —
-        vérifications, corrections et papiers —, comme le badge « Calendrier »
-        de la barre latérale.
+        Les compteurs du bandeau réunissent toutes les familles —{" "}
+        {enumererFamilles()} —, comme le badge « Calendrier » de la barre
+        latérale.
+      </p>
+      {/* L'écart avec les autres écrans, dit là où il se constate. Le parc et
+          les zones ne comptent que ce qu'un équipement porte ; ici, rien n'est
+          écarté. Sans cette phrase, deux nombres justes se contredisaient à
+          l'œil sans qu'aucun ne soit corrigeable. */}
+      <p className="m-0">
+        Le compte en tête de la règle porte sur l&apos;<strong>année
+        affichée</strong> ; les occurrences « à planifier », qui n&apos;ont pas
+        de date, sont comptées quelle que soit l&apos;année. Les chiffres de la
+        page Équipements et les pastilles des zones, eux, ne comptent que ce que
+        portent vos équipements — ce qui est dû au titre de
+        l&apos;établissement lui-même ou de vos salariés ne s&apos;y trouve
+        pas, et se lit ici.
       </p>
       <div className="flex flex-wrap gap-2 pt-1">
         <LegalBadge
