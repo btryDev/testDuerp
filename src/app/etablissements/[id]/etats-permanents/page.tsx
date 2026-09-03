@@ -125,7 +125,8 @@ export default async function EtatsPermanentsPage({
               s&apos;agit d&apos;un état à mettre en place puis à maintenir. Une
               bonne partie est sans doute déjà vraie chez vous — de l&apos;eau au
               robinet, des toilettes, une affiche au mur. Passez-les en revue :
-              ce qui restera décoché dira ce qu&apos;il vous reste à faire.
+              ce que vous n&apos;aurez pas déclaré dira ce qu&apos;il vous reste
+              à faire.
             </p>
           </div>
 
@@ -277,8 +278,11 @@ export default async function EtatsPermanentsPage({
               </h2>
               <div className="mt-3 flex max-w-[72ch] flex-col gap-2.5 text-[13px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                 <p className="m-0">
-                  Ce que vous cochez ici est <strong>une déclaration</strong>, et
-                  elle est enregistrée comme telle : Rojer note que vous avez
+                  {/* « Déclarez », jamais « cochez » : le contrôle de cette
+                      page est un bouton « Déclarer en place ». Le vocabulaire
+                      de la case survivait à la case. */}
+                  Ce que vous déclarez ici est <strong>une déclaration</strong>,
+                  et elle est enregistrée comme telle : Rojer note que vous avez
                   déclaré, et à quelle date. Ce n&apos;est pas une vérification,
                   ce n&apos;est pas une pièce justificative, et cela ne rend
                   aucun dossier conforme.
@@ -288,16 +292,17 @@ export default async function EtatsPermanentsPage({
                   quel rythme revoir ce que vous avez mis en place. La date
                   s&apos;affiche, vous jugez vous-même si elle a vieilli.
                 </p>
-                {/* Le dirigeant doit savoir où va ce qu'il coche, et sous quels
-                    mots — c'est ce qui distingue une déclaration enregistrée
-                    d'une déclaration publiée. Les lignes NON cochées y figurent
-                    aussi : le taire ici ferait cocher pour « faire bonne
-                    figure » quelqu'un qui découvrirait le tableau après coup. */}
+                {/* Le dirigeant doit savoir où va ce qu'il déclare, et sous
+                    quels mots — c'est ce qui distingue une déclaration
+                    enregistrée d'une déclaration publiée. Les lignes NON
+                    déclarées y figurent aussi : le taire ici ferait déclarer
+                    pour « faire bonne figure » quelqu'un qui découvrirait le
+                    tableau après coup. */}
                 <p className="m-0">
                   Ce que vous déclarez ici figure dans le dossier de conformité
                   que vous remettez à un tiers, avec sa date — présenté comme
                   votre déclaration, jamais comme une pièce justificative. Les
-                  lignes que vous n&apos;avez pas cochées y figurent aussi,
+                  lignes que vous n&apos;avez pas déclarées y figurent aussi,
                   accompagnées de la même précision : une ligne sans déclaration
                   n&apos;y est pas présentée comme un manquement.
                 </p>

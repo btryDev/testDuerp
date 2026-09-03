@@ -29,7 +29,8 @@ export default async function NouveauPrestatairePage({
         </h1>
         <p className="m-0 mt-2 max-w-[68ch] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
           L&apos;identité et le contact suffisent pour commencer —{" "}
-          {etablissement.raisonDisplay} pourra recevoir les pièces plus tard.
+          {etablissement.raisonDisplay}{" "}
+          pourra recevoir les pièces plus tard.
           Les joindre dès maintenant vous évite d&apos;avoir à les redemander le
           jour d&apos;un contrôle.
         </p>

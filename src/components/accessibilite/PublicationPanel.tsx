@@ -59,7 +59,8 @@ export function PublicationPanel({
         </h3>
         <p className="m-0 mt-2 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
           Dès que les sections <strong>1 (prestations)</strong> et{" "}
-          <strong>2 (conformité)</strong> sont remplies, vous pouvez publier. Une
+          <strong>2 (conformité)</strong>{" "}
+          sont remplies, vous pouvez publier. Une
           URL publique sera générée, consultable avec un simple QR code collé à
           l&apos;entrée de votre établissement.
         </p>

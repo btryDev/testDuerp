@@ -41,22 +41,6 @@ function formatDate(d: Date | null): string | null {
   return formaterDateLongueFr(d);
 }
 
-const PICTO: Record<keyof typeof LABEL_HANDICAP, string> = {
-  moteur: "♿",
-  visuel: "👁",
-  auditif: "👂",
-  mental: "✶",
-  cognitif: "✦",
-  psychique: "❋",
-  // Entrées le 2026-09-03 avec les deux dernières situations de `L. 114` du
-  // code de l'action sociale et des familles. Le `Record` exhaustif est ce qui
-  // a fait remonter cette table : c'est la QUATRIÈME déclaration de
-  // `HandicapAccessible`, et la seule que le compilateur tienne — les trois
-  // autres se recopiaient l'une l'autre en silence.
-  polyhandicap: "✻",
-  trouble_sante_invalidant: "✚",
-};
-
 export default async function RegistrePublicPage({
   params,
 }: {
@@ -103,16 +87,39 @@ export default async function RegistrePublicPage({
             </h2>
             <ul className="m-0 mt-4 grid list-none grid-cols-1 gap-2 p-0 sm:grid-cols-2">
               {r.handicapsAccueillis.map((h) => (
+                /* PAS DE PICTOGRAMME, ET C'EST LA CORRECTION — 2026-09-03.
+
+                   Les huit entrées en portaient un : trois emoji en couleur
+                   (♿ 👁 👂) et cinq glyphes noirs (✶ ✦ ❋ ✻ ✚). Trois raisons
+                   de les retirer, dans cet ordre d'importance :
+
+                   1. `✚` sur « trouble de santé invalidant » rend une croix
+                      médicale épaisse — sur la seule des huit situations que
+                      `L. 114` met sur le même plan SANS qu'elle soit une
+                      désignation médicale. Le signe dit le contraire du texte.
+                   2. `❋` (psychique) et `✻` (polyhandicap) sont indiscernables
+                      à 19 px ; `✶` (mental) et `✦` (cognitif) aussi. Quatre
+                      signes qui ne se distinguent pas ne distinguent rien :
+                      seul le texte porte le sens, et il le portait déjà.
+                   3. Trois des huit ont un signe conventionnel, cinq n'en ont
+                      aucun — aucune symbologie officielle ne couvre les huit
+                      situations de `L. 114`. En inventer cinq à côté de trois
+                      vraies apprend au lecteur que les cinq sont
+                      conventionnelles elles aussi.
+
+                   S'y ajoute que le `<span>` était `aria-hidden` : les
+                   pictogrammes ne portaient rien pour les lecteurs d'écran,
+                   c'est-à-dire pour une partie de ceux à qui cette page
+                   publique s'adresse. Ils étaient décoratifs par construction.
+
+                   Aucune puce neutre ne les remplace : la pilule EST le
+                   marqueur, et remettre un point rond serait remettre de la
+                   décoration là où on vient d'en retirer. */
                 <li
                   key={h}
-                  className="flex items-center gap-2.5 rounded-[16px] bg-[color:var(--board-blue-pale)] px-3.5 py-2.5"
+                  className="rounded-[16px] bg-[color:var(--board-blue-pale)] px-3.5 py-2.5 text-[13.5px] font-semibold text-[color:var(--board-blue-ink)]"
                 >
-                  <span aria-hidden className="text-[19px] leading-none">
-                    {PICTO[h]}
-                  </span>
-                  <span className="text-[13.5px] font-semibold text-[color:var(--board-blue-ink)]">
-                    {LABEL_HANDICAP[h]}
-                  </span>
+                  {LABEL_HANDICAP[h]}
                 </li>
               ))}
             </ul>

@@ -343,8 +343,31 @@ export function EtablissementForm({
               </label>
 
               {estERP && (
+                /* TYPE ET CATÉGORIE PRENNENT LA LIGNE ENTIÈRE, ET C'EST UNE
+                   CORRECTION DE 2026-09-03.
+
+                   Ils tenaient en `sm:grid-cols-2`, soit un champ de ~373 px.
+                   Un `<select>` ne replie pas son texte et ne l'abrège pas : il
+                   le TRANCHE, sans ellipse, vers 57 caractères. Trois des
+                   vingt-deux libellés de GN 1 dépassent — J (59), R (68) et L
+                   (76) —, et ce sont les trois que le lot du 2026-09-03 venait
+                   de recaler mot pour mot sur le texte. Un directeur d'EHPAD
+                   relisait sa fiche et y lisait « personnes âgées ou handica ».
+
+                   Ça ne gêne pas au moment de CHOISIR — le menu natif s'ouvre à
+                   sa largeur propre — mais quand on revient RELIRE, c'est-à-dire
+                   la seule chose que cette page sert.
+
+                   Abréger les libellés était l'autre voie, et elle est fermée :
+                   `referentiels/types-erp.test.ts` les tient sur le verbatim de
+                   GN 1 § 1, et les rogner ferait revenir le défaut qu'on vient
+                   de corriger. C'est donc le champ qui s'élargit.
+
+                   La paire perdue ne coûte rien : la catégorie portait déjà
+                   trois lignes d'aide sous elle et le type aucune, si bien que
+                   les deux colonnes ne s'alignaient pas. */
                 <div className="ml-7 grid gap-4 sm:grid-cols-2">
-                  <div>
+                  <div className="sm:col-span-2">
                     <label className="label-board" htmlFor="typeErp">
                       Type ERP *
                     </label>
@@ -366,7 +389,7 @@ export function EtablissementForm({
                     <Erreur message={err("typeErp")} />
                   </div>
 
-                  <div>
+                  <div className="sm:col-span-2">
                     <label className="label-board" htmlFor="categorieErp">
                       Catégorie *
                     </label>
@@ -560,7 +583,7 @@ export function EtablissementForm({
                         construction et de l&apos;habitation. Les bureaux y sont
                         deux classes, que seule sépare la hauteur du plancher bas
                         du dernier niveau : <strong>GHW1</strong> de plus de
-                        28 mètres à 50 mètres au plus, <strong>GHW2</strong>
+                        28 mètres à 50 mètres au plus, <strong>GHW2</strong>{" "}
                         au-delà de 50 mètres. Choisissez celle qui correspond —
                         cette information figure au dossier de l&apos;immeuble.
                       </p>

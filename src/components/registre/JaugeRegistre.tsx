@@ -99,7 +99,8 @@ export function JaugeRegistre({ bilan }: { bilan: BilanRegistre }) {
           manquerait demain. Le détail, lui, ne fond rien. */}
       <p className="board-titre m-0 mt-3 max-w-[24ch] text-[22px]">
         {outillees} fiche{outillees > 1 ? "s" : ""} sur {dues}{" "}
-        {outillees > 1 ? "sont couvertes" : "est couverte"} par
+        {outillees > 1 ? "sont couvertes" : "est couverte"}{" "}
+        par
         l&apos;application.
       </p>
 

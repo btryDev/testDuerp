@@ -122,7 +122,8 @@ export default async function PermisFeuListePage({
         >
           <p className="m-0">
             Aucun texte n&apos;impose le permis de feu sous ce nom. Il
-            matérialise un <strong>faisceau d&apos;obligations</strong> :
+            matérialise un <strong>faisceau d&apos;obligations</strong>{" "}
+            :
             l&apos;entretien des installations de sécurité, et, en ERP,
             l&apos;interdiction de travaux dangereux en présence du public.
           </p>

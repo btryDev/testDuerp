@@ -858,6 +858,17 @@
   .champ-board::placeholder {
     color: var(--board-slate-soft);
   }
+  /* Un `<select>` ne replie pas et n'abrège pas : il tranche, au caractère
+     près et sans rien dire. « L · Salle d'audition, de conférence, de réunion,
+     de specta » se lit comme une valeur complète.
+
+     L'ellipse ne rend pas le texte manquant — c'est la largeur du champ qui
+     s'en charge, cf. `EtablissementForm` —, elle dit qu'il en manque. Sur un
+     écran étroit, où aucune largeur ne fera tenir soixante-seize caractères,
+     c'est la seule chose honnête que le champ puisse faire. */
+  select.champ-board {
+    text-overflow: ellipsis;
+  }
   .champ-board:focus-visible {
     outline: 2px solid var(--board-blue-strong);
     outline-offset: 1px;

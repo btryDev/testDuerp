@@ -151,7 +151,8 @@ export default async function PrestatairesPage({
           </h2>
           <p className="m-0 mt-3 max-w-[68ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
             Pour tout contrat d&apos;au moins <strong>5 000 € HT</strong>, vous
-            vous faites remettre <strong>tous les six mois</strong> l&apos;attestation
+            vous faites remettre <strong>tous les six mois</strong>{" "}
+            l&apos;attestation
             de vigilance de votre prestataire, et vous en gardez trace. En cas de
             travail dissimulé chez lui, cette trace écrite est ce qui vous
             distingue.

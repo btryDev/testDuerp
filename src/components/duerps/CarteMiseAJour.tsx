@@ -72,7 +72,8 @@ export function CarteMiseAJour({ effectif }: { effectif: number }) {
                     est décoratif, et « 2° » seul ne dit rien à qui n'a pas la
                     liste sous les yeux. */}
                 <span className="sr-only">
-                  Cas {d.rang} de l&apos;art. R. 4121-2 :{" "}
+                  Cas {d.rang}{" "}
+                  de l&apos;art. R. 4121-2 :{" "}
                 </span>
                 {d.quand}
               </p>

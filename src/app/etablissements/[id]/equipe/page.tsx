@@ -162,7 +162,8 @@ export default async function EquipePage({
           </p>
           <p className="m-0 mt-3 max-w-[68ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
             Un cas mérite d&apos;être dit, parce qu&apos;on le cherche souvent
-            ici : le <strong>CACES</strong> n&apos;y figure pas et n&apos;y
+            ici : le <strong>CACES</strong>{" "}
+            n&apos;y figure pas et n&apos;y
             figurera pas. Il ne relève pas du Code du travail — c&apos;est un
             dispositif conventionnel de l&apos;assurance maladie. Ce que le Code
             impose, lui, est dans la liste : une formation adéquate à la
@@ -213,7 +214,8 @@ export default async function EquipePage({
 
         {actifs > 0 && (
           <p className="m-0 px-1 text-[12px] text-[color:var(--board-slate-soft)]">
-            {actifs} personne{actifs > 1 ? "s" : ""} dans l&apos;effectif
+            {actifs} personne{actifs > 1 ? "s" : ""}{" "}
+            dans l&apos;effectif
             {equipe.length > actifs &&
               ` · ${equipe.length - actifs} sortie${equipe.length - actifs > 1 ? "s" : ""}, conservée${equipe.length - actifs > 1 ? "s" : ""} pour la preuve`}
           </p>

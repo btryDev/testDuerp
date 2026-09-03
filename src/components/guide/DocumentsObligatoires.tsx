@@ -51,10 +51,15 @@ export function DocumentsObligatoires() {
           </span>
         </h2>
         <p className="mt-5 max-w-[68ch] text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+          {/* Insécable devant le deux-points, comme les quarante autres
+              endroits du dépôt qui l'écrivent déjà. Avec une espace ordinaire,
+              la ligne cassait entre « compte » et « : », et le deux-points
+              ouvrait la ligne suivante — un défaut intermittent, qui ne se voit
+              qu'à la largeur où la coupure tombe là. */}
           Chaque ligne cite le texte qui la fonde, ouvrable sur Légifrance. La
-          liste n&apos;est pas un compte : plusieurs de ces documents ne sont
-          dus que dans certains cas, dits ligne par ligne. Et elle ne dit rien
-          de votre situation — seulement ce que les textes demandent.
+          liste n&apos;est pas un compte&nbsp;: plusieurs de ces documents ne
+          sont dus que dans certains cas, dits ligne par ligne. Et elle ne dit
+          rien de votre situation — seulement ce que les textes demandent.
         </p>
       </header>
 

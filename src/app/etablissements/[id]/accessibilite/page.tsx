@@ -192,7 +192,8 @@ export default async function AccessibilitePage({
             extrait="L'exploitant de tout établissement recevant du public au sens de l'article R. 143-2 élabore le registre public d'accessibilité prévu à l'article L. 164-1. Celui-ci précise les dispositions prises pour permettre à tous, notamment aux personnes handicapées, quel que soit leur handicap, de bénéficier des prestations en vue desquelles cet établissement a été conçu."
           >
             L&apos;arrêté du 19 avril 2017 définit{" "}
-            <strong>4 rubriques obligatoires</strong> : prestations fournies,
+            <strong>4 rubriques obligatoires</strong>{" "}
+            : prestations fournies,
             pièces administratives d&apos;accessibilité, formation du
             personnel, et modalités de maintenance.
           </LegalBadge>

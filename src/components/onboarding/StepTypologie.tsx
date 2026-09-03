@@ -129,7 +129,13 @@ export function StepTypologie({
                     aria-label="Type d'ERP"
                     value={state.typeErp}
                     onChange={(e) => update({ typeErp: e.currentTarget.value })}
-                    className="champ-board max-w-md"
+                    /* Pleine largeur de la colonne, et non `max-w-md`.
+                       448 px tranchaient « L · Salle d'audition, de conférence,
+                       de réunion, de specta » sans ellipse — trois des
+                       vingt-deux libellés de GN 1 dépassent. Le libellé n'est
+                       pas abrégeable : `types-erp.test.ts` le tient sur le
+                       verbatim du texte. */
+                    className="champ-board"
                     aria-invalid={Boolean(messagePour("typeErp"))}
                   >
                     <option value="">— Sélectionner —</option>
@@ -158,7 +164,10 @@ export function StepTypologie({
                     onChange={(e) =>
                       update({ categorieErp: e.currentTarget.value })
                     }
-                    className="champ-board max-w-md"
+                    /* Même largeur que le type juste au-dessus : deux selects
+                       superposés de largeurs différentes se lisent comme deux
+                       champs de nature différente. */
+                    className="champ-board"
                     aria-invalid={Boolean(messagePour("categorieErp"))}
                   >
                     <option value="">— Sélectionner —</option>

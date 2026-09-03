@@ -441,7 +441,8 @@ export function DuerpDocument({ snapshot, historique, brouillon = false }: Props
                 {activitesSansReponse.length > 1 ? "s" : ""} sur le périmètre du
                 référentiel {activitesSansReponse.length > 1 ? "sont" : "est"}{" "}
                 restée{activitesSansReponse.length > 1 ? "s" : ""} sans réponse{" "}
-                {quandSansReponse(brouillon)} : le document n&apos;affirme donc
+                {quandSansReponse(brouillon)}{" "}
+                : le document n&apos;affirme donc
                 ni que ces activités sont exercées, ni qu&apos;elles ne le sont
                 pas.
               </Text>

@@ -228,7 +228,8 @@ export function PrescriptionForm({
           Un procès-verbal de commission est un avis ; l&apos;acte qui prescrit
           est l&apos;arrêté du maire ou du préfet qui le suit (CCH, art. R.
           143-45). Rojer n&apos;enregistre qu&apos;une prescription qui
-          <strong> renforce</strong> vos obligations : un allègement se conserve
+          <strong> renforce</strong>{" "}
+          vos obligations : un allègement se conserve
           dans vos pièces, il n&apos;est pas pris en compte dans le calendrier.
         </p>
       </section>

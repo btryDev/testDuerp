@@ -535,10 +535,12 @@ export function RegistreDocument({ data }: { data: RegistreData }) {
           <Text>
             {data.bilan.dues} fiches sont dues pour cet établissement, compte
             tenu de son régime et des équipements déclarés :{" "}
-            {data.bilan.faites} renseignées, {data.bilan.tenuesAilleurs} tenues
+            {data.bilan.faites} renseignées, {data.bilan.tenuesAilleurs}{" "}
+            tenues
             depuis le parc d&apos;équipements ou le calendrier,{" "}
             {data.bilan.aRemplir} restant à remplir, et{" "}
-            {data.bilan.nonOutillees} conservées hors de l&apos;application.
+            {data.bilan.nonOutillees}{" "}
+            conservées hors de l&apos;application.
           </Text>
           <Text style={{ marginTop: 4 }}>
             Ce décompte dit ce que l&apos;application recueille, et rien

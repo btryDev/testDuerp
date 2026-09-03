@@ -102,7 +102,8 @@ export default async function ActivitesPage({
           laisserait croire à une mesure de la qualité du DUERP. */}
       {sansReponse.length > 0 && (
         <p className="m-0 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
-          {sansReponse.length} question{sansReponse.length > 1 ? "s" : ""} sans
+          {sansReponse.length} question{sansReponse.length > 1 ? "s" : ""}{" "}
+          sans
           réponse. Vous pouvez continuer sans répondre&nbsp;: le document ne
           dira alors ni que ces activités sont exercées, ni qu&apos;elles ne le
           sont pas.
