@@ -8,6 +8,7 @@ import {
   ChampsFiche,
   CorpsFiche,
   EcranFiche,
+  LegalBadge,
   LigneFiche,
   LignesFiche,
   PastilleFiche,
@@ -26,6 +27,7 @@ import {
   getFicheEquipement,
   lignesAFaire,
   lignesHistoire,
+  obligationsDeclencheesParUnFait,
   obligationsDeLEquipement,
 } from "@/lib/equipements/fiche";
 import { caracteristiquesLisibles } from "@/lib/equipements/caracteristiques";
@@ -100,6 +102,28 @@ export default async function EquipementDetailPage({
   const aFaire = lignesAFaire(eq, base, maintenant);
   const histoire = lignesHistoire(eq, base, maintenant);
   const obligations = obligationsDeLEquipement(eq);
+
+  // Ce qui vise cet appareil sans jamais tomber à une date. Lu au MOTEUR et
+  // non aux `Verification` : le générateur saute la périodicité `autre`, donc
+  // une obligation événementielle n'a aucune ligne persistée et `obligations`
+  // ci-dessus ne peut structurellement pas la voir.
+  const declenchees = obligationsDeclencheesParUnFait(eq);
+
+  // POURQUOI LE COMPTE DU BANDEAU CHANGE. La pastille « N obligations » se
+  // calculait sur les seules obligations qui ont produit une ligne de suivi.
+  // Le corps de la fiche en nomme désormais d'autres, et « un en-tête ne doit
+  // jamais contredire ce qu'il coiffe » (charte, § 5). Le dédoublonnage n'a
+  // aujourd'hui rien à retirer — une événementielle ne peut pas avoir de
+  // `Verification` — mais il coûte une ligne et évite le double compte le jour
+  // où une prescription particulière en engendrera une.
+  const idsAvecSuivi = new Set(obligations.map((o) => o.id));
+  const obligationsCitees = [
+    ...obligations,
+    ...declenchees
+      .filter((d) => !idsAvecSuivi.has(d.obligation.id))
+      .map((d) => d.obligation),
+  ];
+
   const caracteristiques = caracteristiquesLisibles(
     eq.categorie,
     eq.caracteristiques,
@@ -193,7 +217,7 @@ export default async function EquipementDetailPage({
       ? `Des vérifications sont rattachées à cet appareil, mais aucune date n'a encore été convenue. ${trace}`
       : `Aucune échéance n'est ouverte sur cet appareil à ce jour. ${trace}`;
 
-  const realisateurs = realisateursRequis(obligations);
+  const realisateurs = realisateursRequis(obligationsCitees);
 
   // Les propriétés qui bornent réellement une obligation de CET appareil.
   // Une question à trois états est posée dès que la catégorie correspond,
@@ -202,6 +226,13 @@ export default async function EquipementDetailPage({
   // reste au calendrier » sur la VMC d'un restaurant serait une
   // affirmation de droit que le calendrier contredit — l'outil rend des
   // faits, il n'invente pas une obligation (cf. garde-fous produit).
+  //
+  // `declenchees` n'y entre PAS, et la phrase ci-dessus dit pourquoi : la
+  // mention promet que « l'obligation reste au calendrier », ce qui est vrai
+  // d'une échéance à rythme et faux d'une événementielle — le générateur ne
+  // lui ouvre aucune ligne. L'y ajouter aurait affiché la promesse inverse de
+  // ce que la carte « Ce qui se déclenche sur cet appareil » explique deux
+  // blocs plus bas.
   const proprietesPortees = new Set(
     obligations.flatMap((o) => o.conditions?.map((c) => c.propriete) ?? []),
   );
@@ -251,7 +282,7 @@ export default async function EquipementDetailPage({
                 </PastilleFiche>
               )}
               <PastilleFiche ton="neutre">
-                {`${obligations.length} obligation${obligations.length > 1 ? "s" : ""}`}
+                {`${obligationsCitees.length} obligation${obligationsCitees.length > 1 ? "s" : ""}`}
               </PastilleFiche>
             </>
           }
@@ -261,7 +292,7 @@ export default async function EquipementDetailPage({
                   fois, pas à chaque ouverture de la fiche : ils passent
                   derrière le « ? », le même objet que celui du calendrier. */}
               <AideEcran titre="Pourquoi on vérifie cet équipement">
-                {obligations.length === 0 ? (
+                {obligationsCitees.length === 0 ? (
                   <p className="m-0">
                     Aucune obligation du référentiel n&apos;est rattachée à cet
                     appareil pour l&apos;instant. Sa catégorie n&apos;en
@@ -271,13 +302,13 @@ export default async function EquipementDetailPage({
                 ) : (
                   <>
                     <p className="m-0">
-                      {obligations.length > 1
-                        ? `${obligations.length} obligations du référentiel s'appliquent à cet appareil.`
+                      {obligationsCitees.length > 1
+                        ? `${obligationsCitees.length} obligations du référentiel s'appliquent à cet appareil.`
                         : "Une obligation du référentiel s'applique à cet appareil."}{" "}
                       Chacune cite l&apos;article qui la fonde&nbsp;: c&apos;est
                       celui qu&apos;on présente en cas de contrôle.
                     </p>
-                    {obligations.map((o) => (
+                    {obligationsCitees.map((o) => (
                       <div
                         key={o.id}
                         className="rounded-[18px] bg-[color:var(--board-slate-pale)] px-4 py-3.5"
@@ -382,6 +413,91 @@ export default async function EquipementDetailPage({
                 ))}
               </ChampsFiche>
             </CarteFiche>
+
+            {/* CE QUI EST DÛ SANS JAMAIS TOMBER À UNE DATE.
+
+              La carte ne se pose QUE si le moteur en rend une, et c'est le
+              seul endroit de cette fiche où l'emplacement vide ne se pose pas.
+              Le corollaire de la charte — « un emplacement vide se pose quand
+              même » — vise ce que l'utilisateur peut remplir : une photo, un
+              document, une plaque signalétique. Ici il n'y a rien à remplir ;
+              une carte permanente disant « aucune » sur les neuf appareils sur
+              dix qui n'en portent aucune serait du bruit, et le panneau « ? »
+              du bandeau énumère de toute façon TOUTES les obligations de
+              l'appareil.
+
+              Elle est dans la colonne PRINCIPALE et non dans « À faire », qui
+              est à droite. `CorpsFiche` a un contrat : les faits à gauche, le
+              geste attendu à droite. Une obligation événementielle n'appelle
+              aucun geste aujourd'hui — la ranger sous « À faire » lui aurait
+              donné l'apparence d'une tâche datée, exactement ce que l'ADR-010
+              interdit de fabriquer. Elle suit « L'appareil » parce que ce sont
+              les caractéristiques déclarées juste au-dessus qui la bornent. */}
+            {declenchees.length > 0 && (
+              <CarteFiche titreFort="Ce qui se déclenche sur cet appareil">
+                <p className="m-0 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+                  {declenchees.length > 1
+                    ? "Aucun texte n'écrit de rythme pour ces obligations : elles sont dues à un "
+                    : "Aucun texte n'écrit de rythme pour cette obligation : elle est due à un "}
+                  <strong className="font-semibold">fait</strong> — chaque ligne
+                  dit lequel —, et Rojer ne voit pas ce fait passer. Il
+                  n&apos;y a donc ici ni échéance ni retard&nbsp;:{" "}
+                  {declenchees.length > 1 ? "les lignes attendent" : "la ligne attend"}{" "}
+                  le jour où vous toucherez à l&apos;appareil.
+                </p>
+                <ul className="m-0 mt-4 flex list-none flex-col gap-2 p-0">
+                  {declenchees.map(({ obligation, raisons }) => (
+                    <li
+                      key={obligation.id}
+                      className="rounded-[22px] bg-[color:var(--board-slate-pale)] px-4 py-3.5"
+                    >
+                      <p className="m-0 text-[13.5px] font-semibold leading-tight text-[color:var(--board-slate-ink)]">
+                        {obligation.libelle}
+                      </p>
+                      {/* La phrase du RÉFÉRENTIEL, pas une reformulation :
+                          c'est elle qui nomme le fait déclencheur — « toute
+                          modification affectant le circuit frigorifique ». */}
+                      <p className="m-0 mt-1.5 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                        {obligation.description}
+                      </p>
+                      {/* Le mode *explain* du moteur, tel qu'il l'écrit. Il
+                          répond à l'autre question — pourquoi CET appareil-ci
+                          et pas le voisin — et une phrase réécrite à la main
+                          finirait par dire autre chose que le calcul. */}
+                      {raisons.length > 0 && (
+                        <p className="m-0 mt-2 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-soft)]">
+                          Pourquoi elle vise cet appareil : {raisons.join(" · ")}.
+                        </p>
+                      )}
+                      {/* La référence qui FONDE l'obligation vient en premier
+                          dans le référentiel (ADR-003). Même geste que sur la
+                          fiche d'un salarié : pastille dépliable quand elle
+                          pointe un texte, texte simple sinon — l'apparence
+                          d'un lien sans rien dessous est un lien mort. */}
+                      <div className="mt-2.5 flex flex-wrap items-center gap-3">
+                        {obligation.referencesLegales.slice(0, 1).map((r) =>
+                          r.url ? (
+                            <LegalBadge
+                              key={r.article ?? r.reference}
+                              charte="board"
+                              reference={r.reference}
+                              href={r.url}
+                            />
+                          ) : (
+                            <span
+                              key={r.article ?? r.reference}
+                              className="font-mono text-[10.5px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-soft)]"
+                            >
+                              § {r.reference}
+                            </span>
+                          ),
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </CarteFiche>
+            )}
 
             {/* Posées même vides : un emplacement qui n'apparaît qu'une fois
               rempli ne se remplit jamais. */}

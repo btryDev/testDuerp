@@ -13,6 +13,13 @@
  * dit « partage la règle, pas la mise en page ». C'est la règle, elle vit ici,
  * et le générateur de calendrier s'en sert aussi.
  *
+ * Depuis le 2026-09-04 il tient une règle de plus, et le mot « quelles » du
+ * paragraphe précédent devient donc « lesquelles vont où » : `estDeclenchee-
+ * ParUnFait` nomme les obligations événementielles sans rendez-vous, celles
+ * que cet écran-ci doit refuser et que la fiche de leur sujet doit prendre.
+ * Elle est ici et non ailleurs pour une raison unique : `estSansRendezVous`
+ * ne doit avoir qu'une seule lecture.
+ *
  * ## Le critère n'est pas « pas de périodicité »
  *
  * Une première rédaction du brief dimensionnait cet écran sur les quarante-trois
@@ -127,6 +134,33 @@ export function estFaitADater(
 const EXCLUES_DU_FAIT_DATE: ReadonlySet<string> = new Set([
   "incendie-erp-5-visite-commission",
 ]);
+
+/**
+ * Ce qu'un **fait** rend dû, et qu'aucun écran daté ne peut porter.
+ *
+ * Le pendant des deux prédicats ci-dessus, pour la troisième des quatre
+ * natures. Il vit ici parce que c'est le module qui répartit les natures entre
+ * les surfaces, et parce que `estSansRendezVous` ne doit exister qu'une fois :
+ * une seconde lecture de « le générateur n'en produit aucune ligne », écrite
+ * ailleurs, finirait par diverger de celle-ci.
+ *
+ * **Il n'entre PAS dans `modeDeclaration`, et c'est tout son intérêt.** Une
+ * case « en place » ment à une obligation événementielle — elle redevient due
+ * au fait suivant —, et « fait le » lui ment aussi : le fait qui la déclenche
+ * n'est pas l'acte de l'employeur, c'est une embauche, un changement de poste,
+ * une modification de circuit. Rien à cocher, donc, et rien à dater. Ce qui se
+ * montre est l'obligation elle-même, **sur la fiche de son sujet** (ADR-022) :
+ * la personne pour un porteur `salarie`, l'appareil pour un porteur
+ * `equipement`. Les afficher ailleurs, c'était les afficher nulle part.
+ */
+export function estDeclencheeParUnFait(
+  o: Obligation,
+  periodiciteEffective: Periodicite = o.periodicite,
+): boolean {
+  return (
+    o.nature === "evenementielle" && estSansRendezVous(periodiciteEffective)
+  );
+}
 
 /** Le verbe sous lequel une ligne se déclare, et ce qu'il entraîne. */
 export type ModeDeclaration =

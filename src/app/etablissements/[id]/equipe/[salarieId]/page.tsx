@@ -22,6 +22,7 @@ import {
   exclusionsDuTitre,
 } from "@/lib/salaries/catalogue";
 import { declarerTitre } from "@/lib/salaries/actions";
+import { obligationsDeclencheesParUnFait } from "@/lib/salaries/obligations-evenementielles";
 import { CHAMP_ETAT, ENCRE_ETAT, type RegistreLigne } from "@/lib/calendrier/etats";
 import { formaterDateLongueFr } from "@/lib/dates";
 import { Download } from "lucide-react";
@@ -94,6 +95,13 @@ export default async function SalarieDetailPage({
   // la place du dirigeant — lui seul sait laquelle des deux visites cette
   // personne passe réellement.
   const conflits = conflitsExclusion(dejaDeclares);
+
+  // Ce qu'un fait rend dû, joint aux titres de cette personne. La liste est la
+  // même pour tout l'effectif, et c'est exact : le moteur ne dérive rien d'un
+  // porteur salarié (ADR-023), et la formation à la sécurité de `L. 4141-2` est
+  // due à TOUS les travailleurs. Ce qui varie d'une fiche à l'autre est la date
+  // du dernier titre déclaré, pas la liste.
+  const declenchees = obligationsDeclencheesParUnFait(s.titres);
 
   const action = declarerTitre.bind(null, id, salarieId);
   const provenance = lireProvenance(de, id);
@@ -268,6 +276,84 @@ export default async function SalarieDetailPage({
                     </li>
                   ))}
                 </ul>
+              )}
+            </CarteFiche>
+
+            {/* CE QUE LE CALENDRIER NE PEUT PAS PORTER, ET QUI EST DÛ QUAND
+                MÊME. Deux obligations du catalogue sont `evenementielle` et
+                `autre` : elles reviennent, sans qu'aucun texte n'écrive de
+                rythme, sur un fait que le produit n'observe pas. Le générateur
+                ne leur ouvre donc aucune occurrence et « Ce qui doit être en
+                place » les refuse — jusqu'ici elles n'existaient que dans le
+                menu déroulant ci-dessous, c'est-à-dire comme une OPTION DE
+                SAISIE et jamais comme une obligation due.
+
+                L'ADR-022 dit où elles vivent : une obligation se porte sur un
+                sujet, et le sujet est la personne. Elles sont donc ici, sur sa
+                fiche, et **au-dessus** du formulaire : on lit ce qui est dû
+                avant de lire ce qu'on peut saisir. */}
+            <CarteFiche titreFort="Ce qui se déclenche pour cette personne">
+              {declenchees.length === 0 ? (
+                <p className="m-0 max-w-[64ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+                  Aucune obligation de ce genre n&apos;est encodée au
+                  référentiel aujourd&apos;hui.
+                </p>
+              ) : (
+                <>
+                  <p className="m-0 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
+                    Ces obligations ne tombent à aucune date : elles sont dues à
+                    un <strong className="font-semibold">fait</strong> — une
+                    embauche, un changement de poste, la prise en main
+                    d&apos;un engin. Rojer ne voit aucun de ces faits, donc il
+                    n&apos;ouvre ici ni échéance ni retard. Chaque ligne dit à
+                    quoi elle se déclenche ; vous seul savez quand le fait
+                    arrive.
+                  </p>
+                  <ul className="m-0 mt-4 flex list-none flex-col gap-2 p-0">
+                    {declenchees.map(({ obligation, dernierTitreLe }) => (
+                      <li
+                        key={obligation.id}
+                        className="rounded-[22px] bg-[color:var(--board-slate-pale)] px-4 py-3.5"
+                      >
+                        <p className="m-0 text-[13.5px] font-semibold leading-tight text-[color:var(--board-slate-ink)]">
+                          {obligation.libelle}
+                        </p>
+                        {/* La phrase du RÉFÉRENTIEL, pas une reformulation.
+                            C'est elle qui nomme le déclencheur — « lors de son
+                            embauche, lors d'un changement de poste » — et une
+                            paraphrase écrite ici finirait par dire autre chose
+                            que le texte relu. */}
+                        <p className="m-0 mt-1.5 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+                          {obligation.description}
+                        </p>
+                        <p className="m-0 mt-2 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-soft)]">
+                          {dernierTitreLe
+                            ? `Un titre est déclaré pour cette obligation, délivré le ${formaterDateLongueFr(dernierTitreLe)}. Il ne la referme pas : elle redevient due au fait suivant.`
+                            : "Aucun titre n'est déclaré pour cette obligation. Ce n'est pas un retard : aucune date ne dit quand elle était due."}
+                        </p>
+                        <div className="mt-2.5 flex flex-wrap items-center gap-3">
+                          {obligation.referencesLegales.slice(0, 1).map((r) =>
+                            r.url ? (
+                              <LegalBadge
+                                key={r.article ?? r.reference}
+                                charte="board"
+                                reference={r.reference}
+                                href={r.url}
+                              />
+                            ) : (
+                              <span
+                                key={r.article ?? r.reference}
+                                className="font-mono text-[10.5px] font-medium uppercase tracking-[0.16em] text-[color:var(--board-slate-soft)]"
+                              >
+                                § {r.reference}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </>
               )}
             </CarteFiche>
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   lignesAFaire,
   lignesHistoire,
+  obligationsDeclencheesParUnFait,
   obligationsDeLEquipement,
   type FicheEquipement,
 } from "./fiche";
@@ -283,5 +284,94 @@ describe("obligationsDeLEquipement", () => {
       }),
     );
     expect(obligations).toEqual([]);
+  });
+});
+
+/**
+ * Un appareil tel que le moteur le lit : sa catégorie, ses caractéristiques,
+ * et la typologie de l'établissement qui le porte. **Aucune `Verification`** —
+ * c'est tout le point : ces obligations-là n'en ont jamais.
+ */
+function ficheAuMoteur(opts: {
+  categorie: string;
+  caracteristiques?: Record<string, unknown> | null;
+}): FicheEquipement {
+  return {
+    id: "eq-1",
+    libelle: "Chambre froide positive",
+    categorie: opts.categorie,
+    caracteristiques: opts.caracteristiques ?? null,
+    verifications: [],
+    etablissement: {
+      id: "etab-1",
+      effectifSurSite: 6,
+      estEtablissementTravail: true,
+      estERP: false,
+      estIGH: false,
+      estHabitation: false,
+      typeErp: null,
+      categorieErp: null,
+      classeIgh: null,
+      familleHabitation: null,
+      personnesPresentesHabituellement: null,
+      manipuleMatieresR422722: null,
+      comporteLocauxSommeilPublic: null,
+    },
+  } as unknown as FicheEquipement;
+}
+
+describe("obligationsDeclencheesParUnFait", () => {
+  it("voit ce qu'aucune ligne de suivi ne porte", () => {
+    // LE DÉFAUT QUE CE LOT CORRIGE. Le générateur saute la périodicité
+    // `autre`, donc le contrôle d'étanchéité après modification du circuit n'a
+    // jamais de `Verification` — et la fiche, qui ne lisait que celles-là, ne
+    // pouvait pas en dire un mot. La fiche passée ici n'en a AUCUNE, et la
+    // ligne sort quand même.
+    const eq = ficheAuMoteur({ categorie: "INSTALLATION_FRIGORIFIQUE" });
+    expect(obligationsDeLEquipement(eq)).toEqual([]);
+
+    const declenchees = obligationsDeclencheesParUnFait(eq);
+    expect(declenchees.length).toBeGreaterThan(0);
+    for (const { obligation } of declenchees) {
+      expect(obligation.nature, obligation.id).toBe("evenementielle");
+      expect(obligation.periodicite, obligation.id).toBe("autre");
+    }
+  });
+
+  it("rend le mode explain, pour que l'écran n'ait pas à réécrire la raison", () => {
+    const declenchees = obligationsDeclencheesParUnFait(
+      ficheAuMoteur({ categorie: "INSTALLATION_FRIGORIFIQUE" }),
+    );
+    for (const d of declenchees) {
+      expect(d.raisons.length, d.obligation.id).toBeGreaterThan(0);
+    }
+    // Et l'appareil est nommé dans l'explication : c'est ce qui distingue
+    // « cet appareil-ci » de « cette catégorie d'appareils ».
+    expect(declenchees.some((d) => d.raisons.join(" ").includes("Chambre froide"))).toBe(
+      true,
+    );
+  });
+
+  it("se tait sur un appareil qu'aucune règle événementielle ne vise", () => {
+    // La borne haute. Un extincteur porte des obligations, toutes datées : la
+    // carte ne doit pas se poser sur sa fiche.
+    expect(
+      obligationsDeclencheesParUnFait(ficheAuMoteur({ categorie: "EXTINCTEUR" })),
+    ).toEqual([]);
+  });
+
+  it("respecte les conditions déclarées sur l'appareil", () => {
+    // La preuve que la lecture passe bien par le MOTEUR et non par un filtre
+    // de catégorie : `froid-controle-etancheite-apres-modification` porte la
+    // condition « hors dispense », et un équipement hermétiquement scellé sous
+    // le seuil sort du champ des deux textes. La ligne doit disparaître, sans
+    // quoi la fiche annoncerait une obligation que l'appareil ne doit pas.
+    const scelle = ficheAuMoteur({
+      categorie: "INSTALLATION_FRIGORIFIQUE",
+      caracteristiques: { estHermetiquementScelleSousSeuil: true },
+    });
+    expect(
+      obligationsDeclencheesParUnFait(scelle).map((d) => d.obligation.id),
+    ).not.toContain("froid-controle-etancheite-apres-modification");
   });
 });
