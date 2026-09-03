@@ -385,7 +385,8 @@ function FormulaireSuppression({
           </>
         ) : (
           <>
-            Supprimer <strong>{batiment.nom}</strong> ? Ce qui pourrait encore
+            Supprimer <strong>{batiment.nom}</strong>{" "}
+            ? Ce qui pourrait encore
             s&apos;y rattacher (équipement retiré du parc, point de relevé,
             permis, plan de prévention) sera déplacé vers la zone que vous
             choisissez.

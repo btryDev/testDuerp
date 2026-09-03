@@ -1086,7 +1086,8 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
                 retard, aucune à venir
               </p>
               <p className="m-0 max-w-[560px] text-[13.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-                {nbEnRetard > 1 ? "Elles datent" : "Elle date"} d&apos;avant
+                {nbEnRetard > 1 ? "Elles datent" : "Elle date"}{" "}
+                d&apos;avant
                 la période affichée — trois mois en arrière au plus — et rien
                 n&apos;est programmé ensuite : il n&apos;y a donc rien à poser
                 sur la frise.
@@ -1309,7 +1310,8 @@ export function BlocFrise({ bundle }: { bundle: DashboardBundle }) {
           {nbSansDate > 1
             ? `${nbSansDate} vérifications à planifier n'ont pas encore de date`
             : "1 vérification à planifier n'a pas encore de date"}{" "}
-          — <Lien href={hrefCalendrier}>datez-les au calendrier</Lien> pour
+          — <Lien href={hrefCalendrier}>datez-les au calendrier</Lien>{" "}
+          pour
           qu&apos;elles apparaissent ici.
         </p>
       ) : null}

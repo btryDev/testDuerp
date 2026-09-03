@@ -139,12 +139,30 @@ export default async function PrescriptionsPage({
                   className="border-t border-[color:var(--board-slate-line)] px-7 py-5 first:border-t-0 sm:px-8"
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-3">
+                    {/* LA NATURE DE L'ACTE ET SA RÉFÉRENCE SE SÉPARENT — 2026-09-03.
+
+                        Une espace simple les collait : « Demande de votre
+                        assureur Avenant multirisque professionnelle n°
+                        MRP-2026-4417 » se lit « votre assureur Avenant »,
+                        comme si l'assureur portait ce nom. Les deux membres
+                        sont de nature différente — l'un dit QUI prescrit,
+                        l'autre QUEL acte —, et rien ne le marquait.
+
+                        Le tiret cadratin est déjà le séparateur employé pour
+                        ce même couple sur la fiche de vérification
+                        (« Demande de votre assureur — {reference} ») : c'est
+                        cette surface-là qui faisait autorité, pas celle-ci.
+
+                        L'autorité passe donc au point médian, le séparateur
+                        secondaire du board : deux tirets identiques pour deux
+                        niveaux différents ne séparent plus rien. */}
                     <p className="m-0 text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[color:var(--board-ink)]">
                       {LABEL_SOURCE_PRESCRIPTION[
                         p.source as keyof typeof LABEL_SOURCE_PRESCRIPTION
-                      ] ?? p.source}{" "}
+                      ] ?? p.source}
+                      {" — "}
                       {p.reference}
-                      {p.autorite ? ` — ${p.autorite}` : ""}
+                      {p.autorite ? ` · ${p.autorite}` : ""}
                     </p>
                     {/* Cette liste est la première surface où une échéance
                         d'assurance pourrait se lire comme du droit : c'est

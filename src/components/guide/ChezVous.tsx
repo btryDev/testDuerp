@@ -75,7 +75,8 @@ export function ChezVous({
             </>
           ) : (
             <>
-              vous êtes sous le seuil de {SEUIL_MAJ_ANNUELLE_DUERP} :
+              vous êtes sous le seuil de {SEUIL_MAJ_ANNUELLE_DUERP}{" "}
+              :
               l&apos;annualité n&apos;est pas imposée, mais la mise à jour
               reste due <strong>lors de tout aménagement important</strong>{" "}
               ou quand une information nouvelle sur un risque vous parvient.
@@ -113,7 +114,8 @@ export function ChezVous({
       {data.aucunEquipement ? (
         <div className="carte-board px-7 py-6 sm:px-8 mt-4 px-6 py-5 sm:px-8">
           <p className="max-w-3xl text-[0.95rem] leading-relaxed">
-            <strong>Aucun équipement déclaré pour l&apos;instant</strong> —
+            <strong>Aucun équipement déclaré pour l&apos;instant</strong>{" "}
+            —
             les vérifications qui naissent d&apos;un appareil ne peuvent donc
             pas être calculées.{" "}
             {data.domaines.length > 0 ? (

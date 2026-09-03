@@ -26,6 +26,7 @@ import type { Obligation } from "@/lib/referentiels/conformite";
 import { LABEL_DOMAINE } from "@/lib/calendrier/labels";
 import type { DomaineObligation } from "@/lib/referentiels/conformite";
 import { modeDeclarationApplique, type ModeDeclaration } from "./regle";
+import { ordonnerLignes } from "./ordre";
 
 export type LigneEtatPermanent = {
   obligation: Obligation;
@@ -167,25 +168,17 @@ export async function listerEtatsPermanents(
     .map(([domaine, lignes]) => ({
       domaine,
       libelle: LABEL_DOMAINE[domaine],
-      // À l'intérieur d'un domaine : ce qui reste à faire d'abord. Un écran
-      // dont le haut est déjà coché ne dit pas ce qu'il reste.
-      lignes: lignes.sort((a, b) => {
-        if ((a.declareLe === null) !== (b.declareLe === null)) {
-          return a.declareLe === null ? -1 : 1;
-        }
-        return a.obligation.libelle.localeCompare(b.obligation.libelle, "fr");
-      }),
+      // L'ordre ne lit PAS `declareLe`, et `ordre.ts` dit pourquoi : il l'a
+      // lu jusqu'au 2026-09-03, si bien que déclarer une ligne la faisait
+      // descendre au bas de son groupe et remonter toutes les suivantes. Deux
+      // clics au même pixel déclaraient deux obligations différentes.
+      lignes: ordonnerLignes(lignes),
     }))
     .sort((a, b) => a.libelle.localeCompare(b.libelle, "fr"));
 
-  // Les lignes « fait le » sont triées comme les autres : ce qui reste à faire
-  // d'abord. Un écran dont le haut est déjà coché ne dit pas ce qu'il reste.
-  faits.sort((a, b) => {
-    if ((a.declareLe === null) !== (b.declareLe === null)) {
-      return a.declareLe === null ? -1 : 1;
-    }
-    return a.obligation.libelle.localeCompare(b.obligation.libelle, "fr");
-  });
+  // Même règle pour « ce qui revient » : un ordre qui dépend de l'état déplace
+  // la ligne suivante au moment précis où on va la cliquer.
+  ordonnerLignes(faits);
 
   return { groupes, faits, enPlace, total, faitsDates, faitsDatesRenseignes };
 }

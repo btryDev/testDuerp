@@ -125,7 +125,8 @@ export default async function RegistrePage({
         et des équipements déclarés — chacune dit pourquoi elle est là.
       </p>
       <p>
-        <strong>L&apos;outil stocke, il ne vérifie pas.</strong> Les contrôles
+        <strong>L&apos;outil stocke, il ne vérifie pas.</strong>{" "}
+        Les contrôles
         doivent être réalisés par un organisme agréé ou une personne
         qualifiée ; l&apos;application conserve ce qu&apos;ils vous remettent
         et vous dit ce qui manque.

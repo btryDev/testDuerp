@@ -490,7 +490,8 @@ export default async function SynthesePage({
               <>
                 <p className="m-0 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                   Vous avez déclaré exercer {perimetreDeclare.length} activité
-                  {perimetreDeclare.length > 1 ? "s" : ""} que le référentiel
+                  {perimetreDeclare.length > 1 ? "s" : ""}{" "}
+                  que le référentiel
                   sectoriel ne couvre pas. Le DUERP généré les nomme et précise
                   ce qu&apos;il ne traite pas à leur sujet.
                 </p>
@@ -515,7 +516,8 @@ export default async function SynthesePage({
               <p className="m-0 mt-4 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
                 {perimetreSansReponse.length} question
                 {perimetreSansReponse.length > 1 ? "s" : ""} sur le périmètre
-                {perimetreSansReponse.length > 1 ? " restent" : " reste"} sans
+                {perimetreSansReponse.length > 1 ? " restent" : " reste"}{" "}
+                sans
                 réponse. Une version validée maintenant l&apos;indiquera comme
                 telle&nbsp;: elle n&apos;affirmera ni que ces activités sont
                 exercées, ni qu&apos;elles ne le sont pas.

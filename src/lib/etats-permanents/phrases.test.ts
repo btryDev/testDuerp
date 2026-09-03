@@ -45,10 +45,10 @@ describe("les phrases assemblées", () => {
     // qu'elle doit se lire, et toute jonction manquée fait diverger la chaîne.
     // C'est plus long à écrire et ça ne se trompe pas.
     expect(phraseRestantes(1)).toBe(
-      "Une ligne reste à passer en revue. Une ligne non cochée n'est pas un manquement constaté : c'est une question à laquelle vous n'avez pas encore répondu.",
+      "Une ligne reste à passer en revue. Une ligne non déclarée n'est pas un manquement constaté : c'est une question à laquelle vous n'avez pas encore répondu.",
     );
     expect(phraseRestantes(12)).toBe(
-      "12 lignes restent à passer en revue. Une ligne non cochée n'est pas un manquement constaté : c'est une question à laquelle vous n'avez pas encore répondu.",
+      "12 lignes restent à passer en revue. Une ligne non déclarée n'est pas un manquement constaté : c'est une question à laquelle vous n'avez pas encore répondu.",
     );
 
     expect(phraseFaitsDates(1, 0)).toBe(

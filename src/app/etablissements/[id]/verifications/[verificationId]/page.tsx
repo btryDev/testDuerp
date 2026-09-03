@@ -406,7 +406,8 @@ export default async function VerificationDetailPage({
             </ul>
             <p className="m-0 mt-4 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
               Les installations que le texte nomme. La liste n&apos;est{" "}
-              <strong className="font-semibold">pas limitative</strong> : elle
+              <strong className="font-semibold">pas limitative</strong>{" "}
+              : elle
               se termine par « etc. » et vise l&apos;ensemble de vos
               installations techniques, y compris celles que vous n&apos;avez
               pas déclarées ici. L&apos;échéance vous est due même si vous

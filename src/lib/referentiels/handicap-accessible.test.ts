@@ -252,7 +252,7 @@ describe("handicaps — la liste du modèle répond de l'article L. 114", () => 
   });
 
   it("les trois déclarations libres du modèle disent la même liste", () => {
-    // `HandicapAccessible` est déclarée QUATRE fois, et il a fallu casser la
+    // `HandicapAccessible` était déclarée QUATRE fois, et il a fallu casser la
     // compilation pour s'en apercevoir : l'enum Prisma, `HANDICAPS` (qui
     // alimente aussi le `z.enum` du schéma et les cases du formulaire),
     // `LABEL_HANDICAP`, et une table de pictogrammes privée à la page publique
@@ -260,11 +260,14 @@ describe("handicaps — la liste du modèle répond de l'article L. 114", () => 
     // recopiée sur la précédente, et les deux membres manquants manquaient aux
     // quatre. C'est là que vit le défaut, pas dans le membre absent.
     //
-    // La quatrième n'est pas listée ici, et c'est délibéré : c'est un
-    // `Record<HandicapAccessible, string>`, donc le COMPILATEUR la tient
-    // exhaustive — c'est même elle qui a fait rougir `tsc` quand les deux
-    // valeurs sont entrées. Trois des quatre déclarations n'ont pas cette
-    // garantie ; ce sont celles-là que ce test tient.
+    // **La table de pictogrammes a été retirée le 2026-09-03** — ses huit
+    // signes n'informaient pas et l'un d'eux disait le contraire du texte
+    // (voir la page). Elle n'est donc plus la quatrième déclaration, et il n'en
+    // reste que trois. Rien n'est perdu de la garantie qu'elle portait :
+    // `LABEL_HANDICAP` est elle aussi un `Record<HandicapAccessible, string>`,
+    // donc le compilateur la tient exhaustive au même titre. Ce test tient ce
+    // que le compilateur ne tient pas — que les trois disent la MÊME liste, et
+    // que cette liste soit celle du texte.
     const reference = Object.keys(FAMILLE_L114);
     for (const [nom, liste] of [
       ["enum HandicapAccessible (prisma/schema.prisma)", enumPrismaHandicap()],

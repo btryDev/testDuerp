@@ -90,12 +90,14 @@ export function OutilsConformite() {
         </h2>
         <p className="text-[14.5px] leading-[1.55] text-[color:var(--board-slate-mid)] mt-5">
           Vous déclarez vos équipements et votre matériel ; la plateforme{" "}
-          <strong>génère les documents attendus</strong> (DUERP, registre,
+          <strong>génère les documents attendus</strong>{" "}
+          (DUERP, registre,
           plan d&apos;actions…), les met à jour au fil de vos
           vérifications et <strong>vous rappelle les échéances</strong>{" "}
           avant qu&apos;elles ne passent. Chaque outil ci-dessous
           correspond à une obligation précise. Les documents que vous devez
-          tenir <strong>et que la plateforme ne produit pas</strong> sont
+          tenir <strong>et que la plateforme ne produit pas</strong>{" "}
+          sont
           nommés sur la page « Documents obligatoires », avec le texte qui les fonde et l&apos;endroit où
           ils se tiennent.
         </p>

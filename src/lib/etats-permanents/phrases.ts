@@ -34,7 +34,13 @@ export function phraseRestantes(restantes: number): string | null {
     restantes === 1
       ? "Une ligne reste à passer en revue."
       : `${restantes} lignes restent à passer en revue.`;
-  return `${tete} Une ligne non cochée n'est pas un manquement constaté : c'est une question à laquelle vous n'avez pas encore répondu.`;
+  // « Non déclarée », et non « non cochée » : le contrôle de cette page est un
+  // bouton « Déclarer en place », pas une case. Le vocabulaire de la case était
+  // celui d'une version antérieure ; `LigneEtat` explique pourquoi le bouton
+  // l'a remplacée — une case suggère un formulaire qu'on valide, le geste ici
+  // est immédiat et réversible. Le mot resté en place décrivait un contrôle qui
+  // n'existe plus à l'écran.
+  return `${tete} Une ligne non déclarée n'est pas un manquement constaté : c'est une question à laquelle vous n'avez pas encore répondu.`;
 }
 
 /**

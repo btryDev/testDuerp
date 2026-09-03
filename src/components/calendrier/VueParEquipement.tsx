@@ -205,7 +205,8 @@ export function VueParEquipement({
               d'obligation. */}
           {horsReferentiel > 0 ? (
             <p className="m-0 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
-              Dont {horsReferentiel} hors référentiel : aucune échéance
+              Dont {horsReferentiel}{" "}
+              hors référentiel : aucune échéance
               n&apos;est calculée pour{" "}
               {horsReferentiel > 1 ? "ces équipements" : "cet équipement"},
               quelle que soit l&apos;année. Cela ne veut pas dire

@@ -15,6 +15,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { BentoCell } from "@/components/dashboard/BentoCell";
 import { CarteBoard, TitreBloc } from "@/components/dashboard/widgets/impl/board";
 import { MarqueCategorie } from "@/components/equipements/MarqueCategorie";
+import { LABEL_CATEGORIE_EQUIPEMENT } from "@/lib/equipements/labels";
 import { formaterDateFr, formaterJourMoisFr } from "@/lib/dates";
 import type { DashboardBundle } from "../types";
 
@@ -106,8 +107,24 @@ export function WidgetRegistre({ bundle }: { bundle: DashboardBundle }) {
 
 /* ─── Équipements ───────────────────────────────────────── */
 
+/**
+ * Le nom d'une catégorie, pris à la table et non recalculé sur la clé d'enum.
+ *
+ * Ce qu'il y avait ici : `c.replace(/_/g, " ").toLowerCase()`, remis en casse
+ * par un `capitalize` CSS. Sur des catégories qui sont des SIGLES, un
+ * humaniseur générique produit le contraire d'un nom : « Baes », « Vmc »,
+ * « Appareil Cuisson Erp ». Et comme les clés d'enum sont en ASCII, aucune
+ * casse calculée ne peut rendre l'accent : « Installation Electrique ».
+ *
+ * `LABEL_CATEGORIE_EQUIPEMENT` existait déjà et sert partout ailleurs — fiche
+ * d'équipement, fiche de vérification, calendrier, guide, `CarteCategorie`.
+ * Le tableau de bord était le seul à s'en passer, et donc le seul à écrire les
+ * noms autrement que le reste du produit.
+ */
 function libelleCategorie(c: string): string {
-  return c.replace(/_/g, " ").toLowerCase();
+  return (
+    (LABEL_CATEGORIE_EQUIPEMENT as Partial<Record<string, string>>)[c] ?? c
+  );
 }
 
 /** Mini-pastille de signal sur tuile blanche : creux ardoise, point de
@@ -319,7 +336,9 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
               >
                 <MarqueCategorie categorie={g.categorie} taille={48} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[14.5px] font-semibold capitalize leading-[1.25] text-[color:var(--board-ink)]">
+                  {/* Aucune transformation de casse : le nom porte la sienne,
+                      et « capitalize » la lui reprenait mot par mot. */}
+                  <span className="block truncate text-[14.5px] font-semibold leading-[1.25] text-[color:var(--board-ink)]">
                     {libelleCategorie(g.categorie)}
                   </span>
                   <span className="mt-0.5 block text-[12px] text-[color:var(--board-slate-mid)]">
@@ -376,7 +395,20 @@ export function WidgetEquipements({ bundle }: { bundle: DashboardBundle }) {
                 {/* Vitrine : champ bleu glacier, pastille de catégorie
                     posée dessus, picto centré. */}
                 <div className="relative flex h-[150px] flex-none items-center justify-center bg-[color:var(--board-blue-pale)]">
-                  <span className="absolute left-3 top-3 max-w-[calc(100%-24px)] truncate rounded-full bg-[color:var(--board-card)] px-3 py-[6px] font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--board-ink)]">
+                  {/* NI CAPITALES NI TRONCATURE — 2026-09-03.
+
+                      La pastille portait `uppercase tracking-[0.1em]` sur une
+                      chaîne fabriquée à partir de la clé d'enum, et le tout
+                      coupé net : « INSTALLATIO… ». En prenant le vrai nom, les
+                      capitales le font déborder de plus belle — « ÉCLAIRAGE
+                      DE S… » en dit moins que le sigle qu'il remplace. Le nom
+                      se replie donc sur deux lignes et garde sa casse, qui
+                      porte justement le sigle : « Éclairage de sécurité
+                      (BAES) ».
+
+                      Le tracking positif part avec les capitales : la charte
+                      (§ 3) ne l'admet qu'en mono capitales. */}
+                  <span className="absolute left-3 top-3 max-w-[calc(100%-24px)] rounded-[12px] bg-[color:var(--board-card)] px-3 py-[6px] font-mono text-[10px] font-semibold leading-[1.35] text-[color:var(--board-ink)]">
                     {libelleCategorie(eq.categorie)}
                   </span>
                   <MarqueCategorie

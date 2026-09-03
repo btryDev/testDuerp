@@ -88,7 +88,8 @@ export default async function PlanPreventionListePage({
               </p>
               <p className="m-0 text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                 Créez un plan pour votre prochaine intervention. Le diagnostic
-                intégré vous dit si l&apos;<strong>écrit</strong> est
+                intégré vous dit si l&apos;<strong>écrit</strong>{" "}
+                est
                 obligatoire ; le plan lui-même est dû dès qu&apos;un risque
                 d&apos;interférence existe, quelle que soit la durée.
               </p>
@@ -184,7 +185,8 @@ export default async function PlanPreventionListePage({
             risques</strong>, dès qu&apos;un risque d&apos;interférence existe
             et quelle que soit la durée (art. R. 4512-6). Il doit être établi{" "}
             <strong>par écrit</strong> si les travaux atteignent{" "}
-            <strong>400 h sur 12 mois</strong> OU figurent sur la liste des
+            <strong>400 h sur 12 mois</strong>{" "}
+            OU figurent sur la liste des
             travaux dangereux de l&apos;arrêté du 19-03-1993 (art. R. 4512-7).
             Sous ce seuil, l&apos;inspection commune préalable et
             l&apos;accord sur les mesures restent dus.

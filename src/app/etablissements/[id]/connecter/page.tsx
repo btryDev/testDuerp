@@ -111,7 +111,8 @@ export default async function ConnecterPage({
             l&apos;application. L&apos;assistant lit, il n&apos;écrit jamais.
           </p>
           <p className="m-0 mt-3.5 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
-            Le programme tourne <strong>sur votre machine</strong> et n&apos;est
+            Le programme tourne <strong>sur votre machine</strong>{" "}
+            et n&apos;est
             accessible qu&apos;à l&apos;application qui le lance : rien
             n&apos;est publié sur internet, il n&apos;y a ni adresse ni port à
             ouvrir.
