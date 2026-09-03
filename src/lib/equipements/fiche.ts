@@ -24,6 +24,11 @@ import {
 import { estActionEnRetard, estActionOuverte } from "@/lib/dates/retard";
 import { obligationParId } from "@/lib/referentiels/conformite";
 import type { Obligation } from "@/lib/referentiels/conformite/types";
+import {
+  determineObligationsApplicables,
+  projeterEtablissement,
+} from "@/lib/matching";
+import { estDeclencheeParUnFait } from "@/lib/etats-permanents/regle";
 
 /**
  * L'équipement, ses lignes de suivi, leurs rapports et les actions qu'elles
@@ -42,6 +47,23 @@ export async function getFicheEquipement(id: string) {
           // Combien de bâtiments porte l'établissement : sous un seul,
           // l'afficher n'apprend rien (ADR-019).
           _count: { select: { batiments: true } },
+          // La typologie, parce que la fiche interroge désormais le MOTEUR et
+          // plus seulement les lignes persistées. Les douze champs sont ceux
+          // que `projeterEtablissement` recopie : les prendre un à un plutôt
+          // qu'en bloc garde la raison sociale et l'adresse hors du matching,
+          // et une omission ne compile pas.
+          effectifSurSite: true,
+          estEtablissementTravail: true,
+          estERP: true,
+          estIGH: true,
+          estHabitation: true,
+          typeErp: true,
+          categorieErp: true,
+          classeIgh: true,
+          familleHabitation: true,
+          personnesPresentesHabituellement: true,
+          manipuleMatieresR422722: true,
+          comporteLocauxSommeilPublic: true,
         },
       },
       // Le lieu de l'appareil. Le parc renvoie ici en disant qu'un appareil
@@ -275,3 +297,79 @@ export function obligationsDeLEquipement(eq: FicheEquipement): Obligation[] {
   }
   return out;
 }
+
+/**
+ * Ce qui se déclenche sur cet appareil sans jamais tomber à une date.
+ *
+ * ## Pourquoi cette lecture ne peut pas partir des `Verification`
+ *
+ * `obligationsDeLEquipement` ci-dessus part des lignes persistées, et c'est
+ * juste pour ce qu'elle rend : les obligations qui ont produit un rendez-vous.
+ * Mais le générateur **saute** la périodicité `autre` — aucun texte n'en écrit
+ * le rythme —, donc une obligation événementielle n'a jamais de `Verification`
+ * et cette fonction-là ne peut structurellement pas la voir. C'est ainsi que
+ * `froid-controle-etancheite-apres-modification` n'atteignait aucune surface :
+ * le contrôle d'étanchéité après modification du circuit est dû, la fiche de
+ * la chambre froide n'en disait pas un mot.
+ *
+ * On repasse donc par le **moteur**, comme `hors-referentiel.ts` : la réponse
+ * ne dépend alors que du référentiel, de la typologie et des caractéristiques
+ * de l'appareil — elle est vraie avant même la première génération, et elle
+ * reste vraie sur un dossier dont le calendrier n'a jamais tourné.
+ *
+ * ## Un seul équipement passé au moteur
+ *
+ * `determineObligationsApplicables` accepte un parc ; on ne lui donne que cet
+ * appareil-ci. Les conditions d'une obligation portée par un équipement se
+ * lisent sur l'équipement (`conditionSatisfaite`), pas sur ses voisins : la
+ * réponse est donc la même que si on passait le parc entier, en une boucle au
+ * lieu de N. Les obligations portées par l'établissement traversent bien le
+ * moteur, et `estPorteeParEquipement` les écarte ici — leur sujet n'est pas
+ * cet appareil, et c'est la fiche de l'établissement qui les doit.
+ *
+ * ## Ce qui n'est pas lu, et qui devra l'être
+ *
+ * Les surcharges de prescription particulière (ADR-014). Un arrêté qui donne
+ * un rythme à une obligation `autre` la ferait passer au calendrier, et elle
+ * n'aurait plus rien à faire ici. `reperterSansEcheance` a la même lacune, au
+ * même endroit et pour la même raison : `determineObligationsApplicables` ne
+ * rend pas les surcharges, seul `appliquerPrescriptions` les calcule. Le jour
+ * où l'une des deux lectures les branche, l'autre doit suivre — d'où cette
+ * note, écrite des deux côtés plutôt qu'un demi-remède posé d'un seul.
+ */
+export function obligationsDeclencheesParUnFait(
+  eq: FicheEquipement,
+): ObligationDeclencheeParUnFait[] {
+  const applicables = determineObligationsApplicables(
+    projeterEtablissement(eq.etablissement),
+    [
+      {
+        id: eq.id,
+        libelle: eq.libelle,
+        categorie: eq.categorie,
+        caracteristiques: (eq.caracteristiques ?? null) as Record<
+          string,
+          unknown
+        > | null,
+      },
+    ],
+  );
+
+  return applicables
+    .filter((a) => a.porteur === "equipement")
+    .filter((a) => estDeclencheeParUnFait(a.obligation))
+    .map((a) => ({ obligation: a.obligation, raisons: a.raisons }));
+}
+
+/**
+ * Une obligation événementielle qui vise cet appareil, avec le mode *explain*
+ * du moteur — ce qui, dans ce dossier-ci, la fait porter sur lui.
+ *
+ * Les `raisons` sont reprises telles que le moteur les écrit, jamais
+ * reformulées : une phrase réécrite à côté finit par dire autre chose que le
+ * calcul qu'elle prétend expliquer.
+ */
+export type ObligationDeclencheeParUnFait = {
+  obligation: Obligation;
+  raisons: string[];
+};

@@ -13,6 +13,7 @@ import {
   type EtablissementMatching,
 } from "@/lib/matching";
 import {
+  estDeclencheeParUnFait,
   estEtatADeclarer,
   estFaitADater,
   estSansRendezVous,
@@ -353,5 +354,78 @@ describe("aucune surface de dépôt sur cet écran", () => {
     expect(MOTIF_DEPOT.test('<EvidenceDropzone name="x" />')).toBe(true);
     expect(MOTIF_DEPOT.test('<input type="file" />')).toBe(true);
     expect(MOTIF_DEPOT.test("<button>Déclarer en place</button>")).toBe(false);
+  });
+});
+
+describe("le troisième cas — ce qu'un fait rend dû", () => {
+  it("ne prend que les événementielles sans rythme écrit", () => {
+    // Borne basse : tout ce que le prédicat retient porte bien les deux
+    // caractères. Aucune liste d'identifiants ici — une liste se répare en
+    // recopiant, donc elle cesse de vérifier.
+    for (const o of obligationsConformite) {
+      if (!estDeclencheeParUnFait(o)) continue;
+      expect(o.nature, o.id).toBe("evenementielle");
+      expect(o.periodicite, o.id).toBe("autre");
+    }
+  });
+
+  it("laisse dehors ce que les deux autres verbes prennent", () => {
+    // Borne haute : les trois prédicats sont disjoints. S'ils se recouvraient,
+    // une obligation aurait deux surfaces — le défaut que la journée du
+    // 2026-08-31 a passé à retirer.
+    for (const o of obligationsConformite) {
+      if (!estDeclencheeParUnFait(o)) continue;
+      expect(estEtatADeclarer(o), o.id).toBe(false);
+      expect(estFaitADater(o), o.id).toBe(false);
+      expect(
+        modeDeclaration(o),
+        `${o.id} apparaîtrait à la fois sur « Ce qui doit être en place » et sur la fiche de son sujet`,
+      ).toBeNull();
+    }
+  });
+
+  it("relâche l'obligation le jour où un texte lui donne un rythme", () => {
+    // Le cas FABRIQUÉ, comme pour la visite de commission : on prend une
+    // obligation événementielle livrée et on lui donne une périodicité. Elle
+    // doit alors quitter cette surface pour le calendrier — sans quoi elle y
+    // serait deux fois.
+    const evenementielle = obligationsConformite.find((o) =>
+      estDeclencheeParUnFait(o),
+    );
+    expect(
+      evenementielle,
+      "plus aucune obligation événementielle sans rythme : retirer cette surface",
+    ).toBeDefined();
+    if (!evenementielle) return;
+
+    const avecRythme = {
+      ...evenementielle,
+      periodicite: "annuelle",
+    } as Obligation;
+    expect(estDeclencheeParUnFait(avecRythme)).toBe(false);
+    // Et la périodicité EFFECTIVE l'emporte sur celle du référentiel : c'est
+    // ce qu'une prescription particulière fait (ADR-014).
+    expect(estDeclencheeParUnFait(evenementielle, "annuelle")).toBe(false);
+  });
+
+  it("couvre les deux sujets qui ont une fiche", () => {
+    // Le point de la décision : « une obligation vit chez son sujet ». Les
+    // deux sujets servis sont la personne et l'appareil ; ce test dit que
+    // chacun en porte au moins une, pour que le jour où l'un des deux se
+    // vide, quelqu'un le voie plutôt que de découvrir une carte morte.
+    const parPorteur = new Map<string, string[]>();
+    for (const o of obligationsConformite) {
+      if (!estDeclencheeParUnFait(o)) continue;
+      const p = porteurDe(o);
+      parPorteur.set(p, [...(parPorteur.get(p) ?? []), o.id]);
+    }
+    expect(
+      (parPorteur.get("salarie") ?? []).length,
+      "la fiche d'un salarié doit en montrer au moins une",
+    ).toBeGreaterThan(0);
+    expect(
+      (parPorteur.get("equipement") ?? []).length,
+      "la fiche d'un équipement doit en montrer au moins une",
+    ).toBeGreaterThan(0);
   });
 });
