@@ -156,11 +156,42 @@ export const TYPES_ERP = [
 ] as const;
 export type TypeErp = (typeof TYPES_ERP)[number];
 
+/**
+ * Catégories d'ERP — CCH, art. R. 143-19, dans l'ordre du texte.
+ *
+ * PAS `GN 2` de l'arrêté du 25 juin 1980, qu'on lui attribuait : cet article
+ * traite du classement des GROUPEMENTS d'établissements. Le règlement de
+ * sécurité emploie la nomenclature, le code la pose. Les cinq valeurs, elles,
+ * sont justes — confrontées au verbatim le 2026-09-03.
+ */
 export const CATEGORIES_ERP = ["N1", "N2", "N3", "N4", "N5"] as const;
 export type CategorieErp = (typeof CATEGORIES_ERP)[number];
 
+/**
+ * Classes d'IGH — **ce que la base peut CONTENIR**, reflet exact de
+ * l'énumération Prisma `ClasseIgh`.
+ *
+ * À NE PAS CONFONDRE AVEC `CLASSES_IGH` DE `src/lib/etablissements/schema.ts`,
+ * qui est la liste des classes DÉCLARABLES. Les deux listes ont été identiques
+ * jusqu'au 2026-09-03 ; elles ne le sont plus, et l'écart est le sujet.
+ *
+ * Le texte — CCH, art. R. 146-4 — écrit DIX classes. Celle-ci en porte ONZE :
+ * `GHTC`, `GHW1` et `GHW2` y entrent, et `GHW` y RESTE alors que le code ne
+ * l'écrit nulle part. La liste était tirée de l'arrêté du 30 décembre 2011,
+ * dont le titre III groupe GH W 1 et GH W 2 sous un chapitre unique « GH W » —
+ * un chapitre de règlement, pas une classe.
+ *
+ * `GHW` est en SURSIS, pas toléré : il a disparu de tous les choix offerts, si
+ * bien que plus personne ne peut en créer, mais il reste dans le type parce
+ * que des dossiers peuvent en porter et qu'on ne le sait pas encore. Le retirer
+ * du type réécrirait la colonne et effacerait ces valeurs sans équivalent —
+ * `GHW` ne dit pas si la tour fait 40 ou 60 mètres. Retrait au temps 2 :
+ * condition et marche à suivre dans `docs/chantiers-ouverts.md` § 9 bis.
+ */
 export const CLASSES_IGH = [
-  "GHA", "GHW", "GHO", "GHR", "GHS", "GHU", "GHZ", "ITGH",
+  "GHA", "GHO", "GHR", "GHS", "GHTC", "GHU", "GHW1", "GHW2", "GHZ", "ITGH",
+  // EN SURSIS — absente de R. 146-4. Ne pas la remettre dans un menu.
+  "GHW",
 ] as const;
 export type ClasseIgh = (typeof CLASSES_IGH)[number];
 

@@ -25,12 +25,29 @@ export const TYPE_ERP = [
   "PA", "CTS", "SG", "PS", "REF", "GA", "OA", "EF",
 ] as const;
 
+/** Catégories d'ERP — CCH, art. R. 143-19. Cinq, dans l'ordre du texte. */
 export const CATEGORIES_ERP = ["N1", "N2", "N3", "N4", "N5"] as const;
 
+/**
+ * Classes d'IGH **DÉCLARABLES** — CCH, art. R. 146-4, dans l'ordre du texte.
+ * Dix, exactement celles que le code écrit.
+ *
+ * C'est la liste qui valide les formulaires et qui remplit les menus : elle dit
+ * ce qu'un dossier peut se voir ATTRIBUER aujourd'hui. Elle est plus courte que
+ * `CLASSES_IGH` de `src/lib/referentiels/types-communs.ts`, qui dit ce que la
+ * base peut CONTENIR et porte encore `GHW` — une valeur que R. 146-4 n'écrit
+ * pas, restée dans l'énumération PostgreSQL le temps qu'on établisse s'il en
+ * existe des lignes.
+ *
+ * L'écart entre les deux listes est la forme même du palier : plus personne ne
+ * peut créer un `GHW`, et aucune donnée n'est effacée pour autant. Voir
+ * `docs/chantiers-ouverts.md` § 9 bis.
+ */
 export const CLASSES_IGH = [
-  "GHA", "GHW", "GHO", "GHR", "GHS", "GHU", "GHZ", "ITGH",
+  "GHA", "GHO", "GHR", "GHS", "GHTC", "GHU", "GHW1", "GHW2", "GHZ", "ITGH",
 ] as const;
 
+/** Familles d'habitation — arrêté du 31 janvier 1986, art. 3. La 3ᵉ se scinde. */
 export const FAMILLES_HABITATION = [
   "PREMIERE", "DEUXIEME", "TROISIEME_A", "TROISIEME_B", "QUATRIEME",
 ] as const;
@@ -135,9 +152,24 @@ export const etablissementSchema = z
       (v) => (v === "" || v === null ? undefined : v),
       z.enum(CATEGORIES_ERP).optional(),
     ),
+    // LE MESSAGE EST ÉCRIT, ET IL EST LE SEUL DE CE BLOC À L'ÊTRE. Depuis le
+    // 2026-09-03, `CLASSES_IGH` est plus courte que l'énumération de la base :
+    // `GHW` y a été retirée. Un dossier antérieur qui en porte une et qu'on
+    // réenregistre sans y toucher arrive donc ici, et le message par défaut de
+    // Zod — « Invalid option » — ne dirait pas quoi faire. Celui-ci nomme le
+    // fait qui manque, la hauteur du plancher bas, parce que c'est la seule
+    // chose que le déclarant ait à aller chercher.
     classeIgh: z.preprocess(
       (v) => (v === "" || v === null ? undefined : v),
-      z.enum(CLASSES_IGH).optional(),
+      z
+        .enum(CLASSES_IGH, {
+          message:
+            "Classe IGH inconnue de l'article R. 146-4. Si ce dossier portait « GHW », " +
+            "le code n'écrit pas cette classe : les bureaux en sont deux, séparées par la " +
+            "hauteur du plancher bas du dernier niveau — GHW1 de plus de 28 m à 50 m au " +
+            "plus, GHW2 au-delà de 50 m. Choisissez celle qui correspond.",
+        })
+        .optional(),
     ),
     familleHabitation: z.preprocess(
       (v) => (v === "" || v === null ? undefined : v),

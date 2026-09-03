@@ -72,7 +72,7 @@ describe("etablissementSchema — typologie (ADR-004)", () => {
       typeErp: "W",
       categorieErp: "N2",
       estIGH: true,
-      classeIgh: "GHW",
+      classeIgh: "GHW1",
     });
     expect(res.success).toBe(true);
   });
@@ -255,7 +255,7 @@ describe("refus de périmètre — création seulement", () => {
       typeErp: "M",
       categorieErp: "N5",
       estIGH: true,
-      classeIgh: "GHW",
+      classeIgh: "GHW1",
     });
     expect(res.success).toBe(false);
   });
@@ -265,7 +265,7 @@ describe("refus de périmètre — création seulement", () => {
       etablissementCreationSchema.safeParse({
         ...base,
         estIGH: true,
-        classeIgh: "GHW",
+        classeIgh: "GHW1",
       }).success,
     ).toBe(true);
   });

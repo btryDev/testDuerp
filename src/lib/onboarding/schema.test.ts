@@ -161,7 +161,7 @@ describe("onboardingSchema", () => {
       typeErp: "W",
       categorieErp: "N1",
       estIGH: true,
-      classeIgh: "GHW",
+      classeIgh: "GHW1",
     });
     expect(res.success).toBe(false);
   });
@@ -174,7 +174,7 @@ describe("onboardingSchema", () => {
     const res = onboardingSchema.safeParse({
       ...base,
       estIGH: true,
-      classeIgh: "GHW",
+      classeIgh: "GHW1",
     });
     expect(res.success).toBe(true);
   });

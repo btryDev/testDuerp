@@ -263,13 +263,45 @@ enum FamilleHabitation {
   QUATRIEME
 }
 
+// Classes d'immeubles de grande hauteur — CCH, art. R. 146-4.
+//
+// LE TEXTE EN ÉCRIT DIX ; CETTE ÉNUMÉRATION EN PORTE ONZE, ET LA ONZIÈME EST
+// EN SURSIS. Jusqu'au 2026-09-03 la liste était tirée de l'arrêté du
+// 30 décembre 2011, qui ne la porte pas — son `GH 1` renvoie au code, et son
+// titre III groupe GH W 1 et GH W 2 sous un chapitre unique « GH W ». Un
+// chapitre de règlement n'est pas une classe : le code n'écrit nulle part de
+// classe « GHW », et `GHTC` (tour de contrôle) manquait purement et
+// simplement.
+//
+// La hauteur du plancher bas est le seul fait qui sépare GHW1 (plus de 28 m,
+// au plus 50 m) de GHW2 (plus de 50 m) — les fusionner en « GHW » revenait à
+// ne jamais la demander.
+//
+// POURQUOI `GHW` EST ENCORE LÀ. Le retrait d'une valeur d'énumération
+// PostgreSQL réécrit la colonne, et les lignes qui portent `GHW` n'ont pas
+// d'équivalent : `GHW` ne dit pas si la tour fait 40 ou 60 mètres. On ne sait
+// pas s'il en existe — la lecture de la base de production n'a pas pu être
+// faite —, et `pnpm build` joue `prisma migrate deploy` : pousser le retrait
+// reviendrait à effacer une donnée sans savoir laquelle. La valeur reste donc
+// dans le TYPE, mais elle a disparu de tous les CHOIX offerts
+// (`src/lib/etablissements/schema.ts`, `CHOIX_CLASSES_IGH`, le formulaire) :
+// plus personne ne peut en créer, et un dossier qui en porte une continue de
+// l'afficher. Le comptage devient concluant une fois ce palier déployé.
+//
+// Retrait au temps 2, condition et marche à suivre écrites dans
+// `docs/chantiers-ouverts.md` § 9 bis. `src/lib/referentiels/classes-igh.test.ts`
+// dérive la liste du verbatim de R. 146-4 dépouillé au corpus, et ne tolère
+// `GHW` que par une dérogation nommée qui ne peut que rétrécir.
 enum ClasseIgh {
   GHA
-  GHW
   GHO
   GHR
   GHS
+  GHTC
   GHU
+  GHW // EN SURSIS — absente de R. 146-4, retrait au temps 2. Ne pas réoffrir.
+  GHW1
+  GHW2
   GHZ
   ITGH
 }

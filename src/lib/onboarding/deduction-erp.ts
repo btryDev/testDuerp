@@ -189,19 +189,67 @@ export function deduireCategorieErpDepuisEffectif(
  * Cas très rare en TPE — pour les quelques cas où un TPE gère un
  * immeuble de grande hauteur, on affiche la grille mais avec une aide
  * claire « rare chez vous ».
+ *
+ * DIX ENTRÉES, ET DEUX D'ENTRE ELLES SONT NÉES DE LA CONFRONTATION DU
+ * 2026-09-03. La grille était tirée de l'arrêté du 30 décembre 2011, qui ne
+ * porte pas la nomenclature ; le CCH, art. R. 146-4, la porte, et il en écrit
+ * dix. Manquaient `GHTC` — tour de contrôle — et la coupure des bureaux en
+ * `GHW 1` / `GHW 2` ; figurait en trop un `GHW` que le code n'écrit nulle
+ * part.
+ *
+ * LES HAUTEURS SONT DANS LES LIBELLÉS PARCE QUE C'EST TOUT CE QUI DISTINGUE
+ * DEUX CLASSES. « Bureaux » seul ne permettait à personne de choisir : le
+ * plancher bas du dernier niveau à 40 mètres donne GHW 1, à 60 mètres GHW 2, et
+ * la question n'était jamais posée. Même raison pour GHZ, dont le libellé
+ * disait « Mixte » là où le texte décrit un immeuble à usage PRINCIPAL
+ * D'HABITATION entre 28 et 50 mètres : un syndic cherchait « habitation »,
+ * trouvait GHA, et se déclarait dans la mauvaise classe.
+ * `src/lib/referentiels/classes-igh.test.ts` tient ces chiffres à ceux du
+ * verbatim de R. 146-4.
+ *
+ * L'ORDRE N'EST PAS CELUI DU TEXTE, et c'est assumé : le texte range GHA en
+ * tête, la grille met les bureaux devant parce que c'est le cas le plus
+ * probable. Un ordre d'affichage est un choix de produit ; le test ne le
+ * vérifie pas.
  */
 export const CHOIX_CLASSES_IGH = [
-  { id: "GHW", label: "Bureaux", description: "Tour de bureaux." },
+  {
+    id: "GHW1",
+    label: "Bureaux, de 28 à 50 m",
+    description:
+      "Tour de bureaux dont le plancher bas du dernier niveau est à plus de 28 mètres et à 50 mètres au plus.",
+  },
+  {
+    id: "GHW2",
+    label: "Bureaux, plus de 50 m",
+    description:
+      "Tour de bureaux dont le plancher bas du dernier niveau est à plus de 50 mètres.",
+  },
   { id: "GHA", label: "Habitation", description: "Immeuble de logement." },
+  {
+    id: "GHZ",
+    label: "Habitation avec des locaux d'une autre nature",
+    description:
+      "Immeuble à usage principal d'habitation, plancher bas de plus de 28 mètres et de 50 mètres au plus, comportant des locaux d'une autre nature qui ne répondent pas aux conditions d'isolement.",
+  },
   { id: "GHO", label: "Hôtel", description: "Tour hôtelière." },
   { id: "GHR", label: "Enseignement", description: "Établissement scolaire." },
-  { id: "GHS", label: "Archives", description: "Centre d'archives." },
+  {
+    id: "GHS",
+    label: "Dépôt d'archives",
+    description: "Centre d'archives.",
+  },
+  {
+    id: "GHTC",
+    label: "Tour de contrôle",
+    description: "Immeuble à usage de tour de contrôle.",
+  },
   { id: "GHU", label: "Sanitaire", description: "Hôpital, clinique." },
-  { id: "GHZ", label: "Mixte", description: "Plusieurs activités." },
   {
     id: "ITGH",
     label: "Très grande hauteur",
-    description: "Immeuble > 200 m.",
+    description:
+      "Immeuble dont le plancher bas du dernier niveau est à plus de 200 mètres.",
   },
 ] as const;
 

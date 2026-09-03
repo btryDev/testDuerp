@@ -17,15 +17,27 @@ import { CHOIX_FAMILLES_HABITATION } from "@/lib/onboarding/deduction-erp";
 import type { EtablissementActionState } from "@/lib/etablissements/actions";
 
 
+/**
+ * Les dix classes de `R. 146-4`, telles qu'un dirigeant peut s'y reconnaître.
+ *
+ * LES HAUTEURS FONT PARTIE DU LIBELLÉ, elles ne sont pas un ornement : c'est
+ * le plancher bas du dernier niveau, et lui seul, qui sépare GHW1 de GHW2. Un
+ * libellé « Bureaux » unique ne posait jamais la question, et c'est ainsi que
+ * le modèle a vécu avec un `GHW` que le code n'écrit pas. Même chose pour GHZ,
+ * dont le libellé disait « Mixte » quand le texte décrit un immeuble à usage
+ * PRINCIPAL d'habitation entre 28 et 50 mètres.
+ */
 const LABEL_CLASSE_IGH: Record<(typeof CLASSES_IGH)[number], string> = {
   GHA: "GHA · Habitation",
-  GHW: "GHW · Bureaux",
   GHO: "GHO · Hôtel",
   GHR: "GHR · Enseignement",
-  GHS: "GHS · Archives",
+  GHS: "GHS · Dépôt d'archives",
+  GHTC: "GHTC · Tour de contrôle",
   GHU: "GHU · Sanitaire",
-  GHZ: "GHZ · Mixte",
-  ITGH: "ITGH · Immeuble de très grande hauteur",
+  GHW1: "GHW1 · Bureaux, plancher bas de plus de 28 mètres et de 50 mètres au plus",
+  GHW2: "GHW2 · Bureaux, plancher bas de plus de 50 mètres",
+  GHZ: "GHZ · Habitation principale de plus de 28 mètres et de 50 mètres au plus, avec des locaux d'une autre nature non isolés",
+  ITGH: "ITGH · Immeuble de très grande hauteur, plancher bas de plus de 200 mètres",
 };
 
 /** La case à cocher du board : encre pleine à l'état coché, filet d'ardoise. */
@@ -99,6 +111,24 @@ export function EtablissementForm({
 
   const err = (champ: string) =>
     state.status === "error" ? state.fieldErrors?.[champ]?.[0] : undefined;
+
+  /**
+   * La classe IGH enregistrée qui n'est plus déclarable, s'il y en a une.
+   *
+   * `CLASSES_IGH` est la liste des classes que R. 146-4 écrit ; l'énumération
+   * de la base en porte une de plus, `GHW`, retirée des choix le 2026-09-03 et
+   * du type au temps 2 (`docs/chantiers-ouverts.md` § 9 bis). Un dossier
+   * antérieur peut donc porter une valeur absente du menu.
+   *
+   * On la calcule au lieu de nommer `GHW` : le jour où la valeur sortira du
+   * type, ce code n'aura rien à désapprendre, et si une autre valeur se
+   * trouvait un jour dans le même cas il la montrerait aussi.
+   */
+  const classeRetireeDuReglement =
+    valeursInitiales?.classeIgh &&
+    !(CLASSES_IGH as readonly string[]).includes(valeursInitiales.classeIgh)
+      ? valeursInitiales.classeIgh
+      : null;
 
   return (
     <form action={formAction} className="flex flex-col gap-8">
@@ -495,14 +525,46 @@ export function EtablissementForm({
                       required={estIGH}
                       className="champ-board"
                       aria-invalid={Boolean(err("classeIgh"))}
+                      aria-describedby={
+                        classeRetireeDuReglement ? "classeIgh-sursis" : undefined
+                      }
                     >
                       <option value="">— Sélectionner —</option>
+                      {/* LA CLASSE ENREGISTRÉE QUI N'EST PLUS OFFERTE RESTE
+                          VISIBLE. Sans cette option, un `<select>` dont la
+                          valeur ne figure dans aucune option retombe sur la
+                          première : le dossier afficherait « GHA » là où il
+                          porte « GHW », et l'enregistrement suivant écraserait
+                          la donnée en silence. C'est exactement l'erreur que ce
+                          palier existe pour éviter. */}
+                      {classeRetireeDuReglement && (
+                        <option value={classeRetireeDuReglement}>
+                          {classeRetireeDuReglement} · classe retirée du
+                          règlement — à corriger
+                        </option>
+                      )}
                       {CLASSES_IGH.map((c) => (
                         <option key={c} value={c}>
                           {LABEL_CLASSE_IGH[c]}
                         </option>
                       ))}
                     </select>
+                    {classeRetireeDuReglement && (
+                      <p
+                        id="classeIgh-sursis"
+                        className="m-0 mt-1.5 max-w-[66ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]"
+                      >
+                        Ce dossier porte la classe{" "}
+                        <strong>{classeRetireeDuReglement}</strong>, qui ne
+                        figure pas à l&apos;article R. 146-4 du code de la
+                        construction et de l&apos;habitation. Les bureaux y sont
+                        deux classes, que seule sépare la hauteur du plancher bas
+                        du dernier niveau : <strong>GHW1</strong> de plus de
+                        28 mètres à 50 mètres au plus, <strong>GHW2</strong>
+                        au-delà de 50 mètres. Choisissez celle qui correspond —
+                        cette information figure au dossier de l&apos;immeuble.
+                      </p>
+                    )}
                     <Erreur message={err("classeIgh")} />
                   </div>
                 </div>

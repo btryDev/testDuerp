@@ -360,18 +360,51 @@ légitimement et qui n'ont pas de source.
 **Sept transcrivent une nomenclature écrite dans un texte, et aucune n'a jamais
 été confrontée à ce texte** :
 
-| Liste | Sa source | État |
+| Liste | Sa source **établie** | État au 2026-09-03 |
 | --- | --- | --- |
-| `TypeErp` | `GN 1`, arrêté du 25 juin 1980 | **fausse — `J` manquant**, lot en cours |
-| `CategorieErp` | même arrêté | non vérifiée |
-| `ClasseIgh` | arrêté du 30 décembre 2011 | non vérifiée |
-| `FamilleHabitation` | arrêté du 31 janvier 1986 | source citée en commentaire, pas testée |
+| `TypeErp` | `GN 1 § 1`, arrêté du 25 juin 1980 | **était fausse — `J` manquant** ; corrigée et gardée par `types-erp.test.ts` |
+| `CategorieErp` | `R. 143-19` CCH — **pas** `GN 2` | liste juste ; **source présumée fausse** ; gardée par `categories-erp.test.ts` |
+| `ClasseIgh` | `R. 146-4` CCH — **pas** l'arrêté de 2011 | **était fausse — `GHTC`, `GHW1`, `GHW2` manquants, `GHW` en trop** ; manquants ajoutés, `GHW` retiré des choix mais **encore dans l'énumération** — voir § 9 bis |
+| `FamilleHabitation` | art. 3, arrêté du 31 janvier 1986 | liste juste, source juste ; gardée par `familles-habitation.test.ts` |
 | `HandicapAccessible` | droit de l'accessibilité | non vérifiée |
 | `NatureTravauxPointChaud` | INRS ED 6030 | non vérifiée |
 | `Realisateur` | `R. 4323-24` et voisins | non vérifiée |
 
-**La première qu'on a ouverte était fausse.** On ne sait pas ce que valent les six
-autres.
+**Quatre sur sept sont désormais confrontées, et deux étaient fausses.** On ne sait
+toujours pas ce que valent les trois dernières.
+
+### Ce que la seconde passe a appris, et qui n'était pas dans la première
+
+**LA SOURCE PRÉSUMÉE EST AUSSI PEU FIABLE QUE LA LISTE.** Deux des trois sources
+citées ci-dessus étaient fausses, et de la même façon : elles désignaient le
+RÈGLEMENT DE SÉCURITÉ là où la nomenclature est au CODE. `GN 2` de l'arrêté du
+25 juin 1980 traite du classement des GROUPEMENTS d'établissements, pas des
+catégories ; `GH 1` de l'arrêté du 30 décembre 2011 renvoie explicitement au CCH
+« pour les prescriptions générales communes aux diverses classes ». Le règlement
+EMPLOIE une nomenclature que le code POSE.
+
+Ce n'est pas une nuance d'érudition : **c'est ce mauvais renvoi qui a coûté trois
+classes à `ClasseIgh`.** Le titre III de l'arrêté de 2011 groupe GH W 1 et GH W 2
+sous un chapitre unique « GH W », et c'est ce chapitre — pas une classe — que le
+modèle avait recopié. Chercher une liste dans le texte qui l'applique au lieu du
+texte qui la définit produit une liste plausible et fausse.
+
+**UN MEMBRE EN TROP SE PAIE COMME UN MANQUANT.** `GHW` n'était pas une valeur
+inoffensive : un exploitant de tour de bureaux la cochait, enregistrait une classe
+qui n'existe pas, et n'était jamais interrogé sur la hauteur du plancher bas — le
+seul fait qui sépare GHW 1 de GHW 2. **Mais un membre en trop ne se retire pas
+comme on ajoute un manquant** : l'ajout est additif, le retrait réécrit la
+colonne. C'est ce qui a scindé le lot en deux, et le § 9 bis en porte la suite.
+
+**LES LIBELLÉS SE CONFRONTENT AU TEXTE, PAS SEULEMENT LES CLÉS.** Le lot `TypeErp`
+l'avait déjà relevé ; les trois listes suivantes le confirment. « GHZ · Mixte »
+désignait, dans le texte, un immeuble à usage PRINCIPAL D'HABITATION entre 28 et
+50 mètres : un syndic cherchait « habitation », trouvait GHA, et se rangeait dans
+la mauvaise classe. Les gardes vérifient désormais que les libellés portent les
+CHIFFRES du texte — hauteurs pour les classes d'IGH, seuils d'effectif pour les
+catégories d'ERP —, jamais ses mots : exiger les mots interdirait de rendre la
+nomenclature lisible, et un plancher de longueur forcerait à rallonger
+« Y · Musée ».
 
 ### Le défaut est à moitié couvert, et c'est ce qui l'a rendu invisible
 
@@ -403,3 +436,94 @@ complet » a une réponse mécanique au lieu d'une affirmation.
 énonce la liste des types une seule fois, avec la mention **« (~20 valeurs) »**.
 L'auteur savait sa liste approximative ; rien n'a jamais eu la charge de la
 confronter. C'est l'archétype du défaut de tout ce paragraphe.
+
+## 9 bis. `GHW` : retrait programmé, en attente d'un comptage en production
+
+**Ouvert le 2026-09-03. C'est le temps 2 du lot « listes fermées » ; le temps 1
+est livré.**
+
+### Où en est la valeur
+
+`GHW` n'existe pas à l'article `R. 146-4` du CCH. Le code écrit deux classes de
+bureaux, `GHW 1` et `GHW 2`, que sépare la hauteur du plancher bas du dernier
+niveau — plus de 28 mètres et au plus 50 pour la première, plus de 50 pour la
+seconde. Le `GHW` unique du modèle venait du titre III de l'arrêté du
+30 décembre 2011, qui groupe les deux sous un chapitre de règlement.
+
+État au terme du temps 1 :
+
+| surface | `GHW` y figure-t-il ? |
+| --- | --- |
+| `enum ClasseIgh` (PostgreSQL + `schema.prisma`) | **oui**, en sursis |
+| `CLASSES_IGH` (`src/lib/referentiels/types-communs.ts`) — ce que la base peut CONTENIR | **oui**, en sursis |
+| `CLASSES_IGH` (`src/lib/etablissements/schema.ts`) — ce qu'on peut DÉCLARER | non |
+| `CHOIX_CLASSES_IGH` (grille d'onboarding) | non |
+| `LABEL_CLASSE_IGH` (menu du formulaire) | non |
+
+**Plus personne ne peut en créer ; un dossier qui en porte un l'affiche encore**,
+marqué « classe retirée du règlement — à corriger », avec les deux hauteurs qui
+permettent de choisir. La dérogation qui laisse `classes-igh.test.ts` vert
+s'appelle `EN_SURSIS_JUSQU_AU_TEMPS_2` et ne couvre que les deux premières
+lignes du tableau.
+
+### Pourquoi ce n'est pas fini au même moment
+
+Retirer une valeur d'un type énuméré PostgreSQL impose de recréer le type et de
+**réécrire la colonne**, donc de donner un sort aux lignes qui la portent. `GHW`
+n'a pas d'équivalent : il ne dit pas si la tour fait 40 mètres ou 60. `NULL` est
+la seule valeur honnête, et c'est une **perte de donnée**.
+
+Deux faits l'ont emporté :
+
+1. **`package.json` porte `"build": "prisma generate && prisma migrate deploy && next build"`.**
+   Pousser sur `main` joue la migration en production au prochain déploiement
+   Vercel. Une migration destructive part donc sans qu'on la déclenche.
+2. **On ignore s'il existe des lignes `GHW`.** La lecture de la base de
+   production a été refusée par le classifieur de permissions, et elle n'a pas
+   été contournée.
+
+Et un comptage fait avant le temps 1 n'aurait rien prouvé : **tant que `GHW`
+était offert au formulaire, un déclarant pouvait en écrire un entre la lecture et
+le déploiement.** C'est le sens du palier — après lui, le compte ne peut plus
+remonter.
+
+### Ce qu'il faut faire, dans cet ordre
+
+1. **Déployer le temps 1** (ce lot) et le laisser en production.
+2. **Compter**, sur la base de production :
+   `SELECT count(*) FROM "Etablissement" WHERE "classeIgh" = 'GHW';`
+   Le compte est définitif : plus rien ne peut en créer.
+3. **Si le compte est nul** — écrire la migration destructive, sans clause de
+   sauvetage puisqu'il n'y a rien à sauver : renommer le type, le recréer sans
+   `GHW`, convertir la colonne avec un `USING` direct, supprimer l'ancien type.
+   `Etablissement.classeIgh` est le seul usage de ce type, vérifié le 2026-09-03.
+4. **Si le compte n'est pas nul** — ne pas ramener les lignes à `NULL` sans
+   prévenir. Il faut d'abord **redemander la hauteur du plancher bas** aux
+   dossiers concernés, et deux choses manquent pour ça :
+   - un moyen de les joindre ou de les marquer, le produit n'ayant aujourd'hui
+     aucune notion de « donnée à corriger » sur un établissement ;
+   - la décision de ce qui se passe si personne ne répond. Le formulaire de
+     modification refuse déjà d'enregistrer un dossier resté en `GHW` et affiche
+     pourquoi : dans bien des cas, la correction viendra d'elle-même à la
+     première édition. Le reliquat est ce qu'il faut trancher.
+
+   Passer directement au `NULL` de masse est le seul geste explicitement écarté :
+   la donnée disparaîtrait sans que celui qui la subit ait une chance de s'en
+   apercevoir.
+5. **Solder la dérogation.** Retirer `"GHW"` de `EN_SURSIS_JUSQU_AU_TEMPS_2` dans
+   `src/lib/referentiels/classes-igh.test.ts`. Si la liste devient vide, retirer
+   la constante et `ecartHorsSursis` avec elle, et rendre les cinq comparaisons
+   strictes. **Le test y force** : une entrée en sursis qui ne figure plus dans
+   l'énumération est signalée comme périmée et fait échouer la suite. La
+   dérogation ne peut donc pas survivre à sa cause.
+6. Retirer cette section et remettre la ligne `ClasseIgh` du § 9 à « corrigée ».
+
+### Ce qui a été écarté, et pourquoi
+
+- **Livrer le retrait tout de suite** : effacerait une donnée inconnue au
+  prochain déploiement, sans que personne ne l'ait décidé.
+- **Compter d'abord, livrer ensuite, en un seul lot** : le comptage ne conclut
+  rien tant que la valeur reste créable.
+- **Migrer `GHW` vers `GHW1`** « parce que c'est le cas le plus fréquent » :
+  inscrirait au dossier une hauteur que personne n'a constatée. Une erreur
+  invisible plutôt qu'une donnée manquante visible.

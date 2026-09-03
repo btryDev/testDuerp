@@ -6,6 +6,7 @@ import { ARRETE_1980_LIVRE_2 } from "./arrete-1980-livre-2";
 import { CORPUS_PE } from "./arrete-1980-livre-3";
 import { ARRETE_2011_12_14_ECLAIRAGE } from "./arrete-2011-12-14-eclairage";
 import { ARRETE_2011_12_30_IGH } from "./arrete-2011-12-30-igh";
+import { CCH_CLASSEMENT_ERP_IGH } from "./cch-classement-erp-igh";
 import { CCH_REGISTRE_SECURITE } from "./cch-registre-securite";
 import { CODE_TRAVAIL_INCENDIE } from "./code-travail-incendie";
 import { ARRETE_2004_03_01_LEVAGE } from "./arrete-2004-03-01-levage";
@@ -243,6 +244,22 @@ export const CORPUS: readonly Corpus[] = [
   // (« entreposées OU manipulées »). Voir l'en-tête du fichier et le motif de
   // `R. 4227-22`.
   CODE_TRAVAIL_MATIERES_INFLAMMABLES,
+  // Lot « listes fermées », 2026-09-03 — le second corpus du dépôt qui ne sert
+  // AUCUNE obligation, après `arrete-1980-livre-1.ts`. Il porte les trois
+  // articles du CCH qui CLASSENT : `R. 143-19` (les cinq catégories d'ERP),
+  // `R. 146-3` (ce qu'est un immeuble de grande hauteur) et `R. 146-4` (les
+  // dix classes d'IGH). Ce qu'ils servent est le modèle de données, pas le
+  // calendrier — `docs/chantiers-ouverts.md` § 9.
+  //
+  // LES DEUX SOURCES PRÉSUMÉES ÉTAIENT FAUSSES. Les catégories d'ERP étaient
+  // attribuées à `GN 2` de l'arrêté du 25 juin 1980, qui traite en réalité du
+  // classement des GROUPEMENTS d'établissements ; les classes d'IGH à
+  // l'arrêté du 30 décembre 2011, dont `GH 1` renvoie au code pour la
+  // nomenclature. Le règlement de sécurité APPLIQUE une liste que le code
+  // POSE, et chercher la liste dans le règlement a coûté trois classes au
+  // modèle : `GHTC`, `GHW1` et `GHW2` manquaient, et un `GHW` que `R. 146-4`
+  // n'écrit nulle part figurait en trop.
+  CCH_CLASSEMENT_ERP_IGH,
 ];
 
 export function couvertureParCorpus(): CouvertureCorpus[] {
