@@ -3,6 +3,14 @@ import type {
   Realisateur,
 } from "@/lib/referentiels/types-communs";
 import type { DomaineObligation } from "@/lib/referentiels/conformite/types";
+// `import type`, et jamais une valeur : `echeances.ts` ouvre la base et lit la
+// session, et ce module-ci est importé par `AnneeCalendrier`, qui est un
+// composant client. La première version de cet en-tête importait
+// `FAMILLES_FILTRABLES` — une valeur — et faisait entrer Prisma, `requireUser`
+// et `next/headers` dans le paquet du navigateur. `tsc` n'a rien vu ; c'est le
+// build qui a refusé. La liste des familles se dérive donc des clés de
+// `LABEL_FAMILLE_PROSE`, et un test rapproche les deux.
+import type { FamilleEcheance } from "./echeances";
 
 export const LABEL_PERIODICITE: Record<Periodicite, string> = {
   hebdomadaire: "hebdomadaire",
@@ -227,4 +235,73 @@ export function libelleMoisPrecedents(nbCartesPassees: number): string {
   return nbCartesPassees === 1
     ? "Voir le mois précédent"
     : `Voir les ${nbCartesPassees} mois précédents`;
+}
+
+/**
+ * Ce que chaque famille apporte au calendrier, dit en courant — pour une phrase
+ * qui les énumère, pas pour une pilule qui les nomme.
+ *
+ * ## Pourquoi une table de plus
+ *
+ * `LABEL_FAMILLE` et `LABEL_FAMILLE_LONG` (`MarqueurFamille.tsx`) nomment une
+ * famille prise seule, en tête de pilule ou de filtre : capitales, groupe
+ * nominal, esperluette. Enfilés dans une phrase ils donnaient « Corrections &
+ * réparations, Documents à renouveler » au milieu d'un paragraphe. Cette
+ * table-ci est la même liste dite à voix haute.
+ *
+ * ## Pourquoi elle est exhaustive, et ce que ça garde
+ *
+ * Le 2026-09-03, la page Calendrier annonçait « Vos échéances datées, réunies :
+ * vérifications d'équipements, corrections à mener, chantiers encadrés,
+ * documents à renouveler ». Quatre familles nommées, cinq réunies : la famille
+ * `personnel` est née avec l'ADR-023 sans que la phrase bouge. Son aide disait
+ * pire — « les compteurs du bandeau réunissent toutes les familles —
+ * vérifications, corrections et papiers » : trois nommées sur cinq, sous le mot
+ * « toutes ».
+ *
+ * Une énumération recopiée cesse d'être vraie au lot suivant, et aucun diff ne
+ * la touche. Celle-ci est un `Record` sur le type fermé : une sixième famille
+ * ne compile pas tant que personne ne lui a donné ses mots, et la phrase se
+ * fabrique en parcourant les clés. C'est le mécanisme de `FAMILLE_DE_TYPE`,
+ * appliqué à une phrase.
+ *
+ * L'ORDRE DES CLÉS EST CELUI DES PILULES du calendrier (`FAMILLES_FILTRABLES`),
+ * et c'est un rapprochement que ce module ne peut pas faire lui-même — la
+ * liste est une valeur d'un module qui ouvre la base, et ce module-ci est
+ * chargé par un composant client. `porteurs-comptes.test.ts` confronte les deux
+ * ensembles ; c'est le même dispositif que l'invariant écrit au-dessus de
+ * `FAMILLES_FILTRABLES`, qui existe parce que deux listes voisines se sont déjà
+ * contredites sans que rien ne le dise.
+ */
+export const LABEL_FAMILLE_PROSE: Record<FamilleEcheance, string> = {
+  controle: "vérifications périodiques",
+  travaux: "corrections à mener",
+  operations: "chantiers encadrés",
+  papiers: "documents à renouveler",
+  // « titres de vos salariés » et non « personnel » : la famille ne suit pas
+  // des gens, elle suit l'échéance des titres qu'ils détiennent (ADR-023,
+  // docs/rgpd.md § 2.3).
+  personnel: "titres de vos salariés",
+};
+
+/**
+ * Toutes les familles nommables, dans l'ordre où la phrase les dit — dérivé du
+ * `Record` ci-dessus, jamais recopié à côté de lui.
+ */
+export const FAMILLES_NOMMEES = Object.keys(
+  LABEL_FAMILLE_PROSE,
+) as FamilleEcheance[];
+
+/**
+ * Les familles du calendrier, énumérées en toutes lettres.
+ *
+ * L'ordre est celui des pilules de l'écran : la phrase et la rangée de filtres
+ * se lisent dans le même sens.
+ */
+export function enumererFamilles(
+  familles: readonly FamilleEcheance[] = FAMILLES_NOMMEES,
+): string {
+  const mots = familles.map((f) => LABEL_FAMILLE_PROSE[f]);
+  if (mots.length <= 1) return mots[0] ?? "";
+  return `${mots.slice(0, -1).join(", ")} et ${mots[mots.length - 1]}`;
 }

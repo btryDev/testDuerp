@@ -184,6 +184,7 @@ export default async function EquipementsPage({
     <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
       <BandeauParc
         hrefRetour={base}
+        hrefCalendrier={`${base}/calendrier`}
         enRetard={compteurs.enRetard}
         proches={compteurs.proches}
         aPlanifier={compteurs.aPlanifier}

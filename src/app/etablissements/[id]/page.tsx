@@ -14,7 +14,11 @@ import { BlocBrief } from "@/components/dashboard/widgets/impl/board";
 import type { DashboardBundle } from "@/components/dashboard/widgets/types";
 import { getEtablissement } from "@/lib/etablissements/queries";
 import { listerEquipementsDeLEtablissement } from "@/lib/equipements/queries";
-import { listerBatimentsAvecCharge } from "@/lib/batiments/queries";
+import {
+  listerBatimentsAvecCharge,
+  porteursDeLaPlaqueZones,
+} from "@/lib/batiments/queries";
+import { legendePlaqueZones } from "@/lib/perimetre/porteurs-comptes";
 import { estMultiBatiments, resoudreFiltreBatiment } from "@/lib/batiments/filtre";
 import { SelecteurBatiment } from "@/components/batiments/SelecteurBatiment";
 import {
@@ -29,7 +33,7 @@ import { compterEtatEcheances } from "@/lib/calendrier/retards";
 import { statsActionsEnRetard } from "@/lib/actions/queries";
 import { prisma } from "@/lib/prisma";
 import { composantesCiviles, joursCivilsEntre } from "@/lib/dates";
-import { libellePorteur } from "@/lib/calendrier/labels";
+import { enumererFamilles, libellePorteur } from "@/lib/calendrier/labels";
 import {
   porteeBatiment,
   toutesLesConditions,
@@ -254,6 +258,17 @@ export default async function EtablissementPage({
     etablissementId: id,
     batiments,
     batimentFiltre: batiments.find((b) => b.id === batimentFiltre) ?? null,
+    // Les deux périmètres du hero, dits en clair — cf. `DashboardBundle`.
+    // Le premier se dérive du type fermé des familles, le second d'un appel à
+    // l'agrégation des zones : aucun des deux n'est une phrase écrite à la
+    // main au-dessus d'un chiffre qu'elle ne décrit plus.
+    perimetreHero: {
+      releves: `« Dépassées » et « Sous 30 j » réunissent toutes les familles — ${enumererFamilles()} — pour l'établissement entier, filtre de zone compris.`,
+      plaqueZones: legendePlaqueZones({
+        comptes: porteursDeLaPlaqueZones(aujourdhui),
+        libelleReleveComplet: "Dépassées",
+      }),
+    },
     etablissement: {
       id: etab.id,
       raisonDisplay: etab.raisonDisplay,
