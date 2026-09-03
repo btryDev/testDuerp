@@ -106,13 +106,63 @@ export const ARRETE_1986_HABITATION: Corpus = {
         texte: "Arrêté du 7 août 2019 - art. 2",
         url: "https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000038906964/",
       },
-      luLe: "2026-09-01",
+      luLe: "2026-09-03",
       lecture: "agent_verbatim",
       statut: "sans_objet",
+      // LE VERBATIM EST DE LA DONNÉE, PAS DE L'ORNEMENT — et c'est ce qui a
+      // imposé de le relire. Le relevé du 2026-09-01 était criblé de « […] » :
+      // lisible pour un humain, illisible pour `familles-habitation.test.ts`,
+      // qui PARSE ce champ pour en tirer les familles que le texte écrit et
+      // les confronter aux cinq déclarations du modèle. Un verbatim élidé
+      // aurait laissé la garde dériver sa référence d'un texte troué.
+      //
+      // Relu en entier le 2026-09-03, sur la même URL d'article. Les deux
+      // lectures concordent : mêmes familles, même découpe, même version en
+      // vigueur. Ce qui reste élidé — les sous-énumérations du 4° sur les
+      // locaux non résidentiels tolérés, et le détail de la faculté du maire —
+      // ne porte aucune ligne de nomenclature ; chaque en-tête de famille est
+      // ici mot pour mot.
+      //
+      // LA LIGNE « 5° Duplex et triplex. » EST CONSERVÉE EXPRÈS. C'est le
+      // piège de cet article : il compte CINQ points numérotés et QUATRE
+      // familles. Le 5° est une règle de comptage des niveaux, pas une
+      // cinquième famille. Un lecteur pressé — ou un parseur qui lirait les
+      // « N° » au lieu des familles — en inventerait une, et le test le
+      // vérifie en s'assurant qu'aucune « cinquième famille » n'en sort.
       citationCle:
-        "Les bâtiments d'habitation sont classés comme suit du point de vue de la sécurité-incendie : 1° Première famille : habitations individuelles isolées ou jumelées à un étage sur rez-de-chaussée, au plus ; habitations individuelles à rez-de-chaussée groupées en bande […] 2° Deuxième famille : […] habitations collectives comportant au plus trois étages sur rez-de-chaussée. 3° Troisième famille : habitations dont le plancher bas du logement le plus haut est situé à vingt-huit mètres au plus […] Troisième famille A : […] comporter au plus sept étages sur rez-de-chaussée ; comporter des circulations horizontales telles que la distance entre la porte palière de logement la plus éloignée et l'accès à l'escalier soit au plus égale à dix mètres ; être implantées de telle sorte qu'au rez-de-chaussée les accès aux escaliers soient atteints par la voie échelles […] Troisième famille B : habitations ne satisfaisant pas à l'une des conditions précédentes. 4° Quatrième famille : habitations dont le plancher bas du niveau le plus haut est situé à cinquante mètres au plus […] et qui ne relèvent pas des trois autres familles d'habitation.",
+        "Les bâtiments d'habitation sont classés comme suit du point de vue de la sécurité-incendie :\n" +
+        "1° Première famille :\n" +
+        "- habitations individuelles isolées ou jumelées à un étage sur rez-de-chaussée, au plus ;\n" +
+        "- habitations individuelles à rez-de-chaussée groupées en bande.\n" +
+        "Toutefois, sont également classées en première famille les habitations individuelles à un étage sur rez-de-chaussée, groupées en bande, lorsque les structures de chaque habitation concourant à la stabilité du bâtiment sont indépendantes de celles de l'habitation contiguë.\n" +
+        "2° Deuxième famille :\n" +
+        "- habitations individuelles isolées ou jumelées de plus d'un étage sur rez-de-chaussée ;\n" +
+        "- habitations individuelles à un étage sur rez-de-chaussée seulement, groupées en bande, lorsque les structures de chaque habitation concourant à la stabilité du bâtiment ne sont pas indépendantes des structures de l'habitation contiguë ;\n" +
+        "- habitations individuelles de plus d'un étage sur rez-de-chaussée groupées en bande ;\n" +
+        "- habitations collectives comportant au plus trois étages sur rez-de-chaussée.\n" +
+        "Pour l'application des 1° et 2° ci-dessus :\n" +
+        "- sont considérées comme maisons individuelles au sens du présent arrêté les bâtiments d'habitation ne comportant pas de logements superposés ;\n" +
+        "- les escaliers des bâtiments d'habitation collectifs de trois étages sur rez-de-chaussée dont le plancher bas du logement le plus haut est à plus de huit mètres du sol doivent être encloisonnés, sauf s'ils sont extérieurs tels que définis à l'article 29 bis.\n" +
+        "3° Troisième famille :\n" +
+        "Habitations dont le plancher bas du logement le plus haut est situé à vingt-huit mètres au plus au-dessus du sol utilement accessible aux engins des services de secours et de lutte contre l'incendie, parmi lesquelles on distingue :\n" +
+        "Troisième famille A : habitations répondant à l'ensemble des prescriptions suivantes :\n" +
+        "- comporter au plus sept étages sur rez-de-chaussée ;\n" +
+        "- comporter des circulations horizontales telles que la distance entre la porte palière de logement la plus éloignée et l'accès à l'escalier soit au plus égale à dix mètres ;\n" +
+        "- être implantées de telle sorte qu'au rez-de-chaussée les accès aux escaliers soient atteints par la voie échelles définies à l'article 4 ci-après.\n" +
+        "Troisième famille B : habitations ne satisfaisant pas à l'une des conditions précédentes.\n" +
+        "Ces habitations doivent être implantées de telle sorte que les accès aux escaliers soient situés à moins de cinquante mètres d'une voie ouverte à la circulation répondant aux caractéristiques définies à l'article 4 ci-après \"voie engins\".\n" +
+        "Toutefois, dans les communes dont les services de secours et de lutte contre l'incendie sont dotés d'échelles aériennes de hauteur suffisante, le maire peut décider que les bâtiments classés en troisième famille B, situés dans le secteur d'intervention desdites échelles, peuvent être soumis aux seules prescriptions fixées pour les bâtiments classés en troisième famille A. […]\n" +
+        "De plus, les bâtiments comportant plus de sept étages sur rez-de-chaussée doivent être équipés de colonnes sèches conformément aux dispositions de l'article 98.\n" +
+        "4° Quatrième famille :\n" +
+        "Habitations dont le plancher bas du niveau le plus haut est situé à cinquante mètres au plus au-dessus du niveau du sol utilement accessible aux engins des services publics de secours et de lutte contre l'incendie, et qui ne relèvent pas des trois autres familles d'habitation.\n" +
+        "Ces habitations doivent être implantées de telle sorte que les accès aux escaliers protégés prévus aux articles 26 à 29 ci-après soient situés à moins de cinquante mètres d'une voie ouverte à la circulation répondant aux caractéristiques définies à l'article 4 ci-après (voie-engins).\n" +
+        "Lorsqu'un immeuble de la quatrième famille doit contenir des locaux à usage autre que d'habitation, dans des conditions non prévues par l'article R. 111-1 du code de la construction et de l'habitation, cet immeuble doit être rangé dans la catégorie des immeubles de grande hauteur.\n" +
+        "Toutefois, le bâtiment demeure en quatrième famille lorsque les locaux contenus répondent à l'une des conditions suivantes : […]\n" +
+        "5° Duplex et triplex.\n" +
+        "Pour le classement des bâtiments des trois premières familles, seul le niveau bas des duplex ou des triplex des logements situés à l'étage le plus élevé est pris en compte si ces logements disposent d'une pièce principale et d'une porte palière en partie basse et que les planchers des différents niveaux constituant ces logements répondent aux caractéristiques de l'article 6.\n" +
+        "Les quadruplex et plus ne sont pas admis dans les bâtiments d'habitation collectifs.",
       motif:
-        "Article de définition : il classe, il ne prescrit pas. Dépouillé parce qu'il FONDE l'enum `FamilleHabitation`, posée le 2026-09-01 avant que ce texte n'ait été ouvert. VÉRIFICATION FAITE, ET LA DÉCOUPE EST JUSTE : cinq valeurs, dans cet ordre, et la troisième famille se subdivise bien en A et B au sein d'un même seuil de 28 mètres — ce qui explique pourquoi l'enum porte `TROISIEME_A` et `TROISIEME_B` plutôt qu'une `TROISIEME` unique. La 3ᵉ A est définie par TROIS conditions cumulatives (au plus sept étages, dix mètres de circulation horizontale au plus, accès aux escaliers atteints par la voie échelles) et la 3ᵉ B est son complément : une habitation qui manque une seule des trois bascule en B. À NOTER pour qui remplira le champ : l'article prévoit que le maire d'une commune dotée d'échelles aériennes suffisantes PEUT décider qu'un bâtiment de 3ᵉ famille B soit soumis aux seules prescriptions de la 3ᵉ famille A. La famille déclarée peut donc diverger de la famille calculée sur la géométrie, et c'est le texte qui l'autorise, pas une erreur de saisie.",
+        "Article de définition : il classe, il ne prescrit pas. Dépouillé parce qu'il FONDE l'enum `FamilleHabitation`, posée le 2026-09-01 avant que ce texte n'ait été ouvert. VÉRIFICATION FAITE, ET LA DÉCOUPE EST JUSTE : cinq valeurs, dans cet ordre, et la troisième famille se subdivise bien en A et B au sein d'un même seuil de 28 mètres — ce qui explique pourquoi l'enum porte `TROISIEME_A` et `TROISIEME_B` plutôt qu'une `TROISIEME` unique. La 3ᵉ A est définie par TROIS conditions cumulatives (au plus sept étages, dix mètres de circulation horizontale au plus, accès aux escaliers atteints par la voie échelles) et la 3ᵉ B est son complément : une habitation qui manque une seule des trois bascule en B. À NOTER pour qui remplira le champ : l'article prévoit que le maire d'une commune dotée d'échelles aériennes suffisantes PEUT décider qu'un bâtiment de 3ᵉ famille B soit soumis aux seules prescriptions de la 3ᵉ famille A. La famille déclarée peut donc diverger de la famille calculée sur la géométrie, et c'est le texte qui l'autorise, pas une erreur de saisie.\n\nCONFRONTATION MÉCANISÉE LE 2026-09-03, ET ELLE CONFIRME LA LECTURE DE MAIN. `familles-habitation.test.ts` dérive désormais les familles du verbatim ci-dessus et les confronte aux CINQ déclarations du modèle — l'énumération Prisma, `FAMILLES_HABITATION` du référentiel, `FAMILLES_HABITATION` du schéma Zod, `CHOIX_FAMILLES_HABITATION` de l'onboarding et `LIBELLE_FAMILLE` du moteur. Aucun écart, dans aucun des deux sens : rien ne manque, rien n'est en trop. C'est la seule des trois listes ouvertes ce jour-là dont la source présumée était la bonne ET le contenu juste.\n\nLE PIÈGE DE CET ARTICLE EST SON 5°. Il compte cinq points numérotés et quatre familles : le 5° « Duplex et triplex » est une règle de comptage des niveaux pour le classement des trois premières familles, pas une cinquième famille. Un parseur qui lirait les « N° » plutôt que les mots « … famille » en fabriquerait une, et le modèle gagnerait un membre que le texte n'écrit pas. Le test lit les familles, jamais les numéros, et il vérifie explicitement qu'aucune cinquième famille n'en sort. La troisième, elle, n'entre pas comme membre : le texte la subdivise lui-même — « parmi lesquelles on distingue » — en A et B, et ce sont les feuilles qui sont les valeurs.",
     },
     {
       ref: "Arrêté 1986-01-31 art. 97",

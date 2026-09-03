@@ -158,13 +158,13 @@ describe("étape 2 — les régimes (ADR-004)", () => {
   // relève du Code du travail et que le produit sert entièrement.
   it("refuse un ERP situé dans un IGH", () => {
     expect(
-      texte(validerTypologie({ ...erp, estIGH: true, classeIgh: "GHW" })),
+      texte(validerTypologie({ ...erp, estIGH: true, classeIgh: "GHW1" })),
     ).toContain("immeuble de grande hauteur");
   });
 
   it("accepte un IGH qui n'est pas un ERP", () => {
     expect(
-      validerTypologie({ ...complet, estIGH: true, classeIgh: "GHW" }),
+      validerTypologie({ ...complet, estIGH: true, classeIgh: "GHW1" }),
     ).toBeNull();
   });
 });
@@ -295,7 +295,7 @@ describe("le refus dit où regarder, et de quelle nature il est", () => {
       validerIdentite({ ...complet, effectifSurSite: "51" })?.perimetre,
     ).toBe(true);
     expect(
-      validerTypologie({ ...erp, estIGH: true, classeIgh: "GHW" })?.perimetre,
+      validerTypologie({ ...erp, estIGH: true, classeIgh: "GHW1" })?.perimetre,
     ).toBe(true);
   });
 });

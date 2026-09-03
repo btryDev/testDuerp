@@ -59,7 +59,7 @@ describe("les refus à l'entrée sont projetés, pas recopiés", () => {
     const ighSeul = {
       ...dossierAccepte,
       estIGH: true,
-      classeIgh: "GHW",
+      classeIgh: "GHW1",
     };
     expect(etablissementCreationSchema.safeParse(ighSeul).success).toBe(true);
 

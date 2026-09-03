@@ -86,7 +86,7 @@ function etabIgh(): EtablissementMatching {
     estHabitation: false,
     typeErp: "W",
     categorieErp: "N1",
-    classeIgh: "GHW",
+    classeIgh: "GHW1",
     familleHabitation: null,
     personnesPresentesHabituellement: null,
     manipuleMatieresR422722: null,

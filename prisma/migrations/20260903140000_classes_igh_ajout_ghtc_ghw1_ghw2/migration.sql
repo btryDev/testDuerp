@@ -1,0 +1,61 @@
+-- Les trois classes d'IGH qui manquaient au modèle entrent. AUCUNE NE SORT.
+--
+-- ---------------------------------------------------------------------------
+-- CE QUE CETTE MIGRATION FAIT, ET CE QU'ELLE NE FAIT PAS
+-- ---------------------------------------------------------------------------
+--
+-- `enum ClasseIgh` portait huit valeurs, tirées de l'arrêté du 30 décembre 2011
+-- — qui ne porte PAS la nomenclature. Son article GH 1 renvoie au code « pour
+-- les prescriptions générales communes aux diverses classes », et son titre III
+-- groupe GH W 1 et GH W 2 sous un chapitre unique « GH W ». Un chapitre de
+-- règlement n'est pas une classe.
+--
+-- L'article R. 146-4 du code de la construction et de l'habitation, version en
+-- vigueur depuis le 1er juillet 2021, en écrit DIX. L'écart, dans les deux
+-- sens :
+--
+--   MANQUAIENT   GHTC — immeubles à usage de tour de contrôle
+--                GHW1 — bureaux, plancher bas > 28 m et <= 50 m
+--                GHW2 — bureaux, plancher bas > 50 m
+--   EN TROP      GHW  — le code ne l'écrit nulle part
+--
+-- CETTE MIGRATION NE TRAITE QUE LES TROIS MANQUANTS. Elle est strictement
+-- ADDITIVE : `ALTER TYPE ... ADD VALUE` n'écrit aucune ligne, ne réécrit
+-- aucune colonne, et laisse `GHW` en place. Aucune donnée existante n'est
+-- touchée, aucune valeur ne devient illisible.
+--
+-- ---------------------------------------------------------------------------
+-- POURQUOI `GHW` NE SORT PAS ICI
+-- ---------------------------------------------------------------------------
+--
+-- PostgreSQL ne sait pas retirer une valeur d'un type énuméré : il faut
+-- recréer le type et RÉÉCRIRE la colonne, en donnant un sort aux lignes qui
+-- portent la valeur retirée. Or `GHW` n'a pas d'équivalent — il ne dit pas si
+-- le plancher bas du dernier niveau est à 40 mètres (GHW 1) ou à 60 (GHW 2),
+-- et cette hauteur ne figure nulle part ailleurs dans le dossier. Les ramener
+-- à NULL est la seule valeur honnête, et c'est une PERTE.
+--
+-- On ne sait pas s'il existe de telles lignes : la lecture de la base de
+-- production n'a pas pu être faite. Et `package.json` porte
+-- « build: prisma generate && prisma migrate deploy && next build » — pousser
+-- sur `main` joue donc la migration en production au prochain déploiement.
+-- Livrer le retrait maintenant reviendrait à effacer une donnée sans savoir
+-- laquelle, ni prévenir personne.
+--
+-- Un comptage préalable n'y suffirait pas : tant que `GHW` est offert au
+-- formulaire, un déclarant peut en écrire un entre la lecture et le
+-- déploiement. C'est ce que ce palier corrige. `GHW` disparaît de TOUS LES
+-- CHOIX — `CLASSES_IGH` de `src/lib/etablissements/schema.ts` (schémas Zod de
+-- création et d'onboarding), `CHOIX_CLASSES_IGH`, le menu du formulaire — sans
+-- disparaître du TYPE. Plus personne ne peut en créer ; un dossier qui en
+-- porte un continue de l'afficher, marqué comme à corriger. Le comptage
+-- devient alors concluant, et il ne peut plus remonter.
+--
+-- TEMPS 2 — condition de déclenchement, migration destructive à écrire, et ce
+-- qu'il faudra prévoir si le compte n'est pas nul : `docs/chantiers-ouverts.md`
+-- § 9 bis. La dérogation qui laisse `classes-igh.test.ts` vert d'ici là est
+-- nommée `EN_SURSIS_JUSQU_AU_TEMPS_2` et ne peut que rétrécir.
+
+ALTER TYPE "ClasseIgh" ADD VALUE 'GHTC';
+ALTER TYPE "ClasseIgh" ADD VALUE 'GHW1';
+ALTER TYPE "ClasseIgh" ADD VALUE 'GHW2';

@@ -93,6 +93,38 @@ enum ClasseIgh {
 }
 ```
 
+> **AMENDEMENT DU 2026-09-03 — `ClasseIgh` ci-dessus est FAUSSE, et le bloc est
+> conservé tel quel parce qu'un ADR consigne la décision telle qu'elle a été
+> prise.**
+>
+> Ces huit classes ont été écrites d'après l'**arrêté du 30 décembre 2011**, cité
+> au § Contexte. Cet arrêté ne porte pas la nomenclature : son `GH 1` renvoie au
+> code « pour les prescriptions générales communes aux diverses classes », et son
+> titre III groupe GH W 1 et GH W 2 sous un chapitre unique « GH W » — un
+> chapitre de règlement, pas une classe. La nomenclature est à l'article
+> **`R. 146-4` du CCH**, et elle en compte **dix** : `GHTC` (tour de contrôle)
+> manquait, `GHW1` et `GHW2` étaient recollés en un `GHW` que le code n'écrit
+> nulle part.
+>
+> Corrigé le 2026-09-03, **en deux temps**. Temps 1, livré : `GHTC`, `GHW1` et
+> `GHW2` entrent (migration additive
+> `20260903140000_classes_igh_ajout_ghtc_ghw1_ghw2`), et `GHW` disparaît de tous
+> les choix offerts — plus personne ne peut en créer — sans quitter
+> l'énumération, parce qu'on ignore si des dossiers en portent et que son
+> retrait réécrirait la colonne. Temps 2, en attente d'un comptage en
+> production : retrait de la valeur. Condition et marche à suivre dans
+> `docs/chantiers-ouverts.md` § 9 bis.
+>
+> La liste qui fait foi n'est plus écrite ici ni ailleurs à la main : elle est
+> DÉRIVÉE du verbatim de `R. 146-4` dépouillé dans
+> `src/lib/referentiels/corpus/cch-classement-erp-igh.ts` par
+> `src/lib/referentiels/classes-igh.test.ts`. Ne pas recopier le bloc ci-dessus.
+>
+> Même correctif de source, sans changement de liste, pour `CategorieErp` : la
+> nomenclature est à `R. 143-19` du CCH, pas dans le règlement de sécurité. Les
+> cinq catégories du bloc précédent sont justes ; c'est leur provenance qui ne
+> l'était pas. Voir `docs/chantiers-ouverts.md` § 9.
+
 ### Pourquoi des flags et pas un enum ?
 
 Parce que **les régimes se cumulent**. Un restaurant qui ouvre au public à plus de 300 couverts est :
