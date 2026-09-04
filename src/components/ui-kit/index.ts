@@ -13,4 +13,5 @@ export { EvidenceDropzone } from "./EvidenceDropzone";
 export { AideEcran } from "./AideEcran";
 export { FilRetour } from "./FilRetour";
 export { ChampBoard, SectionChamps } from "./ChampBoard";
+export { useConfirmation, type Question } from "./Confirmation";
 export * from "./fiche";

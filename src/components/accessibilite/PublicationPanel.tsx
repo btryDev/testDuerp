@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { PastilleFiche } from "@/components/ui-kit";
+import { useConfirmation } from "@/components/ui-kit/Confirmation";
 import {
   depublierRegistre,
   publierRegistre,
@@ -24,6 +25,7 @@ export function PublicationPanel({
   const [pending, startTransition] = useTransition();
   const [erreur, setErreur] = useState<string | null>(null);
   const [copie, setCopie] = useState(false);
+  const { demander, confirmation } = useConfirmation();
 
   function onPublier() {
     setErreur(null);
@@ -36,9 +38,18 @@ export function PublicationPanel({
   }
 
   function onDepublier() {
-    if (!confirm("Retirer le registre de la publication ? L'URL publique ne sera plus accessible.")) return;
-    startTransition(async () => {
-      await depublierRegistre(etablissementId);
+    demander({
+      titre: "Retirer le registre de la publication ?",
+      detail:
+        "L'URL publique cesse de répondre, et les QR codes déjà collés à " +
+        "l'entrée mènent à une page qui n'affiche plus rien. Le contenu du " +
+        "registre, lui, reste saisi : republier le remet en ligne à la même " +
+        "adresse.",
+      agir: "Retirer la publication",
+      alors: () =>
+        startTransition(async () => {
+          await depublierRegistre(etablissementId);
+        }),
     });
   }
 
@@ -177,6 +188,8 @@ export function PublicationPanel({
               {pending ? "…" : "Retirer la publication"}
             </button>
           </div>
+
+          {confirmation}
         </div>
       </div>
     </div>

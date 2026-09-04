@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { useConfirmation } from "@/components/ui-kit/Confirmation";
 import { basculerActif, retirerTitre } from "@/lib/salaries/actions";
 
 /**
@@ -65,25 +66,33 @@ export function RetirerTitreButton({
   libelle: string;
 }) {
   const [pending, startTransition] = useTransition();
+  const { demander, confirmation } = useConfirmation();
 
   return (
-    <button
-      type="button"
-      disabled={pending}
-      className="text-[11.5px] text-[color:var(--board-slate-soft)] underline-offset-2 transition-colors hover:text-[color:var(--board-signal-ink)] hover:underline disabled:opacity-50"
-      onClick={() => {
-        if (
-          !confirm(
-            `Retirer « ${libelle} » ? À utiliser pour corriger une saisie — pour un renouvellement, redéclarez simplement le titre avec ses nouvelles dates.`,
-          )
-        )
-          return;
-        startTransition(async () => {
-          await retirerTitre(etablissementId, salarieId, titreId);
-        });
-      }}
-    >
-      {pending ? "Retrait…" : "Retirer"}
-    </button>
+    <>
+      <button
+        type="button"
+        disabled={pending}
+        className="text-[11.5px] text-[color:var(--board-slate-soft)] underline-offset-2 transition-colors hover:text-[color:var(--board-signal-ink)] hover:underline disabled:opacity-50"
+        onClick={() =>
+          demander({
+            titre: `Retirer « ${libelle} » de cette fiche ?`,
+            detail:
+              "Ses dates et sa référence légale s'effacent, et avec elles la " +
+              "trace que cette personne était habilitée. Pour un " +
+              "renouvellement, ne retirez rien : redéclarez le même titre " +
+              "avec ses nouvelles dates.",
+            agir: "Retirer le titre",
+            alors: () =>
+              startTransition(async () => {
+                await retirerTitre(etablissementId, salarieId, titreId);
+              }),
+          })
+        }
+      >
+        {pending ? "Retrait…" : "Retirer"}
+      </button>
+      {confirmation}
+    </>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { useConfirmation } from "@/components/ui-kit/Confirmation";
 import {
   leverPrescription,
   reactiverPrescription,
@@ -47,6 +48,7 @@ export function PrescriptionActions({
   const [etatSuppr, setEtatSuppr] = useState<PrescriptionActionState | null>(
     null,
   );
+  const { demander, confirmation } = useConfirmation();
 
   const lever = leverPrescription.bind(null, etablissementId, prescriptionId);
   const [etat, action, pending] = useActionState<
@@ -92,19 +94,27 @@ export function PrescriptionActions({
             variant="boardClair"
             size="boardSm"
             disabled={pendingAutre}
-            onClick={() => {
-              if (
-                !confirm(
-                  "Supprimer cette prescription ? À n'employer que si elle a été saisie par erreur. Si l'acte a réellement existé, levez-la plutôt : son effet s'arrête et l'historique reste.",
-                )
-              )
-                return;
-              startTransition(async () => {
-                setEtatSuppr(
-                  await supprimerPrescription(etablissementId, prescriptionId),
-                );
-              });
-            }}
+            onClick={() =>
+              demander({
+                titre: "Supprimer cette prescription du dossier ?",
+                detail:
+                  "L'acte disparaît, et avec lui les lignes de calendrier " +
+                  "qu'il imposait — plus rien ne dira d'où venaient ces " +
+                  "vérifications. À n'employer que si la prescription a été " +
+                  "saisie par erreur : si l'acte a réellement existé, levez-la " +
+                  "plutôt, son effet s'arrête et l'historique reste.",
+                agir: "Supprimer la prescription",
+                alors: () =>
+                  startTransition(async () => {
+                    setEtatSuppr(
+                      await supprimerPrescription(
+                        etablissementId,
+                        prescriptionId,
+                      ),
+                    );
+                  }),
+              })
+            }
           >
             {pendingAutre ? "Suppression…" : "Supprimer"}
           </Button>
@@ -117,6 +127,8 @@ export function PrescriptionActions({
           </p>
         )}
       </div>
+
+      {confirmation}
 
       {etatSuppr?.status === "error" && (
         <p className="m-0 text-[12.5px] text-[color:var(--board-signal-ink)]">
