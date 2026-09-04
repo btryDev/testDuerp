@@ -126,8 +126,18 @@ export function BarreCompte({
   const rondDeGelule =
     "grid size-9 place-items-center rounded-full text-[color:var(--board-slate-mid)] transition-[background-color,color,transform] duration-150 hover:bg-[color:var(--board-card)] hover:text-[color:var(--board-ink)] hover:shadow-[0_1px_2px_rgba(13,18,36,.06)] active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--board-ink)]";
 
+  // `z-50` n'est pas décoratif : sans lui, ce panneau passait SOUS les cartes
+  // du tableau de bord. Un élément positionné sans `z-index` se range derrière
+  // tout élément positionné qui en porte un, et les widgets du board en portent
+  // deux — `z-10` sur leur poignée, `z-20` sur leur propre menu
+  // (`WidgetShell.tsx`). Le sélecteur d'établissement devenait donc illisible
+  // dès qu'il s'ouvrait au-dessus d'une carte, c'est-à-dire toujours.
+  //
+  // 50 et non 21 : la barre haute coiffe l'application entière et doit passer
+  // devant n'importe quelle surface, pas seulement devant celles qu'on connaît
+  // aujourd'hui. Un écart d'un cran se referme au premier widget qui monte.
   const panneau =
-    "absolute right-0 top-[52px] min-w-[228px] rounded-[18px] bg-[color:var(--board-card)] p-2 shadow-[0_0_0_1px_rgba(13,18,36,.08),0_18px_40px_-20px_rgba(13,18,36,.35)]";
+    "absolute right-0 top-[52px] z-50 min-w-[228px] rounded-[18px] bg-[color:var(--board-card)] p-2 shadow-[0_0_0_1px_rgba(13,18,36,.08),0_18px_40px_-20px_rgba(13,18,36,.35)]";
 
   return (
     // 67 px : la hauteur du bloc de marque du rail, filet compris. Les deux

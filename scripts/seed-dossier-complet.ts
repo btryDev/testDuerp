@@ -746,6 +746,23 @@ const OU_TROUVER_L_UUID = [
  * helpers de `lib/auth/scope.ts` bornent tous par `entreprise.userId`) tout en
  * ayant l'air d'avoir réussi. Le script s'arrête plutôt que de le produire.
  */
+/**
+ * `--zone-unique` replie le dossier sur une seule zone.
+ *
+ * POURQUOI CETTE OPTION EXISTE. Le dossier de démonstration porte trois zones
+ * parce qu'un restaurant en a trois, et parce que la répartition par zone est
+ * ce qui rend la plaque du tableau de bord lisible. Mais un dossier qui sert à
+ * MONTRER le produit n'a pas toujours besoin de cette richesse : trois zones
+ * font trois volumes à expliquer avant d'arriver au sujet.
+ *
+ * Repliée, la zone principale reçoit tous les équipements — leur `zone` est
+ * réécrite, jamais ignorée : un équipement sans zone ne s'afficherait nulle
+ * part, ce qui est exactement le défaut qu'on passe ses journées à traquer.
+ */
+function lireZoneUnique(argv: string[]): boolean {
+  return argv.includes("--zone-unique");
+}
+
 function lireUserId(argv: string[]): string {
   const i = argv.indexOf("--user");
   const valeur = i === -1 ? undefined : argv[i + 1];
@@ -779,6 +796,7 @@ function lireUserId(argv: string[]): string {
 
 async function main(): Promise<void> {
   const userId = lireUserId(process.argv.slice(2));
+  const zoneUnique = lireZoneUnique(process.argv.slice(2));
 
   // Refus explicite sur base non vide — cf. l'en-tête. Le compte des
   // entreprises suffit : elles sont la racine de tenancy (ADR-005), tout le
@@ -852,7 +870,7 @@ async function main(): Promise<void> {
       aDemandesAssureur: true,
 
       batiments: {
-        create: ZONES.map((z) => ({
+        create: (zoneUnique ? [ZONES[0]] : ZONES).map((z) => ({
           nom: z.nom,
           complementAdresse: z.complementAdresse,
           ordre: z.ordre,
@@ -872,7 +890,9 @@ async function main(): Promise<void> {
   // -------------------------------------------------------------------------
   const equipementParLibelle = new Map<string, string>();
   for (const e of EQUIPEMENTS) {
-    const batimentId = zoneParNom.get(e.zone);
+    const batimentId = zoneParNom.get(
+      zoneUnique ? NOM_BATIMENT_PRINCIPAL : e.zone,
+    );
     if (!batimentId) throw new Error(`Zone inconnue : ${e.zone}`);
 
     // Passage par le schéma du produit : c'est lui qui refuse une propriété
@@ -1172,7 +1192,7 @@ async function main(): Promise<void> {
       dateDebut: jours(8),
       dateFin: jours(8),
       lieu: "Local technique sur cour — raccordement du groupe froid",
-      batimentId: zoneParNom.get("Terrasse et local technique"),
+      batimentId: zoneParNom.get(zoneUnique ? NOM_BATIMENT_PRINCIPAL : "Terrasse et local technique"),
       naturesTravaux: ["brasage", "meulage"],
       descriptionTravaux:
         "Brasage des liaisons frigorifiques et reprise du support du groupe. Meulage ponctuel sur platine acier.",
@@ -1208,7 +1228,7 @@ async function main(): Promise<void> {
       dateFin: jours(12),
       dureeHeuresEstimee: 22,
       lieux: "Local technique sur cour, cuisine, réserve",
-      batimentId: zoneParNom.get("Terrasse et local technique"),
+      batimentId: zoneParNom.get(zoneUnique ? NOM_BATIMENT_PRINCIPAL : "Terrasse et local technique"),
       naturesTravaux:
         "Remplacement du groupe frigorifique de la chambre froide positive et reprise du réseau d'extraction de la hotte.",
       travauxDangereux: true,
@@ -1260,7 +1280,7 @@ async function main(): Promise<void> {
           {
             nom: "Sortie de production — ballon ECS",
             localisation: "Local technique sur cour",
-            batimentId: zoneParNom.get("Terrasse et local technique"),
+            batimentId: zoneParNom.get(zoneUnique ? NOM_BATIMENT_PRINCIPAL : "Terrasse et local technique"),
             typeReseau: "ECS",
             seuilMinCelsius: 55,
           },
@@ -1274,7 +1294,7 @@ async function main(): Promise<void> {
           {
             nom: "Retour de boucle",
             localisation: "Local technique sur cour",
-            batimentId: zoneParNom.get("Terrasse et local technique"),
+            batimentId: zoneParNom.get(zoneUnique ? NOM_BATIMENT_PRINCIPAL : "Terrasse et local technique"),
             typeReseau: "ECS_BOUCLAGE",
             seuilMinCelsius: 50,
           },
