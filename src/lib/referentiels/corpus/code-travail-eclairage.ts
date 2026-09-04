@@ -20,13 +20,20 @@
 // AURAIT MANQUÉ. `R. 4223-11` fait FIXER PAR L'EMPLOYEUR des règles d'entretien
 // périodique du matériel d'éclairage, consignées dans un document communiqué au
 // comité social et économique. C'est un écrit permanent, exactement de la même
-// espèce que la consigne de ventilation de `R. 4222-21` — et il a le même
-// destin : trois textes le nomment, aucune obligation ne le réclame.
-// `R. 4224-17`, dépouillé le 2026-09-01, l'agrège nommément au dossier de
-// maintenance des lieux de travail (« la consigne et les documents prévus en
-// matière d'aération, d'assainissement et d'éclairage aux articles R. 4222-21
-// et R. 4223-11 »), et sa réserve relevait déjà le premier des deux sans voir
-// le second.
+// espèce que la consigne de ventilation de `R. 4222-21`. `R. 4224-17`,
+// dépouillé le 2026-09-01, l'agrège nommément au dossier de maintenance des
+// lieux de travail (« la consigne et les documents prévus en matière
+// d'aération, d'assainissement et d'éclairage aux articles R. 4222-21 et
+// R. 4223-11 »), et sa réserve relevait le premier des deux sans voir le
+// second.
+//
+// ÉTAT AU 2026-09-04, ET LES DEUX MOITIÉS ONT BOUGÉ. `R. 4223-11` EST ENCODÉ —
+// `eclairage-etablissement-regles-entretien`, porteur établissement, état
+// permanent, `pieceAttendue` nommée —, et la réserve de `R. 4224-17` est
+// corrigée : elle nomme désormais les deux documents et dit lequel des deux
+// reste dehors. C'est `R. 4222-21`, toujours `obligation_manquante`. La phrase
+// « trois textes le nomment, aucune obligation ne le réclame », qui tenait ici
+// depuis le 2026-09-02, ne vaut plus que pour la consigne de ventilation.
 //
 // OÙ PASSE LA LIGNE ENTRE `sans_objet` ET `obligation_manquante` DANS CE
 // FICHIER, parce qu'elle est discutable et qu'il vaut mieux l'écrire que la
@@ -242,9 +249,10 @@ export const CODE_TRAVAIL_ECLAIRAGE: Corpus = {
         "Trois choses : le matériel d'éclairage est installé de manière à pouvoir être entretenu aisément ; L'EMPLOYEUR FIXE LES RÈGLES D'ENTRETIEN PÉRIODIQUE de ce matériel en vue d'assurer le respect de la section ; ces règles sont consignées dans un document communiqué aux membres du comité social et économique.",
       citationCle:
         "Le matériel d'éclairage est installé de manière à pouvoir être entretenu aisément. L'employeur fixe les règles d'entretien périodique du matériel en vue d'assurer le respect des dispositions de la présente section. Les règles d'entretien sont consignées dans un document qui est communiqué aux membres du comité social et économique.",
-      statut: "obligation_manquante",
-      motif:
-        "LE JUMEAU EXACT DE R. 4222-21, ET IL A ÉCHAPPÉ AU MÊME LOT QUI A INSCRIT CELUI-LÀ. Un écrit permanent — les règles d'entretien périodique du matériel d'éclairage —, communiqué à une instance, et porté par aucune obligation du référentiel. Trois textes le nomment : celui-ci, R. 4224-17 qui l'agrège nommément au dossier de maintenance des lieux de travail (« la consigne et les documents prévus en matière d'aération, d'assainissement et d'éclairage aux articles R. 4222-21 et R. 4223-11 »), et la portée du dossier lui-même. Aucun ne le demande à personne dans ce produit. La réserve de R. 4224-17, écrite le 2026-09-01, relève le premier des deux documents et pas le second : c'est le renvoi d'article lu à moitié.\n\nCE QUI LE DISTINGUE DE R. 4223-4 : ici l'obligation n'est pas un niveau à atteindre mais un DOCUMENT À PRODUIRE, ce que le référentiel sait porter — `pieceAttendue` existe, l'état permanent de l'ADR-026 existe, le porteur établissement existe, et il n'y a aucun seuil d'effectif à connaître. Rien ne bloque techniquement : c'est un article qu'on n'avait pas lu.\n\nUNE RÉSERVE SUR LA COMMUNICATION AU CSE, à trancher avant d'encoder : la phrase suppose un CSE, donc onze salariés. Sous ce seuil, l'employeur doit-il encore fixer les règles ? Le texte fait deux phrases distinctes, et seule la seconde parle du CSE — la lecture littérale est que les règles sont dues dans tous les cas et que seule leur communication suppose l'instance. Ce n'est pas tranché ici.",
+      statut: "retenu",
+      obligations: ["eclairage-etablissement-regles-entretien"],
+      reserve:
+        "ENCODÉ LE 2026-09-04, DEUX JOURS APRÈS AVOIR ÉTÉ LU. L'entrée qui précédait celle-ci disait « Rien ne bloque techniquement : c'est un article qu'on n'avait pas lu » ; elle avait raison, et l'obligation a demandé une heure. `eclairage-etablissement-regles-entretien` porte le document : porteur établissement, `nature: \"etat_permanent\"`, `periodicite: \"autre\"`, `pieceAttendue` nommée. Elle a fallu créer un domaine — `eclairage` —, le référentiel n'en ayant aucun pour l'éclairage ORDINAIRE.\n\nLA RÉSERVE SUR LE CSE EST TRANCHÉE, ET DANS LE SENS LITTÉRAL QUE CETTE ENTRÉE ANNONÇAIT. L'article fait deux phrases distinctes : la deuxième impose de FIXER les règles, sans mentionner aucune instance ; la troisième impose de COMMUNIQUER le document aux membres du comité social et économique. Seule la troisième suppose un CSE, donc onze salariés. L'obligation encodée ne porte donc AUCUN `effectifMin` : le poser aurait retiré l'écrit à la quasi-totalité de la cible du produit sur la foi d'une phrase qui ne le dit pas. Même lecture que celle retenue pour `R. 4121-4`, dont la seconde phrase renvoie au règlement intérieur sans réserver l'obligation aux établissements qui en ont un.\n\nCE QUI RESTE DEHORS, ET IL FAUT LE SAVOIR : le RYTHME de l'entretien lui-même. L'article ne l'écrit pas — c'est l'employeur qui le fixe — et le produit ne l'invente pas. L'obligation encodée est l'ÉCRIT, pas l'entretien : un dirigeant qui déclare son document en place n'a pas déclaré avoir entretenu ses luminaires. La distinction est écrite dans le libellé et dans la description de la ligne.\n\nET LE JUMEAU N'EST TOUJOURS PAS PORTÉ. `R. 4222-21` — la consigne d'utilisation de la ventilation — reste `obligation_manquante` au corpus `code-travail-risque-chimique`. Des deux documents que `R. 4224-17` agrège nommément, le référentiel en porte un. Sa réserve, corrigée le même jour, le dit désormais dans les deux sens.",
     },
     {
       ref: "R. 4223-12",

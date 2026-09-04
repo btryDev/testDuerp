@@ -64,17 +64,41 @@ quoi. Les deux sont exigées et ne servent pas la même règle.
 
 ---
 
-## 3. Deux obligations que rien ne bloque
+## 3. Deux obligations que rien ne bloquait — CLOS LE 2026-09-04
+
+Les deux sont encodées. Ce paragraphe reste, avec sa date, parce que la leçon
+qu'il porte ne se lit pas dans le diff : **une entrée `obligation_manquante` qui
+écrit elle-même que rien ne la bloque n'attend pas un ADR, elle attend une
+heure de travail.** Les deux motifs le disaient depuis deux jours, mot pour mot.
 
 - **`R. 4223-11`** — l'employeur *fixe les règles d'entretien périodique* du
   matériel d'éclairage, consignées dans un document communiqué au CSE. Jumeau
   exact de `R. 4222-21`, et `R. 4224-17` — déjà au corpus — **agrège nommément
   les deux documents** alors que sa réserve n'en relevait qu'un. Dépouillé le
-  2026-09-02, `obligation_manquante`.
+  2026-09-02. **Encodé le 2026-09-04** :
+  `eclairage-etablissement-regles-entretien`, porteur établissement,
+  `etat_permanent`, `pieceAttendue` nommée. Il a fallu un domaine neuf —
+  `eclairage` —, le référentiel n'en ayant aucun pour l'éclairage ORDINAIRE.
+  La réserve sur le CSE est tranchée dans le sens littéral : l'article fait deux
+  phrases, seule la seconde suppose l'instance, donc aucun `effectifMin`.
+  **La réserve de `R. 4224-17` est corrigée du même mouvement.**
 - **`R. 4323-24`** — la liste des personnes qualifiées, tenue à la disposition de
   l'inspection du travail. Vaut pour tout employeur détenant un équipement soumis
   à vérification générale périodique, et le lot « compacteur » du 2026-09-02 a
-  **augmenté le parc concerné sans la traiter**.
+  **augmenté le parc concerné sans la traiter**. **Encodée le 2026-09-04** :
+  `prevention-etablissement-liste-personnes-qualifiees`, porteur établissement,
+  `etat_permanent`, dans le domaine `organisation_prevention` et non `levage` —
+  la liste est UNE pour tout l'établissement et couvre toutes les vérifications
+  générales périodiques du parc. Sur-application nommée : un établissement sans
+  aucun équipement soumis à VGP reçoit la case, le porteur établissement ne
+  sachant pas poser cette condition.
+
+**Ce qui reste, et qui est de la même espèce.** Trois écrits que le modèle sait
+porter et que personne ne réclame, chacun en réserve au corpus sous son
+article : la **consigne d'utilisation de la ventilation** (`R. 4222-21`, jumelle
+de celle de l'éclairage, toujours `obligation_manquante`), le **livret
+d'entretien de l'installation de filtration** (`CH 39 § 1`), et le **stock
+permanent de fournitures de rechange de l'alarme** (`MS 69`).
 
 ---
 

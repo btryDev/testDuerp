@@ -92,11 +92,21 @@ export const CODE_TRAVAIL_LEVAGE: Corpus = {
         "L'article qui dit QUI réalise les vérifications générales périodiques, pour tous les équipements de travail et pas seulement le levage. Il répond en trois temps : par des « personnes qualifiées », appartenant OU NON à l'établissement — un organisme extérieur n'est donc jamais exigé par le Code, contrairement au régime des équipements sous pression ; ces personnes doivent être compétentes en prévention des risques présentés par l'équipement vérifié et connaître les dispositions réglementaires afférentes ; et leur LISTE est tenue à la disposition de l'inspection du travail. C'est cet article qui fonde la valeur `personne_qualifiee` de `realisateurs` sur toutes les VGP d'équipement de travail du référentiel. Chemin : partie réglementaire, quatrième partie, livre III, titre II, chapitre III, section 4, sous-section 2 « Vérifications périodiques ».",
       citationCle:
         "Les vérifications générales périodiques sont réalisées par des personnes qualifiées, appartenant ou non à l'établissement, dont la liste est tenue à la disposition de l'inspection du travail. Ces personnes sont compétentes dans le domaine de la prévention des risques présentés par les équipements de travail soumis à vérification et connaissent les dispositions réglementaires afférentes.",
-      statut: "obligation_manquante",
-      motif:
-        "La première phrase de l'article porte DEUX exigences, et le référentiel n'en couvre qu'une. La qualification du vérificateur est couverte : c'est la valeur `personne_qualifiee` que portent les VGP du domaine. LA LISTE DES PERSONNES QUALIFIÉES TENUE À LA DISPOSITION DE L'INSPECTION DU TRAVAIL NE L'EST PAS. C'est une obligation documentaire permanente d'employeur, de même nature que la consignation au registre de sécurité de R. 4323-25 — laquelle est portée, elle, par `levage-registre-securite-consignation`. Aucune obligation du référentiel ne demande cette liste, aucun écran ne la réclame, et elle est opposable à tout employeur détenant un équipement soumis à VGP, levage ou non. Le manque est nommé, pas comblé : ce lot dépouille et n'encode pas.",
-      bloquePar:
-        "Rien de technique : la pièce est un document permanent d'établissement, forme que le modèle sait déjà porter. Ce qui manque est l'encodage lui-même — l'obligation n'a jamais été écrite parce que l'article n'avait jamais été ouvert.",
+      statut: "retenu",
+      obligations: [
+        // La liste elle-même, encodée le 2026-09-04. Elle est rangée dans le
+        // domaine `organisation_prevention` et non dans `levage` : c'est un
+        // document unique d'employeur, qui couvre TOUTES les vérifications
+        // générales périodiques du parc, levage ou non. Le motif du choix est
+        // dans les notes internes de l'obligation.
+        "prevention-etablissement-liste-personnes-qualifiees",
+        // Les deux VGP qui citaient déjà l'article pour la QUALIFICATION du
+        // vérificateur — l'autre moitié de sa première phrase.
+        "levage-vgp-annuelle-charges",
+        "compactage-dechets-vgp-trimestrielle",
+      ],
+      reserve:
+        "LE MANQUE NOMMÉ LE 2026-09-02 EST COMBLÉ LE 2026-09-04, ET L'ENTRÉE PRÉCÉDENTE DISAIT DÉJÀ POURQUOI IL LE SERAIT : « Rien de technique : la pièce est un document permanent d'établissement, forme que le modèle sait déjà porter. Ce qui manque est l'encodage lui-même. » `prevention-etablissement-liste-personnes-qualifiees` porte désormais la liste — porteur établissement, `etat_permanent`, `periodicite: \"autre\"`, `pieceAttendue` nommée, `realisateurs: [\"exploitant\"]`.\n\nLES DEUX EXIGENCES DE LA PREMIÈRE PHRASE SONT DONC COUVERTES, chacune par son moyen : la QUALIFICATION du vérificateur par la valeur `personne_qualifiee` que portent les VGP du domaine, la LISTE par une obligation à elle.\n\nCE QUI RESTE DEHORS, ET C'EST LA SECONDE PHRASE. « Ces personnes sont compétentes dans le domaine de la prévention des risques présentés par les équipements de travail soumis à vérification et connaissent les dispositions réglementaires afférentes. » C'est une exigence de FOND sur la compétence, que rien ne peut constater dans le produit : ni la liste tenue par l'employeur, ni le rapport déposé ne disent si son auteur connaît les textes. Le référentiel ne prétend pas la porter, et une case à cocher qui l'affirmerait serait exactement la déclaration-qui-ressemble-à-une-preuve que l'ADR-027 interdit.\n\nUNE SUR-APPLICATION CONNUE ET ASSUMÉE, écrite ici parce qu'elle se lit sur cet article. La liste n'est due que par l'employeur qui détient au moins un équipement soumis à vérification générale périodique — l'article ne s'ouvre que sur « les vérifications générales périodiques ». Le porteur établissement ne sait pas poser cette condition : une obligation d'établissement s'applique quels que soient les équipements déclarés, y compris aucun (ADR-022 § 4). Un bureau sans le moindre appareil reçoit donc la ligne. C'est le sens d'erreur voulu : elle est visible par celui qui la subit, elle se solde par une déclaration, et l'inverse aurait fait disparaître la liste chez le commerçant qui a déclaré son transpalette sans savoir qu'elle allait avec.",
     },
     {
       ref: "R. 4323-25",

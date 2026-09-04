@@ -199,6 +199,40 @@ export const DOMAINES_OBLIGATION = [
    * décision, pas un effet de bord.
    */
   "compactage_dechets",
+
+  /**
+   * Éclairage des lieux de travail — `R. 4223-1` à `R. 4223-12`.
+   *
+   * L'éclairage ORDINAIRE : combien de lumière au plan de travail pendant que
+   * les gens travaillent, et l'entretien du matériel qui la produit. Une seule
+   * ligne à ce jour, `R. 4223-11` : l'employeur FIXE les règles d'entretien
+   * périodique du matériel d'éclairage et les consigne dans un document
+   * communiqué au comité social et économique.
+   *
+   * ENTRÉ LE 2026-09-04, ET IL COMBLE UN DOMAINE ENTIER, comme `signalisation`
+   * le 2026-09-02 : le référentiel ne portait aucune obligation d'éclairage de
+   * travail, sous aucun de ses trois porteurs, alors que le corpus
+   * `code-travail-eclairage` avait relevé l'article dès le 2026-09-02 et le
+   * classait `obligation_manquante` en écrivant que rien ne le bloquait.
+   *
+   * POURQUOI PAS `incendie`, OÙ VIVENT DÉJÀ DES OBLIGATIONS D'ÉCLAIRAGE. Celles
+   * qui y vivent portent l'ÉCLAIRAGE DE SÉCURITÉ — les blocs qui prennent le
+   * relais quand le courant tombe (`R. 4227-14`, arrêté du 14 décembre 2011,
+   * `EC 14`). Ce n'est pas le même objet, pas le même texte et pas le même
+   * geste : l'un se teste tous les mois pour qu'une évacuation reste possible,
+   * l'autre se nettoie et se relampe pour qu'on voie ce qu'on fait. Le corpus
+   * pose déjà cette frontière en tête de `code-travail-eclairage.ts` ; la
+   * franchir ici l'aurait effacée côté obligations.
+   *
+   * POURQUOI PAS `electricite`. Un luminaire est un appareil électrique, mais
+   * `DOMAINES_PRESTATAIRE_ATTENDUS` traduit chaque domaine en catégorie de
+   * prestataire attendue : y ranger cette ligne aurait fait chercher un
+   * organisme de contrôle électrique à un dirigeant à qui le texte demande
+   * seulement d'écrire ses propres règles d'entretien. Ce domaine porte donc
+   * `aucun_tiers_attendu`, et c'est une lecture de l'article — « L'EMPLOYEUR
+   * fixe les règles » — pas un repli.
+   */
+  "eclairage",
 ] as const;
 
 export type DomaineObligation = (typeof DOMAINES_OBLIGATION)[number];

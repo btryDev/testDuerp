@@ -215,6 +215,20 @@ export const DOMAINES_PRESTATAIRE_ATTENDUS: Record<
   // « compactage » ferait inscrire à l'annuaire un métier qui n'existe pas
   // sous ce nom, et l'inscription resterait vide chez tout le monde.
   compactage_dechets: ["bureau_controle"],
+  // L'éclairage des lieux de travail, entré le 2026-09-04. Sixième entrée à
+  // porter le marqueur, et c'est une lecture de `R. 4223-11` : « L'EMPLOYEUR
+  // fixe les règles d'entretien périodique du matériel » et les consigne dans
+  // un document communiqué au comité social et économique. Aucun tiers n'est
+  // nommé — ni organisme, ni personne qualifiée, ni entreprise d'entretien —,
+  // et l'obligation encodée est l'ÉCRIT, pas l'entretien lui-même. Prêter un
+  // vérificateur à cet article enverrait le dirigeant chercher un prestataire
+  // pour rédiger ses propres consignes.
+  //
+  // À NE PAS CONFONDRE avec l'éclairage DE SÉCURITÉ, qui appelle bel et bien
+  // quelqu'un : ses obligations vivent en domaine `incendie` et passent par
+  // les prestataires de ce domaine. Le même bâtiment, deux textes, deux
+  // domaines — et un seul des deux attend un tiers.
+  eclairage: AUCUN_TIERS_ATTENDU,
 };
 
 /**

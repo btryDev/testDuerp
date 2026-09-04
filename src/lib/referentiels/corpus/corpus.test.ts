@@ -641,18 +641,58 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // Ce qu'il faut retenir pour les entrées suivantes : une entrée de cette
       // liste que rien ne bloque au modèle n'attend pas un ADR, elle attend une
       // heure de travail. Celle-ci en a demandé une.
-      // R. 4323-24 entre le 2026-09-02 avec l'ouverture de la branche hors
-      // levage de R. 4323-23. Il n'y entre pas par un texte nouveau mais par
-      // un TROU DE LA SOUS-SECTION 2 : le corpus déclarait -23, -25, -26 et
-      // -27 et sautait celui-ci, que `levage-vgp-annuelle-charges` cite
-      // pourtant en clair depuis toujours — sa `reference` dit « R. 4323-23
-      // et R. 4323-24 » sous une clé `article` qui ne vaut que pour le
-      // premier, forme qu'`articlesCitesNonDepouilles()` ne peut pas voir.
-      // Ce qui manque au référentiel n'est pas la qualification du
-      // vérificateur — `personne_qualifiee` la porte — mais la LISTE des
-      // personnes qualifiées tenue à la disposition de l'inspection du
-      // travail, obligation documentaire permanente que rien ne réclame.
-      "R. 4323-24",
+      // ── Lot « les sept articles du Livre II », 2026-09-04. Quatre entrées
+      // pour sept articles lus, et c'est le résultat qu'il faut lire dans les
+      // deux sens : trois des sept étaient encodables et le sont
+      // (`CH 39` → `aeration-erp-filtres-visite-periodique`, `MS 69` →
+      // `incendie-erp-alarme-verification-hebdomadaire`, `AS 9` → l'obligation
+      // CCH qui portait déjà le même contrôle quinquennal), quatre ne le sont
+      // pas et disent chacune ce qui la bloque.
+      //
+      // Elles partagent une cause à trois nuances près : il n'y a rien À QUOI
+      // les accrocher. CO 61 et AS 10 attendent une catégorie d'équipement que
+      // `CATEGORIES_EQUIPEMENT` ne porte pas ; GC 18 attend en plus un attribut
+      // disant qu'une cuisine est temporaire ; MS 71 attend deux attributs
+      // d'établissement — le nombre de niveaux de sous-sol et leur surface.
+      //
+      // CO 61 § 6 : inspection quinquennale de l'état de conservation d'une
+      // tribune TÉLESCOPIQUE de plus d'un mètre, par un organisme accrédité.
+      // Types X et L, hors des trois secteurs cibles.
+      "CO 61",
+      // AS 10 : l'annuelle des escaliers mécaniques et trottoirs roulants, par
+      // personne ou organisme agréé, PLUS un examen des chaînes et crémaillères
+      // à mi-période par l'entreprise d'entretien. Deux rythmes, deux
+      // réalisateurs. C'est le manque le plus proche de la cible — un escalier
+      // mécanique se rencontre en centre commercial, type M. Ne surtout pas
+      // l'accrocher à `ASCENSEUR` : AS 9 et AS 10 ne coïncident sur rien.
+      "AS 10",
+      // GC 18 h) : nettoyage du conduit d'extraction d'un module ou conteneur
+      // spécialisé de cuisson, avant chaque mise en place et au moins tous les
+      // six mois. L'accrocher à `HOTTE_PRO` doublerait la fréquence du ramonage
+      // annuel de GC 21 pour toutes les cuisines professionnelles, sur la foi
+      // d'un article qui ne vise que la cuisine TEMPORAIRE.
+      "GC 18",
+      // MS 71 § 3 : vérification de la continuité des communications
+      // radioélectriques, une fois avant ouverture puis tous les trois ans, par
+      // un organisme agréé par le ministère chargé de la sécurité civile. Le
+      // § 1 la réserve aux ERP du 1er groupe disposant de PLUS D'UN niveau de
+      // sous-sol, et l'écarte sous 100 m² de sous-sol total. C'est la seule
+      // entrée de ce lot où la sur-application a été explicitement REFUSÉE :
+      // le champ exclut plus qu'il n'inclut, et le rendez-vous appelle un
+      // organisme agréé.
+      "MS 71",
+      // R. 4323-24 A QUITTÉ CETTE LISTE LE 2026-09-04, et par la porte qu'il
+      // annonçait lui-même. Il y était entré le 2026-09-02 avec un `bloquePar`
+      // qui disait : « Rien de technique : la pièce est un document permanent
+      // d'établissement, forme que le modèle sait déjà porter. Ce qui manque
+      // est l'encodage lui-même. » C'est la seconde entrée de cette liste, après
+      // GH 61, à sortir parce que quelqu'un a fait le travail qu'elle décrivait
+      // plutôt que d'attendre un ADR. La liste des personnes qualifiées est
+      // portée par `prevention-etablissement-liste-personnes-qualifiees`, dans
+      // le domaine `organisation_prevention` et non `levage` : elle est UNE
+      // pour tout l'établissement et couvre toutes les vérifications générales
+      // périodiques du parc. La qualification du vérificateur, elle, était déjà
+      // couverte par `personne_qualifiee`.
       // `R. 4544-11-1` a quitté cette liste le 2026-08-27 : le porteur salarié
       // de l'ADR-023 la rend encodable, et elle l'est —
       // `elec-salarie-attestation-medicale-voisinage`. Troisième sortie par
@@ -1143,14 +1183,22 @@ describe("corpus — Livre III du règlement de sécurité ERP", () => {
       // intervalle, à la différence du bruit. La voie qui l'ouvrirait est le
       // DUERP, pas le calendrier de conformité.
       "R. 4223-4",
-      // R. 4223-11 : LE JUMEAU EXACT DE R. 4222-21, et il a échappé au lot qui
-      // a inscrit celui-là. L'employeur fixe les règles d'entretien périodique
-      // du matériel d'éclairage et les consigne dans un document communiqué au
-      // CSE. R. 4224-17 agrège nommément les DEUX documents (« aux articles
-      // R. 4222-21 et R. 4223-11 ») ; sa réserve, écrite le 2026-09-01, n'en
-      // relevait qu'un. C'est un renvoi d'article lu à moitié, et c'est la
-      // seule entrée de ce lot que rien ne bloque techniquement.
-      "R. 4223-11",
+      // R. 4223-11 A QUITTÉ CETTE LISTE LE 2026-09-04, et il n'y aura été que
+      // deux jours. Il y était entré le 2026-09-02 avec cette phrase : « c'est
+      // la seule entrée de ce lot que rien ne bloque techniquement ». Elle
+      // était juste, comme celle de GH 61 avant elle et celle de R. 4323-24 le
+      // même jour. Le document consignant les règles d'entretien du matériel
+      // d'éclairage est porté par `eclairage-etablissement-regles-entretien`,
+      // qui a demandé un domaine neuf — `eclairage` — parce que le référentiel
+      // n'en avait aucun pour l'éclairage ORDINAIRE, celui de l'éclairage de
+      // SÉCURITÉ vivant sous `incendie`. La réserve du CSE est tranchée dans le
+      // sens littéral : l'article fait deux phrases, seule la seconde suppose
+      // l'instance, et aucun `effectifMin` n'est posé.
+      //
+      // Son jumeau `R. 4222-21` reste, lui, plus bas dans cette liste : des deux
+      // documents que R. 4224-17 agrège nommément, le référentiel en porte
+      // désormais un. La réserve de R. 4224-17 est corrigée du même mouvement —
+      // elle recopiait le renvoi entier et n'en tirait qu'un seul document.
       // R. 4433-2 : « En cas de mesurage, celui-ci est renouvelé au moins tous
       // les cinq ans » — la seule périodicité chiffrée des deux titres bruit
       // et vibrations, et le produit détient DÉJÀ la date qui la calculerait

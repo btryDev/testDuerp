@@ -94,10 +94,14 @@ On refuse ce qu'on ne peut pas servir, pas ce qu'on ne couvre pas entièrement.
 3. **Bureau / services tertiaires**
 
 ### Référentiel de conformité (vérifications)
-Livré : **146 obligations sur 19 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité, et depuis le 2026-09-02 signalisation de sécurité et compactage des déchets. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
+Livré : **150 obligations sur 20 domaines** — électricité, incendie, aération/ventilation, cuisson/hottes, ascenseurs, portes/portails automatiques, équipements sous pression, stockage de matières dangereuses, levage, froid (contrôle d'étanchéité des fluides frigorigènes), et depuis le 2026-08-31 formation à la sécurité, santé au travail, premiers secours, organisation de la prévention, information des travailleurs, locaux sociaux, co-activité, depuis le 2026-09-02 signalisation de sécurité et compactage des déchets, et depuis le 2026-09-04 éclairage des lieux de travail. Le référentiel vit en **TypeScript versionné** (`src/lib/referentiels/conformite/`), pas en base (ADR-003).
 
-**86 d'entre elles sont déclenchées par un équipement déclaré, quarante-cinq sont
-portées par l'établissement, quatorze par un salarié.** La répartition a changé deux fois le
+**88 d'entre elles sont déclenchées par un équipement déclaré, quarante-huit sont
+portées par l'établissement, quatorze par un salarié** — remesuré en appelant
+`obligationsConformite` et `porteurDe` le 2026-09-04, jamais au grep. Le compte
+d'établissement écrit ici disait « quarante-cinq » quand la ligne de répartition, plus
+bas dans ce même fichier, en annonçait quarante-six : deux phrases du même document se
+contredisaient d'une unité, et aucune des deux n'était juste après le lot suivant. La répartition a changé deux fois le
 2026-08-31 : les trois lots ont ajouté trente et une obligations, et le lot « faux
 négatifs d'ancrage » a fait passer trois obligations existantes de l'équipement à
 l'établissement — le registre de sécurité, les exercices d'évacuation et les consignes
@@ -134,17 +138,30 @@ intérieure** — un troisième cas de figure après ceux du lot 7 —, et le pr
 modélisant aucun mandat, l'échéance calculée arrive en avance pour un mandat interrompu.
 Le sens d'erreur est délibéré.
 
-**Sept des dix-neuf domaines ne naissent d'aucun équipement** — les sept du milieu,
-de `formation_securite` à `signalisation` : leur déclencheur est le statut d'employeur,
-l'effectif ou la co-activité. La phrase disait « les sept DERNIERS » jusqu'au
-2026-09-02 ; `compactage_dechets` est arrivé après eux et naît, lui, d'un équipement
-déclaré, ce qui rendait le rang faux sans qu'aucun compte ne bouge. Un bureau de six personnes sans le moindre appareil déclaré doit
-désormais **vingt-cinq obligations**. À douze salariés il en doit **vingt-six** (le CSE
-s'ajoute), à cinquante-cinq **vingt-neuf** : le règlement intérieur s'ajoute, le local de
+**Huit des vingt domaines ne portent aucune obligation d'équipement** :
+`formation_securite`, `sante_travail`, `secours`, `organisation_prevention`,
+`information_travailleurs`, `locaux_sociaux`, `co_activite` et — depuis le
+2026-09-04 — `eclairage`. Leur déclencheur est le statut d'employeur, l'effectif ou la
+co-activité. **Ils ne sont plus contigus, et la formule « les sept du milieu, de
+`formation_securite` à `signalisation` » était fausse des deux bouts** : `signalisation`
+porte bien deux lignes d'équipement — la vérification semestrielle des signaux lumineux
+et acoustiques et l'annuelle des alimentations de secours —, donc il n'a jamais eu sa
+place dans cette liste, et `eclairage` la rejoint par l'autre extrémité de
+l'énumération. La liste ci-dessus est le produit d'un filtre sur `porteurDe`, exécuté
+le 2026-09-04 ; c'est la seule forme sous laquelle elle ne se périmera pas en silence.
+Un bureau de six personnes sans le moindre appareil déclaré doit
+désormais **vingt-sept obligations**. À douze salariés il en doit **vingt-huit** (le CSE
+s'ajoute), à cinquante-cinq **trente et une** : le règlement intérieur s'ajoute, le local de
 restauration remplace l'emplacement, et le franchissement de cinquante et une personnes
 présentes fait entrer la consigne de sécurité incendie et l'exercice semestriel.
 
-Ces trois chiffres ont été mesurés en appelant le moteur le 2026-09-02, et ils ont
+Ces trois chiffres ont été remesurés en appelant le moteur le 2026-09-04, et ils ont
+gagné deux unités : la liste des personnes qualifiées de `R. 4323-24` et le document
+d'entretien de l'éclairage de `R. 4223-11` sont portées par l'établissement, donc dues
+même sans le moindre équipement déclaré. Les deux autres lignes du même lot — la
+vérification hebdomadaire de l'alarme et la visite trimestrielle des filtres — naissent
+d'un équipement et d'un classement ERP des quatre premières catégories : un bureau n'en
+voit rien, ce qui est la réponse juste. Le 2026-09-02 ils avaient
 gagné sept unités d'un coup : le domaine `signalisation` porte sept lignes que rien ne
 conditionne à un équipement. **Remesurés le même jour après le lot machines : ils n'ont
 pas bougé**, et c'est la réponse juste — `compactage_dechets` est portée par un
@@ -204,10 +221,26 @@ réellement événementielles recensées sont hors périmètre (déclaration d'A
 accidents bénins) ou déjà servies par le module `PlanPrevention`. L'axe est nommé dans
 l'ADR-022, sans mécanisme.
 
-Répartition au 2026-09-04 : **86 équipement, 46 établissement, 14 salarié**
-(total 146) — remesurée en appelant `obligationsConformite` et
-`porteurDe` le 2026-09-04, pas au grep. La quarante-sixième obligation
-d'établissement est entrée ce jour-là : `incendie-igh-charge-calorifique-quinquennale`,
+Répartition au 2026-09-04, après le lot « les sept articles du Livre II » :
+**88 équipement, 48 établissement, 14 salarié**
+(total 150) — remesurée en appelant `obligationsConformite` et
+`porteurDe`, pas au grep. Les quatre entrées du lot sont, dans l'ordre où elles
+apparaissent au référentiel : `aeration-erp-filtres-visite-periodique`
+(`CH 39 § 3`, visite TRIMESTRIELLE des filtres de ventilation par l'utilisateur,
+équipement, ERP N1–N4), `incendie-erp-alarme-verification-hebdomadaire`
+(`MS 69`, contrôle HEBDOMADAIRE de l'alarme par l'exploitant, équipement, ERP N1–N4),
+`prevention-etablissement-liste-personnes-qualifiees` (`R. 4323-24`, la liste des
+personnes qualifiées tenue à la disposition de l'inspection du travail, établissement,
+état permanent) et `eclairage-etablissement-regles-entretien` (`R. 4223-11`, le document
+consignant les règles d'entretien du matériel d'éclairage, établissement, état permanent,
+et le seul domaine neuf du lot). **Les deux premières sont les premières lignes du
+référentiel bornées aux quatre premières catégories d'ERP par LECTURE de leur champ**, et
+non par héritage d'une sur-application ancienne : mesuré en appelant le moteur le même
+jour, un restaurant de 3ᵉ catégorie ayant déclaré une alarme et une centrale de
+traitement d'air passe de 34 à 36 obligations, quand le même restaurant en 5ᵉ catégorie
+en compte 37. L'écart de trois lignes que le Livre II à moitié dépouillé creusait au
+détriment du 1er groupe tombe à une. La quarante-sixième obligation
+d'établissement était entrée le même jour : `incendie-igh-charge-calorifique-quinquennale`,
 le rapport quinquennal de conformité de la charge calorifique que `GH 61 § 5` met à la
 charge des **occupants** d'un IGH. La dernière est entrée le
 même jour avec le dépouillement intégral de l'arrêté du 5 mars 1993 : le domaine

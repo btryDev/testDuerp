@@ -465,6 +465,114 @@ est le débiteur).
 
 ---
 
+### C13 · 2026-09-04 — Les sept derniers articles à rythme du Livre II, et deux obligations que rien ne bloquait
+
+**Périmètre** — deux choses sans rapport, réunies par le même mandat.
+
+*Partie 1, ce que le corpus portait déjà et que personne n'avait encodé.*
+`R. 4223-11` (document consignant les règles d'entretien du matériel
+d'éclairage) et `R. 4323-24` (liste des personnes qualifiées tenue à la
+disposition de l'inspection du travail). Les deux étaient dépouillés, datés,
+avec verbatim et texte modificateur, et **les deux portaient dans leur propre
+motif la phrase qui disait qu'il n'y avait rien à débloquer** : « Rien ne bloque
+techniquement : c'est un article qu'on n'avait pas lu » pour le premier, « Rien
+de technique : […] ce qui manque est l'encodage lui-même » pour le second.
+**Aucune lecture nouvelle n'a été nécessaire ; il a fallu une heure chacun.**
+C'est la troisième et la quatrième sortie de la liste des `obligation_manquante`
+par livraison plutôt que par requalification, après `GH 61` la veille.
+
+*Partie 2, les sept articles du Livre II de l'arrêté du 25 juin 1980.* La mesure
+du 2026-09-03 (`docs/revues/denominateur-livre-2-erp.md`) avait établi sur la
+donnée officielle de la DILA que **dix-neuf articles seulement portent un
+rythme** pour un ERP de type N ou M, tous au Titre Ier, et que le corpus en
+citait douze. Les sept manquants ont été ouverts un à un à la source : `AS 9`,
+`AS 10`, `MS 69`, `MS 71`, `CH 39`, `GC 18`, `CO 61`.
+
+**Méthode, et les trois pièges du § 2.D rencontrés.**
+
+1. **Le plan tronqué, une fois de plus.** La page de plan du Livre II s'arrête
+   au chapitre II ; celle du Titre Ier, à mi-chapitre Ier. Aucun sommaire n'a
+   servi de source. La structure a été reconstituée de proche en proche par les
+   liens « section précédente / section suivante » (`?idSecParent=`), chaque
+   page annonçant son intitulé et son intervalle d'articles.
+2. **Un identifiant fabriqué, écarté par un 404.** Interrogée sur les chapitres
+   du Titre Ier, la lecture automatique a rendu « Chapitre II : Construction —
+   `LEGISCTA000020303864` ». Cette section n'existe pas ; le vrai identifiant
+   est `LEGISCTA000020303891`, atteint par le lien « section précédente » du
+   chapitre III. **La parade n'a pas été une seconde lecture de la même page,
+   c'est l'ouverture de l'URL** — un identifiant inventé se dénonce en 404, un
+   intitulé inventé ne se dénonce pas.
+3. **Deux articles longs relus par question fermée** (parade n° 8), le
+   paragraphe décisif redemandé seul : `CO 61 § 6` et `MS 71 § 3`. Les deux
+   relectures rendent le même chiffre.
+
+**Un désaccord dans la source, signalé et non lissé.** La page d'article de
+`MS 69` annonce « Version en vigueur depuis le 15/08/1980 » et, dans le même
+bandeau, « Modifié par Arrêté du 2 février 1993 ». Les deux ne peuvent pas être
+vraies ensemble. `versionEnVigueur` porte la date que la page affiche comme
+telle, `modifiePar` le texte qu'elle nomme, et le corpus dit que le désaccord
+est dans la source — la lecture vient d'une page d'ARTICLE, pas d'une
+consolidée.
+
+| Article | Ce qu'il porte | Sort |
+|---|---|---|
+| **`AS 9`** | Ascenseurs : vérification par **organisme agréé** tous les **cinq ans**, et avant remise en service après transformation importante | **`retenu`, sans ligne neuve.** Le CCH sert déjà le même acte (`ascenseur-controle-technique-quinquennal`, `R. 134-11`). AS 9 est ajouté **en contexte** sur l'obligation existante : une seconde ligne aurait donné deux rendez-vous quinquennaux pour un contrôle, et le test anti-doublon ne l'aurait pas vu, les fondateurs étant différents. Recoupé par `PO 1 § 3`, déjà au corpus, qui renvoie nommément à AS 9 |
+| **`CH 39 § 3`** | Filtres de ventilation de confort : visite périodique par l'**utilisateur**, plafond d'un an, **ramenée à trois mois** en l'absence de système de mesure et d'alarme permanent | **Encodé** — `aeration-erp-filtres-visite-periodique`, **trimestrielle**, `exploitant`, VMC + CTA, ERP N1–N4. Un allègement ne se donne pas sur une absence supposée : le produit ne détient aucun attribut disant qu'une installation a une mesure permanente |
+| **`MS 69`** | Alarme : l'exploitant s'assure **une fois par semaine au moins** du bon fonctionnement de l'installation et des alimentations de sécurité | **Encodé** — `incendie-erp-alarme-verification-hebdomadaire`, **hebdomadaire**, `exploitant`, ALARME_INCENDIE, ERP N1–N4 |
+| **`AS 10`** | Escaliers mécaniques et trottoirs roulants : **annuelle** par personne ou organisme agréé, **plus** un examen des chaînes et crémaillères **à mi-période** par l'entreprise d'entretien | **`obligation_manquante`.** Aucune catégorie d'équipement. Ne pas l'accrocher à `ASCENSEUR` : cinq ans contre un an, un réalisateur contre deux, aucun examen intermédiaire contre un. C'est le manque le plus proche de la cible — type M |
+| **`GC 18 h)`** | Conduit d'extraction d'un **module ou conteneur spécialisé** de cuisson : nettoyé avant chaque mise en place et **au moins tous les six mois** | **`obligation_manquante`.** Aucune catégorie pour le module, aucun attribut « cuisine temporaire ». L'accrocher à `HOTTE_PRO` doublerait la fréquence du ramonage annuel de GC 21 pour toutes les cuisines professionnelles |
+| **`MS 71 § 3`** | Communications radioélectriques : **une fois avant ouverture, puis tous les trois ans**, par organisme agréé par le ministère chargé de la sécurité civile | **`obligation_manquante`.** Le § 1 réserve l'article aux ERP du 1er groupe **disposant de plus d'un niveau de sous-sol**, et l'écarte sous 100 m² de sous-sol total. Deux attributs d'établissement absents. **Seule entrée du lot où la sur-application a été explicitement refusée** : le champ exclut plus qu'il n'inclut, et le rendez-vous appelle un organisme agréé |
+| **`CO 61 § 6`** | Tribune **télescopique** dont le dernier plancher déployé est à plus d'un mètre : inspection périodique **tous les cinq ans** par un organisme accrédité | **`obligation_manquante`.** Aucune catégorie « tribune ». Types X et L, hors des trois secteurs cibles |
+
+**Ce que le lot corrige en plus.**
+
+- **La `portee` de `arrete-1980-livre-2.ts` était fausse dans les deux sens**,
+  et la mesure du 2026-09-03 l'avait constaté sans pouvoir y toucher. Elle
+  annonçait « (MS, EC, EL, DF, GE) » en omettant `CH`, `GZ` et `GC` — neuf des
+  dix-huit articles qu'elle portait —, et « des dispositions particulières par
+  type » dont elle ne contient **aucun** article. Réécrite : dix des onze
+  chapitres du Titre Ier, `AM` seul absent, **zéro article du Titre II**.
+- **La réserve de `R. 4224-17` lisait son propre renvoi à moitié.** Écrite le
+  2026-09-01, elle recopiait la phrase entière — « aux articles R. 4222-21 **et
+  R. 4223-11** » — puis n'en tirait qu'un document, la consigne de ventilation.
+  Le second, celui de l'éclairage, n'était pas même nommé. Corrigée : elle dit
+  ce que chacun des deux porte, lequel est désormais servi et lequel ne l'est
+  pas.
+- **Une référence qui nommait deux articles sous une seule clé est scindée.**
+  `levage-vgp-annuelle-charges` citait « R. 4323-23 et R. 4323-24 » avec
+  `article: "R. 4323-23"` : le second passait pour lu sans être rattaché. Le
+  corpus l'avait relevé le 2026-09-02 ; c'est fait.
+
+**Deux garanties éprouvées en les cassant.** (1) La nature de
+`eclairage-etablissement-regles-entretien` passée de `etat_permanent` à
+`ponctuelle` : `obligations-sans-surface.test.ts` la nomme aussitôt — « Soit sa
+`nature` est fausse […] soit son absence de surface est assumée ». C'est le
+comportement annoncé, et il vaut pour une ligne neuve. (2) La clé `article` de
+la nouvelle obligation de `R. 4323-24` remplacée par une référence inexistante :
+**trois** tests tombent — le lien corpus ↔ obligation dans les deux sens, le
+cliquet « obligations s'appuyant sur un texte non dépouillé » (plafond 0), et le
+document d'état de vérification. Les deux injections ont été retirées et la
+suite est repassée au vert.
+
+**Application** — quatre obligations (146 → **150**, remesuré en appelant), un
+domaine neuf (`eclairage`, 19 → **20**), sept articles portés au corpus du
+Livre II (18 → **25**), `REFERENTIEL_VERSION` en `2026-09-04.2`,
+`EMPREINTE_ATTENDUE` en `150-8cb9a3b49692ed58`. Mesuré le même jour en appelant
+le moteur : un restaurant de **3ᵉ catégorie** ayant déclaré une alarme et une
+centrale de traitement d'air passe de 34 à **36** obligations, quand le même en
+**5ᵉ catégorie** en compte 37. **L'écart que le Livre II à moitié dépouillé
+creusait au détriment du 1er groupe tombe de trois à une.**
+
+**Ce que ce lot laisse en suspens, et qui n'attend qu'une décision.** Trois
+écrits que le modèle sait porter et que personne n'a réclamés : le **livret
+d'entretien de l'installation de filtration** (`CH 39 § 1`), le **stock
+permanent de fournitures de rechange de l'alarme** (`MS 69`, état permanent
+matériel), et la **consigne d'utilisation de la ventilation** (`R. 4222-21`),
+jumelle de celle de l'éclairage qui vient d'être encodée. Les trois sont en
+réserve au corpus, chacun sous son article.
+
+---
+
 ### Ce que la chronologie donne à voir
 
 1. **Le dépôt lit beaucoup et applique peu, et l'écart est systématique.** La

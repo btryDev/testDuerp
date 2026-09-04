@@ -759,6 +759,37 @@ export const obligationsIncendie: Obligation[] = [
     categoriesEquipement: ["ALARME_INCENDIE"],
   },
   {
+    id: "incendie-erp-alarme-verification-hebdomadaire",
+    domaine: "incendie",
+    libelle:
+      "Vérification hebdomadaire du bon fonctionnement de l'alarme (ERP des 4 premières catégories)",
+    description:
+      "L'exploitant ou son représentant s'assure, une fois par semaine au moins, du bon fonctionnement de l'installation d'alarme et de l'aptitude des alimentations électriques et/ou pneumatiques de sécurité. C'est une vérification que l'exploitant conduit lui-même, sans tiers, au même titre que l'essai mensuel de l'éclairage de sécurité — et c'est le seul contrôle du règlement de sécurité qui revienne chaque semaine.",
+    referencesLegales: [
+      {
+        source: "ARRETE",
+        reference:
+          "Arrêté du 25 juin 1980, art. MS 69 deuxième alinéa (l'exploitant s'assure une fois par semaine au moins du bon fonctionnement de l'installation)",
+        article: "MS 69",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317748",
+        note: "« L'exploitant ou son représentant doit s'assurer, une fois par semaine au moins, du bon fonctionnement de l'installation et de l'aptitude des alimentations électriques et/ou pneumatiques de sécurité à satisfaire aux exigences du présent règlement. » Article ouvert à la source le 2026-09-04, page d'article. Les trois autres alinéas — initiation du personnel, remise en état sans délai, stock de fournitures de rechange — ne portent aucun rythme et ne sont pas encodés ; la réserve du corpus les nomme un par un.",
+        versionConstatee: "1980-08-15",
+      },
+    ],
+    periodicite: "hebdomadaire",
+    nature: "echeance_recurrente",
+    pieceAttendue: null,
+    realisateurs: ["exploitant"],
+    criticite: 4,
+    transmet: [],
+    typologies: {
+      erp: { categories: ["N1", "N2", "N3", "N4"] },
+    },
+    categoriesEquipement: ["ALARME_INCENDIE"],
+    notesInternes:
+      "CRÉÉE LE 2026-09-04, AVEC LES SEPT DERNIERS ARTICLES À RYTHME DU LIVRE II. `MS 69` n'était cité nulle part dans `src/` : le référentiel portait l'annuelle et la triennale du SSI (`MS 73`) et ignorait le contrôle que l'exploitant doit faire lui-même chaque semaine — le plus fréquent du règlement, et le seul qui ne coûte rien.\n\nPÉRIMÈTRE : N1 À N4, ET C'EST UNE CORRECTION DE CAP. `MS 69` est au Livre II, dont `PE 1 § 1` écarte l'application en 5ᵉ catégorie sauf renvoi exprès ; le Livre III n'ouvre que `MS 39` et `MS 70`, pas `MS 69`. La typologie est donc bornée aux quatre premières catégories, comme `incendie-erp-ssi-triennale` et à la différence de `incendie-erp-ssi-annuelle`, dont la sur-application en N5 est ancienne, documentée et maintenue pour ne pas creuser un faux négatif muet. Une ligne NEUVE n'a pas cet héritage : aucun calendrier ne la porte encore, personne ne la perd, et l'encoder au-delà de son champ aurait fabriqué une sur-application de plus au lieu d'en hériter d'une.\n\nCE QUE CETTE BORNE PRODUIT, ET C'EST LE POINT DU LOT. Un ERP de 3ᵉ catégorie recevait jusqu'ici MOINS d'obligations qu'un de 5ᵉ, parce que les articles du Livre II n'étaient dépouillés qu'à moitié tandis que le Livre III l'était en entier. Cette ligne et celle des filtres de CH 39 sont les deux premières à ne s'adresser QU'aux quatre premières catégories par lecture du champ, et non par héritage.\n\nUN RENDEZ-VOUS PAR SEMAINE, ET C'EST LE TEXTE. Environ 52 lignes de calendrier par an et par installation d'alarme. Le précédent est `cuisson-erp-filtres-hebdomadaire` (GC 21 § 2), livrée le 2026-08-26 avec la même remarque : si le volume devient un problème d'affichage, c'est l'affichage qu'il faut traiter, pas la périodicité.\n\n`realisateurs: [\"exploitant\"]`, SANS TIERS. Le texte nomme « l'exploitant ou son représentant » et personne d'autre. Y ajouter `personne_qualifiee` aurait envoyé le dirigeant chercher chaque semaine quelqu'un que l'article n'exige pas.\n\nCriticité 4 : une alarme muette ne se découvre qu'au moment où elle devait sonner. Elle n'est pas à 5 comme la vérification annuelle du SSI, qui porte sur la chaîne entière — détection, compartimentage, désenfumage — là où celle-ci porte sur le seul fonctionnement de l'alarme et de ses alimentations.\n\nCE QUI N'EST PAS ENCODÉ ET QUI EST DANS LE MÊME ARTICLE : le stock permanent de petites fournitures de rechange (lampes, fusibles, vitres de déclencheurs manuels à bris de glace, cartouches de gaz inerte). C'est un état permanent matériel, de la même espèce que `secours-etablissement-materiel` ; rien ne le bloque au modèle. Il fera une seconde ligne le jour où quelqu'un le décidera — la réserve de `MS 69` au corpus le porte.",
+  },
+  {
     id: "incendie-erp-baes-annuelle",
     domaine: "incendie",
     libelle: "Vérification annuelle de l'éclairage de sécurité / BAES (ERP)",

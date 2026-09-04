@@ -34,6 +34,7 @@ import { obligationsLocauxSociaux } from "./locaux-sociaux";
 import { obligationsCoActivite } from "./co-activite";
 import { obligationsSignalisation } from "./signalisation";
 import { obligationsCompactageDechets } from "./compactage-dechets";
+import { obligationsEclairage } from "./eclairage";
 
 export {
   obligationsElectricite,
@@ -55,6 +56,7 @@ export {
   obligationsCoActivite,
   obligationsSignalisation,
   obligationsCompactageDechets,
+  obligationsEclairage,
 };
 export * from "./types";
 export * from "./veille-textes";
@@ -94,6 +96,13 @@ export const obligationsConformite: Obligation[] = [
   // secteurs cibles — presses à balles et compacteurs à déchets — et elles
   // partagent l'acte, le rythme, le réalisateur et le contenu.
   ...obligationsCompactageDechets,
+  // Lot « les sept articles du Livre II » (2026-09-04) — le domaine que le
+  // référentiel n'avait pas : l'éclairage ORDINAIRE des lieux de travail. Une
+  // seule ligne, `R. 4223-11`, et c'est un ÉCRIT — les règles d'entretien
+  // périodique que l'employeur fixe lui-même et consigne dans un document
+  // communiqué au CSE. Le corpus l'avait lu le 2026-09-02 et écrit que rien ne
+  // le bloquait ; il aura fallu deux jours pour le croire.
+  ...obligationsEclairage,
 ];
 
 /**
@@ -138,7 +147,13 @@ export const obligationsConformite: Obligation[] = [
 // catégorie d'équipement neuve. Aucun calendrier existant ne la porte — la
 // catégorie n'existait pas —, mais la version se lit à la main et le
 // référentiel a changé.
-export const REFERENTIEL_VERSION = "2026-09-04.1";
+// `.2` le 2026-09-04 : le lot « les sept articles du Livre II » ajoute quatre
+// obligations, dont deux produisent des lignes de calendrier — la vérification
+// HEBDOMADAIRE de l'alarme (`MS 69`) et la visite TRIMESTRIELLE des filtres de
+// ventilation (`CH 39 § 3`). Toutes deux sont bornées aux ERP des quatre
+// premières catégories : aucun calendrier existant ne les porte, et un parc de
+// 5ᵉ catégorie n'en voit rien.
+export const REFERENTIEL_VERSION = "2026-09-04.2";
 
 /**
  * Les identifiants d'obligations retirées du référentiel.

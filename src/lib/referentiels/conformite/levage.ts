@@ -135,10 +135,28 @@ export const obligationsLevage: Obligation[] = [
     referencesLegales: [
       {
         source: "CODE_TRAVAIL",
-        reference: "R. 4323-23 et R. 4323-24",
+        reference:
+          "R. 4323-23 (vérification générale périodique des équipements de travail)",
         article: "R. 4323-23",
         url:
           "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531479/",
+        versionConstatee: "2008-05-01",
+      },
+      {
+        // SCINDÉ LE 2026-09-04. Cette référence disait « R. 4323-23 et
+        // R. 4323-24 » sous la clé `article: "R. 4323-23"` — donc elle nommait
+        // deux articles et n'en rattachait qu'un. Le corpus l'avait relevé le
+        // 2026-09-02 en inscrivant R. 4323-24 : « une référence lisible qui
+        // nomme deux articles sous une seule clé est invisible à
+        // `articlesCitesNonDepouilles()` : le second passe pour lu. » Il l'est
+        // désormais pour de bon, et le lien retour du corpus tient.
+        source: "CODE_TRAVAIL",
+        reference:
+          "R. 4323-24 (les vérifications sont réalisées par des personnes qualifiées, appartenant ou non à l'établissement)",
+        article: "R. 4323-24",
+        url:
+          "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000018531477",
+        note: "« Les vérifications générales périodiques sont réalisées par des personnes qualifiées, appartenant ou non à l'établissement, dont la liste est tenue à la disposition de l'inspection du travail. » C'est cet article qui fonde `realisateurs: [\"personne_qualifiee\"]` — et non un organisme extérieur, qu'il n'exige pas. La LISTE qu'il vise dans la même phrase est portée à part, par `prevention-etablissement-liste-personnes-qualifiees`.",
         versionConstatee: "2008-05-01",
       },
       {

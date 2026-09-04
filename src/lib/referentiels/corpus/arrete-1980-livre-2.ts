@@ -1,9 +1,22 @@
-// Corpus : articles cités par le référentiel, dépouillés le 26 août 2026.
+// Corpus : articles cités par le référentiel, dépouillés le 26 août 2026,
+// complétés le 4 septembre 2026 par les sept derniers articles du Titre Ier
+// portant un rythme.
 //
 // Étendue « articles_cites » : cette liste ne contient QUE les articles que le
-// référentiel cite. Elle ne dit rien de ce que le texte contient par ailleurs,
-// et ne peut donc jamais se déclarer complète. C'est un remboursement de dette,
-// pas une preuve d'exhaustivité.
+// référentiel cite — plus ceux qu'on a ouverts en cherchant, et qui portent une
+// obligation qu'il ne sait pas encore faire naître (`obligation_manquante`).
+// Elle ne dit rien de ce que le texte contient par ailleurs, et ne peut donc
+// jamais se déclarer complète. C'est un remboursement de dette, pas une preuve
+// d'exhaustivité.
+//
+// CE QUE LA MESURE DU 2026-09-03 A ÉTABLI, ET QUE CE FICHIER PORTE DEPUIS.
+// `docs/revues/denominateur-livre-2-erp.md` a compté le Livre II sur la donnée
+// officielle de la DILA : **794 articles**, dont **dix-neuf seulement portent
+// un rythme** pour un ERP de type N ou M — les dix-neuf au Titre Ier, aucun
+// dans un chapitre de type. Ce corpus en citait douze ; il les porte désormais
+// tous les dix-neuf. Le dénominateur, lui, ne bouge pas : dix-neuf rythmes sur
+// dix-neuf ne fait pas 25 articles sur 794, et la `portee` ci-dessous dit
+// exactement ce que la liste couvre et ce qu'elle laisse dehors.
 
 import type { Corpus } from "./types";
 
@@ -14,7 +27,7 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
   url: "https://www.legifrance.gouv.fr/loda/id/LEGITEXT000020303557/",
   etendue: "articles_cites",
   portee:
-    "Dispositions générales (MS, EC, EL, DF, GE) et particulières par type. PE 1 § 1 l'écarte en 5e catégorie sauf renvoi exprès : le Livre III n'en ouvre que MS 39 et MS 70. Les articles listés ici sont cités par le référentiel malgré cette exclusion — la sur-application est documentée obligation par obligation.",
+    "TITRE IER SEUL — dispositions générales, dix des onze chapitres : GE (généralités), CO (construction), DF (désenfumage), CH (chauffage-ventilation), GZ (gaz), EL (électricité), EC (éclairage de sécurité), AS (ascenseurs, escaliers mécaniques, trottoirs roulants), GC (appareils de cuisson), MS (moyens de secours). Seul AM (aménagements intérieurs) n'a aucune entrée. AUCUN ARTICLE DU TITRE II — les 482 articles des quatorze chapitres de type (L, M, N, O, P, R, S, T, U, V, W, X, Y, J) ne sont pas ouverts, et pas davantage cités par le référentiel. PE 1 § 1 écarte ce livre en 5ᵉ catégorie sauf renvoi exprès : le Livre III n'en ouvre que MS 39 et MS 70. Les articles listés ici sont cités par le référentiel malgré cette exclusion — la sur-application est documentée obligation par obligation.",
   articles: [
     {
       ref: "CH 57",
@@ -346,6 +359,174 @@ export const ARRETE_1980_LIVRE_2: Corpus = {
       reserve:
         "(1) LA FIN DE VIGUEUR AU 1ER JUIN 2027 RELEVÉE ICI LE 2026-09-01 EST FAUSSE, et `versionFuture` est retirée le même jour. Trois lectures à la source, le 2026-09-01 : la page de section du chapitre Ier (LEGISCTA000020303872) affiche « Version en vigueur depuis le 01/01/2015 » pour GE 4, sans terme ; la page d'article (LEGIARTI000029642660) ne porte ni version future ni abrogation programmée ; et l'arrêté du 19 février 2026, ouvert au JO, ne modifie dans la série GE que GE 2, GE 6 et GE 7. Les deux articles de cette section qui portent bien « du ... au 01/06/2027 » sont GE 2 et GE 6 — GE 6 est au corpus et sa `versionFuture` est exacte. Le relevé du matin a donc étendu à GE 4 un terme lu sur ses voisins. Conséquence : aucune `relectureDue` n'est due sur `incendie-erp-5-visite-commission` de ce chef ; le rendez-vous du 1er juin 2027 est posé sur `elec-erp-mise-en-service`, seule obligation à citer GE 6. (2) Le § 3 est un PLAFOND, pas un rythme : quand un établissement sans hébergement enchaîne deux visites périodiques favorables, « le délai fixé pour sa prochaine visite par le tableau ci-dessus peut être prolongé dans la limite de cinq ans ». « Dans la limite de cinq ans » n'est pas « tous les cinq ans », et le § 4 permet en outre au maire ou au préfet de modifier la fréquence. (3) CONFIRMÉ UNE QUATRIÈME FOIS LE 2026-09-01 PAR LE LOT B, ET LE PIÈGE EST NOMMÉ. La page de SECTION du chapitre (LEGISCTA000020303874) affiche bien un sélecteur de version « au 01/06/2027 » : ce sélecteur porte sur la SECTION, pas sur GE 4, et il existe parce que GE 2 et GE 6, qui vivent dans la même section, sont modifiés à cette date. Lire un terme d'article sur un sélecteur de section est exactement l'erreur du relevé du matin. Le recoupement indépendant est dans `veille-textes.ts` : l'arrêté du 19 février 2026 « modifie GN 4 et GN 16 (nouveau), GE 2, GE 6, GE 7, CO 6 à CO 34, AM 1 à AM 8, EL 5 et AS 1 » — GE 4 n'y est pas. (4) [AMENDÉ LE 2026-09-01, VOIR (5) : CE QUI SUIT DÉCRIT UN MANQUE QUI A ÉTÉ COMBLÉ LE MÊME JOUR.] L'ÉCHELLE DE GE 4 N'EST ENCODÉE NULLE PART, ET CE N'EST PAS UN DÉFAUT DE `incendie-erp-5-visite-commission`. Cette obligation est bornée à la 5ᵉ catégorie (`typologies.erp.categories = [\"N5\"]`) et se fonde sur PE 37, pas sur GE 4, qui n'y figure que comme repoussoir. Le tableau du § 1 — [PHRASE FAUSSE, LIRE (6) : le type à cinq ans dans les quatre catégories est V et non Y, et quatre types restent à trois ans en 4ᵉ catégorie] trois ans pour toutes les catégories sauf le type Y en 1ʳᵉ à 3ᵉ, et cinq ans pour tous les types en 4ᵉ catégorie hors Y — ne vise que les 1ʳᵉ à 4ᵉ catégories, qui n'ont AUCUNE obligation de visite périodique au référentiel. C'est un manque, et son ampleur est bornée : les trois secteurs cibles (restauration, commerce de détail, bureau) sont presque toujours de 5ᵉ catégorie. L'encoder supposerait de croiser type ET catégorie dans une même condition, ce que `TypologieApplication` sait faire — `categories` et `types` y sont « indépendants et cumulables » —, mais au prix d'une obligation par ligne du tableau. Relevé, non encodé : c'est une obligation manquante, pas une échelle mal lue, et elle ne figure pas à l'inventaire des dix. (5) ENCODÉ LE 2026-09-01 PAR LE LOT B3, SUR DÉCISION DE LA PROPRIÉTAIRE — le produit sert toutes les catégories d'ERP. `incendie-erp-cat1-4-visite-commission` porte désormais le § 1, en UNE ligne bornée à N1–N4 et portée par l'ÉTABLISSEMENT : le § 1 ne conditionne la visite à aucun équipement. La périodicité retenue est `triennale`, et le raisonnement ne dépend pas des cellules du tableau : celui-ci ne porte que deux barreaux, 3 ans et 5 ans, donc trois ans n'est jamais en dessous d'une case. C'est ce qui a permis de l'encoder SANS le lire cellule par cellule — et il a bien fallu, car le corps du tableau n'a PAS pu être lu de façon fiable à la source : quatre extractions se contredisent, l'une porte quatorze croix là où le rendu brut en montre quatre, une autre invente un type « Q » absent de la nomenclature ERP, et les totaux ne se reconstituent pas à quinze colonnes. Le manque est donc DÉPLACÉ, pas supprimé : ce qui reste non lu est la répartition 3/5 ans par case, et l'affiner ferait passer certains établissements de trois à cinq ans. La sur-application actuelle est d'au plus deux ans et ne met personne en défaut. LE PIÈGE DE LA DATE A ÉTÉ LEVÉ AUTREMENT QUE PAR UNE CINQUIÈME LECTURE, et c'est le point de méthode à retenir : la section relue À LA DATE DU 1ER JUILLET 2027 rend GE 4 présent et inchangé dans sa version du 01/01/2015, tandis que GE 2 y apparaît dans une version NOUVELLE du 01/06/2027. Une lecture de plus de la même page aurait reproduit la même erreur une quatrième fois ; ce qui la corrige est une question dont les deux réponses se distinguent. (6) LE TABLEAU EST LU, ET LA NOTE (4) ÉTAIT FAUSSE SUR SES DEUX MOITIÉS — 2026-09-02. Le tableau a été relevé sur la donnée officielle de la DILA puis VÉRIFIÉ CASE PAR CASE SUR LE FAC-SIMILÉ DU JOURNAL OFFICIEL, quinze colonnes sur huit lignes, sans un écart. Il se lit ainsi, en années, par groupe de types : J, O, R (1) avec hébergement, U → 3, 3, 3, 3 ; L, P, R (2) sans hébergement → 3, 3, 3, 5 ; M, N, S, T, W, X, Y → 3, 3, 5, 5 ; V → 5, 5, 5, 5. PREMIÈRE ERREUR : « sauf le type Y ». Le type qui est à cinq ans dans les QUATRE catégories est V, les établissements de culte, et il est le seul dans ce cas. Y (musées) suit le régime ordinaire de M, N, S, T, W et X — trois ans en 1ʳᵉ et 2ᵉ, cinq ans en 3ᵉ et 4ᵉ. Un glissement V → Y rendrait la phrase exacte pour les deux premières catégories ; la lettre juste est V. SECONDE ERREUR, ET C'EST CELLE QUI COÛTAIT : « cinq ans pour tous les types en 4ᵉ catégorie hors Y ». En 4ᵉ catégorie, QUATRE types restent à trois ans — J, O, R avec hébergement, U —, et Y n'en fait pas partie. Encoder cette note aurait donné cinq ans à un EHPAD, un hôtel, un internat et un établissement de soins que le texte visite tous les trois ans : deux ans de délai en trop, sur exactement les publics hébergés ou vulnérables, et personne pour s'en apercevoir. CONTRÔLE. Les cellules vides du tableau ne sont pas encodées dans la donnée officielle — le défaut est déjà dans le texte publié au JO —, ce qui explique que quatre extractions se soient contredites le 2026-09-01 : elles alignaient à gauche des lignes de longueurs différentes. Les CARDINALITÉS, elles, sont exactes et lues sur deux jeux officiels indépendants : trois ans → 14, 14, 7, 4 ; cinq ans → 1, 1, 8, 11 ; chaque catégorie se complète à quinze. CE QUI EST ENCODÉ DEPUIS, ET COMMENT : six obligations, une par bloc du tableau (1ʳᵉ-2ᵉ / 3ᵉ / 4ᵉ × trois ans / cinq ans), qui forment une partition — chaque établissement en reçoit exactement une. Les lignes triennales sont écrites en COMPLÉMENT (`typesExclus`) et non en énumération, pour qu'un ERP dont le type n'est pas renseigné garde ses trois ans au lieu de perdre sa ligne. DEUX ÉCARTS ASSUMÉS, TOUS DEUX DU CÔTÉ COURT — ET IL N'EN RESTE QU'UN. (a) Le type J n'existait pas dans l'énumération `TypeErp` (il est à trois ans partout, donc sans conséquence de rythme, mais un EHPAD ne pouvait pas se déclarer pour ce qu'il est) : LEVÉ LE 2026-09-03. GN 1, la nomenclature elle-même, n'était dépouillé nulle part — c'est en le lisant qu'on a vu que la liste du produit en oubliait un sur vingt-deux, et que l'ADR-004 l'avait écrite de mémoire, « (~20 valeurs) ». Le corpus `arrete-1980-livre-1` la porte désormais, et `types-erp.test.ts` en dérive la liste attendue. (b) La distinction R (1) / R (2), elle, RESTE, et elle ne se lève pas de la même façon : GN 1 § 1 n'écrit qu'un seul R — « Etablissements d'éveil, d'enseignement, de formation, centres de vacances, centres de loisirs sans hébergement ». Les deux colonnes du tableau de GE 4 ne sont pas deux types de la nomenclature mais deux régimes d'une même ligne, séparés par le fait d'héberger, que le § 4 de GN 1 définit (« les seuls locaux destinés au sommeil du public la nuit »). Ajouter une lettre inventerait un type ; ce qu'il faudrait est un croisement du type R avec un attribut d'établissement, que `TypologieApplication` ne sait pas exprimer. Tout R reste donc à trois ans, y compris en 4ᵉ catégorie où le tableau met R sans hébergement à cinq. L'ARRÊTÉ QUI A POSÉ CE TABLEAU EST NOMMÉ AVEC SON NOR, ET IL LE FAUT : deux arrêtés du 20 octobre 2014 au titre identique figurent au même JO. Celui qui remplace le tableau de GE 4 est le NOR INTE1420988A (JORFTEXT000029641453, JORF n°0250 du 28 octobre 2014, texte n°23, page 17818) ; l'autre, NOR INTE1421827A (JORFTEXT000029641444), modifie REF 7, les refuges de montagne, et ne touche pas GE 4. Citer « l'arrêté du 20 octobre 2014 » sans son NOR désigne les deux à la fois. Relevé complet, sources et limites : `docs/revues/releve-ge4-tableau.md`.",
 
+    },
+
+    // -------------------------------------------------------------------------
+    // Lot « les sept articles du Livre II », 2026-09-04.
+    //
+    // POURQUOI CES SEPT-LÀ, ET PAS D'AUTRES.
+    // `docs/revues/denominateur-livre-2-erp.md` (2026-09-03) a mesuré le Livre II
+    // sur la donnée officielle de la DILA : 794 articles, dont **dix-neuf
+    // seulement portent un rythme** pour un ERP de type N ou M, tous au
+    // Titre Ier. Le corpus en citait douze. Ces sept sont le complément exact,
+    // et ce lot les ouvre un à un à la source.
+    //
+    // COMMENT ILS ONT ÉTÉ LUS, parce que le § 2.D du journal dit que trois
+    // pièges se sont produits sur ce texte précis. Aucune page de sommaire n'a
+    // servi de source : les pages de plan du Livre II et du Titre Ier se sont
+    // arrêtées, l'une au chapitre II, l'autre à mi-chapitre Ier — piège n° 1,
+    // constaté une fois de plus. La structure a été reconstituée de proche en
+    // proche par les liens « section précédente / section suivante » des pages
+    // de section, chacune annonçant son propre intitulé et son intervalle
+    // d'articles. Un identifiant de chapitre rendu par une page de plan
+    // (`LEGISCTA000020303864`, donné pour « Chapitre II : Construction ») a été
+    // ÉCARTÉ après un 404 : c'était une fabrication de la lecture automatique,
+    // le vrai est `LEGISCTA000020303891`. Chaque article a ensuite été ouvert
+    // SUR SA PROPRE PAGE, qui annonce son numéro, son texte porteur, sa version
+    // et son texte modificateur — les trois contrôles du § 2.D.
+    //
+    // LES DEUX ARTICLES LONGS ONT ÉTÉ RELUS PAR QUESTION FERMÉE (parade n° 8),
+    // le paragraphe décisif redemandé seul : `CO 61 § 6` et `MS 71 § 3`. Les
+    // deux relectures rendent le même chiffre que la première.
+    // -------------------------------------------------------------------------
+    {
+      ref: "CO 61",
+      intitule: "Tribunes fixes par destination ou télescopiques",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049576769",
+      versionEnVigueur: "2024-05-24",
+      modifiePar: {
+        texte: "Arrêté du 17 mai 2024 - art. 1",
+      },
+      luLe: "2026-09-04",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Sept paragraphes de conception et d'exploitation des tribunes. UN SEUL porte un rythme, le § 6, et il ne vise que la tribune TÉLESCOPIQUE (escamotable, à tiroirs) dont le dernier plancher déployé est à plus d'un mètre du sol : contrôle de la conception et vérification du montage renvoyés à l'arrêté du 25 juillet 2022, puis inspection périodique de l'état de conservation TOUS LES CINQ ANS par un organisme accrédité, avec rapport conforme à son annexe VI. La motorisation du déploiement est expressément hors de ces contrôles. Les § 1 à § 5 et le § 7 sont des règles de construction et de propreté, sans acte daté.",
+      citationCle:
+        "La tribune télescopique (escamotable, déploiement à tiroirs et autres dispositifs) dont le dernier plancher déployé est à plus d'un mètre du sol est soumise au contrôle de la conception et à la vérification du montage prévus respectivement aux articles 37 § 2 et 38 § 4 de l'arrêté du 25 juillet 2022 fixant les règles de sécurité et les dispositions techniques applicables aux structures provisoires et démontables. Une inspection périodique portant sur l'état de conservation de la tribune télescopique est réalisée tous les cinq ans par un organisme accrédité pour l'inspection en exploitation des structures provisoires et démontables. Cette inspection fait l'objet d'un rapport dont le contenu figure à l'annexe VI de l'arrêté précité. La motorisation servant au déploiement n'est pas concernée par ces contrôles et ces vérifications.",
+      statut: "obligation_manquante",
+      motif:
+        "UNE QUINQUENNALE ÉCRITE, ET AUCUN OBJET POUR LA PORTER. Le § 6 impose à l'exploitant une inspection périodique tous les cinq ans par un organisme accrédité — un rythme chiffré, un réalisateur nommé, un rapport dont le contenu est fixé. Le référentiel ne sait pas la faire naître : aucune catégorie d'équipement ne dit « tribune », et le mot n'apparaît nulle part dans `src/`.\n\nCE QUI SERAIT FAUX ET QU'ON NE FAIT PAS. L'accrocher à `AUTRE` ferait naître une quinquennale d'organisme accrédité chez tout dirigeant ayant déclaré un équipement inclassable — un faux positif de masse sur une ligne coûteuse. La faire porter par l'établissement la donnerait à tous les ERP du 1er groupe, alors que le § 6 ne vise QUE la tribune télescopique de plus d'un mètre : ni une salle de restaurant, ni un magasin, ni un bureau n'en détiennent.\n\nCE QUE LE MANQUE COÛTE, ET IL EST BORNÉ. Une tribune télescopique se rencontre en type X (établissements sportifs), en type L (salles de spectacle) et dans les salles polyvalentes — aucun des trois secteurs cibles. Le relevé du 2026-09-03 le classait « sans objet dans les trois secteurs cibles » ; il n'est pas classé `sans_objet` ici, parce que ce statut dit « aucune échéance n'en sort » et que c'est faux : une échéance en sort, pour un exploitant que le produit ne sert pas encore.",
+      bloquePar:
+        "Aucune catégorie d'équipement « tribune » ni « structure provisoire et démontable », et aucun attribut ne dit qu'un établissement en détient une. Le § 6 pose en outre deux conditions cumulatives que rien ne peut renseigner : que la tribune soit télescopique, et que son dernier plancher déployé soit à plus d'un mètre du sol.",
+    },
+    {
+      ref: "CH 39",
+      intitule: "Entretien des filtres",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020304645",
+      versionEnVigueur: "1980-08-15",
+      modifiePar: {
+        texte: "Arrêté du 14 février 2000 - art. Annexe, v. init.",
+      },
+      luLe: "2026-09-04",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Quatre paragraphes sur le chargement en poussières des filtres d'une installation de ventilation de confort. § 1 : l'UTILISATEUR tient un livret d'entretien de l'installation de filtration, où sont portées les valeurs d'efficacité minimale. § 2 : l'installateur y consigne la perte de charge maximale au-delà de laquelle les filtres doivent être nettoyés ou changés. § 3 : une VISITE PÉRIODIQUE est effectuée par l'utilisateur ou son représentant, à une périodicité qui ne peut excéder UN AN, RAMENÉE À TROIS MOIS en l'absence d'un système de mesure et d'alarme fonctionnant en permanence, et raccourcie encore si les caractéristiques locales ou fonctionnelles le justifient. § 4 : les visites, mesures, nettoyages et changements sont notés sur le livret. Chemin : Livre II > Titre Ier > Chapitre V > Section 7 « Traitement d'air et ventilation » > Sous-section 1 « Ventilation de confort » (CH 29 à CH 40).",
+      citationCle:
+        "§ 3. Une visite périodique doit être effectuée par l'utilisateur ou son représentant. Cette périodicité ne doit pas être supérieure à un an. En l'absence d'un système de mesure et d'alarme fonctionnant en permanence, cette périodicité est ramenée à trois mois. De plus, les caractéristiques locales ou fonctionnelles de certaines installations peuvent justifier une périodicité plus courte, qui sera portée sur le livret d'entretien.",
+      statut: "retenu",
+      obligations: ["aeration-erp-filtres-visite-periodique"],
+      reserve:
+        "TROIS CHOSES RESTENT DEHORS, ET LA PREMIÈRE EST UN ÉCRIT.\n\n(1) LE LIVRET D'ENTRETIEN DE L'INSTALLATION DE FILTRATION (§ 1, § 2 et § 4) N'EST PORTÉ PAR AUCUNE OBLIGATION. C'est une pièce que l'utilisateur TIENT — valeurs d'efficacité minimale, perte de charge maximale fixée par l'installateur, puis chaque visite, mesure, nettoyage ou changement de filtre. Un état permanent avec `pieceAttendue`, de la même espèce que le carnet d'entretien d'ascenseur que le référentiel porte déjà. Rien ne le bloque au modèle ; ce lot ne l'encode pas parce qu'il n'a pas tranché s'il fait un écrit à part ou s'il rejoint le livret d'entretien de GC 18 h) et le dossier de R. 4224-17, trois écrits voisins que personne n'a rapprochés.\n\n(2) L'ALLÈGEMENT ANNUEL N'EST PAS DONNÉ, ET C'EST DÉLIBÉRÉ. Le § 3 écrit un plafond d'un an et le ramène à trois mois « en l'absence d'un système de mesure et d'alarme fonctionnant en permanence ». Le produit ne détient aucun attribut disant qu'une installation en est pourvue, et la règle du dépôt vaut ici en plein : un allègement ne se donne pas sur une absence supposée. `aeration-erp-filtres-visite-periodique` porte donc TRIMESTRIELLE, qui est le régime ordinaire — une ventilation de confort de restaurant ou de commerce n'a presque jamais de mesure permanente. La sur-application possible est de trois visites par an, faites par l'exploitant lui-même, donc visible et sans coût de tiers ; l'erreur inverse aurait multiplié le délai par quatre sans que personne puisse s'en apercevoir.\n\n(3) LA TROISIÈME PHRASE DU § 3 N'EST PAS ENCODABLE, et il faut le dire : « les caractéristiques locales ou fonctionnelles de certaines installations peuvent justifier une périodicité plus courte, qui sera portée sur le livret d'entretien ». C'est un rythme que l'exploitant fixe lui-même, sur le livret. Le produit ne l'invente pas ; la prescription particulière (ADR-014) est la voie par laquelle il pourrait un jour l'accueillir.",
+    },
+    {
+      ref: "AS 9",
+      intitule: "Vérifications techniques des ascenseurs",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020382882",
+      versionEnVigueur: "2008-10-08",
+      modifiePar: {
+        texte: "Arrêté du 26 juin 2008 - art. 1, v. init.",
+      },
+      luLe: "2026-09-04",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Deux titres dans une seule phrase : les ascenseurs sont vérifiés par un ORGANISME AGRÉÉ, dans les conditions de la section II du chapitre Ier (donc GE 6 et suivants), TOUS LES CINQ ANS et avant leur remise en service faisant suite à une transformation importante. La vérification porte sur le respect des dispositions de la section applicables aux ascenseurs. Chemin : Livre II > Titre Ier > Chapitre IX « Ascenseurs, escaliers mécaniques et trottoirs roulants » (AS 1 à AS 11).",
+      citationCle:
+        "Les ascenseurs doivent faire l'objet d'une vérification, fonctionnement compris, par un organisme agréé, dans les conditions prévues à la section II du chapitre Ier du présent titre tous les cinq ans et avant leur remise en service faisant suite à une transformation importante. Ces vérifications portent sur le respect des dispositions de la présente section applicables aux ascenseurs.",
+      statut: "retenu",
+      obligations: ["ascenseur-controle-technique-quinquennal"],
+      reserve:
+        "OUVERT AVANT D'ENCODER QUOI QUE CE SOIT, ET C'EST LE RÉSULTAT : IL N'Y AVAIT RIEN À ENCODER. Le contrôle quinquennal qu'il impose est le MÊME ACTE que celui de `ascenseur-controle-technique-quinquennal`, fondé sur `CCH R. 134-11` : même objet, même rythme de cinq ans, même appareil. Créer une seconde ligne aurait donné deux rendez-vous quinquennaux pour un seul contrôle — le doublon exact que le test anti-doublon cherche, et qu'il n'aurait PAS vu, les articles fondateurs étant différents. AS 9 est donc ajouté en CONTEXTE sur l'obligation existante, jamais en fondement d'une nouvelle.\n\nUN SECOND ARTICLE LE CITE, ET IL EST DÉJÀ AU CORPUS. `PO 1 § 3` (Livre III, hôtels de 5ᵉ catégorie) écrit : « Le contrôle des ascenseurs relève des dispositions particulières précisées dans le cadre de l'article AS 9 du règlement. » Le renvoi vient d'un autre livre, et il confirme qu'AS 9 est bien l'article du contrôle des ascenseurs — un recoupement qui ne partage pas l'angle mort de la lecture d'AS 9 elle-même.\n\nDEUX ÉCARTS RESTENT, ET AUCUN N'EST COMBLÉ ICI.\n\n(1) LE RÉALISATEUR. AS 9 exige un ORGANISME AGRÉÉ au sens de GE 6 ; `ascenseur-controle-technique-quinquennal` accepte `bureau_controle` ou `personne_qualifiee`, ce que `CCH R. 134-12` autorise (contrôleur technique agréé, organisme habilité, personne certifiée). Dans un ERP des quatre premières catégories, le règlement de sécurité est donc plus étroit que le CCH. Resserrer la ligne ferait perdre l'obligation aux ERP de 5ᵉ catégorie, aux immeubles d'habitation et aux locaux de travail, qui suivent le CCH seul : il faudrait deux lignes, donc un doublon d'acte. Non fait ; l'écart est nommé.\n\n(2) LA VÉRIFICATION AVANT REMISE EN SERVICE APRÈS TRANSFORMATION IMPORTANTE n'est portée par rien. C'est une obligation ÉVÉNEMENTIELLE au sens de l'ADR-026 — le fait déclencheur est la transformation, que le produit n'observe pas —, et cette nature n'a aujourd'hui AUCUNE surface (`src/lib/surfaces/obligations-sans-surface.ts`). L'encoder ajouterait une dixième ligne au registre daté qui existe pour les compter ; c'est une décision de conception, pas une correction.",
+    },
+    {
+      ref: "AS 10",
+      intitule:
+        "Vérifications techniques des escaliers mécaniques et des trottoirs roulants",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020382709",
+      versionEnVigueur: "2007-09-28",
+      modifiePar: {
+        texte: "Arrêté du 4 juillet 2007 - art. Annexe, v. init.",
+      },
+      luLe: "2026-09-04",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Trois actes, tous à la charge de l'exploitant. Avant remise en service après une transformation importante : vérification, fonctionnement compris, par une personne ou un organisme agréé. ANNUELLEMENT, par une personne ou un organisme agréé : examen du maintien de la conformité acquise, examen de l'état de conservation des éléments, vérification du fonctionnement des dispositifs de sécurité. AU MILIEU DE LA PÉRIODE ANNUELLE : examen supplémentaire des chaînes et crémaillères, par le service ou l'entreprise chargé de l'entretien — donc un second rendez-vous, à six mois du premier, avec un réalisateur différent.",
+      citationCle:
+        "En outre, l'exploitant est tenu de faire procéder : a) Annuellement, par une personne ou un organisme agréé : – à un examen du maintien de la conformité acquise lors de la mise en service ou après une transformation importante ; – à un examen de l'état de conservation des éléments de l'installation ; – à la vérification du fonctionnement des dispositifs de sécurité. b) Au milieu de la période annuelle ci-dessus, à un examen supplémentaire des chaînes et crémaillères, par le service ou l'entreprise chargé de l'entretien.",
+      statut: "obligation_manquante",
+      motif:
+        "DEUX RYTHMES ÉCRITS, ET AUCUN OBJET POUR LES PORTER. L'annuelle du a) et l'examen à mi-période du b) sont l'un et l'autre chiffrés, avec chacun son réalisateur — organisme ou personne agréé pour le premier, service ou entreprise d'entretien pour le second. Ce serait deux obligations, sur le patron de `incendie-erp-extincteurs-annuelle` et de sa révision décennale : deux actes, deux dates, deux preuves.\n\nCE QUI MANQUE EST UNE CATÉGORIE D'ÉQUIPEMENT, et le constat du 2026-09-03 se confirme en cherchant à nouveau : ni « escalier mécanique » ni « trottoir roulant » n'apparaissent dans `src/`. Le chapitre IX en réunit trois — ascenseurs, escaliers mécaniques, trottoirs roulants — et le référentiel n'en connaît qu'un.\n\nCE QU'IL NE FAUT SURTOUT PAS FAIRE, et c'est pour cela que ce motif est écrit plutôt qu'une ligne encodée : accrocher AS 10 à `ASCENSEUR`. Le chapitre traite les deux familles séparément — AS 9 pour les ascenseurs, AS 10 pour les escaliers mécaniques et trottoirs roulants — et leurs régimes ne coïncident sur rien : cinq ans contre un an, organisme agréé seul contre deux réalisateurs, aucun examen intermédiaire contre un examen à six mois. Un propriétaire d'ascenseur recevrait trois rendez-vous qu'il ne doit pas, et un exploitant d'escalier mécanique n'en recevrait toujours aucun.\n\nCE QUE LE MANQUE COÛTE. Un escalier mécanique se rencontre en centre commercial et en grand magasin — le type M, l'un des trois secteurs cibles. C'est celui des quatre manques de ce lot qui touche le plus près de la cible.",
+      bloquePar:
+        "Aucune catégorie d'équipement `ESCALIER_MECANIQUE` ni `TROTTOIR_ROULANT` dans `CATEGORIES_EQUIPEMENT` — donc rien à déclarer au parc, et rien à quoi accrocher les deux lignes. La créer est faisable et sans invention (le nom serait celui du texte), mais elle touche l'énumération Prisma, le formulaire d'équipement et le seed : c'est un lot, pas un effet de bord de celui-ci.",
+    },
+    {
+      ref: "GC 18",
+      intitule:
+        "Conditions d'installation des modules ou conteneurs spécialisés de cuisson",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000052225085",
+      versionEnVigueur: "2026-01-01",
+      modifiePar: {
+        texte: "Arrêté du 1er septembre 2025 - art. 26",
+      },
+      luLe: "2026-09-04",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Régit le module ou conteneur spécialisé de cuisson installé TEMPORAIREMENT, dans un local accessible ou non au public ou à moins de 8 mètres d'un bâtiment, après avis de la commission de sécurité. Huit conditions a) à h) : énergies admises, arrêt d'urgence unique par énergie, degrés coupe-feu des parois, dispositifs d'obturation des ouvertures latérales, extraction mécanique avec clapet coupe-feu, extinction automatique et extincteur, régime dérogatoire des bouteilles de gaz de 35 kg. Le h) porte les seuls actes datés : l'entretien renvoyé à GC 21, le livret d'entretien tenu à la disposition de la commission de sécurité, et le NETTOYAGE DU CONDUIT D'EXTRACTION des buées et graisses avant chaque mise en place et AU MOINS TOUS LES SIX MOIS.",
+      citationCle:
+        "h) L'entretien doit être réalisé conformément aux dispositions de l'article GC 21. Le livret d'entretien doit être tenu à la disposition de la commission de sécurité. Le conduit d'extraction des buées et graisses doit être nettoyé avant chaque mise en place et au moins tous les six mois.",
+      statut: "obligation_manquante",
+      motif:
+        "UN SEMESTRIEL ÉCRIT, SUR UN OBJET QUE LE PARC NE CONNAÎT PAS. Le dernier alinéa du h) impose un nettoyage du conduit d'extraction au moins tous les six mois, et un nettoyage supplémentaire avant chaque mise en place. Le premier est un rythme, le second un événement.\n\nCE QU'IL NE FAUT PAS FAIRE, ET C'EST LE POINT. L'accrocher à `HOTTE_PRO` donnerait un semestriel à toutes les cuisines professionnelles, alors que GC 21 ne leur impose qu'un ramonage ANNUEL des conduits — le référentiel le porte sous `cuisson-erp-circuits-extraction-nettoyage`. Ce serait doubler la fréquence pour l'immense majorité des exploitants sur la foi d'un article qui ne les vise pas : GC 18 ne parle que du module ou conteneur SPÉCIALISÉ, installé TEMPORAIREMENT. `GC 1` distingue déjà le module du reste du chapitre ; le référentiel, lui, n'a qu'une catégorie de hotte.\n\nCE QUE LE MANQUE COÛTE. Le module ou conteneur de cuisson est la cuisine mobile — camion-restaurant, cuisine relais de chantier ou d'événement, conteneur de remise en température. Il touche la restauration, secteur cible, mais par un mode d'exploitation que le produit ne sait pas décrire : rien, dans le modèle, ne dit qu'une cuisine est temporaire.",
+      bloquePar:
+        "Aucune catégorie d'équipement pour le « module ou conteneur spécialisé » de cuisson, et aucun attribut d'équipement disant qu'une installation de cuisson est TEMPORAIRE. Les deux conditions du champ de GC 18 sont indissociables : le régime dérogatoire qu'il ouvre (bouteilles de 35 kg, ouvertures latérales) n'a de sens que pour un module temporaire.",
+    },
+    {
+      ref: "MS 69",
+      intitule: "Exploitation de l'équipement d'alarme",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020317748",
+      versionEnVigueur: "1980-08-15",
+      modifiePar: {
+        texte: "Arrêté du 2 février 1993 - art. Annexe, v. init.",
+      },
+      luLe: "2026-09-04",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Quatre obligations d'exploitation de l'alarme : initier le personnel au fonctionnement du système d'alarme ; s'assurer, UNE FOIS PAR SEMAINE AU MOINS, du bon fonctionnement de l'installation et de l'aptitude des alimentations électriques et/ou pneumatiques de sécurité ; faire effectuer les remises en état le plus rapidement possible ; disposer en permanence d'un stock de petites fournitures de rechange (lampes, fusibles, vitres de déclencheurs manuels à bris de glace, cartouches de gaz inerte comprimé). Chemin : Livre II > Titre Ier > Chapitre XI > Section 5 « Système de sécurité incendie (SSI) » (MS 53 à MS 69) — donc écarté en 5ᵉ catégorie par PE 1 § 1.",
+      citationCle:
+        "L'exploitant ou son représentant doit s'assurer, une fois par semaine au moins, du bon fonctionnement de l'installation et de l'aptitude des alimentations électriques et/ou pneumatiques de sécurité à satisfaire aux exigences du présent règlement.",
+      statut: "retenu",
+      obligations: ["incendie-erp-alarme-verification-hebdomadaire"],
+      reserve:
+        "TROIS DES QUATRE OBLIGATIONS DE L'ARTICLE NE SONT PORTÉES PAR RIEN, et elles ne se ressemblent pas.\n\n(1) L'INITIATION DU PERSONNEL AU FONCTIONNEMENT DU SYSTÈME D'ALARME. Première phrase de l'article, sans rythme et sans réalisateur nommé. Elle est voisine de la formation à la sécurité de `L. 4141-1` et de l'exercice semestriel de `R. 4227-39`, que le référentiel porte l'une et l'autre côté Code du travail — mais elle vise l'ALARME nommément, et un ERP peut n'avoir aucun salarié. Non encodée : la rabattre sur l'une des deux serait le rabattage que ce dépôt refuse.\n\n(2) LA REMISE EN ÉTAT « LE PLUS RAPIDEMENT POSSIBLE » n'est ni un rythme ni un état : c'est une obligation de diligence dont le fait déclencheur est la panne. Le produit ne l'observe pas.\n\n(3) LE STOCK PERMANENT DE PETITES FOURNITURES DE RECHANGE — lampes, fusibles, vitres de bris de glace, cartouches de gaz inerte — est un ÉTAT PERMANENT MATÉRIEL, de la même espèce que le matériel de premiers secours de `R. 4224-14` que le référentiel porte. Rien ne le bloque au modèle ; ce lot ne l'encode pas parce que le mandat bornait ce qui devait l'être aux articles qui PORTENT UN RYTHME, et qu'une seconde ligne sur le même article se décide pour elle-même.\n\nUNE TENSION DE DATE, SIGNALÉE PLUTÔT QUE LISSÉE. La page de l'article annonce « Version en vigueur depuis le 15/08/1980 » et, dans le même bandeau, « Modifié par Arrêté du 2 février 1993 - art. Annexe, v. init. ». Les deux ne peuvent pas être vraies ensemble. `versionEnVigueur` porte la date que la page affiche comme telle — c'est elle que la veille compare —, et `modifiePar` porte le texte que la même page nomme. Le § 2.D du journal tient ce piège au n° 7, mais pour une page CONSOLIDÉE ; ici la lecture vient de la page d'ARTICLE, et les deux informations y coexistent telles quelles. Le désaccord est donc dans la source, pas dans la lecture.",
+    },
+    {
+      ref: "MS 71",
+      intitule: "Communications radioélectriques",
+      url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049865160",
+      versionEnVigueur: "2024-07-04",
+      modifiePar: {
+        texte: "Arrêté du 28 juin 2024 - art. 3",
+      },
+      luLe: "2026-09-04",
+      lecture: "agent_verbatim",
+      prescrit:
+        "Huit paragraphes sur la continuité des communications radioélectriques des services de secours en infrastructure. Le § 1 borne le champ : ERP DU 1ER GROUPE et parcs de stationnement couverts DISPOSANT DE PLUS D'UN NIVEAU DE SOUS-SOL, et il écarte l'établissement dont la surface totale des niveaux en sous-sol est inférieure à 100 m². Le § 2 met à la charge de l'exploitant l'étude, la réalisation et l'entretien d'une installation fixe quand la continuité n'est pas acquise. Le § 3 porte le rythme : vérification par un ORGANISME AGRÉÉ par le ministère chargé de la sécurité civile, une fois avant l'ouverture au public, puis TOUS LES TROIS ANS et lors de la visite de réception consécutive à des travaux. Les § 5 et § 6 imposent une attestation de vérifications réglementaires conclusive, consignée au registre de sécurité. Le § 7 ouvre une dérogation totale ou partielle après avis conforme de la commission de sécurité.",
+      citationCle:
+        "§ 3. La vérification de la continuité des moyens de communications radioélectriques est réalisée par un organisme agréé par le ministère chargé de la sécurité civile : - une fois avant l'ouverture au public de l'établissement concerné ; puis - une fois tous les trois ans et lors de la visite de réception consécutive à des travaux relatifs à l'installation précitée.",
+      statut: "obligation_manquante",
+      motif:
+        "UNE TRIENNALE ÉCRITE, UN CHAMP QUE LE PRODUIT NE SAIT PAS INTERROGER. Le § 3 est aussi net que possible : organisme agréé, une fois avant ouverture, puis tous les trois ans. Ce qui manque n'est pas la lecture, c'est la question qui dit à qui elle s'adresse.\n\nDEUX CONDITIONS CUMULATIVES, AUCUNE RENSEIGNABLE. Le § 1 exige (a) plus d'un niveau de sous-sol et (b) une surface totale des niveaux en sous-sol d'au moins 100 m². `Etablissement` ne porte ni l'un ni l'autre, et aucun attribut voisin ne s'en approche.\n\nCE QU'UNE SUR-APPLICATION COÛTERAIT, ET POURQUOI ELLE EST REFUSÉE ICI. La règle du dépôt veut qu'entre sur- et sous-appliquer, on choisisse l'erreur que subit quelqu'un qui peut s'en apercevoir. Elle ne tranche pas en faveur de la sur-application quand le rendez-vous appelle un ORGANISME AGRÉÉ par le ministère de l'intérieur, tous les trois ans, pour une installation que l'immense majorité des ERP du 1er groupe n'a pas : le restaurant de plain-pied, le magasin de rue et le bureau sans sous-sol n'y sont pas, et la ligne leur coûterait une recherche de prestataire et un devis avant qu'ils comprennent qu'elle ne les vise pas. Le § 1 exclut ici plus qu'il n'inclut, ce qui n'est le cas d'aucune des sur-applications déjà assumées par le référentiel.\n\nCE QUE LE MANQUE COÛTE. Il est réel pour un commerce à réserve enterrée sur deux niveaux ou un restaurant à cave et sous-sol technique — mais il suppose PLUS D'UN niveau de sous-sol, ce qui reste rare dans les trois secteurs cibles.",
+      bloquePar:
+        "Deux attributs d'établissement absents du modèle : le NOMBRE DE NIVEAUX DE SOUS-SOL (le § 1 exige « plus d'un ») et la SURFACE TOTALE DES NIVEAUX EN SOUS-SOL (seuil de 100 m²). Les poser est une décision d'onboarding — deux questions de plus au dirigeant — et non un encodage ; c'est exactement la forme `Transmission.attribut_absent` de l'ADR-024, qui ne peut cependant pas être déclarée tant qu'aucune obligation ne porte l'article.",
     },
   ],
 };

@@ -212,6 +212,21 @@ export const obligationsAscenseurs: Obligation[] = [
           "https://www.legifrance.gouv.fr/loda/id/JORFTEXT000026286347",
         versionConstatee: "2026-05-15",
       },
+      {
+        // AJOUTÉE LE 2026-09-04 : le règlement de sécurité ERP impose le MÊME
+        // contrôle quinquennal, et le référentiel ne le citait pas. C'est un
+        // ajout de CONTEXTE, pas un second fondement — créer une ligne pour
+        // AS 9 aurait donné deux rendez-vous quinquennaux pour un seul acte,
+        // et le test anti-doublon ne l'aurait pas vu, les articles fondateurs
+        // étant différents.
+        source: "ARRETE",
+        reference:
+          "Arrêté du 25 juin 1980, art. AS 9 (ERP des 4 premières catégories : vérification par un organisme agréé tous les cinq ans)",
+        article: "AS 9",
+        url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000020382882",
+        note: "« Les ascenseurs doivent faire l'objet d'une vérification, fonctionnement compris, par un organisme agréé, dans les conditions prévues à la section II du chapitre Ier du présent titre tous les cinq ans et avant leur remise en service faisant suite à une transformation importante. » Article ouvert à la source le 2026-09-04. DEUX ÉCARTS AVEC LE RÉGIME DU CCH ENCODÉ ICI, tous deux relevés et non corrigés : (1) AS 9 exige un ORGANISME AGRÉÉ au sens de GE 6, là où R. 134-12 admet aussi une personne certifiée — dans un ERP des quatre premières catégories, le règlement est plus étroit que le CCH ; (2) la vérification avant remise en service après TRANSFORMATION IMPORTANTE n'est portée par aucune obligation, sa nature étant événementielle et cette nature n'ayant aucune surface. Le détail est dans la réserve d'AS 9 au corpus `arrete-1980-livre-2`.",
+        versionConstatee: "2008-10-08",
+      },
     ],
     periodicite: "quinquennale",
     nature: "echeance_recurrente",
