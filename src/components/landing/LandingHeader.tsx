@@ -11,6 +11,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { signOutAction } from "@/lib/auth/actions";
 
 // Deux entrées, deux destinations à venir : aucune des deux pages
 // n'existe encore. On les affiche quand même — la barre doit montrer la
@@ -85,7 +86,22 @@ export function LandingHeader({
               >
                 Se connecter
               </Link>
-            ) : null}
+            ) : (
+              // L'accueil est la destination du « Quitter » de la mise en
+              // place, et il n'y porte pas le header d'application
+              // (`AppHeaderGate` l'exclut par égalité stricte). Sans cette
+              // sortie, un compte connecté sans dossier arrivait ici sur un
+              // seul bouton, qui le renvoyait à l'écran qu'il venait de
+              // quitter.
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="text-[0.875rem] text-[color:var(--board-slate-mid)] transition-colors hover:text-[color:var(--board-ink)]"
+                >
+                  Déconnexion
+                </button>
+              </form>
+            )}
             <Link
               href={ctaHref}
               className="lp-btn lp-btn-ink px-[18px] py-[10px] text-[0.875rem]"
