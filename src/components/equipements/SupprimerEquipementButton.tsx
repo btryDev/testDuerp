@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useConfirmation } from "@/components/ui-kit/Confirmation";
 import {
   supprimerEquipement,
   type SuppressionEquipementResult,
@@ -36,8 +37,20 @@ export function SupprimerEquipementButton({
     null,
   );
   const router = useRouter();
+  const { demander, confirmation } = useConfirmation();
 
   const estErreur = resultat?.statut === "erreur";
+
+  const retirer = () => {
+    setResultat(null);
+    startTransition(async () => {
+      const res = await supprimerEquipement(id);
+      setResultat(res);
+      // On ne quitte l'écran que si le retrait a bien eu lieu :
+      // sur une erreur, le message doit rester lisible là où il est né.
+      if (redirectTo && res.statut !== "erreur") router.push(redirectTo);
+    });
+  };
 
   return (
     <div className="space-y-3">
@@ -45,28 +58,23 @@ export function SupprimerEquipementButton({
         variant="boardClair"
         size="boardSm"
         disabled={pending}
-        onClick={() => {
-          if (
-            !confirm(
-              "Retirer cet équipement du parc ? Il ne générera plus d'échéance. " +
-                "Ses rapports de vérification et ses actions correctives sont " +
-                "conservés : la loi impose de pouvoir les présenter en cas de " +
-                "contrôle.",
-            )
-          )
-            return;
-          setResultat(null);
-          startTransition(async () => {
-            const res = await supprimerEquipement(id);
-            setResultat(res);
-            // On ne quitte l'écran que si le retrait a bien eu lieu :
-            // sur une erreur, le message doit rester lisible là où il est né.
-            if (redirectTo && res.statut !== "erreur") router.push(redirectTo);
-          });
-        }}
+        onClick={() =>
+          demander({
+            titre: "Retirer cet équipement du parc ?",
+            detail:
+              "Il sortira du calendrier et ne générera plus d'échéance. Ses " +
+              "rapports de vérification et ses actions correctives restent au " +
+              "dossier : la loi impose de pouvoir les présenter en cas de " +
+              "contrôle.",
+            agir: "Retirer l'équipement",
+            alors: retirer,
+          })
+        }
       >
         {pending ? "Retrait…" : label}
       </Button>
+
+      {confirmation}
 
       {resultat && resultat.statut !== "supprime" && (
         <section

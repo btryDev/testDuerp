@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConfirmation } from "@/components/ui-kit/Confirmation";
 import { modifierMesure, supprimerMesure } from "@/lib/mesures/actions";
 import { LABEL_TYPE_MESURE } from "@/lib/mesures/labels";
 import type { TypeMesure } from "@/lib/referentiels/types";
@@ -37,6 +38,7 @@ export function MesureRow({
   origine,
 }: Props) {
   const [pending, startTransition] = useTransition();
+  const { demander, confirmation } = useConfirmation();
 
   const setStatut = (next: Statut) => {
     if (next === statut) return;
@@ -82,17 +84,30 @@ export function MesureRow({
             variant="boardClair"
             size="boardSm"
             disabled={pending}
-            onClick={() => {
-              if (!confirm("Supprimer cette mesure ?")) return;
-              startTransition(async () => {
-                await supprimerMesure(id);
-              });
-            }}
+            onClick={() =>
+              demander({
+                titre: `Supprimer la mesure « ${libelle} » ?`,
+                detail:
+                  statut === "prevue"
+                    ? "Son échéance et son responsable partent avec elle, et " +
+                      "elle quitte le plan d'actions. Le risque restera sans " +
+                      "cette mesure en regard."
+                    : "Le risque restera sans cette mesure en regard : le " +
+                      "DUERP ne dira plus qu'elle est en place.",
+                agir: "Supprimer la mesure",
+                alors: () =>
+                  startTransition(async () => {
+                    await supprimerMesure(id);
+                  }),
+              })
+            }
           >
             Supprimer
           </Button>
         </div>
       </div>
+
+      {confirmation}
 
       {statut === "prevue" && (
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">

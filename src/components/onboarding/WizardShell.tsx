@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConfirmation } from "@/components/ui-kit/Confirmation";
 import { signOutAction } from "@/lib/auth/actions";
 import { StepIdentite } from "./StepIdentite";
 import { StepTypologie } from "./StepTypologie";
@@ -66,7 +67,7 @@ export function WizardShell({ email }: { email?: string | null }) {
   const [state, setState] = useState<OnboardingState>(VALEURS_INITIALES);
   const [etapeIdx, setEtapeIdx] = useState(0);
   const [blocage, setBlocage] = useState<Blocage | null>(null);
-  const [sortieDemandee, setSortieDemandee] = useState(false);
+  const { demander, confirmation } = useConfirmation();
 
   // Quitter : rien n'est persisté avant l'étape finale (état React pur),
   // donc on le dit honnêtement au lieu d'un « Enregistrer et quitter »
@@ -79,11 +80,30 @@ export function WizardShell({ email }: { email?: string | null }) {
   // inerte pour le reste de la visite — le clic ne produit alors plus rien
   // du tout. La question se pose donc dans la page, où rien ne peut la
   // supprimer.
+  //
+  // Elle était écrite à la main ici. Le 2026-09-04, seize autres `confirm()`
+  // ont été trouvés dans quinze fichiers — presque tous sur des boutons qui
+  // suppriment —, et la carte est devenue `ui-kit/Confirmation`. La garder en
+  // double ici l'aurait fait diverger au premier des deux qu'on retouche :
+  // c'est déjà arrivé, et l'emphase inversée ci-dessous en était la trace.
   const modifie = JSON.stringify(state) !== JSON.stringify(VALEURS_INITIALES);
 
   const quitter = () => {
     if (modifie) {
-      setSortieDemandee(true);
+      // L'emphase était à l'envers : « Quitter sans enregistrer » sortait en
+      // pilule d'encre pleine et « Reprendre la saisie » en contour, si bien
+      // que l'œil, le pouce et la touche Entrée allaient tous les trois vers
+      // la porte qui détruit. Le kit tient désormais ce choix, sans prop pour
+      // le défaire.
+      demander({
+        titre: "Quitter la mise en place ?",
+        detail:
+          "Vos réponses ne seront pas conservées — le questionnaire ne prend " +
+          "que quelques minutes et pourra être repris depuis le début.",
+        agir: "Quitter sans enregistrer",
+        rester: "Reprendre la saisie",
+        alors: () => router.push("/"),
+      });
       return;
     }
     router.push("/");
@@ -345,48 +365,7 @@ export function WizardShell({ email }: { email?: string | null }) {
 
         {/* La confirmation de sortie, rendue dans le flux juste sous la
             barre de progression — là où le clic vient d'avoir lieu. */}
-        {sortieDemandee ? (
-          <div
-            role="alertdialog"
-            aria-labelledby="sortie-titre"
-            aria-describedby="sortie-detail"
-            className="mb-8 rounded-2xl bg-[color:var(--board-card)] p-5 shadow-[inset_0_0_0_1px_rgba(10,10,10,.14)]"
-          >
-            <p
-              id="sortie-titre"
-              className="m-0 text-[14px] font-semibold text-[color:var(--board-ink)]"
-            >
-              Quitter la mise en place ?
-            </p>
-            <p
-              id="sortie-detail"
-              className="mt-1.5 text-[13px] leading-[1.55] text-[color:var(--board-slate-mid)]"
-            >
-              Vos réponses ne seront pas conservées — le questionnaire ne prend
-              que quelques minutes et pourra être repris depuis le début.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              {/* Le focus va à la porte qui ne détruit rien. */}
-              <Button
-                type="button"
-                variant="boardClair"
-                size="boardSm"
-                autoFocus
-                onClick={() => setSortieDemandee(false)}
-              >
-                Reprendre la saisie
-              </Button>
-              <Button
-                type="button"
-                variant="board"
-                size="boardSm"
-                onClick={() => router.push("/")}
-              >
-                Quitter sans enregistrer
-              </Button>
-            </div>
-          </div>
-        ) : null}
+        {confirmation ? <div className="mb-5">{confirmation}</div> : null}
 
         <form
           action={formAction}

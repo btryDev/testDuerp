@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { useConfirmation } from "@/components/ui-kit/Confirmation";
 import {
   supprimerEtablissement,
   type SuppressionResult,
@@ -22,6 +23,15 @@ import {
 export function SupprimerEtablissementButton({ id }: { id: string }) {
   const [pending, startTransition] = useTransition();
   const [refus, setRefus] = useState<SuppressionResult | null>(null);
+  const { demander, confirmation } = useConfirmation();
+
+  const supprimer = () => {
+    setRefus(null);
+    startTransition(async () => {
+      const resultat = await supprimerEtablissement(id);
+      if (resultat?.statut === "refus") setRefus(resultat);
+    });
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -29,25 +39,24 @@ export function SupprimerEtablissementButton({ id }: { id: string }) {
         variant="boardClair"
         size="boardSm"
         disabled={pending}
-        onClick={() => {
-          if (
-            !confirm(
-              "Supprimer cet établissement ? Ses équipements, vérifications et " +
-                "rapports seront effacés. Si des versions de votre DUERP sont " +
-                "archivées, la suppression sera refusée : la loi impose de les " +
-                "conserver 40 ans.",
-            )
-          )
-            return;
-          setRefus(null);
-          startTransition(async () => {
-            const resultat = await supprimerEtablissement(id);
-            if (resultat?.statut === "refus") setRefus(resultat);
-          });
-        }}
+        onClick={() =>
+          demander({
+            titre: "Supprimer cet établissement et tout ce qu'il porte ?",
+            detail:
+              "Ses équipements, ses vérifications, ses rapports téléversés, " +
+              "son plan d'actions et son registre partent avec lui, sans " +
+              "retour possible. Si des versions de votre DUERP sont archivées, " +
+              "la suppression sera refusée : la loi impose de les conserver " +
+              "40 ans.",
+            agir: "Supprimer l'établissement",
+            alors: supprimer,
+          })
+        }
       >
         {pending ? "Suppression…" : "Supprimer"}
       </Button>
+
+      {confirmation}
 
       {refus && (
         // Le refus est un état, pas une décoration : champ du signal et

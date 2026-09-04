@@ -388,7 +388,13 @@ export default async function RisquesUnitePage({
                     )}
                   </div>
                 </div>
-                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0 sm:flex-nowrap">
+                {/* `sm:flex-nowrap` a été retiré : la question de suppression
+                    du risque naît ici et doit passer à la ligne pour avoir sa
+                    largeur, au lieu de se glisser entre deux pilules. Les
+                    boutons, eux, ne bougent pas — la colonne est `sm:w-auto
+                    sm:shrink-0`, donc dimensionnée sur son contenu, et une
+                    ligne qui ne déborde pas ne se replie pas. */}
+                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">
                   {/* Le déroulé « cotation puis mesures » se lisait ici dans
                       une bulle au survol — invisible au doigt (interdit 18),
                       et déjà écrit en clair dans la marche à suivre ci-dessus.
