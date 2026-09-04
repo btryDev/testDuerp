@@ -8,6 +8,7 @@ import {
   libelleEtatCourtCapitale,
   type RegistreLigne,
 } from "./etats";
+import { JOURS_HORIZON_PROCHE } from "@/lib/dates";
 import { etatCharge, libelleCharge } from "@/lib/batiments/etat-charge";
 import { resumerEquipement } from "@/lib/equipements/etat-verifications";
 
@@ -78,6 +79,34 @@ describe("un mot par état", () => {
     }
   });
 
+  it("les deux états qui se partagent l'horizon nomment tous deux la borne", () => {
+    // POURQUOI CE TEST EXISTE. « Un mot par état » a été respecté à la lettre
+    // — « sous 30 jours » et « à venir » sont bien deux mots — et le lecteur y
+    // perdait quand même : « à venir » est le terme générique qui CONTIENT
+    // « sous 30 jours », et les deux comptes affichés côte à côte sur la carte
+    // d'un appareil ne se lisaient plus comme disjoints. Compter juste ne
+    // suffisait pas ; il fallait que les MOTS soient disjoints eux aussi.
+    //
+    // Ce que ce test tient, et qu'aucune règle d'unicité ne tenait : `proche`
+    // et `lointain` partagent une borne, donc chacun doit la NOMMER. Le jour
+    // où l'un des deux redevient un terme vague — « à venir », « plus tard »,
+    // « bientôt » —, ce test échoue.
+    //
+    // Et il exige le nombre de la CONSTANTE, pas un 30 littéral : un horizon
+    // porté à 45 jours doit changer les deux phrases, sinon elles mentent.
+    const borne = String(JOURS_HORIZON_PROCHE);
+    for (const e of ["proche", "lointain"] as const) {
+      for (const mot of [LIBELLE_ETAT[e].un, LIBELLE_ETAT[e].plusieurs]) {
+        expect(
+          mot.includes(borne),
+          `« ${mot} » ne nomme pas la borne des ${borne} jours. ` +
+            "`proche` et `lointain` se partagent cet horizon : un mot qui ne " +
+            "le dit pas se lit comme englobant l'autre état.",
+        ).toBe(true);
+      }
+    }
+  });
+
   it("aucun mot n'est vide, ni ne traîne d'espace", () => {
     for (const e of ETATS) {
       for (const mot of [
@@ -103,7 +132,9 @@ describe("un mot par état", () => {
       );
     }
     expect(libelleEtatCourtCapitale("enRetard")).toBe("Dépassées");
-    expect(libelleEtatCourtCapitale("proche")).toBe("Sous 30 j");
+    expect(libelleEtatCourtCapitale("proche")).toBe(
+      `Sous ${JOURS_HORIZON_PROCHE} j`,
+    );
   });
 });
 
