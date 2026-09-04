@@ -49,6 +49,8 @@
  * exemple — n'oblige plus à réécrire la règle une seconde fois.
  */
 
+import { LIBELLE_ETAT_COURT } from "@/lib/calendrier/etats";
+
 /** Ce qu'une carte de zone a le droit d'annoncer. Union fermée. */
 export type EtatCharge =
   | { readonly nature: "sansObjet" }
@@ -84,6 +86,21 @@ export function etatCharge({
  * déjà écrit pourquoi, juste au-dessus : « 0 équipement ». Deux mots suffisent
  * donc, et il n'y a pas la place pour davantage : le volume mesure 156 px dès
  * qu'une quatrième zone existe.
+ *
+ * `enRetard` ÉCRIVAIT « à traiter », ET C'ÉTAIT LE QUATRIÈME MOT D'UN MÊME
+ * ÉTAT. À un clic de cette pastille, le relevé du hero disait « DÉPASSÉES », le
+ * bandeau du parc « EN RETARD » et la carte d'un appareil « 5 dépassées » — le
+ * dirigeant avait donc à deviner que ces quatre-là parlaient de la même chose.
+ * Le mot vient désormais de `LIBELLE_ETAT_COURT` (`lib/calendrier/etats`), qui
+ * tenait déjà la couleur de chaque état et tient maintenant son mot. La forme
+ * courte, et pas la longue, parce que la place est celle qu'elle est ; c'est le
+ * même mot abrégé, jamais un synonyme.
+ *
+ * `sansObjet` et `aJour` n'ont pas d'entrée là-bas et n'en auront pas : ce ne
+ * sont pas des états d'échéance mais des états de ZONE — l'un dit qu'il n'y a
+ * rien de déclaré, l'autre qu'aucune échéance n'est dépassée sur un parc qui,
+ * lui, existe. Les faire entrer dans le registre des lignes ferait croire
+ * qu'une occurrence peut être « sans objet ».
  */
 export function libelleCharge(etat: EtatCharge): string {
   switch (etat.nature) {
@@ -92,6 +109,6 @@ export function libelleCharge(etat: EtatCharge): string {
     case "aJour":
       return "À jour";
     case "enRetard":
-      return "à traiter";
+      return LIBELLE_ETAT_COURT.enRetard;
   }
 }

@@ -994,25 +994,37 @@ export default async function CalendrierPage({
 
           Restait un écart d'énumération : la phrase disait « toutes les
           familles » puis en nommait trois sur cinq. Elle se dérive maintenant
-          du type fermé, comme celle du chapeau. */}
+          du type fermé, comme celle du chapeau.
+
+          L'ÉNUMÉRATION EST PARTIE D'ICI le 2026-09-04, et rien d'autre. Le
+          chapeau, à trois cents pixels au-dessus et sur le même écran, nomme
+          déjà les cinq familles — les nommer deux fois n'en apprenait pas une
+          sixième. La moitié droite reste : « comme le badge Calendrier » est le
+          seul rapprochement que le chapeau ne fait pas, et c'est celui qui
+          désamorce l'écart apparent entre deux nombres visibles ensemble.
+
+          Aucune famille n'est écrite en dur : la phrase n'en nomme plus
+          aucune, donc elle ne peut plus en oublier une. */}
       <p className="m-0">
-        Les compteurs du bandeau réunissent toutes les familles —{" "}
-        {enumererFamilles()} —, comme le badge « Calendrier » de la barre
-        latérale.
+        Les compteurs du bandeau réunissent toutes les familles
+        d&apos;échéances, comme le badge « Calendrier » de la barre latérale.
       </p>
-      {/* L'écart avec les autres écrans, dit là où il se constate. Le parc et
-          les zones ne comptent que ce qu'un équipement porte ; ici, rien n'est
-          écarté. Sans cette phrase, deux nombres justes se contredisaient à
-          l'œil sans qu'aucun ne soit corrigeable. */}
+      {/* LA SECONDE PHRASE DE CE PARAGRAPHE EST PARTIE le 2026-09-04. Elle
+          disait, quasi mot pour mot, ce que dit le chapeau : « Les chiffres de
+          la page Équipements et les pastilles des zones ne comptent que ce que
+          portent vos équipements — ce qui est dû au titre de l'établissement
+          lui-même ou de vos salariés ne s'y trouve pas, et se lit ici. » Deux
+          énoncés du même fait sur un même écran, dont l'un derrière un « ? »
+          qu'il faut ouvrir.
+
+          Ce qui reste est ce que le chapeau ne dit pas et ne peut pas dire :
+          la portée ANNUELLE du compte de la règle, qui n'existe que sur cette
+          page. */}
       <p className="m-0">
         Le compte en tête de la règle porte sur l&apos;<strong>année
         affichée</strong>{" "}
         ; les occurrences « à planifier », qui n&apos;ont pas de date, sont
-        comptées quelle que soit l&apos;année. Les chiffres de la
-        page Équipements et les pastilles des zones, eux, ne comptent que ce que
-        portent vos équipements — ce qui est dû au titre de
-        l&apos;établissement lui-même ou de vos salariés ne s&apos;y trouve
-        pas, et se lit ici.
+        comptées quelle que soit l&apos;année.
       </p>
       <div className="flex flex-wrap gap-2 pt-1">
         <LegalBadge
