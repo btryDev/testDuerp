@@ -242,6 +242,65 @@ rien sur une correction de charte. S'y ajoutent tout l'onboarding, le refus de l
 
 ---
 
+## 7 bis. Les équipements de protection — ce qu'on ne sait pas déclarer
+
+**Relevé le 2026-09-04, à la demande de la propriétaire.** Un dirigeant ne peut
+déclarer ni un casque, ni un harnais, ni des chaussures de sécurité : les
+**dix-neuf catégories d'équipement** vont de l'installation électrique au
+compacteur, et aucune ne porte un équipement de protection. **Zéro obligation du
+référentiel ne les vise.**
+
+Le DUERP, lui, les traite — il porte les mesures de prévention, et le dossier de
+démonstration y nomme chaussures antidérapantes, gants anti-coupure et gants
+chimiques. C'est le bon endroit pour l'évaluation du risque. **Ce n'est pas un
+suivi de vérification.**
+
+### Le motif d'exclusion écrit ne couvre pas ce qui manque
+
+`.claude/CLAUDE.md` range en hors périmètre « registres non couverts : […] EPI ».
+Le mot qui compte est **registre**. Ce motif n'écarte ni :
+
+| Article | Ce qu'il impose | État |
+| --- | --- | --- |
+| `R. 4321-4` | Mise à disposition des EPI et des vêtements de travail, et veiller à leur **utilisation effective** | dépouillé le 2026-09-02, non encodé |
+| `R. 4323-99` à `-103` | **Vérifications générales périodiques** des EPI, dont la liste et la périodicité sont fixées par arrêté | `R. 4323-99` dépouillé, les autres non |
+| `R. 4323-106` | — | non ouvert |
+
+**Et voici le point qui rend l'omission difficile à défendre** : `R. 4323-99` est
+**la même mécanique d'habilitation par arrêté que `R. 4323-23`** — un article du
+Code qui renvoie à un arrêté pour la liste des équipements soumis et leur
+rythme. Le dépôt a instruit `R. 4323-23` par l'arrêté du 1ᵉʳ mars 2004 (levage),
+puis par celui du 5 mars 1993 (machines hors levage). **On a suivi deux branches
+du même mécanisme et laissé la troisième.**
+
+### Ce qu'il faudrait pour l'ouvrir
+
+1. **Dépouiller l'arrêté** que `R. 4323-99` habilite — le dépôt ne le connaît pas.
+   Attention : il ne s'agit **pas** de l'arrêté du 19 mars 1993, qui est celui des
+   travaux dangereux du plan de prévention et que le corpus porte déjà.
+2. **Une ou plusieurs catégories d'équipement.** Un EPI se déclare-t-il comme un
+   appareil, ou par nature — « protection antichute », « protection
+   respiratoire » ? Le texte le dira : le lot « compacteur » du 2026-09-02 a
+   montré qu'une catégorie mal nommée produit soit un faux négatif muet, soit du
+   bruit sur tout le parc.
+3. **Trancher le porteur.** Un EPI est remis à une personne — `R. 4323-99` porte
+   sur l'équipement, mais l'attribution est nominative. C'est le même partage que
+   `R. 4224-14` (le matériel de secours, porteur établissement) et `R. 4224-15`
+   (le secouriste, porteur salarié) : deux articles voisins, deux porteurs, et
+   les fondre serait le défaut que l'ADR-022 a corrigé sur `PE 4`.
+
+**La protection collective** n'existe pas davantage comme objet. Ce qui s'en
+approche est traité par domaine — garde-corps sous le travail en hauteur,
+signalisation, désenfumage —, jamais comme une famille.
+
+### Ce qu'on dit aujourd'hui, et qui reste vrai
+
+Que les EPI sont **évalués au DUERP** et que **leur vérification périodique n'est
+pas suivie**. C'est exact et c'est dicible ; ce qui ne l'est pas, c'est de
+laisser croire que le motif « registre EPI non couvert » recouvre la question.
+
+---
+
 ## 8. Ce que l'onboarding permet de déduire — à instruire, bas de liste
 
 **Idée de la propriétaire, 2026-09-03.** Le lot « personnes habituellement
