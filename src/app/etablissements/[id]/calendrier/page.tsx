@@ -1006,8 +1006,9 @@ export default async function CalendrierPage({
           l'œil sans qu'aucun ne soit corrigeable. */}
       <p className="m-0">
         Le compte en tête de la règle porte sur l&apos;<strong>année
-        affichée</strong> ; les occurrences « à planifier », qui n&apos;ont pas
-        de date, sont comptées quelle que soit l&apos;année. Les chiffres de la
+        affichée</strong>{" "}
+        ; les occurrences « à planifier », qui n&apos;ont pas de date, sont
+        comptées quelle que soit l&apos;année. Les chiffres de la
         page Équipements et les pastilles des zones, eux, ne comptent que ce que
         portent vos équipements — ce qui est dû au titre de
         l&apos;établissement lui-même ou de vos salariés ne s&apos;y trouve

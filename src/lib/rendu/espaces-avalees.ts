@@ -154,14 +154,49 @@ const BALISES_INLINE = new Set([
  * Un rendu se termine par quelque chose qui appelle une espace : une lettre, un
  * chiffre, ou une ponctuation fermante. Après « GHW2 » comme après « 50 %, » ou
  * « (art. 7) », le mot suivant a besoin d'être décollé.
+ *
+ * **Cette classe-ci n'est pas le miroir de `DEBUT_APPELLE_ESPACE`, et l'écart
+ * est connu** : le guillemet OUVRANT `«` et le tiret d'incise `—` appellent
+ * bien une espace APRÈS eux en français, et ils n'y figurent pas. Les ajouter a
+ * été essayé le 2026-09-04 et rend **zéro** soudure de plus sur le dépôt — la
+ * règle serait donc une règle que rien n'exerce. Elle est nommée ici plutôt
+ * qu'ajoutée : le jour où une phrase coupe la ligne juste après un `«` ou un
+ * `—`, c'est la ligne à modifier, et le relevé du défaut existe déjà.
  */
 const FIN_APPELLE_ESPACE = /[\p{L}\p{N}»)\].,;:!?%€]$/u;
 
 /**
- * Un rendu commence par quelque chose qui appelle une espace devant lui. La
- * ponctuation fermante en est exclue : un mot suivi d'une virgule se colle bien.
+ * Un rendu commence par quelque chose qui appelle une espace devant lui.
+ *
+ * **Une ponctuation ne se sépare pas toute seule — c'est vrai en anglais, pas
+ * en français**, et c'est par là que la garde a laissé passer trois soudures le
+ * jour même où elle a été écrite. La première rédaction n'admettait que la
+ * lettre, le chiffre et l'ouvrante ; tout le reste de la ponctuation était tenu
+ * pour se détachant de lui-même, à la manière du `word,` anglais. Trois
+ * familles s'y distinguent, et la garde doit les trancher séparément :
+ *
+ * - **la ponctuation BASSE** — `,` `.` `…` — et les FERMANTES `)` `]` : elles
+ *   se collent au mot qui précède, dans les deux langues. Hors de la classe :
+ *   « un mot, ensuite » ne manque d'aucune espace.
+ * - **la ponctuation HAUTE** — `;` `:` `!` `?` — et le guillemet fermant `»` :
+ *   le français leur met une espace DEVANT, l'anglais aucune. Dans la classe.
+ *   « l'année affichée; les occurrences » est bien une espace avalée, et c'est
+ *   exactement la forme que ce produit écrit.
+ * - **le tiret d'incise** `—` (et son cousin `–`) : il s'écrit entre deux
+ *   espaces dans les deux langues, et ce dépôt en est plein. Dans la classe.
+ *
+ * Les trois occurrences du relevé visuel du 2026-09-04 — « un fait— une
+ * embauche », « un fait— chaque ligne », « l'année affichée; les occurrences »
+ * — portaient toutes une HAUTE ou un tiret à droite de la soudure, et le
+ * balayage rendait zéro sur les trois pendant que son test restait vert.
+ *
+ * Le témoin qui sépare cette règle-ci de la règle de l'entité : à forme égale,
+ * une soudure ne se voit que si le nœud de droite porte une entité HTML
+ * (`d&apos;un engin`), qui lui fait perdre son blanc de tête. Sans entité —
+ * `/duerp/import` — l'espace survit et il n'y a rien à relever. Les deux
+ * règles se composent ; corriger celle-ci sans l'autre ne rend rien.
  */
-const DEBUT_APPELLE_ESPACE = /^[\p{L}\p{N}«(\[]/u;
+const DEBUT_APPELLE_ESPACE = /^[\p{L}\p{N}«(\[;:!?»—–]/u;
 
 /** Les utilitaires Tailwind qui écartent une balise de sa voisine. */
 const MARGE_HORIZONTALE = /(^|[\s"'`])-?m[lrxse]-/;

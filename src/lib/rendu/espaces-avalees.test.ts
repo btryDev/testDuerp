@@ -142,6 +142,66 @@ describe("les trois formes de soudure", () => {
   });
 });
 
+describe("la ponctuation ne se sépare pas toute seule en français", () => {
+  /**
+   * LE TROU QUE CES TROIS TESTS FERMENT. La première rédaction de la garde
+   * n'admettait à droite d'une soudure que la lettre, le chiffre et l'ouvrante :
+   * toute autre ponctuation était tenue pour se détachant d'elle-même, à la
+   * manière du `word,` anglais. Elle a donc laissé passer trois soudures nées le
+   * jour même où elle a été écrite — « un fait— une embauche », « un fait—
+   * chaque ligne », « l'année affichée; les occurrences » — **en restant verte**.
+   *
+   * Le cas de droite est le SEUL qui change d'un test à l'autre : même enfant,
+   * même entité, même retour à la ligne. Si les trois se réparaient d'un seul
+   * caractère ajouté quelque part, ils ne prouveraient rien ; c'est parce que
+   * `lettre` et `ponctuation haute` empruntent deux branches distinctes de la
+   * classe qu'une régression sur l'une laisse l'autre debout.
+   */
+  const phrase = (droite: string) => `
+    export const A = () => (
+      <p>
+        Elles sont dues à un <strong>fait</strong>${droite}
+      </p>
+    );
+  `;
+
+  it("famille 1 — une LETTRE après l'espace avalée", () => {
+    const releve = espacesAvalees(phrase(" une embauche, d&apos;un engin."));
+    expect(releve).toHaveLength(1);
+    expect(releve[0].droite).toContain("une embauche");
+  });
+
+  it("famille 2 — une ponctuation HAUTE, que le français fait précéder d'une espace", () => {
+    // Le tiret cadratin d'incise…
+    const tiret = espacesAvalees(phrase(" — une embauche, d&apos;un engin."));
+    expect(tiret).toHaveLength(1);
+    expect(tiret[0].droite).toContain("— une embauche");
+
+    // …et le point-virgule, qui prend une espace devant lui en français et
+    // aucune en anglais. C'est la forme de l'aide du calendrier.
+    const pointVirgule = espacesAvalees(
+      phrase(" ; les occurrences, d&apos;abord."),
+    );
+    expect(pointVirgule).toHaveLength(1);
+    expect(pointVirgule[0].droite).toContain("; les occurrences");
+  });
+
+  it("la ponctuation BASSE reste dehors — un mot suivi d'une virgule se colle", () => {
+    // La borne de l'autre côté : élargir la classe à TOUTE ponctuation aurait
+    // fait relever « … fait, ensuite » comme une espace manquante.
+    expect(espacesAvalees(phrase(", ensuite d&apos;un engin."))).toEqual([]);
+  });
+
+  it("sans entité, la même phrase garde son espace et n'est pas relevée", () => {
+    // Le témoin qui sépare cette règle de celle de l'entité : les deux se
+    // composent, et corriger celle-ci seule ne relèverait toujours rien.
+    // C'est le comportement de `/duerp/import`, qui n'a jamais été en défaut.
+    expect(
+      espacesAvalees(phrase(" — une embauche, un engin de chantier.")),
+    ).toEqual([]);
+  });
+});
+
 describe("ce que le balayage laisse passer, et pourquoi", () => {
   // Sans ces quatre discriminants, le balayage rendait 117 lignes sur ce dépôt
   // pour un seul défaut. Chacun est structurel : aucun n'énumère de cas.

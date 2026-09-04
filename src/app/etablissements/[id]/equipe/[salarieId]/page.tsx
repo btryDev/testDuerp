@@ -302,8 +302,8 @@ export default async function SalarieDetailPage({
                 <>
                   <p className="m-0 max-w-[66ch] text-[13.5px] leading-[1.6] text-[color:var(--board-slate-mid)]">
                     Ces obligations ne tombent à aucune date : elles sont dues à
-                    un <strong className="font-semibold">fait</strong> — une
-                    embauche, un changement de poste, la prise en main
+                    un <strong className="font-semibold">fait</strong>{" "}
+                    — une embauche, un changement de poste, la prise en main
                     d&apos;un engin. Rojer ne voit aucun de ces faits, donc il
                     n&apos;ouvre ici ni échéance ni retard. Chaque ligne dit à
                     quoi elle se déclenche ; vous seul savez quand le fait

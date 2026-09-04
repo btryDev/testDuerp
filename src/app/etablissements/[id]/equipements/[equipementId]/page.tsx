@@ -439,8 +439,9 @@ export default async function EquipementDetailPage({
                   {declenchees.length > 1
                     ? "Aucun texte n'écrit de rythme pour ces obligations : elles sont dues à un "
                     : "Aucun texte n'écrit de rythme pour cette obligation : elle est due à un "}
-                  <strong className="font-semibold">fait</strong> — chaque ligne
-                  dit lequel —, et Rojer ne voit pas ce fait passer. Il
+                  <strong className="font-semibold">fait</strong>{" "}
+                  — chaque ligne dit lequel —, et Rojer ne voit pas ce fait
+                  passer. Il
                   n&apos;y a donc ici ni échéance ni retard&nbsp;:{" "}
                   {declenchees.length > 1 ? "les lignes attendent" : "la ligne attend"}{" "}
                   le jour où vous toucherez à l&apos;appareil.
