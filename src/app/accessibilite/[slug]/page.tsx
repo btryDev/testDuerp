@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getRegistrePublicParSlug } from "@/lib/accessibilite/queries";
+import { identitePublique } from "@/lib/accessibilite/identite";
 import { LABEL_HANDICAP, LABEL_REGIME } from "@/lib/accessibilite/schema";
 import { formaterDateLongueFr } from "@/lib/dates";
 
@@ -50,8 +51,11 @@ export default async function RegistrePublicPage({
   const r = await getRegistrePublicParSlug(slug);
   if (!r) notFound();
 
-  const etab = r.etablissement;
-  const entreprise = etab.entreprise;
+  // Le sujet ne se compose pas ici : il se demande (`lib/accessibilite/identite.ts`,
+  // et `sujet-public.test.ts` vérifie qu'aucune surface publique n'en décide
+  // dans son coin — c'est en en décidant dans son coin que celle-ci a titré
+  // pendant des mois du nom d'un autre lieu).
+  const identite = identitePublique(r.etablissement);
 
   return (
     <main className="min-h-screen bg-[color:var(--board-canvas)] px-5 pb-20 pt-10 sm:px-8">
@@ -62,14 +66,24 @@ export default async function RegistrePublicPage({
             Registre d&apos;accessibilité
           </p>
           <h1 className="board-titre m-0 mt-3 text-[clamp(29px,3vw,39px)]">
-            {entreprise.raisonSociale}
+            {identite.titre}
           </h1>
-          <p className="m-0 mt-1.5 text-[14.5px] leading-[1.5] text-[color:var(--board-slate-ink)]">
-            {etab.raisonDisplay}
-          </p>
-          <p className="m-0 mt-1 font-mono text-[12.5px] text-[color:var(--board-slate-mid)]">
-            {etab.adresse}
-          </p>
+          {/* L'adresse monte d'un rang : c'est elle qui distingue deux lieux
+              d'une même maison, et c'est sur elle que le visiteur se reconnaît.
+              `<address>` et non `<p>` — un lecteur d'écran peut alors l'annoncer
+              pour ce qu'elle est, sur une page justement lue par des personnes
+              en situation de handicap. `not-italic` parce que l'élément est
+              italique par défaut, et que l'italique n'est pas au barème. */}
+          <address className="m-0 mt-2 not-italic text-[14.5px] leading-[1.5] text-[color:var(--board-slate-ink)]">
+            {identite.adresse}
+          </address>
+          {/* L'exploitant, et seulement s'il n'est pas déjà dans le titre.
+              `identitePublique` tranche ; la page ne redécide rien. */}
+          {identite.exploitant && (
+            <p className="m-0 mt-1.5 text-[12.5px] leading-[1.5] text-[color:var(--board-slate-mid)]">
+              Exploité par {identite.exploitant}
+            </p>
+          )}
         </header>
 
         {/* Handicaps accueillis — bloc visuel fort.
@@ -231,11 +245,15 @@ export default async function RegistrePublicPage({
           <p className="m-0 mt-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--board-slate-soft)]">
             Mis à jour le {formatDate(r.updatedAt)}
           </p>
-          {entreprise.siret && (
-            <p className="m-0 mt-4 font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--board-slate-soft)]">
-              SIRET {entreprise.siret}
-            </p>
-          )}
+          {/* PAS DE SIRET, ET C'EST LA SECONDE CORRECTION — 2026-09-04.
+              Le pied publiait celui de l'ENTREPRISE, faute de colonne sur
+              `Etablissement` : les deux registres d'un même compte annonçaient
+              le même numéro, quand le NIC — les cinq derniers chiffres —
+              désigne un site et un seul. Au plus un des deux disait vrai.
+              Rien ne le remplace : l'arrêté du 19 avril 2017 énumère neuf
+              pièces à son article 1er, et aucune n'est un identifiant
+              d'immatriculation. L'argument complet, et pourquoi une colonne
+              n'a pas été ajoutée, sont dans `lib/accessibilite/identite.ts`. */}
         </footer>
       </div>
     </main>

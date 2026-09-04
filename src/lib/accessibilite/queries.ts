@@ -12,6 +12,13 @@ export async function getRegistreAccessibilite(etablissementId: string) {
  * Lecture publique via slug, sans auth. Ne retourne que les champs
  * publiables. Si le registre n'est pas publié, renvoie `null` pour que
  * la page publique affiche une 404.
+ *
+ * `siret` a quitté ce `select` le 2026-09-04, et il n'y revient pas. C'est
+ * celui de l'ENTREPRISE : publié tel quel sur le registre d'un établissement,
+ * il était faux pour tous les sites sauf un (le NIC désigne un site, pas une
+ * société), et l'arrêté du 19 avril 2017 ne le réclame nulle part. Ne pas le
+ * lire ici est ce qui empêche une surface de le réafficher par mégarde —
+ * `identite.ts` porte l'argument, `sujet-public.test.ts` le tient.
  */
 export async function getRegistrePublicParSlug(slug: string) {
   const r = await prisma.registreAccessibilite.findUnique({
@@ -24,7 +31,7 @@ export async function getRegistrePublicParSlug(slug: string) {
           typeErp: true,
           categorieErp: true,
           entreprise: {
-            select: { raisonSociale: true, siret: true },
+            select: { raisonSociale: true },
           },
         },
       },

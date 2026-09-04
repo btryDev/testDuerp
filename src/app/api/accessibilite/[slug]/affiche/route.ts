@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getRegistrePublicParSlug } from "@/lib/accessibilite/queries";
 import { genererQrCodeDataUrl } from "@/lib/accessibilite/qrcode";
+import { identitePublique } from "@/lib/accessibilite/identite";
 import { publicAppUrl } from "@/lib/email";
 
 /**
@@ -8,39 +9,39 @@ import { publicAppUrl } from "@/lib/email";
  * le QR code et l'URL du registre. Le navigateur gère l'impression via
  * window.print(). Permet au dirigeant de coller le QR code à l'accueil
  * sans avoir à manipuler un générateur externe.
+ *
+ * ELLE PORTAIT LE MÊME DÉFAUT QUE LA PAGE, en trois exemplaires — `<title>`,
+ * `<h1>` et pied — et c'est ici qu'il coûtait le plus cher : cette affiche
+ * est le papier qu'on COLLE à la porte du 3 quai Nord, et il annonçait le nom
+ * d'un autre lieu. La corriger n'est pas un élargissement de confort : la
+ * garde de `sujet-public.test.ts` porte sur les surfaces publiques du module,
+ * et laisser celle-ci en dehors aurait été excepter un fichier d'une règle
+ * pour n'avoir pas à le reprendre.
  */
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  const registre = await prisma.registreAccessibilite.findUnique({
-    where: { slugPublic: slug },
-    include: {
-      etablissement: {
-        select: {
-          raisonDisplay: true,
-          adresse: true,
-          entreprise: { select: { raisonSociale: true } },
-        },
-      },
-    },
-  });
+  // La même lecture publique que la page — et pas une requête jumelle écrite
+  // ici. Les deux portaient chacune leur contrôle de publication ; deux
+  // exemplaires d'une règle finissent par diverger, et celui qui dériverait
+  // afficherait une affiche pour un registre dépublié.
+  const registre = await getRegistrePublicParSlug(slug);
 
-  if (!registre || !registre.publie) {
+  if (!registre) {
     return NextResponse.json({ error: "introuvable" }, { status: 404 });
   }
 
   const url = `${publicAppUrl()}/accessibilite/${registre.slugPublic}`;
   const qrDataUrl = await genererQrCodeDataUrl(url);
-  const etab = registre.etablissement;
-  const entreprise = etab.entreprise;
+  const identite = identitePublique(registre.etablissement);
 
   const html = `<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Affiche — ${escapeHtml(entreprise.raisonSociale)}</title>
+<title>Affiche — ${escapeHtml(identite.titre)}</title>
 <style>
   @page { size: A4; margin: 18mm; }
   * { box-sizing: border-box; }
@@ -137,8 +138,8 @@ export async function GET(
 <body>
   <div class="wrap">
     <div class="kicker">Accessibilité · Arrêté du 19 avril 2017</div>
-    <h1>${escapeHtml(entreprise.raisonSociale)}</h1>
-    <div class="subtitle">${escapeHtml(etab.raisonDisplay)}</div>
+    <h1>${escapeHtml(identite.titre)}</h1>
+    <div class="subtitle">${escapeHtml(identite.adresse)}</div>
 
     <div class="qr-box">
       <img src="${qrDataUrl}" alt="QR code — registre d'accessibilité" />
@@ -157,8 +158,11 @@ export async function GET(
   </div>
 
   <div class="footer">
-    ${escapeHtml(entreprise.raisonSociale)} —
-    <span class="adresse">${escapeHtml(etab.adresse)}</span>
+    ${escapeHtml(identite.titre)}${
+      identite.exploitant
+        ? ` — <span class="adresse">exploité par ${escapeHtml(identite.exploitant)}</span>`
+        : ""
+    }
   </div>
 </body>
 </html>`;
