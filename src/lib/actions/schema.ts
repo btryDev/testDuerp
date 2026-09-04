@@ -28,6 +28,35 @@ export const STATUTS_ACTION = [
   "abandonnee",
 ] as const satisfies readonly StatutAction[];
 
+/**
+ * L'échelle de `Action.criticite` — **1 à 5, et ce n'est pas celle du DUERP**.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * DEUX GRANDEURS PORTENT LE MÊME NOM, ET LES CONFONDRE SE VOIT À L'ÉCRAN
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * `Risque.criticite` est (gravité × probabilité) / maîtrise, bornée [1, 16] par
+ * `lib/cotation` et écrite « 05/16 » partout où elle s'affiche. `Action
+ * .criticite` est celle de l'écart à corriger, sur la même échelle que les
+ * obligations du référentiel — `ObligationConformite.criticite: 1|2|3|4|5`,
+ * « 1 = informatif, 5 = vital ». Les deux colonnes s'appellent `criticite`, et
+ * la base ne borne ni l'une ni l'autre (`Int?`).
+ *
+ * Le 2026-09-04, la fiche d'une action affichait **« 6 sur 5 » et cinq points
+ * tous pleins** : le seed recopiait la criticité du risque (échelle 16) dans
+ * l'action (échelle 5). Sur un dossier réel avec un risque grave, ç'aurait été
+ * « 16 sur 5 ». Le seed est corrigé — aucun écrivain de production ne mettait
+ * cette valeur là, `toggleMesureReferentiel` et `ajouterMesureCustom` laissant
+ * le champ vide — et la borne porte désormais un nom, pour que la validation
+ * et l'affichage cessent d'écrire « 5 » chacun de leur côté.
+ *
+ * `CarteFiche.Cotation` reçoit cette constante en `sur` ; sa prop est
+ * délibérément requise, pour qu'aucun appelant n'hérite en silence d'une
+ * échelle qu'il n'a pas choisie.
+ */
+export const CRITICITE_ACTION_MIN = 1;
+export const CRITICITE_ACTION_MAX = 5;
+
 const DATE_FMT = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -46,7 +75,12 @@ export const actionVerificationSchema = z.object({
   type: z.enum(TYPES_ACTION),
   criticite: z.preprocess(
     (v) => (v === "" || v === null || v === undefined ? undefined : v),
-    z.coerce.number().int().min(1).max(5).optional(),
+    z.coerce
+      .number()
+      .int()
+      .min(CRITICITE_ACTION_MIN)
+      .max(CRITICITE_ACTION_MAX)
+      .optional(),
   ),
   echeance: z.preprocess(
     (v) => (v === "" || v === null ? undefined : v),
@@ -89,7 +123,13 @@ export type CloturerActionInput = z.infer<typeof cloturerActionSchema>;
 export const modifierActionSchema = z.object({
   statut: z.enum(STATUTS_ACTION).optional(),
   type: z.enum(TYPES_ACTION).optional(),
-  criticite: z.coerce.number().int().min(1).max(5).optional().nullable(),
+  criticite: z.coerce
+    .number()
+    .int()
+    .min(CRITICITE_ACTION_MIN)
+    .max(CRITICITE_ACTION_MAX)
+    .optional()
+    .nullable(),
   echeance: z.preprocess(
     (v) => {
       if (v === undefined) return undefined;

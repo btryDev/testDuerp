@@ -1087,7 +1087,15 @@ async function main(): Promise<void> {
             libelle: mesure.libelle,
             type: mesure.type as TypeAction,
             statut: "levee",
-            criticite: risque.criticite,
+            // Pas de `criticite` — et surtout pas `risque.criticite`, qui est
+            // sur l'échelle [1, 16] du DUERP quand `Action.criticite` est sur
+            // celle de l'écart, [1, 5]. Le seed a recopié l'une dans l'autre
+            // jusqu'au 2026-09-04, et la fiche de l'action affichait « 6 sur 5 »
+            // avec cinq points pleins. Le code de production ne remplit ce
+            // champ que depuis un écart de vérification
+            // (`actionVerificationSchema`) ; une mesure du wizard le laisse
+            // vide (`toggleMesureReferentiel`, `ajouterMesureCustom`), et le
+            // seed doit produire ce que l'application produit.
             leveeLe: jours(-120),
             leveeCommentaire: "Constatée en place lors de l'évaluation.",
           },
@@ -1105,7 +1113,8 @@ async function main(): Promise<void> {
             libelle: a.libelle,
             type: a.type,
             statut: a.statut,
-            criticite: risque.criticite,
+            // Même raison qu'au bloc précédent : l'échelle du risque n'est pas
+            // celle de l'action.
             echeance: a.echeanceJours === null ? null : jours(a.echeanceJours),
             responsable: a.responsable,
           },

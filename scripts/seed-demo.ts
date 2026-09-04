@@ -516,7 +516,12 @@ async function creer(cible: Cible): Promise<void> {
             libelle: a.libelle,
             type: a.type,
             statut: a.statut,
-            criticite: risque.criticite,
+            // Pas de `criticite` : `risque.criticite` est sur l'échelle [1, 16]
+            // du DUERP, `Action.criticite` sur celle de l'écart, [1, 5]. La
+            // recopie faisait afficher « 6 sur 5 » sur la fiche de l'action
+            // jusqu'au 2026-09-04. Le code de production ne remplit ce champ
+            // que depuis un écart de vérification ; une mesure du wizard le
+            // laisse vide.
             echeance: a.echeanceJours === null ? null : jours(a.echeanceJours),
             responsable: a.responsable,
             // Une action levée sans date de levée serait incohérente : le

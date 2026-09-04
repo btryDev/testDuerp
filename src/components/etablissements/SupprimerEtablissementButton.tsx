@@ -8,6 +8,10 @@ import {
   supprimerEtablissement,
   type SuppressionResult,
 } from "@/lib/etablissements/actions";
+import {
+  detailSuppressionEtablissement,
+  type PerimetreEtablissement,
+} from "@/lib/suppression/perimetre";
 
 /**
  * La suppression peut être **refusée par la loi** : les versions figées du DUERP
@@ -19,8 +23,28 @@ import {
  *
  * En cas de succès, l'action redirige côté serveur : le composant ne reçoit
  * rien et la navigation se fait seule.
+ *
+ * **Ce bouton n'était monté nulle part jusqu'au 2026-09-04** : il existait,
+ * il avait été migré vers ce composant de confirmation, et aucun fichier ne
+ * l'importait. Il n'y avait donc aucun écran d'où supprimer un établissement,
+ * alors que l'ADR-028 laisse un compte en porter plusieurs — le seul recours
+ * était de supprimer l'entreprise entière, ce que la conservation du DUERP
+ * refuse souvent. Il vit maintenant dans la « zone sensible » de
+ * `/etablissements/<id>/modifier`, jumelle de celle de
+ * `/entreprises/<id>/modifier` : l'écran où l'on change l'établissement, pas
+ * celui où on le consulte tous les jours.
+ *
+ * Le périmètre est mesuré côté serveur et passé en prop, pour la raison qui a
+ * fait mentir la carte de l'entreprise : une question de suppression ne doit
+ * annoncer que ce qu'elle a compté.
  */
-export function SupprimerEtablissementButton({ id }: { id: string }) {
+export function SupprimerEtablissementButton({
+  id,
+  perimetre,
+}: {
+  id: string;
+  perimetre: PerimetreEtablissement;
+}) {
   const [pending, startTransition] = useTransition();
   const [refus, setRefus] = useState<SuppressionResult | null>(null);
   const { demander, confirmation } = useConfirmation();
@@ -37,23 +61,19 @@ export function SupprimerEtablissementButton({ id }: { id: string }) {
     <div className="flex flex-col gap-3">
       <Button
         variant="boardClair"
-        size="boardSm"
+        size="board"
+        className="text-[color:var(--board-signal-ink)]"
         disabled={pending}
         onClick={() =>
           demander({
             titre: "Supprimer cet établissement et tout ce qu'il porte ?",
-            detail:
-              "Ses équipements, ses vérifications, ses rapports téléversés, " +
-              "son plan d'actions et son registre partent avec lui, sans " +
-              "retour possible. Si des versions de votre DUERP sont archivées, " +
-              "la suppression sera refusée : la loi impose de les conserver " +
-              "40 ans.",
+            detail: detailSuppressionEtablissement(perimetre),
             agir: "Supprimer l'établissement",
             alors: supprimer,
           })
         }
       >
-        {pending ? "Suppression…" : "Supprimer"}
+        {pending ? "Suppression…" : "Supprimer l'établissement"}
       </Button>
 
       {confirmation}

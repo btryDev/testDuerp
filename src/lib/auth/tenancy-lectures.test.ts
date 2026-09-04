@@ -82,11 +82,40 @@ function sansCommentairesNiChaines(src: string): string {
     .replace(/'(?:[^'\\]|\\.)*'/g, " ");
 }
 
-/** Ce qui, dans le corps d'une fonction, établit la portée au user. */
+/**
+ * Ce qui, dans le corps d'une fonction, établit la portée au user.
+ *
+ * LES ASSERTIONS D'APPARTENANCE SE DÉRIVENT, ELLES NE SE RECOPIENT PAS.
+ * `assertEtablissementOwnership` figurait ici à la main, et sa jumelle
+ * `assertEntrepriseOwnership` — même corps, `requireUser()` puis un `where`
+ * sur `userId`, puis `notFound()` — n'y figurait pas. Une lecture
+ * parfaitement scopée a donc été dénoncée le 2026-09-04, et le remède
+ * évident aurait été d'ajouter le second nom : c'est-à-dire de réparer la
+ * liste en recopiant, ce que ce dépôt s'interdit — une liste qu'on répare
+ * ainsi cesse de vérifier.
+ *
+ * Elles se relèvent donc dans `scope.ts`, qui est l'endroit où elles vivent.
+ * La troisième s'ajoutera d'elle-même.
+ */
+function assertionsDAppartenance(): string[] {
+  const source = readFileSync(join(process.cwd(), "src/lib/auth/scope.ts"), "utf8");
+  const noms = [
+    ...source.matchAll(/export async function (assert\w+Ownership)\b/g),
+  ].map((m) => m[1]);
+  if (noms.length === 0) {
+    throw new Error(
+      "Aucune assertion d'appartenance relevée dans auth/scope.ts. Soit elles " +
+        "ont été renommées, soit ce relevé est cassé — dans les deux cas la " +
+        "garde ne garde plus, et il faut regarder plutôt que la contourner.",
+    );
+  }
+  return noms;
+}
+
 const MARQUEURS_DE_PORTEE = [
   "requireUser",
   "requireEtablissement",
-  "assertEtablissementOwnership",
+  ...assertionsDAppartenance(),
   "portee(",
   "userId",
 ];

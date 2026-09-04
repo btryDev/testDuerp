@@ -4,6 +4,8 @@ import { ArrowLeft } from "lucide-react";
 import { EtablissementForm } from "@/components/etablissements/EtablissementForm";
 import { modifierEtablissement } from "@/lib/etablissements/actions";
 import { getEtablissement } from "@/lib/etablissements/queries";
+import { SupprimerEtablissementButton } from "@/components/etablissements/SupprimerEtablissementButton";
+import { mesurerPerimetreEtablissement } from "@/lib/suppression/queries";
 import { cleJourCivil } from "@/lib/dates";
 
 export default async function ModifierEtablissementPage({
@@ -16,6 +18,10 @@ export default async function ModifierEtablissementPage({
   if (!etab) notFound();
 
   const action = modifierEtablissement.bind(null, id);
+
+  // Cf. la note de `SupprimerEtablissementButton` : la mesure se fait au rendu,
+  // pas au clic, pour que la carte de confirmation s'ouvre sans délai.
+  const perimetre = await mesurerPerimetreEtablissement(id);
 
   return (
     <main className="flex flex-1 flex-col bg-[color:var(--board-canvas)] pb-16">
@@ -73,6 +79,26 @@ export default async function ModifierEtablissementPage({
               href: `/etablissements/${id}`,
             }}
           />
+        </div>
+
+        {/* La zone sensible, jumelle de celle de `/entreprises/<id>/modifier`.
+            Elle est ici et non sur `/etablissements/<id>` : celui-là est le
+            tableau de bord qu'on ouvre tous les jours, et une commande qui
+            emporte le dossier n'a pas sa place à côté de ce qu'on vient lire.
+            L'écran de modification est celui où l'établissement se change ;
+            le supprimer en est le cas extrême. */}
+        <div className="mt-8 max-w-[880px] border-t border-[color:var(--board-slate-line)] pt-8">
+          <h2 className="m-0 text-[13.5px] font-semibold text-[color:var(--board-signal-ink)]">
+            Zone sensible
+          </h2>
+          <p className="m-0 mt-1.5 max-w-[64ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
+            La suppression efface l&apos;établissement et tout son dossier. Elle
+            est refusée dès qu&apos;une version de son DUERP est archivée : la
+            loi impose de les conserver 40 ans.
+          </p>
+          <div className="mt-4">
+            <SupprimerEtablissementButton id={id} perimetre={perimetre} />
+          </div>
         </div>
       </div>
     </main>

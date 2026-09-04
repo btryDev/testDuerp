@@ -8,14 +8,32 @@ import {
   supprimerEntreprise,
   type SuppressionEntrepriseResult,
 } from "@/lib/entreprises/actions";
+import {
+  detailSuppressionEntreprise,
+  type PerimetreEntreprise,
+} from "@/lib/suppression/perimetre";
 
 /**
  * Même logique que la suppression d'établissement : le refus de conservation
  * (art. R. 4121-4 CT) n'est pas une erreur technique, c'est une réponse que
  * l'utilisateur doit pouvoir lire. En cas de succès l'action redirige, donc le
  * composant ne reçoit rien.
+ *
+ * **Le périmètre est une prop, et il est mesuré.** La carte annonçait
+ * « L'établissement s'en va avec elle » — au singulier, écrit en dur, sans rien
+ * compter — pendant que l'ADR-028 laissait un compte en porter autant qu'il en
+ * tient et que le dossier de démonstration en portait deux. Le composant ne
+ * sait plus rien du dossier : il reçoit ce que le serveur a compté
+ * (`lib/suppression/queries.ts`) et le met en mots
+ * (`lib/suppression/perimetre.ts`).
  */
-export function SupprimerEntrepriseButton({ id }: { id: string }) {
+export function SupprimerEntrepriseButton({
+  id,
+  perimetre,
+}: {
+  id: string;
+  perimetre: PerimetreEntreprise;
+}) {
   const [pending, startTransition] = useTransition();
   const [refus, setRefus] = useState<SuppressionEntrepriseResult | null>(null);
   const { demander, confirmation } = useConfirmation();
@@ -38,12 +56,7 @@ export function SupprimerEntrepriseButton({ id }: { id: string }) {
         onClick={() =>
           demander({
             titre: "Supprimer cette entreprise et tout son dossier ?",
-            detail:
-              "L'établissement s'en va avec elle, et avec lui ses équipements, " +
-              "ses vérifications, ses rapports téléversés et son plan " +
-              "d'actions. Rien ne se récupère ensuite. Si des versions de " +
-              "votre DUERP sont archivées, la suppression sera refusée : la " +
-              "loi impose de les conserver 40 ans.",
+            detail: detailSuppressionEntreprise(perimetre),
             agir: "Supprimer l'entreprise",
             alors: supprimer,
           })

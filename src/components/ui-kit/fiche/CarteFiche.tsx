@@ -104,11 +104,19 @@ export function ChampsFiche({ children }: { children: ReactNode }) {
 }
 
 /**
- * Cotation en cinq points. « 2 / 5 » demandait de convertir un chiffre en
- * gravité à chaque lecture ; cinq points se comparent d'une fiche à
- * l'autre sans être lus.
+ * Cotation en points. « 2 / 5 » demandait de convertir un chiffre en gravité à
+ * chaque lecture ; des points se comparent d'une fiche à l'autre sans être lus.
+ *
+ * **`sur` est requis, et ne prend plus 5 par défaut.** Le défaut était une
+ * échelle héritée sans être choisie : la fiche d'une action lui passait
+ * `Action.criticite` sans rien dire, et le 2026-09-04 l'écran affichait
+ * « 6 sur 5 » avec cinq points tous pleins parce qu'une criticité de risque
+ * (échelle 1–16) avait atterri dans un champ d'action (échelle 1–5). Deux
+ * grandeurs distinctes portent le nom `criticite` dans ce dépôt ; une échelle
+ * par défaut les rend indiscernables à l'affichage. L'appelant nomme la sienne
+ * — `CRITICITE_ACTION_MAX` pour le plan d'actions.
  */
-export function Cotation({ valeur, sur = 5 }: { valeur: number; sur?: number }) {
+export function Cotation({ valeur, sur }: { valeur: number; sur: number }) {
   return (
     <span className="inline-flex items-center gap-3 align-middle">
       <span aria-hidden className="inline-flex items-center gap-[5px]">

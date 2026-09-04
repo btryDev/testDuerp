@@ -19,6 +19,7 @@ import { SupprimerActionButton } from "@/components/actions/SupprimerActionButto
 import { cloturerAction } from "@/lib/actions/plan";
 import { getAction, origineDeLAction } from "@/lib/actions/queries";
 import { LABEL_TYPE_ACTION } from "@/lib/actions/labels";
+import { CRITICITE_ACTION_MAX } from "@/lib/actions/schema";
 import { LABEL_RESULTAT } from "@/lib/rapports/schema";
 import { classerDate, type RegistreLigne } from "@/lib/calendrier/etats";
 import { formaterDateFr, formaterDateLongueFr } from "@/lib/dates";
@@ -87,7 +88,12 @@ export default async function ActionDetailPage({
     { cle: "Type de mesure", valeur: LABEL_TYPE_ACTION[a.type] },
   ];
   if (a.criticite !== null) {
-    faits.push({ cle: "Criticité", valeur: <Cotation valeur={a.criticite} /> });
+    faits.push({
+      cle: "Criticité",
+      // L'échelle est nommée, jamais héritée : `Action.criticite` va de 1 à 5,
+      // et non de 1 à 16 comme la criticité d'un risque du DUERP.
+      valeur: <Cotation valeur={a.criticite} sur={CRITICITE_ACTION_MAX} />,
+    });
   }
   faits.push({
     cle: "Responsable",

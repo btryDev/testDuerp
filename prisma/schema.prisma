@@ -819,6 +819,15 @@ model Action {
   description String?
   type        TypeAction
   statut      StatutAction @default(ouverte)
+  // Échelle [1, 5] — celle de l'écart à corriger, la même que
+  // `ObligationConformite.criticite` du référentiel (« 1 = informatif,
+  // 5 = vital »). **Ce n'est PAS `Risque.criticite`**, qui vaut
+  // (gravité × probabilité) / maîtrise sur [1, 16] et s'écrit « 05/16 » à
+  // l'écran. Les deux colonnes portent le même nom et aucune n'est bornée par
+  // la base ; un seed a recopié l'une dans l'autre jusqu'au 2026-09-04 et la
+  // fiche de l'action affichait « 6 sur 5 ». La borne vit dans
+  // `lib/actions/schema.ts` (`CRITICITE_ACTION_MAX`), qui la fait respecter par
+  // les deux seuls écrivains de production et la donne à l'affichage.
   criticite   Int?
   echeance    DateTime?
   responsable String?

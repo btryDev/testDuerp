@@ -4,6 +4,7 @@ import { EntrepriseForm } from "@/components/entreprises/EntrepriseForm";
 import { modifierEntreprise } from "@/lib/entreprises/actions";
 import { getEntreprise } from "@/lib/entreprises/queries";
 import { SupprimerEntrepriseButton } from "@/components/entreprises/SupprimerEntrepriseButton";
+import { mesurerPerimetreEntreprise } from "@/lib/suppression/queries";
 
 export default async function ModifierEntreprisePage({
   params,
@@ -15,6 +16,11 @@ export default async function ModifierEntreprisePage({
   if (!entreprise) notFound();
 
   const action = modifierEntreprise.bind(null, id);
+
+  // Ce que la suppression emporterait, compté au rendu plutôt qu'au clic : la
+  // carte de confirmation s'ouvre de façon synchrone, et une question qui met
+  // une seconde à apparaître se clique deux fois.
+  const perimetre = await mesurerPerimetreEntreprise(id);
 
   return (
     <main className="mx-auto max-w-[760px] px-6 py-10">
@@ -44,11 +50,19 @@ export default async function ModifierEntreprisePage({
         <h2 className="m-0 text-[13.5px] font-semibold text-[color:var(--board-signal-ink)]">
           Zone sensible
         </h2>
+        {/* Cette phrase a dit le contraire de la carte qu'elle coiffe, à cent
+            pixels d'écart : « La suppression entraîne celle de tous les DUERP
+            et versions associés. » C'est faux depuis toujours, et sur l'écran
+            où l'on détruit le plus — `DuerpVersion.duerpId` est en
+            `onDelete: Restrict`, donc une seule version archivée fait échouer
+            la suppression entière, DUERP compris. */}
         <p className="m-0 mt-1.5 max-w-[64ch] text-[12.5px] leading-[1.55] text-[color:var(--board-slate-mid)]">
-          La suppression entraîne celle de tous les DUERP et versions associés.
+          La suppression efface l&apos;entreprise et le dossier de ses
+          établissements. Elle est refusée dès qu&apos;une version du DUERP est
+          archivée : la loi impose de les conserver 40 ans.
         </p>
         <div className="mt-4">
-          <SupprimerEntrepriseButton id={id} />
+          <SupprimerEntrepriseButton id={id} perimetre={perimetre} />
         </div>
       </div>
     </main>
