@@ -141,8 +141,23 @@ const VERBE: Record<RecoBrief["kind"], string> = {
 };
 
 /**
- * Titres d'amorçage : quand le dossier est en mise en place, « Rien ne
- * presse cette semaine » est vrai mais trompeur — tout reste à faire.
+ * Le titre du dossier calme.
+ *
+ * Une constante, et pas deux chaînes égales : `construireBrief` compare le
+ * titre à celle-ci pour décider de le remplacer par une étape d'amorçage, et
+ * cette comparaison se serait défaite en silence au premier mot changé — ce qui
+ * vient précisément d'arriver à la phrase.
+ *
+ * « dans les trente jours » et non plus « cette semaine ». La branche n'est
+ * atteinte que si les TROIS compteurs sont à zéro, dont `sous30j` : ce que le
+ * brief sait alors est plus large que ce qu'il annonçait, et il l'annonçait
+ * dans une unité qu'il ne mesure nulle part.
+ */
+const TITRE_CALME = "Rien ne presse dans les trente jours";
+
+/**
+ * Titres d'amorçage : quand le dossier est en mise en place, `TITRE_CALME`
+ * est vrai mais trompeur — tout reste à faire.
  * On remplace le titre par l'étape en cours, sur le ton de l'invitation.
  */
 const TITRE_AMORCE: Partial<Record<RecoBrief["kind"], string>> = {
@@ -156,10 +171,56 @@ const TONS_ALERTE: ReadonlySet<RecoBrief["kind"]> = new Set([
   "action_en_retard",
 ]);
 
+/**
+ * Le titre du hero — et ce qu'il a le droit de dire.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * LE TITRE ANNONÇAIT UN DÉLAI QUE SON PROPRE CHIFFRE DÉMENTAIT
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * Il écrivait « Onze échéances à traiter CETTE SEMAINE » au-dessus d'un relevé
+ * « DÉPASSÉES 11 » posé soixante pixels plus bas : le même nombre, deux fois,
+ * dont une avec une semaine qui n'existe nulle part dans le calcul. Le
+ * calendrier le démentait tout seul — « Voir les 4 mois précédents — 11 en
+ * retard », et les barres de mai à août faisaient 1 + 1 + 2 + 7.
+ *
+ * CE QUE `e.retards.total` AGRÈGE VRAIMENT, mesuré en remontant ses deux
+ * sources (`compterEtatEcheances`, `lib/calendrier/retards`) :
+ *
+ *   — TOUTES LES FAMILLES. `repartirRetards` verse les cinq familles dans une
+ *     seule ventilation et en rend la somme.
+ *   — TOUS LES PORTEURS. La lecture qui l'alimente ne pose aucune condition sur
+ *     `equipementId` : ce que porte l'établissement lui-même et ce que porte un
+ *     salarié y sont, à la différence des compteurs du parc et des zones.
+ *   — TOUT L'ÉTABLISSEMENT. `BlocBrief` lit `echeancesEtablissement`, le filtre
+ *     de zone explicitement ignoré.
+ *   — ET AUCUNE FENÊTRE DE TEMPS. C'est le point. `repartirRetards` retient une
+ *     ligne sur son TON — `alerte` —, jamais sur sa date : une occurrence
+ *     dépassée depuis quatre mois y pèse exactement autant que celle d'hier, et
+ *     rien dans la chaîne ne borne l'ancienneté par le bas.
+ *
+ * Le titre dit donc ce fait-là, et rien de plus : ces échéances ont dépassé
+ * leur date. Pas quand, pas depuis combien de temps — le compteur ne le sait
+ * pas, et un titre n'a pas à savoir mieux que le nombre qu'il coiffe.
+ *
+ * IL PORTE LE VERBE DU RELEVÉ QU'IL COIFFE, et pas son adjectif : « Onze
+ * échéances dépassées » aurait recopié mot pour mot, à soixante pixels d'écart,
+ * ce que « DÉPASSÉES · 11 » affiche déjà. « ont dépassé leur date » ajoute ce
+ * que le titre avait justement faux — de quelle date il s'agit — et parle la
+ * même langue que le registre d'états.
+ *
+ * La garde qui tient la mesure est dans `brief-perimetre.test.ts` : elle fait
+ * compter une occurrence de quatre mois et vérifie qu'elle entre bien dans le
+ * titre. Le jour où une fenêtre serait posée, elle tombe.
+ */
 function construireTitre(e: EntreeBrief): string {
   const urgent = e.retards.total;
   if (urgent > 0) {
-    return `${enLettres(urgent)} ${urgent > 1 ? "échéances" : "échéance"} à traiter cette semaine`;
+    // L'accord porte sur deux mots, pas un : « Une échéance a dépassé SA
+    // date », « Onze échéances ont dépassé LEUR date ».
+    return urgent > 1
+      ? `${enLettres(urgent)} échéances ont dépassé leur date`
+      : `${enLettres(urgent)} échéance a dépassé sa date`;
   }
   const proche = e.sous30j.total;
   if (proche > 0) {
@@ -172,7 +233,7 @@ function construireTitre(e: EntreeBrief): string {
       e.verifsAPlanifier > 1 ? "vérifications" : "vérification"
     } restent à planifier`;
   }
-  return "Rien ne presse cette semaine";
+  return TITRE_CALME;
 }
 
 /**
@@ -301,7 +362,7 @@ export function construireBrief(e: EntreeBrief): Brief {
 
   let titre = construireTitre(e);
   const premiere = e.recommandations[0];
-  if (titre === "Rien ne presse cette semaine" && premiere) {
+  if (titre === TITRE_CALME && premiere) {
     titre = TITRE_AMORCE[premiere.kind] ?? titre;
   }
 

@@ -89,6 +89,85 @@ export const ENCRE_ETAT: Record<RegistreLigne, string> = {
 };
 
 /**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * LE MOT DE CHAQUE ÉTAT — UN SEUL, ET IL VIT ICI
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * Le 2026-09-04, à un clic d'écart, le MÊME état s'écrivait de quatre façons :
+ * « DÉPASSÉES » sur le relevé du hero, « à traiter » sur la pastille d'une
+ * zone, « EN RETARD » sur le bandeau du parc, « 5 dépassées » sur la carte d'un
+ * appareil. Aucune n'était fausse ; ensemble elles faisaient croire à quatre
+ * mesures. Ce module tenait déjà la COULEUR de chaque état pour cette raison
+ * exacte — « trois copies d'une même règle, qui dérivent au premier
+ * ajustement ». Il ne tenait pas le MOT, et le mot a dérivé quatre fois.
+ *
+ * POURQUOI « DÉPASSÉE » ET PAS « À TRAITER » NI « EN RETARD ». « Dépassée » dit
+ * un fait sur une date : elle est passée, et c'est vérifiable. « À traiter » est
+ * une consigne, et elle vise plus large que l'état — une occurrence à planifier
+ * est elle aussi à traiter, sans avoir dépassé quoi que ce soit ; le mot ne
+ * pouvait donc pas nommer CET état-là sans en recouvrir un autre. « En retard »
+ * se rapproche du jugement sur celui qui lit, quand le produit ne dit que des
+ * faits datés. Le reste du produit disait d'ailleurs déjà « dépassée » dans la
+ * moitié des cas — la vue par équipement, le brief, la page de vente.
+ *
+ * DEUX FORMES DU MÊME MOT, JAMAIS DEUX MOTS. Une pastille de zone n'a pas la
+ * largeur d'un bandeau pleine page : c'est la forme COURTE qui l'y remplace,
+ * pas un synonyme. `LIBELLE_ETAT_COURT` n'est donc pas un second vocabulaire —
+ * c'est le même, abrégé, et la garde vérifie qu'aucun mot n'y nomme deux états.
+ *
+ * CE QUE CETTE TABLE NE COUVRE PAS, ET IL FAUT LE SAVOIR : un compteur qui
+ * agrège DEUX états n'a pas de mot ici, et ne doit pas en emprunter un. La
+ * carte d'un appareil comptait « N à venir » sur `proche` + `lointain` réunis
+ * pendant que le bandeau du parc comptait « N sous 30 j » sur `proche` seul :
+ * les deux mots se ressemblaient parce que les deux nombres ne comptaient pas
+ * la même chose. Le remède est de séparer le compte, pas d'unifier le mot.
+ */
+export const LIBELLE_ETAT: Record<
+  RegistreLigne,
+  { readonly un: string; readonly plusieurs: string }
+> = {
+  enRetard: { un: "dépassée", plusieurs: "dépassées" },
+  proche: { un: "sous 30 jours", plusieurs: "sous 30 jours" },
+  lointain: { un: "à venir", plusieurs: "à venir" },
+  faite: { un: "faite", plusieurs: "faites" },
+  aPlanifier: { un: "à planifier", plusieurs: "à planifier" },
+};
+
+/**
+ * Le même mot, dans la largeur d'une pastille.
+ *
+ * Identique au pluriel long partout où celui-ci tient déjà : n'abrège que ce
+ * qui déborde. Une entrée qui s'écarterait du mot long sans l'abréger serait un
+ * second vocabulaire, et la garde la refuse.
+ */
+export const LIBELLE_ETAT_COURT: Record<RegistreLigne, string> = {
+  enRetard: "dépassées",
+  proche: "sous 30 j",
+  lointain: "à venir",
+  faite: "faites",
+  aPlanifier: "à planif.",
+};
+
+/** « 1 dépassée », « 5 dépassées » — le compte et son mot, accordés. */
+export function compteEtat(n: number, etat: RegistreLigne): string {
+  const { un, plusieurs } = LIBELLE_ETAT[etat];
+  return `${n} ${n > 1 ? plusieurs : un}`;
+}
+
+/**
+ * Le mot court avec sa capitale — pour un relevé, ou pour une phrase qui cite
+ * un relevé entre guillemets.
+ *
+ * Une fonction et non une sixième table : une variante capitalisée écrite à la
+ * main serait exactement le second dictionnaire que ce module existe pour
+ * empêcher, et elle survivrait au changement du mot d'origine.
+ */
+export function libelleEtatCourtCapitale(etat: RegistreLigne): string {
+  const mot = LIBELLE_ETAT_COURT[etat];
+  return mot.charAt(0).toUpperCase() + mot.slice(1);
+}
+
+/**
  * Classe une date nue — une échéance qui n'a ni statut ni réalisation,
  * comme les attestations ou les travaux du plan d'actions.
  */

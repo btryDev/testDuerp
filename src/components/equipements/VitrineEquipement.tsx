@@ -15,24 +15,17 @@
 
 import Link from "next/link";
 import { MapPin } from "lucide-react";
-import {
-  CHAMP_ETAT,
-  ENCRE_ETAT,
-  type RegistreLigne,
-} from "@/lib/calendrier/etats";
+import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
 import type { SignalEquipement } from "@/lib/equipements/etat-verifications";
 
-/** Le champ d'un signal ne dit pas l'état d'une échéance mais le compte
- *  d'une famille d'échéances : on reprend les jetons d'état, en point. */
-const ETAT_DU_SIGNAL: Record<SignalEquipement["cle"], RegistreLigne> = {
-  enRetard: "enRetard",
-  aPlanifier: "aPlanifier",
-  aVenir: "lointain",
-  faite: "faite",
-};
+/* La table de correspondance qui vivait ici a disparu avec sa cause. Elle
+   traduisait la clé `aVenir` — qui réunissait `proche` et `lointain` — en un
+   seul état, `lointain`, et peignait donc en bleu « plus tard » un compte
+   pouvant ne contenir que des échéances des trente prochains jours. Le signal
+   porte désormais son état, et la couleur n'a plus à être devinée. */
 
 function Signal({ signal }: { signal: SignalEquipement }) {
-  const etat = ETAT_DU_SIGNAL[signal.cle];
+  const etat = signal.cle;
   return (
     <span
       className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--board-slate-pale)] px-2.5 py-[5px] text-[11.5px] font-semibold"

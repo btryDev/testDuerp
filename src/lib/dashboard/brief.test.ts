@@ -56,7 +56,7 @@ describe("construireBrief — titre", () => {
       ...CALME,
       retards: ventil({ controle: 1, travaux: 1, papiers: 1 }),
     });
-    expect(b.titre).toBe("Trois échéances à traiter cette semaine");
+    expect(b.titre).toBe("Trois échéances ont dépassé leur date");
   });
 
   it("accorde le singulier", () => {
@@ -64,7 +64,7 @@ describe("construireBrief — titre", () => {
       ...CALME,
       retards: ventil({ controle: 1 }),
     });
-    expect(b.titre).toBe("Une échéance à traiter cette semaine");
+    expect(b.titre).toBe("Une échéance a dépassé sa date");
   });
 
   it("bascule sur les trente jours quand rien n'est en retard", () => {
@@ -84,7 +84,9 @@ describe("construireBrief — titre", () => {
   });
 
   it("ne fabrique pas d'urgence quand tout est calme", () => {
-    expect(construireBrief(CALME).titre).toBe("Rien ne presse cette semaine");
+    expect(construireBrief(CALME).titre).toBe(
+      "Rien ne presse dans les trente jours",
+    );
   });
 
   it("passe aux chiffres au-delà de neuf", () => {
@@ -92,7 +94,7 @@ describe("construireBrief — titre", () => {
       ...CALME,
       retards: ventil({ controle: 12 }),
     });
-    expect(b.titre).toBe("12 échéances à traiter cette semaine");
+    expect(b.titre).toBe("12 échéances ont dépassé leur date");
   });
 });
 
@@ -272,7 +274,7 @@ describe("construireBrief — amorçage", () => {
         { kind: "amorce_duerp", titre: "Ouvrez votre DUERP", href: "/d" },
       ],
     });
-    expect(b.titre).toBe("Une échéance à traiter cette semaine");
+    expect(b.titre).toBe("Une échéance a dépassé sa date");
   });
 
   it("les amorces sont toujours de ton neutre", () => {

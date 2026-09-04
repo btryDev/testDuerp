@@ -34,6 +34,7 @@ import { statsActionsEnRetard } from "@/lib/actions/queries";
 import { prisma } from "@/lib/prisma";
 import { composantesCiviles, joursCivilsEntre } from "@/lib/dates";
 import { enumererFamilles, libellePorteur } from "@/lib/calendrier/labels";
+import { libelleEtatCourtCapitale } from "@/lib/calendrier/etats";
 import {
   porteeBatiment,
   toutesLesConditions,
@@ -262,11 +263,22 @@ export default async function EtablissementPage({
     // Le premier se dérive du type fermé des familles, le second d'un appel à
     // l'agrégation des zones : aucun des deux n'est une phrase écrite à la
     // main au-dessus d'un chiffre qu'elle ne décrit plus.
+    //
+    // LA MOITIÉ DROITE DE LA PREMIÈRE EST PARTIE. Elle disait « — pour
+    // l'établissement entier, filtre de zone compris », et la légende du
+    // sélecteur de zone, 200 px plus bas, disait déjà le même fait avec
+    // d'autres mots. Le fait est donc énoncé une fois, à l'endroit où la
+    // question se pose : sous le filtre qui la fait naître. Sans filtre, il n'y
+    // a pas de périmètre de zone à distinguer, et la phrase n'avait rien à
+    // annoncer.
+    //
+    // Les deux relevés sont NOMMÉS par la table d'états, pas recopiés : le jour
+    // où le mot change, la phrase qui le cite change avec lui.
     perimetreHero: {
-      releves: `« Dépassées » et « Sous 30 j » réunissent toutes les familles — ${enumererFamilles()} — pour l'établissement entier, filtre de zone compris.`,
+      releves: `« ${libelleEtatCourtCapitale("enRetard")} » et « ${libelleEtatCourtCapitale("proche")} » réunissent toutes les familles — ${enumererFamilles()}.`,
       plaqueZones: legendePlaqueZones({
         comptes: porteursDeLaPlaqueZones(aujourdhui),
-        libelleReleveComplet: "Dépassées",
+        libelleReleveComplet: libelleEtatCourtCapitale("enRetard"),
       }),
     },
     etablissement: {
@@ -365,9 +377,19 @@ export default async function EtablissementPage({
             baseHref={`/etablissements/${id}`}
             batiments={batiments}
             actif={batimentFiltre}
+            // La seule phrase du tableau de bord qui dise ce que le filtre
+            // laisse hors de sa portée — et c'est ici qu'elle doit être, sous
+            // la commande qui pose la question.
+            //
+            // « Le bandeau du haut » a été remplacé par le nom des deux
+            // relevés. Le bandeau du haut porte aussi la plaque des zones, qui
+            // compte zone par zone : la phrase affirmait donc « toujours sur
+            // l'établissement entier » d'un objet dont la moitié ne l'est pas.
+            // Nommer les relevés dit vrai et parle la même langue que la
+            // légende posée sous eux.
             legende={
               batimentFiltre
-                ? "Les échéances, équipements et opérations affichés sont ceux de cette zone, plus ce qui concerne tout l'établissement. Le bandeau du haut, le score et l'état des documents portent toujours sur l'établissement entier."
+                ? `Les échéances, équipements et opérations affichés sont ceux de cette zone, plus ce qui concerne tout l'établissement. Les relevés « ${libelleEtatCourtCapitale("enRetard")} » et « ${libelleEtatCourtCapitale("proche")} », le score et l'état des documents portent toujours sur l'établissement entier.`
                 : undefined
             }
           />

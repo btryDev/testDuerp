@@ -48,7 +48,12 @@ import { ChevronLeft } from "lucide-react";
 import { SelecteurBatiment } from "@/components/batiments/SelecteurBatiment";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { CHAMP_ETAT, ENCRE_ETAT } from "@/lib/calendrier/etats";
+import {
+  CHAMP_ETAT,
+  ENCRE_ETAT,
+  LIBELLE_ETAT,
+  LIBELLE_ETAT_COURT,
+} from "@/lib/calendrier/etats";
 import { porteursDuBandeauParc } from "@/lib/equipements/etat-verifications";
 import { legendeParc } from "@/lib/perimetre/porteurs-comptes";
 
@@ -178,22 +183,26 @@ export function BandeauParc({
           </div>
 
           <div className="flex flex-none flex-wrap items-center gap-2.5">
+            {/* Les mots viennent de la table d'états, comme les couleurs
+                juste à côté — ce bandeau écrivait « en retard » pendant que
+                le relevé du tableau de bord, à un clic, écrivait
+                « DÉPASSÉES » sur le même état. */}
             <Compteur
               nombre={enRetard}
-              legende="en retard"
-              champ="var(--board-signal)"
-              encre="var(--board-signal-ink)"
+              legende={LIBELLE_ETAT_COURT.enRetard}
+              champ={CHAMP_ETAT.enRetard}
+              encre={ENCRE_ETAT.enRetard}
             />
             <Compteur
               nombre={proches}
-              legende="sous 30 j"
-              champ="var(--board-amber)"
-              encre="var(--board-amber-ink)"
+              legende={LIBELLE_ETAT_COURT.proche}
+              champ={CHAMP_ETAT.proche}
+              encre={ENCRE_ETAT.proche}
             />
             {aPlanifier > 0 ? (
               <Compteur
                 nombre={aPlanifier}
-                legende="à planifier"
+                legende={LIBELLE_ETAT.aPlanifier.plusieurs}
                 champ={CHAMP_ETAT.aPlanifier}
                 encre={ENCRE_ETAT.aPlanifier}
               />

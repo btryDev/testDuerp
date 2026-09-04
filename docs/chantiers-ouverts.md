@@ -228,12 +228,34 @@ bord, 19 sur la carte de zone, « 22 datées · 5 à planifier » au calendrier,
 « 19 en retard · 1 à planifier » sur `/equipements`. L'écart s'explique — porteur
 équipement contre porteur établissement — mais **aucun écran ne le dit**.
 
+> **Les quatre écrans le disent depuis le 2026-09-03**, et depuis le 2026-09-04
+> ils le disent chacun une fois : les phrases se répétaient d'un écran à l'autre
+> et deux fois sur `/calendrier`. **Ce qui reste ouvert, et qui n'est pas la
+> même chose** : les quatre comptes divergeaient aussi dans leurs MOTS —
+> « DÉPASSÉES », « à traiter », « EN RETARD », « 5 dépassées » pour un seul
+> état. Le mot vit désormais dans `LIBELLE_ETAT` (`lib/calendrier/etats`), avec
+> la couleur qui y vivait déjà, et `vocabulaire-etats.test.ts` refuse qu'un
+> écran en réécrive un. Une divergence de la même famille a été trouvée en le
+> faisant : la carte d'un appareil comptait « N à venir » sur `proche` +
+> `lointain` réunis quand le bandeau du parc comptait « N sous 30 j » sur
+> `proche` seul — deux mots voisins pour deux ensembles différents, et une
+> pastille bleue « lointain » posée sur un compte qui pouvait n'être que
+> proche. Les deux états sont maintenant deux signaux.
+
 ### Les autres
 
 - `J−3` affiché sur une ligne « en retard » : le signe est inversé, et il se lit
   « dans trois jours » à qui a déjà dépassé.
-- « 22 échéances à traiter cette semaine » au-dessus de « 22 dépassées · 0 sous
-  30 j » : le titre annonce un délai que ses propres chiffres démentent.
+- ~~« 22 échéances à traiter cette semaine » au-dessus de « 22 dépassées · 0 sous
+  30 j » : le titre annonce un délai que ses propres chiffres démentent.~~
+  **CLOS LE 2026-09-04.** Le titre dit désormais « N échéances ont dépassé leur
+  date ». Ce que `e.retards.total` agrège a été mesuré avant d'écrire : toutes
+  les familles, les trois porteurs, tout l'établissement, et **aucune fenêtre de
+  temps** — `repartirRetards` retient une ligne sur son ton, jamais sur sa date.
+  `brief-perimetre.test.ts` tient la mesure en faisant compter une occurrence de
+  quatre mois. Le titre du dossier calme est passé de « cette semaine » à
+  « dans les trente jours » avec la même cause : sa branche n'est atteinte que
+  si `sous30j` est nul.
 - Deux espaces manquantes après un `<strong>` : « couvertespar l'application »
   (`/registre`, dans un H2) et « tous les six mois**l'attestation** »
   (`/prestataires`). Deux pages, donc un `grep` plutôt que deux correctifs.

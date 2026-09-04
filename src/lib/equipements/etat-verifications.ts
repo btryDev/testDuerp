@@ -11,7 +11,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth/require-user";
-import { lecturesCalendrier, type RegistreLigne } from "@/lib/calendrier/etats";
+import {
+  compteEtat,
+  lecturesCalendrier,
+  type RegistreLigne,
+} from "@/lib/calendrier/etats";
 import {
   porteursComptesPar,
   type LigneSondee,
@@ -205,8 +209,24 @@ export function porteursDuBandeauParc(
  * certifie pas (cf. garde-fous produit) : « 2 faites » dit deux
  * vérifications réalisées, pas un appareil en règle.
  */
+/**
+ * Un signal de carte : un compte, l'état qu'il compte, et le mot de cet état.
+ *
+ * `cle` EST UN `RegistreLigne`, ET CE N'EST PAS UN DÉTAIL. Elle valait
+ * auparavant `"aVenir"`, qui n'est l'état de rien : elle réunissait `proche` et
+ * `lointain`. La carte écrivait donc « 1 à venir » sur un compte dont le
+ * bandeau du parc, à un clic, comptait une PARTIE sous le nom « 1 sous 30 j » —
+ * deux mots proches pour deux ensembles différents, le pire des deux mondes. Et
+ * la pastille peignait le tout en bleu « lointain », y compris quand tout ce
+ * qu'elle comptait tombait dans les trente jours : la règle « la couleur dit
+ * l'état » était fausse sur cette carte-là.
+ *
+ * Les deux états sont désormais deux signaux, et `etat.proches` — qui existait
+ * déjà, lu par le seul bandeau du parc — sert enfin sur la carte qui le porte.
+ * Rien de nouveau n'est calculé.
+ */
 export type SignalEquipement = {
-  cle: "enRetard" | "aPlanifier" | "aVenir" | "faite";
+  cle: RegistreLigne;
   nb: number;
   libelle: string;
 };
@@ -224,35 +244,25 @@ export function resumerEquipement(
 ): ResumeEquipement {
   if (!etat) return { etat: "aPlanifier", signaux: [] };
 
+  // Les mots ne sont plus écrits ici : `compteEtat` les prend à la table du
+  // registre (`lib/calendrier/etats`), celle-là même qui donne déjà à la
+  // pastille sa couleur. Un accord de pluriel copié dans un quatrième fichier
+  // était le chemin par lequel « dépassées » avait cessé d'être le mot du
+  // bandeau du parc, qui disait « en retard ».
   const signaux: SignalEquipement[] = [];
-  if (etat.enRetard > 0) {
-    signaux.push({
-      cle: "enRetard",
-      nb: etat.enRetard,
-      libelle: `${etat.enRetard} dépassée${etat.enRetard > 1 ? "s" : ""}`,
-    });
-  }
-  if (etat.aPlanifier > 0) {
-    signaux.push({
-      cle: "aPlanifier",
-      nb: etat.aPlanifier,
-      libelle: `${etat.aPlanifier} à planifier`,
-    });
-  }
-  if (etat.aVenir > 0) {
-    signaux.push({
-      cle: "aVenir",
-      nb: etat.aVenir,
-      libelle: `${etat.aVenir} à venir`,
-    });
-  }
-  if (etat.faites > 0) {
-    signaux.push({
-      cle: "faite",
-      nb: etat.faites,
-      libelle: `${etat.faites} faite${etat.faites > 1 ? "s" : ""}`,
-    });
-  }
+  const ajouter = (cle: RegistreLigne, nb: number) => {
+    if (nb > 0) signaux.push({ cle, nb, libelle: compteEtat(nb, cle) });
+  };
+
+  // L'ordre est celui de l'urgence, comme partout : dépassé, sans rendez-vous,
+  // proche, lointain, fait.
+  ajouter("enRetard", etat.enRetard);
+  ajouter("aPlanifier", etat.aPlanifier);
+  // `proches` est un SOUS-ENSEMBLE de `aVenir` (cf. `EtatEquipement`) : le
+  // lointain est le reste, jamais un second comptage.
+  ajouter("proche", etat.proches);
+  ajouter("lointain", etat.aVenir - etat.proches);
+  ajouter("faite", etat.faites);
 
   const dominant: RegistreLigne =
     etat.enRetard > 0

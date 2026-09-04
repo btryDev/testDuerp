@@ -32,6 +32,7 @@ import {
   GanttChart,
 } from "lucide-react";
 import { construireBrief } from "@/lib/dashboard/brief";
+import { LIBELLE_ETAT_COURT } from "@/lib/calendrier/etats";
 import {
   illustrationBatiment,
   sourceIllustrationBatiment,
@@ -561,9 +562,13 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
                 nombre. */}
             <div className="mt-7 flex items-stretch">
               <div className="pr-[26px]">
+                {/* Le mot vient de la table d'états (`LIBELLE_ETAT_COURT`),
+                    comme celui de la pastille de zone à 200 px d'ici et celui
+                    du bandeau du parc à un clic : les trois écrivaient trois
+                    mots différents pour cet état-là. */}
                 <Releve
                   valeur={totalUrgent}
-                  libelle="Dépassées"
+                  libelle={LIBELLE_ETAT_COURT.enRetard}
                   alerte={totalUrgent > 0}
                 />
               </div>
@@ -571,7 +576,10 @@ export function BlocBrief({ bundle }: { bundle: DashboardBundle }) {
               <div className="px-[26px]">
                 {/* Toutes familles, comme le relevé d'à côté : ce
                     compteur-ci ne comptait que les vérifications. */}
-                <Releve valeur={sous30j.total} libelle="Sous 30 j" />
+                <Releve
+                  valeur={sous30j.total}
+                  libelle={LIBELLE_ETAT_COURT.proche}
+                />
               </div>
               <div className="w-px bg-[color:rgba(10,10,10,.12)]" />
               <div className="pl-[26px]">

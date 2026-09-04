@@ -262,7 +262,31 @@ describe("resumerEquipement", () => {
     // L'état normal juste après génération : rien de dépassé, rien à
     // planifier, rien de fait. La carte doit quand même parler.
     const r = resumerEquipement(etatDe([verif("eq1", "2027-03-01")]));
-    expect(r.signaux.map((s) => s.cle)).toEqual(["aVenir"]);
+    expect(r.signaux.map((s) => s.cle)).toEqual(["lointain"]);
+  });
+
+  it("sépare ce qui tombe sous 30 jours de ce qui tombe plus tard", () => {
+    // Le signal valait `aVenir` et réunissait les deux : la carte écrivait
+    // « 2 à venir » et peignait le tout en bleu « lointain », pendant que le
+    // bandeau du parc comptait la moitié proche sous le nom « sous 30 j ».
+    // Deux mots voisins pour deux ensembles différents — c'est ce qui faisait
+    // douter des deux nombres.
+    const e = etatDe([
+      verif("eq1", "2026-08-20"),
+      verif("eq1", "2027-03-01"),
+    ])!;
+    expect(e.proches).toBe(1);
+    expect(e.aVenir).toBe(2);
+
+    const r = resumerEquipement(e);
+    expect(r.signaux.map((s) => s.cle)).toEqual(["proche", "lointain"]);
+    expect(r.signaux.map((s) => s.libelle)).toEqual([
+      "1 sous 30 jours",
+      "1 à venir",
+    ]);
+    // La somme des deux signaux est le compte d'avant, jamais un de plus :
+    // `proches` est un sous-ensemble de `aVenir`, pas un second comptage.
+    expect(r.signaux.reduce((n, s) => n + s.nb, 0)).toBe(e.aVenir);
   });
 
   it("retombe sur la dernière preuve quand plus rien n'est attendu", () => {
