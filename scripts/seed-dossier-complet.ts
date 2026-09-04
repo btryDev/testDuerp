@@ -759,6 +759,36 @@ const OU_TROUVER_L_UUID = [
  * réécrite, jamais ignorée : un équipement sans zone ne s'afficherait nulle
  * part, ce qui est exactement le défaut qu'on passe ses journées à traquer.
  */
+/**
+ * `--second-etablissement` rattache le dossier à une entreprise EXISTANTE au
+ * lieu d'en créer une.
+ *
+ * POURQUOI CE N'EST PAS UN CONTOURNEMENT DU REFUS. Le refus sur base non vide
+ * protège d'un empilement SILENCIEUX : relancer le script par mégarde ajoutait
+ * un dossier sans le dire. Ici, l'intention est nommée sur la ligne de
+ * commande, et l'entreprise d'accueil est désignée : rien n'est deviné.
+ *
+ * ET SURTOUT, LE MODÈLE L'EXIGE. `Entreprise.userId` est `@unique` — un
+ * utilisateur a UNE entreprise et autant d'établissements qu'il en tient
+ * (ADR-028). Créer une seconde entreprise sous le même compte violerait la
+ * contrainte ; le second dossier doit donc être un second ÉTABLISSEMENT de
+ * l'entreprise déjà là. C'est aussi ce qui fait apparaître le sélecteur de la
+ * barre haute, qui ne se montre qu'à partir de deux.
+ */
+function lireEntrepriseHote(argv: string[]): string | null {
+  const i = argv.indexOf("--second-etablissement");
+  if (i === -1) return null;
+  const valeur = argv[i + 1];
+  if (valeur === undefined || valeur.startsWith("--")) {
+    throw new Error(
+      "--second-etablissement <id> attend l'identifiant de l'entreprise\n" +
+        "d'accueil. Pour le trouver :\n" +
+        '  select id, "raisonSociale", "userId" from "Entreprise";',
+    );
+  }
+  return valeur;
+}
+
 function lireZoneUnique(argv: string[]): boolean {
   return argv.includes("--zone-unique");
 }
@@ -797,12 +827,13 @@ function lireUserId(argv: string[]): string {
 async function main(): Promise<void> {
   const userId = lireUserId(process.argv.slice(2));
   const zoneUnique = lireZoneUnique(process.argv.slice(2));
+  const entrepriseHote = lireEntrepriseHote(process.argv.slice(2));
 
   // Refus explicite sur base non vide — cf. l'en-tête. Le compte des
   // entreprises suffit : elles sont la racine de tenancy (ADR-005), tout le
   // reste en dépend par cascade.
   const dejaLa = await prisma.entreprise.count();
-  if (dejaLa > 0) {
+  if (dejaLa > 0 && entrepriseHote === null) {
     console.error(
       `REFUS : la base porte déjà ${dejaLa} entreprise(s).\n` +
         "Ce script CRÉE un dossier, il n'en complète aucun — le relancer ici\n" +
@@ -819,7 +850,9 @@ async function main(): Promise<void> {
   // -------------------------------------------------------------------------
   // 1. Entreprise + établissement + zones (ADR-001, ADR-004, ADR-029).
   // -------------------------------------------------------------------------
-  const entreprise = await prisma.entreprise.create({
+  const entreprise = entrepriseHote
+    ? await prisma.entreprise.findUniqueOrThrow({ where: { id: entrepriseHote } })
+    : await prisma.entreprise.create({
     data: {
       userId,
       raisonSociale: ENTREPRISE.raisonSociale,
@@ -828,13 +861,24 @@ async function main(): Promise<void> {
       effectif: ENTREPRISE.effectif,
       adresse: ENTREPRISE.adresse,
     },
-  });
+      });
+
+  // Un second établissement porte son PROPRE nom et sa propre adresse. Deux
+  // dossiers homonymes rendraient le sélecteur de la barre haute illisible —
+  // il n'affiche que `raisonDisplay` —, et son slug public entrerait en
+  // collision avec celui du premier, `slugPublic` étant unique.
+  const nomDuDossier = entrepriseHote
+    ? "Le Comptoir des Halles — Quai Nord"
+    : ENTREPRISE.raisonSociale;
+  const adresseDuDossier = entrepriseHote
+    ? "3 quai Nord, 44000 Nantes"
+    : ENTREPRISE.adresse;
 
   const etablissement = await prisma.etablissement.create({
     data: {
       entrepriseId: entreprise.id,
-      raisonDisplay: ENTREPRISE.raisonSociale,
-      adresse: ENTREPRISE.adresse,
+      raisonDisplay: nomDuDossier,
+      adresse: adresseDuDossier,
       codeNaf: ENTREPRISE.codeNaf,
       effectifSurSite: ENTREPRISE.effectif,
 
