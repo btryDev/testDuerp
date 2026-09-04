@@ -38,8 +38,14 @@ vi.mock("@/lib/onboarding/actions", () => ({
     return { status: "idle" as const };
   },
 }));
+const navigations: string[] = [];
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: () => {} }),
+  useRouter: () => ({ push: (href: string) => navigations.push(href) }),
+}));
+vi.mock("@/lib/auth/actions", () => ({
+  signOutAction: async () => {
+    appels.push("deconnexion");
+  },
 }));
 
 import { WizardShell } from "./WizardShell";
@@ -47,6 +53,7 @@ import { WizardShell } from "./WizardShell";
 afterEach(cleanup);
 beforeEach(() => {
   appels.length = 0;
+  navigations.length = 0;
   // jsdom n'a pas de mise en page, donc pas de `scrollIntoView`. Le bouchon
   // est ici et non dans le composant : amener le refus sous les yeux est le
   // comportement voulu, pas une précaution à rendre conditionnelle.
@@ -211,5 +218,71 @@ describe("le refus de périmètre est aussi lisible sans le voir", () => {
     for (const id of decrit.split(" ")) {
       expect(document.getElementById(id), id).toBeTruthy();
     }
+  });
+});
+
+/**
+ * La sortie de l'écran. `/onboarding` masque le header global (`AppHeaderGate`)
+ * et la barre de compte n'existe qu'une fois un établissement créé : cet écran
+ * est le seul à porter la déconnexion pour un compte qui n'a pas encore de
+ * dossier. Et la confirmation de « Quitter » ne peut pas être une boîte native
+ * — un navigateur à qui l'on a coché « empêcher cette page d'ouvrir d'autres
+ * boîtes de dialogue » fait rendre `false` à `confirm()` sans rien afficher,
+ * ce qui rend le bouton inerte pour le reste de la visite.
+ */
+describe("on peut sortir de la mise en place", () => {
+  it("sans rien avoir saisi, « Quitter » s'en va sans poser de question", async () => {
+    render(<WizardShell email="paul@exemple.fr" />);
+    screen.getByRole("button", { name: "Quitter" }).click();
+    await souffler();
+
+    expect(navigations).toEqual(["/"]);
+  });
+
+  it("une saisie commencée : la question est posée DANS la page, et elle mène dehors", async () => {
+    render(<WizardShell email="paul@exemple.fr" />);
+    remplirEtape1();
+    await souffler();
+
+    screen.getByRole("button", { name: "Quitter" }).click();
+    await souffler();
+
+    // Rien n'a bougé, et la question est un nœud du document — pas une boîte
+    // native que le navigateur peut avoir désactivée.
+    expect(navigations).toEqual([]);
+    const question = screen.getByRole("alertdialog");
+    expect(question.textContent).toMatch(/Quitter la mise en place/);
+
+    screen.getByRole("button", { name: /Quitter sans enregistrer/ }).click();
+    await souffler();
+    expect(navigations).toEqual(["/"]);
+  });
+
+  it("« Reprendre la saisie » referme la question et ne navigue pas", async () => {
+    // La borne basse : sans elle, un panneau qui navigue toujours passerait.
+    render(<WizardShell email="paul@exemple.fr" />);
+    remplirEtape1();
+    await souffler();
+    screen.getByRole("button", { name: "Quitter" }).click();
+    await souffler();
+
+    screen.getByRole("button", { name: /Reprendre la saisie/ }).click();
+    await souffler();
+
+    expect(navigations).toEqual([]);
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    // La saisie est toujours là : on n'a pas remis le questionnaire à zéro.
+    expect(
+      (screen.getByLabelText(/Raison sociale/) as HTMLInputElement).value,
+    ).toBe("Bistrot du marché");
+  });
+
+  it("la déconnexion est atteignable depuis l'écran", async () => {
+    render(<WizardShell email="paul@exemple.fr" />);
+
+    screen.getAllByRole("button", { name: /Déconnexion/ })[0].click();
+    await souffler();
+
+    expect(appels).toEqual(["deconnexion"]);
   });
 });

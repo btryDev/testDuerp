@@ -3,8 +3,9 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, ShieldCheck } from "lucide-react";
+import { Check, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { signOutAction } from "@/lib/auth/actions";
 import { StepIdentite } from "./StepIdentite";
 import { StepTypologie } from "./StepTypologie";
 import { StepResume } from "./StepResume";
@@ -60,24 +61,29 @@ const ETAPES: Etape[] = [
   },
 ];
 
-export function WizardShell() {
+export function WizardShell({ email }: { email?: string | null }) {
   const router = useRouter();
   const [state, setState] = useState<OnboardingState>(VALEURS_INITIALES);
   const [etapeIdx, setEtapeIdx] = useState(0);
   const [blocage, setBlocage] = useState<Blocage | null>(null);
+  const [sortieDemandee, setSortieDemandee] = useState(false);
 
   // Quitter : rien n'est persisté avant l'étape finale (état React pur),
   // donc on le dit honnêtement au lieu d'un « Enregistrer et quitter »
   // trompeur. Confirmation seulement si l'utilisateur a commencé à saisir.
+  //
+  // Cette confirmation était un `window.confirm`. Un navigateur qui a déjà
+  // ouvert deux boîtes natives propose « empêcher cette page d'ouvrir
+  // d'autres boîtes de dialogue » : cochée, la case fait rendre `false` à
+  // `confirm()` sans rien afficher, et le bouton devient définitivement
+  // inerte pour le reste de la visite — le clic ne produit alors plus rien
+  // du tout. La question se pose donc dans la page, où rien ne peut la
+  // supprimer.
+  const modifie = JSON.stringify(state) !== JSON.stringify(VALEURS_INITIALES);
+
   const quitter = () => {
-    const modifie =
-      JSON.stringify(state) !== JSON.stringify(VALEURS_INITIALES);
-    if (
-      modifie &&
-      !window.confirm(
-        "Quitter la mise en place ?\n\nVos réponses ne seront pas conservées — le questionnaire ne prend que quelques minutes et pourra être repris depuis le début.",
-      )
-    ) {
+    if (modifie) {
+      setSortieDemandee(true);
       return;
     }
     router.push("/");
@@ -239,11 +245,40 @@ export function WizardShell() {
           })}
         </ol>
 
-        <div className="mt-auto text-[12px] leading-[1.5] text-white/60">
-          <div className="mb-1.5 flex items-center gap-2">
-            <ShieldCheck aria-hidden className="size-4" /> Données hébergées UE
+        {/* Le header global est masqué sur cet écran (`AppHeaderGate`) et
+            la barre de compte n'apparaît qu'une fois un établissement créé :
+            sans cette porte, un compte arrêté en cours de mise en place ne
+            pouvait plus se déconnecter nulle part — ni ici, ni sur l'accueil,
+            dont le seul bouton le renvoie à cet écran. */}
+        <div className="mt-auto flex flex-col gap-5">
+          {email ? (
+            <div className="border-t border-white/15 pt-5">
+              <p
+                className="m-0 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-white/45"
+                title={email}
+              >
+                {email}
+              </p>
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="mt-2 inline-flex items-center gap-2 text-[12.5px] text-white/70 underline decoration-white/30 decoration-dotted underline-offset-4 transition-colors hover:text-white"
+                >
+                  <LogOut aria-hidden className="size-3.5" />
+                  Déconnexion
+                </button>
+              </form>
+            </div>
+          ) : null}
+
+          <div className="text-[12px] leading-[1.5] text-white/60">
+            <div className="mb-1.5 flex items-center gap-2">
+              <ShieldCheck aria-hidden className="size-4" /> Données hébergées UE
+            </div>
+            <span>
+              Toutes les informations restent modifiables après la création.
+            </span>
           </div>
-          <span>Toutes les informations restent modifiables après la création.</span>
         </div>
       </aside>
 
@@ -260,6 +295,21 @@ export function WizardShell() {
               conformité
             </span>
           </Link>
+
+          {/* Le rail — et donc la déconnexion qu'il porte — est replié sous
+              le point de rupture : elle se redonne ici, sinon la sortie
+              n'existe que sur grand écran. */}
+          {email ? (
+            <form action={signOutAction}>
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1.5 text-[12.5px] text-[color:var(--board-slate-mid)] underline decoration-[color:var(--board-slate)] decoration-dotted underline-offset-4 transition-colors hover:text-[color:var(--board-ink)]"
+              >
+                <LogOut aria-hidden className="size-3.5" />
+                Déconnexion
+              </button>
+            </form>
+          ) : null}
         </div>
 
         {/* Progression */}
@@ -292,6 +342,51 @@ export function WizardShell() {
             />
           </div>
         </div>
+
+        {/* La confirmation de sortie, rendue dans le flux juste sous la
+            barre de progression — là où le clic vient d'avoir lieu. */}
+        {sortieDemandee ? (
+          <div
+            role="alertdialog"
+            aria-labelledby="sortie-titre"
+            aria-describedby="sortie-detail"
+            className="mb-8 rounded-2xl bg-[color:var(--board-card)] p-5 shadow-[inset_0_0_0_1px_rgba(10,10,10,.14)]"
+          >
+            <p
+              id="sortie-titre"
+              className="m-0 text-[14px] font-semibold text-[color:var(--board-ink)]"
+            >
+              Quitter la mise en place ?
+            </p>
+            <p
+              id="sortie-detail"
+              className="mt-1.5 text-[13px] leading-[1.55] text-[color:var(--board-slate-mid)]"
+            >
+              Vos réponses ne seront pas conservées — le questionnaire ne prend
+              que quelques minutes et pourra être repris depuis le début.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {/* Le focus va à la porte qui ne détruit rien. */}
+              <Button
+                type="button"
+                variant="boardClair"
+                size="boardSm"
+                autoFocus
+                onClick={() => setSortieDemandee(false)}
+              >
+                Reprendre la saisie
+              </Button>
+              <Button
+                type="button"
+                variant="board"
+                size="boardSm"
+                onClick={() => router.push("/")}
+              >
+                Quitter sans enregistrer
+              </Button>
+            </div>
+          </div>
+        ) : null}
 
         <form
           action={formAction}
